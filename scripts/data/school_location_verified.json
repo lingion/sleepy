@@ -147,6 +147,40 @@
     "excerptOfArchivedFullText": true
   },
   {
+    "name": "上海大学（2024新版）",
+    "cities": [
+      "上海市"
+    ],
+    "sourceUrl": "https://apply.shu.edu.cn/search/index?language=zh",
+    "sourceUrls": [
+      "https://apply.shu.edu.cn/search/index?language=zh",
+      "https://apply.shu.edu.cn/news/detail?id=241"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "报到日期：2026年9月6日（周日）和9月7日（周一）③ 报到地点：根据录取通知书上的报到地点到所在校区报到宝山校区：上海市宝山区锦秋路716号（北门），V楼国际教育学院二楼（近山明食堂）延长校区：上海市静安区延长路149号，国际教育学院二楼（近校医院）嘉定校区：上海市嘉定区城中路20号，嘉定校区文德楼",
+    "relationEvidence": "新版为技术注释；学校现国际招生检索页含2026新生通知与官方上海宝山地址，2024/2025交换指南明确宝山、延长、嘉定三校区。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "",
+    "evidenceTextSha256": "0b2aac25818f5c35fe1dc3c40e99a815cba8a6e05df31cd2ba55c162922a81ea",
+    "evidenceArchive": "location-next-campus-probes.jsonl",
+    "relationSources": [
+      {
+        "sourceUrl": "https://apply.shu.edu.cn/news/detail?id=241",
+        "observedText": "上海大学共有宝山、延长、嘉定三个校区。 … 宝山校区：中国上海市宝山区上大路99号",
+        "evidenceTextSha256": "21235daf5fcf69b6fc01cba29eade33de976acc163ee2b6a302225aa1ae7f01f",
+        "evidenceArchive": "location-next-campus-probes.jsonl",
+        "bodySha256": "a9eaab3823984ee89105f76e4ec64345541ceefbe1a99db51e44a5ac153a4a99",
+        "retrievedDate": "2026-10-15"
+      }
+    ],
+    "bodySha256": "a51a473acc52ab1dddf3c5d2a81858b11964242707b58bdb8b6ac7c3dee0240a",
+    "excerptOfArchivedFullText": true
+  },
+  {
     "name": "上海大学（2024新版） - 研究生",
     "cities": [
       "上海市"
@@ -870,6 +904,20 @@
     "excerptOfArchivedFullText": true
   },
   {
+    "name": "中国农业大学（烟台） - 研究生",
+    "cities": [
+      "烟台市"
+    ],
+    "sourceUrl": "http://yt.cau.edu.cn/col/col39596/index.html",
+    "retrievedDate": "2026-10-15",
+    "observedText": "中国农业大学烟台研究院是学校设在山东的一所教育科研机构，她坐落于亚洲唯一的国际葡萄与葡萄酒城——烟台市。研究院校园占地1583亩，校舍建筑面积近27万平方米，拥有现代化的教学楼、图书馆、学生公寓、学生餐厅、运动场馆、办公楼、国际学术交流中心等基础设施及各类配套设施。 目前，烟台研究院教职工245人，其中专职教师158人，中高级以上职称占96.8%，具有博士、硕士学位的占91.1%。在校生共5947人，其中本科生2806人，硕士研究生2325人，第二学士学位学生816人。 ",
+    "bodySha256": "803b1fd1e313e7762d1148b58d81b27da37254c31b71dffb3c843fe73fa14f08",
+    "evidenceTextSha256": "b2dd40c2a33d53913269e94766b427b6d724fc198f10c3ddaa198859ea7d7cb1",
+    "relationEvidence": "烟台研究院官方简介同一正文明确机构坐落烟台市以及在校硕士研究生2325人，构成该烟台培养单位的直接关系证据。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅证明公开的研究生办公或培养单位城市，不宣称所有学生或校区位置。"
+  },
+  {
     "name": "中国医科大学 - 研究生",
     "cities": [
       "沈阳市"
@@ -940,6 +988,23 @@
       }
     ],
     "coverageNote": "研究生部门公开地址及官方行政归属；不宣称全体学生所在位置。"
+  },
+  {
+    "name": "中国民航大学 - 研究生",
+    "cities": [
+      "天津市"
+    ],
+    "sourceUrl": "https://www.cauc.edu.cn/yjsy/info/1124/2480.htm",
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "十二、咨询及监督渠道 通信地址：天津市东丽区津北公路 2898 号 联系部门：中国民航大学研究生院招生办公室 电子邮箱： caucyjs@cauc.edu.cn 招生网址： https://www.cauc.edu.cn/yjsy/ 研究生招生办公室： 022-24092146 纪委办公室： 022-24092242 招生学院联系方式 招生学院 联系电话 马克思主义学院 022-24095608 安全科学与工程学院 022-24092135 交通科学与工程学院 022-24092407 sfcheng@cauc.edu.cn 空中交通管理学院 022-24092907 航空工程学院 022-24092406 电子信息与自动化学院 022-24092828 计算机与人工智能学院 022-24092087 理学院 022-24092513 经济与管理学院 022-24092269 法学院 022-24092534 外国语学院 022-24095910 航空服务与安防管理学院 022-24098265 附件【 2027年中国民航大学硕士研究生招生专业目录.pdf 】已下载 次 中国民航大学研究生院版权所有",
+    "relationEvidence": "中国民航大学2027硕士招生简章明确天津市津北公路2898号，联系部门研究生院招生办公室。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅证明来源明确的研究生办公、招生或培养单位地址；不表示穷尽全部校区。",
+    "bodySha256": "d94db81e377616d8f3263da76f49a45a8e472f2a461b8242f3609fa597feb7fb",
+    "evidenceTextSha256": "af2a4c016b639c6ba5d415d956d7757cff9feff12a5b42198934761c51fc03e4",
+    "excerptOfArchivedFullText": true,
+    "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-final4-review.json"
   },
   {
     "name": "中国海洋大学 - 研究生",
@@ -1599,6 +1664,40 @@
     "evidenceTextSha256": "71115a516e7afa3c521804ee6a6f4a9ae5d2079f8d64c8bf5717b00f287cf755"
   },
   {
+    "name": "佛山科学技术学院",
+    "cities": [
+      "佛山市"
+    ],
+    "sourceUrl": "http://www.fosu.edu.cn/",
+    "sourceUrls": [
+      "http://www.fosu.edu.cn/",
+      "http://www.moe.gov.cn/srcsite/A03/s181/202406/t20240612_1135108.html"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "邮编：528225 地址：江湾校区——广东省佛山市禅城区江湾一路18号 仙溪校区——广东省佛山市南海区狮山镇广云路33号 河滨路校区——广东省佛山市禅城区河滨路5号",
+    "relationEvidence": "现佛山大学官网列江湾、仙溪、河滨三个校区完整地址均佛山市；教育部函明确旧学院更名佛山大学。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "佛山大学 | 欢迎您！",
+    "evidenceTextSha256": "3e65f295cc50bf47b0fb5ed0bf0bf523d662ed4ff56c4c910cacc279e9ddaacd",
+    "evidenceArchive": "campus12-http-probes.jsonl",
+    "relationSources": [
+      {
+        "sourceUrl": "http://www.moe.gov.cn/srcsite/A03/s181/202406/t20240612_1135108.html",
+        "observedText": "经教育部党组会议研究决定，同意佛山科学技术学院更名为佛山大学，学校标识码为4144011847；同时撤销佛山科学技术学院的建制。现将有关事项函告如下",
+        "evidenceTextSha256": "0e8bc20c2a6573c3bbbad6bb6b6881b0e838d5f06a0693495999304384ae1164",
+        "evidenceArchive": "campus12-probes.jsonl",
+        "bodySha256": "07e5197636e80d2fc490f6a4bf597fcef424020c07f5d1ab55ef4d75013856b2",
+        "retrievedDate": "2026-10-15"
+      }
+    ],
+    "bodySha256": "4346045b7b32f9b532c944c0c3ce9a2b0ac38ca2216549d34cf60f46a478574b",
+    "excerptOfArchivedFullText": true
+  },
+  {
     "name": "佛山职业技术学院（推荐）",
     "cities": [
       "佛山市"
@@ -1826,6 +1925,49 @@
     "excerptOfArchivedFullText": true
   },
   {
+    "name": "内蒙古警察职业学院",
+    "cities": [
+      "呼和浩特市"
+    ],
+    "sourceUrl": "https://www.impc.edu.cn/",
+    "sourceUrls": [
+      "https://www.impc.edu.cn/",
+      "http://www.moe.gov.cn/srcsite/A03/s181/202503/t20250314_1182877.html",
+      "http://hlgena.huhhot.gov.cn/tzxq/tzhj/fzjc_50232/"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "内蒙古警察学院网站 内蒙古警察学院 OA系统 书记信箱 警院概况 警院要闻 组织机构 学科专业 科学研究 招生工作 通知公告 警院风采 保障与安全 对党忠诚，服务人民，执法公正，纪律严明 忠诚教育、英模教育、执法教育、保密教育、警示教育 AI警务、教据警务、低空警务、主动警务、预防警务、应急警务 警务化管理，实战化教学 内蒙古警察学院 OA系统 书记信箱 警院概况 警院要闻 组织机构 学科专业 科学研究 招生工作 通知公告 警院风采 保障与安全 x 搜索 查看更多 查看更多 12 2026.10 内蒙古警察学院召开党委领导班子巡视整改专题民主生活会 内蒙古警察学院召开党委领导班子巡视整改专题民主生活会 01 2026.10 内蒙古警察学院隆重举行2026级新生开学典礼暨警务化训练成果展示 内蒙古警察学院隆重举行2026级新生开学典礼暨警务化训练成果展示 24 2026.09 内蒙古警察学院召开学位评定委员会2026年度第一次工作会议 内蒙古警察学院召开学位评定委员会2026年度第一次工作会议 21 2026.09 内蒙古警察学院召开树立和践行正确政绩观学习教育总结会 内蒙古警察学院召开树立和践行正确政绩观学习教育总结会 18 2026.09 内蒙古警察学院召开“正三风·强治理·促发展”专项提升行动动员部署会 内蒙古警察学院召开“正三风·强治理·促发展”专项提升行动动员部署会 2026.10.12 内蒙古警察学院召开党委领导班子巡视整改专题民主生活会 2026.10.01 内蒙古警察学院隆重举行2026级新生开学典礼暨警务化训练成果展示 2026.09.24 内蒙古警察学院召开学位评定委员会2026年度第一次工作会议 2026.09.21 内蒙古警察学院召开树立和践行正确政绩观学习教育总结会 2026.09.18 内蒙古警察学院召开“正三风·强治理·促发展”专项提升行动动员部署会 15 2026.10 缅怀革命英烈 筑牢忠诚警魂——刑事科学技术学院开展烈士纪念日主题党日活动 缅怀革命英烈 筑牢忠诚警魂——刑事科学技术学院开展烈士纪念日主题党日活动 13 2026.10 法学院组织开展东方明珠大讲坛第89期暨法律专业学位教育系列讲座直播活动 法学院组织开展东方明珠大讲坛第89期暨法律专业学位教育系列讲座直播活动 29 2026.09 我院公共基础教研部开展端午主题人文素养提升活动 我院公共基础教研部开展端午主题人文素养提升活动 29 2026.09 学院网络安全与执法专业实践教学基地揭牌仪式在呼和浩特市公安局侦查中心举行 学院网络安全与执法专业实践教学基地揭牌仪式在呼和浩特市公安局侦查中心举行 27 2026.09 我院学子在2026年全区教育系统网络安全竞赛暨第七届“蒙古马杯”学生组网络安全竞赛中斩获佳绩 我院学子在2026年全区教育系统网络安全竞赛暨第七届“蒙古马杯”学生组网络安全竞赛中斩获佳绩 2026.10.15 缅怀革命英烈 筑牢忠诚警魂——刑事科学技术学院开展烈士纪念日主题党日活动 2026.10.13 法学院组织开展东方明珠大讲坛第89期暨法律专业学位教育系列讲座直播活动 2026.09.29 我院公共基础教研部开展端午主题人文素养提升活动 2026.09.29 学院网络安全与执法专业实践教学基地揭牌仪式在呼和浩特市公安局侦查中心举行 2026.09.27 我院学子在2026年全区教育系统网络安全竞赛暨第七届“蒙古马杯”学生组网络安全竞赛中斩获佳绩 内蒙古警察学院新版网站上线试运行公告 2026年10月14日 内蒙古警察学院信息化运维耗材年度采购项目询价公告 2026年08月31日 内蒙古警察学院租赁漏洞智能防御系统项目询价公告 2026年08月31日 内蒙古警察学院信息化运维耗材年度采购项目询价公告 2026年08月31日 内蒙古警察学院公安交通管理技术协同创新实验室装饰装修工程询价公告(补充) 2026年07月28日 内蒙古警察学院公安交通管理技术协同创新实验室装饰装修工程询价公告 2026年07月28日 内蒙古警察学院公安交通管理技术协同创新实验室 室内全彩LED显示屏采购项目市场调研公告 2026年07月27日 内蒙古警察学院体育场户外P5全彩LED显示屏采购项目市场调研公告 2026年07月16日 内蒙古警察学院（和林格尔校区）操场看台优化改造市场调研询价公告 2026年07月08日 查看更多 实战化 教学 我院教师参加第六届新时代一流公安学科专业建设学术研讨会并获奖 我院教师参加第六届新时代一流公安学科专业建设学术研讨会并获奖 学院召开2026年秋季学期教学督导委员会工作会议 学院召开2026年秋季学期教学督导委员会工作会议 内蒙古警察学院召开2026年度自治区教育科学“十五五”规划课题开题评审会 内蒙古警察学院召开2026年度自治区教育科学“十五五”规划课题开题评审会 内蒙古警察学院召开学位评定委员会2026年度第一次工作会议 内蒙古警察学院召开学位评定委员会2026年度第一次工作会议 警务化 管理 砺炼方成蜕变 辞师再启新航——内蒙古警察学院举行2026级新生警训阶段性会操表演暨警训教官欢送仪式 砺炼方成蜕变 辞师再启新航——内蒙古警察学院举行2026级新生警训阶段性会操表演暨警训教官欢送仪式 磨砺蜕变｜新生教官训练纪实 磨砺蜕变｜新生教官训练纪实 全区公安机关2025年度新招录人民警察 （非公安院校）初任培训班顺利开班 全区公安机关2025年度新招录人民警察 （非公安院校）初任培训班顺利开班 公安厅机关2026年度司晋督警衔晋升培训班在我院圆满完成 公安厅机关2026年度司晋督警衔晋升培训班在我院圆满完成 民警 培训 查看更多 内蒙古警察学院2026年招生章程 内蒙古警察学院2026年招生章程 查看更多 09 /2026-09 喜报｜我院在“智慧公安我先行”全区公安基层技术革新专项活动暨全区第五届科技创新大赛中斩获佳绩 14 /2026-08 暑期实践锻炼长本领 校厅协同育人出成效 14 /2026-08 国家语委科研规划领导小组办公室关于国家语言文字“十五五”科研规划2026年度项目申报的通知 08 /2026-08 北疆安全稳定屏障建设研究基地、内蒙古警察学院成功举办第二届“边疆治理体系和治理能力现代化”学术研讨会 29 /2026-07 2026年上半年我院获批多项校外科研项目 21 /2026-07 学院举办第98期北疆警苑大讲堂——《涵养科学家精神 恪守科研诚信底线》专题讲座 查看更多 信息公开 更多 + 内蒙古警察学院租赁漏洞智能防御系统项目询价公告 2026-08-31 内蒙古警察学院信息化运维耗材年度采购项目询价公告 2026-08-31 内蒙古警察学院采购信息化运维意向公开 2026-05-18 关于采购IP话机公开询价的通知 2026-03-02 安全教育 更多 + 学院开展新学期开学前校园安全专项检查 2026.08.28 学院开展新学期开学前校园安全专项检查 学院开展春季学期开学安全大检查 2026.03.06 学院开展春季学期开学安全大检查 筑牢安全防线 护航平安校园——学院开展暑期校园安全大检查 2025.07.20 筑牢安全防线 护航平安校园——学院开展暑期校园安全大检查 中华人民共和国公安部 中华人民共和国教育部 各省市公安厅 北京市公安局 天津市公安局 河北省公安厅 山西省公安厅 辽宁省公安厅 吉林省公安厅 黑龙江省公安厅 上海市公安局 江苏省公安厅 浙江省公安厅 安徽省公安厅 福建省公安厅 江西省公安厅 山东省公安厅 河南省公安厅 湖北省公安厅 湖南省公安厅 广东省公安厅 广西壮族自治区公安厅 海南省公安厅 内蒙古自治区公安厅 内蒙古自治区教育厅 各盟市公安局 呼和浩特市公安局 包头市公安局 呼伦贝尔市公安局 兴安盟公安局 通辽市公安局 赤峰市公安局 锡林郭勒盟公安局 乌兰察布市公安局 鄂尔多斯市公安局 巴彦淖尔市公安局 乌海市公安局 阿拉善盟公安局 全国公安院校 中国人民公安大学 中国人民警察大学 中国刑事警察学院 南京警察学院 北京警察学院 山西警察学院 辽宁警察学院 吉林警察学院 上海公安学院 江苏警官学院 浙江警察学院 安徽公安学院 山东警察学院 湖北警官学院 湖南警察学院 广东警官学院 广西警察学院 重庆警察学院 四川警察学院 贵州警察学院 收起 联系我们 地址：和林格尔新区云谷片区金盛路与云港大道交汇处（和林校区） 呼和浩特市新城区兴安北路11号（新城校区） 邮编：010051 招生电话：0471-5278003 信息中心：0471-3683662 邮件：nmjyxxzx@163.com 校内链接 教学管理信息服务平台（外网） 教学管理信息服务平台（内网） 图书资源索引 微信公众号 微信公众号 微信公众号 微信视频号 微信视频号 微信视频号 抖音号 抖音号 抖音号 快手号 快手号 快手号 哔哩哔哩号 版权所有：内蒙古警察学院 蒙ICP备2022001508号-1 × 放大图片 您即将离开内蒙古警察学院网站 是 否 确认 试运行公告 ◎ 关闭 ◎",
+    "relationEvidence": "现学院官方首页列和林格尔新区云谷片区与呼和浩特市新城区两校区；新区政府发展基础明确新区位于呼和浩特市东部和南部；教育部函明确旧职业学院升本。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "内蒙古警察学院网站",
+    "evidenceTextSha256": "a508f8e3b3d2f08f684f89d507b393a1832631236fbd360b576adb60ffbadc95",
+    "evidenceArchive": "campus8-probes.jsonl",
+    "relationSources": [
+      {
+        "sourceUrl": "http://www.moe.gov.cn/srcsite/A03/s181/202503/t20250314_1182877.html",
+        "observedText": "教育部关于同意设置内蒙古警察学院的函 - 中华人民共和国教育部政府门户网站 登录 Languages English Русский 日本語 Deutsch Français Español العربية 搜索 无障碍浏览 Languages English Русский 日本語 Deutsch Français Español العربية 微言教育 无障碍浏览 登录 | 注册 图片 个人登录 法人登录 图片 个人注册 法人注册 搜索 首页 机构 新闻 公开 服务 互动 文献 当前位置： 首页 > 公开 信息名称： 教育部关于同意设置内蒙古警察学院的函 信息索引： 360A03-02-2025-0013-1 生成日期： 2025-02-24 发文机构： 中华人民共和国教育部 发文字号： 教发函〔2025〕25号 信息类别： 发展规划 内容概述： 教育部同意设置内蒙古警察学院。 教育部关于同意设置内蒙古警察学院的函 教发函〔2025〕25号 内蒙古自治区人民政府： 《内蒙古自治区人民政府关于商请以内蒙古警察职业学院为基础设立内蒙古警察学院的函》（内政函〔2023〕91号）收悉。根据《中华人民共和国高等教育法》《普通高等学校设置暂行条例》有关规定以及第八届全国高等学校设置评议委员会考察评议结果，经教育部党组会议审议，同意以内蒙古警察职业学院为基础设立内蒙古警察学院，学校标识码为4115012797；同时撤销内蒙古警察职业学院的建制。现将有关事项函告如下。 一、内蒙古警察学院为公办普通本科学校，由你区领导和管理。 二、学校要切实加强党的建设，全面贯彻党和国家的教育方针，坚持社会主义办学方向，落实立德树人根本任务，培养德智体美劳全面发展的社会主义建设者和接班人。 三、学校专业设置按教育部有关规定办理，同意首批设置侦查学、治安学、网络安全与执法、法学等4个普通本科专业。 四、学校全日制在校生规模暂定为5000人。 望你区进一步加大投入和政策支持，多措并举做好办学经费保障工作。加强师资队伍建设，加大教育基础设施投入力度，持续改善办学条件，科学规划学科专业布局，逐步建成特色鲜明、区域一流的公安本科学校，着力培养高水平应用型公安专业人才，为内蒙古经济社会高质量发展作出更大贡献。 教 育 部 2025年2月21日 点击右上角 选择在浏览器中打开 发布日期：2025-03-18 来源：教育部 下载 收藏 责任编辑：姚振 网站声明 网站地图 联系我们 版权所有：中华人民共和国教育部 中文域名：教育部.政务 京ICP备10028400号-1 京公网安备11010202007625号 网站标识码：bm05000001",
+        "evidenceTextSha256": "1bba78ade019b5860f70a752a1122113385ff91f177c4682750a53bdc4d4e356",
+        "evidenceArchive": "campus8-probes.jsonl",
+        "bodySha256": "687325ae9858a657bec3218b30ab4af55f0f2d30f5078a54bc008578c8e990f6",
+        "retrievedDate": "2026-10-15"
+      },
+      {
+        "sourceUrl": "http://hlgena.huhhot.gov.cn/tzxq/tzhj/fzjc_50232/",
+        "observedText": "发展基础_ 中国（内蒙古）自由贸易试验区呼和浩特片区管理委员会、内蒙古和林格尔新区管理委员会 呼和浩特市人民政府 长辈版 无障碍浏览 登录/注册 政务微信 政务微博 集约化站群导航 旗县区 土默特左旗 托克托县 和林县 清水河县 武川县 新城区 回民区 玉泉区 赛罕区 委办局 发展和改革委员会 教育局 科学技术局 工业和信息化局 民族事务委员会 公安局 民政局 司法局 财政局 人力资源和社会保障局 自然资源局 生态环境局 住房和城乡建设局 交通运输局 水务局 农牧局 商务局 文化旅游广电局 卫生健康委员会 退役军人事务局 应急管理局 审计局 外事办公室 市国有资产监督管理委员会 市场监督管理局 体育局 统计局 林业和草原局 国防动员办公室 医疗保障局 信访局 市城市管理局 行政审批和政务服务局 公共资源交易监督管理局 开发区 呼和浩特综合保税区 经济技术开发区 和林格尔新区 其他 呼和浩特市地铁 呼和浩特市园林建设服务中心 网站首页 管委会概况 资讯中心 政务公开 办事服务 互动交流 招商引资 搜本站 搜本站 统一标识 内蒙古和林格尔新区 发展基础 当前位置： 首页 > 招商引资 > 投资环境 > 发展基础 投资环境 产业体系 发展基础 发展要素 投资成本 发展基础 【区位条件】 新区位于内蒙古首府呼和浩特市东部和南部，地处呼包鄂城市群的核心区域，南临黄河，北拥草原，是呼包鄂榆城市群的核心区，是沟通华北地区和西北地区的重要枢纽，是建设丝绸之路经济带和中蒙俄经济走廊的重要节点，新区核心区距离主城区仅30公里，具有独特的区位优势。“敕勒川，阴山下。天似穹庐，笼盖四野。天苍苍，野茫茫。风吹草低见牛羊”，这首诗描绘的就是敕勒川的风光，内蒙古和林格尔新区核心区就位于这里。 【自然资源】 气候条件宜人。属典型的温带大陆性气候，年平均气温为3.5—8℃，其中北部大青山平均气温仅2℃，南部地区（新区核心区）6.7℃，中国电信、移动数据中心实测年平均气温5.4℃。日照时间年均1600小时，年平均降水量为335.2-534.6毫米。 生态环境良好。新区处于阴山南麓、蛮汗山西侧，森林覆盖率超过36%，草原综合植被覆盖率达53%，境内有大、小黑河，什拉乌素河、宝贝河等横穿腹地，土地和水资源丰富，人居环境优美。 地质结构稳定。地形由山地和平原构成，北部大青山和东南部蛮汉山为山地地形，南部及西南部为土默川平原地形，地势由北东向南西逐渐倾斜，历史上未发生过较大地质灾害。 资源承载力强。境内煤、气、电、高岭土等能源矿产资源富集，现已探明的有20多种。 开发潜力巨大。新区规划区域地处全国主体功能区规划明确的重点开发区，现有开发强度较低，发展空间充裕。 已具备高起点高标准开发建设的基础条件。 【交通网络】 【航空】 新区北翼拥有年旅客吞吐量突破1000万人次的白塔国际机场，规划建设的呼和浩特新机场位于新区核心区，设计年旅客吞吐量2800万人次（到2030年），是国内重要干线机场、首都机场主备降场和一类航空口岸。 【铁路】 京包、集包第二复线、呼准货运、呼准鄂客运铁路和在建的呼张高铁途径新区。呼张高铁通车后，由新区至北京时间约为2.5小时，交通非常便利。 【公路】 京藏（G6）、京新（G7）、呼北（G59）、荣乌（G18）高速公路和国道209纵贯新区，启动建设金盛路提升改造工程、核心区部分路网建设工程，积极筹划新机场高速、新区组团路网建设工程。 【地铁】 呼和浩特规划建设5条地铁线路，1号线、2号线已开工建设，未来有2条线路延伸到新区并连接新机场。 【桥梁】 启动建设连接新区与老城区跨河标志桥梁建设工程——金盛路跨大黑河单塔斜拉大桥，将极大缩短新区至主城区通行时间。 目前，新区已初步构建起承东启西、连南贯北的现代化立体交通体系，未来新区将加快与主城区地铁联通、推动与周边城市高铁、城际铁路互通，实现与新区辖区旗县轻轨连接，在新区打造新机场、呼和浩特南站综合交通枢纽，构建新区面向国际开放新平台。 【基础设施配套】 【供电】：新区分布京能盛乐热电厂、托克托电厂（世界最大的单体火力发电厂）和金桥3座火电发电厂，装机能力802万千瓦，拥有国内三大电网之一蒙西电网，核心区建成投用2座500KV、4座220KV，6座110KV变电站，云谷片区已形成五路八回路供电系统，为园区云计算、大数据产业发展提供充足稳定的电力保障。 【燃气】：长庆—呼和浩特输气管道及复线、陕京四线、大和天然气输气管道途径新区，全国最大的整装大气田———苏里格气田距离新区仅300公里，现探明储量6025亿立方米，为新区提供了充裕的天然气供给保障。 【供热】：新区拥有京能盛乐热电厂、金桥热电厂和丰华生物质热源厂，供热面积约3200多万平方米，按照新区总体规划，未来将采用电厂余热、燃气、地热能（浅层、深层）、太阳能等多种清洁能源供热，实现多能互补，清洁高效供热。 【供水】：黄河、大黑河、小黑河、什拉乌素河、宝贝河等多条河流穿越新区，呼和浩特“引黄工程”日供水能力为40万立方米，可满足新区产业发展用水需求。 【云计算】：中国电信、中国移动、中国联通三大运营商在新区建成数据中心，服务器装机能力达到70万台，2016年获批全国唯一大数据基础设施统筹发展类综合试验区，2017年新区被科技部认定为第二批国家火炬特色产业基地，内蒙古大数据规划将新区列为自治区大数据产业核心区。百度、阿里巴巴、腾讯、浪潮等一批国内外知名互联网企业落户新区。 【污水处理】：新区各园区污水处理、中水利用设施完善，建成投用5个污水处理厂，日处理能力达15.2万吨。 【通信】：建成通往北京、欧洲的互联网干线网络，出口带宽达10T，呼和浩特被誉为“宽带中国”示范城市，正在申报国家互联网骨干直连点。 【物流】：新区物流基础设施完善，可满足各类运输需求。区域内拥有沙良铁路物流园区、白塔空港物流园区、沙尔营煤炭交易中心、托清物流园区。 国家级新区网站 中国政府网 内蒙古自治区人民政府 呼和浩特市人民政府 网站声明 网站地图 联系我们 中国(内蒙古)自由贸易试验区呼和浩特片区、 内蒙古和林格尔新区管理委员会主办 中国(内蒙古)自由贸易试验区呼和浩特片区、内蒙古和林格尔新区党政综合办公室 承办 地址： 中国(内蒙古)自由贸易试验区呼和浩特片区、 内蒙古和林格尔新区管理委员会 流量统计： 政府网站标识码：1501000059 蒙ICP备17001976号-3 蒙公网安备15012302000170号 蒙公网安备15012302000170号 网站首页 资讯中心 政务公开 办事服务 互动交流 招商引资 退出长辈版 内蒙古和林格尔新区 呼和浩特市人民政府 长辈版 退出长辈版 无障碍浏览 网站首页 资讯中心 政务公开 办事服务 互动交流 招商引资 导航 当前位置： 首页 > 招商引资 > 投资环境 > 发展基础 产业体系 发展基础 发展要素 投资成本 发展基础 【区位条件】 新区位于内蒙古首府呼和浩特市东部和南部，地处呼包鄂城市群的核心区域，南临黄河，北拥草原，是呼包鄂榆城市群的核心区，是沟通华北地区和西北地区的重要枢纽，是建设丝绸之路经济带和中蒙俄经济走廊的重要节点，新区核心区距离主城区仅30公里，具有独特的区位优势。“敕勒川，阴山下。天似穹庐，笼盖四野。天苍苍，野茫茫。风吹草低见牛羊”，这首诗描绘的就是敕勒川的风光，内蒙古和林格尔新区核心区就位于这里。 【自然资源】 气候条件宜人。属典型的温带大陆性气候，年平均气温为3.5—8℃，其中北部大青山平均气温仅2℃，南部地区（新区核心区）6.7℃，中国电信、移动数据中心实测年平均气温5.4℃。日照时间年均1600小时，年平均降水量为335.2-534.6毫米。 生态环境良好。新区处于阴山南麓、蛮汗山西侧，森林覆盖率超过36%，草原综合植被覆盖率达53%，境内有大、小黑河，什拉乌素河、宝贝河等横穿腹地，土地和水资源丰富，人居环境优美。 地质结构稳定。地形由山地和平原构成，北部大青山和东南部蛮汉山为山地地形，南部及西南部为土默川平原地形，地势由北东向南西逐渐倾斜，历史上未发生过较大地质灾害。 资源承载力强。境内煤、气、电、高岭土等能源矿产资源富集，现已探明的有20多种。 开发潜力巨大。新区规划区域地处全国主体功能区规划明确的重点开发区，现有开发强度较低，发展空间充裕。 已具备高起点高标准开发建设的基础条件。 【交通网络】 【航空】 新区北翼拥有年旅客吞吐量突破1000万人次的白塔国际机场，规划建设的呼和浩特新机场位于新区核心区，设计年旅客吞吐量2800万人次（到2030年），是国内重要干线机场、首都机场主备降场和一类航空口岸。 【铁路】 京包、集包第二复线、呼准货运、呼准鄂客运铁路和在建的呼张高铁途径新区。呼张高铁通车后，由新区至北京时间约为2.5小时，交通非常便利。 【公路】 京藏（G6）、京新（G7）、呼北（G59）、荣乌（G18）高速公路和国道209纵贯新区，启动建设金盛路提升改造工程、核心区部分路网建设工程，积极筹划新机场高速、新区组团路网建设工程。 【地铁】 呼和浩特规划建设5条地铁线路，1号线、2号线已开工建设，未来有2条线路延伸到新区并连接新机场。 【桥梁】 启动建设连接新区与老城区跨河标志桥梁建设工程——金盛路跨大黑河单塔斜拉大桥，将极大缩短新区至主城区通行时间。 目前，新区已初步构建起承东启西、连南贯北的现代化立体交通体系，未来新区将加快与主城区地铁联通、推动与周边城市高铁、城际铁路互通，实现与新区辖区旗县轻轨连接，在新区打造新机场、呼和浩特南站综合交通枢纽，构建新区面向国际开放新平台。 【基础设施配套】 【供电】：新区分布京能盛乐热电厂、托克托电厂（世界最大的单体火力发电厂）和金桥3座火电发电厂，装机能力802万千瓦，拥有国内三大电网之一蒙西电网，核心区建成投用2座500KV、4座220KV，6座110KV变电站，云谷片区已形成五路八回路供电系统，为园区云计算、大数据产业发展提供充足稳定的电力保障。 【燃气】：长庆—呼和浩特输气管道及复线、陕京四线、大和天然气输气管道途径新区，全国最大的整装大气田———苏里格气田距离新区仅300公里，现探明储量6025亿立方米，为新区提供了充裕的天然气供给保障。 【供热】：新区拥有京能盛乐热电厂、金桥热电厂和丰华生物质热源厂，供热面积约3200多万平方米，按照新区总体规划，未来将采用电厂余热、燃气、地热能（浅层、深层）、太阳能等多种清洁能源供热，实现多能互补，清洁高效供热。 【供水】：黄河、大黑河、小黑河、什拉乌素河、宝贝河等多条河流穿越新区，呼和浩特“引黄工程”日供水能力为40万立方米，可满足新区产业发展用水需求。 【云计算】：中国电信、中国移动、中国联通三大运营商在新区建成数据中心，服务器装机能力达到70万台，2016年获批全国唯一大数据基础设施统筹发展类综合试验区，2017年新区被科技部认定为第二批国家火炬特色产业基地，内蒙古大数据规划将新区列为自治区大数据产业核心区。百度、阿里巴巴、腾讯、浪潮等一批国内外知名互联网企业落户新区。 【污水处理】：新区各园区污水处理、中水利用设施完善，建成投用5个污水处理厂，日处理能力达15.2万吨。 【通信】：建成通往北京、欧洲的互联网干线网络，出口带宽达10T，呼和浩特被誉为“宽带中国”示范城市，正在申报国家互联网骨干直连点。 【物流】：新区物流基础设施完善，可满足各类运输需求。区域内拥有沙良铁路物流园区、白塔空港物流园区、沙尔营煤炭交易中心、托清物流园区。 党政机关 中国(内蒙古)自由贸易试验区呼和浩特片区、内蒙古和林格尔新区管理委员会主办 中国(内蒙古)自由贸易试验区呼和浩特片区、内蒙古和林格尔新区党政综合办公室承办 政府网站标识码：1501000059 联系电话：0471-7388011 投资热线：0471-7388888 地址：中国(内蒙古)自由贸易试验区呼和浩特片区、内蒙古和林格尔新区管理委员会 蒙ICP备17001976号-3 蒙公网安备15012302000170号",
+        "evidenceTextSha256": "6c79bf0d9febf19e0f77099dea57c3f5ddbb110ba2713999a7620133aa21897d",
+        "evidenceArchive": "campus11-probes.jsonl",
+        "bodySha256": "5b32078434e96bc30a765fc476c307c3853deb4debad750ee4a695d96cda5e2a",
+        "retrievedDate": "2026-10-15"
+      }
+    ],
+    "bodySha256": "9bdf1e59cb0d4d664ea295cc6776b428725fd77d26f46d706c08544e3df01b64",
+    "excerptOfArchivedFullText": true
+  },
+  {
     "name": "包头师范学院",
     "cities": [
       "包头市"
@@ -1875,6 +2017,30 @@
     "bodySha256": "5f24dc40ddfecc1f192257931263835be970ddc2ee1b12727001ac2e9b4d8d0e",
     "observedText": "1.采购人信息 名 称：北京医药职工大学（中国北京同仁堂（集团）有限责任公司党校） 地址：丰台区宋家庄苇子坑148号 联系方式：王老师,58167931 2.采购代理机构信息 名 称：北京市公共资源交易中心（北京市政府采购中心） 地 址：北京市丰台区玉林里45号腾飞大厦 联系方式：赵老师，83916706 3.项目联系方式 项目联系人：赵老师 电 话： 83916706 ﻿",
     "relationEvidence": "Official school contact page or government procurement record identifies the institution and its own address; excludes supplier/agency addresses."
+  },
+  {
+    "name": "北京吉利学院",
+    "cities": [
+      "成都市"
+    ],
+    "sourceUrl": "https://rlzyc.guc.edu.cn/rszp/zpxx/2025/9/39f625c46d14485693e3aa09e054397f.htm",
+    "sourceUrls": [
+      "https://rlzyc.guc.edu.cn/rszp/zpxx/2025/9/39f625c46d14485693e3aa09e054397f.htm"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "吉利学院是经教育部批准独立设置的全日制民办普通本科高校，前身为北京吉利大学，由世界500强企业吉利控股集团于1999年在北京创办。2014年4月经教育部批准升格为本科高校并更名为北京吉利学院。学校认真贯彻落实习近平总书记2·26讲话精神，努力践行疏解非首都核心功能战略，主动向有关部门提请搬迁至成都市办学。在教育部、北京市、四川省、成都市和北京大学的大力支持下，2020年3月30日，经教育部批准学校整体搬迁至成都市办学，更名为吉利学院。 … 地址:四川省成都市简阳市东部新区成简大道二段123号",
+    "relationEvidence": "现吉利学院2025教师招聘官方页明确原北京吉利学院2020年整体搬迁至成都市、改名吉利学院；现地址四川省成都市简阳市东部新区成简大道二段123号。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "招聘信息",
+    "evidenceTextSha256": "2fec4669bc048c45f734a78bdcea1898f8fe619c2ff9ef6d02693b91f50d9bd2",
+    "evidenceArchive": "campus4-probes.jsonl",
+    "relationSources": [],
+    "bodySha256": "90b253629a651ceb8ff90ad26f822f499d2cc88ce9f5c42c84f2bfbbfb7d72e7",
+    "excerptOfArchivedFullText": true
   },
   {
     "name": "北京外国语大学 - 研究生",
@@ -2006,6 +2172,30 @@
     "evidenceTextSha256": "c2f228c8492f9b83cb1412ac02fb0ea76aca45cfd24490af7874aebf460d3ab7"
   },
   {
+    "name": "北京工商大学嘉华学院",
+    "cities": [
+      "北京市"
+    ],
+    "sourceUrl": "https://zsb.canvard.net.cn/",
+    "sourceUrls": [
+      "https://zsb.canvard.net.cn/"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "北京金融科技学院（原北京工商大学嘉华学院）本科招生网 … 地址：北京市通州区宋庄南路甲一号 … ©2026 北京工商大学嘉华学院 版权所有",
+    "relationEvidence": "现学校官方本科招生网页标题明确北京金融科技学院（原北京工商大学嘉华学院），2026版权和地址北京市通州区宋庄南路甲一号；页面HTTP压缩使用curl --compressed解码，保留完整正文和hash。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "北京金融科技学院（原北京工商大学嘉华学院）本科招生网",
+    "evidenceTextSha256": "686211ee5d2f27e7ac79e12df74436505023acdb8e8962042257ddc1a5762d28",
+    "evidenceArchive": "campus15-profile-probes.jsonl",
+    "relationSources": [],
+    "bodySha256": "d99b86e2c3f214fc78a40209a0f415708db2335fc10c138449872e21b4862dbf",
+    "excerptOfArchivedFullText": true
+  },
+  {
     "name": "北京市东城区职工业余大学",
     "cities": [
       "北京市"
@@ -2044,6 +2234,24 @@
     "excerptOfArchivedFullText": true
   },
   {
+    "name": "北京市崇文区职工大学",
+    "cities": [
+      "北京市"
+    ],
+    "sourceUrl": "https://query.bjeea.cn/queryService/rest/plan/116",
+    "sourceDate": null,
+    "checkedAt": "2026-10-15",
+    "finalUrl": "https://query.bjeea.cn/queryService/rest/plan/116",
+    "bodySha256": "cf6f32ce0ca0b8f44afa6ae958d613c0c09623cce95fcc35d163d6db50314a86",
+    "observedText": "北京市崇文区职工大学 WWW 北京市东城区潘家坡胡同1号 65536977",
+    "relationEvidence": "北京教育考试院官方2026年北京成人高等学校查询，按学校查询结果同一行直接给出学校全称和地址。",
+    "coverage": "verified-current-admissions-directory-address",
+    "coverageNote": "2026官方成招目录所列联系地址；不推断所有分校与每个教学点。",
+    "evidenceTextSha256": "cb240a976d0ebed74edc80daacfff291e357d268746881997dd9032ddd641b53",
+    "retrievedDate": "2026-10-15",
+    "excerptOfArchivedFullText": true
+  },
+  {
     "name": "北京市总工会职工大学",
     "cities": [
       "北京市"
@@ -2068,6 +2276,42 @@
     "bodySha256": "d562ef83661d11a5ea22de26060f7f773cbbb114a27bd189c62e1b78b251e560",
     "observedText": "名时间】即日起，随报随学 更多 【上课地点】朝阳区和平里南口砖角楼北里5… 更多 【上课时间】15周，每周工作日半天 更多 【收费标准】其它专业每学期500元；钢琴10… 更多 【咨询电话】64286428 84250538 更多 招生简章 报名方式 学员问答 专业加试成绩查询 和平里教学区 双龙教学区 开设专业 行政管理 更多 地址: 和平里南口砖角楼北里5号 电话: 64286428 84250538 乘车路线: 乘13、",
     "relationEvidence": "Official school or government webpage identifies this exact institution and publishes an address on the same page."
+  },
+  {
+    "name": "北京市海淀区职工大学",
+    "cities": [
+      "北京市"
+    ],
+    "sourceUrl": "https://query.bjeea.cn/queryService/rest/plan/116",
+    "sourceDate": null,
+    "checkedAt": "2026-10-15",
+    "finalUrl": "https://query.bjeea.cn/queryService/rest/plan/116",
+    "bodySha256": "cf6f32ce0ca0b8f44afa6ae958d613c0c09623cce95fcc35d163d6db50314a86",
+    "observedText": "北京市海淀区职工大学 WWW 北京市海淀区北四环中路271号 62347024",
+    "relationEvidence": "北京教育考试院官方2026年北京成人高等学校查询，按学校查询结果同一行直接给出学校全称和地址。",
+    "coverage": "verified-current-admissions-directory-address",
+    "coverageNote": "2026官方成招目录所列联系地址；不推断所有分校与每个教学点。",
+    "evidenceTextSha256": "cb240a976d0ebed74edc80daacfff291e357d268746881997dd9032ddd641b53",
+    "retrievedDate": "2026-10-15",
+    "excerptOfArchivedFullText": true
+  },
+  {
+    "name": "北京市石景山区业余大学",
+    "cities": [
+      "北京市"
+    ],
+    "sourceUrl": "https://query.bjeea.cn/queryService/rest/plan/116",
+    "sourceDate": null,
+    "checkedAt": "2026-10-15",
+    "finalUrl": "https://query.bjeea.cn/queryService/rest/plan/116",
+    "bodySha256": "cf6f32ce0ca0b8f44afa6ae958d613c0c09623cce95fcc35d163d6db50314a86",
+    "observedText": "北京市石景山区业余大学 WWW 北京市石景山区八角北路51号 68861127,68821102",
+    "relationEvidence": "北京教育考试院官方2026年北京成人高等学校查询，按学校查询结果同一行直接给出学校全称和地址。",
+    "coverage": "verified-current-admissions-directory-address",
+    "coverageNote": "2026官方成招目录所列联系地址；不推断所有分校与每个教学点。",
+    "evidenceTextSha256": "cb240a976d0ebed74edc80daacfff291e357d268746881997dd9032ddd641b53",
+    "retrievedDate": "2026-10-15",
+    "excerptOfArchivedFullText": true
   },
   {
     "name": "北京市西城经济科学大学",
@@ -2194,6 +2438,26 @@
     "relationEvidence": "Official institution site or government notice names this exact institution and publishes its address. Address excerpt excludes unrelated host-footer addresses."
   },
   {
+    "name": "北京林业大学 - 研究生",
+    "cities": [
+      "北京市"
+    ],
+    "sourceUrl": "http://graduate.bjfu.edu.cn/",
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "No.35 Tsinghua East Road, Haidian District, Beijing 100083 Copyeight @ 2018 | Beijing Forestry University Graduate Students",
+    "relationEvidence": "北京林业大学官方主站研究生教育链接指向graduate.bjfu.edu.cn；该研究生院官网明确英文通信地址及Beijing Forestry University Graduate Students署名。",
+    "normalization": {
+      "北京市": "官方英文地址Haidian District, Beijing→北京市；明确城市英文译名标准化。"
+    },
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅研究生院官网明确通信地址，不表示穷尽所有培养校区。",
+    "bodySha256": "2ff16e5216ffe53fd081357743426fc152acb646e7840a4374c9fd022ca417b5",
+    "evidenceTextSha256": "b400cac8a8f961a7f3a0b8ea5672af0b2ff0e2bc7bf7a1068747834b3bbaf731",
+    "excerptOfArchivedFullText": true,
+    "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-final7-review.json"
+  },
+  {
     "name": "北京物资学院 - 研究生",
     "cities": [
       "北京市"
@@ -2302,6 +2566,30 @@
     "coverageNote": "已核实该校研究生院、研究生招生或培养机构的公开地址；未穷尽跨市培养校区，不表示全部校区覆盖。"
   },
   {
+    "name": "北京金融科技学院（原北京工商大学嘉华学院）",
+    "cities": [
+      "北京市"
+    ],
+    "sourceUrl": "https://zsb.canvard.net.cn/",
+    "sourceUrls": [
+      "https://zsb.canvard.net.cn/"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "北京金融科技学院（原北京工商大学嘉华学院）本科招生网 … 地址：北京市通州区宋庄南路甲一号 … ©2026 北京工商大学嘉华学院 版权所有",
+    "relationEvidence": "现学校官方本科招生网页标题明确北京金融科技学院（原北京工商大学嘉华学院），2026版权和地址北京市通州区宋庄南路甲一号；页面HTTP压缩使用curl --compressed解码，保留完整正文和hash。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "北京金融科技学院（原北京工商大学嘉华学院）本科招生网",
+    "evidenceTextSha256": "686211ee5d2f27e7ac79e12df74436505023acdb8e8962042257ddc1a5762d28",
+    "evidenceArchive": "campus15-profile-probes.jsonl",
+    "relationSources": [],
+    "bodySha256": "d99b86e2c3f214fc78a40209a0f415708db2335fc10c138449872e21b4862dbf",
+    "excerptOfArchivedFullText": true
+  },
+  {
     "name": "北华大学 - 研究生",
     "cities": [
       "吉林市"
@@ -2368,6 +2656,26 @@
     "evidencePageTitle": "研究生院",
     "evidenceHttpStatus": 200,
     "evidenceTextSha256": "8e427efff383d46ac8cc33f302830ba7cd09bbf9eb3562efd0f9036f90534cb4"
+  },
+  {
+    "name": "华中农业大学 - 研究生",
+    "cities": [
+      "武汉市"
+    ],
+    "sourceUrl": "https://cf.hzau.edu.cn/info/1371/26741.htm",
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "地址：中国·湖北·武汉 南湖狮子山街一号 联系电话：027-87282113 院长信箱：sc@mail.hzau.edu .cn 高校院所 水产养殖实验教学中心 池塘健康养殖湖北省工程实验室 友好企业 中国高校水产学科发展联席会 华中农业大学 教研资源 海大集团 CopyRight © 华中农业大学水产学院 版权所有",
+    "relationEvidence": "华中农业大学水产学院2026硕士招生页面明确同学院武汉地址，实际研究生招生主体是水产学院而非通用学校页脚。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅证明来源明确的研究生办公、招生或培养单位地址；不表示穷尽全部校区。",
+    "bodySha256": "f763934f81067cc1f0edad5ddb63e830933e7acc3ebdba21c980f72db750f5fe",
+    "evidenceTextSha256": "7db51bc86fd40720fb302e02b7c6cae6c11b106a6f898d6528a02c48da65d9b5",
+    "excerptOfArchivedFullText": true,
+    "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-final5-review.json",
+    "normalization": {
+      "武汉市": "官方学院地址中国·湖北·武汉→武汉市，仅补城市后缀。"
+    }
   },
   {
     "name": "华中师范大学（研究生）",
@@ -2659,6 +2967,23 @@
     "evidenceTextSha256": "cd98f0d01a9f4a01ac49a4d7ea35dc41627cfa0e2c1d690b60314d9a529fe93c"
   },
   {
+    "name": "南京审计大学 - 研究生",
+    "cities": [
+      "南京市"
+    ],
+    "sourceUrl": "https://gs.nau.edu.cn/2026/0930/c4397a162271/page.htm",
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "Copyright © 南京审计大学研究生院 江苏省南京市浦口区江浦街道雨山西路86号敏行5楼 邮编：211815 联系电话:025-58318145(培养),025-58312884(学位),025-58313060(招生)",
+    "relationEvidence": "南京审计大学研究生院官方2027硕士招生章程页直接列本院南京市浦口区雨山西路86号敏行5楼及培养/学位/招生电话。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅证明来源明确的研究生办公、招生或培养单位地址；不表示穷尽全部校区。",
+    "bodySha256": "c3ef16da8772be797b8cab025214c1450efbba1712d7a43b178ad82b2d3af916",
+    "evidenceTextSha256": "723e99bb1416710267665472c858b8b5c70b6ce6d5557935c53d10ba3b7f0635",
+    "excerptOfArchivedFullText": true,
+    "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-final5-review.json"
+  },
+  {
     "name": "南京工业大学 - 研究生",
     "cities": [
       "南京市"
@@ -2709,6 +3034,24 @@
     "excerptOfArchivedFullText": true,
     "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-final-pdf-review.json",
     "sourceFormat": "pdf"
+  },
+  {
+    "name": "南京市职工大学",
+    "cities": [
+      "南京市"
+    ],
+    "sourceUrl": "https://www.njgh.org/vp-front/sys/content/info/f435e11650274e91be6260655b6c0598",
+    "sourceDate": "2024-11-28",
+    "checkedAt": "2026-10-15",
+    "finalUrl": "https://www.njgh.org/vp-front/sys/content/info/f435e11650274e91be6260655b6c0598",
+    "bodySha256": "8abb8e1ead60a8907f6e3fdfdf7e8ff0bf14e16cca1b4a630c0a1a65371ccd54",
+    "observedText": "联系单位：南京市职工大学 联系人：方先生 联系电话： 025-84492936 联系地址：南京市秦淮区双塘街道璇子巷 59 号 ",
+    "relationEvidence": "2024官方招租公示列南京市职工大学为联系单位，其联系地址璇子巷59号；不混用出租物业地址或工会页脚中山东路105号。",
+    "coverage": "verified-institution-contact-address",
+    "coverageNote": "明确学校地址城市；日期及用途范围按原文保留。",
+    "evidenceTextSha256": "003304454933cfa42d604b50a873f1a029c6973e16402aaaf45eb5c5b78a5264",
+    "retrievedDate": "2026-10-15",
+    "excerptOfArchivedFullText": true
   },
   {
     "name": "南京开放大学",
@@ -2800,6 +3143,20 @@
     "evidenceTextSha256": "1ac5ea4875afe567738b36eed4f5acad6c97c5880c25c30d6ac2d1ff95401170",
     "retrievedDate": "2026-10-15",
     "excerptOfArchivedFullText": true
+  },
+  {
+    "name": "南华大学 - 研究生",
+    "cities": [
+      "衡阳市"
+    ],
+    "sourceUrl": "https://yjs.usc.edu.cn/",
+    "retrievedDate": "2026-10-15",
+    "observedText": "联系我们 地址： 湖南省衡阳市蒸湘区常胜西路28号-北校区办公楼四楼 电话： 0734-8282416（综合办）、0734-8282310（招生办） 0734-8282276（培养办）、0734-8281311（学位办） 关于我们 版权所有：南华大学党委研究生工作部/研究生院 技术支持：西安恒远翼展信息技术有限公司 首页 新闻动态 招生信息 培养信息 学位信息 思政信息 学科建设信息 学术风采 机构简介 学科建设与研究生教育概况 机构设置 学位点设置 招生信息 招生简章 博士招生 硕士招生 同等学力招生 文件及规定 培养管理 培养过程管理 非学历管理 创新与质量工程 国际交流 文件及规定 学位管理 学位授予 学位点建设 非学历申请学位 文件及规定 管理人员工作指南 导师队伍 导师招生资格审核 导师培训 导师列表 优秀导师评选 文件及规定 学科建设 政策法规 双一流建设 ESI学科建设 核医结合优势特色学科群 质量管理 质量报告 奖助体系建设 学术道德与规范 学位授予标准 优秀论文评审 思政教育 党建风采 奖助体系 心理专栏 团学活动 下载专区 就业创业 招聘信息 创业服务 文件及规定 公告公示 下载中心 招生 培养 学位管理 思想教育 就业创业 毕业离校 学科建设 ",
+    "bodySha256": "3c333ff59670ce730773750408d052a402aa8ee975a63d016bc57e1ad72355a4",
+    "evidenceTextSha256": "f28173ee54bfb7e333bf221443a7c9666eeaf594b17cadfd27d9f23b13c16890",
+    "relationEvidence": "学校官方导航指向研究生院，其本部门地址明确衡阳市北校区办公楼四楼。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅证明公开的研究生办公或培养单位城市，不宣称所有学生或校区位置。"
   },
   {
     "name": "南开大学 - 研究生",
@@ -3474,6 +3831,20 @@
     "coverageNote": "已核实该校研究生院、研究生招生或培养机构的公开地址；未穷尽跨市培养校区，不表示全部校区覆盖。"
   },
   {
+    "name": "哈尔滨师范大学 - 研究生",
+    "cities": [
+      "哈尔滨市"
+    ],
+    "sourceUrl": "http://yjsxy.hrbnu.edu.cn/",
+    "retrievedDate": "2026-10-15",
+    "observedText": "联系方式 地址：哈尔滨市利民经济开发区师大路1号 研究生院楼 邮编：150025 友情链接 中华人民共和国教育部 中国学位与研究生教育信息网 中国高等教育学生信息网 中国研究生招生信息网 教育部学位管理与研究生教育司 黑龙江省教育厅 更 多 链 接 全国应用统计专业学位研究生教育指导委员会 全国法律专业学位研究生教育指导委员会 全国教育专业学位研究生教育指导委员会 全国新闻与传播专业学位研究生教育指导委员会 全国工程专业学位研究生教育指导委员会 全国公共管理专业学位研究生教育指导委员会 全国会计专业学位研究生教育指导委员会 全国艺术专业学位研究生教育指导委员会 全国翻译专业学位研究生教育指导委员会 关注我们 版权所有：哈尔滨师范大学研究生学院 ©2023 All Rights Reserved 黑ICP备05006819 ",
+    "bodySha256": "e2d368212a00a5581d335e1a7e9755875e66eb35bcb1c004e428b71bd0571285",
+    "evidenceTextSha256": "1352514c33d2fde96e17ba98b5d83453a743db8039563d1430eabb7689794ef8",
+    "relationEvidence": "学校官网直接链接研究生学院；院方官网明确哈尔滨市师大路1号研究生院楼。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅证明研究生院公开办公地址，不宣称全部研究生教学点。"
+  },
+  {
     "name": "哈尔滨开放大学",
     "cities": [
       "哈尔滨市"
@@ -3497,6 +3868,40 @@
     "relationEvidence": "Official graduate/research page: 哈尔滨理工大学研究生招生咨询联系方式（2020年3月份更新）",
     "coverage": "verified-graduate-office-address",
     "coverageNote": "已核实该校研究生院、研究生招生或培养机构的公开地址；未穷尽跨市培养校区，不表示全部校区覆盖。"
+  },
+  {
+    "name": "哈尔滨职业技术学院",
+    "cities": [
+      "哈尔滨市"
+    ],
+    "sourceUrl": "https://www.hrbzy.edu.cn/xxjj/list.htm",
+    "sourceUrls": [
+      "https://www.hrbzy.edu.cn/xxjj/list.htm",
+      "http://www.hrbzy.edu.cn/xywz/list.htm"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "哈尔滨职业技术大学是哈尔滨市政府主办的公办本科层次职业院校，前身是哈尔滨职业技术学院。2024年5月31日，教育部批准以哈尔滨职业技术学院为基础设立哈尔滨职业技术大学，成为黑龙江省内首所本科层次职业院校。 … 学校现有总校、学府、新阳、景阳四个校区",
+    "relationEvidence": "现大学简介明确前身哈尔滨职业技术学院、2024年升本；官方学校位置页完整列总校、学府、新阳、景阳四校区均哈尔滨市。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "学校简介",
+    "evidenceTextSha256": "cc616612d077b3bc93b9b983d4ea1757319b7cf360fe3b7d39b8ece9b47d79de",
+    "evidenceArchive": "campus13-profile-probes.jsonl",
+    "relationSources": [
+      {
+        "sourceUrl": "http://www.hrbzy.edu.cn/xywz/list.htm",
+        "observedText": "哈尔滨职业技术大学总校地址：哈尔滨市香坊区哈平路 217 号 哈尔滨职业技术 大学 学府校区地址：哈尔滨市南岗区学府路 251 号 哈尔滨职业 技术 大学 新阳校区地址：哈尔滨市道里区新阳路 495 号 哈尔滨职业技术 大学 景阳校区地址：哈尔滨市道外区景阳街 47 号",
+        "evidenceTextSha256": "df6d539f2210a59c61372019f8bea56c4a5eb3dae4e4efa5d857dffca3f07c5a",
+        "evidenceArchive": "campus13-relation-probes.jsonl",
+        "bodySha256": "d70e0e54a81d26531bf5d5199d31db9333228441a15ee8637bfdec6c62ce82b0",
+        "retrievedDate": "2026-10-15"
+      }
+    ],
+    "bodySha256": "3c962627ceeb17df901db5a8ccb84867e27faae27f5b932e94a7989b7e36eecc",
+    "excerptOfArchivedFullText": true
   },
   {
     "name": "唐山工业职业技术学院",
@@ -3688,6 +4093,31 @@
     "excerptOfArchivedFullText": true
   },
   {
+    "name": "四川建筑职业技术学院",
+    "cities": [
+      "德阳市",
+      "成都市"
+    ],
+    "sourceUrl": "http://www.scac.edu.cn/xxgk1/xxjj.htm",
+    "sourceUrls": [
+      "http://www.scac.edu.cn/xxgk1/xxjj.htm"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "2026年2月，教育部批准以四川建筑职业技术学院为基础设立四川建筑职业技术大学。 … （德阳校区）德阳市嘉陵江西路4号 邮编：618000 （成都校区）成都市青白江区万桂路388号 邮编：610399",
+    "relationEvidence": "2026年2月现官方简介明确以四川建筑职业技术学院为基础升本，现德阳校区德阳市嘉陵江西路4号、成都校区成都市青白江区万桂路388号。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "学校简介-四川建筑职业技术大学",
+    "evidenceTextSha256": "dd7ebfca5c67e6587f2d769d13e55db2b110e62d859553e1007e63d0b3447d9c",
+    "evidenceArchive": "campus13-retry-probes.jsonl",
+    "relationSources": [],
+    "bodySha256": "c68f7e03b599858bb1d35942d5fda77c6e9dc473efddb576742721194cf23daf",
+    "excerptOfArchivedFullText": true
+  },
+  {
     "name": "四川开放大学",
     "cities": [
       "成都市"
@@ -3781,6 +4211,23 @@
     "excerptOfArchivedFullText": true
   },
   {
+    "name": "国际关系学院 - 研究生",
+    "cities": [
+      "北京市"
+    ],
+    "sourceUrl": "https://yjs.uir.cn/",
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "地址：北京市海淀区坡上村12号 邮编：100091 版权所有©国际关系学院研究生处（党委研究生工作部） 研究生教育微信公众号 研究生会微信公众号",
+    "relationEvidence": "国际关系学院官网导航指向本校研究生处；研究生处明确列北京市坡上村12号。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅证明来源明确的研究生办公、招生或培养单位地址；不表示穷尽全部校区。",
+    "bodySha256": "9cb3d7eabb5478cea975831ce105410fc718e085ad44076b8a516906d33f80b8",
+    "evidenceTextSha256": "d0fcdbd91e9fe5b3b322f88836243ced76932e6ac92def532bd262f3770e7b04",
+    "excerptOfArchivedFullText": true,
+    "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-final4-review.json"
+  },
+  {
     "name": "复旦大学 - 研究生",
     "cities": [
       "上海市"
@@ -3831,6 +4278,30 @@
         "retrievedDate": "2026-10-15"
       }
     ]
+  },
+  {
+    "name": "大连大学 - 研究生",
+    "cities": [
+      "大连市"
+    ],
+    "sourceUrl": "http://yjs.dlu.edu.cn/__local/4/95/8F/6D4CA1A6B9595BEFEFBD7A83F1B_76E93C67_5C7A8.pdf",
+    "retrievedDate": "2026-10-15",
+    "observedText": "4.咨询部门：大连大学研究生院研究生招生办公室 联系电话：0411-87402323 联系邮箱: yzb@dlu.edu.cn 邮编：116622 通讯地址：辽宁省大连经济技术开发区学府大街10 号 ",
+    "bodySha256": "c989a4c276544735f46cc30620489bad4f7a5e7b6495e8af4b6adce4f0992415",
+    "evidenceTextSha256": "85b3bf1d92362653cb831eae0e9e59cfc4aedde3a7902766b35f7dd0c5ba2cc9",
+    "parentSourceUrl": "http://yjs.dlu.edu.cn/info/1065/3890.htm",
+    "evidencePages": [
+      4,
+      8
+    ],
+    "sourceFormat": "pdf",
+    "extractionMethod": "pdf-text",
+    "relationEvidence": "官方2027硕士招生章程PDF联系方式明示大连大学研究生院研究生招生办公室、大连经济技术开发区学府大街10号。",
+    "normalization": {
+      "大连市": "官方地址辽宁省大连经济技术开发区→大连市，仅补城市后缀"
+    },
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅证明研究生院招生办公室地址。"
   },
   {
     "name": "大连开放大学",
@@ -4137,6 +4608,23 @@
     "excerptOfArchivedFullText": true
   },
   {
+    "name": "天津理工大学 - 研究生",
+    "cities": [
+      "天津市"
+    ],
+    "sourceUrl": "https://yjs.tjut.edu.cn/",
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "天津理工大学研究生院 地址：天津市西青区宾水西道391号 电话：022-60215566 传真：022-60216838 邮箱：jyjs@tjut.edu.cn",
+    "relationEvidence": "天津理工大学研究生院官方门户直接列天津市宾水西道391号。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅证明来源明确的研究生办公、招生或培养单位地址；不表示穷尽全部校区。",
+    "bodySha256": "fe1850d2cfceaf409981732dd18bb28dffe14baabeef01ab98a31f3c9527d009",
+    "evidenceTextSha256": "ceebe62f1f9107b599970cca1bc367444fdea4520a65ddaaffa7e940643c5587",
+    "excerptOfArchivedFullText": true,
+    "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-final4-review.json"
+  },
+  {
     "name": "天津科技大学 - 研究生",
     "cities": [
       "天津市"
@@ -4181,6 +4669,56 @@
     "evidenceHttpStatus": 200,
     "evidencePageTitle": "学院简介-太原科技大学华科学院",
     "evidenceTextSha256": "8c6f72afd282475bf86d6a185f17f4443936f106f319dd0c93d15b6c8d4e7e76"
+  },
+  {
+    "name": "宁夏工商职业技术学院",
+    "cities": [
+      "银川市"
+    ],
+    "sourceUrl": "http://www.nxgs.edu.cn/xxgk/xxjj.htm",
+    "sourceUrls": [
+      "http://www.nxgs.edu.cn/xxgk/xxjj.htm",
+      "https://www.nxgs.edu.cn/xxgk/fzlc.htm"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "宁夏工商职业技术大学办学源头可追溯至1951年，是教育部批复设立的公办本科层次职业学校，以习近平新时代中国特色社会主义思想为指引，全面贯彻党的教育方针。学校2002年升格为高职专科院校；2025年6月获批职业本科，办学层次实现历史性跨越。 … 地址：宁夏银川市西夏区文萃北街大连西路531号",
+    "relationEvidence": "2026年9月现大学简介与地址明确银川市西夏区文萃北街大连西路531号；官方发展历程以宁夏工商职业技术学院全名回溯同校沿革，现简介记录2025获批职业本科。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "学校简介-宁夏工商职业技术大学",
+    "evidenceTextSha256": "53fa04f5d54002462772a0fa614bcfd8d2b9441ff5a276e24b90f0ebbd6edbab",
+    "evidenceArchive": "campus13-retry-probes.jsonl",
+    "relationSources": [
+      {
+        "sourceUrl": "https://www.nxgs.edu.cn/xxgk/fzlc.htm",
+        "observedText": "宁夏工商职业技术学院始创于1951年，先后由宁夏商业学校、宁夏供销学校、宁夏粮食学校、宁夏机电工程学校（宁夏农业机械化学校）和宁夏化工技师学院（宁夏化工技校）五校合并组建而成。 … 2022年12月，教育部批复以宁夏工商职业技术学院为基础，整合相关资源申办本科层次职业学校",
+        "evidenceTextSha256": "fda6867f39e83e81f8784813d2e12b70baee024e77501a10647a5d4ee6c4a45d",
+        "evidenceArchive": "campus13-relation-probes.jsonl",
+        "bodySha256": "59cd1b1fd757fa35d0012d0a55eb1915477f9eed303806845064d4e00f085fd0",
+        "retrievedDate": "2026-10-15"
+      }
+    ],
+    "bodySha256": "becfaf010f3cea8c5c9017d693fee3dc4e816f6d468878e31b0d8696600850ad",
+    "excerptOfArchivedFullText": true
+  },
+  {
+    "name": "宁夏师范大学 - 研究生",
+    "cities": [
+      "固原市"
+    ],
+    "sourceUrl": "http://yjsc.nxnu.edu.cn",
+    "retrievedDate": "2026-10-15",
+    "observedText": "Copyright © 宁夏师范大学研究生院 地址：宁夏固原市原州区学院路宁夏师范大学古雁校区逸夫楼 联系电话：0954-2023221 邮编：756000 ",
+    "bodySha256": "72640a26b9cfade8f7c0ae38e1bed97489e24cf7d043fb98f652e838023da313",
+    "evidenceTextSha256": "0bba0b7779fc7f92e599bfa0dc4178f6e7869647bf7f6564d508d76edf319748",
+    "evidenceArchive": "graduate-main-eighth-probes.json",
+    "relationEvidence": "研究生部门官网联系地址明确城市及本部门名称。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅证明公开的研究生办公或培养单位城市，不宣称所有学生或校区位置。",
+    "excerptOfArchivedFullText": true
   },
   {
     "name": "宁夏师范学院",
@@ -4333,6 +4871,23 @@
     "excerptOfArchivedFullText": true
   },
   {
+    "name": "安徽农业大学 - 研究生",
+    "cities": [
+      "合肥市"
+    ],
+    "sourceUrl": "https://yjs.ahau.edu.cn/",
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "地址：安徽省合肥市长江西路130号 邮编230036 信箱：yjsy@ahau.edu.cn 官方微信",
+    "relationEvidence": "安徽农业大学党委研工部、研究生院官方门户列合肥市长江西路130号及院方邮箱。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅证明来源明确的研究生办公、招生或培养单位地址；不表示穷尽全部校区。",
+    "bodySha256": "750f7b9b35bd3cfe141c3fb1e63f4cb3a3a805d2dba7c021c83295305f130412",
+    "evidenceTextSha256": "ab380ea54da0156b069d1964cbbd3de3edea7db001aecc6c0317c4e57cb8b53e",
+    "excerptOfArchivedFullText": true,
+    "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-final4-review.json"
+  },
+  {
     "name": "安徽医学高等专科学校",
     "cities": [
       "合肥市",
@@ -4400,6 +4955,40 @@
     "relationEvidence": "Official graduate/research page: 安徽工业大学研究生院 Graduate School of AHUT",
     "coverage": "verified-graduate-office-address",
     "coverageNote": "已核实该校研究生院、研究生招生或培养机构的公开地址；未穷尽跨市培养校区，不表示全部校区覆盖。"
+  },
+  {
+    "name": "安徽工业大学工商学院",
+    "cities": [
+      "马鞍山市"
+    ],
+    "sourceUrl": "https://www.masu.edu.cn/",
+    "sourceUrls": [
+      "https://www.masu.edu.cn/",
+      "http://www.moe.gov.cn/srcsite/A03/s181/201906/t20190618_386317.html"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "地址：安徽省马鞍山市当涂县黄池路8号",
+    "relationEvidence": "现马鞍山学院官网地址安徽省马鞍山市当涂县黄池路8号；教育部转设函明确原安徽工业大学工商学院转设马鞍山学院。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "欢迎访问马鞍山学院官方网站！",
+    "evidenceTextSha256": "4b5d9c071555e0a6393f4a4fe85b861ec81f29d3128f0ac89c1afd8e75298a13",
+    "evidenceArchive": "campus13-probes.jsonl",
+    "relationSources": [
+      {
+        "sourceUrl": "http://www.moe.gov.cn/srcsite/A03/s181/201906/t20190618_386317.html",
+        "observedText": "经教育部党组会议研究决定，同意安徽工业大学工商学院转设为马鞍山学院，学校标识码为4134013614；同时撤销安徽工业大学工商学院的建制。现将有关事项函告如下",
+        "evidenceTextSha256": "df5353be3d3e49856b8eea3724eea65c3570c03b72a687b3cb61ad2177f02bef",
+        "evidenceArchive": "campus12-probes.jsonl",
+        "bodySha256": "8559e2174062715c5883c0aa3433beddbb0be4dea3c60bc7658c0664bd3d6ce2",
+        "retrievedDate": "2026-10-15"
+      }
+    ],
+    "bodySha256": "64df64521c71526d0d5a99bdffc517d5fa5af57ffa66f8963860c6b748182435",
+    "excerptOfArchivedFullText": true
   },
   {
     "name": "安徽工程大学 - 研究生",
@@ -4551,6 +5140,20 @@
     ],
     "bodySha256": "2358b19c26c4e3411f33b5e79ae4f582f3d2664c70986744ea493328a58a83eb",
     "excerptOfArchivedFullText": true
+  },
+  {
+    "name": "安徽财经大学 - 研究生",
+    "cities": [
+      "蚌埠市"
+    ],
+    "sourceUrl": "http://yjs.aufe.edu.cn/",
+    "retrievedDate": "2026-10-15",
+    "observedText": "版权所有： 安徽财经大学研究生院 地址：安徽省蚌埠市曹山路962号安徽财经大学龙湖东校区1号行政楼 招生咨询：（0552）3169051 皖ICP备12011727号 技术支持： ",
+    "bodySha256": "02b6a95ec43adb7e15d5ded4aba6d0d7f9699323adb178354163be483cc5f21b",
+    "evidenceTextSha256": "405a396613d1030858f4ec426b085389f3878842b5522b211a545480c33dfa60",
+    "relationEvidence": "学校官网导航直接链研究生院；院方页明确本单位蚌埠市曹山路962号龙湖东校区1号行政楼及研招咨询电话。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅证明研究生院公开办公地址，不宣称全部研究生教学点。"
   },
   {
     "name": "宝鸡市职工大学",
@@ -4773,6 +5376,22 @@
     "excerptOfArchivedFullText": true
   },
   {
+    "name": "山西医科大学 - 研究生",
+    "cities": [
+      "太原市"
+    ],
+    "sourceUrl": "http://www.sxmu.edu.cn/yjs/zsxx/lxwm.htm",
+    "retrievedDate": "2026-10-15",
+    "observedText": "通讯地址：山西省太原市新建南路56号 山西医科大学校本部研究生学院研招办（邮编：030001） E-Mail:sxykdxyzb5123@126.com 版权所有@山西医科大学研究生学院 技术支持：山西医科大学网络中心 ",
+    "bodySha256": "e5c33635155451c27f461835579d284f031e9c9346fbb198ba8d3e5ddc7e5d11",
+    "evidenceTextSha256": "75ce9ef4c685a661e79a38624fd77da78bf4bf4933eb692e372acad415bd1ca8",
+    "evidenceArchive": "graduate-main-eighth-probes.json",
+    "relationEvidence": "研究生部门官网联系地址明确城市及本部门名称。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅证明公开的研究生办公或培养单位城市，不宣称所有学生或校区位置。",
+    "excerptOfArchivedFullText": true
+  },
+  {
     "name": "山西大学 - 研究生",
     "cities": [
       "太原市"
@@ -4944,6 +5563,98 @@
     "excerptOfArchivedFullText": true
   },
   {
+    "name": "常德学院（原湖南文理学院芙蓉学院）",
+    "cities": [
+      "常德市"
+    ],
+    "sourceUrl": "https://www.changdecollege.cn/xxgk/xxjj.htm",
+    "sourceUrls": [
+      "https://www.changdecollege.cn/xxgk/xxjj.htm"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "学校前身为创建于2002年湖南文理学院芙蓉学院（简称芙蓉学院）。2025年2月，教育部同意湖南文理学院芙蓉学院转设为常德学院。 … 地 址：位于湖南省常德市武陵区高泗路806号",
+    "relationEvidence": "2025年4月现常德学院简介明确前身湖南文理学院芙蓉学院、2025年教育部同意转设，现校址湖南省常德市武陵区高泗路806号。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "学校简介-常德学院",
+    "evidenceTextSha256": "0dead76361a5bb1a31bab2ea1ae9c43098f096da61e5e08f4052c9d8319c1444",
+    "evidenceArchive": "campus15-profile-probes.jsonl",
+    "relationSources": [],
+    "bodySha256": "596033415946803ad29f380c83d96a5362c784d8fbfe4632d542f934a043632e",
+    "excerptOfArchivedFullText": true
+  },
+  {
+    "name": "常熟理工学院",
+    "cities": [
+      "苏州市"
+    ],
+    "sourceUrl": "http://www.szut.edu.cn/xxgk/xxjj.htm",
+    "sourceUrls": [
+      "http://www.szut.edu.cn/xxgk/xxjj.htm",
+      "http://www.moe.gov.cn/srcsite/A03/s181/202503/t20250314_1182878.html"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "2004年，升格本科，更名为常熟理工学院。2025年，更名为苏州工学院。 … 东湖校区：江苏省苏州市常熟市南三环路99号 东南校区：江苏省苏州市常熟市东南街道湖山路99号",
+    "relationEvidence": "现苏州工学院简介及页尾列东湖、东南两校区完整地址均江苏省苏州市常熟市；教育部函明确常熟理工学院更名苏州工学院。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "学校简介-苏州工学院",
+    "evidenceTextSha256": "ee9ef312c6154ee30c63b5134af227ddbe1ca6da1ca64cafb296a86ebe376e47",
+    "evidenceArchive": "campus12-http-probes.jsonl",
+    "relationSources": [
+      {
+        "sourceUrl": "http://www.moe.gov.cn/srcsite/A03/s181/202503/t20250314_1182878.html",
+        "observedText": "经教育部党组会议研究决定，同意常熟理工学院更名为苏州工学院，学校标识码为4132010333；同时撤销常熟理工学院的建制。现将有关事项函告如下",
+        "evidenceTextSha256": "1272339166bad1634171a94aa686d9e454df1046835e5fb4cf5b7f850296a890",
+        "evidenceArchive": "campus12-probes.jsonl",
+        "bodySha256": "def4d0aeebdd165dc96f4976e910c7177220f8673d93bb25e3d54d374941c7fa",
+        "retrievedDate": "2026-10-15"
+      }
+    ],
+    "bodySha256": "2b9302d712643cfec83c13c35fda1375850d149916a7788fc9510aa0b64d10a7",
+    "excerptOfArchivedFullText": true
+  },
+  {
+    "name": "常熟理工学院（苏州常熟）",
+    "cities": [
+      "苏州市"
+    ],
+    "sourceUrl": "http://www.szut.edu.cn/xxgk/xxjj.htm",
+    "sourceUrls": [
+      "http://www.szut.edu.cn/xxgk/xxjj.htm",
+      "http://www.moe.gov.cn/srcsite/A03/s181/202503/t20250314_1182878.html"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "2004年，升格本科，更名为常熟理工学院。2025年，更名为苏州工学院。 … 东湖校区：江苏省苏州市常熟市南三环路99号 东南校区：江苏省苏州市常熟市东南街道湖山路99号",
+    "relationEvidence": "现苏州工学院简介及页尾列东湖、东南两校区完整地址均江苏省苏州市常熟市；教育部函明确常熟理工学院更名苏州工学院。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "学校简介-苏州工学院",
+    "evidenceTextSha256": "ee9ef312c6154ee30c63b5134af227ddbe1ca6da1ca64cafb296a86ebe376e47",
+    "evidenceArchive": "campus12-http-probes.jsonl",
+    "relationSources": [
+      {
+        "sourceUrl": "http://www.moe.gov.cn/srcsite/A03/s181/202503/t20250314_1182878.html",
+        "observedText": "经教育部党组会议研究决定，同意常熟理工学院更名为苏州工学院，学校标识码为4132010333；同时撤销常熟理工学院的建制。现将有关事项函告如下",
+        "evidenceTextSha256": "1272339166bad1634171a94aa686d9e454df1046835e5fb4cf5b7f850296a890",
+        "evidenceArchive": "campus12-probes.jsonl",
+        "bodySha256": "def4d0aeebdd165dc96f4976e910c7177220f8673d93bb25e3d54d374941c7fa",
+        "retrievedDate": "2026-10-15"
+      }
+    ],
+    "bodySha256": "2b9302d712643cfec83c13c35fda1375850d149916a7788fc9510aa0b64d10a7",
+    "excerptOfArchivedFullText": true
+  },
+  {
     "name": "广东工业大学 - 研究生",
     "cities": [
       "广州市"
@@ -5106,6 +5817,41 @@
     "excerptOfArchivedFullText": true
   },
   {
+    "name": "广东轻工职业技术学院",
+    "cities": [
+      "广州市",
+      "佛山市"
+    ],
+    "sourceUrl": "https://www.gdipu.edu.cn/info/1059/2741.htm",
+    "sourceUrls": [
+      "https://www.gdipu.edu.cn/info/1059/2741.htm",
+      "http://www.moe.gov.cn/srcsite/A03/s181/202406/t20240612_1135120.html"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "﻿ 学校简介-广东轻工职业技术大学 学生 教职工 校友 访客 智慧3.0 邮箱登录 VPN登录 轻工教育在线 学校概况 学校简介 机构设置 学校领导 标志成果 历史沿革 办学理念： 高素质为本 高技能为重 高就业导向 创新促发展 二级学院 人工智能学院 经济与管理学院 航天北斗技术学院 材料学院 生态环境学院 智能制造与装备学院 继续教育学院 生命健康学院 数字创意学院 马克思主义学院 创业学院 中职教育部 办学理念： 植根岭南文化 传承职教精髓 锻造技能英才 创办一流高职 师资队伍 教师发展中心 教师风采 有理想信念 有道德情操 有扎实知识 有仁爱之心 广轻学子 校友会 校团委 匠心致理 招生就业 职场悍将 广轻出发 招生 就业 创新创业 图书馆 走进广轻 轻院精神： 自强 敬业 求实 创新 校园风光 标志成果 重大项目 国内一流 国际知名 创新强校工程 导航 邮箱登录 导航 关闭 学校概况 学校简介 机构设置 学校领导 标志成果 历史沿革 二级学院 人工智能学院 经济与管理学院 航天北斗技术学院 材料学院 生态环境学院 智能制造与装备学院 继续教育学院 生命健康学院 数字创意学院 马克思主义学院 创业学院 中职教育部 师资队伍 教师发展中心 教师风采 广轻学子 校友会 校团委 招生就业 招生 就业 创新创业 图书馆 走进广轻 校园风光 标志成果 重大项目 创新强校工程 其它 学生 教职工 VPN登录 校友 访客 信息公开 智慧3.0 您所在的位置： 首页 > 学校概况 > 正文 学校概况 学校简介 机构设置 学校领导 标志成果 历史沿革 校训 广轻精神 校园风光 学校简介 广东轻工职业技术大学是广东省属、广东省教育厅主管的职业本科院校，是第一、二期 国家“双高计划” 建设学校、国家优质高职院校、国家示范性高职院校， 学校轻工特色鲜明，综合竞争力稳居全国职业本科院校前4位（第三方榜单） ， 正全力打造“全国职业本科教育引领者” 。立足粤港澳大湾区中心城市，建有广州新港、广州琶洲、佛山南海三个校区， 校园面积2515亩，全日制在校生3万余人。 学校 前身是创建于1933年的“广东省立第一职业学校”， 历经抗战烽火、院系调整、中专办学、高职崛起、职业本科跃升多个历史阶段，是我国职业教育百年发展的生动缩影。学校 秉承“德能兼备，学以成之”的校训和“自强、敬业、求实、创新”的广轻精神，已为社会培养了28万多名高素质技术技能人才 。学校生于轻工、兴于轻工， 培养了中国酵母大王、陶瓷大王、制糖大王等行业翘楚，走出了数以千计的董事长、总经理，被誉为“轻工业人才摇篮”。 党的领导持续加强 。 全面贯彻党的教育方针，坚持用习近平新时代中国特色社会主义思想铸魂育人。2026 年入选教育部“全国党建工作示范高校”培育创建单位。至今已入选全国高校党建“双创”项目 10项，数量和质量均居全国高职并列第一。承建 教育部高校思想政治工作创新发展中心（全国高职仅6所） ，是全国高职高专院校思政课建设联盟会长单位。 专业建设成效突出。 学校聚焦广东战略性新兴产业和未来产业 ，围绕高端制造、人工智能等现代化产业，对接广东“双十”产业集群 ， 建设“设计引领、工科支撑、数智驱动、产教一体”的特色专业发展体系。开设全日制本科专业18个、全日制专科专业84个、微专业12个 ；聚焦轻工行业， 建成“设计轻工 －制造轻工－ 服务轻工”13专业群（国家级4个），省级以上 重点专业 占比86.7%。拥有一批全国顶尖专业，专业整体实力位居全国第2。 人才培养成果丰 硕 。 近三届获国家教学成果奖14项，其中一等奖1项。建成国家级教学资源库2个、省级教学资源库4个，国家在线精品课程29门、省级在线精品课程99门。全国教师教学能力大赛一等奖4个、省奖103个；国家规划教材109本，获全国教材建设奖3项，入选教育部现场工程师专项培养计划项目。构建“以德领创、分层分类”的创新创业人才培养体系，中国国际大学生创新大赛获国家级奖项25项（金奖9项），入选教育部首批国家级创新创业学院。2022年以来获“挑战杯”竞赛国家级奖项12项（金奖1项）。创新“三结合、三提升”人才培养模式，近五年的毕业生初次毕业去向落实率保持在9 8%左右，居全国职业院校前列 。 师资人才队伍结构完 备 。 贯彻人才强国、人才强校战略， 坚持“厚爱干部、富养教师”理念，引进与培养并重，现有教职工17 59 人，其中国务院政府特殊津贴专家5人，全国模范教师3人，全国优秀教师1人，国家级教学名师5人，省级教学名师 26 人；全国高校黄大年式教师团队1个，国家级教学团队4个；全国技术能手5人、省级技术能手25人，全国青年岗位能手1人，全国高校思想政治理论课教师影响力人物2人，全国轻工行业先进工作者1人，中国轻工职业教育教学名师2人，全国辅导员年度人物1人。 科研与 技术转化 能力 稳步 提升。 建成4个国家级协同创新中心、2 8 个市级以上工程中心，现有省级科技创新团队14支，院士工作站1个、博士工作站1个，建立研究生联合培养基地3个。202 2年以来，立项市厅级以上科研项目303项，授权国家发明专利193 项，科研与技术服务到账1. 66 亿元，综合实力稳居全国职业本科院校前十，在全国1600余所职业院校中位列前3%。 深入推进产教深度融合。 坚持以产定教、以教兴产， 致力于“产业伙伴型大学” 建设 。建成一批校企精准对接、产教深度融合平台。创新实施“行业一产业一企业一专业一就业”五业联动的产教融合长效机制，牵头成立轻工职教集团（国家级）、牵头建设佛山市“两高四新”产教联合体（国家级）和9个全国行业产教融合共同体，是广东省职业学校产教融合工作指导委员会依托单位，2019年牵头成立广东省产教融合促进会，成立“新质生产力科技成果转化院”，与华为、腾讯等行业标杆企业共建产业学院19个（其中8个省级示范）、国家级实训基地5个（含国家级仿真实训基地1个）、省级实训基地23个，校外实践教学场所数2016个（其中18个省级示范）。成功推荐104家合作企业获得广东省产教融合型企业认定，获教育部2024年产教融合、校企合作典型案例，入选“产教融合100强”。 服务发展能力不断增强。 依托国家级职业学校校长培训基地、国家级职业教育“双师型”教师培训基地，2022 —2025年累计开展社会培训33万人次，继续教育收入到账经费1.76亿元；2022年—2026年获批国家级、省级职教师资培训项目216项，立项金额6051.6 万元，立项数量、金额均列广东省职业院校首位。牵头成立“职业院校跨区域协同发展共同体”，推进“双百行动”与职教帮扶，对口支援新疆、甘肃、西藏、内蒙古等8省（区）30余所院校。面向化州、德庆推动“融合共建+资源共享”式“双百行动”，东西协作帮扶获教育部肯定。 对外交流合作 持续拓展 。 获全国首批“国家级产业工匠学院”立项、省级首批“岭南工匠学院”建设单位，牵头组建广东省“一带一路”职业教育联盟，携手105所境内（外）院校、行业协会和企业，服务玖龙、环亚等企业“走出去”。发布国际行业标准3项，国际教学标准5项，国际课程标准31项，引进国际职业资格证书5个及引进国际课程标准80余门。与美国、加拿大的高校合作开设2个中外合作办学项目，在巴基斯坦、菲律宾 设立海外教学点，开设跨境电子商务专业。 面向“十五五” ，学校坚持以习近平新时代中国特色社会主义思想为指导， 全面落实“教育强国战略”和省委“1310”具体部署，坚持“一个引领、三个服务、八个打造”发展定位，持续坚持“强党建、谋发展、严规范、提幸福、优队伍”发展思路，努力打造“百年广轻”“引领广轻”“优学广轻”“美丽广轻”“幸福广轻”五张新名片，建设“中国特色、世界一流”的职业本科大学！ 学校校媒 人才招聘 采购公告 机构设置 版权所有©广东轻工职业技术大学 联系地址 : 广州市海珠区新港西路152号 联系电话 : 020-61230200(学校办公室) 020-61230198/61230900(招生办) 020-61230822(就业办) 粤ICP备12053365号 粤公网安备 44010502001704号",
+    "relationEvidence": "现学校简介明确建有广州新港、广州琶洲、佛山南海三个校区，教育部函明确以旧学院为基础设立大学、撤销旧建制。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "学校简介-广东轻工职业技术大学",
+    "evidenceTextSha256": "987a2cbed3bbe0a4bccc25bbf4cba3cefe98750f4817c4622568de6dbb2d77b8",
+    "evidenceArchive": "campus11-gdip-probes.jsonl",
+    "relationSources": [
+      {
+        "sourceUrl": "http://www.moe.gov.cn/srcsite/A03/s181/202406/t20240612_1135120.html",
+        "observedText": "教育部关于同意设置广东轻工职业技术大学的函 - 中华人民共和国教育部政府门户网站 登录 Languages English Русский 日本語 Deutsch Français Español العربية 搜索 无障碍浏览 Languages English Русский 日本語 Deutsch Français Español العربية 微言教育 无障碍浏览 登录 | 注册 图片 个人登录 法人登录 图片 个人注册 法人注册 搜索 首页 机构 新闻 公开 服务 互动 文献 当前位置： 首页 > 公开 信息名称： 教育部关于同意设置广东轻工职业技术大学的函 信息索引： 360A03-02-2024-0019-1 生成日期： 2024-06-03 发文机构： 中华人民共和国教育部 发文字号： 教发函〔2024〕110号 信息类别： 发展规划 内容概述： 教育部同意设置广东轻工职业技术大学。 教育部关于同意设置 广东轻工职业技术大学的函 教发函〔2024〕110号 广东省人民政府： 《广东省人民政府关于报请批准设置广东轻工职业技术大学的函》（粤府函〔2023〕303号）收悉。根据《中华人民共和国高等教育法》《中华人民共和国职业教育法》《普通高等学校设置暂行条例》等有关规定以及第八届全国高等学校设置评议委员会评议结果，经教育部党组会议研究决定，同意以广东轻工职业技术学院为基础设立广东轻工职业技术大学，学校标识码为4144010833；同时撤销广东轻工职业技术学院的建制。现将有关事项函告如下。 一、广东轻工职业技术大学为公办本科层次职业学校，由你省领导和管理。 二、学校要切实加强党的建设，全面贯彻党的教育方针，坚持社会主义办学方向，落实立德树人根本任务，培养德智体美劳全面发展的社会主义建设者和接班人。 三、学校专业设置按我部有关规定办理，同意首批设置现代精细化工技术、合成生物技术、软件工程技术、机械电子工程技术、产品设计、现代物流管理等6个职业本科专业。 四、学校全日制在校生规模暂定为20000人。 望你省进一步加大投入和政策支持，引导学校注重内涵发展，坚持职业教育办学定位，加强对本科层次职业教育的研究和模式探索，科学规划专业布局，加强师资队伍建设，推动职业教育教学实践与产业发展、技术变革和社会人才需求紧密对接，促进学校办出特色、办出水平，培养高素质技术技能人才，为广东经济建设和社会发展作出更大贡献。 教 育 部 2024年5月31日 点击右上角 选择在浏览器中打开 发布日期：2024-06-27 来源：教育部 下载 收藏 责任编辑：谢沂楠 网站声明 网站地图 联系我们 版权所有：中华人民共和国教育部 中文域名：教育部.政务 京ICP备10028400号-1 京公网安备11010202007625号 网站标识码：bm05000001",
+        "evidenceTextSha256": "d228efdffd03e32c5de0640bde1b0b5e8475d27ee0a7b230a50cd77ed707ab41",
+        "evidenceArchive": "campus7-probes.jsonl",
+        "bodySha256": "902e97a2d9368ffb8c406ef39f1a905f2456a18932c9ddb7fa20e03d18f18fbf",
+        "retrievedDate": "2026-10-15"
+      }
+    ],
+    "bodySha256": "18d5c380aed38817cd1e5b5b9fa6235ab18463bd8514daf34868e1bbeb641b5c",
+    "excerptOfArchivedFullText": true
+  },
+  {
     "name": "广州中医药大学 - 研究生",
     "cities": [
       "广州市"
@@ -5128,6 +5874,31 @@
     "relationEvidence": "Official graduate/research page: 导师管理-广州大学研究生院",
     "coverage": "verified-graduate-office-address",
     "coverageNote": "已核实该校研究生院、研究生招生或培养机构的公开地址；未穷尽跨市培养校区，不表示全部校区覆盖。"
+  },
+  {
+    "name": "广州大学华软软件学院",
+    "cities": [
+      "广州市",
+      "江门市"
+    ],
+    "sourceUrl": "https://www.gzus.edu.cn/xxgk/xxjj.htm",
+    "sourceUrls": [
+      "https://www.gzus.edu.cn/xxgk/xxjj.htm"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "广州软件学院成立于2002年，前身为广州大学华软软件学院，2020年12月，经教育部批准，广东省人民政府同意，转设更名为广州软件学院。 … 学校现有广州和江门两个校区。广州校区坐落在广州中新知识城北延区域的广州从化太平镇；江门校区位于江门市新会区双水镇，毗邻深湛城铁双水站和中阳高速罗坑站。 … 地址 广州市从化区经济开发区高技术产业园广从南路548号",
+    "relationEvidence": "2026年4月现官方简介明确前身广州大学华软软件学院、2020年转设广州软件学院，现广州从化和江门市新会区两个校区。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "学校简介-广州软件学院",
+    "evidenceTextSha256": "fa507b9419cf7f6dc99b3dbfd2d73cbbc42a37d7c4661eae0221aff6a27f1fec",
+    "evidenceArchive": "campus15-probes.jsonl",
+    "relationSources": [],
+    "bodySha256": "0fbffd1483404958ea97ab5d20edd6c06e69836c135da6605eeca698f1fa3e4a",
+    "excerptOfArchivedFullText": true
   },
   {
     "name": "广州大学松田学院",
@@ -5176,6 +5947,30 @@
     "relationEvidence": "Official institution site or government notice names this exact institution and publishes its address. Address excerpt excludes unrelated host-footer addresses."
   },
   {
+    "name": "广西农业职业技术学院",
+    "cities": [
+      "南宁市"
+    ],
+    "sourceUrl": "https://www.gxnzd.edu.cn/xxgk/xxgk.htm",
+    "sourceUrls": [
+      "https://www.gxnzd.edu.cn/xxgk/xxgk.htm"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "﻿ 学校概况-广西农业职业技术大学 学生 校友 网络 书记校长信箱 搜索 学校概况 学校概况 现任领导 组织机构 校园风光 招生就业 招生信息网 就业服务网 教学院系 农业工程学院 动物科技学院 城乡建设学院 智能装备工程学院 食品药品工程学院 信息工程学院 经济管理学院 马克思主义学院 人文与艺术学院 通识教育学院 教育培训学院（广西乡村振兴学院） 国际教育学院 教育教学 本（专）科生教育 成人高等学历继续教育 科学研究 畜牧研究院 合作交流 国际交流与合作处 （港澳台事务办公室、国际教育学院） 创新创业学院 （校企合作办公室、产教融合办公室） 学校概况 学校概况 现任领导 组织机构 校园风光 当前位置： 首页 — 学校概况 — 学校概况 广西农业职业技术大学简介 广西农业职业技术大学于2021年5月经中华人民共和国教育部批准设置，由广西壮族自治区人民政府举办。学校由广西大学行健文理学院、广西农业职业技术学院合并，并整合广西大学和广西壮族自治区畜牧研究所部分资源转设而成，是全国第一所涉农类公办职业本科大学。 广西大学行健文理学院创办于2002年，依托广西大学深厚的文化底蕴、丰富的教学资源以及雄厚的学科基础办学，走特色发展之路，是一所理、工、经、管、文等多学科协调发展的应用型普通本科院校，其办学实力曾在广西独立学院中名列前茅。广西农业职业技术学院办学历史悠久，创建于1942年，以强农兴农为己任，培养适应农业生产、建设、管理、服务第一线需要的技术技能型人才，曾是广西高水平高职学校和高水平专业建设单位。广西壮族自治区畜牧研究所成立于1960年，是公益一类畜牧综合科研机构，建设省部级及以上科研平台13个，其中国际交流平台1个、国家级平台4个；建立国家现代农业产业技术体系团队3个，包括广西肉鸡产业首席专家创新团队、广西牛羊产业功能岗位专家创新团队、广西生猪产业专家创新团队；获批地厅级及以上科研项目271项；荣获地厅级及以上科技奖励130项，含国家级奖励7项、省部级奖励66项；通过国家审定新品种28个；获授权专利65项；通过审定的地方标准46项；出版专著52部；发表科技论文1485篇。与美国、澳大利亚、日本、韩国、巴基斯坦、越南、老挝等多国开展科技交流与合作，为助推中国南方畜牧业发展做出重大贡献。 学校占地面积3636.7亩，设东、西两个校区，西校区在南宁市大学东路176号，占地面积992.64亩，东校区在南宁市邕武路24号，占地面积2644.06亩。学校设有农业工程学院、动物科技学院、城乡建设学院、智能装备工程学院、食品药品工程学院、信息工程学院、经济管理学院、人文与艺术学院、马克思主义学院、通识教育学院、教育培训学院（广西乡村振兴学院）、国际教育学院等12个教学机构，畜牧研究院、作物研究院、食品药品研究院、农业人工智能研究院、艺术教育研究中心等5个科研机构。学校共有全日制在校生19002人（不含2026届毕业生7705人），其中普通全日制本科在校生11571人，普通全日制专科在校生7431人。学校现有教职工1506人，高级职称教师578人，硕士及以上学位教师865人，“双师型”教师805人。学校拥有自治区级以上教学创新团队3个（国家级1个），获评全国优秀教师1人、全国先进工作者1人。学校共有招生备案专业85个，其中四年制职业本科专业37个，二年制职业本科专业30个，高职专科专业18个。 学校学科专业体系完备。构建了以农类学科专业为主，农工、农经、农管、农文、农艺等交叉融合的“新农科”职业教育专业体系。已建成自治区高水平专业群2个，国家级骨干专业5个，在建自治区高水平专业群3个。近五年，获国家级职业教育教学成果奖2项（主持1项，参与1项），获自治区级职业教育教学成果奖8项（主持5项，参与3项）。现有广西职业教育示范特色专业及实训基地项目12个，自治区职业教育示范性虚拟仿真实训基地建设项目2个。获自治区级以上在线精品开放课程4门（国家级1门），获自治区级以上规划教材8部（国家级4部）。 学校人才培养成效显著。认真落实立德树人根本任务，深入推进“三教”改革，落实“岗课赛证”综合育人，注重培养德技并修、具有“三农”情怀、扎实专业技术知识、较强创新精神和实践能力的现代农业农村高层次、复合型、具有国际视野的高技能人才。近五年，学生参加职业院校技能大赛获自治区级以上奖项388项（国家级38项），参加中国国际大学生创新大赛（原中国国际“互联网+”大学生创新创业大赛）获自治区级以上奖项196项（国家级7项）。通过推进215个自治区“1+X”证书试点项目培训学生通过考证13135人。毕业生获教育部基层就业卓越奖学金、广西“乡村振兴好榜样”等荣誉称号。此外，学校除了通过普通高考招生以外，还通过单招、对口、中职升本等招生方式，实现不同层次职业教育有效贯通，不断拓展学生成长成才通道。 学校科研成果丰硕。获批为国家自然科学基金依托单位，是全区职业本科院校中唯一获批的高校。现有广西耐盐碱粮食作物种子工程研究中心、农产品加工应用技术协同创新中心、广西玉米良种培育中心等15个科研平台。学校依托科研平台，围绕自治区重点发展的水稻、玉米、肉牛肉羊、优质家禽等优势特色农业产业的重大科技需求，构建了服务农业强区建设的省级科技创新战略力量。近五年获广西科技进步奖、全国农牧渔业丰收奖及广西社会科学优秀成果奖等省部级科研奖31项，其中广西科学技术进步奖14项，全国农牧渔业丰收奖6项，神农中华农业科技奖三等奖1项，中国商业联合会科学技术奖三等奖1项，广西社会科学优秀成果奖9项。通过国家审定动植物品种7个、自治区审定玉米等农作物品种35个，获发明专利授权135件，完成科技成果转化67项。 学校服务乡村振兴成效明显。学校是全国新型职业农民培育示范基地、全国粮食安全宣传教育基地，是广西职业院校“双师型”教师培养培训基地、广西职业教育培训基地。长期以来，学校紧密对接国家14条重点产业链和广西“10+5+4”现代化产业体系，聚焦粮食、糖业、水果、蔬菜、畜禽、渔业6个千亿级特色农业产业，深入开展校政、校企合作，通过育训结合、长短结合、内外结合的方式，承担国家级“耕耘者”、乡村产业带头人培育“头雁”项目、青年农场主、高素质农民及广西农业农村干部、基层农技推广人员、水库移民劳动力、职业技能等各类培训，连续十七年承担广西优秀村党组织书记大专学历教育班项目，形成了各层级人才培育、科技成果推广、技术应用指导、职业技能鉴定、农业职业教育智库建设五大核心版块的乡村振兴服务内容，为广西农业强、农村美、农民富提供人才和智力支撑。学校承担各类各级培训班6166余期，培训学员达25.6万多人次。近5年累计选派科技特派员454人，3名获评为“最美科技特派员”，学校获自治区科技厅通报表扬为乡村科技特派员组织实施单位2次。 学校对外合作特色鲜明。学校是最早面向东盟国家开展农业职业教育对外合作的单位之一。2002年被农业部确立为“实施农业科教‘走出去’战略试点工作”单位。2004年与老挝政府合作建设中国—老挝农作物优良品种试验站，建成农业职业教育实践基地和校企合作境外培训基地，协同国内多家农业企业走向东盟，试验站建设成效多次获老挝农林部表彰，是中—老两国间农业合作的典范。2012年，学校经农业部批准设立“中国—东盟农业培训中心”，累计培训学员4000多人次。2024年，学校入选农业农村部国际交流服务中心评定的第二批农业涉外培训合作交流点、入选国家级涉外农业培训教学基地。学校牵头组建中国—东盟农业职业教育联盟，成功举办4届中国—东盟农业职业教育论坛（交流会），与马来西亚、老挝、泰国、越南、美国、中国香港等国家（地区）的20多所高校保持良好的教育合作伙伴关系，累计招收来华留学生300多人，选派1200多名学生出国留学。学校推动双向留学，与老挝东坎商农业技术学院合作共建老挝分校。成立老挝职业教育研究所，建设中老职教合作的科研支撑平台。以中国—东盟现代畜牧技术创新学院和中国—老挝现代农业工匠学院项目获自治区批准立项为契机，打造面向东盟教育合作新高地，推进国际农业产能合作和产教融合。 学校入选农业农村部、教育部推介的全国百所“乡村振兴人才培养优质校”，是教育部首批脱贫攻坚、乡村振兴专题“大思政课”实践教学基地，入选广西新一轮“双高”立项建设单位，获中华人民共和国第一届职业技能大赛突出贡献单位，自治区2024、2025年度最具网络影响力本科高校，广西普通高校毕业生就业创业工作突出单位等荣誉称号，多年来为广西经济社会发展和乡村振兴战略实施提供了智力支持和人才支撑。 面向未来，学校将锚定目标，坚定信心，凝心聚力，把学校建设成为服务区域经济社会高质量发展和农业农村现代化需要，优势突出、特色鲜明的国内一流职业本科大学，成为区域现代农业高层次技术技能人才培养高地、技术创新和服务中心。（数据截至2026年7月1日） 学校电话:0771-3249899 招生电话:0771-3246471、3277701 实习监督电话:0771-4714963 | 地址:广西壮族自治区南宁市大学东路176号（西校区）广西南宁市邕武路24号(东校区) | 招生代码:16205 桂ICP备06007804号-6",
+    "relationEvidence": "现大学官方概况明确由广西农业职业技术学院、广西大学行健文理学院、广西壮族自治区畜牧研究所合并转设，现东、西两校区分别在南宁市邕武路24号和大学东路176号。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "学校概况-广西农业职业技术大学",
+    "evidenceTextSha256": "42e9f94cfdcc5acb50c0d3e120493a88b63efb3943533c61c38160106e906151",
+    "evidenceArchive": "campus10-profile-probes.jsonl",
+    "relationSources": [],
+    "bodySha256": "e1ce0c9f71230832dfe4336805697cef6c8711e1d668bce0b53691f8a350bad2",
+    "excerptOfArchivedFullText": true
+  },
+  {
     "name": "广西大学 - 研究生",
     "cities": [
       "南宁市"
@@ -5186,6 +5981,30 @@
     "relationEvidence": "Official graduate/research page: 招生 - 广西大学研究生院",
     "coverage": "verified-graduate-office-address",
     "coverageNote": "已核实该校研究生院、研究生招生或培养机构的公开地址；未穷尽跨市培养校区，不表示全部校区覆盖。"
+  },
+  {
+    "name": "广西大学行健文理学院",
+    "cities": [
+      "南宁市"
+    ],
+    "sourceUrl": "https://www.gxnzd.edu.cn/xxgk/xxgk.htm",
+    "sourceUrls": [
+      "https://www.gxnzd.edu.cn/xxgk/xxgk.htm"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "﻿ 学校概况-广西农业职业技术大学 学生 校友 网络 书记校长信箱 搜索 学校概况 学校概况 现任领导 组织机构 校园风光 招生就业 招生信息网 就业服务网 教学院系 农业工程学院 动物科技学院 城乡建设学院 智能装备工程学院 食品药品工程学院 信息工程学院 经济管理学院 马克思主义学院 人文与艺术学院 通识教育学院 教育培训学院（广西乡村振兴学院） 国际教育学院 教育教学 本（专）科生教育 成人高等学历继续教育 科学研究 畜牧研究院 合作交流 国际交流与合作处 （港澳台事务办公室、国际教育学院） 创新创业学院 （校企合作办公室、产教融合办公室） 学校概况 学校概况 现任领导 组织机构 校园风光 当前位置： 首页 — 学校概况 — 学校概况 广西农业职业技术大学简介 广西农业职业技术大学于2021年5月经中华人民共和国教育部批准设置，由广西壮族自治区人民政府举办。学校由广西大学行健文理学院、广西农业职业技术学院合并，并整合广西大学和广西壮族自治区畜牧研究所部分资源转设而成，是全国第一所涉农类公办职业本科大学。 广西大学行健文理学院创办于2002年，依托广西大学深厚的文化底蕴、丰富的教学资源以及雄厚的学科基础办学，走特色发展之路，是一所理、工、经、管、文等多学科协调发展的应用型普通本科院校，其办学实力曾在广西独立学院中名列前茅。广西农业职业技术学院办学历史悠久，创建于1942年，以强农兴农为己任，培养适应农业生产、建设、管理、服务第一线需要的技术技能型人才，曾是广西高水平高职学校和高水平专业建设单位。广西壮族自治区畜牧研究所成立于1960年，是公益一类畜牧综合科研机构，建设省部级及以上科研平台13个，其中国际交流平台1个、国家级平台4个；建立国家现代农业产业技术体系团队3个，包括广西肉鸡产业首席专家创新团队、广西牛羊产业功能岗位专家创新团队、广西生猪产业专家创新团队；获批地厅级及以上科研项目271项；荣获地厅级及以上科技奖励130项，含国家级奖励7项、省部级奖励66项；通过国家审定新品种28个；获授权专利65项；通过审定的地方标准46项；出版专著52部；发表科技论文1485篇。与美国、澳大利亚、日本、韩国、巴基斯坦、越南、老挝等多国开展科技交流与合作，为助推中国南方畜牧业发展做出重大贡献。 学校占地面积3636.7亩，设东、西两个校区，西校区在南宁市大学东路176号，占地面积992.64亩，东校区在南宁市邕武路24号，占地面积2644.06亩。学校设有农业工程学院、动物科技学院、城乡建设学院、智能装备工程学院、食品药品工程学院、信息工程学院、经济管理学院、人文与艺术学院、马克思主义学院、通识教育学院、教育培训学院（广西乡村振兴学院）、国际教育学院等12个教学机构，畜牧研究院、作物研究院、食品药品研究院、农业人工智能研究院、艺术教育研究中心等5个科研机构。学校共有全日制在校生19002人（不含2026届毕业生7705人），其中普通全日制本科在校生11571人，普通全日制专科在校生7431人。学校现有教职工1506人，高级职称教师578人，硕士及以上学位教师865人，“双师型”教师805人。学校拥有自治区级以上教学创新团队3个（国家级1个），获评全国优秀教师1人、全国先进工作者1人。学校共有招生备案专业85个，其中四年制职业本科专业37个，二年制职业本科专业30个，高职专科专业18个。 学校学科专业体系完备。构建了以农类学科专业为主，农工、农经、农管、农文、农艺等交叉融合的“新农科”职业教育专业体系。已建成自治区高水平专业群2个，国家级骨干专业5个，在建自治区高水平专业群3个。近五年，获国家级职业教育教学成果奖2项（主持1项，参与1项），获自治区级职业教育教学成果奖8项（主持5项，参与3项）。现有广西职业教育示范特色专业及实训基地项目12个，自治区职业教育示范性虚拟仿真实训基地建设项目2个。获自治区级以上在线精品开放课程4门（国家级1门），获自治区级以上规划教材8部（国家级4部）。 学校人才培养成效显著。认真落实立德树人根本任务，深入推进“三教”改革，落实“岗课赛证”综合育人，注重培养德技并修、具有“三农”情怀、扎实专业技术知识、较强创新精神和实践能力的现代农业农村高层次、复合型、具有国际视野的高技能人才。近五年，学生参加职业院校技能大赛获自治区级以上奖项388项（国家级38项），参加中国国际大学生创新大赛（原中国国际“互联网+”大学生创新创业大赛）获自治区级以上奖项196项（国家级7项）。通过推进215个自治区“1+X”证书试点项目培训学生通过考证13135人。毕业生获教育部基层就业卓越奖学金、广西“乡村振兴好榜样”等荣誉称号。此外，学校除了通过普通高考招生以外，还通过单招、对口、中职升本等招生方式，实现不同层次职业教育有效贯通，不断拓展学生成长成才通道。 学校科研成果丰硕。获批为国家自然科学基金依托单位，是全区职业本科院校中唯一获批的高校。现有广西耐盐碱粮食作物种子工程研究中心、农产品加工应用技术协同创新中心、广西玉米良种培育中心等15个科研平台。学校依托科研平台，围绕自治区重点发展的水稻、玉米、肉牛肉羊、优质家禽等优势特色农业产业的重大科技需求，构建了服务农业强区建设的省级科技创新战略力量。近五年获广西科技进步奖、全国农牧渔业丰收奖及广西社会科学优秀成果奖等省部级科研奖31项，其中广西科学技术进步奖14项，全国农牧渔业丰收奖6项，神农中华农业科技奖三等奖1项，中国商业联合会科学技术奖三等奖1项，广西社会科学优秀成果奖9项。通过国家审定动植物品种7个、自治区审定玉米等农作物品种35个，获发明专利授权135件，完成科技成果转化67项。 学校服务乡村振兴成效明显。学校是全国新型职业农民培育示范基地、全国粮食安全宣传教育基地，是广西职业院校“双师型”教师培养培训基地、广西职业教育培训基地。长期以来，学校紧密对接国家14条重点产业链和广西“10+5+4”现代化产业体系，聚焦粮食、糖业、水果、蔬菜、畜禽、渔业6个千亿级特色农业产业，深入开展校政、校企合作，通过育训结合、长短结合、内外结合的方式，承担国家级“耕耘者”、乡村产业带头人培育“头雁”项目、青年农场主、高素质农民及广西农业农村干部、基层农技推广人员、水库移民劳动力、职业技能等各类培训，连续十七年承担广西优秀村党组织书记大专学历教育班项目，形成了各层级人才培育、科技成果推广、技术应用指导、职业技能鉴定、农业职业教育智库建设五大核心版块的乡村振兴服务内容，为广西农业强、农村美、农民富提供人才和智力支撑。学校承担各类各级培训班6166余期，培训学员达25.6万多人次。近5年累计选派科技特派员454人，3名获评为“最美科技特派员”，学校获自治区科技厅通报表扬为乡村科技特派员组织实施单位2次。 学校对外合作特色鲜明。学校是最早面向东盟国家开展农业职业教育对外合作的单位之一。2002年被农业部确立为“实施农业科教‘走出去’战略试点工作”单位。2004年与老挝政府合作建设中国—老挝农作物优良品种试验站，建成农业职业教育实践基地和校企合作境外培训基地，协同国内多家农业企业走向东盟，试验站建设成效多次获老挝农林部表彰，是中—老两国间农业合作的典范。2012年，学校经农业部批准设立“中国—东盟农业培训中心”，累计培训学员4000多人次。2024年，学校入选农业农村部国际交流服务中心评定的第二批农业涉外培训合作交流点、入选国家级涉外农业培训教学基地。学校牵头组建中国—东盟农业职业教育联盟，成功举办4届中国—东盟农业职业教育论坛（交流会），与马来西亚、老挝、泰国、越南、美国、中国香港等国家（地区）的20多所高校保持良好的教育合作伙伴关系，累计招收来华留学生300多人，选派1200多名学生出国留学。学校推动双向留学，与老挝东坎商农业技术学院合作共建老挝分校。成立老挝职业教育研究所，建设中老职教合作的科研支撑平台。以中国—东盟现代畜牧技术创新学院和中国—老挝现代农业工匠学院项目获自治区批准立项为契机，打造面向东盟教育合作新高地，推进国际农业产能合作和产教融合。 学校入选农业农村部、教育部推介的全国百所“乡村振兴人才培养优质校”，是教育部首批脱贫攻坚、乡村振兴专题“大思政课”实践教学基地，入选广西新一轮“双高”立项建设单位，获中华人民共和国第一届职业技能大赛突出贡献单位，自治区2024、2025年度最具网络影响力本科高校，广西普通高校毕业生就业创业工作突出单位等荣誉称号，多年来为广西经济社会发展和乡村振兴战略实施提供了智力支持和人才支撑。 面向未来，学校将锚定目标，坚定信心，凝心聚力，把学校建设成为服务区域经济社会高质量发展和农业农村现代化需要，优势突出、特色鲜明的国内一流职业本科大学，成为区域现代农业高层次技术技能人才培养高地、技术创新和服务中心。（数据截至2026年7月1日） 学校电话:0771-3249899 招生电话:0771-3246471、3277701 实习监督电话:0771-4714963 | 地址:广西壮族自治区南宁市大学东路176号（西校区）广西南宁市邕武路24号(东校区) | 招生代码:16205 桂ICP备06007804号-6",
+    "relationEvidence": "现官方概况明确广西大学行健文理学院与广西农业职业技术学院、广西畜牧研究所合并转设，现东西校区均在南宁市。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "学校概况-广西农业职业技术大学",
+    "evidenceTextSha256": "42e9f94cfdcc5acb50c0d3e120493a88b63efb3943533c61c38160106e906151",
+    "evidenceArchive": "campus10-profile-probes.jsonl",
+    "relationSources": [],
+    "bodySha256": "e1ce0c9f71230832dfe4336805697cef6c8711e1d668bce0b53691f8a350bad2",
+    "excerptOfArchivedFullText": true
   },
   {
     "name": "广西师范大学 - 研究生",
@@ -5524,6 +6343,30 @@
     "excerptOfArchivedFullText": true
   },
   {
+    "name": "新乡医学院",
+    "cities": [
+      "新乡市"
+    ],
+    "sourceUrl": "https://www.xxmu.edu.cn/xxgk1/xxjj.htm",
+    "sourceUrls": [
+      "https://www.xxmu.edu.cn/xxgk1/xxjj.htm"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "河南医药大学位于河南省新乡市，是河南省唯一独立设置的公办西医本科院校 … 1982年升格本科，更名新乡医学院 … 2025年6月，学校更名为河南医药大学",
+    "relationEvidence": "2026年9月现官方简介明确1982年更名新乡医学院、2025年6月更名河南医药大学，学校位于河南省新乡市。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "学校简介-河南医药大学",
+    "evidenceTextSha256": "e356cb610483b2a7d9c86265ac766bb51f367b7910f4ba7d1dfc06f9b0edd80e",
+    "evidenceArchive": "campus15-profile-probes.jsonl",
+    "relationSources": [],
+    "bodySha256": "4ef1a7b636ea7075bc51f7b95ba664a83c1f8217e536e033f6d0f17289e110d9",
+    "excerptOfArchivedFullText": true
+  },
+  {
     "name": "新疆农业大学 - 研究生",
     "cities": [
       "乌鲁木齐市"
@@ -5729,6 +6572,35 @@
     "excerptOfArchivedFullText": true
   },
   {
+    "name": "昆明医科大学 - 研究生",
+    "cities": [
+      "昆明市"
+    ],
+    "sourceUrl": "https://www.kmmu.edu.cn/upload/20261003/2026100317230215.pdf",
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "云南省昆明市呈贡区雨花街道春融西路1168 号昆明医科大学至 真楼309 研究生招生办公室",
+    "relationEvidence": "昆明医科大学官方2027年硕士研究生招生章程PDF联系地址条款明确列示学校研究生招生办公室及昆明市。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅研究生招生办公室明确联系地址，不表示穷尽所有培养校区或附属医院。",
+    "bodySha256": "e5c81e048e4d66328d9dab2af2c661ee3535c12024a01e6529735396a514b7f0",
+    "evidenceTextSha256": "e7f3e056a6d0eaf67e31a121f90f54e73a5060b2bb9bef8d250b0595934d5b94",
+    "excerptOfArchivedFullText": true,
+    "cityEvidence": [
+      {
+        "city": "昆明市",
+        "observedText": "云南省昆明市呈贡区雨花街道春融西路1168 号昆明医科大学至 真楼309 研究生招生办公室",
+        "sourceUrl": "https://www.kmmu.edu.cn/upload/20261003/2026100317230215.pdf"
+      }
+    ],
+    "evidencePages": [
+      14
+    ],
+    "sourceFormat": "pdf",
+    "extractionMethod": "PDF text extraction; contact clause visually structured as single office address on page 14",
+    "evidenceArchive": "graduate-owner-next-pdf-review1.json"
+  },
+  {
     "name": "昆明理工大学 - 研究生",
     "cities": [
       "昆明市"
@@ -5931,6 +6803,24 @@
     "evidencePageTitle": "杭州医学院-研究生院（研究生工作部）",
     "evidenceHttpStatus": 200,
     "evidenceTextSha256": "2b1d5c6459fd519a1131fe4307a82ec835b682091dc0e13e221407f2019eef07"
+  },
+  {
+    "name": "杭州市工人业余大学",
+    "cities": [
+      "杭州市"
+    ],
+    "sourceUrl": "https://www.hzgh.org/newsview12.htm",
+    "sourceDate": null,
+    "checkedAt": "2026-10-15",
+    "finalUrl": "https://www.hzgh.org/newsview12.htm",
+    "bodySha256": "bb094773efd6ac9240aa71981f3837f9eeb3cd304a0e3c7bd5efc830d3b6b3ff",
+    "observedText": "地址：杭州市 上城区 东宁路501号 ",
+    "relationEvidence": "主管工会当前直属单位介绍明确学校全称及东宁路501号地址；正文提及两个校区，但地址段只明确东宁路，不猜另一校区地址。",
+    "coverage": "verified-institution-address",
+    "coverageNote": "明确学校地址城市；日期及用途范围按原文保留。",
+    "evidenceTextSha256": "c006ae5db19c3a6902e2b8c58d01c34d9e19fb81789ead03278caaab4d6509d8",
+    "retrievedDate": "2026-10-15",
+    "excerptOfArchivedFullText": true
   },
   {
     "name": "杭州师范大学 - 研究生",
@@ -6522,6 +7412,26 @@
     "excerptOfArchivedFullText": true
   },
   {
+    "name": "沈阳工业大学 - 研究生",
+    "cities": [
+      "沈阳市"
+    ],
+    "sourceUrl": "https://yjsxy.sut.edu.cn/",
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "版权所有：沈阳工业大学研究生院 地址：沈阳经济技术开发区沈辽西路111号 邮政编码：110870 请升级浏览器版本 你正在使用旧版本浏览器。请升级浏览器以获得更好的体验。 Chrome Firefox Opera Edge",
+    "relationEvidence": "沈阳工业大学研究生院官网直接列本院沈阳经济技术开发区沈辽西路111号。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅证明来源明确的研究生办公、招生或培养单位地址；不表示穷尽全部校区。",
+    "bodySha256": "c2ef7a98c7b4abe288dbebcbde6836d4b4d335b975d3550bda532967cc647d2e",
+    "evidenceTextSha256": "a5be0b7f68351a6e6301076b6b0c3e961371b77b8b63e5a4ed1e89b78d000ec5",
+    "excerptOfArchivedFullText": true,
+    "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-final4-review.json",
+    "normalization": {
+      "沈阳市": "官方地址沈阳经济技术开发区→沈阳市，仅补明确城市后缀。"
+    }
+  },
+  {
     "name": "沈阳开放大学",
     "cities": [
       "沈阳市"
@@ -6569,6 +7479,49 @@
     "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-final2-review.json"
   },
   {
+    "name": "河北中医学院 - 研究生",
+    "cities": [
+      "石家庄市"
+    ],
+    "sourceUrl": "https://yjsxy.hebcm.edu.cn/col/1628824584171/2026/09/30/1790772963067.html",
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "单位名称：河北 中医药大学 招生电话： 0311 - 89926644 研究生学院网址： https://yjsxy.hebcm.edu.cn/ 地址：河北省石家庄市桥西区新石南路 326 号 邮编： 050091 培养类型 培养类型包括 学术学位硕士研究生 和专业学位硕士研究生。 学术学位硕士研究生 ： 侧重 于 理论创新和科研能力培养， 毕业时授予学术学位；专业学位硕士研究生： 侧重 于应用技能和职业素养，毕业时授予专业学位。 选拔方式 1. 推荐免试（含 中医学 “ 5+3 ” 转段）： 按教育部文件精神，在应届本科毕业生中选拔优秀者攻读硕士学位。推荐免试生是指在原学校获 得 推荐免初试资格并且经我校复试 录取 的应届本科毕业生。中医学专业 “ 5+3 ” 一体化学生转段工作与推荐免试工作同时进行，相关要求另行发布。 2. 全国统一考试： 全国硕士研究生 招生初试。 招生计划、学习方式和学制 我校 202 7 年拟招收 全日制 硕士研究生 496 名（含推免生、中医学专业 “ 5+3 ” 一体化转段学生 、中外合作办学项目 学 生 ），学制 三 年。我校与巴西戈亚斯联邦大学合作举办护理专业硕士研究生教育项目 （中外合作办学项目） ，培养期间学生需赴巴西学习 1 年。 2027 年， 我校 在 中医学一级学科下自主设置中医药文化学（ 1005Z2 ）二级学科。本学科立足中医药传承创新发展国家战略，聚焦中医药文化理论、中医药文化传播、中医药人文与医德研究等方向，融合中华优秀传统文化、马克思主义理论与中医药知识，打造 医文 交叉特色研究平台。欢迎热爱中华优秀传统文化、有志于中医药文化传承创新的考生踊跃报考 。 报考条件 1. 拥护中国共产党的领导，遵守中华人民共和国宪法和法律，诚实守信。 2 . 身体健康状况符合国家《普通高等学校招生体检工作指导意见》和我校规定的体检要求。",
+    "relationEvidence": "河北中医药大学2027硕士招生章程明确研究生招生电话与石家庄市新石南路326号；教育部教发函〔2023〕58号明确河北中医学院更名为河北中医药大学。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅证明来源明确的研究生办公、招生或培养单位地址；不表示穷尽全部校区。",
+    "bodySha256": "55eedcefcc1de720bb1beae504299615198ea5cafe3b4a67434df8577a545124",
+    "evidenceTextSha256": "9d0268c70ccd15157807c5f4072fd650983425ffd89ff2a6104fcfc9aed097e5",
+    "excerptOfArchivedFullText": true,
+    "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-final6-review.json",
+    "relationSources": [
+      {
+        "sourceUrl": "http://www.moe.gov.cn/srcsite/A03/s181/202306/t20230616_1064611.html",
+        "observedText": "教育部关于同意河北中医学院更名为河北中医药大学的函 - 中华人民共和国教育部政府门户网站 登录 Languages English Русский 日本語 Deutsch Français Español العربية 搜索 无障碍浏览 Languages English Русский 日本語 Deutsch Français Español العربية 微言教育 无障碍浏览 登录 | 注册 个人登录 法人登录 个人注册 法人注册 搜索 首页 机构 新闻 公开 服务 互动 文献 当前位置： 首页 > 公开 信息名称： 教育部关于同意河北中医学院更名为河北中医药大学的函 信息索引： 360A03-02-2023-0022-1 生成日期： 2023-06-07 发文机构： 中华人民共和国教育部 发文字号： 教发函〔2023〕58号 信息类别： 发展规划 内容概述： 教育部同意河北中医学院更名为河北中医药大学。 教育部关于同意河北中医学院更名为 河北中医药大学的函 教发函〔2023〕58号 河北省人民政府： 《河北省人民政府关于申请将河北中医学院更名为河北中医药大学的函》（冀政函〔2023〕7号）收悉。 根据《中华人民共和国高等教育法》《普通高等学校设置暂行条例》《普通本科学校设置暂行规定》有关规定以及第八届全国高等学校设置评议委员会评议结果，经教育部党组会议研究决定，同意河北中医学院更名为河北中医药大学，学校标识码为4113014432；同时撤销河北中医学院的建制。现将有关事项函告如下。 一、河北中医药大学为公办本科层次的普通高等学校，以本科教育为主，同时承担研究生培养任务，由你省领导和管理。 二、学校要切实加强党的建设，全面贯彻党的教育方针，坚持社会主义办学方向，落实立德树人根本任务，培养德智体美劳全面发展的社会主义建设者和接班人。 三、学校现有专业结构的调整和新专业的增设，应按我部有关规定办理。 四、学校全日制在校生规模暂定为12000人。 五、我部将适时对学校办学定位、办学条件、办学行为和人才培养质量等情况进行核验。 望你省加强对该校的指导和支持，加大资金投入力度和资源支持强度，引导学校科学定位、内涵发展，切实夯实中医药类专业主体地位，不断提高教育质量、科研水平和办学效益，进一步办出特色、办出水平，重点培养服务区域经济社会发展的创新型、应用型、复合型人才，为推动中医药教育改革与高质量发展，以及河北省的经济建设和社会发展作出更大贡献。 教 育 部 2023年6月6日 点击右上角 选择在浏览器中打开 发布日期：2023-06-16 来源：教育部 下载 收藏 责任编辑：谢沂楠 网站声明 网站地图 联系我们 版权所有：中华人民共和国教育部 中文域名：教育部.政务 京ICP备10028400号-1 京公网安备11010202007625号 网站标识码：bm05000001",
+        "bodySha256": "8f8c7cd932ec5147b6d57df8b9fb885c44de80c06c9a04e9d763c75d7e877359",
+        "evidenceTextSha256": "549ab546f97aef40c4e8aa14eb95cfc52162db637311d4aa82d5635ab878b917",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-final6-review.json"
+      }
+    ]
+  },
+  {
+    "name": "河北农业大学 - 研究生",
+    "cities": [
+      "保定市"
+    ],
+    "sourceUrl": "https://yanjiusheng.hebau.edu.cn/",
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "版 权： 河北农业大学研究生学院 地址：保定市灵雨寺街289号| 邮编：071001 | 学院办公室电话：0312-7521495 | 研招办电话：0312-7521303 | 研招办邮箱：yjshzhsh@hebau.edu.cn",
+    "relationEvidence": "河北农业大学研究生学院官网明确保定市灵雨寺街289号及研招办电话。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅证明来源明确的研究生办公、招生或培养单位地址；不表示穷尽全部校区。",
+    "bodySha256": "4043c1e6ffc86f5e88acf69347141d6e19e81fc81188a4d5b65f00792a85ac35",
+    "evidenceTextSha256": "8624017c85a285f535c391673be1988939069c2e43072ab4426f53c823441a61",
+    "excerptOfArchivedFullText": true,
+    "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-final4-review.json"
+  },
+  {
     "name": "河北北方学院动物科技学院",
     "cities": [
       "张家口市"
@@ -6608,6 +7561,23 @@
     "evidenceTextSha256": "e81b253cb5309aaf9078a436c92eec0d5382c662dd4f9b357370ce3c24d0c983",
     "excerptOfArchivedFullText": true,
     "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-final2-review.json"
+  },
+  {
+    "name": "河北地质大学 - 研究生",
+    "cities": [
+      "石家庄市"
+    ],
+    "sourceUrl": "https://www.hgu.edu.cn/yzw/zkxx/sszs/lxfs.htm",
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "地址：河北省石家庄市河北大道601号 邮编：052161 电话：0311-87208228 版权所有 © 河北地质大学 Copyright@2016,All Rights Reserved 冀ICP备15002650号-2 冀公网安备 13010802000749号",
+    "relationEvidence": "河北地质大学硕士招生联系方式页面明确石家庄市河北大道601号及各培养学院联系人。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅证明来源明确的研究生办公、招生或培养单位地址；不表示穷尽全部校区。",
+    "bodySha256": "3dfa2458c67237f90e18f1670b81f9c4f90d21a067014c95632762380b736335",
+    "evidenceTextSha256": "9201a4a3a461755a94c5bf9c4908753cf5fcfcf2e6e9cbdeee7ef2b7eb037aa7",
+    "excerptOfArchivedFullText": true,
+    "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-final4-review.json"
   },
   {
     "name": "河北工业大学 - 研究生",
@@ -6791,6 +7761,40 @@
     "evidenceTextSha256": "7a30e503e8238ca17ee99beeedd4818432e85a457a8b50e773c50c55307bf3cf"
   },
   {
+    "name": "河南工业职业技术学院",
+    "cities": [
+      "南阳市"
+    ],
+    "sourceUrl": "http://www.hnpi.edu.cn/",
+    "sourceUrls": [
+      "http://www.hnpi.edu.cn/",
+      "http://www.moe.gov.cn/srcsite/A03/s181/202603/t20260319_1431467.html"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "2026年2月，教育部批准以河南工业职业技术学院为基础设立河南工业职业技术大学。 … 孔明校区：南阳市杜诗路1666号 光武校区：南阳市工农路291号 方城校区：南阳市方城县秋实路66号",
+    "relationEvidence": "现大学官网完整列孔明、光武、方城三个校区均南阳市；教育部2026设立函明确以河南工业职业技术学院为基础设立大学。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "河南工业职业技术大学",
+    "evidenceTextSha256": "173be6192cc74f7d5e45d31719c374705de8321a1ba8ebc8b6ee5f3eaa222336",
+    "evidenceArchive": "campus13-probes.jsonl",
+    "relationSources": [
+      {
+        "sourceUrl": "http://www.moe.gov.cn/srcsite/A03/s181/202603/t20260319_1431467.html",
+        "observedText": "经教育部党组会议研究决定，同意以河南工业职业技术学院为基础设立河南工业职业技术大学，学校标识码为4141012794；同时撤销河南工业职业技术学院的建制。现将有关事项函告如下",
+        "evidenceTextSha256": "6a2aaefad11e9e08011c8baf747113f39e2dbd815f8e50b5c0e18231ce3e227c",
+        "evidenceArchive": "campus13-relation-probes.jsonl",
+        "bodySha256": "d84a58d9e8d33e89edafdc3fb33d7ee7b50666b5bba7cdce31e1c008a86a20c1",
+        "retrievedDate": "2026-10-15"
+      }
+    ],
+    "bodySha256": "621c2358ce90730383c8cfdd974abf8a028b0ee871cd8c0a4ca8c475a7dfdeef",
+    "excerptOfArchivedFullText": true
+  },
+  {
     "name": "河南师范大学 - 研究生",
     "cities": [
       "新乡市"
@@ -6940,6 +7944,30 @@
     "evidenceTextSha256": "2c35d79a3ef86bfb76d8098a39e3e29cbd50d7c29c1db02b83ab6240852947d7"
   },
   {
+    "name": "浙江医药高等专科学校",
+    "cities": [
+      "宁波市"
+    ],
+    "sourceUrl": "https://www.zjpc.net.cn/zygk/xxjj.htm",
+    "sourceUrls": [
+      "https://www.zjpc.net.cn/zygk/xxjj.htm"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "浙江药科职业大学是2021年经教育部批准设立的全国第一所药科类本科层次职业大学，坐落于浙江省宁波市。 … 2002年经教育部批准建立浙江医药高等专科学校，是全国第一所公办医药类专科层次高等院校。2021年成立浙江药科职业大学，2023年获批成为学士学位授权单位 … 学校拥有奉化、鄞州两个校区",
+    "relationEvidence": "2026年5月现浙江药科职业大学简介明确2002年建立浙江医药高等专科学校、2021年成立大学，坐落浙江省宁波市，现奉化鄞州两校区。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "学校简介-浙江药科职业大学",
+    "evidenceTextSha256": "4407a3d97f4290467163bc06eaa35c237298d6236e1faa46dceefa10fea754ae",
+    "evidenceArchive": "campus15-profile-probes.jsonl",
+    "relationSources": [],
+    "bodySha256": "059df136e20c5d25a304a20972e908106ad9dffe7ee6b22eaadc19a3ae12d976",
+    "excerptOfArchivedFullText": true
+  },
+  {
     "name": "浙江大学 - 研究生",
     "cities": [
       "杭州市"
@@ -7054,6 +8082,41 @@
     "bodySha256": "cc888576aa20a45abdfcc4edd8ddb428e3d9aec2b73617214531c607c9a3e829",
     "observedText": "地址：杭州市西湖区教工路42号（教工路校区）、杭州市西湖区振华路6号（振华路校区） 电话：0571-89913053（办公室）、0571-88060314（招生咨询）、 0571-88054835（信访） 传真：0571-89913088 邮编：310012 校园全景 办学体系 国家开放大学 浙江省教育厅 教育部 微信公众号 微信视频号 微浙开 B站号 抖音号 浙开乐学港 小红书 Copyright©2021 浙江开放大学 浙ICP备05018780号",
     "relationEvidence": "Official institution page explicitly publishes its own campus address."
+  },
+  {
+    "name": "浙江树人大学",
+    "cities": [
+      "杭州市",
+      "绍兴市"
+    ],
+    "sourceUrl": "https://www.zjsru.edu.cn/xxgk/xxjj.htm",
+    "sourceUrls": [
+      "https://www.zjsru.edu.cn/xxgk/xxjj.htm",
+      "https://www.zjsru.edu.cn/xxgk/lsyg.htm"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "浙江树人学院由浙江省政协创办于1984年，是经教育部批准、省教育厅主管的全国首批全日制民办本科高校。 … 杭州拱宸桥校区 | 地址：杭州市树人街8号 电话：0571-88297000（招生办公室）/ 0571-88297011（学校办公室） 邮编：310015 绍兴杨汛桥校区 | 地址：绍兴市柯桥区杨汛桥街道江夏路2016号 电话：0571-88297000（招生办公室）/0575-85324517（学校办公室） 邮编：312028",
+    "relationEvidence": "现浙江树人学院2026年5月简介列杭州拱宸桥和绍兴杨汛桥两校区完整地址；学校历史沿革明确1984年/2000年浙江树人大学旧校名与后续升本沿革。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "学校简介-浙江树人学院",
+    "evidenceTextSha256": "c407dd25fa4e8ee0d03b36e7e330bdc8c6cbe90846e27ee7654e161e9f922519",
+    "evidenceArchive": "campus13-profile-probes.jsonl",
+    "relationSources": [
+      {
+        "sourceUrl": "https://www.zjsru.edu.cn/xxgk/lsyg.htm",
+        "observedText": "1984年11月8日，一所高等教育改革创新的民办高校——浙江树人大学应运而生。",
+        "evidenceTextSha256": "02815dfe2fb4f70157159c6d9db5b8aca4de488caa7b81d10a0c425914d44599",
+        "evidenceArchive": "campus13-retry-probes.jsonl",
+        "bodySha256": "6f48551e48ca13e1687bc967fcf7fb1918d8a885e43f68df1abfa8858030b2ae",
+        "retrievedDate": "2026-10-15"
+      }
+    ],
+    "bodySha256": "4e4a2c5e0044327018ba7fbf3abf652a825b19f16e6343401b75f0eb68d20b6d",
+    "excerptOfArchivedFullText": true
   },
   {
     "name": "浙江海洋大学 - 研究生",
@@ -7255,6 +8318,30 @@
     "excerptOfArchivedFullText": true
   },
   {
+    "name": "淮安信息职业技术学院",
+    "cities": [
+      "淮安市"
+    ],
+    "sourceUrl": "https://www.jsei.edu.cn/xxgk1/xxjj.htm",
+    "sourceUrls": [
+      "https://www.jsei.edu.cn/xxgk1/xxjj.htm"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "江苏电子信息职业学院是由江苏省人民政府主办、江苏省工业和信息化厅主管的全日制高等学校，始建于 1978 年，初名为淮阴电子工业学校， 2001 年升格为淮安信息职业技术学院， 2005 年在教育部组织的江苏省首轮高职高专人才培养工作水平评估中被评定为“优秀”院校， 2007 年被遴选为江苏省首批十所示范性高等职业院校建设单位之一， 2020 年更名为江苏电子信息职业学院 … 地址：淮安市高教园区枚乘东路３号",
+    "relationEvidence": "2026年4月现官方简介明确2001年升格淮安信息职业技术学院、2020年更名江苏电子信息职业学院，坐落淮安高教园，现完整地址淮安市高教园区枚乘东路3号。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "学校简介-江苏电子信息职业学院",
+    "evidenceTextSha256": "b424d64ceabc0b001b09e3bb1bc31052ed773ea916d6b394210192355ca7eb3f",
+    "evidenceArchive": "campus13-retry-probes.jsonl",
+    "relationSources": [],
+    "bodySha256": "15f146da78c3953c9fc3b0ebc9d541a2fd64f607237aff99606fcd470b41e0fb",
+    "excerptOfArchivedFullText": true
+  },
+  {
     "name": "淮海工学院",
     "cities": [
       "连云港市"
@@ -7443,6 +8530,24 @@
       }
     ],
     "bodySha256": "bd6d1dd1e9022be321ee343676a460d3697784600d3a70a3cb524fc4d0b17cfc",
+    "excerptOfArchivedFullText": true
+  },
+  {
+    "name": "温州市工人业余大学",
+    "cities": [
+      "温州市"
+    ],
+    "sourceUrl": "https://www.wztvu.com/Col/Col629/Index.html",
+    "sourceDate": null,
+    "checkedAt": "2026-10-15",
+    "finalUrl": "https://www.wztvu.com/Col/Col629/Index.html",
+    "bodySha256": "5a9cd24a21290e0f3bd6dd492779b7a99cefb945e3d3bc471f3d30aa163c07e9",
+    "observedText": "总校地址：温州市龙湾区瑶溪街道永宁西路2001号",
+    "relationEvidence": "官网学校简介开头明确温州开放大学（温州城市大学、温州老年大学、温州市工人业余大学）同体名称，页脚同样保留全称；总校地址明确永宁西路2001号。",
+    "coverage": "verified-institution-address",
+    "coverageNote": "以当前同体学校官方总校地址为证，不以历史并入关系单独推断；不推断其余校区。",
+    "evidenceTextSha256": "7738f074256f676264f75a6aba69404f2966a87fab262faf2401de48f70bfed0",
+    "retrievedDate": "2026-10-15",
     "excerptOfArchivedFullText": true
   },
   {
@@ -7731,6 +8836,30 @@
     "relationEvidence": "湖南开放大学 https://www.hnou.edu.cn/"
   },
   {
+    "name": "湖南文理学院芙蓉学院",
+    "cities": [
+      "常德市"
+    ],
+    "sourceUrl": "https://www.changdecollege.cn/xxgk/xxjj.htm",
+    "sourceUrls": [
+      "https://www.changdecollege.cn/xxgk/xxjj.htm"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "学校前身为创建于2002年湖南文理学院芙蓉学院（简称芙蓉学院）。2025年2月，教育部同意湖南文理学院芙蓉学院转设为常德学院。 … 地 址：位于湖南省常德市武陵区高泗路806号",
+    "relationEvidence": "2025年4月现常德学院简介明确前身湖南文理学院芙蓉学院、2025年教育部同意转设，现校址湖南省常德市武陵区高泗路806号。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "学校简介-常德学院",
+    "evidenceTextSha256": "0dead76361a5bb1a31bab2ea1ae9c43098f096da61e5e08f4052c9d8319c1444",
+    "evidenceArchive": "campus15-profile-probes.jsonl",
+    "relationSources": [],
+    "bodySha256": "596033415946803ad29f380c83d96a5362c784d8fbfe4632d542f934a043632e",
+    "excerptOfArchivedFullText": true
+  },
+  {
     "name": "湖南汽车工程职业学院",
     "cities": [
       "株洲市"
@@ -7753,6 +8882,32 @@
     "relationSources": [],
     "bodySha256": "f5a5a9fdf5a86d1fad4776c52b81002f3c9f30909789cf85f1d847d0c621d2d3",
     "excerptOfArchivedFullText": true
+  },
+  {
+    "name": "湖南理工学院 - 研究生",
+    "cities": [
+      "岳阳市"
+    ],
+    "sourceUrl": "https://xk.hnist.cn/info/1328/4990.htm",
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "通讯地址：湖南省岳阳市岳阳楼区湘北大道湖南理工大学（北院）研究生工作部 邮编：414006 【 关闭窗口 】 下一篇：部长&书记邮箱 联系方式 Copyright &copy; 2026 研究生工作部 xk.hnist.cn All Rights Reserved 制作维护：湖南理工大学 - 信息中心 - Design By 蛙泳速度",
+    "relationEvidence": "湖南理工大学研究生工作部联系页明确岳阳市湘北大道北院地址；教育部教发函〔2026〕39号明确湖南理工学院更名为湖南理工大学。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅证明来源明确的研究生办公、招生或培养单位地址；不表示穷尽全部校区。",
+    "bodySha256": "5aef8c812c5901fb1fad83542a8dad52850490ad2dc43e63b03e5fbd4309e96b",
+    "evidenceTextSha256": "60b0636bdf4f18bbf5480da8f1b569051c1ee2f441457f408b6c71e594f75374",
+    "excerptOfArchivedFullText": true,
+    "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-final6-review.json",
+    "relationSources": [
+      {
+        "sourceUrl": "http://www.moe.gov.cn/srcsite/A03/s181/202603/t20260319_1431445.html",
+        "observedText": "教育部关于同意湖南理工学院更名为湖南理工大学的函 - 中华人民共和国教育部政府门户网站 登录 Languages English Русский 日本語 Deutsch Français Español العربية 搜索 无障碍浏览 Languages English Русский 日本語 Deutsch Français Español العربية 微言教育 无障碍浏览 登录 | 注册 个人登录 法人登录 个人注册 法人注册 搜索 首页 机构 新闻 公开 服务 互动 文献 当前位置： 首页 > 公开 信息名称： 教育部关于同意湖南理工学院更名为湖南理工大学的函 信息索引： 360A03-02-2026-0014-1 生成日期： 2026-02-05 发文机构： 中华人民共和国教育部 发文字号： 教发函〔2026〕39号 信息类别： 发展规划 内容概述： 教育部同意湖南理工学院更名为湖南理工大学。 教育部关于同意湖南理工学院更名为 湖南理工大学的函 教发函〔2026〕39号 湖南省人民政府： 《湖南省人民政府关于申请将湖南理工学院更名为湖南理工大学的函》（湘政函〔2025〕43号）收悉。根据《中华人民共和国高等教育法》《普通高等学校设置暂行条例》等有关规定，经教育部党组会议研究决定，同意湖南理工学院更名为湖南理工大学，学校标识码为4143010543；同时撤销湖南理工学院的建制。现将有关事项函告如下。 一、湖南理工大学为公办普通本科学校，以本科教育为主，同时开展研究生教育，由你省领导和管理。 二、学校要切实加强党的建设，全面贯彻党的教育方针，坚持社会主义办学方向，落实立德树人根本任务，培养德智体美劳全面发展的社会主义建设者和接班人。 三、学校现有专业结构的调整和新专业的增设，应按我部有关规定办理。 四、学校全日制在校生规模暂定为19000人。 五、我部将适时对学校办学定位、办学条件、办学行为和人才培养质量等情况进行核验。 望你省进一步加大投入和保障力度，提升办学条件，引导学校科学定位、内涵发展，强化优势特色学科建设，科学规划学科专业布局，加强师资队伍建设，不断提高教育教学质量和科研水平，着力培养高水平应用型人才，为湖南经济社会高质量发展作出更大贡献。 教 育 部 2026年2月4日 点击右上角 选择在浏览器中打开 发布日期：2026-02-05 来源：教育部 下载 收藏 责任编辑：谢沂楠 网站声明 网站地图 联系我们 版权所有：中华人民共和国教育部 中文域名：教育部.政务 京ICP备10028400号-1 京公网安备11010202007625号 网站标识码：bm05000001",
+        "bodySha256": "43678b4054090333f2b20cff3f153c5eda40840fde02b631240d292fc32912f9",
+        "evidenceTextSha256": "0763a734b9c3327622bf05df23325d1410ecff05bf0e848bedd49611a8c66253",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-final6-review.json"
+      }
+    ]
   },
   {
     "name": "湖南理工学院南湖学院",
@@ -7986,6 +9141,30 @@
     "bodySha256": "98d2f67bf670b9c498ccae58dcfcff7c56964b8c6455c1b2205cc1f9375e35f5",
     "observedText": "地址：焦作市解放区学苑路1号焦作职工医学院 院办电话：0391-3530440 招生办电话：0391-3530027、2919003 成教办公室电话：0391-3577580、3213011 官方微信公众号：焦作职工医学院、焦作职工医学院继续教育学院 E-mail:phnjzpxq@sina.com 网址： http://www.jzzgyxy.com.cn 上一条： 校园风景 下一条： 没有了 Copyright ",
     "relationEvidence": "Official school contact page or government procurement record identifies the institution and its own address; excludes supplier/agency addresses."
+  },
+  {
+    "name": "牡丹江医学院",
+    "cities": [
+      "牡丹江市"
+    ],
+    "sourceUrl": "https://www.mdjmu.cn/xxgk/xxjj.htm",
+    "sourceUrls": [
+      "https://www.mdjmu.cn/xxgk/xxjj.htm"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "1958年 正式 创建牡丹江医学院， 校名由 著名历史学家郭沫若先生 题写 。 2024年5月，经教育部批准，学校更名为牡丹江医科大学。 … 地址：黑龙江省牡丹江市爱民区通乡街3号",
+    "relationEvidence": "2026年9月现官方简介明确1958年创建牡丹江医学院、2024年更名牡丹江医科大学，现完整地址黑龙江省牡丹江市爱民区通乡街3号。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "学校简介-牡丹江医科大学",
+    "evidenceTextSha256": "e19e0ed0f934eb7939f100304b22b78580acde0ac84798339e99ac67f433f6c4",
+    "evidenceArchive": "campus15-probes.jsonl",
+    "relationSources": [],
+    "bodySha256": "53ba6191692b8bfcc8772c270c415d127ae7ea1005b41053d066385a94c58194",
+    "excerptOfArchivedFullText": true
   },
   {
     "name": "甘肃农业大学 - 研究生",
@@ -8448,6 +9627,94 @@
     "evidenceHttpStatus": 200,
     "evidencePageTitle": "国际交流办公室-西北工业大学研究生院",
     "evidenceTextSha256": "4a8e9855bf54cc707423dc13e1b821a1db2a29b6f2e9ed02c39e2121083816ba"
+  },
+  {
+    "name": "西北工业大学（备用）",
+    "cities": [
+      "西安市",
+      "苏州市"
+    ],
+    "sourceUrl": "https://www.nwpu.edu.cn/xxgk/xxjj.htm",
+    "sourceUrls": [
+      "https://www.nwpu.edu.cn/xxgk/xxjj.htm",
+      "https://taicang.nwpu.edu.cn/sy20/xqghyjs/xqztgh.htm",
+      "https://taicang.nwpu.edu.cn/"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "﻿ 学校简介-西北工业大学 网站页面已加载完成 由于您当前的浏览器版本过低，存在安全隐患。建议您尽快更新，以便获取更好的体验。推荐使用最新版Chrome、Firefox、Opera、Edge Chrome Firefox Opera Edge 学生 教工 校友 访客 常用链接 翱翔门户 翱翔办公 电子邮件 书记 | 校长 ENG 学校概况 学校简介 学校历史 现任领导 历任领导 组织机构 党政机关 教学科研机构 支撑和服务保障机构 科研平台 人才培养 本科生教育 研究生教育 留学生教育 继续教育 网络教育 出国（境）交流 师资队伍 两院院士 杰出人才 青年人才 教师主页 科学研究 科研平台 设备共享 学术活动 学术科研 合作交流 战略合作 海外合作 招生就业 本科生招生 研究生招生 留学生招生 继续教育招生 网络教育招生 就业信息网 人才招聘 学校简介 学校简介 学校历史 现任领导 历任领导 当前位置: 首页 · 学校概况 · 学校简介 学校简介 undefined 西北工业大学（简称西工大或西北工大）坐落于陕西西安，是一所以航空、航天、航海等领域人才培养和科学研究为特色的国家“双一流”建设高校，隶属于工业和信息化部。学校脉源三支、强强融合（国立西北工学院、华东航空学院、哈尔滨军事工程学院空军工程系），1960年被中共中央确定为全国重点大学，“七五”“八五”均被国务院列为国家重点建设高校之一，1995年首批进入“211工程”，2001年进入“985工程”，2017年进入“一流大学”建设高校（A类）行列，是“卓越大学联盟”成员高校，是“一带一路”航天创新联盟发起高校。 学校全面贯彻党的教育方针，秉承“公诚勇毅”校训，弘扬“三实一新”（基础扎实、工作踏实、作风朴实、开拓创新）校风，坚持工科为本、三航当家、信息赋能、融合强校的发展思路，扎根西部、献身国防，为党育英才、为国铸重剑，为党和国家事业发展作出了重要贡献，书写了新中国历史上的多个“第一”，为武器装备研制、国防领域关键核心技术自主安全可控和国民经济建设提供了有力支撑，是连续两次被中共中央、国务院、中央军委联合授予“重大贡献奖”的唯一高校。学校先后获得“全国文明单位”“全国文明校园”“全国毕业生就业典型经验高校”“全国民族团结进步模范集体”“全国创先争优先进基层党组织”“全国党建工作示范高校”等荣誉称号和表彰奖励。 学校办学资源富集，学科特色鲜明。 现有学生40000余人，教职工4100余人，占地面积4700余亩，设有航空、航天、航海、人工智能等24个专业学院和未来技术学院、国家卓越工程师学院、国际教育学院、西北工业大学伦敦玛丽女王大学工程学院、西北工业大学莫航学院。设有72个本科专业、38个硕士学位授权一级学科、31个博士学位授权一级学科，形成了以三航（航空、航天、航海）学科群为引领，3M（材料、机械、力学）学科群、3C（计算机、通信、控制）学科群、理科学科群、人文社科学科群和交叉学科协调发展的学科体系，航空宇航科学与技术、材料科学与工程、机械工程3个学科入选国家“双一流”建设学科，工程学、材料科学、计算机科学、化学、物理学、地球科学、数学、临床医学、生物学与生物化学、环境学/生态学、农业科学、社会科学总论、药理学与毒理学、经济学与商学14个学科进入ESI国际学科排名前1%，其中工程学进入前1‱，材料科学、计算机科学、化学进入前1‰，为建设世界一流学科奠定了良好的基础。 学校坚持立德树人，育人成效显著。 大力弘扬“低调务实、兼收并蓄、厚积薄发、为国铸剑”为特质的总师育人文化，着力培养家国情怀深厚、追求卓越、引领未来的领军人才。学校为国防科技事业和国民经济建设输送了36万多名人才，其中培养了铸造、航空宇航制造工程、飞行力学、航空发动机、水中兵器、火箭发动机、无人系统7个学科的全国第一位工学博士，60余位校友成长为省部级以上领导、140余位校友成长为将军、两院院士，在航空、航天、航海等领域涌现出大批型号总师、行业精英、创新创业典型等杰出人才，半数以上的航空领域重大型号总师和副总师为西工大校友，在人才培养领域形成了独有的“西工大现象”，被社会誉为“总师摇篮”。学校建有4个国家级实验教学示范中心、2个国家级虚拟仿真实验教学中心、3个国家级人才培养模式创新实验区，入选首批国家卓越工程师学院试点牵头建设单位。2023年获国家教学成果奖14项，位列全国高校第7。2025年获中国国际大学生创新大赛金奖数全国高校第1。 学校坚持内培外引，师资力量雄厚。 深入实施新时代人才强校战略，强化高端人才引领，着力培养造就战略科学家、一流科技领军人才和创新团队。学校不断深化评价改革，全面推行准长聘制度，突出创新能力、质量、实效、贡献导向，健全薪酬激励与约束机制，引导各类人才分类发展。现汇聚了一支由590余位国家级高层次人才为骨干的高素质教师队伍，包括全职两院院士11人、国家级教学名师12人、国家级领军人才216人、国家级青年人才370人，以及一大批行业领域专家、型号总师等国家级专家。现有国家级创新团队38个。 学校强化科研创新，科技贡献突出。 坚持“四个面向”战略导向，完善“方向-队伍-平台-项目-成果”五位一体创新链条，加强国家战略科技力量建设，有组织推进基础研究，统筹强化关键核心技术攻关，推动基础理科“0到1”和工程技术“1到0”双向发力、上下对齐，为加快实现高水平科技自立自强提供有力支撑。全国第一架小型无人机、第一型50公斤级水下无人智能航行器、第一台航空机载计算机、第一型航空吊放声呐、世界首颗12U立方星“翱翔之星”等均诞生在我校。学校深度参与太行、汉江等6个国家实验室建设，牵头建有全国重点实验室、国家工程实验室、“一带一路”联合实验室等9个国家级平台，共建全国重点实验室、国家技术创新中心、国家工程研究中心等19个国家级平台。深度参与大飞机、航空发动机及燃气轮机、载人航天等国家重大专项科研攻关，是“为中国首次载人航天飞行作出贡献单位”的两所高校之一。近年来，学校不断强化服务国家战略能力，翼身融合大型客机缩比试验机、“飞天系列”火箭冲压组合动力、“澳门科学一号”卫星B星、某水下无人系统等大国重器相继取得重大突破。学校开创我国无人机研制先河，拥有我国无人机领域第一个全国重点实验室和国家工程研究中心，建有我国高校唯一的无人机专业化飞行试验测试基地，全面推进无人机科研与产业发展。在国庆60周年、建军90周年及国庆70周年阅兵中，我校自主研制的无人机方队多次光荣受阅。学校强化基础研究、促进学科交叉，在《Nature》《Science》《Cell》等顶级期刊持续发表原创性成果。学校获国家科技三大奖65项，获奖数量居全国高校前列。“十四五”以来学校牵头获国家科技奖10项，其中国家技术发明奖一等奖1项，国家自然科学奖二等奖2项。学校科技活动经费居全国高校前列，其中2025年度学校科技活动经费超过70亿元。 学校加快成果转化，服务社会能力增强。 打通政产学研用链条，推动科技创新和产业创新深度融合，促进科技创新成果转化应用，助力培育新兴产业、未来产业。先行探索科技成果转化“三项改革”，其中职务科技成果资产单列管理经验写入党的二十届三中全会《决定》。成果转化企业20余项关键核心技术填补国内空白，支撑了百余项国家重大任务，铂力特、华秦科技等成果转化企业成功上市，8家成果转化企业入选国家级专精特新“小巨人”企业，逐步形成了行之有效的科技成果转化“西工大模式”，获国务院“真抓实干督查激励”表彰。高质量服务西安区域科技创新中心和秦创原创新驱动平台建设，积极融入京津冀、粤港澳大湾区、成渝地区、东北全面振兴等国家区域发展战略。与航空工业、航天科技、航天科工、中国船舶、中国航发、中国商飞、中国兵工、中国铝业等签署战略合作协议，助力制造强国建设。 学校深化全球拓展，国际声誉快速提升。 深入落实教育对外开放战略，深化全球拓展，与300余所海外高校、企业和科研院所建立亲密合作，与TOP200高校合作数量达80所，国际声誉快速提升。统筹做好教育“走出去”，在哈萨克斯坦设立分校、中哈卓越工程师学院，2023年5月中哈两国元首见签共建哈萨克斯坦分校协议，2024年7月习近平总书记在署名文章中指出要“共同办好西北工业大学哈萨克斯坦分校，培养更多中哈友好事业接班人”。积极推进国外一流理工科大学优质教育“引进来”，设立西北工业大学伦敦玛丽女王大学工程学院、西北工业大学莫航学院，承建白俄罗斯国家科学院中国分院。学校获批16个国家级国际科技合作平台。1位外国专家荣获国际科学技术合作奖，16位外国专家荣获“中国政府友谊奖”，获奖人数位列全国前茅。学校深度参与高等教育与科技国际治理，拓展与国际组织的合作，先后发起成立“一带一路”航天创新联盟等4个多边国际交流合作平台；与亚太空间合作组织合作成立航天创新人才培养基地，与亚太工程组织联合会合作成立“一带一路”工程教育培训中心；牵头筹建国际绿色航空协会。 潮涌千帆竞，奋楫百川开。学校将持续深入学习贯彻习近平新时代中国特色社会主义思想，锚定“一十百千”和“天下工大、世界三航”远景目标，继承巩固、创新发展，笃行实干、追求卓越，奋力谱写中国特色世界一流大学建设新篇章，为实现中华民族伟大复兴和人类文明进步作出更大贡献！ （数据截至2026年8月5日） 友谊校区地址：西安市友谊西路127号 邮编:710072 长安校区地址：西安市长安区东祥路1号 邮编:710129 版权所有 © 西北工业大学 ICP备案号：陕ICP备05010979号",
+    "relationEvidence": "技术括注不改变学校身份；2026现学校简介列西安友谊/长安地址，太仓智汇港官方总体规划明确江苏省苏州市太仓市，现管委会首页仍在太仓运行，保留西安+苏州。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "学校简介-西北工业大学",
+    "evidenceTextSha256": "3fe3ad3b846491809aa926c6f766efce5f58a71fb53136823a3cedbe6fa5df13",
+    "evidenceArchive": "campus4-probes.jsonl",
+    "relationSources": [
+      {
+        "sourceUrl": "https://taicang.nwpu.edu.cn/sy20/xqghyjs/xqztgh.htm",
+        "observedText": "﻿ 校区总体规划-太仓智汇港管理委员会 西工大首页 | EN 太仓长三角研究院 网站主页 太仓校区党工委 部门介绍 部门动态 通知公告 先行制度 相关资源 太仓校区管理委员会 部门介绍 部门动态 通知公告 先行制度 相关资源 教学运行管理中心 部门介绍 部门动态 通知公告 先行制度 相关资源 学生事务中心 部门介绍 部门动态 通知公告 先行制度 相关资源 综合保障中心 部门介绍 部门动态 通知公告 先行制度 相关资源 长三角研究院 网站主页 太仓校区党工委 部门介绍 部门动态 通知公告 先行制度 相关资源 太仓校区管理委员会 部门介绍 部门动态 通知公告 先行制度 相关资源 教学运行管理中心 部门介绍 部门动态 通知公告 先行制度 相关资源 学生事务中心 部门介绍 部门动态 通知公告 先行制度 相关资源 综合保障中心 部门介绍 部门动态 通知公告 先行制度 相关资源 长三角研究院 校区总体规划 校区规划与建设 通知公告 校区总体规划 > 校区一期建设 > 校区主要建筑 > 校区总体规划 您的位置： 首页 > 首页20 > 校区规划与建设 > 校区总体规划 > 太仓市隶属苏州，位于江苏省东南部，东濒长江，南邻上海，距上海、苏州市中心50公里。是全国百强县市，被誉为长三角地区最具投资价值的创业乐土之一、最具发展活力和潜力的城市之一。 西北工业大学太仓校区占地1776亩，2021年一期建成投入使用，预计全部建成后在校学生数达到10000名左右、教职工达到2500余名。太仓校区将围绕国家科教兴国战略，面向学科前沿，汇聚一流大师，培养一流人才，建设网络安全、软件、微电子、民航、人工智能、核科学与技术等学院及相关研究中心。 太仓校区是学校在长三角区域打造的新的事业增长极，旨在打造“新工科、新方向、国际化、现代化”校区。校区将紧密围绕国家科教兴国战略，面向学科前沿，汇聚一流大师，培养一流人才。‍ 友情链接： 工业和信息化部 太仓市人民政府 地址：江苏省苏州市太仓市科教新城子冈路27号 邮编：215400 版权所有 西北工业大学太仓智汇港管理委员会",
+        "evidenceTextSha256": "497b3c231c3a44dce846a67539d1340b39da29346b304e41a2c790307f144e62",
+        "evidenceArchive": "campus11-probes.jsonl",
+        "bodySha256": "5d183f70dfe028554b3a6944bd76faf0516264b5a2caf861060f42ecdfd0cf7a",
+        "retrievedDate": "2026-10-15"
+      },
+      {
+        "sourceUrl": "https://taicang.nwpu.edu.cn/",
+        "observedText": "﻿ 太仓智汇港管理委员会 首页 太仓智汇港党工委、管委会 太仓智汇港教学运行管理中心 太仓智汇港学生事务中心 太仓智汇港综合保障中心 太仓智汇港相关学院 党工委、管委会简介 党工委、管委会动态 中心简介 教学运行管理动态 中心简介 学生事务动态 中心简介 综合保障动态 相关学院 Previous Next 图片要闻 新闻动态 04 2026-03 太仓智汇港管委会、长三角研究院传达学习2026年寒假务虚会和春季新... 23 2026-01 太仓智汇港召开安全生产工作专题会议 30 2025-12 学生事务中心开展2026年元旦放假前学生宿舍安全检查 24 2025-12 太仓智汇港管委会赴镇巴县巴山镇开展慰问活动 30 2025-09 太仓智汇港管委会为在校学生送上双节祝福——皎皎明月意，浓浓中秋情 10 2025-09 太仓智汇港举行2025年教师节庆祝活动 04 2025-09 太仓智汇港管委会、长三角研究院召开专题会议传达学习暑期务虚会、... 03 2025-09 太仓智汇港党工委、管委会组织在太仓师生观看纪念抗战胜利80周年大会 24 2025-07 三航科技创新中心2025年建设发展研讨会在太仓智汇港召开 23 2025-07 哈工大苏州研究院来太仓智汇港调研交流 通知公告 项目竞选结果公告（三） 2025-07-22 项目竞选结果公告（二） 2025-07-22 项目竞选结果公告（一） 2025-07-22 太仓智汇港核心机房维保服务项目竞选结果公告 2025-07-09 太仓智汇港网络核心和数据中心驻场服务项目竞选结果公告 2025-07-09 人才引进 20190605苏委办发【2019】99号《苏州市引进顶尖人才（团队）“一人一策”实施办法》（试行） 2019-08-04 20171222苏府【2018】168号《关于支持高等院校、科研院所引进高层次人才的实施办法》 2019-08-04 抱歉，你的浏览器不支持video标签。。 友情链接 工业和信息化部 太仓市人民政府 西北工业大学 地址：江苏省太仓市太仓大道127号 电话：0512-53331000 邮编：215400 邮箱 ：tcxq@nwpu.edu.cn",
+        "evidenceTextSha256": "616fd15a44ce0630bcf2f97db3b4bd6878e0d131644c61467ccca3d48802580d",
+        "evidenceArchive": "campus11-probes.jsonl",
+        "bodySha256": "b48b286adc935408c245cb1a845ac19957720f1e091d63ac9220c836bd2defe3",
+        "retrievedDate": "2026-10-15"
+      }
+    ],
+    "bodySha256": "d846051877c1c22581b67bcf795303873c537d0860626a14beda26bb346fd8e3",
+    "excerptOfArchivedFullText": true
+  },
+  {
+    "name": "西北工业大学（浏览器登录）",
+    "cities": [
+      "西安市",
+      "苏州市"
+    ],
+    "sourceUrl": "https://www.nwpu.edu.cn/xxgk/xxjj.htm",
+    "sourceUrls": [
+      "https://www.nwpu.edu.cn/xxgk/xxjj.htm",
+      "https://taicang.nwpu.edu.cn/sy20/xqghyjs/xqztgh.htm",
+      "https://taicang.nwpu.edu.cn/"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "﻿ 学校简介-西北工业大学 网站页面已加载完成 由于您当前的浏览器版本过低，存在安全隐患。建议您尽快更新，以便获取更好的体验。推荐使用最新版Chrome、Firefox、Opera、Edge Chrome Firefox Opera Edge 学生 教工 校友 访客 常用链接 翱翔门户 翱翔办公 电子邮件 书记 | 校长 ENG 学校概况 学校简介 学校历史 现任领导 历任领导 组织机构 党政机关 教学科研机构 支撑和服务保障机构 科研平台 人才培养 本科生教育 研究生教育 留学生教育 继续教育 网络教育 出国（境）交流 师资队伍 两院院士 杰出人才 青年人才 教师主页 科学研究 科研平台 设备共享 学术活动 学术科研 合作交流 战略合作 海外合作 招生就业 本科生招生 研究生招生 留学生招生 继续教育招生 网络教育招生 就业信息网 人才招聘 学校简介 学校简介 学校历史 现任领导 历任领导 当前位置: 首页 · 学校概况 · 学校简介 学校简介 undefined 西北工业大学（简称西工大或西北工大）坐落于陕西西安，是一所以航空、航天、航海等领域人才培养和科学研究为特色的国家“双一流”建设高校，隶属于工业和信息化部。学校脉源三支、强强融合（国立西北工学院、华东航空学院、哈尔滨军事工程学院空军工程系），1960年被中共中央确定为全国重点大学，“七五”“八五”均被国务院列为国家重点建设高校之一，1995年首批进入“211工程”，2001年进入“985工程”，2017年进入“一流大学”建设高校（A类）行列，是“卓越大学联盟”成员高校，是“一带一路”航天创新联盟发起高校。 学校全面贯彻党的教育方针，秉承“公诚勇毅”校训，弘扬“三实一新”（基础扎实、工作踏实、作风朴实、开拓创新）校风，坚持工科为本、三航当家、信息赋能、融合强校的发展思路，扎根西部、献身国防，为党育英才、为国铸重剑，为党和国家事业发展作出了重要贡献，书写了新中国历史上的多个“第一”，为武器装备研制、国防领域关键核心技术自主安全可控和国民经济建设提供了有力支撑，是连续两次被中共中央、国务院、中央军委联合授予“重大贡献奖”的唯一高校。学校先后获得“全国文明单位”“全国文明校园”“全国毕业生就业典型经验高校”“全国民族团结进步模范集体”“全国创先争优先进基层党组织”“全国党建工作示范高校”等荣誉称号和表彰奖励。 学校办学资源富集，学科特色鲜明。 现有学生40000余人，教职工4100余人，占地面积4700余亩，设有航空、航天、航海、人工智能等24个专业学院和未来技术学院、国家卓越工程师学院、国际教育学院、西北工业大学伦敦玛丽女王大学工程学院、西北工业大学莫航学院。设有72个本科专业、38个硕士学位授权一级学科、31个博士学位授权一级学科，形成了以三航（航空、航天、航海）学科群为引领，3M（材料、机械、力学）学科群、3C（计算机、通信、控制）学科群、理科学科群、人文社科学科群和交叉学科协调发展的学科体系，航空宇航科学与技术、材料科学与工程、机械工程3个学科入选国家“双一流”建设学科，工程学、材料科学、计算机科学、化学、物理学、地球科学、数学、临床医学、生物学与生物化学、环境学/生态学、农业科学、社会科学总论、药理学与毒理学、经济学与商学14个学科进入ESI国际学科排名前1%，其中工程学进入前1‱，材料科学、计算机科学、化学进入前1‰，为建设世界一流学科奠定了良好的基础。 学校坚持立德树人，育人成效显著。 大力弘扬“低调务实、兼收并蓄、厚积薄发、为国铸剑”为特质的总师育人文化，着力培养家国情怀深厚、追求卓越、引领未来的领军人才。学校为国防科技事业和国民经济建设输送了36万多名人才，其中培养了铸造、航空宇航制造工程、飞行力学、航空发动机、水中兵器、火箭发动机、无人系统7个学科的全国第一位工学博士，60余位校友成长为省部级以上领导、140余位校友成长为将军、两院院士，在航空、航天、航海等领域涌现出大批型号总师、行业精英、创新创业典型等杰出人才，半数以上的航空领域重大型号总师和副总师为西工大校友，在人才培养领域形成了独有的“西工大现象”，被社会誉为“总师摇篮”。学校建有4个国家级实验教学示范中心、2个国家级虚拟仿真实验教学中心、3个国家级人才培养模式创新实验区，入选首批国家卓越工程师学院试点牵头建设单位。2023年获国家教学成果奖14项，位列全国高校第7。2025年获中国国际大学生创新大赛金奖数全国高校第1。 学校坚持内培外引，师资力量雄厚。 深入实施新时代人才强校战略，强化高端人才引领，着力培养造就战略科学家、一流科技领军人才和创新团队。学校不断深化评价改革，全面推行准长聘制度，突出创新能力、质量、实效、贡献导向，健全薪酬激励与约束机制，引导各类人才分类发展。现汇聚了一支由590余位国家级高层次人才为骨干的高素质教师队伍，包括全职两院院士11人、国家级教学名师12人、国家级领军人才216人、国家级青年人才370人，以及一大批行业领域专家、型号总师等国家级专家。现有国家级创新团队38个。 学校强化科研创新，科技贡献突出。 坚持“四个面向”战略导向，完善“方向-队伍-平台-项目-成果”五位一体创新链条，加强国家战略科技力量建设，有组织推进基础研究，统筹强化关键核心技术攻关，推动基础理科“0到1”和工程技术“1到0”双向发力、上下对齐，为加快实现高水平科技自立自强提供有力支撑。全国第一架小型无人机、第一型50公斤级水下无人智能航行器、第一台航空机载计算机、第一型航空吊放声呐、世界首颗12U立方星“翱翔之星”等均诞生在我校。学校深度参与太行、汉江等6个国家实验室建设，牵头建有全国重点实验室、国家工程实验室、“一带一路”联合实验室等9个国家级平台，共建全国重点实验室、国家技术创新中心、国家工程研究中心等19个国家级平台。深度参与大飞机、航空发动机及燃气轮机、载人航天等国家重大专项科研攻关，是“为中国首次载人航天飞行作出贡献单位”的两所高校之一。近年来，学校不断强化服务国家战略能力，翼身融合大型客机缩比试验机、“飞天系列”火箭冲压组合动力、“澳门科学一号”卫星B星、某水下无人系统等大国重器相继取得重大突破。学校开创我国无人机研制先河，拥有我国无人机领域第一个全国重点实验室和国家工程研究中心，建有我国高校唯一的无人机专业化飞行试验测试基地，全面推进无人机科研与产业发展。在国庆60周年、建军90周年及国庆70周年阅兵中，我校自主研制的无人机方队多次光荣受阅。学校强化基础研究、促进学科交叉，在《Nature》《Science》《Cell》等顶级期刊持续发表原创性成果。学校获国家科技三大奖65项，获奖数量居全国高校前列。“十四五”以来学校牵头获国家科技奖10项，其中国家技术发明奖一等奖1项，国家自然科学奖二等奖2项。学校科技活动经费居全国高校前列，其中2025年度学校科技活动经费超过70亿元。 学校加快成果转化，服务社会能力增强。 打通政产学研用链条，推动科技创新和产业创新深度融合，促进科技创新成果转化应用，助力培育新兴产业、未来产业。先行探索科技成果转化“三项改革”，其中职务科技成果资产单列管理经验写入党的二十届三中全会《决定》。成果转化企业20余项关键核心技术填补国内空白，支撑了百余项国家重大任务，铂力特、华秦科技等成果转化企业成功上市，8家成果转化企业入选国家级专精特新“小巨人”企业，逐步形成了行之有效的科技成果转化“西工大模式”，获国务院“真抓实干督查激励”表彰。高质量服务西安区域科技创新中心和秦创原创新驱动平台建设，积极融入京津冀、粤港澳大湾区、成渝地区、东北全面振兴等国家区域发展战略。与航空工业、航天科技、航天科工、中国船舶、中国航发、中国商飞、中国兵工、中国铝业等签署战略合作协议，助力制造强国建设。 学校深化全球拓展，国际声誉快速提升。 深入落实教育对外开放战略，深化全球拓展，与300余所海外高校、企业和科研院所建立亲密合作，与TOP200高校合作数量达80所，国际声誉快速提升。统筹做好教育“走出去”，在哈萨克斯坦设立分校、中哈卓越工程师学院，2023年5月中哈两国元首见签共建哈萨克斯坦分校协议，2024年7月习近平总书记在署名文章中指出要“共同办好西北工业大学哈萨克斯坦分校，培养更多中哈友好事业接班人”。积极推进国外一流理工科大学优质教育“引进来”，设立西北工业大学伦敦玛丽女王大学工程学院、西北工业大学莫航学院，承建白俄罗斯国家科学院中国分院。学校获批16个国家级国际科技合作平台。1位外国专家荣获国际科学技术合作奖，16位外国专家荣获“中国政府友谊奖”，获奖人数位列全国前茅。学校深度参与高等教育与科技国际治理，拓展与国际组织的合作，先后发起成立“一带一路”航天创新联盟等4个多边国际交流合作平台；与亚太空间合作组织合作成立航天创新人才培养基地，与亚太工程组织联合会合作成立“一带一路”工程教育培训中心；牵头筹建国际绿色航空协会。 潮涌千帆竞，奋楫百川开。学校将持续深入学习贯彻习近平新时代中国特色社会主义思想，锚定“一十百千”和“天下工大、世界三航”远景目标，继承巩固、创新发展，笃行实干、追求卓越，奋力谱写中国特色世界一流大学建设新篇章，为实现中华民族伟大复兴和人类文明进步作出更大贡献！ （数据截至2026年8月5日） 友谊校区地址：西安市友谊西路127号 邮编:710072 长安校区地址：西安市长安区东祥路1号 邮编:710129 版权所有 © 西北工业大学 ICP备案号：陕ICP备05010979号",
+    "relationEvidence": "技术括注不改变学校身份；2026现学校简介列西安友谊/长安地址，太仓智汇港官方总体规划明确江苏省苏州市太仓市，现管委会首页仍在太仓运行，保留西安+苏州。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "学校简介-西北工业大学",
+    "evidenceTextSha256": "3fe3ad3b846491809aa926c6f766efce5f58a71fb53136823a3cedbe6fa5df13",
+    "evidenceArchive": "campus4-probes.jsonl",
+    "relationSources": [
+      {
+        "sourceUrl": "https://taicang.nwpu.edu.cn/sy20/xqghyjs/xqztgh.htm",
+        "observedText": "﻿ 校区总体规划-太仓智汇港管理委员会 西工大首页 | EN 太仓长三角研究院 网站主页 太仓校区党工委 部门介绍 部门动态 通知公告 先行制度 相关资源 太仓校区管理委员会 部门介绍 部门动态 通知公告 先行制度 相关资源 教学运行管理中心 部门介绍 部门动态 通知公告 先行制度 相关资源 学生事务中心 部门介绍 部门动态 通知公告 先行制度 相关资源 综合保障中心 部门介绍 部门动态 通知公告 先行制度 相关资源 长三角研究院 网站主页 太仓校区党工委 部门介绍 部门动态 通知公告 先行制度 相关资源 太仓校区管理委员会 部门介绍 部门动态 通知公告 先行制度 相关资源 教学运行管理中心 部门介绍 部门动态 通知公告 先行制度 相关资源 学生事务中心 部门介绍 部门动态 通知公告 先行制度 相关资源 综合保障中心 部门介绍 部门动态 通知公告 先行制度 相关资源 长三角研究院 校区总体规划 校区规划与建设 通知公告 校区总体规划 > 校区一期建设 > 校区主要建筑 > 校区总体规划 您的位置： 首页 > 首页20 > 校区规划与建设 > 校区总体规划 > 太仓市隶属苏州，位于江苏省东南部，东濒长江，南邻上海，距上海、苏州市中心50公里。是全国百强县市，被誉为长三角地区最具投资价值的创业乐土之一、最具发展活力和潜力的城市之一。 西北工业大学太仓校区占地1776亩，2021年一期建成投入使用，预计全部建成后在校学生数达到10000名左右、教职工达到2500余名。太仓校区将围绕国家科教兴国战略，面向学科前沿，汇聚一流大师，培养一流人才，建设网络安全、软件、微电子、民航、人工智能、核科学与技术等学院及相关研究中心。 太仓校区是学校在长三角区域打造的新的事业增长极，旨在打造“新工科、新方向、国际化、现代化”校区。校区将紧密围绕国家科教兴国战略，面向学科前沿，汇聚一流大师，培养一流人才。‍ 友情链接： 工业和信息化部 太仓市人民政府 地址：江苏省苏州市太仓市科教新城子冈路27号 邮编：215400 版权所有 西北工业大学太仓智汇港管理委员会",
+        "evidenceTextSha256": "497b3c231c3a44dce846a67539d1340b39da29346b304e41a2c790307f144e62",
+        "evidenceArchive": "campus11-probes.jsonl",
+        "bodySha256": "5d183f70dfe028554b3a6944bd76faf0516264b5a2caf861060f42ecdfd0cf7a",
+        "retrievedDate": "2026-10-15"
+      },
+      {
+        "sourceUrl": "https://taicang.nwpu.edu.cn/",
+        "observedText": "﻿ 太仓智汇港管理委员会 首页 太仓智汇港党工委、管委会 太仓智汇港教学运行管理中心 太仓智汇港学生事务中心 太仓智汇港综合保障中心 太仓智汇港相关学院 党工委、管委会简介 党工委、管委会动态 中心简介 教学运行管理动态 中心简介 学生事务动态 中心简介 综合保障动态 相关学院 Previous Next 图片要闻 新闻动态 04 2026-03 太仓智汇港管委会、长三角研究院传达学习2026年寒假务虚会和春季新... 23 2026-01 太仓智汇港召开安全生产工作专题会议 30 2025-12 学生事务中心开展2026年元旦放假前学生宿舍安全检查 24 2025-12 太仓智汇港管委会赴镇巴县巴山镇开展慰问活动 30 2025-09 太仓智汇港管委会为在校学生送上双节祝福——皎皎明月意，浓浓中秋情 10 2025-09 太仓智汇港举行2025年教师节庆祝活动 04 2025-09 太仓智汇港管委会、长三角研究院召开专题会议传达学习暑期务虚会、... 03 2025-09 太仓智汇港党工委、管委会组织在太仓师生观看纪念抗战胜利80周年大会 24 2025-07 三航科技创新中心2025年建设发展研讨会在太仓智汇港召开 23 2025-07 哈工大苏州研究院来太仓智汇港调研交流 通知公告 项目竞选结果公告（三） 2025-07-22 项目竞选结果公告（二） 2025-07-22 项目竞选结果公告（一） 2025-07-22 太仓智汇港核心机房维保服务项目竞选结果公告 2025-07-09 太仓智汇港网络核心和数据中心驻场服务项目竞选结果公告 2025-07-09 人才引进 20190605苏委办发【2019】99号《苏州市引进顶尖人才（团队）“一人一策”实施办法》（试行） 2019-08-04 20171222苏府【2018】168号《关于支持高等院校、科研院所引进高层次人才的实施办法》 2019-08-04 抱歉，你的浏览器不支持video标签。。 友情链接 工业和信息化部 太仓市人民政府 西北工业大学 地址：江苏省太仓市太仓大道127号 电话：0512-53331000 邮编：215400 邮箱 ：tcxq@nwpu.edu.cn",
+        "evidenceTextSha256": "616fd15a44ce0630bcf2f97db3b4bd6878e0d131644c61467ccca3d48802580d",
+        "evidenceArchive": "campus11-probes.jsonl",
+        "bodySha256": "b48b286adc935408c245cb1a845ac19957720f1e091d63ac9220c836bd2defe3",
+        "retrievedDate": "2026-10-15"
+      }
+    ],
+    "bodySha256": "d846051877c1c22581b67bcf795303873c537d0860626a14beda26bb346fd8e3",
+    "excerptOfArchivedFullText": true
   },
   {
     "name": "西北政法大学 - 研究生",
@@ -8946,6 +10213,40 @@
     "excerptOfArchivedFullText": true
   },
   {
+    "name": "贵阳护理职业学院",
+    "cities": [
+      "贵阳市"
+    ],
+    "sourceUrl": "http://www.gyhvu.edu.cn/xygk/xxjj.htm",
+    "sourceUrls": [
+      "http://www.gyhvu.edu.cn/xygk/xxjj.htm",
+      "http://www.gyhvu.edu.cn/xygk/lsyg.htm"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "﻿ 学校简介-贵阳康养职业大学 请输入您搜索的信息！ 融合门户 | 教务系统 | OA系统 | 数据平台 | 科研管理平台 | English 网站首页 康大要闻 康大动态 媒体关注 通知公告 招标采购 政策速递 职教动态 数说康大 康大风采 康大融媒 康大专题 党代会专题网 马院+书院 学校概况 学校简介 历史沿革 校史专栏 学校领导 学校荣誉 校训校徽 校园风光 信息公开 机构设置 党的建设 党风廉政建设 组织工作 招生就业 就业创业信息网 招就动态 招生服务 历年录取分数 录取公示 就业服务 学生档案查询 人才培养 学生活动 教学通知 教学管理 专业建设 课程思政 教学成果 教学资源 教学督导 实习信息平台 科学研究 科研公告 科研制度 申报指南 相关文件 师资队伍 师德师风 人事任免 人事招聘 职称评聘 评优评先 教师发展 学校服务 康大校历 网络服务 后勤服务 医疗服务 校园地图 心理健康 产教融合 新闻动态 创新创业 四百工程 产教融合基地 社会培训 康养在线学院 最新动态 访客 学生 教师 校友 访客 | 融合门户 | 教务系统 | OA系统 | 数据平台 | 科研管理平台 | English | 搜索 网站首页 康大要闻 康大动态 媒体关注 通知公告 招标采购 政策速递 职教动态 数说康大 康大风采 康大融媒 康大专题 党代会专题网 马院+书院 学校概况 学校简介 历史沿革 校史专栏 学校领导 学校荣誉 校训校徽 校园风光 信息公开 机构设置 党的建设 党风廉政建设 组织工作 招生就业 就业创业信息网 招就动态 招生服务 历年录取分数 录取公示 就业服务 学生档案查询 人才培养 学生活动 教学通知 教学管理 专业建设 课程思政 教学成果 教学资源 教学督导 实习信息平台 科学研究 科研公告 科研制度 申报指南 相关文件 师资队伍 师德师风 人事任免 人事招聘 职称评聘 评优评先 教师发展 学校服务 康大校历 网络服务 后勤服务 医疗服务 校园地图 心理健康 产教融合 新闻动态 创新创业 四百工程 产教融合基地 社会培训 康养在线学院 最新动态 网站首页 康大要闻 康大动态 媒体关注 通知公告 招标采购 政策速递 职教动态 数说康大 康大风采 康大融媒 康大专题 党代会专题网 马院+书院 学校概况 学校简介 历史沿革 校史专栏 学校领导 学校荣誉 校训校徽 校园风光 信息公开 机构设置 党的建设 党风廉政建设 组织工作 招生就业 就业创业信息网 招就动态 招生服务 历年录取分数 录取公示 就业服务 学生档案查询 人才培养 学生活动 教学通知 教学管理 专业建设 课程思政 教学成果 教学资源 教学督导 实习信息平台 科学研究 科研公告 科研制度 申报指南 相关文件 师资队伍 师德师风 人事任免 人事招聘 职称评聘 评优评先 教师发展 学校服务 康大校历 网络服务 后勤服务 医疗服务 校园地图 心理健康 产教融合 新闻动态 创新创业 四百工程 产教融合基地 社会培训 康养在线学院 最新动态 学校概况 学校简介 历史沿革 校史专栏 学校领导 学校荣誉 校训校徽 校园风光 信息公开 公开制度 公开事项 公开目录 公开指南 公开申请 监督投诉 网站首页 > 学校概况 > 学校简介 学校概况 学校简介 历史沿革 校史专栏 学校领导 学校荣誉 校训校徽 校园风光 信息公开 > 公开制度 公开事项 公开目录 公开指南 公开申请 监督投诉 贵阳康养职业大学是贵州省建校最早的卫生健康类职业学校，是贵州省第一所全日制公办职业本科大学与全国唯一康养特色卫生健康类职业本科大学。其前身是成立于1939年10月的“贵州省立医事职业学校”，此后历经贵州省立贵阳高级医事职业学校、贵州省卫生学校等历史时期，于1961年更名为贵阳市卫生学校，2006年独立升格更名为贵阳护理职业学院，2021年8月，由贵阳护理职业学院与贵州师范大学求是学院合并转设。办学87年来，已累计培养卫生健康类技术技能人才8万余名。 学校是全国第一批职业院校数字校园建设试点学校、全国信息化标杆学校立项建设单位、全国首批急救教育试点学校、全国健康学校建设单位，国家级中药制药专业教学资源库与全国智慧家政行业产教融合共同体牵头建设单位；是贵州省唯一同时获得全国职教先进单位、省示范校、优质校、省级高水平高职学校立项建设单位、医养结合示范单位的卫生健康类职业学校；也是贵州省三教改革示范校、中高本协同发展示范校，贵州省职业院校健康医养、养老服务产业链的专业建设与人才培养项目牵头单位。学校办学实践先后得到十三届全国政协人口资源环境委员会、贵州省政协、贵阳市委、中国职业技术教育学会等各级领导的高度认可。 学校主校区位于观山湖区，设置有教学机构14个，有直属附属医院1所（贵阳市第三人民医院），非直属附属医院1所（贵州省康复医院）；开设职业本科四年制专业19个、两年制专升本专业14个、高职专业22个，建有护理等国家级骨干专业5个；开展了四年制本科、3+4中本贯通、3+2高本衔接，与中南大学共建“护理湘雅班”等纵向贯通、横向职普融通人才培养，有全日制在校生12000余人。有校本部教职工574人，专任教师496人，其中博士研究生85人，硕士研究生289人；正高级职称34人，副高级职称147人，中级226人；“双师型”专业课教师291人。 近五年学校毕业生平均毕业去向落实率保持在90%左右，部分专业落实率高居全省前列，用人单位满意度达到93%以上。学生累计获世界职业院校技能大赛金奖、全国职业院校专业技能大赛一等奖等专业技能、创新创业等省级以上大赛奖200余项。 1248 学校占地约（亩） 12000 在校生 496 专任教师 291 “双师型”教师（人） 19 职业本科专业（个） 22 高职专业（个） 学校占地面积1248亩，教学科研实习仪器设备总值约1.7亿，建有国家级高技能人才培训基地、国家级药学示范性生产性基地、教育部“十四五强国工程”重点项目“贵州省卫生健康产教融合实训基地”，贵州省级康养/家政产教融合实训基地、智能康复产教融合实训基地，贵州省药用资源康养产品工程研究中心等产学研平台17个。累计获批教育部加快推进现代职业教育体系建设改革重点任务4类5项；立项建设贵州省“兴黔富民”“技能贵州”等项目77项。编写出版教材39部，其中国家级规划教材2部、省级规划教材5部、行业规划教材1部。省级金课、一流核心课程累计25门。获省级教学成果奖特等奖1项、一等奖3项、二等奖1项，获国家级职业教育教师创新团队（培育）1个。 学校聚焦“产业、产技、产品、产教”四个关键要素，立足强化技术研究与产业痛点融合、深化科创能力与技能培养融合，聚焦贵州与贵阳贵安重点发展的健康医药、养老服务、生态特色食品等产业链，以全力实施百企进校、百团服务、百技助产、百品入市“四百工程”为主路径，“1+1+n+1”为主模式（即1博士或教授牵头，协同1家研究院，联合多名师生，组建1支团队），累计整合组建科研团队83支，成果转化与服务产业成效显著，服务企业超百家；发表SCI论文67篇，获省级科技奖2项；年均推动实施纵、横科创项目达100余项；累计开发康养特色食品46种。 学校积极开展服务社会，建有国家级高技能人才培训基地、康养在线网络学院等线上线下社会服务平台7个，开展养老护理员、长期照护师等18项职业技能等级认定，组建有AHA等社会培训团队20余个，引进开发有各类培训课程235门，年均培训高技能人才超3万人次，承办的全省养老服务人员、全省专业技术人员等培训，先后得到了贵州省民政厅、贵州省人力资源和社会保障厅等单位的好评。 （2026年3月） 书记信箱 校长信箱 网上咨询 康养在线 学校档案 查询数字 图书馆 联系我们 地址： 贵阳市观山湖区石林西路2号 邮编：550081 电话： 0851-84127087 友情链接 高等教育出版社产品信息检索系统 新华网贵州频道 中国高职高专教育网 贵州省教育厅 中国疾病预防控制中心 卫生人才网 版权所有： 贵阳康养职业大学 贵公网安备 52011502000211号 网站备案号黔ICP备2022005538号-1",
+    "relationEvidence": "2026年3月现简介明确贵阳护理职业学院与贵州师范大学求是学院2021年合并转设贵阳康养职业大学，地址贵阳市观山湖区石林西路2号。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "学校简介-贵阳康养职业大学",
+    "evidenceTextSha256": "b6c175a6b9289571710143192386ff23c3d2dde531ae15aaa94be447e1b69ed9",
+    "evidenceArchive": "campus10-probes.jsonl",
+    "relationSources": [
+      {
+        "sourceUrl": "http://www.gyhvu.edu.cn/xygk/lsyg.htm",
+        "observedText": "﻿ 历史沿革-贵阳康养职业大学 请输入您搜索的信息！ 融合门户 | 教务系统 | OA系统 | 数据平台 | 科研管理平台 | English 网站首页 康大要闻 康大动态 媒体关注 通知公告 招标采购 政策速递 职教动态 数说康大 康大风采 康大融媒 康大专题 党代会专题网 马院+书院 学校概况 学校简介 历史沿革 校史专栏 学校领导 学校荣誉 校训校徽 校园风光 信息公开 机构设置 党的建设 党风廉政建设 组织工作 招生就业 就业创业信息网 招就动态 招生服务 历年录取分数 录取公示 就业服务 学生档案查询 人才培养 学生活动 教学通知 教学管理 专业建设 课程思政 教学成果 教学资源 教学督导 实习信息平台 科学研究 科研公告 科研制度 申报指南 相关文件 师资队伍 师德师风 人事任免 人事招聘 职称评聘 评优评先 教师发展 学校服务 康大校历 网络服务 后勤服务 医疗服务 校园地图 心理健康 产教融合 新闻动态 创新创业 四百工程 产教融合基地 社会培训 康养在线学院 最新动态 访客 学生 教师 校友 访客 | 融合门户 | 教务系统 | OA系统 | 数据平台 | 科研管理平台 | English | 搜索 网站首页 康大要闻 康大动态 媒体关注 通知公告 招标采购 政策速递 职教动态 数说康大 康大风采 康大融媒 康大专题 党代会专题网 马院+书院 学校概况 学校简介 历史沿革 校史专栏 学校领导 学校荣誉 校训校徽 校园风光 信息公开 机构设置 党的建设 党风廉政建设 组织工作 招生就业 就业创业信息网 招就动态 招生服务 历年录取分数 录取公示 就业服务 学生档案查询 人才培养 学生活动 教学通知 教学管理 专业建设 课程思政 教学成果 教学资源 教学督导 实习信息平台 科学研究 科研公告 科研制度 申报指南 相关文件 师资队伍 师德师风 人事任免 人事招聘 职称评聘 评优评先 教师发展 学校服务 康大校历 网络服务 后勤服务 医疗服务 校园地图 心理健康 产教融合 新闻动态 创新创业 四百工程 产教融合基地 社会培训 康养在线学院 最新动态 网站首页 康大要闻 康大动态 媒体关注 通知公告 招标采购 政策速递 职教动态 数说康大 康大风采 康大融媒 康大专题 党代会专题网 马院+书院 学校概况 学校简介 历史沿革 校史专栏 学校领导 学校荣誉 校训校徽 校园风光 信息公开 机构设置 党的建设 党风廉政建设 组织工作 招生就业 就业创业信息网 招就动态 招生服务 历年录取分数 录取公示 就业服务 学生档案查询 人才培养 学生活动 教学通知 教学管理 专业建设 课程思政 教学成果 教学资源 教学督导 实习信息平台 科学研究 科研公告 科研制度 申报指南 相关文件 师资队伍 师德师风 人事任免 人事招聘 职称评聘 评优评先 教师发展 学校服务 康大校历 网络服务 后勤服务 医疗服务 校园地图 心理健康 产教融合 新闻动态 创新创业 四百工程 产教融合基地 社会培训 康养在线学院 最新动态 学校概况 学校简介 历史沿革 校史专栏 学校领导 学校荣誉 校训校徽 校园风光 信息公开 公开制度 公开事项 公开目录 公开指南 公开申请 监督投诉 网站首页 > 学校概况 > 历史沿革 学校概况 学校简介 历史沿革 校史专栏 学校领导 学校荣誉 校训校徽 校园风光 信息公开 > 公开制度 公开事项 公开目录 公开指南 公开申请 监督投诉 1939 10月1日学校创建，初名贵州省立医事职业学校。在大井坎（今慧文路）借校办学。 1941 8月，学校更名为“贵州省立贵阳高级医事职业学校”。 1942 校址迁至威清门外北新区路2号，与民国中央卫生署公共卫生人员训练所在一起办公。 1943 4月，民国中央卫生署公共卫生人员训练所移交贵州省人民政府，改组为贵州省卫生干部人员训练所。 1946 贵州省卫生干部人员训练所并入贵州省立贵阳高级医事职业学校。同年秋，迁至大南门外市南路原中央医院旧址。 1947 贵州省立镇远高级医事职业学校并入贵州省立贵阳高级医事职业学校。 1950 学校为贵阳市军事管制委员会接收，将省立贵阳高级护士学校、解放军赣东北军区卫生学校、省立遵义高级护士职业学校合并更名为“贵州省卫生学校”。 1952 3月，贵州省卫生厅决定省卫校附属医院在市东路建立贵州省干部医院。 1954 秋，贵州省卫生学校医士科分出，在市东路建立贵阳医士学校。 1956 秋，省卫生学校助产科分出，在贵阳市芦花村建立贵阳市助产学校；护理科分出，在遵义地区建立遵义护士学校。药检专业分出，在贵阳市大南门建立贵州省贵阳卫生学校。 1958 贵州省贵阳卫生学校、贵阳助产学校下放贵阳市管理，贵州省贵阳卫生学校更名为贵阳市第一卫生学校，贵阳助产学校更名为贵阳市第二卫生学校。 1961 9月，贵阳市第一、第二卫校、贵医护校、省医护校四校合并更名为贵阳市卫生学校，由贵阳市卫生局主管，校址位于贵阳市次南门芦花村（原贵阳市助产学校办学旧址，现贵阳市花溪大道北段42号）。 1998 与贵州广播电视大学联合开办“高级护理”班 2000 与贵阳医学院联办护理大专班 2001 独立设置高级护理、药学、检验三个五年制高职专业；与贵阳医学院联办临床医学专业五年制大专班、3+2形式医学检验高职班；与贵阳中医学院联办3+3形式中药制药高职班。 2006 6月，经教育部和贵州省人民政府同意，升格更名为“贵阳护理职业学院”，直属贵阳市人民政府管理。 2009 学校由贵阳市次南门搬迁至金阳新区（后改为观山湖区）石林西路2号新校区办学。 2021 8月，经教育部和贵州省人民政府批准，贵州师范大学求是学院与贵阳护理职业学院合并转设为贵阳康养职业大学。 书记信箱 校长信箱 网上咨询 康养在线 学校档案 查询数字 图书馆 联系我们 地址： 贵阳市观山湖区石林西路2号 邮编：550081 电话： 0851-84127087 友情链接 高等教育出版社产品信息检索系统 新华网贵州频道 中国高职高专教育网 贵州省教育厅 中国疾病预防控制中心 卫生人才网 版权所有： 贵阳康养职业大学 贵公网安备 52011502000211号 网站备案号黔ICP备2022005538号-1",
+        "evidenceTextSha256": "0c5050ea075f9a9e9ecb0902f7ed5022ad095675cb5dc558f999dc0dfc69633d",
+        "evidenceArchive": "campus10-probes.jsonl",
+        "bodySha256": "1ed6d8078feb8a7af436374ef68fa19ce79c8ed7d9714a6c920bf2cbbce52ba3",
+        "retrievedDate": "2026-10-15"
+      }
+    ],
+    "bodySha256": "d055af6a3410e5c5169dd0bd55c149498193f3ea27cd40a5734dd89e4d7a926c",
+    "excerptOfArchivedFullText": true
+  },
+  {
     "name": "辽宁中医药大学 - 研究生",
     "cities": [
       "沈阳市",
@@ -9064,6 +10365,54 @@
       }
     ],
     "bodySha256": "415bc07870e28fb9c001025c5d16b27bb9e536be49a48214c3911b183b62ce00",
+    "excerptOfArchivedFullText": true
+  },
+  {
+    "name": "连云港师范高等专科学校",
+    "cities": [
+      "连云港市"
+    ],
+    "sourceUrl": "https://www.lygsf.edu.cn/xxjj/list.htm",
+    "sourceUrls": [
+      "https://www.lygsf.edu.cn/xxjj/list.htm"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "连云港师范学院坐落于全国首批沿海开放城市、长三角北翼重要港口城市 ——江苏连云港。2025年经教育部批准为全日制普通本科院校。学校前身为始建于1914年的江苏省立第八师范学校，后历经江苏省东海师范学校、海州师范学校、连云港师范高等专科学校（由原海州师范学校、连云港教育学院、连云港师范学校、连云港市经济管理干部中等专业学校合并组建）等重要发展时期 … 地址：连云港市海州区圣湖路28号",
+    "relationEvidence": "2026年5月现连云港师范学院简介明确前身历经连云港师范高等专科学校，2025年升本；坐落江苏连云港，现地址连云港市海州区圣湖路28号。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "学校简介",
+    "evidenceTextSha256": "07e4c4d379f26cad6472f38430179598dfa2629afd17cb5ec2d31839b7f750fc",
+    "evidenceArchive": "campus13-profile-probes.jsonl",
+    "relationSources": [],
+    "bodySha256": "bd8922194a3cce31426b51d3e2e35ef3df80c0f700a3908fc72aede984d2124c",
+    "excerptOfArchivedFullText": true
+  },
+  {
+    "name": "邢台医学院（原邢台医学高等专科学校）",
+    "cities": [
+      "邢台市"
+    ],
+    "sourceUrl": "https://www.xtmc.edu.cn/xxgk/xxjj.htm",
+    "sourceUrls": [
+      "https://www.xtmc.edu.cn/xxgk/xxjj.htm"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "﻿ 学校简介-邢台医学院 校园VPN | 协同办公 首页 学校概况 学校简介 现任领导 历史沿革 校徽校歌 学校章程 信息公开 组织机构 党政机构 系部设置 附属医院 教育教学 专业设置 教务在线 临床实践教学 师资队伍 师资概况 人才招聘 学术科研 招生就业 招生专题网 就业指导网 继续教育 校园文化 校园风光 一训三风 学生社团 校园VPN 协同办公 首页 学校概况 学校简介 现任领导 历史沿革 校徽校歌 学校章程 信息公开 组织机构 党政机构 系部设置 附属医院 教育教学 专业设置 教务在线 临床实践教学 师资队伍 师资概况 人才招聘 学术科研 招生就业 招生专题网 就业指导网 继续教育 校园文化 校园风光 一训三风 学生社团 学校概况 学校简介 现任领导 历史沿革 校徽校歌 学校章程 信息公开 当前位置： 首页 -> 学校概况 -> 学校简介 邢台医学院简介 邢台医学院前身为创建于1958年的河北邢台眼科大学，历经邢台眼科专科学校、河北省邢台卫生学校、邢台医学高等专科学校等，2024年5月升格为医学本科院校。 办学条件： 现有钢铁路、皇寺两个校区，占地1198亩，校舍建筑面积43万平方米，拥有3所三级甲等直属附属医院、1所老年养护中心，形成了“一校三院一中心”的办学格局和“教医养”深度融合的特色办学模式。校内拥有259个实验实训室、113个多媒体教室，千兆校园网覆盖全校，校外实践教学基地达到148家。 师资队伍： 现有专任教师937人，其中高级职称占比39.72%、硕博士占比74.1%、“双师”占比58%。“十四五”期间，建成省级教学团队6个、校级教学团队12个，康养教学团队获评省级本科优秀教学团队；117人获得河北省拔尖人才、“三三三人才工程”人选、燕赵人才、邢台市领军人才等称号；教师在国家级省级赛事中斩获奖项330项。 学科专业： 现有本科专业12个，专科专业17个，专升本专业5个，其中中央财政支持重点建设专业3个、国家骨干专业2个，与马来西亚林肯大学学院合办了口腔医学专业高等专科教育项目。学校获评全国护理专业技能型紧缺人才培训基地、全国养老护理员培训基地、国家心血管病护理及技术培训基地、国家基层卫生人才能力提升培训项目培训基地，入选教育部首批全国学校急救教育试点学校，是全国中医药康养护产教融合共同体副理事长单位、全国AI+养老康复产教融合共同体常务副理事长单位。 人才培养： 学校面向全国29个省（自治区、直辖市）招生，现有全日制在校生1.4万余人。秉持“崇德、砺志、精业、笃行”校训，累计培养高素质医疗卫生人才12万余人。“十四五”期间，学生荣获省级以上奖项366项，包括“一带一路”暨金砖国家技能发展与技术创新大赛养老机构运营管理赛项本科组全国一等奖、第十二届“学创杯”创业综合模拟演训活动全国总决赛高教组和职教组一等奖各1项；护士执业资格考试通过率达到97.62%，毕业生去向落实率保持在95%以上。 科学研究： 学校及附属医院拥有国家药物临床试验机构、省级院士工作站等省市级科研平台25个，国家级临床重点专科1个、临床重点专科项目创建单位1个，国家卫健委神经外科建设中心1个。2021年以来，获批省市级科研项目574项，获省市级科研成果465项、奖励195项，获授权专利151项，发表核心期刊论文454篇；立项省市级教研课题42项，建成国省级精品课程30门，主持参建国家级专业教学资源库3个，主编参编教材著作126部；获评教育部优质教育培训项目、课程资源3项。 社会服务： “十四五”期间，聚焦社会需求，开展成人学历教育和短期技能培训，成人教育培养16647人，高质量完成13个职业院校教师素质提高计划（国培）项目、培训605人次，培训乡村医生2606人次，面向社会开展技能培训7000余人次，持续开展健康科普宣传、社区医疗服务。 发展目标： 邢台医学院将始终以立德树人为根本任务，紧扣国家医学教育要求与区域医疗卫生需求，建设特色鲜明、实力突出的地方性应用型医学本科院校，培养理想信念坚定、专业理论扎实、实践能力强、人文素质高的应用型卫生健康人才，为“健康中国”建设及区域经济社会发展不断做出新贡献。 电话：党政办公室 0319-2233280 招生就业处 0319-2233321 地址：河北省邢台市信都区钢铁北路618号 邮编：054000 官方微信 Copyright © 邢台医学院 版权所有 冀ICP备14010172号-2 冀公网安备13050302001978号",
+    "relationEvidence": "现官方简介明确学校历经邢台医学高等专科学校、2024年5月升格为医学本科，现官方地址河北省邢台市信都区钢铁北路618号；括注为明确旧名。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "学校简介-邢台医学院",
+    "evidenceTextSha256": "a018e019e6668972c40450e4a3e9293b7164b60bd551bb624c377a0d6f496a14",
+    "evidenceArchive": "campus10-probes.jsonl",
+    "relationSources": [],
+    "bodySha256": "017318851d44b48825837589199e81ee6cb9dee60b35db88180b3f7b5fd56525",
     "excerptOfArchivedFullText": true
   },
   {
@@ -9425,6 +10774,40 @@
     "excerptOfArchivedFullText": true
   },
   {
+    "name": "铁道警察学院",
+    "cities": [
+      "郑州市"
+    ],
+    "sourceUrl": "https://www.zzpu.edu.cn/xxgk/gk.htm",
+    "sourceUrls": [
+      "https://www.zzpu.edu.cn/xxgk/gk.htm",
+      "https://www.zzpu.edu.cn/zsjy/info/1030/1779.htm"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "2013年经教育部批准独立举办全日制普通本科教育，更名为铁道警察学院，2023年落实中央全面深化改革精神，更名为郑州警察学院。 … 现有龙湖和农业路两个校区 … 地址：河南省郑州市农业路31号",
+    "relationEvidence": "现郑州警察学院概况明确2013年更名铁道警察学院、2023年更名郑州警察学院，1980年迁建郑州，现地址河南省郑州市农业路31号。 2026年招生章程第六条明确农业路校区河南省郑州市农业路31号、龙湖校区河南省郑州市新郑市龙湖镇；两校区均为郑州市。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "概况-郑州警察学院",
+    "evidenceTextSha256": "0a2765753c555a3726683c13963c627abbfbd633b73a1ee5d9809c43b766838f",
+    "evidenceArchive": "campus13-profile-probes.jsonl",
+    "relationSources": [
+      {
+        "sourceUrl": "https://www.zzpu.edu.cn/zsjy/info/1030/1779.htm",
+        "observedText": "第六条 办学地点： （一）农业路校区：河南省郑州市农业路 31号 （二）龙湖校区：河南省郑州市新郑市龙湖镇",
+        "evidenceTextSha256": "8bebbb76469b5c9380f80c5ef38fdc608455b5a52b47fd961afa4c5309705493",
+        "evidenceArchive": "campus15-extra-probes.jsonl",
+        "bodySha256": "3c57f35d9a55fff7e69be2760ed369bb0c36a5c1f2838484d18717eefc041a4b",
+        "retrievedDate": "2026-10-15"
+      }
+    ],
+    "bodySha256": "b2c257424be31507c990d0e028ea16247e7b286db71f1e589335812cc858903c",
+    "excerptOfArchivedFullText": true
+  },
+  {
     "name": "铜仁职业技术学院",
     "cities": [
       "铜仁市"
@@ -9504,6 +10887,20 @@
     "bodySha256": "7a651504d8768994b5056aaf000f22c3858b85bfcde2f141412f81cf1809302e",
     "evidenceTextSha256": "34b158616153f3ae906460ccf078d7bb04570ee9fb60b38d59c9ca6eada3683c",
     "excerptOfArchivedFullText": true
+  },
+  {
+    "name": "长春大学 - 研究生",
+    "cities": [
+      "长春市"
+    ],
+    "sourceUrl": "https://yjsb.ccu.edu.cn/",
+    "retrievedDate": "2026-10-15",
+    "observedText": "联系方式 Contact us 地址 : 中国吉林长春市卫星路6543号 电话 : 0431-85251786 邮编 : 130022 长大研究生院公众号 长春大学公众号 Copyright © 2021 长春大学研究生院 All rights reversed ",
+    "bodySha256": "b79451ad08f50f8ed21ab4e950488cf0e857a605f5970375614d9d4d3c96bf0c",
+    "evidenceTextSha256": "7efc1b61a60ae5ee7d1f7853daa9c96734d1940369c42d1660c8e6b5be72c8fb",
+    "relationEvidence": "本校研究生院页明确本单位长春市卫星路6543号。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅证明公开的研究生办公或培养单位城市，不宣称所有学生或校区位置。"
   },
   {
     "name": "长春工业大学 - 研究生",
@@ -9662,6 +11059,23 @@
     "excerptOfArchivedFullText": true
   },
   {
+    "name": "长沙理工大学 - 研究生",
+    "cities": [
+      "长沙市"
+    ],
+    "sourceUrl": "https://www.csust.edu.cn/yjsy/zsxxw.htm",
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "长沙理工大学研究生院招生办公室 版权所有 © 2022 copyright reserved 长沙理工大学研究生招生办公室 地址：湖南省长沙市天心区万家丽南路2段960号 电话：0731-85258968 邮编：410114 邮箱：zhaoshengban@csust.edu.cn 扫一扫关注 长沙理工大学 研究生招生 微信二维码",
+    "relationEvidence": "长沙理工大学研究生招生办公室官网明确长沙市天心区万家丽南路2段960号。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅证明来源明确的研究生办公、招生或培养单位地址；不表示穷尽全部校区。",
+    "bodySha256": "56654a41c4f699be70d74dde7b488f3d9e79c0945225b7825fc1ef1bcdcfec40",
+    "evidenceTextSha256": "0c5c6fd3c8213df61b8c962e283b85a442086d7a48382c82a1a9b6ce73f2ca59",
+    "excerptOfArchivedFullText": true,
+    "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-final4-review.json"
+  },
+  {
     "name": "闽江学院",
     "cities": [
       "福州市"
@@ -9777,6 +11191,30 @@
     "bodySha256": "0ef88ecc4864119124bb242154f8fe580300fce12cdd567d2b4944f11462db02",
     "observedText": "评为“A”类学校 版权所有：陕西兵器工业职工大学 总校地址：西安市雁塔中路18号 邮政编码：710054 联系电话：029－87671502 http://www.sxbqzd.cn E－mail：bingqizhida@126.com",
     "relationEvidence": "Official school or government webpage identifies this exact institution and publishes an address on the same page."
+  },
+  {
+    "name": "陕西工业职业技术学院",
+    "cities": [
+      "咸阳市"
+    ],
+    "sourceUrl": "https://www.snpu.edu.cn/xxgk/xxjj.htm",
+    "sourceUrls": [
+      "https://www.snpu.edu.cn/xxgk/xxjj.htm"
+    ],
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "observedText": "﻿ 学校简介-陕西工业职业技术大学 页 面 正 在 加 载 中 旧版入口 English 搜索 首页 学校概况 学校简介 历史沿革 现任领导 历任领导 工大标识 VR全景校园 组织机构 党政管理部门 群团组织 教学单位 教辅机构 学术机构 教育教学 人才培养 专业建设 精品课程 实践教学 本科教育 专科教育 师资队伍 师资建设 招聘信息 科研学术 科研处 科研学术 科研平台 招生就业 招生网 就业网 培训服务 继教学院简介 培训平台 培训业务 设施条件 国际交流 图书档案 图书馆 档案馆 学工天地 学工在线 团旗飘飘 网上党校 心理健康 网站导航 点击关闭 学校概况 学校简介 历史沿革 现任领导 历任领导 工大标识 VR全景校园 组织机构 党政管理部门 群团组织 教学单位 教辅机构 学术机构 教育教学 人才培养 专业建设 精品课程 实践教学 本科教育 专科教育 师资队伍 师资建设 招聘信息 科研学术 科研处 科研学术 科研平台 招生就业 招生网 就业网 培训服务 继教学院简介 培训平台 培训业务 设施条件 国际交流 图书档案 图书馆 档案馆 学工天地 学工在线 团旗飘飘 网上党校 心理健康 首页 > 学校概况 > 学校简介 学校概况 学校简介 历史沿革 现任领导 历任领导 工大标识 VR全景校园 学校简介 陕西工业职业技术大学办学历史悠久，创建于新中国百业待兴之时，壮大于改革浪潮迭起之际，兴盛于职教强国大势之中，与祖国振兴同向同行七五余载。学校于1950年成立，1999年作为西北地区首家改制升格举办高职教育，2010年与陕西纺织服装职业技术学院合并组建成新的陕西工业职业技术学院，2025年升格为陕西工业职业技术大学。办学75余载矢志工业强基，扎根西部、铸魂精技，践行服务装备制造业办学使命，因装备制造而生、依装备制造而立、随装备制造而强。先后两次荣膺“全国职业教育先进单位”，四次蝉联全国文明单位，是全国文明校园、全国高校党建工作示范校、国家示范性高职院校、全国机械行业骨干职业院校。2019年，作为西部唯一入选国家“双高计划”A档建设院校；2023年、2024年连续两年在“软科”全国高职院校榜单中排名理工类院校第一，2025年入选国家第二期“双高建设计划”高校，进入技能型高校“国家队”，办学实力稳居全国第一方阵。 学校位于中国第一帝都、国家级历史文化名城咸阳，东接省会西安，北毗西安咸阳国际机场，区位优势显著。现有渭城校区和经开校区两座图书馆，总建筑面积达4万余平方米，阅览座位5000余席，馆藏图书总量达236万余册，中外文数字资源20余种，涵盖学校各学科门类、多载体、适应高校教学与科研需要的藏书236万余册，建设有CNKI中国知网、读秀、电子图书类20余种数据库，形成了纸质资源与数字资源协调发展的综合性文献资源保障中心，为教科研、人才培养提供有效的文献信息资源保障。现有全日制在校学生17012人，教职工1239人。设机械工程学院、材料工程学院、电气工程学院、人工智能学院、航空工程学院、智慧财经学院、数字商贸学院、汽车与智能工程学院、能源化工学院、数智城市学院、国际教育学院、马克思主义学院、公共课教学部、体育部、美育部、继续教育与培训学院等16个教学院部。校内建有理实一体化教学场所和生产性实训基地51个（含231个实训室），校外拥有相对稳定的顶岗实习基地100个；校园网主干40G，出口总带宽20G，建成43个信息系统，搭建统一身份认证、统一门户、统一数据中心三个平台，打通信息孤岛，实现办公、教学、管理业务的信息化、网络化、智能化；建有文体中心、羽毛球馆、乒乓球馆、标准塑胶跑道田径运动场等体育场馆；拥有新型教学楼、学生公寓、学生食堂、学生活动中心、多功能报告厅等完善的基础设施。 学校背靠装备制造行业，聚焦陕西增材制造、数控机床等重点产业链，开设涵盖装备制造、电子信息、能源动力与材料等11个专业大类63个招生专业，其中本科专业16个、专科专业47个，专业布局有效服务省域5个万亿级产业集群，与陕西省32条工业领域重点产业链高度对接。建有教育部精品专业1个、教育部高职高专教改试点专业2个、教育部技能型紧缺人才培养工程教改试点专业2个、国家示范专业5个、国家级骨干专业12个、全国机械行业技能人才培养特色专业3个、央财支持建设提升产业服务能力项目专业2个、全国职业院校装备制造类示范专业2个、省级教改试点专业3个、省级重点专业16个、省级综合改革试点专业3个，立项建设省级一流专业7个、一流培育专业13个；获批国家级专业群3个，省级专业群8个；主持高技能人才集群培养计划1项；学校获批国家级课程思政示范课程2门、省级课程思政示范课程26门；主持专业类及专业教学标准研制17项，参与专业教学航准研制25项，3个专业的岗位职业标准成为全国行业标准；主持建设国家专业教学资源库3个、参与国家专业教学资源库10个、主持省级专业教学资源库5个；建成国家级精品在线开放课程3门、国家级在线精品课程10门、国家级精品课程2门、国家级精品资源共享课程2门、教育部教指委精品课程7门、省级精品课程19门、省级在线精品课程51门、省级高校创新创业教育课程5门、省级一流核心课程（线下）13门；建成国家规划教材69本、省级优秀教材25本，省级规划教材20本。 1950 1950 （年） 学校成立 16 16 （个） 教学院部 63 63 （个） 本、专科专业 23 23 （个） 市厅级以上科研平台 11 11 （项） 国家级教学成果奖 633 633 （项） 学生国家级技能大赛获奖 800 800 + （家） 深度合作企业 50000 50000 + （人次） 年均社会培训 学校拥有一支师德高尚、结构合理、业务精湛、素质过硬的“双师型”高水平师资队伍。现有教授105人（二级教授9人、三级教授13人）、副高职称以上483人，博士、硕士研究生948人。全国高校黄大年式教师团队1个、国家级职业教育教师教学创新团队3个、全国教育系统先进集体1个、教育部课程思政教学团队2个、全国机械行业职业教育服务先进制造专业领军教学团队1个；国家“万人计划”教学名师1人、“国家高层次人才特殊支持计划”教学名师1人、享受国务院政府特殊津贴教师1人、教育部新时代职业学校名师（名匠）培养对象1人、全国模范教师、优秀教师、教书育人楷模等荣誉共11人、教育部课程思政教学名师2人、全国机械行业职业教育服务先进制造专业领军教学名师1人、全国石油和化工教育青年教学名师1人；先后获国家级教学成果奖一等奖4项、二等奖8项，陕西省人民政府教学成果特等奖11项、一等奖12项、二等奖24项；国家教指委教学成果或科学研究成果共计39项；教师参加国家级、省级业务能力大赛累计获奖164项。 办学成果丰硕 学校是全国党建工作示范高校、全国文明校园、全国高校思政工作创新发展中心、教育部课程思政教学研究示范中心、国家自然科学基金依托单位、全国教育系统先进集体、教育部高校教师“领航工作站”建设试点单位、国家职业教育创新行动计划建设单位、全国工业优秀单位、世界职业技术教育发展联盟理事单位、教育部职业院校教学诊断与改进工作试点单位、全国机械行业服务先进制造高水平骨干职业院校、教育部“1+X”证书制度试点院校、教育部“混合式教学试点项目”建设单位、国家级协同创新中心、全国示范性职业教育集团（联盟）培育单位、教育部集团化办学试点单位、教育部现代学徒制试点单位、国家级职教教师教学创新团队立项建设单位、国家高等职业院校名师（名匠）培养基地、国家首批教育信息化试点单位、教育部有色金属行业职业教育“走出去”试点项目建设单位、教育部首批全国健康学校建设单位、全国职业院校数字校园建设试点单位、黄炎培职业教育奖优秀学校、高职院校治理体系建设全国50所典型院校、全国高职院校服务贡献50强、教学资源50强、教学管理50强、学生管理50强、实习管理50强、产教融合50强院校。 人才培养显著 学校秉承“明德、笃学、精艺、强身”的校训精神，倾力“办有灵魂的教育，建有品位的学校，创有境界的文化、育有底气的人才”，积淀形成了“有历史、有精神、有伙伴、有口碑”的育人品牌。牵头组建“陕西装备制造业职业教育集团（国家级示范职教集团）”“全国材料智能成型与智能生产行业产教融合共同体”“全国新能源（光伏）装备制造产教融合共同体”等实体化校企合作协同育人平台。按照“一院一名企、一院一模式、一院一品牌”思路，与北京精雕、宁夏共享、宁德时代、深圳华为、西安航天发动机有限公司等807家企业深度合作，共建产业学院10个，学做合一、理实一体，让人才培养与企业需求、专业教师与能工巧匠、理论教学与技能培训、教学内容与工作任务、能力考核与技能鉴定、校园文化与企业文化深度融合，促进了人才培养规格与企业岗位能力的“无缝匹配”。学生在国家级技能大赛等比赛中累计获奖633项、省级技能比赛中累计获奖1567项。学校近3年毕业生去向落实率平均保持在95%以上，85%扎根装备制造业、70%服务陕西发展、65%就职制造类骨干企业。累计培养了以《中国制造2025》主要执笔人屈贤明，2022年“大国工匠”年度人物、全国五一劳动奖章获得者、国家航天高级技师何小虎，全国劳动模范、咸阳纺织集团一分厂纺部车间赵梦桃小组生产组长何菲和在清华大学、浙江大学、北京航空航天大学等知名高校执教的24名实践教学骨干团队之一的邢小颖为突出代表的高素质技术技能人才18万余名，为区域经济社会发展提供了有力人才和技能支撑。先后荣获“全国职业院校就业竞争力示范校”“中国职业教育就业百强”等荣誉称号，连续多年被评为陕西省“高等学校毕业生就业工作先进集体”。 创新成果多点开花 学校坚持产学研用相结合，紧盯“卡脖子”难题，为上百家企业提供立体化服务，助力咸阳市国家产教融合试点城市建设。建有教育部协同创新中心4个、市厅级以上产学研一体化示范基地、未来产业创新研究院等科研平台23个，近5年年均横向技术服务与培训到账经费超过1600万元。立项厅局级以上科研项目300余项，其中承担国家自然科学基金项目4项、省级项目80项、厅局级253项；获得授权专利645件，其中发明专利59件，实用新型专利561件，外观设计专利25件；登记计算机软件著作权234件，成果转化142项；发表论文1789篇，其中SCI、EI及核心论文等702篇，普通期刊论文1087篇；出版学术专著15部；起草技术标准5项（其中3项标准由国家工业和信息化部发布）；41项科研成果获得市厅级以上奖项，其中省级4项，市厅级37项；近五年学校致力于服务中小微企业的技术研发和产品升级，解决企业生产一线技术或工艺实际问题。先后获得陕西高校科研管理工作先进集体，陕西高校秦创原建设工作及科技成果转移转化绩效评估A+等级单位，省科技成果知识产权规范管理试点高校，陕西省知识产权信息公共服务网点，中国职业技术教育学会科技成果转化工作委员会常务理事会成员单位等荣誉。 社会服务辐射深远 学校构建起多层次、立体化的社会服务体系，是人社部备案的国家职业技能等级评价机构、全国计算机等级考试考点、全国英语等级考试考点、全国制图员考试考点等职业资格培训与考试认证机构。拥有国家级高技能人才培训基地、教育部国家职业院校校长培训基地、国家级“新时代职业学校名师（名匠）”培养基地、全国重点建设职业教育师资培养培训基地、国家级职业教育“双师型”教师培训基地、教育教师教学创新团队培训基地（三批）、国家高技能人才培训基地等国家级培训平台8个；陕西省省级高技能人才培训基地、陕西省首批职业技能提升行动培训机构、陕西乡村振兴人才培养基地、陕西省首批高校农民培训基地等省级培训平台8个。也是中国机械工业联合会“机械工业教育发展中心咸阳培训中心”、咸阳市大学生创业培训定点培训机构、咸阳市退役军人职业教育承训机构。面向社会，积极开展职业院校师资培育项目、教学管理人员培训、企事业单位职工培训、大学生创业培训、退役军人培训等项目，近5年年均非学历教育与培训达5万人次。 职教出海声誉斐然 学校构建职教开放新生态，以全球视野书写中国职教方案。在赞比亚共建中国—赞比亚职业技术学院，埃塞俄比亚设立中文工坊，印度尼西亚、尼日利亚分别设立秦岭工坊，机械制造与自动化专业教学标准进入赞比亚国民教育体系；携手宁德时代、华友钴业等龙头企业，共同开展订单式本土技能人才培养，满足企业海外人力资源需求，有力促进国际产能合作；牵头成立中德高职教育联盟（陕西-柏林）、中国-新西兰职业教育示范项目教师培训基地，与德国等21个国家和地区的102所院校、企业、教育机构建立了合作关系。16个专业标准及182门课程标准被尼日利亚高校引进。过去10年来，累计派出687名师生赴国外交流学习，招收200余名学历留学生，为“一带一路”共建国家培训979名职教师资，获得32个各类国际技能大赛奖项。累计聘请外籍教师53人次，聘请海外客座教授21人。马拉维共和国总统穆萨里卡、新西兰驻华大使傅恩莱来校访问。连续三次荣获世界职业院校与技术大学联盟卓越奖金奖、银奖，31个国际合作案例被国内外机构或媒体采用。先后获评联合国教科文组织国际职教联系中心、世界职业技术教育发展联盟理事单位、鲁班工坊建设联盟理事单位、中非职业教育联盟学生发展工作组、中国东盟职教联合会印尼新加坡国别工作组，教育部首批协同企业“走出去”试点院校。历史长河奔涌向前，几代陕工人初心不改、豪情如瀑，数十载厚积薄发、行久致远。面向未来，全体陕工人将始终高举中国特色社会主义伟大旗帜，以习近平新时代中国特色社会主义思想为指引，坚持面向人人、面向产业、面向创新、面向智能、面向国际，勇担职业教育发展新使命，奋力建设全国一流职业技术大学！ （2026年5月更新） 学校·概况 学校简介 历史沿革 现任领导 历任领导 工大标识 VR全景校园 联系我们 招生咨询：029-33152021 029-33152020 就业咨询：029-33152023 029-33152155 地址：中国·咸阳·文汇西路12号 邮编：712000 信箱：snpudzb@snpu.edu.cn 部门网站 马克思主义学院 机械工程学院 航空工程学院 材料工程学院 电气工程学院 人工智能学院 智慧财经学院 数字商贸学院 汽车与智能工程学院 能源化工学院 数智城市学院 公共课教学部 体育部 美育部 国际教育学院（国际合作与交流中心，外事办公室、港澳台办公室） 继续教育与培训学院 党政办公室（经开校区综合办公室） 党委组织部（党校，乡村振兴办公室） 宣传与思想政治工作部 党委统战部 纪委综合室（党委巡察工作领导小组办公室） 纪委监督检查室 党委学生工作部（学生处、劳动教育部） 发展规划处（高职教育研究所） 教务处（创新创业学院） 科研处（技术转移中心） 人事处（党委教师工作部、教师发展中心） 就业指导处、校企合作处（校友工作办公室） 财务处 审计处 国有资产管理处 保卫处（人民武装部） 离退休工作处 后勤保障处 基建处 工会（妇女工作委员会） 团委 本科生教学部 教育教学质量管理中心 信息化建设中心 产业服务中心 图书馆 教育机构 中华人民共和国教育部 陕西省职业技术教育学会 陕西省教育厅 中国高职高专教育网 中国职业技术教育网 中国机械工业联合会 信息服务 访客预约 后勤保障 专题网站 党风廉政 版权所有 2026 陕西工业职业技术大学 信息化建设中心 陕ICP备08104344号 网站总访问： 今天您是第 位访客 官方微信 公众号 OA办公 统一资源门户 办事大厅 智慧财务 全景校园",
+    "relationEvidence": "现大学官方简介明确2010年组建陕西工业职业技术学院、2025年升格为大学，学校地处国家级历史文化名城咸阳，列渭城和经开校区。",
+    "precision": "city",
+    "coverage": "verified-current-campus-or-successor-address",
+    "coverageNote": "现行学校/校区官方地址证据；保留已证多城市。境外校区不映射国内城市边界；不作为具体坐标。",
+    "evidenceHttpStatus": 200,
+    "evidencePageTitle": "学校简介-陕西工业职业技术大学",
+    "evidenceTextSha256": "94e26a4f2d08a27dc6b7563b45a51f8f8316780a9a5a9ff8f3946413d5d2bab9",
+    "evidenceArchive": "campus10-profile-probes.jsonl",
+    "relationSources": [],
+    "bodySha256": "171b8eb5e2fbeb4b0e0cc21d7e97d8d39feebfcd17e3d7b3693da1c1d96fc35f",
+    "excerptOfArchivedFullText": true
   },
   {
     "name": "陕西工运学院",
@@ -10025,6 +11463,24 @@
     "evidenceTextSha256": "372898739d80162bc2b2dac461c549293527b8b10edee6c1a11ace5cb16789ac",
     "excerptOfArchivedFullText": true,
     "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-final3-review.json"
+  },
+  {
+    "name": "首都联合职工大学",
+    "cities": [
+      "北京市"
+    ],
+    "sourceUrl": "https://query.bjeea.cn/queryService/rest/plan/116",
+    "sourceDate": null,
+    "checkedAt": "2026-10-15",
+    "finalUrl": "https://query.bjeea.cn/queryService/rest/plan/116",
+    "bodySha256": "cf6f32ce0ca0b8f44afa6ae958d613c0c09623cce95fcc35d163d6db50314a86",
+    "observedText": "首都联合职工大学 WWW 北京市朝阳区来广营水岸南街1号院 84631746",
+    "relationEvidence": "北京教育考试院官方2026年北京成人高等学校查询，按学校查询结果同一行直接给出学校全称和地址。",
+    "coverage": "verified-current-admissions-directory-address",
+    "coverageNote": "2026官方成招目录所列联系地址；不推断所有分校与每个教学点。",
+    "evidenceTextSha256": "cb240a976d0ebed74edc80daacfff291e357d268746881997dd9032ddd641b53",
+    "retrievedDate": "2026-10-15",
+    "excerptOfArchivedFullText": true
   },
   {
     "name": "香港城市大学",
