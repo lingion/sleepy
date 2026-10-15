@@ -5,8 +5,8 @@ The recovered request requires sourced school-to-academic-system ownership and a
 ## Current scope
 
 - Catalog: 4,140 entries, including graduate, campus, historical and import variants; not 4,140 independent institutions.
-- City mappings: 3,517; 623 unresolved. This adds 353 reviewed exact-entity address records to the prior 3,164 mappings.
-- Unresolved: 266 campus/import variants, 138 graduate entries, 14 historical/alias entries, 70 legacy names and 135 adult institutions with no accepted current city evidence.
+- City mappings: 3,703; 437 unresolved. This adds 539 reviewed exact-entity address records to the prior 3,164 mappings.
+- Unresolved: 189 campus/import variants, 66 graduate entries, 11 historical/alias entries, 51 legacy names and 120 adult institutions with no accepted current city evidence.
 - A mapped graduate office or teaching unit does not prove all campuses or student locations. Six 2015 recruitment-office addresses remain research evidence only.
 - Offline boundaries: 22 Taiwan counties/cities added; offshore islands and small enclaves tested. Xinxing remains explicitly unsupported pending a verifiable compatible-coordinate boundary source.
 - Initial configured academic endpoints: 341 publicly verified, 177 unknown, one wrong-school configuration identified. Strict endpoint review withdrew 97 earlier overbroad verdicts; 27 now have exact official links or directed HTTP evidence, while 70 remain unresolved. Unknown does not mean proven wrong.
@@ -18,7 +18,7 @@ school_url_evidence.json records identity, exact endpoint, observations, source 
 
 school_location_verified.json is the sole reviewed address input. school_location_research.json preserves actual search queries, result URLs, probe outcomes, hashes and reviewed rejection reasons for unresolved names; search hits alone are not proof. school_location_evidence.json is the generated full-catalog audit.
 
-Remaining research should prioritize unresolved exact graduate/campus entities, then failed or ambiguous official pages. Fresh exact-contact queries cover the 138 remaining graduate records. County-level addresses such as Yanji and Jishou require official administrative linkage to the prefecture used by the polygon index. Do not infer from school names, parent universities, third-party recruiting pages, or unrelated source footers.
+Remaining research should prioritize unresolved exact graduate/campus entities, then failed or ambiguous official pages. Fresh exact-contact queries cover the remaining graduate records. County-level addresses such as Yanji and Jishou require official administrative linkage to the prefecture used by the polygon index. Do not infer from school names, parent universities, third-party recruiting pages, or unrelated source footers.
 
 The research archive lives under /Users/lingion_k/research/school-expansion-20261014/. Completed temporary batches were archived in locations/frozen-batches; only canonical reviewed inputs drive generation.
 
