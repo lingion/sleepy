@@ -32,12 +32,23 @@ class VerifiedLocationsTest(unittest.TestCase):
                        "observedText": "Former school became Campus", "bodySha256": "abc"}]
         relation = [{"sourceUrl": "https://school.example/about",
                      "observedText": "Campus current identity", "evidenceTextSha256": "def"}]
-        row = self.row | {"supportingEvidence": supporting, "relationSources": relation}
+        row = self.row | {"supportingEvidence": supporting, "relationSources": relation,
+                          "requestMethod": "POST", "requestBody": {"code": ""},
+                          "parentSourceUrl": "https://school.example/contact",
+                          "extractionMethod": "public-json-field",
+                          "cityEvidence": [{"city": "珠海市", "unit": "Campus"}],
+                          "evidencePages": [1, 3]}
         apply_verified_locations(self.result, [row], self.names)
         source = self.result["_cityEvidence"]["Campus"]["sourceId"]
         metadata = self.result["_citySources"][source]
         self.assertEqual(supporting, metadata["supportingEvidence"])
         self.assertEqual(relation, metadata["relationSources"])
+        self.assertEqual("POST", metadata["requestMethod"])
+        self.assertEqual({"code": ""}, metadata["requestBody"])
+        self.assertEqual(row["parentSourceUrl"], metadata["parentSourceUrl"])
+        self.assertEqual("public-json-field", metadata["extractionMethod"])
+        self.assertEqual(row["cityEvidence"], metadata["cityEvidence"])
+        self.assertEqual([1, 3], metadata["evidencePages"])
 
     def test_bad_records_fail_without_partial_mutation(self):
         for bad in ({"cities": ["广东省"]}, {"cities": ["广西壮族自治区"]},
