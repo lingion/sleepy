@@ -5,8 +5,8 @@ The recovered request requires sourced school-to-academic-system ownership and a
 ## Current scope
 
 - Catalog: 4,140 entries, including graduate, campus, historical and import variants; not 4,140 independent institutions.
-- City mappings: 3,797; 343 unresolved. This includes 633 reviewed exact-entity address records plus the prior 3,164 mappings.
-- Unresolved: 149 campus/import variants, 38 graduate entries, 7 historical/alias entries, 37 legacy names and 112 adult institutions with no accepted current city evidence.
+- City mappings: 3,821; 319 unresolved. This includes 657 newly mapped exact-entity records plus the prior 3,164 mappings; two reviewed baseline extensions add Urumqi to Xinjiang Agricultural Vocational Technical University and Taian to Shandong Foreign Trade Vocational College without counting either as a new school.
+- Unresolved: 134 campus/import variants, 37 graduate entries, 5 historical/alias entries, 34 legacy names and 109 adult institutions with no accepted current city evidence.
 - A mapped graduate office or teaching unit does not prove all campuses or student locations. Six 2015 recruitment-office addresses remain research evidence only.
 - Offline boundaries: 22 Taiwan counties/cities added; offshore islands and small enclaves tested. Xinxing remains explicitly unsupported pending a verifiable compatible-coordinate boundary source.
 - Initial configured academic endpoints: 348 publicly verified, 170 unknown, one wrong-school configuration identified. Strict endpoint review withdrew 97 earlier overbroad verdicts; 27 now have exact official links or directed HTTP evidence, while 70 remain unresolved. Unknown does not mean proven wrong.
@@ -16,7 +16,7 @@ The recovered request requires sourced school-to-academic-system ownership and a
 
 school_url_evidence.json records identity, exact endpoint, observations, source URLs, verdict history and research traces. The nursing-college correction requires the official notice plus an archived continuous meta/HTTP chain to the exact named endpoint.
 
-school_location_verified.json is the sole reviewed address input. school_location_research.json preserves actual search queries, result URLs, probe outcomes, hashes and reviewed rejection reasons for unresolved names; search hits alone are not proof. school_location_evidence.json is the generated full-catalog audit.
+school_location_verified.json is the sole reviewed address input. Explicit baseline extensions carry an exact original city/provenance snapshot, permit only additional cities, reject drift and restore the original mapping when withdrawn. school_location_research.json preserves actual search queries, result URLs, probe outcomes, hashes and reviewed rejection reasons for unresolved names; search hits alone are not proof. school_location_evidence.json is the generated full-catalog audit.
 
 Remaining research should prioritize unresolved exact graduate/campus entities, then failed or ambiguous official pages. Fresh exact-contact queries cover the remaining graduate records. County-level addresses such as Yanji and Jishou require official administrative linkage to the prefecture used by the polygon index. Do not infer from school names, parent universities, third-party recruiting pages, or unrelated source footers.
 
@@ -27,3 +27,5 @@ The research archive lives under /Users/lingion_k/research/school-expansion-2026
 Run the URL safety, ownership and location Python tests, followed by generate_school_catalog.py, enrich_school_cities.py, build_school_location_evidence.py and generate_schools_list.py. Then run generate_school_catalog.py --check, verify repeated-output hashes and git diff --check. Run one serialized Gradle invocation for testDebugUnitTest, lintDebug and assembleDebug; concurrent Gradle processes in this worktree previously caused a KSP output collision.
 
 ✅ 来源证据先于归属/定位 · ✅ 精确实体与endpoint · ✗同host/根路径/SSO推同租户 · ✗研究生办公室=全部校区 · ✗旧报名地址=现校址 · ✅ 公开快照脱敏后入库 · 🚫原始cookie/CSRF入库 · ✗待证项包装成完成
+
+Latest validation: 61 Python tests passed; full Android unit tests (2,920, zero failures/errors/skips), lint and assemble passed at the 3,813-mapping snapshot. The final 3,821-mapping snapshot also passed the School* suite (14 seconds), source-hash checks and repeated generation. Research traces now join exact catalogue names, with shared artifact hashes and explicit unresolved evidence categories.

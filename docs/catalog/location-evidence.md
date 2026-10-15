@@ -6,12 +6,12 @@ Every one of the 4,140 catalogue names has one record. `mapped` entries are the 
 
 | Status | Count | Meaning |
 |---|---:|---|
-| `campus_or_import_unverified` | 149 | Campus or import variant needs exact address |
-| `graduate_relation_unverified` | 38 | Graduate relation/location needs explicit evidence |
-| `historical_or_alias_unverified` | 7 | Historical/renamed entry needs dated evidence |
-| `legacy_unresolved` | 37 | No exact source found in frozen snapshot |
-| `mapped` | 3797 | Existing evidence-backed city mapping |
-| `official_no_city` | 112 | MOE adult record has no city field |
+| `campus_or_import_unverified` | 134 | Campus or import variant needs exact address |
+| `graduate_relation_unverified` | 37 | Graduate relation/location needs explicit evidence |
+| `historical_or_alias_unverified` | 5 | Historical/renamed entry needs dated evidence |
+| `legacy_unresolved` | 34 | No exact source found in frozen snapshot |
+| `mapped` | 3821 | Existing evidence-backed city mapping |
+| `official_no_city` | 109 | MOE adult record has no city field |
 
 The report intentionally distinguishes catalogue participation from city coverage: adult institutions with a null Ministry city and unresolved WakeUp variants participate in the audit but are not assigned a guessed city.
 

@@ -200073,5 +200073,189 @@
         }
       ]
     }
+  ],
+  "mainFinalResearchTraces": [
+    {
+      "archive": "locations/graduate-main-ninth-search.json",
+      "sha256": "49a7cbda939d665c246f1d216d54b8b61b7c6c4531b28db6ec55b37dcf365140",
+      "records": [
+        {
+          "name": "中南财经政法大学 - 研究生",
+          "query": "中南财经政法大学 南湖校区 武汉 地址 site:zuel.edu.cn",
+          "retrievedDate": "2026-10-15",
+          "resultUrls": [
+            "https://pxjy.zuel.edu.cn/sjzn/listm.htm",
+            "https://www.zuel.edu.cn/",
+            "https://gsxy.zuel.edu.cn/en",
+            "https://baike.baidu.com/item/%E6%B0%B4%E6%99%B6%E5%85%B0/957422",
+            "https://yjsy.zuel.edu.cn/kltj/listm.htm",
+            "https://zhuanlan.zhihu.com/p/308217736",
+            "https://www.zuel.edu.cn/wsxf/",
+            "https://ies.zuel.edu.cn/12619/list.htm",
+            "https://zhuanlan.zhihu.com/p/548168380",
+            "https://wgyxy.zuel.edu.cn/2026/0920/c10341a439340/pagem.htm",
+            "https://ies.zuel.edu.cn/12576/list.htm",
+            "https://xagx.zuel.edu.cn/2022/0328/c3560a294548/page.htm",
+            "https://baike.baidu.com/item/%E6%B0%B4%E6%99%B6%E5%85%B0%E5%B1%9E/3588454",
+            "https://www.zuel.edu.cn/services/",
+            "http://ies-en.zuel.edu.cn/13668/list.htm",
+            "https://www.sohu.com/a/919103222_121948383",
+            "https://finance.zuel.edu.cn/sjwyzxx/list.htm",
+            "https://gsxy.zuel.edu.cn/en/SBAIntroduction/list.htm",
+            "https://k.sina.cn/article_7879923048_1d5ae156806801ehxs.html",
+            "https://wgyxy.zuel.edu.cn/10315/listm.htm",
+            "http://jjxy.zuel.edu.cn/2015/0630/c4215a62063/page.htm",
+            "https://www.iplant.cn/info/Monotropa?t=focn",
+            "https://archive.zuel.edu.cn/2021/1117/c641a282895/page.htm",
+            "https://tsxy.zuel.edu.cn/2022/1229/c14198a321205/page.htm",
+            "https://www.iplant.cn/info/%E6%B0%B4%E6%99%B6%E5%85%B0?t=z",
+            "https://archive.zuel.edu.cn/641/list2.htm",
+            "http://ies-en.zuel.edu.cn/2026/0311/c18162a424016/page.htm",
+            "https://www.sohu.com/a/923417828_121948416",
+            "https://jjxy.zuel.edu.cn/2026/0921/c2744a439463/page.htm",
+            "https://gsxy.zuel.edu.cn/2026/0512/c8384a429612/page.htm",
+            "https://www.xinhuanet.com/science/20231121/187fb11954d649d6bbae2afbac59ccbf/c.html",
+            "https://zyfz.zuel.edu.cn/"
+          ]
+        }
+      ]
+    },
+    {
+      "archive": "locations/graduate-main-ninth-probes.json",
+      "sha256": "09e47440957d010d616b875df1c2d93db7c9dbb28daebaed1691e99168ff3d10",
+      "records": [
+        {
+          "url": "https://www.zuel.edu.cn/about/",
+          "http": 200,
+          "bodySha256": "4773bc3637e1022af87ec82709816aff6230dac4f2071a7e569abb7c27232ba4",
+          "textSha256": "d0733177e17230accada3d01767b31d062b8db36086275def035c8f0fc86c5bd",
+          "retrievedDate": "2026-10-15"
+        },
+        {
+          "url": "https://www.zuel.edu.cn/guide/",
+          "http": 200,
+          "bodySha256": "0c0da52c3e732b68f704a111e8fc6b14f41c0e2f67416bab4f1f1ea15f5c684d",
+          "textSha256": "feb246016c211337cd282cf1b0fe34fd24b51a276658305bad0c753088325a72",
+          "retrievedDate": "2026-10-15"
+        },
+        {
+          "url": "https://gis.zuel.edu.cn/",
+          "http": 200,
+          "bodySha256": "175c6af2924149bee472567d40168817bab025afff7547cb4b0cc0ff0545fd5a",
+          "textSha256": "fbd306e9dd1dc7cd43180134e0046edc28071ab951f17a95b269892a646d50be",
+          "retrievedDate": "2026-10-15"
+        }
+      ]
+    },
+    {
+      "archive": "locations/graduate-main-tenth-search.json",
+      "sha256": "4b81e129c7f136032e7f7a773dd5da019c9d19170b8b7f87c5aba417788058e3",
+      "records": [
+        {
+          "name": "中南财经政法大学 - 研究生",
+          "query": "\"中南财经政法大学\" \"南湖校区\" \"武汉\" site:gov.cn",
+          "retrievedDate": "2026-10-15",
+          "resultUrls": [
+            "http://gtghj.wuhan.gov.cn/showSgsJyh.asp?type=1&cid=2255&instanceID=SX20260914005592",
+            "https://www.audit.gov.cn/web772/n806/c10815909/content.html",
+            "https://www.toutiao.com/article/7625320285394223642/",
+            "https://news.qq.com/rain/a/20260813A08NII00",
+            "https://mall.jd.com/index-1000466444.html",
+            "https://sw.wuhan.gov.cn/xwdt/gzdt/202609/t20260902_2842032.shtml",
+            "http://www.moe.gov.cn/jyb_xwfb/xw_zt/moe_357/2024/2024_zt01/jyzf/jyzf_gx/202405/t20240521_1131783.html",
+            "https://www.toutiao.com/article/7688300428232933928/",
+            "http://rst.hubei.gov.cn/hbrsksw/ksfw/kddt/202312/t20231213_5003434.shtml",
+            "https://jrj.wuhan.gov.cn/ynzx_57/whjrdt/201911/t20191129_56798.shtml",
+            "https://www.zhihu.com/question/380674476",
+            "http://jyt.hubei.gov.cn/bmdt/dtyw/202303/t20230322_4596286.shtml",
+            "https://wiki.1688.com/zh/WKg193pziiakg0",
+            "https://www.ggzy.gov.cn/information/deal/html/a/420000/0101/20260908/0042ea92bc69f7ed4a4a99cc2c5063be5ecd.html",
+            "https://mall.jd.com/index-1000521761.html",
+            "http://en.www.km.gov.cn/2026-06/26/c_1193419.htm",
+            "https://www.zhihu.com/question/653107437?utm_psn=1763635459316805634",
+            "https://english.nmpa.gov.cn/2025-02/19/c_1073652.htm",
+            "https://www.c114.com.cn/other/241/a1286638.html",
+            "https://english.nmpa.gov.cn/2025-03/21/c_1080286.htm",
+            "https://baike.baidu.com/item/%E4%BA%AC%E4%B8%9C3C%E6%95%B0%E7%A0%81%E9%97%A8%E5%BA%97/68556259",
+            "https://en.ncsti.gov.cn/Latest/news/202609/t20260917_256515.html"
+          ]
+        },
+        {
+          "name": "中南财经政法大学 - 研究生",
+          "query": "\"中南财经政法大学\" \"研究生院\" \"地址\" site:zuel.edu.cn",
+          "retrievedDate": "2026-10-15",
+          "resultUrls": [
+            "https://www.sigmaaldrich.com/deepweb/assets/sigmaaldrich/product/documents/598/510/userguide-73065bc-73021bc-ms.pdf",
+            "https://yjsy.zuel.edu.cn/",
+            "https://finance.zuel.edu.cn/2025/0310/c1150a385456/page.htm",
+            "https://www.ibm.com/docs/en/zos/2.1.0?topic=gtf-trace-options",
+            "https://yjsy.zuel.edu.cn/6265/listm.htm",
+            "https://gsxy.zuel.edu.cn/en",
+            "https://www.manualslib.com/products/Biocontrol-Assurance-Gds-Rotor-Gene-Q-10430086.html",
+            "https://www.zuel.edu.cn/services/",
+            "http://jjxy.zuel.edu.cn/2015/0630/c4215a62063/page.htm",
+            "https://www.ibm.com/docs/en/zos/2.1.0?topic=subcommands-gtftrace-subcommand-format-gtf-trace-records",
+            "https://yjsy.zuel.edu.cn/_t471/mainm.psp",
+            "https://xagx.zuel.edu.cn/2022/0328/c3560a294548/page.htm",
+            "https://www.manualslib.com/manual/1585963/Biocontrol-Assurance-Gds-Rotor-Gene-Q.html",
+            "https://ies.zuel.edu.cn/12619/list.htm",
+            "https://www.sigmaaldrich.com/deepweb/assets/sigmaaldrich/product/documents/299/234/79100bc-dfu-tn5774en-ms.pdf",
+            "https://gsxy.zuel.edu.cn/en/SBAIntroduction/list.htm",
+            "https://gtf.sinoimex.com/",
+            "http://ies-en.zuel.edu.cn/13668/list.htm",
+            "https://www.sigmaaldrich.cn/deepweb/assets/sigmaaldrich/product/documents/113/877/fl5251en-mk.pdf",
+            "http://fyjjxy.zuel.edu.cn/8073/list.htm",
+            "https://asia.ensembl.org/info/website/upload/gff.html",
+            "https://tsxy.zuel.edu.cn/2022/1229/c14198a321205/page.htm",
+            "http://mblab.wustl.edu/GTF2.html",
+            "http://ies-en.zuel.edu.cn/2026/0311/c18162a424016/page.htm"
+          ]
+        }
+      ]
+    },
+    {
+      "archive": "locations/graduate-main-tenth-probes.json",
+      "sha256": "50ecb579877e192022baa07f1a99d69b1fcaebb872be4721aec34686badd6d06",
+      "records": [
+        {
+          "name": "中南财经政法大学 - 研究生",
+          "url": "https://pxjy.zuel.edu.cn/sjzn/listm.htm",
+          "http": 200,
+          "bodySha256": "a901109f13951f4ce42884fd3b47675adca80dc395789194d4308b03d012561a",
+          "textSha256": "a94e1ce851d4330b90115f99f313dc3c912f9ba39d513957ed4382c64e67ab9a",
+          "retrievedDate": "2026-10-15"
+        }
+      ]
+    },
+    {
+      "archive": "locations/graduate-main-eleventh-probes.json",
+      "sha256": "629ae93ad78c93484f61414aeedd7e44727d254ff11d701f7a1c1ca673457fe1",
+      "records": [
+        {
+          "name": "中南财经政法大学 - 研究生",
+          "url": "https://yjsy.zuel.edu.cn/6265/listm.htm",
+          "http": 200,
+          "bodySha256": "11c307c9fa96dfd892274085b9b8ccffef6a7488eb3d96644611210197d60933",
+          "textSha256": "a94e1ce851d4330b90115f99f313dc3c912f9ba39d513957ed4382c64e67ab9a",
+          "retrievedDate": "2026-10-15"
+        },
+        {
+          "name": "中南财经政法大学 - 研究生",
+          "url": "https://www.audit.gov.cn/web772/n806/c10815909/content.html",
+          "http": 200,
+          "bodySha256": "cdcc02541255a727c68feda6dd5b9b98b71ae535c146b1c6961609aa48f7355d",
+          "textSha256": "64c4b268d655b36fa7c72141db119f74c8ea49c18c589fb84d9e5fa1558f7aec",
+          "retrievedDate": "2026-10-15"
+        },
+        {
+          "name": "中南财经政法大学 - 研究生",
+          "url": "http://gtghj.wuhan.gov.cn/showSgsJyh.asp?type=1&cid=2255&instanceID=SX20260914005592",
+          "http": 200,
+          "bodySha256": "d28df0400633739b095c8557462d85e790b0f9dd8ec1fa3cecfc13b60b32d806",
+          "textSha256": "cafe68fcd4c472f483f1e2bc43d71876e5c5d90ecb3e71254dfaae78d7318cad",
+          "retrievedDate": "2026-10-15"
+        }
+      ]
+    }
   ]
 }
