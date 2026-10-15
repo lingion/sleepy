@@ -75,5 +75,11 @@ def sanitize_tree(value,path=''):
      events.append({'path':path+'/'+k,'parameters':keys})
    elif isinstance(v,(dict,list)):events.extend(sanitize_tree(v,path+'/'+k))
  elif isinstance(value,list):
-  for i,v in enumerate(value):events.extend(sanitize_tree(v,path+'/'+str(i)))
+  for i,v in enumerate(value):
+   if isinstance(v,str) and ('://' in v or '%3a' in v.lower() or '%253a' in v.lower()):
+    safe,keys=sanitize_url(v)
+    if safe!=v:
+     value[i]=safe
+     events.append({'path':path+'/'+str(i),'parameters':keys,'originalSha256':hashlib.sha256(v.encode()).hexdigest(),'displayCopyOnly':True})
+   else:events.extend(sanitize_tree(v,path+'/'+str(i)))
  return events

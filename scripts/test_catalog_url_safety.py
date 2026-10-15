@@ -30,4 +30,12 @@ class UrlSafetyTest(unittest.TestCase):
   self.assertEqual(sanitize_url(raw),(raw,[]))
  def test_audit_catches_new_nested_sensitive_field(self):
   self.assertTrue(audit({'url':'https://sso.example/?service=https%3A%2F%2Fapp.example%2F%3FsessionToken%3Dsynthetic'}))
+ def test_nested_url_lists_are_redacted_with_hash_events(self):
+  raw='https://example.edu/?token=synthetic-secret'
+  obj={'results':[[raw],{'links':[raw]}]}
+  events=sanitize_tree(obj)
+  self.assertFalse(audit(obj))
+  self.assertEqual({'/results/0/0','/results/1/links/0'}, {x['path'] for x in events})
+  self.assertTrue(all(x['originalSha256']==hashlib.sha256(raw.encode()).hexdigest() for x in events))
+  self.assertFalse(sanitize_tree(obj))
 if __name__=='__main__':unittest.main()
