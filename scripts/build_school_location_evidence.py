@@ -87,7 +87,8 @@ def main() -> None:
                             **{key: source[key] for key in (
                                 "supportingEvidence", "relationSources", "requestMethod",
                                 "requestBody", "parentSourceUrl", "extractionMethod",
-                                "cityEvidence", "evidencePages", "normalization", "sourceFormat") if key in source},
+                                "cityEvidence", "evidencePages", "normalization", "sourceFormat",
+                                "baselineExtension", "appliedCities") if key in source},
                             "reason": "existing city mapping; explicit source/override metadata retained"})
         else:
             status, reason = classify(name, official)
