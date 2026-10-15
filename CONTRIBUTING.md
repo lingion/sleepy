@@ -12,7 +12,8 @@ cd sleepy
 ./gradlew :app:testDebugUnitTest   # 先跑一遍全量单测,确认基线全绿
 ```
 
-- Android Studio 打开即可开发；命令行构建用 `./gradlew`。
+- 使用 JDK 17+、Gradle 9.8.1 Wrapper 和 AGP 9.3.3；Android Studio 需支持 AGP 9.3。命令行构建用 `./gradlew`，Windows 用 `.\gradlew.bat`。
+- SDK 安装与 SDK XML v4 兼容性警告的排查见 [构建前置说明](README.md#前置)；确保 IDE 与命令行使用同一套 SDK 和最新 Command-line Tools。
 - 改代码前先跑通测试基线；提交前确认自己新增的行为有测试锁定。
 
 ## 提 Bug
