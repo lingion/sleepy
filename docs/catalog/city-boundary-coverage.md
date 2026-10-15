@@ -30,3 +30,16 @@ regressions cover Taiwan municipalities/counties/islands, Hong Kong, Macau, Kuns
 and a synthetic old province-only asset that must never produce a city.
 
 Maintenance: ✅保留事实城市·✅逐名审计边界缺口·✗省级轮廓冒充城市·✗按缺失列表自动放行
+
+## 2026-10-15 official-preview follow-up
+
+The TianDiTu public administrative-division preview now contains 新星市 (156659011)
+in its Xinjiang province-level FeatureCollection. Its direct city preview is empty.
+The saved official interface states that the September 2025 data are only for map
+visualization; the inspected primary-source pages do not state the coordinate CRS.
+The preview therefore remains research-only and is not relabelled WGS84 or bundled
+for offline point-in-polygon geolocation. This narrows the gap to a compatible,
+authorized analytical source rather than claiming no public polygon exists.
+Hashes and exact endpoints are frozen in
+research/school-expansion-20261014/boundary-resume/official-xinxing-preview-review.json
+under the local research root.
