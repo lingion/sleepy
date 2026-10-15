@@ -400,6 +400,22 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4144012960",
+    "name": "广东司法警官职业学院",
+    "url": "http://210.21.33.69:8027/",
+    "type": "zf",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 797,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "zf"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
+  },
+  {
     "catalogId": "moe:4144014556",
     "name": "广东茂名健康职业学院",
     "url": "http://14.215.239.114:6380/jsxsd/",
@@ -539,6 +555,22 @@
     "title": "湖南医药学院教学综合信息服务平台",
     "fingerprints": [
       "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
+  },
+  {
+    "catalogId": "moe:4143014360",
+    "name": "湖南有色金属职业技术学院",
+    "url": "https://jwxt.hnyszy.com.cn/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1045,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
     ],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "ownership-confirmed"
@@ -736,6 +768,22 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4142014755",
+    "name": "湖北孝感美珈职业学院",
+    "url": "http://42.247.9.91:8083/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1197,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
+  },
+  {
     "catalogId": "moe:4113013578",
     "name": "河北工程大学科信学院",
     "url": "https://jwglxxfwpt.hebeu.edu.cn/xtgl/login_slogin.html",
@@ -790,6 +838,22 @@
     "type": "zf_new",
     "sourceId": "wakeup-6.1.06-asset",
     "sourceRow": 1251,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
+  },
+  {
+    "catalogId": "moe:4113010085",
+    "name": "河北水利电力学院",
+    "url": "https://jwxt.hbwe.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1288,
     "checkedAt": "2026-10-14",
     "http": 200,
     "title": "教学管理信息服务平台",
@@ -1568,6 +1632,22 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4112013661",
+    "name": "天津医科大学临床医学院",
+    "url": "http://180.213.3.14:18880/eams/loginExt.action",
+    "type": "classic_eams",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2726,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "天津医科大学临床医院教学管理系统",
+    "fingerprints": [
+      "classic_eams"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
+  },
+  {
     "catalogId": "moe:4112012721",
     "name": "天津机电职业技术学院",
     "url": "https://jwsys.suoyuan.com.cn/jwglxt/xtgl/login_slogin.html",
@@ -1817,6 +1897,22 @@
     "checkedAt": "2026-10-14",
     "http": 200,
     "title": "欢迎使用正方教务管理系统！请登录",
+    "fingerprints": [
+      "zf"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
+  },
+  {
+    "catalogId": "moe:4161014041",
+    "name": "西安理工大学高科学院",
+    "url": "http://113.201.151.38:9999/",
+    "type": "zf",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3082,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
     "fingerprints": [
       "zf"
     ],

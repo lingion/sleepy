@@ -5,9 +5,9 @@
   "statusCounts": {
     "supported": 348,
     "grad_supported": 2,
-    "pending": 3359,
+    "pending": 3353,
     "grad_pending": 301,
-    "unverified": 130
+    "unverified": 136
   },
   "sourceCounts": {
     "official": 3377,
@@ -45,20 +45,20 @@
     },
     {
       "path": "scripts/data/school_url_evidence.json",
-      "sha256": "8b48d5aa164182b479a3d641b7eb8968ae6934c5b5b76eb97707aab5ed268422"
+      "sha256": "1dcf03fa35dcffa900b64b18b7552dd57010c8be4a746fb25c9e9e4742abddad"
     }
   ],
   "matchingPolicy": "Exact trimmed full names plus reviewed school_catalog_renames.json; no fuzzy aliases or graduate/campus suffix removal. Historical source rows remain independently traceable.",
   "ownershipAudit": {
     "evidenceCounts": {
-      "unknown": 177,
-      "verified": 341,
+      "unknown": 170,
+      "verified": 348,
       "contradicted": 1
     },
     "actions": {
-      "retained-existing-config-ownership-unresolved": 138,
-      "ownership-confirmed": 341,
-      "withheld-new-unproven-owner": 39,
+      "retained-existing-config-ownership-unresolved": 137,
+      "ownership-confirmed": 348,
+      "withheld-new-unproven-owner": 33,
       "corrected-official-entry": 1
     },
     "decisions": [
@@ -1849,8 +1849,8 @@
       {
         "catalogId": "S_山东外国语职业技术大学",
         "name": "山东外国语职业技术大学",
-        "ownershipStatus": "unknown",
-        "action": "retained-existing-config-ownership-unresolved",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
         "operationalUrl": "https://swut.jw.chaoxing.com/admin/login",
         "authenticatedImportTested": false
       },
@@ -2889,9 +2889,9 @@
       {
         "catalogId": "moe:4112013661",
         "name": "天津医科大学临床医学院",
-        "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
+        "operationalUrl": "http://180.213.3.14:18880/eams/loginExt.action",
         "authenticatedImportTested": false
       },
       {
@@ -2945,9 +2945,9 @@
       {
         "catalogId": "moe:4113010085",
         "name": "河北水利电力学院",
-        "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
+        "operationalUrl": "https://jwxt.hbwe.edu.cn/jwglxt/xtgl/login_slogin.html",
         "authenticatedImportTested": false
       },
       {
@@ -3617,9 +3617,9 @@
       {
         "catalogId": "moe:4142014755",
         "name": "湖北孝感美珈职业学院",
-        "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
+        "operationalUrl": "http://42.247.9.91:8083/jsxsd/",
         "authenticatedImportTested": false
       },
       {
@@ -3697,9 +3697,9 @@
       {
         "catalogId": "moe:4143014360",
         "name": "湖南有色金属职业技术学院",
-        "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
+        "operationalUrl": "https://jwxt.hnyszy.com.cn/jsxsd/",
         "authenticatedImportTested": false
       },
       {
@@ -3769,9 +3769,9 @@
       {
         "catalogId": "moe:4144012960",
         "name": "广东司法警官职业学院",
-        "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
+        "operationalUrl": "http://210.21.33.69:8027/",
         "authenticatedImportTested": false
       },
       {
@@ -4089,9 +4089,9 @@
       {
         "catalogId": "moe:4161014041",
         "name": "西安理工大学高科学院",
-        "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
+        "operationalUrl": "http://113.201.151.38:9999/",
         "authenticatedImportTested": false
       },
       {

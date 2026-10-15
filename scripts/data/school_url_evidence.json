@@ -10,21 +10,21 @@
     "searchQueries": 287
   },
   "summary": {
-    "verified": 341,
-    "unknown": 177,
+    "verified": 348,
+    "unknown": 170,
     "contradicted": 1,
-    "highConfidence": 174,
+    "highConfidence": 181,
     "mediumConfidence": 168,
-    "lowConfidence": 177,
+    "lowConfidence": 170,
     "interpretation": "Verified means recorded school identity proves the exact configured endpoint, directly or through an archived directed HTTP chain; unknown lacks sufficient ownership proof; contradicted identifies a different school.",
-    "unknownWithResearchTrace": 177,
+    "unknownWithResearchTrace": 170,
     "researchTraceReasonCounts": {
       "non_public_or_inaccessible_host": 4,
       "strict_endpoint_equivalence_not_proven": 70,
-      "generic_or_unrelated_entry_identity": 57,
+      "generic_or_unrelated_entry_identity": 51,
       "official_school_to_exact_tenant_link_not_found": 10,
       "public_probe_failed_or_filtered": 29,
-      "shared_vendor_tenant_not_independently_linked": 4,
+      "shared_vendor_tenant_not_independently_linked": 3,
       "campus_or_graduate_scope_not_proven": 2,
       "tenant_path_equivalence_not_proven": 1
     }
@@ -9590,15 +9590,40 @@
       "name": "山东外国语职业技术大学",
       "url": "https://swut.jw.chaoxing.com/admin/login",
       "source": "baseline",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "https://swut.jw.chaoxing.com/admin/login",
-      "status": "unknown",
-      "confidence": "low",
-      "sources": [],
-      "defects": [
-        "Public page does not name catalog school; parser title alone is insufficient."
+      "status": "verified",
+      "confidence": "high",
+      "sources": [
+        {
+          "kind": "official-school-link",
+          "url": "http://www.swut.edu.cn/",
+          "checkedAt": "2026-10-15",
+          "observedText": "﻿ 山东外国语职业技术大学 智慧校园 ENGLISH Webvpn 首页 学校概况 学校简介 名誉校长 治理结构 组织机构 校园文化 学校荣誉 标识系统 学院设置 外语学院 财会金融学院 国际商学院 信息工程学院 智能科学与控制工程学院 国际教育学院 文化创意与旅游学院 继续教育学院 马克思主义学院 通识教育学院 党建引领 党建“双创” 教学科研 教务处 科研处 实验实训 督导与质量评价中心 双高建设 学团在线 学生工作 青春山外 招生就业 招生办公室 就业创业中心 国际交流 平安山外 首页 学校概况 学校简介 名誉校长 治理结构 组织机构 校园文化 学校荣誉 标识系统 学院设置 外语学院 财会金融学院 国际商学院 信息工程学院 智能科学与控制工程学院 国际教育学院 文化创意与旅游学院 继续教育学院 马克思主义学院 通识教育学院 党建引领 党建“双创” 教学科研 教务处 科研处 实验实训 督导与质量评价中心 双高建设 学团在线 学生工作 青春山外 招生就业 招生办公室 就业创业中心 国际交流 平安山外 智慧校园 ENGLISH Webvpn 首页 学校概况 学校简介 名誉校长 治理结构 组织机构 校园文化 学校荣誉 标识系统 学院设置 外语学院 财会金融学院 国际商学院 信息工程学院 智能科学与控制工程学院 国际教育学院 文化创意与旅游学院 继续教育学院 马克思主义学院 通识教育学院 党建引领 党建“双创” 教学科研 教务处 科研处 实验实训 督导与质量评价中心 双高建设 学团在线 学生工作 青春山外 招生就业 招生办公室 就业创业中心 国际交流 平安山外 学校要闻 更多>> 团省委调研组来我校调研青年志愿服务工作 团省委调研组来我校调研青年志愿服务工作... 2026/10/14 我校举办公益性混合式教学设计创新大赛备赛工作坊 我校举办公益性混合式教学设计创新大赛备赛工作坊... 2026/10/11 2金7银3铜！我校在山东省大学生创新大赛（2026）再创佳绩 2金7银3铜！我校在山东省大学生创新大赛（2026）再创佳绩... 2026/10/08 我校代表队再获2026年世界职业院校技能大赛银奖 我校代表队再获2026年世界职业院校技能大赛银奖... 2026/10/02 10/14 2026 团省委调研组来我校调研青年志愿服务工作 10/11 2026 我校举办公益性混合式教学设计创新大赛备赛工作坊 10/08 2026 2金7银3铜！我校在山东省大学生创新大赛（2026）再创佳绩 10/02 2026 我校代表队再获2026年世界职业院校技能大赛银奖 09/27 2026 我校在山东省大学生创新大赛（2026）高教主赛道总决赛中斩获金奖2项 09/26 2026 我校在2026年世界职业院校技能大赛总决赛争夺赛两个赛道中获1金1银1铜 09/25 2026 我校举办境外交流与访学教师云上中秋茶话会 通知公告 更多>> 2026-10-12 国际职业教育发展前沿与职教国际化师资队伍建设专题培训开启报名！ 了解更多 山东外国语职业技术大学教师招聘简章 了解更多 2026-09-25 2026-09-11 关于2026年中秋节、国庆节放假调休及执行冬季作息的通知 了解更多 山东外国语职业技术大学高层次人才招聘简章 了解更多 2026-08-26 2026-02-10 教育部关于深化职业教育教学关键要素改革的意见 了解更多 山东外国语职业技术大学2026年新年贺词：二十年初心如磐 新征程笃行致远 了解更多 2025-12-31 2025-01-20 教育强国建设规划纲要（2024－2035年）》 了解更多 山东外国语职业技术大学纪委邮箱 了解更多 2024-12-25 2024-08-30 中共中央 国务院关于弘扬教育家精神加强新时代高素质专业化教师队伍建设的意见 了解更多 媒体看山外 更多>> 日照日报：墨西哥高校到山外开展友好交流 2026-10-14 日照日报：世界职业院校技能大赛部分赛道收官 山外获1金1银1铜 2026-10-09 中国科技网：国庆节里，山东外国语职业技术大学学子收到了特殊礼物 2026-10-07 科技日报：国庆节里，山东外国语职业技术大学学子收到了特殊礼物 2026-10-07 数说山外 2140.29亩 校园面积 23300+人 全日制在校学生数 28个 职业本科专业 19个 高职专科专业 425项 近三年教师市级及以上获奖 2604人次 近三年学生省级及以上技能竞赛获奖 77个 学生社团 370+人 引进外教 1300+人 出国（境）留学生数量 1010+人 培养国际学生 山外名师 更多>> 文化创意与旅游学院-张念龙 财会金融学院-王支萍 国际商学院-李莎 文化创意与旅游学院-耿艺南 智能科学与控制工程学院-费敬雯 国际商学院-白晓楠 国际商学院-马春艳 个人简介马春艳，教授，一级企业培训师，二级人力资源管理师，高级电子商务师，山东省SYB创业培训讲师，日照市“爱岗敬业”教师，山东省职业教育青年技能名师，山东省高等学校教学名师。主持参与部省共建课题、省级教改课题6项，市厅级科研项目28项，主 信息工程学院-岳庆玲 外语学院-郭媛媛 无人系统应用研究院-李杰 专题专栏 学习宣传贯彻党的二十大精神 查看更多>> 党史展览馆VR云展馆 查看更多>> 2026年全国两会专题网站 查看更多>> 党建”双创“ 查看更多>> 信息公开 查看更多>> 1 教务登录 2 图书馆 3 学工管理 4 泛雅学习平台 5 智慧树学习平台 6 教师发展平台 1 档案查询 1 工会系统 1 质量管理 电话/Tel：0633-8109001 传真/Fax：0633-8109002 招生咨询电话：0633-8109666 8109079 网址：http://www.swut.cn/ 地址：山东省日照市山海路99号 Add：No.99,ShanhaiRd.,Rizhao,Shandong,P.R.China 邮编/P.C.：276826 电话/Tel：0633-8109001 传真/Fax：0633-8109002 招生咨询电话：0633-8109666 8109079 备案信息： 鲁ICP备11031532号",
+          "linkedUrls": [
+            "https://swut.jw.chaoxing.com/"
+          ],
+          "bodySha256": "6a03efd329ad34eef5339a049999f0644001dbfa899dd9f3622e122ca26e067f",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-targeted-review1.json",
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-targeted-delta1.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "https://swut.jw.chaoxing.com/",
+              "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "redirects": [
+                {
+                  "from": "https://swut.jw.chaoxing.com/",
+                  "to": "https://swut.jw.chaoxing.com/admin/login",
+                  "http": 303
+                }
+              ]
+            }
+          ]
+        }
       ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "山东外国语综合教学管理系统",
       "probeError": null,
@@ -9607,17 +9632,41 @@
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Direct current public URL refetch; response and redirect chain retained in continuation-1015-direct.jsonl",
-          "One targeted 2026 school-name + academic-system search; candidate URLs retained in continuation-1015-search.jsonl",
-          "Reviewed 284 fetched official/search-discovered candidate pages for school identity and exact configured authority/path; captures in continuation-1015-probes.jsonl"
+          "Reuse cached official pages",
+          "Find official academic navigation or publication",
+          "Decode archived body and headers and verify hashes",
+          "Verify literal exact href or actual continuous HTTP Location chain"
         ],
-        "result": "no sufficient public ownership proof after this pass",
-        "reasonCode": "shared_vendor_tenant_not_independently_linked",
-        "currentHttp": 200,
-        "currentFinalUrl": "https://swut.jw.chaoxing.com/admin/login",
-        "currentTitle": "山东外国语综合教学管理系统",
-        "probeError": null
-      }
+        "reasonCode": "exact_official_endpoint_proven",
+        "result": "Exact public configured endpoint ownership proven; authenticated import not tested",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-targeted-delta1.json"
+      },
+      "ownershipReviewHistory": [
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Public page does not name catalog school; parser title alone is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Direct current public URL refetch; response and redirect chain retained in continuation-1015-direct.jsonl",
+              "One targeted 2026 school-name + academic-system search; candidate URLs retained in continuation-1015-search.jsonl",
+              "Reviewed 284 fetched official/search-discovered candidate pages for school identity and exact configured authority/path; captures in continuation-1015-probes.jsonl"
+            ],
+            "result": "no sufficient public ownership proof after this pass",
+            "reasonCode": "shared_vendor_tenant_not_independently_linked",
+            "currentHttp": 200,
+            "currentFinalUrl": "https://swut.jw.chaoxing.com/admin/login",
+            "currentTitle": "山东外国语综合教学管理系统",
+            "probeError": null
+          },
+          "reason": "Exact official href independently rechecked against decoded sanitized bytes, or actual raw HTTP Location chain reaches configured endpoint; hashes and source_proves pass.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-targeted-delta1.json"
+        }
+      ]
     },
     {
       "catalogId": "S_山东外贸职业学院",
@@ -16720,15 +16769,25 @@
       "name": "广东司法警官职业学院",
       "url": "http://210.21.33.69:8027/",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "http://210.21.33.69:8027/",
-      "status": "unknown",
-      "confidence": "low",
-      "sources": [],
-      "defects": [
-        "Public page does not name catalog school; parser title alone is insufficient."
+      "status": "verified",
+      "confidence": "high",
+      "sources": [
+        {
+          "kind": "official-school-link",
+          "url": "https://www.gdjpvc.edu.cn/info/1018/3882.htm",
+          "checkedAt": "2026-10-15",
+          "observedText": "﻿ 教务管理系统-广东司法警官职业学院 学院内网 首页 学院概况 学院简介 学院章程 校徽校歌 党委班子成员 校园风采 新闻中心 学院新闻 通知公告 时政要闻 机构设置 党政管理机构 教学教辅机构 教学科研 教育教学 科研动态 信息公开 招生公开 财务公开 工作年度报告 信访联系方式 招生就业 招生信息网 就业信息网 公共服务 校历 校园地图 下载专区 规章制度 教育教学 教学信息 学生管理 思想教育 奖学助学 在职培训 基本情况 培训动态 教育教学 教学信息 学生管理 思想教育 奖学助学 快速通道 “省高水平高职学校建设计划（2... 招标采购 2026级专业人才培养方案 师德师风监督举报渠道 第二批省级规划教材推荐网站专栏 第二届全国教材建设奖（职业教... “省高职院校高水平专业群”验... 2025年省课程思政示范计划验收 2024年度广东省高等职业教育“... 教学信息 当前位置： 首页 >> 教学科研 >> 教育教学 >> 教学信息 >> 正文 教务管理系统 来源： 发布人： 点击数： 发表时间：2022-05-30 内网入口 外网入口 上一篇： 学院代表队在广东省职业院校社会工作实务技能大赛中喜获佳绩 下一篇： 以教促赛 以赛促教——学院2022年教师教学能力大赛顺利举行 友情链接： 司法部 广东省司法厅 广东省教育厅 龙洞校区地址：广州市天河区龙腾路245号 邮政编码：510520 石井校区地址：广州市白云区石井石潭西路30号 邮政编码：510430 版权所有 广东司法警官职业学院粤ICP备 12004361号 教育收费咨询电话：020-87083540 教育收费投诉电话：020-38315911",
+          "linkedUrls": [
+            "http://210.21.33.69:8027"
+          ],
+          "bodySha256": "bfdb97cb46a24b656a98deccc02eda8f5dd80c425d18c427fcb3f7047c880609",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-batch2-review1.json"
+        }
       ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "登录",
       "probeError": null,
@@ -16737,17 +16796,41 @@
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Direct current public URL refetch; response and redirect chain retained in continuation-1015-direct.jsonl",
-          "One targeted 2026 school-name + academic-system search; candidate URLs retained in continuation-1015-search.jsonl",
-          "Reviewed 284 fetched official/search-discovered candidate pages for school identity and exact configured authority/path; captures in continuation-1015-probes.jsonl"
+          "Reuse cached official pages",
+          "Find official academic navigation or publication",
+          "Decode archived body and headers and verify hashes",
+          "Verify literal exact href or actual continuous HTTP Location chain"
         ],
-        "result": "no sufficient public ownership proof after this pass",
-        "reasonCode": "generic_or_unrelated_entry_identity",
-        "currentHttp": 200,
-        "currentFinalUrl": "http://210.21.33.69:8027/",
-        "currentTitle": "登录",
-        "probeError": null
-      }
+        "reasonCode": "exact_official_endpoint_proven",
+        "result": "Exact public configured endpoint ownership proven; authenticated import not tested",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-batch2-delta1.json"
+      },
+      "ownershipReviewHistory": [
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Public page does not name catalog school; parser title alone is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Direct current public URL refetch; response and redirect chain retained in continuation-1015-direct.jsonl",
+              "One targeted 2026 school-name + academic-system search; candidate URLs retained in continuation-1015-search.jsonl",
+              "Reviewed 284 fetched official/search-discovered candidate pages for school identity and exact configured authority/path; captures in continuation-1015-probes.jsonl"
+            ],
+            "result": "no sufficient public ownership proof after this pass",
+            "reasonCode": "generic_or_unrelated_entry_identity",
+            "currentHttp": 200,
+            "currentFinalUrl": "http://210.21.33.69:8027/",
+            "currentTitle": "登录",
+            "probeError": null
+          },
+          "reason": "Exact official href independently rechecked against decoded sanitized bytes, or actual raw HTTP Location chain reaches configured endpoint; hashes and source_proves pass.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-batch2-delta1.json"
+        }
+      ]
     },
     {
       "catalogId": "moe:4144014556",
@@ -17168,15 +17251,25 @@
       "name": "湖南有色金属职业技术学院",
       "url": "https://jwxt.hnyszy.com.cn/jsxsd/",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "https://jwxt.hnyszy.com.cn/jsxsd/",
-      "status": "unknown",
-      "confidence": "low",
-      "sources": [],
-      "defects": [
-        "Public page does not name catalog school; parser title alone is insufficient."
+      "status": "verified",
+      "confidence": "high",
+      "sources": [
+        {
+          "kind": "official-school-link",
+          "url": "https://www.hnyszy.com.cn/",
+          "checkedAt": "2026-10-15",
+          "observedText": "﻿ 湖南有色金属职业技术学院_首页 360网站安全检测平台 关闭 教学系部 资源环境系 冶金材料系 建筑工程系 机电工程系 公共课教学部 经济管理系 马克思主义学院 党政部门 党政办公室 组织人事部（教工部） 纪检监察处 宣传统战部（网信办） 教务处 学生工作部 招生就业处 科研处 财务处 后勤处 保卫部 基建处 工会 质量与评建中心 图书馆 专题网站 湖南政务服务网 创新创业网 阳光服务大厅 网上看校 科研管理系统 数据采集入口 人培方案与题库 课程思政示范项目 毕业设计专题 现代学徒制试点项目 学院VR全景 2024级人才培养方案 师德师风 校友会 第二批“十四五”职业 第二届全国教材建设奖全国优... 信息门户登录 领导信箱 网站首页 学校概况 学院章程 学院介绍 现任领导 学院文化 学院风采 联系我们 新闻动态 学院新闻 信息公开 媒体报道 招标公告 学院视频 有色职院报 系部设置 资源环境系 冶金材料系 建筑工程系 机电工程系 公共课教学部 经济管理系 马克思主义学院 招生就业 招生网 就业网 创新创业网 教学科研 教学工作 科研培训 党建动态 学生服务 阳光服务 学生工作部 学院 新闻 NEW +更多 拥抱青春，向阳生长｜学院举办第五届心理… 为落实立德树人根本任务，扎实推进“医教协同”心理健康育人工作，结合 2026 年世界精神卫生日主题要求，10月15日，学院开展第五届心理卫生知识科普… 更多>> 从“知风险”到“会防范”：学院上好新生… 新学期伊始，学院围绕2026级新生入学安全需求，联合属地公安机关开展系列安全教育活动，通过法治讲座、安全知识教育、反诈推广等形式，将法律知识和… 更多>> 建筑工程系召开2027届毕业生实习就业动员… 10月10日下午，建筑工程系2027届毕业生实习就业动员暨安全教育会在学术报告厅召开。招生就业处副处长（主持工作）刘耀庭、实习实训中心主任余雄辉应… 更多>> 深入调研察实情，凝心聚力促发展 ——侯… 为精准掌握学院办学实情，把脉专业群内涵建设，推动装备制造类高技能人才培养高质量发展，2026年10月9日上午，学院党委副书记、院长侯朝辉一行赴机… 更多>> 警校协作保秩序 平安有序迎新生 10月8日—9日，学院迎来2026级3700名新生入学报到。为筑牢迎新期间校园安全防线，确保新生报到工作平稳有序开展，学院保卫部提前谋划、周密部署，统… 更多>> 侯朝辉院长赴经济管理系开展专题调研 10月7日下午，学院党委副书记、院长侯朝辉率队赴经济管理系开展专题调研，并在资环楼3305会议室召开调研座谈会。经济管理系班子成员及各教学团队负… 更多>> 1 2 3 4 5 6 拥抱青春，向阳生长｜学院举... 为落实立德树人根本任务，扎实推进“医教协同”心理健康育人工作，结合 2026 年世界精神卫生... 2026-10-15 从“知风险”到“会防范”：... 新学期伊始，学院围绕2026级新生入学安全需求，联合属地公安机关开展系列安全教育活动，通过... 2026-10-13 建筑工程系召开2027届毕业生... 10月10日下午，建筑工程系2027届毕业生实习就业动员暨安全教育会在学术报告厅召开。招生就业... 2026-10-13 信息 公开 INFORMATION +更多 02 2026-09 食堂商铺招租项目包4（第二次）成交公告 31 2026-08 湖南有色金属职业技术学院2025年度决算公开 26 2026-08 湖南有色金属职业技术学院第一食堂餐饮劳务服务项目成交公告 26 2026-08 食堂商铺招租项目包5成交结果变更公告 媒体 报道 MEDIA +更多 【红网-时刻】 湖南有色金属职院学子荣获2026年世界职业院校技能大赛资源开采赛道银奖 【湖南教育新闻网】 探秘汉字博物馆 趣创拼豆汉字 —— 湖南有色金属职业技术学院推普周让语... 【华声在线】 湖南省大运会田径赛场传捷报！湖南有色金属职院斩获铅球双金 系部 动态 DEPARTMENT DYNAMICS +更多 粽叶飘香迎端午 文化润心育青年——机电... 粽叶飘香，端午将至。为传承端午民俗文化，厚植青年学生文化底蕴，学院机电工程系于6月... 【资源环境系】 全国说课交流展风采 资源环境系党员教师... 06月10日 【建筑工程系】 以练筑防，防患未然——建筑工程系成功... 06月05日 【经济管理系】 学院技能节Shopee跨境电商技能赛项圆满... 06月04日 【建筑工程系】 青春力量进社区，筑牢防骗“防火墙” ... 06月04日 【冶金材料系】 冶金材料系开展“圈住好心情，画出小确... 05月30日 学习 园地 INSTITUTE +更多 讲话致辞 讲话致辞 【新华网】 指示批示 10月29日 【新华网】 重要文章 10月29日 【新华网】 考察调研 10月29日 【新华网】 会议活动 10月29日 【新华网】 致电致信 10月29日 快速 导航 友情链接 校友服务 / 湖南省教育厅 / 中华人民共和国教育部 / 中国有色金属工业协会 / 中国五矿集团公司 / 中国铝业公司 / 湖南金鑫黄金集团 / 有色人才网 / 湖南教育政务网 / 湖南职成信息网 / 中国高等教育学生信息网 / 为先在线 / 地址：株洲市石峰区学林街道香樟社区明礼路197号 邮编：412006 电话：0731-22713089（院党政办公室） 0731-22713079 0731-22713066 0731-22713033（招生就业） 0731-22713070（培训鉴定科研服务） 传真：0731-22713000 湘微教育 湖南教育政务网 学院官微 版权信息：有色职院Copyright 2012-2013 前置审核编号：湘教QS4_201212_020021 ICP备案号： 湘ICP备16006148号-1 湘公网安备43020002000177",
+          "linkedUrls": [
+            "https://jwxt.hnyszy.com.cn/jsxsd/"
+          ],
+          "bodySha256": "cb5dae5fd5a168b64ae589fcbb8779e898f1ca50d2c86884e3fe1b8376bffef9",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-targeted-review1.json"
+        }
       ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "登录",
       "probeError": null,
@@ -17185,17 +17278,41 @@
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Direct current public URL refetch; response and redirect chain retained in continuation-1015-direct.jsonl",
-          "One targeted 2026 school-name + academic-system search; candidate URLs retained in continuation-1015-search.jsonl",
-          "Reviewed 284 fetched official/search-discovered candidate pages for school identity and exact configured authority/path; captures in continuation-1015-probes.jsonl"
+          "Reuse cached official pages",
+          "Find official academic navigation or publication",
+          "Decode archived body and headers and verify hashes",
+          "Verify literal exact href or actual continuous HTTP Location chain"
         ],
-        "result": "no sufficient public ownership proof after this pass",
-        "reasonCode": "generic_or_unrelated_entry_identity",
-        "currentHttp": 200,
-        "currentFinalUrl": "https://jwxt.hnyszy.com.cn/jsxsd/",
-        "currentTitle": "登录",
-        "probeError": null
-      }
+        "reasonCode": "exact_official_endpoint_proven",
+        "result": "Exact public configured endpoint ownership proven; authenticated import not tested",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-targeted-delta1.json"
+      },
+      "ownershipReviewHistory": [
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Public page does not name catalog school; parser title alone is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Direct current public URL refetch; response and redirect chain retained in continuation-1015-direct.jsonl",
+              "One targeted 2026 school-name + academic-system search; candidate URLs retained in continuation-1015-search.jsonl",
+              "Reviewed 284 fetched official/search-discovered candidate pages for school identity and exact configured authority/path; captures in continuation-1015-probes.jsonl"
+            ],
+            "result": "no sufficient public ownership proof after this pass",
+            "reasonCode": "generic_or_unrelated_entry_identity",
+            "currentHttp": 200,
+            "currentFinalUrl": "https://jwxt.hnyszy.com.cn/jsxsd/",
+            "currentTitle": "登录",
+            "probeError": null
+          },
+          "reason": "Exact official href independently rechecked against decoded sanitized bytes, or actual raw HTTP Location chain reaches configured endpoint; hashes and source_proves pass.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-targeted-delta1.json"
+        }
+      ]
     },
     {
       "catalogId": "moe:4143012303",
@@ -17799,15 +17916,25 @@
       "name": "湖北孝感美珈职业学院",
       "url": "http://42.247.9.91:8083/jsxsd/",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "http://42.247.9.91:8083/jsxsd/",
-      "status": "unknown",
-      "confidence": "low",
-      "sources": [],
-      "defects": [
-        "Public page does not name catalog school; parser title alone is insufficient."
+      "status": "verified",
+      "confidence": "high",
+      "sources": [
+        {
+          "kind": "official-school-link",
+          "url": "https://jwc.hbxgmgpi.edu.cn/article/2291.html",
+          "checkedAt": "2026-10-15",
+          "observedText": "湖北孝感美珈职业学院 教务处 教务处 搜索 学校主页 教务处电话 0712-2283013 首页 部门概况 部门简介 科室设置与岗位职责 专业设置 专业简介 人才培养方案 专业教学标准 教学建设 教改前沿 专业建设 课程建设 教材建设 师资建设 实训基地建设 实践教学 实验室安全 制度文件 国家文件 省级文件 学校制度 办事指南 下载中心 教务系统 课程平台 下载中心 教师端、学生端-查询课表 发表时间：2022-03-15 作者：湖北孝感美珈职业学院 阅读：17098次 系统登陆 建议使用 360安全浏览器 步骤 -1 进入学院官网 步骤 -2 1. 进入同一身份认证平台切换浏览器为极速模式（ 很重要 ） 2.输入学校智慧校园帐号和密码后进行登陆 。 账号为：教工号 /学号 密码为：初始密码为身份证后六位 步骤 -3 点击应用中心，订阅综合教务 步骤 -4 点击直接进入系统 步骤 -5 1教师端-老师看这里 进入我们的教务系统首页可以看到我们的 当日课表 ，也可以点击 个人课表信息 进行更细致的查询 个人学期课表 。 2学生端-学生看这里 进入我们的教务系统首页可以看到我们的 当日课表 ，可以点击学期理论课表进行更细致的查询 本学期课表 、可以点击课程成绩查询查看成绩。 友情链接 职能部门： 党务工作办公室 人事处 财务处 图书馆 学生工作处 发展规划与质量管理中心（含科研处） 招生处 就业处 信息技术中心 中华传统文化研究中心 招生咨询电话：0712-2323777 / 0712-2075678 信访投诉咨询电话：0712-2283078 学校地址：武汉·孝感临空经济区教育科技园纵六路 官方微信 官方视频号 官方抖音 官方微博 常用链接： 中华人民共和国教育部 中国高职高专教育网 中国高等教育学生信息网（学信网） 湖北省教育厅 OA Copyright @ 2020 湖北孝感美珈职业学院所有 鄂ICP备2021006896号-2 技术支持：一网科技 返回顶部 在线咨询 扫一扫咨询 招生咨询官方QQ：800119666 招生热线 招生办公室电话: 0712-2323777 0712-2075678 微信关注 扫一扫关注微信公众号 返回顶部",
+          "linkedUrls": [
+            "http://42.247.9.91:8083/jsxsd/"
+          ],
+          "bodySha256": "3bc78863ec5c1336bb42d73a6b18e82def7ca50769f3156997c3d59c5628ca9f",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-batch2-review1.json"
+        }
       ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "登录",
       "probeError": null,
@@ -17816,17 +17943,41 @@
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Direct current public URL refetch; response and redirect chain retained in continuation-1015-direct.jsonl",
-          "One targeted 2026 school-name + academic-system search; candidate URLs retained in continuation-1015-search.jsonl",
-          "Reviewed 284 fetched official/search-discovered candidate pages for school identity and exact configured authority/path; captures in continuation-1015-probes.jsonl"
+          "Reuse cached official pages",
+          "Find official academic navigation or publication",
+          "Decode archived body and headers and verify hashes",
+          "Verify literal exact href or actual continuous HTTP Location chain"
         ],
-        "result": "no sufficient public ownership proof after this pass",
-        "reasonCode": "generic_or_unrelated_entry_identity",
-        "currentHttp": 200,
-        "currentFinalUrl": "http://42.247.9.91:8083/jsxsd/",
-        "currentTitle": "登录",
-        "probeError": null
-      }
+        "reasonCode": "exact_official_endpoint_proven",
+        "result": "Exact public configured endpoint ownership proven; authenticated import not tested",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-batch2-delta1.json"
+      },
+      "ownershipReviewHistory": [
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Public page does not name catalog school; parser title alone is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Direct current public URL refetch; response and redirect chain retained in continuation-1015-direct.jsonl",
+              "One targeted 2026 school-name + academic-system search; candidate URLs retained in continuation-1015-search.jsonl",
+              "Reviewed 284 fetched official/search-discovered candidate pages for school identity and exact configured authority/path; captures in continuation-1015-probes.jsonl"
+            ],
+            "result": "no sufficient public ownership proof after this pass",
+            "reasonCode": "generic_or_unrelated_entry_identity",
+            "currentHttp": 200,
+            "currentFinalUrl": "http://42.247.9.91:8083/jsxsd/",
+            "currentTitle": "登录",
+            "probeError": null
+          },
+          "reason": "Exact official href independently rechecked against decoded sanitized bytes, or actual raw HTTP Location chain reaches configured endpoint; hashes and source_proves pass.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-batch2-delta1.json"
+        }
+      ]
     },
     {
       "catalogId": "moe:4113013578",
@@ -18130,15 +18281,40 @@
       "name": "河北水利电力学院",
       "url": "https://jwxt.hbwe.edu.cn/jwglxt/xtgl/login_slogin.html",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "https://jwxt.hbwe.edu.cn/jwglxt/xtgl/login_slogin.html",
-      "status": "unknown",
-      "confidence": "low",
-      "sources": [],
-      "defects": [
-        "Public page does not name catalog school; parser title alone is insufficient."
+      "status": "verified",
+      "confidence": "high",
+      "sources": [
+        {
+          "kind": "official-school-link",
+          "url": "https://jiaowu.hbwe.edu.cn/",
+          "checkedAt": "2026-10-15",
+          "observedText": "﻿ 教务处 学院首页 首页 部门概况 部门职责 教学工作指导委员会 学位评定委员会 语言文字 规章制度 上级文件 校级文件 专业与课程建设 专业建设 课程建设 实践教学 实验室建设 毕业设计（论文） 校外实践教学基地建设 学科竞赛 教研教改 省级课题 校级课题 课程思政专项 基层教学组织 教研室 教学团队 转型发展 政策文件 转型动态 常用下载 系部下载 教师下载 学生下载 教材建设 校级教材建设 省级教材建设 Previous Next 1 2 3 教务系统 实践教学系统 课程中心 校历 查重系统 教务动态 通知公告 常用下载 我校召开9月份教学工作例会 2026年9月2日，我校在弘文守正楼九楼科技特派员室召开9月份教学工作例会，副校长董... 我校学子在2026年“西门子杯”中国智能制造挑战赛中... 2026-08-28 我校6门课程获批第三批省级一流本科课程 2026-07-24 探寻沧海文脉 践行育人使命---机关第七党支部赴沧州... 2026-06-28 我校召开教材工作委员会2026年秋季学期教材选用会议 2026-06-18 以赛促学激活力 匠心筑梦启新程—— 河北水利电力学... 2026-06-15 我校2个专业连续4年入选河北省应用型转型重点建设专业 近日，河北省教育厅公布《关于公布2026年度普通本科高校应用型转型重点建设专业名... 河北水利电力学院关于第二批智慧课程立项建设名单的公示 2026-09-11 河北水利电力学院关于2026年度本科专业设置的公示 2026-08-12 关于 2026 年度省级课程思政典型教学案例拟推荐名单... 2026-08-07 关于2026教师数字素养提升实践活动（常规项目）拟推... 2026-07-23 关于首批智慧课程拟认定结果的公示 2026-07-19 复学审批表（2026版） 复学审批表（2026版） 经费使用审批单 2026-05-21 巡课记录表 2025-09-22 取消学生考试资格申请表 2025-06-26 河北水利电力学院学科竞赛申报书 2025-06-24 河北水利电力学院课程提前考试申请表 2025-05-26 专题专栏 Special column 友情链接 Friendship link 中华人民共和国教育部 河北省教育厅 雨课堂 智慧树 国家智慧教学平台 学信网 手机版 河北水利电力学院教务处版权所有 地址：河北省沧州市黄河西路49号 邮编：061001 Email：hbsdxyjwc@126.com 电话： 0317-7587073",
+          "linkedUrls": [
+            "http://jwxt.hbwe.edu.cn/jwglxt/xtgl/login_slogin.html"
+          ],
+          "bodySha256": "e35ff2d1246ecfd2b42ee58787d922221a99511d2cf816622c4eb9b3d1056755",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-targeted-review1.json",
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-targeted-delta1.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "http://jwxt.hbwe.edu.cn/jwglxt/xtgl/login_slogin.html",
+              "bodySha256": "09be591bf73dd2561190a19f35ea583c6c443a52708eac0a5787344125b00fca",
+              "redirects": [
+                {
+                  "from": "http://jwxt.hbwe.edu.cn/jwglxt/xtgl/login_slogin.html",
+                  "to": "https://jwxt.hbwe.edu.cn/jwglxt/xtgl/login_slogin.html",
+                  "http": 302
+                }
+              ]
+            }
+          ]
+        }
       ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "教学管理信息服务平台",
       "probeError": null,
@@ -18147,17 +18323,41 @@
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Direct current public URL refetch; response and redirect chain retained in continuation-1015-direct.jsonl",
-          "One targeted 2026 school-name + academic-system search; candidate URLs retained in continuation-1015-search.jsonl",
-          "Reviewed 284 fetched official/search-discovered candidate pages for school identity and exact configured authority/path; captures in continuation-1015-probes.jsonl"
+          "Reuse cached official pages",
+          "Find official academic navigation or publication",
+          "Decode archived body and headers and verify hashes",
+          "Verify literal exact href or actual continuous HTTP Location chain"
         ],
-        "result": "no sufficient public ownership proof after this pass",
-        "reasonCode": "generic_or_unrelated_entry_identity",
-        "currentHttp": 200,
-        "currentFinalUrl": "https://jwxt.hbwe.edu.cn/jwglxt/xtgl/login_slogin.html",
-        "currentTitle": "教学管理信息服务平台",
-        "probeError": null
-      }
+        "reasonCode": "exact_official_endpoint_proven",
+        "result": "Exact public configured endpoint ownership proven; authenticated import not tested",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-targeted-delta1.json"
+      },
+      "ownershipReviewHistory": [
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Public page does not name catalog school; parser title alone is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Direct current public URL refetch; response and redirect chain retained in continuation-1015-direct.jsonl",
+              "One targeted 2026 school-name + academic-system search; candidate URLs retained in continuation-1015-search.jsonl",
+              "Reviewed 284 fetched official/search-discovered candidate pages for school identity and exact configured authority/path; captures in continuation-1015-probes.jsonl"
+            ],
+            "result": "no sufficient public ownership proof after this pass",
+            "reasonCode": "generic_or_unrelated_entry_identity",
+            "currentHttp": 200,
+            "currentFinalUrl": "https://jwxt.hbwe.edu.cn/jwglxt/xtgl/login_slogin.html",
+            "currentTitle": "教学管理信息服务平台",
+            "probeError": null
+          },
+          "reason": "Exact official href independently rechecked against decoded sanitized bytes, or actual raw HTTP Location chain reaches configured endpoint; hashes and source_proves pass.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-targeted-delta1.json"
+        }
+      ]
     },
     {
       "catalogId": "moe:4113010092",
@@ -20849,15 +21049,25 @@
       "name": "天津医科大学临床医学院",
       "url": "http://180.213.3.14:18880/eams/loginExt.action",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "http://180.213.3.14:18880/eams/loginExt.action",
-      "status": "unknown",
-      "confidence": "low",
-      "sources": [],
-      "defects": [
-        "Public page does not name catalog school; parser title alone is insufficient."
+      "status": "verified",
+      "confidence": "high",
+      "sources": [
+        {
+          "kind": "official-school-link",
+          "url": "https://www.tmucmc.edu.cn/",
+          "checkedAt": "2026-10-15",
+          "observedText": "天津医科大学临床医学院 在校学生 教职工 考生 校长信箱 首页 新闻中心 学院概况 学院简介 现任领导 专业设置 教育教学 来院路线 校园风光 学院校历 党团机构 党委办公室 工会 学院团委 行政机构 院长办公室 人事处 教务处 学生处 后勤处 保卫处 网络信息中心 财务处 院系设置 临床医学系 医学技术系 法学系 药学系 口腔医学系 管理学系 护理学系 实验中心 马克思主义学院 公共基础部 招生就业 招生信息网 就业信息网 人才招聘 校园媒体 图书馆 图书馆 中国知网 万方数据 电子图书 馆藏搜索 数字化校园 图书馆借还系统 . . . ‘ . ' , 1 2 3 4 5 ‹ › 综合新闻 2026-09-24 月满中秋话团结 中华民族一家亲——我院... 2026-09-17 思政实践育人站 | 临医师生“一起去长... 2026-09-16 我院武术队在天津市第十六届运动会武术... 2026-09-10 弘扬教育家精神 | 我院召开2026年度庆... 2026-09-09 临医启航，向新而行——天津医科大学临床... 2026-09-08 党委书记张健讲授形势政策教育“开学第... 2026-09-04 乘风破浪医路行，奋楫扬帆正当时——学院... 2026-07-02 学院多名个人和集体受到天津市教育系统... 2026-06-25 天津市教育系统关工委召开民办高校关工... 2026-06-18 思政实践育人站 | 天津医科大学医学人... 院部动态 教学动态 公告公示 招生信息 2026-09-15 以医学之名，赴约York——我院师生赴英国... 2026-06-17 绿茵逐风，青春绽放 | 学院第八届阳光... 2026-06-17 以医竞技，以技护航 | 临床医学系第十... 2026-06-12 深入学习贯彻习近平总书记关于全过程人... 2026-06-03 传承临医精神 厚植育人文化 | 津味糕干... 2026-06-03 民法典宣传月——“法”在身边 “典”亮... 2026-06-01 铸魂强能 以评促建 | 我院圆满完成2026... 2026-06-01 思政实践育人站 | 学院合唱团在天津医... 2026-05-31 聚焦专业认证 深化考核评价 | 我院举办... 2026-05-23 医学人文实践月 | “墨笔绘万象 铺卷展... 2026-10-10 2026-2027-1学期课后辅导计划安排 2026-04-30 2025-2026-2天津医科大学临床医学院教... 2026-01-20 祝贺我院师生在2025年天津市学科竞赛中... 2025-12-02 我院师生在2025年天津市学科竞赛中再创... 2025-06-04 我校作品在天津市中医药文化与健康主题... 2025-06-04 我校作品在天津市中医药文化与健康主题... 2023-09-11 2022-2023学年第二学期课后辅导计划表 2023-02-20 你好，新学期 2022-06-03 网络考试流程与注意事项 2022-05-16 我院五一假期期间组织爱国主义电影展播 2026-10-08 2026年10月天津医科大学临床医学院“一... 2026-10-12 2026年天津医科大学临床医学院分省分专... 2026-10-10 2027年高职升本科招生对口专业目录 2026-06-16 2026年天津医科大学临床医学院招生简章 2026-06-16 2026年天津医科大学临床医学院分省分专... 2026-06-16 2026年天津医科大学临床医学院举办校园... 2026-05-12 天津医科大学临床医学院2026年普通本科... 2026-04-27 天津医科大学临床医学院2026年高职升本... 2025-12-23 2026年天津医科大学临床医学院高职升本... 2025-12-09 2026年天津医科大学临床医学院高职升本... 2025-12-04 天津医科大学临床医学院2026年高职升本... 友情链接 快速访问 学院校历 信息公开 新闻中心 人才招聘 教务系统(外网) 图书借还 万方数据库 中国知网 汇雅书世界 校园风光 学院简介 招生信息 就业信息 天津医科大学 专题网站 联系我们 | 网络服务 | 友情链接 | 关于我们 | 版权所有：天津医科大学临床医学院 通讯地址：天津市滨海新区大港学苑路167号 邮政编码：300270 天津医科大学临床医学院网络信息中心制作维护 津ICP备14001585号-2 津教备：0614号 官方微信 新浪官微 新浪官微",
+          "linkedUrls": [
+            "http://180.213.3.14:18880/eams/loginExt.action"
+          ],
+          "bodySha256": "2597a6be3f6357afb0dbc44447714b705796d12fa3506734903fd9724c84cc41",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-batch2-review3.json"
+        }
       ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "天津医科大学临床医院教学管理系统",
       "probeError": null,
@@ -20866,17 +21076,41 @@
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Direct current public URL refetch; response and redirect chain retained in continuation-1015-direct.jsonl",
-          "One targeted 2026 school-name + academic-system search; candidate URLs retained in continuation-1015-search.jsonl",
-          "Reviewed 284 fetched official/search-discovered candidate pages for school identity and exact configured authority/path; captures in continuation-1015-probes.jsonl"
+          "Reuse cached official pages",
+          "Find official academic navigation or publication",
+          "Decode archived body and headers and verify hashes",
+          "Verify literal exact href or actual continuous HTTP Location chain"
         ],
-        "result": "no sufficient public ownership proof after this pass",
-        "reasonCode": "generic_or_unrelated_entry_identity",
-        "currentHttp": 200,
-        "currentFinalUrl": "http://180.213.3.14:18880/eams/loginExt.action",
-        "currentTitle": "天津医科大学临床医院教学管理系统",
-        "probeError": null
-      }
+        "reasonCode": "exact_official_endpoint_proven",
+        "result": "Exact public configured endpoint ownership proven; authenticated import not tested",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-batch2-delta2.json"
+      },
+      "ownershipReviewHistory": [
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Public page does not name catalog school; parser title alone is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Direct current public URL refetch; response and redirect chain retained in continuation-1015-direct.jsonl",
+              "One targeted 2026 school-name + academic-system search; candidate URLs retained in continuation-1015-search.jsonl",
+              "Reviewed 284 fetched official/search-discovered candidate pages for school identity and exact configured authority/path; captures in continuation-1015-probes.jsonl"
+            ],
+            "result": "no sufficient public ownership proof after this pass",
+            "reasonCode": "generic_or_unrelated_entry_identity",
+            "currentHttp": 200,
+            "currentFinalUrl": "http://180.213.3.14:18880/eams/loginExt.action",
+            "currentTitle": "天津医科大学临床医院教学管理系统",
+            "probeError": null
+          },
+          "reason": "Exact official href independently rechecked against decoded sanitized bytes, or actual raw HTTP Location chain reaches configured endpoint; hashes and source_proves pass.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-batch2-delta2.json"
+        }
+      ]
     },
     {
       "catalogId": "moe:4112012721",
@@ -21756,15 +21990,25 @@
       "name": "西安理工大学高科学院",
       "url": "http://113.201.151.38:9999/",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "http://113.201.151.38:9999/",
-      "status": "unknown",
-      "confidence": "low",
-      "sources": [],
-      "defects": [
-        "Public page does not name catalog school; parser title alone is insufficient."
+      "status": "verified",
+      "confidence": "high",
+      "sources": [
+        {
+          "kind": "official-school-link",
+          "url": "https://www.xthtc.com/index.php?s=/Index/view/s/2/c/84/id/3289.html",
+          "checkedAt": "2026-10-15",
+          "observedText": "西安理工大学高科学院>教务教学>西安理工大学高科学院教学管理信息系统 菜单 搜索 首页 学院概况 学院介绍 学院领导 机构设置 校园文化 党团建设 党建工作 团委工作 工会工作 新闻中心 学院新闻 通知公告 校报网 高科学子 教育时政 学风建设 人事招聘 图片视频 高科视频 高科图片 招生专栏 招生公告 招生专题 学院画册 热点政策 录取查询 专升本招生 教务教学 教学动态 实验实训 科研教改中心 考试考研 学科带头人 教育家精神 语言文字 资源中心 学生工作 书记信箱 工作动态 通知公告 部门概况 规章制度 学生管理 学风督察 办事流程 辅导员之家 下载专区 就业导航 就业专题 毕业生信息 就业桥 网络招聘会 国家24365大学生就业服务平台 学院微媒体 微信平台 新闻客户端 当前位置： 首页 教务教学 分享至手机 西安理工大学高科学院教学管理信息系统 时间：2016-11-03 编辑:王岚 浏览量：307431 来源：院宣传处 西安理工大学高科学院教学管理信息系统 内网登录 外网登录 责任编辑:王岚 审核人:王逸 上一篇： 下一篇： 相关文章 【通知】中共西安理工大学高科学院委员会关于开展保密教育线上培训活动的通知 2018西安理工大学高科学院画册封面 2018西安理工大学高科学院画册【学院领导】 2018西安理工大学高科学院画册【本部简介】 2018西安理工大学高科学院画册【学院简介】 2018西安理工大学高科学院画册【校园文化】 2018西安理工大学高科学院画册【特色办学】 2018西安理工大学高科学院画册【特色办学】 最新发布 陕西中科启航科技有限公司 中国第一汽车集团盐城分公司 山阳高新中学有限公司 福建恒安集团有限公司 TCL实业控股股份有限公司 其亚新疆集团有限公司 数字旅通 家和养老 友情链接： 教育部 陕西省政府 陕西省教育厅 新华网 人民网 西安理工大学 学院新闻网 学院招生网 学院实验室 学院图书馆 学院团委网 学院教务网 学院学生工作网 学院党建工作网 关注我们： 官方微信 腾讯微博 CopyRight 2016 西安理工大学高科学院 招生热线:38952789 技术支持：学院网络中心 陕公网安备 61110502000102 陕ICP备12005088号-1 通讯地址：西安市西咸新区泾河新城 邮编713700",
+          "linkedUrls": [
+            "http://113.201.151.38:9999/"
+          ],
+          "bodySha256": "bf62d77433d3e043b80aee6166d5a7334b285ce4acb78d3f2e149a7709389735",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-batch2-review1.json"
+        }
       ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "登录",
       "probeError": null,
@@ -21773,17 +22017,41 @@
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Direct current public URL refetch; response and redirect chain retained in continuation-1015-direct.jsonl",
-          "One targeted 2026 school-name + academic-system search; candidate URLs retained in continuation-1015-search.jsonl",
-          "Reviewed 284 fetched official/search-discovered candidate pages for school identity and exact configured authority/path; captures in continuation-1015-probes.jsonl"
+          "Reuse cached official pages",
+          "Find official academic navigation or publication",
+          "Decode archived body and headers and verify hashes",
+          "Verify literal exact href or actual continuous HTTP Location chain"
         ],
-        "result": "no sufficient public ownership proof after this pass",
-        "reasonCode": "generic_or_unrelated_entry_identity",
-        "currentHttp": 200,
-        "currentFinalUrl": "http://113.201.151.38:9999/",
-        "currentTitle": "登录",
-        "probeError": null
-      }
+        "reasonCode": "exact_official_endpoint_proven",
+        "result": "Exact public configured endpoint ownership proven; authenticated import not tested",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-batch2-delta1.json"
+      },
+      "ownershipReviewHistory": [
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Public page does not name catalog school; parser title alone is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Direct current public URL refetch; response and redirect chain retained in continuation-1015-direct.jsonl",
+              "One targeted 2026 school-name + academic-system search; candidate URLs retained in continuation-1015-search.jsonl",
+              "Reviewed 284 fetched official/search-discovered candidate pages for school identity and exact configured authority/path; captures in continuation-1015-probes.jsonl"
+            ],
+            "result": "no sufficient public ownership proof after this pass",
+            "reasonCode": "generic_or_unrelated_entry_identity",
+            "currentHttp": 200,
+            "currentFinalUrl": "http://113.201.151.38:9999/",
+            "currentTitle": "登录",
+            "probeError": null
+          },
+          "reason": "Exact official href independently rechecked against decoded sanitized bytes, or actual raw HTTP Location chain reaches configured endpoint; hashes and source_proves pass.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-batch2-delta1.json"
+        }
+      ]
     },
     {
       "catalogId": "wakeup:06aa768f38c367d88c30",

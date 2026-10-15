@@ -4,8 +4,8 @@ Frozen review date: 2026-10-15. Scope: 519 initially operational catalog records
 
 ## Current result
 
-- **341 verified**: archived evidence proves this school's configured endpoint under the strict rules below.
-- **177 unknown**: exact configured endpoint ownership is not proven. This includes 138 baseline and 39 imported records. All 177 retain machine-readable research traces.
+- **348 verified**: archived evidence proves this school's configured endpoint under the strict rules below.
+- **170 unknown**: exact configured endpoint ownership is not proven. This includes 137 baseline and 33 imported records. All 170 retain machine-readable research traces.
 - **1 contradicted**: 潍坊护理职业学院's configured sdwfvc.cn entry belongs to 潍坊职业学院. The incorrect entry must never be used; its separately proven nursing-college correction is admitted as unverified with fetch disabled.
 
 The machine-readable source is [`scripts/data/school_url_evidence.json`](../../scripts/data/school_url_evidence.json). A verified public ownership result does not prove an authenticated timetable import, current availability, or long-term uptime. No credentials or authenticated student data were used.
@@ -32,7 +32,7 @@ A 2026-10-15 raw capture proves the complete directed chain: `http://120.224.233
 
 The separate `official-school-meta-chain` validator parses the actual refresh attribute and raw Location headers; hand-written destination fields cannot override them. It requires the literal publication quote/root authority, exact original source URL, same-origin continuous responses, exact final target and institutional identity. Missing/multiple meta tags, discontinuity, hash mismatch, wrong IP/port/path and wrong final identity fail closed. Non-allowlisted headers, script elements and populated input values are rejected to prevent session or token material entering evidence. Existing endpoint equivalence rules stay strict.
 
-The proposed correction is **verified for public URL ownership**, preserving the earlier unknown decision in review history. It replaces the proven wrong-school entry only as `unverified`, with `enableFetch=false` and `authenticatedImportTested=false`; no authenticated timetable import was tested. The current configured-URL totals after both follow-ups are 341 verified / 177 unknown / 1 contradicted.
+The proposed correction is **verified for public URL ownership**, preserving the earlier unknown decision in review history. It replaces the proven wrong-school entry only as `unverified`, with `enableFetch=false` and `authenticatedImportTested=false`; no authenticated timetable import was tested. The current configured-URL totals after both follow-ups are 348 verified / 170 unknown / 1 contradicted.
 
 ## Bounded exact-HTTP follow-up
 
@@ -48,11 +48,17 @@ A further review of 2,097 cached pages, 34 narrowly targeted imported-school que
 
 The pass rejected three concrete near misses: 山东大学（威海） only appears incidentally in central-university footer links; 广东财经大学's raw notice publishes `/jsxsd` although a historical text extractor inserted a space before it; 长沙幼师's official notice PDF publishes the root but its captured response does not direct to configured `/jsxsd/`. Existing failed chains were deduplicated before new probes. Remaining barriers include unavailable/private DNS, TLS/network restrictions, generic SSO without precise target proof, unpublished query/session/campus distinctions and official notices naming only a different root/path. These remain unknown; no importer authentication was attempted. Of the original 97 strict downgrades, 70 remain unknown after both follow-ups.
 
+## Official-navigation continuation
+
+Seven further exact endpoint owners were verified on 2026-10-15: 湖南有色金属职业技术学院、河北水利电力学院、山东外国语职业技术大学、广东司法警官职业学院、湖北孝感美珈职业学院、西安理工大学高科学院、天津医科大学临床医学院. Five official pages contain literal configured links or published addresses; two links reach the configured endpoint through captured HTTP Location redirects. Each accepted body and header was independently decoded and hash-checked. Original unknown decisions, defects and traces remain in ownershipReviewHistory. These seven do not change the 70 unresolved strict-review downgrades.
+
+The bounded twenty-school navigation round recorded 34 discovery queries and 32 page reviews, recovering four of these seven and leaving sixteen unknown. Exact endpoint rules are unchanged; public ownership is separate from authenticated import support. Frozen audits: ownership-seven-merge-audit.json and ownership-batch2-handoff.json.
+
 ## Research coverage and limitations
 
 The initial 2026-10-14 pass fetched 517 distinct configured URLs, 488 root candidates and 545 source-page candidates, with 287 targeted searches. Later historical batches added 12 targeted searches/40 pages and 129 searches/88 pages. The 2026-10-15 continuation added 119 targeted school-name searches, 284 candidate page fetches and 119 configured-URL refetches. These are historical batch counts, not current verified totals.
 
-Research captures live under `/Users/lingion_k/research/school-expansion-20261014/url-verification/`. Quotations and hashes are embedded in machine-readable evidence; search results are discovery aids, never standalone proof. The 177 unknown entries include generic pages, restricted hosts, unproven tenant/path distinctions, campus/graduate scope gaps, and 70 remaining strict-rule downgrades. Pending catalog entries outside the initial 519-record URL audit are not URL-verified.
+Research captures live under `/Users/lingion_k/research/school-expansion-20261014/url-verification/`. Quotations and hashes are embedded in machine-readable evidence; search results are discovery aids, never standalone proof. The 170 unknown entries include generic pages, restricted hosts, unproven tenant/path distinctions, campus/graduate scope gaps, and 70 remaining strict-rule downgrades. Pending catalog entries outside the initial 519-record URL audit are not URL-verified.
 
 四川城市技师学院 remains unknown because the current tenant names 四川城市职业学院; attachment to that institution does not establish a shared tenant. 山东大学（威海） remains unknown because parent-university identity and incidental campus mentions do not establish its academic endpoint. 云南农业大学's official integration page links the tenant root, but the root capture does not prove the configured `/jsxsd/` path.
 
