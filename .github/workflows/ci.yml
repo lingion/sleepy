@@ -40,10 +40,13 @@ jobs:
       - name: Verify source coverage and reproducible school catalog
         run: |
           python3 scripts/test_catalog_url_safety.py
+          python3 scripts/test_catalog_ownership.py
+          python3 -m unittest discover -s scripts -p test_school_locations.py
           python3 scripts/generate_school_catalog.py --check
           python3 scripts/enrich_school_cities.py
+          python3 scripts/build_school_location_evidence.py
           python3 scripts/generate_schools_list.py
-          git diff --exit-code -- app/src/main/assets/school_cities.json docs/schools-list.md
+          git diff --exit-code -- app/src/main/assets/school_cities.json scripts/data/school_location_evidence.json docs/catalog/location-evidence.md docs/schools-list.md
 
   collector-test:
     runs-on: ubuntu-latest
