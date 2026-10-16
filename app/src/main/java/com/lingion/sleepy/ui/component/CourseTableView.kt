@@ -1482,7 +1482,7 @@ private fun DetailDayCard(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = DateUtils.localizedDay(day, context) + if (isToday) stringResource(R.string.today_suffix) else "" + (dateStr?.let { "·$it" } ?: ""),
+                text = DateUtils.localizedDay(day, context) + (if (isToday) stringResource(R.string.today_suffix) else "") + (dateStr?.let { "·$it" } ?: ""),
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                 color = if (isGrey) colors.onSurfaceVariant.copy(alpha = SleepyTheme.Alpha.inactive) else colors.onSurface
             )
