@@ -21,7 +21,7 @@
   "sources": [
     {
       "path": "scripts/data/school_catalog_baseline.json",
-      "sha256": "7070441a241a5082d1c8ead77fe646c7170af710ee4004655bf30c4c33857cd1"
+      "sha256": "98f65af07cf252ecc66b36580effd4f172a3253c27886a4466f143361f75691a"
     },
     {
       "path": "scripts/data/official_schools.json",
