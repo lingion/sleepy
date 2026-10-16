@@ -269,7 +269,9 @@ class JwNewSchoolsTest {
         val readyPending = pendingTypes.mapNotNull { (cls, type) ->
             runCatching { Class.forName(cls) }.getOrNull()?.let { type }
         }.toSet()
-        val acceptable = knownTypes + readyPending
+        // WakeUp 兼容层类型 (kingo_new/scau/cumtb/ecupl 等) 由 JwParserRegistry 运行时路由,
+        // 与 SchoolsJsonConsistencyTest 同一口径.
+        val acceptable = knownTypes + readyPending + JwProtocol.WAKEUP_COMPAT_TYPES
 
         val schools = parse(loadSchoolsJson())
         val unknown = schools.filter { it.type != null && it.type !in acceptable }

@@ -84,3 +84,4 @@ docs/HEU_JWGL_IMPORT.md
 docs/PARSER_SPEC_REPORT.md
 docs/YSU_BOYA_PP_IMPORT.md
 docs/four-school-cross-validation-*.md
+__pycache__/

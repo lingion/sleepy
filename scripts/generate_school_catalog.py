@@ -5,6 +5,8 @@ from collections import Counter,defaultdict
 from pathlib import Path
 from catalog_url_safety import audit
 from catalog_ownership import apply_ownership
+from routable_types import routable_types
+ROUTABLE_PROTOCOL_TYPES=routable_types()
 ROOT=Path(__file__).resolve().parents[1]
 DATA=ROOT/'scripts/data'
 def read(name):
@@ -40,8 +42,11 @@ def generate():
  for decision in admissions:
   name=canonical(decision['name']);row=by_name.get(name)
   if row is None or name in baseline_names:continue
-  row.update(url=decision['probe']['finalUrl'],type=decision['mappedType'],status='grad_unverified' if is_grad(name) else 'unverified',enableFetch=False)
-  accepted.append({'catalogId':key(row),'name':name,'url':row['url'],'type':row['type'],'sourceId':decision['sourceId'],'sourceRow':decision['sourceRow'],'checkedAt':decision['probe']['checkedAt'],'http':decision['probe']['http'],'title':decision['probe'].get('title'),'fingerprints':decision['probe'].get('fingerprints',[]),'limitation':decision['verification']})
+  url=decision['probe']['finalUrl']
+  mapped=decision['mappedType']
+  if not url or mapped not in ROUTABLE_PROTOCOL_TYPES:continue  # no declared parser: stays pending, never operational
+  row.update(url=url,type=mapped,status='grad_unverified' if is_grad(name) else 'unverified',enableFetch=False)
+  accepted.append({'catalogId':key(row),'name':name,'url':url,'type':row['type'],'sourceId':decision['sourceId'],'sourceRow':decision['sourceRow'],'checkedAt':decision['probe']['checkedAt'],'http':decision['probe']['http'],'title':decision['probe'].get('title'),'fingerprints':decision['probe'].get('fingerprints',[]),'limitation':decision['verification']})
  assert rows[:len(baseline)]==baseline,'Existing school fields changed before ownership review'
  ownership=apply_ownership(rows,read('school_url_evidence.json'),baseline_names,renames)
  decisions={x['catalogId']:x for x in ownership}
