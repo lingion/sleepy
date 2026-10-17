@@ -693,6 +693,101 @@ private object WakeUpCompat {
         return result.distinctBy { listOf(it.name, it.day, it.startNode, it.startWeek, it.endWeek, it.type) }
     }
 
+    /** UMOOC 教务系统 HTML 解析器。
+     *  特征: timetable 元素, infolist_hr_common 类。
+     *  解析逻辑: 查找 timetable 容器, 遍历行提取课程数据。 */
+    fun parseUmooc(source: String): List<JwCourse> {
+        val doc = Jsoup.parse(source)
+        val timetable = doc.selectFirst(".timetable") ?: doc.selectFirst("#timetable") ?: return emptyList()
+        val result = mutableListOf<JwCourse>()
+        
+        // 查找课程表格行
+        val rows = timetable.select("tr")
+        for ((rowIndex, row) in rows.withIndex()) {
+            val cells = row.select("td")
+            for ((cellIndex, cell) in cells.withIndex()) {
+                val text = cell.text().trim()
+                if (text.isBlank() || text == "节次") continue
+                
+                // 尝试解析课程信息
+                // 格式通常是: 课程名\n教师\n教室\n周次
+                val lines = text.split("\n").map { it.trim() }.filter { it.isNotBlank() }
+                if (lines.size >= 2) {
+                    val name = lines[0]
+                    val teacher = lines.getOrNull(1) ?: ""
+                    val room = lines.getOrNull(2) ?: ""
+                    val weekInfo = lines.getOrNull(3) ?: ""
+                    
+                    // 解析周次 (例如: "1-16周" 或 "1-16(单)")
+                    val weekMatch = Regex("(\\d+)-(\\d+)").find(weekInfo)
+                    if (weekMatch != null) {
+                        val startWeek = weekMatch.groupValues[1].toInt()
+                        val endWeek = weekMatch.groupValues[2].toInt()
+                        val type = if (weekInfo.contains("单")) 1 else if (weekInfo.contains("双")) 0 else 2
+                        
+                        // 列索引对应星期几 (0=周一, 1=周二, ...)
+                        val day = cellIndex + 1
+                        if (day in 1..7) {
+                            // 行索引对应节次 (简化处理, 实际需要根据具体 HTML 结构调整)
+                            val startNode = rowIndex + 1
+                            result.add(JwCourse(name, room, teacher, day, startNode, startNode, startWeek, endWeek, type))
+                        }
+                    }
+                }
+            }
+        }
+        
+        return result.distinctBy { listOf(it.name, it.day, it.startNode, it.startWeek, it.endWeek, it.type) }
+    }
+
+    /** 奕联教务系统 HTML 解析器。
+     *  特征: app-components-CourseTimeTable-styles-timeTable 类。
+     *  解析逻辑: 查找 timeTable 容器, 解析 tbody/tr 结构提取课程数据。 */
+    fun parseYl(source: String): List<JwCourse> {
+        val doc = Jsoup.parse(source)
+        val timeTable = doc.selectFirst(".app-components-CourseTimeTable-styles-timeTable") 
+            ?: doc.selectFirst("[class*=CourseTimeTable]") 
+            ?: return emptyList()
+        val result = mutableListOf<JwCourse>()
+        
+        // 查找课程表格
+        val tbody = timeTable.selectFirst("tbody") ?: return emptyList()
+        val rows = tbody.select("tr")
+        
+        for ((rowIndex, row) in rows.withIndex()) {
+            val cells = row.select("td")
+            for ((cellIndex, cell) in cells.withIndex()) {
+                val text = cell.text().trim()
+                if (text.isBlank() || text == "节次") continue
+                
+                // 尝试解析课程信息
+                val lines = text.split("\n").map { it.trim() }.filter { it.isNotBlank() }
+                if (lines.size >= 2) {
+                    val name = lines[0]
+                    val teacher = lines.getOrNull(1) ?: ""
+                    val room = lines.getOrNull(2) ?: ""
+                    val weekInfo = lines.getOrNull(3) ?: ""
+                    
+                    // 解析周次
+                    val weekMatch = Regex("(\\d+)-(\\d+)").find(weekInfo)
+                    if (weekMatch != null) {
+                        val startWeek = weekMatch.groupValues[1].toInt()
+                        val endWeek = weekMatch.groupValues[2].toInt()
+                        val type = if (weekInfo.contains("单")) 1 else if (weekInfo.contains("双")) 0 else 2
+                        
+                        val day = cellIndex + 1
+                        if (day in 1..7) {
+                            val startNode = rowIndex + 1
+                            result.add(JwCourse(name, room, teacher, day, startNode, startNode, startWeek, endWeek, type))
+                        }
+                    }
+                }
+            }
+        }
+        
+        return result.distinctBy { listOf(it.name, it.day, it.startNode, it.startWeek, it.endWeek, it.type) }
+    }
+
     private fun parseActivity(row: JSONObject): List<JwCourse>? {
         val name = first(row, "courseName", "course", "name", "kcmc")
         val day = firstInt(row, "weekday", "weekDay", "dayOfWeek", "classDay", "xqj", "day")
@@ -842,4 +937,24 @@ class JwCumtbParser(source: String) : WakeUpMarkerParser(source, setOf("eams5-st
 }
 class JwXjuParser(source: String) : WakeUpMarkerParser(source, setOf("xjtu", "xju", "courseTable", "课程表")) {
     override fun generateCourseList() = WakeUpCompat.parseXju(source).ifEmpty { super.generateCourseList() }
+}
+
+/** UMOOC 教务系统 HTML 解析器。
+ *  特征: /academic/common/security/login.jsp, timetable 元素, infolist_hr_common 类。
+ *  解析逻辑: 查找 timetable 容器, 遍历行提取课程数据。 */
+class JwUmoocParser(source: String) : WakeUpMarkerParser(source, setOf("timetable", "infolist_hr_common", "academic/common/security")) {
+    override fun generateCourseList(): List<JwCourse> {
+        val parsed = WakeUpCompat.parseUmooc(source)
+        return parsed.ifEmpty { super.generateCourseList() }
+    }
+}
+
+/** 奕联教务系统 HTML 解析器。
+ *  特征: /lyuapServer/login, app-components-CourseTimeTable-styles-timeTable 类。
+ *  解析逻辑: 查找 timeTable 容器, 解析 tbody/tr 结构提取课程数据。 */
+class JwYlParser(source: String) : WakeUpMarkerParser(source, setOf("CourseTimeTable-styles-timeTable", "lyuapServer", "奕联")) {
+    override fun generateCourseList(): List<JwCourse> {
+        val parsed = WakeUpCompat.parseYl(source)
+        return parsed.ifEmpty { super.generateCourseList() }
+    }
 }

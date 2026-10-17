@@ -6245,7 +6245,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_new",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://sso.xdsisu.edu.cn/login?service=https:%2F%2Ffd.xdsisu.edu.cn%2Fwengine-auth%2Flogin%3Fcas_login%3Dtrue",
       "checkedAt": "2026-10-16",
@@ -6483,7 +6483,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_new",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://nbkjw.suibe.edu.cn/student/home",
       "checkedAt": "2026-10-16",
@@ -6933,7 +6933,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_new",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://my.gench.edu.cn/FAP5.Portal/pc.html?rnd=465464148",
       "checkedAt": "2026-10-16",
@@ -7466,7 +7466,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_new",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://jwgl.sdju.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -7495,7 +7495,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://ids.shanghaitech.edu.cn/authserver/login?service=https%3A%2F%2Feams.shanghaitech.edu.cn%2Feams%2Fhome.action",
       "checkedAt": "2026-10-16",
@@ -7643,7 +7643,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_new",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://jiaowu2023.siva.edu.cn/student/home",
       "checkedAt": "2026-10-16",
@@ -8627,7 +8627,8 @@
       "error": "curl-28"
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -8657,7 +8658,8 @@
       "error": "curl-52"
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -8732,7 +8734,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://ca.cupl.edu.cn/tpass/login",
       "checkedAt": "2026-10-16",
@@ -8861,7 +8863,8 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -9085,7 +9088,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_new",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://bk.cup.edu.cn/student",
       "checkedAt": "2026-10-16",
@@ -11330,7 +11333,8 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -11880,7 +11884,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://cas1.xyu.edu.cn/cas/login?service=https%3A%2F%2Fjw.xyu.edu.cn%2Feams%2Fsso%2Flogin.action%3FtargetUrl%3Dbase64aHR0cHM6Ly9qdy54eXUuZWR1LmNuL2VhbXMvaG9tZUV4dC5hY3Rpb24%3D",
       "checkedAt": "2026-10-16",
@@ -12306,7 +12310,8 @@
       "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -12954,7 +12959,8 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -13071,7 +13077,8 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -14841,7 +14848,8 @@
       "error": "curl-28"
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -16692,7 +16700,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_new",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://jwxt.nufe.edu.cn/student/login?refer=https://jwxt.nufe.edu.cn/student/home",
       "checkedAt": "2026-10-16",
@@ -18305,7 +18313,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://wvpn.hfpec.edu.cn/http/77726476706e69737468656265737421f9f352d22f3678557d468ca88d1b203b/authserver/login?service=https%3A%2F%2Fwvpn.hfpec.edu.cn%2Flogin%3Fcas_login%3Dtrue",
       "checkedAt": "2026-10-16",
@@ -19709,7 +19717,8 @@
       "error": "non-public-url"
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -20538,7 +20547,8 @@
       "error": "curl-28"
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -20796,7 +20806,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://sqxy.jijiaox.com/mg/login/",
       "checkedAt": "2026-10-16",
@@ -21602,7 +21612,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_new",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "http://jwcxk.sicnu.edu.cn/student/login",
       "checkedAt": "2026-10-16",
@@ -22324,7 +22334,8 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -23266,7 +23277,8 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -23487,7 +23499,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://id.dlmu.edu.cn/login?service=https:%2F%2Fid.dlmu.edu.cn%2Foauth2.0%2FcallbackAuthorize%3Fclient_id%3DEVvlF08Y4ujiPiuGuTYj%26redirect_uri%3Dhttps%253A%252F%252Fhall.dlmu.edu.cn%252Fportal%252Fsso%252Fcallback%26response_type%3Dcode%26client_name%3DCasOAuthClient",
       "checkedAt": "2026-10-16",
@@ -23929,7 +23941,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "http://jwxt.tjau.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -24136,7 +24148,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "http://sfrz.tsguas.edu.cn/sso/login?service=http://xxmh.tsguas.edu.cn/user/simpleSSOLogin",
       "checkedAt": "2026-10-16",
@@ -24257,7 +24269,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://sso.tju.edu.cn/cas/login",
       "checkedAt": "2026-10-16",
@@ -24652,7 +24664,8 @@
       "error": "non-public-url Session-bound URL redacted; not usable as an operational value."
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -24698,7 +24711,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_new",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://cas.tjzhic.edu.cn/cas/login",
       "checkedAt": "2026-10-16",
@@ -26073,7 +26086,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://webvpn.nbcc.cn/users/sign_in",
       "checkedAt": "2026-10-16",
@@ -27108,7 +27121,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "http://xjwxt.ahpu.edu.cn/ahpu/localLogin.action",
       "checkedAt": "2026-10-16",
@@ -27261,7 +27274,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "http://jwgl.aust.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -28809,7 +28822,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://authserver-sict-edu-cn.vpn.sict.edu.cn:8118/authserver/login?service=https%3A%2F%2Fvpn.sict.edu.cn%2Fauth%2Fcas_validate%3Fentry_id%3D1",
       "checkedAt": "2026-10-16",
@@ -29798,7 +29811,8 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -31709,7 +31723,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_new",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://ehall.vpn.chu.edu.cn:4443/",
       "checkedAt": "2026-10-16",
@@ -32765,7 +32779,8 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -33691,7 +33706,8 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -34245,7 +34261,8 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -34365,7 +34382,8 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -34443,7 +34461,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "http://jw.gzgs.edu.cn/http://auth.gzgs.org.cn/cas/login?service=http%3A%2F%2Fis.gzgs.org.cn%2Fc%2Fportal%2Flogin%3Fredirect%3D%252Fweb%252Fguest%252Findex%26p_l_id%3D10213",
       "checkedAt": "2026-10-16",
@@ -37594,7 +37612,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://ywtb.cuit.edu.cn/#/login",
       "checkedAt": "2026-10-16",
@@ -39458,7 +39476,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://mycas.xjmu.edu.cn/cas/login?service=https://portal.xjmu.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -42191,7 +42209,8 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -42207,7 +42226,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_new",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://v.guet.edu.cn/https/77726476706e69737468656265737421f3f652d220256d44300d8db9d6562d/authserver/login?service=https%3A%2F%2Fv.guet.edu.cn%2Flogin%3Fcas_login%3Dtrue",
       "checkedAt": "2026-10-16",
@@ -42279,7 +42298,8 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -42908,7 +42928,8 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -43045,7 +43066,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://whxyjwxt.whxy.edu.cn/eams/login.action",
       "checkedAt": "2026-10-16",
@@ -44297,7 +44318,8 @@
       "error": "non-public-url"
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -45268,7 +45290,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_new",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "http://www.jscfa.edu.cn",
       "checkedAt": "2026-10-16",
@@ -45632,7 +45654,8 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -47013,7 +47036,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_new",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://jwxt.czu.edu.cn/student/login",
       "checkedAt": "2026-10-16",
@@ -49853,7 +49876,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://uia.hpu.edu.cn/cas/login?service=http%3A%2F%2Fzhjw.hpu.edu.cn%2Feams%2Flogin.action#/https://zhjw.hpu.edu.cn/eams/loginExt.action",
       "checkedAt": "2026-10-16",
@@ -50393,7 +50416,8 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -53683,7 +53707,8 @@
       "error": "curl-28"
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -53921,7 +53946,8 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -62407,7 +62433,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_new",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://sso.tec.suda.edu.cn/login?service=http%3A%2F%2Flb.tec.suda.edu.cn%2Flogin",
       "checkedAt": "2026-10-16",
@@ -63573,7 +63599,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_new",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://uis.nwpu.edu.cn/cas/login?service=https%3A%2F%2Fecampus.nwpu.edu.cn%2Fc%2Fportal%2Flogin",
       "checkedAt": "2026-10-16",
@@ -63602,7 +63628,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_new",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://uis.nwpu.edu.cn/cas/login?service=https%3A%2F%2Fecampus.nwpu.edu.cn%2Fc%2Fportal%2Flogin",
       "checkedAt": "2026-10-16",
@@ -64193,7 +64219,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://jwxt.xisu.edu.cn/eams/login.action",
       "checkedAt": "2026-10-16",
@@ -64282,7 +64308,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_new",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://sz.xpu.edu.cn/auth2/login",
       "checkedAt": "2026-10-16",
@@ -64867,7 +64893,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://cas.xaau.edu.cn/lyuapServer/login?service=https%3A%2F%2Fscore.xaau.edu.cn%2Feams%2Fhome.action",
       "checkedAt": "2026-10-16",
@@ -66648,7 +66674,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_new",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "http://i.gufe.edu.cn/dcp/forward.action?path=dcp/apps/sso/jsp/ssoDcpSelf&appid=4095",
       "checkedAt": "2026-10-16",
@@ -67651,7 +67677,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://authserver.lntu.edu.cn/authserver/login?service=https%3A%2F%2Fehall.lntu.edu.cn%2Flogin",
       "checkedAt": "2026-10-16",
@@ -68127,7 +68153,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://mea.lnist.edu.cn/eams/loginExt.action",
       "checkedAt": "2026-10-16",
@@ -69841,7 +69867,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://jw.v.zzu.edu.cn/eams/login.action",
       "checkedAt": "2026-10-16",
@@ -72379,7 +72405,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://cas.cqie.cn/cas/WEB/index.html#/index",
       "checkedAt": "2026-10-16",
@@ -76195,7 +76221,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "http://my.sust.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -77329,7 +77355,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://cas.qhmu.edu.cn/cas/login?service=https%3A%2F%2Fportal.qhmu.edu.cn%2F%3Fpath%3Dhttps%3A%2F%2Fportal.qhmu.edu.cn%2Fmain.html%23%2FServiceCenter",
       "checkedAt": "2026-10-16",
@@ -77564,7 +77590,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "http://jw.hstc.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -77740,7 +77766,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xatu_shuwei",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://v.cnu.edu.cn/users/sign_in",
       "checkedAt": "2026-10-16",
