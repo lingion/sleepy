@@ -24,16 +24,26 @@ DATA = Path(__file__).resolve().parent / 'data'
 TODAY = '2026-10-16'
 
 
+def read_journal_lines(path):
+    """Split the journal on \\n only.
+
+    Page text may embed \\x85 (NEL), U+2028/U+2029 inside JSON strings;
+    str.splitlines() would treat them as line boundaries and corrupt the
+    journal. ensure_ascii=True on write keeps future lines ASCII-safe.
+    """
+    return path.read_text().split('\n')
+
+
 def clean_journal():
     path = DATA / 'entry-evidence-captures.jsonl'
     if not path.exists():
         return 0
     good, dropped = [], 0
-    for line in path.read_text().splitlines():
+    for line in read_journal_lines(path):
         if not line.strip():
             continue
         try:
-            good.append(json.dumps(json.loads(line), ensure_ascii=False))
+            good.append(json.dumps(json.loads(line), ensure_ascii=True))
         except json.JSONDecodeError:
             dropped += 1
     path.write_text('\n'.join(good) + '\n')
@@ -92,7 +102,7 @@ def load_captures():
     captures = {}
     if not path.exists():
         return captures
-    for line in path.read_text().splitlines():
+    for line in read_journal_lines(path):
         if not line.strip():
             continue
         try:

@@ -150,7 +150,7 @@ def text_evidence(text):
 def load_captures():
     caps = {}
     if CAPTURES.exists():
-        for line in CAPTURES.read_text().splitlines():
+        for line in CAPTURES.read_text().split('\n'):
             if line.strip():
                 rec = json.loads(line)
                 caps[rec['url']] = rec

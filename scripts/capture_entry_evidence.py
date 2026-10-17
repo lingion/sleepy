@@ -167,7 +167,7 @@ def main():
     out_file = DATA / 'entry-evidence-captures.jsonl'
     done = {}
     if args.resume and out_file.exists():
-        for line in out_file.read_text().splitlines():
+        for line in out_file.read_text().split('\n'):
             if line.strip():
                 c = json.loads(line)
                 done[c['url']] = c
@@ -189,14 +189,15 @@ def main():
             cap = fut.result()
             completed += 1
             with write_lock, open(out_file, 'a') as f:
-                f.write(json.dumps(cap, ensure_ascii=False) + '\n')
+                f.write(json.dumps(cap, ensure_ascii=False).replace('\x85', '\\u0085')
+                               .replace('\u2028', '\\u2028').replace('\u2029', '\\u2029') + '\n')
                 f.flush()
             if completed % 100 == 0:
                 print(f'  {completed}/{len(todo)}', flush=True)
 
     captures = dict(done)
     if out_file.exists():
-        for line in out_file.read_text().splitlines():
+        for line in out_file.read_text().split('\n'):
             if line.strip():
                 c = json.loads(line)
                 captures[c['url']] = c
