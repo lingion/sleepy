@@ -49,9 +49,9 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 
 ## 汇总
 
-- 批次行 2499：keep 1553；remap（含回退与升级）21；unknown（维持不可路由）925；frozen 基线行 170
-- 最终文件相对 HEAD 的类型变化：13 条（其中保留工作树 remap：0；回退工作树 remap：0；其余为证据升级）
-- 裁决后仍不可路由（pending）：925 条；可路由且 URL 可用：1739 条
+- 批次行 2499：keep 1578；remap（含回退与升级）8；unknown（维持不可路由）913；frozen 基线行 170
+- 最终文件相对 HEAD 的类型变化：12 条（其中保留工作树 remap：12；回退工作树 remap：0；其余为证据升级）
+- 裁决后仍不可路由（pending）：913 条；可路由且 URL 可用：1751 条
 
 ## 逐条依据表（全部 2499 批次行；sourceRow 为 WakeUp 源表行号，括号内为来源 id）
 
@@ -191,8 +191,8 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 1848（wakeup-6.1.06-asset） | 临沂科技职业学院 | ziyan | ziyan | unknown | auth/proxy shell only; no system anchor | 2026-10-17 |
 | 1864（wakeup-6.1.06-asset） | 临沧职业学院 | wisedu | wisedu | keep | URL anchor /jwapp/ | 2026-10-17 |
 | 1850（wakeup-6.1.06-asset） | 临沂城市职业学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
-| 1862（wakeup-6.1.06-asset） | 丽江师范学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
-| 1843（wakeup-6.1.06-asset） | 丽江师范高等专科学校 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
+| 1862（wakeup-6.1.06-asset） | 丽江师范学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
+| 1843（wakeup-6.1.06-asset） | 丽江师范高等专科学校 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
 | 1218（wakeup-52.36-user-attachment） | 中山大学新华学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 1759（wakeup-6.1.06-asset） | 丽江文化旅游学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
 | 3214（wakeup-6.1.06-asset） | 义乌工商职业技术学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
@@ -203,7 +203,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 1628（wakeup-6.1.06-asset） | 九江卫生健康职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 1596（wakeup-6.1.06-asset） | 九州职业技术学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
 | 2906（wakeup-6.1.06-asset） | 乌兰察布职业学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
-| 3255（wakeup-6.1.06-asset） | 云南三鑫职业技术学院 | kingo_new | kingo_new | keep | page KINGOSOFT（青果品牌） | 2026-10-17 |
+| 3255（wakeup-6.1.06-asset） | 云南三鑫职业技术学院 | kingo_new | kingo_new | keep | page KINGOSOFT（青果品牌）; page 教务网络管理系统 + jwweb | 2026-10-17 |
 | 1492（wakeup-6.1.06-asset） | 九江职业大学 | urp_new | urp_new | keep | declared routable type retained | 2026-10-17 |
 | 1653（wakeup-6.1.06-asset） | 九江科技职业大学 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
 | 651（wakeup-52.36-user-attachment） | 丽水学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
@@ -287,7 +287,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 1624（wakeup-52.36-user-attachment） | 兰州工商学院 | qz | qz | keep | URL anchor jsxsd/jxd/logon.do/verifycode.servlet/qzdatasoft | 2026-10-17 |
 | 1872（wakeup-6.1.06-asset） | 兰州现代职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 1766（wakeup-6.1.06-asset） | 兰州文理学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
-| 1869（wakeup-6.1.06-asset） | 兰州职业技术学院 | ziyan | kingo_new | remap | upgraded by page KINGOSOFT（青果品牌） | 2026-10-17 |
+| 1869（wakeup-6.1.06-asset） | 兰州职业技术学院 | kingo_new | kingo_new | keep | page KINGOSOFT（青果品牌） | 2026-10-17 |
 | 1889（wakeup-6.1.06-asset） | 兰州资源环境职业技术大学 | qz | qz | keep | declared routable type retained | 2026-10-17 |
 | 1999（wakeup-6.1.06-asset） | 内江卫生与健康职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 1866（wakeup-6.1.06-asset） | 兰州石化职业技术大学 | qz | qz | keep | URL anchor jsxsd/jxd/logon.do/verifycode.servlet/qzdatasoft; page 强智科技/教学一体化/qzdatasoft.com | 2026-10-17 |
@@ -407,7 +407,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 382（wakeup-52.36-user-attachment） | 华南农业大学珠江学院 | qz | qz | keep | declared routable type retained | 2026-10-17 |
 | 714（wakeup-52.36-user-attachment） | 南京中医药大学 | cumtb | cumtb | keep | declared routable type retained | 2026-10-17 |
 | 716（wakeup-52.36-user-attachment） | 南京中医药大学（泰州） | cumtb | cumtb | keep | declared routable type retained | 2026-10-17 |
-| 2017（wakeup-6.1.06-asset） | 南京交通职业技术学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
+| 2017（wakeup-6.1.06-asset） | 南京交通职业技术学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
 | 717（wakeup-52.36-user-attachment） | 南京中医药大学翰林学院 | urp | urp | keep | declared routable type retained | 2026-10-17 |
 | 721（wakeup-52.36-user-attachment） | 南京农业大学 | qz_single_node | qz_single_node | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 720（wakeup-52.36-user-attachment） | 南京信息职业技术学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
@@ -420,7 +420,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 1964（wakeup-6.1.06-asset） | 南京师范大学泰州学院 | nnutc | nnutc | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 731（wakeup-52.36-user-attachment） | 南京师范大学 | qz | qz | keep | declared routable type retained | 2026-10-17 |
 | 2050（wakeup-6.1.06-asset） | 南京晓庄学院 | qz | qz | keep | declared routable type retained | 2026-10-17 |
-| 735（wakeup-52.36-user-attachment） | 南京森林警察学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
+| 735（wakeup-52.36-user-attachment） | 南京森林警察学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
 | 2109（wakeup-6.1.06-asset） | 南京理工大学紫金学院 | urp | urp | keep | declared routable type retained | 2026-10-17 |
 | 2016（wakeup-6.1.06-asset） | 南京科技职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 2038（wakeup-6.1.06-asset） | 南京医科大学康达学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
@@ -441,7 +441,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 2070（wakeup-6.1.06-asset） | 南方科技大学 | login | login | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 1949（wakeup-6.1.06-asset） | 南京警察学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 2007（wakeup-6.1.06-asset） | 南昌健康职业技术学院 | chaoxing | chaoxing | keep | URL anchor chaoxing host/xsd/queryKbForGrdb | 2026-10-17 |
-| 1931（wakeup-6.1.06-asset） | 南昌交通学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
+| 1931（wakeup-6.1.06-asset） | 南昌交通学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
 | 1975（wakeup-6.1.06-asset） | 南昌大学共青学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 2001（wakeup-6.1.06-asset） | 南宁职业技术大学 | ziyan | ziyan | unknown | auth/proxy shell only; no system anchor | 2026-10-17 |
 | 2008（wakeup-6.1.06-asset） | 南昌大学科学技术学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
@@ -481,7 +481,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 1141（wakeup-6.1.06-asset） | 合肥信息技术职业学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 1075（wakeup-52.36-user-attachment） | 厦门工学院 | qz_br | qz_br | keep | declared routable type retained | 2026-10-17 |
 | 2999（wakeup-6.1.06-asset） | 厦门演艺职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
-| 1397（wakeup-6.1.06-asset） | 合肥共达职业技术学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
+| 1397（wakeup-6.1.06-asset） | 合肥共达职业技术学院 | ziyan | kingo_new | keep | page 教务网络管理系统 + jwweb | 2026-10-17 |
 | 1339（wakeup-6.1.06-asset） | 合肥大学 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 1337（wakeup-6.1.06-asset） | 合肥工业大学（可切换学期） | eams5 | eams5 | keep | URL anchor eams5 (jxglstu/for-std) | 2026-10-17 |
 | 1335（wakeup-6.1.06-asset） | 合肥幼儿师范高等专科学校 | shuwei_json | shuwei_json | keep | declared routable type retained | 2026-10-17 |
@@ -527,7 +527,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 2805（wakeup-6.1.06-asset） | 吐鲁番职业技术学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 1801（wakeup-6.1.06-asset） | 吕梁学院 | kingo_new | kingo_new | keep | declared routable type retained | 2026-10-17 |
 | 1829（wakeup-6.1.06-asset） | 吕梁师范高等专科学校 | chaoxing | chaoxing | keep | URL anchor chaoxing host/xsd/queryKbForGrdb | 2026-10-17 |
-| 1828（wakeup-6.1.06-asset） | 吕梁职业技术学院 | ziyan | kingo_new | remap | upgraded by page KINGOSOFT（青果品牌） | 2026-10-17 |
+| 1828（wakeup-6.1.06-asset） | 吕梁职业技术学院 | kingo_new | kingo_new | keep | page KINGOSOFT（青果品牌） | 2026-10-17 |
 | 3533（wakeup-6.1.06-asset） | 周口职业技术学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 1333（wakeup-6.1.06-asset） | 呼伦贝尔学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 3548（wakeup-6.1.06-asset） | 周口文理职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
@@ -556,7 +556,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 3396（wakeup-6.1.06-asset） | 周口师范学院 | kingo_new | kingo_new | keep | declared routable type retained | 2026-10-17 |
 | 1390（wakeup-6.1.06-asset） | 哈尔滨科学技术职业学院 | ziyan | ziyan | unknown | auth/proxy shell only; no system anchor | 2026-10-17 |
 | 403（wakeup-52.36-user-attachment） | 哈尔滨石油学院 | cf_new | cf_new | keep | declared routable type retained | 2026-10-17 |
-| 1378（wakeup-6.1.06-asset） | 哈尔滨金融学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
+| 1378（wakeup-6.1.06-asset） | 哈尔滨金融学院 | ziyan | kingo_new | keep | page 教务网络管理系统 + jwweb | 2026-10-17 |
 | 1384（wakeup-6.1.06-asset） | 哈尔滨铁道职业技术学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 2722（wakeup-6.1.06-asset） | 唐山学院 | kingo_new | kingo_new | keep | page KINGOSOFT（青果品牌） | 2026-10-17 |
 | 402（wakeup-52.36-user-attachment） | 哈尔滨理工大学 | umooc | umooc | keep | declared routable type retained | 2026-10-17 |
@@ -564,7 +564,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 2709（wakeup-6.1.06-asset） | 唐山海运职业学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 2248（wakeup-52.36-user-attachment） | 哈尔滨职业技术大学 | hitsz | hitsz | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 2247（wakeup-52.36-user-attachment） | 哈尔滨职业技术学院 | hitsz | hitsz | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
-| 2696（wakeup-6.1.06-asset） | 唐山幼儿师范高等专科学校 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
+| 2696（wakeup-6.1.06-asset） | 唐山幼儿师范高等专科学校 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
 | 2788（wakeup-6.1.06-asset） | 唐山科技职业技术学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 2335（wakeup-6.1.06-asset） | 商丘医学高等专科学校 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 1122（wakeup-6.1.06-asset） | 哈尔滨远东理工学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
@@ -890,7 +890,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 2340（wakeup-6.1.06-asset） | 山东药品食品职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 2394（wakeup-6.1.06-asset） | 山西卫生健康职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 1310（wakeup-52.36-user-attachment） | 山西传媒学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
-| 2543（wakeup-6.1.06-asset） | 山东科技职业学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
+| 2543（wakeup-6.1.06-asset） | 山东科技职业学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
 | 911（wakeup-52.36-user-attachment） | 山西医科大学 | cf_new | cf_new | keep | declared routable type retained | 2026-10-17 |
 | 2224（wakeup-6.1.06-asset） | 山西工程科技职业大学 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 913（wakeup-52.36-user-attachment） | 山西大学 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
@@ -941,7 +941,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 459（wakeup-6.1.06-asset） | 常德学院 | ziyan | ziyan | unknown | auth/proxy shell only; no system anchor | 2026-10-17 |
 | 2118（wakeup-6.1.06-asset） | 平凉职业技术学院 | qz | qz | keep | URL anchor jsxsd/jxd/logon.do/verifycode.servlet/qzdatasoft | 2026-10-17 |
 | 465（wakeup-6.1.06-asset） | 常德科技职业技术学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
-| 275（wakeup-6.1.06-asset） | 常州纺织服装职业技术学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
+| 275（wakeup-6.1.06-asset） | 常州纺织服装职业技术学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
 | 2120（wakeup-6.1.06-asset） | 平顶山工业职业技术学院 | qz | qz | keep | page 强智科技/教学一体化/qzdatasoft.com | 2026-10-17 |
 | 2113（wakeup-6.1.06-asset） | 平顶山文化艺术职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 2112（wakeup-6.1.06-asset） | 平顶山学院 | kingo_new | kingo_new | keep | page KINGOSOFT（青果品牌） | 2026-10-17 |
@@ -1016,7 +1016,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 949（wakeup-6.1.06-asset） | 广州东华职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 954（wakeup-6.1.06-asset） | 广州体育职业技术学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 294（wakeup-52.36-user-attachment） | 广州华商学院 | qz | qz | keep | URL anchor jsxsd/jxd/logon.do/verifycode.servlet/qzdatasoft | 2026-10-17 |
-| 853（wakeup-6.1.06-asset） | 广州华南商贸职业学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
+| 853（wakeup-6.1.06-asset） | 广州华南商贸职业学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
 | 849（wakeup-6.1.06-asset） | 广州南洋理工职业学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 690（wakeup-6.1.06-asset） | 广州华立学院 | qz | qz | keep | page 强智科技/教学一体化/qzdatasoft.com | 2026-10-17 |
 | 295（wakeup-52.36-user-attachment） | 广州华夏职业学院 | yl | yl | keep | declared routable type retained | 2026-10-17 |
@@ -1086,7 +1086,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 814（wakeup-6.1.06-asset） | 广西警察学院 | kingo_new | kingo_new | keep | page KINGOSOFT（青果品牌） | 2026-10-17 |
 | 328（wakeup-52.36-user-attachment） | 广西科技大学 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
 | 334（wakeup-52.36-user-attachment） | 广西财经学院 | kingo_new | kingo_new | remap | conflict: zf_new via URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
-| 927（wakeup-6.1.06-asset） | 广西蓝天航空职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
+| 927（wakeup-6.1.06-asset） | 广西蓝天航空职业学院 | ziyan | kingo_new | keep | page 教务网络管理系统 + jwweb | 2026-10-17 |
 | 926（wakeup-6.1.06-asset） | 广西质量工程职业技术学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 795（wakeup-6.1.06-asset） | 广西自然资源职业技术学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
 | 730（wakeup-6.1.06-asset） | 广西金融职业技术学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
@@ -1106,7 +1106,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 1732（wakeup-6.1.06-asset） | 开封大学 | kingo_new | kingo_new | keep | page KINGOSOFT（青果品牌） | 2026-10-17 |
 | 1731（wakeup-6.1.06-asset） | 开封文化艺术职业学院 | ziyan | ziyan | unknown | auth/proxy shell only; no system anchor | 2026-10-17 |
 | 3556（wakeup-6.1.06-asset） | 张家界学院 | qz | qz | keep | declared routable type retained | 2026-10-17 |
-| 3452（wakeup-6.1.06-asset） | 张家口学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
+| 3452（wakeup-6.1.06-asset） | 张家口学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
 | 2947（wakeup-6.1.06-asset） | 徐州工业职业技术学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 3293（wakeup-6.1.06-asset） | 延边职业技术学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 3149（wakeup-6.1.06-asset） | 徐州生物工程职业技术学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
@@ -1176,7 +1176,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 1082（wakeup-52.36-user-attachment） | 新乡医学院 | kingo_new | kingo_new | keep | declared routable type retained | 2026-10-17 |
 | 2841（wakeup-6.1.06-asset） | 文山职业技术学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 297（wakeup-6.1.06-asset） | 承德医学院 | qz | qz | keep | declared routable type retained | 2026-10-17 |
-| 2992（wakeup-6.1.06-asset） | 新乡工程学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
+| 2992（wakeup-6.1.06-asset） | 新乡工程学院 | ziyan | kingo_new | keep | page 教务网络管理系统 + jwweb | 2026-10-17 |
 | 1865（wakeup-6.1.06-asset） | 拉萨师范学院 | ziyan | ziyan | unknown | auth/proxy shell only; no system anchor | 2026-10-17 |
 | 1083（wakeup-52.36-user-attachment） | 新乡学院 | classic_eams | classic_eams | keep | declared routable type retained | 2026-10-17 |
 | 1084（wakeup-52.36-user-attachment） | 新余学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
@@ -1212,7 +1212,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 3018（wakeup-6.1.06-asset） | 新疆石河子职业技术学院 | ziyan | ziyan | unknown | auth/proxy shell only; no system anchor | 2026-10-17 |
 | 3109（wakeup-6.1.06-asset） | 新疆第二医学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 2960（wakeup-6.1.06-asset） | 新疆艺术学院 | qz | qz | keep | URL anchor jsxsd/jxd/logon.do/verifycode.servlet/qzdatasoft | 2026-10-17 |
-| 3014（wakeup-6.1.06-asset） | 新疆轻工职业技术学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
+| 3014（wakeup-6.1.06-asset） | 新疆轻工职业技术学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
 | 1027（wakeup-52.36-user-attachment） | 无锡太湖学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
 | 2853（wakeup-6.1.06-asset） | 无锡商业职业技术学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 2820（wakeup-6.1.06-asset） | 无锡工艺职业技术学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
@@ -1274,7 +1274,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 3526（wakeup-6.1.06-asset） | 枣庄科技职业学院 | ziyan | ziyan | unknown | auth/proxy shell only; no system anchor | 2026-10-17 |
 | 1803（wakeup-6.1.06-asset） | 柳州城市职业学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 3448（wakeup-6.1.06-asset） | 枣庄应用职业技术学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
-| 3527（wakeup-6.1.06-asset） | 枣庄职业学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
+| 3527（wakeup-6.1.06-asset） | 枣庄职业学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
 | 3567（wakeup-6.1.06-asset） | 株洲市职工大学 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 925（wakeup-6.1.06-asset） | 桂林信息工程职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 937（wakeup-6.1.06-asset） | 桂林信息科技学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
@@ -1335,7 +1335,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 257（wakeup-6.1.06-asset） | 毕节工业职业技术学院 | ziyan | ziyan | unknown | auth/proxy shell only; no system anchor | 2026-10-17 |
 | 2922（wakeup-6.1.06-asset） | 武汉软件工程职业学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
 | 256（wakeup-6.1.06-asset） | 毕节幼儿师范高等专科学校 | chaoxing | chaoxing | keep | URL anchor chaoxing host/xsd/queryKbForGrdb | 2026-10-17 |
-| 1924（wakeup-6.1.06-asset） | 民办万博科技职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
+| 1924（wakeup-6.1.06-asset） | 民办万博科技职业学院 | ziyan | kingo_new | keep | page 教务网络管理系统 + jwweb | 2026-10-17 |
 | 254（wakeup-6.1.06-asset） | 毕节职业技术学院 | chaoxing | chaoxing | keep | URL anchor chaoxing host/xsd/queryKbForGrdb | 2026-10-17 |
 | 2890（wakeup-6.1.06-asset） | 武汉铁路职业技术学院 | qz | qz | keep | declared routable type retained | 2026-10-17 |
 | 1923（wakeup-6.1.06-asset） | 民办合肥经济技术职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
@@ -1420,7 +1420,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 1717（wakeup-6.1.06-asset） | 江西工业职业技术学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
 | 1611（wakeup-6.1.06-asset） | 江西开放大学 | ziyan | ziyan | unknown | auth/proxy shell only; no system anchor | 2026-10-17 |
 | 1649（wakeup-6.1.06-asset） | 江西旅游商贸职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
-| 1638（wakeup-6.1.06-asset） | 江西枫林涉外经贸职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
+| 1638（wakeup-6.1.06-asset） | 江西枫林涉外经贸职业学院 | ziyan | kingo_new | keep | page 教务网络管理系统 + jwweb | 2026-10-17 |
 | 1631（wakeup-6.1.06-asset） | 江西水利职业学院 | chaoxing | chaoxing | keep | URL anchor chaoxing host/xsd/queryKbForGrdb | 2026-10-17 |
 | 1562（wakeup-6.1.06-asset） | 江西服装学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 1659（wakeup-6.1.06-asset） | 江西水利电力大学 | ziyan | ziyan | unknown | auth/proxy shell only; no system anchor | 2026-10-17 |
@@ -1445,7 +1445,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 1588（wakeup-6.1.06-asset） | 江门职业技术学院 | jmpt | jmpt | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 1950（wakeup-52.36-user-attachment） | 江西航空职业技术学院 | javtc | javtc | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 1701（wakeup-6.1.06-asset） | 江西软件职业技术大学 | qz | qz | keep | URL anchor jsxsd/jxd/logon.do/verifycode.servlet/qzdatasoft | 2026-10-17 |
-| 1687（wakeup-6.1.06-asset） | 江西飞行学院 | ziyan | cf | remap | upgraded by page 乘方教务/科技 | 2026-10-17 |
+| 1687（wakeup-6.1.06-asset） | 江西飞行学院 | cf | cf | keep | page 乘方教务/科技 | 2026-10-17 |
 | 1641（wakeup-6.1.06-asset） | 江西青年职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 919（wakeup-52.36-user-attachment） | 沈阳体育学院 | cf | cf | keep | page 乘方教务/科技 | 2026-10-17 |
 | 453（wakeup-6.1.06-asset） | 池州职业技术学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
@@ -1464,7 +1464,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 2582（wakeup-6.1.06-asset） | 沈阳航空航天大学 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 2583（wakeup-6.1.06-asset） | 沙洲职业工学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 925（wakeup-52.36-user-attachment） | 沈阳大学 | qz | qz | keep | declared routable type retained | 2026-10-17 |
-| 2393（wakeup-6.1.06-asset） | 沈阳音乐学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
+| 2393（wakeup-6.1.06-asset） | 沈阳音乐学院 | ziyan | kingo_new | keep | page 教务网络管理系统 + jwweb | 2026-10-17 |
 | 2580（wakeup-6.1.06-asset） | 沈阳理工大学 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
 | 303（wakeup-6.1.06-asset） | 沧州交通学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 1365（wakeup-52.36-user-attachment） | 沈阳药科大学 | qz | qz | keep | declared routable type retained | 2026-10-17 |
@@ -1491,7 +1491,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 1371（wakeup-6.1.06-asset） | 河北公安警察职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 426（wakeup-52.36-user-attachment） | 河北建筑工程学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 1299（wakeup-6.1.06-asset） | 河北工业大学 | urp_new | urp_new | keep | declared routable type retained | 2026-10-17 |
-| 1370（wakeup-6.1.06-asset） | 河北对外经贸职业学院 | kingo_new | kingo_new | keep | page KINGOSOFT（青果品牌） | 2026-10-17 |
+| 1370（wakeup-6.1.06-asset） | 河北对外经贸职业学院 | kingo_new | kingo_new | keep | page KINGOSOFT（青果品牌）; page 教务网络管理系统 + jwweb | 2026-10-17 |
 | 1193（wakeup-6.1.06-asset） | 河北机电职业技术学院 | kingo_new | kingo_new | keep | declared routable type retained | 2026-10-17 |
 | 1369（wakeup-6.1.06-asset） | 河北旅游职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 1374（wakeup-6.1.06-asset） | 河北正定师范高等专科学校 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
@@ -1531,9 +1531,9 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 1273（wakeup-6.1.06-asset） | 河南工业职业技术学院 | qz | qz | keep | page 强智科技/教学一体化/qzdatasoft.com | 2026-10-17 |
 | 1413（wakeup-6.1.06-asset） | 河南建筑职业技术学院 | ziyan | ziyan | unknown | auth/proxy shell only; no system anchor | 2026-10-17 |
 | 443（wakeup-52.36-user-attachment） | 河南师范大学 | cf_new | cf_new | keep | declared routable type retained | 2026-10-17 |
-| 445（wakeup-52.36-user-attachment） | 河南广播电视大学 | shuwei_m | classic_eams | remap | upgraded by URL anchor eams login(.action)/loginExt/homeExt | 2026-10-17 |
+| 445（wakeup-52.36-user-attachment） | 河南广播电视大学 | classic_eams | classic_eams | keep | URL anchor eams login(.action)/loginExt/homeExt | 2026-10-17 |
 | 1280（wakeup-6.1.06-asset） | 河北金融学院 | qz_crazy | qz_crazy | keep | declared routable type retained | 2026-10-17 |
-| 444（wakeup-52.36-user-attachment） | 河南开放大学 | shuwei_m | classic_eams | remap | upgraded by URL anchor eams login(.action)/loginExt/homeExt | 2026-10-17 |
+| 444（wakeup-52.36-user-attachment） | 河南开放大学 | classic_eams | classic_eams | keep | URL anchor eams login(.action)/loginExt/homeExt | 2026-10-17 |
 | 1420（wakeup-6.1.06-asset） | 河南新乡工商职业学院 | ziyan | ziyan | unknown | auth/proxy shell only; no system anchor | 2026-10-17 |
 | 1219（wakeup-6.1.06-asset） | 河南机电职业学院 | kingo_new | kingo_new | keep | declared routable type retained | 2026-10-17 |
 | 1274（wakeup-6.1.06-asset） | 河南工业大学 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
@@ -1580,7 +1580,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 1626（wakeup-52.36-user-attachment） | 泰山科技学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
 | 2793（wakeup-6.1.06-asset） | 泰州学院 | kingo_new | kingo_new | keep | page KINGOSOFT（青果品牌） | 2026-10-17 |
 | 1777（wakeup-6.1.06-asset） | 泸州职业技术学院 | wisedu | wisedu | keep | URL anchor /jwapp/ | 2026-10-17 |
-| 1851（wakeup-6.1.06-asset） | 洛阳师范学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
+| 1851（wakeup-6.1.06-asset） | 洛阳师范学院 | ziyan | kingo_new | keep | page 教务网络管理系统 + jwweb | 2026-10-17 |
 | 1857（wakeup-6.1.06-asset） | 洛阳商业职业学院 | chaoxing | chaoxing | keep | URL anchor chaoxing host/xsd/queryKbForGrdb | 2026-10-17 |
 | 631（wakeup-52.36-user-attachment） | 济南大学泉城学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 672（wakeup-52.36-user-attachment） | 洛阳理工学院 | cf_new | cf_new | keep | declared routable type retained | 2026-10-17 |
@@ -1595,7 +1595,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 1627（wakeup-6.1.06-asset） | 济宁汽车工程职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 1572（wakeup-6.1.06-asset） | 济南职业学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 2707（wakeup-6.1.06-asset） | 泰州职业技术学院 | changzhou | changzhou | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
-| 3445（wakeup-6.1.06-asset） | 浙江中医药大学 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
+| 3445（wakeup-6.1.06-asset） | 浙江中医药大学 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
 | 1232（wakeup-52.36-user-attachment） | 浙江交通职业技术学院 | ztvtit | ztvtit | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 1777（wakeup-52.36-user-attachment） | 济源职业技术学院 | kingo_new | kingo_new | keep | declared routable type retained | 2026-10-17 |
 | 1491（wakeup-6.1.06-asset） | 济宁学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
@@ -1834,7 +1834,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 1625（wakeup-6.1.06-asset） | 焦作新材料职业学院 | classic_eams | classic_eams | keep | URL anchor eams login(.action)/loginExt/homeExt | 2026-10-17 |
 | 1925（wakeup-6.1.06-asset） | 牡丹江大学 | ziyan | ziyan | unknown | auth/proxy shell only; no system anchor | 2026-10-17 |
 | 1362（wakeup-52.36-user-attachment） | 牡丹江医学院 | cf_new | cf_new | keep | declared routable type retained | 2026-10-17 |
-| 1929（wakeup-6.1.06-asset） | 牡丹江医科大学 | ziyan | cf | remap | upgraded by page 乘方教务/科技 | 2026-10-17 |
+| 1929（wakeup-6.1.06-asset） | 牡丹江医科大学 | cf | cf | keep | page 乘方教务/科技 | 2026-10-17 |
 | 1452（wakeup-52.36-user-attachment） | 燕京理工学院 | qz | qz | keep | declared routable type retained | 2026-10-17 |
 | 3267（wakeup-6.1.06-asset） | 玉林职业技术学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 3177（wakeup-6.1.06-asset） | 玉溪农业职业技术学院 | qz | qz | keep | declared routable type retained | 2026-10-17 |
@@ -1888,7 +1888,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 3175（wakeup-6.1.06-asset） | 盐城工学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
 | 3174（wakeup-6.1.06-asset） | 盐城师范学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 2418（wakeup-6.1.06-asset） | 石家庄信息工程职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
-| 2417（wakeup-6.1.06-asset） | 石家庄工商职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
+| 2417（wakeup-6.1.06-asset） | 石家庄工商职业学院 | ziyan | kingo_new | keep | page 教务网络管理系统 + jwweb | 2026-10-17 |
 | 2414（wakeup-6.1.06-asset） | 石家庄医学高等专科学校 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 2420（wakeup-6.1.06-asset） | 石家庄工程职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 2413（wakeup-6.1.06-asset） | 石家庄科技职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
@@ -1964,7 +1964,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 1335（wakeup-52.36-user-attachment） | 肇庆学院 | cf | cf | keep | declared routable type retained | 2026-10-17 |
 | 2684（wakeup-6.1.06-asset） | 苏州农业职业技术学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 949（wakeup-52.36-user-attachment） | 苏州卫生职业技术学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
-| 2361（wakeup-6.1.06-asset） | 苏州工学院 | ziyan | zf_new | remap | upgraded by URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
+| 2361（wakeup-6.1.06-asset） | 苏州工学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
 | 2358（wakeup-6.1.06-asset） | 苏州幼儿师范高等专科学校 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 2677（wakeup-6.1.06-asset） | 苏州工业职业技术学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 2354（wakeup-6.1.06-asset） | 苏州旅游职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
@@ -2076,7 +2076,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 2991（wakeup-6.1.06-asset） | 许昌陶瓷职业学院 | chaoxing | chaoxing | keep | URL anchor chaoxing host/xsd/queryKbForGrdb | 2026-10-17 |
 | 3230（wakeup-6.1.06-asset） | 豫章师范学院 | kingo_new | kingo_new | keep | declared routable type retained | 2026-10-17 |
 | 921（wakeup-6.1.06-asset） | 贵州交通职业大学 | ziyan | ziyan | unknown | auth/proxy shell only; no system anchor | 2026-10-17 |
-| 746（wakeup-6.1.06-asset） | 贵州中医药大学时珍学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
+| 746（wakeup-6.1.06-asset） | 贵州中医药大学时珍学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
 | 2973（wakeup-6.1.06-asset） | 西藏警官高等专科学校 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 3094（wakeup-6.1.06-asset） | 许昌学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
 | 353（wakeup-52.36-user-attachment） | 贵州医科大学 | classic_eams | classic_eams | keep | declared routable type retained | 2026-10-17 |
@@ -2098,7 +2098,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 913（wakeup-6.1.06-asset） | 贵州建设职业技术学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
 | 852（wakeup-6.1.06-asset） | 贵州工商职业学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
 | 789（wakeup-6.1.06-asset） | 贵州民族大学 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
-| 903（wakeup-6.1.06-asset） | 贵州民用航空职业学院 | ziyan | zf_new | remap | upgraded by URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
+| 903（wakeup-6.1.06-asset） | 贵州民用航空职业学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
 | 752（wakeup-6.1.06-asset） | 贵州师范学院 | qz | qz | keep | declared routable type retained | 2026-10-17 |
 | 905（wakeup-6.1.06-asset） | 贵州机电职业技术学院 | chaoxing | chaoxing | keep | URL anchor chaoxing host/xsd/queryKbForGrdb | 2026-10-17 |
 | 359（wakeup-52.36-user-attachment） | 贵州理工学院 | chaoxing | chaoxing | keep | URL anchor chaoxing host/xsd/queryKbForGrdb | 2026-10-17 |
@@ -2119,7 +2119,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 900（wakeup-6.1.06-asset） | 贵州铜仁数据职业学院 | chaoxing | chaoxing | keep | URL anchor chaoxing host/xsd/queryKbForGrdb | 2026-10-17 |
 | 919（wakeup-6.1.06-asset） | 贵州航天职业技术学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 1584（wakeup-52.36-user-attachment） | 贵阳信息科技学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
-| 923（wakeup-6.1.06-asset） | 贵州黔南经济学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
+| 923（wakeup-6.1.06-asset） | 贵州黔南经济学院 | ziyan | kingo_new | keep | page 教务网络管理系统 + jwweb | 2026-10-17 |
 | 828（wakeup-6.1.06-asset） | 贵阳学院 | qz | qz | keep | URL anchor jsxsd/jxd/logon.do/verifycode.servlet/qzdatasoft | 2026-10-17 |
 | 3560（wakeup-6.1.06-asset） | 资阳口腔职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 810（wakeup-6.1.06-asset） | 贵阳康养职业大学 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
@@ -2177,7 +2177,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 3295（wakeup-6.1.06-asset） | 运城师范高等专科学校 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 1785（wakeup-6.1.06-asset） | 辽阳职业技术学院 | lz | lz | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 3222（wakeup-6.1.06-asset） | 运城学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
-| 3297（wakeup-6.1.06-asset） | 运城幼儿师范高等专科学校 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
+| 3297（wakeup-6.1.06-asset） | 运城幼儿师范高等专科学校 | ziyan | kingo_new | keep | page 教务网络管理系统 + jwweb | 2026-10-17 |
 | 1787（wakeup-6.1.06-asset） | 连云港职业技术学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 581（wakeup-6.1.06-asset） | 达州职业技术学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 3158（wakeup-6.1.06-asset） | 运城职业技术大学 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx; page 教学管理信息服务平台/zftal-ui | 2026-10-17 |
@@ -2202,7 +2202,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 3544（wakeup-6.1.06-asset） | 郑州亚欧交通职业学院 | kingo_new | kingo_new | keep | page KINGOSOFT（青果品牌） | 2026-10-17 |
 | 3128（wakeup-6.1.06-asset） | 邢台学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 2330（wakeup-6.1.06-asset） | 邵阳学院 | ziyan | ziyan | unknown | auth/proxy shell only; no system anchor | 2026-10-17 |
-| 1275（wakeup-52.36-user-attachment） | 郑州信息科技职业学院 | shuwei_m | classic_eams | remap | upgraded by URL anchor eams login(.action)/loginExt/homeExt | 2026-10-17 |
+| 1275（wakeup-52.36-user-attachment） | 郑州信息科技职业学院 | classic_eams | classic_eams | keep | URL anchor eams login(.action)/loginExt/homeExt | 2026-10-17 |
 | 3547（wakeup-6.1.06-asset） | 郑州体育职业学院 | classic_eams | classic_eams | keep | URL anchor eams login(.action)/loginExt/homeExt | 2026-10-17 |
 | 3539（wakeup-6.1.06-asset） | 郑州信息工程职业学院 | ziyan | ziyan | unknown | auth/proxy shell only; no system anchor | 2026-10-17 |
 | 3532（wakeup-6.1.06-asset） | 郑州健康学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
@@ -2308,7 +2308,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 336（wakeup-6.1.06-asset） | 重庆科创职业学院 | shuwei_json | shuwei_json | keep | declared routable type retained | 2026-10-17 |
 | 481（wakeup-6.1.06-asset） | 重庆经贸职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 333（wakeup-6.1.06-asset） | 重庆电力高等专科学校 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
-| 471（wakeup-6.1.06-asset） | 重庆警察学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
+| 471（wakeup-6.1.06-asset） | 重庆警察学院 | ziyan | kingo_new | keep | page 教务网络管理系统 + jwweb | 2026-10-17 |
 | 478（wakeup-6.1.06-asset） | 重庆能源职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 483（wakeup-6.1.06-asset） | 重庆科技职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 386（wakeup-6.1.06-asset） | 重庆移通学院 | zf_new | zf_new | keep | URL anchor jwglxt/xtgl/login_slogin/kbcx | 2026-10-17 |
@@ -2336,7 +2336,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 2728（wakeup-6.1.06-asset） | 铜陵学院 | qz | qz | keep | declared routable type retained | 2026-10-17 |
 | 2803（wakeup-6.1.06-asset） | 铜川职业技术学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 2791（wakeup-6.1.06-asset） | 铁岭卫生职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
-| 1682（wakeup-6.1.06-asset） | 锦州医科大学医疗学院 | ziyan | qz | remap | upgraded by URL anchor jsxsd/jxd/logon.do/verifycode.servlet/qzdatasoft | 2026-10-17 |
+| 1682（wakeup-6.1.06-asset） | 锦州医科大学医疗学院 | qz | qz | keep | URL anchor jsxsd/jxd/logon.do/verifycode.servlet/qzdatasoft | 2026-10-17 |
 | 1177（wakeup-52.36-user-attachment） | 银川科技学院 | qz | qz | keep | declared routable type retained | 2026-10-17 |
 | 2706（wakeup-6.1.06-asset） | 铜陵职业技术学院 | kingo_new | kingo_new | keep | page KINGOSOFT（青果品牌） | 2026-10-17 |
 | 1681（wakeup-6.1.06-asset） | 锦州师范高等专科学校 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
@@ -2354,7 +2354,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 350（wakeup-6.1.06-asset） | 长春工程学院 | qz | qz | keep | URL anchor jsxsd/jxd/logon.do/verifycode.servlet/qzdatasoft | 2026-10-17 |
 | 390（wakeup-6.1.06-asset） | 长春光华学院 | zf_new | zf_new | keep | declared routable type retained | 2026-10-17 |
 | 352（wakeup-6.1.06-asset） | 长春建筑学院 | lz | lz | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
-| 443（wakeup-6.1.06-asset） | 长春工业大学人文信息学院 | ziyan | cf | remap | upgraded by page 乘方教务/科技 | 2026-10-17 |
+| 443（wakeup-6.1.06-asset） | 长春工业大学人文信息学院 | cf | cf | keep | page 乘方教务/科技 | 2026-10-17 |
 | 499（wakeup-6.1.06-asset） | 长春教育学院 | ziyan | ziyan | unknown | auth/proxy shell only; no system anchor | 2026-10-17 |
 | 181（wakeup-52.36-user-attachment） | 长春师范大学 | cnu | cnu | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 450（wakeup-6.1.06-asset） | 长春数字科技职业学院 | chaoxing | chaoxing | keep | URL anchor chaoxing host/xsd/queryKbForGrdb | 2026-10-17 |
@@ -2369,7 +2369,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 498（wakeup-6.1.06-asset） | 长春职工医科大学 | ziyan | ziyan | unknown | auth/proxy shell only; no system anchor | 2026-10-17 |
 | 445（wakeup-6.1.06-asset） | 长春师范高等专科学校 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 456（wakeup-6.1.06-asset） | 长江工程职业技术学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
-| 373（wakeup-6.1.06-asset） | 长江大学文理学院 | shuwei_m | classic_eams | remap | upgraded by URL anchor eams login(.action)/loginExt/homeExt | 2026-10-17 |
+| 373（wakeup-6.1.06-asset） | 长江大学文理学院 | classic_eams | classic_eams | keep | URL anchor eams login(.action)/loginExt/homeExt | 2026-10-17 |
 | 374（wakeup-6.1.06-asset） | 长江大学 | shuwei_m | shuwei_m | unknown | auth/proxy shell only; no system anchor | 2026-10-17 |
 | 358（wakeup-6.1.06-asset） | 长春财经学院 | lz | lz | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 464（wakeup-6.1.06-asset） | 长沙卫生职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
@@ -2501,7 +2501,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 | 1830（wakeup-6.1.06-asset） | 鲁迅美术学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 3537（wakeup-6.1.06-asset） | 驻马店职业技术学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 1445（wakeup-52.36-user-attachment） | 鲁东大学 | urp_new | urp_new | keep | declared routable type retained | 2026-10-17 |
-| 1907（wakeup-6.1.06-asset） | 马鞍山学院 | shuwei_m | classic_eams | remap | upgraded by URL anchor eams login(.action)/loginExt/homeExt | 2026-10-17 |
+| 1907（wakeup-6.1.06-asset） | 马鞍山学院 | classic_eams | classic_eams | keep | URL anchor eams login(.action)/loginExt/homeExt | 2026-10-17 |
 | 1417（wakeup-6.1.06-asset） | 鹤壁能源化工职业学院 | ziyan | ziyan | unknown | no decisive evidence; stays unroutable | 2026-10-17 |
 | 1178（wakeup-6.1.06-asset） | 鹤壁职业技术学院 | shuwei_m | shuwei_m | unknown | auth/proxy shell only; no system anchor | 2026-10-17 |
 | 1910（wakeup-6.1.06-asset） | 马鞍山师范高等专科学校 | classic_eams | classic_eams | keep | declared routable type retained | 2026-10-17 |
@@ -2562,5 +2562,7 @@ URL 强特征（`JwImportViewModel.detectProtocolFromUrlImpl` 同源，webvpn �
 - `ziyan` umbrella 声明 1068 条：绝大多数无超星/强智/正方/KINGOSOFT 锚点，维持不可路由；其中有页面/URL 强特征的行已按上表逐条改写。
 - 学校私有协议（aic/lz/cityu/buaa/hitsz 等）：无通用协议正向证据，维持不可路由；后续应补自定义解析器，而不是伪装成通用协议。
 - CAS/authserver 纯壳与 webvpn 壳 URL：永不作为操作值依据，也不构成协议证据。
+
+注意：协议可路由≠条目入目录。协议裁决之后仍有所有权闸门与域名碰撞闸门（`catalog_ownership.apply_ownership` / `_candidate_poisons`）决定 URL 是否进入 `schools.json`：owner 未证明与被 HEAD 唯一行占住主机/域名（会破坏按 URL 反查学校的 fail-closed 定位）的行被拦截。逐条依据表见 [证据生成报告](EVIDENCE_GENERATION_REPORT.md) 的“域名碰撞闸门”一节。
 
 完整 2499 行逐行证据（含未变更行为何可信）在 `scripts/data/adjudication-log.jsonl`。

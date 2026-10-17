@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "checkedAt": "2026-10-14",
   "scope": {
-    "records": 2088,
+    "records": 2100,
     "distinctUrls": 517,
     "method": "bounded public HTTP fetch + official school/source-page corroboration; no login",
     "officialPagesFetched": 488,
@@ -11,8 +11,8 @@
     "entryEvidencePass": "2026-10-16"
   },
   "summary": {
-    "verified": 737,
-    "unknown": 1350,
+    "verified": 748,
+    "unknown": 1351,
     "contradicted": 1,
     "highConfidence": 181,
     "mediumConfidence": 168,
@@ -28884,6 +28884,35 @@
       ]
     },
     {
+      "catalogId": "moe:4134014135",
+      "name": "合肥共达职业技术学院",
+      "url": "http://220.178.78.157:8082/jwweb/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "http://220.178.78.157:8082/jwweb/",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "http://220.178.78.157:8082/jwweb/",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "合肥共达职业技术学院教务网络管理系统",
+          "observedText": "合肥共达职业技术学院教务网络管理系统 2026-2027学年第一学期 第 7周 教学安排 课程课表 教师课表 班级课表 教室课表 周/日/节次课表 分院(系)/部按班级查看实践环节安排 查看临时活动安排 友情链接 合肥共达职业技术学院 合肥共达职业技术学院教务处网 合肥工业大学 安徽教育网 安徽人才网 安徽高等教育学生信息网（学信网） 通知公告 更多> 公共下载 更多> 2026-01-07 2025-01-07 2025-01-07 2025-01-07 2025-01-07 2024-09-26 2024-09-26 管理规定 Copyright 2000-2026 By 青果软件集团有限公司 All Rights Reserved",
+          "bodySha256": "e1fe12e0c97af53d2a16e4afebf8c82beb573b820319b78acb8ddecf0384fe4b",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "合肥共达职业技术学院教务网络管理系统",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
+    },
+    {
       "catalogId": "moe:4134011059",
       "name": "合肥大学",
       "url": "https://ids.hfuu.edu.cn/authserver/login",
@@ -29846,6 +29875,35 @@
       ],
       "proposedCorrection": null,
       "title": "哈尔滨石油学院教务管理系统",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
+    },
+    {
+      "catalogId": "moe:4123010245",
+      "name": "哈尔滨金融学院",
+      "url": "http://jw.hrbfu.edu.cn/jwweb/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "http://jw.hrbfu.edu.cn/jwweb/",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "http://jw.hrbfu.edu.cn/jwweb/",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "哈尔滨金融学院教务网络管理系统",
+          "observedText": "哈尔滨金融学院教务网络管理系统 运行环境指南 Copyright 2000-2026 By 青果软件集团有限公司 All Rights Reserved",
+          "bodySha256": "d733c48505bdc1ee54ce6e586a6830f0fbf9682021d8011a57c2e77ef57617f1",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "哈尔滨金融学院教务网络管理系统",
       "probeError": null,
       "availability": "public-page",
       "authenticatedImportTested": false,
@@ -37512,6 +37570,35 @@
       ]
     },
     {
+      "catalogId": "moe:4145014574",
+      "name": "广西蓝天航空职业学院",
+      "url": "http://jwxt.gxltu.edu.cn/jwweb/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "http://jwxt.gxltu.edu.cn/jwweb/",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "http://jwxt.gxltu.edu.cn/jwweb/",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "广西蓝天航空职业学院教务网络管理系统",
+          "observedText": "广西蓝天航空职业学院教务网络管理系统 2026-2027学年第一学期 第 6周 教学安排 班级课表 教室课表 周/日/节次课表 查看临时活动安排 友情链接 通知公告 更多> 公共下载 更多> 管理规定 Copyright 2000-2026 By 青果软件集团有限公司 All Rights Reserved ICP备案号：ICP备案测试",
+          "bodySha256": "082ae5da490f2d1f5804928eb546f1d39b5eb9786ee7f487cd292ca3b6c75c3c",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "广西蓝天航空职业学院教务网络管理系统",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
+    },
+    {
       "catalogId": "moe:4145014668",
       "name": "广西自然资源职业技术学院",
       "url": "https://jwxt.gxnrvtc.edu.cn/jwglxt/xtgl/login_slogin.html",
@@ -38591,6 +38678,35 @@
       "defects": [
         "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
       ]
+    },
+    {
+      "catalogId": "moe:4141013506",
+      "name": "新乡工程学院",
+      "url": "http://jw.xxgc.edu.cn/jwweb/home.aspx",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "http://jw.xxgc.edu.cn/jwweb/home.aspx",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "http://jw.xxgc.edu.cn/jwweb/home.aspx",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "新乡工程学院教务网络管理系统",
+          "observedText": "新乡工程学院教务网络管理系统 2026-2027学年第一学期 第 7周 教学安排 课程课表 教师课表 班级课表 教室课表 任选课表 周/日/节次课表 课程教学进度表 班级教学进度表 分院(系)/部按班级查看实践环节安排 查看学期实践教学进程 友情链接 聚才网 新乡工程学院 教务处主页 通知公告 更多> 公共下载 更多> 管理规定 Copyright 2000-2026 By 青果软件集团有限公司 All Rights Reserved",
+          "bodySha256": "8154d8a424ab236d25dc743fa703bb4a15790c1650311f4a32e6ec9984437153",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "新乡工程学院教务网络管理系统",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
     },
     {
       "catalogId": "moe:4141011071",
@@ -41023,6 +41139,26 @@
       "defects": []
     },
     {
+      "catalogId": "moe:4134012218",
+      "name": "民办万博科技职业学院",
+      "url": "http://218.106.83.103/jwweb/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "http://218.106.83.103/jwweb/",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "万博科技职业学院教务网络管理系统",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
       "catalogId": "moe:4152014198",
       "name": "毕节职业技术学院",
       "url": "https://gzbjzy.jw.chaoxing.com/admin/login",
@@ -42334,6 +42470,35 @@
       ]
     },
     {
+      "catalogId": "moe:4136014167",
+      "name": "江西枫林涉外经贸职业学院",
+      "url": "http://118.212.35.46:5000/jwweb/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "http://118.212.35.46:5000/jwweb/",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "http://118.212.35.46:5000/jwweb/",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "江西枫林涉外经贸职业学院教务网络管理系统",
+          "observedText": "江西枫林涉外经贸职业学院教务网络管理系统 2026-2027学年第一学期 第 6周 教学安排 班级课表 查看临时活动安排 友情链接 行知阅读 通知公告 更多> 公共下载 更多> 管理规定 Copyright 2000-2026 By 青果软件集团有限公司 All Rights Reserved ICP备案号：ICP备案测试",
+          "bodySha256": "587c89488426823226cce7e2cb3f8fa57b850548482cfd9cc74bb9fc113065ca",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "江西枫林涉外经贸职业学院教务网络管理系统",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
+    },
+    {
       "catalogId": "moe:4136014476",
       "name": "江西水利职业学院",
       "url": "https://jxslzyxy.jw.chaoxing.com/admin/login",
@@ -42946,6 +43111,35 @@
       "defects": [
         "Entry page identity does not name this school; ownership unproven."
       ]
+    },
+    {
+      "catalogId": "moe:4121010177",
+      "name": "沈阳音乐学院",
+      "url": "http://gl.sycm.edu.cn/Jwweb/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "http://gl.sycm.edu.cn/Jwweb/",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "http://gl.sycm.edu.cn/Jwweb/",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "沈阳音乐学院教务网络管理系统",
+          "observedText": "沈阳音乐学院教务网络管理系统 2025-2026学年第一学期 第59周 教学安排 友情链接 沈阳音乐学院 长江雨课堂 通知公告 更多> 公共下载 更多> 管理规定 Copyright 2000-2026 By 青果软件集团有限公司 All Rights Reserved ICP备案号： ICP备案",
+          "bodySha256": "6bf18dafcbfc873f5a6dbfe7b4b7c7e5a2e0dc2730264a9500ae5c083e007f52",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "沈阳音乐学院教务网络管理系统",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
     },
     {
       "catalogId": "moe:4121010144",
@@ -44677,6 +44871,35 @@
       "defects": [
         "Entry page identity does not name this school; ownership unproven."
       ]
+    },
+    {
+      "catalogId": "moe:4141010482",
+      "name": "洛阳师范学院",
+      "url": "http://211.67.81.81/jwweb/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "http://211.67.81.81/jwweb/",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "http://211.67.81.81/jwweb/",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "洛阳师范学院教务网络管理系统",
+          "observedText": "洛阳师范学院教务网络管理系统 2026-2027学年第一学期 第 6周 教学安排 友情链接 中国高等教育学生信息网 洛阳师范学院网络教学平台 通知公告 更多> 公共下载 更多> 2025-04-07 2025-04-07 2025-04-07 2025-04-07 2025-04-07 2025-04-07 2022-02-23 2020-09-28 2017-06-19 2014-02-20 2014-02-20 2013-12-21 2013-12-21 2013-09-27 2013-09-27 2013-09-27 2013-09-27 2013-09-27 2013-09-27 2013-07-04 2013-06-27 2013-06-09 2013-03-20 管理规定 Copyright 2000-2026 By 青果软件集团有限公司 All Rights Reserved ICP备案号：ICP备案测试",
+          "bodySha256": "27a8c91102f77a7f31ec2f6a2eb44fe6bcdc2a994c70308db67773f8129cd72e",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "洛阳师范学院教务网络管理系统",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
     },
     {
       "catalogId": "moe:4141014795",
@@ -49057,6 +49280,35 @@
       ]
     },
     {
+      "catalogId": "moe:4113013399",
+      "name": "石家庄工商职业学院",
+      "url": "http://111.61.60.210/jwweb/home.aspx",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "http://111.61.60.210/jwweb/home.aspx",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "http://111.61.60.210/jwweb/home.aspx",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "石家庄工商职业学院教务网络管理系统",
+          "observedText": "石家庄工商职业学院教务网络管理系统 2026-2027学年第一学期 第 7周 教学安排 课程课表 教师课表 教室课表 周/日/节次课表 课程教学进度表 班级教学进度表 查看临时活动安排 友情链接 湖南青果软件有限公司 石家庄工商职业学院 河北省教育厅 中国高职高专教育网 河北省高职高专教育网 聚才网 通知公告 更多> 公共下载 更多> 管理规定 Copyright 2000-2026 By 青果软件集团有限公司 All Rights Reserved ICP备案号： 桂ICP11002731号-5",
+          "bodySha256": "9d8aceda072533f75ffb37568dee99dff00217a06f18ffcd55c25f47c8e6559c",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "石家庄工商职业学院教务网络管理系统",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
+    },
+    {
       "catalogId": "moe:4113014328",
       "name": "石家庄幼儿师范高等专科学校",
       "url": "https://sjzptc.jw.chaoxing.com/admin/login",
@@ -52047,6 +52299,35 @@
       ]
     },
     {
+      "catalogId": "moe:4152013648",
+      "name": "贵州黔南经济学院",
+      "url": "http://jwweb.gzsu.net:7071/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "http://jwweb.gzsu.net:7071/",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "http://jwweb.gzsu.net:7071/",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "贵州财经大学商务学院\\贵州黔南经济学院教务网络管理系统",
+          "observedText": "贵州财经大学商务学院\\贵州黔南经济学院教务网络管理系统 2026-2027学年第一学期 第 7周 教学安排 课程课表 教师课表 班级课表 教室课表 任选课表 周/日/节次课表 课程教学进度表 班级教学进度表 友情链接 湖南青果软件有限公司 高教社面向高校推出的免费图书检索系统 通知公告 更多> 公共下载 更多> 2026-09-14 2025-12-15 管理规定 Copyright 2000-2026 By 青果软件集团有限公司 All Rights Reserved",
+          "bodySha256": "600729e37b649af961896cb56d2f626aef5e9e03eb05ada3bc71424b671ecfc6",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "贵州财经大学商务学院\\贵州黔南经济学院教务网络管理系统",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
+    },
+    {
       "catalogId": "moe:4152010976",
       "name": "贵阳学院",
       "url": "https://cas.gyu.edu.cn/lyuapServer/login   https://jwxt.gyu.edu.cn/jsxsd/   http://jxzl.gyu.cn/info/1970/1225.htm",
@@ -52686,6 +52967,35 @@
       "defects": [
         "Entry page identity does not name this school; ownership unproven."
       ]
+    },
+    {
+      "catalogId": "moe:4114014093",
+      "name": "运城幼儿师范高等专科学校",
+      "url": "http://60.222.229.42:8085/jwweb/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "http://60.222.229.42:8085/jwweb/",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "http://60.222.229.42:8085/jwweb/",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "运城幼儿师范高等专科学校教务网络管理系统",
+          "observedText": "运城幼儿师范高等专科学校教务网络管理系统 2025-2026学年第二学期 第32周 教学安排 友情链接 聚才网 通知公告 更多> 公共下载 更多> 管理规定 Copyright 2000-2026 By 青果软件集团有限公司 All Rights Reserved",
+          "bodySha256": "57ab75ef696689715ab9a3d010e87bc83b0bc2460a86bd78df6bb19329bfd72e",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "运城幼儿师范高等专科学校教务网络管理系统",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
     },
     {
       "catalogId": "moe:4132011050",
@@ -54504,6 +54814,35 @@
       "defects": [
         "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
       ]
+    },
+    {
+      "catalogId": "moe:4150012757",
+      "name": "重庆警察学院",
+      "url": "http://jiaowu.cqpc.edu.cn/jwweb/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "http://jiaowu.cqpc.edu.cn/jwweb/",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "http://jiaowu.cqpc.edu.cn/jwweb/",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "重庆警察学院教务网络管理系统",
+          "observedText": "重庆警察学院教务网络管理系统 2022-2023学年第二学期 第191周 教学安排 课程课表 教师课表 班级课表 教室课表 任选课表 周/日/节次课表 课程教学进度表 班级教学进度表 分院(系)/部按班级查看实践环节安排 查看学期实践教学进程 查看临时活动安排 友情链接 青果软件 浙江警察学院 江苏警官学院 高等教育出版社产品信息系统检索系统 成绩分析报告（按承担单位检索，可打公选课） 通知公告 更多> 公共下载 更多> 2025-04-09 2025-04-09 2025-04-09 2024-12-25 2024-04-09 2024-04-09 2024-04-09 2023-10-17 2022-11-04 2022-07-06 2022-07-01 2021-10-01 2021-08-31 2021-01-04 2021-01-04 2021-01-04 2021-01-04 2020-07-15 2020-06-12 2020-02-25 2019-10-30 2019-09-30 2019-09-24 2019-09-18 2019-06-05 2018-07-12 2018-05-30 2018-04-27 2018-04-18 2018-04-18 2018-03-12 2018-03-12 2018-02-24 2017-02-22 管理规定 Copyright 2000-2026 By 青果软件集团有限公司 All Rights Reserved ICP备案号： ICP备案",
+          "bodySha256": "86fed483e6d0b80f6c5cdf6795624ac6538fdd144eed6abbc1fd0be967bbf68d",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "重庆警察学院教务网络管理系统",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
     },
     {
       "catalogId": "moe:4150013627",
