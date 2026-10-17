@@ -12476,7 +12476,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "kingo_new",
     "probe": {
       "url": "https://jwgl.lvu.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -19586,7 +19586,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "kingo_new",
     "probe": {
       "url": "https://jwxt.llzy.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -46919,7 +46919,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "cf",
     "probe": {
       "url": "https://jwxt.jxfu.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -49465,7 +49465,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_m",
+    "mappedType": "classic_eams",
     "probe": {
       "url": "http://zxjw.open.ha.cn/eams/homeExt.action",
       "checkedAt": "2026-10-16",
@@ -49524,7 +49524,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_m",
+    "mappedType": "classic_eams",
     "probe": {
       "url": "http://zxjw.open.ha.cn/eams/homeExt.action",
       "checkedAt": "2026-10-16",
@@ -58464,7 +58464,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "cf",
     "probe": {
       "url": "https://jwgl.mdjmu.cn",
       "checkedAt": "2026-10-16",
@@ -62314,7 +62314,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "zf_new",
     "probe": {
       "url": "http://jwxt.szut.edu.cn/jwglxt/",
       "checkedAt": "2026-10-16",
@@ -66290,7 +66290,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "zf_new",
     "probe": {
       "url": "http://119.0.139.143.8899/jwglxt",
       "checkedAt": "2026-10-16",
@@ -69365,7 +69365,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_m",
+    "mappedType": "classic_eams",
     "probe": {
       "url": "http://zxjw.open.ha.cn/eams/homeExt.action",
       "checkedAt": "2026-10-16",
@@ -73319,7 +73319,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "qz",
     "probe": {
       "url": "http://jwgl.jzmu.edu.cn:9995/jsxsd/",
       "checkedAt": "2026-10-16",
@@ -73851,7 +73851,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "cf",
     "probe": {
       "url": "http://jwxt.ccut.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -74287,7 +74287,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_m",
+    "mappedType": "classic_eams",
     "probe": {
       "url": "https://jw.wlxy.edu.cn/eams/loginExt.action",
       "checkedAt": "2026-10-16",
@@ -78202,7 +78202,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_m",
+    "mappedType": "classic_eams",
     "probe": {
       "url": "https://jwxt.masu.edu.cn/eams/login.action",
       "checkedAt": "2026-10-16",
