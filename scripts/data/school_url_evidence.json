@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "checkedAt": "2026-10-14",
   "scope": {
-    "records": 1905,
+    "records": 1976,
     "distinctUrls": 517,
     "method": "bounded public HTTP fetch + official school/source-page corroboration; no login",
     "officialPagesFetched": 488,
@@ -11,8 +11,8 @@
     "entryEvidencePass": "2026-10-16"
   },
   "summary": {
-    "verified": 630,
-    "unknown": 1274,
+    "verified": 646,
+    "unknown": 1329,
     "contradicted": 1,
     "highConfidence": 181,
     "mediumConfidence": 168,
@@ -23030,6 +23030,26 @@
       ]
     },
     {
+      "catalogId": "moe:4131013636",
+      "name": "上海外国语大学贤达经济人文学院",
+      "url": "https://sso.xdsisu.edu.cn/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://sso.xdsisu.edu.cn/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "统一身份认证平台",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
       "catalogId": "moe:4131012050",
       "name": "上海商学院",
       "url": "http://219.220.243.210/default2.aspx",
@@ -23047,6 +23067,26 @@
       "authenticatedImportTested": false,
       "defects": [
         "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
+    },
+    {
+      "catalogId": "moe:4131010273",
+      "name": "上海对外经贸大学",
+      "url": "https://nbkjw.suibe.edu.cn/student/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://nbkjw.suibe.edu.cn/student/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "登入页面",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
       ]
     },
     {
@@ -23139,6 +23179,26 @@
       ]
     },
     {
+      "catalogId": "moe:4131012799",
+      "name": "上海建桥学院",
+      "url": "https://my.gench.edu.cn/FAP5.Portal/pc.html",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://my.gench.edu.cn/FAP5.Portal/pc.html",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
       "catalogId": "moe:4131012798",
       "name": "上海济光职业技术学院",
       "url": "https://jwxt.shjgu.edu.cn/jwglxt/xtgl/login_slogin.html",
@@ -23208,6 +23268,55 @@
       ]
     },
     {
+      "catalogId": "moe:4131011458",
+      "name": "上海电机学院",
+      "url": "https://jwgl.sdju.edu.cn/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://jwgl.sdju.edu.cn/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "登入页面",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
+      "catalogId": "moe:4131014423",
+      "name": "上海科技大学",
+      "url": "https://ids.shanghaitech.edu.cn/authserver/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://ids.shanghaitech.edu.cn/authserver/login",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "https://ids.shanghaitech.edu.cn/authserver/login",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "统一身份认证平台",
+          "observedText": "﻿﻿ 统一身份认证平台 Eng 中文 统一身份认证 统一身份认证 统一身份认证 切换为二维码登录 切换为账号登录 生物识别 账号登录 验证码登录 扫码登录 点击开启识别登录 刷新 获取验证码 登录 刷新 登录 忘记密码 扫码登录 扫描成功 请在手机上「确认登录」 返回二维码 今日校园 微信 Copyright © 上海科技大学 All Rights Reserved.",
+          "bodySha256": "071713d7904d09f4d7b4ea14e6c42fc6734f3cc5ec28bdae9e4f33ae0549c4b5",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "统一身份认证平台",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
+    },
+    {
       "catalogId": "moe:4131012587",
       "name": "上海立达学院",
       "url": "https://shldxyjw.yinghuaonline.com/shldzyjsxy/",
@@ -23241,6 +23350,26 @@
       "proposedCorrection": null,
       "title": "",
       "probeError": "curl-7",
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
+    },
+    {
+      "catalogId": "moe:4131013632",
+      "name": "上海视觉艺术学院",
+      "url": "https://jiaowu2023.siva.edu.cn/student/home",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "https://jiaowu2023.siva.edu.cn/student/home",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": "curl-28",
       "availability": "unavailable-or-restricted",
       "authenticatedImportTested": false,
       "defects": [
@@ -23740,6 +23869,46 @@
       "defects": []
     },
     {
+      "catalogId": "moe:4111011149",
+      "name": "中华女子学院",
+      "url": "http://jw.cwu.edu.cn/academic/common/security/login.jsp",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "http://jw.cwu.edu.cn/academic/common/security/login.jsp",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": "curl-28",
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
+    },
+    {
+      "catalogId": "moe:4111012453",
+      "name": "中国劳动关系学院",
+      "url": "http://www.culr.edu.cn",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "http://www.culr.edu.cn",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": "curl-52",
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
+    },
+    {
       "catalogId": "wakeup:6fc92fda6d6b50eb9e5f",
       "name": "中国地质大学",
       "url": "http://one.cug.edu.cn/tp_up/v1",
@@ -23757,6 +23926,26 @@
       "authenticatedImportTested": false,
       "defects": [
         "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
+    },
+    {
+      "catalogId": "moe:4111010053",
+      "name": "中国政法大学",
+      "url": "https://ca.cupl.edu.cn/tpass/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://ca.cupl.edu.cn/tpass/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "智慧法大",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
       ]
     },
     {
@@ -23812,6 +24001,35 @@
       ],
       "proposedCorrection": null,
       "title": "统一身份认证平台",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
+    },
+    {
+      "catalogId": "moe:4111011415",
+      "name": "中国地质大学（北京）",
+      "url": "https://elib.cugb.edu.cn/https/77726476706e69737468656265737421f3f652d224256f52300d8db9d6562d/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://elib.cugb.edu.cn/https/77726476706e69737468656265737421f3f652d224256f52300d8db9d6562d/login",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "https://elib.cugb.edu.cn/https/77726476706e69737468656265737421f3f652d224256f52300d8db9d6562d/login",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "中国地质大学(北京)统一身份认证",
+          "observedText": "中国地质大学(北京)统一身份认证 账号登录 二次验证 扫码登录 用户名： 账号激活 账号说明 密码： 忘记密码？ 温馨提醒：若为本人操作，请点击本人登录。 温馨提醒：若为被委托人操作，请点击切换。 温馨提醒：账号暂未绑定手机号，请点击绑定手机号并录入本人号码。该操作仅允许执行一次，请务必谨慎确认。 登录需要用到手机号，请核对是不是你自己的号码。\n                                是本人号码就点确认本机登录，不是就点更换手机号。\n                                该确认操作只做一次，大家谨慎选择。 此手机号将接收验证码 用户名： 账号说明 密码： 忘记密码？ 验证码： 请向右拖动滑块完成验证 >> 手机号： 验证码： 我的统一身份认证用户名是什么？ 如果您是中国地质大学（北京）的学生，您的学号就是您的用户名；如果您是中国地质大学（北京）的教职工，您的工号就是您的用户名。 如何修改密码？ 您可以在登录信息门户后，通过右上角的\"修改密码\"修改您统一身份认证的密码。 若您忘记密码，可点击登录页面中的\"忘记密码\"找回。若您无法通过系统找回，为确保您的账户安全，请您携带有效证件到信息网络中心304客服大厅办理密码重置。 微信扫码登录需要满足的前提条件？ 微信扫码登录需要您绑定\"北地信息服务\"企业微信，如果您尚未绑定，请您先扫码关注进行身份验证。 常见问题 (1）如果您是教职工，请首先确保人事系统中存在您的信息，如果不存在，请先联系人事处录入您的信息；如果您是本科生，请首先确保教务系统中存在您的信息，如果不存在，\n                        请先联系教务处录入您的信息；如果您是研究生，请首先确保研究生系统中存在您的信息，如果不存在，请先联系研究生院录入您的信息。 (2）如您仍然遇到无法登录的情况，请您联系信息网络中心82322294/82322957处理。 版权所有©中国地质大学（北京）信息网络中心  |  京ICP备：08011785",
+          "bodySha256": "d7bdbd5b911fceafd40e199f9149fbcaa29c6467a16e056accab5e63a0cf5d54",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "中国地质大学(北京)统一身份认证",
       "probeError": null,
       "availability": "public-page",
       "authenticatedImportTested": false,
@@ -23905,6 +24123,26 @@
       "checkedAt": "2026-10-16",
       "http": 0,
       "finalUrl": "http://jwgl.cauc.edu.cn/xtgl/login_slogin.html",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": "curl-28",
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
+    },
+    {
+      "catalogId": "moe:4111011414",
+      "name": "中国石油大学（北京）",
+      "url": "http://bk.cup.edu.cn/student/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "http://bk.cup.edu.cn/student/",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
@@ -24899,6 +25137,26 @@
       ]
     },
     {
+      "catalogId": "moe:4136010419",
+      "name": "井冈山大学",
+      "url": "https://authserver.jgsu.edu.cn/authserver/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://authserver.jgsu.edu.cn/authserver/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "统一身份认证平台",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
       "catalogId": "moe:4144011347",
       "name": "仲恺农业工程学院",
       "url": "http://edu-admin.zhku.edu.cn/",
@@ -25166,6 +25424,35 @@
       "defects": []
     },
     {
+      "catalogId": "moe:4141013503",
+      "name": "信阳学院",
+      "url": "https://cas1.xyu.edu.cn/cas/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://cas1.xyu.edu.cn/cas/login",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "https://cas1.xyu.edu.cn/cas/login",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "Login - 信阳学院综合服务门户",
+          "observedText": "Login - 信阳学院综合服务门户 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 当前登录环境异常，需通过安全验证确认是本人操作后才可继续登录。请选择安全验证方式！ {{typeInfo[typeIndex].info}} 其他方式 点击发送验证请求后，请在 超级APP 上进行确认，完成安全验证 确认码：{{appPushCallbackCode}} {{appPushStatusAlertMessage}} +86 {{securePhone}} {{securePhoneSendText}} {{securePhoneValidAlertMessage}} 安全手机未绑定，无法使用安全手机验证 {{secureEmail}} {{secureEmailSendText}} {{secureEmailValidAlertMessage}} 安全邮箱未绑定，无法使用安全邮箱验证 点击刷新二维码 支持 {{qrCodeScanTypeNames}} 的扫一扫功能，完成安全验证 {{qrCodeStatusAlertMessage}} 确认码：{{qrCodeCallbackCode}} 请在手机上点击同意以完成安全验证 点击刷新二维码 打开 超级APP 扫一扫功能，扫描二维码进行人脸识别，完成安全验证 {{faceVerifyStatusAlertMessage}} {{appPushSendText}} 确 定 确 定",
+          "bodySha256": "73b6df527215f40487fd85ee69fee16a49105ce836cf4d9adad92b83b2a9798c",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "Login - 信阳学院综合服务门户",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
+    },
+    {
       "catalogId": "moe:4152013054",
       "name": "六盘水职业技术学院",
       "url": "https://lpszyxy.jw.chaoxing.com/",
@@ -25308,6 +25595,26 @@
       "proposedCorrection": null,
       "title": "",
       "probeError": "curl-28",
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
+    },
+    {
+      "catalogId": "moe:4162010730",
+      "name": "兰州大学",
+      "url": "https://my.lzu.edu.cn/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 412,
+      "finalUrl": "https://my.lzu.edu.cn/",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": null,
       "availability": "unavailable-or-restricted",
       "authenticatedImportTested": false,
       "defects": [
@@ -25533,6 +25840,35 @@
       ]
     },
     {
+      "catalogId": "moe:4115010128",
+      "name": "内蒙古工业大学",
+      "url": "https://authserver.imut.edu.cn/cas/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://authserver.imut.edu.cn/cas/login",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "https://authserver.imut.edu.cn/cas/login",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "登录 - 内蒙古工业大学",
+          "observedText": "登录 - 内蒙古工业大学 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 您正在使用 校园网 接入上网，可直接使用 校园网 上网账号快速登录。 请确认是否使用该账号进行登录。 上网IP： 上网账号： 关闭 上网账号快速登录 下次自动登录 当前登录环境异常，需通过安全验证确认是本人操作后才可继续登录。请选择安全验证方式！ {{typeInfo[typeIndex].info}} 其他方式 点击发送验证请求后，请在 超级APP 上进行确认，完成安全验证 确认码：{{appPushCallbackCode}} {{appPushStatusAlertMessage}} +86 {{securePhone}} {{securePhoneSendText}} {{securePhoneValidAlertMessage}} 安全手机未绑定，无法使用安全手机验证 {{secureEmail}} {{secureEmailSendText}} {{secureEmailValidAlertMessage}} 安全邮箱未绑定，无法使用安全邮箱验证 点击刷新二维码 支持 {{qrCodeScanTypeNames}} 的扫一扫功能，完成安全验证 {{qrCodeStatusAlertMessage}} 确认码：{{qrCodeCallbackCode}} 请在手机上点击同意以完成安全验证 点击刷新二维码 打开 超级APP 扫一扫功能，扫描二维码进行人脸识别，完成安全验证 {{faceVerifyStatusAlertMessage}} {{appPushSendText}} 确 定 确 定",
+          "bodySha256": "390d051e103c0b5f187cc6e54066f310c2fac349468e6c810038807c720387d7",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "登录 - 内蒙古工业大学",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
+    },
+    {
       "catalogId": "moe:4115010135",
       "name": "内蒙古师范大学",
       "url": "https://auth.imnu.edu.cn/auth/cas/login",
@@ -25599,6 +25935,26 @@
       "authenticatedImportTested": false,
       "defects": [
         "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
+    },
+    {
+      "catalogId": "moe:4115010129",
+      "name": "内蒙古农业大学",
+      "url": "https://vpn.imau.edu.cn/portal/shortcut.html",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://vpn.imau.edu.cn/portal/shortcut.html",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "Loading...",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
       ]
     },
     {
@@ -26327,6 +26683,26 @@
       "proposedCorrection": null,
       "title": "",
       "probeError": null,
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
+    },
+    {
+      "catalogId": "moe:4111010017",
+      "name": "北京石油化工学院",
+      "url": "http://222.31.135.24/academic/common/security/login.jsp",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "http://222.31.135.24/academic/common/security/login.jsp",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": "curl-28",
       "availability": "unavailable-or-restricted",
       "authenticatedImportTested": false,
       "defects": [
@@ -27295,6 +27671,26 @@
       ]
     },
     {
+      "catalogId": "moe:4132010327",
+      "name": "南京财经大学",
+      "url": "https://jwxt.nufe.edu.cn/student/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://jwxt.nufe.edu.cn/student/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "登入页面",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
       "catalogId": "moe:4132012048",
       "name": "南京特殊教育师范学院",
       "url": "http://222.192.176.235:8080/jwglxt",
@@ -28029,6 +28425,26 @@
       ]
     },
     {
+      "catalogId": "moe:4134014330",
+      "name": "合肥幼儿师范高等专科学校",
+      "url": "https://wvpn.hfpec.edu.cn/http/77726476706e69737468656265737421f9f352d22f3678557d468ca88d1b203b/authserver/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://wvpn.hfpec.edu.cn/http/77726476706e69737468656265737421f9f352d22f3678557d468ca88d1b203b/authserver/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "统一身份认证平台",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
       "catalogId": "moe:4134013615",
       "name": "合肥城市学院",
       "url": "http://60.174.215.2:8005/xtgl/login_slogin.html",
@@ -28594,6 +29010,26 @@
       ]
     },
     {
+      "catalogId": "moe:4115011709",
+      "name": "呼和浩特民族学院",
+      "url": "http://211.82.176.48",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "http://211.82.176.48",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": "non-public-url",
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
+    },
+    {
       "catalogId": "moe:4115014283",
       "name": "呼伦贝尔职业技术学院",
       "url": "https://hlbrzy.bylw.chaoxing.com/admin/login",
@@ -28899,6 +29335,26 @@
       ]
     },
     {
+      "catalogId": "moe:4123010214",
+      "name": "哈尔滨理工大学",
+      "url": "http://jwzx.hrbust.edu.cn/homepage/index.do",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "http://jwzx.hrbust.edu.cn/homepage/index.do",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": "curl-28",
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
+    },
+    {
       "catalogId": "moe:4113012787",
       "name": "唐山工业职业技术大学",
       "url": "http://authserver.tsgzy.edu.cn/authserver/login",
@@ -28985,6 +29441,26 @@
       "authenticatedImportTested": false,
       "defects": [
         "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
+    },
+    {
+      "catalogId": "moe:4141013500",
+      "name": "商丘工学院",
+      "url": "https://sqxy.jijiaox.com/mg/login/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://sqxy.jijiaox.com/mg/login/",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "教务管理系统",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
       ]
     },
     {
@@ -29453,6 +29929,26 @@
       ]
     },
     {
+      "catalogId": "moe:4151010636",
+      "name": "四川师范大学",
+      "url": "http://jwcxk.sicnu.edu.cn/student/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "http://jwcxk.sicnu.edu.cn/student/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "登入页面",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
       "catalogId": "moe:4151014221",
       "name": "四川幼儿师范高等专科学校",
       "url": "http://125.65.115.248:60003/cas/login",
@@ -29820,6 +30316,26 @@
       ]
     },
     {
+      "catalogId": "moe:4151012970",
+      "name": "四川职业技术学院",
+      "url": "https://jwxt.scvtc.edu.cn/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://jwxt.scvtc.edu.cn/",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "教务系统",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
       "catalogId": "moe:4151012641",
       "name": "四川航天职业技术学院",
       "url": "http://222.209.81.20:90",
@@ -30127,6 +30643,26 @@
       ]
     },
     {
+      "catalogId": "moe:4121010150",
+      "name": "大连交通大学",
+      "url": "http://jw.djtu.edu.cn/academic/common/security/affairLogin.jsp",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "http://jw.djtu.edu.cn/academic/common/security/affairLogin.jsp",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
       "catalogId": "moe:4121010152",
       "name": "大连工业大学",
       "url": "http://jwgl.dlpu.edu.cn/admin/login",
@@ -30188,6 +30724,26 @@
       "sources": [],
       "proposedCorrection": null,
       "title": "资源访问控制系统",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
+      "catalogId": "moe:4121010151",
+      "name": "大连海事大学",
+      "url": "https://id.dlmu.edu.cn/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://id.dlmu.edu.cn/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "统一身份认证平台",
       "probeError": null,
       "availability": "public-page",
       "authenticatedImportTested": false,
@@ -30443,6 +30999,26 @@
       "defects": []
     },
     {
+      "catalogId": "moe:4112010061",
+      "name": "天津农学院",
+      "url": "http://jwxt.tjau.edu.cn/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "http://jwxt.tjau.edu.cn/",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
       "catalogId": "moe:4112013660",
       "name": "天津商业大学宝德学院",
       "url": "http://jwgl.boustead.edu.cn/(pugje1r1o01rge55tqc2p545)/tjsdbd_jw.aspx",
@@ -30505,6 +31081,26 @@
       "proposedCorrection": null,
       "title": "",
       "probeError": "non-public-url",
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
+    },
+    {
+      "catalogId": "moe:4112012105",
+      "name": "天津中德应用技术大学",
+      "url": "http://sfrz.tsguas.edu.cn/sso/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "http://sfrz.tsguas.edu.cn/sso/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": "curl-28",
       "availability": "unavailable-or-restricted",
       "authenticatedImportTested": false,
       "defects": [
@@ -30588,6 +31184,26 @@
       "availability": "public-page",
       "authenticatedImportTested": false,
       "defects": []
+    },
+    {
+      "catalogId": "moe:4112010056",
+      "name": "天津大学",
+      "url": "https://sso.tju.edu.cn/cas/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://sso.tju.edu.cn/cas/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "Unified Identity Authentication",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
     },
     {
       "catalogId": "moe:4112010058",
@@ -30737,6 +31353,35 @@
       "defects": [
         "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
       ]
+    },
+    {
+      "catalogId": "moe:4112013897",
+      "name": "天津理工大学中环信息学院",
+      "url": "https://cas.tjzhic.edu.cn/cas/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://cas.tjzhic.edu.cn/cas/login",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "https://cas.tjzhic.edu.cn/cas/login",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "Login - 天津理工大学中环信息学院",
+          "observedText": "Login - 天津理工大学中环信息学院 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 当前登录环境异常，需通过安全验证确认是本人操作后才可继续登录。请选择安全验证方式！ {{typeInfo[typeIndex].info}} 其他方式 点击发送验证请求后，请在 超级APP 上进行确认，完成安全验证 确认码：{{appPushCallbackCode}} {{appPushStatusAlertMessage}} +86 {{securePhone}} {{securePhoneSendText}} {{securePhoneValidAlertMessage}} 安全手机未绑定，无法使用安全手机验证 {{secureEmail}} {{secureEmailSendText}} {{secureEmailValidAlertMessage}} 安全邮箱未绑定，无法使用安全邮箱验证 点击刷新二维码 支持 {{qrCodeScanTypeNames}} 的扫一扫功能，完成安全验证 {{qrCodeStatusAlertMessage}} 确认码：{{qrCodeCallbackCode}} 请在手机上点击同意以完成安全验证 点击刷新二维码 打开 超级APP 扫一扫功能，扫描二维码进行人脸识别，完成安全验证 {{faceVerifyStatusAlertMessage}} {{appPushSendText}} 确 定 确 定",
+          "bodySha256": "eb54a79e98353275dd5949ab6a91c0b87ad25cdff8e6a0f1d53e885d53340e8e",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "Login - 天津理工大学中环信息学院",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
     },
     {
       "catalogId": "moe:4112010066",
@@ -31300,6 +31945,26 @@
       "defects": []
     },
     {
+      "catalogId": "moe:4133012645",
+      "name": "宁波城市职业技术学院",
+      "url": "https://webvpn.nbcc.edu.cn/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://webvpn.nbcc.edu.cn/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "WEBVPN",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
       "catalogId": "moe:4133010863",
       "name": "宁波职业技术大学",
       "url": "https://jwc.webs.nbpt.edu.cn/",
@@ -31689,6 +32354,26 @@
       ]
     },
     {
+      "catalogId": "moe:4134010363",
+      "name": "安徽工程大学",
+      "url": "http://xjwxt.ahpu.edu.cn/ahpu/localLogin.action",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "http://xjwxt.ahpu.edu.cn/ahpu/localLogin.action",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": "curl-28",
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
+    },
+    {
       "catalogId": "wakeup:103eb5bd8ebd3572f1b1",
       "name": "安徽机电职业技术学院",
       "url": "https://ids.ahcme.edu.cn/authserver/login",
@@ -31755,6 +32440,26 @@
       "authenticatedImportTested": false,
       "defects": [
         "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
+      "catalogId": "moe:4134010361",
+      "name": "安徽理工大学",
+      "url": "http://jwgl.aust.edu.cn/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "http://jwgl.aust.edu.cn/",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": "non-public-url",
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
       ]
     },
     {
@@ -32412,6 +33117,26 @@
       ]
     },
     {
+      "catalogId": "wakeup:7c1d2da03324f4f5ff78",
+      "name": "山东商业职业技术学院",
+      "url": "https://authserver-sict-edu-cn.vpn.sict.edu.cn:8118/authserver/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://authserver-sict-edu-cn.vpn.sict.edu.cn:8118/authserver/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "统一身份认证平台",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
       "catalogId": "wakeup:5209e95416dfd5aaa85d",
       "name": "山东大学威海校区",
       "url": "http://service.sdu.edu.cn/",
@@ -32904,6 +33629,26 @@
       "checkedAt": "2026-10-16",
       "http": 200,
       "finalUrl": "http://zfjw.sdp.edu.cn",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
+      "catalogId": "moe:4137010439",
+      "name": "山东第一医科大学",
+      "url": "https://jwc.sdfmu.edu.cn/academic/common/security/affairLogin.jsp",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://jwc.sdfmu.edu.cn/academic/common/security/affairLogin.jsp",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
@@ -33680,6 +34425,26 @@
       ]
     },
     {
+      "catalogId": "moe:4134010380",
+      "name": "巢湖学院",
+      "url": "https://ehall.vpn.chu.edu.cn:4443/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "https://ehall.vpn.chu.edu.cn:4443/",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": "curl-28",
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
+    },
+    {
       "catalogId": "moe:4162014595",
       "name": "平凉职业技术学院",
       "url": "http://60.165.215.111:22080/jsxsd/",
@@ -34007,6 +34772,35 @@
       "defects": [
         "Entry page identity does not name this school; ownership unproven."
       ]
+    },
+    {
+      "catalogId": "moe:4144013707",
+      "name": "广东文艺职业学院",
+      "url": "https://cas.gdla.edu.cn/cas/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://cas.gdla.edu.cn/cas/login",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "https://cas.gdla.edu.cn/cas/login",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "统一认证系统 - SSO SERVICES AUTHENTICATION",
+          "observedText": "统一认证系统 - SSO SERVICES AUTHENTICATION 扫码登录 微信 企业微信 新用户扫码后需输入帐号密码进行绑定 统一认证系统 SSO SERVICES AUTHENTICATION 登录账号 * 登录密码 * 忘记密码？ 其它登录方式 出于安全考虑，一旦您访问过需要提供凭证信息的应用，请操作完成之后关闭浏览器。 @广东文艺职业学院 粤ICP备16070491号 版权所有 2000-",
+          "bodySha256": "957e780ee56cad0427fedf3407e043b8a021c58d29c9d2aa3645900a27ed1773",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "统一认证系统 - SSO SERVICES AUTHENTICATION",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
     },
     {
       "catalogId": "moe:4144012743",
@@ -34425,6 +35219,35 @@
       "defects": []
     },
     {
+      "catalogId": "moe:4144014667",
+      "name": "广东财贸职业学院",
+      "url": "https://sso.gdcmxy.edu.cn/authserver/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://sso.gdcmxy.edu.cn/authserver/login",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "https://sso.gdcmxy.edu.cn/authserver/login",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "广东财贸职业学院智慧校园平台",
+          "observedText": "广东财贸职业学院智慧校园平台 统一身份认证平台 发送验证码 记住密码 忘记密码？ 认证说明 请用广东财贸职院专属钉扫码登录 统一身份认证说明 COPYRIGHT © 2019 ALL RIGHTS RESERVED.粤ICP备 号 推荐使用 Google Chrome 浏览器 点此下载",
+          "bodySha256": "50d6414dab0d62d83871811e429766cdf1aaeb48af2fe029e02c8c3ec797b24e",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "广东财贸职业学院智慧校园平台",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
+    },
+    {
       "catalogId": "wakeup:fa3c0e61473adaa40460",
       "name": "广东软件学院",
       "url": "https://jwxt.seig.edu.cn/jwglxt/xtgl/login_slogin.html",
@@ -34705,6 +35528,35 @@
       ]
     },
     {
+      "catalogId": "moe:4144014268",
+      "name": "广州华夏职业学院",
+      "url": "http://jwc.gzhxtc.edu.cn",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "http://jwc.gzhxtc.edu.cn",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "http://jwc.gzhxtc.edu.cn",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "广州华夏职业学院-教务处",
+          "observedText": "广州华夏职业学院-教务处 首页 教务要闻 教学研究 规章制度 产业学院 办事指南 下载专区 首页 教务要闻 教学研究 规章制度 产业学院 办事指南 下载专区 首页 教务要闻 教学研究 规章制度 产业学院 办事指南 下载专区 学校风光二 学校风光一 服务直通车 更多>> 教务系统 岗位实习 技能竞赛 质量工程 网络教学 学信网 通知通告 MORE>> 广州华夏职业学院关于2026年青年教师教学大赛校级比赛评审结果的公示 2026-09-08 17:09:14.0 广州华夏职业学院关于广东省第八届高校青年教师教学大赛拟推荐省赛名单的公示 2026-09-04 11:50:43.0 往届毕业学生打印成绩单申请流程 2026-09-03 10:33:42.0 关于给予马健翀自动退学的决定 2026-07-17 16:28:18.0 广州华夏职业学院 广州理工学院 关于调整2024年三二分段专升本协同育人项目转段考核方案的公示 2026-06-15 10:06:00.0 教务要闻 MORE>> 2026-2027学年第一学期第6周巡课情况简报 2026-10-10 15:23:35.0 学校高级督导唐国华教授莅临经济与管理学院指导项目化课堂教学改革 2026-10-09 11:56:45.0 信息工程学院举办高级督导听课经验分享会 2026-10-09 11:55:42.0 【喜报】斩获银奖！广州华夏职业学院在世界职业院校技能大赛创历史突破 2026-10-09 11:42:12.0 关于2026-2027第一学期职业学校学生实习单位的公示 2026-09-30 08:38:43.0 办事指南 MORE>> 在校生打印成绩单申请流程 2026-09-03 16:11:38.0 往届毕业学生打印成绩单申请流程 2026-09-03 10:33:42.0 学生申请退学办理流程 2025-03-07 17:13:57.0 新生非参军保留入学资格办理流程 2025-03-07 16:25:30.0 保留入学资格学生复学办理流程 2025-03-07 16:18:24.0 联系地址：广东省广州市从化城鳌大道东772号 邮政编码：510935 联系电话：020-37964009、020-87860120 版权所有：广州华夏职业学院 ICP备案号：粤ICP备12042111号",
+          "bodySha256": "e815193d808d52fc6d0d8393cb309c6f8bbf70dfa72d1bb0c6da87601e844aae",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "广州华夏职业学院-教务处",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
+    },
+    {
       "catalogId": "moe:4144014592",
       "name": "广州卫生职业技术学院",
       "url": "https://cas.gzws.edu.cn/lyuapServer/login",
@@ -34765,6 +35617,26 @@
       ]
     },
     {
+      "catalogId": "moe:4144014136",
+      "name": "广州城建职业学院",
+      "url": "https://cas.gzccc.edu.cn/lyuapServer/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://cas.gzccc.edu.cn/lyuapServer/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "统一身份认证平台",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
       "catalogId": "moe:4144014266",
       "name": "广州华商职业学院",
       "url": "https://jwxt.gdhsc.edu.cn/jsxsd/",
@@ -34812,6 +35684,26 @@
       "availability": "public-page",
       "authenticatedImportTested": false,
       "defects": []
+    },
+    {
+      "catalogId": "moe:4144013714",
+      "name": "广州工商学院",
+      "url": "http://jw.gzgs.edu.cn/http://auth.gzgs.org.cn/cas/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 404,
+      "finalUrl": "http://jw.gzgs.edu.cn/http://auth.gzgs.org.cn/cas/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": null,
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
     },
     {
       "catalogId": "moe:4144011078",
@@ -36178,6 +37070,26 @@
       "defects": []
     },
     {
+      "catalogId": "moe:4151010621",
+      "name": "成都信息工程大学",
+      "url": "https://ywtb.cuit.edu.cn/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://ywtb.cuit.edu.cn/",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "一网通办",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
       "catalogId": "moe:4151013705",
       "name": "成都医学院",
       "url": "https://jwweb.cmc.edu.cn/",
@@ -36855,6 +37767,35 @@
       ],
       "proposedCorrection": null,
       "title": "统一身份认证",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
+    },
+    {
+      "catalogId": "moe:4165010760",
+      "name": "新疆医科大学",
+      "url": "https://mycas.xjmu.edu.cn/cas/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://mycas.xjmu.edu.cn/cas/login",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "https://mycas.xjmu.edu.cn/cas/login",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "登录 - 新疆医科大学",
+          "observedText": "登录 - 新疆医科大学 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 您正在使用 城市热点 接入上网，可直接使用 城市热点 上网账号快速登录。 请确认是否使用该账号进行登录。 上网IP： 上网账号： 关闭 上网账号快速登录 下次自动登录 当前登录环境异常，需通过安全验证确认是本人操作后才可继续登录。请选择安全验证方式！ 登录成功后，设为可信客户端 {{typeInfo[typeIndex].info}} 其他方式 点击发送验证请求后，请在 超级APP 上进行确认，完成安全验证 确认码：{{appPushCallbackCode}} {{appPushStatusAlertMessage}} +86 {{securePhone}} {{securePhoneSendText}} {{securePhoneValidAlertMessage}} 安全手机未绑定，无法使用安全手机验证 {{secureEmail}} {{secureEmailSendText}} {{secureEmailValidAlertMessage}} 安全邮箱未绑定，无法使用安全邮箱验证 点击刷新二维码 支持 {{qrCodeScanTypeNames}} 的扫一扫功能，完成安全验证 {{qrCodeStatusAlertMessage}} 确认码：{{qrCodeCallbackCode}} 请在手机上点击同意以完成安全验证 点击刷新二维码 打开 超级APP 扫一扫功能，扫描二维码进行人脸识别，完成安全验证 {{faceVerifyStatusAlertMessage}} 打开OTP验证器获取OTP动态口令，完成安全验证 {{otpValidAlertMessage}} OTP令牌未绑定，无法使用OTP令牌验证 支持 小程序类（数盾OTP）、APP类（Google Authenticator、Microsoft Authenticator）等OTP验证器 {{appPushSendText}} 确 定 确 定 确 定",
+          "bodySha256": "f1adce30782e8516ad15fe0832266e7632fe2ff077d0737f7696d0ac8116b71a",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "登录 - 新疆医科大学",
       "probeError": null,
       "availability": "public-page",
       "authenticatedImportTested": false,
@@ -38127,6 +39068,55 @@
       ]
     },
     {
+      "catalogId": "wakeup:4044137d942f633fa462",
+      "name": "桂林理工大学南宁分校",
+      "url": "http://jw.glutnn.cn/academic/common/security/affairLogin.jsp",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "http://jw.glutnn.cn/academic/common/security/affairLogin.jsp",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
+      "catalogId": "moe:4145010595",
+      "name": "桂林电子科技大学",
+      "url": "https://v.guet.edu.cn/https/77726476706e69737468656265737421f3f652d220256d44300d8db9d6562d/authserver/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://v.guet.edu.cn/https/77726476706e69737468656265737421f3f652d220256d44300d8db9d6562d/authserver/login",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "https://v.guet.edu.cn/https/77726476706e69737468656265737421f3f652d220256d44300d8db9d6562d/authserver/login",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "统一身份认证平台",
+          "observedText": "﻿﻿ 统一身份认证平台 学校官网 ENG 中文 生物识别 账号登录 验证码登录 扫码登录 点击开启识别登录 刷新 获取验证码 海外手机请按“国家代码-手机号”的格式输入，如：1-888888 登录 刷新 7天免登录 忘记密码/账号申诉 登录 帮  助 账号激活 匿名登录 建议浏览器： edge 谷歌 360极速 第一次使用，请点击“账号激活”，激活账号；如二次验证无法收到信息或账号信息有误，请点击“忘记密码/账号申诉”，按提示输入信息之后点“下一步”，再点“申诉”进行修改；其它问题请点击“ 帮助 ”。 微信扫码 安全登录 您还可以用以下登录方式: 版权信息：@2022桂林电子科技大学",
+          "bodySha256": "09e9ab34eb2f9aa95a26be79b341e28dc842a30f8611ea9679e950c5b5ebb6d9",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "统一身份认证平台",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
+    },
+    {
       "catalogId": "moe:4145011825",
       "name": "桂林航天工业学院",
       "url": "http://jw.guat.edu.cn/cas/login.action",
@@ -38144,6 +39134,26 @@
       "authenticatedImportTested": false,
       "defects": [
         "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
+    },
+    {
+      "catalogId": "moe:4145010596",
+      "name": "桂林理工大学",
+      "url": "https://jw.glut.edu.cn/academic/affairLogin.do",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://jw.glut.edu.cn/academic/affairLogin.do",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
       ]
     },
     {
@@ -38347,6 +39357,26 @@
       ]
     },
     {
+      "catalogId": "moe:4142011796",
+      "name": "武汉城市职业学院",
+      "url": "http://jw.whcp.edu.cn/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "http://jw.whcp.edu.cn/",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "教务系统",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
       "catalogId": "moe:4142012989",
       "name": "武汉信息传播职业技术学院",
       "url": "https://cas.whinfo.cn/cas/login",
@@ -38428,6 +39458,26 @@
       "sources": [],
       "proposedCorrection": null,
       "title": "KINGOSOFT高校智慧校园教学综合服务平台",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
+      "catalogId": "moe:4142013634",
+      "name": "武汉学院",
+      "url": "https://whxyjwxt.whxy.edu.cn/eams/login.action",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://whxyjwxt.whxy.edu.cn/eams/login.action",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
       "probeError": null,
       "availability": "public-page",
       "authenticatedImportTested": false,
@@ -38911,6 +39961,26 @@
       "authenticatedImportTested": false,
       "defects": [
         "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
+      "catalogId": "moe:4144012954",
+      "name": "汕头职业技术学院",
+      "url": "https://rz.stpt.edu.cn:7274/lyuapServer/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "https://rz.stpt.edu.cn:7274/lyuapServer/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": "non-public-url",
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
       ]
     },
     {
@@ -39513,6 +40583,35 @@
       "defects": []
     },
     {
+      "catalogId": "moe:4132014542",
+      "name": "江苏财会职业学院",
+      "url": "https://www.jscfa.edu.cn/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://www.jscfa.edu.cn/",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "https://www.jscfa.edu.cn/",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "江苏财会职业学院",
+          "observedText": "江苏财会职业学院 迎新智能助手 智慧财院 办公系统 校领导信箱 在校生 VPN 校园地图 江苏财会职业学院 导航 首页 学校概况 学校简介 现任领导 学校章程 历任领导 联系我们 机构设置 党群组织 行政部门 教学单位 教辅部门 人才培养 教学动态 管理制度 实践教学 督导之窗 继续教育 招生就业 招生信息 就业信息 学术研究 管理政策 下载专区 合作交流 国际交流 合作办学 校园文化 财院校报 多彩活动 校园风光 官方微博 官方微信 七彩社区 视觉财院 财院人物 葫芦文化 公共服务 图书馆 招标信息网 财院日历 作息时间 联系电话 公共卫生 学校要闻 查看更多 我校召开党委理论学习中心组2026... 学校要闻 查看更多 我校召开党委理论学习中心组2026年第十一次学习会 2026.10 15 我校与中国财经出版传媒集团举行战略合作协议签署仪式 2026-10-15 我校举办2026年 “讲述我的育人故事” 专题宣讲活动 2026-10-14 喜报！我校荣获中国青年科技创新“揭榜挂帅”擂台赛全国一等奖 2026-10-13 我校召开“十五五”事业发展规划征求意见座谈会 2026-10-09 喜报！我校荣获2026年世界职业院校技能大赛总决赛争夺赛（高职组）财经赛道银奖 2026-10-01 我校召开9月份校园食品安全工作调度会 2026-09-24 公告通知 查看更多 2026-04 22 江苏财会职业学院2026年长期公开招聘高层次人才公告 江苏财会职业学院是江苏省财政厅主管的全额拨款事业单位，位于连云港市海州区春晖路8号（网址：http://www.... 2026-10 09 2026年录取新生放弃入学资格名单公示 我校2026级新生应于2026年9月5日入学报到。根据《江苏财会职业学院学生学籍管理办法》之规定，现将放弃入学... 2026-09 22 江苏财会职业学院2026年长期公开招聘高层次人才第二批... 有关考生：根据《江苏财会职业学院2026年长期公开招聘高层次人才公告》安排，定于2026年10月10日上午举行20... 2026-05 31 江苏财会职业学院2026年公开招聘专任教师公告（四）面... 有关考生：我校2026年公开招聘专任教师面试成绩及总成绩公布如下：B01、B02岗位总成绩=试讲成绩×60%＋面试... 视觉财院 查看更多 查看更多 财院人物 我校在2025年江苏省职业院校创新创业大赛中荣获一等奖 江苏省教学名师——谭函梅 综合新闻 查看更多 综合新闻 查看更多 人工智能学院组织开展“山海连云，青春无艾”防艾主题... 2026-10-14 数智会计学院举行升旗仪式暨“国旗下思政课”主题教育... 2026-10-13 人工智能学院志愿者助力省运会职工部拔河比赛赛事 2026-10-13 数智会计学院第五届会计案例大赛圆满落幕 2026-10-12 数字商务学院举办2026年大学生职业规划大赛点评专场活... 2026-10-12 数字商务学院开展短视频征集评比活动 2026-10-12 我校开展辅导员心理案例专题研讨会 2026-10-10 主题网站 人事管理 招生就业 校园文化 资源导航 政务公开 教务系统 图书馆 媒体聚焦 查看更多 【新华日报】江苏财会职业学院“急救西游行”志愿队守... 2026-09-29 【连云港日报】江苏财会职业学院“急救西游行守护行动... 2026-09-24 【交汇点】江苏财会职业学院“急救西游行”项目斩获全... 2026-09-24 【现代快报】西游赋能急救科普，江苏财会职业学院斩获... 2026-09-23 【学习强国】情景反诈、西游动画、街头快答——这支青年... 2026-09-22 招标信息 查看更多 江苏财会职业学院3D财经博览馆实训平台招标公告 2026-09-20 江苏财会职业学院云计算实训平台服务器采购招标公告 2026-09-18 江苏财会职业学院教学机房互联网教学专线采购（二次）... 2026-09-09 江苏财会职业学院AI督导平台服务器采购招标公告 2026-08-24 江苏财会职业学院2026-2029年度一卡通人工维保服务采... 2026-08-14 友情链接 中华人民共和国教育部 江苏省财政厅 江苏职教网 江苏省思想政治工作网 江苏省智慧教育云计算平台 连云港市人才综合服务平台 中国教育新闻网 江苏联合职业技术学院 中国高职高专教育网 教育科研网 校内导航 图书馆 审计处 纪委办公室 继续教育处 财务处 后勤管理处 综合档案室 政务公开网 智慧校园中心 新闻网 资产管理处（招投标办公室） 教务处 招生就业网 学工处 科研处 二级学院网站 数智会计学院 数智财金学院 数字商务学院 大数据应用学院 人工智能学院 马克思主义学院 基础教育学院 融媒体学院 旧版回顾 地址：连云港市海州区春晖路8号  邮政编码：222061 电话： 0518-85899703（校办）0518-85899701（校办）0518-85899702（校办） 师德师风监督电话： 0518-85899663 电子邮件：jsck_xcb@jscfa.edu.cn 江苏财会职业学院版权所有©2021 苏ICP备05004334号-3  苏公网安备32070602010149号 关闭",
+          "bodySha256": "436a9be0abc61153f0f9dc160200793fb0effa41911154811d73a5c63b56eb00",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "江苏财会职业学院",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
+    },
+    {
       "catalogId": "moe:4132012047",
       "name": "江苏经贸职业技术学院",
       "url": "https://client.casb.jvic.edu.cn/https/webvpn7a567cd25d3e02f240fd25d290140c86/cas/login",
@@ -39589,6 +40688,26 @@
       "checkedAt": "2026-10-16",
       "http": 200,
       "finalUrl": "https://cas.jxcfs.com/lyuapServer/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "统一身份认证平台",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
+      "catalogId": "moe:4136012944",
+      "name": "江西工业工程职业技术学院",
+      "url": "https://cas-jxvcie-edu-cn-s.jxvcie.edu.cn:4438/lyuapServer/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://cas-jxvcie-edu-cn-s.jxvcie.edu.cn:4438/lyuapServer/login",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
@@ -40056,6 +41175,26 @@
       "availability": "public-page",
       "authenticatedImportTested": false,
       "defects": []
+    },
+    {
+      "catalogId": "moe:4134011306",
+      "name": "池州学院",
+      "url": "https://jwxt.czu.edu.cn/student/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "https://jwxt.czu.edu.cn/student/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": "curl-28",
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. Endpoint did not return a public HTTP 200 page at the configured URL during the entry-evidence pass."
+      ]
     },
     {
       "catalogId": "moe:4121010149",
@@ -41346,6 +42485,26 @@
       ]
     },
     {
+      "catalogId": "moe:4141010460",
+      "name": "河南理工大学",
+      "url": "https://uia.hpu.edu.cn/cas/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "https://uia.hpu.edu.cn/cas/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": "curl-28",
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. Endpoint did not return a public HTTP 200 page at the configured URL during the entry-evidence pass."
+      ]
+    },
+    {
       "catalogId": "moe:4141010469",
       "name": "河南牧业经济学院",
       "url": "http://211.84.213.21/cas/login.action",
@@ -41671,6 +42830,35 @@
       "defects": [
         "Entry page identity does not name this school; ownership unproven."
       ]
+    },
+    {
+      "catalogId": "moe:4135010399",
+      "name": "泉州师范学院",
+      "url": "https://id.qztc.edu.cn/portal/login.html",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://id.qztc.edu.cn/portal/login.html",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "https://id.qztc.edu.cn/portal/login.html",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "泉州师范学院统一身份认证",
+          "observedText": "泉州师范学院统一身份认证 账号登录 短信登录 账号 密码 图形验证码 登录 记住密码 忘记密码? 手机号码 验证码 发送验证码 图形验证码 登录 记住密码 忘记密码? 使用说明: 统一身份认证系统已实现校内多个应用系统单点登录功能。 账号：职工号或者学号 初次使用系统或者忘记密码请先点击登录框右下角“忘记密码”进行密码重置。 如需修改手机号，可进入 →手机号绑定页面 若需了解详情，可查看： 统一身份认证系统操作说明 或者联系网络中心办公室 电话：22911950 时间：工作日 9:00-12:00 14:30-17:00 地点：荣茂楼 310、312 本平台为互联网非涉密平台，严禁处理、传输国家秘密！ 版权所有 泉州师范学院 闽ICP备05005468号 闽公网安备35050302000128号 地址:  福建省泉州市东海大街398号    邮政编码:  362000",
+          "bodySha256": "814fcf46071eefcf299d4423c328f35a377f6dcd36d0d568d6742a3ca42c43a6",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "泉州师范学院统一身份认证",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
     },
     {
       "catalogId": "moe:4141011788",
@@ -43380,6 +44568,26 @@
       "defects": []
     },
     {
+      "catalogId": "moe:4144012958",
+      "name": "清远职业技术学院",
+      "url": "http://jwxt.qypt.edu.cn/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "http://jwxt.qypt.edu.cn/",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": "curl-28",
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
+    },
+    {
       "catalogId": "moe:4133010351",
       "name": "温州大学",
       "url": "https://source.wzu.edu.cn/login",
@@ -43432,6 +44640,26 @@
       "sources": [],
       "proposedCorrection": null,
       "title": "登录",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
+      "catalogId": "moe:4142012951",
+      "name": "湖北中医药高等专科学校",
+      "url": "https://cas.hbzyy.net/data/share/dev04/ssl/assets/cab/gaikuang.docx:/usr/share/nginx/html/assets/cab/jiaowu.docx",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://cas.hbzyy.net/data/share/dev04/ssl/assets/cab/gaikuang.docx:/usr/share/nginx/html/assets/cab/jiaowu.docx",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "统一身份认证平台",
       "probeError": null,
       "availability": "public-page",
       "authenticatedImportTested": false,
@@ -46818,6 +48046,26 @@
       ]
     },
     {
+      "catalogId": "moe:4132013984",
+      "name": "苏州大学应用技术学院",
+      "url": "https://sso.tec.suda.edu.cn/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "https://sso.tec.suda.edu.cn/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": "curl-28",
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. Endpoint did not return a public HTTP 200 page at the configured URL during the entry-evidence pass."
+      ]
+    },
+    {
       "catalogId": "moe:4132010285",
       "name": "苏州大学",
       "url": "http://xk.suda.edu.cn",
@@ -47256,6 +48504,55 @@
       ]
     },
     {
+      "catalogId": "moe:4161010699",
+      "name": "西北工业大学",
+      "url": "https://uis.nwpu.edu.cn/cas/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://uis.nwpu.edu.cn/cas/login",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "https://uis.nwpu.edu.cn/cas/login",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "西北工业大学 | 统一身份认证 | Login",
+          "observedText": "西北工业大学 | 统一身份认证 | Login 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 QRCode User-Password Remember Me Forgot your password? Send {{qrcodeAlertMessage}} 刷新二维码 打开 “ 西北工业大学APP ” 扫描二维码 Or login with: Active your account 账号激活攻略 密码找回攻略 本科新生学号查询 开放平台 正版终端杀毒 本平台为互联网非涉密平台，严禁处理、传输国家秘密 信息化管理处（信息中心）：88491717 电邮：app@nwpu.edu.cn QQ群：540478672 Copyright © 2020 Northwestern Polytechnical University All Rights Reserved 建议浏览器 当前登录环境异常，需通过安全验证确认是本人操作后才可继续登录。请选择安全验证方式！ {{typeInfo[typeIndex].info}} 其他方式 点击发送验证请求后，请在 西北工业大学APP 上进行确认，完成安全验证 确认码：{{appPushCallbackCode}} {{appPushStatusAlertMessage}} +86 {{securePhone}} {{securePhoneSendText}} {{securePhoneValidAlertMessage}} 安全手机未绑定，无法使用安全手机验证 {{secureEmail}} {{secureEmailSendText}} {{secureEmailValidAlertMessage}} 安全邮箱未绑定，无法使用安全邮箱验证 点击刷新二维码 支持 {{qrCodeScanTypeNames}} 的扫一扫功能，完成安全验证 {{qrCodeStatusAlertMessage}} 确认码：{{qrCodeCallbackCode}} 请在手机上点击同意以完成安全验证 点击刷新二维码 扫描成功 打开手机App扫描二维码 请在手机上点击同意以完成安全验证 {{appPushSendText}} 确 定 确 定",
+          "bodySha256": "8b7fd6fc3d4491a890471a5a415d604f25d8526e5ddf98c68108719f53937051",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "西北工业大学 | 统一身份认证 | Login",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
+    },
+    {
+      "catalogId": "wakeup:722e4826027db1ae44fb",
+      "name": "西北工业大学（浏览器登录）",
+      "url": "https://uis.nwpu.edu.cn/cas/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://uis.nwpu.edu.cn/cas/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "西北工业大学 | 统一身份认证 | Login",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
       "catalogId": "moe:4162010736",
       "name": "西北师范大学",
       "url": "https://www.nwnu.edu.cn/",
@@ -47514,6 +48811,46 @@
       ]
     },
     {
+      "catalogId": "moe:4161010724",
+      "name": "西安外国语大学",
+      "url": "https://jwxt.xisu.edu.cn/eams/login.action",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "https://jwxt.xisu.edu.cn/eams/login.action",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": "curl-28",
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. Endpoint did not return a public HTTP 200 page at the configured URL during the entry-evidence pass."
+      ]
+    },
+    {
+      "catalogId": "moe:4161010709",
+      "name": "西安工程大学",
+      "url": "https://sz.xpu.edu.cn/auth2/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "https://sz.xpu.edu.cn/auth2/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": "curl-28",
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. Endpoint did not return a public HTTP 200 page at the configured URL during the entry-evidence pass."
+      ]
+    },
+    {
       "catalogId": "moe:4161013682",
       "name": "西安工商学院",
       "url": "https://bxaitjw.yinghuaonline.com/xxgcxy/",
@@ -47673,6 +49010,26 @@
       "sources": [],
       "proposedCorrection": null,
       "title": "登录页",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
+      ]
+    },
+    {
+      "catalogId": "moe:4161011736",
+      "name": "西安航空学院",
+      "url": "https://cas.xaau.edu.cn/lyuapServer/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://cas.xaau.edu.cn/lyuapServer/login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
       "probeError": null,
       "availability": "public-page",
       "authenticatedImportTested": false,
@@ -48301,6 +49658,26 @@
       ]
     },
     {
+      "catalogId": "moe:4152010671",
+      "name": "贵州财经大学",
+      "url": "http://i.gufe.edu.cn/dcp/forward.action",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 483,
+      "finalUrl": "http://i.gufe.edu.cn/dcp/forward.action",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": null,
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
+    },
+    {
       "catalogId": "wakeup:297ebc4ef23bfd051f49",
       "name": "贵州轻工职业技术学院",
       "url": "https://zhxy.gzqy.cn/",
@@ -48610,6 +49987,35 @@
       ]
     },
     {
+      "catalogId": "moe:4121010147",
+      "name": "辽宁工程技术大学",
+      "url": "https://authserver.lntu.edu.cn/authserver/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://authserver.lntu.edu.cn/authserver/login",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "https://authserver.lntu.edu.cn/authserver/login",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "统一身份认证平台",
+          "observedText": "﻿﻿ 统一身份认证平台 统一身份认证 生物识别 账号登录 验证码登录 扫码登录 点击开启识别登录 刷新 获取验证码 海外手机请按“国家代码-手机号”的格式输入，如：1-888888 登录 刷新 账号激活 忘记密码 登录 登录提示： 首次登陆，请点击账号激活。 手机扫码  安全登录 扫描成功 请在手机上「确认登录」 返回二维码 手机扫码  安全登录 其他登录方式 微信登录 中国•阜新•辽宁工程技术大学 © 版权所有 辽ICP备18005850号",
+          "bodySha256": "73e19247aebf150b176e4b5c082f070e695dc46880799f20873ac9550f1fa223",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "统一身份认证平台",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
+    },
+    {
       "catalogId": "moe:4121013215",
       "name": "辽宁师范大学海华学院",
       "url": "http://jwxt.lshhxy.edu.cn/jwapp/sys/emapfunauth/pages/funauth-login.do",
@@ -48773,6 +50179,35 @@
       ],
       "proposedCorrection": null,
       "title": "教学管理信息服务平台",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
+    },
+    {
+      "catalogId": "moe:4121011430",
+      "name": "辽宁科技学院",
+      "url": "https://mea.lnist.edu.cn/eams/loginExt.action",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://mea.lnist.edu.cn/eams/loginExt.action",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "https://mea.lnist.edu.cn/eams/loginExt.action",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "辽宁科技学院教学管理系统",
+          "observedText": "辽宁科技学院教学管理系统 账号密码登录 中文 ENGLISH 建议浏览器 : IE9+ firefox Chrome 忘记密码? 从平台登录",
+          "bodySha256": "4f209ca32bee59fb1fb5ac453143b1e6ca5c2a916a0028324a920627fe39911b",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "辽宁科技学院教学管理系统",
       "probeError": null,
       "availability": "public-page",
       "authenticatedImportTested": false,
@@ -49282,6 +50717,26 @@
       "availability": "public-page",
       "authenticatedImportTested": false,
       "defects": []
+    },
+    {
+      "catalogId": "moe:4141010459",
+      "name": "郑州大学",
+      "url": "https://jw.v.zzu.edu.cn/eams/login.action",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "https://jw.v.zzu.edu.cn/eams/login.action",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": "curl-28",
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
     },
     {
       "catalogId": "moe:4141013791",
@@ -50384,6 +51839,26 @@
       "authenticatedImportTested": false,
       "defects": [
         "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
+    },
+    {
+      "catalogId": "moe:4150014173",
+      "name": "重庆科创职业学院",
+      "url": "https://cas.cqie.cn/cas/WEB/index.html",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://cas.cqie.cn/cas/WEB/index.html",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "统一身份认证",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Entry page identity does not name this school; ownership unproven."
       ]
     },
     {
@@ -51704,6 +53179,26 @@
       ]
     },
     {
+      "catalogId": "moe:4161010708",
+      "name": "陕西科技大学",
+      "url": "http://my.sust.edu.cn/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "http://my.sust.edu.cn/",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": "curl-28",
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. Endpoint did not return a public HTTP 200 page at the configured URL during the entry-evidence pass."
+      ]
+    },
+    {
       "catalogId": "moe:4161010720",
       "name": "陕西理工大学",
       "url": "http://jwgl.snut.edu.cn/eams/loginExt.action",
@@ -52200,6 +53695,35 @@
       ]
     },
     {
+      "catalogId": "moe:4163010748",
+      "name": "青海民族大学",
+      "url": "https://cas.qhmu.edu.cn/cas/login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://cas.qhmu.edu.cn/cas/login",
+      "status": "verified",
+      "confidence": "medium",
+      "sources": [
+        {
+          "url": "https://cas.qhmu.edu.cn/cas/login",
+          "kind": "entry-page",
+          "evidence": "Public page text contains catalog school name.",
+          "checkedAt": "2026-10-16",
+          "title": "登录 - 青海民族大学",
+          "observedText": "登录 - 青海民族大学 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 打开消息提示 您正在使用 校园网 接入上网，可直接使用 校园网 上网账号快速登录。 请确认是否使用该账号进行登录。 上网IP： 上网账号： 关闭 上网账号快速登录 下次自动登录 当前登录环境异常，需通过安全验证确认是本人操作后才可继续登录。请选择安全验证方式！ 登录成功后，设为可信客户端 {{typeInfo[typeIndex].info}} 其他方式 点击发送验证请求后，请在 超级APP 上进行确认，完成安全验证 确认码：{{appPushCallbackCode}} {{appPushStatusAlertMessage}} +86 {{securePhone}} {{securePhoneSendText}} {{securePhoneValidAlertMessage}} 安全手机未绑定，无法使用安全手机验证 {{secureEmail}} {{secureEmailSendText}} {{secureEmailValidAlertMessage}} 安全邮箱未绑定，无法使用安全邮箱验证 点击刷新二维码 支持 {{qrCodeScanTypeNames}} 的扫一扫功能，完成安全验证 {{qrCodeStatusAlertMessage}} 确认码：{{qrCodeCallbackCode}} 请在手机上点击同意以完成安全验证 点击刷新二维码 打开 超级APP 扫一扫功能，扫描二维码进行人脸识别，完成安全验证 {{faceVerifyStatusAlertMessage}} {{appPushSendText}} 确 定 确 定",
+          "bodySha256": "66f2f1b03ea41b7f4b336fcee3bf3fa14a2a798ee289307cca1c051727155d9d",
+          "linkedUrls": []
+        }
+      ],
+      "proposedCorrection": null,
+      "title": "登录 - 青海民族大学",
+      "probeError": null,
+      "availability": "public-page",
+      "authenticatedImportTested": false,
+      "defects": []
+    },
+    {
       "catalogId": "moe:4121010169",
       "name": "鞍山师范学院",
       "url": "https://assh.jw.chaoxing.com/admin/login",
@@ -52227,6 +53751,26 @@
       "availability": "public-page",
       "authenticatedImportTested": false,
       "defects": []
+    },
+    {
+      "catalogId": "moe:4144010578",
+      "name": "韩山师范学院",
+      "url": "https://jw.hstc.edu.cn/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 483,
+      "finalUrl": "https://jw.hstc.edu.cn/",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": null,
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
     },
     {
       "catalogId": "moe:4111010029",
@@ -52266,6 +53810,26 @@
       "authenticatedImportTested": false,
       "defects": [
         "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
+    },
+    {
+      "catalogId": "moe:4111010028",
+      "name": "首都师范大学",
+      "url": "https://zt.cnu.edu.cn/users/sign_in",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "https://zt.cnu.edu.cn/users/sign_in",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": "curl-28",
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership not verified; URL sourced from WakeUp database. Endpoint did not return a public HTTP 200 page at the configured URL during the entry-evidence pass."
       ]
     },
     {

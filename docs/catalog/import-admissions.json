@@ -2266,6 +2266,20 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4131014423",
+    "name": "上海科技大学",
+    "url": "https://ids.shanghaitech.edu.cn/authserver/login",
+    "type": "shuwei_json",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2621,
+    "checkedAt": "2026-10-16",
+    "http": 200,
+    "title": "统一身份认证平台",
+    "fingerprints": [],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
+  },
+  {
     "catalogId": "moe:3636000312",
     "name": "上饶幼儿师范高等专科学校",
     "url": "https://srygz.jxjy.chaoxing.com/login",
@@ -2401,6 +2415,20 @@
     "checkedAt": "2026-10-16",
     "http": 200,
     "title": "统一身份认证平台",
+    "fingerprints": [],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
+  },
+  {
+    "catalogId": "moe:4111011415",
+    "name": "中国地质大学（北京）",
+    "url": "https://elib.cugb.edu.cn/https/77726476706e69737468656265737421f3f652d224256f52300d8db9d6562d/login",
+    "type": "umooc",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 1195,
+    "checkedAt": "2026-10-16",
+    "http": 200,
+    "title": "中国地质大学(北京)统一身份认证",
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "ownership-confirmed"
@@ -2580,6 +2608,20 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4141013503",
+    "name": "信阳学院",
+    "url": "https://cas1.xyu.edu.cn/cas/login",
+    "type": "shuwei_json",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2931,
+    "checkedAt": "2026-10-16",
+    "http": 200,
+    "title": "Login - 信阳学院综合服务门户",
+    "fingerprints": [],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
+  },
+  {
     "catalogId": "moe:4152010977",
     "name": "六盘水师范学院",
     "url": "https://www.lpssy.edu.cn/jwc/5825/list.htm",
@@ -2617,6 +2659,20 @@
     "checkedAt": "2026-10-16",
     "http": 200,
     "title": "登录",
+    "fingerprints": [],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
+  },
+  {
+    "catalogId": "moe:4115010128",
+    "name": "内蒙古工业大学",
+    "url": "https://authserver.imut.edu.cn/cas/login",
+    "type": "umooc",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 707,
+    "checkedAt": "2026-10-16",
+    "http": 200,
+    "title": "登录 - 内蒙古工业大学",
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "ownership-confirmed"
@@ -3398,6 +3454,20 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4112013897",
+    "name": "天津理工大学中环信息学院",
+    "url": "https://cas.tjzhic.edu.cn/cas/login",
+    "type": "shuwei_json",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2716,
+    "checkedAt": "2026-10-16",
+    "http": 200,
+    "title": "Login - 天津理工大学中环信息学院",
+    "fingerprints": [],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
+  },
+  {
     "catalogId": "moe:4112010066",
     "name": "天津职业技术师范大学",
     "url": "https://www.tute.edu.cn/xysh/yyxt.htm",
@@ -3836,6 +3906,20 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4144013707",
+    "name": "广东文艺职业学院",
+    "url": "https://cas.gdla.edu.cn/cas/login",
+    "type": "yl",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 772,
+    "checkedAt": "2026-10-16",
+    "http": 200,
+    "title": "统一认证系统 - SSO SERVICES AUTHENTICATION",
+    "fingerprints": [],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
+  },
+  {
     "catalogId": "moe:4144014758",
     "name": "广东梅州职业技术学院",
     "url": "http://jwxt.gdmzvtc.edu.cn/jwglxt/xtgl/login_slogin.html",
@@ -3889,6 +3973,34 @@
     "checkedAt": "2026-10-16",
     "http": 200,
     "title": "广东行政职业学院 WebVPN",
+    "fingerprints": [],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
+  },
+  {
+    "catalogId": "moe:4144014667",
+    "name": "广东财贸职业学院",
+    "url": "https://sso.gdcmxy.edu.cn/authserver/login",
+    "type": "yl",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 771,
+    "checkedAt": "2026-10-16",
+    "http": 200,
+    "title": "广东财贸职业学院智慧校园平台",
+    "fingerprints": [],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
+  },
+  {
+    "catalogId": "moe:4144014268",
+    "name": "广州华夏职业学院",
+    "url": "http://jwc.gzhxtc.edu.cn",
+    "type": "yl",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 295,
+    "checkedAt": "2026-10-16",
+    "http": 200,
+    "title": "广州华夏职业学院-教务处",
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "ownership-confirmed"
@@ -4240,6 +4352,20 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4165010760",
+    "name": "新疆医科大学",
+    "url": "https://mycas.xjmu.edu.cn/cas/login",
+    "type": "shuwei_json",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3033,
+    "checkedAt": "2026-10-16",
+    "http": 200,
+    "title": "登录 - 新疆医科大学",
+    "fingerprints": [],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
+  },
+  {
     "catalogId": "moe:4165013558",
     "name": "新疆理工学院",
     "url": "https://cas-xjit-edu-cn-443.webvpn.xjistedu.cn/cas/login",
@@ -4442,6 +4568,20 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4145010595",
+    "name": "桂林电子科技大学",
+    "url": "https://v.guet.edu.cn/https/77726476706e69737468656265737421f3f652d220256d44300d8db9d6562d/authserver/login",
+    "type": "shuwei_json",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 800,
+    "checkedAt": "2026-10-16",
+    "http": 200,
+    "title": "统一身份认证平台",
+    "fingerprints": [],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
+  },
+  {
     "catalogId": "moe:4142012989",
     "name": "武汉信息传播职业技术学院",
     "url": "https://cas.whinfo.cn/cas/login",
@@ -4639,6 +4779,20 @@
     "checkedAt": "2026-10-16",
     "http": 200,
     "title": "Login - 江苏航运职业技术学院",
+    "fingerprints": [],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
+  },
+  {
+    "catalogId": "moe:4132014542",
+    "name": "江苏财会职业学院",
+    "url": "https://www.jscfa.edu.cn/",
+    "type": "shuwei_json",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 616,
+    "checkedAt": "2026-10-16",
+    "http": 200,
+    "title": "江苏财会职业学院",
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "ownership-confirmed"
@@ -4925,6 +5079,20 @@
     "checkedAt": "2026-10-16",
     "http": 200,
     "title": "统一身份认证平台",
+    "fingerprints": [],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
+  },
+  {
+    "catalogId": "moe:4135010399",
+    "name": "泉州师范学院",
+    "url": "https://id.qztc.edu.cn/portal/login.html",
+    "type": "umooc",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2163,
+    "checkedAt": "2026-10-16",
+    "http": 200,
+    "title": "泉州师范学院统一身份认证",
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "ownership-confirmed"
@@ -5612,6 +5780,20 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4161010699",
+    "name": "西北工业大学",
+    "url": "https://uis.nwpu.edu.cn/cas/login",
+    "type": "shuwei_json",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3037,
+    "checkedAt": "2026-10-16",
+    "http": 200,
+    "title": "西北工业大学 | 统一身份认证 | Login",
+    "fingerprints": [],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
+  },
+  {
     "catalogId": "moe:4150010635",
     "name": "西南大学",
     "url": "https://v4study.eduwest.com/login.shtml",
@@ -5700,6 +5882,20 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4121010147",
+    "name": "辽宁工程技术大学",
+    "url": "https://authserver.lntu.edu.cn/authserver/login",
+    "type": "shuwei_json",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1822,
+    "checkedAt": "2026-10-16",
+    "http": 200,
+    "title": "统一身份认证平台",
+    "fingerprints": [],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
+  },
+  {
     "catalogId": "moe:4121012593",
     "name": "辽宁生态工程职业学院",
     "url": "https://zf.lnstzy.cn/jwglxt/xtgl/login_slogin.html",
@@ -5712,6 +5908,20 @@
     "fingerprints": [
       "zf_new"
     ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
+  },
+  {
+    "catalogId": "moe:4121011430",
+    "name": "辽宁科技学院",
+    "url": "https://mea.lnist.edu.cn/eams/loginExt.action",
+    "type": "shuwei_json",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1781,
+    "checkedAt": "2026-10-16",
+    "http": 200,
+    "title": "辽宁科技学院教学管理系统",
+    "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "ownership-confirmed"
   },
@@ -6135,6 +6345,20 @@
     "checkedAt": "2026-10-16",
     "http": 200,
     "title": "Login - 青海大学",
+    "fingerprints": [],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
+  },
+  {
+    "catalogId": "moe:4163010748",
+    "name": "青海民族大学",
+    "url": "https://cas.qhmu.edu.cn/cas/login",
+    "type": "shuwei_json",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2183,
+    "checkedAt": "2026-10-16",
+    "http": 200,
+    "title": "登录 - 青海民族大学",
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "ownership-confirmed"

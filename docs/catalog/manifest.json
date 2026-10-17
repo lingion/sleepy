@@ -5,8 +5,8 @@
   "statusCounts": {
     "supported": 348,
     "grad_supported": 2,
-    "unverified": 418,
-    "pending": 3071,
+    "unverified": 434,
+    "pending": 3055,
     "grad_pending": 301
   },
   "sourceCounts": {
@@ -37,7 +37,7 @@
     },
     {
       "path": "scripts/data/school_import_admissions.json",
-      "sha256": "4a6c9ce12830c1bc2d7773064413cefbbb955bd97ccae52b89ad1fa7772b9466"
+      "sha256": "8ba1cfee33cabc4c4515ff272cf5ee86ff44e74036e22c7e7c0d5f0e79bacf0f"
     },
     {
       "path": "scripts/data/school_catalog_renames.json",
@@ -45,20 +45,20 @@
     },
     {
       "path": "scripts/data/school_url_evidence.json",
-      "sha256": "b1cfe5051a70324063b413b0586b322cf292cb917663be0dd1e947761fc94f3a"
+      "sha256": "98e2f07b3338ab4e798e613098ae7e68ba0175a4ea11f78f3c58db276de7b838"
     }
   ],
   "matchingPolicy": "Exact trimmed full names plus reviewed school_catalog_renames.json; no fuzzy aliases or graduate/campus suffix removal. Historical source rows remain independently traceable.",
   "ownershipAudit": {
     "evidenceCounts": {
-      "unknown": 1274,
-      "verified": 630,
+      "unknown": 1329,
+      "verified": 646,
       "contradicted": 1
     },
     "actions": {
       "retained-existing-config-ownership-unresolved": 137,
-      "ownership-confirmed": 630,
-      "withheld-new-unproven-owner": 1137,
+      "ownership-confirmed": 646,
+      "withheld-new-unproven-owner": 1192,
       "corrected-official-entry": 1
     },
     "decisions": [
@@ -2911,6 +2911,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4111010017",
+        "name": "北京石油化工学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4111010020",
         "name": "北京农学院",
         "ownershipStatus": "unknown",
@@ -2929,6 +2937,14 @@
       {
         "catalogId": "moe:4111010027",
         "name": "北京师范大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4111010028",
+        "name": "首都师范大学",
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
@@ -3055,11 +3071,43 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4111010053",
+        "name": "中国政法大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4111010054",
         "name": "华北电力大学",
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4111011149",
+        "name": "中华女子学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4111011414",
+        "name": "中国石油大学（北京）",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4111011415",
+        "name": "中国地质大学（北京）",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
+        "operationalUrl": "https://elib.cugb.edu.cn/https/77726476706e69737468656265737421f3f652d224256f52300d8db9d6562d/login",
         "authenticatedImportTested": false
       },
       {
@@ -3076,6 +3124,14 @@
         "ownershipStatus": "verified",
         "action": "ownership-confirmed",
         "operationalUrl": "https://webvpn.bcu.edu.cn:8000/users/sign_in",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4111012453",
+        "name": "中国劳动关系学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
         "authenticatedImportTested": false
       },
       {
@@ -3191,6 +3247,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4112010056",
+        "name": "天津大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4112010057",
         "name": "天津科技大学",
         "ownershipStatus": "verified",
@@ -3220,6 +3284,14 @@
         "ownershipStatus": "verified",
         "action": "ownership-confirmed",
         "operationalUrl": "https://authserver.tjut.edu.cn/authserver/login",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4112010061",
+        "name": "天津农学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
         "authenticatedImportTested": false
       },
       {
@@ -3295,6 +3367,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4112012105",
+        "name": "天津中德应用技术大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4112013658",
         "name": "天津外国语大学滨海外事学院",
         "ownershipStatus": "unknown",
@@ -3332,6 +3412,14 @@
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4112013897",
+        "name": "天津理工大学中环信息学院",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
+        "operationalUrl": "https://cas.tjzhic.edu.cn/cas/login",
         "authenticatedImportTested": false
       },
       {
@@ -4255,6 +4343,22 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4115010128",
+        "name": "内蒙古工业大学",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
+        "operationalUrl": "https://authserver.imut.edu.cn/cas/login",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4115010129",
+        "name": "内蒙古农业大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4115010135",
         "name": "内蒙古师范大学",
         "ownershipStatus": "verified",
@@ -4292,6 +4396,14 @@
         "ownershipStatus": "verified",
         "action": "ownership-confirmed",
         "operationalUrl": "https://hetaoxueyuan.jw.chaoxing.com/admin/login",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4115011709",
+        "name": "呼和浩特民族学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
         "authenticatedImportTested": false
       },
       {
@@ -4471,6 +4583,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4121010147",
+        "name": "辽宁工程技术大学",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
+        "operationalUrl": "https://authserver.lntu.edu.cn/authserver/login",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4121010148",
         "name": "辽宁石油化工大学",
         "ownershipStatus": "unknown",
@@ -4481,6 +4601,22 @@
       {
         "catalogId": "moe:4121010149",
         "name": "沈阳化工大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4121010150",
+        "name": "大连交通大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4121010151",
+        "name": "大连海事大学",
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
@@ -4572,6 +4708,14 @@
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4121011430",
+        "name": "辽宁科技学院",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
+        "operationalUrl": "https://mea.lnist.edu.cn/eams/loginExt.action",
         "authenticatedImportTested": false
       },
       {
@@ -5015,6 +5159,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4123010214",
+        "name": "哈尔滨理工大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4123010219",
         "name": "黑龙江科技大学",
         "ownershipStatus": "unknown",
@@ -5303,6 +5455,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4131010273",
+        "name": "上海对外经贸大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4131010277",
         "name": "上海体育大学",
         "ownershipStatus": "unknown",
@@ -5321,6 +5481,14 @@
       {
         "catalogId": "moe:4131010856",
         "name": "上海工程技术大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4131011458",
+        "name": "上海电机学院",
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
@@ -5351,8 +5519,32 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4131012799",
+        "name": "上海建桥学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4131012915",
         "name": "上海中侨职业技术大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4131013632",
+        "name": "上海视觉艺术学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4131013636",
+        "name": "上海外国语大学贤达经济人文学院",
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
@@ -5364,6 +5556,14 @@
         "ownershipStatus": "verified",
         "action": "ownership-confirmed",
         "operationalUrl": "https://thjwgl.sthu.edu.cn/jwglxt/xtgl/login_slogin.html",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4131014423",
+        "name": "上海科技大学",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
+        "operationalUrl": "https://ids.shanghaitech.edu.cn/authserver/login",
         "authenticatedImportTested": false
       },
       {
@@ -5489,6 +5689,14 @@
       {
         "catalogId": "moe:4132010324",
         "name": "盐城师范学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4132010327",
+        "name": "南京财经大学",
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
@@ -5668,6 +5876,14 @@
         "ownershipStatus": "verified",
         "action": "ownership-confirmed",
         "operationalUrl": "https://jwgl.cwxu.edu.cn/jwglxt/xtgl/login_slogin.html",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4132013984",
+        "name": "苏州大学应用技术学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
         "authenticatedImportTested": false
       },
       {
@@ -6167,6 +6383,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4132014542",
+        "name": "江苏财会职业学院",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
+        "operationalUrl": "https://www.jscfa.edu.cn/",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4132014543",
         "name": "江苏城乡建设职业学院",
         "ownershipStatus": "verified",
@@ -6495,6 +6719,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4133012645",
+        "name": "宁波城市职业技术学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4133012647",
         "name": "浙江同济科技职业学院",
         "ownershipStatus": "verified",
@@ -6735,6 +6967,22 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4134010361",
+        "name": "安徽理工大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4134010363",
+        "name": "安徽工程大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4134010367",
         "name": "蚌埠医科大学",
         "ownershipStatus": "unknown",
@@ -6799,6 +7047,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4134010380",
+        "name": "巢湖学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4134010383",
         "name": "铜陵学院",
         "ownershipStatus": "unknown",
@@ -6825,6 +7081,14 @@
       {
         "catalogId": "moe:4134011305",
         "name": "蚌埠学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4134011306",
+        "name": "池州学院",
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
@@ -7119,6 +7383,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4134014330",
+        "name": "合肥幼儿师范高等专科学校",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4134014419",
         "name": "安徽卫生健康职业学院",
         "ownershipStatus": "unknown",
@@ -7196,6 +7468,14 @@
         "ownershipStatus": "verified",
         "action": "ownership-confirmed",
         "operationalUrl": "https://jwgl.ndnu.edu.cn/jwglxt/xtgl/login_slogin.html",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4135010399",
+        "name": "泉州师范学院",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
+        "operationalUrl": "https://id.qztc.edu.cn/portal/login.html",
         "authenticatedImportTested": false
       },
       {
@@ -7543,6 +7823,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4136010419",
+        "name": "井冈山大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4136010421",
         "name": "江西财经大学",
         "ownershipStatus": "unknown",
@@ -7807,6 +8095,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4136012944",
+        "name": "江西工业工程职业技术学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4136013423",
         "name": "江西工业贸易职业技术学院",
         "ownershipStatus": "verified",
@@ -7929,6 +8225,14 @@
       {
         "catalogId": "moe:4137010433",
         "name": "山东理工大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4137010439",
+        "name": "山东第一医科大学",
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
@@ -8655,6 +8959,22 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4141010459",
+        "name": "郑州大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4141010460",
+        "name": "河南理工大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4141010463",
         "name": "河南工业大学",
         "ownershipStatus": "unknown",
@@ -8903,11 +9223,27 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4141013500",
+        "name": "商丘工学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4141013501",
         "name": "河南开封科技传媒学院",
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4141013503",
+        "name": "信阳学院",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
+        "operationalUrl": "https://cas1.xyu.edu.cn/cas/login",
         "authenticatedImportTested": false
       },
       {
@@ -9591,6 +9927,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4142013634",
+        "name": "武汉学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4142013664",
         "name": "武汉工程科技学院",
         "ownershipStatus": "unknown",
@@ -9647,6 +9991,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4142011796",
+        "name": "武汉城市职业学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4142012738",
         "name": "武汉工程职业技术学院",
         "ownershipStatus": "unknown",
@@ -9676,6 +10028,14 @@
         "ownershipStatus": "verified",
         "action": "ownership-confirmed",
         "operationalUrl": "http://ca.hbctc.edu.cn/cas/login",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4142012951",
+        "name": "湖北中医药高等专科学校",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
         "authenticatedImportTested": false
       },
       {
@@ -10511,6 +10871,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4144010578",
+        "name": "韩山师范学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4144010579",
         "name": "岭南师范学院",
         "ownershipStatus": "unknown",
@@ -10684,6 +11052,14 @@
         "ownershipStatus": "verified",
         "action": "ownership-confirmed",
         "operationalUrl": "https://jwxt.gcc.edu.cn/xtgl/login_slogin.html",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4144013714",
+        "name": "广州工商学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
         "authenticatedImportTested": false
       },
       {
@@ -10927,11 +11303,35 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4144012954",
+        "name": "汕头职业技术学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4144012958",
+        "name": "清远职业技术学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4144012960",
         "name": "广东司法警官职业学院",
         "ownershipStatus": "verified",
         "action": "ownership-confirmed",
         "operationalUrl": "http://210.21.33.69:8027/",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4144013707",
+        "name": "广东文艺职业学院",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
+        "operationalUrl": "https://cas.gdla.edu.cn/cas/login",
         "authenticatedImportTested": false
       },
       {
@@ -11039,6 +11439,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4144014136",
+        "name": "广州城建职业学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4144014263",
         "name": "东莞职业技术学院",
         "ownershipStatus": "unknown",
@@ -11052,6 +11460,14 @@
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4144014268",
+        "name": "广州华夏职业学院",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
+        "operationalUrl": "http://jwc.gzhxtc.edu.cn",
         "authenticatedImportTested": false
       },
       {
@@ -11159,6 +11575,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4144014667",
+        "name": "广东财贸职业学院",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
+        "operationalUrl": "https://sso.gdcmxy.edu.cn/authserver/login",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4144014758",
         "name": "广东梅州职业技术学院",
         "ownershipStatus": "verified",
@@ -11185,6 +11609,22 @@
       {
         "catalogId": "moe:4145010594",
         "name": "广西科技大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4145010595",
+        "name": "桂林电子科技大学",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
+        "operationalUrl": "https://v.guet.edu.cn/https/77726476706e69737468656265737421f3f652d220256d44300d8db9d6562d/authserver/login",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4145010596",
+        "name": "桂林理工大学",
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
@@ -11895,6 +12335,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4150014173",
+        "name": "重庆科创职业学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4150014183",
         "name": "重庆建筑工程职业学院",
         "ownershipStatus": "unknown",
@@ -12015,6 +12463,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4151010621",
+        "name": "成都信息工程大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4151010624",
         "name": "中国民用航空飞行学院",
         "ownershipStatus": "unknown",
@@ -12036,6 +12492,14 @@
         "ownershipStatus": "verified",
         "action": "ownership-confirmed",
         "operationalUrl": "https://jwweb.cdutcm.edu.cn/",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4151010636",
+        "name": "四川师范大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
         "authenticatedImportTested": false
       },
       {
@@ -12361,6 +12825,14 @@
       {
         "catalogId": "moe:4151012968",
         "name": "眉山职业技术学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4151012970",
+        "name": "四川职业技术学院",
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
@@ -12713,6 +13185,14 @@
       {
         "catalogId": "moe:4152010670",
         "name": "黔南民族师范学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4152010671",
+        "name": "贵州财经大学",
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
@@ -13319,6 +13799,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4161010699",
+        "name": "西北工业大学",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
+        "operationalUrl": "https://uis.nwpu.edu.cn/cas/login",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4161010701",
         "name": "西安电子科技大学",
         "ownershipStatus": "unknown",
@@ -13329,6 +13817,22 @@
       {
         "catalogId": "moe:4161010702",
         "name": "西安工业大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4161010708",
+        "name": "陕西科技大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4161010709",
+        "name": "西安工程大学",
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
@@ -13383,6 +13887,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4161010724",
+        "name": "西安外国语大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4161011080",
         "name": "西安文理学院",
         "ownershipStatus": "verified",
@@ -13401,6 +13913,14 @@
       {
         "catalogId": "moe:4161011664",
         "name": "西安邮电大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4161011736",
+        "name": "西安航空学院",
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
@@ -13647,6 +14167,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4162010730",
+        "name": "兰州大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4162010732",
         "name": "兰州交通大学",
         "ownershipStatus": "unknown",
@@ -13855,6 +14383,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4163010748",
+        "name": "青海民族大学",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
+        "operationalUrl": "https://cas.qhmu.edu.cn/cas/login",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4164010749",
         "name": "宁夏大学",
         "ownershipStatus": "unknown",
@@ -13924,6 +14460,14 @@
         "ownershipStatus": "verified",
         "action": "ownership-confirmed",
         "operationalUrl": "https://jwxt.xjau.edu.cn/jwglxt/xtgl/login_slogin.html",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4165010760",
+        "name": "新疆医科大学",
+        "ownershipStatus": "verified",
+        "action": "ownership-confirmed",
+        "operationalUrl": "https://mycas.xjmu.edu.cn/cas/login",
         "authenticatedImportTested": false
       },
       {
@@ -14463,6 +15007,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "wakeup:4044137d942f633fa462",
+        "name": "桂林理工大学南宁分校",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "wakeup:6c61dad8c45bfba8bcd6",
         "name": "甘肃工业职业技术学院",
         "ownershipStatus": "unknown",
@@ -14951,6 +15503,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "wakeup:7c1d2da03324f4f5ff78",
+        "name": "山东商业职业技术学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "wakeup:5209e95416dfd5aaa85d",
         "name": "山东大学威海校区",
         "ownershipStatus": "unknown",
@@ -15089,6 +15649,14 @@
       {
         "catalogId": "wakeup:6bb44a42aa163b204fd6",
         "name": "西安工商大学",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:722e4826027db1ae44fb",
+        "name": "西北工业大学（浏览器登录）",
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",

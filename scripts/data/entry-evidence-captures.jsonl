@@ -1706,3 +1706,103 @@
 {"url": "https://ehall.ynarts.cn/a/manager/identify/info.html", "http": 0, "error": "curl-28"}
 {"url": "https://sso.ynou.edu.cn/authserver/login", "http": 200, "error": null, "title": "统一身份认证平台", "observedText": "﻿﻿ 统一身份认证平台 ENG 中文 账号登录 验证码登录 生物识别 扫码登录 账号激活 忘记密码 手机扫码  安全登录 扫描成功 请在手机上「确认登录」 返回二维码 手机扫码  安全登录 钉钉扫码登陆 微信扫码登陆 扫码登录 微信扫码登录 钉钉扫码登录 微信登录 Copyright © 2025  云南开放大学（云南国防工业职业技术学院） 点击开启识别登录 手机号 海外手机请按“国家代码-手机号”的格式输入，如：1-888888 图形验证码 刷新 短信验证码 获取验证码 120 后重发 登录 用户名 密码 验证码 刷新 7天免登录 开启后7天内无需再次登录，主动退出登录或使用浏览器无痕模式访问后，此功能失效 登录 手机扫码  安全登录 扫描成功 请在手机上「确认登录」 返回二维码 手机扫码  安全登录", "bodySha256": "8285cfe63ba4da316716f29b0ad0a3115b547261db4e13bb7fee3e83c40aa935"}
 {"url": "http://119.62.43.148:8082/", "http": 200, "error": null, "title": "云南新兴职业学院教务网络管理系统", "observedText": "云南新兴职业学院教务网络管理系统 2026-2027学年第一学期 第 7周 教学安排 课程课表 教师课表 班级课表 友情链接 KINGOSOFT 湖南青果软件有限公司 聚才网 云南新兴职业学院 通知公告 更多> 公共下载 更多> 2017-01-10 管理规定 Copyright 2000-2026 By 青果软件集团有限公司 All Rights Reserved", "bodySha256": "98c8c9915344b5ac8d2f4496c426e1fe683c6d0788dc901d9d106ff7ecfa73bf"}
+{"url": "http://101.91.242.139:8081/", "http": 200, "error": null, "title": "上海农林职业技术学院教务教学管理系统", "observedText": "上海农林职业技术学院教务教学管理系统", "bodySha256": "c22000267b0181eb7c182cf3d42f506d253391bc2d62ab7ea7833f706c4a436f"}
+{"url": "https://xingwei.populiweb.com/", "http": 0, "error": "curl-28"}
+{"url": "https://sso.sjdc.net.cn/", "http": 0, "error": "curl-28"}
+{"url": "https://cas.shnu.edu.cn/cas/login", "http": 0, "error": "curl-28"}
+{"url": "https://webvpn.sppc.edu.cn/https/77726476706e69737468656265737421e3e44ed234207853300d8db9d6562d/sso/", "http": 0, "error": "curl-28"}
+{"url": "https://banweb.cityu.edu.hk/pls/PROD/hwsstmtbl_matrix_cityu.Show", "http": 0, "error": "curl-28"}
+{"url": "https://195347iif.mh.chaoxing.com/page/312449/show", "http": 0, "error": "curl-28"}
+{"url": "https://authserver.smxcsa.edu.cn/authserver/login", "http": 0, "error": "curl-28"}
+{"url": "https://service.shcac.edu.cn/wui/index.html", "http": 0, "error": "curl-28"}
+{"url": "https://webvpn2.shsmu.edu.cn/https/77726476706e69737468656265737421f1e2559469236043731dc7a99c406d3618/ac/", "http": 0, "error": "curl-28"}
+{"url": "https://my.gench.edu.cn/FAP5.Portal/pc.html", "http": 0, "error": "curl-28"}
+{"url": "https://cas.sta.edu.cn/cas/login", "http": 0, "error": "curl-28"}
+{"url": "https://sf.shnhvtc.edu.cn/authserver/login", "http": 0, "error": "curl-28"}
+{"url": "https://sso.succ.edu.cn/auth-api/login", "http": 0, "error": "curl-28"}
+{"url": "https://platform.xhedu.sh.cn/platform/app/login.php", "http": 0, "error": "curl-28"}
+{"url": "https://cas.sicfl.edu.cn/login", "http": 0, "error": "curl-28"}
+{"url": "https://sso.xdsisu.edu.cn/login", "http": 0, "error": "curl-28"}
+{"url": "https://nbkjw.suibe.edu.cn/student/login", "http": 0, "error": "curl-28"}
+{"url": "https://sso.sitsh.edu.cn/cas/login", "http": 0, "error": "curl-28"}
+{"url": "https://cas.sicp.edu.cn/lyuapServer/login", "http": 0, "error": "curl-28"}
+{"url": "https://lxr.shcc.edu.cn:4310/portal/shortcut.html", "http": 0, "error": "curl-28"}
+{"url": "https://sso.spa.jsedu.sh.cn:8079/casServer/login", "http": 0, "error": "curl-28"}
+{"url": "http://ids.scst.edu.cn/authserver/login", "http": 0, "error": "curl-28"}
+{"url": "https://jwgl.sdju.edu.cn/login", "http": 0, "error": "curl-28"}
+{"url": "https://shanghai.nyu.edu/cn/user/login", "http": 0, "error": "curl-28"}
+{"url": "https://ids.shanghaitech.edu.cn/authserver/login", "http": 0, "error": "curl-28"}
+{"url": "https://shxj.jw.chaoxing.com/admin/login", "http": 0, "error": "curl-28"}
+{"url": "https://srwsxxedu.cn:1880/login", "http": 0, "error": "curl-28"}
+{"url": "https://smp.mhedu.sh.cn/zhmh/site/mh1/index.html", "http": 0, "error": "curl-28"}
+{"url": "https://cas.zykj.edu.cn/cas/login", "http": 0, "error": "curl-28"}
+{"url": "https://ca.cupl.edu.cn/tpass/login", "http": 0, "error": "curl-28"}
+{"url": "https://sso.cppu.edu.cn/tpass/login", "http": 0, "error": "curl-28"}
+{"url": "https://cas.nacta.edu.cn/login", "http": 0, "error": "curl-28"}
+{"url": "https://elib.cugb.edu.cn/https/77726476706e69737468656265737421f3f652d224256f52300d8db9d6562d/login", "http": 0, "error": "curl-28"}
+{"url": "https://wx.cdb.ac.cn:8850/loginPage", "http": 0, "error": "curl-28"}
+{"url": "https://webvpn.zytx.org.cn/fingerprint", "http": 0, "error": "curl-28"}
+{"url": "https://jw.cafa.edu.cn/academic/common/security/affairLogin.jsp", "http": 0, "error": "curl-28"}
+{"url": "https://portal.cafa.edu.cn/", "http": 0, "error": "curl-28"}
+{"url": "https://zgzd.jijiaox.com/mg/login", "http": 0, "error": "curl-28"}
+{"url": "https://lxxdzy.com/user/login", "http": 0, "error": "curl-28"}
+{"url": "https://lfvtc.jw.chaoxing.com/admin/loginFailPage", "http": 0, "error": "curl-28"}
+{"url": "http://authserver.lyvust.edu.cn/authserver/login", "http": 0, "error": "curl-28"}
+{"url": "http://b.ynsxzy.com:8032/jwweb/", "http": 0, "error": "curl-28"}
+{"url": "https://cas.ynvct.com/lyuapServer/login", "http": 0, "error": "curl-28"}
+{"url": "http://ciap.ynsvu.edu.cn/authserver/login", "http": 0, "error": "curl-28"}
+{"url": "https://authserver.yncpu.net/authserver/login", "http": 0, "error": "curl-28"}
+{"url": "http://jw.fafl.cn/", "http": 0, "error": "curl-28"}
+{"url": "https://ehall.ynarts.cn/a/manager/identify/info.html", "http": 0, "error": "curl-28"}
+{"url": "https://sso.ynou.edu.cn/authserver/login", "http": 0, "error": "curl-28"}
+{"url": "https://portal.ynmec.edu.cn/", "http": 0, "error": "curl-28"}
+{"url": "https://v32237.kaoshi.chaoxing.com/login", "http": 0, "error": "curl-28"}
+{"url": "https://ynxdxy.jysd.com/user/login", "http": 0, "error": "curl-28"}
+{"url": "https://ynjwjjystu.bjmantis.cn/", "http": 0, "error": "curl-28"}
+{"url": "https://authserver.ynpc.edu.cn/authserver/login", "http": 0, "error": "curl-28"}
+{"url": "https://ynczy.jw.chaoxing.com/admin/login", "http": 0, "error": "curl-28"}
+{"url": "https://authserver.jgsu.edu.cn/authserver/login", "http": 0, "error": "curl-28"}
+{"url": "https://cas.bdysgz.cn/backstage/cas/login", "http": 0, "error": "curl-28"}
+{"url": "https://authserver.fosu.edu.cn/authserver/login", "http": 0, "error": "curl-28"}
+{"url": "https://crjy.wencaischool.net/bxzyxy/console/index.html", "http": 0, "error": "curl-28"}
+{"url": "https://xyhkxy.jijiaox.com/mg/login", "http": 0, "error": "curl-28"}
+{"url": "https://jw.xykj.edu.cn/eams/localLogin.action", "http": 0, "error": "curl-28"}
+{"url": "https://cas1.xyu.edu.cn/cas/login", "http": 0, "error": "curl-28"}
+{"url": "https://ehall.kzjsxy.edu.cn/iap/login/pc.html", "http": 0, "error": "curl-28"}
+{"url": "https://webvpn.ppsuc.edu.cn/login", "http": 0, "error": "curl-28"}
+{"url": "https://jw.kzvtc.edu.cn:7524/", "http": 0, "error": "curl-28"}
+{"url": "https://lazyxx.kttx.cn/pc/user/login.do", "http": 0, "error": "curl-28"}
+{"url": "http://zjy.lpsyz.cn/LPSYZLogin/index.html", "http": 0, "error": "curl-28"}
+{"url": "https://oss.lzmvc.edu.cn/", "http": 0, "error": "curl-28"}
+{"url": "https://jwgl.lvu.edu.cn/", "http": 0, "error": "curl-28"}
+{"url": "https://open.weixin.qq.com/connect/oauth2/authorize", "http": 0, "error": "curl-28"}
+{"url": "https://jw.immu.edu.cn/admin/login", "http": 0, "error": "curl-28"}
+{"url": "https://authserver.imut.edu.cn/cas/login", "http": 0, "error": "curl-28"}
+{"url": "https://authserver.imvcc.edu.cn/authserver/login", "http": 0, "error": "curl-28"}
+{"url": "https://vpn.imau.edu.cn/portal/shortcut.html", "http": 0, "error": "curl-28"}
+{"url": "https://iam.pt.ouchn.cn/am/UI/Login", "http": 0, "error": "curl-28"}
+{"url": "https://nmmzyz.jw.chaoxing.com/admin/login", "http": 0, "error": "curl-28"}
+{"url": "http://110.16.72.197/", "http": 200, "error": null, "title": "dc_web", "observedText": "dc_web We're sorry but dc_web doesn't work properly without JavaScript enabled. Please enable it to continue.", "bodySha256": "0ff86f181d0addbd8bcf02e2bcdbe8d9f827c10067512618bac72d54bfdd67e9"}
+{"url": "http://119.62.43.148:8082/", "http": 200, "error": null, "title": "云南新兴职业学院教务网络管理系统", "observedText": "云南新兴职业学院教务网络管理系统 2026-2027学年第一学期 第 7周 教学安排 课程课表 教师课表 班级课表 友情链接 KINGOSOFT 湖南青果软件有限公司 聚才网 云南新兴职业学院 通知公告 更多> 公共下载 更多> 2017-01-10 管理规定 Copyright 2000-2026 By 青果软件集团有限公司 All Rights Reserved", "bodySha256": "98c8c9915344b5ac8d2f4496c426e1fe683c6d0788dc901d9d106ff7ecfa73bf"}
+{"url": "http://124.152.76.142:8388/api/oauth/login", "http": 200, "error": null, "title": "统一身份认证 - 登录", "observedText": "统一身份认证 - 登录 统一身份认证系统 智慧校园统一门户 短信登录 短期账号登录", "bodySha256": "a42f3fb6640094656de69a52f466806b0f01e1792cc6b7be8a550197bbe16f32"}
+{"url": "https://open.btsvc.edu.cn/auth/oauth/authorize", "http": 0, "error": "curl-28"}
+{"url": "https://bjjt.jw.chaoxing.com/admin/login", "http": 0, "error": "curl-28"}
+{"url": "https://vpn.bjhvc.edu.cn/portal/", "http": 0, "error": "curl-28"}
+{"url": "https://peixun.ghgy.com.cn/jcdw/", "http": 0, "error": "curl-28"}
+{"url": "https://sjsyd.yuketang.cn/pro/portal/home/", "http": 0, "error": "curl-28"}
+{"url": "https://login.bjie.ac.cn/stafftlogin/gologin.php", "http": 0, "error": "curl-28"}
+{"url": "https://byyt.ustb.edu.cn/", "http": 0, "error": "curl-28"}
+{"url": "https://bkz.jw.chaoxing.com/admin/login", "http": 0, "error": "curl-28"}
+{"url": "https://www.bda.edu.cn/", "http": 0, "error": "curl-28"}
+{"url": "https://canvardjw.yinghuaonline.com/bjgsdxjhxy/", "http": 0, "error": "curl-28"}
+{"url": "https://www.ncut.edu.cn/system/resource/code/auth/ipauth.htm", "http": 0, "error": "curl-28"}
+{"url": "https://jwxt.ecjtu.edu.cn/", "http": 0, "error": "curl-28"}
+{"url": "https://jw3.njau.edu.cn/", "http": 0, "error": "curl-28"}
+{"url": "https://jwc.nau.edu.cn", "http": 0, "error": "curl-28"}
+{"url": "https://njwxt.naujsc.edu.cn/jwc/", "http": 0, "error": "curl-28"}
+{"url": "https://jwxt.njpi.edu.cn/", "http": 0, "error": "curl-28"}
+{"url": "http://mhub.hust.edu.cn/login", "http": 200, "error": null, "title": "HUB系统 华中科技大学教学信息服务平台", "observedText": "HUB系统 华中科技大学教学信息服务平台", "bodySha256": "ad8b9598be494ebaa109ca5b4bd751ca1c924c2b5334f7f1c24a505b14f8a9a3"}
+{"url": "http://www.nmgmsxy.net:8080/login", "http": 200, "error": null, "title": "登录教务管理系统", "observedText": "登录教务管理系统 登录教务管理系统： 教师 学生 登录", "bodySha256": "f470734b9a0b281137307b3d52bb68d1cfbcb17463ccf2f128648ba21f2d745f"}
+{"url": "http://jwgl.ncist.edu.cn/", "http": 200, "error": null, "title": "应急管理大学教务网络管理系统", "observedText": "应急管理大学教务网络管理系统 2025-2026学年第二学期 第32周 教学安排 课程课表 教师课表 班级课表 教室课表 查看临时活动安排 分周次/节次查看空闲教室 友情链接 教务主页 通知公告 更多> 公共下载 更多> 2014-10-29 2014-04-15 管理规定 Copyright 2000-2026 By 青果软件集团有限公司 All Rights Reserved", "bodySha256": "c68532390f2a6832d375bf7ea851c2febde3c041e9237e949d1103dcf8812b99"}
+{"url": "https://jwzx.nua.edu.cn", "http": 0, "error": "curl-28"}
+{"url": "http://authserver.jtxy.com.cn/authserver/login", "http": 0, "error": "curl-28"}
