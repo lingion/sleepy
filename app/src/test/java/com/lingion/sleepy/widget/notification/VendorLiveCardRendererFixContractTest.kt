@@ -124,6 +124,53 @@ class VendorLiveCardRendererFixContractTest {
     }
 
     @Test
+    fun `vivo end-of-life uninstalls the island gracefully`() {
+        // origin-isle PROTOCOL §2: on class end, the same id is reposted with
+        // showNotify=false + changedRecord=MAX so OriginOS tears the island down
+        // rather than leaving a stale card (issue #164 "card flies out" family).
+        assertTrue(
+            "vivo showNotify must follow isActive so end posts hide the notify",
+            source.contains("putBoolean(\"notification.superx.showNotify\", state.isActive)")
+        )
+        assertTrue(
+            "vivo changedRecord must jump to Int.MAX_VALUE on end",
+            source.contains("if (state.isActive) state.updateSequence else Int.MAX_VALUE")
+        )
+    }
+
+    @Test
+    fun `honor injects notification live capsule envelope`() {
+        // Bugaoshan PR #368 real-device verified on MagicOS (Android 17): the
+        // system extracts notification.live.* extras into a status-bar capsule.
+        assertTrue(
+            "Honor branch must route to addHonorExtras",
+            source.contains("LiveCardVendor.HONOR -> addHonorExtras(")
+        )
+        assertTrue(
+            "Honor must set notification.live.operation",
+            source.contains("putInt(\n                \"notification.live.operation\"") ||
+                source.contains("putInt(\"notification.live.operation\"")
+        )
+        assertTrue(
+            "Honor capsule must ship capsuleStatus/capsuleType/title/content",
+            source.contains("notification.live.capsuleStatus") &&
+                source.contains("notification.live.capsuleType") &&
+                source.contains("notification.live.capsuleTitle") &&
+                source.contains("notification.live.capsuleContent")
+        )
+        assertTrue(
+            "Honor must carry event ORDER + type 3 (progress) per verified wire",
+            source.contains("notification.live.event\", \"ORDER\"") &&
+                source.contains("notification.live.type\", 3")
+        )
+        // HUAWEI stays on the generic path (ArkTS-only Live View, no Android extras).
+        assertFalse(
+            "Huawei must NOT get a notification.live envelope (no Android implementation path)",
+            source.contains("LiveCardVendor.HUAWEI -> add")
+        )
+    }
+
+    @Test
     fun `vivo registers clickResp as PendingIntent bundle`() {
         assertTrue(
             "vivo renderer must write notification.superx.clickResp",
