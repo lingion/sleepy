@@ -250,13 +250,23 @@ class ScheduleViewModel : ViewModel() {
                         }
                         return@collect
                     }
-                    val selectedId = _state.value.selectedTableId
-                    val targetId: Long = if (manualSelectDone && selectedId != null && tables.any { t -> t.id == selectedId }) {
-                        selectedId
-                    } else {
-                        tables.find { it.isDefault }?.id ?: tables.first().id
+                    val previous = _state.value
+                    val targetId = resolveSelectedTableId(
+                        tables = tables,
+                        selectedTableId = previous.selectedTableId,
+                        previousDefaultTableId = previous.tables.find { it.isDefault }?.id,
+                        preserveSelection = manualSelectDone,
+                    ) ?: return@collect
+                    _state.update {
+                        val changed = it.selectedTableId != targetId
+                        it.copy(
+                            tables = tables,
+                            selectedTableId = targetId,
+                            initialWeekSettled = if (changed) false else it.initialWeekSettled,
+                            weekSelectionManual = if (changed) false else it.weekSelectionManual,
+                            weekDisplayContext = if (changed) null else it.weekDisplayContext,
+                        )
                     }
-                    _state.update { it.copy(tables = tables, selectedTableId = targetId) }
                     loadCourses(targetId)
                 }
         }

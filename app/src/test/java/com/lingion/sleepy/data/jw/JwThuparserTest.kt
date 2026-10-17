@@ -240,7 +240,8 @@ class JwThuparserTest {
 
     @Test
     fun `missing room does not consume next course`() {
-        val html = sample().replace("strHTML1 += \"；六教6A201\";\n", "")
+        val html = sample().replace("strHTML1 += \"；六教6A201\";", "")
+        assertTrue(!html.contains("六教6A201"))
         val courses = JwThuparser(html).generateCourseList()
         assertEquals(5, courses.size)
         assertEquals("", courses.single { it.name == "高等数学" }.room)

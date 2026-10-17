@@ -9,9 +9,10 @@ import java.io.File
 /**
  * 2026-09-21 用户令: 4 点行为契约 — 锁实现,以防后续重构破坏新行为。
  *
- *  A. 管理页「当前课表摘要卡」整张可点 → 所有课表页(用户直觉:点开就有课表列表)
+ *  A. 管理页「当前课表摘要卡」左侧 → 编辑当前课表；仅「查看全部」→ 所有课表页。
+ *     无课表时保留摘要和提示，禁用编辑入口。
  *  B. 我的页「课表数」卡可点 → 所有课表;「课程数」卡可点 → 新课程清单页;
- *     「周数」卡静态(无 onClick)
+ *     「作息表数」卡可点 → 作息表管理；下方不再重复显示课表、作息表和导出入口。
  *  C. 课表主页 TopBar 撤回/取消撤回合胶囊: 一体显隐(hasUndo||hasRedo 才挂载),
  *     体育场形状(CircleShape+两半 32dp)+中缝 1dp 淡淡竖线
  *  D. 课程清单(CourseListScreen)路由+导航入口齐全; 课程清单按 courseName 聚合,
@@ -59,45 +60,56 @@ class MineNavRedoCourseListContractTest {
     private fun stringsFor(loc: String): String =
         findUpward("app/src/main/res/$loc/strings.xml").readText()
 
-    // ---- A. 管理页: 当前表卡可点 → 所有课表 ----
+    // ---- A. 管理页: 左侧编辑当前课表，查看全部进入所有课表 ----
 
     @Test
-    fun `current table card on management page is clickable and routes to AllTables`() {
-        // 卡内必须有 noRippleClickable(onOpenAllTables) 整卡包裹
-        val m = Regex("""noRippleClickable\(\s*onOpenAllTables\s*\)""").findAll(managementPage).toList()
+    fun `current table summary edits current table and only view all opens AllTables`() {
         assertTrue(
-            "管理页必须有 noRippleClickable(onOpenAllTables) 整卡点击,且至少出现 1 次," +
-                "实际 ${m.size}",
-            m.isNotEmpty()
+            "摘要左侧应编辑当前课表，无课表时禁用编辑",
+            Regex("""noRippleClickable\(\s*enabled\s*=\s*table\s*!=\s*null\s*,\s*onClick\s*=\s*onEditCurrentTable\s*\)""")
+                .containsMatchIn(managementPage)
+        )
+        assertTrue(
+            "查看全部按钮应单独连接所有课表入口",
+            Regex("""TextButton\(\s*onClick\s*=\s*onOpenAllTables\s*,[\s\S]*?R\.string\.manage_view_all_tables""")
+                .containsMatchIn(managementPage)
+        )
+        assertEquals(
+            "onOpenAllTables 只应出现在回调声明和查看全部按钮中，禁止整卡跳转",
+            2,
+            Regex("""\bonOpenAllTables\b""").findAll(managementPage).count()
         )
     }
 
     @Test
     fun `management page declares onOpenAllTables parameter`() {
         assertTrue(
-            "ManagementPage 形参列表必须有 onOpenAllTables: () -> Unit = {}",
-            Regex("""onOpenAllTables:\s*\(\)\s*->\s*Unit\s*=\s*\{\}""").containsMatchIn(managementPage)
+            "ManagementPage 必须要求调用方提供 onOpenAllTables 回调",
+            Regex("""onOpenAllTables:\s*\(\)\s*->\s*Unit\s*,""").containsMatchIn(managementPage)
         )
     }
 
-    // ---- B. 我的页: StatsCard 课表数/课程数可点,周数格静态 ----
+    // ---- B. 我的页: 三个统计格分别连接对应管理页 ----
 
     @Test
-    fun `mine screen StatsCard wires tables and courses callbacks, week is static`() {
-        // 调 StatsCard 必须传 onOpenTables + onOpenCourses
+    fun `mine screen StatsCard wires tables courses and period tables callbacks`() {
+        // 调 StatsCard 必须连接三类统计的导航回调。
         val callCount = Regex(
-            """StatsCard\(\s*[\s\S]*?onOpenTables\s*=\s*onOpenAllTables[\s\S]*?onOpenCourses\s*=\s*onOpenCourseList"""
+            """StatsCard\(\s*[\s\S]*?onOpenTables\s*=\s*onOpenAllTables[\s\S]*?onOpenCourses\s*=\s*onOpenCourseList[\s\S]*?onOpenPeriodTables\s*=\s*onOpenPeriodTables"""
         ).findAll(mineScreen).toList().size
         assertTrue(
-            "MineScreen 调用 StatsCard 必须同时传 onOpenTables=onOpenAllTables 和 onOpenCourses=onOpenCourseList,实际 $callCount",
+            "MineScreen 调用 StatsCard 必须连接课表、课程和作息表入口，实际 $callCount",
             callCount >= 1
         )
-        // 周数格 StatItem 必须只 3 参数,无 onClick(静态)
-        // 允许第三参数为 null
-        val weekStatic = Regex(
-            """StatItem\(\s*value\s*=\s*week\.toString\(\)\s*,\s*label\s*=\s*stringResource\(R\.string\.mine_stat_week\)\s*\)"""
+        assertTrue("作息表数量必须订阅实际列表", mineScreen.contains("viewModel.allPeriodTables.collectAsState()"))
+        assertTrue("统计卡必须使用作息表数量", mineScreen.contains("periodTableCount = periodTables.size"))
+        val periodTablesClickable = Regex(
+            """StatItem\(\s*value\s*=\s*periodTableCount\.toString\(\)\s*,\s*label\s*=\s*stringResource\(R\.string\.mine_stat_period_tables\)\s*,\s*onClick\s*=\s*onOpenPeriodTables\s*\)"""
         ).containsMatchIn(mineScreen)
-        assertTrue("周数格 StatItem 必须无 onClick 形参(静态),实际:$weekStatic", weekStatic)
+        assertTrue("作息表数格必须进入作息表管理", periodTablesClickable)
+        for (removedLabel in listOf("all_tables", "mine_period_tables", "mine_export")) {
+            assertFalse("我的页不应保留重复列表入口：$removedLabel", mineScreen.contains("R.string.$removedLabel"))
+        }
     }
 
     @Test
@@ -255,6 +267,7 @@ class MineNavRedoCourseListContractTest {
             "schedule_redo",
             "schedule_redo_none",
             "manage_view_all_tables",
+            "mine_stat_period_tables",
             "course_list_title",
             "course_list_subtitle",
             "course_list_empty",

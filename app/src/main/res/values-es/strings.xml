@@ -59,10 +59,10 @@
     <string name="manage_new_period_table_sub">Crea un horario de períodos vacío para compartir entre horarios</string>
     <string name="manage_edit_current">Editar actual</string>
     <string name="manage_edit_current_sub">Editar nombre, fechas y horarios</string>
-    <string name="manage_export">Exportar horario/períodos</string>
-    <string name="manage_export_sub">Compartir como nativo / JSON WakeUp / ICS / texto</string>
+    <string name="manage_export">Copia de seguridad y exportación</string>
+    <string name="manage_export_sub">Exportar horarios o períodos</string>
     <string name="manage_manual_add">Añadir curso</string>
-    <string name="manage_manual_add_sub">Añadir un curso al horario actual</string>
+    <string name="manage_manual_add_sub">Importar cursos o añadirlos manualmente</string>
     <string name="table_info">Inicio: %1$s  |  Semana %2$d  |  %3$d clases</string>
     <string name="manage_view_all_tables">Ver todos</string>
     <string name="course_list_title">Lista de cursos</string>
@@ -129,13 +129,12 @@
     <string name="import_confirm_title">Confirmar antes de importar</string>
     <string name="import_confirm_body">Verifica la fecha de inicio y los horarios — de lo contrario la semana actual será incorrecta.</string>
     <string name="import_week_start">La primera semana empieza el</string>
-    <string name="import_confirm">Confirmar importación</string>
+    <string name="import_confirm">Confirmar</string>
     <string name="import_all_conflict">Todos los cursos tienen conflictos — nada que añadir</string>
     <string name="import_content_empty">El contenido está vacío</string>
     <string name="import_select_table">Selecciona un horario primero</string>
     <string name="read_failed">Error de lectura: %1$s</string>
     <string name="cannot_read_file">No se puede leer el archivo</string>
-    <string name="import_preview_sub">Vista previa primero, luego importar</string>
     <string name="format_wakeup_share">Texto compartido de WakeUp</string>
     <string name="format_wakeup_desc">Comienza con 【来自WakeUp课程表】</string>
     <string name="format_wakeup_json">WakeUp JSON</string>
@@ -314,7 +313,7 @@
     <string name="mine_export">Exportar horario/períodos</string>
     <string name="mine_stat_tables">Horarios</string>
     <string name="mine_stat_courses">Cursos</string>
-    <string name="mine_stat_week">Semana</string>
+    <string name="mine_stat_period_tables">Horarios de períodos</string>
 
         <string name="settings_high_refresh">Frecuencia de actualización alta</string>
     <string name="settings_nav_style">Estilo de barra inferior</string>
@@ -1080,6 +1079,24 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="school_location_permission_settings">Permisos de ubicación</string>
     <string name="reminder_class_dnd_title">No molestar en clase</string>
     <string name="reminder_class_dnd_sub">Activa No molestar durante las clases y lo restaura al terminar</string>
+    <string name="manage_add_table">Añadir horario</string>
+    <string name="manage_add_table_sub">Importar un horario o crear uno vacío</string>
+    <string name="manage_period_tables">Gestionar períodos</string>
+    <string name="manage_period_tables_sub">Añadir, editar o eliminar horarios de períodos</string>
+    <string name="manage_no_table">No hay horarios</string>
+    <string name="manage_no_table_hint">Usa Añadir horario para importar o crear uno</string>
+    <string name="manage_create_blank_table">Crear horario vacío</string>
+    <string name="add_course_title">Añadir curso</string>
+    <string name="create_table_title">Crear nuevo horario</string>
+    <string name="add_course_from_existing">Desde un horario existente</string>
+    <string name="add_course_manual">Añadir curso manualmente</string>
+
+    <string name="import_backup_original">Hacer copia del horario original</string>
+    <string name="import_backup_original_sub">Copia el horario original antes de añadir estos cursos</string>
+    <string name="import_append_conflicts_option">Añadir cursos en conflicto</string>
+    <string name="import_append_conflicts_option_sub">Desactivado: se omiten los cursos que entren en conflicto</string>
+    <string name="add_course_no_source">No hay otros horarios. Añade un horario primero.</string>
+    <string name="import_backup_name">%1$s - Copia</string>
     <string name="table_reminder_title">Avisos por horario</string>
     <string name="table_reminder_subtitle">Elige qué horarios reciben avisos</string>
     <string name="table_reminder_master_off">Los avisos están desactivados. Tu selección se aplicará al activar el interruptor principal.</string>

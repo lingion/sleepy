@@ -46,9 +46,6 @@ import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.screen.schedule.ViewMode
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.lingion.sleepy.data.entity.CourseEntity
-import com.lingion.sleepy.data.jw.JwImportDraftCodec
-import com.lingion.sleepy.ui.screen.imports.ImportDraft
-import com.lingion.sleepy.ui.screen.imports.JwImportActivity
 import com.lingion.sleepy.ui.screen.edit.AddCourseScreen
 import com.lingion.sleepy.ui.component.NavDockSpec
 import com.lingion.sleepy.ui.component.PillNavigationBar
@@ -105,10 +102,6 @@ class MainActivity : ComponentActivity() {
         var pendingImportText: String?
             get() = pendingImportTextState.value
             set(v) { pendingImportTextState.value = v }
-        // 无表空态 → "导入第一张课表" 引导: 切管理页时自动弹 ImportSheet 一次。
-        // 会话级一次性 flag (组合态可读), 消费即清 — 避免下次进管理页误弹。
-        val autoShowImportOnceState: androidx.compose.runtime.MutableState<Boolean> =
-            androidx.compose.runtime.mutableStateOf(false)
     }
 
     private val editingCourseFromIntent = MutableStateFlow<CourseEntity?>(null)
@@ -265,12 +258,11 @@ private fun AppRoot(
     // (2026-09-21 用户报障)。放这层后 pop 重建首帧即正确。
     val pillBarState = remember { PillBarState() }
 
-    // 外部导入文本 → 切管理页(与旧实现等价,语义不变)。
-    var autoImportTriggered by remember { mutableStateOf(false) }
+    // 外部导入与空态引导共用全屏添加课表页。
     LaunchedEffect(pendingImportText) {
-        if (!autoImportTriggered && pendingImportText != null) {
-            autoImportTriggered = true
+        if (pendingImportText != null) {
             currentTab = Tab.Manage
+            navigator.openAddTable()
         }
     }
 
@@ -318,13 +310,12 @@ internal fun MainTabs(
     // SaveableStateProvider(currentTab.name) — key 稳定(tab 枚举名), 返回时恢复。
     // 注意: scheduleViewMode 会话态仍由 AppRoot 持有(§1.4 契约), 此处只管组合作用域。
     val session = navigator.session
-    val draftScope = rememberCoroutineScope()
     when (currentTab) {
         Tab.Schedule -> holder.SaveableStateProvider(currentTab.name) {
             ScheduleScreen(
                 viewMode = viewMode,
                 onViewModeChange = onViewModeChange,
-                onGoImport = { MainActivity.autoShowImportOnceState.value = true; setCurrentTab(Tab.Manage) },
+                onGoImport = { setCurrentTab(Tab.Manage); navigator.openAddTable() },
                 onManualAdd = { navigator.openAddCourse() },
                 onCreateTable = onCreateNewTable,
                 onEditCourse = { course -> session.beginEditCourse(course); navigator.openAddCourse(course.id, editing = true) })
@@ -333,37 +324,15 @@ internal fun MainTabs(
             TodayScreen(onEditCourse = { course -> session.beginEditCourse(course); navigator.openAddCourse(course.id, editing = true) })
         }
         Tab.Manage -> holder.SaveableStateProvider(currentTab.name) {
-            val ctx = LocalContext.current
-            val importCoursesLabel = stringResource(com.lingion.sleepy.R.string.import_courses)
-            // 空态导入引导: autoShowImportOnce 置位过 → 本次进管理页自动弹 ImportSheet, 随即消费清零。
-            // pendingImportText != null 是另一路 (外部 app 分享课表文本进来) 的既有自动弹层, 语义不同并存。
-            val autoOnce = MainActivity.autoShowImportOnceState.value
-            if (autoOnce) MainActivity.autoShowImportOnceState.value = false
-            val draftEntities by SleepyApp.get().importDraftRepository.observeAll().collectAsState(initial = emptyList())
-            val drafts = draftEntities.mapNotNull { entity ->
-                val snapshot = JwImportDraftCodec.fromJson(entity.payloadJson) ?: return@mapNotNull null
-                ImportDraft(
-                    id = entity.id,
-                    name = snapshot.tableName.ifBlank { snapshot.school.name },
-                    details = "${snapshot.courses.size} $importCoursesLabel",
-                )
-            }
-            ManagementPage(autoShowImportSheet = autoOnce || MainActivity.pendingImportText != null, onJwImportRequested = { ctx.startActivity(Intent(ctx, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java)) }, onCreateNewTableRequested = onCreateNewTable,
-                // v1.0.56 T7: 新建作息表卡 — ManagementPage 内部建表(自动唯一命名)后回调带新 id,
-                // 与 PeriodTablesScreen 新建按钮同一套 pendingNew discard 残留语义
-                onCreateNewPeriodTableRequested = { newId -> navigator.createPeriodTableAndEdit(newId) },
-                onManualAdd = { navigator.openAddCourse() }, onEditCurrentTable = { navigator.openEditTable() }, onExportRequested = { navigator.openExport() },
+            ManagementPage(
+                onAddTable = { navigator.openAddTable() },
+                onManualAdd = { navigator.openAddCourseEntry(mainVm.state.value.selectedTableId ?: 0L) },
+                onEditCurrentTable = { navigator.openEditTable() },
+                onOpenPeriodTables = { navigator.openPeriodTables() },
+                onExportRequested = { navigator.openExport() },
                 onOpenAllTables = { navigator.openAllTables() },
-                drafts = drafts,
-                onRestoreDraft = { id ->
-                    ctx.startActivity(Intent(ctx, JwImportActivity::class.java).putExtra(JwImportActivity.EXTRA_DRAFT_ID, id))
-                },
-                onDeleteDraft = { id ->
-                    draftScope.launch { SleepyApp.get().importDraftRepository.delete(id) }
-                },
-                // v7.10.16w 用户 2026-09-10: 导入完成留在管理页 — 此前硬跳课表页(周/网格),
-                // 打断"复制副本→追加导入→继续操作"的管理动线。当前课表摘要卡就地刷新可见。
-                onImported = { /* 留在管理页, 摘要卡就地刷新 */ })
+                viewModel = mainVm,
+            )
         }
         Tab.Mine -> holder.SaveableStateProvider(currentTab.name) {
             MineScreen(
@@ -372,7 +341,6 @@ internal fun MainTabs(
                 onOpenPeriodTables = { navigator.openPeriodTables() },
                 onOpenAppearance = { navigator.openAppearance() },
                 onOpenGeneral = { navigator.openGeneral() },
-                onOpenExport = { navigator.openExport() },
                 onOpenReminder = { navigator.openReminder() },
                 onOpenAbout = { navigator.openAbout() },
                 updateNoticeVisible = updateNoticeVisible)

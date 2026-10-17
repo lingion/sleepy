@@ -79,32 +79,20 @@ class HydrationConsistencyContractTest {
     }
 
     @Test
-    fun import_time_domain_writes_bound_owner_in_all_existing_table_modes() {
-        // P1(2026-09-23 workflow 审计): 绑定共享作息表的课表, 导入延伸节次时
-        // 必须写 period_tables(真实 owner), 不得污染兼容列(症状1可经导入复现)。
-        val replaceBranch = importSheet.substringAfter("ImportApplyMode.ReplaceCurrent ->")
-            .substringBefore("ImportApplyMode.AppendNonConflict ->")
-        val appendNonConflictBranch = importSheet.substringAfter("ImportApplyMode.AppendNonConflict ->")
-            .substringBefore("ImportApplyMode.AppendAsNew ->")
-        val appendAllBranch = importSheet.substringAfter("ImportApplyMode.AppendAll ->")
-
-        assertTrue(
-            "ReplaceCurrent(整表替换)绑定态必须经 savePeriodTable 写作息表 owner",
-            replaceBranch.contains("repo.savePeriodTable(")
-        )
-        assertTrue(
-            "AppendNonConflict(仅追加不冲突)绑定态必须经 savePeriodTable 写作息表 owner",
-            appendNonConflictBranch.contains("repo.savePeriodTable(")
-        )
-        assertTrue(
-            "AppendAll(全部追加)绑定态必须经 savePeriodTable 写作息表 owner",
-            appendAllBranch.contains("repo.savePeriodTable(")
-        )
-        assertTrue(
-            "三个写时间域分支都必须先探查绑定关系(getPeriodTable)",
-            replaceBranch.contains("repo.getPeriodTable(it)") &&
-                appendNonConflictBranch.contains("repo.getPeriodTable(it)") &&
-                appendAllBranch.contains("repo.getPeriodTable(it)")
-        )
+    fun import_time_domain_writes_bound_owner_and_freezes_backup() {
+        val repository = findUpward("app/src/main/java/com/lingion/sleepy/data/repository/ScheduleRepository.kt").readText()
+        val append = repository.substringAfter("internal suspend fun appendImportedCourses(")
+            .substringBefore("suspend fun getDefaultTable(")
+        assertTrue(append.contains("db.withTransaction"))
+        assertTrue(append.contains("table.hydratedWith(bound)"))
+        assertTrue(append.contains("periodTableDao.update(bound.copy("))
+        assertTrue(append.contains("timeJson = if (bound == null) extended else table.timeJson"))
+        assertTrue(append.contains("tableDao.insert(effective.copy("))
+        assertTrue(append.contains("periodTableId = null"))
+        assertTrue(append.contains("courseDao.insertAll(existing.map"))
+        assertTrue(append.contains("if (backupOriginal)"))
+        assertTrue(!append.contains("deleteByTable"))
+        assertTrue(importSheet.contains("CourseImportPolicy.mergeTimeJson("))
+        assertTrue(append.contains("CourseImportPolicy.mergeTimeJson("))
     }
 }

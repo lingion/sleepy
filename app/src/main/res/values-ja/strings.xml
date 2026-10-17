@@ -59,10 +59,10 @@
     <string name="manage_new_period_table_sub">複数の時間割で共有する空の時程表を作成します</string>
     <string name="manage_edit_current">編集</string>
     <string name="manage_edit_current_sub">名前・日付・時限時間を編集</string>
-    <string name="manage_export">時間割・時程表をエクスポート</string>
-    <string name="manage_export_sub">ネイティブ / WakeUp JSON / ICS / テキストで共有</string>
+    <string name="manage_export">バックアップとエクスポート</string>
+    <string name="manage_export_sub">時間割・時程表をエクスポート</string>
     <string name="manage_manual_add">授業を追加</string>
-    <string name="manage_manual_add_sub">現在の時間割に授業を追加</string>
+    <string name="manage_manual_add_sub">時間割から取り込む・手動で授業を追加</string>
     <string name="table_info">開始日: %1$s  |  第%2$d週  |  %3$dコマ</string>
     <string name="manage_view_all_tables">すべて表示</string>
     <string name="course_list_title">授業一覧</string>
@@ -129,13 +129,12 @@
     <string name="import_confirm_title">インポート前の確認</string>
     <string name="import_confirm_body">学期開始日と時限時間を確認してください。現在の週が不正確になります。</string>
     <string name="import_week_start">第1週の開始日</string>
-    <string name="import_confirm">インポート</string>
+    <string name="import_confirm">確認</string>
     <string name="import_all_conflict">すべて競合しています — 追加できる授業がありません</string>
     <string name="import_content_empty">内容が空です</string>
     <string name="import_select_table">時間割を先に選択してください</string>
     <string name="read_failed">読み取り失敗: %1$s</string>
     <string name="cannot_read_file">ファイルを読み取れません</string>
-    <string name="import_preview_sub">最初にプレビュー、それからインポート</string>
     <string name="format_wakeup_share">WakeUp 共有テキスト</string>
     <string name="format_wakeup_desc">【来自WakeUp课程表】で始まる</string>
     <string name="format_wakeup_json">WakeUp JSON</string>
@@ -314,7 +313,7 @@
     <string name="mine_export">時間割・時程表をエクスポート</string>
     <string name="mine_stat_tables">時間割数</string>
     <string name="mine_stat_courses">授業数</string>
-    <string name="mine_stat_week">現在の週</string>
+    <string name="mine_stat_period_tables">時程表数</string>
 
         <string name="settings_high_refresh">高リフレッシュレート</string>
     <string name="settings_nav_style">下部バーのスタイル</string>
@@ -1079,6 +1078,24 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="school_location_permission_settings">位置情報の権限</string>
     <string name="reminder_class_dnd_title">授業中はおやすみモード</string>
     <string name="reminder_class_dnd_sub">授業時間帯におやすみモードを自動で有効にし、終了後に復元します</string>
+    <string name="manage_add_table">時間割を追加</string>
+    <string name="manage_add_table_sub">時間割をインポート、または空の時間割を作成</string>
+    <string name="manage_period_tables">時程表の管理</string>
+    <string name="manage_period_tables_sub">時程表を追加・編集・削除</string>
+    <string name="manage_no_table">時間割がありません</string>
+    <string name="manage_no_table_hint">下の「時間割を追加」からインポートまたは作成できます</string>
+    <string name="manage_create_blank_table">空の時間割を作成</string>
+    <string name="add_course_title">授業を追加</string>
+    <string name="create_table_title">新しい時間割を作成</string>
+    <string name="add_course_from_existing">既存の時間割から</string>
+    <string name="add_course_manual">授業を手動で追加</string>
+
+    <string name="import_backup_original">元の時間割をバックアップ</string>
+    <string name="import_backup_original_sub">追加前に元の時間割をコピーします</string>
+    <string name="import_append_conflicts_option">競合する授業も追加</string>
+    <string name="import_append_conflicts_option_sub">オフにすると既存授業と競合する授業を除外します</string>
+    <string name="add_course_no_source">他の時間割がありません。先に時間割を追加してください。</string>
+    <string name="import_backup_name">%1$s - バックアップ</string>
     <string name="table_reminder_title">時間割の通知</string>
     <string name="table_reminder_subtitle">通知を受け取る時間割を選択</string>
     <string name="table_reminder_master_off">通知はオフです。時間割ごとの設定は、通知のメインスイッチをオンにすると有効になります。</string>

@@ -13,15 +13,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Refresh
-import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -57,12 +53,12 @@ fun MineScreen(
     onOpenPeriodTables: () -> Unit = {},
     onOpenAppearance: () -> Unit = {},
     onOpenGeneral: () -> Unit = {},
-    onOpenExport: () -> Unit = {},
     onOpenReminder: () -> Unit = {},
     onOpenAbout: () -> Unit = {},
     updateNoticeVisible: Boolean = false
 ) {
     val state by viewModel.state.collectAsState()
+    val periodTables by viewModel.allPeriodTables.collectAsState()
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val widgetsRefreshedMessage = stringResource(R.string.mine_refresh_widgets_done)
@@ -88,7 +84,7 @@ fun MineScreen(
                 Column {
                     Text(
                         text = stringResource(R.string.tab_mine),
-                        style = MaterialTheme.typography.headlineMedium,
+                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                         color = colors.onBackground
                     )
                     Spacer(modifier = Modifier.height(4.dp))
@@ -108,13 +104,14 @@ fun MineScreen(
                     courseCount = state.courses
                         .distinctBy { it.courseName.ifBlank { "#${it.groupId}" } }
                         .size,
-                    week = state.currentWeek,
+                    periodTableCount = periodTables.size,
                     onOpenTables = onOpenAllTables,
-                    onOpenCourses = onOpenCourseList
+                    onOpenCourses = onOpenCourseList,
+                    onOpenPeriodTables = onOpenPeriodTables
                 )
             }
 
-            // 设置项 (5 个导航项扁平列表)
+            // 设置项：提醒、外观、通用和关于。
             item {
                 Column(
                     modifier = Modifier
@@ -122,14 +119,6 @@ fun MineScreen(
                         .clip(SleepyTheme.shapes.large)
                         .background(colors.surfaceContainer)
                 ) {
-                    SettingsItem(icon = Icons.Outlined.Edit, label = stringResource(R.string.all_tables), onClick = onOpenAllTables)
-                    Divider()
-                    // issue#40: 时间节次表入口 — 与课表管理并列(设计 §4.1)
-                    // 2026-09-16 用户: 「作息表/管理各课表共用的作息」副标题删除(冗余)
-                    SettingsItem(icon = Icons.Outlined.Schedule, label = stringResource(R.string.mine_period_tables), onClick = onOpenPeriodTables)
-                    Divider()
-                    SettingsItem(icon = Icons.Outlined.Share, label = stringResource(R.string.mine_export), onClick = onOpenExport)
-                    Divider()
                     SettingsItem(icon = Icons.Outlined.Notifications, label = stringResource(R.string.reminder_title), onClick = onOpenReminder)
                     Divider()
                     SettingsItem(icon = Icons.Outlined.Palette, label = stringResource(R.string.mine_appearance), onClick = onOpenAppearance)
@@ -171,9 +160,10 @@ fun MineScreen(
 private fun StatsCard(
     tableCount: Int,
     courseCount: Int,
-    week: Int,
+    periodTableCount: Int,
     onOpenTables: () -> Unit,
-    onOpenCourses: () -> Unit
+    onOpenCourses: () -> Unit,
+    onOpenPeriodTables: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
     Row(
@@ -181,12 +171,12 @@ private fun StatsCard(
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 2026-09-21 用户令: 统计格可点 — 表数格→所有课表, 课程格→课程清单页, 周数格静态
+        // 三个统计格分别进入所有课表、课程清单和作息表管理。
         StatItem(value = tableCount.toString(), label = stringResource(R.string.mine_stat_tables), onClick = onOpenTables)
         Divider(vertical = true)
         StatItem(value = courseCount.toString(), label = stringResource(R.string.mine_stat_courses), onClick = onOpenCourses)
         Divider(vertical = true)
-        StatItem(value = week.toString(), label = stringResource(R.string.mine_stat_week))
+        StatItem(value = periodTableCount.toString(), label = stringResource(R.string.mine_stat_period_tables), onClick = onOpenPeriodTables)
     }
 }
 
