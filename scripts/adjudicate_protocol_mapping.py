@@ -130,11 +130,13 @@ def shell_flags(url):
     return out
 
 
-def text_evidence(text):
+def text_evidence(text, url=''):
     if not text:
         return []
     t = text if isinstance(text, str) else ' '.join(map(str, text))
-    L = t.lower()
+    # Rules that pair a page phrase with a URL feature (e.g. KINGOSOFT's
+    # 教务网络管理系统 + /jwweb/) need the URL in the haystack too.
+    L = t.lower() + ' ' + (url or '').lower()
     out, seen = [], set()
     for test, typ, label in TEXT_ANCHORS:
         try:
@@ -169,7 +171,7 @@ def collect(row, caps):
             ev.append((typ, field, label))
     title = (p.get('title') or '').strip()
     if title and not GENERIC_TITLE.match(title):
-        for typ, label in text_evidence(title):
+        for typ, label in text_evidence(title, final_url or row.get('sourceUrl')):
             ev.append((typ, 'probe.title', label))
     for typ, label in text_evidence(p.get('fingerprints')):
         ev.append((typ, 'probe.fingerprints', label))
@@ -177,9 +179,9 @@ def collect(row, caps):
     if cap:
         ctitle = (cap.get('title') or '').strip()
         if ctitle and not GENERIC_TITLE.match(ctitle):
-            for typ, label in text_evidence(ctitle):
+            for typ, label in text_evidence(ctitle, final_url):
                 ev.append((typ, 'capture.title', label))
-        for typ, label in text_evidence(cap.get('observedText')):
+        for typ, label in text_evidence(cap.get('observedText'), final_url):
             ev.append((typ, 'capture.observedText', label))
     return ev, shells
 
@@ -378,6 +380,12 @@ def write_doc(final, trace, vc, unmapped, routable_url):
         '- 学校私有协议（aic/lz/cityu/buaa/hitsz 等）：无通用协议正向证据，维持不可路由；'
         '后续应补自定义解析器，而不是伪装成通用协议。',
         '- CAS/authserver 纯壳与 webvpn 壳 URL：永不作为操作值依据，也不构成协议证据。',
+        '',
+        '注意：协议可路由≠条目入目录。协议裁决之后仍有所有权闸门与域名碰撞闸门'
+        '（`catalog_ownership.apply_ownership` / `_candidate_poisons`）决定 URL 是否进入 '
+        '`schools.json`：owner 未证明与被 HEAD 唯一行占住主机/域名（会破坏按 URL 反查学校'
+        '的 fail-closed 定位）的行被拦截。逐条依据表见 '
+        '[证据生成报告](EVIDENCE_GENERATION_REPORT.md) 的“域名碰撞闸门”一节。',
         '',
         '完整 2499 行逐行证据（含未变更行为何可信）在 `scripts/data/adjudication-log.jsonl`。',
         '',

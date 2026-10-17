@@ -21,6 +21,7 @@ def is_grad(name):return '研究生' in name
 def generate():
  renames=read('school_catalog_renames.json'); canonical=lambda name:renames.get(norm(name),{}).get('newName',norm(name))
  baseline=read('school_catalog_baseline.json'); official=read('official_schools.json'); wakeup=read('wakeup_school_sources.json'); pinyin=read('school_catalog_pinyin.json'); admissions=read('school_import_admissions.json')
+ domain_reference=read('school_catalog_domain_reference.json')
  rows=copy.deepcopy(baseline); by_name={norm(r['name']):r for r in rows}; source_links=defaultdict(list); official_links=defaultdict(list)
  # Baseline fields are preserved byte-for-value; their pre-existing stable keys stay valid.
  def key(row):return row.get('catalogId') or row['sortKey']+'_'+row['name']
@@ -48,7 +49,7 @@ def generate():
   row.update(url=url,type=mapped,status='grad_unverified' if is_grad(name) else 'unverified',enableFetch=False)
   accepted.append({'catalogId':key(row),'name':name,'url':url,'type':row['type'],'sourceId':decision['sourceId'],'sourceRow':decision['sourceRow'],'checkedAt':decision['probe']['checkedAt'],'http':decision['probe']['http'],'title':decision['probe'].get('title'),'fingerprints':decision['probe'].get('fingerprints',[]),'limitation':decision['verification']})
  assert rows[:len(baseline)]==baseline,'Existing school fields changed before ownership review'
- ownership=apply_ownership(rows,read('school_url_evidence.json'),baseline_names,renames)
+ ownership=apply_ownership(rows,read('school_url_evidence.json'),baseline_names,renames,head_rows=domain_reference)
  decisions={x['catalogId']:x for x in ownership}
  accepted=[dict(x, url=decisions[x['catalogId']]['operationalUrl'],ownershipAction=decisions[x['catalogId']]['action']) for x in accepted if decisions[x['catalogId']]['operationalUrl']]
  rows=rows[:len(baseline)]+sorted(rows[len(baseline):],key=lambda x:(x['sortKey'],x['sortKeyFull'],x['name']))
@@ -59,7 +60,7 @@ def generate():
  assert all(not x['url'] and x['type'] is None for x in rows if x.get('status') in ('pending','grad_pending'))
  assert all(x.get('status') not in ('supported','grad_supported') for x in rows[len(baseline):])
  sources=[]
- for source_file in ('school_catalog_baseline.json','official_schools.json','wakeup_school_sources.json','school_catalog_pinyin.json','school_import_admissions.json','school_catalog_renames.json','school_url_evidence.json'):
+ for source_file in ('school_catalog_baseline.json','official_schools.json','wakeup_school_sources.json','school_catalog_pinyin.json','school_import_admissions.json','school_catalog_renames.json','school_url_evidence.json','school_catalog_domain_reference.json'):
   path=DATA/source_file
   sources.append({'path':str(path.relative_to(ROOT)),'sha256':hashlib.sha256(path.read_bytes()).hexdigest()})
  manifest={'generatedAsOf':'2026-10-14','baselineCount':len(baseline),'catalogCount':len(rows),'statusCounts':dict(Counter(x.get('status','supported') for x in rows)),'sourceCounts':{'official':len(official),'wakeupSchoolSourceRows':len(wakeup['records']),'wakeupExcludedTemplateRows':len(wakeup['excludedTemplates'])},'coverage':{'officialMissing':[],'wakeupMissing':[]},'sources':sources,'matchingPolicy':'Exact trimmed full names plus reviewed school_catalog_renames.json; no fuzzy aliases or graduate/campus suffix removal. Historical source rows remain independently traceable.','sourceLinks':{k:official_links[k]+source_links[k] for k in ids if official_links[k] or source_links[k]}}

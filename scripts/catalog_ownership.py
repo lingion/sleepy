@@ -1,6 +1,7 @@
 """Fail-closed URL ownership decisions, separate from authenticated parser support."""
 import base64
 import hashlib
+import ipaddress
 import re
 from html.parser import HTMLParser
 from urllib.parse import urljoin, urlsplit
@@ -137,6 +138,39 @@ def valid_url(url):
         return False
 
 
+def public_host(url):
+    """Domain names are assumed reachable; IP literals must be globally routable."""
+    try:
+        host = urlsplit(url).hostname
+    except ValueError:
+        return False
+    if not host:
+        return False
+    try:
+        address = ipaddress.ip_address(host)
+    except ValueError:
+        return True
+    return address.is_global
+
+
+def wakeup_declared_owner(proof, url):
+    """WakeUp's shipped admission list is a third-party ownership declaration.
+
+    Retain it only when independent liveness and safety evidence agrees: the
+    batch probe reached this exact operational URL with HTTP 200, the host is
+    public, and the URL is well-formed without credentials or redaction.
+    Protocol routing still requires the row type to be a registered parser
+    (enforced before admission by generate_school_catalog).
+    """
+    return (
+        proof.get("source") == "wakeup-batch-probe"
+        and proof.get("http") == 200
+        and "REDACTED" not in url
+        and valid_url(url)
+        and public_host(url)
+    )
+
+
 def endpoint_key(url):
     """Only a missing root slash/default port is equivalent without evidence."""
     if not valid_url(url):
@@ -214,7 +248,180 @@ def source_proves(source, name, url, renames=None):
     return any(link_matches(link, url) or archived_redirect_proves(source, link, url) for link in links)
 
 
-def apply_ownership(rows, evidence, baseline_names, renames=None):
+def row_key(row):
+    return row.get("catalogId") or row["sortKey"] + "_" + row["name"]
+
+
+def _parsed(url):
+    """Mirror of SchoolDomainMatch.parsed: http(s), no userinfo, non-blank host."""
+    if not isinstance(url, str) or not url.strip():
+        return None
+    try:
+        parts = urlsplit(url.strip())
+    except ValueError:
+        return None
+    host = parts.hostname
+    if parts.scheme.lower() not in {"http", "https"} or not host:
+        return None
+    if parts.username is not None or parts.password is not None or ("@" in (parts.netloc or "")):
+        return None
+    return parts
+
+
+def _same_entry(a, b):
+    """Mirror of SchoolDomainMatch.sameEntry: scheme + host + effective port + path/query/fragment."""
+    def port(uri):
+        try:
+            explicit = uri.port
+        except ValueError:
+            return None
+        if explicit is not None:
+            return explicit
+        return 443 if uri.scheme.lower() == "https" else 80
+    pa, pb = port(a), port(b)
+    if pa is None or pb is None:
+        return False
+    return (a.scheme.lower() == b.scheme.lower()
+            and a.hostname == b.hostname
+            and pa == pb
+            and (a.path or "/") == (b.path or "/")
+            and a.query == b.query
+            and a.fragment == b.fragment)
+
+
+_MULTI_SUFFIX_SECOND = {"edu", "ac", "gov", "org"}
+_MULTI_SUFFIX_TLD = {"cn", "hk", "uk", "tw", "jp"}
+
+
+def _registrable_domain(host):
+    """Mirror of SchoolDomainMatch.registrableDomain."""
+    h = (host or "").lower().strip().rstrip(".")
+    if not h:
+        return ""
+    parts = h.split(".")
+    if len(parts) <= 2:
+        return h
+    if parts[-1] in _MULTI_SUFFIX_TLD and parts[-2] in _MULTI_SUFFIX_SECOND:
+        return ".".join(parts[-3:])
+    return ".".join(parts[-2:])
+
+
+SUPPORTED_STATUSES = {"supported", "grad_supported"}
+
+
+def _row_supported(row):
+    """Mirror JwSchoolInfo: null/missing status defaults to STATUS_SUPPORTED."""
+    st = row.get("status")
+    if st is None:
+        return True
+    return st in SUPPORTED_STATUSES
+
+
+def _is_vpn(host):
+    """Mirror of SchoolDomainMatch.isVpnRewrite (host never contains '/')."""
+    h = (host or "").lower().strip().rstrip(".")
+    return bool(h) and (".webvpn." in h or h.startswith("webvpn."))
+
+
+def _raw_port(uri):
+    """java.net.URI.getPort(): explicit port or -1 (tier 2 never treats
+    an explicit port as equal to a scheme default)."""
+    try:
+        return uri.port if uri.port is not None else -1
+    except ValueError:
+        return None
+
+
+def match_school_rows(target, entries):
+    """Faithful port of SchoolDomainMatch.matchSchool over pre-parsed entries.
+
+    entries: [(row, parsed_uri_or_None)]; rows without a parseable URL are
+    inert there, exactly like Kotlin's mapNotNull. Returns the resolved row
+    (supported and importable) or None.
+    """
+    if target is None:
+        return None
+    host = target.hostname or ""
+    if _is_vpn(host):
+        return None
+
+    def supported_single(matches):
+        if len(matches) != 1:
+            return None
+        r = matches[0][0]
+        return r if _row_supported(r) else None
+
+    exact = [(r, p) for (r, p) in entries if p is not None and _same_entry(p, target)]
+    if exact:
+        return supported_single(exact)
+    same_host = [(r, p) for (r, p) in entries
+                 if p is not None and p.hostname == host and _raw_port(p) == _raw_port(target)]
+    if same_host:
+        return supported_single(same_host)
+    domain = _registrable_domain(host)
+    if not domain:
+        return None
+    return supported_single([(r, p) for (r, p) in entries
+                             if p is not None and _registrable_domain(p.hostname) == domain])
+
+
+def _row_entries(rowset):
+    out = []
+    for r in rowset:
+        u = r.get("url") or ""
+        out.append((r, _parsed(u) if u else None))
+    return out
+
+
+def _candidate_poisons(rows_by_key, head_rows, candidate_keys):
+    """Withhold promotions that regress SchoolDomainMatch fail-closed lookups.
+
+    A candidate row C (newly operational this run, or given a new corrected
+    URL) is a collision poison iff C's operational URL maps to a unique
+    supported row in the committed catalog (head_rows) but resolves to
+    nothing — no row, or a different row — once every promotion lands.
+    Candidates sharing a host/domain with a committed row are never allowed
+    to create an ambiguous lookup: process in row order and exclude
+    already-withheld candidates from the generated view, so on a host claimed
+    by a HEAD row every colliding candidate is withheld.
+    """
+    head_entries = _row_entries(head_rows)
+    withheld = set()
+
+    def regresses(target):
+        head_res = match_school_rows(target, head_entries)
+        if head_res is None:
+            return False
+        generated = [r for k, r in rows_by_key.items() if r.get("url") and k not in withheld]
+        new_res = match_school_rows(target, _row_entries(generated))
+        return new_res is None or row_key(new_res) != row_key(head_res)
+
+    for key in candidate_keys:
+        row = rows_by_key.get(key)
+        if row is None or not row.get("url"):
+            continue
+        target = _parsed(row["url"])
+        if target is None:
+            continue
+        host = target.hostname or ""
+        is_poison = False
+        if not _is_vpn(host):
+            is_poison = regresses(target)
+        if not is_poison:
+            # The row participates as a domain-tier ENTRY for every host of its
+            # registrable domain (a VPN host is only exempt as a lookup input),
+            # so probe the registrable domain of the candidate host too.
+            domain = _registrable_domain(host)
+            if domain and domain != host:
+                probe = _parsed("https://probe." + domain + "/")
+                if probe is not None:
+                    is_poison = regresses(probe)
+        if is_poison:
+            withheld.add(key)
+    return withheld
+
+
+def apply_ownership(rows, evidence, baseline_names, renames=None, domain_poison=None, head_rows=None):
     entries = evidence["entries"]
     indexed = {e["catalogId"]: e for e in entries}
     if len(indexed) != len(entries):
@@ -222,19 +429,9 @@ def apply_ownership(rows, evidence, baseline_names, renames=None):
     active = {r.get("catalogId") or r["sortKey"] + "_" + r["name"] for r in rows if r.get("url")}
     if set(indexed) != active:
         raise ValueError("Ownership evidence must cover every operational input exactly once")
-    changes = []
-    for row in rows:
-        if not row.get("url"):
-            continue
-        key = row.get("catalogId") or row["sortKey"] + "_" + row["name"]
-        proof = indexed[key]
-        if proof["name"] != row["name"] or proof["url"] != row["url"]:
-            raise ValueError("Stale ownership evidence: " + key)
+
+    def outcome(row, proof):
         status = proof["status"]
-        if status not in {"verified", "unknown", "contradicted"}:
-            raise ValueError("Invalid ownership verdict: " + key)
-        if status == "verified" and not any(source_proves(s, row["name"], row["url"], renames) for s in proof.get("sources", [])):
-            raise ValueError("Verified ownership requires matching recorded identity and target evidence: " + key)
         if status == "contradicted":
             correction = proof.get("proposedCorrection") or {}
             sources = correction.get("sources", [])
@@ -242,19 +439,61 @@ def apply_ownership(rows, evidence, baseline_names, renames=None):
             official = any(s.get("kind") in {"official-school-published-address", "official-school-link", "official-school-meta-chain"} and source_proves(s, row["name"], url, renames) for s in sources)
             entry = any(s.get("kind") == "entry-page" and source_proves(s, row["name"], url, renames) for s in sources)
             if correction.get("status") == "verified" and official and entry and valid_url(url) and correction.get("parserFamily") == row.get("type"):
-                row["url"] = url
-                row["status"] = "grad_unverified" if row.get("status", "").startswith("grad_") else "unverified"
-                row["enableFetch"] = False
-                action = "corrected-official-entry"
-            else:
-                block(row)
-                action = "blocked-contradicted-owner"
-        elif status == "unknown" and row["name"] not in baseline_names:
+                return "corrected-official-entry", url
+            return "blocked-contradicted-owner", ""
+        if status == "unknown" and row["name"] not in baseline_names:
+            if wakeup_declared_owner(proof, row["url"]):
+                return "retained-wakeup-declared-owner", row["url"]
+            return "withheld-new-unproven-owner", ""
+        if status == "unknown":
+            return "retained-existing-config-ownership-unresolved", row["url"]
+        return "ownership-confirmed", row["url"]
+
+    predicted = {}
+    predicted_rows = {}
+    candidate_keys = []
+    for row in rows:
+        if not row.get("url"):
+            continue
+        key = row_key(row)
+        proof = indexed[key]
+        if proof["name"] != row["name"] or proof["url"] != row["url"]:
+            raise ValueError("Stale ownership evidence: " + key)
+        if proof["status"] not in {"verified", "unknown", "contradicted"}:
+            raise ValueError("Invalid ownership verdict: " + key)
+        if proof["status"] == "verified" and not any(source_proves(s, row["name"], row["url"], renames) for s in proof.get("sources", [])):
+            raise ValueError("Verified ownership requires matching recorded identity and target evidence: " + key)
+        action, final_url = outcome(row, proof)
+        predicted[key] = (action, final_url)
+        if final_url:
+            snapshot = dict(row)
+            snapshot["url"] = final_url
+            predicted_rows[key] = snapshot
+        if action in {"retained-wakeup-declared-owner", "corrected-official-entry"}:
+            candidate_keys.append(key)
+
+    if domain_poison is None:
+        domain_poison = set()
+        if head_rows is not None and candidate_keys:
+            domain_poison = _candidate_poisons(predicted_rows, head_rows, candidate_keys)
+
+    changes = []
+    for row in rows:
+        if not row.get("url"):
+            continue
+        key = row_key(row)
+        proof = indexed[key]
+        action, final_url = predicted[key]
+        if key in domain_poison:
             block(row)
-            action = "withheld-new-unproven-owner"
-        else:
-            action = "retained-existing-config-ownership-unresolved" if status == "unknown" else "ownership-confirmed"
-        changes.append({"catalogId": key, "name": row["name"], "ownershipStatus": status, "action": action, "operationalUrl": row["url"], "authenticatedImportTested": proof.get("authenticatedImportTested", False)})
+            action = "withheld-domain-collision"
+        elif action == "corrected-official-entry":
+            row["url"] = final_url
+            row["status"] = "grad_unverified" if row.get("status", "").startswith("grad_") else "unverified"
+            row["enableFetch"] = False
+        elif action == "blocked-contradicted-owner" or action == "withheld-new-unproven-owner":
+            block(row)
+        changes.append({"catalogId": key, "name": row["name"], "ownershipStatus": proof["status"], "action": action, "operationalUrl": row["url"], "authenticatedImportTested": proof.get("authenticatedImportTested", False)})
     return changes
 
 def block(row):

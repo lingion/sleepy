@@ -2,7 +2,7 @@ import copy
 import base64
 import hashlib
 import unittest
-from catalog_ownership import apply_ownership, link_matches, source_proves
+from catalog_ownership import apply_ownership, link_matches, source_proves, match_school_rows, _row_entries, _parsed, _row_supported
 
 class OwnershipTest(unittest.TestCase):
     def setUp(self):
@@ -65,6 +65,46 @@ class OwnershipTest(unittest.TestCase):
     def test_unknown_new_entry_is_not_operational(self):
         row, result = self.apply()
         self.assertEqual(('', None, 'pending', False), (row['url'], row['type'], row['status'], row['enableFetch']))
+
+    def test_wakeup_declared_public_live_owner_is_retained_unverified(self):
+        self.proof.update(source='wakeup-batch-probe', http=200)
+        row, result = self.apply()
+        self.assertEqual(self.row['url'], row['url'])
+        self.assertEqual('zf_new', row['type'])
+        self.assertEqual('unverified', row['status'])
+        self.assertFalse(row.get('enableFetch', False))
+        self.assertEqual('retained-wakeup-declared-owner', result['action'])
+
+    def test_wakeup_declaration_needs_live_public_evidence(self):
+        for patch in [
+            dict(http=0),
+            dict(http=404),
+            dict(source='import'),
+            dict(url='http://10.10.181.1/jw'),
+            dict(url='http://[fd00::1]/jw'),
+            dict(url='https://example.invalid/REDACTED/jw'),
+        ]:
+            row = copy.deepcopy(self.row)
+            self.proof = dict(catalogId='school:1', name='甲大学', status='unknown', sources=[],
+                              source='wakeup-batch-probe', http=200)
+            self.proof['url'] = row['url'] = patch.pop('url', row['url'])
+            self.proof.update(patch)
+            result = apply_ownership([row], {'entries': [copy.deepcopy(self.proof)]}, set())[0]
+            with self.subTest(**patch):
+                self.assertEqual(('', None, 'pending', False), (row['url'], row['type'], row['status'], row['enableFetch']))
+                self.assertEqual('withheld-new-unproven-owner', result['action'])
+        self.proof = dict(catalogId='school:1', name='甲大学', url=self.row['url'], status='unknown', sources=[])
+        row, result = self.apply()
+        self.assertEqual('', row['url'])
+        self.assertEqual('withheld-new-unproven-owner', result['action'])
+
+    def test_wakeup_retained_graduate_identity_stays_grad_scoped(self):
+        self.row['name'] = self.proof['name'] = '甲大学 - 研究生'
+        self.row['status'] = 'grad_unverified'
+        self.proof.update(source='wakeup-batch-probe', http=200)
+        row, result = self.apply()
+        self.assertEqual('grad_unverified', row['status'])
+        self.assertEqual('retained-wakeup-declared-owner', result['action'])
 
     def test_unreachable_page_does_not_invalidate_previous_import_evidence(self):
         self.row['status'] = 'supported'
@@ -282,5 +322,84 @@ class RawMetaChainTest(unittest.TestCase):
         for body in ['甲大学<script>var value=1;</script>', '甲大学<input name=csrftoken value=synthetic-placeholder>']:
             self.source['metaChain']['responses'][-1] = self.capture(self.target, body)
             self.assertFalse(self.valid())
+
+class DomainCollisionGateTest(unittest.TestCase):
+    """The collision gate: a promotion that would make a previously
+    resolvable SchoolDomainMatch lookup fail-closed must be withheld."""
+
+    def wake_proof(self, row):
+        return dict(catalogId=row['catalogId'], name=row['name'], url=row['url'],
+                    status='unknown', sources=[], source='wakeup-batch-probe', http=200)
+
+    def baseline(self, catalogId, name, url):
+        return dict(catalogId=catalogId, name=name, url=url, type='zf', status=None)
+
+    def candidate(self, catalogId, name, url):
+        return dict(catalogId=catalogId, name=name, url=url, type='zf', status='unverified')
+
+    def run_gate(self, head_rows, baselines, candidates):
+        rows = baselines + candidates
+        entries = []
+        for r in rows:
+            p = self.wake_proof(r)
+            p.update(status='unknown')
+            entries.append(p)
+        baseline_names = {r['name'] for r in baselines}
+        return {c['catalogId']: c['action'] for c in
+                apply_ownership(rows, {'entries': entries}, baseline_names, head_rows=head_rows)}
+
+    def test_null_status_baseline_row_is_supported(self):
+        # JwSchoolInfo defaults null status to supported; the Python mirror must too.
+        self.assertTrue(_row_supported({'status': None}))
+        self.assertTrue(_row_supported({}))
+        self.assertTrue(_row_supported({'status': 'supported'}))
+        self.assertFalse(_row_supported({'status': 'unverified'}))
+
+    def test_same_host_promotion_poisons_baseline_lookup_and_is_withheld(self):
+        b = [self.baseline('b1', '甲大学', 'https://jw.example.edu.cn/')]
+        c = self.candidate('c1', '丙大学', 'https://jw.example.edu.cn/x')
+        before = match_school_rows(_parsed('https://jw.example.edu.cn/'), _row_entries(b))
+        self.assertEqual('b1', before['catalogId'])
+        actions = self.run_gate(b, b, [c])
+        self.assertEqual('withheld-domain-collision', actions['c1'])
+        self.assertEqual('', c['url'])
+        self.assertEqual('pending', c['status'])
+
+    def test_vpn_host_candidate_still_poisons_domain_tier_and_is_withheld(self):
+        # A webvpn URL is invisible as a match input but its row still counts
+        # as a domain-tier entry, so it silently breaks domain-level lookups.
+        b = [self.baseline('b1', '甲大学', 'https://jwc.hunau.edu.cn/')]
+        c = self.candidate('c1', '乙大学', 'https://webvpn.hunau.edu.cn/https/1/login')
+        self.assertIsNone(match_school_rows(_parsed(c['url']), _row_entries(b)))
+        actions = self.run_gate(b, b, [c])
+        self.assertEqual('withheld-domain-collision', actions['c1'])
+
+    def test_all_candidates_on_a_claimed_host_are_withheld(self):
+        # Once one promoted candidate shares the baseline host, every further
+        # candidate on that host keeps the lookup ambiguous; none may survive.
+        b = [self.baseline('b1', '甲大学', 'https://one.example.edu.cn/')]
+        c1 = self.candidate('c1', '乙大学', 'https://one.example.edu.cn/a')
+        c2 = self.candidate('c2', '丙大学', 'https://one.example.edu.cn/b')
+        actions = self.run_gate(b, b, [c1, c2])
+        self.assertEqual('withheld-domain-collision', actions['c1'])
+        self.assertEqual('withheld-domain-collision', actions['c2'])
+        self.assertEqual('https://one.example.edu.cn/', b[0]['url'])
+
+    def test_multi_match_domains_do_not_poison(self):
+        # chaoxing.com hosts never uniquely resolve, so promoting one changes nothing.
+        b = [self.baseline('b1', '甲大学', 'https://jw1.chaoxing.com/'),
+             self.baseline('b2', '乙大学', 'https://jw2.chaoxing.com/')]
+        c = self.candidate('c1', '丙大学', 'https://jw3.chaoxing.com/')
+        actions = self.run_gate(b, b, [c])
+        self.assertEqual('retained-wakeup-declared-owner', actions['c1'])
+        self.assertEqual('https://jw3.chaoxing.com/', c['url'])
+
+    def test_gate_disabled_without_domain_reference(self):
+        b = [self.baseline('b1', '甲大学', 'https://jw.example.edu.cn/')]
+        c = self.candidate('c1', '丙大学', 'https://jw.example.edu.cn/x')
+        rows = b + [c]
+        actions = {e['catalogId']: e['action'] for e in
+                   apply_ownership(rows, {'entries': [self.wake_proof(r) for r in rows]}, {'甲大学'})}
+        self.assertEqual('retained-wakeup-declared-owner', actions['c1'])
 
 if __name__ == '__main__': unittest.main()
