@@ -80,7 +80,9 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                 } catch (e: CancellationException) {
                     throw e
                 } catch (_: Exception) { emptyMap() }
-                val list = parseSchoolsJson(text).map { it.copy(cities = cityIndex[it.name].orEmpty()) }
+                val list = parseSchoolsJson(text)
+                    .map { it.copy(cities = cityIndex[it.name].orEmpty()) }
+                    .filter { it.url.isNotBlank() }  // 只显示有URL的学校，避免用户看到大量不可用选项
                 _schools.value = list
             } catch (e: Exception) {
                 _importState.value = ImportState.Error("加载学校列表失败: ${e.message}")
