@@ -18,10 +18,10 @@ class ReminderExperimentalTagContractTest {
     @Test
     fun `fluid notification row keeps experimental tag in reminders screen`() {
         val fluidRow = source.substringAfter(
-            "title = stringResource(R.string.reminder_fluid_title)",
+            "if (beforeClassMode == AppPrefs.BEFORE_CLASS_MODE_FLUID) {",
             ""
-        ).substringBefore("if (fluidEnabled)")
-        assertTrue(fluidRow.contains("tag = stringResource(R.string.reminder_experimental_tag)"))
+        ).substringBefore("R.string.reminder_mode_fluid_sub")
+        assertTrue("experimental tag must stay adjacent to fluid title", fluidRow.contains("stringResource(R.string.reminder_experimental_tag)"))
         assertTrue(source.contains("stringResource(R.string.reminder_fluid_title)"))
     }
 }

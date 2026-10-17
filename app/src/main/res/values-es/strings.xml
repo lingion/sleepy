@@ -746,8 +746,6 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="notif_tomorrow_title_no_course">Mañana no hay clases</string>
     <string name="notif_tomorrow_text_no_course">¡Disfruta del tiempo libre!</string>
     <string name="notif_room_unknown">Aula desconocida</string>
-    <string name="reminder_banner_sub">Mostrar un banner antes de clase en la barra de notificaciones</string>
-    <string name="reminder_banner_title">Recordatorio en banner</string>
     <string name="jw_error_dialog_title">Problema de importación</string>
     <string name="jw_diag_export_btn">Exportar paquete de diagnóstico</string>
     <string name="jw_diag_exporting">Generando paquete de diagnóstico…</string>
@@ -831,8 +829,12 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="reminder_reliability_missing">no habilitado</string>
     <string name="reminder_reliability_degraded">degradado</string>
     <string name="reminder_reliability_unknown">desconocido</string>
-    <string name="reminder_fluid_sub">Mostrar tarjetas de curso en tiempo real en teléfonos Xiaomi, vivo, Samsung y Meizu compatibles</string>
     <string name="reminder_fluid_title">Nube Fluida / Súper Isla</string>
+    <string name="reminder_mode_label">Estilo de aviso</string>
+    <string name="reminder_mode_banner">Banner</string>
+    <string name="reminder_mode_fluid">Nube fluida</string>
+    <string name="reminder_mode_banner_sub">Banner normal deslizable en la barra de notificaciones; compatible con la sincronización de reloj y pulsera</string>
+    <string name="reminder_mode_fluid_sub">Tarjetas de curso en tiempo real en teléfonos Xiaomi, vivo, Samsung y Meizu compatibles; puede no mostrarse si no es compatible</string>
     <string name="reminder_master_sub">Permitir que Sleepy envíe notificaciones de cursos</string>
     <string name="reminder_master_title">Activar recordatorios</string>
     <string name="reminder_pick_time">Elegir hora de recordatorio</string>

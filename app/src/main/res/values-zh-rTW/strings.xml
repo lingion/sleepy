@@ -744,8 +744,6 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="notif_tomorrow_title_no_course">明天沒有課</string>
     <string name="notif_tomorrow_text_no_course">好好休息，享受一天！</string>
     <string name="notif_room_unknown">未知教室</string>
-    <string name="reminder_banner_sub">在系統通知欄顯示課前橫幅</string>
-    <string name="reminder_banner_title">橫幅提醒</string>
     <string name="jw_error_dialog_title">匯入遇到問題</string>
     <string name="jw_diag_export_btn">匯出排查全量包</string>
     <string name="jw_diag_exporting">正在產生排查包…</string>
@@ -829,8 +827,12 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="reminder_reliability_missing">未滿足</string>
     <string name="reminder_reliability_degraded">降級執行</string>
     <string name="reminder_reliability_unknown">未知</string>
-    <string name="reminder_fluid_sub">在支援的小米 / vivo / 三星 / 魅族手機上顯示即時課程卡片</string>
     <string name="reminder_fluid_title">流體雲 / 超級島</string>
+    <string name="reminder_mode_label">提醒形態</string>
+    <string name="reminder_mode_banner">橫幅</string>
+    <string name="reminder_mode_fluid">流體雲</string>
+    <string name="reminder_mode_banner_sub">系統通知欄一般橫幅,可手動劃掉;手環/手錶同步不受影響</string>
+    <string name="reminder_mode_fluid_sub">在支援的小米 / vivo / 三星 / 魅族手機上顯示即時課程卡片;系統不支援時可能不顯示</string>
     <string name="reminder_master_sub">允許 Sleepy 發送課程通知</string>
     <string name="reminder_master_title">開啟提醒</string>
     <string name="reminder_pick_time">選擇提醒時間</string>

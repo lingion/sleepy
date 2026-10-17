@@ -261,7 +261,8 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
     var timePickerTarget by remember { mutableStateOf<DailyReminderTimeTarget?>(null) }
     var minutesInput by remember { mutableStateOf(beforeClassMinutes.toString()) }
     var fluidEnabled by remember { mutableStateOf(AppPrefs.isBeforeClassFluidEnabled(context)) }
-    var bannerEnabled by remember { mutableStateOf(AppPrefs.isBeforeClassBannerEnabled(context)) }
+    // 课前提醒形态互斥 tab: banner(普通可划横幅, 手环/手表友好) ⇄ fluid(实况卡片, 实验)
+    var beforeClassMode by remember { mutableStateOf(AppPrefs.getBeforeClassMode(context)) }
     var fluidPrimary by remember { mutableStateOf(AppPrefs.getBeforeClassFluidPrimary(context)) }
     var fieldsMenuExpanded by remember { mutableStateOf(false) }
     // 流体云测试按钮两态: 投放中显示「投放中 | 结束投放」。提升到顶层供授权回调置位。
@@ -886,28 +887,69 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                 modifier = Modifier.padding(start = 52.dp, top = 8.dp, bottom = 8.dp, end = 4.dp)
                             )
                             SubDivider()
-                            ReminderToggleRow(
-                                title = stringResource(R.string.reminder_banner_title),
-                                subtitle = stringResource(R.string.reminder_banner_sub),
-                                checked = bannerEnabled,
-                                onCheckedChange = {
-                                    bannerEnabled = it
-                                    AppPrefs.setBeforeClassBannerEnabled(context, it)
-                                    ReminderRescheduler.request()
+                            // 形态互斥 tab (用户 2026-10-17 指令: 旧双开关下 banner 被 fluid
+                            // 静默吞掉, 改分段二选一): 横幅 = 普通可划通知, 天然兼容手环同步;
+                            // 流体云 = Android 16 promoted 实况卡片, 带实验标签, 用户自选即
+                            // 接受"系统不支持则无卡片"的代价 — 不做静默回落。
+                            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 4.dp)) {
+                                Text(
+                                    text = stringResource(R.string.reminder_mode_label),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = colors.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                com.lingion.sleepy.ui.component.SegmentedSwitcher(
+                                    options = listOf(
+                                        AppPrefs.BEFORE_CLASS_MODE_BANNER to stringResource(R.string.reminder_mode_banner),
+                                        AppPrefs.BEFORE_CLASS_MODE_FLUID to stringResource(R.string.reminder_mode_fluid)
+                                    ),
+                                    selected = beforeClassMode,
+                                    onSelect = { mode ->
+                                        if (mode != beforeClassMode) {
+                                            beforeClassMode = mode
+                                            fluidEnabled = mode == AppPrefs.BEFORE_CLASS_MODE_FLUID
+                                            AppPrefs.setBeforeClassMode(context, mode)
+                                            // 切回横幅须真正停掉流体云投放服务 — 仅 cancel 通知不够,
+                                            // FluidCloudService 的 15s 循环会 re-post 让实况卡复活
+                                            com.lingion.sleepy.widget.notification.FluidCloudService.requestStop(context)
+                                            ReminderRescheduler.request()
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    containerColor = colors.surfaceContainerHighest
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                if (beforeClassMode == AppPrefs.BEFORE_CLASS_MODE_FLUID) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = stringResource(R.string.reminder_fluid_title),
+                                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
+                                            color = colors.onSurfaceVariant
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = stringResource(R.string.reminder_experimental_tag),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = colors.primary,
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(50))
+                                                .background(colors.primary.copy(alpha = 0.12f))
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(4.dp))
                                 }
-                            )
-                            SubDivider()
-                            ReminderToggleRow(
-                                title = stringResource(R.string.reminder_fluid_title),
-                                subtitle = stringResource(R.string.reminder_fluid_sub),
-                                tag = stringResource(R.string.reminder_experimental_tag),
-                                checked = fluidEnabled,
-                                onCheckedChange = {
-                                    fluidEnabled = it
-                                    AppPrefs.setBeforeClassFluidEnabled(context, it)
-                                    ReminderRescheduler.request()
-                                }
-                            )
+                                Text(
+                                    text = stringResource(
+                                        if (beforeClassMode == AppPrefs.BEFORE_CLASS_MODE_FLUID)
+                                            R.string.reminder_mode_fluid_sub
+                                        else
+                                            R.string.reminder_mode_banner_sub
+                                    ),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = colors.onSurfaceVariant
+                                )
+                            }
                             if (fluidEnabled) {
                                 SubDivider()
                                 Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 8.dp)) {

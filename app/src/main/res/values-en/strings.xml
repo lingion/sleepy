@@ -756,8 +756,6 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="notif_tomorrow_title_no_course">No classes tomorrow</string>
     <string name="notif_tomorrow_text_no_course">Enjoy your free time!</string>
     <string name="notif_room_unknown">Unknown room</string>
-    <string name="reminder_banner_sub">Show a before-class banner in the notification bar</string>
-    <string name="reminder_banner_title">Banner Reminder</string>
     <string name="jw_error_dialog_title">Import Problem</string>
     <string name="jw_diag_export_btn">Export Diagnostic Package</string>
     <string name="jw_diag_exporting">Generating diagnostic package…</string>
@@ -841,8 +839,12 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="reminder_reliability_missing">not enabled</string>
     <string name="reminder_reliability_degraded">degraded</string>
     <string name="reminder_reliability_unknown">unknown</string>
-    <string name="reminder_fluid_sub">Show real-time course cards on supported Xiaomi, vivo, Samsung, and Meizu phones</string>
     <string name="reminder_fluid_title">Fluid Cloud / Super Island</string>
+    <string name="reminder_mode_label">Reminder style</string>
+    <string name="reminder_mode_banner">Banner</string>
+    <string name="reminder_mode_fluid">Fluid Cloud</string>
+    <string name="reminder_mode_banner_sub">Standard dismissible banner in the notification bar; safe for watch/band sync</string>
+    <string name="reminder_mode_fluid_sub">Real-time course cards on supported Xiaomi, vivo, Samsung, and Meizu phones; may not appear if unsupported</string>
     <string name="reminder_master_sub">Allow Sleepy to send course notifications</string>
     <string name="reminder_master_title">Enable Reminders</string>
     <string name="reminder_pick_time">Pick Reminder Time</string>

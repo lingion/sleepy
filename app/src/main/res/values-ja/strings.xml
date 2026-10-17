@@ -746,8 +746,6 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="notif_tomorrow_title_no_course">明日は授業なし</string>
     <string name="notif_tomorrow_text_no_course">ゆっくり休みましょう。</string>
     <string name="notif_room_unknown">教室不明</string>
-    <string name="reminder_banner_sub">通知バーに授業前のバナーを表示</string>
-    <string name="reminder_banner_title">バナーリマインダー</string>
     <string name="jw_error_dialog_title">インポート中に問題が発生しました</string>
     <string name="jw_diag_export_btn">診断パッケージをエクスポート</string>
     <string name="jw_diag_exporting">診断パッケージを生成中…</string>
@@ -831,8 +829,12 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="reminder_reliability_missing">未設定</string>
     <string name="reminder_reliability_degraded">制限あり</string>
     <string name="reminder_reliability_unknown">不明</string>
-    <string name="reminder_fluid_sub">対応する Xiaomi・vivo・Samsung・Meizu スマホでリアルタイム授業カードを表示</string>
     <string name="reminder_fluid_title">Fluid Cloud / Super Island</string>
+    <string name="reminder_mode_label">リマインダー形態</string>
+    <string name="reminder_mode_banner">バナー</string>
+    <string name="reminder_mode_fluid">リアルタイムカード</string>
+    <string name="reminder_mode_banner_sub">通知バーに表示する通常のスワイプ削除可能バナー。ウェアラブル同期に影響なし</string>
+    <string name="reminder_mode_fluid_sub">対応する Xiaomi・vivo・Samsung・Meizu スマホでリアルタイム授業カードを表示。非対応の場合は表示されないことがあります</string>
     <string name="reminder_master_sub">Sleepy に授業通知の送信を許可</string>
     <string name="reminder_master_title">リマインダーを有効化</string>
     <string name="reminder_pick_time">リマインダー時刻を選択</string>
