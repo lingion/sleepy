@@ -5704,7 +5704,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://195347iif.mh.chaoxing.com/page/312449/show",
       "checkedAt": "2026-10-16",
@@ -6697,7 +6697,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://succ.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -7201,7 +7201,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://cas.shmtu.edu.cn/cas/login?service=https%3A%2F%2Fng.shmtu.edu.cn%2Fwengine-auth%2flogin%3Fcas_login%3Dtrue",
       "checkedAt": "2026-10-16",
@@ -7702,7 +7702,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://shxj.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -9502,7 +9502,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://lfvtc.jw.chaoxing.com/admin/scanLogin?wfwfid=43521&pageId=1010835&websiteId=526615&mhType=1&publicId=cf3934545e726111ee19c5376dac34e467ca&mhEnc=d76fd69fbb1192efaf1a0200d26823a0",
       "checkedAt": "2026-10-16",
@@ -9982,7 +9982,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "kingo_new",
     "probe": {
       "url": "http://b.ynsxzy.com:8032/jwweb/",
       "checkedAt": "2026-10-16",
@@ -10488,7 +10488,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "kingo_new",
     "probe": {
       "url": "http://jw.fafl.cn/",
       "checkedAt": "2026-10-16",
@@ -10607,7 +10607,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "kingo_new",
     "probe": {
       "url": "http://119.62.43.148:8082/",
       "checkedAt": "2026-10-16",
@@ -10814,7 +10814,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "wisedu",
     "probe": {
       "url": "https://zhxy.ynctv.cn:8088/cas/login?service=https://jwxt.ynctv.cn:8453/jwapp/sys/emaphome/portal/index.do",
       "checkedAt": "2026-10-16",
@@ -11262,7 +11262,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://ynczy.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -11410,7 +11410,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://ylzyjs.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -12001,7 +12001,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "cf",
     "probe": {
       "url": "http://jw.kzvtc.edu.cn:7524/",
       "checkedAt": "2026-10-16",
@@ -13152,7 +13152,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://nmmzyz.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -13416,7 +13416,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://bjjt.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -13772,7 +13772,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "classic_eams",
     "probe": {
       "url": "http://www.plzyxy.com:8060/eams/loginExt.action",
       "checkedAt": "2026-10-16",
@@ -14775,7 +14775,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://bkz.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -16998,7 +16998,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://ncjkzy.mh.chaoxing.com/page/426688/show",
       "checkedAt": "2026-10-16",
@@ -17717,7 +17717,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://nykjzy.jw.chaoxing.com/",
       "checkedAt": "2026-10-16",
@@ -18074,7 +18074,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "kingo_new",
     "probe": {
       "url": "https://jwxt.xmdh.com/xmdhjw/cas/login.action",
       "checkedAt": "2026-10-16",
@@ -22793,7 +22793,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "classic_eams",
     "probe": {
       "url": "http://www.plzyxy.com:8060/eams/loginExt.action",
       "checkedAt": "2026-10-16",
@@ -22910,7 +22910,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://tlmzyjsxy.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -23381,7 +23381,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "zf",
     "probe": {
       "url": "http://10-10-89-108.webvpn.hljlzy.com/default2.aspx",
       "checkedAt": "2026-10-16",
@@ -24591,7 +24591,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://xdxy.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -24890,7 +24890,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://tjqgxy.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -25760,7 +25760,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://nxfszs.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -26558,7 +26558,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "xsyu_shuwei",
+    "mappedType": "classic_eams",
     "probe": {
       "url": "http://jwgl.ahmu.edu.cn/eams/loginExt.action",
       "checkedAt": "2026-10-16",
@@ -27956,7 +27956,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "classic_eams",
     "probe": {
       "url": "http://yx.asotc.cn:8073/eams/loginExt.action",
       "checkedAt": "2026-10-16",
@@ -28220,7 +28220,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://szhkxy.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -28307,7 +28307,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://stcm.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -29084,7 +29084,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "zf_new",
     "probe": {
       "url": "http://10.1.99.110/jwglxt/xtgl/login_slogin.html",
       "checkedAt": "2026-10-16",
@@ -29173,7 +29173,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "classic_eams",
     "probe": {
       "url": "http://jw.sdts.net.cn/eams/loginExt.action",
       "checkedAt": "2026-10-16",
@@ -29260,7 +29260,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "qz",
     "probe": {
       "url": "http://jwxt.sdm.net.cn:9010/jsxsd/",
       "checkedAt": "2026-10-16",
@@ -29290,7 +29290,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "zf_new",
     "probe": {
       "url": "http://zhtj.sdse.cn:6107/jwglxt/xtgl/login_slogin.html",
       "checkedAt": "2026-10-16",
@@ -30711,7 +30711,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "kingo_new",
     "probe": {
       "url": "http://111.53.65.84/default.aspx",
       "checkedAt": "2026-10-16",
@@ -32113,7 +32113,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "classic_eams",
     "probe": {
       "url": "https://jwxt.pdszy.edu.cn/eams/loginExt.action",
       "checkedAt": "2026-10-16",
@@ -35137,7 +35137,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "classic_eams",
     "probe": {
       "url": "https://jw.gxwzy.edu.cn/eams/loginExt.action",
       "checkedAt": "2026-10-16",
@@ -38532,7 +38532,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "classic_eams",
     "probe": {
       "url": "https://jw.yzpc.edu.cn/eams/loginExt.action",
       "checkedAt": "2026-10-16",
@@ -39210,7 +39210,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "zf_new",
     "probe": {
       "url": "http://jwglxt.xjhtc.edu.cn/jwglxt/xtgl/login_slogin.html",
       "checkedAt": "2026-10-16",
@@ -39778,7 +39778,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://xjny.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -41534,7 +41534,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://szyjw.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -41596,7 +41596,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://lcat.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -41986,7 +41986,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "cf",
     "probe": {
       "url": "https://ejwc.glmu.edu.cn",
       "checkedAt": "2026-10-16",
@@ -42315,7 +42315,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://kmzy.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -42374,7 +42374,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "wisedu",
     "probe": {
       "url": "http://ids.tctc.edu.cn:8111/authserver/login?service=https://jwxt.tctc.edu.cn/xgsy/shiro-cas",
       "checkedAt": "2026-10-16",
@@ -42433,7 +42433,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://cxmtc.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -42671,7 +42671,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "qz",
     "probe": {
       "url": "http://jwxt.kjxy.whsu.edu.cn/jsxsd/",
       "checkedAt": "2026-10-16",
@@ -43212,7 +43212,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://whmzxy.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -43626,7 +43626,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://gzbjyz.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -43684,7 +43684,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://gzbjzy.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -44275,7 +44275,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://jnys.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -45319,7 +45319,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "zf_new",
     "probe": {
       "url": "https://172.16.99.154:8080/jwglxt/xtgl/login_slogin.html",
       "checkedAt": "2026-10-16",
@@ -45524,7 +45524,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://jxyxgz.mh.chaoxing.com/page/1406577/show",
       "checkedAt": "2026-10-16",
@@ -45819,7 +45819,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://jxgcxx.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -46030,7 +46030,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "zf_new",
     "probe": {
       "url": "http://cas.tynxy.com:7171/cas/login?service=http%3A%2F%2Fjw.tynxy.com%3A7182%2Fjwglxt%2Fxtgl%2Findex_initMenu.html",
       "checkedAt": "2026-10-16",
@@ -46207,7 +46207,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://jxslzyxy.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -48283,7 +48283,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "kingo_new",
     "probe": {
       "url": "https://jwweb.hbiibe.edu.cn/home.aspx",
       "checkedAt": "2026-10-16",
@@ -49787,7 +49787,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://hnwl.jw.chaoxing.com",
       "checkedAt": "2026-10-16",
@@ -50940,7 +50940,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://lyvcc.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -51980,7 +51980,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "zf_new",
     "probe": {
       "url": "https://webvpn.zjnu.edu.cn/https/77726476706e69737468656265737421fae04598692a625e6b468ca88d1b203b/jwglxt/xtgl/login_slogin.html",
       "checkedAt": "2026-10-16",
@@ -52691,7 +52691,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://169126gii.mh.chaoxing.com/page/102227/show?refer=https%3A%2F%2Fhntyxg.v.chaoxing.com%2Fmanage",
       "checkedAt": "2026-10-16",
@@ -52750,7 +52750,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://nsr.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -55004,7 +55004,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "classic_eams",
     "probe": {
       "url": "http://jwxt.hifa.edu.cn/eams/login.action",
       "checkedAt": "2026-10-16",
@@ -57701,7 +57701,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "qz",
     "probe": {
       "url": "http://10.0.10.16:78/jsxsd/",
       "checkedAt": "2026-10-16",
@@ -57731,7 +57731,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "cf",
     "probe": {
       "url": "http://221.1.106.78:8081/",
       "checkedAt": "2026-10-16",
@@ -58083,7 +58083,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://ytetc.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -58377,7 +58377,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "classic_eams",
     "probe": {
       "url": "http://zhjw.jzxcl.edu.cn/eams/loginExt.action",
       "checkedAt": "2026-10-16",
@@ -58847,7 +58847,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "qz",
     "probe": {
       "url": "https://jw.gipc.edu.cn/jsxsd/",
       "checkedAt": "2026-10-16",
@@ -59888,7 +59888,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://pjzy.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -60511,7 +60511,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "zf_new",
     "probe": {
       "url": "https://mapp.haut.edu.cn/cas/login?service=http%3A%2F%2Fjwglxt.haut.edu.cn%2Fsso%2Fjhlogin",
       "checkedAt": "2026-10-16",
@@ -60780,7 +60780,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "kingo_new",
     "probe": {
       "url": "http://112.49.122.230:8082/home.aspx",
       "checkedAt": "2026-10-16",
@@ -61814,7 +61814,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://topflying.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -62139,7 +62139,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://whhk.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -62492,7 +62492,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://scc.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -62851,7 +62851,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "classic_eams",
     "probe": {
       "url": "http://58.50.22.13:9090/eams/loginExt.action",
       "checkedAt": "2026-10-16",
@@ -63657,7 +63657,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "qz_single_node",
+    "mappedType": "qz",
     "probe": {
       "url": "http://ea.swmu.edu.cn/jsxsd/",
       "checkedAt": "2026-10-16",
@@ -64159,7 +64159,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://xayxgd.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -65540,7 +65540,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://xctc.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -65959,7 +65959,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://passport2.chaoxing.com/login?loginType=1&fid=&newversion=true&refer=https://gzieu.mh.chaoxing.com/entry/",
       "checkedAt": "2026-10-16",
@@ -66350,7 +66350,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://gzjdvc.mh.chaoxing.com/page/135966/show",
       "checkedAt": "2026-10-16",
@@ -66645,7 +66645,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "classic_eams",
     "probe": {
       "url": "https://eas.gzvti.com/eams/loginExt.action",
       "checkedAt": "2026-10-16",
@@ -67146,7 +67146,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://gdzy.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -67737,7 +67737,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_m",
+    "mappedType": "shuwei_json",
     "probe": {
       "url": "https://open.lnnu.edu.cn/auth/cas/login?service=https%3A%2F%2Frproxy.lnnu.edu.cn%2Fwengine-auth%2flogin%3Fcas_login%3Dtrue",
       "checkedAt": "2026-10-16",
@@ -68445,7 +68445,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://lyvtc.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -68803,7 +68803,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "classic_eams",
     "probe": {
       "url": "jw.suiningc.com/eams/loginExt.action;jsessionid=DF1AA50FFB4FDEBA321A87B052E9787F",
       "checkedAt": "2026-10-16",
@@ -68833,7 +68833,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "cf",
     "probe": {
       "url": "https://jw.dzvccm.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -70338,7 +70338,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "classic_eams",
     "probe": {
       "url": "http://jw.zzsvtc.edu.cn/eams/loginExt.action",
       "checkedAt": "2026-10-16",
@@ -70455,7 +70455,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "classic_eams",
     "probe": {
       "url": "http://jwxt.zzspxy.cn:7080/eams/loginExt.action",
       "checkedAt": "2026-10-16",
@@ -72229,7 +72229,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "cf",
     "probe": {
       "url": "http://jw.cqip.com.cn/",
       "checkedAt": "2026-10-16",
@@ -72375,7 +72375,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "uestc_shuwei",
+    "mappedType": "classic_eams",
     "probe": {
       "url": "http://jwnew.cqust.edu.cn/eams/login.action?cqustadminweb=1",
       "checkedAt": "2026-10-16",
@@ -73144,7 +73144,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://trzy.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -73173,7 +73173,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://trzy.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -73645,7 +73645,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://dfzy.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -73938,7 +73938,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://szkj.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -73967,7 +73967,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://cczjxy.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -75512,7 +75512,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://yqzyjsxy.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -76043,7 +76043,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "zf_new",
     "probe": {
       "url": "https://xjwxt.sxpi.edu.cn/jwglxt/xtgl/login_slogin.html",
       "checkedAt": "2026-10-16",
@@ -77003,7 +77003,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://qdhkxy.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -77531,7 +77531,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://aszyjsxy.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -79155,7 +79155,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://hljstgc.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
@@ -79331,7 +79331,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "ziyan",
+    "mappedType": "chaoxing",
     "probe": {
       "url": "https://hljny.jw.chaoxing.com/admin/login",
       "checkedAt": "2026-10-16",
