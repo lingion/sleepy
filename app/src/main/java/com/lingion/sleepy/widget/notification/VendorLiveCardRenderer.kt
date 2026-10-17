@@ -128,6 +128,9 @@ object VendorLiveCardRenderer {
             .setContentTitle(state.courseName)
             .setOngoing(true)
             .setRequestPromotedOngoing(true)
+            // origin-isle PROTOCOL §4 says silent posts get dropped, but real-device
+            // evidence (issue #164, X300 Pro) shows the pill surfaces with this set;
+            // a loud 15s-reposted countdown is worse UX than an unproven protocol claim.
             .setSilent(true)
             .setOnlyAlertOnce(true)
             .setCategory(NotificationCompat.CATEGORY_PROGRESS)
@@ -165,9 +168,9 @@ object VendorLiveCardRenderer {
             LiveCardVendor.VIVO, LiveCardVendor.IQOO -> addVivoExtras(builder, state, contentIntent, context, support, themePrimaryArgb)
             LiveCardVendor.MEIZU -> addMeizuExtras(builder, state, contentIntent, context, themePrimaryArgb, support)
             LiveCardVendor.SAMSUNG -> addSamsungExtras(builder, state, contentIntent, context, support)
-            // OPPO, ONEPLUS, REALME, HUAWEI, HONOR, GENERIC: plain ongoing notification
+            LiveCardVendor.HONOR -> addHonorExtras(builder, state, contentIntent, context, themePrimaryArgb)
+            // OPPO, ONEPLUS, REALME, HUAWEI, GENERIC: plain ongoing notification
             // Huawei HarmonyOS Live View is ArkTS-only — cannot implement in Android Kotlin.
-            // Honor Suggestions Kit is whitelist-only — falls back to standard notification.
             else -> Unit
         }
         return builder.build()
@@ -264,14 +267,22 @@ object VendorLiveCardRenderer {
                     else -> 1               // update
                 }
             )
-            putBoolean("notification.superx.showNotify", true)
+            // Graceful uninstall (origin-isle PROTOCOL §2): on end, post the same
+            // id with showNotify=false so OriginOS tears the island down instead
+            // of leaving a stale card.
+            putBoolean("notification.superx.showNotify", state.isActive)
             putInt("notification.superx.template", 2)   // progress card
             // NAVIGATION is the only confirmed working scene on vivo's allow-list
             // (origin-isle PROTOCOL.md §1). METTING/TIMER/TRAIN are also requested
             // in registration; whether vivo grants them is unknown — the extras still
             // post as a plain notification when all scene requests are denied.
             putString("notification.superx.scene", "NAVIGATION")
-            putInt("notification.superx.changedRecord", state.updateSequence)
+            // End-of-life posts carry changedRecord=MAX so OriginOS treats it as the
+            // terminal update of the session (origin-isle PROTOCOL §2).
+            putInt(
+                "notification.superx.changedRecord",
+                if (state.isActive) state.updateSequence else Int.MAX_VALUE
+            )
             putInt(
                 "notification.superx.displays",
                 65809   // notification(1) | lockscreen(16) | statusbar(256) | AOD(65536)
@@ -394,5 +405,60 @@ object VendorLiveCardRenderer {
         // Samsung is the only vendor branch that writes extras here, so the builder
         // has no prior extras — a plain set is the whole story, no merge needed.
         builder.setExtras(samsungExtras)
+    }
+
+    // ---------------------------------------------------------------------------
+    // Honor / MagicOS — 灵动胶囊 (status-bar capsule)
+    // Protocol facts from The-Brotherhood-of-SCU/Bugaoshan PR #368 (AGPL-3.0; keys
+    // and types transcribed, no code copied), real-device verified on MagicOS
+    // (Android 17): the system daemon extracts `notification.live.*` from the
+    // notification extras and promotes it to a capsule. No Suggestions Kit, no
+    // whitelist — unrecognised keys fall back to the standard notification.
+    // ---------------------------------------------------------------------------
+    private fun addHonorExtras(
+        builder: NotificationCompat.Builder,
+        state: CourseLiveCardState,
+        contentIntent: PendingIntent,
+        context: Context,
+        themeColor: Int,
+    ) {
+        val opaqueThemeColor = themeColor or 0xFF000000.toInt()
+        val capsuleContent = state.room.ifBlank { state.startTime }
+        // Wire stays exactly at the MagicOS-verified field set (Bugaoshan #368):
+        // no contentColor/clickResp additions — a strict capsule parser can drop
+        // the whole sub-bundle on an unexpected key or type. Clicks fall through
+        // to the notification's own contentIntent.
+        val capsule = Bundle().apply {
+            putInt("notification.live.capsuleStatus", 1)
+            putInt("notification.live.capsuleType", 1)
+            putString("notification.live.capsuleTitle", state.courseName)
+            putString("notification.live.capsuleContent", capsuleContent)
+            putString("notification.live.capsuleBgColor", String.format("#%06X", opaqueThemeColor and 0xFFFFFF))
+            putParcelable("notification.live.capsuleIcon",
+                Icon.createWithResource(context, R.drawable.ic_notification_time))
+            // Older MagicOS builds read the capsule bundle with unprefixed keys.
+            putString("capsuleTitle", state.courseName)
+            putString("capsuleContent", capsuleContent)
+            putString("capsuleBgColor", String.format("#%06X", opaqueThemeColor and 0xFFFFFF))
+        }
+        builder.setExtras(Bundle().apply {
+            putInt(
+                "notification.live.operation",
+                when {
+                    !state.isActive -> 2
+                    state.updateSequence <= 1 -> 0
+                    else -> 1
+                }
+            )
+            putString("notification.live.event", "ORDER")
+            putInt("notification.live.type", 3)
+            putCharSequence("notification.live.titleOverlay", state.courseName)
+            putBundle("notification.live.capsule", capsule)
+            putBundle("notification.live.feature", Bundle().apply {
+                putString("courseName", state.courseName)
+                putString("location", state.room)
+                putString("timeRange", state.timeRangeText)
+            })
+        })
     }
 }
