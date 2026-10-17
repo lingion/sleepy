@@ -135,18 +135,32 @@ class Schools179CrossValidationTest {
 
     @Test
     fun `renamed schools must use new official names`() {
-        // 滨州医学院→山东第二医科大学(2023官网整体迁移); 嘉兴学院南湖学院→嘉兴南湖学院(2020转设);
+        // 潍坊医学院→山东第二医科大学(4137010438，教育部教发函〔2023〕143号);
+        // 滨州医学院→山东医药大学(4137010440)，与山东第二医科大学是不同学校。
+        // 嘉兴学院南湖学院→嘉兴南湖学院(2020转设);
         // 信阳师范学院→信阳师范大学(2023更名)
         assertTrue(entryOf("山东第二医科大学") != null)
         assertTrue(entryOf("嘉兴南湖学院") != null)
         assertTrue(entryOf("信阳师范大学") != null)
         // 旧名不得残留
-        for (old in listOf("滨州医学院", "嘉兴学院南湖学院", "信阳师范学院")) {
+        for (old in listOf("滨州医学院", "潍坊医学院", "嘉兴学院南湖学院", "信阳师范学院")) {
             assertFalse("旧校名 '$old' 不应残留", entries().any { it.first == old })
         }
         // 更名兼容靠 aliases
         val xinyang = entryOf("信阳师范大学")!!
         assertTrue(xinyang.getJSONArray("aliases").let { a -> (0 until a.length()).any { a.getString(it) == "信阳师院" } })
+    }
+
+    @Test fun `Binzhou and Weifang medical schools remain distinct after renaming`() {
+        val schools = JwImportViewModel.parseSchoolsJson(schoolsJson)
+        val binzhou = schools.single { it.name == "山东医药大学" }
+        val weifang = schools.single { it.name == "山东第二医科大学" }
+        assertFalse(binzhou.stableKey == weifang.stableKey)
+        assertEquals("http://jwgl.sdsmu.edu.cn/jwglxt", weifang.url)
+        assertEquals("zf_new", weifang.type)
+        assertTrue(weifang.isSupported)
+        assertFalse("滨州医学院不得归入潍坊医学院别名", "滨州医学院" in weifang.aliases)
+        assertFalse("潍坊医学院不得归入滨州医学院别名", "潍坊医学院" in binzhou.aliases)
     }
 
     // ---- 5. 已删除的僵尸条目不得复活 ----
@@ -159,7 +173,8 @@ class Schools179CrossValidationTest {
         assertEquals(
             "僵尸条目不应存在",
             emptyList<String>(),
-            entries().map { it.first }.filter {
+            entries().filter { JwSchoolInfo.normalizeStatus(it.second.optString("status", "")) in
+                setOf(JwSchoolInfo.STATUS_SUPPORTED, JwSchoolInfo.STATUS_GRAD_SUPPORTED) }.map { it.first }.filter {
                 it in setOf("广西大学行健文理学院", "广东环境保护工程职业学院", "广西师范学院")
             },
         )
@@ -168,7 +183,7 @@ class Schools179CrossValidationTest {
     // ---- 6. 总量闸 ----
 
     @Test
-    fun `school count stays 350`() {
+    fun `previously supported school count stays 350`() {
         // 179 - 删3 (行健文理/广东环保/广西师范学院重复条目) = 176
         // 2026-09-05 收录广东医科大学 → 177; 广州医科大学 → 178; 吉林工商学院(超星) → 179
         // 2026-09-06 收录北京航空航天大学(强智 iEAS) → 180；2026-09-07 国科大 → 181
@@ -183,7 +198,7 @@ class Schools179CrossValidationTest {
         // 2026-10-04 收录惠州学院(zf_new, 用户采集包 sleepy-adapt-1004, jwxt.hzu.edu.cn) → 348
         // 2026-10-10 收录湖北商贸学院(zf_new, 用户采集包 hbsm-20261010, jwxt.hbc.edu.cn 裸 /kbcx/) → 349
         // 2026-10-13 清华大学 THU：已核选课系统 host，用户在整体课表页手动导入 → 350
-        assertEquals(350, entries().size)
+        assertEquals(350, JwImportViewModel.parseSchoolsJson(schoolsJson).count { it.isSupported })
     }
 
     @Test

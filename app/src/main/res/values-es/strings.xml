@@ -1098,4 +1098,9 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="notif_before_class_compact">Empieza a las %1$s · %2$s</string>
     <string name="notif_date_title">%1$s · Clases: %2$d</string>
     <string name="notif_date_no_course">%1$s · Sin clases</string>
+    <string name="jw_catalog_unverified">Sin verificar</string>
+    <string name="jw_catalog_unverified_message">Esta entrada y su protocolo aún no se han verificado para esta institución. Puedes intentar iniciar sesión, pero la importación podría ser incompleta o fallar.</string>
+    <string name="jw_catalog_pending_message">Aún no hay una entrada verificada para esta institución. Inténtalo más tarde o solicita asistencia.</string>
+    <string name="jw_catalog_try">Intentar de todos modos</string>
+    <string name="jw_catalog_counts">Directorio %1$d · Compatibles %2$d · Sin verificar %3$d</string>
 </resources>

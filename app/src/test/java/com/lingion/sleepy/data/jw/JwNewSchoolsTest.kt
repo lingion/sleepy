@@ -135,13 +135,35 @@ class JwNewSchoolsTest {
     }
 
     @Test
-    fun `parseSchoolsJson normalizes unknown status values to supported`() {
+    fun `parseSchoolsJson normalizes unknown status values to pending`() {
         val mini = """
             [{"sortKey": "Z", "name": "测试Z", "url": "https://z.edu/", "type": "qz", "aliases": [], "sortKeyFull": "z", "status": "garbage_value"}]
         """.trimIndent()
         val parsed = parse(mini)
         assertEquals(1, parsed.size)
-        assertEquals(JwSchoolInfo.STATUS_SUPPORTED, parsed[0].status)
+        assertEquals(JwSchoolInfo.STATUS_PENDING, parsed[0].status)
+        assertFalse(parsed[0].canImport)
+    }
+
+    @Test
+    fun `catalog identity fetch switch and unverified status survive loading`() {
+        val school = parse("""[{"name":"测试学校","catalogId":"source:123","status":"unverified","url":"https://jw.example.edu/","type":"qz","enableFetch":true}]""").single()
+        assertEquals("source:123", school.stableKey)
+        assertTrue(school.enableFetch)
+        assertTrue(school.isUnverified)
+        assertTrue(school.canImport)
+        assertFalse(school.isSupported)
+    }
+
+    @Test fun `null absent and unknown protocols cannot enable unverified entries`() {
+        val parsed = parse("""[
+            {"name":"Null","type":null,"url":"https://jw.example.edu/","status":"unverified"},
+            {"name":"Absent","url":"https://jw.example.edu/","status":"unverified"},
+            {"name":"Unknown","type":"future_protocol","url":"https://jw.example.edu/","status":"unverified"}
+        ]""")
+        assertEquals(null, parsed[0].type)
+        assertEquals(null, parsed[1].type)
+        assertTrue(parsed.none { it.canImport })
     }
 
     // -------- 3. 审计块过滤 --------
@@ -247,7 +269,9 @@ class JwNewSchoolsTest {
         val readyPending = pendingTypes.mapNotNull { (cls, type) ->
             runCatching { Class.forName(cls) }.getOrNull()?.let { type }
         }.toSet()
-        val acceptable = knownTypes + readyPending
+        // WakeUp 兼容层类型 (kingo_new/scau/cumtb/ecupl 等) 由 JwParserRegistry 运行时路由,
+        // 与 SchoolsJsonConsistencyTest 同一口径.
+        val acceptable = knownTypes + readyPending + JwProtocol.WAKEUP_COMPAT_TYPES
 
         val schools = parse(loadSchoolsJson())
         val unknown = schools.filter { it.type != null && it.type !in acceptable }

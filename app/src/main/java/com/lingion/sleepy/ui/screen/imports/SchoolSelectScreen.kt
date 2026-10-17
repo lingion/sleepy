@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -81,10 +82,10 @@ import com.lingion.sleepy.data.jw.JwProtocol
 import com.lingion.sleepy.data.jw.JwSchoolInfo
 import com.lingion.sleepy.data.jw.SchoolDomainMatch
 import com.lingion.sleepy.data.jw.SchoolCityIndex
+import com.lingion.sleepy.data.jw.SchoolSearchIndex
 import com.lingion.sleepy.data.jw.SchoolLocationState
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
-import com.lingion.sleepy.util.PinyinMatcher
 import kotlinx.coroutines.launch
 
 private fun looksLikeUrl(s: String): Boolean {
@@ -213,14 +214,8 @@ fun SchoolSelectScreen(
 
     val fieldColors = SleepyTheme.fieldColors()
 
-    val filtered = remember(schools, query) {
-        if (query.isBlank()) schools
-        else {
-            val q = query.trim().lowercase()
-            val matched = schools.filter { PinyinMatcher.match(it.name, it.sortKey, query, it.aliases) }
-            matched.sortedByDescending { it.aliases.any { a -> a.lowercase() == q } }
-        }
-    }
+    val searchIndex = remember(schools) { SchoolSearchIndex(schools) }
+    val filtered = remember(searchIndex, query) { searchIndex.search(query) }
 
     val isUrl = remember(query) { looksLikeUrl(query) }
     val urlProtocol = remember(query, isUrl) {
@@ -319,7 +314,7 @@ fun SchoolSelectScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = stringResource(R.string.school_count_total, schools.size),
+                    text = stringResource(R.string.jw_catalog_counts, schools.size, schools.count { it.isSupported && it.canImport }, schools.count { it.isUnverified }),
                     style = MaterialTheme.typography.bodySmall,
                     color = colors.onSurfaceVariant
                 )
@@ -333,26 +328,27 @@ fun SchoolSelectScreen(
             }
 
             if (isUrl) {
-                // issue #25: 输入 URL 的注册域若与目录条目同域, 直接映射到目录条目
-                // (拿权威教务 URL + 协议 type), 而不是建 type=null 的自定义条目。
-                val matchedSchool = remember(query, schools) {
-                    SchoolDomainMatch.matchSchool(normalizeUrl(query.trim()), schools)
+                // Keep exact catalogue identities so typed URLs cannot bypass admission prompts.
+                val urlSelections = remember(query, schools, urlProtocol) {
+                    SchoolDomainMatch.selectionsForUrl(
+                        normalizeUrl(query.trim()), schools, urlProtocol, "自定义教务"
+                    )
                 }
-                UrlDirectRow(
-                    url = query.trim(),
-                    protocolType = urlProtocol,
-                    matchedSchool = matchedSchool,
-                    onClick = {
-                        val school = matchedSchool ?: JwSchoolInfo(
-                            sortKey = "",
-                            name = "自定义教务",
-                            url = normalizeUrl(query.trim()),
-                            type = urlProtocol,
-                            status = JwSchoolInfo.STATUS_SUPPORTED
-                        )
-                        onSchoolSelected(school)
+                if (urlSelections.size == 1) {
+                    val school = urlSelections.single()
+                    UrlDirectRow(
+                        url = query.trim(),
+                        protocolType = urlProtocol,
+                        matchedSchool = school.takeIf { it in schools },
+                        onClick = { onSchoolSelected(school) }
+                    )
+                } else {
+                    LazyColumn(modifier = Modifier.heightIn(max = 240.dp)) {
+                        items(urlSelections, key = { it.stableKey }) { school ->
+                            SchoolRow(school = school, onClick = { onSchoolSelected(school) })
+                        }
                     }
-                )
+                }
             }
 
             if (filtered.isEmpty() && !isUrl) {
@@ -402,7 +398,7 @@ fun SchoolSelectScreen(
                             // Schools
                             items(
                                 items = section.schools,
-                                key = { "${it.sortKey}_${it.name}" }
+                                key = { it.stableKey }
                             ) { school ->
                                 SchoolRow(
                                     school = school,
@@ -492,7 +488,14 @@ private fun PossibleSchoolsCard(
                     Text(stringResource(R.string.school_location_city_hint),
                         style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant,
                         modifier = Modifier.padding(top = 8.dp))
-                    (if (expanded) schools else schools.take(5)).forEach { school ->
+                    if (expanded) {
+                        LazyColumn(modifier = Modifier.heightIn(max = 360.dp)) {
+                            items(schools, key = { it.stableKey }) { school ->
+                                SchoolRow(school = school, onClick = { onSchoolSelected(school) })
+                                HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                            }
+                        }
+                    } else schools.take(5).forEach { school ->
                         SchoolRow(school = school, onClick = { onSchoolSelected(school) })
                         HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     }
@@ -650,12 +653,12 @@ private fun AlphabetIndexBar(
 @Composable
 private fun SchoolRow(school: JwSchoolInfo, onClick: () -> Unit) {
     val colors = MaterialTheme.colorScheme
-    // T13: status 分流 — supported+有 URL 才可点; pending/legacy/no-url 不响应
-    val isClickable = school.isSupported && school.hasUrl
+    // Every entry can show its availability; the Activity gates actual navigation.
+    val isClickable = school.canImport
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .then(if (isClickable) Modifier.noRippleClickable(onClick) else Modifier)
+            .noRippleClickable(onClick)
             .padding(vertical = 14.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -712,6 +715,11 @@ private fun SchoolStatusBadge(school: JwSchoolInfo) {
     if (school.status == JwSchoolInfo.STATUS_SUPPORTED) return
     val colors = MaterialTheme.colorScheme
     val (label, bg, fg) = when (school.status) {
+        JwSchoolInfo.STATUS_UNVERIFIED, JwSchoolInfo.STATUS_GRAD_UNVERIFIED -> Triple(
+            stringResource(R.string.jw_catalog_unverified) + if (school.isGrad) " · " + stringResource(R.string.jw_pending_grad) else "",
+            colors.tertiaryContainer,
+            colors.onTertiaryContainer
+        )
         JwSchoolInfo.STATUS_PENDING -> Triple(
             stringResource(R.string.jw_pending_pending),
             colors.tertiaryContainer,

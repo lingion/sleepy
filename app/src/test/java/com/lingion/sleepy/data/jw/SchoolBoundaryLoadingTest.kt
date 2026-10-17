@@ -1,6 +1,7 @@
 package com.lingion.sleepy.data.jw
 
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
@@ -8,7 +9,6 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.Assert.*
 import org.junit.Test
 import java.io.ByteArrayInputStream
@@ -62,30 +62,44 @@ class SchoolBoundaryLoadingTest {
 
     @Test fun `timeout during index loading promptly cancels provider and does not publish index`() = runBlocking {
         val parsingStarted = CompletableDeferred<Unit>()
+        val providerStarted = CompletableDeferred<Unit>()
         val providerCancelled = CompletableDeferred<Unit>()
         var published = false
-        val start = System.nanoTime()
-        val result = withTimeoutOrNull(100) {
-            SchoolLocationLookup.findCity(SchoolLocationMode.PRECISE, listOf("gps"), emptyList(), {
-                val context = currentCoroutineContext()
-                val parsed = OfflineSchoolCityIndex.parse(ByteArrayInputStream(sample)) {
-                    parsingStarted.complete(Unit)
-                    // Simulate CPU-bound slow parsing, continuously observing cancellation.
-                    while (context.isActiveForTest()) Thread.yield()
-                    context.ensureActive()
+        var parsingStart = 0L
+        try {
+            // Bound startup separately from the short parsing cancellation deadline.
+            // On a busy JVM the provider may not start within a 100 ms startup window.
+            withTimeout(5_000) {
+                SchoolLocationLookup.findCity(SchoolLocationMode.PRECISE, listOf("gps"), emptyList(), {
+                    providerStarted.await()
+                    withTimeout(100) {
+                        val context = currentCoroutineContext()
+                        parsingStart = System.nanoTime()
+                        val parsed = OfflineSchoolCityIndex.parse(ByteArrayInputStream(sample)) {
+                            parsingStarted.complete(Unit)
+                            while (context.isActiveForTest()) Thread.yield()
+                            context.ensureActive()
+                        }
+                        published = true
+                        parsed
+                    }
+                }) {
+                    try {
+                        providerStarted.complete(Unit)
+                        kotlinx.coroutines.awaitCancellation()
+                    } finally {
+                        providerCancelled.complete(Unit)
+                    }
                 }
-                published = true
-                parsed
-            }) {
-                try { kotlinx.coroutines.awaitCancellation() }
-                finally { providerCancelled.complete(Unit) }
             }
+            fail("Index loading must time out")
+        } catch (_: TimeoutCancellationException) {
+            assertTrue("Parsing must start before the tested timeout", parsingStarted.isCompleted)
+            assertTrue(providerCancelled.isCompleted)
+            assertFalse(published)
+            assertTrue("Timeout must not wait for a full parse",
+                System.nanoTime() - parsingStart < TimeUnit.SECONDS.toNanos(2))
         }
-        assertNull(result)
-        assertTrue(parsingStarted.isCompleted)
-        assertTrue(providerCancelled.isCompleted)
-        assertFalse(published)
-        assertTrue("Timeout must not wait for a full parse", System.nanoTime() - start < TimeUnit.SECONDS.toNanos(2))
     }
 
     @Test fun `parent cancellation during parsing also cancels provider`() = runBlocking {

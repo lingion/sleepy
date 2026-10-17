@@ -16,6 +16,7 @@ class JwImportDraftTest {
         aliases = listOf("哈工程"),
         sortKeyFull = "haerbingongchengdaxue",
         enableFetch = true,
+        catalogId = "school:hrbeu",
     )
 
     private val snapshot = JwImportDraftSnapshot(
@@ -61,6 +62,25 @@ class JwImportDraftTest {
         assertEquals(snapshot.smartConfigJson, decoded?.smartConfigJson)
     }
 
+    @Test fun `login draft restoration preserves supported access but reconfirms unverified entries`() {
+        val login = snapshot.copy(phase = JwImportDraftPhase.WEBVIEW_LOGIN)
+        fun restored(status: String, url: String = school.url, type: String? = school.type) =
+            JwImportDraftCodec.fromJson(JwImportDraftCodec.toJson(login.copy(
+                school = school.copy(status = status, url = url, type = type),
+            )))!!
+        org.junit.Assert.assertFalse(restored(JwSchoolInfo.STATUS_SUPPORTED).requiresSchoolConfirmation)
+        org.junit.Assert.assertFalse(restored(JwSchoolInfo.STATUS_GRAD_SUPPORTED).requiresSchoolConfirmation)
+        assertTrue(restored(JwSchoolInfo.STATUS_UNVERIFIED).requiresSchoolConfirmation)
+        assertTrue(restored(JwSchoolInfo.STATUS_GRAD_UNVERIFIED).requiresSchoolConfirmation)
+        assertTrue(restored(JwSchoolInfo.STATUS_PENDING).requiresSchoolConfirmation)
+        assertTrue(restored("unknown_status").requiresSchoolConfirmation)
+        assertTrue(restored(JwSchoolInfo.STATUS_SUPPORTED, url = "").requiresSchoolConfirmation)
+        assertTrue(restored(JwSchoolInfo.STATUS_UNVERIFIED, type = "unknown_protocol").requiresSchoolConfirmation)
+        // A parsed preview does not reopen a login page or discard already recovered courses.
+        org.junit.Assert.assertFalse(snapshot.copy(school = school.copy(
+            status = JwSchoolInfo.STATUS_UNVERIFIED)).requiresSchoolConfirmation)
+    }
+
     @Test
     fun `optional school values remain distinguishable when absent`() {
         val minimal = snapshot.copy(
@@ -75,6 +95,24 @@ class JwImportDraftTest {
         assertEquals(minimal, decoded)
         assertEquals(null, decoded?.school?.type)
         assertEquals(emptyList<String>(), decoded?.school?.aliases)
+    }
+
+    @Test fun `old drafts without catalog identity remain readable`() {
+        val json = org.json.JSONObject(JwImportDraftCodec.toJson(snapshot))
+        json.getJSONObject("school").remove("catalogId")
+        val restored = JwImportDraftCodec.fromJson(json.toString())!!
+        assertEquals("H_哈尔滨工程大学", restored.school.stableKey)
+    }
+
+    @Test fun `drafts preserve unverified admission and reject unknown status upgrade`() {
+        val candidate = snapshot.copy(school = school.copy(status = JwSchoolInfo.STATUS_UNVERIFIED))
+        val restored = JwImportDraftCodec.fromJson(JwImportDraftCodec.toJson(candidate))!!
+        assertTrue(restored.school.isUnverified)
+        val json = org.json.JSONObject(JwImportDraftCodec.toJson(candidate))
+        json.getJSONObject("school").put("status", "future_status")
+        assertEquals(JwSchoolInfo.STATUS_PENDING, JwImportDraftCodec.fromJson(json.toString())!!.school.status)
+        json.getJSONObject("school").put("type", org.json.JSONObject.NULL)
+        assertNull(JwImportDraftCodec.fromJson(json.toString())!!.school.type)
     }
 
     @Test

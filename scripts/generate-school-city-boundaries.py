@@ -13,7 +13,7 @@ from pathlib import Path
 import struct
 
 
-def generate(source, output, revision):
+def generate(source, output, revision, supplemental=None):
     areas, originals = [], []
     municipalities = {"北京市", "上海市", "天津市", "重庆市", "香港特别行政区", "澳门特别行政区"}
     for path in sorted(source.glob("*.json")):
@@ -33,6 +33,41 @@ def generate(source, output, revision):
             areas.append((name, polygons))
     if not areas:
         raise ValueError("No province GeoJSON files found")
+    supplements = []
+    supplemental = supplemental or Path(__file__).parent / "data/boundaries"
+    for metadata_path in sorted(supplemental.glob("*.source.json")):
+        metadata = json.loads(metadata_path.read_text())
+        raw = gzip.decompress(metadata_path.with_name(
+            metadata_path.name.removesuffix(".source.json") + ".geojson.gz").read_bytes())
+        if hashlib.sha256(raw).hexdigest() != metadata["sha256"]:
+            raise ValueError("Supplemental boundary checksum mismatch")
+        document = json.loads(raw)
+        if document.get("crs", {}).get("properties", {}).get("name") != "urn:ogc:def:crs:OGC:1.3:CRS84":
+            raise ValueError("Supplemental boundaries must be WGS84 longitude/latitude (CRS84)")
+        features = document["features"]
+        names = [feature["properties"][metadata["nameProperty"]] for feature in features]
+        if len(names) != len(set(names)) or sorted(names) != metadata["cityNames"]:
+            raise ValueError("Supplemental boundary names do not match audited source")
+        # Replace a province-wide outline; preserve every county polygon/island/hole.
+        areas = [(name, polygons) for name, polygons in areas if name not in metadata["replaces"]]
+        supplemental_areas = []
+        for feature in features:
+            geometry = feature["geometry"]
+            if geometry["type"] not in ("Polygon", "MultiPolygon"):
+                raise ValueError("Unsupported supplemental geometry")
+            polygons = geometry["coordinates"]
+            if geometry["type"] == "Polygon":
+                polygons = [polygons]
+            supplemental_areas.append((feature["properties"][metadata["nameProperty"]], polygons))
+        # Prefer the reviewed county layer over coarse mainland outlines (offshore
+        # islands), and enclosed small municipalities over enclosing counties.
+        # The pinned mirror omits the Taipei hole from New Taipei's outer ring.
+        def footprint(area):
+            return sum(abs(sum(ring[i - 1][0] * ring[i][1] - ring[i][0] * ring[i - 1][1]
+                               for i in range(len(ring))))
+                       for polygon in area[1] for ring in polygon[:1])
+        areas = sorted(supplemental_areas, key=footprint) + areas
+        supplements.append(metadata)
     stream = io.BytesIO()
     stream.write(b"SCB1")
     def integer(value):
@@ -69,6 +104,8 @@ def generate(source, output, revision):
         "codeLicense": "ChinaGeoJson MIT; does not establish a license for DataV data",
         "dataRedistributionAuthorization": "Not confirmed; requires upstream confirmation before distribution",
         "originals": originals, "areas": len(areas), "points": points,
+        "supplementalSources": supplements,
+        "overlapPolicy": "Supplemental county polygons precede mainland snapshot; smaller supplemental exterior footprint first for enclaves omitted as holes by source mirror.",
         "cityNames": sorted({name for name, _ in areas}),
         "assetSha256": hashlib.sha256(output.read_bytes()).hexdigest(),
     }
@@ -82,5 +119,6 @@ if __name__ == "__main__":
     parser.add_argument("--source", type=Path, required=True, help="ChinaGeoJson province directory")
     parser.add_argument("--output", type=Path, default=Path("app/src/main/assets/school_city_boundaries.bin.gz"))
     parser.add_argument("--revision", required=True, help="Exact ChinaGeoJson commit used")
+    parser.add_argument("--supplemental", type=Path, help="Pinned supplemental source directory")
     arguments = parser.parse_args()
-    generate(arguments.source, arguments.output, arguments.revision)
+    generate(arguments.source, arguments.output, arguments.revision, arguments.supplemental)

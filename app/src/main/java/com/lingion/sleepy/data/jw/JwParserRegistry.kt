@@ -22,6 +22,8 @@ object JwParserRegistry {
         JwProtocol.TYPE_SOUTH_SOFT to 10,
         JwProtocol.TYPE_CHAOXING_LEGACY to 11,
         JwProtocol.TYPE_SHUWEI to 12,
+        JwProtocol.TYPE_UMOOC to 13,
+        JwProtocol.TYPE_YL to 13,
         JwProtocol.TYPE_SUDA_POST to 13,
         JwProtocol.TYPE_CUMTB to 14,
         JwProtocol.TYPE_XJU_POST to 15,
@@ -76,6 +78,8 @@ object JwParserRegistry {
         JwProtocol.TYPE_SOUTH_SOFT to ::JwSouthSoftParser,
         JwProtocol.TYPE_CHAOXING_LEGACY to ::JwChaoxingLegacyParser,
         JwProtocol.TYPE_SHUWEI to ::JwShuweiParser,
+        JwProtocol.TYPE_UMOOC to ::JwUmoocParser,
+        JwProtocol.TYPE_YL to ::JwYlParser,
         JwProtocol.TYPE_SUDA_POST to ::JwSudaParser,
         JwProtocol.TYPE_CUMTB to ::JwCumtbParser,
         JwProtocol.TYPE_XJU_POST to ::JwXjuParser,
@@ -128,6 +132,9 @@ object JwParserRegistry {
 
     fun parserFor(type: String, html: String): JwParser =
         FACTORIES[type]?.invoke(html) ?: throw IllegalArgumentException("协议 $type 暂不支持")
+
+    /** Check registration without constructing a parser or interpreting a page. */
+    fun supports(type: String?): Boolean = type != null && FACTORIES.containsKey(type)
 
     private data class Row(val type: String?, val attempt: ParserAttempt, val result: List<JwCourse>)
 

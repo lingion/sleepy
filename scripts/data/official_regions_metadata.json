@@ -1,0 +1,35 @@
+{
+  "retrieved_at": "2026-10-14",
+  "records": 181,
+  "region_counts": {
+    "hongkong": 22,
+    "macau": 10,
+    "taiwan": 149
+  },
+  "scope": {
+    "hongkong": "香港教育局列示可颁授学位院校22所；不等同所有副学位/专上机构。",
+    "macau": "澳门教青局官方高校链接列示10所。",
+    "taiwan": "教育部114学年全國大專校院及校長名錄149所；CSV导出2026-01-08，官网声明统计时点为每年10月15日，114学年对应2025-10-15。非完整军警院校目录。"
+  },
+  "notes": "HK/MO页面无可确认更新日期，source_date/data_as_of保持null；学校网址仅homepage_url，绝不作为academic_system_url。香港/澳门city为官方地域目录所示地域，非校区坐标。台湾保存原始繁体县市名称。",
+  "sources": [
+    {
+      "id": "hk-edb-degree",
+      "url": "https://www.edb.gov.hk/tc/edu-system/postsecondary/local-higher-edu/institutions/index.html",
+      "local_file": "hongkong-edb.html",
+      "sha256": "0f78a5c6b0932f2dbdb335808c513c46ff7dbf56ed33c33bc0b90b5c7f79de73"
+    },
+    {
+      "id": "mo-dsedj-higher",
+      "url": "https://portal.dsedj.gov.mo/webdsejspace/internet/Inter_main_page.jsp?id=80123",
+      "local_file": "macau-dsedj-schools.html",
+      "sha256": "c9ccda47f63e475407756c09715496c854ec9cf8fe7a6d4dbbc5d77a7460eb59"
+    },
+    {
+      "id": "tw-moe-114",
+      "url": "https://udb.moe.edu.tw/ulist/Resource/download/ulistaddress?extension=csv",
+      "local_file": "taiwan-114-address.csv",
+      "sha256": "c06b7d2e4efc740e6264133c7d72a3fe3db19c6b0a90a99dee229510b8371fe4"
+    }
+  ]
+}

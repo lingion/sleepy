@@ -74,6 +74,12 @@ object JwProtocol {
     /** WakeUp 数维共享课表变体。 */
     const val TYPE_SHUWEI = "shuwei_json"
 
+    /** UMOOC 教务系统（/academic/common/security/login.jsp）。 */
+    const val TYPE_UMOOC = "umooc"
+
+    /** 奕联教务系统（/lyuapServer/login）。 */
+    const val TYPE_YL = "yl"
+
     /** WakeUp 苏大 POST/HTML 变体。 */
     const val TYPE_SUDA_POST = "suda_post"
 
@@ -306,7 +312,7 @@ object JwProtocol {
     /** WakeUp-derived types routed by the compatibility layer; kept separate from legacy UI ordering. */
     val WAKEUP_COMPAT_TYPES: List<String> = listOf(
         TYPE_KINGO_NEW, TYPE_KINGO_ZX, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
-        TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST, TYPE_THU, TYPE_NWPU_POST, TYPE_NEW_URP_SUPER,
+        TYPE_SHUWEI, TYPE_UMOOC, TYPE_YL, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST, TYPE_THU, TYPE_NWPU_POST, TYPE_NEW_URP_SUPER,
         TYPE_ECUPL, TYPE_ECUPL_SCRIPT, TYPE_ECUPL_SUPER, TYPE_SCAU,
     )
 
@@ -329,6 +335,8 @@ object JwProtocol {
         TYPE_SOUTH_SOFT -> "南软研究生教务"
         TYPE_CHAOXING_LEGACY -> "超星教务（旧版）"
         TYPE_SHUWEI -> "数维教务"
+        TYPE_UMOOC -> "UMOOC 教务"
+        TYPE_YL -> "奕联教务"
         TYPE_SUDA_POST -> "苏大教务"
         TYPE_CUMTB -> "矿大 EAMS5"
         TYPE_XJU_POST -> "西交/新疆大学教务"
@@ -371,7 +379,7 @@ object JwProtocol {
         TYPE_ZF, TYPE_ZF_1, TYPE_ZF_NEW -> "zf"
         TYPE_URP, TYPE_URP_NEW -> "urp"
         TYPE_KINGO_NEW, TYPE_KINGO_ZX, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
-        TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST, TYPE_THU, TYPE_NWPU_POST, TYPE_NEW_URP_SUPER,
+        TYPE_SHUWEI, TYPE_UMOOC, TYPE_YL, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST, TYPE_THU, TYPE_NWPU_POST, TYPE_NEW_URP_SUPER,
         TYPE_ECUPL, TYPE_ECUPL_SCRIPT, TYPE_ECUPL_SUPER, TYPE_SCAU -> "other"
         TYPE_WISEDU -> "wisedu"
         TYPE_CQU -> "cqu"

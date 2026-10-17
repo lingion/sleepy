@@ -20,15 +20,7 @@ class SchoolsJsonConsistencyTest {
         File("src/main/assets/schools.json").readText(Charsets.UTF_8)
     }
 
-    private data class Entry(val name: String, val type: String?, val url: String)
-
-    private fun loadEntries(): List<Entry> {
-        val arr = JSONArray(schoolsJson)
-        return (0 until arr.length()).map { i ->
-            val o = arr.getJSONObject(i)
-            Entry(o.optString("name", ""), o.optString("type", "").ifBlank { null }, o.optString("url", ""))
-        }
-    }
+    private fun loadEntries(): List<JwSchoolInfo> = JwImportViewModel.parseSchoolsJson(schoolsJson)
 
     @Test
     fun `every school type is a declared protocol constant`() {
@@ -52,7 +44,7 @@ class SchoolsJsonConsistencyTest {
             JwProtocol.TYPE_NUIT,
             JwProtocol.TYPE_THU,
         )
-        val bad = loadEntries().filter { it.type != null && it.type !in declared }
+        val bad = loadEntries().filter { it.type != null && it.type !in declared && it.type !in JwProtocol.WAKEUP_COMPAT_TYPES }
         assertEquals("type 未在 JwProtocol 声明的条目: ${bad.map { it.name to it.type }}", 0, bad.size)
     }
 
@@ -71,9 +63,16 @@ class SchoolsJsonConsistencyTest {
     }
 
     @Test
-    fun `every school entry has non-blank url`() {
-        val blank = loadEntries().filter { it.url.isBlank() }
-        assertEquals("URL 为空的条目: ${blank.map { it.name }}", 0, blank.size)
+    fun `supported and unverified entries have valid import configuration`() {
+        val bad = loadEntries().filter { (it.isSupported || it.isUnverified) && !it.canImport }
+        assertEquals("Invalid import entries: ${bad.map { it.name }}", 0, bad.size)
+        assertTrue(loadEntries().filter { it.isPending }.none { it.canImport })
+    }
+
+    @Test fun `catalogue keys are unique and expanded entries have explicit identities`() {
+        val schools = loadEntries()
+        assertEquals(schools.size, schools.map { it.stableKey }.toSet().size)
+        assertTrue(schools.filter { !it.isSupported }.all { it.catalogId.isNotBlank() })
     }
 
     @Test
@@ -102,7 +101,7 @@ class SchoolsJsonConsistencyTest {
             assertTrue("type=$t 应至少有 1 所学校", types.count { it == t } >= 1)
         }
         // 且每所 hnust 学校现在真的能路由 (T3 之前这里会失败 — 正确的失败)
-        val hnust = loadEntries().filter { it.type == JwProtocol.TYPE_HNUST }
+        val hnust = loadEntries().filter { it.isSupported && it.type == JwProtocol.TYPE_HNUST }
         assertEquals(3, hnust.size)  // 湖南科技大学 / 潇湘学院 / 东北石油大学
     }
 
@@ -118,7 +117,7 @@ class SchoolsJsonConsistencyTest {
     @Test
     fun `status field if present is one of the known lifecycle values`() {
         // T13 会引入 status; 现清单 (2026-08) 无该键。此测试向前兼容:
-        val known = setOf("supported", "pending", "grad_supported", "grad_pending", "legacy")
+        val known = setOf("supported", "pending", "grad_supported", "grad_pending", "legacy", "unverified", "grad_unverified")
         val arr = JSONArray(schoolsJson)
         val bad = mutableListOf<String>()
         for (i in 0 until arr.length()) {

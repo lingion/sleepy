@@ -130,6 +130,7 @@ class JwImportActivity : ComponentActivity() {
                 val saveableStateHolder: SaveableStateHolder = rememberSaveableStateHolder()
 
                 var selectedSchool by remember { mutableStateOf<JwSchoolInfo?>(null) }
+                var catalogNotice by remember { mutableStateOf<JwSchoolInfo?>(null) }
                 var stage by remember { mutableStateOf<Stage>(Stage.SelectSchool) }
                 var errorMsg by remember { mutableStateOf<String?>(null) }
                 var statusMsg by remember { mutableStateOf<String?>(null) }
@@ -453,7 +454,10 @@ class JwImportActivity : ComponentActivity() {
                     configBindPeriodTableId = -1L
                     exitDraftState = exitDraftState.copy(activeImport = true)
                     stage = when (snapshot.phase) {
-                        JwImportDraftPhase.WEBVIEW_LOGIN -> Stage.WebViewLogin
+                        JwImportDraftPhase.WEBVIEW_LOGIN -> if (snapshot.requiresSchoolConfirmation) {
+                            catalogNotice = snapshot.school
+                            Stage.SelectSchool
+                        } else Stage.WebViewLogin
                         JwImportDraftPhase.CONFIGURE_CONFIRM -> Stage.Preview
                     }
                 }
@@ -700,8 +704,8 @@ class JwImportActivity : ComponentActivity() {
                         saveableStateHolder.SaveableStateProvider("SelectSchool") {
                             SchoolSelectScreen(
                                 onSchoolSelected = { school ->
-                                    if (school.url.isBlank()) {
-                                        errorMsg = getString(R.string.jw_no_url)
+                                    if (!school.canImport || school.isUnverified) {
+                                        catalogNotice = school
                                         return@SchoolSelectScreen
                                     }
                                     selectedSchool = school
@@ -715,7 +719,7 @@ class JwImportActivity : ComponentActivity() {
 
                     stage is Stage.WebViewLogin -> {
                         val school = selectedSchool
-                        if (school == null) {
+                        if (school == null || !school.canImport) {
                             stage = Stage.SelectSchool
                         } else saveableStateHolder.SaveableStateProvider("WebViewLogin") {
                             JwWebViewLoginScreen(
@@ -842,6 +846,30 @@ class JwImportActivity : ComponentActivity() {
                         onContinue = { handleExitChoice(ExitDraftChoice.Continue) },
                         onKeepDraft = { handleExitChoice(ExitDraftChoice.KeepDraft) },
                         onDeleteDraft = { handleExitChoice(ExitDraftChoice.DeleteDraft) },
+                    )
+                }
+
+                catalogNotice?.let { school ->
+                    val mayTry = school.isUnverified && school.canImport
+                    AlertDialog(
+                        onDismissRequest = { catalogNotice = null },
+                        title = { Text(school.name) },
+                        text = { Text(getString(if (mayTry) R.string.jw_catalog_unverified_message else R.string.jw_catalog_pending_message)) },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                catalogNotice = null
+                                if (mayTry) {
+                                    selectedSchool = school
+                                    exitDraftState = exitDraftState.copy(activeImport = true)
+                                    stage = Stage.WebViewLogin
+                                }
+                            }) { Text(getString(if (mayTry) R.string.jw_catalog_try else R.string.jw_pending_close)) }
+                        },
+                        dismissButton = {
+                            if (mayTry) TextButton(onClick = { catalogNotice = null }) {
+                                Text(getString(R.string.jw_pending_close))
+                            }
+                        },
                     )
                 }
 

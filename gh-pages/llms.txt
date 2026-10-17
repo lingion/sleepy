@@ -53,7 +53,7 @@ The app does not require an account, email, phone number, student number, subscr
 
 ## Academic-system import
 
-The project maintains a live school directory in `app/src/main/assets/schools.json`; the human-readable school list is `docs/schools-list.md`. The current catalogue contains 349 school entries across 33 protocol identifiers; inclusion is not a guarantee that every current login flow has been tested on a device. This number can change as the directory is updated; consult the repository list rather than treating it as permanent.
+The project maintains a live school directory in `app/src/main/assets/schools.json`; the human-readable school list is `docs/schools-list.md`. The directory distinguishes existing import configurations, unverified entries that require explicit confirmation, and pending adaptation records. Listing is not an import guarantee; pending records cannot start imports. Current counts and source boundaries are in docs/catalog/manifest.json and docs/catalog/README.md.
 
 Protocol families and adapters include, among others:
 

@@ -55,7 +55,7 @@ The school selector requests foreground location only after tapping Locate, for 
 | ABIs | arm64-v8a / armeabi-v7a / x86_64 |
 | Languages | zh-CN · zh-TW · en · ja · es |
 
-Sleepy is an Android timetable app built around three principles: **light, fast, accurate**. Its school catalogue contains 349 entries across 33 protocol identifiers; catalogue inclusion does not mean every current school login has been tested on a device. Features include JW import, multi-format parsing, five home-screen widget types in 13 fixed-size variants, daily course notifications, dark mode, and multiple theme presets. The version and supported-school catalogue are maintained in the app's About page and on GitHub Releases. Timetables are stored locally. Network operations include JW synchronization, holiday-data refresh from `unpkg.com/holiday-calendar`, and update checks via GitHub (with the project mirror as fallback); these are not analytics services.
+Sleepy is an Android timetable app built around three principles: **light, fast, accurate**. Its [school catalogue](docs/schools-list.md) distinguishes existing import configurations, unverified entries that require confirmation, and schools awaiting adaptation; catalogue inclusion is not an import guarantee. Features include JW import, multi-format parsing, five home-screen widget types in 13 fixed-size variants, daily course notifications, dark mode, and multiple theme presets. The version and supported-school catalogue are maintained in the app's About page and on GitHub Releases. Timetables are stored locally. Network operations include JW synchronization, holiday-data refresh from `unpkg.com/holiday-calendar`, and update checks via GitHub (with the project mirror as fallback); these are not analytics services.
 
 ---
 
@@ -181,9 +181,9 @@ The protocol catalogue grows with school integrations. The table below shows pro
 
 > School selector shown in English on the demo device
 
-The school catalogue changes with each release. Choose a listed university for the maintained path, or enter a JW URL in the search field when your university is not listed. Sleepy will try to detect a protocol from the URL and open it for login and import. Success still depends on the university page, its login flow, and a compatible parser.
+The school catalogue changes with each release. Existing import configurations remain available; unverified entries require confirmation, while pending entries cannot start an import. You can also enter a JW URL in the search field when your university is not listed. Sleepy will try to detect a protocol from the URL and open it for login and import. Success still depends on the university page, its login flow, and a compatible parser.
 
-All catalogued school entries (349) with their JW login URLs and protocol types are listed in **[Supported Schools List](docs/schools-list.md)** — searchable by full name, abbreviation, or pinyin initials; also useful for verifying JW addresses and school renames.
+School names, status, available JW entry URLs, candidate protocols, and source records are listed in **[School Catalogue and Status](docs/schools-list.md)** — searchable by full name, abbreviation, or pinyin initials; also useful for verifying JW addresses and school renames. The evidence pipeline behind the counts is documented in the **[evidence generation report](docs/catalog/EVIDENCE_GENERATION_REPORT.md)** and **[protocol mapping](docs/catalog/PROTOCOL_MAPPING.md)**.
 
 If URL detection or parsing does not work, file an adaptation request with the JW URL and the observed failure. Use the **[collection guide](docs/adapt-kit/README.md)** only when more page or network data is needed. Never include an account, password, verification code, or other personal data in an issue. You can [open an adaptation request](https://github.com/lingion/sleepy/issues/new?template=school_adaptation.yml) directly.
 
