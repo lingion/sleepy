@@ -110,16 +110,26 @@ class VendorLiveCardRendererFixContractTest {
         )
     }
 
+    /** Slice of renderer source belonging to one vendor extras function. */
+    private fun vendorBody(name: String): String {
+        val start = source.indexOf("private fun $name(")
+        assertTrue("renderer must define $name", start >= 0)
+        val nextFun = source.indexOf("\n    private fun ", start + 1)
+        val end = if (nextFun >= 0) nextFun else source.indexOf("\n}", start)
+        return source.substring(start, end.coerceAtLeast(start))
+    }
+
     @Test
     fun `vivo operation covers create update and end`() {
+        val vivo = vendorBody("addVivoExtras")
         assertTrue(
             "vivo renderer must emit operation 2 after the class ends",
-            source.contains("!state.isActive -> 2")
+            vivo.contains("!state.isActive -> 2")
         )
         assertTrue(
             "vivo renderer must switch operation 0 -> 1 while active",
-            source.contains("state.updateSequence <= 1 -> 0") &&
-                source.contains("else -> 1")
+            vivo.contains("state.updateSequence <= 1 -> 0") &&
+                vivo.contains("else -> 1")
         )
     }
 
@@ -128,13 +138,14 @@ class VendorLiveCardRendererFixContractTest {
         // origin-isle PROTOCOL §2: on class end, the same id is reposted with
         // showNotify=false + changedRecord=MAX so OriginOS tears the island down
         // rather than leaving a stale card (issue #164 "card flies out" family).
+        val vivo = vendorBody("addVivoExtras")
         assertTrue(
             "vivo showNotify must follow isActive so end posts hide the notify",
-            source.contains("putBoolean(\"notification.superx.showNotify\", state.isActive)")
+            vivo.contains("putBoolean(\"notification.superx.showNotify\", state.isActive)")
         )
         assertTrue(
             "vivo changedRecord must jump to Int.MAX_VALUE on end",
-            source.contains("if (state.isActive) state.updateSequence else Int.MAX_VALUE")
+            vivo.contains("if (state.isActive) state.updateSequence else Int.MAX_VALUE")
         )
     }
 
@@ -146,22 +157,24 @@ class VendorLiveCardRendererFixContractTest {
             "Honor branch must route to addHonorExtras",
             source.contains("LiveCardVendor.HONOR -> addHonorExtras(")
         )
+        val honor = vendorBody("addHonorExtras")
         assertTrue(
-            "Honor must set notification.live.operation",
-            source.contains("putInt(\n                \"notification.live.operation\"") ||
-                source.contains("putInt(\"notification.live.operation\"")
+            "Honor must set notification.live.operation with the 2/0/1 lifecycle",
+            honor.contains("putInt(\n                \"notification.live.operation\"") &&
+                honor.contains("!state.isActive -> 2") &&
+                honor.contains("state.updateSequence <= 1 -> 0")
         )
         assertTrue(
             "Honor capsule must ship capsuleStatus/capsuleType/title/content",
-            source.contains("notification.live.capsuleStatus") &&
-                source.contains("notification.live.capsuleType") &&
-                source.contains("notification.live.capsuleTitle") &&
-                source.contains("notification.live.capsuleContent")
+            honor.contains("notification.live.capsuleStatus") &&
+                honor.contains("notification.live.capsuleType") &&
+                honor.contains("notification.live.capsuleTitle") &&
+                honor.contains("notification.live.capsuleContent")
         )
         assertTrue(
             "Honor must carry event ORDER + type 3 (progress) per verified wire",
-            source.contains("notification.live.event\", \"ORDER\"") &&
-                source.contains("notification.live.type\", 3")
+            honor.contains("notification.live.event\", \"ORDER\"") &&
+                honor.contains("notification.live.type\", 3")
         )
         // HUAWEI stays on the generic path (ArkTS-only Live View, no Android extras).
         assertFalse(

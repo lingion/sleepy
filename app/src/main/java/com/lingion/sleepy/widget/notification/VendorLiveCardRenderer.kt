@@ -424,22 +424,22 @@ object VendorLiveCardRenderer {
     ) {
         val opaqueThemeColor = themeColor or 0xFF000000.toInt()
         val capsuleContent = state.room.ifBlank { state.startTime }
+        // Wire stays exactly at the MagicOS-verified field set (Bugaoshan #368):
+        // no contentColor/clickResp additions — a strict capsule parser can drop
+        // the whole sub-bundle on an unexpected key or type. Clicks fall through
+        // to the notification's own contentIntent.
         val capsule = Bundle().apply {
             putInt("notification.live.capsuleStatus", 1)
             putInt("notification.live.capsuleType", 1)
             putString("notification.live.capsuleTitle", state.courseName)
             putString("notification.live.capsuleContent", capsuleContent)
-            // Bugaoshan passed the background color as a #RRGGBB string on the verified
-            // device; keep the string form and only add the luminance-based content color.
             putString("notification.live.capsuleBgColor", String.format("#%06X", opaqueThemeColor and 0xFFFFFF))
-            putInt("notification.live.capsuleContentColor",
-                if (Color.luminance(opaqueThemeColor) > 0.7f) Color.BLACK else Color.WHITE)
             putParcelable("notification.live.capsuleIcon",
                 Icon.createWithResource(context, R.drawable.ic_notification_time))
-            putParcelable("notification.live.capsuleClickResp", contentIntent)
             // Older MagicOS builds read the capsule bundle with unprefixed keys.
             putString("capsuleTitle", state.courseName)
             putString("capsuleContent", capsuleContent)
+            putString("capsuleBgColor", String.format("#%06X", opaqueThemeColor and 0xFFFFFF))
         }
         builder.setExtras(Bundle().apply {
             putInt(
