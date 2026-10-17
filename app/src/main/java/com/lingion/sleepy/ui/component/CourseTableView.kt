@@ -704,15 +704,22 @@ fun CardsGridView(
                             course.startTime, course.endTime, renderSlots
                         ) else null
                         val cardY = frac?.let { yOfRows(it.first) } ?: yOfRows(nodeIdx.toFloat())
-                        // 卡高走 natural 跨度 — 餐段折入的空隙不进卡高 (空白落在卡后),
-                        // 位置(cardY)仍走 yOfRows 边界, 与簇内 cardHOf/contentSpanDpOf 同规。
+                        // 卡高走 natural 跨度 − 普通行隙 — 薄带不进卡高 (2026-10-17 修: 旧公式减
+                        // gapAfterRow=gapH+带, 而 cardY 的 yOfRows 已加带, 同带双扣 → 锚行胶囊回缩)。
+                        // 位置(cardY)仍走 yOfRows 边界, 与簇内 contentSpanDpOf−gapH 同规。
                         val cardH = if (frac != null) {
                             // 按比例(分钟加权), 保底 0.3 标准行避免过短课胶囊塌缩到不可点
-                            (naturalSpan(frac.second) - naturalSpan(frac.first)).coerceAtLeast(rowH * 0.3f) -
-                                (if (frac.second == frac.second.roundToInt().toFloat() && frac.second > 0f)
-                                    gapAfterRow(frac.second.roundToInt() - 1) else gapH)
+                            TimetableViewportPolicy.longBreakCardHeightDp(
+                                naturalSpanDp = (naturalSpan(frac.second) - naturalSpan(frac.first)).value,
+                                gapDp = gapH.value,
+                                minSpanDp = (rowH * 0.3f).value,
+                            ).dp
                         } else {
-                            naturalSpan((nodeIdx + steps).toFloat()) - naturalSpan(nodeIdx.toFloat()) - gapAfterRow(nodeIdx + steps - 1)
+                            TimetableViewportPolicy.longBreakCardHeightDp(
+                                naturalSpanDp = (naturalSpan((nodeIdx + steps).toFloat()) -
+                                    naturalSpan(nodeIdx.toFloat())).value,
+                                gapDp = gapH.value,
+                            ).dp
                         }
 
                         CourseOverlayCard(
