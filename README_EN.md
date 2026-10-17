@@ -183,7 +183,7 @@ The protocol catalogue grows with school integrations. The table below shows pro
 
 The school catalogue changes with each release. Existing import configurations remain available; unverified entries require confirmation, while pending entries cannot start an import. You can also enter a JW URL in the search field when your university is not listed. Sleepy will try to detect a protocol from the URL and open it for login and import. Success still depends on the university page, its login flow, and a compatible parser.
 
-School names, status, available JW entry URLs, candidate protocols, and source records are listed in **[School Catalogue and Status](docs/schools-list.md)** — searchable by full name, abbreviation, or pinyin initials; also useful for verifying JW addresses and school renames.
+School names, status, available JW entry URLs, candidate protocols, and source records are listed in **[School Catalogue and Status](docs/schools-list.md)** — searchable by full name, abbreviation, or pinyin initials; also useful for verifying JW addresses and school renames. The evidence pipeline behind the counts is documented in the **[evidence generation report](docs/catalog/EVIDENCE_GENERATION_REPORT.md)** and **[protocol mapping](docs/catalog/PROTOCOL_MAPPING.md)**.
 
 If URL detection or parsing does not work, file an adaptation request with the JW URL and the observed failure. Use the **[collection guide](docs/adapt-kit/README.md)** only when more page or network data is needed. Never include an account, password, verification code, or other personal data in an issue. You can [open an adaptation request](https://github.com/lingion/sleepy/issues/new?template=school_adaptation.yml) directly.
 

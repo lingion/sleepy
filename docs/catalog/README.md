@@ -53,3 +53,7 @@ WakeUp 数据来自本机原版 APK 和先前用户附件，未定位到该专�
 运行 `python3 scripts/test_catalog_ownership.py` 检查未知/错配入口阻断、证据时效绑定和研究生状态保留。位置证据详见 `location-evidence.md`，城市匹配精度不等于校区坐标精度。
 
 入口等价仅接受相同 scheme、host、port、path、query、fragment（默认端口与根斜杠规范化），或归档的连续定向跳转。不凭同一主机、父路径、通用 SSO 页面推断租户归属。
+
+## 用户体验：学校选择只展示可尝试条目
+
+早期版本应用内学校选择页加载 `schools.json` 全部 4,140 条目录条目，其中仅约八百条带教务入口 URL，其余显示为不可点击的灰色项，用户反馈“四千多所学校只有几百所能用”。`JwImportViewModel.loadSchools()` 现过滤 `url.isNotBlank()`，只展示可实际尝试导入的条目（当前 875 条，见 manifest.statusCounts 与 [学校目录](../schools-list.md)）；待适配条目仍通过目录文档、issue 模板和自定义 URL 识别通道可被发现和申请。过滤发生在展示层，目录数据本身保留全部条目与来源记录，收录不等于支持的原则不变。

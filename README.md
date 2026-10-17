@@ -196,7 +196,7 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 
 学校目录会随版本更新。学校条目区分已有导入配置、待验证可尝试和待适配；待验证项需确认，待适配项不能直接导入。如果学校暂时不在目录中，也可以在搜索框输入教务系统 URL，Sleepy 会尝试根据 URL 识别协议，再打开该地址进行登录和导入。能否成功取到课表取决于学校页面、登录方式和对应解析器。
 
-学校名称、状态、可用教务入口与来源记录见 **[学校目录与状态](docs/schools-list.md)**，支持 Ctrl+F 按全名 / 简称 / 拼音缩写检索，也用于核实教务地址和学校改名。
+学校名称、状态、可用教务入口与来源记录见 **[学校目录与状态](docs/schools-list.md)**，支持 Ctrl+F 按全名 / 简称 / 拼音缩写检索，也用于核实教务地址和学校改名。目录条目的证据来源、协议裁定与归属闸门口径见 **[证据生成报告](docs/catalog/EVIDENCE_GENERATION_REPORT.md)** 和 **[协议映射](docs/catalog/PROTOCOL_MAPPING.md)**。
 
 如果 URL 识别或解析仍不成功，再提交适配申请。优先提供教务 URL 和失败现象；需要进一步定位时，再按 **[适配采集教程](docs/adapt-kit/README.md)** 提供页面或网络数据。不要在 issue 中提交账号、密码、验证码或其他个人信息。也可以直接 [开一个适配申请](https://github.com/lingion/sleepy/issues/new?template=school_adaptation.yml)。
 
