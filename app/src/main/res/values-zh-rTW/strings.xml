@@ -583,6 +583,14 @@
     <string name="theme_editor_delete_confirm">刪除這個自訂主題?</string>
     <string name="theme_editor_delete_confirm_body">刪除後使用該主題的頁面與小工具將回落到預設主題「淡紫」。</string>
 <string name="appearance_section_theme">主題色彩</string>
+    <string name="appearance_section_course_color">課程配色</string>
+    <string name="course_color_classic">經典撒色（不隨主題）</string>
+    <string name="course_color_follow_theme">跟隨主題色</string>
+    <string name="course_color_custom_seed">自訂基準色</string>
+    <string name="course_color_seed_label">基準色相</string>
+    <string name="course_color_preview">預覽</string>
+    <string name="course_color_recalc">重新編排所有課程配色</string>
+    <string name="course_color_recalc_done">已重新編排 %1$d 門課程的配色</string>
     <string name="appearance_section_schedule_display">課表顯示</string>
     <string name="appearance_period_header">節次表頭</string>
     <string name="appearance_home_style">主頁樣式</string>

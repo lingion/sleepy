@@ -595,6 +595,14 @@
     <string name="theme_editor_delete_confirm">Delete this custom theme?</string>
     <string name="theme_editor_delete_confirm_body">Pages and widgets using it will fall back to the default "Lilac" theme.</string>
 <string name="appearance_section_theme">Theme colors</string>
+    <string name="appearance_section_course_color">Course colors</string>
+    <string name="course_color_classic">Classic scatter (not theme-based)</string>
+    <string name="course_color_follow_theme">Follow theme color</string>
+    <string name="course_color_custom_seed">Custom base color</string>
+    <string name="course_color_seed_label">Base hue</string>
+    <string name="course_color_preview">Preview</string>
+    <string name="course_color_recalc">Re-arrange all course colors</string>
+    <string name="course_color_recalc_done">Re-arranged colors for %1$d courses</string>
     <string name="appearance_section_schedule_display">Schedule display</string>
     <string name="appearance_period_header">Period headers</string>
     <string name="appearance_home_style">Home style</string>

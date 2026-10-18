@@ -961,6 +961,14 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="theme_editor_delete_confirm">删除这个自定义主题?</string>
     <string name="theme_editor_delete_confirm_body">删除后使用该主题的页面与小组件将回落到默认主题「淡紫」。</string>
     <string name="appearance_section_theme">主题色彩</string>
+    <string name="appearance_section_course_color">课程配色</string>
+    <string name="course_color_classic">经典撒色（不随主题）</string>
+    <string name="course_color_follow_theme">跟随主题色</string>
+    <string name="course_color_custom_seed">自定义基准色</string>
+    <string name="course_color_seed_label">基准色相</string>
+    <string name="course_color_preview">预览</string>
+    <string name="course_color_recalc">重新编排所有课程配色</string>
+    <string name="course_color_recalc_done">已重新编排 %1$d 门课程的配色</string>
     <string name="appearance_section_schedule_display">课表显示</string>
     <string name="appearance_period_header">节次表头</string>
     <string name="appearance_home_style">主页样式</string>
