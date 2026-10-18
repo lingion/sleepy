@@ -29,6 +29,15 @@ object CourseColorUtil {
     /** 黄金角 137.508°，相邻 id 色差最大化（13 门课最少差 ~27°） */
     private const val GOLDEN_ANGLE = 137.508f
 
+    /** 允许弧参数域总长 = 两段 120° (360° − 主题保护带 60° − 补色带 60°)，1 单位 = 1° */
+    private const val ARC_UNITS = 240
+
+    /** 避让扫描步长（度）— 2° 网格兼顾槽位密度与重算耗时（≤120 次/课） */
+    private const val ARC_STEP_DEG = 2
+
+    /** 课色最小环距保证（重算路径）— 肉眼可辨下限; 敏感度证明见契约测试 spacingBound_isWhatGuaranteesSeparation */
+    internal const val MIN_SEP_DEG = 10f
+
     /** 哨兵色 "#FF6750A4"，标记「未设置颜色」，与主题默认紫完全相同（Phase2 换 isCustomColor 布尔 + DB migration） */
     private const val SENTINEL_COLOR = "#FF6750A4"
 
@@ -52,6 +61,98 @@ object CourseColorUtil {
      */
     fun stableHue(groupId: String): Float =
         ((groupId.hashCode().toLong() * GOLDEN_ANGLE) % 360f + 360f) % 360f
+
+    /**
+     * 主题和谐化色相 — 安全弧公式（spec docs/spec-course-color-harmony-2026-10-18.md §2.2）。
+     *
+     * 以 anchor（主题 primary / 用户种子色的色相）为原点，色环挖掉两段禁区，
+     * 把 [0,240) 均匀映射进剩余两允许弧：
+     *   禁区1 [anchor-30°, anchor+30°]   主题保护带 — 课色不与 UI 主色混淆
+     *   禁区2 [anchor+150°, anchor+210°] 补色带     — 杜绝「紫配黄」扎眼（M3 同源规则）
+     *
+     * 纯函数确定性：同 (anchor, groupId) 永远同 hue，故落库值与渲染兜底值同源。
+     * 明暗不参与本函数（只切 S/L），hue 跨深浅恒定。
+     */
+    fun safeArcHue(anchor: Float, groupId: String): Float =
+        hueFromT(anchor, seedT(groupId))
+
+    /** safeArcHue 的 t 种子: hashCode → [0,240) 均匀映射（两段 120° 允许弧的参数域）。 */
+    private fun seedT(groupId: String): Int = (groupId.hashCode() and Int.MAX_VALUE) % ARC_UNITS
+
+    /** t ∈ [0,240) → hue: [0,120) 落允许弧A (anchor+30..150)，[120,240) 落允许弧B (anchor+210..330)。 */
+    private fun hueFromT(anchor: Float, t: Int): Float {
+        val offset = if (t < ARC_UNITS / 2) 30f + t else 210f + (t - ARC_UNITS / 2)
+        return (((anchor + offset) % 360f) + 360f) % 360f
+    }
+
+    /**
+     * 增量避让取色 — 重算/写表路径专用（spec §2.3 触发 1/2/3/6, §2.4 新课补色）。
+     *
+     * 纯哈希 safeArcHue 在 240° 弧上对任意 13 门课做不到 ≥10° 保证间距
+     * （碰撞模拟实证 worst-case ≈0°），故落库时按 taken 列表增量滑位：
+     *   ① 以 safeArcHue 产出为起点 t0，沿弧参数 t 每次 +2 扫描整圈；
+     *   ② 首个与所有 taken 环距 ≥ minSep 的槽位即返回 → 已放置课永不受影响（钉死性：
+     *      taken 只增不改，同前缀重算逐位复现）；
+     *   ③ 弧饱和（>~24 门）时无解不抛异常，退化为「与 taken 最小环距最大」的槽位 —
+     *      仍在允许弧，只是间距妥协（可见行为：课极多时相邻课色趋近，不撞主题/补色区）。
+     *
+     * 两允许弧之间的跨弧环距恒 ≥ 60°（禁区几何保证），间距约束只在同弧内起作用。
+     * 纯函数确定性：同 (anchor, groupId, taken) 永远同 hue。
+     */
+    fun resolveHueWithSpacing(
+        anchor: Float,
+        groupId: String,
+        taken: List<Float>,
+        minSep: Float = MIN_SEP_DEG
+    ): Float {
+        val t0 = seedT(groupId)
+        if (taken.isEmpty()) return hueFromT(anchor, t0)
+        var t = t0
+        var bestT = t0
+        var bestGap = -1f
+        repeat(ARC_UNITS / ARC_STEP_DEG) {
+            val hue = hueFromT(anchor, t)
+            val gap = taken.minOf { ringDelta(hue, it) }
+            if (gap >= minSep) return hue
+            if (gap > bestGap) { bestGap = gap; bestT = t }
+            t = (t + ARC_STEP_DEG) % ARC_UNITS
+        }
+        return hueFromT(anchor, bestT)
+    }
+
+    /** 环上最短角距 (0..180)。 */
+    private fun ringDelta(a: Float, b: Float): Float {
+        val d = ((a - b) % 360f + 360f) % 360f
+        return if (d > 180f) 360f - d else d
+    }
+
+    /**
+     * ARGB Int → HSL 色相 (0..360)。无彩度（黑白灰）回 0f — colorToHSL 对灰阶的
+     * hue 是未定义噪声，归零避免 anchor 抖动。供三路径统一解析主题 primary 色相。
+     *
+     * 自实现而非 ColorUtils.colorToHSL：平台实现对纯绿 (00FF00) 返回 hue=0
+     * （契约测试实测），且自实现保证 Compose/Canvas/重算三路解析逐位一致。
+     */
+    fun hueOf(argb: Int): Float {
+        val r = (argb shr 16 and 0xFF) / 255f
+        val g = (argb shr 8 and 0xFF) / 255f
+        val b = (argb and 0xFF) / 255f
+        val max = maxOf(r, g, b)
+        val delta = max - minOf(r, g, b)
+        if (delta < 0.0001f) return 0f
+        val h = when (max) {
+            r -> 60f * (((g - b) / delta) % 6f)
+            g -> 60f * ((b - r) / delta + 2f)
+            else -> 60f * ((r - g) / delta + 4f)
+        }
+        return ((h % 360f) + 360f) % 360f
+    }
+
+    /** [hueOf] 的 Color 重载（Compose 路径）。 */
+    fun hueOf(color: Color): Float =
+        hueOf(android.graphics.Color.rgb(
+            (color.red * 255).toInt(), (color.green * 255).toInt(), (color.blue * 255).toInt()
+        ))
 
     /**
      * 判定课程是否有用户自定义颜色：color 非空且非哨兵值。
