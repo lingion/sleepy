@@ -64,6 +64,7 @@ import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.ConflictLayoutEngine
 import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.CourseDisplayUtil
+import com.lingion.sleepy.util.CourseHueStore
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.util.PeriodHeaderFormatter
@@ -898,12 +899,15 @@ private fun CourseOverlayCard(
     val context = androidx.compose.ui.platform.LocalContext.current
     // 统一取色入口（决策 D3）— colorless 读取 AppPrefs course_colorless 独立开关
     // issue#22: 同名课程多地点 — 用 groupRows 传同 groupId 全行,支持 AUTO/CUSTOM 模式取色
+    // spec §2.3: persistedHue 派生档持久色（CLASSIC/查无 → null → stableHue 老路径零变化）
+    val hueMap by CourseHueStore.hueMapFlow.collectAsState()
     val bg = CourseColorUtil.pickCourseColorComposeWithGroupRows(
         row = course,
         groupRows = groupRows,
         isDark = CourseColorUtil.isPaletteDark(palette),
         neutralColor = colors.secondaryContainer,
-        colorless = AppPrefs.isCourseColorless(context)
+        colorless = AppPrefs.isCourseColorless(context),
+        persistedHue = hueMap[course.groupId]
     )
     // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface
     val fg = CourseColorUtil.textColorOn(bg, CourseColorUtil.isPaletteDark(palette), colors.onSurface)
@@ -1586,12 +1590,15 @@ private fun LessonRow(
     val sd = { v: Float -> (v * effScale).dp }
     // 统一取色入口（决策 D3）— colorless 读取 AppPrefs course_colorless 独立开关
     // issue#22: 同名课程多地点 — 用 groupRows 传同 groupId 全行,支持 AUTO/CUSTOM 模式取色
+    // spec §2.3: persistedHue 派生档持久色（CLASSIC/查无 → null → stableHue 老路径零变化）
+    val hueMap by CourseHueStore.hueMapFlow.collectAsState()
     val bg = CourseColorUtil.pickCourseColorComposeWithGroupRows(
         row = course,
         groupRows = groupRows,
         isDark = CourseColorUtil.isPaletteDark(palette),
         neutralColor = colors.secondaryContainer,
-        colorless = AppPrefs.isCourseColorless(context)
+        colorless = AppPrefs.isCourseColorless(context),
+        persistedHue = hueMap[course.groupId]
     )
     // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface
     val fg = CourseColorUtil.textColorOn(bg, CourseColorUtil.isPaletteDark(palette), colors.onSurface)

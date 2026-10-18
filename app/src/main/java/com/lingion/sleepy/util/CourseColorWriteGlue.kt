@@ -49,6 +49,7 @@ object CourseColorWriteGlue {
             dao.upsertAll(plan.map { (gid, hue) ->
                 CourseColorEntity(tableKey = tableKey, groupId = gid, hue = hue)
             })
+            CourseHueStore.invalidate() // 渲染快照即时跟表（step-5 重算完成后同理）
         }
         plan
     }.getOrElse { emptyMap() }

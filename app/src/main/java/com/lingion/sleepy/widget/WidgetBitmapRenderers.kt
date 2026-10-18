@@ -13,6 +13,7 @@ import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.CourseDisplayUtil
+import com.lingion.sleepy.util.CourseHueStore
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.util.WeekDisplayStatus
@@ -84,7 +85,8 @@ object WidgetBitmapRenderers {
     ) {
         // 统一取色入口 (决策 D3) — colorless 使用所选主题 secondaryContainer (与「刷新所有小组件」按钮同色)
         // issue#22: 同名课程多地点 — 用 groupRows 传同 groupId 全行,支持 AUTO/CUSTOM 模式取色
-        val bgColor = CourseColorUtil.pickCourseColorIntWithGroupRows(course, groupRows, scheme.isDark, scheme.secondaryContainer, colorless)
+        // spec §2.3: Canvas 侧同步读持久 hue 快照（加载点 resolve 已自刷, 同帧一致）
+        val bgColor = CourseColorUtil.pickCourseColorIntWithGroupRows(course, groupRows, scheme.isDark, scheme.secondaryContainer, colorless, persistedHue = CourseHueStore.hueFor(course.groupId))
         val greyAlpha = if (isGrey) 0x99 else 0xFF
         // 文字色亮度自适应 (决策 D5-13) — 深色自定义课色上切白字, 浅色底仍 onSurface
         val textColor = CourseColorUtil.textColorOn(bgColor, scheme.isDark, scheme.onSurface)
@@ -906,9 +908,11 @@ object WidgetBitmapRenderers {
                     val name = CourseDisplayUtil.displayName(course, useAlias)
                     // 课程颜色背景 (对齐 WeekGrid 风格) — 统一入口 CourseColorUtil (决策 D3)
                     // issue#22: 同名课程多地点 — 用 day.courses 同 groupId 全行,支持 AUTO/CUSTOM 模式取色
+                    // spec §2.3: Canvas 侧同步读持久 hue 快照（加载点 resolve 已自刷）
                     val bgColor = CourseColorUtil.pickCourseColorIntWithGroupRows(
                         course, day.courses.filter { it.groupId == course.groupId },
-                        s.isDark, s.secondaryContainer, colorless
+                        s.isDark, s.secondaryContainer, colorless,
+                        persistedHue = CourseHueStore.hueFor(course.groupId)
                     )
                     p.color = applyAlpha(bgColor, if (day.isGrey) 153 else 255)
                     canvas.drawRoundRect(

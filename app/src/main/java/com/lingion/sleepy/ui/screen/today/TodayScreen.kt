@@ -50,6 +50,7 @@ import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.CourseColorUtil
+import com.lingion.sleepy.util.CourseHueStore
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import java.time.LocalDate
@@ -419,12 +420,15 @@ private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null, onCl
     // 统一取色入口 — hue 源自动对齐 groupId（修复原 course.id%360 导致同门课多节次异色+三屏三色）
     // colorless 读取 AppPrefs course_colorless 独立开关
     // issue#22: 同名课程多地点 — 用 groupRows 传同 groupId 全行,支持 AUTO/CUSTOM 模式取色
+    // spec §2.1: 派生档持久 hue（订阅快照流, CLASSIC/查无 → null → stableHue 老路径逐值不变）
+    val hueMap by CourseHueStore.hueMapFlow.collectAsState()
     val bg = CourseColorUtil.pickCourseColorComposeWithGroupRows(
         row = course,
         groupRows = groupRows,
         isDark = CourseColorUtil.isPaletteDark(palette),
         neutralColor = colors.secondaryContainer,
-        colorless = AppPrefs.isCourseColorless(context)
+        colorless = AppPrefs.isCourseColorless(context),
+        persistedHue = hueMap[course.groupId]
     )
     // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface
     val fg = CourseColorUtil.textColorOn(bg, CourseColorUtil.isPaletteDark(palette), colors.onSurface)
