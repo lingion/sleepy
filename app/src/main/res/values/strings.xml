@@ -870,6 +870,8 @@
     <string name="about_author_name">Lingion</string>
     <string name="about_source">开源地址</string>
     <string name="about_source_url">github.com/lingion/sleepy</string>
+    <string name="about_privacy">隐私政策</string>
+    <string name="about_privacy_url">sleepy.qdp.qzz.io/privacy</string>
     <string name="about_feedback">反馈与建议</string>
     <string name="about_feedback_detail">提交 Bug 或新想法到 GitHub Issue，或通过邮件联系作者</string>
     <string name="about_feedback_github">GitHub Issue</string>

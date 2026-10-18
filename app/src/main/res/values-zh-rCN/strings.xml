@@ -801,6 +801,8 @@
     <string name="about_author_name">Lingion</string>
     <string name="about_source">开源地址</string>
     <string name="about_source_url">github.com/lingion/sleepy</string>
+    <string name="about_privacy">隐私政策</string>
+    <string name="about_privacy_url">sleepy.qdp.qzz.io/privacy</string>
     <string name="about_license_title">开源声明</string>
     <string name="about_license_body">SCAU protocol references: greyovo/ScheduleXParser_SCAU, greyovo/AIScheduleSCAU, N0B0d7-rzddn/SCAU-course-tool, CberYellowstone/Course-Hunter-SCAU, Weather174/SCAU-Course-Assistant, ToMo517/Scau_Course_bot-main, visionyimian/scau_class_table.\n\n本应用部分教务导入适配参考了以下开源项目的公开实现。按跨校普适项目 / 单校项目两类组织，单校卡展开后可查看该校所参考的所有学生维护项目。
 

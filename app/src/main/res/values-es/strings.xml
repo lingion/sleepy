@@ -627,6 +627,8 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="about_license_title">Declaración de código abierto</string>
     <string name="about_source">Código fuente</string>
     <string name="about_source_url">github.com/lingion/sleepy</string>
+    <string name="about_privacy">Política de privacidad</string>
+    <string name="about_privacy_url">sleepy.qdp.qzz.io/privacy</string>
     <string name="about_feedback">Comentarios y sugerencias</string>
     <string name="about_feedback_detail">Reporta errores o comparte ideas mediante un Issue de GitHub, o contacta al autor por correo</string>
     <string name="about_feedback_github">Issue de GitHub</string>

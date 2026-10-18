@@ -99,6 +99,15 @@ class StringsKeyParityTest {
     )
 
     /**
+     * 隐私政策页 + 关于页入口新增 string key (2026-10-18, feat/privacy-policy, 商店审核)。
+     * 全 6 locale 必须齐 — 缺任一 = MissingTranslation lint error 回归。
+     */
+    private val privacyPolicyKeys = listOf(
+        "about_privacy",
+        "about_privacy_url"
+    )
+
+    /**
      * 未验证学校导入成功报告弹窗新增 string key (2026-10-18, feat/jw-import-success-report)。
      * 全 6 locale 必须齐 — 缺任一 = MissingTranslation lint error 回归。
      */
@@ -189,6 +198,16 @@ class StringsKeyParityTest {
         "reminder_date_rules_advanced_button",
         "reminder_date_rules_advanced_subtitle"
     )
+
+    @Test
+    fun privacy_policy_keys_present_in_all_six_locales() {
+        for (locale in localeDirs) {
+            val text = File(basePath, "$locale/strings.xml").readText()
+            for (key in privacyPolicyKeys) {
+                assertTrue("$locale missing $key", text.contains("name=\"$key\""))
+            }
+        }
+    }
 
     @Test
     fun jw_import_report_keys_present_in_all_six_locales() {

@@ -29,6 +29,7 @@ import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -419,6 +420,44 @@ fun AboutScreen(
                     }
                     IconButton(onClick = {
                         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/lingion/sleepy")))
+                    }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
+                            contentDescription = null,
+                            tint = colors.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Privacy policy card (商店审核要求: 应用内可达 https://sleepy.qdp.qzz.io/privacy, 与 web 关于页同源)
+            InfoCard {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Outlined.Shield,
+                        contentDescription = null,
+                        tint = colors.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.about_privacy),
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                            color = colors.onSurface
+                        )
+                        Text(
+                            text = stringResource(R.string.about_privacy_url),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = colors.primary,
+                            textDecoration = TextDecoration.Underline
+                        )
+                    }
+                    IconButton(onClick = {
+                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://sleepy.qdp.qzz.io/privacy")))
                     }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
