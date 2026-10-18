@@ -31,6 +31,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  *   v8 → v9: C2 换绑前快照 (issue#40, 2026-09-20)
  *     - 加 time_tables.preBindSnapshotJson (TEXT NOT NULL DEFAULT '')
  *     - 旧行空串 = 无快照; 解绑回退兼容列(旧镜像语义)仅在快照缺失时兜底
+ *   v11 → v12: 课程持久色相表 (spec-course-color-harmony-2026-10-18 §3)
+ *     - 新表 course_colors: (tableKey, groupId) 复合主键 → hue REAL
+ *     - 不回填 — CLASSIC 档不读表; 切入派生档时重算全量写入
  */
 val MIGRATION_3_4: Migration = object : Migration(3, 4) {
     override fun migrate(db: SupportSQLiteDatabase) {
@@ -131,6 +134,28 @@ internal val MIGRATION_10_11_STATEMENTS: List<String> = listOf(
     "ALTER TABLE time_tables ADD COLUMN reminderEnabled INTEGER NOT NULL DEFAULT 1"
 )
 
+/**
+ * v11 → v12: 课程持久色相表 course_colors (spec docs/spec-course-color-harmony-2026-10-18.md §3)
+ *   - 新表 (tableKey, groupId) 复合主键 → hue REAL
+ *   - 不回填: CLASSIC 档不读表, 首次切入派生档时由重算全量写入
+ */
+val MIGRATION_11_12: Migration = object : Migration(11, 12) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        MIGRATION_11_12_STATEMENTS.forEach { db.execSQL(it) }
+    }
+}
+
+internal val MIGRATION_11_12_STATEMENTS: List<String> = listOf(
+    """
+    CREATE TABLE IF NOT EXISTS course_colors (
+        tableKey TEXT NOT NULL,
+        groupId TEXT NOT NULL,
+        hue REAL NOT NULL,
+        PRIMARY KEY (tableKey, groupId)
+    )
+    """.trimIndent()
+)
+
 internal val MIGRATION_9_10_STATEMENTS: List<String> = listOf(
     """
     CREATE TABLE IF NOT EXISTS calendar_import_records (
@@ -165,7 +190,8 @@ val ALL_MIGRATIONS: Array<Migration> = arrayOf(
     MIGRATION_7_8,
     MIGRATION_8_9,
     MIGRATION_9_10,
-    MIGRATION_10_11
+    MIGRATION_10_11,
+    MIGRATION_11_12
 )
 
 /** issue#26: v5→v6 逐条 SQL — 单一事实来源, CourseAliasMigrationTest 用 sqlite-jdbc 直接执行同一份 */

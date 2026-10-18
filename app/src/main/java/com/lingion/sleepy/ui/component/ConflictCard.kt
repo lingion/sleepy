@@ -26,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -68,6 +69,7 @@ import com.lingion.sleepy.util.ConflictLayoutEngine
 import com.lingion.sleepy.util.ConflictVariant
 import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.CourseDisplayUtil
+import com.lingion.sleepy.util.CourseHueStore
 import com.lingion.sleepy.util.LaidOutCourse
 
 /**
@@ -552,13 +554,16 @@ fun ConflictClusterCard(
     // 课色(描边/虚线/flap 取色,含 isGrey 灰显,与卡渲染取同一色)
     // issue#22: 同名课程多地点 — 传 cluster 全行作为 groupRows,支持 AUTO/CUSTOM 模式取色
     val groupRowsForCard = cluster.courses
+    // spec §2.3: 派生档持久色上提组合函数作用域,闭包按 gid 查表（CLASSIC/查无 → null 老路径）
+    val hueMap by CourseHueStore.hueMapFlow.collectAsState()
     fun courseColorOf(course: CourseEntity): Color {
         val bg = CourseColorUtil.pickCourseColorComposeWithGroupRows(
             row = course,
             groupRows = groupRowsForCard,
             isDark = CourseColorUtil.isPaletteDark(palette),
             neutralColor = colors.secondaryContainer,
-            colorless = AppPrefs.isCourseColorless(context)
+            colorless = AppPrefs.isCourseColorless(context),
+            persistedHue = hueMap[course.groupId]
         )
         return if (isGrey) bg.copy(alpha = SleepyTheme.Alpha.inactive) else bg
     }
@@ -1045,12 +1050,15 @@ private fun ConflictCourseCard(
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     // issue#22: 同名课程多地点 — 用 groupRows 传同 groupId 全行,支持 AUTO/CUSTOM 模式取色
+    // spec §2.3: persistedHue 派生档持久色（CLASSIC/查无 → null → stableHue 老路径零变化）
+    val hueMap by CourseHueStore.hueMapFlow.collectAsState()
     val bg = CourseColorUtil.pickCourseColorComposeWithGroupRows(
         row = course,
         groupRows = groupRows,
         isDark = CourseColorUtil.isPaletteDark(palette),
         neutralColor = colors.secondaryContainer,
-        colorless = AppPrefs.isCourseColorless(context)
+        colorless = AppPrefs.isCourseColorless(context),
+        persistedHue = hueMap[course.groupId]
     )
     val fg = CourseColorUtil.textColorOn(bg, CourseColorUtil.isPaletteDark(palette), colors.onSurface)
     val effectiveBg = if (isGrey) bg.copy(alpha = SleepyTheme.Alpha.inactive) else bg

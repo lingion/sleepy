@@ -583,6 +583,14 @@
     <string name="theme_editor_delete_confirm">¿Eliminar este tema personalizado?</string>
     <string name="theme_editor_delete_confirm_body">Las páginas y widgets que lo usen volverán al tema predeterminado «Lila».</string>
 <string name="appearance_section_theme">Colores del tema</string>
+    <string name="appearance_section_course_color">Colores de asignaturas</string>
+    <string name="course_color_classic">Dispersión clásica (sin tema)</string>
+    <string name="course_color_follow_theme">Seguir el color del tema</string>
+    <string name="course_color_custom_seed">Color base personalizado</string>
+    <string name="course_color_seed_label">Tono base</string>
+    <string name="course_color_preview">Vista previa</string>
+    <string name="course_color_recalc">Reorganizar todos los colores</string>
+    <string name="course_color_recalc_done">Se reorganizaron los colores de %1$d asignaturas</string>
     <string name="appearance_section_schedule_display">Visualización del horario</string>
     <string name="appearance_period_header">Encabezados de período</string>
     <string name="appearance_home_style">Estilo de inicio</string>

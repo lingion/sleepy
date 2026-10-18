@@ -10,20 +10,20 @@ import java.io.File
 class RoomSchemaContractTest {
     private val schema by lazy {
         val root = System.getProperty("sleepy.test.root") ?: error("sleepy.test.root is required")
-        val file = File(root, "app/schemas/com.lingion.sleepy.data.AppDatabase/11.json")
+        val file = File(root, "app/schemas/com.lingion.sleepy.data.AppDatabase/12.json")
         assertTrue("Room schema must be generated at $file", file.isFile)
         JSONObject(file.readText()).getJSONObject("database")
     }
 
     @Test
     fun exportedSchemaMatchesDatabaseVersionAndEntitySet() {
-        assertEquals(11, schema.getInt("version"))
+        assertEquals(12, schema.getInt("version"))
         val names = buildSet {
             val entities = schema.getJSONArray("entities")
             for (i in 0 until entities.length()) add(entities.getJSONObject(i).getString("tableName"))
         }
         assertEquals(
-            setOf("courses", "time_tables", "period_tables", "import_drafts", "calendar_import_records"),
+            setOf("courses", "time_tables", "period_tables", "import_drafts", "calendar_import_records", "course_colors"),
             names
         )
     }
@@ -60,7 +60,7 @@ class RoomSchemaContractTest {
 
     @Test
     fun migrationChainIsContinuousAndReachesExportedSchemaVersion() {
-        assertEquals(11, schema.getInt("version"))
+        assertEquals(12, schema.getInt("version"))
         assertEquals(3, ALL_MIGRATIONS.first().startVersion)
         ALL_MIGRATIONS.forEachIndexed { index, migration ->
             assertEquals(migration.startVersion + 1, migration.endVersion)

@@ -4,6 +4,7 @@ import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.util.AppPrefs
+import com.lingion.sleepy.util.CourseHueStore
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.WeekDisplayContext
 import com.lingion.sleepy.util.WeekDisplayResolver
@@ -59,6 +60,10 @@ internal data class WidgetWeekSource(
 internal object WidgetWeekDataLoader {
     suspend fun resolve(appWidgetId: Int, now: LocalDateTime = LocalDateTime.now()): WidgetWeekSource? {
         val app = SleepyApp.get()
+        // spec §2.3 刷新源③: 五个 widget 装载器全部经由本函数 — 单点自刷持久 hue
+        // 快照, 保证 Canvas 同步读 hueFor 与实际渲染同帧一致。配色是增值数据,
+        // 刷失败仅回落 stableHue, 绝不阻断装载（CourseHueStore 红线）。
+        runCatching { CourseHueStore.refresh(app) }
         val repo = app.repository
         val table = WidgetTableResolver.resolveBoundTable(appWidgetId)
             ?: WidgetTableResolver.resolveCurrentTable()

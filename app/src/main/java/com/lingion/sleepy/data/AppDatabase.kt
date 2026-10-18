@@ -6,18 +6,20 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.lingion.sleepy.data.dao.CourseDao
 import com.lingion.sleepy.data.dao.CalendarImportRecordDao
+import com.lingion.sleepy.data.dao.CourseColorDao
 import com.lingion.sleepy.data.dao.ImportDraftDao
 import com.lingion.sleepy.data.dao.PeriodTableDao
 import com.lingion.sleepy.data.dao.TimeTableDao
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.CalendarImportRecordEntity
+import com.lingion.sleepy.data.entity.CourseColorEntity
 import com.lingion.sleepy.data.entity.ImportDraftEntity
 import com.lingion.sleepy.data.entity.PeriodTableEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 
 @Database(
-    entities = [CourseEntity::class, TimeTableEntity::class, PeriodTableEntity::class, ImportDraftEntity::class, CalendarImportRecordEntity::class],
-    version = 11,                           // 10 → 11: per-table reminder toggle (time_tables.reminderEnabled)
+    entities = [CourseEntity::class, TimeTableEntity::class, PeriodTableEntity::class, ImportDraftEntity::class, CalendarImportRecordEntity::class, CourseColorEntity::class],
+    version = 12,                           // 11 → 12: course_colors 持久色相表 (spec-course-color-harmony §3)
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -27,6 +29,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun periodTableDao(): PeriodTableDao
     abstract fun importDraftDao(): ImportDraftDao
     abstract fun calendarImportRecordDao(): CalendarImportRecordDao
+    abstract fun courseColorDao(): CourseColorDao
 
     companion object {
         private const val DB_NAME = "sleepy.db"

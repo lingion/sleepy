@@ -79,6 +79,15 @@ object AppPrefs {
     const val KEY_VERT_PUNCT_REPLACE = "vert_punct_replace" // bool default false (方案B开关)
     const val KEY_WIDGET_COLORLESS = "widget_colorless" // bool default false
     const val KEY_COURSE_COLORLESS = "course_colorless" // bool default false (App 课程胶囊专用)
+
+    // ===== 课程配色三档模式 (spec-course-color-harmony §2.1) =====
+    // 默认 CLASSIC=0 — 升级用户不切档则渲染零变化（stableHue 老路径, 不读 course_colors 表）
+    const val KEY_COURSE_COLOR_MODE = "course_color_mode"           // int: 0 classic / 1 follow theme / 2 custom seed
+    const val KEY_COURSE_COLOR_SEED_HUE = "course_color_seed_hue"   // float 0..360; -1 = 未初始化(CUSTOM 回落主题色)
+    const val COURSE_COLOR_MODE_CLASSIC = 0
+    const val COURSE_COLOR_MODE_FOLLOW_THEME = 1
+    const val COURSE_COLOR_MODE_CUSTOM = 2
+    const val COURSE_COLOR_SEED_UNSET = -1f
     const val KEY_WIDGET_SEPARATOR = "widget_separator" // bool default true (WeekView 纯文字课程间分隔线)
     const val KEY_GRID_SCALE = "grid_scale" // float 0.7~1.3 default 1.0 — 网格视图整体缩放(字号/行高/间距/圆角联动, issue#8)
     const val KEY_GRID_AUTO_HIDE_EMPTY_EVENING = "grid_auto_hide_empty_evening" // bool default false — 实验室: 网格视图自动收起无课晚间节次
@@ -571,6 +580,48 @@ object AppPrefs {
     fun setCourseColorless(ctx: Context, v: Boolean) {
         sp(ctx).edit().putBoolean(KEY_COURSE_COLORLESS, v).apply()
     }
+
+    // ===== 课程配色三档模式 + 种子色 — 默认 CLASSIC (spec-course-color-harmony) =====
+
+    fun getCourseColorMode(ctx: Context): Int =
+        sp(ctx).getInt(KEY_COURSE_COLOR_MODE, COURSE_COLOR_MODE_CLASSIC)
+
+    fun setCourseColorMode(ctx: Context, v: Int) {
+        require(v in COURSE_COLOR_MODE_CLASSIC..COURSE_COLOR_MODE_CUSTOM)
+        sp(ctx).edit().putInt(KEY_COURSE_COLOR_MODE, v).apply()
+        _changeBus.tryEmit(KEY_COURSE_COLOR_MODE)
+    }
+
+    /** mode 订阅通道 — 仿 themeKeyFlow(SP 监听 + distinctUntilChanged), 外观页三档单选用。 */
+    fun courseColorModeFlow(ctx: Context): Flow<Int> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sp, k ->
+            if (k == KEY_COURSE_COLOR_MODE) trySend(sp.getInt(KEY_COURSE_COLOR_MODE, COURSE_COLOR_MODE_CLASSIC))
+        }
+        val sp = sp(ctx)
+        sp.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getCourseColorMode(ctx))
+        awaitClose { sp.unregisterOnSharedPreferenceChangeListener(listener) }
+    }.distinctUntilChanged()
+
+    fun getCourseColorSeedHue(ctx: Context): Float =
+        sp(ctx).getFloat(KEY_COURSE_COLOR_SEED_HUE, COURSE_COLOR_SEED_UNSET)
+
+    fun setCourseColorSeedHue(ctx: Context, hue: Float) {
+        require(hue in 0f..360f || hue == COURSE_COLOR_SEED_UNSET)
+        sp(ctx).edit().putFloat(KEY_COURSE_COLOR_SEED_HUE, hue).apply()
+        _changeBus.tryEmit(KEY_COURSE_COLOR_SEED_HUE)
+    }
+
+    /** seed 订阅通道 — 同 courseColorModeFlow; 外观页色相滑条 + 预览试算用。 */
+    fun courseColorSeedHueFlow(ctx: Context): Flow<Float> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sp, k ->
+            if (k == KEY_COURSE_COLOR_SEED_HUE) trySend(sp.getFloat(KEY_COURSE_COLOR_SEED_HUE, COURSE_COLOR_SEED_UNSET))
+        }
+        val sp = sp(ctx)
+        sp.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getCourseColorSeedHue(ctx))
+        awaitClose { sp.unregisterOnSharedPreferenceChangeListener(listener) }
+    }.distinctUntilChanged()
 
     // ===== WeekView 纯文字组件：课程间分隔线 — 默认 true =====
 

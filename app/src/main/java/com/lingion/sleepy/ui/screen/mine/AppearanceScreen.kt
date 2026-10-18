@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.screen.mine
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,7 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -23,17 +26,22 @@ import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,11 +50,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
+import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.ui.component.SectionHeader
 import com.lingion.sleepy.ui.theme.CustomSchemeDeriver
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -55,10 +65,16 @@ import com.lingion.sleepy.ui.theme.ThemePreset
 import com.lingion.sleepy.ui.theme.ThemePresets
 import com.lingion.sleepy.data.CustomThemeStore
 import com.lingion.sleepy.util.AppPrefs
+import com.lingion.sleepy.util.CourseColorUtil
+import com.lingion.sleepy.util.CourseColorWriteGlue
+import com.lingion.sleepy.util.CourseHueStore
+import com.lingion.sleepy.util.GoldenAngleColor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.math.roundToInt
 
 /**
  * 外观页(决策 D2 合并页): 仅主题色彩组。课程显示/小组件组已迁至 GeneralSettingsScreen(2026-08-24)。
@@ -86,6 +102,45 @@ fun AppearanceScreen(
     val widgetScope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
     fun refreshWidgets() {
         widgetScope.launch { com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(context) }
+    }
+
+    // 预览胶囊数据源: 当前默认课表前 5 个不同组(gid→课名, spec §5); 空课表时区体用占位名
+    var previewCourseGroups by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
+    LaunchedEffect(Unit) {
+        runCatching {
+            val app = SleepyApp.get()
+            val tid = app.repository.getDefaultTable()?.id
+            val courses = if (tid != null) app.repository.getCourses(tid) else app.repository.getAllCourses()
+            courses.asSequence().sortedBy { it.id }
+                .filter { it.groupId.isNotBlank() }
+                .distinctBy { it.groupId }
+                .take(5)
+                .map { it.groupId to it.courseName }
+                .toList()
+        }.getOrNull()?.let { previewCourseGroups = it }
+    }
+
+    // ── 课程配色三档状态 (spec §5) ──
+    // mode/seed/theme/themeMode 四键 CourseHueStore.start 均已订阅自动重灌快照,
+    // UI 订阅同一快照 → 试算预览/渲染叶子同帧一致。
+    val courseColorMode by AppPrefs.courseColorModeFlow(context).collectAsState(initial = AppPrefs.getCourseColorMode(context))
+    val courseColorSeed by AppPrefs.courseColorSeedHueFlow(context).collectAsState(initial = AppPrefs.getCourseColorSeedHue(context))
+
+    /** 全表重算挂后台 — recalcAll 内部自检 CLASSIC→0 写(零变化红线), 调用点无需判档。 */
+    fun recalcAllCourses() {
+        widgetScope.launch {
+            val app = SleepyApp.get()
+            val gids = app.repository.getAllCourses().sortedBy { it.id }.map { it.groupId }
+            CourseColorWriteGlue.recalcAll(context, app.database.courseColorDao(), gids)
+        }
+    }
+
+    // spec §2.3 时机2「FOLLOW_THEME 下换主题 → 重排课表色」(用户批准的 §2.5 目标行为):
+    // theme_key 覆盖预设点选/自定义点选/编辑器保存/删除回落全部主题应用路径;
+    // distinctUntilChanged 防初帧误触。CUSTOM 档 anchor=种子(与主题无关),不随主题重算;
+    // CLASSIC 档 recalcAll 内部自检零写。深浅切换(§6 测试3: 只动 S/L)同样无需重算。
+    LaunchedEffect(currentKey) {
+        if (courseColorMode == AppPrefs.COURSE_COLOR_MODE_FOLLOW_THEME) recalcAllCourses()
     }
 
     Scaffold(
@@ -186,6 +241,10 @@ fun AppearanceScreen(
                             modifier = Modifier.weight(1f).clip(SleepyTheme.shapes.medium).background(if (sel) colors.primary else colors.surfaceContainerHigh).noRippleClickable {
                                 if (mode != selectedMode) {
                                     AppPrefs.setThemeMode(context, mode); onThemeModeChange(mode); refreshWidgets()
+                                    // 深浅切换在 FOLLOW_THEME 下可能移动 anchor(系统动态取色深浅 primary
+                                    // 色相不同/预设深浅 primary 不同)→ 按 spec §2.3 时机2 重算保表与
+                                    // 新课补色同 anchor。CUSTOM 档 anchor=种子(与深浅无关),不重算。
+                                    if (courseColorMode == AppPrefs.COURSE_COLOR_MODE_FOLLOW_THEME) recalcAllCourses()
                                 }
                             }.padding(vertical = 12.dp),
                             contentAlignment = Alignment.Center
@@ -194,6 +253,53 @@ fun AppearanceScreen(
                         }
                     }
                 }
+            }
+
+            // ── Section②·5 课程配色 (spec §5: 三档 + 色相滑条 + 试算预览 + 重排按钮) ──
+            item {
+                SectionHeader(title = stringResource(R.string.appearance_section_course_color))
+            }
+            item {
+                CourseColorSection(
+                    mode = courseColorMode,
+                    seed = courseColorSeed,
+                    onModeChange = { newMode ->
+                        if (newMode != courseColorMode) {
+                            // 进 CUSTOM 且种子未初始化 → 播种为当前主题 anchor(滑条起点即所见)
+                            if (newMode == AppPrefs.COURSE_COLOR_MODE_CUSTOM &&
+                                courseColorSeed == AppPrefs.COURSE_COLOR_SEED_UNSET
+                            ) {
+                                // hueOf(Color) 与 FOLLOW_THEME anchor 同一解析函数 → 滑条起点=所见主题色
+                                AppPrefs.setCourseColorSeedHue(context, CourseColorUtil.hueOf(colors.primary))
+                            }
+                            AppPrefs.setCourseColorMode(context, newMode)
+                            recalcAllCourses() // spec §2.3 时机1: 切档重排
+                            refreshWidgets()
+                        }
+                    },
+                    onSeedCommit = { hue ->
+                        AppPrefs.setCourseColorSeedHue(context, hue)
+                        recalcAllCourses() // spec §2.3 时机3: 种子变化重排
+                        refreshWidgets()
+                    },
+                    onRecalc = {
+                        widgetScope.launch {
+                            val app = SleepyApp.get()
+                            val gids = app.repository.getAllCourses().sortedBy { it.id }.map { it.groupId }
+                            // spec §2.3 时机6: 手动重排 — Toast 报真实重算组数(0 写=表已一致), 回主线程弹
+                            val n = CourseColorWriteGlue.recalcAll(context, app.database.courseColorDao(), gids)
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.course_color_recalc_done, n),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                        refreshWidgets()
+                    },
+                    previewGids = previewCourseGroups,
+                )
             }
 
             // ── Section③ 课表显示：冲突样式及参数仍属于本组 ──
@@ -434,6 +540,138 @@ private fun CustomThemeCard(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * 课程配色区 (spec §5): 三档单选 + CUSTOM 色相滑条 + 按当前档试算预览 + 手动重排按钮。
+ *
+ * 预览试算走纯函数(planHuesForGroups / stableHue), 不依赖 DB 写成功 —— 与渲染兜底
+ * 「表中查无 → 实时按 2.2 公式算, 与表将含值一致」同源, 预览即所得。
+ * anchor 取当前 Compose primary(所见即所算, 动态取色主题也正确)。
+ */
+@Composable
+private fun CourseColorSection(
+    mode: Int,
+    seed: Float,
+    onModeChange: (Int) -> Unit,
+    onSeedCommit: (Float) -> Unit,
+    onRecalc: () -> Unit,
+    previewGids: List<Pair<String, String>>,
+) {
+    val colors = MaterialTheme.colorScheme
+    // 与主页/课表格/小组件同一 isDark 判定（isPaletteDark(palette)）— 保证 S/L 档逐位同源
+    val isDark = CourseColorUtil.isPaletteDark(SleepyTheme.palette)
+    val placeholder = stringResource(R.string.format_help_example)
+
+    // 滑条: 拖拽只动本地值, 松手才提交(onValueChangeFinished) → 一次拖动只重算一次
+    var sliderHue by remember { mutableFloatStateOf(seed.coerceAtLeast(0f)) }
+    LaunchedEffect(seed) { if (seed >= 0f) sliderHue = seed }
+
+    val anchor = CourseColorUtil.resolveAnchor(mode, colors.primary.toArgb(), seed)
+    // 课表有课取真实前 5 组课名; 空课表用占位串(预览仍可看色相编排)
+    val items: List<Pair<String, String>> =
+        previewGids.ifEmpty { (1..5).map { "preview-$it" to placeholder } }
+    // 试算层: 只对「无持久记录」的组生效(占位串/导入未落库的新课)。
+    val planned: Map<String, Float> = remember(anchor, items) {
+        if (anchor == null) items.associate { (gid, _) -> gid to CourseColorUtil.stableHue(gid) }
+        else CourseColorUtil.planHuesForGroups(anchor, emptyList(), items.map { it.first })
+    }
+    // 持久快照 = 主页胶囊取色的同一事实源（CourseHueStore）: 有记录的组直读,
+    // 所见即主页所得。此前预览从零试算前 5 组, 与全表重算落库的持久 hue
+    // 在增量避让滑位下可对同一门课给出不同色相 — 即用户所见「预览比主页淡」色差根因。
+    val persisted by CourseHueStore.hueMapFlow.collectAsState()
+    val hues = remember(planned, persisted) {
+        planned.mapValues { (gid, hue) -> persisted[gid] ?: hue }
+    }
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = SleepyTheme.shapes.large,
+        color = colors.surfaceContainer,
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            listOf(
+                AppPrefs.COURSE_COLOR_MODE_CLASSIC to stringResource(R.string.course_color_classic),
+                AppPrefs.COURSE_COLOR_MODE_FOLLOW_THEME to stringResource(R.string.course_color_follow_theme),
+                AppPrefs.COURSE_COLOR_MODE_CUSTOM to stringResource(R.string.course_color_custom_seed),
+            ).forEach { (m, label) ->
+                val selected = m == mode
+                Row(
+                    modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.medium)
+                        .background(if (selected) colors.surfaceContainerHigh else Color.Transparent)
+                        .noRippleClickable { onModeChange(m) }
+                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadioButton(selected = selected, onClick = null)
+                    Spacer(Modifier.width(4.dp))
+                    Text(label, style = MaterialTheme.typography.bodyMedium, color = colors.onSurface)
+                }
+            }
+            if (mode == AppPrefs.COURSE_COLOR_MODE_CUSTOM) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        stringResource(R.string.course_color_seed_label),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.onSurfaceVariant,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text(
+                        "${sliderHue.roundToInt()}°",
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                        color = colors.onSurface,
+                    )
+                }
+                Slider(
+                    value = sliderHue,
+                    onValueChange = { sliderHue = it.roundToInt().toFloat() },
+                    onValueChangeFinished = { onSeedCommit(sliderHue) },
+                    valueRange = 0f..360f,
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                )
+            }
+            Spacer(Modifier.height(4.dp))
+            Text(
+                stringResource(R.string.course_color_preview),
+                style = MaterialTheme.typography.labelMedium,
+                color = colors.onSurfaceVariant,
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items.forEach { (gid, name) ->
+                    val hue = hues[gid] ?: return@forEach
+                    val (s, l) = GoldenAngleColor.hsl(hue, isDark)
+                    val bg = CourseColorUtil.hslToColor(hue, s, l)
+                    Box(
+                        modifier = Modifier.clip(SleepyTheme.shapes.small)
+                            .background(bg)
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                    ) {
+                        Text(
+                            name,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = CourseColorUtil.textColorOn(bg, isDark, colors.onSurface),
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            FilledTonalButton(
+                onClick = onRecalc,
+                modifier = Modifier.fillMaxWidth(),
+                shape = SleepyTheme.shapes.medium,
+            ) {
+                Text(stringResource(R.string.course_color_recalc))
             }
         }
     }

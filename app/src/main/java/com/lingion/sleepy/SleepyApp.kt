@@ -40,6 +40,8 @@ class SleepyApp : Application() {
         instance = this
         androidx.core.app.NotificationManagerCompat.from(this)
             .cancel(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE)
+        // 课程持久色相缓存首载（spec §2.1 渲染层）— 之后靠 changeBus/invalidate 刷新。
+        com.lingion.sleepy.util.CourseHueStore.start(this)
         // 提醒重排枢纽: 数据/设置变更 → 300ms 防抖合并为一次完整刷新。
         // Each subsystem is isolated so one reconciliation failure cannot block the others.
         com.lingion.sleepy.widget.notification.ReminderRescheduler.init {

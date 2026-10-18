@@ -25,6 +25,7 @@ import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.MealBreakDetector
 import com.lingion.sleepy.util.GridSeparatorGeometry
 import com.lingion.sleepy.util.CourseDisplayUtil
+import com.lingion.sleepy.util.CourseHueStore
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.HolidayManager
 import com.lingion.sleepy.util.PeriodHeaderFormatter
@@ -463,7 +464,8 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                         val laneW = dayW * laneRect.laneWidthFraction
                         p.color = CourseColorUtil.pickCourseColorIntWithGroupRows(
                             course, allCourses.filter { it.groupId == course.groupId },
-                            isDark, gridLine, colorless
+                            isDark, gridLine, colorless,
+                            persistedHue = CourseHueStore.hueFor(course.groupId)
                         )
                         p.alpha = if (dayData.isGrey) 120 else 200
                         val r = minOf(dp(4f).toFloat(), barH / 2f)
@@ -714,7 +716,8 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                     // colorless 灰底传 gridLine(即 surfaceVariant 的 Int), 与原实现一致
                     val baseColor = CourseColorUtil.pickCourseColorIntWithGroupRows(
                         course, allCourses.filter { it.groupId == course.groupId },
-                        isDark, gridLine, colorless
+                        isDark, gridLine, colorless,
+                        persistedHue = CourseHueStore.hueFor(course.groupId)
                     )
                     p.color = baseColor
                     p.alpha = if (dayData.isGrey) 120 else 200
