@@ -444,13 +444,16 @@
     <string name="widget_scroll_dialog_confirm">Enable experimental</string>
     <string name="widget_scroll_dialog_cancel">Cancel</string>
     <string name="widget_edit_default_label">Default (follow current schedule)</string>
-    <string name="widget_manage_title">Manage Widgets</string>
+    <string name="widget_manage_title">Add or Manage Widgets</string>
     <string name="widget_edit_title">Edit Widget</string>
     <string name="widget_manage_empty">No Sleepy widget added to home screen yet. Long-press empty space → Widgets → pick Sleepy to add.</string>
     <string name="widget_edit_compact_title">3-day window</string>
     <string name="widget_edit_compact_today_first">Today first</string>
     <string name="widget_edit_compact_today_second">Today second</string>
-    <string name="widget_manage_entry">Manage Widgets</string>
+    <string name="widget_manage_entry">Add or Manage Widgets</string>
+    <string name="widget_manage_empty_v2">Tap + at the top right to add a widget. If your launcher does not support quick add, long-press the home screen → Widgets → pick Sleepy.</string>
+    <string name="widget_gallery_title">Add Widget</string>
+    <string name="widget_add_unsupported_hint">This launcher does not support quick add. Long-press the home screen → Widgets → pick Sleepy.</string>
     <string name="more_sections">%1$d more...</string>
     <string name="tomorrow">Tomorrow</string>
     <string name="n_course_periods">%1$d course periods</string>
@@ -563,6 +566,7 @@
     <string name="section_single">Period %1$d</string>
     <string name="mine_appearance">Appearance &amp; theme</string>
     <string name="mine_general">General</string>
+    <string name="mine_widget">Widgets</string>
     <string name="theme_appearance">Appearance</string>
     <string name="theme_mode_system">Auto (light/dark)</string>
     <string name="theme_mode_light">Light</string>

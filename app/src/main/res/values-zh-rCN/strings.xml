@@ -538,10 +538,13 @@
     <string name="widget_scroll_dialog_confirm">开启实验</string>
     <string name="widget_scroll_dialog_cancel">取消</string>
     <string name="widget_edit_default_label">默认（跟随当前课表）</string>
-    <string name="widget_manage_title">管理桌面小组件</string>
+    <string name="widget_manage_title">添加或管理桌面小组件</string>
     <string name="widget_edit_title">编辑小组件</string>
     <string name="widget_manage_empty">暂未在桌面添加 Sleepy 小组件。长按桌面空白处 → 小组件 → 选 Sleepy 即可添加。</string>
-    <string name="widget_manage_entry">管理桌面小组件</string>
+    <string name="widget_manage_entry">添加或管理桌面小组件</string>
+    <string name="widget_manage_empty_v2">点右上角 ＋ 添加小组件;桌面不支持快捷添加时,长按桌面 → 小组件 → 选 Sleepy。</string>
+    <string name="widget_gallery_title">添加小组件</string>
+    <string name="widget_add_unsupported_hint">当前桌面不支持快捷添加,请长按桌面 → 小组件 → 选 Sleepy。</string>
     <string name="more_sections">还有 %1$d 节…</string>
     <string name="tomorrow">明天</string>
     <string name="n_course_periods">%1$d 节课程</string>
@@ -846,6 +849,7 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="section_single">第%1$d 节</string>
     <string name="mine_appearance">外观与主题</string>
     <string name="mine_general">通用</string>
+    <string name="mine_widget">小组件</string>
     <string name="theme_appearance">外观</string>
     <!-- 深浅色模式的"跟随系统",与主题取色的 theme_system(跟随系统)区分 -->
     <string name="theme_mode_system">深浅色跟随系统</string>

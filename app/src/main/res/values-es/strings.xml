@@ -432,13 +432,16 @@
     <string name="widget_scroll_dialog_confirm">Activar experimental</string>
     <string name="widget_scroll_dialog_cancel">Cancelar</string>
     <string name="widget_edit_default_label">Predeterminado (sigue el horario actual)</string>
-    <string name="widget_manage_title">Administrar widgets del escritorio</string>
+    <string name="widget_manage_title">Añadir o administrar widgets</string>
     <string name="widget_edit_title">Editar widget</string>
     <string name="widget_manage_empty">Aún no se ha añadido ningún widget de Sleepy al escritorio. Mantén pulsado un espacio vacío → Widgets → elige Sleepy para añadir.</string>
     <string name="widget_edit_compact_title">Ventana de 3 días</string>
     <string name="widget_edit_compact_today_first">Hoy primero</string>
     <string name="widget_edit_compact_today_second">Hoy segundo</string>
-    <string name="widget_manage_entry">Administrar widgets del escritorio</string>
+    <string name="widget_manage_entry">Añadir o administrar widgets</string>
+    <string name="widget_manage_empty_v2">Toca + arriba a la derecha para añadir un widget. Si tu lanzador no admite el añadido rápido, mantén pulsado el inicio → Widgets → elige Sleepy.</string>
+    <string name="widget_gallery_title">Añadir widget</string>
+    <string name="widget_add_unsupported_hint">Este lanzador no admite el añadido rápido. Mantén pulsado el inicio → Widgets → elige Sleepy.</string>
     <string name="more_sections">%1$d más...</string>
     <string name="tomorrow">Mañana</string>
     <string name="n_course_periods">%1$d períodos de curso</string>
@@ -551,6 +554,7 @@
     <string name="section_single">Período %1$d</string>
     <string name="mine_appearance">Apariencia y tema</string>
     <string name="mine_general">General</string>
+    <string name="mine_widget">Widgets</string>
     <string name="theme_appearance">Apariencia</string>
     <string name="theme_mode_system">Automático (claro/oscuro)</string>
     <string name="theme_mode_light">Claro</string>

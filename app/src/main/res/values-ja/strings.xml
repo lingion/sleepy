@@ -432,13 +432,16 @@
     <string name="widget_scroll_dialog_confirm">実験的に有効にする</string>
     <string name="widget_scroll_dialog_cancel">キャンセル</string>
     <string name="widget_edit_default_label">デフォルト（現在の時間割に従う）</string>
-    <string name="widget_manage_title">ホームウィジェットを管理</string>
+    <string name="widget_manage_title">ウィジェットを追加・管理</string>
     <string name="widget_edit_title">ウィジェットを編集</string>
     <string name="widget_manage_empty">ホーム画面に Sleepy ウィジェットが追加されていません。空いているスペースを長押し → ウィジェット → Sleepy を選択してください。</string>
     <string name="widget_edit_compact_title">3日間ウィンドウ</string>
     <string name="widget_edit_compact_today_first">今日を1番目に</string>
     <string name="widget_edit_compact_today_second">今日を2番目に</string>
-    <string name="widget_manage_entry">ホームウィジェットを管理</string>
+    <string name="widget_manage_entry">ウィジェットを追加・管理</string>
+    <string name="widget_manage_empty_v2">右上の＋からウィジェットを追加できます。クイック追加非対応のランチャーでは、ホーム画面を長押し → ウィジェット → Sleepy を選択してください。</string>
+    <string name="widget_gallery_title">ウィジェットを追加</string>
+    <string name="widget_add_unsupported_hint">このランチャーはクイック追加に対応していません。ホーム画面を長押し → ウィジェット → Sleepy を選択してください。</string>
     <string name="more_sections">他に %1$d コマ…</string>
     <string name="tomorrow">明日</string>
     <string name="n_course_periods">%1$dコマ</string>
@@ -551,6 +554,7 @@
     <string name="section_single">第%1$d限</string>
     <string name="mine_appearance">外観とテーマ</string>
     <string name="mine_general">一般</string>
+    <string name="mine_widget">ウィジェット</string>
     <string name="theme_appearance">外観</string>
     <string name="theme_mode_system">明暗はシステムに従う</string>
     <string name="theme_mode_light">ライト</string>

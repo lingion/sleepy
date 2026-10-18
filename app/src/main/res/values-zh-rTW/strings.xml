@@ -432,13 +432,16 @@
     <string name="widget_scroll_dialog_confirm">開啟實驗</string>
     <string name="widget_scroll_dialog_cancel">取消</string>
     <string name="widget_edit_default_label">預設（跟隨當前課表）</string>
-    <string name="widget_manage_title">管理桌面小工具</string>
+    <string name="widget_manage_title">新增或管理桌面小工具</string>
     <string name="widget_edit_title">編輯小工具</string>
     <string name="widget_manage_empty">桌面上尚未加入 Sleepy 小工具。長按桌面空白處 → 小工具 → 選擇 Sleepy 即可新增。</string>
     <string name="widget_edit_compact_title">三天視窗</string>
     <string name="widget_edit_compact_today_first">今日居於第一位</string>
     <string name="widget_edit_compact_today_second">今日居於第二位</string>
-    <string name="widget_manage_entry">管理桌面小工具</string>
+    <string name="widget_manage_entry">新增或管理桌面小工具</string>
+    <string name="widget_manage_empty_v2">點右上角 ＋ 新增小工具;若桌面不支援快捷新增,請長按桌面 → 小工具 → 選擇 Sleepy。</string>
+    <string name="widget_gallery_title">新增小工具</string>
+    <string name="widget_add_unsupported_hint">目前桌面不支援快捷新增,請長按桌面 → 小工具 → 選擇 Sleepy。</string>
     <string name="more_sections">還有 %1$d 節…</string>
     <string name="tomorrow">明天</string>
     <string name="n_course_periods">%1$d 節課程</string>
@@ -551,6 +554,7 @@
     <string name="section_single">第%1$d 節</string>
     <string name="mine_appearance">外觀與主題</string>
     <string name="mine_general">一般</string>
+    <string name="mine_widget">小工具</string>
     <string name="theme_appearance">外觀</string>
     <string name="theme_mode_system">深淺色跟隨系統</string>
     <string name="theme_mode_light">淺色</string>
