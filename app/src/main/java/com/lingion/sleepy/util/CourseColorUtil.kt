@@ -1,7 +1,6 @@
 package com.lingion.sleepy.util
 
 import androidx.compose.ui.graphics.Color
-import androidx.core.graphics.ColorUtils
 import com.lingion.sleepy.data.entity.CourseColorMode
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.CoursePalette
@@ -148,11 +147,35 @@ object CourseColorUtil {
         return ((h % 360f) + 360f) % 360f
     }
 
-    /** [hueOf] 的 Color 重载（Compose 路径）。 */
-    fun hueOf(color: Color): Float =
-        hueOf(android.graphics.Color.rgb(
-            (color.red * 255).toInt(), (color.green * 255).toInt(), (color.blue * 255).toInt()
-        ))
+    /**
+     * [hueOf] 的 Color 重载（Compose 路径）。
+     * 手工拼 ARGB 而非 android.graphics.Color.rgb — 后者在纯 JVM 单测里是 mockable
+     * 桩(恒返回 0), 会让 Compose 路径 anchor 解析在测试环境静默失真。
+     */
+    fun hueOf(color: Color): Float {
+        val argb = (0xFF shl 24) or
+            ((color.red * 255).toInt().coerceIn(0, 255) shl 16) or
+            ((color.green * 255).toInt().coerceIn(0, 255) shl 8) or
+            (color.blue * 255).toInt().coerceIn(0, 255)
+        return hueOf(argb)
+    }
+
+    /**
+     * 三档模式 anchor 决策（spec §2.1）— 单一事实来源，Compose/Canvas/重算三路共用：
+     *   CLASSIC → null（不派生, 渲染走 stableHue 老路径）
+     *   FOLLOW_THEME → 主题 primary 的 hue
+     *   CUSTOM → 用户种子色 hue；种子未初始化(-1)回落主题 hue（升级首进不崩不回红）
+     *
+     * themePrimaryArgb 解析责任在调用方: Compose 取 WakeUpColorScheme.primary,
+     * Canvas/重算经 themeKey→ThemePreset 当前深浅 primary — 两路必须解析同一颜色
+     * （契约测试 hueOf_compose_and_canvas_paths_agree 锁解析函数同源）。
+     */
+    fun resolveAnchor(mode: Int, themePrimaryArgb: Int, seedHue: Float): Float? = when (mode) {
+        AppPrefs.COURSE_COLOR_MODE_FOLLOW_THEME -> hueOf(themePrimaryArgb)
+        AppPrefs.COURSE_COLOR_MODE_CUSTOM ->
+            if (seedHue >= 0f) ((seedHue % 360f) + 360f) % 360f else hueOf(themePrimaryArgb)
+        else -> null
+    }
 
     /**
      * 判定课程是否有用户自定义颜色：color 非空且非哨兵值。
@@ -263,18 +286,22 @@ object CourseColorUtil {
     /**
      * Compose 路径取色入口（TodayScreen / CourseTableView）。
      * @param neutralColor colorless 统一底色，即当前主题的最浅 surface container（勿从 CoursePalette 取，它无此字段）
+     * @param persistedHue 派生档（FOLLOW_THEME/CUSTOM）从 course_colors 表读到的 hue；
+     *   null = CLASSIC 档或查无 → 走 stableHue 实时老路径（v1.0.61 行为零变化，spec §2.1）。
+     *   优先级红线不变: 单课自定义色 > colorless > persistedHue/stableHue。
      */
     fun pickCourseColorCompose(
         course: CourseEntity,
         isDark: Boolean,
         neutralColor: Color,
-        colorless: Boolean = false
+        colorless: Boolean = false,
+        persistedHue: Float? = null
     ): Color {
         if (hasCustomColor(course)) {
             runCatching { return Color(android.graphics.Color.parseColor(course.color)) }
         }
         if (colorless) return neutralColor
-        val hue = stableHue(course.groupId)
+        val hue = persistedHue ?: stableHue(course.groupId)
         val s = if (isDark) S_DARK else S_LIGHT
         val l = if (isDark) L_DARK else L_LIGHT
         return hslToColor(hue, s, l)
@@ -283,18 +310,20 @@ object CourseColorUtil {
     /**
      * Canvas 路径取色入口（WeekGridWidgetProvider / WidgetBitmapRenderers）。
      * @param neutralColorInt colorless 统一底色，即当前主题的最浅 surface container 的 Int 值
+     * @param persistedHue 同 [pickCourseColorCompose]，Canvas 侧同源语义（spec §2.3 三路一致）。
      */
     fun pickCourseColorInt(
         course: CourseEntity,
         isDark: Boolean,
         neutralColorInt: Int,
-        colorless: Boolean = false
+        colorless: Boolean = false,
+        persistedHue: Float? = null
     ): Int {
         if (hasCustomColor(course)) {
             runCatching { return android.graphics.Color.parseColor(course.color) }
         }
         if (colorless) return neutralColorInt
-        val hue = stableHue(course.groupId)
+        val hue = persistedHue ?: stableHue(course.groupId)
         val s = if (isDark) S_DARK else S_LIGHT
         val l = if (isDark) L_DARK else L_LIGHT
         return hslToColorInt(hue, s, l)
@@ -313,13 +342,17 @@ object CourseColorUtil {
      * @param row 目标行
      * @param groupRows 同 groupId 所有行(含 row 自身) — 用于 AUTO 模式按行号顺序算 hue
      * @param neutralColor colorless 统一底色
+     * @param persistedHue 派生档持久 hue（null = CLASSIC/查无, 全线走 v1.0.61 老路径）。
+     *   GROUP 行: 直接作 base; AUTO 行: 取代「组色源 hex 解析 hue」作黄金角推进的 base —
+     *   组级持久色相即整组的多地点基色, 行偏移语义不变（spec §2.1 决策树 ③）。
      */
     fun pickCourseColorComposeWithGroupRows(
         row: CourseEntity,
         groupRows: List<CourseEntity>,
         isDark: Boolean,
         neutralColor: Color,
-        colorless: Boolean = false
+        colorless: Boolean = false,
+        persistedHue: Float? = null
     ): Color {
         return when (row.colorMode) {
             CourseColorMode.CUSTOM -> runCatching {
@@ -327,7 +360,9 @@ object CourseColorUtil {
             }.getOrElse { neutralColor }
             CourseColorMode.AUTO -> {
                 if (colorless) return neutralColor
-                val hue = GoldenAngleColor.forRow(row, groupRows, groupSourceColorHex(groupRows))
+                val hue = GoldenAngleColor.forRow(
+                    row, groupRows, groupSourceColorHex(groupRows), persistedBaseHue = persistedHue
+                )
                 val (s, l) = GoldenAngleColor.hsl(hue, isDark)
                 hslToColor(hue, s, l)
             }
@@ -336,7 +371,7 @@ object CourseColorUtil {
                     runCatching { return Color(android.graphics.Color.parseColor(row.color)) }
                 }
                 if (colorless) return neutralColor
-                val hue = stableHue(row.groupId)
+                val hue = persistedHue ?: stableHue(row.groupId)
                 val s = if (isDark) S_DARK else S_LIGHT
                 val l = if (isDark) L_DARK else L_LIGHT
                 hslToColor(hue, s, l)
@@ -344,13 +379,14 @@ object CourseColorUtil {
         }
     }
 
-    /** Canvas 路径 · issue#22 3 态取色入口 */
+    /** Canvas 路径 · issue#22 3 态取色入口（persistedHue 语义与 Compose 版同源） */
     fun pickCourseColorIntWithGroupRows(
         row: CourseEntity,
         groupRows: List<CourseEntity>,
         isDark: Boolean,
         neutralColorInt: Int,
-        colorless: Boolean = false
+        colorless: Boolean = false,
+        persistedHue: Float? = null
     ): Int {
         return when (row.colorMode) {
             CourseColorMode.CUSTOM -> runCatching {
@@ -358,7 +394,9 @@ object CourseColorUtil {
             }.getOrElse { neutralColorInt }
             CourseColorMode.AUTO -> {
                 if (colorless) return neutralColorInt
-                val hue = GoldenAngleColor.forRow(row, groupRows, groupSourceColorHex(groupRows))
+                val hue = GoldenAngleColor.forRow(
+                    row, groupRows, groupSourceColorHex(groupRows), persistedBaseHue = persistedHue
+                )
                 val (s, l) = GoldenAngleColor.hsl(hue, isDark)
                 hslToColorInt(hue, s, l)
             }
@@ -367,7 +405,7 @@ object CourseColorUtil {
                     runCatching { return android.graphics.Color.parseColor(row.color) }
                 }
                 if (colorless) return neutralColorInt
-                val hue = stableHue(row.groupId)
+                val hue = persistedHue ?: stableHue(row.groupId)
                 val s = if (isDark) S_DARK else S_LIGHT
                 val l = if (isDark) L_DARK else L_LIGHT
                 hslToColorInt(hue, s, l)
@@ -402,9 +440,16 @@ object GoldenAngleColor {
      * @param row 目标行(只读,用于取 id)
      * @param groupRows 同 groupId 的所有行(含 row 自身)
      * @param groupSourceColorHex 组色源行(通常是 colorMode=GROUP 中 id 最小)的 color 字段值
+     * @param persistedBaseHue 派生档持久 hue（spec §2.1 决策树 ③）— 非 null 时取代 hex 解析
+     *   作黄金角推进基色（组级基色=持久表值, 行偏移语义不变）; null = CLASSIC 老路径零变化。
      */
-    fun forRow(row: CourseEntity, groupRows: List<CourseEntity>, groupSourceColorHex: String?): Float {
-        val baseHue = parseHexHue(groupSourceColorHex)
+    fun forRow(
+        row: CourseEntity,
+        groupRows: List<CourseEntity>,
+        groupSourceColorHex: String?,
+        persistedBaseHue: Float? = null
+    ): Float {
+        val baseHue = persistedBaseHue ?: parseHexHue(groupSourceColorHex)
         val sorted = groupRows.sortedBy { it.id }
         val idx = sorted.indexOfFirst { it.id == row.id }
         val safeIdx = if (idx < 0) 0 else idx
@@ -419,10 +464,8 @@ object GoldenAngleColor {
     private fun parseHexHue(hex: String?): Float {
         if (hex.isNullOrBlank()) return 0f
         return runCatching {
-            val argb = android.graphics.Color.parseColor(hex)
-            val hsl = FloatArray(3)
-            ColorUtils.colorToHSL(argb, hsl)
-            hsl[0]
+            // 与 anchor 解析同一 hueOf（自实现三路逐位一致, 弃 ColorUtils 平台差异）
+            CourseColorUtil.hueOf(android.graphics.Color.parseColor(hex))
         }.getOrDefault(0f)
     }
 }
