@@ -138,6 +138,13 @@ class ScheduleRepository(private val db: AppDatabase) {
             override suspend fun insertTable(table: TimeTableEntity) = tableDao.insert(table)
             override suspend fun insertCourses(courses: List<CourseEntity>) { courseDao.insertAll(courses) }
             override suspend fun setDefault(id: Long) = tableDao.setDefault(id)
+            // 认亲（spec §2.4）: 事务内读导入前全库名册; 新课 hue 同事务落库。
+            override suspend fun knownNameRoster() = knownNameToGroupId(courseDao.getAll())
+            override suspend fun persistNewGroupColors(courses: List<CourseEntity>) {
+                com.lingion.sleepy.util.CourseColorWriteGlue.persistNewGroupHues(
+                    SleepyApp.get(), db.courseColorDao(), courses
+                )
+            }
         }, table, courses, periodTable, bindPeriodTableId, keepGroups)
         onDataChanged()
         return id
@@ -506,8 +513,12 @@ class ScheduleRepository(private val db: AppDatabase) {
     suspend fun insertCourses(courses: List<CourseEntity>): List<Long> {
         captureForUndo()
         // 导入时以规范化课程名为身份；时间、教师、教室只属于课程的一个时段。
-        val withGroupIds = assignGroupIds(courses)
+        // 认亲（spec §2.4）: 全库同名课 → 继承旧 groupId → 持久 hue 命中 → 颜色跨导入不变。
+        val withGroupIds = assignGroupIds(courses, knownNameToGroupId(courseDao.getAll()))
         val ids = courseDao.insertAll(withGroupIds)
+        com.lingion.sleepy.util.CourseColorWriteGlue.persistNewGroupHues(
+            SleepyApp.get(), db.courseColorDao(), withGroupIds
+        )
         onDataChanged()
         return ids
     }
@@ -652,8 +663,13 @@ class ScheduleRepository(private val db: AppDatabase) {
     /** 覆盖式导入（先删后插） */
     suspend fun replaceCourses(tableId: Long, courses: List<CourseEntity>) {
         captureForUndo()
-        val withGroupIds = assignGroupIds(courses)
+        // 认亲（spec §2.4）: 名册在删前取 — 被覆盖表自己的旧同名行也是认亲对象,
+        // 重导入同名课 groupId/hue 双继承 → 覆盖导入颜色不变。
+        val withGroupIds = assignGroupIds(courses, knownNameToGroupId(courseDao.getAll()))
         courseDao.replaceAll(tableId, withGroupIds)
+        com.lingion.sleepy.util.CourseColorWriteGlue.persistNewGroupHues(
+            SleepyApp.get(), db.courseColorDao(), withGroupIds
+        )
         onDataChanged()
         pruneDefaultTopPrefs()
     }
@@ -690,5 +706,8 @@ class ScheduleRepository(private val db: AppDatabase) {
         }
     }
 
-    private fun assignGroupIds(courses: List<CourseEntity>): List<CourseEntity> = normalizedImportGroups(courses)
+    private fun assignGroupIds(
+        courses: List<CourseEntity>,
+        knownNameToGroup: Map<String, String> = emptyMap()
+    ): List<CourseEntity> = normalizedImportGroups(courses, knownNameToGroup)
 }

@@ -727,12 +727,21 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
             // 落库课程
             val defaultColor = "#FF6750A4"
             // 按课程名分 groupId（同名课程视为一组，便于编辑）
+            // 认亲（spec §2.4）: 全库同名课 → 继承旧 groupId → 持久 hue 命中 → 删表重导入颜色不变
+            val knownNameToGid = com.lingion.sleepy.data.repository.knownNameToGroupId(courseDao.getAll())
             val nameToGroup = mutableMapOf<String, String>()
             val entities = toCourseEntities(courses, generatedId, defaultColor).map { c ->
-                val gid = nameToGroup.getOrPut(c.courseName) { java.util.UUID.randomUUID().toString() }
+                val key = c.courseName.trim().replace(Regex("\\s+"), " ").lowercase()
+                val gid = nameToGroup.getOrPut(key) {
+                    knownNameToGid[key] ?: java.util.UUID.randomUUID().toString()
+                }
                 c.copy(groupId = gid)
             }
             courseDao.insertAll(entities)
+            // 派生档新课补色同事务落库; CLASSIC 零写入（spec §2.1 升级零变化）
+            com.lingion.sleepy.util.CourseColorWriteGlue.persistNewGroupHues(
+                getApplication(), db.courseColorDao(), entities
+            )
             generatedId
         }
         newId

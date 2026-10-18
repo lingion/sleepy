@@ -178,6 +178,30 @@ object CourseColorUtil {
     }
 
     /**
+     * 增量补色规划（spec §2.4「新课只增不改」/ §6 测试7 色相层）— 纯函数, 无 DB 依赖:
+     *   gids = 待补色的**新**组（既有组由调用方过滤, 钉死性: existing 永不移动）;
+     *   起点 = safeArcHue, 沿 [resolveHueWithSpacing] 避让既有 hue + 本批已产色滑位。
+     * anchor=null（CLASSIC）→ 空规划, 调用方零写入 — 升级默认档 course_colors 保持空表。
+     * 键序 = gids 序（调用方保证确定性, 同输入同输出）。
+     */
+    fun planHuesForGroups(
+        anchor: Float?,
+        existingHues: Collection<Float>,
+        gids: List<String>
+    ): Map<String, Float> {
+        if (anchor == null) return emptyMap()
+        val taken = existingHues.toMutableList()
+        val plan = LinkedHashMap<String, Float>()
+        for (gid in gids) {
+            if (gid in plan) continue // 同批同名(重复 gid)只产一次, 防双写互撞
+            val hue = resolveHueWithSpacing(anchor, gid, taken)
+            plan[gid] = hue
+            taken += hue
+        }
+        return plan
+    }
+
+    /**
      * 判定课程是否有用户自定义颜色：color 非空且非哨兵值。
      * 哨兵判定收敛到此单点，为后续铺路。
      *
