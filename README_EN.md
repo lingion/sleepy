@@ -579,6 +579,8 @@ sleepy/                                    # Repository root
 
 ### Prerequisites
 
+Build with the bundled **Gradle 9.8.1 Wrapper + Android Gradle Plugin (AGP) 9.3.3**. Android Studio must support AGP 9.3; see the [official AGP 9.3 compatibility requirements](https://developer.android.com/build/releases/agp-9-3-0-release-notes).
+
 ```bash
 java -version           # JDK 17+
 
@@ -586,6 +588,8 @@ sdkmanager "platforms;android-37.0" "build-tools;36.0.0"
 ```
 
 The current Gradle configuration resolves to `compileSdk=37` and `buildToolsVersion=36.0.0`; the platform package identifier is `platforms;android-37.0`.
+
+If you see `SDK XML versions up to 3` / `SDK XML file of version 4`, build through this repository's `gradlew` / `gradlew.bat` and update **Android SDK Command-line Tools (latest)** under Android Studio's SDK Manager → SDK Tools. The IDE, `ANDROID_HOME`, and `sdk.dir` in `local.properties` should use the same SDK. Run its `cmdline-tools/latest/bin/sdkmanager` (`sdkmanager.bat` on Windows), and check that `PATH` does not select an older `tools/bin/sdkmanager`. See the [official sdkmanager documentation](https://developer.android.com/tools/sdkmanager).
 
 ### Build
 

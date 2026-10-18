@@ -596,6 +596,8 @@ sleepy/                                    # 仓库根目录
 
 ### 前置
 
+构建使用仓库自带的 **Gradle 9.8.1 Wrapper + Android Gradle Plugin (AGP) 9.3.3**。Android Studio 需支持 AGP 9.3，版本兼容要求见 [AGP 9.3 官方说明](https://developer.android.com/build/releases/agp-9-3-0-release-notes)。
+
 ```bash
 java -version           # JDK 17+
 
@@ -603,6 +605,8 @@ sdkmanager "platforms;android-37.0" "build-tools;36.0.0"
 ```
 
 当前 Gradle 配置解析为 `compileSdk=37`、`buildToolsVersion=36.0.0`；平台安装包标识为 `platforms;android-37.0`。
+
+若遇到 `SDK XML versions up to 3` / `SDK XML file of version 4` 警告，先确认通过本仓库的 `gradlew` / `gradlew.bat` 构建，再在 Android Studio 的 SDK Manager → SDK Tools 中更新 **Android SDK Command-line Tools (latest)**。IDE、`ANDROID_HOME` 和 `local.properties` 中的 `sdk.dir` 应指向同一个 SDK；命令行使用该 SDK 的 `cmdline-tools/latest/bin/sdkmanager`（Windows 为 `sdkmanager.bat`），避免 `PATH` 命中旧的 `tools/bin/sdkmanager`。参见 [sdkmanager 官方文档](https://developer.android.com/tools/sdkmanager)。
 
 ### 编译
 

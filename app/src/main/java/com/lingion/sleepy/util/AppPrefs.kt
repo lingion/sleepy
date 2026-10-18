@@ -53,6 +53,9 @@ object AppPrefs {
     const val KEY_CALENDAR_FIRST_ALARM_MINUTES = "calendar_import_first_alarm_minutes"
     const val KEY_BEFORE_CLASS_BANNER = "before_class_banner"         // bool default true
     const val KEY_BEFORE_CLASS_FLUID = "before_class_fluid"            // bool default false
+    const val KEY_BEFORE_CLASS_MODE = "before_class_mode"             // string: banner|fluid — 互斥形态 tab (取代双开关)
+    const val BEFORE_CLASS_MODE_BANNER = "banner"
+    const val BEFORE_CLASS_MODE_FLUID = "fluid"
     const val KEY_BEFORE_CLASS_FLUID_FIELDS = "before_class_fluid_fields" // legacy multi-select
     const val KEY_BEFORE_CLASS_FLUID_PRIMARY = "before_class_fluid_primary" // name/time/room
     const val KEY_THEME = "theme_key"
@@ -283,19 +286,25 @@ object AppPrefs {
         sp(ctx).edit().putInt(KEY_CALENDAR_FIRST_ALARM_MINUTES, minutes.coerceIn(0, 999)).apply()
     }
 
-    fun isBeforeClassBannerEnabled(ctx: Context): Boolean =
-        sp(ctx).getBoolean(KEY_BEFORE_CLASS_BANNER, true)
+    /**
+     * 课前提醒形态 (互斥): "banner" 普通可划横幅 (手环/手表友好) | "fluid" 实况卡片。
+     * 旧版双开关无损迁移: 未写过 mode 时, 由 KEY_BEFORE_CLASS_FLUID 推导。
+     */
+    fun getBeforeClassMode(ctx: Context): String {
+        sp(ctx).getString(KEY_BEFORE_CLASS_MODE, null)?.let { return it }
+        val legacyFluid = sp(ctx).getBoolean(KEY_BEFORE_CLASS_FLUID, false)
+        return if (legacyFluid) BEFORE_CLASS_MODE_FLUID else BEFORE_CLASS_MODE_BANNER
+    }
 
-    fun setBeforeClassBannerEnabled(ctx: Context, v: Boolean) {
-        sp(ctx).edit().putBoolean(KEY_BEFORE_CLASS_BANNER, v).apply()
+    fun setBeforeClassMode(ctx: Context, mode: String) {
+        sp(ctx).edit().putString(KEY_BEFORE_CLASS_MODE, mode).apply()
     }
 
     fun isBeforeClassFluidEnabled(ctx: Context): Boolean =
-        sp(ctx).getBoolean(KEY_BEFORE_CLASS_FLUID, false)
+        getBeforeClassMode(ctx) == BEFORE_CLASS_MODE_FLUID
 
-    fun setBeforeClassFluidEnabled(ctx: Context, v: Boolean) {
-        sp(ctx).edit().putBoolean(KEY_BEFORE_CLASS_FLUID, v).apply()
-    }
+    fun isBeforeClassBannerEnabled(ctx: Context): Boolean =
+        getBeforeClassMode(ctx) == BEFORE_CLASS_MODE_BANNER
 
     fun getBeforeClassFluidFields(ctx: Context): Set<String> =
         (sp(ctx).getString(KEY_BEFORE_CLASS_FLUID_FIELDS, "name,time,room,teacher")

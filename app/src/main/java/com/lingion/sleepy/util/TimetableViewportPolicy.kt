@@ -133,6 +133,16 @@ object TimetableViewportPolicy {
         }
     }
 
+    /**
+     * 长课间薄带卡高 (2026-10-17 #105→#183 回归定位): 卡片高度 = natural 跨度 − 普通行隙,
+     * **带厚永远不进卡高** — 带只存在于 yOfRows 坐标层 (悬浮在锚行卡底与下行卡顶之间)。
+     * 旧 bug = cardH 减 gapAfterRow(=gapH+带) 而 cardY 走 yOfRows(已加带), 同一带厚双扣,
+     * 锚行胶囊回缩一个带厚。签名无带参数 = 该错误口径不可表达。
+     * minSpanDp: ownTime 比例卡保底 (0.3 标准行, 防过短课塌缩到不可点)。
+     */
+    fun longBreakCardHeightDp(naturalSpanDp: Float, gapDp: Float, minSpanDp: Float = 0f): Float =
+        naturalSpanDp.coerceAtLeast(minSpanDp) - gapDp
+
     /** True only after a two-finger gesture has a clear vertical intent. */
     fun locksVerticalResize(
         startVerticalSpan: Float,

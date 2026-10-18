@@ -328,7 +328,8 @@ fun ScheduleScreen(
                         startDate = state.currentTable?.startDate ?: "",
                         currentWeek = page + 1,
                         onCourseClick = { selectedCourse = it },
-                        greyDays = greyDays
+                        greyDays = greyDays,
+                        showDate = showDate
                     )
                     ViewMode.Cards -> CardsGridView(
                         courses = renderCourses,

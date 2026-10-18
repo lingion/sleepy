@@ -705,10 +705,12 @@
     <string name="reminder_before_class_preview">示例：下节课 高等数学 于 08:00 在 教学楼A101 上课</string>
     <string name="reminder_before_class_preview_dynamic">示例：%1$s，下节课是「%2$s」，于 %3$s 在 %4$s 上课%5$s</string>
     <string name="reminder_before_class_preview_dynamic_no_course">示例：未来没有可提醒的课程。</string>
-    <string name="reminder_banner_title">横幅提醒</string>
-    <string name="reminder_banner_sub">在系统通知栏显示课前横幅</string>
     <string name="reminder_fluid_title">流体云 / 超级岛</string>
-    <string name="reminder_fluid_sub">在支持的小米 / vivo / 三星 / 魅族手机上显示实时课程卡片</string>
+    <string name="reminder_mode_label">提醒形态</string>
+    <string name="reminder_mode_banner">横幅</string>
+    <string name="reminder_mode_fluid">流体云</string>
+    <string name="reminder_mode_banner_sub">系统通知栏普通横幅,可手动划掉;手环/手表同步不受影响</string>
+    <string name="reminder_mode_fluid_sub">在支持的小米 / vivo / 三星 / 魅族手机上显示实时课程卡片;系统不支持时可能不显示</string>
     <string name="reminder_fluid_fields">胶囊主显示内容</string>
     <string name="reminder_fluid_fields_hint">选择一个主显示内容</string>
     <string name="reminder_fluid_field_name">课程名称</string>

@@ -770,9 +770,9 @@ class BeforeClassNotifyReceiver : BroadcastReceiver() {
         val startTime = intent.getStringExtra("startTime") ?: ""
         val roomStr = room.ifBlank { context.getString(R.string.notif_room_unknown) }
         val teacher = intent.getStringExtra("teacher") ?: ""
+        // 形态互斥 (横幅 ⇄ 流体云, 单一 mode 真值); debug_force_fluid 仅供测试强推流体路径
         val fluid = intent.getBooleanExtra("debug_force_fluid", false) || AppPrefs.isBeforeClassFluidEnabled(context)
-        val banner = AppPrefs.isBeforeClassBannerEnabled(context)
-        if (!banner && !fluid) return
+        if (!fluid && !AppPrefs.isBeforeClassBannerEnabled(context)) return
         val fields = AppPrefs.getBeforeClassFluidFields(context)
         val fluidText = buildList {
             if ("name" in fields) add(courseName)

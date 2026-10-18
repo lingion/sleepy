@@ -13,6 +13,10 @@
 
 - 仓库协作规范升级:main 分支 ruleset 保护(PR-only、squash-only 线性历史、必需 CI 检查),`ci.yml` PR 门禁(commitlint / collector 单测 / Android 单测 / lint / assembleRelease),`release.yml` tag 触发发布,版本号由 git tag 与 `docs/release-notes-v*.md` 派生([VERSIONING.md](VERSIONING.md))。
 
+### Changed
+
+- 构建工具链统一升级为 Gradle 9.8.1 / AGP 9.3.3，同步主、备用 wrapper 并加入官方 SHA-256 校验；构建文档补充 SDK XML v4 兼容性警告的排查步骤。
+
 ## [1.0.57] - 2026-09-28
 
 ### Added

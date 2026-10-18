@@ -87,12 +87,12 @@ class WeekGridMealBreakPixelTest {
             val gapH = dp(1.5f).toFloat()
             val headH = dp(56f)
             val bodyTop = (outerPad + headH).toFloat()
-            val bodyH = height - dp(6f) * 2 - headH
-            val totalBodyGap = dp(1.5f) * (4 + 1) + dp(4f)
-            val slotH = ((bodyH - totalBodyGap) / 4).toFloat().coerceAtLeast(dp(3f).toFloat())
-            val mealExtra = dp(4f).toFloat()
-            fun rowTop(index: Int): Float = bodyTop + gapH + index * (slotH + gapH) +
-                if (index >= 3) mealExtra else 0f
+            val mealExtra = WeekGridWidgetProvider.mealBreakBandPx(density, context.resources.configuration.fontScale)
+            val (_, slotH) = WeekGridWidgetProvider.weekGridBodyGeomPx(
+                height, density, 4, mealBreakCount = 1,
+                fontScale = context.resources.configuration.fontScale)
+            fun rowTop(index: Int): Float = WeekGridWidgetProvider.weekGridRowTopPx(
+                bodyTop, gapH, slotH, index, breakAfterRows = setOf(2), bandPx = mealExtra)
 
             val bandTop = rowTop(2) + slotH
             val bandBottom = rowTop(3)
