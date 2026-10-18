@@ -52,6 +52,7 @@ import com.lingion.sleepy.data.jw.JwImportDraftPhase
 import com.lingion.sleepy.data.jw.JwImportDraftPeriod
 import com.lingion.sleepy.data.jw.JwImportDraftSnapshot
 import com.lingion.sleepy.data.jw.JwImportDraftCodec
+import com.lingion.sleepy.data.jw.JwImportReport
 import com.lingion.sleepy.data.jw.JwImportViewModel
 import com.lingion.sleepy.data.jw.JwParseDiagnostics
 import com.lingion.sleepy.data.jw.JwProtocol
@@ -68,6 +69,7 @@ import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.SleepyThemeProvider
 import android.webkit.WebView
 import com.lingion.sleepy.util.AppPrefs
+import com.lingion.sleepy.util.QqJoin
 import com.lingion.sleepy.util.TimeTableUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -131,6 +133,8 @@ class JwImportActivity : ComponentActivity() {
 
                 var selectedSchool by remember { mutableStateOf<JwSchoolInfo?>(null) }
                 var catalogNotice by remember { mutableStateOf<JwSchoolInfo?>(null) }
+                // 2026-10-18 离线回路: 未验证学校导入成功后弹报告弹窗(复制+加QQ群), 已验证学校维持静默 finish
+                var reportDialogSchool by remember { mutableStateOf<JwSchoolInfo?>(null) }
                 var stage by remember { mutableStateOf<Stage>(Stage.SelectSchool) }
                 var errorMsg by remember { mutableStateOf<String?>(null) }
                 var statusMsg by remember { mutableStateOf<String?>(null) }
@@ -209,6 +213,52 @@ class JwImportActivity : ComponentActivity() {
                     exitDraftState = exitDraftState.copy(activeImport = false)
                 }
 
+                // 2026-10-18 离线回路: 项目无云端、不上传任何数据 — 导入失败用户会开 issue,
+                // 成功却是静默的。unverified 学校成功后先弹报告弹窗(复制文本 + 拉起 QQ 群粘贴),
+                // 维护者据此在 school_url_evidence 翻 verified, 下个版本该学校不再出现确认/报告。
+                // supported 学校维持原静默 finish, 零额外打扰。
+                suspend fun finishOrReport(school: JwSchoolInfo?) {
+                    if (school != null && school.isUnverified) {
+                        reportDialogSchool = school
+                    } else {
+                        completeImport()
+                    }
+                }
+
+                /** 只写剪贴板, 不拉起任何应用 — 与 [launchQqGroupJoin] 的剪贴板边界互斥(见回路契约测试)。 */
+                fun copyTextToClipboard(text: String, label: String) {
+                    val cm = getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                    cm.setPrimaryClip(android.content.ClipData.newPlainText(label, text))
+                }
+
+                /**
+                 * QQ 拉起降级链复用 AboutScreen.joinQqGroup 时序(群资料卡 → 备选形态 → TIM → QQ → 浏览器),
+                 * 但**不**像 AboutScreen 那样先复制群号 — 此刻剪贴板装着待粘贴的报告, 覆盖 = 回路断裂。
+                 */
+                fun launchQqGroupJoin(group: String) {
+                    val pm = packageManager
+                    val hasTim = runCatching { pm.getPackageInfo("com.tencent.tim", 0) }.isSuccess
+                    val hasQq = runCatching { pm.getPackageInfo("com.tencent.mobileqq", 0) }.isSuccess
+                    var launched = runCatching {
+                        startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(QqJoin.groupCardUri(group))))
+                    }.isSuccess
+                    if (!launched) launched = runCatching {
+                        startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(QqJoin.groupCardUriAlt(group))))
+                    }.isSuccess
+                    if (!launched && hasTim) launched = runCatching {
+                        pm.getLaunchIntentForPackage("com.tencent.tim")?.let { startActivity(it) } ?: error("no TIM")
+                    }.isSuccess
+                    if (!launched && hasQq) launched = runCatching {
+                        pm.getLaunchIntentForPackage("com.tencent.mobileqq")?.let { startActivity(it) } ?: error("no QQ")
+                    }.isSuccess
+                    if (!launched) launched = runCatching {
+                        startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(QqJoin.webFallbackUri(group))))
+                    }.isSuccess
+                    if (!launched) {
+                        statusMsg = getString(R.string.jw_import_report_qq_manual, group)
+                    }
+                }
+
                 suspend fun applySharedImport(preview: ImportPreview, mode: ImportApplyMode) {
                     var imported = false
                     applyImportPreview(
@@ -229,7 +279,7 @@ class JwImportActivity : ComponentActivity() {
                         bindPeriodTableId = configBindPeriodTableId?.takeIf { it > 0 }
                     )
                     // A rejected append must keep the preview and its recoverable draft.
-                    if (imported) completeImport()
+                    if (imported) finishOrReport(selectedSchool ?: parsedSchool)
                 }
                 // 错误弹窗「导出排查全量包」— DOM 可点元素清单点按钮时现抓(页面还在,
                 // 弹窗不关页), zip 组装落 IO 线程, 成功即拉系统分享面板(2A 动线)。
@@ -672,7 +722,7 @@ class JwImportActivity : ComponentActivity() {
                                                 if (chosenId != null && chosenId > 0) {
                                                     scheduleViewModel.bindPeriodTable(tableId, chosenId)
                                                 }
-                                                completeImport()
+                                                finishOrReport(school)
                                             } else {
                                                 applySharedImport(requireNotNull(importPreview), pendingMode)
                                             }
@@ -870,6 +920,71 @@ class JwImportActivity : ComponentActivity() {
                                 Text(getString(R.string.jw_pending_close))
                             }
                         },
+                    )
+                }
+
+                // 2026-10-18 离线回路: 未验证学校导入成功 = 对该校协议适配的一次真人验证。
+                // app 不上传任何数据 — 把成功事实压成可粘贴文本, 用户复制后进 QQ 群粘贴,
+                // 维护者据此把该条目翻 verified; 下个版本该校不再出现确认/报告弹窗。
+                reportDialogSchool?.let { school ->
+                    val qqGroup = getString(R.string.about_qq_group_number)
+                    val reportText = JwImportReport.build(
+                        school = school,
+                        courseCount = parsedCourses.size,
+                        versionName = com.lingion.sleepy.BuildConfig.VERSION_NAME,
+                        versionCode = com.lingion.sleepy.BuildConfig.VERSION_CODE,
+                    )
+                    // 完成/点外 = 同一收口: 清弹窗 → scope 里跑 suspend completeImport → importFinished → finish()
+                    val closeReportDialog: () -> Unit = {
+                        reportDialogSchool = null
+                        scope.launch { completeImport() }
+                    }
+                    AlertDialog(
+                        onDismissRequest = closeReportDialog,
+                        title = { Text(getString(R.string.jw_import_report_title)) },
+                        text = {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(max = 420.dp)
+                            ) {
+                                Text(
+                                    text = getString(R.string.jw_import_report_hint, qqGroup),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                                Spacer(modifier = Modifier.height(10.dp))
+                                // 报告正文: 等宽感用 surfaceVariant 底色块(全app纯色块禁描线 2026-08-25)
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(max = 220.dp)
+                                        .verticalScroll(rememberScrollState())
+                                ) {
+                                    Card(
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                        )
+                                    ) {
+                                        Text(
+                                            text = reportText,
+                                            modifier = Modifier.padding(12.dp),
+                                            style = MaterialTheme.typography.bodySmall,
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(20.dp))
+                                DialogActionButtons(
+                                    confirmText = getString(R.string.jw_import_report_done),
+                                    onConfirm = closeReportDialog,
+                                    thirdText = getString(R.string.jw_import_report_join_qq),
+                                    onThird = { launchQqGroupJoin(qqGroup) },
+                                    dismissText = getString(R.string.jw_import_report_copy),
+                                    onDismiss = { copyTextToClipboard(reportText, "jw_import_report") },
+                                )
+                            }
+                        },
+                        confirmButton = {},
+                        dismissButton = {}
                     )
                 }
 

@@ -1099,9 +1099,14 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="notif_before_class_compact">%1$s 開始 · %2$s</string>
     <string name="notif_date_title">%1$s · 授業 %2$d 件</string>
     <string name="notif_date_no_course">%1$s · 授業なし</string>
-    <string name="jw_catalog_unverified">未検証</string>
     <string name="jw_catalog_unverified_message">この学校では、この入口とプロトコルはまだ検証されていません。ログインを試せますが、インポートが不完全または失敗する場合があります。</string>
     <string name="jw_catalog_pending_message">この学校には、まだ試せる確認済みの入口がありません。後でもう一度試すか、対応をリクエストしてください。</string>
     <string name="jw_catalog_try">試してみる</string>
     <string name="jw_catalog_counts">掲載 %1$d · 対応済み %2$d · 未検証 %3$d</string>
+    <string name="jw_import_report_title">インポート成功 — ひとつお願いがあります</string>
+    <string name="jw_import_report_hint">この学校の学務ポートは未検証でした。あなたの成功がそのまま実証になります。下の報告テキストをコピーし、QQグループ %1$s に参加して貼り付けてください。確認され次第、次バージョンではこの学校に再表示されません。</string>
+    <string name="jw_import_report_qq_manual">QQ が検出されませんでした。グループ番号 %1$s：QQ を手動で開いて検索してください。</string>
+    <string name="jw_import_report_copy">報告をコピー</string>
+    <string name="jw_import_report_join_qq">QQ グループに参加</string>
+    <string name="jw_import_report_done">完了</string>
 </resources>

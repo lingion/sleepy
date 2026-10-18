@@ -1100,9 +1100,14 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="notif_before_class_compact">Empieza a las %1$s · %2$s</string>
     <string name="notif_date_title">%1$s · Clases: %2$d</string>
     <string name="notif_date_no_course">%1$s · Sin clases</string>
-    <string name="jw_catalog_unverified">Sin verificar</string>
     <string name="jw_catalog_unverified_message">Esta entrada y su protocolo aún no se han verificado para esta institución. Puedes intentar iniciar sesión, pero la importación podría ser incompleta o fallar.</string>
     <string name="jw_catalog_pending_message">Aún no hay una entrada verificada para esta institución. Inténtalo más tarde o solicita asistencia.</string>
     <string name="jw_catalog_try">Intentar de todos modos</string>
     <string name="jw_catalog_counts">Directorio %1$d · Compatibles %2$d · Sin verificar %3$d</string>
+    <string name="jw_import_report_title">Importación exitosa — un pequeño favor</string>
+    <string name="jw_import_report_hint">La entrada académica de esta institución no estaba verificada; tu éxito es una verificación real. Copia el informe de abajo, únete al grupo de QQ %1$s y pégalo allí. Al confirmarse, esta institución no mostrará más avisos en la próxima versión.</string>
+    <string name="jw_import_report_qq_manual">No se detectó QQ. Número de grupo %1$s: abre QQ y búscalo para unirte manualmente.</string>
+    <string name="jw_import_report_copy">Copiar informe</string>
+    <string name="jw_import_report_join_qq">Unirse al grupo</string>
+    <string name="jw_import_report_done">Listo</string>
 </resources>

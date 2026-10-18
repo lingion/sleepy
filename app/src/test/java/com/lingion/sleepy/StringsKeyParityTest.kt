@@ -98,6 +98,25 @@ class StringsKeyParityTest {
         "reminder_daily_master_toggle_sub"
     )
 
+    /**
+     * 未验证学校导入成功报告弹窗新增 string key (2026-10-18, feat/jw-import-success-report)。
+     * 全 6 locale 必须齐 — 缺任一 = MissingTranslation lint error 回归。
+     */
+    private val jwImportReportKeys = listOf(
+        "jw_import_report_title",
+        "jw_import_report_hint",
+        "jw_import_report_qq_manual",
+        "jw_import_report_copy",
+        "jw_import_report_join_qq",
+        "jw_import_report_done"
+    )
+
+    /**
+     * 列表静默(2026-10-18 用户: unverified 不渲染徽章)后删除的 dead key —
+     * 复活 = 徽章分支被悄悄加回。计数行的「待验证」是另一键 jw_catalog_counts, 保留。
+     */
+    private val removedBadgeKeys = listOf("jw_catalog_unverified")
+
     private val basePath: File = sequenceOf(
         File("app/src/main/res"),
         File("src/main/res")
@@ -170,6 +189,31 @@ class StringsKeyParityTest {
         "reminder_date_rules_advanced_button",
         "reminder_date_rules_advanced_subtitle"
     )
+
+    @Test
+    fun jw_import_report_keys_present_in_all_six_locales() {
+        for (locale in localeDirs) {
+            val text = File(basePath, "$locale/strings.xml").readText()
+            for (key in jwImportReportKeys) {
+                assertTrue("$locale missing $key", text.contains("name=\"$key\""))
+            }
+        }
+    }
+
+    @Test
+    fun removed_badge_key_stays_deleted_in_all_six_locales() {
+        // 列表静默(2026-10-18): jw_catalog_unverified 徽章唯一消费点随 SchoolStatusBadge 分支删除;
+        // 复活 = 徽章被悄悄加回。计数行「待验证」是另一键 jw_catalog_counts, 不受本闸影响。
+        for (locale in localeDirs) {
+            val text = File(basePath, "$locale/strings.xml").readText()
+            for (key in removedBadgeKeys) {
+                assertTrue(
+                    "removed key \"$key\" resurrected in $locale/strings.xml",
+                    !text.contains("name=\"$key\"")
+                )
+            }
+        }
+    }
 
     @Test
     fun reminder_date_rules_keys_present_in_all_six_locales() {

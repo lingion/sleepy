@@ -222,10 +222,12 @@ class BackRestoreSaveableContractTest {
             "SchoolRow 内 SchoolStatusBadge 与 6dp Spacer 必须成对出现 (同增同减, 首端对齐): badge=$badgeCount spacer=$spacerCount",
             badgeCount == spacerCount && badgeCount >= 1,
         )
-        // 徽章调用必须包在 status 条件分支内(禁止无条件调用回归)
+        // 徽章调用必须包在 status 条件分支内(禁止无条件调用回归)。
+        // 2026-10-18 列表静默: 条件扩为「非 supported 且非 unverified」— [^)]* 容忍
+        // && 扩展项, 锁的核心不变量仍是「徽章+Spacer 包在同一个 status 条件内」。
         assertTrue(
-            "SchoolRow 的徽章+Spacer 必须包在 status != SUPPORTED 条件内",
-            Regex("""if\s*\(\s*school\.status\s*!=\s*JwSchoolInfo\.STATUS_SUPPORTED\s*\)\s*\{[^}]*SchoolStatusBadge""").containsMatchIn(rowBody)
+            "SchoolRow 的徽章+Spacer 必须包在 status != SUPPORTED (及其静默扩展) 条件内",
+            Regex("""if\s*\(\s*school\.status\s*!=\s*JwSchoolInfo\.STATUS_SUPPORTED[^)]*\)\s*\{[^}]*SchoolStatusBadge""").containsMatchIn(rowBody)
         )
     }
 

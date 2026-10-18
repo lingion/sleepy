@@ -1102,9 +1102,14 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="notif_before_class_compact">Starts %1$s · %2$s</string>
     <string name="notif_date_title">%1$s · Classes: %2$d</string>
     <string name="notif_date_no_course">%1$s · No classes</string>
-    <string name="jw_catalog_unverified">Unverified</string>
     <string name="jw_catalog_unverified_message">This entry and protocol have not been verified for this school. You can try signing in, but import may be incomplete or fail.</string>
     <string name="jw_catalog_pending_message">There is no verified entry to try for this school yet. Try later or request support.</string>
     <string name="jw_catalog_try">Try anyway</string>
     <string name="jw_catalog_counts">Directory %1$d · Supported %2$d · Unverified %3$d</string>
+    <string name="jw_import_report_title">Import succeeded — one small favor</string>
+    <string name="jw_import_report_hint">This school\'s academic portal had not been verified before; your success is a real verification. Copy the report text below, join QQ group %1$s, and paste it there. Once confirmed, this school will show no more prompts in the next release.</string>
+    <string name="jw_import_report_qq_manual">QQ not detected. Group number %1$s — please open QQ and search to join manually.</string>
+    <string name="jw_import_report_copy">Copy report</string>
+    <string name="jw_import_report_join_qq">Join QQ group</string>
+    <string name="jw_import_report_done">Done</string>
 </resources>

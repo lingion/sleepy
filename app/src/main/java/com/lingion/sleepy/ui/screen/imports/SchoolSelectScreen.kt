@@ -682,7 +682,8 @@ private fun SchoolRow(school: JwSchoolInfo, onClick: () -> Unit) {
                 // T13: status badge (supported 不渲染, 避免冗余)
                 // 徽章与校名之间的间距必须和徽章本身同增同减 — 无条件 Spacer 会让无徽章
                 // (supported, 占绝大多数) 的校名比第二行「协议 · 网址」凭空右移, 两行首端错位
-                if (school.status != JwSchoolInfo.STATUS_SUPPORTED) {
+                // unverified 同样无徽章(2026-10-18 列表静默) — 判定必须与 SchoolStatusBadge 分支一致
+                if (school.status != JwSchoolInfo.STATUS_SUPPORTED && !school.isUnverified) {
                     SchoolStatusBadge(school = school)
                     Spacer(modifier = Modifier.size(6.dp))
                 }
@@ -709,17 +710,16 @@ private fun SchoolRow(school: JwSchoolInfo, onClick: () -> Unit) {
  * supported 不渲染 badge（默认全功能）; pending=「待适配」tertiary chip;
  * grad_supported=「研究生」secondary chip; legacy=「旧版」surfaceVariant chip。
  * 文案消费 strings.xml 既有 jw_pending_* 键（此前 0 引用的 dead 字符串）。
+ *
+ * 2026-10-18 用户: unverified 不渲染徽章 — 目录扩充后待验证占列表绝大多数,
+ * 满屏「待验证」chip 反而淹没其余状态信号。提示职责移到两处弹窗:
+ * 点进前 catalogNotice 确认（保留）+ 导入成功后报告弹窗（新增, JwImportActivity）。
  */
 @Composable
 private fun SchoolStatusBadge(school: JwSchoolInfo) {
     if (school.status == JwSchoolInfo.STATUS_SUPPORTED) return
     val colors = MaterialTheme.colorScheme
     val (label, bg, fg) = when (school.status) {
-        JwSchoolInfo.STATUS_UNVERIFIED, JwSchoolInfo.STATUS_GRAD_UNVERIFIED -> Triple(
-            stringResource(R.string.jw_catalog_unverified) + if (school.isGrad) " · " + stringResource(R.string.jw_pending_grad) else "",
-            colors.tertiaryContainer,
-            colors.onTertiaryContainer
-        )
         JwSchoolInfo.STATUS_PENDING -> Triple(
             stringResource(R.string.jw_pending_pending),
             colors.tertiaryContainer,

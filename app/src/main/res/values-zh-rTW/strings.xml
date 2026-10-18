@@ -1066,9 +1066,14 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="notif_before_class_compact">%1$s 開始 · %2$s</string>
     <string name="notif_date_title">%1$s · %2$d 次課</string>
     <string name="notif_date_no_course">%1$s 沒有課</string>
-    <string name="jw_catalog_unverified">待驗證</string>
     <string name="jw_catalog_unverified_message">此入口和協定尚未在該校驗證。你可以先嘗試登入，但匯入結果可能不完整或失敗。</string>
     <string name="jw_catalog_pending_message">此學校尚無可嘗試的已核實入口。可稍後再試或申請適配。</string>
     <string name="jw_catalog_try">仍要嘗試</string>
     <string name="jw_catalog_counts">目錄 %1$d · 已支援 %2$d · 待驗證 %3$d</string>
+    <string name="jw_import_report_title">匯入成功 · 請幫個忙</string>
+    <string name="jw_import_report_hint">這所學校的教務入口此前未經驗證，你的這次成功就是一次真實驗證。複製下面的報告文字，加入 QQ 群 %1$s 貼上傳送即可。維護者確認後，下個版本該校不再出現提示。</string>
+    <string name="jw_import_report_qq_manual">未偵測到 QQ，群號 %1$s，請手動開啟 QQ 搜尋加入</string>
+    <string name="jw_import_report_copy">複製報告</string>
+    <string name="jw_import_report_join_qq">加入 QQ 群</string>
+    <string name="jw_import_report_done">完成</string>
 </resources>
