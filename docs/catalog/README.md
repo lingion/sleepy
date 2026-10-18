@@ -57,3 +57,14 @@ WakeUp 数据来自本机原版 APK 和先前用户附件，未定位到该专�
 ## 用户体验：学校选择只展示可尝试条目
 
 早期版本应用内学校选择页加载 `schools.json` 全部 4,140 条目录条目，其中仅约八百条带教务入口 URL，其余显示为不可点击的灰色项，用户反馈“四千多所学校只有几百所能用”。`JwImportViewModel.loadSchools()` 现过滤 `url.isNotBlank()`，只展示可实际尝试导入的条目（当前 1,478 条，见 manifest.statusCounts 与 [学校目录](../schools-list.md)）；待适配条目仍通过目录文档、issue 模板和自定义 URL 识别通道可被发现和申请。过滤发生在展示层，目录数据本身保留全部条目与来源记录，收录不等于支持的原则不变。
+
+## 未验证学校的离线成功回路
+
+项目无云端、不上传任何数据（见「准入限制」：探测不采集凭据、不登录）。导入失败有 issue 通道，成功却是静默的——维护者收不到任何信号，`school_url_evidence` 的翻档只能靠猜。2026-10-18 起以 QQ 群为带外通道闭合这个回路：
+
+1. 列表侧静默：unverified/grad_unverified 不再渲染徽章（目录扩充后待验证占绝大多数，满屏 chip 淹没真正的 pending/研究生/旧版信号）。提示职责集中到两次弹窗——点进前确认（catalogNotice，保留）+ 导入成功后报告（新增）。
+2. 成功弹窗按 `JwImportReport.build()` 生成纯文本报告（app 版本/日期/校名/catalogId/status/协议/URL/课程数）。函数签名只接受学校公开目录字段，结构性地不接触账号、口令、session。两个按钮的副作用严格互斥：「复制报告」只写剪贴板；「加入 QQ 群」只拉起群卡片（QqJoin 降级链），绝不覆写剪贴板——报告此刻正装在剪贴板里，覆盖即回路断裂。
+3. 用户进群粘贴报告文本。维护者按报告中 catalogId 定位条目，完成归属/实测核验后把 `school_url_evidence` 翻 verified、status 改 supported——下个版本该校不再弹任何提示。
+4. supported 学校走原有静默完成路径，不弹窗、不打扰；报告弹窗只对 unverified 出现。
+
+约束的测试锚点：`JwUnverifiedReportLoopContractTest`（徽章静默、finishOrReport 分流、剪贴板互斥）、`JwImportReportTest`（字段完整、无凭据词）、`StringsKeyParityTest`（六 locale 齐 + `jw_catalog_unverified` 禁复活）。
