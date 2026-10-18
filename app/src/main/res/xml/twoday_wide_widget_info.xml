@@ -10,7 +10,7 @@
     android:targetCellHeight="2"
     android:updatePeriodMillis="0"
     android:initialLayout="@layout/widget_bitmap_container"
-    android:previewLayout="@layout/widget_bitmap_container"
+    android:previewLayout="@layout/widget_preview_twoday_wide"
     android:previewImage="@drawable/widget_preview_twoday_wide"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"

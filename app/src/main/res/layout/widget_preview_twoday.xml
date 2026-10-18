@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- widget 选择器静态预览脸: src = 与应用内添加画廊同源的 PNG
+     (previewLayout 优先级高于 previewImage, 空容器会显示空白脸 —
+     WidgetPreviewFacesContractTest 锁 src==info XML previewImage)。
+     fitXY: 容器宽高比 == PNG 宽高比(锁 ±2%), 1:1 映射无畸变。 -->
+<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:scaleType="fitXY"
+    android:adjustViewBounds="false"
+    android:src="@drawable/widget_preview_twoday"
+    android:contentDescription="@string/widget_twoday_label" />
