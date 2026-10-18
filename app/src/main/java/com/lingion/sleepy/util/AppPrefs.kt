@@ -592,6 +592,17 @@ object AppPrefs {
         _changeBus.tryEmit(KEY_COURSE_COLOR_MODE)
     }
 
+    /** mode 订阅通道 — 仿 themeKeyFlow(SP 监听 + distinctUntilChanged), 外观页三档单选用。 */
+    fun courseColorModeFlow(ctx: Context): Flow<Int> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sp, k ->
+            if (k == KEY_COURSE_COLOR_MODE) trySend(sp.getInt(KEY_COURSE_COLOR_MODE, COURSE_COLOR_MODE_CLASSIC))
+        }
+        val sp = sp(ctx)
+        sp.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getCourseColorMode(ctx))
+        awaitClose { sp.unregisterOnSharedPreferenceChangeListener(listener) }
+    }.distinctUntilChanged()
+
     fun getCourseColorSeedHue(ctx: Context): Float =
         sp(ctx).getFloat(KEY_COURSE_COLOR_SEED_HUE, COURSE_COLOR_SEED_UNSET)
 
@@ -600,6 +611,17 @@ object AppPrefs {
         sp(ctx).edit().putFloat(KEY_COURSE_COLOR_SEED_HUE, hue).apply()
         _changeBus.tryEmit(KEY_COURSE_COLOR_SEED_HUE)
     }
+
+    /** seed 订阅通道 — 同 courseColorModeFlow; 外观页色相滑条 + 预览试算用。 */
+    fun courseColorSeedHueFlow(ctx: Context): Flow<Float> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sp, k ->
+            if (k == KEY_COURSE_COLOR_SEED_HUE) trySend(sp.getFloat(KEY_COURSE_COLOR_SEED_HUE, COURSE_COLOR_SEED_UNSET))
+        }
+        val sp = sp(ctx)
+        sp.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getCourseColorSeedHue(ctx))
+        awaitClose { sp.unregisterOnSharedPreferenceChangeListener(listener) }
+    }.distinctUntilChanged()
 
     // ===== WeekView 纯文字组件：课程间分隔线 — 默认 true =====
 
