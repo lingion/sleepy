@@ -84,7 +84,6 @@ import java.util.Locale
 fun GeneralSettingsScreen(
     onBack: () -> Unit,
     onOpenHoliday: () -> Unit = {},
-    onOpenWidgetManagement: () -> Unit = {},
     navDock: Boolean = false,
     onNavDockChange: (Boolean) -> Unit = {}
 ) {
@@ -118,7 +117,6 @@ fun GeneralSettingsScreen(
     var gridAdaptiveHeight by remember { mutableStateOf(AppPrefs.isGridAdaptiveHeight(context)) }
     // v1.0.56 T3: 双指捏放行高(实验室, 默认关)
     var gridPinchZoom by remember { mutableStateOf(AppPrefs.isGridPinchZoom(context)) }
-    var nearestBusyDay by remember { mutableStateOf(AppPrefs.isNearestBusyDay(context)) }
     // v1.0.56 T4: 语言折叠卡展开态 — 默认收起; 选择语言即 recreate 重建, 会话态足够
     var languageExpanded by remember { mutableStateOf(false) }
     var eveningStart by remember { mutableStateOf(AppPrefs.getGridEveningStart(context)) }
@@ -135,9 +133,7 @@ fun GeneralSettingsScreen(
     var vertPunct by remember { mutableStateOf(AppPrefs.isVertPunctReplace(context)) }
     var gridShowSeparators by remember { mutableStateOf(AppPrefs.isGridShowSeparators(context)) }
     var gridLongBreakSpacing by remember { mutableStateOf(AppPrefs.isGridLongBreakSpacing(context)) }
-    var widgetColorless by remember { mutableStateOf(AppPrefs.isWidgetColorless(context)) }
     var courseColorless by remember { mutableStateOf(AppPrefs.isCourseColorless(context)) }
-    var widgetSeparator by remember { mutableStateOf(AppPrefs.isWidgetSeparator(context)) }
 
     // 显示项变更后立即刷小组件(管线自 AppearanceScreen 迁移保留)
     val widgetScope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
@@ -451,80 +447,6 @@ fun GeneralSettingsScreen(
                         // 仅标题(用户 2026-09-03 指令: 入口说明文字去掉)
                         Text(
                             text = stringResource(R.string.settings_holiday_title),
-                            style = MaterialTheme.typography.titleSmall,
-                            color = colors.onSurface
-                        )
-                    }
-                    Icon(
-                        Icons.Outlined.ChevronRight,
-                        contentDescription = null,
-                        tint = colors.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-
-            // ── 分隔线 ──
-            item { HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline)) }
-
-            // ── 分组② 小组件 ──
-            item {
-                SectionHeader(title = stringResource(R.string.appearance_section_widget))
-            }
-
-            item {
-                SettingsCard(title = stringResource(R.string.settings_widget), expanded = "widget" in expandedSections, onToggle = { toggleSection("widget") }) {
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_widget_colorless),
-                        subtitle = stringResource(R.string.settings_widget_colorless_sub),
-                        checked = widgetColorless,
-                        onCheckedChange = {
-                            widgetColorless = it
-                            AppPrefs.setWidgetColorless(context, it)
-                            refreshWidgets()
-                        }
-                    )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_widget_separator),
-                        subtitle = stringResource(R.string.settings_widget_separator_sub),
-                        checked = widgetSeparator,
-                        onCheckedChange = {
-                            widgetSeparator = it
-                            AppPrefs.setWidgetSeparator(context, it)
-                            refreshWidgets()
-                        }
-                    )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_nearest_busy_day),
-                        subtitle = stringResource(R.string.settings_nearest_busy_day_sub),
-                        checked = nearestBusyDay,
-                        onCheckedChange = {
-                            nearestBusyDay = it
-                            AppPrefs.setNearestBusyDay(context, it)
-                            refreshWidgets()
-                        }
-                    )
-                    // 竖排标点优化已迁实验室组(2026-09-21): 实验功能唯一家门=「实验室」组
-                    // 或带 [实验] 胶囊(提醒页流体云), 禁第三形态
-                }
-            }
-
-            // 管理桌面小组件: 跳二级页列出已放置的小组件(模板: 节假日课程灰显入口行)
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(SleepyTheme.shapes.large)
-                        .background(colors.surfaceContainer)
-                        .noRippleClickable(onOpenWidgetManagement)
-                        .padding(horizontal = 16.dp, vertical = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = stringResource(R.string.widget_manage_entry),
                             style = MaterialTheme.typography.titleSmall,
                             color = colors.onSurface
                         )

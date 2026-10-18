@@ -56,6 +56,7 @@ class SleepyNavigator(
     fun openAbout() = push(SleepyRoute.About)
     fun openLicense() = push(SleepyRoute.License)
     fun openWidgetManagement() = push(SleepyRoute.WidgetManagement)
+    fun openWidgetSettings() = push(SleepyRoute.WidgetSettings)
     fun openPeriodTables() = push(SleepyRoute.PeriodTables)
     fun openWidgetEdit(widgetId: Int) = push(SleepyRoute.WidgetEdit(widgetId))
     fun openPeriodEdit(periodId: Long, isNew: Boolean = false) =

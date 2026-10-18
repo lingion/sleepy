@@ -372,6 +372,7 @@ internal fun MainTabs(
                 onOpenPeriodTables = { navigator.openPeriodTables() },
                 onOpenAppearance = { navigator.openAppearance() },
                 onOpenGeneral = { navigator.openGeneral() },
+                onOpenWidgetSettings = { navigator.openWidgetSettings() },
                 onOpenExport = { navigator.openExport() },
                 onOpenReminder = { navigator.openReminder() },
                 onOpenAbout = { navigator.openAbout() },

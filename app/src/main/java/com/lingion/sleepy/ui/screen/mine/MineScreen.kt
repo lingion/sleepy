@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Widgets
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Palette
@@ -57,6 +58,7 @@ fun MineScreen(
     onOpenPeriodTables: () -> Unit = {},
     onOpenAppearance: () -> Unit = {},
     onOpenGeneral: () -> Unit = {},
+    onOpenWidgetSettings: () -> Unit = {},
     onOpenExport: () -> Unit = {},
     onOpenReminder: () -> Unit = {},
     onOpenAbout: () -> Unit = {},
@@ -135,6 +137,8 @@ fun MineScreen(
                     SettingsItem(icon = Icons.Outlined.Palette, label = stringResource(R.string.mine_appearance), onClick = onOpenAppearance)
                     Divider()
                     SettingsItem(icon = Icons.Outlined.Tune, label = stringResource(R.string.mine_general), onClick = onOpenGeneral)
+                    Divider()
+                    SettingsItem(icon = Icons.Outlined.Widgets, label = stringResource(R.string.mine_widget), onClick = onOpenWidgetSettings)
                     Divider()
                     SettingsItem(
                         icon = Icons.Outlined.Info,
