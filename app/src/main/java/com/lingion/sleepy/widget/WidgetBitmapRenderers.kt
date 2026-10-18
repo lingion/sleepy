@@ -768,7 +768,7 @@ object WidgetBitmapRenderers {
         val visibleDays = AppPrefs.getVisibleDays(context)
         // compact 脸日列 = compactShownDays 单一口径 (compactWindow 优先, 可跨上下周)
         val compactData = data.copy(days = compactShownDays(data, visibleDays, todayDow))
-        return renderWeekListRegular(context, compactData, wDp, hDp, visibleByCol, footerByCol)
+        return renderWeekListRegular(context, compactData, wDp, hDp, visibleByCol, footerByCol, keepDateOrder = true)
     }
 
     /**
@@ -787,7 +787,7 @@ object WidgetBitmapRenderers {
             return renderWeekListCompact(context, data, wDp, hDp, visibleByCol, footerByCol)
         }
         // SMALL 但容器被拖大 ≥150dp → 内部升档回全量排版(设计第三节决策)
-        return renderWeekListRegular(context, data, wDp, hDp, visibleByCol, footerByCol)
+        return renderWeekListRegular(context, data, wDp, hDp, visibleByCol, footerByCol, keepDateOrder = false)
     }
 
     /**
@@ -796,7 +796,8 @@ object WidgetBitmapRenderers {
     private fun renderWeekListRegular(
         context: Context, data: WeekData, wDp: Float, hDp: Float,
         visibleByCol: List<List<com.lingion.sleepy.data.entity.CourseEntity>?>?,
-        footerByCol: List<String?>?
+        footerByCol: List<String?>?,
+        keepDateOrder: Boolean
     ): Bitmap {
         val density = context.resources.displayMetrics.density
         val w = (wDp * density).toInt()
@@ -806,10 +807,11 @@ object WidgetBitmapRenderers {
         // issue#26: widget 场景别名 — 渲染时读全局 widget 开关
         val useAlias = AppPrefs.isWidgetUseAlias(context)
         // visibleDays (决策 D5-12, 对齐 WeekGridWidgetProvider.renderBitmap L162-163):
-        // 用户"显示星期"设置决定渲染列; 设置页 UI 保证至少留 1 天, 空集时回退全周防御
+        // 用户"显示星期"设置决定渲染列; 设置页 UI 保证至少留 1 天, 空集时回退全周防御。
+        // keepDateOrder: compact 三天窗口保留日期序(周日窗口跨边界不得重排);
+        // regular 档传 false → 星序, 与历史行为逐字节一致。
         val visibleDays = AppPrefs.getVisibleDays(context)
-        val shownDays = if (visibleDays.isEmpty()) data.days
-            else data.days.filter { it.dayOfWeek in visibleDays }.sortedBy { it.dayOfWeek }
+        val shownDays = visibleDaysForRender(data.days, visibleDays, keepDateOrder)
 
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -967,6 +969,24 @@ object WidgetBitmapRenderers {
     }
 
     /**
+     * 渲染列选取 + 排序单一口径 (2026-10-18 修「今日居于第一位/第二位」失灵):
+     * regular 档 keepDateOrder=false → 星序(周一在左, 历史行为逐字节不变);
+     * compact 三天窗口 keepDateOrder=true → 保留输入序(= 真实日期序)。
+     * 根因: 周日窗口 [日(7)/一(1)/二(2)] 跨 dayOfWeek 边界, 旧实现无条件
+     * sortedBy dayOfWeek 把「今日居首」重排回最右列 → 档位看着失灵;
+     * 周一~周六三天同周递增重排不变序 → 仅跨周边界日发作。
+     */
+    fun visibleDaysForRender(
+        days: List<DayData>,
+        visibleDays: Set<Int>,
+        keepDateOrder: Boolean
+    ): List<DayData> {
+        val filtered = if (visibleDays.isEmpty()) days
+            else days.filter { it.dayOfWeek in visibleDays }
+        return if (keepDateOrder) filtered else filtered.sortedBy { it.dayOfWeek }
+    }
+
+    /**
      * 最小档三天窗口的真实日期 (2026-09-15 用户令, 渲染与单测共用单一事实来源):
      * todayFirst=true → 今天/明天/后天(今日居于第一位); false → 昨天/今天/明天(今日居于第二位)。
      * 固定三天, 不跳空天; 日期可越出本周(上下周打通由数据层按所在周周次过滤课程)。
@@ -1088,7 +1108,7 @@ object WidgetBitmapRenderers {
         // visibleDays 同 Regular 档读法(决策 D5-12): 空集回退全周防御; 日列走 compactShownDays 单一口径
         val visibleDays = AppPrefs.getVisibleDays(context)
         val compactData = data.copy(days = compactShownDays(data, visibleDays, todayDow))
-        return renderWeekViewRegular(context, compactData, wDp, hDp, maxCoursesPerDay)
+        return renderWeekViewRegular(context, compactData, wDp, hDp, maxCoursesPerDay, keepDateOrder = true)
     }
 
     /**
@@ -1098,7 +1118,8 @@ object WidgetBitmapRenderers {
         context: Context, data: WeekData, wDp: Float, hDp: Float,
         maxCoursesPerDay: Int = 5,
         visibleByCol: List<List<com.lingion.sleepy.data.entity.CourseEntity>?>? = null,
-        footerByCol: List<String?>? = null
+        footerByCol: List<String?>? = null,
+        keepDateOrder: Boolean = false
     ): Bitmap {
         val density = context.resources.displayMetrics.density
         val w = (wDp * density).toInt()
@@ -1108,10 +1129,11 @@ object WidgetBitmapRenderers {
         // issue#26: widget 场景别名 — 渲染时读全局 widget 开关
         val useAlias = AppPrefs.isWidgetUseAlias(context)
         // visibleDays (决策 D5-12, 对齐 WeekGridWidgetProvider.renderBitmap L162-163):
-        // 用户"显示星期"设置决定渲染列; 设置页 UI 保证至少留 1 天, 空集下回退全周防御
+        // 用户"显示星期"设置决定渲染列; 设置页 UI 保证至少留 1 天, 空集下回退全周防御。
+        // keepDateOrder: compact 三天窗口保留日期序(周日窗口跨边界不得重排,
+        // 同 renderWeekListRegular 修口); regular 档默认 false = 星序逐字节不变。
         val visibleDays = AppPrefs.getVisibleDays(context)
-        val shownDays = if (visibleDays.isEmpty()) data.days
-            else data.days.filter { it.dayOfWeek in visibleDays }.sortedBy { it.dayOfWeek }
+        val shownDays = visibleDaysForRender(data.days, visibleDays, keepDateOrder)
 
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
