@@ -13,8 +13,14 @@ Sleepy widget 选择器/画廊略缩图生成器 — 逐 dp 镜像 WidgetBitmapR
     widget_preview_{today,today_small,today_wide,twoday,twoday_small,twoday_wide,
                     weekgrid,weekgrid_small,weeklist,weeklist_small,weeklist_wide,
                     weekview,weekview_small}.png
-    画布 @ D=2.5, 尺寸严格 == info XML 声明 minWidth×minHeight
-    (4×4=300×250→750×625, 2×2=110×110→275×275, 4×2=300×160→750×400)。
+    画布 @ D=4.0, 尺寸严格 == info XML 声明 minWidth×minHeight
+    (4×4=300×250→1200×1000, 2×2=110×110→440×440, 4×2=300×160→1200×640)。
+
+字号镜像规则:
+  - 大脸(4×4/4×2)逐 dp 镜像渲染器固定字号(11sp 胶囊/13dp 标题...)。
+  - 2×2 小脸画布仅 110dp, 同字号占比过大 → 课名整段截成「高…」。
+    预览对 5 张小脸统一乘字号缩放 k=0.75(行高同步收), 属刻意偏差:
+    略缩图要「一眼读得清」, 真机上小 widget 仍按渲染器原字号绘制。
 
 契约闸: app/src/test/.../WidgetPreviewFacesContractTest.kt 锁
     ① previewLayout 指向专属带 src 布局 ② 双目录同字节 ③ 像素比例==声明±2%
@@ -33,7 +39,8 @@ Sleepy widget 选择器/画廊略缩图生成器 — 逐 dp 镜像 WidgetBitmapR
 from PIL import Image, ImageDraw, ImageFont
 import colorsys, math, os
 
-D = 2.5  # density (Pixel-class), px = dp * 2.5
+D = 4.0
+FS = 1.0  # 字号缩放: 2×2 小脸置 0.75(见 docstring), 大脸保持 1.0 逐 dp 镜像  # density: 出图分辨率 = dp*4, 启动器缩到显示尺寸后仍锐利(275px 级显示 ≈ 2x)
 # 双输出目录: drawable(供 mdpi 基准/OEM 回退) + drawable-nodpi(密度无关)
 # 两显示位(应用内画廊 painterResource / 启动器 previewImage+previewLayout)同源同图。
 REPO = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
@@ -59,7 +66,7 @@ def alpha(c, a): return (c[0], c[1], c[2], a)
 FP = "/System/Library/Fonts/PingFang.ttc"
 def f(sp, bold=False):
     idx = 8 if bold else 2  # SC Semibold / SC Regular
-    return ImageFont.truetype(FP, max(int(sp*D), 8), index=idx)
+    return ImageFont.truetype(FP, max(int(sp*FS*D), 8), index=idx)
 
 def course_color(hue, s=0.55, l=0.82):
     r,g,b = colorsys.hls_to_rgb(hue/360.0, l, s)
@@ -98,8 +105,9 @@ def baseline(dr, font, y_top):
     return y_top + asc
 
 def draw_capsule(dr, x, y, w, h, name, meta, bg, fs=11.0):
-    """mirrors drawCourse(): radius 8dp, pad 3dp, bold name + (fs-2) meta, v-centered block"""
-    dr.rounded_rectangle([x,y,x+w,y+h], radius=8*D, fill=bg)
+    """mirrors drawCourse(): radius 8dp, pad 3dp, bold name + (fs-2) meta, v-centered block
+    课名/meta 一律按胶囊内宽 ellipsize —— 2×2 小脸胶囊窄, 不截断控制会溢出卡面"""
+    dr.rounded_rectangle([x,y,x+w,y+h], radius=8*FS*D, fill=bg)
     fg = text_on(bg)
     pad = 3*D
     fn, fm = f(fs, True), f(fs-2, False)
@@ -108,9 +116,10 @@ def draw_capsule(dr, x, y, w, h, name, meta, bg, fs=11.0):
     lineGap = 2*D
     totalH = nameH + (am + lineGap if meta else 0)
     top = y + (h - totalH)/2
-    dr.text((x+pad, top), name, font=fn, fill=fg, anchor="la")
+    innerW = w - pad*2
+    dr.text((x+pad, top), ellipsize(dr, name, fn, innerW), font=fn, fill=fg, anchor="la")
     if meta:
-        dr.text((x+pad, top+nameH+lineGap), meta, font=fm, fill=fg, anchor="la")
+        dr.text((x+pad, top+nameH+lineGap), ellipsize(dr, meta, fm, innerW), font=fm, fill=fg, anchor="la")
 
 def ellipsize(dr, text, font, maxw):
     if dr.textlength(text, font=font) <= maxw: return text
@@ -131,10 +140,10 @@ def today_face(wdp, hdp, n_rows, header=True):
         # mirror renderTodayRegular: title ellipsized against right-slot width
         maxTitleW = wdp*D - pad - (rw + 6*D) - pad
         title = ellipsize(dr, "今天 · 周二", ft, maxTitleW)
-        dr.text((pad, y+13*D), title, font=ft, fill=PRIMARY, anchor="ls")
-        dr.text((wdp*D-pad, y+13*D), date, font=fd, fill=ONSURFVAR, anchor="rs")
-        y += 20*D
-    rowH, rowGap = 30*D, 4*D
+        dr.text((pad, y+13*FS*D), title, font=ft, fill=PRIMARY, anchor="ls")
+        dr.text((wdp*D-pad, y+13*FS*D), date, font=fd, fill=ONSURFVAR, anchor="rs")
+        y += 20*FS*D
+    rowH, rowGap = 30*FS*D, 4*D
     rowW = wdp*D - pad*2
     for i in range(n_rows):
         c = WEEK[2][i % len(WEEK[2])]
@@ -154,8 +163,17 @@ def save(img, name):
         with open(os.path.join(d, name), "wb") as fh:
             fh.write(data)
 
+def with_small_fs(build):
+    """2×2 小脸: 临时把字号/纵向几何缩放置 0.75 再绘制(见 docstring「字号镜像规则」)"""
+    global FS
+    FS = 0.75
+    try:
+        return build()
+    finally:
+        FS = 1.0
+
 save(today_face(300,250,4), "widget_preview_today.png")
-save(today_face(110,110,2), "widget_preview_today_small.png")
+save(with_small_fs(lambda: today_face(110,110,2)), "widget_preview_today_small.png")
 save(today_face(300,160,3), "widget_preview_today_wide.png")
 
 # ════════════ TWODAY family (renderTwoDayRegular) ════════════
@@ -168,15 +186,15 @@ def twoday_face(wdp, hdp, fs, n0, n1):
     for ci,(dow,label,cnt) in enumerate(cols):
         cx = pad + ci*(colW+gap)
         ft = f(12 if wdp>=250 else 10, True)
-        dr.text((cx, pad+12*D), label, font=ft, fill=PRIMARY, anchor="ls")
+        dr.text((cx, pad+12*FS*D), label, font=ft, fill=PRIMARY, anchor="ls")
         tw = dr.textlength(label, font=ft)
         fd = f(10 if wdp>=250 else 8, False)
         dstr = DATES[dow]
         # narrow columns: only draw date if it fits the column width
         if tw + 6*D + dr.textlength(dstr, font=fd) <= colW:
-            dr.text((cx+tw+6*D, pad+12*D), dstr, font=fd, fill=ONSURFVAR, anchor="ls")
-        cy = pad + 20*D
-        rowH, rowGap = (36 if wdp>=250 else 30)*D, 6*D
+            dr.text((cx+tw+6*D, pad+12*FS*D), dstr, font=fd, fill=ONSURFVAR, anchor="ls")
+        cy = pad + 20*FS*D
+        rowH, rowGap = (36 if wdp>=250 else 30)*FS*D, 6*D
         for i in range(cnt):
             c = WEEK[dow][i % len(WEEK[dow])]
             name, sn, step, room, hue = c
@@ -189,7 +207,7 @@ def twoday_face(wdp, hdp, fs, n0, n1):
     return img
 
 save(twoday_face(300,250,10.0,4,3), "widget_preview_twoday.png")
-save(twoday_face(110,110,8.0,2,2), "widget_preview_twoday_small.png")
+save(with_small_fs(lambda: twoday_face(110,110,8.0,2,2)), "widget_preview_twoday_small.png")
 save(twoday_face(300,160,9.0,2,2), "widget_preview_twoday_wide.png")
 
 # ════════════ WEEKLIST family (renderWeekListRegular, capsule rows) ════════════
@@ -203,22 +221,22 @@ def weeklist_face(wdp, hdp, dows, chip=True):
         isT = dow == TODAY
         card = PCONTAINER if isT else SCONT
         dr.rounded_rectangle([x, outer, x+colW, hdp*D-outer], radius=14*D, fill=card)
-        cy = outer + 12*D
+        cy = outer + 12*FS*D
         ft = f(12, True)
         fg = OPCONTAINER if isT else ONSURFACE
         dr.text((x+colW/2, cy), DAYS[dow], font=ft, fill=fg, anchor="ms")
-        cy += 14*D
+        cy += 14*FS*D
         courses = WEEK[dow]
         if not courses: continue
         if chip:
             chipText = f"{len(courses)} 门"
-            chipW = (len(chipText)*6+12)*D; chipH = 14*D
+            chipW = (len(chipText)*6+12)*FS*D; chipH = 14*FS*D
             dr.rounded_rectangle([x+(colW-chipW)/2, cy, x+(colW+chipW)/2, cy+chipH], radius=chipH/2, fill=SVARIANT)
             fc = f(9, False)
             dr.text((x+colW/2, cy+chipH/2), chipText, font=fc, fill=ONSURFVAR, anchor="mm")
-            cy += chipH + 6*D
+            cy += chipH + 6*FS*D
         fr = f(9, False)
-        rowH, rowGap, cpad = 16*D, 3*D, 3*D
+        rowH, rowGap, cpad = 16*FS*D, 3*D, 3*D
         for (name,sn,step,room,hue) in courses:
             bg = course_color(hue)
             dr.rounded_rectangle([x+cpad, cy, x+colW-cpad, cy+rowH], radius=4*D, fill=bg)
@@ -230,7 +248,7 @@ def weeklist_face(wdp, hdp, dows, chip=True):
     return img
 
 save(weeklist_face(300,250,[1,2,3,4,5,6,7]), "widget_preview_weeklist.png")
-save(weeklist_face(110,110,[2,3,4]), "widget_preview_weeklist_small.png")
+save(with_small_fs(lambda: weeklist_face(110,110,[2,3,4])), "widget_preview_weeklist_small.png")
 save(weeklist_face(300,160,[1,2,3,4,5,6,7]), "widget_preview_weeklist_wide.png")
 
 # ════════════ WEEKVIEW family (renderWeekViewRegular, plain-text rows + separators) ════════════
@@ -244,17 +262,17 @@ def weekview_face(wdp, hdp, dows):
         isT = dow == TODAY
         card = PCONTAINER if isT else SCONT
         dr.rounded_rectangle([x, outer, x+colW, hdp*D-outer], radius=14*D, fill=card)
-        cy = outer + 12*D
+        cy = outer + 12*FS*D
         ft = f(12, True)
         dr.text((x+colW/2, cy), DAYS[dow], font=ft, fill=(OPCONTAINER if isT else ONSURFACE), anchor="ms")
-        cy += 14*D
+        cy += 14*FS*D
         courses = WEEK[dow]
         if not courses: continue
         chipText = f"{len(courses)} 门"
-        chipW = (len(chipText)*6+12)*D; chipH = 14*D
+        chipW = (len(chipText)*6+12)*FS*D; chipH = 14*FS*D
         dr.rounded_rectangle([x+(colW-chipW)/2, cy, x+(colW+chipW)/2, cy+chipH], radius=chipH/2, fill=SVARIANT)
         dr.text((x+colW/2, cy+chipH/2), chipText, font=f(9,False), fill=ONSURFVAR, anchor="mm")
-        cy += chipH + 4*D
+        cy += chipH + 4*FS*D
         fr = f(9, False)
         a,d = fr.getmetrics(); lineH = a+d
         textPad = 4*D
@@ -273,7 +291,7 @@ def weekview_face(wdp, hdp, dows):
     return img
 
 save(weekview_face(300,250,[1,2,3,4,5,6,7]), "widget_preview_weekview.png")
-save(weekview_face(110,110,[2,3,4]), "widget_preview_weekview_small.png")
+save(with_small_fs(lambda: weekview_face(110,110,[2,3,4])), "widget_preview_weekview_small.png")
 
 # ════════════ WEEKGRID family (WeekGridWidgetProvider.renderBitmap) ════════════
 def weekgrid_face(wdp, hdp):
@@ -330,7 +348,7 @@ def weekgrid_face(wdp, hdp):
 
 save(weekgrid_face(300,250), "widget_preview_weekgrid.png")
 # weekgrid small = today face @2x2 (weekGridMinimumTodayData → renderToday, same pixels)
-save(today_face(110,110,2), "widget_preview_weekgrid_small.png")
+save(with_small_fs(lambda: today_face(110,110,2)), "widget_preview_weekgrid_small.png")
 
 names = sorted(f for f in os.listdir(OUT_DIRS[0]) if f.startswith("widget_preview_"))
 print("done:", len(names), "previews ×", len(OUT_DIRS), "dirs")

@@ -102,9 +102,10 @@ class WidgetPreviewFacesContractTest {
         }
     }
 
-    /** ②+③ PNG 双目录同字节存在, 且像素宽高比 == 声明 minWidth×minHeight(±2%)。 */
+    /** ②+③ PNG 双目录同字节存在, 像素宽高比 == 声明 minWidth×minHeight(±2%),
+     *  且出图密度 >= 3.5px/dp(用户验收「分辨率调高」定型, 防 D 回退悄悄变糊)。 */
     @Test
-    fun `every preview png exists in both drawable dirs byte-identical and matches declared aspect`() {
+    fun `every preview png exists in both drawable dirs byte-identical matches declared aspect and min density`() {
         entries.forEach { e ->
             val mdpi = resDir.resolve("drawable/widget_preview_${e.drawableKey}.png")
             val nodpi = resDir.resolve("drawable-nodpi/widget_preview_${e.drawableKey}.png")
@@ -129,6 +130,13 @@ class WidgetPreviewFacesContractTest {
                 "${e.drawableKey}: 像素比例 ${w}x$h=${"%.3f".format(actualRatio)} " +
                     "偏离声明 ${declaredW}x${declaredH}dp=${"%.3f".format(declaredRatio)} 超 2%",
                 drift <= 0.02
+            )
+            // 分辨率下限: 出图密度 D = px/dp 必须 >= 3.5 (生成器 D=4.0, 留 rounding 裕量)。
+            // 2026-10-18 用户验收「分辨率调高一点」定型; D 改回 <=3 即红。
+            val density = w.toDouble() / declaredW
+            assertTrue(
+                "${e.drawableKey}: 出图密度 ${"%.2f".format(density)}px/dp < 3.5, 略缩图会糊",
+                density >= 3.5
             )
         }
     }
