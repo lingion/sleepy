@@ -116,4 +116,8 @@ object DateUtils {
     /** 短日期格式 M/d（无前导零） */
     fun shortDateSlash(date: LocalDate): String =
         "${date.monthValue}/${date.dayOfMonth}"
+
+    /** 中文短日期 M月d日（无前导零） */
+    fun shortDateChinese(date: LocalDate): String =
+        "${date.monthValue}月${date.dayOfMonth}日"
 }

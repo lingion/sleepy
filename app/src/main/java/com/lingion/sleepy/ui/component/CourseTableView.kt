@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -44,6 +45,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.LineHeightStyle
@@ -1091,14 +1093,14 @@ fun FullWeekView(
     val byDay = courses.groupBy { it.day }
     val navExtra = com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding.current
 
-    /** 每天的 M/d 日期字符串 — showDate 开且 startDate 合法时显示 (用户要求: 周一·10-13) */
+    /** 每天的 M月d日 日期字符串 — showDate 开且 startDate 合法时显示 (用户要求: 周一·10月13日) */
     val dayDate: Map<Int, String?> = remember(showDate, startDate, currentWeek, visibleDays) {
         if (!showDate || startDate.isBlank()) return@remember emptyMap()
         val map = mutableMapOf<Int, String?>()
         for (day in visibleDays.filter { it in 1..7 }) {
             map[day] = runCatching {
                 val d = DateUtils.dateOfWeek(startDate, currentWeek, day)
-                if (d != null) DateUtils.shortDateSlash(d) else null
+                if (d != null) DateUtils.shortDateChinese(d) else null
             }.getOrNull()
         }
         map
@@ -1121,7 +1123,6 @@ fun FullWeekView(
             useAlias = useAlias,
             scale = scale,
             cornerRatio = cornerRatio,
-            dayDate = dayDate,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
         )
         DetailPanel(
@@ -1159,10 +1160,14 @@ private fun WeekStrip(
     useAlias: Boolean = false,
     scale: Float = 1f,
     cornerRatio: Float = 1f,
-    dayDate: Map<Int, String?> = emptyMap(),
     modifier: Modifier = Modifier
 ) {
     val sd = { v: Float -> (v * scale).dp }
+
+    // 等高: 7 个胶囊对齐到最高的那个
+    val cellHeights = remember(visibleDays) { mutableStateMapOf<Int, Int>() }
+    val maxH = cellHeights.values.maxOrNull() ?: 0
+
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(sd(6f))
@@ -1172,6 +1177,7 @@ private fun WeekStrip(
             val isToday = startDate.isNotBlank() && runCatching {
                 DateUtils.isDateToday(DateUtils.dateOfWeek(startDate, currentWeek, day), todayDate)
             }.getOrDefault(false)
+            val cellMod = if (maxH > 0) Modifier.height(maxH.dp) else Modifier
             DaySummaryCell(
                 day = day,
                 courses = dayCourses,
@@ -1180,8 +1186,11 @@ private fun WeekStrip(
                 useAlias = useAlias,
                 scale = scale,
                 cornerRatio = cornerRatio,
-                dateStr = dayDate[day],
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f).then(cellMod).onSizeChanged { size ->
+                    if (maxH == 0 || cellHeights[day] != size.height) {
+                        cellHeights[day] = size.height
+                    }
+                }
             )
         }
     }
@@ -1194,7 +1203,6 @@ private fun DaySummaryCell(
     isToday: Boolean,
     isGrey: Boolean = false,
     useAlias: Boolean = false,
-    dateStr: String? = null,
     modifier: Modifier = Modifier,
     scale: Float = 1f,
     cornerRatio: Float = 1f
@@ -1217,7 +1225,7 @@ private fun DaySummaryCell(
     ) {
         // 日期
         Text(
-            text = DateUtils.localizedDay(day, context) + (dateStr?.let { "·$it" } ?: ""),
+            text = DateUtils.localizedDay(day, context),
             style = SleepyTextStyle.dayLabel().copy(fontSize = (13 * scale).sp, lineHeight = (18 * scale).sp),
             color = fg,
             modifier = Modifier.align(Alignment.CenterHorizontally)
