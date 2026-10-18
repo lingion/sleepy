@@ -141,7 +141,9 @@ private fun GalleryCard(card: WidgetGalleryCard, enabled: Boolean, onClick: () -
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(1.6f)
+                    // 卡片框 = 该 variant 声明尺寸的真实比例(缩略图与桌面占地等大比例),
+                    // 统一 1.6f 会让 2×2(1.0)/4×4(1.2)脸在框内留白,与启动器预览不一致
+                    .aspectRatio(card.variant.widthDp.toFloat() / card.variant.heightDp.toFloat())
                     .clip(RoundedCornerShape(8.dp))
                     .background(colors.surfaceContainerHighest),
                 alpha = if (enabled) 1f else 0.5f
