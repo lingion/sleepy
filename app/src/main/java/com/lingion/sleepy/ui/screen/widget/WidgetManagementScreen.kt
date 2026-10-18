@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -21,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -28,6 +30,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.widget.PlacedWidgetItem
@@ -35,20 +40,31 @@ import com.lingion.sleepy.widget.WidgetManagementViewModel
 
 /**
  * Lists every Sleepy widget instance currently placed on the home screen,
- * across all 9 variants. Tapping a row opens [WidgetEditScreen] for that
+ * across all variants. Tapping a row opens [WidgetEditScreen] for that
  * widget id, where the user can pick a per-widget schedule binding.
  *
- * Empty-state copy tells the user how to add a widget — the actions live
- * entirely in the system launcher / home screen, not in our app.
+ * 标题栏右上「＋」进画廊页直接添加(设计 §3)。pin 成功后返回列表时,
+ * ON_RESUME 重扫桌面实例 → 新卡片即时可见,无需手动刷新。
  */
 @Composable
 fun WidgetManagementScreen(
     onBack: () -> Unit,
-    onSelect: (Int) -> Unit
+    onSelect: (Int) -> Unit,
+    onOpenWidgetGallery: () -> Unit = {}
 ) {
     val vm = remember { WidgetManagementViewModel() }
     val items by vm.state.collectAsState()
     val colors = MaterialTheme.colorScheme
+
+    // 画廊 pin → 返回本页: 重扫已放置实例(单一真源 = AppWidgetManager)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) vm.reload()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     Scaffold(
         containerColor = colors.background,
@@ -60,6 +76,14 @@ fun WidgetManagementScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = stringResource(R.string.back)
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onOpenWidgetGallery) {
+                        Icon(
+                            imageVector = Icons.Outlined.Add,
+                            contentDescription = stringResource(R.string.widget_gallery_title)
                         )
                     }
                 },
@@ -86,7 +110,7 @@ fun WidgetManagementScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = stringResource(R.string.widget_manage_empty),
+                            text = stringResource(R.string.widget_manage_empty_v2),
                             style = MaterialTheme.typography.bodyLarge,
                             color = colors.onSurfaceVariant
                         )

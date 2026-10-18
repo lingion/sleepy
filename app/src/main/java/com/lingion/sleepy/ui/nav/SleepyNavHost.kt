@@ -97,6 +97,7 @@ import com.lingion.sleepy.ui.screen.mine.MineScreen
 import com.lingion.sleepy.ui.screen.widget.WidgetEditScreen
 import com.lingion.sleepy.ui.screen.widget.WidgetManagementScreen
 import com.lingion.sleepy.ui.screen.mine.WidgetSettingsScreen
+import com.lingion.sleepy.ui.screen.widget.WidgetGalleryScreen
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.data.entity.CourseEntity
@@ -337,6 +338,7 @@ internal fun SleepyNavHost(
             WidgetManagementScreen(
                 onBack = { navigator.pop() },
                 onSelect = { widgetId -> navigator.openWidgetEdit(widgetId) },
+                onOpenWidgetGallery = { navigator.openWidgetGallery() },
             )
         }
 
@@ -344,6 +346,12 @@ internal fun SleepyNavHost(
             WidgetSettingsScreen(
                 onBack = { navigator.pop() },
                 onOpenWidgetManagement = { navigator.openWidgetManagement() },
+            )
+        }
+
+        entry<SleepyRoute.WidgetGallery> {
+            WidgetGalleryScreen(
+                onBack = { navigator.pop() },
             )
         }
 

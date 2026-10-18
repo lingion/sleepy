@@ -26,6 +26,7 @@ sealed interface SleepyRoute : NavKey {
     @Serializable data object License : SleepyRoute
     @Serializable data object WidgetManagement : SleepyRoute
     @Serializable data object WidgetSettings : SleepyRoute
+    @Serializable data object WidgetGallery : SleepyRoute
     @Serializable data class WidgetEdit(val widgetId: Int) : SleepyRoute
     @Serializable data object PeriodTables : SleepyRoute
     @Serializable data class PeriodEdit(val periodId: Long, val isNew: Boolean = false) : SleepyRoute
