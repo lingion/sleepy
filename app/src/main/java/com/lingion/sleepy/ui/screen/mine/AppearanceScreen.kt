@@ -67,6 +67,7 @@ import com.lingion.sleepy.data.CustomThemeStore
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.CourseColorWriteGlue
+import com.lingion.sleepy.util.CourseHueStore
 import com.lingion.sleepy.util.GoldenAngleColor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -561,7 +562,8 @@ private fun CourseColorSection(
     previewGids: List<Pair<String, String>>,
 ) {
     val colors = MaterialTheme.colorScheme
-    val isDark = colors.background.red < 0.5f
+    // 与主页/课表格/小组件同一 isDark 判定（isPaletteDark(palette)）— 保证 S/L 档逐位同源
+    val isDark = CourseColorUtil.isPaletteDark(SleepyTheme.palette)
     val placeholder = stringResource(R.string.format_help_example)
 
     // 滑条: 拖拽只动本地值, 松手才提交(onValueChangeFinished) → 一次拖动只重算一次
@@ -572,9 +574,17 @@ private fun CourseColorSection(
     // 课表有课取真实前 5 组课名; 空课表用占位串(预览仍可看色相编排)
     val items: List<Pair<String, String>> =
         previewGids.ifEmpty { (1..5).map { "preview-$it" to placeholder } }
-    val hues: Map<String, Float> = remember(anchor, items) {
+    // 试算层: 只对「无持久记录」的组生效(占位串/导入未落库的新课)。
+    val planned: Map<String, Float> = remember(anchor, items) {
         if (anchor == null) items.associate { (gid, _) -> gid to CourseColorUtil.stableHue(gid) }
         else CourseColorUtil.planHuesForGroups(anchor, emptyList(), items.map { it.first })
+    }
+    // 持久快照 = 主页胶囊取色的同一事实源（CourseHueStore）: 有记录的组直读,
+    // 所见即主页所得。此前预览从零试算前 5 组, 与全表重算落库的持久 hue
+    // 在增量避让滑位下可对同一门课给出不同色相 — 即用户所见「预览比主页淡」色差根因。
+    val persisted by CourseHueStore.hueMapFlow.collectAsState()
+    val hues = remember(planned, persisted) {
+        planned.mapValues { (gid, hue) -> persisted[gid] ?: hue }
     }
 
     Surface(
