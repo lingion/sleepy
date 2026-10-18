@@ -54,6 +54,41 @@ object CourseColorWriteGlue {
         plan
     }.getOrElse { emptyMap() }
 
+    /**
+     * 全表重算（spec §2.3 时机 1/2/3/6 — 模式切换/主题变化/种子变化/手动重排）:
+     * 以 anchor 对全部非空白、去重 groupId 重新编排 hue 并 REPLACE 落库。
+     *
+     * 语义钉死（测试锁 CourseColorRecalcTest）:
+     *   - anchor=null(CLASSIC 或解析失败) → 零写 — 表不动, 渲染走 stableHue;
+     *   - 换 anchor 重排**所有**组（「换主题重排课表整体颜色」= 用户批准的目标行为 §2.5）,
+     *     与 persistNewGroupHues 的「钉死既有组」相反 — 那是导入路, 这是重算路;
+     *   - 顺序 = 调用方传入序（DAO getAll 无 ORDER BY → 上层显式排序保确定性）;
+     *   - 异常吞掉返回已写部分（配色增值数据红线, 同 persistNewGroupHues）。
+     */
+    suspend fun recalcWithAnchor(
+        anchor: Float?,
+        dao: CourseColorDao,
+        gids: List<String>
+    ): Map<String, Float> = runCatching {
+        val distinct = gids.filter { it.isNotBlank() }.distinct()
+        val plan = CourseColorUtil.planHuesForGroups(anchor, emptyList(), distinct)
+        if (plan.isNotEmpty()) {
+            dao.upsertAll(plan.map { (gid, hue) ->
+                CourseColorEntity(tableKey = CourseColorEntity.GLOBAL_TABLE_KEY, groupId = gid, hue = hue)
+            })
+            CourseHueStore.invalidate()
+        }
+        plan
+    }.getOrElse { emptyMap() }
+
+    /** Context 系重算入口（AppearanceScreen/主题挂钩调用）。返回重算组数。 */
+    suspend fun recalcAll(ctx: Context, dao: CourseColorDao, gids: List<String>): Int {
+        val mode = AppPrefs.getCourseColorMode(ctx)
+        if (mode == AppPrefs.COURSE_COLOR_MODE_CLASSIC) return 0
+        val anchor = resolveAnchor(ctx, mode) ?: return 0
+        return recalcWithAnchor(anchor, dao, gids).size
+    }
+
     /** 当前深浅档主题 primary 的 anchor 解析 — 与 Compose 渲染路径同一派生函数（spec §2.2 契约4）。 */
     fun resolveAnchor(ctx: Context, mode: Int): Float? {
         val argb = themePrimaryArgb(ctx) ?: return null
