@@ -1,214 +1,340 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Sleepy widget 选择列表预览图生成器 (Task 7)。
+Sleepy widget 选择器/画廊略缩图生成器 — 逐 dp 镜像 WidgetBitmapRenderers.kt。
 
 为什么是 Python 而不是单测: 仓库无 Robolectric(纯 JUnit), android.graphics
-管线无法在 JVM 跑 → 预览图改用本地工具生成 placeholder PNG, 产物直接入库。
+管线无法在 JVM 跑 → 预览图改用本地工具生成 PNG, 产物直接入库。
 
 用法:
     cd <repo-root> && python3 tools/gen_widget_previews.py
 
-输出 10 张 PNG 到 app/src/main/res/drawable-nodpi/:
-    widget_preview_{today,twoday,weeklist,weekview,weekgrid}{,_small}.png
-    大档 ~560x420px, 小档 280x280px (drawable-nodpi → launcher 自行缩放)。
+输出 13 张 PNG, 每张同时写 drawable/ 与 drawable-nodpi/ (字节一致):
+    widget_preview_{today,today_small,today_wide,twoday,twoday_small,twoday_wide,
+                    weekgrid,weekgrid_small,weeklist,weeklist_small,weeklist_wide,
+                    weekview,weekview_small}.png
+    画布 @ D=2.5, 尺寸严格 == info XML 声明 minWidth×minHeight
+    (4×4=300×250→750×625, 2×2=110×110→275×275, 4×2=300×160→750×400)。
 
-重新生成时机: 改了配色/尺寸规格, 或新增 widget 变体时。脚本依赖 Pillow
-(本机已装 11.3.0; 若 Pillow 缺失则退化为纯 zlib/struct 无文字版, 见 PILLOW 检查)。
+契约闸: app/src/test/.../WidgetPreviewFacesContractTest.kt 锁
+    ① previewLayout 指向专属带 src 布局 ② 双目录同字节 ③ 像素比例==声明±2%
+    ④ 画廊 previewImageRes 名集 == 启动器 previewImage 名集。
+改配色/尺寸/新增变体后必须重跑本脚本再提交, 否则契约测试红。
 
-配色取自 app/src/main/java/com/lingion/sleepy/ui/theme/Theme.kt LightScheme
-(widget 渲染 WeekGridWidgetProvider 用 scheme.surface/primaryContainer/...,
-动态取色下选择列表预览用中性亮色基线即可)。
+依赖 Pillow。字体 PingFang.ttc (macOS); 缺字体退化为系统默认 (仅影响观感)。
+规范依据: developer.android.com/develop/ui/views/appwidgets/previews
+  + /design/ui/mobile/guides/widgets/{sizing,style,discovery-promotion}。
+本脚本逻辑与 WidgetBitmapRenderers.kt @ origin/main 同源。
 """
+# Spec basis: developer.android.com/develop/ui/views/appwidgets/previews
+#   + /design/ui/mobile/guides/widgets/{sizing,style,discovery-promotion}
+#   → preview must mirror the actual widget layout with realistic sample content,
+#     accurate to the widget's targetCell size.
+from PIL import Image, ImageDraw, ImageFont
+import colorsys, math, os
 
-import os
-import struct
-import zlib
-import sys
+D = 2.5  # density (Pixel-class), px = dp * 2.5
+# 双输出目录: drawable(供 mdpi 基准/OEM 回退) + drawable-nodpi(密度无关)
+# 两显示位(应用内画廊 painterResource / 启动器 previewImage+previewLayout)同源同图。
+REPO = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
+OUT_DIRS = [os.path.join(REPO, "app/src/main/res/drawable"),
+            os.path.join(REPO, "app/src/main/res/drawable-nodpi")]
 
-OUT_DIR = os.path.join(os.path.dirname(__file__), "..", "app", "src", "main", "res", "drawable-nodpi")
+# ── M3 baseline light scheme (Theme.kt Default preset, ThemePresets.KEY_DEFAULT) ──
+BG          = (0xFE,0xF7,0xFF)
+PRIMARY     = (0x67,0x50,0xA4)
+PCONTAINER  = (0xEA,0xDD,0xFF)
+OPCONTAINER = (0x21,0x00,0x5D)
+SCONTAINER  = (0xE8,0xDE,0xF8)
+ONSURFACE   = (0x1D,0x1B,0x20)
+ONSURFVAR   = (0x49,0x45,0x4F)
+SCONT       = (0xF3,0xED,0xF7)
+SCLOWEST    = (0xFF,0xFF,0xFF)
+SVARIANT    = (0xE7,0xE0,0xEC)
+OUTLINEVAR  = (0xCA,0xC4,0xD0)
 
-# ── LightScheme 中性色 (Theme.kt LightScheme 同源) ──
-SURFACE = "#FEF7FF"          # widget 背景底色
-SURFACE_CONTAINER = "#F3EDF7"  # 骨架块底
-SURFACE_VARIANT = "#E7E0EC"  # 描边/次级块
-PRIMARY = "#6750A4"          # 强调色
-PRIMARY_CONTAINER = "#EADDFF"  # 课程块填充
-ON_SURFACE = "#1D1B20"       # 标题文字
-ON_SURFACE_VAR = "#49454F"   # 次级文字
+def alpha(c, a): return (c[0], c[1], c[2], a)
 
-try:
-    from PIL import Image, ImageDraw, ImageFont
-    HAS_PIL = True
-except ImportError:
-    HAS_PIL = False
+# ── fonts (PingFang SC ≈ Noto Sans CJK on device) ──
+FP = "/System/Library/Fonts/PingFang.ttc"
+def f(sp, bold=False):
+    idx = 8 if bold else 2  # SC Semibold / SC Regular
+    return ImageFont.truetype(FP, max(int(sp*D), 8), index=idx)
 
-# CJK 字体: macOS 自带 PingFang; 找不到就无文字 (纯圆角矩形)
-_FONT_CANDIDATES = [
-    "/System/Library/Fonts/PingFang.ttc",
-    "/System/Library/Fonts/Hiragino Sans GB.ttc",
-    "/System/Library/Fonts/STHeiti Light.ttc",
-    "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
-]
+def course_color(hue, s=0.55, l=0.82):
+    r,g,b = colorsys.hls_to_rgb(hue/360.0, l, s)
+    return (int(r*255), int(g*255), int(b*255))
 
+def text_on(bg):
+    lum = 0.299*bg[0]+0.587*bg[1]+0.114*bg[2]
+    return ONSURFACE if lum > 150 else (0xFF,0xFF,0xFF)
 
-def _load_font(size):
-    for path in _FONT_CANDIDATES:
-        if os.path.exists(path):
-            try:
-                return ImageFont.truetype(path, size)
-            except Exception:
-                pass
-    return None
-
-
-def _hex_rgb(h):
-    h = h.lstrip("#")
-    return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
-
-
-def _draw_with_pil(path, w, h, label, sub, blocks):
-    """Pillow 版: 圆角底 + 标题 + 课程骨架块 + 底部次级文字。
-    blocks: [(x0, y0, x1, y1, fill, radius)] 相对坐标 0~1。"""
-    img = Image.new("RGBA", (w, h), _hex_rgb(SURFACE) + (255,))
-    d = ImageDraw.Draw(img)
-
-    # 外框 (圆角描边, 模拟 widget 卡片)
-    d.rounded_rectangle([1, 1, w - 2, h - 2], radius=28, outline=_hex_rgb(SURFACE_VARIANT), width=2)
-
-    # 标题
-    font = _load_font(max(26, w // 14))
-    if font:
-        d.text((36, 30), label, fill=_hex_rgb(ON_SURFACE), font=font)
-        if sub:
-            sfont = _load_font(max(20, w // 20))
-            d.text((36, 30 + max(34, w // 11)), sub, fill=_hex_rgb(ON_SURFACE_VAR), font=sfont)
-
-    # 课程骨架块
-    for x0, y0, x1, y1, fill, radius in blocks:
-        d.rounded_rectangle(
-            [int(x0 * w), int(y0 * h), int(x1 * w), int(y1 * h)],
-            radius=radius, fill=_hex_rgb(fill),
-        )
-
-    img.save(path, "PNG")
-
-
-def _draw_fallback(path, w, h):
-    """无 Pillow 兜底: 纯 zlib/struct 写纯色圆角矩形 PNG (无文字)。"""
-    r, g, b = _hex_rgb(SURFACE)
-    radius = min(w, h) // 12
-    rows = []
-    for y in range(h):
-        row = bytearray([0])
-        for x in range(w):
-            # 圆角: 距四角超 radius 的点透明
-            cx = radius if x < radius else (w - 1 - radius if x >= w - radius else x)
-            cy = radius if y < radius else (h - 1 - radius if y >= h - radius else y)
-            inside = (x - cx) ** 2 + (y - cy) ** 2 <= radius ** 2 or (radius <= x < w - radius) or (radius <= y < h - radius)
-            if inside:
-                row += bytes((r, g, b, 255))
-            else:
-                row += bytes((0, 0, 0, 0))
-        rows.append(bytes(row))
-    raw = b"".join(rows)
-
-    def chunk(tag, data):
-        c = struct.pack(">I", len(data)) + tag + data
-        return c + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF)
-
-    ihdr = struct.pack(">IIBBBBB", w, h, 8, 6, 0, 0, 0)
-    png = (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", ihdr)
-           + chunk(b"IDAT", zlib.compress(raw, 9)) + chunk(b"IEND", b""))
-    with open(path, "wb") as f:
-        f.write(png)
-
-
-# (label, sub, 尺寸, 骨架块布局) — 布局按真实 widget 内容密度近似
-VARIANTS = {
-    "today": (
-        "今日课程", None, (560, 420), [
-            (0.07, 0.42, 0.93, 0.62, PRIMARY_CONTAINER, 18),
-            (0.07, 0.68, 0.93, 0.88, SURFACE_CONTAINER, 18),
-        ],
-    ),
-    "today_small": (
-        "今日课程", "小", (280, 280), [
-            (0.10, 0.46, 0.90, 0.90, PRIMARY_CONTAINER, 14),
-        ],
-    ),
-    "twoday": (
-        "最近两天", None, (560, 420), [
-            (0.06, 0.42, 0.49, 0.92, PRIMARY_CONTAINER, 16),
-            (0.54, 0.42, 0.94, 0.92, SURFACE_CONTAINER, 16),
-        ],
-    ),
-    "twoday_small": (
-        "最近两天", "小", (280, 280), [
-            (0.10, 0.46, 0.90, 0.90, PRIMARY_CONTAINER, 14),
-        ],
-    ),
-    "weeklist": (
-        "本周课表", "（列表）", (560, 420), [
-            (0.07, 0.44, 0.93, 0.56, PRIMARY_CONTAINER, 12),
-            (0.07, 0.60, 0.93, 0.72, SURFACE_CONTAINER, 12),
-            (0.07, 0.76, 0.93, 0.88, SURFACE_CONTAINER, 12),
-        ],
-    ),
-    "weeklist_small": (
-        "本周课表", "（列表）小", (280, 280), [
-            (0.10, 0.50, 0.90, 0.64, PRIMARY_CONTAINER, 10),
-            (0.10, 0.70, 0.90, 0.84, SURFACE_CONTAINER, 10),
-        ],
-    ),
-    "weekview": (
-        "本周课表", "（周视图）", (560, 420), [
-            (0.06, 0.44, 0.24, 0.92, PRIMARY_CONTAINER, 12),
-            (0.26, 0.44, 0.44, 0.92, SURFACE_CONTAINER, 12),
-            (0.46, 0.44, 0.64, 0.92, SURFACE_CONTAINER, 12),
-            (0.66, 0.44, 0.86, 0.92, PRIMARY_CONTAINER, 12),
-            (0.88, 0.44, 0.94, 0.92, SURFACE_VARIANT, 12),
-        ],
-    ),
-    "weekview_small": (
-        "本周课表", "（周视图）小", (280, 280), [
-            (0.08, 0.46, 0.28, 0.90, PRIMARY_CONTAINER, 10),
-            (0.32, 0.46, 0.52, 0.90, SURFACE_CONTAINER, 10),
-            (0.56, 0.46, 0.76, 0.90, PRIMARY_CONTAINER, 10),
-            (0.80, 0.46, 0.92, 0.90, SURFACE_VARIANT, 10),
-        ],
-    ),
-    "weekgrid": (
-        "本周课表", "（网格）", (560, 420), [
-            (0.06, 0.44, 0.48, 0.66, PRIMARY_CONTAINER, 12),
-            (0.52, 0.44, 0.94, 0.66, SURFACE_CONTAINER, 12),
-            (0.06, 0.70, 0.48, 0.92, SURFACE_CONTAINER, 12),
-            (0.52, 0.70, 0.94, 0.92, PRIMARY_CONTAINER, 12),
-        ],
-    ),
-    "weekgrid_small": (
-        "本周课表", "（网格）小", (280, 280), [
-            (0.10, 0.46, 0.52, 0.68, PRIMARY_CONTAINER, 10),
-            (0.58, 0.46, 0.90, 0.68, SURFACE_CONTAINER, 10),
-            (0.10, 0.72, 0.52, 0.90, SURFACE_CONTAINER, 10),
-            (0.58, 0.72, 0.90, 0.90, PRIMARY_CONTAINER, 10),
-        ],
-    ),
+# ── sample timetable ──
+# (name, startNode, step, room, hue)
+WEEK = {
+ 1: [("高等数学",1,2,"A305",280), ("英文阅读",3,2,"B201",60), ("线性代数",5,2,"A305",150)],
+ 2: [("高等数学",1,2,"A305",280), ("英文阅读",3,2,"B201",60), ("体育",5,2,"体育馆",225), ("程序设计实践",7,2,"C102",320)],
+ 3: [("线性代数",1,2,"A305",150), ("研讨课",3,1,"D203",30), ("程序设计实践",4,2,"C102",320)],
+ 4: [("高等数学",2,2,"A305",280), ("英文阅读",5,2,"B201",60)],
+ 5: [("线性代数",1,2,"A305",150), ("研讨课",3,1,"D203",30), ("体育",4,2,"体育馆",225)],
+ 6: [],
+ 7: [],
 }
+DAYS = {1:"Mon",2:"Tue",3:"Wed",4:"Thu",5:"Fri",6:"Sat",7:"Sun"}
+DAYS_CN = {1:"周一",2:"周二",3:"周三",4:"周四",5:"周五",6:"周六",7:"周日"}
+DATES = {1:"10/19",2:"10/20",3:"10/21",4:"10/22",5:"10/23",6:"10/24",7:"10/25"}
+TODAY = 2  # Tue 10/20
+
+def canvas(wdp, hdp):
+    img = Image.new("RGBA", (int(wdp*D), int(hdp*D)), (0,0,0,0))
+    dr = ImageDraw.Draw(img)
+    r = 20*D
+    dr.rounded_rectangle([0,0,img.width-1,img.height-1], radius=r, fill=BG)
+    dr.rounded_rectangle([0,0,img.width-1,img.height-1], radius=r, outline=OUTLINEVAR, width=2)
+    return img, dr
+
+def baseline(dr, font, y_top):
+    asc, _ = font.getmetrics()
+    return y_top + asc
+
+def draw_capsule(dr, x, y, w, h, name, meta, bg, fs=11.0):
+    """mirrors drawCourse(): radius 8dp, pad 3dp, bold name + (fs-2) meta, v-centered block"""
+    dr.rounded_rectangle([x,y,x+w,y+h], radius=8*D, fill=bg)
+    fg = text_on(bg)
+    pad = 3*D
+    fn, fm = f(fs, True), f(fs-2, False)
+    an,_ = fn.getmetrics(); am,_ = fm.getmetrics()
+    nameH = an + _  # ascent+descent
+    lineGap = 2*D
+    totalH = nameH + (am + lineGap if meta else 0)
+    top = y + (h - totalH)/2
+    dr.text((x+pad, top), name, font=fn, fill=fg, anchor="la")
+    if meta:
+        dr.text((x+pad, top+nameH+lineGap), meta, font=fm, fill=fg, anchor="la")
+
+def ellipsize(dr, text, font, maxw):
+    if dr.textlength(text, font=font) <= maxw: return text
+    n = text
+    while n and dr.textlength(n+"…", font=font) > maxw: n = n[:-1]
+    return n + "…"
+
+# ════════════ TODAY family (renderTodayRegular) ════════════
+def today_face(wdp, hdp, n_rows, header=True):
+    img, dr = canvas(wdp, hdp)
+    pad = 10*D
+    y = pad
+    if header:
+        ft = f(13, True)
+        fd = f(12, False)
+        date = "10月20日"
+        rw = dr.textlength(date, font=fd)
+        # mirror renderTodayRegular: title ellipsized against right-slot width
+        maxTitleW = wdp*D - pad - (rw + 6*D) - pad
+        title = ellipsize(dr, "今天 · 周二", ft, maxTitleW)
+        dr.text((pad, y+13*D), title, font=ft, fill=PRIMARY, anchor="ls")
+        dr.text((wdp*D-pad, y+13*D), date, font=fd, fill=ONSURFVAR, anchor="rs")
+        y += 20*D
+    rowH, rowGap = 30*D, 4*D
+    rowW = wdp*D - pad*2
+    for i in range(n_rows):
+        c = WEEK[2][i % len(WEEK[2])]
+        name, sn, step, room, hue = c
+        draw_capsule(dr, pad, y+i*(rowH+rowGap), rowW, rowH,
+                     name, f"{sn}-{sn+step-1}节 · {room}", course_color(hue))
+    return img
 
 
-def main():
-    out = os.path.normpath(OUT_DIR)
-    os.makedirs(out, exist_ok=True)
-    for name, (label, sub, (w, h), blocks) in VARIANTS.items():
-        path = os.path.join(out, f"widget_preview_{name}.png")
-        if HAS_PIL:
-            _draw_with_pil(path, w, h, label, sub, blocks)
-        else:
-            _draw_fallback(path, w, h)
-        print(f"wrote {path} ({w}x{h})")
-    print(f"done: {len(VARIANTS)} previews, PIL={HAS_PIL}")
+def save(img, name):
+    """write the same PNG bytes into both drawable dirs (contract: byte-identical)."""
+    import io
+    buf = io.BytesIO(); img.save(buf, "PNG")
+    data = buf.getvalue()
+    for d in OUT_DIRS:
+        os.makedirs(d, exist_ok=True)
+        with open(os.path.join(d, name), "wb") as fh:
+            fh.write(data)
 
+save(today_face(300,250,4), "widget_preview_today.png")
+save(today_face(110,110,2), "widget_preview_today_small.png")
+save(today_face(300,160,3), "widget_preview_today_wide.png")
 
-if __name__ == "__main__":
-    sys.exit(main())
+# ════════════ TWODAY family (renderTwoDayRegular) ════════════
+def twoday_face(wdp, hdp, fs, n0, n1):
+    img, dr = canvas(wdp, hdp)
+    pad = 12*D
+    gap = 10*D
+    colW = (wdp*D - pad*2 - gap)/2
+    cols = [(2,"今天",n0),(3,"明天",n1)]
+    for ci,(dow,label,cnt) in enumerate(cols):
+        cx = pad + ci*(colW+gap)
+        ft = f(12 if wdp>=250 else 10, True)
+        dr.text((cx, pad+12*D), label, font=ft, fill=PRIMARY, anchor="ls")
+        tw = dr.textlength(label, font=ft)
+        fd = f(10 if wdp>=250 else 8, False)
+        dstr = DATES[dow]
+        # narrow columns: only draw date if it fits the column width
+        if tw + 6*D + dr.textlength(dstr, font=fd) <= colW:
+            dr.text((cx+tw+6*D, pad+12*D), dstr, font=fd, fill=ONSURFVAR, anchor="ls")
+        cy = pad + 20*D
+        rowH, rowGap = (36 if wdp>=250 else 30)*D, 6*D
+        for i in range(cnt):
+            c = WEEK[dow][i % len(WEEK[dow])]
+            name, sn, step, room, hue = c
+            draw_capsule(dr, cx, cy+i*(rowH+rowGap), colW, rowH,
+                         name, f"{sn}-{sn+step-1}节 · {room}", course_color(hue), fs=fs)
+        # column divider
+        if ci == 0:
+            sx = cx+colW+gap/2
+            dr.line([(sx,pad),(sx,hdp*D-pad)], fill=alpha(ONSURFVAR,32), width=1)
+    return img
+
+save(twoday_face(300,250,10.0,4,3), "widget_preview_twoday.png")
+save(twoday_face(110,110,8.0,2,2), "widget_preview_twoday_small.png")
+save(twoday_face(300,160,9.0,2,2), "widget_preview_twoday_wide.png")
+
+# ════════════ WEEKLIST family (renderWeekListRegular, capsule rows) ════════════
+def weeklist_face(wdp, hdp, dows, chip=True):
+    img, dr = canvas(wdp, hdp)
+    outer = 6*D; gap = 4*D
+    innerW = wdp*D - outer*2
+    colW = (innerW - gap*(len(dows)-1))/len(dows)
+    for i,dow in enumerate(dows):
+        x = outer + i*(colW+gap)
+        isT = dow == TODAY
+        card = PCONTAINER if isT else SCONT
+        dr.rounded_rectangle([x, outer, x+colW, hdp*D-outer], radius=14*D, fill=card)
+        cy = outer + 12*D
+        ft = f(12, True)
+        fg = OPCONTAINER if isT else ONSURFACE
+        dr.text((x+colW/2, cy), DAYS[dow], font=ft, fill=fg, anchor="ms")
+        cy += 14*D
+        courses = WEEK[dow]
+        if not courses: continue
+        if chip:
+            chipText = f"{len(courses)} 门"
+            chipW = (len(chipText)*6+12)*D; chipH = 14*D
+            dr.rounded_rectangle([x+(colW-chipW)/2, cy, x+(colW+chipW)/2, cy+chipH], radius=chipH/2, fill=SVARIANT)
+            fc = f(9, False)
+            dr.text((x+colW/2, cy+chipH/2), chipText, font=fc, fill=ONSURFVAR, anchor="mm")
+            cy += chipH + 6*D
+        fr = f(9, False)
+        rowH, rowGap, cpad = 16*D, 3*D, 3*D
+        for (name,sn,step,room,hue) in courses:
+            bg = course_color(hue)
+            dr.rounded_rectangle([x+cpad, cy, x+colW-cpad, cy+rowH], radius=4*D, fill=bg)
+            disp = ellipsize(dr, name, f(9,True), colW-cpad*2-4*D)
+            fn = f(9, True)
+            a,_ = fn.getmetrics()
+            dr.text((x+cpad+2*D, cy+rowH/2), disp, font=fn, fill=text_on(bg), anchor="lm")
+            cy += rowH + rowGap
+    return img
+
+save(weeklist_face(300,250,[1,2,3,4,5,6,7]), "widget_preview_weeklist.png")
+save(weeklist_face(110,110,[2,3,4]), "widget_preview_weeklist_small.png")
+save(weeklist_face(300,160,[1,2,3,4,5,6,7]), "widget_preview_weeklist_wide.png")
+
+# ════════════ WEEKVIEW family (renderWeekViewRegular, plain-text rows + separators) ════════════
+def weekview_face(wdp, hdp, dows):
+    img, dr = canvas(wdp, hdp)
+    outer = 6*D; gap = 4*D
+    innerW = wdp*D - outer*2
+    colW = (innerW - gap*(len(dows)-1))/len(dows)
+    for i,dow in enumerate(dows):
+        x = outer + i*(colW+gap)
+        isT = dow == TODAY
+        card = PCONTAINER if isT else SCONT
+        dr.rounded_rectangle([x, outer, x+colW, hdp*D-outer], radius=14*D, fill=card)
+        cy = outer + 12*D
+        ft = f(12, True)
+        dr.text((x+colW/2, cy), DAYS[dow], font=ft, fill=(OPCONTAINER if isT else ONSURFACE), anchor="ms")
+        cy += 14*D
+        courses = WEEK[dow]
+        if not courses: continue
+        chipText = f"{len(courses)} 门"
+        chipW = (len(chipText)*6+12)*D; chipH = 14*D
+        dr.rounded_rectangle([x+(colW-chipW)/2, cy, x+(colW+chipW)/2, cy+chipH], radius=chipH/2, fill=SVARIANT)
+        dr.text((x+colW/2, cy+chipH/2), chipText, font=f(9,False), fill=ONSURFVAR, anchor="mm")
+        cy += chipH + 4*D
+        fr = f(9, False)
+        a,d = fr.getmetrics(); lineH = a+d
+        textPad = 4*D
+        fg = alpha(OPCONTAINER,209) if isT else ONSURFVAR
+        shown = courses[:3 if wdp<200 else 5]
+        for j,(name,sn,step,room,hue) in enumerate(shown):
+            disp = ellipsize(dr, name, fr, colW-textPad*2)
+            dr.text((x+textPad, cy+a), disp, font=fr, fill=fg, anchor="ls")
+            cy += lineH
+            if j < len(shown)-1:
+                cy += 1.5*D
+                dr.line([(x+textPad,cy),(x+colW-textPad,cy)], fill=alpha(ONSURFVAR,102), width=1)
+                cy += 1.5*D
+            else:
+                cy += 3*D
+    return img
+
+save(weekview_face(300,250,[1,2,3,4,5,6,7]), "widget_preview_weekview.png")
+save(weekview_face(110,110,[2,3,4]), "widget_preview_weekview_small.png")
+
+# ════════════ WEEKGRID family (WeekGridWidgetProvider.renderBitmap) ════════════
+def weekgrid_face(wdp, hdp):
+    img, dr = canvas(wdp, hdp)
+    outer = 6*D; headH = 56*D; timeW = 40*D; gapH = 1.5*D; gapW = 2.5*D
+    bodyW = wdp*D - outer*2
+    dayW = (bodyW - timeW - gapW*8)/7
+    maxNode = 8
+    bodyH = hdp*D - outer*2 - headH
+    slotH = (bodyH - gapH*(maxNode+1))/maxNode
+    # corner cell + day headers
+    dr.rounded_rectangle([outer, outer, outer+timeW, outer+headH], radius=14*D, fill=SCONT)
+    for idx,dow in enumerate([1,2,3,4,5,6,7]):
+        cx0 = outer + timeW + gapW + idx*(dayW+gapW)
+        isT = dow == TODAY
+        dr.rounded_rectangle([cx0, outer, cx0+dayW, outer+headH], radius=14*D, fill=(PCONTAINER if isT else SCONT))
+        ft = f(13 if dayW>34*D else 10, True)
+        dr.text((cx0+dayW/2, outer+headH*0.40), DAYS_CN[dow], font=ft, fill=(PRIMARY if isT else ONSURFACE), anchor="ms")
+        dr.text((cx0+dayW/2, outer+headH*0.72), DATES[dow], font=f(9,False), fill=ONSURFVAR, anchor="ms")
+    bodyTop = outer + headH
+    # today tint band
+    ti = [1,2,3,4,5,6,7].index(TODAY)
+    tx0 = outer + timeW + gapW + ti*(dayW+gapW)
+    dr.rectangle([tx0, bodyTop, tx0+dayW, bodyTop+bodyH], fill=alpha(PCONTAINER,40))
+    # grid lines
+    gl = alpha(SVARIANT,90)
+    for idx in range(8):
+        lx = outer + timeW + gapW + idx*(dayW+gapW) - gapW/2
+        if 0 < idx <= 7:
+            dr.line([(lx, bodyTop),(lx, bodyTop+bodyH)], fill=gl, width=1)
+    for row in range(maxNode+1):
+        ry = bodyTop + gapH + row*(slotH+gapH) - gapH/2
+        dr.line([(outer+timeW, ry),(wdp*D-outer, ry)], fill=gl, width=1)
+    # time labels
+    for row in range(maxNode):
+        ry = bodyTop + gapH + row*(slotH+gapH)
+        dr.text((outer+timeW-4*D, ry+slotH/2), f"{row+1}", font=f(9,False), fill=ONSURFVAR, anchor="rm")
+    # course cards
+    for idx,dow in enumerate([1,2,3,4,5,6,7]):
+        cx0 = outer + timeW + gapW + idx*(dayW+gapW)
+        for (name,sn,step,room,hue) in WEEK[dow]:
+            y0 = bodyTop + gapH + (sn-1)*(slotH+gapH)
+            hgt = step*slotH + (step-1)*gapH
+            bg = course_color(hue)
+            dr.rounded_rectangle([cx0+1, y0, cx0+dayW-1, y0+hgt], radius=6*D, fill=bg)
+            fg = text_on(bg)
+            fn = f(9 if dayW>34*D else 8, True)
+            if hgt > 40*D:
+                dr.text((cx0+dayW/2, y0+hgt/2-6*D), ellipsize(dr,name,fn,dayW-6*D), font=fn, fill=fg, anchor="mm")
+                dr.text((cx0+dayW/2, y0+hgt/2+7*D), room, font=f(8,False), fill=fg, anchor="mm")
+            else:
+                dr.text((cx0+dayW/2, y0+hgt/2), ellipsize(dr,name,fn,dayW-6*D), font=fn, fill=fg, anchor="mm")
+    return img
+
+save(weekgrid_face(300,250), "widget_preview_weekgrid.png")
+# weekgrid small = today face @2x2 (weekGridMinimumTodayData → renderToday, same pixels)
+save(today_face(110,110,2), "widget_preview_weekgrid_small.png")
+
+names = sorted(f for f in os.listdir(OUT_DIRS[0]) if f.startswith("widget_preview_"))
+print("done:", len(names), "previews ×", len(OUT_DIRS), "dirs")
+for fn in names:
+    p = os.path.join(OUT_DIRS[0], fn)
+    im = Image.open(p)
+    print(f"  {fn:40s} {im.width}x{im.height}  ar={im.width/im.height:.3f}  {os.path.getsize(p)//1024}KB")
