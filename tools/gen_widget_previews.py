@@ -39,8 +39,8 @@ Sleepy widget 选择器/画廊略缩图生成器 — 逐 dp 镜像 WidgetBitmapR
 from PIL import Image, ImageDraw, ImageFont
 import colorsys, math, os
 
-D = 4.0
-FS = 1.0  # 字号缩放: 2×2 小脸置 0.75(见 docstring), 大脸保持 1.0 逐 dp 镜像  # density: 出图分辨率 = dp*4, 启动器缩到显示尺寸后仍锐利(275px 级显示 ≈ 2x)
+D = 4.0   # density: 出图分辨率 = dp*4, 启动器缩到显示尺寸后仍锐利(275px 级显示 ≈ 2x)
+FS = 1.0  # 字号缩放: 2×2 小脸置 0.75(见 docstring), 大脸保持 1.0 逐 dp 镜像
 # 双输出目录: drawable(供 mdpi 基准/OEM 回退) + drawable-nodpi(密度无关)
 # 两显示位(应用内画廊 painterResource / 启动器 previewImage+previewLayout)同源同图。
 REPO = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
