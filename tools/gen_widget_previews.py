@@ -13,8 +13,8 @@ Sleepy widget 选择器/画廊略缩图生成器 — 逐 dp 镜像 WidgetBitmapR
     widget_preview_{today,today_small,today_wide,twoday,twoday_small,twoday_wide,
                     weekgrid,weekgrid_small,weeklist,weeklist_small,weeklist_wide,
                     weekview,weekview_small}.png
-    画布 @ D=4.0, 尺寸严格 == info XML 声明 minWidth×minHeight
-    (4×4=300×250→1200×1000, 2×2=110×110→440×440, 4×2=300×160→1200×640)。
+    画布 @ D=6.0, 尺寸严格 == info XML 声明 minWidth×minHeight
+    (4×4=300×250→1800×1500, 2×2=110×110→660×660, 4×2=300×160→1800×960)。
 
 字号镜像规则:
   - 大脸(4×4/4×2)逐 dp 镜像渲染器固定字号(11sp 胶囊/13dp 标题...)。
@@ -39,8 +39,11 @@ Sleepy widget 选择器/画廊略缩图生成器 — 逐 dp 镜像 WidgetBitmapR
 from PIL import Image, ImageDraw, ImageFont
 import colorsys, math, os
 
-D = 4.0   # density: 出图分辨率 = dp*4, 启动器缩到显示尺寸后仍锐利(275px 级显示 ≈ 2x)
+D = 6.0   # density: 出图分辨率 = dp*6, 启动器缩到显示尺寸后仍锐利(275px 级显示 ≈ 2.2x)
 FS = 1.0  # 字号缩放: 2×2 小脸置 0.75(见 docstring), 大脸保持 1.0 逐 dp 镜像
+
+def bw(): return max(1, int(round(0.8*D)))  # 外框描边 0.8dp(= D2.5 时代的 2px)
+def gw(): return max(1, int(round(0.4*D)))  # 网格/分隔线 0.4dp(= D2.5 时代的 1px)
 # 双输出目录: drawable(供 mdpi 基准/OEM 回退) + drawable-nodpi(密度无关)
 # 两显示位(应用内画廊 painterResource / 启动器 previewImage+previewLayout)同源同图。
 REPO = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
@@ -97,7 +100,7 @@ def canvas(wdp, hdp):
     dr = ImageDraw.Draw(img)
     r = 20*D
     dr.rounded_rectangle([0,0,img.width-1,img.height-1], radius=r, fill=BG)
-    dr.rounded_rectangle([0,0,img.width-1,img.height-1], radius=r, outline=OUTLINEVAR, width=2)
+    dr.rounded_rectangle([0,0,img.width-1,img.height-1], radius=r, outline=OUTLINEVAR, width=bw())
     return img, dr
 
 def baseline(dr, font, y_top):
@@ -203,7 +206,7 @@ def twoday_face(wdp, hdp, fs, n0, n1):
         # column divider
         if ci == 0:
             sx = cx+colW+gap/2
-            dr.line([(sx,pad),(sx,hdp*D-pad)], fill=alpha(ONSURFVAR,32), width=1)
+            dr.line([(sx,pad),(sx,hdp*D-pad)], fill=alpha(ONSURFVAR,32), width=gw())
     return img
 
 save(twoday_face(300,250,10.0,4,3), "widget_preview_twoday.png")
@@ -284,7 +287,7 @@ def weekview_face(wdp, hdp, dows):
             cy += lineH
             if j < len(shown)-1:
                 cy += 1.5*D
-                dr.line([(x+textPad,cy),(x+colW-textPad,cy)], fill=alpha(ONSURFVAR,102), width=1)
+                dr.line([(x+textPad,cy),(x+colW-textPad,cy)], fill=alpha(ONSURFVAR,102), width=gw())
                 cy += 1.5*D
             else:
                 cy += 3*D
@@ -321,10 +324,10 @@ def weekgrid_face(wdp, hdp):
     for idx in range(8):
         lx = outer + timeW + gapW + idx*(dayW+gapW) - gapW/2
         if 0 < idx <= 7:
-            dr.line([(lx, bodyTop),(lx, bodyTop+bodyH)], fill=gl, width=1)
+            dr.line([(lx, bodyTop),(lx, bodyTop+bodyH)], fill=gl, width=gw())
     for row in range(maxNode+1):
         ry = bodyTop + gapH + row*(slotH+gapH) - gapH/2
-        dr.line([(outer+timeW, ry),(wdp*D-outer, ry)], fill=gl, width=1)
+        dr.line([(outer+timeW, ry),(wdp*D-outer, ry)], fill=gl, width=gw())
     # time labels
     for row in range(maxNode):
         ry = bodyTop + gapH + row*(slotH+gapH)
