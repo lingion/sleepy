@@ -23,7 +23,9 @@ junitParams = "5.10.2"
 json = "20231013"
 sqliteJdbc = "3.53.4.0"
 androidxTestJunit = "1.2.1"
+androidxTestCore = "1.7.0"
 espresso = "3.6.1"
+robolectric = "4.16.1"
 
 [libraries]
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
@@ -63,10 +65,12 @@ junit-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref 
 json = { module = "org.json:json", version.ref = "json" }
 sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqliteJdbc" }
 androidx-test-junit = { module = "androidx.test.ext:junit", version.ref = "androidxTestJunit" }
+androidx-test-core = { module = "androidx.test:core", version.ref = "androidxTestCore" }
 espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso" }
 compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

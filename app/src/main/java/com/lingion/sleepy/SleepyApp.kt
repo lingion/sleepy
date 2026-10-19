@@ -79,7 +79,11 @@ class SleepyApp : Application() {
         // 15-min periodic 兜底 (KEEP 幂等): 午夜自续链是单次任务, 强杀进程会清掉,
         // periodic 是唯一能复活它的自主驱动 — schedule() 此前零调用方 (7ecb554 起断链),
         // 恢复挂载使 WidgetUpdater 头注释的兜底描述重新为真。
-        WidgetUpdater.schedule(this@SleepyApp)
+        // runCatching: 无 WorkManager 环境 (Robolectric 单测 / 初始化竞态) 下
+        // getInstance 直接抛 IllegalStateException 并炸掉整个冷启动。本函数其余
+        // 子系统都按「单点失败不阻塞」原则隔离, 此处同理; widget 定时兜底失败
+        // 不致命 — 刷新另有 onUpdate 路径。
+        runCatching { WidgetUpdater.schedule(this@SleepyApp) }
         // 后台预取节假日数据
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try { HolidayManager.preload(this@SleepyApp) } catch (_: Throwable) {}

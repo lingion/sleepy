@@ -234,6 +234,10 @@ dependencies {
     testImplementation(libs.junit.params)
     testImplementation(libs.json)
     testImplementation(libs.sqlite.jdbc)
+    // JVM-side pixel golden tests (Robolectric NATIVE graphics = real LayoutLib
+    // renderer, no emulator/device). Baselines live in app/src/test/golden/.
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
     androidTestImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.compose.ui.test.junit4)
