@@ -131,12 +131,12 @@ class WidgetPreviewFacesContractTest {
                     "偏离声明 ${declaredW}x${declaredH}dp=${"%.3f".format(declaredRatio)} 超 2%",
                 drift <= 0.02
             )
-            // 分辨率下限: 出图密度 D = px/dp 必须 >= 3.5 (生成器 D=4.0, 留 rounding 裕量)。
-            // 2026-10-18 用户验收「分辨率调高一点」定型; D 改回 <=3 即红。
+            // 分辨率下限: 出图密度 D = px/dp 必须 >= 5.5 (生成器 D=6.0, 留 rounding 裕量)。
+            // 2026-10-18/19 用户两次验收「分辨率再调高」定型; D 回退即红。
             val density = w.toDouble() / declaredW
             assertTrue(
-                "${e.drawableKey}: 出图密度 ${"%.2f".format(density)}px/dp < 3.5, 略缩图会糊",
-                density >= 3.5
+                "${e.drawableKey}: 出图密度 ${"%.2f".format(density)}px/dp < 5.5, 略缩图会糊",
+                density >= 5.5
             )
         }
     }
