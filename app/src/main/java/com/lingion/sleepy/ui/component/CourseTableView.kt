@@ -42,10 +42,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.LineHeightStyle
@@ -1164,9 +1164,13 @@ private fun WeekStrip(
 ) {
     val sd = { v: Float -> (v * scale).dp }
 
-    // 等高: 7 个胶囊对齐到最高的那个
-    val cellHeights = remember(visibleDays) { mutableStateMapOf<Int, Int>() }
-    val maxH = cellHeights.values.maxOrNull() ?: 0
+    // 等高: 每个胶囊用 layout 以"宽松高度"测一次自然高度 (px), 记入 per-day 表;
+    // Row 内所有胶囊摆放高度取该表最大值, 短的被拉到最高者。自然高度只由内容决定,
+    // 不随拉伸改变 → 无正反馈, 杜绝 #191 的棘轮膨胀撑屏。
+    // 严禁用 Row(IntrinsicSize): DaySummaryCell 内含 BoxWithConstraints(SubcomposeLayout),
+    // 不支持 intrinsic 询问, 一进周视图首帧即抛 IllegalStateException 崩溃。
+    val naturalHeights = remember(visibleDays) { mutableStateMapOf<Int, Int>() }
+    val maxH = naturalHeights.values.maxOrNull() ?: 0
 
     Row(
         modifier = modifier,
@@ -1177,7 +1181,6 @@ private fun WeekStrip(
             val isToday = startDate.isNotBlank() && runCatching {
                 DateUtils.isDateToday(DateUtils.dateOfWeek(startDate, currentWeek, day), todayDate)
             }.getOrDefault(false)
-            val cellMod = if (maxH > 0) Modifier.height(maxH.dp) else Modifier
             DaySummaryCell(
                 day = day,
                 courses = dayCourses,
@@ -1186,11 +1189,24 @@ private fun WeekStrip(
                 useAlias = useAlias,
                 scale = scale,
                 cornerRatio = cornerRatio,
-                modifier = Modifier.weight(1f).then(cellMod).onSizeChanged { size ->
-                    if (maxH == 0 || cellHeights[day] != size.height) {
-                        cellHeights[day] = size.height
+                modifier = Modifier
+                    .weight(1f)
+                    .layout { measurable, constraints ->
+                        // 第一遍: 宽松 maxHeight 测自然高度 (px), 该值只由内容决定, 上报它不会棘轮
+                        val natural = measurable
+                            .measure(constraints.copy(minHeight = 0, maxHeight = Constraints.Infinity))
+                            .height
+                        if (naturalHeights[day] != natural) {
+                            naturalHeights[day] = natural
+                        }
+                        // 第二遍: 以 max(自然, 全局最高) 强制等高, 背景随 Column 填满
+                        val boxH = natural.coerceAtLeast(maxH)
+                        val stretched = measurable
+                            .measure(constraints.copy(minHeight = boxH, maxHeight = boxH))
+                        layout(stretched.width, boxH) {
+                            stretched.placeRelative(0, 0)
+                        }
                     }
-                }
             )
         }
     }
