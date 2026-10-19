@@ -7,18 +7,14 @@ import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.TimeTableUtils
-import org.junit.Assert.assertTrue
-import org.junit.Assert.fail
+import com.lingion.sleepy.golden.GoldenCompare
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
-import java.io.ByteArrayOutputStream
-import java.io.File
 import java.time.LocalDate
-import javax.imageio.ImageIO
 
 /**
  * JVM-side pixel golden for the landscape week grid — no emulator, no device.
@@ -50,7 +46,7 @@ class WeekGridLandscapeGoldenTest {
 
         val bitmap = WeekGridWidgetProvider.renderBitmap(context, fixture(), LANDSCAPE_W_PX, LANDSCAPE_H_PX)
         try {
-            assertGolden(bitmap, "week_grid_landscape_light.png")
+            GoldenCompare.assertGolden(bitmap, "week_grid_landscape_light.png")
         } finally {
             bitmap.recycle()
         }
@@ -65,50 +61,9 @@ class WeekGridLandscapeGoldenTest {
             context, fixture().copy(isDark = true), LANDSCAPE_W_PX, LANDSCAPE_H_PX,
         )
         try {
-            assertGolden(bitmap, "week_grid_landscape_dark.png")
+            GoldenCompare.assertGolden(bitmap, "week_grid_landscape_dark.png")
         } finally {
             bitmap.recycle()
-        }
-    }
-
-    private fun assertGolden(rendered: Bitmap, name: String) {
-        val png = ByteArrayOutputStream().use { out ->
-            rendered.compress(Bitmap.CompressFormat.PNG, 100, out)
-            out.toByteArray()
-        }
-        val root = System.getProperty("sleepy.test.root") ?: error("sleepy.test.root unset")
-        val golden = File(root, "app/src/test/golden/$name")
-        if (System.getenv("GOLDEN_RECORD") == "1") {
-            golden.parentFile.mkdirs()
-            golden.writeBytes(png)
-            return
-        }
-        assertTrue("missing golden $golden — run with GOLDEN_RECORD=1", golden.exists())
-        val expected = ImageIO.read(golden)
-        val actual = ImageIO.read(java.io.ByteArrayInputStream(png))
-        if (expected.width != actual.width || expected.height != actual.height) {
-            fail("size drift: golden ${expected.width}x${expected.height}, rendered ${actual.width}x${actual.height}")
-        }
-        // 2% perceptual tolerance absorbs antialias noise across toolchain
-        // bumps; real layout regressions blow far past it.
-        var diff = 0
-        for (y in 0 until actual.height) {
-            for (x in 0 until actual.width) {
-                val a = actual.getRGB(x, y)
-                val b = expected.getRGB(x, y)
-                val far = (Math.abs(((a shr 16) and 0xFF) - ((b shr 16) and 0xFF)) > TOLERANCE) ||
-                    (Math.abs(((a shr 8) and 0xFF) - ((b shr 8) and 0xFF)) > TOLERANCE) ||
-                    (Math.abs((a and 0xFF) - (b and 0xFF)) > TOLERANCE)
-                if (far) diff++
-            }
-        }
-        val ratio = diff.toDouble() / (actual.width * actual.height)
-        if (ratio > MAX_DIFF_RATIO) {
-            File.createTempFile("golden-actual-", ".png").let { f ->
-                f.deleteOnExit()
-                ImageIO.write(actual, "png", f)
-                fail("pixel diff ${"%.2f".format(ratio * 100)}% > threshold on $name (actual dumped to ${f.absolutePath})")
-            }
         }
     }
 
@@ -169,7 +124,5 @@ class WeekGridLandscapeGoldenTest {
         // 840x360 px at xxhdpi (density 3) = 280x120 dp landscape strip.
         private const val LANDSCAPE_W_PX = 840
         private const val LANDSCAPE_H_PX = 360
-        private const val TOLERANCE = 8
-        private const val MAX_DIFF_RATIO = 0.02
     }
 }

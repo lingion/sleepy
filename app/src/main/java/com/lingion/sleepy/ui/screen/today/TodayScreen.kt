@@ -58,10 +58,12 @@ import java.time.LocalDate
 @Composable
 fun TodayScreen(
     onEditCourse: (CourseEntity) -> Unit = {},
-    viewModel: ScheduleViewModel = viewModel()
+    viewModel: ScheduleViewModel = viewModel(),
+    // JVM 像素 golden 需要钉死日期 (Robolectric 无法回拨 System.currentTimeMillis);
+    // 生产调用点不传 = 行为不变。同款先例: FullWeekView.todayDate。
+    today: LocalDate = LocalDate.now(),
 ) {
     val state by viewModel.state.collectAsState()
-    val today = LocalDate.now()
     // issue#44: 取课走反向查(补班日=sourceDate 的课, 放假日=无课), 未映射走自然星期
     val courseDate = state.courseDateFor(today)
     val dayOfWeek = courseDate?.dayOfWeek?.value
