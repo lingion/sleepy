@@ -19,7 +19,7 @@ Sleepy widget 选择器/画廊略缩图生成器 — 逐 dp 镜像 WidgetBitmapR
 字号镜像规则:
   - 大脸(4×4/4×2)逐 dp 镜像渲染器固定字号(11sp 胶囊/13dp 标题...)。
   - 2×2 小脸画布仅 110dp, 同字号占比过大 → 课名整段截成「高…」。
-    预览对 5 张小脸统一乘字号缩放 k=0.75(行高同步收), 属刻意偏差:
+    预览对 5 张小脸统一乘字号缩放 k=0.6(行高同步收), 属刻意偏差:
     略缩图要「一眼读得清」, 真机上小 widget 仍按渲染器原字号绘制。
 
 契约闸: app/src/test/.../WidgetPreviewFacesContractTest.kt 锁
@@ -40,7 +40,7 @@ from PIL import Image, ImageDraw, ImageFont
 import colorsys, math, os
 
 D = 6.0   # density: 出图分辨率 = dp*6, 启动器缩到显示尺寸后仍锐利(275px 级显示 ≈ 2.2x)
-FS = 1.0  # 字号缩放: 2×2 小脸置 0.75(见 docstring), 大脸保持 1.0 逐 dp 镜像
+FS = 1.0  # 字号缩放: 2×2 小脸置 0.6(见 docstring), 大脸保持 1.0 逐 dp 镜像
 
 def bw(): return max(1, int(round(0.8*D)))  # 外框描边 0.8dp(= D2.5 时代的 2px)
 def gw(): return max(1, int(round(0.4*D)))  # 网格/分隔线 0.4dp(= D2.5 时代的 1px)
@@ -167,9 +167,9 @@ def save(img, name):
             fh.write(data)
 
 def with_small_fs(build):
-    """2×2 小脸: 临时把字号/纵向几何缩放置 0.75 再绘制(见 docstring「字号镜像规则」)"""
+    """2×2 小脸: 临时把字号/纵向几何缩放置 0.6 再绘制(见 docstring「字号镜像规则」)"""
     global FS
-    FS = 0.75
+    FS = 0.6
     try:
         return build()
     finally:
