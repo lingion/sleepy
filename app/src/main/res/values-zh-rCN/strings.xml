@@ -880,7 +880,7 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="theme_editor_delete_confirm_body">删除后使用该主题的页面与小组件将回落到默认主题「淡紫」。</string>
 <string name="appearance_section_theme">主题色彩</string>
     <string name="appearance_section_course_color">课程配色</string>
-    <string name="course_color_classic">经典撒色（不随主题）</string>
+    <string name="course_color_classic">不跟随主题</string>
     <string name="course_color_follow_theme">跟随主题色</string>
     <string name="course_color_custom_seed">自定义基准色</string>
     <string name="course_color_seed_label">基准色相</string>

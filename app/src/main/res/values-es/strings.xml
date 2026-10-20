@@ -584,7 +584,7 @@
     <string name="theme_editor_delete_confirm_body">Las páginas y widgets que lo usen volverán al tema predeterminado «Lila».</string>
 <string name="appearance_section_theme">Colores del tema</string>
     <string name="appearance_section_course_color">Colores de asignaturas</string>
-    <string name="course_color_classic">Dispersión clásica (sin tema)</string>
+    <string name="course_color_classic">No seguir el color del tema</string>
     <string name="course_color_follow_theme">Seguir el color del tema</string>
     <string name="course_color_custom_seed">Color base personalizado</string>
     <string name="course_color_seed_label">Tono base</string>

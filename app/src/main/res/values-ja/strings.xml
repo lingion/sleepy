@@ -584,7 +584,7 @@
     <string name="theme_editor_delete_confirm_body">使用中のページとウィジェットは既定の「ライラック」に戻ります。</string>
 <string name="appearance_section_theme">テーマカラー</string>
     <string name="appearance_section_course_color">科目の色</string>
-    <string name="course_color_classic">クラシック配置（テーマ非連動）</string>
+    <string name="course_color_classic">テーマ色に追随しない</string>
     <string name="course_color_follow_theme">テーマ色に追随</string>
     <string name="course_color_custom_seed">基準色をカスタム</string>
     <string name="course_color_seed_label">基準の色相</string>
