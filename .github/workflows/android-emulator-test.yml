@@ -60,6 +60,12 @@ jobs:
           disable-animations: true
           profile: Nexus 6
           script: echo "AVD 创建完成"
+      - name: Build test filter arg
+        id: filt
+        env:
+          T: ${{ inputs.tests }}
+        run: |
+          [ -n "$T" ] && echo "extra=-Pandroid.testInstrumentationRunnerArguments.class=$T" >> "$GITHUB_OUTPUT" || true
       - name: Run androidTest
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -70,12 +76,7 @@ jobs:
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
           profile: Nexus 6
-          env:
-            TESTS: ${{ inputs.tests }}
-          script: >
-            ./gradlew :app:connectedDebugAndroidTest
-            $([ -n "$TESTS" ] && echo "-Pandroid.testInstrumentationRunnerArguments.class=$TESTS")
-            --stacktrace
+          script: ./gradlew :app:connectedDebugAndroidTest ${{ steps.filt.outputs.extra }} --stacktrace
       - uses: actions/upload-artifact@v4
         if: always()
         with:
