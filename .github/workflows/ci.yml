@@ -83,7 +83,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       # Robolectric 的 android-all jar (~150MB, 供 JVM 像素 golden 测试用) 走
       # ~/.m2 而非 Gradle 依赖缓存, setup-gradle 不会帮你存; 不缓存则每次 PR 重下。
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ~/.m2/repository/org/robolectric
           key: robolectric-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
