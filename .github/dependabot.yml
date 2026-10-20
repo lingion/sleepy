@@ -1,4 +1,5 @@
 # 白嫖 GitHub: 自动开依赖升级 PR, 走既有 CI 验证后合入。见 docs/ci-automation.md
+# 分组策略: 每个生态一个打包 PR, 避免一次冒出十几条单依赖 PR 淹没评审队列。
 version: 2
 updates:
   - package-ecosystem: gradle
@@ -6,17 +7,21 @@ updates:
     schedule:
       interval: weekly
     groups:
-      androidx:
-        patterns: ["androidx.*"]
-      compose:
-        patterns: ["androidx.compose*", "androidx.navigation*"]
+      gradle-all:
+        patterns: ["*"]
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    groups:
+      actions-all:
+        patterns: ["*"]
 
   - package-ecosystem: gomod
     directory: /tools/sleepy-collector
     schedule:
       interval: monthly
+    groups:
+      go-all:
+        patterns: ["*"]
