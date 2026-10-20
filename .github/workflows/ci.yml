@@ -118,7 +118,7 @@ jobs:
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew :app:lintDebug --stacktrace
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: lint-report
           path: app/build/reports/lint-results-debug.*
@@ -135,7 +135,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Assemble release APK
         run: ./gradlew :app:assembleRelease --stacktrace
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: apks-debug-signing
           path: app/build/outputs/apk/release/*.apk
