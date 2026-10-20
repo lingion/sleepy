@@ -585,8 +585,8 @@
 <string name="appearance_section_theme">Colores del tema</string>
     <string name="appearance_section_course_color">Colores de asignaturas</string>
     <string name="course_color_classic">No seguir el color del tema</string>
-    <string name="course_color_follow_theme">Seguir el color del tema</string>
-    <string name="course_color_custom_seed">Color base personalizado</string>
+    <string name="course_color_follow_theme">Seguir el tema</string>
+    <string name="course_color_custom_seed">Personalizado</string>
     <string name="course_color_seed_label">Tono base</string>
     <string name="course_color_preview">Vista previa</string>
     <string name="course_color_recalc">Reorganizar todos los colores</string>

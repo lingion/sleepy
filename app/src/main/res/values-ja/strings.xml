@@ -585,8 +585,8 @@
 <string name="appearance_section_theme">テーマカラー</string>
     <string name="appearance_section_course_color">科目の色</string>
     <string name="course_color_classic">テーマ色に追随しない</string>
-    <string name="course_color_follow_theme">テーマ色に追随</string>
-    <string name="course_color_custom_seed">基準色をカスタム</string>
+    <string name="course_color_follow_theme">テーマに追随</string>
+    <string name="course_color_custom_seed">カスタム</string>
     <string name="course_color_seed_label">基準の色相</string>
     <string name="course_color_preview">プレビュー</string>
     <string name="course_color_recalc">すべての科目の色を再配置</string>

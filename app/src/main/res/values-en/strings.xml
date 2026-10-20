@@ -597,8 +597,8 @@
 <string name="appearance_section_theme">Theme colors</string>
     <string name="appearance_section_course_color">Course colors</string>
     <string name="course_color_classic">Don\'t follow theme color</string>
-    <string name="course_color_follow_theme">Follow theme color</string>
-    <string name="course_color_custom_seed">Custom base color</string>
+    <string name="course_color_follow_theme">Follow theme</string>
+    <string name="course_color_custom_seed">Custom</string>
     <string name="course_color_seed_label">Base hue</string>
     <string name="course_color_preview">Preview</string>
     <string name="course_color_recalc">Re-arrange all course colors</string>

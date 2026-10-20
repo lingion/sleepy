@@ -881,8 +881,8 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
 <string name="appearance_section_theme">主题色彩</string>
     <string name="appearance_section_course_color">课程配色</string>
     <string name="course_color_classic">不跟随主题</string>
-    <string name="course_color_follow_theme">跟随主题色</string>
-    <string name="course_color_custom_seed">自定义基准色</string>
+    <string name="course_color_follow_theme">跟随主题</string>
+    <string name="course_color_custom_seed">自定义</string>
     <string name="course_color_seed_label">基准色相</string>
     <string name="course_color_preview">预览</string>
     <string name="course_color_recalc">重新编排所有课程配色</string>

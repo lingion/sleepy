@@ -585,8 +585,8 @@
 <string name="appearance_section_theme">主題色彩</string>
     <string name="appearance_section_course_color">課程配色</string>
     <string name="course_color_classic">不跟隨主題</string>
-    <string name="course_color_follow_theme">跟隨主題色</string>
-    <string name="course_color_custom_seed">自訂基準色</string>
+    <string name="course_color_follow_theme">跟隨主題</string>
+    <string name="course_color_custom_seed">自訂</string>
     <string name="course_color_seed_label">基準色相</string>
     <string name="course_color_preview">預覽</string>
     <string name="course_color_recalc">重新編排所有課程配色</string>
