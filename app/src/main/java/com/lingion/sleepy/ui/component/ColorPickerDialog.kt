@@ -197,21 +197,32 @@ fun SVPanel(
     }
 }
 
-/** 色相滑条：360°彩虹水平条 */
+/** 色相滑条：360°彩虹水平条。
+ *  onHueChange 逐帧回调(拖动跟手), onHueCommit 松手/点按各回调一次 —
+ *  供「拖动只动本地值, 松手才落库重算」的调用方(外观页课程配色种子)节流;
+ *  默认空实现, ColorPickerDialog 等既有调用零改动。 */
 @Composable
 fun HueSlider(
     hue: Float,
     onHueChange: (Float) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onHueCommit: (Float) -> Unit = {},
 ) {
+    // pointerInput(Unit) 只在首组成形, 闭包捕获的 hue 会过期; dragged 在 onDrag 逐帧
+    // 更新, onDragEnd 松手提交 = 最后一帧视觉值(同 coroutine, 零竞态; cancel 复位不提交)。
+    // 触碰未越过 touch slop 时 detectDragGestures 不触发, 点按走下方 tap 通道。
     Box(
         modifier = modifier
             .pointerInput(Unit) {
+                var dragged = -1f
                 detectDragGestures(
+                    onDragEnd = { if (dragged >= 0f) onHueCommit(dragged) },
+                    onDragCancel = { dragged = -1f },
                     onDrag = { change, _ ->
                         change.consume()
                         val x = (change.position.x / size.width).coerceIn(0f, 1f)
-                        onHueChange(x * 360f)
+                        dragged = x * 360f
+                        onHueChange(dragged)
                     }
                 )
             }
@@ -219,7 +230,9 @@ fun HueSlider(
                 detectTapGestures(
                     onTap = { offset ->
                         val x = (offset.x / size.width).coerceIn(0f, 1f)
-                        onHueChange(x * 360f)
+                        val target = x * 360f
+                        onHueChange(target)
+                        onHueCommit(target)
                     }
                 )
             }
