@@ -30,9 +30,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -57,7 +55,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
+import com.lingion.sleepy.ui.component.HueSlider
 import com.lingion.sleepy.ui.component.SectionHeader
+import com.lingion.sleepy.ui.component.SegmentedSwitcher
 import com.lingion.sleepy.ui.theme.CustomSchemeDeriver
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
@@ -231,28 +231,22 @@ fun AppearanceScreen(
                     AppPrefs.THEME_MODE_LIGHT to stringResource(R.string.theme_mode_light),
                     AppPrefs.THEME_MODE_DARK to stringResource(R.string.theme_mode_dark)
                 )
-                Row(
-                    modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).padding(4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    modes.forEach { (mode, label) ->
-                        val sel = mode == selectedMode
-                        Box(
-                            modifier = Modifier.weight(1f).clip(SleepyTheme.shapes.medium).background(if (sel) colors.primary else colors.surfaceContainerHigh).noRippleClickable {
-                                if (mode != selectedMode) {
-                                    AppPrefs.setThemeMode(context, mode); onThemeModeChange(mode); refreshWidgets()
-                                    // 深浅切换在 FOLLOW_THEME 下可能移动 anchor(系统动态取色深浅 primary
-                                    // 色相不同/预设深浅 primary 不同)→ 按 spec §2.3 时机2 重算保表与
-                                    // 新课补色同 anchor。CUSTOM 档 anchor=种子(与深浅无关),不重算。
-                                    if (courseColorMode == AppPrefs.COURSE_COLOR_MODE_FOLLOW_THEME) recalcAllCourses()
-                                }
-                            }.padding(vertical = 12.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(label, style = MaterialTheme.typography.labelLarge.copy(fontWeight = if (sel) FontWeight.SemiBold else FontWeight.Medium), color = if (sel) colors.onPrimary else colors.onSurfaceVariant)
+                // 轨道式分段(2026-10-20 用户裁定): 与课表页/假期页同款 SegmentedSwitcher,
+                // 替换旧手搓 if(sel) 选中盒 Row — thumb 弹簧滑动+逐字擦色, 全 app 一致。
+                SegmentedSwitcher(
+                    options = modes,
+                    selected = selectedMode,
+                    onSelect = { mode ->
+                        if (mode != selectedMode) {
+                            AppPrefs.setThemeMode(context, mode); onThemeModeChange(mode); refreshWidgets()
+                            // 深浅切换在 FOLLOW_THEME 下可能移动 anchor(系统动态取色深浅 primary
+                            // 色相不同/预设深浅 primary 不同)→ 按 spec §2.3 时机2 重算保表与
+                            // 新课补色同 anchor。CUSTOM 档 anchor=种子(与深浅无关),不重算。
+                            if (courseColorMode == AppPrefs.COURSE_COLOR_MODE_FOLLOW_THEME) recalcAllCourses()
                         }
-                    }
-                }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
 
             // ── Section②·5 课程配色 (spec §5: 三档 + 色相滑条 + 试算预览 + 重排按钮) ──
@@ -593,24 +587,19 @@ private fun CourseColorSection(
         color = colors.surfaceContainer,
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            listOf(
-                AppPrefs.COURSE_COLOR_MODE_CLASSIC to stringResource(R.string.course_color_classic),
-                AppPrefs.COURSE_COLOR_MODE_FOLLOW_THEME to stringResource(R.string.course_color_follow_theme),
-                AppPrefs.COURSE_COLOR_MODE_CUSTOM to stringResource(R.string.course_color_custom_seed),
-            ).forEach { (m, label) ->
-                val selected = m == mode
-                Row(
-                    modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.medium)
-                        .background(if (selected) colors.surfaceContainerHigh else Color.Transparent)
-                        .noRippleClickable { onModeChange(m) }
-                        .padding(horizontal = 8.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    RadioButton(selected = selected, onClick = null)
-                    Spacer(Modifier.width(4.dp))
-                    Text(label, style = MaterialTheme.typography.bodyMedium, color = colors.onSurface)
-                }
-            }
+            // 轨道式分段(2026-10-20 用户裁定): 三档与深浅 Tab/冲突样式同款 SegmentedSwitcher,
+            // 替换 RadioButton 竖列 — M3 SegmentedButton 描边风亦弃用(TimeSlotEditor 先例)。
+            SegmentedSwitcher(
+                options = listOf(
+                    AppPrefs.COURSE_COLOR_MODE_CLASSIC to stringResource(R.string.course_color_classic),
+                    AppPrefs.COURSE_COLOR_MODE_FOLLOW_THEME to stringResource(R.string.course_color_follow_theme),
+                    AppPrefs.COURSE_COLOR_MODE_CUSTOM to stringResource(R.string.course_color_custom_seed),
+                ),
+                selected = mode,
+                onSelect = onModeChange,
+                modifier = Modifier.fillMaxWidth(),
+                containerColor = colors.surfaceContainerHighest,
+            )
             if (mode == AppPrefs.COURSE_COLOR_MODE_CUSTOM) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
@@ -628,12 +617,17 @@ private fun CourseColorSection(
                         color = colors.onSurface,
                     )
                 }
-                Slider(
-                    value = sliderHue,
-                    onValueChange = { sliderHue = it.roundToInt().toFloat() },
-                    onValueChangeFinished = { onSeedCommit(sliderHue) },
-                    valueRange = 0f..360f,
-                    modifier = Modifier.padding(horizontal = 8.dp),
+                // 彩虹色相条 = ColorPickerDialog 同款共享 HueSlider(全 app 色相取色同源),
+                // 替换裸 material3.Slider。拖动只动本地值, 松手/点按经 onHueCommit 落库重算。
+                HueSlider(
+                    hue = sliderHue,
+                    onHueChange = { sliderHue = it.roundToInt().toFloat() },
+                    onHueCommit = { onSeedCommit(it.roundToInt().toFloat()) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                        .height(36.dp)
+                        .clip(SleepyTheme.shapes.large),
                 )
             }
             Spacer(Modifier.height(4.dp))
@@ -668,8 +662,8 @@ private fun CourseColorSection(
             Spacer(Modifier.height(8.dp))
             FilledTonalButton(
                 onClick = onRecalc,
-                modifier = Modifier.fillMaxWidth(),
-                shape = SleepyTheme.shapes.medium,
+                modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
+                shape = SleepyTheme.Buttons.shape,
             ) {
                 Text(stringResource(R.string.course_color_recalc))
             }
