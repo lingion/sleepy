@@ -72,7 +72,10 @@ jobs:
           profile: Nexus 6
           env:
             TESTS: ${{ inputs.tests }}
-          script: ./gradlew :app:connectedDebugAndroidTest $( [ -n "$TESTS" ] && echo "-Pandroid.testInstrumentationRunnerArguments.class=$TESTS" ) --stacktrace
+          script: >
+            ./gradlew :app:connectedDebugAndroidTest
+            $([ -n "$TESTS" ] && echo "-Pandroid.testInstrumentationRunnerArguments.class=$TESTS")
+            --stacktrace
       - uses: actions/upload-artifact@v4
         if: always()
         with:
