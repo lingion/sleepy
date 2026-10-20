@@ -1,9 +1,23 @@
-name: Debug APK
+name: Debug APK Build
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ci/debug-apk-workflow]
+    inputs:
+      ref:
+        description: "要构建的分支/标签/commit (默认 main)"
+        required: false
+        default: "main"
+      abi:
+        description: "打包架构"
+        required: false
+        default: "all"
+        type: choice
+        options:
+          - all
+          - arm64-v8a
+          - armeabi-v7a
+          - x86_64
+          - universal
 
 concurrency:
   group: debug-apk-${{ github.ref }}
@@ -15,8 +29,11 @@ permissions:
 jobs:
   assemble-debug:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -24,8 +41,20 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Assemble debug APK
         run: ./gradlew :app:assembleDebug --stacktrace
+      - name: List APK outputs
+        run: ls -la app/build/outputs/apk/debug/
+      - name: Select artifact ABI
+        id: pick
+        run: |
+          abi="${{ inputs.abi }}"
+          case "$abi" in
+            all) pattern="*" ;;
+            *)   pattern="app-${abi}-debug.apk" ;;
+          esac
+          echo "pattern=$pattern" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
         with:
-          name: sleepy-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          name: sleepy-debug-apk-${{ inputs.abi }}-${{ github.run_number }}
+          path: app/build/outputs/apk/debug/${{ steps.pick.outputs.pattern }}
+          if-no-files-found: error
           retention-days: 7
