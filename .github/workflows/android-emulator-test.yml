@@ -1,0 +1,87 @@
+# 白嫖 GitHub Actions 的 KVM 硬件加速模拟器, 跑本地跑不动的 androidTest
+# (Room 迁移测试 + Compose UI 像素测试)。见 docs/ci-automation.md
+name: Android Emulator Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "要测试的分支/标签/commit (默认 main)"
+        required: false
+        default: "main"
+      tests:
+        description: "测试类过滤 (留空 = 全量 androidTest; 支持通配符)"
+        required: false
+        default: ""
+        type: string
+
+concurrency:
+  group: emulator-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  instrumented-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-33-google_apis
+      - name: Create AVD and generate snapshot
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera back none
+          disable-animation: true
+          profile: Nexus 6
+          script: echo "AVD 创建完成"
+      - name: Run androidTest
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera back none
+          disable-animation: true
+          profile: Nexus 6
+          script: |
+            if [ -n "${{ inputs.tests }}" ]; then
+              ./gradlew :app:connectedDebugAndroidTest \
+                -Pandroid.testInstrumentationRunnerArguments.class=${{ inputs.tests }} --stacktrace
+            else
+              ./gradlew :app:connectedDebugAndroidTest --stacktrace
+            fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: emulator-test-report
+          path: |
+            app/build/outputs/androidTest-results/connected/**/*.xml
+            app/build/reports/androidTests/connected/**
+          retention-days: 7

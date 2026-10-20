@@ -1,0 +1,56 @@
+# 白嫖 GitHub 的定时 runner: main 每天体检一次。
+# 现有 CI 只在 PR 上跑, dependabot 合入或 runner 镜像变更导致的漂移靠这个兜底。见 docs/ci-automation.md
+name: Nightly Main Check
+
+on:
+  schedule:
+    - cron: "30 18 * * *" # 北京时间凌晨 2:30
+  workflow_dispatch: {}
+
+concurrency:
+  group: nightly
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/org/robolectric
+          key: robolectric-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+          restore-keys: robolectric-${{ runner.os }}-
+      - name: Unit tests
+        run: |
+          set -o pipefail
+          ./gradlew :app:testDebugUnitTest --stacktrace 2>&1 | tail -400
+
+  catalog-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python3 scripts/generate_school_catalog.py --check
+
+  release-assemble:
+    # 确认 main 随时可出 release 产物 (含 R8 全链路)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - run: ./gradlew :app:assembleRelease --stacktrace

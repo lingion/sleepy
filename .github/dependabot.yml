@@ -1,0 +1,22 @@
+# 白嫖 GitHub: 自动开依赖升级 PR, 走既有 CI 验证后合入。见 docs/ci-automation.md
+version: 2
+updates:
+  - package-ecosystem: gradle
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      androidx:
+        patterns: ["androidx.*"]
+      compose:
+        patterns: ["androidx.compose*", "androidx.navigation*"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: gomod
+    directory: /tools/sleepy-collector
+    schedule:
+      interval: monthly

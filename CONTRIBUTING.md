@@ -54,6 +54,10 @@ cd sleepy
 6. 贡献者的 PR 分支推到 `origin` 不需要额外批准；**合入 main 由维护者 squash 合并**。
 7. 版本号 / Release 由维护者打 `v*.*.*` tag 触发（`scripts/bump-version.sh`），不需要在 PR 里手改 `build.gradle.kts`——版本构建时从 tag 派生，见 [VERSIONING.md](VERSIONING.md)。
 
+## 云端算力（不想本地编译也能干活）
+
+本地环境跑不动的活都可以交给 GitHub Actions（public 仓库免费）：**云端打任意架构 debug APK**、**KVM 模拟器 instrumentation 测试**、**依赖自动升级 PR**、**main 每日体检**。贡献者提交 PR 后若要 self-check 产物，直接手动触发对应 workflow 即可，无需申请任何权限。命令速查与边界说明见 [docs/ci-automation.md](docs/ci-automation.md)。
+
 ## 教务适配的特殊要求
 
 新增/修改学校适配不是普通代码提交，额外要求：

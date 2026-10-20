@@ -637,6 +637,8 @@ java -version
 
 Wrapper 会按 `gradle/wrapper/gradle-wrapper.properties` 下载指定版本的 Gradle，无需另行安装 Gradle；首次构建需要联网下载 Gradle 和依赖。Debug APK 输出到 `app/build/outputs/apk/debug/`。
 
+> **不想本地编译？** 仓库配有参数化的 GitHub Actions 工作流，一条命令即可在云端打任意架构 debug APK、跑 KVM 模拟器测试、依赖自动升级——public 仓库免费算力。详见 [docs/ci-automation.md](docs/ci-automation.md)。
+
 ### 安装
 
 ```bash
