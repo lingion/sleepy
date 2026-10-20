@@ -1,0 +1,31 @@
+name: Debug APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ci/debug-apk-workflow]
+
+concurrency:
+  group: debug-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  assemble-debug:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Assemble debug APK
+        run: ./gradlew :app:assembleDebug --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sleepy-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 7
