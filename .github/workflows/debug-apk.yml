@@ -39,6 +39,17 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v4
+      - name: Install project debug keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            mkdir -p ~/.android
+            printf '%s' "$KEYSTORE_B64" | base64 -d > ~/.android/debug.keystore
+            echo "使用项目 debug 密钥签名 (与本机一致)"
+          else
+            echo "未配置 DEBUG_KEYSTORE_BASE64, 回退 runner 一次性密钥 (跨构建不可覆盖安装)"
+          fi
       - name: Assemble debug APK
         run: ./gradlew :app:assembleDebug --stacktrace
       - name: List APK outputs
