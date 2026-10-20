@@ -56,8 +56,8 @@ jobs:
           target: google_apis
           arch: x86_64
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera back none
-          disable-animation: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: true
           profile: Nexus 6
           script: echo "AVD 创建完成"
       - name: Run androidTest
@@ -67,8 +67,8 @@ jobs:
           target: google_apis
           arch: x86_64
           force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera back none
-          disable-animation: true
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: true
           profile: Nexus 6
           script: |
             if [ -n "${{ inputs.tests }}" ]; then
