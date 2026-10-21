@@ -33,6 +33,11 @@ class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(sourc
 
     override fun generateCourseList(): List<JwCourse> {
         val doc = org.jsoup.Jsoup.parse(source)
+        // jsoup 1.20.1 起 pretty-printer 重写: Element.html() 把 <br> 从行尾
+        // 挪到行首,parseImportBean 按 "<br><br>"/"<br><br><br>" 字符串切分课程
+        // 块会整块错位 → 同格双课丢一条。关美化输出 → 序列化保持源形态,
+        // 与 1.18.1 逐字节一致 (对照实验: 三个 zf fixture 两版本 diff 为空)。
+        doc.outputSettings().prettyPrint(false)
         // T1 G5: #Table1 → table.blacktab → 文本含"星期一"的第一个 table
         val table1 = doc.getElementById("Table1")
             ?: doc.select("table.blacktab").firstOrNull()
