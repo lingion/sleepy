@@ -495,14 +495,14 @@ v1.0.37 起课前提醒支持流体云样式：`FluidCloudService` 前台服务�
 
 | 类别 | 技术与版本 |
 |---|---|
-| 语言 | Kotlin 2.1.10；Java / Kotlin JVM 目标版本为 17 |
+| 语言 | Kotlin 2.4.21；Java / Kotlin JVM 目标版本为 17 |
 | 界面 | Jetpack Compose（BOM 2026.09.00）+ Material 3 1.5.0-alpha28 |
 | 导航 | Navigation 3 1.1.7 + NavigationEvent 1.1.2；Lifecycle ViewModel Navigation 3 2.11.0 |
-| 数据存储 | Room 2.7.0；通过 KSP 2.1.10-1.0.29 生成代码 |
+| 数据存储 | Room 2.7.0；通过 KSP 2.3.12 生成代码 |
 | 偏好设置 | SharedPreferences（`AppPrefs`）；DataStore Preferences 1.1.1 已声明，尚未使用 |
-| 协程 | kotlinx-coroutines 1.8.1 |
-| 序列化 | kotlinx-serialization-json 1.6.3 |
-| HTML 解析 | jsoup 1.18.1 |
+| 协程 | kotlinx-coroutines 1.11.0 |
+| 序列化 | kotlinx-serialization-json 1.11.0 |
+| HTML 解析 | jsoup 1.23.2 |
 | 桌面小组件 | RemoteViews + Canvas，同步渲染 |
 | 后台任务 | WorkManager 2.9.1 |
 | 图片加载 | Coil Compose 2.7.0（已声明，尚未使用） |

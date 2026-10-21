@@ -476,14 +476,14 @@ General Settings → Data migration exports timetable and period-table data, pre
 
 | Category | Technology and version |
 |---|---|
-| Language | Kotlin 2.1.10; Java / Kotlin JVM target 17 |
+| Language | Kotlin 2.4.21; Java / Kotlin JVM target 17 |
 | UI | Jetpack Compose (BOM 2026.09.00) + Material 3 1.5.0-alpha28 |
 | Navigation | Navigation 3 1.1.7 + NavigationEvent 1.1.2; Lifecycle ViewModel Navigation 3 2.11.0 |
-| Storage | Room 2.7.0; code generation via KSP 2.1.10-1.0.29 |
+| Storage | Room 2.7.0; code generation via KSP 2.3.12 |
 | Preferences | SharedPreferences (`AppPrefs`); DataStore Preferences 1.1.1 declared, unused |
-| Coroutines | kotlinx-coroutines 1.8.1 |
-| Serialization | kotlinx-serialization-json 1.6.3 |
-| HTML parsing | jsoup 1.18.1 |
+| Coroutines | kotlinx-coroutines 1.11.0 |
+| Serialization | kotlinx-serialization-json 1.11.0 |
+| HTML parsing | jsoup 1.23.2 |
 | Home screen widgets | RemoteViews + Canvas, synchronous rendering |
 | Background tasks | WorkManager 2.9.1 |
 | Image loading | Coil Compose 2.7.0 (declared, unused) |
