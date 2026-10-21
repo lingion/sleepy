@@ -50,16 +50,16 @@
 | 项 | 值 |
 |---|---|
 | 包名 | `com.lingion.sleepy` |
-| 最低 SDK | `26` (Android 8.0) |
+| 最低 SDK | `26`（Android 8.0） |
 | 目标 SDK | `37` |
 | 架构 | arm64-v8a / armeabi-v7a / x86_64 |
 | 语言 | zh-CN · zh-TW · en · ja · es |
 
-**学校教务系统在维护?** WakeUp / 课程格子要登录云端?**想看下一节课却要点开 App?**
+**学校教务系统在维护？** **WakeUp / 课程格子要登录云端？** **想看下一节课却要点开 App？**
 
-Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务导入会访问学校站点，节假日数据和版本更新检查也需要联网；项目未集成 Firebase / Crashlytics / Sentry / Bugsnag 等第三方分析 SDK。[学校目录](docs/schools-list.md)按已有导入配置、待验证可尝试和待适配区分，收录不等于支持导入；[来源说明](docs/catalog/README.md)与生成清单记录当前范围。另支持 iCalendar (ICS)、WakeUp 课程包、CSV、HTML 和原生文本导入；导出的 ICS 文件可导入 Apple Calendar、Google Calendar、Outlook 等日历应用。
+Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务导入会访问学校站点，节假日数据和版本更新检查也需要联网；项目未集成 Firebase / Crashlytics / Sentry / Bugsnag 等第三方分析 SDK。[学校目录](docs/schools-list.md)按已有导入配置、待验证可尝试和待适配区分，收录不等于支持导入；[来源说明](docs/catalog/README.md)与生成清单记录当前范围。另支持 iCalendar（ICS）、WakeUp 课程包、CSV、HTML 和原生文本导入；导出的 ICS 文件可导入 Apple Calendar、Google Calendar、Outlook 等日历应用。
 
-桌面 5 种小组件、13 个固定尺寸变体(Today / TwoDay / WeekList / WeekView / WeekGrid × 常规 / 小 / 宽),跨厂商兼容,放在首屏不用点开 App。GPL-3.0 开源,谁都能审计谁都能 fork。
+桌面提供 5 种小组件、13 个固定尺寸变体（Today / TwoDay / WeekList / WeekView / WeekGrid），跨厂商兼容，放在首屏不用点开 App。GPL-3.0 开源，谁都能审计，谁都能 fork。
 
 按需权限：学校定位仅在点击定位后请求前台位置；添加到系统日历时请求日历读写；开启提醒时请求通知权限，相关页面提供精确闹钟、电池优化和勿扰授权入口；安装应用内下载的更新需允许安装未知来源应用。可离线查看已保存的课表，无需为了普通查看授予这些可选权限。
 
@@ -77,14 +77,15 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 |---|---|
 | **周视图**（按天归组的课程列表） | <p align="left"><img src="docs/screenshots/01-schedule-week.png" width="280"></p> |
 | **网格视图**（时间网格 · 课程色块） | <p align="left"><img src="docs/screenshots/02-schedule-grid.png" width="280"></p> |
-| **今日视图**（底部"今日"Tab · 当日课程） | <p align="left"><img src="docs/screenshots/03-today.png" width="280"></p> |
+| **今日视图**（底部「今日」标签页 · 当日课程） | <p align="left"><img src="docs/screenshots/03-today.png" width="280"></p> |
 
 特性：
+
 - 左/右滑周切换器，实时算周次
 - 周视图与网格视图均支持手指左右滑动切换周次
 - 今日页区分无课、学期未开始和学期已结束状态
 - 平板等宽屏使用侧边导航和双栏布局，左侧保留课表，右侧切换今日、课表管理与我的
-- 课程按"起止周+单双周+起止节"自动过滤当前周
+- 课程按「起止周 + 单双周 + 起止节」自动过滤当前周
 - 点击课程卡片弹出详情底部弹窗
 
 ---
@@ -134,6 +135,7 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 > 右：自动模式（每节时长 / 总节数 / 首节 / 大小课间模板 / 预览切换）
 
 自动模式特性：
+
 - 可添加短课时、长课时，以及小课间、大课间，并在节次/课间分配区指定适用位置
 - 跨组互斥（同一 transition 不能同时属大/小课间）
 - 默认 0 分钟连续，无间隔亦合法
@@ -259,9 +261,9 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
   <img src="docs/screenshots/19-export.png" width="280">
 </p>
 
-> 截图：导出页（在"我的 → 导出课表/作息表"）；此图尚未展示新增的小爱课程表入口。
+> 截图：导出页（在「我的 → 导出课表/作息表」）；此图尚未展示新增的小爱课程表入口。
 
-导出页先选课表或作息表(上半区全部课表、分隔线之下全部作息表)：选**课表**有四种分享/文件格式，以及小爱课程表和系统日历入口，选**作息表**自动收窄为两种(JSON 与 sleepy-v1)。
+导出页先选课表或作息表（上半区为全部课表，分隔线之下为全部作息表）：选择**课表**时，有四种分享/文件格式，以及小爱课程表和系统日历入口；选择**作息表**时，仅提供两种格式（JSON 与 sleepy-v1）。
 
 课表四种导出格式：
 
@@ -290,7 +292,7 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 
 ## 桌面 Widget（5 类 13 变体）
 
-5 类 Widget × 13 个固定尺寸变体：Today / TwoDay / WeekList 各 常规/小/宽 三档，WeekView / WeekGrid 各 常规/小 两档。布局尺寸与各 launcher 自适应。
+5 类 Widget × 13 个固定尺寸变体：Today / TwoDay / WeekList 各有常规 / 小 / 宽三档，WeekView / WeekGrid 各有常规 / 小两档。布局尺寸与各 launcher 自适应。
 
 | Widget | 变体 | 用途 | 截图 |
 |---|---|---|---|
@@ -320,7 +322,7 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 - **v1.0.55：部分变体提供实验性滚动**（内容超出卡片高度时可滚动查看）
 - **v1.0.55：上课/下课边界触发刷新**，跨过节次边界时卡片内容自动更新
 - 配色与 app 主题实时同步（深色模式 + 5 主题预设）
-- **三条渲染路径（主 app / WeekGrid / 截图渲染器）配色完全统一**：课程色按黄金角 (137.508°) HSL 分布，以课程所属分组哈希映射色相，按课程分组稳定分配色相；不同课程仍可能使用相同颜色
+- **三条渲染路径（主 app / WeekGrid / 截图渲染器）配色完全统一**：课程色按黄金角（137.508°）HSL 分布，以课程所属分组哈希映射色相，按课程分组稳定分配色相；不同课程仍可能使用相同颜色
 - 刷新机制：对全部 receiver 广播 `APPWIDGET_UPDATE`（系统级）+ WorkManager 定时刷新 + 上课/下课边界刷新
 
 ---
@@ -491,103 +493,109 @@ v1.0.37 起课前提醒支持流体云样式：`FluidCloudService` 前台服务�
 
 ## 技术栈
 
-```
-language        = Kotlin 2.1.10
-ui              = Jetpack Compose (BOM 2026.09.00) + Material 3
-navigation      = Navigation 3 1.1.7 + NavigationEvent 1.1.2
-storage         = Room 2.7.0 (KSP)
-prefs           = SharedPreferences (AppPrefs)；DataStore 1.1.1 已声明未使用
-serialization   = kotlinx-serialization-json 1.6.3
-html_parser     = jsoup 1.18.1
-widgets         = RemoteViews + Canvas（同步渲染；Glance 依赖已删除）
-background      = WorkManager 2.9.1
-image           = Coil Compose 2.7.0
-splash          = Core Splash Screen 1.0.1
-core_ktx        = AndroidX Core 1.17.0
-build           = AGP 9.1.1 + Gradle 9.3.1 (Kotlin DSL)
-java_compat     = 17
-```
+| 类别 | 技术与版本 |
+|---|---|
+| 语言 | Kotlin 2.1.10；Java / Kotlin JVM 目标版本为 17 |
+| 界面 | Jetpack Compose（BOM 2026.09.00）+ Material 3 1.5.0-alpha28 |
+| 导航 | Navigation 3 1.1.7 + NavigationEvent 1.1.2；Lifecycle ViewModel Navigation 3 2.11.0 |
+| 数据存储 | Room 2.7.0；通过 KSP 2.1.10-1.0.29 生成代码 |
+| 偏好设置 | SharedPreferences（`AppPrefs`）；DataStore Preferences 1.1.1 已声明，尚未使用 |
+| 协程 | kotlinx-coroutines 1.8.1 |
+| 序列化 | kotlinx-serialization-json 1.6.3 |
+| HTML 解析 | jsoup 1.18.1 |
+| 桌面小组件 | RemoteViews + Canvas，同步渲染 |
+| 后台任务 | WorkManager 2.9.1 |
+| 图片加载 | Coil Compose 2.7.0（已声明，尚未使用） |
+| 启动页 | Core Splash Screen 1.0.1 |
+| Android 基础库 | AndroidX Core 1.17.0；Activity Compose 1.13.0；Lifecycle 2.8.7 |
+| 构建 | AGP 9.3.3 + Gradle 9.8.1，使用 Kotlin DSL |
+| Android SDK | `minSdk=26`；`compileSdk=37`；`targetSdk=37` |
+
+版本以[依赖版本目录](gradle/libs.versions.toml)、[根构建配置](build.gradle.kts)、[应用构建配置](app/build.gradle.kts)和 [Gradle Wrapper 配置](gradle/wrapper/gradle-wrapper.properties)为准。
 
 ---
 
 ## 项目结构
 
-```
-sleepy/                                    # 仓库根目录
-├── app/
-│   ├── src/main/
-│   │   ├── java/com/lingion/sleepy/
-│   │   │   ├── MainActivity.kt           # 单 Activity 入口
-│   │   │   ├── SleepyApp.kt              # Application（DI、通知调度器）
-│   │   │   ├── data/
-│   │   │   │   ├── AppDatabase.kt        # Room 数据库
-│   │   │   │   ├── dao/                  # CourseDao / TimeTableDao
-│   │   │   │   ├── entity/               # CourseEntity / TimeTableEntity / SmartPeriodConfig
-│   │   │   │   ├── jw/                   # 教务 parser + JwImportViewModel + JwParity
-│   │   │   │   ├── parser/               # ScheduleParser + SleepyNativeParser/Exporter/Format
-│   │   │   │   ├── repository/           # ScheduleRepository
-│   │   │   │   └── undo/                 # UndoManager
-│   │   │   ├── ui/
-│   │   │   │   ├── component/            # CourseTableView / CourseDetailSheet /
-│   │   │   │   │                         # SmartPeriodEditor / TimeSlotEditor /
-│   │   │   │   │                         # PillNavigationBar / SegmentedSwitcher /
-│   │   │   │   │                         # ConflictCard / DateTimePickers / SettingsCards /
-│   │   │   │   │                         # ShareScheduleSheet / SleepyMotion
-│   │   │   │   ├── screen/
-│   │   │   │   │   ├── schedule/         # 周视图 + 网格视图
-│   │   │   │   │   ├── today/            # 今日视图
-│   │   │   │   │   ├── edit/             # 课程编辑
-│   │   │   │   │   ├── imports/          # 教务导入 + 文本导入 + 学校选择
-│   │   │   │   │   ├── manage/           # 课程管理
-│   │   │   │   │   └── mine/             # 我的 / 所有课表 / 编辑课表 / 主题 / 导出
-│   │   │   │   └── theme/                # Theme + ThemePresets + NoRippleClickable
-│   │   │   ├── util/                     # AppPrefs / DateUtils / LocaleHelper /
-│   │   │   │                             # TimeTableUtils / CourseColorUtil /
-│   │   │   │                             # ConflictLayoutEngine / ConflictDetailReporter /
-│   │   │   │                             # WeekRangeOverlap / HolidayManager / HolidayRange /
-│   │   │   │                             # HighRefreshRate / PinyinMatcher / MarkdownBlocks /
-│   │   │   │                             # FeedbackComposer / UpdateManager / UpdateInfo /
-│   │   │   │                             # UpdateNotifier / VersionUtils
-│   │   │   └── widget/                   # widget Kotlin 文件 + notification/ 子目录
-│   │   │                                 # (Today/WeekList/WeekView/TwoDay/WeekGrid × Provider + Receiver)
-│   │   │                                 # + WidgetRenderActivity + RemoteViewsWidgetHelper +
-│   │   │                                 # WidgetContent / WidgetBitmapRenderers /
-│   │   │                                 # WidgetTableResolver / WidgetUpdateWorker /
-│   │   │                                 # WidgetUpdater / WidgetVariant + WeekGridPreviewActivity
-│   │   │       └── notification/         # CourseNotificationScheduler + FluidCloudService
-│   │   └── res/
-│   │       ├── drawable/                 # 矢量图标
-│   │       ├── drawable-nodpi/           # 不可压缩位图
-│   │       ├── layout/                   # 少量 RemoteViews 布局
-│   │       ├── mipmap-anydpi-v26/        # 自适应图标
-│   │       ├── mipmap-{hdpi,mdpi,xhdpi,xxhdpi,xxxhdpi}/
-│   │       ├── values/                   # 默认资源 (zh-CN)
-│   │       ├── values-zh-rCN/            # 简体中文
-│   │       ├── values-zh-rTW/            # 繁體中文
-│   │       ├── values-en/                # English
-│   │       ├── values-ja/                # 日本語
-│   │       ├── values-es/                # Español
-│   │       └── xml/                      # 13 个 widget_info + 网络/备份规则
-│   └── libs/                             # seedling-support-lite-3.0.7.aar (未声明依赖)
-├── docs/
-│   ├── screenshots/                      # README 引用的 截图
-│   ├── logo.png                          # README 顶部 logo
-│   ├── adapt-kit/                        # 适配采集教程 (独立 README)
-│   └── sop/                              # SOP 索引（不列举具体文件）
-├── assets/                               # logo_1024.png 原图
-├── oppo-fluid-cloud-upk/                 # OPPO 流体云 UPK 源工程（未接入构建）
-├── artifacts/                            # 构建产物归档
-├── scripts/                              # release_check.sh
-├── tools/                                # gen_widget_previews.py + sleepy-collector
-├── tasks/                                # plan.md + todo.md
-├── build.gradle.kts                       # 根构建 (AGP 9.1.1 / Kotlin 2.1.10 / KSP)
-├── app/build.gradle.kts                   # App 模块（compileSdk=37 / minSdk=26 / targetSdk=37）
-├── settings.gradle.kts                   # rootProject.name = "WakeUpPure"
-├── gradle.properties                     # android.disallowKotlinSourceSets=false
-├── gradlew                                # Unix Gradle Wrapper
-├── gradlew.bat                            # Windows Gradle Wrapper（PR #16）
-├── gradle/wrapper/                        # gradle-wrapper.properties (Gradle 9.3.1)
-└── LICENSE                                # GPL-3.0
+以下列出主要目录和代表性文件，省略其余文件；`notification/` 位于 `widget/` 目录下。
+
+```text
+sleepy/
+├── .github/                                                   # GitHub 配置
+│   └── workflows/                                             # CI、发布与自动化工作流
+├── app/                                                       # Android 应用模块
+│   ├── build.gradle.kts                                       # 应用构建、SDK 与依赖配置
+│   ├── libs/                                                  # Seedling AAR（未声明依赖）
+│   ├── schemas/                                               # Room 数据库版本快照
+│   └── src/
+│       ├── main/
+│       │   ├── AndroidManifest.xml                            # 组件与权限声明
+│       │   ├── assets/                                        # 学校目录、城市索引等内置数据
+│       │   ├── java/com/lingion/sleepy/
+│       │   │   ├── MainActivity.kt                            # 主界面入口
+│       │   │   ├── SleepyApp.kt                               # Application 初始化
+│       │   │   ├── data/
+│       │   │   │   ├── AppDatabase.kt                         # Room 数据库
+│       │   │   │   ├── Migrations.kt                          # 数据库版本迁移
+│       │   │   │   ├── CustomThemeStore.kt                    # 自定义主题存储
+│       │   │   │   ├── calendar/                              # 系统日历导入与本机日历
+│       │   │   │   ├── dao/                                   # 课程、课表、作息表等数据访问
+│       │   │   │   ├── diff/                                  # 课表记录差异比较
+│       │   │   │   ├── entity/                                # Room 实体与节次配置
+│       │   │   │   ├── jw/                                    # 教务协议、解析器、学校检索与导入状态
+│       │   │   │   ├── migration/                             # 全量备份、恢复与偏好迁移
+│       │   │   │   ├── parser/                                # 课表格式解析与导出
+│       │   │   │   ├── repository/                            # 课表数据与导入草稿仓库
+│       │   │   │   └── undo/                                  # 撤回与重做
+│       │   │   ├── ui/
+│       │   │   │   ├── component/                             # 课表、节次编辑器等共享 Compose 组件
+│       │   │   │   ├── nav/                                   # 路由、导航栈与页面转场
+│       │   │   │   ├── screen/
+│       │   │   │   │   ├── edit/                              # 课程编辑
+│       │   │   │   │   ├── imports/                           # 教务登录、学校选择与导入
+│       │   │   │   │   ├── manage/                            # 课表管理
+│       │   │   │   │   ├── mine/                              # 设置、主题、作息表、导出与关于
+│       │   │   │   │   ├── schedule/                          # 周视图与网格视图
+│       │   │   │   │   ├── today/                             # 今日课程与每日议程
+│       │   │   │   │   └── widget/                            # 小组件图库、管理与编辑页面
+│       │   │   │   └── theme/                                 # 主题、预设与自定义配色生成
+│       │   │   ├── util/                                      # 偏好、日期、配色、冲突布局与更新等工具
+│       │   │   └── widget/                                    # 小组件提供器、渲染、配置与刷新
+│       │   │       └── notification/                          # 提醒、勿扰与实时通知（以下列出主要文件）
+│       │   │           ├── CourseNotificationScheduler.kt     # 课程提醒与摘要调度
+│       │   │           ├── ClassDndScheduler.kt               # 上课自动勿扰
+│       │   │           ├── DailyScheduleSummary.kt            # 每日课程摘要
+│       │   │           ├── ReminderRescheduler.kt             # 提醒重新调度
+│       │   │           ├── FluidCloudService.kt               # 流体云前台服务
+│       │   │           └── VendorLiveNotificationAdapters.kt  # 厂商实时通知适配器集合
+│       │   └── res/                                           # 图标、RemoteViews 布局、主题、多语言与 XML 配置
+│       ├── debug/                                             # 调试包组件、资源与渲染辅助代码
+│       ├── test/                                              # JVM 单元测试、fixtures 与像素基准
+│       └── androidTest/                                       # 设备端测试与渲染测试
+├── docs/                                                      # 设计、适配验证与版本说明等文档
+│   ├── adapt-kit/                                             # 学校适配采集教程
+│   ├── architecture/                                          # 架构说明
+│   ├── catalog/                                               # 学校目录来源与协议映射
+│   ├── screenshots/                                           # README 截图
+│   ├── sop/                                                   # 操作流程索引
+│   └── logo.png                                               # README 顶部标志
+├── assets/                                                    # 原始标志图片
+├── gh-pages/                                                  # 在线课表页面
+├── oppo-fluid-cloud-upk/                                      # OPPO 流体云 UPK 源工程（未接入构建）
+├── artifacts/                                                 # 已归档构建产物
+├── scripts/                                                   # 学校目录生成、校验与版本维护脚本
+├── tools/                                                     # 小组件预览、设备验证与教务采集工具
+│   └── sleepy-collector/                                      # Go 教务适配采集器
+├── tasks/                                                     # 计划与待办记录
+├── gradle/
+│   ├── libs.versions.toml                                     # 依赖版本目录
+│   └── wrapper/                                               # Gradle 9.8.1 Wrapper 配置与 JAR
+├── build.gradle.kts                                           # 根构建插件配置
+├── settings.gradle.kts                                        # 仓库与模块配置
+├── gradle.properties                                          # Gradle 与 Kotlin 构建选项
+├── gradlew                                                    # Unix Gradle Wrapper 入口
+├── gradlew.bat                                                # Windows Gradle Wrapper 入口
+└── LICENSE                                                    # GPL-3.0
 ```
 
 ---
@@ -596,7 +604,7 @@ sleepy/                                    # 仓库根目录
 
 ### 前置
 
-构建使用仓库自带的 **Gradle 9.8.1 Wrapper + Android Gradle Plugin (AGP) 9.3.3**。Android Studio 需支持 AGP 9.3，版本兼容要求见 [AGP 9.3 官方说明](https://developer.android.com/build/releases/agp-9-3-0-release-notes)。
+构建使用仓库自带的 **Gradle 9.8.1 Wrapper + Android Gradle Plugin（AGP） 9.3.3**。Android Studio 需支持 AGP 9.3，版本兼容要求见 [AGP 9.3 官方说明](https://developer.android.com/build/releases/agp-9-3-0-release-notes)。
 
 ```bash
 java -version           # JDK 17+
@@ -657,26 +665,26 @@ CI 在面向 `main` 的 PR 上运行提交格式检查、采集工具检查、An
 
 ## 社区
 
-Bug 反馈和新学校适配走 [Issues](https://github.com/lingion/sleepy/issues);想聊天、提建议、第一时间知道新版本,可以加 QQ 交流群:
+Bug 反馈和新学校适配请提交到 [Issues](https://github.com/lingion/sleepy/issues)；想聊天、提建议、第一时间了解新版本，可以加入 QQ 交流群：
 
-**QQ 群:`1063407652`**(QQ 搜索群号 → 申请加入)
+**QQ 群：`1063407652`**（在 QQ 中搜索群号 → 申请加入）
 
-不方便加群也没关系,[Discussions](https://github.com/lingion/sleepy/discussions) 里同样会认真回复。
+不方便加群也没关系，[Discussions](https://github.com/lingion/sleepy/discussions) 里同样会认真回复。
 
-## Documentation
+## 文档
 
 - **[在线体验](https://sleepy.qdp.qzz.io)** — Web 版课表，浏览器打开即用，无需安装；支持多格式导入（WakeUp 分享文本 / ICS / CSV / Excel），数据仅存本地
-- **[Wiki](https://github.com/lingion/sleepy/wiki)** — 每屏逐一说明、导入/导出全格式、widget 家族、提醒内部实现、架构与代码地图，侧栏全互链
-- **[Operation Guide](https://blog.qdp.qzz.io/docs/sleepy/overview)** — step-by-step user manual covering installation, import, widgets, themes, and troubleshooting
-- **[Technical Write-up](https://blog.qdp.qzz.io/sleepy-material-you-schedule)** — architecture deep-dive: schedule parser engine, gold-angle HSL, Wisedu reverse-engineering, widget rendering pipeline
+- **[Wiki](https://github.com/lingion/sleepy/wiki)** — 各页面说明、导入/导出格式、小组件类型、提醒实现、架构与代码地图，可通过侧栏导航
+- **[使用指南](https://blog.qdp.qzz.io/docs/sleepy/overview)** — 涵盖安装、导入、小组件、主题和故障排查的分步说明
+- **[技术解析](https://blog.qdp.qzz.io/sleepy-material-you-schedule)** — 课表解析引擎、黄金角 HSL 配色、金智教务协议分析与小组件渲染流程
 
 ---
 
-## License
+## 许可证
 
 [GPL-3.0](LICENSE)
 
-Sleepy 使用 GPL-3.0 发布。教务导入适配、协议研究和课表格式工作参考了多个开源项目；9 个跨校普适项目与 单校致谢卡的项目名称、许可证和参考范围见应用内「我的」→「关于」→「开源声明」。
+Sleepy 使用 GPL-3.0 发布。教务导入适配、协议研究和课表格式工作参考了多个开源项目；9 个跨校普适项目与单校致谢卡的项目名称、许可证和参考范围见应用内「我的 → 关于 → 开源声明」。
 
 ---
 

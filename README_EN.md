@@ -474,103 +474,109 @@ General Settings → Data migration exports timetable and period-table data, pre
 
 ## Tech Stack
 
-```
-language        = Kotlin 2.1.10
-ui              = Jetpack Compose (BOM 2026.09.00) + Material 3 1.5.0-alpha28
-navigation      = Navigation 3 runtime/ui 1.1.7 + navigationevent-compose 1.1.2
-storage         = Room 2.7.0 (KSP)
-prefs           = SharedPreferences (AppPrefs); DataStore 1.1.1 declared, unused
-serialization   = kotlinx-serialization-json 1.6.3
-html_parser     = jsoup 1.18.1
-widgets         = RemoteViews + Canvas (synchronous; Glance removed)
-background      = WorkManager 2.9.1
-image           = Coil Compose 2.7.0
-splash          = Core Splash Screen 1.0.1
-core_ktx        = AndroidX Core 1.17.0
-build           = AGP 9.1.1 + Gradle 9.3.1 (Kotlin DSL)
-java_compat     = 17
-```
+| Category | Technology and version |
+|---|---|
+| Language | Kotlin 2.1.10; Java / Kotlin JVM target 17 |
+| UI | Jetpack Compose (BOM 2026.09.00) + Material 3 1.5.0-alpha28 |
+| Navigation | Navigation 3 1.1.7 + NavigationEvent 1.1.2; Lifecycle ViewModel Navigation 3 2.11.0 |
+| Storage | Room 2.7.0; code generation via KSP 2.1.10-1.0.29 |
+| Preferences | SharedPreferences (`AppPrefs`); DataStore Preferences 1.1.1 declared, unused |
+| Coroutines | kotlinx-coroutines 1.8.1 |
+| Serialization | kotlinx-serialization-json 1.6.3 |
+| HTML parsing | jsoup 1.18.1 |
+| Home screen widgets | RemoteViews + Canvas, synchronous rendering |
+| Background tasks | WorkManager 2.9.1 |
+| Image loading | Coil Compose 2.7.0 (declared, unused) |
+| Splash screen | Core Splash Screen 1.0.1 |
+| Android libraries | AndroidX Core 1.17.0; Activity Compose 1.13.0; Lifecycle 2.8.7 |
+| Build | AGP 9.3.3 + Gradle 9.8.1, using Kotlin DSL |
+| Android SDK | `minSdk=26`; `compileSdk=37`; `targetSdk=37` |
+
+Versions are defined in the [version catalog](gradle/libs.versions.toml), [root build configuration](build.gradle.kts), [app build configuration](app/build.gradle.kts), and [Gradle Wrapper configuration](gradle/wrapper/gradle-wrapper.properties).
 
 ---
 
 ## Project Structure
 
-```
-sleepy/                                    # Repository root
-├── app/
-│   ├── src/main/
-│   │   ├── java/com/lingion/sleepy/
-│   │   │   ├── MainActivity.kt           # Single-activity entry
-│   │   │   ├── SleepyApp.kt              # Application (DI, notification scheduler)
-│   │   │   ├── data/
-│   │   │   │   ├── AppDatabase.kt        # Room database
-│   │   │   │   ├── dao/                  # CourseDao / TimeTableDao
-│   │   │   │   ├── entity/               # CourseEntity / TimeTableEntity / SmartPeriodConfig
-│   │   │   │   ├── jw/                   # JW parsers + JwImportViewModel + JwParity
-│   │   │   │   ├── parser/               # ScheduleParser + SleepyNativeParser/Exporter/Format
-│   │   │   │   ├── repository/           # ScheduleRepository
-│   │   │   │   └── undo/                 # UndoManager
-│   │   │   ├── ui/
-│   │   │   │   ├── component/            # CourseTableView / CourseDetailSheet /
-│   │   │   │   │                         # SmartPeriodEditor / TimeSlotEditor /
-│   │   │   │   │                         # PillNavigationBar / SegmentedSwitcher /
-│   │   │   │   │                         # ConflictCard / DateTimePickers / SettingsCards /
-│   │   │   │   │                         # ShareScheduleSheet / SleepyMotion
-│   │   │   │   ├── screen/
-│   │   │   │   │   ├── schedule/         # Week view + grid view
-│   │   │   │   │   ├── today/            # Today view
-│   │   │   │   │   ├── edit/             # Course editing
-│   │   │   │   │   ├── imports/          # JW import + text import + school picker
-│   │   │   │   │   ├── manage/           # Course management
-│   │   │   │   │   └── mine/             # Mine / all timetables / edit / theme / export
-│   │   │   │   └── theme/                # Theme + ThemePresets + NoRippleClickable
-│   │   │   ├── util/                     # AppPrefs / DateUtils / LocaleHelper /
-│   │   │   │                             # TimeTableUtils / CourseColorUtil /
-│   │   │   │                             # ConflictLayoutEngine / ConflictDetailReporter /
-│   │   │   │                             # WeekRangeOverlap / HolidayManager / HolidayRange /
-│   │   │   │                             # HighRefreshRate / PinyinMatcher / MarkdownBlocks /
-│   │   │   │                             # FeedbackComposer / UpdateManager / UpdateInfo /
-│   │   │   │                             # UpdateNotifier / VersionUtils
-│   │   │   └── widget/                   # Widget Kotlin files + notification/ subdirectory
-│   │   │                                 # (Today/WeekList/WeekView/TwoDay/WeekGrid × Provider + Receiver)
-│   │   │                                 # + WidgetRenderActivity + RemoteViewsWidgetHelper +
-│   │   │                                 # WidgetContent / WidgetBitmapRenderers /
-│   │   │                                 # WidgetTableResolver / WidgetUpdateWorker /
-│   │   │                                 # WidgetUpdater / WidgetVariant + WeekGridPreviewActivity
-│   │   │       └── notification/         # CourseNotificationScheduler + FluidCloudService
-│   │   └── res/
-│   │       ├── drawable/                 # Vector icons
-│   │       ├── drawable-nodpi/           # Non-density bitmap assets
-│   │       ├── layout/                   # RemoteViews layouts
-│   │       ├── mipmap-anydpi-v26/        # Adaptive launcher icons
-│   │       ├── mipmap-{hdpi,mdpi,xhdpi,xxhdpi,xxxhdpi}/
-│   │       ├── values/                   # Default resources (zh-CN)
-│   │       ├── values-zh-rCN/            # Chinese simplified
-│   │       ├── values-zh-rTW/            # Chinese traditional
-│   │       ├── values-en/                # English
-│   │       ├── values-ja/                # Japanese
-│   │       ├── values-es/                # Spanish
-│   │       └── xml/                      # 13 widget_info + network/backup rules
-│   └── libs/                             # seedling-support-lite-3.0.7.aar (dependency not declared)
-├── docs/
-│   ├── screenshots/                      # README screenshots
-│   ├── logo.png                          # Top-of-README logo
-│   ├── adapt-kit/                        # Adaptation collection guide (separate README)
-│   └── sop/                              # SOP index (does not enumerate any specific file)
-├── assets/                               # logo_1024.png original
-├── oppo-fluid-cloud-upk/                 # OPPO Fluid Cloud UPK source (not wired into the build)
-├── artifacts/                            # Build output archive
-├── scripts/                              # release_check.sh
-├── tools/                                # gen_widget_previews.py + sleepy-collector
-├── tasks/                                # plan.md + todo.md
-├── build.gradle.kts                       # Root build (AGP 9.1.1 / Kotlin 2.1.10 / KSP)
-├── app/build.gradle.kts                   # App module (compileSdk=37 / minSdk=26 / targetSdk=37)
-├── settings.gradle.kts                   # rootProject.name = "WakeUpPure"
-├── gradle.properties                     # android.disallowKotlinSourceSets=false
-├── gradlew                                # Unix Gradle Wrapper
-├── gradlew.bat                            # Windows Gradle Wrapper (PR #16)
-├── gradle/wrapper/                        # gradle-wrapper.properties (Gradle 9.3.1)
-└── LICENSE                                # GPL-3.0
+Main directories and representative files are shown below; other files are omitted. `notification/` is a subdirectory of `widget/`.
+
+```text
+sleepy/
+├── .github/                                                   # GitHub configuration
+│   └── workflows/                                             # CI, release, and automation workflows
+├── app/                                                       # Android app module
+│   ├── build.gradle.kts                                       # App build, SDK, and dependencies
+│   ├── libs/                                                  # Seedling AAR (dependency not declared)
+│   ├── schemas/                                               # Room database schema snapshots
+│   └── src/
+│       ├── main/
+│       │   ├── AndroidManifest.xml                            # Components and permissions
+│       │   ├── assets/                                        # Bundled school catalog, city index, and other data
+│       │   ├── java/com/lingion/sleepy/
+│       │   │   ├── MainActivity.kt                            # Main UI entry
+│       │   │   ├── SleepyApp.kt                               # Application initialization
+│       │   │   ├── data/
+│       │   │   │   ├── AppDatabase.kt                         # Room database
+│       │   │   │   ├── Migrations.kt                          # Database version migrations
+│       │   │   │   ├── CustomThemeStore.kt                    # Custom theme storage
+│       │   │   │   ├── calendar/                              # System calendar import and local calendar
+│       │   │   │   ├── dao/                                   # Data access for courses, timetables, and period tables
+│       │   │   │   ├── diff/                                  # Timetable record comparison
+│       │   │   │   ├── entity/                                # Room entities and period configuration
+│       │   │   │   ├── jw/                                    # Academic protocols, parsers, school search, and import state
+│       │   │   │   ├── migration/                             # Full backup, restore, and preference migration
+│       │   │   │   ├── parser/                                # Timetable format parsing and export
+│       │   │   │   ├── repository/                            # Timetable and import draft repositories
+│       │   │   │   └── undo/                                  # Undo and redo
+│       │   │   ├── ui/
+│       │   │   │   ├── component/                             # Shared Compose components for timetables and period editing
+│       │   │   │   ├── nav/                                   # Routes, navigation stack, and transitions
+│       │   │   │   ├── screen/
+│       │   │   │   │   ├── edit/                              # Course editing
+│       │   │   │   │   ├── imports/                           # Academic login, school selection, and import
+│       │   │   │   │   ├── manage/                            # Timetable management
+│       │   │   │   │   ├── mine/                              # Settings, themes, period tables, export, and About
+│       │   │   │   │   ├── schedule/                          # Week and grid views
+│       │   │   │   │   ├── today/                             # Today's courses and daily agenda
+│       │   │   │   │   └── widget/                            # Widget gallery, management, and editing screens
+│       │   │   │   └── theme/                                 # Themes, presets, and custom color scheme generation
+│       │   │   ├── util/                                      # Preferences, dates, colors, conflict layout, and update utilities
+│       │   │   └── widget/                                    # Widget providers, rendering, configuration, and refresh
+│       │   │       └── notification/                          # Reminders, DND, and live notifications (selected files below)
+│       │   │           ├── CourseNotificationScheduler.kt     # Course reminder and summary scheduling
+│       │   │           ├── ClassDndScheduler.kt               # Automatic class-time DND
+│       │   │           ├── DailyScheduleSummary.kt            # Daily course summaries
+│       │   │           ├── ReminderRescheduler.kt             # Reminder rescheduling
+│       │   │           ├── FluidCloudService.kt               # Fluid Cloud foreground service
+│       │   │           └── VendorLiveNotificationAdapters.kt  # Vendor live notification adapters
+│       │   └── res/                                           # Icons, RemoteViews layouts, themes, translations, and XML configuration
+│       ├── debug/                                             # Debug components, resources, and rendering helpers
+│       ├── test/                                              # JVM unit tests, fixtures, and pixel baselines
+│       └── androidTest/                                       # Instrumented and rendering tests
+├── docs/                                                      # Design, adaptation verification, and release documentation
+│   ├── adapt-kit/                                             # School adaptation capture guide
+│   ├── architecture/                                          # Architecture documentation
+│   ├── catalog/                                               # School catalog sources and protocol mapping
+│   ├── screenshots/                                           # README screenshots
+│   ├── sop/                                                   # Operating procedure index
+│   └── logo.png                                               # README logo
+├── assets/                                                    # Original logo asset
+├── gh-pages/                                                  # Online timetable site
+├── oppo-fluid-cloud-upk/                                      # OPPO Fluid Cloud UPK source (not wired into the build)
+├── artifacts/                                                 # Archived build outputs
+├── scripts/                                                   # School catalog generation, validation, and version maintenance
+├── tools/                                                     # Widget previews, device verification, and academic capture tools
+│   └── sleepy-collector/                                      # Go academic adaptation collector
+├── tasks/                                                     # Plans and task records
+├── gradle/
+│   ├── libs.versions.toml                                     # Dependency version catalog
+│   └── wrapper/                                               # Gradle 9.8.1 Wrapper configuration and JAR
+├── build.gradle.kts                                           # Root build plugin configuration
+├── settings.gradle.kts                                        # Repositories and module configuration
+├── gradle.properties                                          # Gradle and Kotlin build options
+├── gradlew                                                    # Unix Gradle Wrapper entry
+├── gradlew.bat                                                # Windows Gradle Wrapper entry
+└── LICENSE                                                    # GPL-3.0
 ```
 
 ---
