@@ -4,6 +4,7 @@ package main
 // 均由 E2E 靶场实跑炸出 (2026-09-12)。
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"strings"
 	"testing"
@@ -12,22 +13,27 @@ import (
 )
 
 // TestPostDataEntryTransportBase64Decoded CDP 的 PostDataEntry.bytes 是
-// binary 类型 (JSON 传输层 base64)。采集入库必须解码 — 否则包里所有
-// POST 体都是 base64 天书, 适配者看到的是传输编码不是业务编码。
-// (E2E 实锤: 页面发明文 "a=1&b=2", 包里存 "YT0xJmI9Mg==")
+// binary 类型 (JSON 传输层 base64)。cdproto v0.158 起解码器自动解掉 —
+// 采集入库拿到的必须已是原始字节, 否则包里所有 POST 体都是 base64 天书,
+// 适配者看到的是传输编码不是业务编码。
+// (E2E 实锤: 页面发明文 "a=1&b=2", 传输层 JSON 里是 "YT0xJmI9Mg==")
 func TestPostDataEntryTransportBase64Decoded(t *testing.T) {
+	var e network.EventRequestWillBeSent
+	raw := `{
+		"requestId": "p1",
+		"request": {
+			"url": "http://x/api", "method": "POST", "hasPostData": true,
+			"postDataEntries": [{"bytes": "YT0xJmI9Mg=="}]
+		}
+	}`
+	if err := json.Unmarshal([]byte(raw), &e); err != nil {
+		t.Fatalf("解 CDP 事件 JSON: %v", err)
+	}
+	if string(e.Request.PostDataEntries[0].Bytes) != "a=1&b=2" {
+		t.Fatalf("cdproto 传输层解码失效: got %q", e.Request.PostDataEntries[0].Bytes)
+	}
 	c := NewCollector()
-	c.onEventTab(0, &network.EventRequestWillBeSent{
-		RequestID: "p1",
-		Request: &network.Request{
-			URL:         "http://x/api",
-			Method:      "POST",
-			HasPostData: true,
-			PostDataEntries: []*network.PostDataEntry{
-				{Bytes: "YT0xJmI9Mg=="}, // base64("a=1&b=2") — 传输编码
-			},
-		},
-	})
+	c.onEventTab(0, &e)
 	r := c.recs[reqKey{0, "p1"}]
 	if r == nil {
 		t.Fatal("记录缺失")
@@ -40,24 +46,29 @@ func TestPostDataEntryTransportBase64Decoded(t *testing.T) {
 	}
 }
 
-// TestPostDataEntryPlainTextPassthrough 防过修: 非 base64 形态的 bytes
-// (理论不该出现, 但防御) 原样保留, 不能瞎解。
-func TestPostDataEntryPlainTextPassthrough(t *testing.T) {
+// TestPostDataEntryBusinessBase64NotDoubleDecoded 防过修: 校方业务层自己
+// base64 (WHUT 型) 时, 传输解码只剥一层 — 包里的业务 base64 必须原样保留,
+// 采集代码绝不能再解一次 (两层编码互不干扰)。
+func TestPostDataEntryBusinessBase64NotDoubleDecoded(t *testing.T) {
+	// 业务内容 "YT0xJmI9Mg==" (本身是 base64), 传输层再包一层 base64
+	business := "YT0xJmI9Mg=="
+	wire := base64.StdEncoding.EncodeToString([]byte(business))
+	var e network.EventRequestWillBeSent
+	raw := `{
+		"requestId": "p2",
+		"request": {
+			"url": "http://x/api", "method": "POST", "hasPostData": true,
+			"postDataEntries": [{"bytes": "` + wire + `"}]
+		}
+	}`
+	if err := json.Unmarshal([]byte(raw), &e); err != nil {
+		t.Fatalf("解 CDP 事件 JSON: %v", err)
+	}
 	c := NewCollector()
-	c.onEventTab(0, &network.EventRequestWillBeSent{
-		RequestID: "p2",
-		Request: &network.Request{
-			URL:         "http://x/api",
-			Method:      "POST",
-			HasPostData: true,
-			PostDataEntries: []*network.PostDataEntry{
-				{Bytes: "a=1"}, // 不是合法 base64 (长度 3 非 4 倍数)
-			},
-		},
-	})
+	c.onEventTab(0, &e)
 	r := c.recs[reqKey{0, "p2"}]
-	if r.postData != "a=1" {
-		t.Fatalf("非 base64 体应原样: got %q", r.postData)
+	if r.postData != business {
+		t.Fatalf("业务级 base64 被二次解码: got %q want %q", r.postData, business)
 	}
 }
 

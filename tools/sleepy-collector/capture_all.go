@@ -9,7 +9,6 @@ package main
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -20,6 +19,7 @@ import (
 	"time"
 
 	cdpbrowser "github.com/chromedp/cdproto/browser"
+	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/cdproto/log"
 	"github.com/chromedp/cdproto/network"
@@ -29,24 +29,6 @@ import (
 )
 
 // ---------------- 配置读取 ----------------
-
-// transportDecode 解 CDP 传输层编码: PostDataEntry.bytes 声明为 binary 类型,
-// JSON 传输按 base64。合法 base64 → 解码; 否则原样返回 (防御异常形态)。
-func transportDecode(s string) string {
-	if s == "" || len(s)%4 != 0 {
-		return s
-	}
-	for _, c := range s {
-		if !(c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '+' || c == '/' || c == '=' || c == '\n' || c == '\r') {
-			return s
-		}
-	}
-	dec, err := base64.StdEncoding.DecodeString(s)
-	if err != nil {
-		return s
-	}
-	return string(dec)
-}
 
 // uaOverrideFromEnv 移动端 UA 伪装开关 (SLEEPY_COLLECTOR_UA)。
 // 强智 qz_app 等移动教务 H5 端点校验 UA, 桌面 Chrome 的 UA 会被服务端拒。
@@ -153,12 +135,14 @@ const (
 
 // enableCapture 每 tab 一次: network(缓存禁用+大体量) + log + runtime console
 // + UA override。在非事件回调 goroutine 调用 (与 discoverTabs 同层)。
+// 注: chromedp v0.21 启动 target 时已内部开启各域, 这里带 MaxPostDataSize
+// 重开 network 域是必要的覆盖 (默认内联上限太小)。
 func (c *Collector) enableCapture(ctx context.Context) error {
-	return chromedp.Run(ctx,
-		network.Enable().WithMaxPostDataSize(8<<20), // 8MB 内联上限, 更大的走 GetRequestPostData 兜底
-		network.SetCacheDisabled(true),              // 二访 disk cache 命中会让 GetResponseBody 报 -32000, body 直接丢
-		log.Enable(),
-		runtime.Enable(),
+	return chromedp.Do(ctx,
+		act(network.Enable, network.EnableParams{MaxPostDataSize: ptrVal(int64(8 << 20))}), // 8MB 内联上限, 更大的走 GetRequestPostData 兜底
+		act(network.SetCacheDisabled, network.SetCacheDisabledParams{CacheDisabled: true}), // 二访 disk cache 命中会让 GetResponseBody 报 -32000, body 直接丢
+		act(log.Enable, cdp.Empty{}),
+		act(runtime.Enable, cdp.Empty{}),
 	)
 }
 
@@ -168,7 +152,8 @@ func applyUserAgentOverride(ctx context.Context) error {
 	if ua == "" {
 		return nil
 	}
-	return chromedp.Run(ctx, emulation.SetUserAgentOverride(ua).WithAcceptLanguage("zh-CN,zh;q=0.9"))
+	return chromedp.Do(ctx, act(emulation.SetUserAgentOverride,
+		emulation.SetUserAgentOverrideParams{UserAgent: ua, AcceptLanguage: "zh-CN,zh;q=0.9"}))
 }
 
 // consoleArgText 把 runtime.RemoteObject 参数压成短文本 (console.log("x", 1) 的多参)。
@@ -275,11 +260,12 @@ func (c *Collector) wsAppendLocked(rid network.RequestID, dir string, f *network
 	} else if f.Opcode == 2 || f.Opcode == 9 || f.Opcode == 10 { // binary / ping / pong
 		line = fmt.Sprintf("%s (二进制 %d 字节)", dir, len(f.PayloadData))
 	} else {
-		p := f.PayloadData
+		p := f.PayloadData // cdproto v0.158 起传输层自动 base64 解码, 已是原始字节
 		if len(p) > wsMaxPayloadText {
-			p = p[:wsMaxPayloadText] + "...[截断]"
+			line = dir + " " + string(p[:wsMaxPayloadText]) + "...[截断]"
+		} else {
+			line = dir + " " + string(p)
 		}
-		line = dir + " " + p
 	}
 	if len(line) > wsFrameLineMax {
 		line = line[:wsFrameLineMax] + "...[截断]"
@@ -341,15 +327,11 @@ func (c *Collector) handleExtraInfo(tabSeq int, rid network.RequestID, e *networ
 
 // cookieFullText 打包阶段取全量 cookie (仅名+域+过期+安全位, 值铁律不入包)。
 func cookieFullText(ctx context.Context) string {
-	var cookies []*network.Cookie
-	err := chromedp.Run(ctx, chromedp.ActionFunc(func(ictx context.Context) error {
-		var err error
-		cookies, err = network.GetCookies().Do(ictx)
-		return err
-	}))
+	res, err := chromedp.Call(ctx, network.GetCookies, network.GetCookiesParams{})
 	if err != nil {
 		return "(取 cookie 失败: " + err.Error() + ")"
 	}
+	cookies := res.Cookies
 	if len(cookies) == 0 {
 		return "(无 cookie)\n"
 	}
@@ -382,11 +364,14 @@ func (c *Collector) enableDownloads(ctx context.Context) error {
 	if err := os.MkdirAll(c.downloadDir, 0755); err != nil {
 		return err
 	}
-	return chromedp.Run(ctx,
-		cdpbrowser.SetDownloadBehavior(cdpbrowser.SetDownloadBehaviorBehaviorAllowAndName).
-			WithDownloadPath(c.downloadDir).
-			WithEventsEnabled(true),
-	)
+	// browser 域命令必须走浏览器级会话 (v0.21 起 CallBrowser)
+	_, err := chromedp.CallBrowser(ctx, cdpbrowser.SetDownloadBehavior,
+		cdpbrowser.SetDownloadBehaviorParams{
+			Behavior:      cdpbrowser.SetDownloadBehaviorBehaviorAllowAndName,
+			DownloadPath:  c.downloadDir,
+			EventsEnabled: ptrVal(true),
+		})
+	return err
 }
 
 // handleDownloadWillBegin 记录下载元信息。
@@ -479,45 +464,48 @@ func sanitizeFileName(s string) string {
 
 // handleAutoAttach target.SetAutoAttach 后, OOPIF(跨源 iframe) 以独立 session
 // 出现。在这里把 iframe 也挂上网络监听 — 强智/正方新版把课表塞在 iframe 里,
-// 只挂顶层 page 等于瞎。
-func (c *Collector) handleAutoAttach(browserCtx context.Context) func(ev interface{}) {
-	return func(ev interface{}) {
-		e, ok := ev.(*target.EventAttachedToTarget)
-		if !ok {
-			return
-		}
-		if e.TargetInfo.Type != "iframe" {
-			return
-		}
-		c.tmu.Lock()
-		if c.iframeAttached[e.TargetInfo.TargetID] {
-			c.tmu.Unlock()
-			return
-		}
-		c.iframeAttached[e.TargetInfo.TargetID] = true
-		c.tabSeq++
-		seq := c.tabSeq
-		c.tmu.Unlock()
-		iframeCtx, _ := chromedp.NewContext(browserCtx, chromedp.WithTargetID(e.TargetInfo.TargetID))
-		iframeCtx, cancel := context.WithCancel(iframeCtx)
-		c.tmu.Lock()
-		c.tabs[seq] = &tabState{seq: seq, ctx: iframeCtx}
-		c.tmu.Unlock()
-		fmt.Printf("  (跨源 iframe 已附加监听: %s)\n", shortURL(e.TargetInfo.URL))
-		_ = chromedp.Run(iframeCtx, network.Enable().WithMaxPostDataSize(8<<20), log.Enable(), runtime.Enable())
-		chromedp.ListenTarget(iframeCtx, func(ev interface{}) { c.onEventTab(seq, ev) })
-		go func() {
-			<-browserCtx.Done()
-			cancel()
-		}()
+// 只挂顶层 page 等于瞎。由浏览器级 AttachedToTarget 订阅分发调用。
+func (c *Collector) handleAutoAttach(browserCtx context.Context, e *target.EventAttachedToTarget) {
+	if e.TargetInfo == nil || e.TargetInfo.Type != "iframe" {
+		return
 	}
+	c.tmu.Lock()
+	if c.iframeAttached[e.TargetInfo.TargetID] {
+		c.tmu.Unlock()
+		return
+	}
+	c.iframeAttached[e.TargetInfo.TargetID] = true
+	c.tabSeq++
+	seq := c.tabSeq
+	c.tmu.Unlock()
+	iframeCtx, _ := chromedp.NewContext(browserCtx, chromedp.WithTargetID(e.TargetInfo.TargetID))
+	iframeCtx, cancel := context.WithCancel(iframeCtx)
+	c.tmu.Lock()
+	c.tabs[seq] = &tabState{seq: seq, ctx: iframeCtx}
+	c.tmu.Unlock()
+	fmt.Printf("  (跨源 iframe 已附加监听: %s)\n", shortURL(e.TargetInfo.URL))
+	_ = chromedp.Do(iframeCtx,
+		act(network.Enable, network.EnableParams{MaxPostDataSize: ptrVal(int64(8 << 20))}),
+		act(log.Enable, cdp.Empty{}),
+		act(runtime.Enable, cdp.Empty{}),
+	)
+	c.startTabPumps(iframeCtx, seq)
+	go func() {
+		<-browserCtx.Done()
+		cancel()
+	}()
 }
 
-// setupAutoAttach 主 tab 侧开 autoAttach (flatten 模式)。
+// setupAutoAttach 主 tab 侧开 autoAttach (flatten 模式, 浏览器级)。
+// 注: chromedp v0.21 内部已在 tab 会话开过一份, 这里显式再开是旧版语义的
+// 对齐 (iframe attach 事件走浏览器级订阅); 重复 attach 由 iframeAttached 去重。
 func setupAutoAttach(ctx context.Context) error {
-	return chromedp.Run(ctx,
-		target.SetAutoAttach(true, false).WithFlatten(true),
-	)
+	_, err := chromedp.CallBrowser(ctx, target.SetAutoAttach, target.SetAutoAttachParams{
+		AutoAttach:             true,
+		WaitForDebuggerOnStart: false,
+		Flatten:                ptrVal(true),
+	})
+	return err
 }
 
 // ---------------- HAR 导出 ----------------
@@ -549,29 +537,29 @@ func buildHAR(recs []*reqRec, maxBodyBytes int) (string, int) {
 		Value string `json:"value"`
 	}
 	type harPostData struct {
-		MimeType string      `json:"mimeType,omitempty"`
-		Params   []harParam  `json:"params,omitempty"`
-		Text     string      `json:"text,omitempty"`
+		MimeType string     `json:"mimeType,omitempty"`
+		Params   []harParam `json:"params,omitempty"`
+		Text     string     `json:"text,omitempty"`
 	}
 	type harHeader struct {
 		Name  string `json:"name"`
 		Value string `json:"value"`
 	}
 	type harContent struct {
-		Size        int    `json:"size"`
-		MimeType    string `json:"mimeType"`
-		Text        string `json:"text,omitempty"`
-		Encoding    string `json:"encoding,omitempty"`
+		Size     int    `json:"size"`
+		MimeType string `json:"mimeType"`
+		Text     string `json:"text,omitempty"`
+		Encoding string `json:"encoding,omitempty"`
 	}
 	type harRequest struct {
-		Method      string      `json:"method"`
-		URL         string      `json:"url"`
-		HTTPVersion string      `json:"httpVersion"`
-		Headers     []harHeader `json:"headers"`
-		QueryString []harParam  `json:"queryString"`
+		Method      string       `json:"method"`
+		URL         string       `json:"url"`
+		HTTPVersion string       `json:"httpVersion"`
+		Headers     []harHeader  `json:"headers"`
+		QueryString []harParam   `json:"queryString"`
 		PostData    *harPostData `json:"postData,omitempty"`
-		HeadersSize int         `json:"headersSize"`
-		BodySize    int         `json:"bodySize"`
+		HeadersSize int          `json:"headersSize"`
+		BodySize    int          `json:"bodySize"`
 	}
 	type harResponse struct {
 		Status      int         `json:"status"`
@@ -584,12 +572,12 @@ func buildHAR(recs []*reqRec, maxBodyBytes int) (string, int) {
 		BodySize    int         `json:"bodySize"`
 	}
 	type harEntry struct {
-		Pageref         string     `json:"pageref"`
-		StartedDateTime string     `json:"startedDateTime"`
-		Time            float64    `json:"time"`
-		Request         harRequest `json:"request"`
+		Pageref         string      `json:"pageref"`
+		StartedDateTime string      `json:"startedDateTime"`
+		Time            float64     `json:"time"`
+		Request         harRequest  `json:"request"`
 		Response        harResponse `json:"response"`
-		Cache           struct{}   `json:"cache"`
+		Cache           struct{}    `json:"cache"`
 		Timings         struct {
 			Send    float64 `json:"send"`
 			Wait    float64 `json:"wait"`
@@ -719,18 +707,11 @@ func (c *Collector) fetchMissingPostData(tabSeq int, k reqKey, r *reqRec) {
 	if ts == nil {
 		return
 	}
-	var postData []byte
-	err := chromedp.Run(ts.ctx, chromedp.ActionFunc(func(ictx context.Context) error {
-		b, err := network.GetRequestPostData(k.rid).Do(ictx)
-		if err != nil {
-			return err
-		}
-		postData = b
-		return nil
-	}))
-	if err == nil && len(postData) > 0 {
+	res, err := chromedp.Call(ts.ctx, network.GetRequestPostData,
+		network.GetRequestPostDataParams{RequestID: k.rid})
+	if err == nil && len(res.PostData) > 0 {
 		c.tmu.Lock()
-		r.postData = string(postData)
+		r.postData = string(res.PostData)
 		r.postDataMissing = false
 		c.tmu.Unlock()
 	}

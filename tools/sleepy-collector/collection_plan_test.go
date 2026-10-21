@@ -156,7 +156,7 @@ func TestCaptureDetailNavigationsUsesSameBrowserSessionAcrossOrigins(t *testing.
 	}))
 	defer root.Close()
 
-	if err := chromedp.Run(execCtx(), chromedp.Navigate(root.URL+"/course/personSchedule")); err != nil {
+	if err := chromedp.Do(execCtx(), chromedp.Navigate(root.URL+"/course/personSchedule")); err != nil {
 		t.Fatalf("open root: %v", err)
 	}
 	p := newPacker()

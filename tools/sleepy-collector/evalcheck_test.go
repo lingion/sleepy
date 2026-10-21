@@ -17,14 +17,10 @@ func TestEvalAsyncAwaits(t *testing.T) {
 	defer ccancel()
 	tctx, tcancel := context.WithTimeout(cctx, 30*time.Second)
 	defer tcancel()
-	err := chromedp.Run(tctx, chromedp.Navigate("about:blank"))
-	if err != nil {
+	if err := chromedp.Do(tctx, chromedp.Navigate("about:blank")); err != nil {
 		t.Fatalf("nav: %v", err)
 	}
-	var got string
-	err = chromedp.Run(tctx, chromedp.ActionFunc(func(ictx context.Context) error {
-		return evalAsync(ictx, `(async function(){ await new Promise(r=>setTimeout(r,300)); return JSON.stringify({s:200, ct:'x', b:'hello-world'}); })()`, &got)
-	}))
+	got, err := evalAsync(tctx, `(async function(){ await new Promise(r=>setTimeout(r,300)); return JSON.stringify({s:200, ct:'x', b:'hello-world'}); })()`)
 	if err != nil {
 		t.Fatalf("evalAsync: %v", err)
 	}

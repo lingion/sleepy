@@ -222,7 +222,8 @@ func (h *logHub) flushLocked(ctx context.Context, expand bool) error {
       if (w2) w2.style.display = 'block';
     })();`
 	}
-	return chromedp.Run(ctx, chromedp.Evaluate(js, nil))
+	_, err = chromedp.Run(ctx, chromedp.Evaluate[chromedp.Void](js))
+	return err
 }
 
 // pushToPanel 已并入 FlushPanel 全量回放 — 面板刷新频率低(阶段级),
@@ -517,13 +518,12 @@ func (c *Collector) onEventTab(tabSeq int, ev interface{}) {
 		if e.Request.HasPostData && len(e.Request.PostDataEntries) > 0 {
 			var sb strings.Builder
 			for _, p := range e.Request.PostDataEntries {
-				// CDP PostDataEntry.bytes 是 binary 类型 — JSON 传输层按 base64
-				// 编码, 必须先解掉。不解的话包里所有 POST 体都是 base64 天书
-				// (E2E 靶场实锤: 页面发 "a=1&b=2", 包里存 "YT0xJmI9Mg==")。
+				// CDP PostDataEntry.bytes 是 binary 类型 — cdproto v0.158 起
+				// JSON 传输层的 base64 已由类型解码器自动解掉, p.Bytes 即原始字节。
 				// 注意: 解掉传输编码后剩下的才是业务形态; 校方自己的业务级
 				// base64 (WHUT 型) 会再次出现在明文里, looksBase64Body 判的
-				// 是那一层, 两层编码互不干扰。
-				sb.WriteString(transportDecode(p.Bytes))
+				// 是那一层, 两层编码互不干扰 (再解一次会把业务编码糟蹋掉)。
+				sb.WriteString(string(p.Bytes))
 			}
 			r.postData = sb.String()
 		} else if e.Request.HasPostData {
@@ -632,25 +632,18 @@ func (c *Collector) fetchBodyInto(tabSeq int, k reqKey, r *reqRec) {
 	if ts == nil {
 		return
 	}
-	var body []byte
-	err := chromedp.Run(ts.ctx, chromedp.ActionFunc(func(ictx context.Context) error {
-		b, err := network.GetResponseBody(k.rid).Do(ictx)
+	getBody := func() ([]byte, error) {
+		res, err := chromedp.Call(ts.ctx, network.GetResponseBody,
+			network.GetResponseBodyParams{RequestID: k.rid})
 		if err != nil {
-			return err
+			return nil, err
 		}
-		body = b
-		return nil
-	}))
+		return res.Body, nil
+	}
+	body, err := getBody()
 	if err != nil && retryable(err) {
 		time.Sleep(300 * time.Millisecond)
-		err = chromedp.Run(ts.ctx, chromedp.ActionFunc(func(ictx context.Context) error {
-			b, err := network.GetResponseBody(k.rid).Do(ictx)
-			if err != nil {
-				return err
-			}
-			body = b
-			return nil
-		}))
+		body, err = getBody()
 	}
 	if err == nil && len(body) > 0 {
 		r.body = string(body)
@@ -1214,34 +1207,32 @@ const jsSelects = `JSON.stringify((function(){
 })())`
 
 // evalAsync 在页面里执行返回 Promise 的表达式并等待结果。
-// 必须经 chromedp.ActionFunc 拿到 chromedp 内部的执行 ctx;直接用外层 ctx 会报 invalid context。
-func evalAsync(ctx context.Context, expr string, res any) error {
-	return chromedp.Run(ctx, chromedp.ActionFunc(func(ictx context.Context) error {
-		return chromedp.Evaluate(expr, res, func(p *runtime.EvaluateParams) *runtime.EvaluateParams {
-			return p.WithAwaitPromise(true).WithReturnByValue(true)
-		}).Do(ictx)
-	}))
+// v0.21: Evaluate[T] 直接是动作, AwaitPromise 经 EvalAwaitPromise 选项开启
+// (ReturnByValue 由泛型 T=string 隐含), 不再需要 ActionFunc 拿内部 ctx。
+func evalAsync(ctx context.Context, expr string) (string, error) {
+	return chromedp.Run(ctx, chromedp.Evaluate[string](expr, chromedp.EvalAwaitPromise))
 }
 
 // evalAsyncRetry: evalAsync 失败自动重试 — 教务服务器偶发超时/连接重置很常见
 // (用户实锤: 同一学校第一次采集大量资源重取失败, 第二次全好), 不该让一次
 // 抖动直接算错。重试 attempts-1 次, 短退避, 总耗时有界。
-func evalAsyncRetry(ctx context.Context, expr string, res any, attempts int) error {
+func evalAsyncRetry(ctx context.Context, expr string, attempts int) (string, error) {
 	var err error
+	var resp string
 	for i := 0; i < attempts; i++ {
 		if i > 0 {
 			// 500ms * i 退避;ctx 取消(浏览器关了/超时)立刻放弃
 			select {
 			case <-time.After(time.Duration(i) * 500 * time.Millisecond):
 			case <-ctx.Done():
-				return ctx.Err()
+				return "", ctx.Err()
 			}
 		}
-		if err = evalAsync(ctx, expr, res); err == nil {
-			return nil
+		if resp, err = evalAsync(ctx, expr); err == nil {
+			return resp, nil
 		}
 	}
-	return err
+	return resp, err
 }
 
 // retryable 判断错误是否值得重试: ctx 取消/超时是全局性的,重试没意义。
@@ -1398,7 +1389,7 @@ func main() {
 	c.tmu.Lock()
 	c.tabs[0] = &tabState{seq: 0, ctx: browserCtx}
 	c.tmu.Unlock()
-	chromedp.ListenTarget(browserCtx, func(ev interface{}) { c.onEventTab(0, ev) })
+	c.startTabPumps(browserCtx, 0)
 
 	// G12: 新标签页监听 — 门户点课表常用 window.open 开新 tab,
 	// 只挂初始 tab 会把新 tab 里的全部课表请求丢光 (HEU 实测翻车)。
@@ -1408,14 +1399,11 @@ func main() {
 	// RequestID), 打包时一并入库。
 	attached := map[cdtarget.ID]bool{}
 	var discoverTabs = func() {
-		var infos []*cdtarget.Info
-		if err := chromedp.Run(browserCtx, chromedp.ActionFunc(func(ictx context.Context) error {
-			var err error
-			infos, err = cdtarget.GetTargets().Do(ictx)
-			return err
-		})); err != nil {
+		res, err := chromedp.CallBrowser(browserCtx, cdtarget.GetTargets, cdtarget.GetTargetsParams{})
+		if err != nil {
 			return
 		}
+		infos := res.TargetInfos
 		for _, info := range infos {
 			if info.Type != "page" || attached[info.TargetID] || info.Attached {
 				continue
@@ -1437,10 +1425,13 @@ func main() {
 			if err := c.enableCapture(tabCtx); err != nil {
 				c.log.Log("warn", "新标签页全域捕获初始化失败: %v", err)
 			}
-			_ = chromedp.Run(tabCtx, page.Enable(), dom.Enable())
+			_ = chromedp.Do(tabCtx,
+				act(page.Enable, page.EnableParams{}),
+				act(dom.Enable, dom.EnableParams{}),
+			)
 			applyUserAgentOverride(tabCtx)
 			c.log.Log("step", "新标签页已附加监听 (%s…) — %s", string(info.TargetID)[:8], shortURL(info.URL))
-			chromedp.ListenTarget(tabCtx, func(ev interface{}) { c.onEventTab(seq, ev) })
+			c.startTabPumps(tabCtx, seq)
 			// 新 tab 的 URL 记入总表 — 打包阶段 (资源重取/详情导航) 才知道有这一页
 			if !c.urlSeen[info.URL] {
 				c.urlSeen[info.URL] = true
@@ -1450,7 +1441,7 @@ func main() {
 			// network.Enable 是从 attach 才生效的。刷新一帧 — 只读查询页无副作用,
 			// 重载后所有请求在监听下重新发生 (等价于"先开 F12 再访问")。
 			// 登录页等提交型页面不会走到这: 它们打开时不产生子 tab。
-			if err := chromedp.Run(tabCtx, chromedp.Reload()); err == nil {
+			if err := chromedp.Do(tabCtx, chromedp.Reload()); err == nil {
 				c.log.Log("info", "已刷新新标签页以完整捕获请求 — %s", shortURL(info.URL))
 			}
 			injectBtn(tabCtx)
@@ -1480,14 +1471,22 @@ func main() {
 	if err := setupAutoAttach(browserCtx); err != nil {
 		c.log.Log("warn", "iframe 自动附加不可用(跨源 iframe 内请求可能漏抓): %v", err)
 	}
-	chromedp.ListenTarget(browserCtx, c.handleAutoAttach(browserCtx))
+	// 浏览器级事件: OOPIF attach + 下载 (旧版经 ListenTarget(browserCtx) 汇入
+	// onEventTab, 新版 typed 订阅; 下载仍走 onEventTab 的 browser 分支)
+	pumpBrowserEvents(browserCtx, cdtarget.AttachedToTarget, func(ev any) {
+		if e, ok := ev.(*cdtarget.EventAttachedToTarget); ok {
+			c.handleAutoAttach(browserCtx, e)
+		}
+	})
+	pumpBrowserEvents(browserCtx, cdpbrowser.DownloadWillBegin, func(ev any) { c.onEventTab(0, ev) })
+	pumpBrowserEvents(browserCtx, cdpbrowser.DownloadProgress, func(ev any) { c.onEventTab(0, ev) })
 	// 初始打开教务网址: 偶发 DNS/网络抖动会在这里失败 — 自动重试 2 次,
 	// 都不行再放弃 (校DNS偶发抽风是"第一次不行第二次好"的常见根因)
 	var navErr error
 	for attempt := 1; attempt <= 3; attempt++ {
-		err = chromedp.Run(browserCtx,
+		err = chromedp.Do(browserCtx,
 			chromedp.Navigate(target),
-			chromedp.WaitVisible("body", chromedp.ByQuery),
+			chromedp.WaitVisible("body"),
 		)
 		if err == nil {
 			navErr = nil
@@ -1541,8 +1540,8 @@ func main() {
 		}
 		c.tmu.Unlock()
 		for _, ts := range tabList {
-			var done bool
-			if err := chromedp.Run(ts.ctx, chromedp.Evaluate(`typeof __sleepyDone !== 'undefined' && __sleepyDone === true`, &done)); err != nil {
+			done, err := chromedp.Run(ts.ctx, chromedp.Evaluate[bool](`typeof __sleepyDone !== 'undefined' && __sleepyDone === true`))
+			if err != nil {
 				continue // tab 已关
 			}
 			if done {
@@ -1618,12 +1617,11 @@ packaged:
 }
 
 func setDone(ctx context.Context) {
-	_ = chromedp.Run(ctx, chromedp.Evaluate(`window.__sleepyDone = true; 1`, nil))
+	_, _ = chromedp.Run(ctx, chromedp.Evaluate[chromedp.Void](`window.__sleepyDone = true; 1`))
 }
 
 func injectBtn(ctx context.Context) {
-	var r string
-	_ = chromedp.Run(ctx, chromedp.Evaluate(btnJS, &r))
+	_, _ = chromedp.Run(ctx, chromedp.Evaluate[chromedp.Void](btnJS))
 }
 
 // takeSnapshot 响应「再拍一帧」按钮 (G7): 抓当前 DOM + 存储 + URL + select 选项,
@@ -1633,11 +1631,21 @@ func (c *Collector) takeSnapshot(ctx context.Context) {
 	c.snapSeq++
 	seq := c.snapSeq
 	var url, html, storJSON, selJSON string
-	_ = chromedp.Run(ctx,
-		chromedp.Evaluate(`location.href`, &url),
-		chromedp.Evaluate(`document.documentElement.outerHTML`, &html),
-		chromedp.Evaluate(jsStorage, &storJSON),
-		chromedp.Evaluate(jsSelects, &selJSON),
+	chromedp.Do(ctx,
+		chromedp.Func(func(ictx context.Context, t *chromedp.Target) error {
+			var err error
+			if url, err = chromedp.Run(ictx, chromedp.Evaluate[string](`location.href`)); err != nil {
+				return err
+			}
+			if html, err = chromedp.Run(ictx, chromedp.Evaluate[string](`document.documentElement.outerHTML`)); err != nil {
+				return err
+			}
+			if storJSON, err = chromedp.Run(ictx, chromedp.Evaluate[string](jsStorage)); err != nil {
+				return err
+			}
+			selJSON, err = chromedp.Run(ictx, chromedp.Evaluate[string](jsSelects))
+			return err
+		}),
 	)
 	c.log.Log("info", "增量快照 #%d — %s", seq, shortURL(url))
 	if html != "" {
@@ -1690,14 +1698,14 @@ func (c *Collector) takeSnapshot(ctx context.Context) {
 
 // pollSnapshots 检查按钮计数, 有新点击就拍快照并清零计数。
 func (c *Collector) pollSnapshots(ctx context.Context) {
-	var want int
-	if err := chromedp.Run(ctx, chromedp.Evaluate(`window.__sleepySnap||0`, &want)); err != nil {
+	want, err := chromedp.Run(ctx, chromedp.Evaluate[int](`window.__sleepySnap||0`))
+	if err != nil {
 		return
 	}
 	for c.snapSeq < want {
 		c.takeSnapshot(ctx)
 	}
-	_ = chromedp.Run(ctx, chromedp.Evaluate(`window.__sleepySnap = 0; 1`, nil))
+	_, _ = chromedp.Run(ctx, chromedp.Evaluate[chromedp.Void](`window.__sleepySnap = 0; 1`))
 }
 
 func waitEnter() {
@@ -1758,14 +1766,22 @@ func (c *Collector) captureDetailNavigations(ctx context.Context, p *packer, mai
 		tabCtx, tabCancel := chromedp.NewContext(ctx)
 		captureCtx, cancel := context.WithTimeout(tabCtx, 20*time.Second)
 		var finalURL, title, html string
-		err := chromedp.Run(captureCtx,
-			network.Enable(),
+		// 导航帧就绪后逐项取值 (旧版在同一个 Run 里串联; 新版 Run 单动作,
+		// 分开跑并保持在 captureCtx 有效期内 — cancel 之后取不到值)。
+		err := chromedp.Do(captureCtx,
+			act(network.Enable, network.EnableParams{}),
 			chromedp.Navigate(plan.URL),
-			chromedp.WaitReady("body", chromedp.ByQuery),
-			chromedp.Title(&title),
-			chromedp.Evaluate(`location.href`, &finalURL),
-			chromedp.Evaluate(`document.documentElement.outerHTML`, &html),
+			chromedp.WaitReady("body"),
 		)
+		if err == nil {
+			title, err = chromedp.Run(captureCtx, chromedp.Title())
+		}
+		if err == nil {
+			finalURL, _ = chromedp.Run(captureCtx, chromedp.Evaluate[string](`location.href`))
+		}
+		if err == nil {
+			html, _ = chromedp.Run(captureCtx, chromedp.Evaluate[string](`document.documentElement.outerHTML`))
+		}
 		cancel()
 		tabCancel()
 		if err != nil || html == "" {
@@ -1800,13 +1816,13 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 	// ---- 1. 页面状态 ----
 	c.log.Log("step", "开始打包 — 页面状态采集")
 	var title, ua, cookieFull, mainURL, mainHTML string
-	_ = chromedp.Run(ctx,
-		chromedp.Title(&title),
-		chromedp.Evaluate(`navigator.userAgent`, &ua),
-		chromedp.Evaluate(`document.cookie`, &cookieFull),
-		chromedp.Evaluate(`location.href`, &mainURL),
-		chromedp.Evaluate(`document.documentElement.outerHTML`, &mainHTML),
-	)
+	if v, err := chromedp.Run(ctx, chromedp.Title()); err == nil {
+		title = v
+	}
+	ua = evalString(ctx, `navigator.userAgent`)
+	cookieFull = evalString(ctx, `document.cookie`)
+	mainURL = evalString(ctx, `location.href`)
+	mainHTML = evalString(ctx, `document.documentElement.outerHTML`)
 	var cookieNames []string
 	for _, kv := range strings.Split(cookieFull, ";") {
 		kv = strings.TrimSpace(kv)
@@ -1818,8 +1834,7 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 	if mainHTML != "" {
 		p.add(p.uniq("1-dom/top_page.html"), "页面DOM(打包时刻)", mainHTML)
 	}
-	var storJSON string
-	_ = chromedp.Run(ctx, chromedp.Evaluate(jsStorage, &storJSON))
+	storJSON := evalString(ctx, jsStorage)
 	var stor map[string]map[string]string
 	if json.Unmarshal([]byte(storJSON), &stor) == nil {
 		for _, kind := range []string{"sessionStorage", "localStorage"} {
@@ -1838,8 +1853,7 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 			p.add(p.uniq("5-storage/top_"+kind+".txt"), kind, strings.Join(lines, "\n"))
 		}
 	}
-	var inlineJSON string
-	_ = chromedp.Run(ctx, chromedp.Evaluate(jsInline, &inlineJSON))
+	inlineJSON := evalString(ctx, jsInline)
 	var inline []map[string]string
 	if json.Unmarshal([]byte(inlineJSON), &inline) == nil {
 		for i, x := range inline {
@@ -1852,8 +1866,7 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 		}
 	}
 	// G2: 学期/周次下拉枚举 — 学期参数候选集的直接证据
-	var selJSON string
-	_ = chromedp.Run(ctx, chromedp.Evaluate(jsSelects, &selJSON))
+	selJSON := evalString(ctx, jsSelects)
 	var sels []map[string]interface{}
 	if json.Unmarshal([]byte(selJSON), &sels) == nil && len(sels) > 0 {
 		b, _ := json.MarshalIndent(sels, "", "  ")
@@ -1870,8 +1883,6 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 	c.log.FlushPanel(ctx) // 面板: "页面状态采集" 完成
 
 	// ---- 2. CDP 捕获的网络请求:取响应体并入库 ----
-	origin := ""
-	_ = chromedp.Run(ctx, chromedp.Evaluate(`location.origin`, &origin))
 	c.log.Log("step", "网络请求 %d 个 — 取响应体入库", len(c.order))
 	fmt.Printf("  网络请求共 %d 个,正在取响应体…\n", len(c.order))
 	netOK := 0
@@ -1944,8 +1955,7 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 	c.log.FlushPanel(ctx)
 
 	// ---- 3. URL 总表(性能日志 + 页内链接补全) ----
-	var perfJSON string
-	_ = chromedp.Run(ctx, chromedp.Evaluate(jsPerfURLs, &perfJSON))
+	perfJSON := evalString(ctx, jsPerfURLs)
 	var perfURLs []string
 	_ = json.Unmarshal([]byte(perfJSON), &perfURLs)
 	for _, u := range perfURLs {
@@ -1954,8 +1964,7 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 			c.urlSrc[u] = append(c.urlSrc[u], "性能日志")
 		}
 	}
-	var linkJSON string
-	_ = chromedp.Run(ctx, chromedp.Evaluate(jsLinks, &linkJSON))
+	linkJSON := evalString(ctx, jsLinks)
 	var links []string
 	_ = json.Unmarshal([]byte(linkJSON), &links)
 	for _, u := range links {
@@ -2009,8 +2018,7 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 			continue
 		}
 		refTried++
-		var resp string
-		evErr := evalAsyncRetry(ctx, fetchJS(u), &resp, 3)
+		resp, evErr := evalAsyncRetry(ctx, fetchJS(u), 3)
 		if evErr == nil && len(resp) > 2 {
 			var fr struct {
 				Status int64  `json:"s"`
@@ -2056,8 +2064,8 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 		if (i+1)%10 == 0 {
 			fmt.Printf("    接口空体重放 %d/%d\n", i+1, len(apis))
 		}
-		var resp string
-		if err := evalAsyncRetry(ctx, postJS(u, ""), &resp, 3); err == nil && len(resp) > 2 {
+		resp, err := evalAsyncRetry(ctx, postJS(u, ""), 3)
+		if err == nil && len(resp) > 2 {
 			var fr struct {
 				Status int64  `json:"s"`
 				CT     string `json:"ct"`
@@ -2093,8 +2101,8 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 			} else if ob, ok := origBody[u]; ok {
 				b = encodeBodyLike(ob, body)
 			}
-			var resp string
-			if err := evalAsyncRetry(ctx, postJS(u, b), &resp, 3); err == nil && len(resp) > 2 {
+			resp, err := evalAsyncRetry(ctx, postJS(u, b), 3)
+			if err == nil && len(resp) > 2 {
 				var fr struct {
 					Status int64  `json:"s"`
 					CT     string `json:"ct"`
@@ -2142,6 +2150,7 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 			wstr := fmt.Sprintf("%d", w)
 			var resp string
 			var reqURL, reqBody string
+			var evErr error
 			if r.method == "POST" {
 				// 体里替换周参数, 其余参数原样保留 (编码形态跟随原体)
 				reqBody = replaceFormParam(r.postData, name, wstr)
@@ -2152,13 +2161,13 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 					reqBody = base64.StdEncoding.EncodeToString([]byte(reqBody))
 				}
 				reqURL = r.url
-				if err := evalAsyncRetry(ctx, postJS(r.url, reqBody), &resp, 2); err != nil {
+				if resp, evErr = evalAsyncRetry(ctx, postJS(r.url, reqBody), 2); evErr != nil {
 					continue
 				}
 			} else {
 				// GET: query 参数替换 (URL 编码由 replaceURLParam 处理)
 				reqURL = replaceURLParam(r.url, name, wstr)
-				if err := evalAsyncRetry(ctx, fetchJS(reqURL), &resp, 2); err != nil {
+				if resp, evErr = evalAsyncRetry(ctx, fetchJS(reqURL), 2); evErr != nil {
 					continue
 				}
 			}

@@ -32,13 +32,19 @@ func TestChromedpDrivesCfT(t *testing.T) {
 	defer cancel3()
 
 	var title, ua string
-	if err := chromedp.Run(ctx3,
+	if err := chromedp.Do(ctx3,
 		chromedp.Navigate("https://www.example.com"),
 		chromedp.WaitReady("h1"),
-		chromedp.Title(&title),
-		chromedp.Evaluate(`navigator.userAgent`, &ua),
 	); err != nil {
-		t.Fatalf("chromedp+CuT: %v", err)
+		t.Fatalf("chromedp+CfT navigate: %v", err)
+	}
+	title, err = chromedp.Run(ctx3, chromedp.Title())
+	if err != nil {
+		t.Fatalf("chromedp+CfT title: %v", err)
+	}
+	ua, err = chromedp.Run(ctx3, chromedp.Evaluate[string](`navigator.userAgent`))
+	if err != nil {
+		t.Fatalf("chromedp+CfT evaluate: %v", err)
 	}
 	if title == "" || !contains(ua, "Chrome") {
 		t.Fatalf("unexpected: title=%q ua=%q", title, ua)

@@ -25,11 +25,11 @@ import (
 
 func TestRedactRequestHeaders(t *testing.T) {
 	in := network.Headers{
-		"Cookie":       "sid=abc123; theme=dark",
+		"Cookie":        "sid=abc123; theme=dark",
 		"Authorization": "Bearer sekrit99",
-		"X-API-Token":  "tk1value",
-		"XRW":          "1",
-		"Content-Type": "application/json",
+		"X-API-Token":   "tk1value",
+		"XRW":           "1",
+		"Content-Type":  "application/json",
 	}
 	out := redactRequestHeaders(in)
 	if strings.Contains(out, "abc123") || strings.Contains(out, "sekrit99") || strings.Contains(out, "tk1value") {
@@ -124,11 +124,11 @@ func TestWSAndConsoleRecording(t *testing.T) {
 	c.onEventTab(0, &network.EventWebSocketCreated{RequestID: "ws1", URL: "wss://x/feed"})
 	c.onEventTab(0, &network.EventWebSocketFrameSent{
 		RequestID: "ws1",
-		Response:  &network.WebSocketFrame{Opcode: 1, PayloadData: "hello-schedule"},
+		Response:  &network.WebSocketFrame{Opcode: 1, PayloadData: []byte("hello-schedule")},
 	})
 	c.onEventTab(0, &network.EventWebSocketFrameReceived{
 		RequestID: "ws1",
-		Response:  &network.WebSocketFrame{Opcode: 2, PayloadData: "BINARYBYTES"},
+		Response:  &network.WebSocketFrame{Opcode: 2, PayloadData: []byte("BINARYBYTES")},
 	})
 	ws := c.wsLogText()
 	if !strings.Contains(ws, "wss://x/feed") {
@@ -291,7 +291,10 @@ func newCaptureEnv(t *testing.T) (*Collector, string, context.CancelFunc) {
 	c.tmu.Lock()
 	c.tabs[0] = &tabState{seq: 0, ctx: ctx}
 	c.tmu.Unlock()
-	chromedp.ListenTarget(ctx, func(ev interface{}) { c.onEventTab(0, ev) })
+	c.startTabPumps(ctx, 0)
+	// v0.21: browser 域事件走浏览器级会话 (旧版 ListenTarget 全量转发)
+	pumpBrowserEvents(ctx, cdpbrowser.DownloadWillBegin, func(ev any) { c.onEventTab(0, ev) })
+	pumpBrowserEvents(ctx, cdpbrowser.DownloadProgress, func(ev any) { c.onEventTab(0, ev) })
 
 	if err := c.enableCapture(ctx); err != nil {
 		cancel()
@@ -301,7 +304,7 @@ func newCaptureEnv(t *testing.T) (*Collector, string, context.CancelFunc) {
 		cancel()
 		t.Fatalf("enableDownloads: %v", err)
 	}
-	if err := chromedp.Run(ctx,
+	if err := chromedp.Do(ctx,
 		chromedp.Navigate(outerSrv.URL+"/"),
 		chromedp.WaitReady("body"),
 	); err != nil {
@@ -400,8 +403,8 @@ func TestCaptureLargePostData(t *testing.T) {
 	c, _, cancel := newCaptureEnv(t)
 	defer cancel()
 	big := "k=" + strings.Repeat("x", 10<<20) // 10MB > 8MB 事件内联上限
-	err := chromedp.Run(c.tabs[0].ctx, chromedp.Evaluate(
-		`fetch('/api/echo', {method:'POST', body: 'k='+'x'.repeat(`+fmt.Sprint(10<<20)+`)}).then(function(){return 1})`, nil,
+	_, err := chromedp.Run(c.tabs[0].ctx, chromedp.Evaluate[chromedp.Void](
+		`fetch('/api/echo', {method:'POST', body: 'k='+'x'.repeat(`+fmt.Sprint(10<<20)+`)}).then(function(){return 1})`,
 	))
 	_ = big
 	if err != nil {

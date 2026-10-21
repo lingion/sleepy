@@ -33,9 +33,8 @@ func TestEvalAsyncRetryBoundsTime(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(execCtx(), 5*time.Second)
 	defer cancel()
-	var out string
 	start := time.Now()
-	err := evalAsyncRetry(ctx, `throw new Error("x")`, &out, 3)
+	_, err := evalAsyncRetry(ctx, `throw new Error("x")`, 3)
 	if err == nil {
 		t.Fatal("非法表达式应返回错误")
 	}
@@ -49,11 +48,8 @@ func TestEvalAsyncRetrySingleAttempt(t *testing.T) {
 	if execCtx() == nil {
 		t.Skip("chromedp 不可用")
 	}
-	var out string
 	start := time.Now()
-	err := chromedp.Run(execCtx(), chromedp.ActionFunc(func(ictx context.Context) error {
-		return evalAsyncRetry(ictx, `"1"`, &out, 1)
-	}))
+	out, err := evalAsyncRetry(execCtx(), `"1"`, 1)
 	if d := time.Since(start); d > 500*time.Millisecond {
 		t.Fatalf("单次尝试不应有退避: %v", d)
 	}
@@ -72,8 +68,7 @@ func TestEvalAsyncRetryRespectsCancel(t *testing.T) {
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	var out string
-	err := evalAsyncRetry(ctx, `1`, &out, 3)
+	_, err := evalAsyncRetry(ctx, `1`, 3)
 	if err == nil || !strings.Contains(err.Error(), "context") {
 		t.Fatalf("取消后应立即返回 ctx 错误, got %v", err)
 	}
@@ -91,7 +86,7 @@ func execCtx() context.Context {
 		_ = ccancel
 		tctx, tcancel := context.WithTimeout(cctx, 60*time.Second)
 		_ = tcancel
-		if err := chromedp.Run(tctx, chromedp.Navigate("about:blank")); err != nil {
+		if err := chromedp.Do(tctx, chromedp.Navigate("about:blank")); err != nil {
 			return nil
 		}
 		execCtxCache = tctx

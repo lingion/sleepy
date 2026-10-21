@@ -29,29 +29,25 @@ func TestStorageCapture(t *testing.T) {
 	defer ccancel()
 	tctx, tcancel := context.WithTimeout(cctx, 30*time.Second)
 	defer tcancel()
-	err := chromedp.Run(tctx, chromedp.ActionFunc(func(ictx context.Context) error {
-		if err := chromedp.Navigate(srv.URL).Do(ictx); err != nil {
-			return err
-		}
-		if err := chromedp.Evaluate(`localStorage.setItem('probe','中文值'); 1`, nil).Do(ictx); err != nil {
-			return err
-		}
-		var storJSON string
-		if err := chromedp.Evaluate(jsStorage, &storJSON).Do(ictx); err != nil {
-			return err
-		}
+	if err := chromedp.Do(tctx,
+		chromedp.Navigate(srv.URL),
+		chromedp.Evaluate[chromedp.Void](`localStorage.setItem('probe','中文值'); 1`),
+	); err != nil {
+		t.Fatalf("run: %v", err)
+	}
+	storJSON, err := chromedp.Run(tctx, chromedp.Evaluate[string](jsStorage))
+	if err != nil {
+		t.Fatalf("eval jsStorage: %v", err)
+	}
+	{
 		var stor map[string]map[string]string
 		if err := json.Unmarshal([]byte(storJSON), &stor); err != nil {
-			return err
+			t.Fatalf("unmarshal: %v", err)
 		}
 		t.Logf("storage: %v", stor)
 		if stor["localStorage"]["probe"] != "中文值" {
 			t.Fatalf("probe missing: %q", storJSON)
 		}
-		return nil
-	}))
-	if err != nil {
-		t.Fatalf("run: %v", err)
 	}
 }
 
@@ -75,12 +71,12 @@ func TestSelectsCapture(t *testing.T) {
 	defer ccancel()
 	tctx, tcancel := context.WithTimeout(cctx, 30*time.Second)
 	defer tcancel()
-	var selJSON string
-	if err := chromedp.Run(tctx,
-		chromedp.Navigate(srv.URL),
-		chromedp.Evaluate(jsSelects, &selJSON),
-	); err != nil {
+	if err := chromedp.Do(tctx, chromedp.Navigate(srv.URL)); err != nil {
 		t.Fatalf("run: %v", err)
+	}
+	selJSON, err := chromedp.Run(tctx, chromedp.Evaluate[string](jsSelects))
+	if err != nil {
+		t.Fatalf("eval jsSelects: %v", err)
 	}
 	var sels []map[string]interface{}
 	if err := json.Unmarshal([]byte(selJSON), &sels); err != nil {
