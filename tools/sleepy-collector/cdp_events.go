@@ -67,7 +67,18 @@ func pumpBrowserEvents[E any](ctx context.Context, ev cdp.Event[E], dispatch fun
 
 // startTabPumps 一次性挂上全域捕获所需的全部 tab 级事件订阅
 // (等价旧版 ListenTarget(c.onEventTab) + 下载/iframe 走浏览器级订阅)。
+//
+// v0.21 语义坑: Events()/BrowserEvents() 是懒初始化 — ctx 尚无 target 时,
+// 调用即触发 createTarget+attach, 且 initContextTarget 的 c.Target==nil 判空
+// 无锁。若 11 个 pump goroutine 并发首调, 会各自建一个 target (c.Target 写入
+// 竞态), 命令与事件落到不同 session: 轻则丢 body, 重则 CI 上 11×createTarget
+// 串行化拖爆超时。故先同步 attach 一次, pump 全部复用同一 target 会话。
 func (c *Collector) startTabPumps(ctx context.Context, seq int) {
+	if _, err := chromedp.Run(ctx, chromedp.Func(func(context.Context, *chromedp.Target) error {
+		return nil
+	})); err != nil {
+		return
+	}
 	dispatch := func(ev any) { c.onEventTab(seq, ev) }
 	pumpEvents(ctx, network.RequestWillBeSentExtraInfo, dispatch)
 	pumpEvents(ctx, network.WebSocketCreated, dispatch)
