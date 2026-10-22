@@ -80,6 +80,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          check-latest: true
       - uses: gradle/actions/setup-gradle@v6
       # Robolectric 的 android-all jar (~150MB, 供 JVM 像素 golden 测试用) 走
       # ~/.m2 而非 Gradle 依赖缓存, setup-gradle 不会帮你存; 不缓存则每次 PR 重下。
@@ -116,6 +117,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          check-latest: true
       - uses: gradle/actions/setup-gradle@v6
       - run: ./gradlew :app:lintDebug --stacktrace
       - uses: actions/upload-artifact@v7
@@ -132,6 +134,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          check-latest: true
       - uses: gradle/actions/setup-gradle@v6
       - name: Assemble release APK
         run: ./gradlew :app:assembleRelease --stacktrace

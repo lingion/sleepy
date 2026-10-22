@@ -34,6 +34,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          check-latest: true
       - uses: gradle/actions/setup-gradle@v6
       - name: Enable KVM
         run: |
