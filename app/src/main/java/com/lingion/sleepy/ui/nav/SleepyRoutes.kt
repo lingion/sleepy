@@ -7,7 +7,7 @@ import androidx.navigation3.runtime.NavKey
 @Serializable
 sealed interface SleepyRoute : NavKey {
     @Serializable data object Main : SleepyRoute
-    @Serializable data class AddCourse(val courseId: Long = NO_ID, val editing: Boolean = false) : SleepyRoute
+    @Serializable data class AddCourse(val courseId: Long = NO_ID, val editing: Boolean = false, val tableId: Long = NO_ID, val week: Int = 0, val day: Int = 1, val node: Int = 1, val step: Int = 1) : SleepyRoute
     @Serializable data object AllTables : SleepyRoute
     @Serializable data object CourseList : SleepyRoute
     @Serializable data class EditTable(

@@ -54,10 +54,10 @@ object WeekDisplayResolver {
         val semesterStatus = DateUtils.semesterStatus(startDate, safeMaxWeek, today)
         val actualWeek = DateUtils.currentWeek(startDate, today).coerceIn(1, safeMaxWeek)
 
-        val sourceToday = HolidayRangeOps.HolidayTransferOps.courseDateForDate(today, transfers)
-        val todayHasRemaining = sourceToday != null &&
-            DateUtils.semesterStatus(startDate, safeMaxWeek, sourceToday) == DateUtils.SemesterStatus.IN_RANGE &&
-            hasRemainingCourse(DateUtils.currentWeek(startDate, sourceToday), sourceToday, now.toLocalTime(), courses, timeJson)
+        val todayHasRemaining = HolidayRangeOps.HolidayTransferOps
+            .coursesForDate(today, startDate, safeMaxWeek, courses, transfers).any { course ->
+                courseEndMinutes(course, timeJson)?.let { it > now.hour * 60 + now.minute } ?: true
+            }
 
         val targetDate = when {
             !enabled -> today
@@ -144,23 +144,6 @@ object WeekDisplayResolver {
     }
 
     /** 今天是否还有未结束的课：course.day > today → 未来；< today → 已过；= today → 解析 endTime。 */
-    private fun hasRemainingCourse(
-        actualWeek: Int,
-        today: LocalDate,
-        now: LocalTime,
-        courses: List<CourseEntity>,
-        timeJson: String
-    ): Boolean {
-        val todayDow = today.dayOfWeek.value
-        return courses.asSequence()
-            .filter { it.inWeek(actualWeek) && it.day == todayDow }
-            .any { course ->
-                courseEndMinutes(course, timeJson)
-                    ?.let { it > now.hour * 60 + now.minute }
-                    ?: true
-            }
-    }
-
     private fun courseEndMinutes(course: CourseEntity, timeJson: String): Int? {
         val effective = TimeTableUtils.effectiveCourseTime(
             course.isIrregularTime || course.ownTime,

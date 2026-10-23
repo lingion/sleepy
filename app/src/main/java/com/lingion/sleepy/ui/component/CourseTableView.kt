@@ -57,10 +57,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.SleepyTextStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.noRippleCombinedClickable
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.ConflictLayoutEngine
@@ -118,6 +122,9 @@ data class TimeSlot(
  */
 @Composable
 fun CardsGridView(
+    onQuickAdd: ((Int, Int, Int) -> Unit)? = null,
+    quickAddState: QuickAddCourseState = remember { QuickAddCourseState() },
+    quickAddEnabled: Boolean = true,
     courses: List<CourseEntity>,
     allCourses: List<CourseEntity> = courses,
     timeSlots: List<TimeSlot>,
@@ -128,6 +135,7 @@ fun CardsGridView(
     today: Int = DateUtils.todayDayOfWeek(),
     todayDate: java.time.LocalDate = java.time.LocalDate.now(),
     onCourseClick: (CourseEntity) -> Unit,
+    onCourseLongClick: ((CourseEntity) -> Unit)? = null,
     modifier: Modifier = Modifier,
     greyDays: Set<Int> = emptySet(),  // 本周应灰显的星期几 (1-7)
     topOverrides: Map<String, Long> = emptyMap(),           // v7.10.5: 会话级置顶 override,上提到 ScheduleScreen(radio 瞬时更新写入同一真相源)
@@ -146,6 +154,10 @@ fun CardsGridView(
     pinchZoomEnabled: Boolean = false
 ) {
     val colors = MaterialTheme.colorScheme
+    LaunchedEffect(currentWeek, startDate, courses, timeSlots, visibleDays, quickAddEnabled) {
+        quickAddState.dismiss()
+    }
+    androidx.activity.compose.BackHandler(enabled = quickAddEnabled && quickAddState.selection != null) { quickAddState.dismiss() }
     // 设置页改 scale / cornerRatio 后强制 recompose
     var prefVersion by remember { mutableIntStateOf(0) }
     LaunchedEffect(Unit) {
@@ -294,6 +306,7 @@ fun CardsGridView(
     Box(
         modifier = modifier
             .fillMaxSize()
+            .dismissQuickAddOnOutsidePress(quickAddState)
             .background(colors.surfaceContainerHigh, gridBgShape)
             .padding(d(8f))
     ) {
@@ -606,7 +619,13 @@ fun CardsGridView(
                             )
                             // 透明占位：保证行宽和表头一致
                             for (day in sortedDays) {
-                                Spacer(modifier = Modifier.width(colW).fillMaxHeight())
+                                val addLabel = stringResource(R.string.occurrence_add_cell, DateUtils.localizedDay(day, context), slot.nodeStart)
+                                Spacer(modifier = Modifier.width(colW).fillMaxHeight().testTag("add-course-$day-${slot.nodeStart}").then(
+                                    if (onQuickAdd != null && quickAddEnabled && !slot.isPlaceholder) Modifier.semantics { contentDescription = addLabel }.noRippleClickable {
+                                        // Course cards above this layer consume occupied-cell taps.
+                                        quickAddState.selection = QuickAddRange(day, slot.nodeStart, slot.nodeStart)
+                                    } else Modifier
+                                ))
                             }
                         }
                     }
@@ -671,7 +690,7 @@ fun CardsGridView(
                                 // 气泡选课 = 换来看: 步数使目标层转到基准序首位(会话态)
                                 onRotationStep(clusterKey, layerPos)
                             },
-                            onCourseClick = onCourseClick,
+                            onCourseClick = onCourseClick, onCourseLongClick = onCourseLongClick,
                             colW = colW,
                             rowH = rowH,
                             maxNode = maxNode,
@@ -728,6 +747,7 @@ fun CardsGridView(
                         CourseOverlayCard(
                             course = course,
                             onClick = { onCourseClick(course) },
+                            onLongClick = onCourseLongClick?.let { callback -> { callback(course) } },
                             modifier = Modifier
                                 .offset(x = cardX, y = cardY)
                                 .width(colW)
@@ -737,6 +757,56 @@ fun CardsGridView(
                             cornerRatio = cornerRatio,
                             groupRows = courses.filter { it.groupId == course.groupId }
                         )
+                    }
+                    quickAddState.selection?.takeIf { quickAddEnabled }?.let { selected ->
+                        val startIndex = slotIndexOf(selected.startNode)
+                        val endIndex = slotIndexOf(selected.endNode)
+                        val dayIndex = sortedDays.indexOf(selected.day)
+                        if (startIndex >= 0 && endIndex >= startIndex && dayIndex >= 0) {
+                            val density = LocalDensity.current
+                            val maxStandard = timeJson?.let { json ->
+                                TimeTableUtils.parseTimeSlotRows(json).filter { it.edgeClass == null }.maxOfOrNull { it.node }
+                            } ?: timeSlots.maxOfOrNull { it.nodeEnd } ?: 12
+                            val nodes = renderSlots.filter { !it.isPlaceholder }.map { it.nodeStart }.toSet()
+                            // Edge periods are single-slot entries in the add form; standard periods may span adjacent nodes.
+                            var firstNode = selected.startNode
+                            var lastNode = selected.endNode
+                            if (selected.startNode in 1..maxStandard) {
+                                while (firstNode > 1 && firstNode - 1 in nodes) firstNode--
+                                while (lastNode < maxStandard && lastNode + 1 in nodes) lastNode++
+                            }
+                            var dragPosition by remember { mutableStateOf(0f) }
+                            QuickAddCourseCapsule(
+                                selection = selected,
+                                state = quickAddState,
+                                onConfirm = {
+                                    quickAddState.dismiss()
+                                    onQuickAdd?.invoke(selected.day, selected.startNode, selected.step)
+                                },
+                                onResizeStart = { top ->
+                                    dragPosition = with(density) {
+                                        (if (top) yOfRows(startIndex.toFloat())
+                                        else yOfRows(endIndex.toFloat()) + rowHeightAt(endIndex) - gapH).toPx()
+                                    }
+                                },
+                                onResize = { top, delta ->
+                                    dragPosition += delta
+                                    val candidates = if (top) firstNode..selected.endNode else selected.startNode..lastNode
+                                    val nearest = candidates.minByOrNull { node ->
+                                        val index = slotIndexOf(node)
+                                        val boundary = if (top) yOfRows(index.toFloat())
+                                            else yOfRows(index.toFloat()) + rowHeightAt(index) - gapH
+                                        abs(with(density) { boundary.toPx() } - dragPosition)
+                                    }
+                                    if (nearest != null) quickAddState.selection = if (top) selected.copy(startNode = nearest)
+                                        else selected.copy(endNode = nearest)
+                                },
+                                modifier = Modifier
+                                    .offset(x = timeW + gapW + (colW + gapW) * dayIndex, y = yOfRows(startIndex.toFloat()))
+                                    .width(colW)
+                                    .height(yOfRows(endIndex.toFloat()) + rowHeightAt(endIndex) - gapH - yOfRows(startIndex.toFloat()))
+                            )
+                        }
                     }
                 }
                     if (navExtra > 0.dp) Spacer(modifier = Modifier.height(navExtra))
@@ -890,6 +960,7 @@ private fun SingleTimeHeadCell(slot: TimeSlot, scale: Float = 1f, modifier: Modi
 private fun CourseOverlayCard(
     course: CourseEntity,
     onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     isGrey: Boolean = false,
     scale: Float = 1f,
@@ -939,7 +1010,7 @@ private fun CourseOverlayCard(
             .padding(sd(2f))
             .clip(shape)
             .background(effectiveBg)
-            .noRippleClickable(onClick)
+            .noRippleCombinedClickable(onClick, onLongClick)
             .padding(sd(4f))
     ) {
         if (subText.isBlank()) {
@@ -1069,6 +1140,7 @@ fun FullWeekView(
     startDate: String = "",
     currentWeek: Int = 1,
     onCourseClick: (CourseEntity) -> Unit,
+    onCourseLongClick: ((CourseEntity) -> Unit)? = null,
     modifier: Modifier = Modifier,
     greyDays: Set<Int> = emptySet(),
     showDate: Boolean = false
@@ -1114,6 +1186,8 @@ fun FullWeekView(
     ) {
         WeekStrip(
             byDay = byDay,
+            onCourseClick = onCourseClick,
+            onCourseLongClick = onCourseLongClick,
             visibleDays = visibleDays,
             today = today,
             todayDate = todayDate,
@@ -1134,7 +1208,7 @@ fun FullWeekView(
             todayDate = todayDate,
             startDate = startDate,
             currentWeek = currentWeek,
-            onCourseClick = onCourseClick,
+            onCourseClick = onCourseClick, onCourseLongClick = onCourseLongClick,
             greyDays = greyDays,
             scale = scale,
             cornerRatio = cornerRatio,
@@ -1151,6 +1225,8 @@ fun FullWeekView(
 @Composable
 private fun WeekStrip(
     byDay: Map<Int, List<CourseEntity>>,
+    onCourseClick: (CourseEntity) -> Unit,
+    onCourseLongClick: ((CourseEntity) -> Unit)?,
     today: Int,
     todayDate: java.time.LocalDate,
     startDate: String,
@@ -1183,6 +1259,8 @@ private fun WeekStrip(
             }.getOrDefault(false)
             DaySummaryCell(
                 day = day,
+                onCourseClick = onCourseClick,
+                onCourseLongClick = onCourseLongClick,
                 courses = dayCourses,
                 isToday = isToday,
                 isGrey = day in greyDays,
@@ -1215,6 +1293,8 @@ private fun WeekStrip(
 @Composable
 private fun DaySummaryCell(
     day: Int,
+    onCourseClick: (CourseEntity) -> Unit,
+    onCourseLongClick: ((CourseEntity) -> Unit)?,
     courses: List<CourseEntity>,
     isToday: Boolean,
     isGrey: Boolean = false,
@@ -1291,6 +1371,10 @@ private fun DaySummaryCell(
         ) {
             courses.take(5).forEach { c ->
                 Text(
+                    modifier = Modifier.noRippleCombinedClickable(
+                        onClick = { onCourseClick(c) },
+                        onLongClick = onCourseLongClick?.let { callback -> { callback(c) } }
+                    ),
                     text = com.lingion.sleepy.util.CourseDisplayUtil.displayName(c, useAlias),
                     style = SleepyTextStyle.micro().copy(fontSize = (9 * scale).sp, lineHeight = (11 * scale).sp),
                     color = if (isToday) colors.onPrimaryContainer.copy(alpha = SleepyTheme.Alpha.highContent) else colors.onSurfaceVariant,
@@ -1313,6 +1397,7 @@ private fun DetailPanel(
     displayMode: String,
     timeJson: String,
     onCourseClick: (CourseEntity) -> Unit,
+    onCourseLongClick: ((CourseEntity) -> Unit)? = null,
     greyDays: Set<Int> = emptySet(),
     scale: Float = 1f,
     cornerRatio: Float = 1f,
@@ -1357,7 +1442,7 @@ private fun DetailPanel(
                 days = split.first,
                 byDay = byDay, today = today, todayDate = todayDate, startDate = startDate,
                 currentWeek = currentWeek, displayMode = displayMode, timeJson = timeJson,
-                onCourseClick = onCourseClick, greyDays = greyDays,
+                onCourseClick = onCourseClick, onCourseLongClick = onCourseLongClick, greyDays = greyDays,
                 scale = scale, cornerRatio = cornerRatio,
                 dayDate = dayDate,
                 modifier = Modifier.weight(1f)
@@ -1367,7 +1452,7 @@ private fun DetailPanel(
                     days = split.second,
                     byDay = byDay, today = today, todayDate = todayDate, startDate = startDate,
                     currentWeek = currentWeek, displayMode = displayMode, timeJson = timeJson,
-                    onCourseClick = onCourseClick, greyDays = greyDays,
+                    onCourseClick = onCourseClick, onCourseLongClick = onCourseLongClick, greyDays = greyDays,
                     scale = scale, cornerRatio = cornerRatio,
                     dayDate = dayDate,
                     modifier = Modifier.weight(1f)
@@ -1394,7 +1479,7 @@ private fun DetailPanel(
                     }.getOrDefault(false),
                     displayMode = displayMode,
                     timeJson = timeJson,
-                    onCourseClick = onCourseClick,
+                    onCourseClick = onCourseClick, onCourseLongClick = onCourseLongClick,
                     isGrey = day in greyDays,
                     scale = scale,
                     cornerRatio = cornerRatio,
@@ -1417,6 +1502,7 @@ private fun DayColumn(
     displayMode: String,
     timeJson: String,
     onCourseClick: (CourseEntity) -> Unit,
+    onCourseLongClick: ((CourseEntity) -> Unit)? = null,
     greyDays: Set<Int>,
     scale: Float,
     cornerRatio: Float,
@@ -1443,7 +1529,7 @@ private fun DayColumn(
                 }.getOrDefault(false),
                 displayMode = displayMode,
                 timeJson = timeJson,
-                onCourseClick = onCourseClick,
+                onCourseClick = onCourseClick, onCourseLongClick = onCourseLongClick,
                 isGrey = day in greyDays,
                 scale = scale,
                 cornerRatio = cornerRatio,
@@ -1462,6 +1548,7 @@ private fun DetailDayCard(
     displayMode: String = "node",
     timeJson: String = "",
     onCourseClick: (CourseEntity) -> Unit,
+    onCourseLongClick: ((CourseEntity) -> Unit)? = null,
     scale: Float = 1f,
     cornerRatio: Float = 1f,
     dateStr: String? = null
@@ -1511,7 +1598,8 @@ private fun DetailDayCard(
                     if (row.laneCount == 1) {
                         LessonRow(
                             course = row.courses[0], displayMode = displayMode, timeJson = timeJson,
-                            onClick = { onCourseClick(row.courses[0]) }, isGrey = isGrey,
+                            onClick = { onCourseClick(row.courses[0]) },
+                            onLongClick = onCourseLongClick?.let { callback -> { callback(row.courses[0]) } }, isGrey = isGrey,
                             scale = scale, cornerRatio = cornerRatio,
                             groupRows = courses.filter { it.groupId == row.courses[0].groupId }
                         )
@@ -1552,6 +1640,7 @@ private fun DetailDayCard(
                                                     course = laneCourse, displayMode = displayMode,
                                                     timeJson = timeJson,
                                                     onClick = { onCourseClick(laneCourse) },
+                            onLongClick = onCourseLongClick?.let { callback -> { callback(laneCourse) } },
                                                     isGrey = isGrey, scale = scale, cornerRatio = cornerRatio,
                                                     laneScale = laneScale, hideSideLabel = hideSide,
                                                     groupRows = courses.filter { it.groupId == laneCourse.groupId }
@@ -1597,6 +1686,7 @@ private fun LessonRow(
     displayMode: String,
     timeJson: String,
     onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
     isGrey: Boolean = false,
     scale: Float = 1f,
     cornerRatio: Float = 1f,
@@ -1642,7 +1732,7 @@ private fun LessonRow(
             .fillMaxWidth()
             .clip(RoundedCornerShape(sd(12f * cornerRatio)))
             .background(effectiveBg)
-            .noRippleClickable(onClick)
+            .noRippleCombinedClickable(onClick, onLongClick)
             .padding(sd(9f)),
         horizontalArrangement = Arrangement.spacedBy(sd(8f))
     ) {

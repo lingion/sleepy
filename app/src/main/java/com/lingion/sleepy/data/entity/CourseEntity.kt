@@ -119,7 +119,10 @@ data class CourseEntity(
 
     @ColumnInfo(name = "credit") val credit: Float = 0f,
 
-    @ColumnInfo(name = "level") val level: Int = 0
+    @ColumnInfo(name = "level") val level: Int = 0,
+
+    /** ISO date of a directly scheduled occurrence; bypasses holiday transfers. */
+    @ColumnInfo(name = "fixedDate", defaultValue = "NULL") val fixedDate: String? = null
 ) {
     /** 第 N 周是否上这门课 */
     fun inWeek(week: Int): Boolean {

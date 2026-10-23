@@ -44,6 +44,7 @@ object MigrationDatabaseCodec {
         val endTime: String = "",
         val credit: Float = 0f,
         val level: Int = 0,
+        val fixedDate: String? = null,
     )
 
     @Serializable
@@ -107,7 +108,7 @@ object MigrationDatabaseCodec {
         startNode = startNode, step = step, startWeek = startWeek, endWeek = endWeek,
         type = type, color = color, colorMode = colorMode, ownTime = ownTime,
         isIrregularNode = isIrregularNode, isIrregularTime = isIrregularTime,
-        startTime = startTime, endTime = endTime, credit = credit, level = level,
+        startTime = startTime, endTime = endTime, credit = credit, level = level, fixedDate = fixedDate,
     )
 
     fun TimeTableEntity.toRow() = TimeTableRow(
@@ -134,7 +135,7 @@ object MigrationDatabaseCodec {
         startNode = startNode, step = step, startWeek = startWeek, endWeek = endWeek,
         type = type, color = color, colorMode = colorMode, ownTime = ownTime,
         isIrregularNode = isIrregularNode, isIrregularTime = isIrregularTime,
-        startTime = startTime, endTime = endTime, credit = credit, level = level,
+        startTime = startTime, endTime = endTime, credit = credit, level = level, fixedDate = fixedDate,
     )
 
     fun TimeTableRow.toEntity() = TimeTableEntity(

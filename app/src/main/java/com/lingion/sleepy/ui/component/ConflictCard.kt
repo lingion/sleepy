@@ -62,6 +62,7 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.SleepyTextStyle
+import com.lingion.sleepy.ui.theme.noRippleCombinedClickable
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.ConflictCluster
@@ -457,6 +458,7 @@ fun ConflictClusterCard(
     topOverrideId: Long?,
     onPickTop: (Long?) -> Unit,
     onCourseClick: (CourseEntity) -> Unit,
+    onCourseLongClick: ((CourseEntity) -> Unit)? = null,
     colW: Dp,
     rowH: Dp,
     maxNode: Int,
@@ -528,6 +530,10 @@ fun ConflictClusterCard(
     val hiddenLayerN = ConflictLayoutEngine.hiddenLayerCount(layerCount)
     val showBadge = conflictShowBadge(layerCount, hiddenLayerN)
     var showPicker by rememberSaveable { mutableStateOf(false) }
+    var pickingOccurrence by rememberSaveable { mutableStateOf(false) }
+    val chooseOccurrence: (() -> Unit)? = if (onCourseLongClick == null) null else {
+        { pickingOccurrence = true; showPicker = true }
+    }
 
     // 绘制序(评审 Critical 修复): 非顶卡(zRank 降序) → 顶卡 → hidden 课 Mark 命中区(overlay 层)。
     val drawOrder = overlayMarkOrder(drawList)
@@ -705,6 +711,7 @@ fun ConflictClusterCard(
                 ConflictCourseCard(
                     course = c,
                     onClick = { onCourseClick(c) },
+                    onLongClick = onCourseLongClick?.let { callback -> { callback(c) } },
                     modifier = Modifier
                         .offset(x = laneW * lane, y = cardYOf(c))
                         .width(laneW)
@@ -751,6 +758,7 @@ fun ConflictClusterCard(
                         ConflictCourseCard(
                             course = course,
                             onClick = { onCourseClick(course) },
+                            onLongClick = onCourseLongClick?.let { callback -> { callback(course) } },
                             modifier = Modifier
                                 .offset(x = topRect.x, y = topRect.y)
                                 .width(topRect.width)
@@ -773,9 +781,10 @@ fun ConflictClusterCard(
                                     .offset(x = r.x, y = r.y)
                                     .width(r.width)
                                     .height(r.height)
-                                    .noRippleClickable {
-                                        if (layerCount >= 3) switchTap() else onPickTop(layerRepOf(course.id) ?: course.id)
-                                    }
+                                    .noRippleCombinedClickable(
+                                        onClick = { if (layerCount >= 3) switchTap() else onPickTop(layerRepOf(course.id) ?: course.id) },
+                                        onLongClick = onCourseLongClick?.let { callback -> { callback(course) } }
+                                    )
                             )
                             return@forEach
                         }
@@ -791,6 +800,7 @@ fun ConflictClusterCard(
                             ConflictCourseCard(
                                 course = course,
                                 onClick = { if (layerCount >= 3) switchTap() else onPickTop(layerRepOf(course.id) ?: course.id) },
+                                onLongClick = onCourseLongClick?.let { callback -> { callback(course) } },
                                 modifier = Modifier.fillMaxSize(),
                                 isGrey = isGrey,
                                 shape = cardShape,
@@ -824,9 +834,10 @@ fun ConflictClusterCard(
                                     .offset(x = hit.x, y = hit.y)
                                     .width(hit.width)
                                     .height(hit.height)
-                                    .noRippleClickable {
-                                        if (layerCount >= 3) switchTap() else onPickTop(layerRepOf(item.hiddenCourseId) ?: item.hiddenCourseId)
-                                    }
+                                    .noRippleCombinedClickable(
+                                        onClick = { if (layerCount >= 3) switchTap() else onPickTop(layerRepOf(item.hiddenCourseId) ?: item.hiddenCourseId) },
+                                        onLongClick = chooseOccurrence
+                                    )
                             )
                         }
                         ConflictVariant.FOLD -> {
@@ -840,9 +851,10 @@ fun ConflictClusterCard(
                                     .offset(x = colW - hit.first, y = cardYOf(topCourse))
                                     .width(hit.first)
                                     .height(hit.second)
-                                    .noRippleClickable {
-                                        if (layerCount >= 3) switchTap() else onPickTop(layerRepOf(item.hiddenCourseId) ?: item.hiddenCourseId)
-                                    }
+                                    .noRippleCombinedClickable(
+                                        onClick = { if (layerCount >= 3) switchTap() else onPickTop(layerRepOf(item.hiddenCourseId) ?: item.hiddenCourseId) },
+                                        onLongClick = chooseOccurrence
+                                    )
                             )
                         }
                         ConflictVariant.RAIL -> {
@@ -864,9 +876,10 @@ fun ConflictClusterCard(
                                     .offset(x = hit.x, y = hit.y)
                                     .width(hit.width)
                                     .height(hit.height)
-                                    .noRippleClickable {
-                                        if (layerCount >= 3) switchTap() else onPickTop(layerRepOf(item.hiddenCourseId) ?: item.hiddenCourseId)
-                                    }
+                                    .noRippleCombinedClickable(
+                                        onClick = { if (layerCount >= 3) switchTap() else onPickTop(layerRepOf(item.hiddenCourseId) ?: item.hiddenCourseId) },
+                                        onLongClick = chooseOccurrence
+                                    )
                             )
                         }
                         ConflictVariant.NONE -> Unit
@@ -930,7 +943,10 @@ fun ConflictClusterCard(
                             )
                             .width(hit.first)
                             .height(hit.second)
-                            .noRippleClickable { if (layerCount >= 3) switchTap() else onPickTop(switchTarget) }
+                            .noRippleCombinedClickable(
+                                onClick = { if (layerCount >= 3) switchTap() else onPickTop(switchTarget) },
+                                onLongClick = chooseOccurrence
+                            )
                     )
                 }
             }
@@ -973,7 +989,8 @@ fun ConflictClusterCard(
             val styleIsFold = form == ConflictVariant.FOLD
             ConflictBadge(
                 hiddenCount = hiddenLayerN,
-                onClick = { showPicker = true },
+                onClick = { pickingOccurrence = false; showPicker = true },
+                onLongClick = chooseOccurrence,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .offset(
@@ -989,10 +1006,13 @@ fun ConflictClusterCard(
             courses = drawList.map { it.course },
             layerRepIdOfCourse = layerRepIdOfCourse,
             topRepId = (rotationLayerOrder ?: baselineOrderIds).first(),
-            onDismiss = { showPicker = false },
+            onDismiss = { showPicker = false; pickingOccurrence = false },
             onPick = { id ->
                 showPicker = false
-                if (clusterLayerCount >= 3) {
+                if (pickingOccurrence) {
+                    pickingOccurrence = false
+                    drawList.firstOrNull { it.course.id == id }?.course?.let { onCourseLongClick?.invoke(it) }
+                } else if (clusterLayerCount >= 3) {
                     // v7.10.16r: 气泡选课 = 「换来看」— 轮换步数使该课所在层转到基准序
                     // 首位,会话态不落盘(层内任一成员反查层代表)。基准序是置顶感知序,
                     // target=0 表示该层已在基准首位 → 步数 0 = 清轮换回基准,语义自洽。
@@ -1041,6 +1061,7 @@ private fun DashOutline(color: Color, modifier: Modifier = Modifier) {
 private fun ConflictCourseCard(
     course: CourseEntity,
     onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     isGrey: Boolean = false,
     shape: Shape = SleepyTheme.shapes.medium,
@@ -1080,7 +1101,7 @@ private fun ConflictCourseCard(
             .clip(shape)
             .background(effectiveBg)
             .border(CARD_BORDER_DP.dp, conflictBorderColor(effectiveBg), shape)
-            .noRippleClickable(onClick)
+            .noRippleCombinedClickable(onClick, onLongClick)
             .padding(4.dp)
     ) {
         if (subText.isBlank()) {
@@ -1143,7 +1164,7 @@ private fun ConflictCourseCard(
  * 宽度随文案自适应(1 位数圆形,2 位数横向胶囊),仍为中性浮起样式。
  */
 @Composable
-private fun ConflictBadge(hiddenCount: Int, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun ConflictBadge(hiddenCount: Int, onClick: () -> Unit, modifier: Modifier = Modifier, onLongClick: (() -> Unit)? = null) {
     val colors = MaterialTheme.colorScheme
     val single = hiddenCount in 0..9
     Box(
@@ -1154,7 +1175,7 @@ private fun ConflictBadge(hiddenCount: Int, onClick: () -> Unit, modifier: Modif
             )
             .clip(RoundedCornerShape(50))
             .background(colors.surface)
-            .noRippleClickable(onClick),
+            .noRippleCombinedClickable(onClick, onLongClick),
         contentAlignment = Alignment.Center
     ) {
         Text(

@@ -217,6 +217,7 @@ internal fun SleepyNavHost(
                     setCurrentTab(Tab.Schedule)
                 },
                 editingCourse = editingCourse,
+                initialSlot = if (key.week > 0) com.lingion.sleepy.ui.screen.edit.InitialCourseSlot(key.tableId, key.week, key.day, key.node, key.step) else null,
             )
         }
 
@@ -577,6 +578,7 @@ private fun MainRoute(
                         onViewModeChange = onScheduleViewModeChange,
                         onGoImport = onTabletGoImport,
                         onManualAdd = onTabletManualAdd,
+                        onAddAt = navigator::openAddCourseAt,
                         onCreateTable = onCreateNewTable,
                         onEditCourse = onTabletEditCourse,
                         viewModel = mainVm,

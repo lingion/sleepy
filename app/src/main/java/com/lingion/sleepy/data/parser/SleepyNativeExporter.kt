@@ -237,9 +237,10 @@ object SleepyNativeExporter {
         }
         sb.append('|').append(token)
         // issue#26: 可选第 11 列 = 课程别名(escape 后写入); 空别名不写列(文件形状与既有 v1 完全一致)
-        if (c.alias.isNotBlank()) {
+        if (c.alias.isNotBlank() || c.fixedDate != null) {
             sb.append('|').append(SleepyNativeFormat.escape(c.alias.trim()))
         }
+        c.fixedDate?.let { sb.append('|').append(it) }
         return sb.toString()
     }
 

@@ -481,6 +481,9 @@ internal object SleepyNativeParser {
         // issue#26: 可选第 11 列 = 课程别名。缺列/空值 → ""(向后兼容既有 v1 文件);
         // 形状宽容(自由文本无非法态), 空白归一为 ""。
         val alias = if (cols.size >= 11) text(10) else ""
+        val fixedDate = if (cols.size >= 12 && text(11).isNotBlank()) {
+            runCatching { java.time.LocalDate.parse(text(11)).toString() }.getOrNull()
+        } else null
 
         courses.add(
             CourseEntity(
@@ -489,6 +492,7 @@ internal object SleepyNativeParser {
                 tableId = defaultTableId,
                 courseName = name,
                 alias = alias,
+                fixedDate = fixedDate,
                 teacher = teacher,
                 room = room,
                 note = note,

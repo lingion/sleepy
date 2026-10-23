@@ -10,14 +10,14 @@ import java.io.File
 class RoomSchemaContractTest {
     private val schema by lazy {
         val root = System.getProperty("sleepy.test.root") ?: error("sleepy.test.root is required")
-        val file = File(root, "app/schemas/com.lingion.sleepy.data.AppDatabase/12.json")
+        val file = File(root, "app/schemas/com.lingion.sleepy.data.AppDatabase/13.json")
         assertTrue("Room schema must be generated at $file", file.isFile)
         JSONObject(file.readText()).getJSONObject("database")
     }
 
     @Test
     fun exportedSchemaMatchesDatabaseVersionAndEntitySet() {
-        assertEquals(12, schema.getInt("version"))
+        assertEquals(13, schema.getInt("version"))
         val names = buildSet {
             val entities = schema.getJSONArray("entities")
             for (i in 0 until entities.length()) add(entities.getJSONObject(i).getString("tableName"))
@@ -38,6 +38,12 @@ class RoomSchemaContractTest {
             }
         }
         val timeTables = byName.getValue("time_tables")
+        val courseFields = byName.getValue("courses").getJSONArray("fields")
+        val fixedDate = (0 until courseFields.length()).map(courseFields::getJSONObject)
+            .single { it.getString("columnName") == "fixedDate" }
+        assertEquals("TEXT", fixedDate.getString("affinity"))
+        assertEquals(false, fixedDate.optBoolean("notNull", false))
+        assertEquals("NULL", fixedDate.getString("defaultValue"))
         val timeColumns = buildSet {
             val fields = timeTables.getJSONArray("fields")
             for (i in 0 until fields.length()) add(fields.getJSONObject(i).getString("columnName"))
@@ -60,7 +66,7 @@ class RoomSchemaContractTest {
 
     @Test
     fun migrationChainIsContinuousAndReachesExportedSchemaVersion() {
-        assertEquals(12, schema.getInt("version"))
+        assertEquals(13, schema.getInt("version"))
         assertEquals(3, ALL_MIGRATIONS.first().startVersion)
         ALL_MIGRATIONS.forEachIndexed { index, migration ->
             assertEquals(migration.startVersion + 1, migration.endVersion)

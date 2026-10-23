@@ -1,6 +1,7 @@
 package com.lingion.sleepy.ui.theme
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -16,6 +17,15 @@ fun Modifier.noRippleClickable(onClick: () -> Unit): Modifier = composed {
         interactionSource = remember { MutableInteractionSource() },
         indication = null,
         onClick = onClick
+    )
+}
+
+fun Modifier.noRippleCombinedClickable(onClick: () -> Unit, onLongClick: (() -> Unit)?): Modifier = composed {
+    combinedClickable(
+        interactionSource = remember { MutableInteractionSource() },
+        indication = null,
+        onClick = onClick,
+        onLongClick = onLongClick,
     )
 }
 

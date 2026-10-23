@@ -295,14 +295,7 @@ class CourseNotificationScheduler private constructor(
         val days = mutableListOf<Pair<LocalDate, List<CourseEntity>>>()
         for (offset in 0 until BEFORE_CLASS_WINDOW_DAYS) {
             val date = today.plusDays(offset.toLong())
-            val sourceDate = dataSource.courseDateForDate(table.id, date)
-            if (sourceDate == null || DateUtils.semesterStatus(table.startDate, table.maxWeek, sourceDate)
-                    != DateUtils.SemesterStatus.IN_RANGE || !dataSource.allowsReminder(table.id, date)) {
-                days += date to emptyList()
-                continue
-            }
-            val week = DateUtils.currentWeek(table.startDate, sourceDate)
-            days += date to dataSource.coursesForDay(table.id, sourceDate.dayOfWeek.value).filter { it.inWeek(week) }
+            days += date to if (dataSource.allowsReminder(table.id, date)) dataSource.coursesOn(table, date) else emptyList()
 
         }
 
@@ -385,15 +378,8 @@ class CourseNotificationScheduler private constructor(
                     .decide(app, today, table.id)
                     .allowReminder
             ) return@forEach
-            // 取课走反向查: 补班日=sourceDate 的课, 放假日=null(无课, 跳过该表)
-            val sourceDate = com.lingion.sleepy.widget.HolidayTransferHelper.courseDateForDate(app, table.id, today)
-                ?: return@forEach
-            val week = DateUtils.currentWeek(table.startDate, sourceDate)
-            // 防呆: 学期范围外不触发流体云(钳制周数会误匹配第 1 周的课)
-            if (DateUtils.semesterStatus(table.startDate, table.maxWeek, sourceDate) != DateUtils.SemesterStatus.IN_RANGE) return@forEach
             val nodes = TimeTableUtils.parseNodes(table.timeJson)
-            repo.getCoursesByDayOnce(table.id, sourceDate.dayOfWeek.value)
-                .filter { it.inWeek(week) }
+            repo.getCoursesForDate(table, today)
                 .forEach { c ->
                     val st = if (c.ownTime && c.startTime.isNotBlank()) c.startTime
                         else nodes.find { it.node == c.startNode }?.let { String.format("%02d:%02d", it.start.hour, it.start.minute) }
@@ -483,6 +469,13 @@ internal interface BeforeClassDataSource {
     suspend fun resolveReminderTables(): List<TimeTableEntity> =
         resolveCurrentTable()?.let { t -> if (t.reminderEnabled) listOf(t) else emptyList() } ?: emptyList()
     suspend fun coursesForDay(tableId: Long, dayOfWeek: Int): List<CourseEntity>
+    suspend fun coursesOn(table: TimeTableEntity, date: LocalDate): List<CourseEntity> {
+        val source = courseDateForDate(table.id, date)
+        val fixed = coursesForDay(table.id, date.dayOfWeek.value).filter { it.fixedDate == date.toString() }
+        if (source == null || DateUtils.semesterStatus(table.startDate, table.maxWeek, source) != DateUtils.SemesterStatus.IN_RANGE) return fixed
+        val week = DateUtils.currentWeek(table.startDate, source)
+        return coursesForDay(table.id, source.dayOfWeek.value).filter { it.fixedDate == null && it.inWeek(week) } + fixed
+    }
     suspend fun allCourseIds(): List<Long>
     /** 取课语义(反向查): 补班日=sourceDate 星期, 放假日=null(无课), 未映射=自然星期 */
     fun courseDateForDate(tableId: Long?, date: LocalDate): LocalDate?

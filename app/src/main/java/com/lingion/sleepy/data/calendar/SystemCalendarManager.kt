@@ -387,9 +387,10 @@ object SystemCalendarManager {
             val selected = HolidayRangeOps.HolidayTransferOps.coursesForDate(
                 date, table.startDate, table.maxWeek, courses, transfers
             )
-            val week = DateUtils.currentWeek(table.startDate, sourceDate ?: date)
-            val classDay = (sourceDate ?: date).dayOfWeek.value
             selected.forEach { course ->
+                val courseDate = if (course.fixedDate != null) date else sourceDate ?: date
+                val week = DateUtils.currentWeek(table.startDate, courseDate)
+                val classDay = courseDate.dayOfWeek.value
                 val interval = TimeTableUtils.effectiveCourseTime(course.isIrregularTime, course.startTime,
                     course.endTime, course.startNode, course.step, table.timeJson)
                 val start = interval?.first?.let { runCatching { LocalTime.parse(it) }.getOrNull() }
@@ -397,7 +398,7 @@ object SystemCalendarManager {
                 if (start == null || end == null || !end.isAfter(start)) {
                     invalid++
                 } else {
-                    val transferred = sourceDate != date
+                    val transferred = course.fixedDate == null && sourceDate != date
                     val marker = "$SLEEPY_MARKER_PREFIX${table.id}:${course.id}:${DateUtils.fullDate(date)}"
                     val description = buildString {
                         append("第${week}周 · 第${course.startNode}—${course.startNode + course.step - 1}节")

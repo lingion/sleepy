@@ -36,6 +36,7 @@ object ScheduleExporter {
                     put("startWeek", c.startWeek)
                     put("endWeek", c.endWeek)
                     put("type", c.type)
+                    c.fixedDate?.let { put("fixedDate", it) }
                     put("color", c.color)
                     // issue#55: 非标准时间课程往返保真 — startTime/endTime 为该卡覆盖值,
                     // 丢了导入端会退化成按节次定位(用户实测 20:50-22:00 变 11-12 节)
@@ -77,6 +78,7 @@ object ScheduleExporter {
                     put("startWeek", c.startWeek)
                     put("endWeek", c.endWeek)
                     put("type", c.type)
+                    c.fixedDate?.let { put("fixedDate", it) }
                     put("color", c.color)
                     // issue#55: 非标准时间课程往返保真, 同 exportWakeUpJson
                     if (c.ownTime && c.startTime.isNotBlank() && c.endTime.isNotBlank()) {
@@ -100,7 +102,7 @@ object ScheduleExporter {
     }
 
     /** 导出 ICS 日历 */
-    fun exportIcs(table: TimeTableEntity, courses: List<CourseEntity>): String {
+    fun exportIcs(table: TimeTableEntity, courses: List<CourseEntity>, transfers: List<com.lingion.sleepy.util.HolidayTransferEntry> = emptyList()): String {
         val sb = StringBuilder()
         sb.appendLine("BEGIN:VCALENDAR")
         sb.appendLine("VERSION:2.0")
@@ -114,7 +116,12 @@ object ScheduleExporter {
             .with(java.time.DayOfWeek.MONDAY)
         val nodeStartTimes = parseNodeTimes(table.timeJson)
 
-        for (c in courses) {
+        val exported = if (transfers.isEmpty()) courses else com.lingion.sleepy.util.CourseOccurrences.dates(table, transfers).flatMap { date ->
+            com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(
+                date, table.startDate, table.maxWeek, courses, transfers
+            ).map { it.copy(fixedDate = date.toString()) }
+        }
+        for (c in exported) {
             // 单双周(type=1 单周/2 双周)按起止周奇偶选第一个实际发生周
             val firstWeek = when (c.type) {
                 1 -> if (c.startWeek % 2 == 1) c.startWeek else c.startWeek + 1
@@ -124,9 +131,9 @@ object ScheduleExporter {
             // 起止周奇偶不符导致无实际发生周时跳过,避免生成错误事件
             if (firstWeek > c.endWeek) continue
 
-            val startDate = start.plusWeeks((firstWeek - 1).toLong())
+            val startDate = c.fixedDate?.let(java.time.LocalDate::parse) ?: start.plusWeeks((firstWeek - 1).toLong())
                 .plusDays((c.day - 1).toLong())
-            val endDate = start.plusWeeks((c.endWeek - 1).toLong())
+            val endDate = if (c.fixedDate != null) startDate else start.plusWeeks((c.endWeek - 1).toLong())
                 .plusDays((c.day - 1).toLong())
 
             // ownTime 课程用自身自定义时间,否则按节次反查
@@ -153,11 +160,13 @@ object ScheduleExporter {
             val until = ";UNTIL=${endDate.toString().replace("-", "")}T235959Z"
 
             sb.appendLine("BEGIN:VEVENT")
-            sb.appendLine("UID:${c.id}-${c.courseName.hashCode()}@sleepy")
+            sb.appendLine("UID:${c.id}-${c.courseName.hashCode()}${c.fixedDate?.let { "-$it" }.orEmpty()}@sleepy")
             sb.appendLine("DTSTAMP:${java.time.ZonedDateTime.now(java.time.ZoneOffset.UTC).toString().replace(Regex("[^0-9TZ]"), "").take(15)}Z")
             sb.appendLine("DTSTART:$dtStart")
             sb.appendLine("DTEND:$dtEnd")
-            if (byDay != null) {
+            if (c.fixedDate != null) {
+                // A concrete date is a single event, including transferred occurrences.
+            } else if (byDay != null) {
                 sb.appendLine("RRULE:FREQ=WEEKLY;BYDAY=$byDay$interval$until")
             } else {
                 sb.appendLine("RRULE:FREQ=WEEKLY$interval$until")

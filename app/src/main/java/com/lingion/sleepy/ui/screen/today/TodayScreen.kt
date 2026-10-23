@@ -73,9 +73,11 @@ fun TodayScreen(
         DateUtils.semesterStatus(it.startDate, it.maxWeek, courseDate ?: today)
     } ?: DateUtils.SemesterStatus.IN_RANGE
     val isOutOfSemester = semesterStatus != DateUtils.SemesterStatus.IN_RANGE
-    val todayCourses = if (isOutOfSemester || dayOfWeek == null) emptyList() else state.courses.filter {
-        it.day == dayOfWeek && it.inWeek(actualWeek)
-    }.let { list ->
+    val todayCourses = (state.currentTable?.let { table ->
+        com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(
+            today, table.startDate, table.maxWeek, state.courses, state.transfers
+        )
+    } ?: emptyList()).let { list ->
         // 用户报障 2026-09-10: ownTime 课渲染前按真实时间归一化节点(与网格同一预处理),
         // 落库的表单占位节点不再影响今日页分组与显示。
         val tj = state.effectiveCurrentTable?.timeJson
@@ -200,9 +202,11 @@ fun CompactTodayPane(
         DateUtils.semesterStatus(it.startDate, it.maxWeek, courseDate ?: today)
     } ?: DateUtils.SemesterStatus.IN_RANGE
     val isOutOfSemester = semesterStatus != DateUtils.SemesterStatus.IN_RANGE
-    val todayCourses = if (isOutOfSemester || dayOfWeek == null) emptyList() else state.courses.filter {
-        it.day == dayOfWeek && it.inWeek(actualWeek)
-    }.let { list ->
+    val todayCourses = (state.currentTable?.let { table ->
+        com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(
+            today, table.startDate, table.maxWeek, state.courses, state.transfers
+        )
+    } ?: emptyList()).let { list ->
         val tj = state.effectiveCurrentTable?.timeJson
         if (tj == null) list else list.map { c -> c.normalizeNode(tj) }
     }.sortedBy { it.startNode }

@@ -191,8 +191,15 @@ val ALL_MIGRATIONS: Array<Migration> = arrayOf(
     MIGRATION_8_9,
     MIGRATION_9_10,
     MIGRATION_10_11,
-    MIGRATION_11_12
+    MIGRATION_11_12,
+    object : Migration(12, 13) {
+        override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+            db.execSQL(MIGRATION_12_13_SQL)
+        }
+    }
 )
+
+internal const val MIGRATION_12_13_SQL = "ALTER TABLE courses ADD COLUMN fixedDate TEXT DEFAULT NULL"
 
 /** issue#26: v5→v6 逐条 SQL — 单一事实来源, CourseAliasMigrationTest 用 sqlite-jdbc 直接执行同一份 */
 

@@ -26,17 +26,18 @@ internal object WidgetCompactWindow {
     ): List<DayData> {
         val anchorDate = displayDate ?: today
         val dates = WidgetBitmapRenderers.compactWindowDates(today, todayFirst, anchorDate)
+        val rows = repo.getCourses(tableId)
         return dates.map { effectiveDate ->
             val sourceDate = HolidayTransferHelper.courseDateForDate(
                 com.lingion.sleepy.SleepyApp.get(), tableId, effectiveDate
             )
             val week = DateUtils.currentWeek(startDate, sourceDate ?: effectiveDate)
-            val inSemester = sourceDate != null && (
-                DateUtils.semesterStatus(startDate, maxWeek, sourceDate) == DateUtils.SemesterStatus.IN_RANGE ||
-                (sourceDate == effectiveDate && DateUtils.semesterStatus(startDate, maxWeek, sourceDate) == DateUtils.SemesterStatus.BEFORE_START)
-            )
-            val visible = if (!inSemester) emptyList()
-                else repo.getCoursesByDayOnce(tableId, sourceDate!!.dayOfWeek.value).filter { it.inWeek(week) }.sortedBy { it.startNode }
+            val visible = if (sourceDate == effectiveDate && DateUtils.semesterStatus(startDate, maxWeek, effectiveDate) == DateUtils.SemesterStatus.BEFORE_START) {
+                rows.filter { it.fixedDate == null && it.day == effectiveDate.dayOfWeek.value && it.inWeek(week) }
+            } else com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(
+                effectiveDate, startDate, maxWeek, rows,
+                com.lingion.sleepy.util.AppPrefs.getHolidayTransfers(com.lingion.sleepy.SleepyApp.get(), tableId)
+            ).sortedBy { it.startNode }
             DayData(
                 date = effectiveDate,
                 dayOfWeek = effectiveDate.dayOfWeek.value,

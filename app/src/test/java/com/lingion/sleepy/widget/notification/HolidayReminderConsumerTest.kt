@@ -102,7 +102,8 @@ class HolidayReminderConsumerTest {
         // 2026-10 每表独立提醒: 流体云改为扫描全部开启提醒的课表, 取窗口内最早的一节
         assertTrue(ensure.contains("val (hit, table) = best ?: return false"))
         assertTrue(normalized(ensure).contains(".allowReminder ) return@forEach"))
-        assertTrue(ensure.contains("!= DateUtils.SemesterStatus.IN_RANGE) return@forEach"))
+        // The shared occurrence resolver checks the source semester, including transfers beyond its end.
+        assertTrue(ensure.contains("getCoursesForDate(table, today)"))
         assertTrue(ensure.contains("best ?: return false"))
         val normalizedEnsure = normalized(ensure)
         assertTrue(normalizedEnsure.contains("startForegroundService(app, svc)"))

@@ -19,7 +19,8 @@ data class RowKey(
     val endWeek: Int,
     val type: Int,
     val room: String,
-    val teacher: String
+    val teacher: String,
+    val fixedDate: String? = null
 ) {
     companion object {
         fun of(c: CourseEntity) = RowKey(
@@ -30,7 +31,8 @@ data class RowKey(
             endWeek = c.endWeek,
             type = c.type,
             room = c.room,
-            teacher = c.teacher
+            teacher = c.teacher,
+            fixedDate = c.fixedDate
         )
     }
 }

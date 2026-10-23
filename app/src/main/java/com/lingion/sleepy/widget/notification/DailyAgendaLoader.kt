@@ -24,17 +24,7 @@ internal suspend fun loadDailyAgenda(context: Context, targetDate: LocalDate): L
     val suppressed = enabledTables.isNotEmpty() && activeTables.isEmpty()
 
     val summaries = activeTables.map { table ->
-        // 取课走反向查: 补班日=sourceDate 的课, 放假日=null(无课)
-        val sourceDate = com.lingion.sleepy.widget.HolidayTransferHelper.courseDateForDate(app, table.id, targetDate)
-        val week = DateUtils.currentWeek(table.startDate, sourceDate ?: targetDate)
-        val inSemester = DateUtils.semesterStatus(table.startDate, table.maxWeek, sourceDate ?: targetDate) ==
-            DateUtils.SemesterStatus.IN_RANGE
-        val courses = if (!inSemester || sourceDate == null) {
-            emptyList()
-        } else {
-            repo.getCoursesByDayOnce(table.id, sourceDate.dayOfWeek.value)
-                .filter { it.inWeek(week) }
-        }
+        val courses = repo.getCoursesForDate(table, targetDate)
         DailyTableCourses(table, courses)
     }
     return LoadedDailyAgenda(buildDailyAgenda(targetDate, buildDailyScheduleSummary(summaries), enabledTables), suppressed)

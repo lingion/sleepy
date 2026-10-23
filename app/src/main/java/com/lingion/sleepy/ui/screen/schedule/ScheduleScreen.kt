@@ -68,6 +68,7 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.ui.component.CardsGridView
+import com.lingion.sleepy.ui.component.dismissQuickAddOnOutsidePress
 import com.lingion.sleepy.ui.component.CourseDetailSheet
 import com.lingion.sleepy.ui.component.FullWeekView
 import com.lingion.sleepy.ui.component.SectionHead
@@ -94,12 +95,14 @@ fun ScheduleScreen(
     onViewModeChange: (ViewMode) -> Unit,
     onGoImport: () -> Unit = {},
     onManualAdd: () -> Unit = {},
+    onAddAt: (Long, Int, Int, Int, Int) -> Unit = { _, _, _, _, _ -> },
     onCreateTable: () -> Unit = {},
     onEditCourse: (CourseEntity) -> Unit = {},
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
+    var selectedOccurrence by remember { mutableStateOf<com.lingion.sleepy.util.CourseOccurrence?>(null) }
     var selectedCourse by remember { mutableStateOf<CourseEntity?>(null) }
     // v7.10.5 会话级置顶 override — 网格 onPickTop 与详情弹窗 radio 共用真相源。
     // radio 点击 → 这里瞬时换层(同帧) + AppPrefs 持久化(跨会话),两条通道一次写齐。
@@ -129,11 +132,13 @@ fun ScheduleScreen(
     var savedRowScale by remember(state.selectedTableId) { mutableFloatStateOf(AppPrefs.getGridRowScale(context)) }
     val scaleUncommitted = kotlin.math.abs(rowHeightScale - savedRowScale) > 0.001f
 
+    val quickAddState = remember(state.selectedTableId, state.selectedWeek) { com.lingion.sleepy.ui.component.QuickAddCourseState() }
+    LaunchedEffect(viewMode) { quickAddState.dismiss() }
     val hasTable = state.tables.isNotEmpty()
     val hasCourses = state.courses.isNotEmpty()
 
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize().dismissQuickAddOnOutsidePress(quickAddState)
     ) {
         if (!hasTable) {
             // 真的没表：导入或建表 (不用加课 — 无表载体时加课无从谈起)
@@ -328,18 +333,39 @@ fun ScheduleScreen(
                         startDate = state.currentTable?.startDate ?: "",
                         currentWeek = page + 1,
                         onCourseClick = { selectedCourse = it },
+                        onCourseLongClick = { projected ->
+                            val table = state.currentTable
+                            val original = state.courses.firstOrNull { it.id == projected.id }
+                            if (table != null && original != null) {
+                                selectedOccurrence = com.lingion.sleepy.util.CourseOccurrences.resolve(
+                                    original, DateUtils.dateOfWeek(table.startDate, page + 1, projected.day), state.transfers
+                                )
+                            }
+                        },
                         greyDays = greyDays,
                         showDate = showDate
                     )
                     ViewMode.Cards -> CardsGridView(
                         courses = renderCourses,
                         allCourses = state.courses,
+                        onQuickAdd = { day, node, step -> state.currentTable?.let { onAddAt(it.id, page + 1, day, node, step) } },
+                        quickAddState = quickAddState,
+                        quickAddEnabled = page == pagerState.currentPage && !pagerState.isScrollInProgress,
                         timeSlots = TimeTableUtils.timeSlotsFor(state.effectiveCurrentTable),
                         visibleDays = visibleDays,
                         showDate = showDate,
                         startDate = state.currentTable?.startDate ?: "",
                         currentWeek = page + 1,
                         onCourseClick = { selectedCourse = it },
+                        onCourseLongClick = { projected ->
+                            val table = state.currentTable
+                            val original = state.courses.firstOrNull { it.id == projected.id }
+                            if (table != null && original != null) {
+                                selectedOccurrence = com.lingion.sleepy.util.CourseOccurrences.resolve(
+                                    original, DateUtils.dateOfWeek(table.startDate, page + 1, projected.day), state.transfers
+                                )
+                            }
+                        },
                         greyDays = greyDays,
                         topOverrides = topOverrides,
                         onSetTopOverride = ::setTopOverride,
@@ -360,6 +386,13 @@ fun ScheduleScreen(
             }
         }
 
+        selectedOccurrence?.let { occurrence ->
+            state.effectiveCurrentTable?.takeIf { it.id == occurrence.course.tableId }?.let { table ->
+                androidx.compose.runtime.key(occurrence) {
+                    com.lingion.sleepy.ui.screen.edit.OccurrenceEditor(occurrence, table) { selectedOccurrence = null }
+                }
+            }
+        }
         // 详情 Bottom Sheet
         // v7.10.16q: allCourses 必须与网格同周域(state.selectedWeek 过滤) —
         // 此前传全周课程, ICS 往返/换教师拆出的周次不相交同行(如周四 8-10 的

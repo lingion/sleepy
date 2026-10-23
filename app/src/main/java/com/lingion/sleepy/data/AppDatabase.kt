@@ -19,7 +19,7 @@ import com.lingion.sleepy.data.entity.TimeTableEntity
 
 @Database(
     entities = [CourseEntity::class, TimeTableEntity::class, PeriodTableEntity::class, ImportDraftEntity::class, CalendarImportRecordEntity::class, CourseColorEntity::class],
-    version = 12,                           // 11 → 12: course_colors 持久色相表 (spec-course-color-harmony §3)
+    version = 13,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {

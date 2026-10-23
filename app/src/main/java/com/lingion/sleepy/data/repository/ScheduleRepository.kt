@@ -575,6 +575,91 @@ class ScheduleRepository(private val db: AppDatabase) {
         pruneDefaultTopPrefs()
     }
 
+    suspend fun getCoursesForDate(table: TimeTableEntity, date: java.time.LocalDate): List<CourseEntity> =
+        com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(
+            date, table.startDate, table.maxWeek, courseDao.getByTable(table.id),
+            AppPrefs.getHolidayTransfers(SleepyApp.get(), table.id)
+        )
+
+    suspend fun saveCourseDraft(
+        drafts: List<CourseEntity>, editingGroup: String?, expectedCourses: List<CourseEntity>,
+        expectedTable: TimeTableEntity, timeJson: String,
+        expectedTransfers: List<com.lingion.sleepy.util.HolidayTransferEntry>,
+    ): Boolean {
+        val saved = db.withTransaction {
+            val table = tableDao.getById(expectedTable.id) ?: return@withTransaction false
+            val period = table.periodTableId?.let { periodTableDao.getById(it) }
+            if (table.hydratedWith(period) != expectedTable || courseDao.getByTable(table.id) != expectedCourses ||
+                AppPrefs.getHolidayTransfers(SleepyApp.get(), table.id) != expectedTransfers) return@withTransaction false
+            captureForUndo()
+            if (timeJson != expectedTable.timeJson) {
+                if (period != null) periodTableDao.update(period.copy(timeJson = timeJson))
+                else tableDao.update(table.copy(timeJson = timeJson))
+            }
+            if (editingGroup != null) {
+                val diff = com.lingion.sleepy.data.diff.RowKeyDiffer.diff(drafts, expectedCourses.filter { it.groupId == editingGroup })
+                if (diff.toDelete.isNotEmpty()) courseDao.deleteByIds(diff.toDelete)
+                if (diff.toUpdate.isNotEmpty()) courseDao.updateAll(diff.toUpdate)
+                if (diff.toInsert.isNotEmpty()) courseDao.insertAll(diff.toInsert)
+                mergeMatchingCourseRows(table.id, editingGroup)
+            } else {
+                val rows = assignGroupIds(drafts, knownNameToGroupId(courseDao.getAll()))
+                courseDao.insertAll(rows)
+                com.lingion.sleepy.util.CourseColorWriteGlue.persistNewGroupHues(SleepyApp.get(), db.courseColorDao(), rows)
+            }
+            reclaimUnusedEdgeNodes(table.id)
+            true
+        }
+        if (saved) { pruneDefaultTopPrefs(); onDataChanged() }
+        return saved
+    }
+
+    /** Compare the preview snapshot inside the write transaction; never overwrite a changed schedule. */
+    suspend fun saveOccurrence(
+        occurrence: com.lingion.sleepy.util.CourseOccurrence,
+        replacement: CourseEntity?,
+        expectedCourses: List<CourseEntity>,
+        expectedTable: TimeTableEntity,
+        expectedTransfers: List<com.lingion.sleepy.util.HolidayTransferEntry>,
+    ): Boolean {
+        val saved = db.withTransaction {
+            val table = tableDao.getById(expectedTable.id) ?: return@withTransaction false
+            val effective = table.hydratedWith(table.periodTableId?.let { periodTableDao.getById(it) })
+            if (effective != expectedTable || courseDao.getByTable(table.id) != expectedCourses ||
+                AppPrefs.getHolidayTransfers(SleepyApp.get(), table.id) != expectedTransfers ||
+                courseDao.getById(occurrence.course.id) != occurrence.course) return@withTransaction false
+            val remaining = com.lingion.sleepy.util.CourseOccurrences.without(
+                occurrence.course, occurrence.sourceDate, table.startDate
+            )
+            captureForUndo()
+            courseDao.deleteById(occurrence.course.id)
+            courseDao.insertAll(remaining + listOfNotNull(replacement?.copy(
+                id = if (remaining.isEmpty()) occurrence.course.id else 0,
+                tableId = table.id, groupId = occurrence.course.groupId
+            )))
+            if (replacement != null) mergeMatchingCourseRows(table.id, occurrence.course.groupId)
+            reclaimUnusedEdgeNodes(table.id)
+            true
+        }
+        if (saved) {
+            pruneDefaultTopPrefs()
+            onDataChanged()
+        }
+        return saved
+    }
+
+    /** Runs inside the edit transaction, sharing its undo snapshot and data-change notification. */
+    private suspend fun mergeMatchingCourseRows(tableId: Long, groupId: String) {
+        if (groupId.isBlank()) return
+        val original = courseDao.getByGroupId(tableId, groupId)
+        val merged = com.lingion.sleepy.util.CourseOccurrences.mergeMatchingRows(original)
+        val retainedIds = merged.map { it.id }.toSet()
+        val removed = original.filter { it.id !in retainedIds }.map { it.id }
+        val updates = merged.filter { row -> original.firstOrNull { it.id == row.id } != row }
+        if (removed.isNotEmpty()) courseDao.deleteByIds(removed)
+        if (updates.isNotEmpty()) courseDao.updateAll(updates)
+    }
+
     /** 删除同 groupId 全部记录。防呆: 空 groupId 拒删(否则整表空组课程全没了) */
     suspend fun deleteCourseGroup(tableId: Long, groupId: String) {
         captureForUndo()
@@ -593,12 +678,16 @@ class ScheduleRepository(private val db: AppDatabase) {
      */
     private suspend fun reclaimUnusedEdgeNodes(tableId: Long) {
         val table = tableDao.getById(tableId) ?: return
-        val remaining = courseDao.getByTable(tableId)
+        val period = table.periodTableId?.let { periodTableDao.getById(it) }
+        val timeJson = period?.timeJson ?: table.timeJson
+        // Shared slots may still be referenced by a different timetable.
+        val owners = if (period == null) listOf(table) else tableDao.getAll().filter { it.periodTableId == period.id }
+        val remaining = owners.flatMap { courseDao.getByTable(it.id) }
         val used = mutableSetOf<Int>()
         remaining.forEach { c ->
             val effStart = if (c.ownTime) {
                 com.lingion.sleepy.util.TimeTableUtils.timeToNode(
-                    c.startTime, c.endTime, table.timeJson
+                    c.startTime, c.endTime, timeJson
                 )?.first ?: c.startNode
             } else c.startNode
             val end = (effStart + c.step - 1).coerceAtLeast(effStart)
@@ -609,10 +698,11 @@ class ScheduleRepository(private val db: AppDatabase) {
             for (n in c.startNode..storedEnd) used.add(n)
         }
         val reclaimed = com.lingion.sleepy.util.TimeTableUtils.reclaimUnusedEdgeNodes(
-            table.timeJson, used
+            timeJson, used
         )
-        if (reclaimed != table.timeJson) {
-            tableDao.update(table.copy(timeJson = reclaimed))
+        if (reclaimed != timeJson) {
+            if (period != null) periodTableDao.update(period.copy(timeJson = reclaimed))
+            else tableDao.update(table.copy(timeJson = reclaimed))
         }
     }
 

@@ -1,5 +1,7 @@
 package com.lingion.sleepy.ui.screen.edit
 
+import com.lingion.sleepy.util.AppPrefs
+
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.ColorPickerDialog
 import androidx.compose.animation.AnimatedVisibility
@@ -59,7 +61,6 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -83,11 +84,9 @@ import com.lingion.sleepy.ui.component.SegmentedSwitcher
 import com.lingion.sleepy.ui.component.TimePickerField
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
-import com.lingion.sleepy.util.ConflictDetailReporter
 import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
-import com.lingion.sleepy.util.weekRangesOverlap
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import java.time.LocalTime
@@ -145,7 +144,8 @@ internal class MeetingBlockDraft(
     teacher: String = "",
     note: String = "",
     color: String = "",
-    colorMode: Int = com.lingion.sleepy.data.entity.CourseColorMode.GROUP
+    colorMode: Int = com.lingion.sleepy.data.entity.CourseColorMode.GROUP,
+    val fixedDate: String? = null
 ) {
     var startNode by mutableStateOf(startNode)
     var step by mutableStateOf(step)
@@ -189,12 +189,15 @@ private data class ValidationIssue(
     val message: String
 )
 
+data class InitialCourseSlot(val tableId: Long, val week: Int, val day: Int, val node: Int, val step: Int = 1)
+
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun AddCourseScreen(
     onBack: () -> Unit,
     onSaved: () -> Unit,
     editingCourse: CourseEntity? = null,
+    initialSlot: InitialCourseSlot? = null,
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -205,6 +208,9 @@ fun AddCourseScreen(
     val currentTable = state.effectiveCurrentTable
     val fieldShape = SleepyTheme.fieldShape
     val fieldColors = SleepyTheme.fieldColors()
+    var showFullEditor by remember(initialSlot, editingCourse?.id) {
+        mutableStateOf(initialSlot == null || editingCourse != null)
+    }
 
     // issue#23 逐卡: 待落库的新建槽位 / 已有槽位默认时间编辑 — UI 工作副本,
     // 落库前不污染 timeJson; 保存时串接 insertEdgeNode / updateEdgeNodeTimes 后一次性 updateTable
@@ -233,8 +239,8 @@ fun AddCourseScreen(
     // issue#26: 课程别名(可选) — 空串 = 处处显示原名; 组级属性, 编辑页保存时整组覆盖
     var courseAlias by remember(editingCourse?.id) { mutableStateOf(editingCourse?.alias ?: "") }
     // issue#22: teacher/room/note/color/colorMode 已下沉到 MeetingBlockDraft(每个时段独立编辑)
-    var startWeek by remember(editingCourse?.id) { mutableIntStateOf(editingCourse?.startWeek ?: 1) }
-    var endWeek by remember(editingCourse?.id) { mutableIntStateOf(editingCourse?.endWeek ?: 16) }
+    var startWeek by remember(editingCourse?.id) { mutableIntStateOf(editingCourse?.startWeek ?: initialSlot?.week ?: 1) }
+    var endWeek by remember(editingCourse?.id) { mutableIntStateOf(editingCourse?.endWeek ?: initialSlot?.week ?: 16) }
     var nextBlockId by remember(editingCourse?.id) { mutableIntStateOf(2) }
     var validationIssues by remember { mutableStateOf<List<ValidationIssue>>(emptyList()) }
     // issue#23 逐卡: 三个弹层目标 — 顶层持状态, 内容按卡片渲染
@@ -243,8 +249,9 @@ fun AddCourseScreen(
     var slotEditTarget by remember { mutableStateOf<SlotEditTarget?>(null) }
     // 颜色选择器改为按 block 持有状态(每节次独立弹窗) — 删除顶层 showColorPicker
     // v7.10.16u: 保存时冲突明细(非阻塞) — 弹窗完整列出撞车细节, 用户「仍然保存」放行
-    // rememberSaveable: 旋转/配置变更时 Activity 重建, remember 会丢明细列表导致弹窗消失
-    var pendingConflictDetails by rememberSaveable { mutableStateOf<List<String>>(emptyList()) }
+    val saveDialogs = remember(context) { OccurrenceSaveDialogs(context) }
+    var saving by remember { mutableStateOf(false) }
+    var saveError by remember { mutableStateOf<String?>(null) }
     // 改组色弹层状态(issue#22 spec §6.2 恢复): 编辑模式才有组色源, 新建模式无组
     var showGroupColorPicker by remember { mutableStateOf(false) }
     // 组色源色值: 同组 colorMode=GROUP 中 id 最小行的 color — UI 显示 + 改组色弹层初值。
@@ -254,7 +261,15 @@ fun AddCourseScreen(
     var pendingGroupColorHex by remember { mutableStateOf<String?>(null) }
 
     val meetingBlocks = remember(editingCourse?.id) {
-        mutableStateListOf(initialMeetingBlock(editingCourse))
+        mutableStateListOf(initialMeetingBlock(editingCourse).apply {
+            if (editingCourse == null && initialSlot != null) {
+                days.clear(); days.add(initialSlot.day)
+                this.startWeek = initialSlot.week; this.endWeek = initialSlot.week
+                startNode = initialSlot.node; step = initialSlot.step
+                isIrregularNode = initialSlot.node < 1 || initialSlot.node > maxStd
+                selectedEdgeNode = initialSlot.node
+            }
+        })
     }
 
     // 用户从周/网格/今日视图点开某门课 → 编辑页要自动落到那颗胶囊所在时段卡。
@@ -302,6 +317,7 @@ fun AddCourseScreen(
                         teacher = first.teacher,
                         note = first.note,
                         color = first.color,
+                        fixedDate = first.fixedDate,
                         colorMode = first.colorMode
                     ))
                     // §2.4: 覆盖时间的卡补派生时长文本
@@ -338,144 +354,64 @@ fun AddCourseScreen(
     val dayNames = context.resources.getStringArray(R.array.day_names)
     val conflictTemplate = stringResource(R.string.conflict_detail_line)
 
-    // 保存主流程: 校验 → 草稿 → 冲突明细 → 落库。forceAfterConflict = 冲突弹窗「仍然保存」回调
-    fun performSave(forceAfterConflict: Boolean) {
-        val issues = validateCourseDraft(
-            courseName = courseName,
-            blocks = meetingBlocks,
-            startWeek = startWeek,
-            endWeek = endWeek,
-            timeJson = effectiveTimeJson,
-            context = context
-        )
-        validationIssues = issues
-        if (issues.isNotEmpty()) return
-
-        val draftTableId = state.selectedTableId  // 进入 scope 前取，drafts 需要
+    fun performSave() {
+        if (saving) return
+        validationIssues = validateCourseDraft(courseName, meetingBlocks, startWeek, endWeek, effectiveTimeJson, context)
+        if (validationIssues.isNotEmpty()) return
+        val tid = state.selectedTableId
+        if (initialSlot != null && tid != initialSlot.tableId) {
+            saveError = context.getString(R.string.occurrence_table_changed)
+            return
+        }
+        val groupId = editingCourse?.groupId ?: java.util.UUID.randomUUID().toString()
+        val draftTimeJson = effectiveTimeJson
         val drafts = meetingBlocks.flatMap { block ->
             block.days.sorted().map { day ->
-                buildCourseEntity(
-                    tableId = draftTableId ?: 0L,
-                    groupId = "",  // 编辑模式暂留 "", 落库前再覆盖 editingCourse.groupId
-                    courseName = courseName.trim(),
-                    block = block,
-                    day = day,
-                    alias = courseAlias.trim(),
-                    // 用户报障 2026-09-10: ownTime 课落库即反算真实节点 —
-                    // 裸节点消费方(今日页/小组件/详情页)不再拿到表单占位节点
-                    timeJson = effectiveTimeJson
-                )
+                val row = buildCourseEntity(tid ?: 0, groupId, courseName.trim(), block, day, courseAlias.trim(), draftTimeJson)
+                // Existing fixed-date blocks remain fixed after ordinary group editing.
+                if (block.fixedDate != null && currentTable != null) {
+                    if (block.startWeek != block.endWeek || block.days.size != 1) {
+                        saveError = context.getString(R.string.occurrence_fixed_single_day)
+                        return
+                    }
+                    row.copy(fixedDate = DateUtils.dateOfWeek(currentTable.startDate, block.startWeek, day).toString())
+                } else row
             }
         }
+        saving = true
+        saveError = null
         scope.launch {
-            val repo = SleepyApp.get().repository
-            // 没表就自动建一张，保证 selectedTableId 非空
-            val tableId = state.selectedTableId
-                ?: viewModel.createEmptyTable()
-            // 编辑模式: 草稿继承原 groupId;新建模式: 仍共享一个新生成的 groupId
-            val fixedDrafts = if (editingCourse != null) {
-                drafts.map { it.copy(groupId = editingCourse.groupId) }
-            } else {
-                drafts
-            }
-            // v7.10.16t: 三层拦截撤除 — 网格 v7.10.16r(issue#10)已支持任意
-            // 层数(轮换显示), 手动加课与整表导入(本就放行三层)对齐, 不再拦。
-            // 旧逻辑 bug(用户 2026-09-04 报): badDays 取的是全表超层天,
-            // 存量违规天会被列进本次添加的拒绝提示里。
-            // v7.10.16u: 不拦但讲清楚 — 编辑模式排除同组旧记录(自己撞自己),
-            // 有冲突先弹明细, 「仍然保存」才落库。
-            if (!forceAfterConflict) {
-                val existing = repo.getCourses(tableId)
-                    .filter { it.groupId != editingCourse?.groupId }
-                val details = ConflictDetailReporter.draftConflictDetails(
-                    fixedDrafts, existing, dayNames, effectiveTimeJson
-                ).map { ConflictDetailReporter.formatDetail(it, conflictTemplate) }
-                if (details.isNotEmpty()) {
-                    pendingConflictDetails = details
-                    return@launch
-                }
-            }
-            if (editingCourse != null) {
-                // v7.10.16+: 行级 diff/patch 替换整组覆盖 — issue#22 同名多地点
-                // 只动该 groupId 内的行, 不波及同表其他课程
-                val existing = repo.getCourses(tableId)
-                    .filter { it.groupId == editingCourse.groupId }
-                val diff = com.lingion.sleepy.data.diff.RowKeyDiffer.diff(fixedDrafts, existing)
-                repo.applyDiff(tableId, diff)
-            } else {
-                // 新建：所有草稿共享同一个 groupId
-                val gid = java.util.UUID.randomUUID().toString()
-                repo.insertCourses(fixedDrafts.map { it.copy(groupId = gid) })
-            }
-            // issue#23: 新建槽位 / 槽位时间编辑先在编辑页暂存, 课程落库成功后再写回 timeJson。
-            // 顺序串接保证一次添加多个槽位时编号连续且方向元数据不丢失。
-            // v7.10.16v 撤回: 课程行 + timeJson 写回是一个动作 — beginBatch 让快照
-            // 固定在动作前, 撤回一次整步回退(否则第二写覆盖快照, 只回退一半)。
-            // 2026-09-23: currentTable 已是水合表 — 绑定共享作息表时槽位变更必须写回
-            // period_tables(真正 owner), 写兼容列既不生效也违反 issue#40 不污染原则。
-            val table = currentTable ?: repo.getTable(tableId)
-            val boundPeriodTable = state.effectivePeriodTable
-            if (table != null && (pendingEdgeInserts.isNotEmpty() || pendingEdgeEdits.isNotEmpty())) {
-                com.lingion.sleepy.data.undo.UndoManager.beginBatch()
-                try {
-                    val withInserts = pendingEdgeInserts.fold(table.timeJson) { json, insert ->
-                        TimeTableUtils.insertEdgeNode(json, insert.edgeClass, insert.start, insert.end)
-                    }
-                    val updated = pendingEdgeEdits.fold(withInserts) { json, edit ->
-                        TimeTableUtils.updateEdgeNodeTimes(json, edit.node, edit.start, edit.end)
-                    }
-                    if (updated != table.timeJson) {
-                        if (boundPeriodTable != null) {
-                            viewModel.updatePeriodTableContent(
-                                boundPeriodTable.copy(timeJson = updated)
-                            )
-                        } else {
-                            viewModel.updateTable(table.copy(timeJson = updated))
-                        }
-                    }
-                } finally {
-                    com.lingion.sleepy.data.undo.UndoManager.endBatch()
-                }
-            }
-            onSaved()
+            try {
+                val repo = SleepyApp.get().repository
+                val tableId = tid ?: viewModel.createEmptyTable()
+                val base = currentTable ?: repo.getTable(tableId) ?: return@launch
+                val table = base.copy(timeJson = draftTimeJson)
+                val transfers = AppPrefs.getHolidayTransfers(context, tableId)
+                val snapshot = repo.getCourses(tableId)
+                val fixedDrafts = drafts.map { it.copy(tableId = tableId) }
+                // Group edits preserve existing transfer semantics. New schedules ask about each affected date.
+                val resolved = if (editingCourse == null) saveDialogs.destinations(fixedDrafts, table, transfers) ?: return@launch
+                    else fixedDrafts
+                val existing = snapshot.filter { it.groupId != editingCourse?.groupId }
+                val details = com.lingion.sleepy.util.CourseOccurrences.conflictDetails(
+                    resolved, existing, table, transfers, dayNames, conflictTemplate
+                )
+                if (!saveDialogs.confirmConflicts(details)) return@launch
+                if (repo.saveCourseDraft(resolved, editingCourse?.groupId, snapshot, base, draftTimeJson, transfers)) onSaved()
+                else saveError = context.getString(R.string.occurrence_draft_stale)
+            } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled
+            } catch (e: Exception) { saveError = e.message ?: context.getString(R.string.occurrence_save_failed)
+            } finally { saving = false }
         }
     }
-
-    // v7.10.16u 冲突明细弹窗(非阻塞): 列出 星期几/第几节/哪几周/撞哪门课 全部细节,
-    // 「仍然保存」= 明确放行落库, 「返回修改」= 关弹窗不保存。
-    if (pendingConflictDetails.isNotEmpty()) {
-        AlertDialog(
-            onDismissRequest = { pendingConflictDetails = emptyList() },
-            title = { Text(stringResource(R.string.conflict_detail_title)) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    pendingConflictDetails.take(6).forEach { line ->
-                        Text(text = "• $line", style = MaterialTheme.typography.bodySmall)
-                    }
-                    if (pendingConflictDetails.size > 6) {
-                        Text(
-                            text = stringResource(R.string.more_unexpanded, pendingConflictDetails.size - 6),
-                            style = MaterialTheme.typography.labelSmall
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 统一色块按钮行
-                    com.lingion.sleepy.ui.component.DialogActionButtons(
-                        confirmText = stringResource(R.string.conflict_detail_save_anyway),
-                        onConfirm = {
-                            // 二次进入 save scope: pendingConflictDetails 已空 → 直接落库
-                            pendingConflictDetails = emptyList()
-                            performSave(forceAfterConflict = true)
-                        },
-                        dismissText = stringResource(R.string.conflict_detail_go_back),
-                        onDismiss = { pendingConflictDetails = emptyList() },
-                        destructive = true
-                    )
-                }
-            },
-            confirmButton = {},
-            dismissButton = {}
-        )
+    OccurrenceSaveDialogHost(saveDialogs)
+    saveError?.let { message ->
+        AlertDialog(onDismissRequest = { saveError = null }, title = { Text(context.getString(R.string.occurrence_save_error_title)) },
+            text = { Text(message) }, confirmButton = {
+                com.lingion.sleepy.ui.component.DialogActionButtons(
+                    confirmText = stringResource(R.string.ok), onConfirm = { saveError = null }
+                )
+            })
     }
 
     // ── 改组色弹层(issue#22 spec §6.2/§6.3 恢复): 调色盘 + 全组影响确认 ──
@@ -573,6 +509,27 @@ fun AddCourseScreen(
             },
             onDismiss = { slotEditTarget = null }
         )
+    }
+
+    if (!showFullEditor) {
+        val block = meetingBlocks.first()
+        val summary = currentTable?.let { table ->
+            runCatching {
+                val date = DateUtils.dateOfWeek(table.startDate, block.startWeek, block.days.single())
+                val nodes = if (block.step == 1) block.startNode.toString() else "${block.startNode}-${block.startNode + block.step - 1}"
+                val nodeLabel = context.getString(R.string.course_node_format, nodes)
+                "$date · ${DateUtils.localizedDay(block.days.single(), context)} · $nodeLabel"
+            }.getOrDefault("")
+        }.orEmpty()
+        SingleOccurrenceCourseForm(
+            courseName = courseName, onCourseNameChange = { courseName = it },
+            alias = courseAlias, onAliasChange = { courseAlias = it }, block = block,
+            scheduleSummary = summary, validationMessages = validationIssues.map { it.message },
+            saving = saving, canSave = canSave && currentTable != null,
+            onBack = onBack, onSave = { performSave() },
+            onMore = { showFullEditor = true }
+        )
+        return
     }
 
     Scaffold(
@@ -775,8 +732,8 @@ fun AddCourseScreen(
 
             item {
                 Button(
-                    onClick = { performSave(forceAfterConflict = false) },
-                    enabled = canSave,
+                    onClick = { performSave() },
+                    enabled = canSave && !saving,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(SleepyTheme.Buttons.ctaHeight),
@@ -855,7 +812,7 @@ fun AddCourseScreen(
  *  v4(用户报障 2026-10-08): day 进分组 key — 同节次不同星期被错误合并 → 必须分开 */
 internal fun groupSlotsForEdit(courses: List<CourseEntity>): List<List<CourseEntity>> =
     courses.groupBy { c ->
-        "${c.day}|${c.ownTime}|${c.startNode}|${c.step}|${c.startTime}|${c.endTime}|${c.startWeek}|${c.endWeek}|${c.type}|${c.room}|${c.teacher}"
+        "${c.day}|${c.ownTime}|${c.startNode}|${c.step}|${c.startTime}|${c.endTime}|${c.startWeek}|${c.endWeek}|${c.type}|${c.room}|${c.teacher}|${c.fixedDate}"
     }.values.toList()
 
 /** 用户点开课程胶囊 → editingCourse 即那颗胶囊, PK 唯一确定一个时段卡。
@@ -899,6 +856,7 @@ private fun initialMeetingBlock(course: CourseEntity?): MeetingBlockDraft {
         teacher = course.teacher,
         note = course.note,
         color = course.color,
+        fixedDate = course.fixedDate,
         colorMode = course.colorMode
     )
 }
@@ -939,6 +897,7 @@ internal fun buildCourseEntity(
         tableId = tableId,
         courseName = courseName,
         alias = alias.trim(),
+        fixedDate = block.fixedDate,
         teacher = block.teacherState.trim(),
         room = block.roomState.trim(),
         note = block.noteState.trim(),
@@ -1011,38 +970,8 @@ private fun validateCourseDraft(
         }
     }
 
-    for (i in blocks.indices) {
-        for (j in i + 1 until blocks.size) {
-            val first = blocks[i]
-            val second = blocks[j]
-            val overlapDays = first.days.intersect(second.days)
-            if (overlapDays.isEmpty()) continue
-            val firstRange = blockRangeMinutes(first, timeJson)
-            val secondRange = blockRangeMinutes(second, timeJson)
-            if (firstRange == null || secondRange == null) continue
-            if (firstRange.first < secondRange.second && secondRange.first < firstRange.second) {
-                if (!weekRangesOverlap(
-                        first.startWeek, first.endWeek, first.weekType,
-                        second.startWeek, second.endWeek, second.weekType
-                    )
-                ) continue
-                val dayText = overlapDays.sorted().joinToString(" / ") { DateUtils.localizedDay(it, context) }
-                issues += ValidationIssue(
-                    second.id,
-                    context.getString(R.string.slot_time_overlap, i + 1, j + 1, dayText)
-                )
-            }
-        }
-    }
+    // Overlapping meetings are confirmed against actual dates in the save flow.
     return issues
-}
-
-/** §3.3 契约的分钟化: 本卡生效起止 → [startMin, endMin), 用于卡间重叠检测 */
-private fun blockRangeMinutes(block: MeetingBlockDraft, timeJson: String): Pair<Int, Int>? {
-    val range = block.effectiveRange(timeJson) ?: return null
-    val start = parseHm(range.first) ?: return null
-    val end = parseHm(range.second) ?: return null
-    return start.hour * 60 + start.minute to end.hour * 60 + end.minute
 }
 
 private fun parseHm(value: String): LocalTime? = try {

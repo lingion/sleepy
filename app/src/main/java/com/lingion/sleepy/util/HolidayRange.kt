@@ -163,10 +163,11 @@ object HolidayRangeOps {
             courses: List<com.lingion.sleepy.data.entity.CourseEntity>,
             transfers: List<HolidayTransferEntry>
         ): List<com.lingion.sleepy.data.entity.CourseEntity> {
-            val source = courseDateForDate(date, transfers) ?: return emptyList()
-            if (DateUtils.semesterStatus(startDate, maxWeek, source) != DateUtils.SemesterStatus.IN_RANGE) return emptyList()
+            val fixed = courses.filter { it.fixedDate == date.toString() }
+            val source = courseDateForDate(date, transfers) ?: return fixed
+            if (DateUtils.semesterStatus(startDate, maxWeek, source) != DateUtils.SemesterStatus.IN_RANGE) return fixed
             val week = DateUtils.currentWeek(startDate, source)
-            return courses.filter { it.day == source.dayOfWeek.value && it.inWeek(week) }
+            return courses.filter { it.fixedDate == null && it.day == source.dayOfWeek.value && it.inWeek(week) } + fixed
         }
 
         /**

@@ -385,6 +385,9 @@ object ScheduleParser {
                 courseName = obj["name"]?.jsonPrimitive?.content
                     ?: obj["courseName"]?.jsonPrimitive?.content
                     ?: "未命名",
+                fixedDate = obj["fixedDate"]?.jsonPrimitive?.contentOrNull?.let { value ->
+                    runCatching { java.time.LocalDate.parse(value).toString() }.getOrNull()
+                },
                 teacher = obj["teacher"]?.jsonPrimitive?.content ?: "",
                 room = obj["position"]?.jsonPrimitive?.content
                     ?: obj["room"]?.jsonPrimitive?.content
@@ -426,6 +429,9 @@ object ScheduleParser {
                 id = 0,
                 groupId = "",
                 tableId = tableId,
+                fixedDate = obj["fixedDate"]?.jsonPrimitive?.contentOrNull?.let { value ->
+                    runCatching { java.time.LocalDate.parse(value).toString() }.getOrNull()
+                },
                 courseName = obj["name"]?.jsonPrimitive?.content
                     ?: obj["courseName"]?.jsonPrimitive?.content
                     ?: "未命名",
