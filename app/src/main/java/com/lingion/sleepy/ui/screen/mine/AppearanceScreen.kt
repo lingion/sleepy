@@ -125,6 +125,7 @@ fun AppearanceScreen(
     // UI 订阅同一快照 → 试算预览/渲染叶子同帧一致。
     val courseColorMode by AppPrefs.courseColorModeFlow(context).collectAsState(initial = AppPrefs.getCourseColorMode(context))
     val courseColorSeed by AppPrefs.courseColorSeedHueFlow(context).collectAsState(initial = AppPrefs.getCourseColorSeedHue(context))
+    var courseColorless by remember { mutableStateOf(AppPrefs.isCourseColorless(context)) }
 
     /** 全表重算挂后台 — recalcAll 内部自检 CLASSIC→0 写(零变化红线), 调用点无需判档。 */
     fun recalcAllCourses() {
@@ -257,7 +258,14 @@ fun AppearanceScreen(
                 CourseColorSection(
                     mode = courseColorMode,
                     seed = courseColorSeed,
+                    colorless = courseColorless,
+                    onColorlessSelect = {
+                        courseColorless = true
+                        AppPrefs.setCourseColorless(context, true)
+                    },
                     onModeChange = { newMode ->
+                        courseColorless = false
+                        AppPrefs.setCourseColorless(context, false)
                         if (newMode != courseColorMode) {
                             // 进 CUSTOM 且种子未初始化 → 播种为当前主题 anchor(滑条起点即所见)
                             if (newMode == AppPrefs.COURSE_COLOR_MODE_CUSTOM &&
@@ -540,7 +548,7 @@ private fun CustomThemeCard(
 }
 
 /**
- * 课程配色区 (spec §5): 三档单选 + CUSTOM 色相滑条 + 按当前档试算预览 + 手动重排按钮。
+ * 课程配色区：统一底色与三种配色模式四选一；自定义模式提供色相滑条。
  *
  * 预览试算走纯函数(planHuesForGroups / stableHue), 不依赖 DB 写成功 —— 与渲染兜底
  * 「表中查无 → 实时按 2.2 公式算, 与表将含值一致」同源, 预览即所得。
@@ -550,6 +558,8 @@ private fun CustomThemeCard(
 private fun CourseColorSection(
     mode: Int,
     seed: Float,
+    colorless: Boolean,
+    onColorlessSelect: () -> Unit,
     onModeChange: (Int) -> Unit,
     onSeedCommit: (Float) -> Unit,
     onRecalc: () -> Unit,
@@ -587,20 +597,21 @@ private fun CourseColorSection(
         color = colors.surfaceContainer,
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            // 轨道式分段(2026-10-20 用户裁定): 三档与深浅 Tab/冲突样式同款 SegmentedSwitcher,
-            // 替换 RadioButton 竖列 — M3 SegmentedButton 描边风亦弃用(TimeSlotEditor 先例)。
             SegmentedSwitcher(
                 options = listOf(
+                    null to stringResource(R.string.course_color_uniform),
                     AppPrefs.COURSE_COLOR_MODE_CLASSIC to stringResource(R.string.course_color_classic),
                     AppPrefs.COURSE_COLOR_MODE_FOLLOW_THEME to stringResource(R.string.course_color_follow_theme),
                     AppPrefs.COURSE_COLOR_MODE_CUSTOM to stringResource(R.string.course_color_custom_seed),
                 ),
-                selected = mode,
-                onSelect = onModeChange,
+                selected = if (colorless) null else mode,
+                onSelect = { selected ->
+                    if (selected == null) onColorlessSelect() else onModeChange(selected)
+                },
                 modifier = Modifier.fillMaxWidth(),
                 containerColor = colors.surfaceContainerHighest,
             )
-            if (mode == AppPrefs.COURSE_COLOR_MODE_CUSTOM) {
+            if (!colorless && mode == AppPrefs.COURSE_COLOR_MODE_CUSTOM) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -643,7 +654,7 @@ private fun CourseColorSection(
                 items.forEach { (gid, name) ->
                     val hue = hues[gid] ?: return@forEach
                     val (s, l) = GoldenAngleColor.hsl(hue, isDark)
-                    val bg = CourseColorUtil.hslToColor(hue, s, l)
+                    val bg = if (colorless) colors.secondaryContainer else CourseColorUtil.hslToColor(hue, s, l)
                     Box(
                         modifier = Modifier.clip(SleepyTheme.shapes.small)
                             .background(bg)
@@ -659,13 +670,15 @@ private fun CourseColorSection(
                     }
                 }
             }
-            Spacer(Modifier.height(8.dp))
-            FilledTonalButton(
-                onClick = onRecalc,
-                modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
-                shape = SleepyTheme.Buttons.shape,
-            ) {
-                Text(stringResource(R.string.course_color_recalc))
+            if (!colorless) {
+                Spacer(Modifier.height(8.dp))
+                FilledTonalButton(
+                    onClick = onRecalc,
+                    modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
+                    shape = SleepyTheme.Buttons.shape,
+                ) {
+                    Text(stringResource(R.string.course_color_recalc))
+                }
             }
         }
     }

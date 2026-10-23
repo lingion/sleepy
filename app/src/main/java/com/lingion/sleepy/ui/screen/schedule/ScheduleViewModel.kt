@@ -250,13 +250,23 @@ class ScheduleViewModel : ViewModel() {
                         }
                         return@collect
                     }
-                    val selectedId = _state.value.selectedTableId
-                    val targetId: Long = if (manualSelectDone && selectedId != null && tables.any { t -> t.id == selectedId }) {
-                        selectedId
-                    } else {
-                        tables.find { it.isDefault }?.id ?: tables.first().id
+                    val previous = _state.value
+                    val targetId = resolveSelectedTableId(
+                        tables = tables,
+                        selectedTableId = previous.selectedTableId,
+                        previousDefaultTableId = previous.tables.find { it.isDefault }?.id,
+                        preserveSelection = manualSelectDone,
+                    ) ?: return@collect
+                    _state.update {
+                        val changed = it.selectedTableId != targetId
+                        it.copy(
+                            tables = tables,
+                            selectedTableId = targetId,
+                            initialWeekSettled = if (changed) false else it.initialWeekSettled,
+                            weekSelectionManual = if (changed) false else it.weekSelectionManual,
+                            weekDisplayContext = if (changed) null else it.weekDisplayContext,
+                        )
                     }
-                    _state.update { it.copy(tables = tables, selectedTableId = targetId) }
                     loadCourses(targetId)
                 }
         }
@@ -461,16 +471,16 @@ class ScheduleViewModel : ViewModel() {
     /** issue#40: 全库课程(保存预览用) — 预览须覆盖所有绑定表的课, state.courses 只装当前选中表 */
     suspend fun getAllCourses(): List<com.lingion.sleepy.data.entity.CourseEntity> = repo.getAllCourses()
 
-    /** issue#40: 删除时间节次表(被引用时 false, UI 提示先改绑) */
+    /** 删除作息表，并将各绑定课表切换为内容相同的内置作息。 */
     suspend fun deletePeriodTable(id: Long): Boolean = repo.deletePeriodTable(id)
 
     /**
      * issue#40: 丢弃一个从未保存过的新建时间节次表(创建即落库的残留清理)。
      * 与课表侧 [discardNewTable] 同语义 — 用户在编辑页点了返回(=放弃), 该空行
-     * 不应遗留在管理页列表里。丢弃不走删除守卫(刚建的表不可能有绑定)。
+     * 不应遗留在管理页列表里。如果已被其他课表绑定则保留。
      */
     fun discardNewPeriodTable(id: Long) {
-        viewModelScope.launch { repo.deletePeriodTable(id) }
+        viewModelScope.launch { repo.deletePeriodTable(id, onlyIfUnbound = true) }
     }
 
     /** issue#40: 新建空白时间节次表 */

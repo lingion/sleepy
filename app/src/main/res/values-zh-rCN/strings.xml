@@ -62,10 +62,10 @@
     <string name="manage_new_period_table_sub">创建一张空白作息表，供多张课表共用</string>
     <string name="manage_edit_current">编辑当前课表</string>
     <string name="manage_edit_current_sub">编辑当前课表名称、日期、节次时间</string>
-    <string name="manage_export">导出课表/作息表</string>
-    <string name="manage_export_sub">以原生格式 / WakeUp JSON / ICS / 文本分享</string>
-    <string name="manage_manual_add">手动添加课程</string>
-    <string name="manage_manual_add_sub">直接添加一门课程到当前课表</string>
+    <string name="manage_export">备份与导出</string>
+    <string name="manage_export_sub">导出课表/作息表</string>
+    <string name="manage_manual_add">添加课程</string>
+    <string name="manage_manual_add_sub">从课表导入或手动添加课程</string>
     <string name="table_info">开始日期: %1$s  |  第%2$d周  |  %3$d个上课安排</string>
     <string name="manage_view_all_tables">查看全部</string>
     <string name="course_list_title">课程清单</string>
@@ -133,13 +133,12 @@
     <string name="import_confirm_title">导入前确认</string>
     <string name="import_confirm_body">先确认学期开始日期和每节时间，不然当前周次会一直不准。</string>
     <string name="import_week_start">第一周从哪天开始</string>
-    <string name="import_confirm">确认导入</string>
+    <string name="import_confirm">确认</string>
     <string name="import_all_conflict">没有可追加课程，全部与现有课表冲突</string>
     <string name="import_content_empty">内容为空</string>
     <string name="import_select_table">请先选择课表</string>
     <string name="read_failed">读取失败: %1$s</string>
     <string name="cannot_read_file">无法读取文件</string>
-    <string name="import_preview_sub">先预览，再导入，不让课表被一把覆盖</string>
     <string name="format_wakeup_share">WakeUp 分享文本</string>
     <string name="format_wakeup_desc">【来自WakeUp课程表】开头</string>
     <string name="format_wakeup_json">WakeUp JSON</string>
@@ -361,7 +360,7 @@
     <string name="export_failed">导出失败，请重试</string>
     <string name="mine_stat_tables">课表数</string>
     <string name="mine_stat_courses">课程数</string>
-    <string name="mine_stat_week">当前周</string>
+    <string name="mine_stat_period_tables">作息表数</string>
 
     <!-- More Settings -->
         <string name="settings_high_refresh">高刷新率</string>
@@ -881,6 +880,7 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
 <string name="appearance_section_theme">主题色彩</string>
     <string name="appearance_section_course_color">课程配色</string>
     <string name="course_color_classic">不跟随主题</string>
+    <string name="course_color_uniform">统一底色</string>
     <string name="course_color_follow_theme">跟随主题</string>
     <string name="course_color_custom_seed">自定义</string>
     <string name="course_color_seed_label">基准色相</string>
@@ -955,6 +955,7 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="irregular_duration_label">持续时长（分钟）</string>
     <string name="mine_period_tables">作息表</string>
     <string name="period_tables_title">作息表</string>
+    <string name="all_period_tables">所有作息表</string>
     <string name="period_table_bound_count">已绑定 %1$d 张课表</string>
     <string name="period_table_new">新建作息表</string>
     <string name="period_table_copy">复制作息表</string>
@@ -971,7 +972,7 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="period_table_name_label">作息表名称</string>
     <string name="period_table_delete_confirm">删除作息表</string>
     <string name="period_table_delete_msg_body">确定要删除作息表「%1$s」吗？</string>
-    <string name="period_table_delete_blocked">该作息表仍被 %1$d 张课表绑定，请先改绑</string>
+    <string name="period_table_delete_bound_hint">该作息表仍被 %1$d 张课表绑定，删除后课表将使用相同的内置作息表</string>
     <string name="period_table_bind_label">作息表</string>
     <string name="period_table_unbound">未绑定（使用本表作息）</string>
     <string name="period_tables_tab">作息表</string>
@@ -1054,6 +1055,24 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="school_location_permission_settings">定位权限设置</string>
     <string name="reminder_class_dnd_title">上课自动勿扰</string>
     <string name="reminder_class_dnd_sub">上课时段自动开启勿扰, 下课自动恢复</string>
+    <string name="manage_add_table">添加课表</string>
+    <string name="manage_add_table_sub">导入课表或创建空白课表</string>
+    <string name="manage_period_tables">作息表管理</string>
+    <string name="manage_period_tables_sub">添加、修改或删除作息表</string>
+    <string name="manage_no_table">暂无课表</string>
+    <string name="manage_no_table_hint">点击下方“添加课表”导入或创建课表</string>
+    <string name="manage_create_blank_table">新建空白课表</string>
+    <string name="add_course_title">添加课程</string>
+    <string name="create_table_title">创建新课表</string>
+    <string name="add_course_from_existing">从现有课表</string>
+    <string name="add_course_manual">手动添加课程</string>
+
+    <string name="import_backup_original">备份原课表</string>
+    <string name="import_backup_original_sub">开启后先复制原课表作为备份，再添加本次课程</string>
+    <string name="import_append_conflicts_option">追加冲突课程</string>
+    <string name="import_append_conflicts_option_sub">关闭后放弃与现有课程冲突的课程</string>
+    <string name="add_course_no_source">没有其他可用课表，请先添加课表</string>
+    <string name="import_backup_name">%1$s-备份</string>
     <string name="table_reminder_title">课表提醒</string>
     <string name="table_reminder_subtitle">选择需要接收提醒的课表</string>
     <string name="table_reminder_master_off">总开关已关闭。可以先设置各课表，开启总开关后生效。</string>

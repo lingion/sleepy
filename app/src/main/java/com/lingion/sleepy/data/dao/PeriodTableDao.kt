@@ -43,11 +43,11 @@ interface PeriodTableDao {
     @Query("SELECT COUNT(*) FROM period_tables")
     suspend fun count(): Int
 
-    /** 引用计数 — 时间节次表管理页"已绑定 N 张课表" + 删除守卫共用 */
+    /** 引用计数 — 管理页显示绑定数量。 */
     @Query("SELECT COUNT(*) FROM time_tables WHERE periodTableId = :id")
     suspend fun boundTableCount(id: Long): Int
 
-    /** 引用此时间表的全部课程表 id — 删除守卫改绑列表用 */
+    /** 引用此时间表的全部课程表 id。 */
     @Query("SELECT id FROM time_tables WHERE periodTableId = :id")
     suspend fun boundTableIds(id: Long): List<Long>
 }

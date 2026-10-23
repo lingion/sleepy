@@ -12,27 +12,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.FileUpload
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,38 +33,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
-import com.lingion.sleepy.ui.screen.imports.ImportDraft
-import com.lingion.sleepy.ui.screen.imports.ImportSheet
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManagementPage(
-    onJwImportRequested: () -> Unit,
-    onCreateNewTableRequested: () -> Unit,
-    // v1.0.56 T7: 新建作息表 — 内部建表(自动命名+全局唯一)落库后回调新 id, 调用方进其编辑页
-    onCreateNewPeriodTableRequested: (Long) -> Unit = {},
+    onAddTable: () -> Unit,
     onManualAdd: () -> Unit,
     onEditCurrentTable: () -> Unit,
-    onExportRequested: () -> Unit = {},
-    onOpenAllTables: () -> Unit = {},
-    onImported: () -> Unit,
-    drafts: List<ImportDraft> = emptyList(),
-    onRestoreDraft: (String) -> Unit = {},
-    onDeleteDraft: (String) -> Unit = {},
-    viewModel: ScheduleViewModel = viewModel(),
-    autoShowImportSheet: Boolean = false
+    onOpenPeriodTables: () -> Unit,
+    onExportRequested: () -> Unit,
+    onOpenAllTables: () -> Unit,
+    viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
     val colors = MaterialTheme.colorScheme
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val scope = androidx.compose.runtime.rememberCoroutineScope()
     val table = state.currentTable
-
-    var showImportSheet by remember { mutableStateOf(autoShowImportSheet) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Box(
         modifier = Modifier
@@ -91,85 +67,61 @@ fun ManagementPage(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                Text(
-                    text = stringResource(R.string.tab_manage),
-                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Medium),
-                    color = colors.onBackground
-                )
-            }
-
-            // 当前课表摘要
-            // 2026-09-21 用户令: 点当前课表大卡 → 跳「所有课表」页(最符合直觉)
-            item {
-                if (table != null) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(SleepyTheme.shapes.large)
+                        .background(colors.surfaceContainer),
+                    verticalAlignment = Alignment.Top
+                ) {
                     Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(SleepyTheme.shapes.large)
-                            .background(colors.surfaceContainer)
-                            .noRippleClickable(onOpenAllTables)
+                            .weight(1f)
+                            .noRippleClickable(enabled = table != null, onClick = onEditCurrentTable)
                             .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = stringResource(R.string.manage_current_table),
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                                color = colors.primary,
-                                modifier = Modifier.weight(1f)
-                            )
-                            Text(
-                                text = stringResource(R.string.manage_view_all_tables),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = colors.onSurfaceVariant
-                            )
-                        }
                         Text(
-                            text = table.name,
+                            text = stringResource(R.string.manage_current_table),
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                            color = colors.primary
+                        )
+                        Text(
+                            text = table?.name ?: stringResource(R.string.manage_no_table),
                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
                             color = colors.onSurface
                         )
                         Text(
-                            // 口径统一(2026-09-21): 此处数字 = 上课安排数(时间×节次×周组合), 非课程门数
-                            text = stringResource(R.string.table_info, table.startDate, state.currentWeek, state.courses.size),
+                            text = if (table != null) {
+                                stringResource(R.string.table_info, table.startDate, state.currentWeek, state.courses.size)
+                            } else {
+                                stringResource(R.string.manage_no_table_hint)
+                            },
                             style = MaterialTheme.typography.bodySmall,
+                            color = colors.onSurfaceVariant
+                        )
+                    }
+                    TextButton(
+                        onClick = onOpenAllTables,
+                        modifier = Modifier.padding(top = 4.dp, end = 8.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.manage_view_all_tables),
+                            style = MaterialTheme.typography.labelMedium,
                             color = colors.onSurfaceVariant
                         )
                     }
                 }
             }
 
-            // 管理按钮（6 个：导入 / 新建课表 / 新建作息表 / 手动添加 / 编辑 / 导出）
+            // 添加课表、添加课程、作息表管理、备份与导出。
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     ManageCard(
                         icon = Icons.Outlined.FileUpload,
-                        title = stringResource(R.string.manage_import),
-                        subtitle = stringResource(R.string.manage_import_sub),
-                        onClick = { showImportSheet = true }
-                    )
-                    ManageCard(
-                        icon = Icons.Outlined.AutoAwesome,
-                        title = stringResource(R.string.manage_new_table),
-                        subtitle = stringResource(R.string.manage_new_table_sub),
-                        onClick = onCreateNewTableRequested
-                    )
-                    // v1.0.56 T7: 新建作息表 — 插在「新建课表」正下方(用户指定卡位)
-                    ManageCard(
-                        icon = Icons.Outlined.Schedule,
-                        title = stringResource(R.string.manage_new_period_table),
-                        subtitle = stringResource(R.string.manage_new_period_table_sub),
-                        onClick = {
-                            // v1.0.56 T7: 建表(自动唯一命名, T2 suggestUniqueName)落库后回调新 id
-                            val ctx = context
-                            scope.launch {
-                                val newId = viewModel.insertPeriodTableWithUniqueName(
-                                    name = "",
-                                    defaultName = ctx.getString(R.string.period_table_new)
-                                )
-                                if (newId > 0) onCreateNewPeriodTableRequested(newId)
-                            }
-                        }
+                        title = stringResource(R.string.manage_add_table),
+                        subtitle = stringResource(R.string.manage_add_table_sub),
+                        onClick = onAddTable
                     )
                     ManageCard(
                         icon = Icons.Outlined.Add,
@@ -178,10 +130,10 @@ fun ManagementPage(
                         onClick = onManualAdd
                     )
                     ManageCard(
-                        icon = Icons.Outlined.Edit,
-                        title = stringResource(R.string.manage_edit_current),
-                        subtitle = stringResource(R.string.manage_edit_current_sub),
-                        onClick = onEditCurrentTable
+                        icon = Icons.Outlined.Schedule,
+                        title = stringResource(R.string.manage_period_tables),
+                        subtitle = stringResource(R.string.manage_period_tables_sub),
+                        onClick = onOpenPeriodTables
                     )
                     ManageCard(
                         icon = Icons.Outlined.Share,
@@ -192,22 +144,6 @@ fun ManagementPage(
                 }
             }
         }
-    }
-
-    if (showImportSheet) {
-        ImportSheet(
-            sheetState = sheetState,
-            onDismiss = { showImportSheet = false },
-            onJwImportRequested = {
-                showImportSheet = false
-                onJwImportRequested()
-            },
-            onImported = onImported,
-            drafts = drafts,
-            onRestoreDraft = onRestoreDraft,
-            onDeleteDraft = onDeleteDraft,
-            viewModel = viewModel
-        )
     }
 }
 

@@ -87,7 +87,6 @@ fun PeriodTableEditScreen(
     val context = LocalContext.current
     val validationErrorMessage = stringResource(R.string.edit_table_validation_error)
     val courseNodeFormat = stringResource(R.string.course_node_format)
-    val deleteBlockedFormat = stringResource(R.string.period_table_delete_blocked)
     val periodTables by viewModel.allPeriodTables.collectAsState()
     val scheduleState by viewModel.state.collectAsState()
 
@@ -114,9 +113,8 @@ fun PeriodTableEditScreen(
     var unsavedNew by remember { mutableStateOf(isNewUnsaved) }
     // 2026-09-20 用户拍板(issue#40 反馈, aa23a443): 作息表编辑页不再有「作息表」第三 Tab。
     // 绑定只存在于课表→作息表单向; 作息表之间禁绑定/取入, 防循环改写。复制走管理页按钮。
-    // v1.0.56 T7: 删除入口迁入本页 — 确认弹窗 + 绑定拦截提示(从管理页列表行整体搬迁)
+    // 删除前提示绑定课表将保留相同的内置作息。
     var showDeleteConfirm by remember(periodTable.id) { mutableStateOf(false) }
-    var deleteBlockedMsg by remember(periodTable.id) { mutableStateOf<String?>(null) }
     // v1.0.56 T8: 复制先命名, 确认后才建; 成功后回管理页
     var showCopyDialog by remember(periodTable.id) { mutableStateOf(false) }
     var copyName by remember(periodTable.id) { mutableStateOf("") }
@@ -333,7 +331,7 @@ fun PeriodTableEditScreen(
 
             // v1.0.56 T7: 删除键从管理页列表行挪到这里(用户 2026-09-16)。
             // 新建未保存的表不显示 — 退出即丢弃, 无"已存在的东西"可删。
-            // 删除成功后回管理页; 被绑定拦截时弹 blocked 提示(与原列表行删除同语义)。
+            // 删除成功后回管理页，绑定课表的作息在仓库事务内保留。
             if (!unsavedNew) {
                 item {
                     Button(
@@ -420,27 +418,29 @@ fun PeriodTableEditScreen(
         )
     }
 
-    // v1.0.56 T7: 删除确认弹窗(原管理页逻辑整体迁移, 语义不变)
+    // 删除确认同时说明绑定课表的作息保留方式。
     if (showDeleteConfirm) {
+        val boundCount = scheduleState.tables.count { it.periodTableId == periodTable.id }
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
             title = { Text(stringResource(R.string.period_table_delete_confirm), color = colors.onSurface) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(R.string.period_table_delete_msg_body, periodTable.name), color = colors.onSurfaceVariant)
+                    if (boundCount > 0) {
+                        Text(
+                            stringResource(R.string.period_table_delete_bound_hint, boundCount),
+                            color = colors.onSurfaceVariant
+                        )
+                    }
                     Spacer(modifier = Modifier.height(12.dp))
                     com.lingion.sleepy.ui.component.DialogActionButtons(
                         confirmText = stringResource(R.string.delete),
                         onConfirm = {
                             showDeleteConfirm = false
                             scope.launch {
-                                val ok = viewModel.deletePeriodTable(periodTable.id)
-                                if (ok) {
-                                    onBack()
-                                } else {
-                                    val bound = scheduleState.tables.count { it.periodTableId == periodTable.id }
-                                    deleteBlockedMsg = deleteBlockedFormat.format(bound)
-                                }
+                                viewModel.deletePeriodTable(periodTable.id)
+                                onBack()
                             }
                         },
                         dismissText = stringResource(R.string.cancel),
@@ -451,25 +451,6 @@ fun PeriodTableEditScreen(
             },
             confirmButton = {},
             dismissButton = {}
-        )
-    }
-
-    // v1.0.56 T7: 绑定拦截提示(删不掉 = 仍有课表绑着本表)
-    deleteBlockedMsg?.let { msg ->
-        AlertDialog(
-            onDismissRequest = { deleteBlockedMsg = null },
-            title = { Text(stringResource(R.string.period_table_delete_confirm), color = colors.onSurface) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(msg, color = colors.onSurfaceVariant)
-                    Spacer(modifier = Modifier.height(12.dp))
-                    com.lingion.sleepy.ui.component.DialogActionButtons(
-                        confirmText = stringResource(R.string.ok),
-                        onConfirm = { deleteBlockedMsg = null }
-                    )
-                }
-            },
-            confirmButton = {}
         )
     }
 

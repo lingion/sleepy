@@ -8,9 +8,9 @@ import org.junit.Test
  * 也必须创建并绑定对应作息表; 先例: ImportDraftWiringContractTest 源码契约口径)。
  *
  * 锁两点:
- * ① ImportAsNew: 解析结果无 P 区块(旧格式/粘贴文本)时, 必须以确认页最终
+ * ① 新建导入: 解析结果无 P 区块(旧格式/粘贴文本)时, 必须以确认页最终
  *   confirmedTimeJson 兜底建作息表并绑定 — 不允许再出现「无 periodTable 就不建」。
- * ② AppendAsNew: 新建合并课表同样必须建+绑(以 mergedTimeJson 为源)。
+ * ② 教务导入: 复用同一新建流程，保留确认数据和解析警告。
  */
 class ImportPeriodTableCreationContractTest {
 
@@ -42,7 +42,7 @@ class ImportPeriodTableCreationContractTest {
     @Test
     fun newImportsUseConfirmedScheduleAndAtomicRepositoryOperation() {
         val src = loadSource("ui/screen/imports/ImportSheet.kt")
-        val branch = balancedBlock(src, "ImportApplyMode.ImportAsNew -> {")
+        val branch = balancedBlock(src, "internal suspend fun applyNewTableImport(")
         assertTrue(branch.contains("importedPeriodTableDraft("))
         assertTrue(branch.contains("confirmedTimeJson = confirmedTimeJson"))
         assertTrue(branch.contains("bindPeriodTableId = bindPeriodTableId"))
@@ -51,11 +51,14 @@ class ImportPeriodTableCreationContractTest {
     }
 
     @Test
-    fun appendCreatesPrivateScheduleInsideAtomicRepositoryOperation() {
-        val branch = balancedBlock(loadSource("ui/screen/imports/ImportSheet.kt"), "ImportApplyMode.AppendAsNew -> {")
-        assertTrue(branch.contains("timeJson = mergedTimeJson"))
-        assertTrue(branch.contains("periodTable = mergedPeriod"))
-        assertTrue(branch.contains("repo.importNewTable("))
+    fun academicImportsUseSharedNewTableFlowAndKeepWarningsOnBothPaths() {
+        val src = loadSource("ui/screen/imports/JwImportActivity.kt")
+        assertTrue(src.contains("applyNewTableImport("))
+        assertTrue(src.contains("confirmedSmartConfigJson = Json.encodeToString(configSmartConfig)"))
+        val preview = src.substringAfter("stage is Stage.Preview").substringBefore("stage is Stage.ConfigureConfirm")
+        val confirm = src.substringAfter("stage is Stage.ConfigureConfirm").substringBefore("stage is Stage.SelectSchool ->")
+        assertTrue(preview.contains("R.string.jw_thu_skipped_courses"))
+        assertTrue(confirm.contains("R.string.jw_thu_skipped_courses"))
     }
 
     @Test

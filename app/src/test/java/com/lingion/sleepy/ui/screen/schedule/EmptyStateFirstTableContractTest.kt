@@ -47,9 +47,6 @@ class EmptyStateFirstTableContractTest {
         findUpward("app/src/main/java/com/lingion/sleepy/MainActivity.kt").readText()
     }
 
-    private val managementPage: String by lazy {
-        findUpward("app/src/main/java/com/lingion/sleepy/ui/screen/manage/ManagementPage.kt").readText()
-    }
 
     /** 全部发布语言 (与 AboutLicenseAttributionTest.ALL_RELEASED_LOCALES 同集)。 */
     private val locales = listOf(
@@ -148,25 +145,12 @@ class EmptyStateFirstTableContractTest {
         }
     }
 
-    // ---- C. 导入引导: 空态切管理页自动弹导入面板 ----
-
+    // 空态导入引导进入全屏添加课表页。
     @Test
-    fun `switching to manage from empty state auto shows import sheet`() {
-        // ManagementPage 必须有 autoShowImportSheet 参数 (导入引导机制入口)。
+    fun `empty state import opens add table route`() {
         assertTrue(
-            "ManagementPage 必须保留 autoShowImportSheet 参数 (导入引导机制)",
-            Regex("""autoShowImportSheet:\s*Boolean""").containsMatchIn(managementPage)
-        )
-        // MainActivity: 空态导入路径 = 会话级 flag 写路径 (onGoImport 置位)
-        // + flag 流入 ManagementPage 的 autoShowImportSheet。
-        assertTrue(
-            "MainActivity 空态导入回调必须置位 autoShow 引导 flag (写路径)",
-            Regex("""onGoImport\s*=\s*\{[^}]*autoShowImportOnce\w*\.value\s*=\s*true""")
-                .containsMatchIn(mainActivity)
-        )
-        assertTrue(
-            "引导 flag 必须流入 ManagementPage 的 autoShowImportSheet 参数",
-            Regex("""ManagementPage\([^)]*autoShowImportSheet\s*=\s*autoOnce""")
+            "空态导入应打开添加课表页",
+            Regex("""onGoImport\s*=\s*\{[^}]*navigator.openAddTable\(\)""")
                 .containsMatchIn(mainActivity)
         )
     }

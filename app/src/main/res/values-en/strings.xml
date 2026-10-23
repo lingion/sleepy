@@ -59,10 +59,10 @@
     <string name="manage_new_period_table_sub">Create an empty bell schedule to share across timetables</string>
     <string name="manage_edit_current">Edit Current</string>
     <string name="manage_edit_current_sub">Edit name, dates, and time slots</string>
-    <string name="manage_export">Export Timetable/Bell Schedule</string>
-    <string name="manage_export_sub">Share as Native / WakeUp JSON / ICS / text</string>
+    <string name="manage_export">Backup &amp; Export</string>
+    <string name="manage_export_sub">Export timetables or bell schedules</string>
     <string name="manage_manual_add">Add Course</string>
-    <string name="manage_manual_add_sub">Add a course directly to current schedule</string>
+    <string name="manage_manual_add_sub">Import courses or add them manually</string>
     <string name="table_info">Start: %1$s  |  Week %2$d  |  %3$d arrangements</string>
     <string name="manage_view_all_tables">View all</string>
     <string name="course_list_title">Course list</string>
@@ -129,13 +129,12 @@
     <string name="import_confirm_title">Confirm Before Import</string>
     <string name="import_confirm_body">Verify the semester start date and class times — otherwise the current week will be inaccurate.</string>
     <string name="import_week_start">First week starts on</string>
-    <string name="import_confirm">Confirm Import</string>
+    <string name="import_confirm">Confirm</string>
     <string name="import_all_conflict">All courses conflict — nothing to append</string>
     <string name="import_content_empty">Content is empty</string>
     <string name="import_select_table">Please select a schedule first</string>
     <string name="read_failed">Read failed: %1$s</string>
     <string name="cannot_read_file">Cannot read file</string>
-    <string name="import_preview_sub">Preview first, then import -- do not overwrite your schedule</string>
     <string name="format_wakeup_share">WakeUp share text</string>
     <string name="format_wakeup_desc">Starts with 【来自WakeUp课程表】</string>
     <string name="format_wakeup_json">WakeUp JSON</string>
@@ -326,7 +325,7 @@
     <string name="mine_export">Export Timetable/Bell Schedule</string>
     <string name="mine_stat_tables">Schedules</string>
     <string name="mine_stat_courses">Courses</string>
-    <string name="mine_stat_week">Week</string>
+    <string name="mine_stat_period_tables">Bell schedules</string>
 
         <string name="settings_high_refresh">High refresh rate</string>
     <string name="settings_nav_style">Bottom bar style</string>
@@ -598,6 +597,7 @@
     <string name="appearance_section_course_color">Course colors</string>
     <string name="course_color_classic">Don\'t follow theme color</string>
     <string name="course_color_follow_theme">Follow theme</string>
+    <string name="course_color_uniform">Uniform</string>
     <string name="course_color_custom_seed">Custom</string>
     <string name="course_color_seed_label">Base hue</string>
     <string name="course_color_preview">Preview</string>
@@ -998,6 +998,7 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="edge_insert_ok">Add</string>
     <string name="mine_period_tables">Bell schedule</string>
     <string name="period_tables_title">Bell schedule</string>
+    <string name="all_period_tables">All bell schedules</string>
     <string name="period_table_bound_count">Bound to %1$d timetable(s)</string>
     <string name="period_table_new">New bell schedule</string>
     <string name="period_table_copy">Duplicate bell schedule</string>
@@ -1014,7 +1015,7 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="period_table_name_label">Bell schedule name</string>
     <string name="period_table_delete_confirm">Delete bell schedule</string>
     <string name="period_table_delete_msg_body">Delete bell schedule "%1$s"?</string>
-    <string name="period_table_delete_blocked">Still bound by %1$d timetable(s), rebind first</string>
+    <string name="period_table_delete_bound_hint">This bell schedule is still linked to %1$d timetable(s). After deletion, each timetable will use an identical built-in bell schedule.</string>
     <string name="period_table_bind_label">Bell schedule</string>
     <string name="period_table_unbound">Not bound (use this table\'s periods)</string>
     <string name="period_tables_tab">Bell schedule</string>
@@ -1096,6 +1097,24 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="school_location_permission_settings">Location permissions</string>
     <string name="reminder_class_dnd_title">Class-time Do Not Disturb</string>
     <string name="reminder_class_dnd_sub">Automatically enable DND during class and restore afterwards</string>
+    <string name="manage_add_table">Add Timetable</string>
+    <string name="manage_add_table_sub">Import a timetable or create a blank one</string>
+    <string name="manage_period_tables">Bell Schedule Management</string>
+    <string name="manage_period_tables_sub">Add, edit or delete bell schedules</string>
+    <string name="manage_no_table">No timetable yet</string>
+    <string name="manage_no_table_hint">Use Add Timetable below to import or create one</string>
+    <string name="manage_create_blank_table">Create Blank Timetable</string>
+    <string name="add_course_title">Add Course</string>
+    <string name="create_table_title">Create New Timetable</string>
+    <string name="add_course_from_existing">From Existing Timetable</string>
+    <string name="add_course_manual">Add Course Manually</string>
+
+    <string name="import_backup_original">Back up original timetable</string>
+    <string name="import_backup_original_sub">Copy the original timetable before adding these courses</string>
+    <string name="import_append_conflicts_option">Append conflicting courses</string>
+    <string name="import_append_conflicts_option_sub">When off, courses conflicting with existing ones are skipped</string>
+    <string name="add_course_no_source">No other timetables available. Add a timetable first.</string>
+    <string name="import_backup_name">%1$s - Backup</string>
     <string name="table_reminder_title">Timetable reminders</string>
     <string name="table_reminder_subtitle">Choose which timetables receive reminders</string>
     <string name="table_reminder_master_off">Reminders are off. Your timetable choices will take effect when you turn on the master switch.</string>

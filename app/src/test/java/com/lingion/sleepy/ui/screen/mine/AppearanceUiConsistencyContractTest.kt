@@ -37,6 +37,19 @@ class AppearanceUiConsistencyContractTest {
     private val appearanceSource: String by lazy { loadSource("ui/screen/mine/AppearanceScreen.kt") }
     private val colorPickerSource: String by lazy { loadSource("ui/component/ColorPickerDialog.kt") }
 
+    @Test
+    fun uniform_color_remains_a_fourth_exclusive_choice() {
+        val section = appearanceSource.substringAfter("private fun CourseColorSection(")
+        assertTrue(section.contains("null to stringResource(R.string.course_color_uniform)"))
+        assertTrue(section.contains("selected = if (colorless) null else mode"))
+        assertTrue(section.contains("if (selected == null) onColorlessSelect() else onModeChange(selected)"))
+        assertTrue(section.contains("if (!colorless && mode == AppPrefs.COURSE_COLOR_MODE_CUSTOM)"))
+        val modeChange = appearanceSource.substringAfter("onModeChange = { newMode ->")
+            .substringBefore("onSeedCommit =")
+        assertTrue(modeChange.contains("AppPrefs.setCourseColorless(context, false)"))
+        assertTrue(appearanceSource.contains("AppPrefs.setCourseColorless(context, true)"))
+    }
+
     /** 契约 1: 外观页不再出现 RadioButton(导入+调用;注释提及不算) */
     @Test
     fun appearance_screen_has_no_radio_button() {

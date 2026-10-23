@@ -17,7 +17,7 @@ import org.junit.Test
  * 4. 复制课程表不创建新时间节次表(引用原 periodTableId)
  * 5. 撤回快照覆盖 period_tables(快照形状级, 恢复顺序在 UndoManagerTest 锁)
  *
- * 数据库守卫(删除被引用/悬空回退)在 ScheduleRepository 集成层 + PeriodTableMigrationTest 锁;
+ * 删除作息表的内置副本和事务回滚由 PeriodTableDeletionTest 锁;
  * 预览纯函数在 PeriodTablePreviewTest 锁; 导入导出在 PeriodTableRoundTripTest 锁。
  */
 class Issue40ContractTest {

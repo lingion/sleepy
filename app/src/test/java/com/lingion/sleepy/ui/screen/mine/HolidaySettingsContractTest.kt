@@ -130,12 +130,17 @@ class HolidaySettingsContractTest {
 
     @Test
     fun table_switcher_bound_to_activeTableId_not_selectTable() {
+        val switcher = screen.substringAfter("if (tableId != null && vmState.tables.size > 1)")
+            .substringBefore("// 标题行右贴 SegmentedSwitcher")
         assertTrue(
-            Regex("""SegmentedSwitcher\([\s\S]{0,300}?onSelect = \{ id -> activeTableId = id \}""").containsMatchIn(screen)
+            switcher.contains("ExposedDropdownMenuBox(") &&
+                switcher.contains("DropdownMenuItem(") &&
+                switcher.contains("activeTableId = table.id")
         )
+        assertFalse(switcher.contains("SegmentedSwitcher("))
         assertTrue(
             "table switcher must not drive viewModel.selectTable",
-            !Regex("""SegmentedSwitcher\([\s\S]{0,300}?viewModel\.selectTable""").containsMatchIn(screen)
+            !switcher.contains("viewModel.selectTable")
         )
     }
 

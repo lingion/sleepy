@@ -16,7 +16,7 @@ import org.junit.Test
  * 本契约锁可 JVM 验证的形状级不变量:
  * 1. 丢弃标记的判定式 — 仅"编辑目标 == 待定新建 id 且待定 id 非空"时为未保存;
  *    复制/编辑既有表(等 id 或 null 待定)绝不误判为未保存。
- * 2. 丢弃走 deletePeriodTable(受删除守卫保护) — 已绑定的行不可能被误删。
+ * 2. 丢弃走 deletePeriodTable(onlyIfUnbound = true) — 已绑定的行不可能被误删。
  * 3. 撤回快照形状: 丢弃 = 一次 deletePeriodTable = 一个撤回单元, 快照含创建+丢弃前库态。
  */
 class Issue40CreateResidueTest {
@@ -47,13 +47,13 @@ class Issue40CreateResidueTest {
 
     @Test
     fun discard_is_a_single_undo_unit_over_delete_guard() {
-        // 丢弃 = deletePeriodTable(id) — 复用删除守卫: 被引用行返回 false 不删,
-        // 因此"新表被误绑后返回"也绝不产生悬空引用(§7 删除守卫不可绕过)
+        // 放弃编辑与主动删除不同：onlyIfUnbound = true 时被引用行返回 false 不删。
+        // 实际仓库流程由 PeriodTableDeletionTest 验证。
         val bound = pt(id = 9)
         val bindingTable = TimeTableEntity(id = 1, name = "课表", startDate = "2026-02-23", maxWeek = 16,
             nodesPerDay = 12, timeJson = "", color = "#111111", periodTableId = 9)
         val referenced = listOf(bindingTable).count { it.periodTableId == bound.id }
-        // boundTableCount > 0 → deletePeriodTable 返回 false → 丢弃静默不删(表仍在, 绑定不悬空)
+        // 有绑定且 onlyIfUnbound = true → 放弃编辑时静默保留。
         assertTrue(referenced > 0)
     }
 

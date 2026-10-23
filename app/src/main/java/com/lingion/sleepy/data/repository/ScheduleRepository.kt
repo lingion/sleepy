@@ -111,6 +111,71 @@ class ScheduleRepository(private val db: AppDatabase) {
 
     suspend fun getTable(id: Long): TimeTableEntity? = tableDao.getById(id)
 
+    /** Back up and append in one transaction; a failed write leaves no partial backup. */
+    internal suspend fun appendImportedCourses(
+        tableId: Long,
+        incoming: List<CourseEntity>,
+        incomingTimeJson: String,
+        incomingNodes: Int,
+        backupOriginal: Boolean,
+        appendConflicts: Boolean,
+        authoritativeGroups: Boolean,
+        backupName: String,
+    ): Int {
+        val added = db.withTransaction {
+            val table = tableDao.getById(tableId) ?: error("Target timetable no longer exists")
+            val bound = table.periodTableId?.let { periodTableDao.getById(it) }
+            val effective = table.hydratedWith(bound)
+            val existing = courseDao.getByTable(tableId)
+            val extended = com.lingion.sleepy.util.CourseImportPolicy.mergeTimeJson(
+                effective.timeJson, incomingTimeJson,
+                maxOf(incomingNodes, incoming.maxOfOrNull { it.startNode + it.step - 1 } ?: 0)
+            )
+            val accepted = com.lingion.sleepy.util.CourseImportPolicy.selectIncoming(
+                incoming, existing, appendConflicts, extended
+            )
+            if (accepted.isEmpty()) return@withTransaction 0
+            captureForUndo()
+            if (backupOriginal) {
+                val names = tableDao.getAll().map { it.name }
+                val periods = periodTableDao.getAll().map { it.name }
+                val name = com.lingion.sleepy.util.TimeTableUtils.suggestUniqueName(backupName, names, periods)
+                // Freeze the effective bell schedule so a later shared-schedule update cannot change the backup.
+                val backupId = tableDao.insert(effective.copy(
+                    id = 0, name = name, isDefault = false, periodTableId = null,
+                    preBindSnapshotJson = "", createdAt = System.currentTimeMillis(), reminderEnabled = false
+                ))
+                courseDao.insertAll(existing.map { it.copy(id = 0, tableId = backupId) })
+            }
+            // Imported group IDs must not merge with a group already present in the target.
+            val groups = mutableMapOf<String, String>()
+            val prepared = (if (authoritativeGroups) accepted else assignGroupIds(accepted)).map {
+                it.copy(id = 0, tableId = tableId,
+                    groupId = if (it.groupId.isBlank()) java.util.UUID.randomUUID().toString()
+                        else groups.getOrPut(it.groupId) { java.util.UUID.randomUUID().toString() })
+            }
+            courseDao.insertAll(prepared)
+            com.lingion.sleepy.util.CourseColorWriteGlue.persistNewGroupHues(
+                SleepyApp.get(), db.courseColorDao(), prepared
+            )
+            val maxNode = com.lingion.sleepy.util.TimeTableUtils.parseTimeSlotRows(extended)
+                .maxOfOrNull { it.node } ?: effective.nodesPerDay
+            if (bound != null && extended != bound.timeJson) {
+                periodTableDao.update(bound.copy(timeJson = extended, nodesPerDay = maxNode, updatedAt = System.currentTimeMillis()))
+            }
+            tableDao.update(table.copy(
+                maxWeek = maxOf(table.maxWeek, accepted.maxOf { it.endWeek }),
+                timeJson = if (bound == null) extended else table.timeJson,
+                nodesPerDay = if (bound == null) maxNode else table.nodesPerDay,
+            ))
+            // The import result, never its backup, remains the active timetable.
+            tableDao.setDefault(tableId)
+            prepared.size
+        }
+        if (added > 0) onDataChanged()
+        return added
+    }
+
     suspend fun getDefaultTable(): TimeTableEntity? = tableDao.getDefault()
 
     suspend fun insertTable(table: TimeTableEntity): Long {
@@ -134,8 +199,19 @@ class ScheduleRepository(private val db: AppDatabase) {
             override suspend fun atomic(block: suspend () -> Long): Long = db.withTransaction { block() }
             override suspend fun periodExists(id: Long) = periodTableDao.getById(id) != null
             override suspend fun captureUndo() = captureForUndo()
-            override suspend fun insertPeriod(period: com.lingion.sleepy.data.entity.PeriodTableEntity) = periodTableDao.insert(period)
-            override suspend fun insertTable(table: TimeTableEntity) = tableDao.insert(table)
+            override suspend fun insertPeriod(period: com.lingion.sleepy.data.entity.PeriodTableEntity): Long {
+                val name = com.lingion.sleepy.util.TimeTableUtils.suggestUniqueName(
+                    period.name, tableDao.getAll().map { it.name } + table.name,
+                    periodTableDao.getAll().map { it.name }
+                )
+                return periodTableDao.insert(period.copy(name = name))
+            }
+            override suspend fun insertTable(table: TimeTableEntity): Long {
+                val name = com.lingion.sleepy.util.TimeTableUtils.suggestUniqueName(
+                    table.name, tableDao.getAll().map { it.name }, periodTableDao.getAll().map { it.name }
+                )
+                return tableDao.insert(table.copy(name = name))
+            }
             override suspend fun insertCourses(courses: List<CourseEntity>) { courseDao.insertAll(courses) }
             override suspend fun setDefault(id: Long) = tableDao.setDefault(id)
             // 认亲（spec §2.4）: 事务内读导入前全库名册; 新课 hue 同事务落库。
@@ -344,7 +420,7 @@ class ScheduleRepository(private val db: AppDatabase) {
     suspend fun getPeriodTable(id: Long): com.lingion.sleepy.data.entity.PeriodTableEntity? =
         periodTableDao.getById(id)
 
-    /** 某时间节次表被多少张课程表绑定 — 管理页"已绑定 N 张课表"与删除守卫共用 */
+    /** 某时间节次表被多少张课程表绑定。 */
     suspend fun periodTableBoundCount(id: Long): Int = periodTableDao.boundTableCount(id)
 
     /**
@@ -470,17 +546,18 @@ class ScheduleRepository(private val db: AppDatabase) {
         return boundCount
     }
 
-    /**
-     * 删除守卫(设计 §7): 被引用的时间节次表禁止删除(返回 false), 无绑定才真删。
-     * 禁止产生悬空引用。
-     */
-    suspend fun deletePeriodTable(id: Long): Boolean {
-        // 删除守卫先行 — 被引用时不动库也不拍快照, 禁止产生悬空引用
-        if (periodTableDao.boundTableCount(id) > 0) return false
-        captureForUndo()
-        periodTableDao.deleteById(id)
-        onDataChanged()
-        return true
+    /** 删除前将当前完整作息保存到各绑定课表内；复制、解绑和删除为同一个撤回单元。 */
+    suspend fun deletePeriodTable(id: Long, onlyIfUnbound: Boolean = false): Boolean {
+        val deleted = deletePeriodTableAtomically(object : PeriodTableDeletionStore {
+            override suspend fun atomic(block: suspend () -> Boolean) = db.withTransaction { block() }
+            override suspend fun getPeriod(id: Long) = periodTableDao.getById(id)
+            override suspend fun getBoundTables(id: Long) = tableDao.getAllBoundTo(id)
+            override suspend fun captureUndo() = captureForUndo()
+            override suspend fun updateTable(table: TimeTableEntity) = tableDao.update(table)
+            override suspend fun deletePeriod(id: Long) = periodTableDao.deleteById(id)
+        }, id, onlyIfUnbound)
+        if (deleted) onDataChanged()
+        return deleted
     }
 
     suspend fun tableCount(): Int = tableDao.count()

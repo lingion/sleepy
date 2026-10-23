@@ -133,7 +133,6 @@ fun GeneralSettingsScreen(
     var vertPunct by remember { mutableStateOf(AppPrefs.isVertPunctReplace(context)) }
     var gridShowSeparators by remember { mutableStateOf(AppPrefs.isGridShowSeparators(context)) }
     var gridLongBreakSpacing by remember { mutableStateOf(AppPrefs.isGridLongBreakSpacing(context)) }
-    var courseColorless by remember { mutableStateOf(AppPrefs.isCourseColorless(context)) }
 
     // 显示项变更后立即刷小组件(管线自 AppearanceScreen 迁移保留)
     val widgetScope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
@@ -402,33 +401,6 @@ fun GeneralSettingsScreen(
                         }
                         if (day != 7) HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     }
-                }
-            }
-
-            // 课程胶囊统一底色: 仅标题 + 右侧开关(用户 2026-09-03 指令: 说明文字去掉; 标题禁两遍),
-            // App 侧独立不刷新小组件。
-            // 2026-09-21 标签补主语「App 内」: 与②组「小组件统一课程底色」成对区分(基线 §10 开关命名带主语)。
-            // 高度对齐折叠卡收起态: Switch 默认 48dp 最小触摸目标会把行撑高, heightIn(max=32dp)
-            // 锁回开关本体高度(触摸目标仍覆盖整行点击区, 不损可用性)
-            item {
-                val colors = MaterialTheme.colorScheme
-                Row(
-                    modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).padding(horizontal = 16.dp, vertical = 14.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(R.string.settings_course_colorless),
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                        color = colors.onSurface,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Switch(
-                        checked = courseColorless,
-                        onCheckedChange = { courseColorless = it; AppPrefs.setCourseColorless(context, it) },
-                        colors = SwitchDefaults.colors(checkedThumbColor = colors.onPrimary, checkedTrackColor = colors.primary),
-                        modifier = Modifier.heightIn(max = 32.dp)
-                    )
                 }
             }
 

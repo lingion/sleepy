@@ -194,6 +194,40 @@ internal fun SleepyNavHost(
             )
         }
 
+        entry<SleepyRoute.AddTable> {
+            val context = LocalContext.current
+            com.lingion.sleepy.ui.screen.imports.AddTableScreen(
+                onBack = { navigator.pop() },
+                onCreateNewTable = onCreateNewTable,
+                onJwImportRequested = {
+                    navigator.pop()
+                    context.startActivity(android.content.Intent(
+                        context, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java
+                    ))
+                },
+                onImported = { navigator.pop() },
+                viewModel = mainVm,
+            )
+        }
+
+        entry<SleepyRoute.AddCourseEntry> { key ->
+            val targetId = key.tableId
+            val context = LocalContext.current
+            com.lingion.sleepy.ui.screen.imports.AddTableScreen(
+                onBack = { navigator.pop() },
+                onCreateNewTable = { navigator.openAddCourse() },
+                onJwImportRequested = {
+                    context.startActivity(android.content.Intent(
+                        context, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java
+                    ).putExtra(com.lingion.sleepy.ui.screen.imports.JwImportActivity.EXTRA_TARGET_TABLE_ID, targetId))
+                },
+                onImported = { navigator.pop() },
+                targetTableId = targetId,
+                addingCourses = true,
+                viewModel = mainVm,
+            )
+        }
+
         entry<SleepyRoute.AddCourse> { key ->
             // 基线 §1.3 例外: 编辑课程会话**不纳入**任何保存作用域。
             // editingCourse 是纯内存态(NavSession), 进程恢复后必为 null, 所以这条
@@ -457,8 +491,8 @@ private fun MainRoute(
             navigator.openAddCourse(course.id, editing = true)
         }
         val onTabletGoImport: () -> Unit = {
-            com.lingion.sleepy.MainActivity.autoShowImportOnceState.value = true
             setCurrentTab(Tab.Manage)
+            navigator.openAddTable()
         }
         val onTabletManualAdd: () -> Unit = { navigator.openAddCourse() }
         val colors = MaterialTheme.colorScheme
@@ -601,12 +635,8 @@ private fun MainRoute(
                         currentTab = effectiveRightTab,
                         mainVm = mainVm,
                         navigator = navigator,
-                        ctx = ctxForExit,
                         onTabletEditCourse = onTabletEditCourse,
-                        onTabletGoImport = onTabletGoImport,
                         onTabletManualAdd = onTabletManualAdd,
-                        onCreateNewTable = onCreateNewTable,
-                        onNavigateManageTab = { setCurrentTab(Tab.Manage) },
                     )
                 }
             }
@@ -803,27 +833,9 @@ private fun RightHalfContent(
     currentTab: Tab,
     mainVm: ScheduleViewModel,
     navigator: SleepyNavigator,
-    ctx: android.content.Context,
     onTabletEditCourse: (CourseEntity) -> Unit,
-    onTabletGoImport: () -> Unit,
     onTabletManualAdd: () -> Unit,
-    onCreateNewTable: () -> Unit,
-    onNavigateManageTab: () -> Unit,
 ) {
-    // 导入草稿来源 — 与 MainTabs (Compact) 同源
-    val draftEntities by com.lingion.sleepy.SleepyApp.get().importDraftRepository
-        .observeAll().collectAsState(initial = emptyList())
-    val drafts: List<com.lingion.sleepy.ui.screen.imports.ImportDraft> =
-        draftEntities.mapNotNull { entity ->
-            val snapshot = com.lingion.sleepy.data.jw.JwImportDraftCodec.fromJson(entity.payloadJson)
-                ?: return@mapNotNull null
-            com.lingion.sleepy.ui.screen.imports.ImportDraft(
-                id = entity.id,
-                name = snapshot.tableName.ifBlank { snapshot.school.name },
-                details = "${snapshot.courses.size} ${stringResource(com.lingion.sleepy.R.string.import_courses)}",
-            )
-        }
-    val draftScope = androidx.compose.runtime.rememberCoroutineScope()
     AnimatedContent(
         targetState = currentTab,
         transitionSpec = {
@@ -837,38 +849,12 @@ private fun RightHalfContent(
                 viewModel = mainVm,
             )
             Tab.Manage -> ManagementPage(
-                autoShowImportSheet = com.lingion.sleepy.MainActivity.autoShowImportOnceState.value
-                    || com.lingion.sleepy.MainActivity.pendingImportText != null,
-                onJwImportRequested = {
-                    ctx.startActivity(android.content.Intent(
-                        ctx,
-                        com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java
-                    ))
-                },
-                onCreateNewTableRequested = onCreateNewTable,
-                onCreateNewPeriodTableRequested = { newId -> navigator.createPeriodTableAndEdit(newId) },
-                onManualAdd = onTabletManualAdd,
+                onAddTable = { navigator.openAddTable() },
+                onManualAdd = { navigator.openAddCourseEntry(mainVm.state.value.selectedTableId ?: 0L) },
                 onEditCurrentTable = { navigator.openEditTable() },
+                onOpenPeriodTables = { navigator.openPeriodTables() },
                 onExportRequested = { navigator.openExport() },
                 onOpenAllTables = { navigator.openAllTables() },
-                drafts = drafts,
-                onRestoreDraft = { id ->
-                    ctx.startActivity(
-                        android.content.Intent(
-                            ctx,
-                            com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java
-                        ).putExtra(
-                            com.lingion.sleepy.ui.screen.imports.JwImportActivity.EXTRA_DRAFT_ID,
-                            id
-                        )
-                    )
-                },
-                onDeleteDraft = { id ->
-                    draftScope.launch {
-                        com.lingion.sleepy.SleepyApp.get().importDraftRepository.delete(id)
-                    }
-                },
-                onImported = { /* 留在管理页, 摘要卡就地刷新 */ },
                 viewModel = mainVm,
             )
             Tab.Mine -> MineScreen(
@@ -879,7 +865,6 @@ private fun RightHalfContent(
                 onOpenAppearance = { navigator.openAppearance() },
                 onOpenGeneral = { navigator.openGeneral() },
                 onOpenWidgetSettings = { navigator.openWidgetSettings() },
-                onOpenExport = { navigator.openExport() },
                 onOpenReminder = { navigator.openReminder() },
                 onOpenAbout = { navigator.openAbout() },
             )

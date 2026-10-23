@@ -81,7 +81,7 @@ fun PeriodTablesScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.period_tables_title)) },
+                title = { Text(stringResource(R.string.all_period_tables)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))

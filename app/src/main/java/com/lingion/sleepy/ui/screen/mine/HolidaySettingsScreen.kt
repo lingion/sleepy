@@ -380,13 +380,41 @@ fun HolidaySettingsScreen(
                     )
                     if (tableId != null && vmState.tables.size > 1) {
                         Spacer(Modifier.height(4.dp))
-                        SegmentedSwitcher(
-                            options = vmState.tables.map { it.id to it.name },
-                            selected = activeTableId,
-                            onSelect = { id -> activeTableId = id },
-                            modifier = Modifier.fillMaxWidth(),
-                            containerColor = colors.surfaceContainerHighest
-                        )
+                        var tableMenuOpen by remember { mutableStateOf(false) }
+                        ExposedDropdownMenuBox(
+                            expanded = tableMenuOpen,
+                            onExpandedChange = { tableMenuOpen = it },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            TextField(
+                                value = vmState.tables.firstOrNull { it.id == activeTableId }?.name.orEmpty(),
+                                onValueChange = {},
+                                readOnly = true,
+                                singleLine = true,
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = tableMenuOpen) },
+                                modifier = Modifier
+                                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                                    .fillMaxWidth(),
+                                shape = SleepyTheme.fieldShape,
+                                colors = SleepyTheme.fieldColors()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = tableMenuOpen,
+                                onDismissRequest = { tableMenuOpen = false },
+                                shape = SleepyTheme.fieldShape,
+                                containerColor = colors.surfaceContainerHighest
+                            ) {
+                                vmState.tables.forEach { table ->
+                                    DropdownMenuItem(
+                                        text = { Text(table.name) },
+                                        onClick = {
+                                            activeTableId = table.id
+                                            tableMenuOpen = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }

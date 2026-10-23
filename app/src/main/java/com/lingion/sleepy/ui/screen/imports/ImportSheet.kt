@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -36,20 +38,22 @@ import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.FileUpload
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.QrCode2
-import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.TextField
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -57,6 +61,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -88,26 +93,16 @@ import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import kotlinx.coroutines.launch
 
-/**
- * 导入课表弹窗 — 取代原 ImportScreen 整页
- *
- * 结构（自上而下）：
- *  - 标题栏 "导入课表"
- *  - 教务直连（一行可点）
- *  - 从文本导入（默认折叠，展开后是输入框 + 预览按钮）
- *  - 从文件导入（一行可点，触发系统选择器）
- *  - 支持的导入类型（说明列表）
- */
+/** 全屏导入入口：新建课表或向指定课表添加课程。 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ImportSheet(
-    sheetState: SheetState,
-    onDismiss: () -> Unit,
+fun AddTableScreen(
+    onBack: () -> Unit,
+    onCreateNewTable: () -> Unit,
     onJwImportRequested: () -> Unit,
     onImported: () -> Unit,
-    drafts: List<ImportDraft> = emptyList(),
-    onRestoreDraft: (String) -> Unit = {},
-    onDeleteDraft: (String) -> Unit = {},
+    targetTableId: Long = 0L,
+    addingCourses: Boolean = false,
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -119,24 +114,42 @@ fun ImportSheet(
     val importSuccessMessage = stringResource(R.string.import_success)
     val defaultTableName = stringResource(R.string.default_table_name)
 
-    var textExpanded by remember { mutableStateOf(false) }
-    var inputText by remember { mutableStateOf("") }
+    var textExpanded by rememberSaveable { mutableStateOf(false) }
+    var inputText by rememberSaveable { mutableStateOf("") }
     var detailFormat by remember { mutableStateOf<ImportFormat?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMsg by remember { mutableStateOf<String?>(null) }
     var preview by remember { mutableStateOf<ImportPreview?>(null) }
-    var pendingMode by remember { mutableStateOf<ImportApplyMode?>(null) }
     var confirmedTableName by remember { mutableStateOf("") }
     var confirmedStartDate by remember { mutableStateOf("") }
     var confirmedTimeJson by remember { mutableStateOf("") }
-    // v1.0.56 T6: 第三 Tab「作息表」— 绑定选择; 确认导入时传给 applyImportPreview 落绑定
+    // 第三 Tab「作息表」的选择随新课表一起保存。
     var confirmedBindPeriodTableId by remember { mutableStateOf<Long?>(null) }
     // v1.0.56 T9: 纯作息导入 — 解析结果只有作息表没课程时, 走独立确认框(只建作息表)
     var purePeriodName by remember { mutableStateOf("") }
     val allPeriodTables by viewModel.allPeriodTables.collectAsState(initial = emptyList())
     var importJustApplied by remember { mutableStateOf(false) }
-    var showDrafts by remember { mutableStateOf(false) }
     val snackbar = remember { androidx.compose.material3.SnackbarHostState() }
+    var showExistingTables by remember { mutableStateOf(false) }
+    val canImport = !isLoading && (!addingCourses || state.tables.any { it.id == targetTableId })
+
+    fun acceptPreview(value: ImportPreview?) {
+        value ?: return
+        if (addingCourses && value.parseResult.courses.isEmpty()) {
+            errorMsg = context.getString(R.string.import_content_empty)
+            return
+        }
+        confirmedStartDate = value.parseResult.startDate.ifBlank { java.time.LocalDate.now().toString() }
+        confirmedTableName = value.parseResult.tableName.ifBlank { defaultTableName }
+        confirmedTimeJson = TimeTableUtils.mergeMostComplete(
+            currentJson = "",
+            incomingJson = value.parseResult.timeJson,
+            requiredNodeCount = maxOf(value.parseResult.nodesPerDay,
+                value.parseResult.courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0)
+        )
+        confirmedBindPeriodTableId = null
+        preview = value
+    }
 
     // 外部 app (文件管理器 / 其他课表 app) 通过 Intent 打开 json 时,
     // MainActivity 已把课表文本挂到 companion.pendingImportText;
@@ -149,10 +162,11 @@ fun ImportSheet(
             com.lingion.sleepy.MainActivity.pendingImportText = null
             isLoading = true
             try {
-                val p = buildImportPreview(text, state, context) { msg -> errorMsg = msg }
-                if (p != null) preview = p
+                val p = buildImportPreview(text, targetTableId, context) { msg -> errorMsg = msg }
+                acceptPreview(p)
             } catch (e: Throwable) {
                 android.util.Log.e("Sleepy", "pending import preview failed", e)
+                errorMsg = readFailedFormat.format(e.message)
             } finally {
                 isLoading = false
             }
@@ -170,8 +184,10 @@ fun ImportSheet(
                 prefs.edit().remove("pending_text").apply()
                 isLoading = true
                 try {
-                    val p = buildImportPreview(text, state, context) { msg -> errorMsg = msg }
-                    if (p != null) preview = p
+                    val p = buildImportPreview(text, targetTableId, context) { msg -> errorMsg = msg }
+                    acceptPreview(p)
+                } catch (e: Exception) {
+                    errorMsg = readFailedFormat.format(e.message)
                 } finally {
                     isLoading = false
                 }
@@ -190,9 +206,8 @@ fun ImportSheet(
                 try {
                     val text = context.contentResolver.openInputStream(it)?.bufferedReader()?.use { r -> r.readText() }
                         ?: throw Exception(cannotReadFileMessage)
-                    preview = buildImportPreview(text, state, context) { msg -> errorMsg = msg }
-                    // 注意: 不要在这里 onDismiss() —— sheet 关掉后 preview state 会随之销毁, dialog 永远不弹。
-                    // preview != null 时 ImportPreviewDialog 会在 sheet 之上显示; 用户点确认/取消后再清 state。
+                    acceptPreview(buildImportPreview(text, targetTableId, context) { msg -> errorMsg = msg })
+                    // 保持页面，预览对话框依赖这里的 preview 状态。
                 } catch (e: Exception) {
                     errorMsg = readFailedFormat.format(e.message)
                 } finally {
@@ -225,59 +240,55 @@ fun ImportSheet(
         )
     }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-    ) {
+    Scaffold(
+        modifier = Modifier.fillMaxSize().imePadding(),
+        containerColor = colors.background,
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(if (addingCourses) R.string.add_course_title else R.string.create_table_title)) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = colors.background)
+            )
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbar) }
+    ) { padding ->
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 8.dp)
+                .fillMaxSize()
+                .padding(padding)
                 .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp, vertical = 8.dp)
         ) {
-            // 标题与草稿入口
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.import_title),
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
-                    color = colors.onSurface,
-                    modifier = Modifier.weight(1f)
+            if (addingCourses) {
+                ImportMethodRow(
+                    icon = Icons.Outlined.ContentCopy,
+                    label = stringResource(R.string.add_course_from_existing),
+                    enabled = canImport,
+                    onClick = { showExistingTables = true }
                 )
-                IconButton(
-                    onClick = { showDrafts = true },
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(androidx.compose.foundation.shape.CircleShape)
-                        .background(colors.primaryContainer)
-                ) {
-                    // 2026-09-16 用户: 书签不像草稿箱 — 换带盖收纳箱 Inventory2
-                    Icon(
-                        imageVector = Icons.Outlined.Inventory2,
-                        contentDescription = stringResource(R.string.import_drafts),
-                        tint = colors.onPrimaryContainer
-                    )
+                if (!state.tables.any { it.id == targetTableId }) {
+                    Text(stringResource(R.string.manage_no_table_hint), color = colors.onSurfaceVariant)
                 }
             }
-            Text(
-                text = stringResource(R.string.import_preview_sub),
-                style = MaterialTheme.typography.bodyMedium,
-                color = colors.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            if (!addingCourses) {
+                Text(
+                    text = stringResource(R.string.import_new_table_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            }
 
             // 行 1：教务直连
             ImportMethodRow(
                 icon = Icons.Outlined.QrCode2,
                 label = stringResource(R.string.import_jw),
-                onClick = {
-                    onDismiss()
-                    onJwImportRequested()
-                }
+                enabled = canImport,
+                onClick = onJwImportRequested
             )
 
             // 行 2：从文本导入（可折叠）
@@ -285,6 +296,7 @@ fun ImportSheet(
                 icon = Icons.Outlined.Description,
                 label = stringResource(R.string.import_paste),
                 trailing = if (textExpanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                enabled = canImport,
                 onClick = { textExpanded = !textExpanded }
             )
             AnimatedVisibility(
@@ -314,18 +326,20 @@ fun ImportSheet(
                             scope.launch {
                                 isLoading = true
                                 try {
-                                    val p = buildImportPreview(inputText, state, context) { msg -> errorMsg = msg }
+                                    val p = buildImportPreview(inputText, targetTableId, context) { msg -> errorMsg = msg }
                                     if (p != null) {
-                                        preview = p
-                                        // 不要 onDismiss() —— dialog 叠在 sheet 上显示; 用户在 dialog 操作完后再关 sheet。
+                                        acceptPreview(p)
+                                        // 预览对话框叠在当前页面上显示。
                                     }
+                                } catch (e: Exception) {
+                                    errorMsg = readFailedFormat.format(e.message)
                                 } finally {
                                     isLoading = false
                                 }
                             }
                         },
                         modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
-                        enabled = !isLoading && inputText.isNotBlank(),
+                        enabled = canImport && inputText.isNotBlank(),
                         shape = SleepyTheme.Buttons.shape,
                     ) {
                         Text(
@@ -341,6 +355,7 @@ fun ImportSheet(
             ImportMethodRow(
                 icon = Icons.Outlined.FileUpload,
                 label = stringResource(R.string.import_file),
+                enabled = canImport,
                 onClick = {
                     // OpenDocument() 接受 MIME 数组, 让 picker 只显示 json / 文本文件
                     filePicker.launch(arrayOf("application/json", "text/plain", "text/csv", "text/html", "*/*"))
@@ -396,34 +411,24 @@ fun ImportSheet(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+            Button(
+                onClick = onCreateNewTable,
+                modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
+                enabled = canImport,
+                shape = SleepyTheme.Buttons.shape,
+            ) {
+                Text(stringResource(if (addingCourses) R.string.add_course_manual else R.string.manage_create_blank_table))
+            }
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
-        // 错误反馈通道: 上面 errorMsg → snackbar.showSnackbar 依赖此 host,
-        // 之前 sheet 内无 host → 导入失败提示被静默吞掉。默认 M3 配色, 与其余 5 处一致。
-        // (原 BoxWithConstraints 包裹层已删: scope 内 maxWidth/maxHeight 从未被消费, lint UnusedBoxWithConstraintsScope)
-        SnackbarHost(
-            hostState = snackbar,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
         // 导入成功提示: 不再跳编辑课表页(假保存闸), 用 snackbar 明示已落库
-        LaunchedEffect(preview, pendingMode) {
-            if (preview == null && pendingMode == null && importJustApplied) {
+        LaunchedEffect(preview, importJustApplied) {
+            if (preview == null && importJustApplied) {
                 importJustApplied = false
                 snackbar.showSnackbar(importSuccessMessage)
             }
         }
-    }
-
-    if (showDrafts) {
-        ImportDraftSheet(
-            drafts = drafts,
-            onDismiss = { showDrafts = false },
-            onRestore = { id ->
-                showDrafts = false
-                onRestoreDraft(id)
-            },
-            onDelete = onDeleteDraft
-        )
     }
 
     // 格式详情弹窗 ("支持格式"每行 ⓘ 点开)
@@ -452,7 +457,7 @@ fun ImportSheet(
                 allPeriodTables.map { it.name }
             )
             AlertDialog(
-                onDismissRequest = { preview = null },
+                onDismissRequest = { if (!isLoading) preview = null },
                 title = { Text(stringResource(R.string.period_table_import_title), color = colors.onSurface) },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -479,25 +484,24 @@ fun ImportSheet(
                         com.lingion.sleepy.ui.component.DialogActionButtons(
                             confirmText = stringResource(R.string.period_table_import_confirm),
                             onConfirm = {
+                                if (isLoading) return@DialogActionButtons
+                                isLoading = true
                                 scope.launch {
-                                    isLoading = true
                                     try {
                                         applyPurePeriodImport(
                                             name = candidate,
                                             parsed = pt,
-                                            onImported = onImported,
+                                            onImported = { preview = null; importJustApplied = true; onImported() },
                                             onError = { msg -> errorMsg = msg }
                                         )
-                                        preview = null
-                                        importJustApplied = true
                                     } finally {
                                         isLoading = false
                                     }
                                 }
                             },
                             dismissText = stringResource(R.string.cancel),
-                            onDismiss = { preview = null },
-                            confirmEnabled = candidate.isNotBlank() && !nameTaken
+                            onDismiss = { if (!isLoading) preview = null },
+                            confirmEnabled = !isLoading && candidate.isNotBlank() && !nameTaken
                         )
                     }
                 },
@@ -506,76 +510,18 @@ fun ImportSheet(
             )
             return@let
         }
-        ImportPreviewDialog(
-            preview = currentPreview,
-            onDismiss = { preview = null },
-            onApply = { mode ->
-                val existingTable = state.currentTable
-                confirmedStartDate = currentPreview.parseResult.startDate.ifBlank {
-                    existingTable?.startDate ?: java.time.LocalDate.now().toString()
-                }
-                confirmedTableName = currentPreview.parseResult.tableName.ifBlank {
-                    existingTable?.name ?: defaultTableName
-                }
-                // v7.10.16k 无损合并(用户 2026-09-03「哪个大用哪个, 最完整优先」):
-                // 不再 ifBlank 单选 — 老表作息与导入作息逐节合并, 节次数取双方最大,
-                // 并拓到导入课程实际到达的最大节。导入源 13 节绝不被老表 10 节压小。
-                confirmedTimeJson = TimeTableUtils.mergeMostComplete(
-                    currentJson = existingTable?.timeJson ?: "",
-                    incomingJson = currentPreview.parseResult.timeJson,
-                    requiredNodeCount = currentPreview.parseResult.nodesPerDay
-                )
-                pendingMode = mode
-            }
-        )
-    }
-
-    if (preview != null && pendingMode != null) {
-        // 追加模式: 追加到已存在的课表, 命名由目标课表自带, 不需要再问用户
-        // 直接走 applyImportPreview, 跳过 ImportConfirmDialog
-        val pending = pendingMode!!
-        if (pending == ImportApplyMode.AppendNonConflict || pending == ImportApplyMode.AppendAll) {
-            LaunchedEffect(Unit) {
-                scope.launch {
-                    isLoading = true
-                    try {
-                        applyImportPreview(
-                            preview = preview!!,
-                            mode = pending,
-                            confirmedStartDateRaw = preview!!.parseResult.startDate.ifBlank {
-                                state.currentTable?.startDate ?: java.time.LocalDate.now().toString()
-                            },
-                            confirmedTableName = state.currentTable?.name ?: "",
-                            // v7.10.16k: 与确认框路径同一无损合并 — 老表∪导入, 节次取最大
-                            confirmedTimeJson = TimeTableUtils.mergeMostComplete(
-                                currentJson = state.currentTable?.timeJson ?: "",
-                                incomingJson = preview!!.parseResult.timeJson,
-                                requiredNodeCount = preview!!.parseResult.nodesPerDay
-                            ),
-                            context = context,
-                            onImported = onImported,
-                            onError = { msg -> errorMsg = msg }
-                        )
-                        preview = null
-                        pendingMode = null
-                        importJustApplied = true
-                    } finally {
-                        isLoading = false
-                    }
-                }
-            }
-        } else {
+        if (!addingCourses) {
             ImportConfirmDialog(
                 startDate = confirmedStartDate,
                 tableName = confirmedTableName,
                 timeJson = confirmedTimeJson,
-                // 仅"创建新课表"或"追加为新课表"需要命名; 覆盖课表用户已在用同一个, 不强制重命名
-                showTableName = pending == ImportApplyMode.ImportAsNew || pending == ImportApplyMode.AppendAsNew,
+                showTableName = true,
+                isApplying = isLoading,
+                parseResult = currentPreview.parseResult,
                 onTableNameChange = { confirmedTableName = it },
                 onStartDateChange = { confirmedStartDate = it },
                 onTimeJsonChange = { confirmedTimeJson = it },
-                onDismiss = { pendingMode = null },
-                // v1.0.56 T6: 第三 Tab「作息表」
+                onDismiss = { if (!isLoading) preview = null },
                 periodTableOptions = allPeriodTables.map {
                     com.lingion.sleepy.ui.component.PeriodTableOption(it.id, it.name, it.nodesPerDay)
                 },
@@ -583,36 +529,112 @@ fun ImportSheet(
                 onSelectPeriodTable = { confirmedBindPeriodTableId = it },
                 periodTableTimeJsonById = allPeriodTables.associate { it.id to it.timeJson },
                 onConfirm = {
-                    val mode = pendingMode ?: return@ImportConfirmDialog
-                    val currentPreview = preview ?: return@ImportConfirmDialog
-                    scope.launch {
+                    if (!isLoading) {
                         isLoading = true
-                        try {
-                            // 「确认导入」= 唯一写库点, 点下即落库。
-                            // 之后不再跳编辑课表页 — 那个页面有「保存」按钮, 会造成
-                            // "没点保存数据也在"的假保存闸误导(用户以为还有反悔机会, 实际已提交)。
-                            applyImportPreview(
-                                preview = currentPreview,
-                                mode = mode,
-                                confirmedStartDateRaw = confirmedStartDate,
-                                confirmedTableName = confirmedTableName,
-                                confirmedTimeJson = confirmedTimeJson,
-                                context = context,
-                                onImported = onImported,
-                                onError = { msg -> errorMsg = msg },
-                                bindPeriodTableId = confirmedBindPeriodTableId
-                            )
-                            preview = null
-                            pendingMode = null
-                            importJustApplied = true
-                        } finally {
-                            isLoading = false
+                        scope.launch {
+                            try {
+                                applyNewTableImport(
+                                    preview = currentPreview,
+                                    confirmedStartDateRaw = confirmedStartDate,
+                                    confirmedTableName = confirmedTableName,
+                                    confirmedTimeJson = confirmedTimeJson,
+                                    context = context,
+                                    bindPeriodTableId = confirmedBindPeriodTableId,
+                                    onImported = { preview = null; importJustApplied = true; onImported() },
+                                )
+                            } catch (e: Exception) {
+                                errorMsg = readFailedFormat.format(e.message)
+                            } finally {
+                                isLoading = false
+                            }
+                        }
+                    }
+                }
+            )
+        } else {
+            ImportPreviewDialog(
+                preview = currentPreview,
+                onDismiss = { if (!isLoading) preview = null },
+                isApplying = isLoading,
+                onApply = { decision ->
+                    if (!isLoading) {
+                        isLoading = true
+                        scope.launch {
+                            try {
+                                applyCourseImport(
+                                    preview = currentPreview,
+                                    decision = decision,
+                                    context = context,
+                                    onImported = { preview = null; importJustApplied = true; onImported() },
+                                    onError = { errorMsg = it },
+                                )
+                            } catch (e: Exception) {
+                                errorMsg = readFailedFormat.format(e.message)
+                            } finally {
+                                isLoading = false
+                            }
                         }
                     }
                 }
             )
         }
     }
+
+    if (showExistingTables) {
+        val sources = state.tables.filter { it.id != targetTableId }
+        AlertDialog(
+            onDismissRequest = { showExistingTables = false },
+            title = { Text(stringResource(R.string.add_course_from_existing)) },
+            text = {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    if (sources.isEmpty()) Text(stringResource(R.string.add_course_no_source))
+                    sources.forEach { source ->
+                        TextButton(
+                            enabled = !isLoading,
+                            onClick = {
+                                isLoading = true
+                                scope.launch {
+                                    try {
+                                        val repo = SleepyApp.get().repository
+                                        val table = repo.getTable(source.id)
+                                            ?: error(context.getString(R.string.manage_no_table))
+                                        val effective = table.hydratedWith(repo.effectivePeriodTable(source.id))
+                                        val courses = repo.getCourses(source.id)
+                                        if (courses.isEmpty()) {
+                                            errorMsg = context.getString(R.string.import_content_empty)
+                                        } else {
+                                            acceptPreview(buildImportPreview(
+                                                ScheduleParser.ParseResult(
+                                                    tableName = effective.name,
+                                                    startDate = effective.startDate,
+                                                    courses = courses,
+                                                    timeJson = effective.timeJson,
+                                                    nodesPerDay = effective.nodesPerDay,
+                                                    maxWeek = effective.maxWeek,
+                                                    groupIdsAuthoritative = true,
+                                                ), targetTableId, context
+                                            ))
+                                            showExistingTables = false
+                                        }
+                                    } catch (e: Exception) {
+                                        errorMsg = readFailedFormat.format(e.message)
+                                    } finally {
+                                        isLoading = false
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) { Text(source.name) }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showExistingTables = false }) { Text(stringResource(R.string.cancel)) }
+            }
+        )
+    }
+
 }
 
 @Composable
@@ -620,6 +642,7 @@ private fun ImportMethodRow(
     icon: ImageVector,
     label: String,
     trailing: ImageVector? = null,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
@@ -627,7 +650,7 @@ private fun ImportMethodRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(SleepyTheme.shapes.medium)
-            .noRippleClickable(onClick)
+            .noRippleClickable(enabled = enabled, onClick = onClick)
             .padding(vertical = 14.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -891,16 +914,6 @@ private fun FormatDetailDialog(format: ImportFormat, onDismiss: () -> Unit) {
 
 // --- shared types / dialogs (copied from ImportScreen to keep sheet self-contained) ---
 
-internal enum class ImportApplyMode {
-    ReplaceCurrent,
-    ImportAsNew,
-    AppendNonConflict,
-    /** 当前课表 + 导入数据合并, 创建新课表保存, 用户命名 */
-    AppendAsNew,
-    /** 连冲突课一起追加进当前课表(红标: 会形成同格多层) */
-    AppendAll
-}
-
 internal data class CourseConflict(
     val incoming: CourseEntity,
     val existing: CourseEntity
@@ -913,26 +926,34 @@ internal data class ImportPreview(
     val existingCourses: List<CourseEntity>,
     val conflicts: List<CourseConflict>,
     // issue#22: 同 groupId 多地点提示 — 不阻塞导入,只让用户心里有数
-    val multiLocationWarnings: List<String> = emptyList()
+    val multiLocationWarnings: List<String> = emptyList(),
+    val effectiveTimeJson: String = "",
 ) {
     val incomingCount: Int get() = parseResult.courses.size
     val conflictCount: Int get() = conflicts.size
     val cleanCount: Int get() = incomingCount - conflictCount
 }
 
+internal data class ImportDecision(
+    val backupOriginal: Boolean = true,
+    val appendConflicts: Boolean = false,
+)
+
 @Composable
 internal fun ImportPreviewDialog(
     preview: ImportPreview,
     parserWarning: String? = null,
     onDismiss: () -> Unit,
-    onApply: (ImportApplyMode) -> Unit,
+    onApply: (ImportDecision) -> Unit,
     isApplying: Boolean = false
 ) {
     // Prevent repeated submissions while the selected import is being saved.
-    val apply: (ImportApplyMode) -> Unit = { if (!isApplying) onApply(it) }
+    var backupOriginal by rememberSaveable(preview.targetTableId) { mutableStateOf(true) }
+    var appendConflicts by rememberSaveable(preview.targetTableId) { mutableStateOf(false) }
+    val apply = { if (!isApplying) onApply(ImportDecision(backupOriginal, appendConflicts)) }
     val colors = MaterialTheme.colorScheme
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = { if (!isApplying) onDismiss() },
         titleContentColor = colors.onSurface,
         textContentColor = colors.onSurfaceVariant,
         title = {
@@ -954,7 +975,10 @@ internal fun ImportPreviewDialog(
             }
         },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
                 if (parserWarning != null) {
                     Text(parserWarning, color = colors.onErrorContainer,
                         modifier = Modifier.fillMaxWidth().background(colors.errorContainer).padding(12.dp))
@@ -1142,87 +1166,61 @@ internal fun ImportPreviewDialog(
             }
         },
         confirmButton = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (preview.targetTableId == 0L) {
-                    // 没有任何课表时只允许 "作为新课表导入"
-                    Button(
+            // AlertDialog reserves its action area before measuring the scrollable details.
+            // Keep import choices here so conflicts and warnings cannot scroll them out of view.
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                if (preview.targetTableId != 0L) {
+                    ImportOptionSwitch(
+                        title = stringResource(R.string.import_backup_original),
+                        subtitle = stringResource(R.string.import_backup_original_sub),
+                        checked = backupOriginal,
                         enabled = !isApplying,
-                        onClick = { apply(ImportApplyMode.ImportAsNew) },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = SleepyTheme.shapes.medium,
-                    ) {
-                        Text(stringResource(R.string.import_as_new), maxLines = 1)
-                    }
-                } else {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Button(
-                            enabled = !isApplying,
-                            onClick = { apply(ImportApplyMode.AppendNonConflict) },
-                            modifier = Modifier.weight(1f),
-                            shape = SleepyTheme.shapes.medium,
-                        ) {
-                            Text(stringResource(R.string.import_append_only), maxLines = 1)
-                        }
-                        Button(
-                            enabled = !isApplying,
-                            onClick = { apply(ImportApplyMode.ImportAsNew) },
-                            modifier = Modifier.weight(1f),
-                            shape = SleepyTheme.shapes.medium,
-                        ) {
-                            Text(stringResource(R.string.import_as_new), maxLines = 1)
-                        }
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        // 追加冲突课表 — 危险动作(同格多层), errorContainer 色块底, 与覆盖按钮同款
-                        Button(
-                            enabled = !isApplying,
-                            onClick = { apply(ImportApplyMode.AppendAll) },
-                            modifier = Modifier.weight(1f),
-                            shape = SleepyTheme.shapes.medium,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colors.errorContainer,
-                                contentColor = colors.onErrorContainer
-                            )
-                        ) {
-                            Text(stringResource(R.string.import_append_conflict), maxLines = 1)
-                        }
-                        Button(
-                            enabled = !isApplying,
-                            onClick = { apply(ImportApplyMode.AppendAsNew) },
-                            modifier = Modifier.weight(1f),
-                            shape = SleepyTheme.shapes.medium,
-                        ) {
-                            Text(stringResource(R.string.import_append_as_new), maxLines = 1)
-                        }
-                    }
-                    // 描线→色块 (2026-08-25 统一指令): 覆盖课表为危险动作,
-                    //   errorContainer 色块底 + onErrorContainer 文字
-                    Button(
+                        onCheckedChange = { backupOriginal = it },
+                    )
+                    ImportOptionSwitch(
+                        title = stringResource(R.string.import_append_conflicts_option),
+                        subtitle = stringResource(R.string.import_append_conflicts_option_sub),
+                        checked = appendConflicts,
                         enabled = !isApplying,
-                        onClick = { apply(ImportApplyMode.ReplaceCurrent) },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = SleepyTheme.shapes.medium,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = colors.errorContainer,
-                            contentColor = colors.onErrorContainer
-                        )
-                    ) {
-                        Text(stringResource(R.string.import_overwrite))
-                    }
+                        onCheckedChange = { appendConflicts = it },
+                    )
                 }
-                TextButton(enabled = !isApplying, onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.cancel), color = colors.onSurfaceVariant)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TextButton(enabled = !isApplying, onClick = onDismiss, modifier = Modifier.weight(1f)) {
+                        Text(stringResource(R.string.cancel), color = colors.onSurfaceVariant)
+                    }
+                    Button(enabled = !isApplying, onClick = apply, modifier = Modifier.weight(1f)) {
+                        Text(stringResource(R.string.import_confirm))
+                    }
                 }
             }
         },
         dismissButton = {}
     )
+}
+
+@Composable
+private fun ImportOptionSwitch(
+    title: String,
+    subtitle: String,
+    checked: Boolean,
+    enabled: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
+    }
 }
 
 @Composable
@@ -1260,6 +1258,8 @@ private fun ImportConfirmDialog(
     tableName: String,
     timeJson: String,
     showTableName: Boolean,
+    isApplying: Boolean,
+    parseResult: ScheduleParser.ParseResult,
     onTableNameChange: (String) -> Unit,
     onStartDateChange: (String) -> Unit,
     onTimeJsonChange: (String) -> Unit,
@@ -1298,10 +1298,16 @@ private fun ImportConfirmDialog(
     }
     var errorMsg by remember { mutableStateOf<String?>(null) }
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = { if (!isApplying) onDismiss() },
         title = { Text(stringResource(R.string.import_confirm_title), color = colors.onSurface) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(stringResource(R.string.export_course_count, parseResult.courses.size))
+                if (parseResult.droppedLines.isNotEmpty()) {
+                    Text(stringResource(R.string.import_dropped_title, parseResult.droppedLines.size), color = colors.error)
+                    parseResult.droppedLines.take(3).forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
+                }
+                parseResult.warnings.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
                 Text(
                     text = stringResource(R.string.import_confirm_body),
                     style = MaterialTheme.typography.bodyMedium,
@@ -1359,13 +1365,15 @@ private fun ImportConfirmDialog(
                 // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 统一色块按钮行
                 com.lingion.sleepy.ui.component.DialogActionButtons(
                     confirmText = stringResource(R.string.import_confirm),
+                    confirmEnabled = !isApplying,
                     onConfirm = {
+                        if (isApplying) return@DialogActionButtons
                         if (startDate.isBlank()) {
                             errorMsg = startDateRequiredMessage
                             return@DialogActionButtons
                         }
                         val dateRegex = Regex("""^\d{4}-\d{2}-\d{2}$""")
-                        if (!dateRegex.matches(startDate)) {
+                        if (!dateRegex.matches(startDate) || runCatching { java.time.LocalDate.parse(startDate) }.isFailure) {
                             errorMsg = startDateFormatMessage
                             return@DialogActionButtons
                         }
@@ -1394,8 +1402,8 @@ private fun ImportConfirmDialog(
                         onTimeJsonChange(TimeTableUtils.buildTimeJsonFromRows(effectiveRows))
                         onConfirm()
                     },
-                    dismissText = stringResource(R.string.back),
-                    onDismiss = onDismiss
+                    dismissText = stringResource(R.string.cancel),
+                    onDismiss = { if (!isApplying) onDismiss() }
                 )
             }
         },
@@ -1406,7 +1414,7 @@ private fun ImportConfirmDialog(
 
 private suspend fun buildImportPreview(
     text: String,
-    state: com.lingion.sleepy.ui.screen.schedule.ScheduleState,
+    tableId: Long,
     context: android.content.Context,
     onError: (String) -> Unit
 ): ImportPreview? {
@@ -1414,8 +1422,7 @@ private suspend fun buildImportPreview(
         onError(context.getString(R.string.import_content_empty))
         return null
     }
-    // selectedTableId 缺失时也能导入 — 没有 tableId 就用 0L，apply 时按 ImportAsNew 自动建表。
-    val tableId = state.selectedTableId ?: 0L
+    // 新建入口使用 0L；加课入口始终携带用户进入页面时的目标 ID。
     val result = ScheduleParser.parse(text, tableId)
     return result.fold(
         onSuccess = { parseResult ->
@@ -1435,6 +1442,12 @@ internal suspend fun buildImportPreview(
 ): ImportPreview {
     val repo = SleepyApp.get().repository
     val existingTable = if (tableId == 0L) null else repo.getTable(tableId)
+    if (tableId != 0L && existingTable == null) error(context.getString(R.string.manage_no_table))
+    val effective = existingTable?.hydratedWith(repo.effectivePeriodTable(tableId))
+    val effectiveTimeJson = com.lingion.sleepy.util.CourseImportPolicy.mergeTimeJson(
+        effective?.timeJson ?: "", parseResult.timeJson,
+        maxOf(parseResult.nodesPerDay, parseResult.courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0)
+    )
     val existingCourses = if (tableId == 0L) emptyList() else repo.getCourses(tableId)
     // issue#22: 同 groupId 多地点提示文案 — 按 (groupId) 聚合,
     // 有 ≥2 个非空不同地点时给一句提示,导入后会作为独立节次展示
@@ -1455,7 +1468,8 @@ internal suspend fun buildImportPreview(
         targetTableName = existingTable?.name ?: context.getString(R.string.manage_current_table),
         parseResult = parseResult,
         existingCourses = existingCourses,
-        multiLocationWarnings = multiLocWarnings
+        multiLocationWarnings = multiLocWarnings,
+        effectiveTimeJson = effectiveTimeJson,
     )
 }
 
@@ -1464,18 +1478,46 @@ internal fun createImportPreview(
     targetTableId: Long,
     targetTableName: String,
     existingCourses: List<CourseEntity>,
-    multiLocationWarnings: List<String> = emptyList()
+    multiLocationWarnings: List<String> = emptyList(),
+    effectiveTimeJson: String = "",
 ): ImportPreview = ImportPreview(
     targetTableId = targetTableId,
     targetTableName = targetTableName,
     parseResult = parseResult,
     existingCourses = existingCourses,
     conflicts = parseResult.courses.mapNotNull { incoming ->
-        existingCourses.firstOrNull { existing -> coursesConflict(incoming, existing) }
+        existingCourses.firstOrNull { existing -> com.lingion.sleepy.util.CourseImportPolicy.conflicts(incoming, existing, effectiveTimeJson) }
             ?.let { CourseConflict(incoming, it) }
     },
-    multiLocationWarnings = multiLocationWarnings
+    multiLocationWarnings = multiLocationWarnings,
+    effectiveTimeJson = effectiveTimeJson,
 )
+
+internal suspend fun applyCourseImport(
+    preview: ImportPreview,
+    decision: ImportDecision,
+    context: Context,
+    onImported: () -> Unit,
+    onError: (String) -> Unit,
+) {
+    val repo = SleepyApp.get().repository
+    val target = repo.getTable(preview.targetTableId)
+    if (target == null) {
+        onError(context.getString(R.string.manage_no_table))
+        return
+    }
+    val added = repo.appendImportedCourses(
+        tableId = preview.targetTableId,
+        incoming = preview.parseResult.courses,
+        incomingTimeJson = preview.parseResult.timeJson,
+        incomingNodes = preview.parseResult.nodesPerDay,
+        backupOriginal = decision.backupOriginal,
+        appendConflicts = decision.appendConflicts,
+        authoritativeGroups = preview.parseResult.groupIdsAuthoritative,
+        backupName = context.getString(R.string.import_backup_name, target.name),
+    )
+    if (added == 0) onError(context.getString(R.string.import_all_conflict)) else onImported()
+}
 
 /**
  * v1.0.56 T9: 纯作息导入 — 只建一张作息表, 不建空课表。
@@ -1508,312 +1550,41 @@ private suspend fun applyPurePeriodImport(
     }
 }
 
-internal suspend fun applyImportPreview(
+/** New-table imports cannot modify an existing timetable. */
+internal suspend fun applyNewTableImport(
     preview: ImportPreview,
-    mode: ImportApplyMode,
     confirmedStartDateRaw: String,
     confirmedTableName: String,
     confirmedTimeJson: String,
-    context: android.content.Context,
+    context: Context,
     onImported: () -> Unit,
-    onError: (String) -> Unit,
-    // v1.0.56 T6: 第三 Tab「作息表」绑定 — 非 null 且 ImportAsNew 时, 新建课表直接绑该表
-    bindPeriodTableId: Long? = null
+    bindPeriodTableId: Long? = null,
+    confirmedSmartConfigJson: String = "",
 ) {
     val repo = SleepyApp.get().repository
-    // v7.10.16 撤回: 整个导入是一个动作 — 批内只保首快照, 撤回一次回退到导入前。
-    // try/finally 收口: 分支里的 early return 也要退出批边界。
-    com.lingion.sleepy.data.undo.UndoManager.beginBatch()
-    try {
-    // 应用约定 startDate=周一；用户在确认框可能手填非周一日期，落库前归一（issue #5）
     val confirmedStartDate = DateUtils.normalizeStartDate(confirmedStartDateRaw)
-    when (mode) {
-        ImportApplyMode.ReplaceCurrent -> {
-            val existing = repo.getTable(preview.targetTableId)
-            if (existing != null) {
-                // 时间域写回真实 owner: 绑定独立作息表时写 period_tables, 不污染兼容列
-                val bound = existing.periodTableId?.let { repo.getPeriodTable(it) }
-                val newNodesPerDay = if (preview.parseResult.nodesPerDay > 0) preview.parseResult.nodesPerDay else existing.nodesPerDay
-                repo.updateTable(
-                    existing.copy(
-                        name = confirmedTableName.trim().ifBlank { preview.parseResult.tableName },
-                        startDate = confirmedStartDate
-                    )
-                )
-                if (bound != null) {
-                    repo.savePeriodTable(
-                        bound.copy(
-                            timeJson = confirmedTimeJson,
-                            nodesPerDay = if (preview.parseResult.nodesPerDay > 0) preview.parseResult.nodesPerDay else bound.nodesPerDay
-                        )
-                    )
-                } else {
-                    repo.updateTable(
-                        existing.copy(
-                            name = confirmedTableName.trim().ifBlank { preview.parseResult.tableName },
-                            startDate = confirmedStartDate,
-                            timeJson = confirmedTimeJson,
-                            nodesPerDay = newNodesPerDay
-                        )
-                    )
-                }
-            }
-            // sleepy-v1 (§3.4 契约一): 解析端权威 groupId → 绕过 assignGroupIds 再分配
-            if (preview.parseResult.groupIdsAuthoritative) {
-                repo.replaceCoursesKeepingGroups(preview.targetTableId, preview.parseResult.courses)
-            } else {
-                repo.replaceCourses(preview.targetTableId, preview.parseResult.courses)
-            }
-            // v7.10.12: 整表替换不过闸门(换的是整张表, 拦截太武断), 但超层时提示
-            val badDays = com.lingion.sleepy.util.ConflictLayoutEngine
-                .daysExceedingTwoLanes(preview.parseResult.courses)
-            if (badDays.isNotEmpty()) {
-                onError(context.getString(R.string.import_three_layers_kept, dayNames(badDays, context)))
-            }
-            onImported()
-        }
-        ImportApplyMode.ImportAsNew -> {
-            val base = repo.getTable(preview.targetTableId)
-            // issue#40 §6: 新格式带 P 区块 → 建 period_tables 并绑定(恢复共享关系);
-            // 用户 2026-10-05(2a): 无 P 区块(旧格式/粘贴文本)不再"不建" — 恒以确认页
-            // 最终 confirmedTimeJson 兜底建表并绑定, 三个入口作息表行为统一。
-            // v1.0.56 T6: 用户在第三 Tab 显式选了作息表 → 绑定用户所选(优先于自动建表绑定);
-            // v1.0.56 T10: 自动建表走全局唯一名顺延(撞名加后缀, 禁与既有课表/作息表同名)
-            val importedPeriod = com.lingion.sleepy.util.importedPeriodTableDraft(
-                bindingId = bindPeriodTableId,
-                name = TimeTableUtils.suggestUniqueName(
-                    preview.parseResult.periodTable?.name ?: confirmedTableName.trim(),
-                    repo.getAllTables().map { it.name }, repo.getAllPeriodTables().map { it.name },
-                    defaultName = preview.parseResult.tableName
-                ),
-                confirmedTimeJson = confirmedTimeJson
-            )
-            repo.importNewTable(
-                table = TimeTableEntity(
-                    name = uniqueImportedTableName(confirmedTableName, repo.getAllTables().map { it.name }, context),
-                    startDate = confirmedStartDate,
-                    maxWeek = if (preview.parseResult.maxWeek > 0) preview.parseResult.maxWeek else base?.maxWeek ?: 20,
-                    nodesPerDay = TimeTableUtils.parseTimeSlotRows(confirmedTimeJson).size.coerceAtLeast(1),
-                    timeJson = confirmedTimeJson,
-                    color = base?.color ?: "#FF6750A4"
-                ),
-                courses = preview.parseResult.courses,
-                periodTable = importedPeriod,
-                bindPeriodTableId = bindPeriodTableId,
-                keepGroups = preview.parseResult.groupIdsAuthoritative
-            )
-            // v7.10.12: 整表新建不过闸门, 超层时提示(同 ReplaceCurrent 策略)
-            val badDaysNew = com.lingion.sleepy.util.ConflictLayoutEngine
-                .daysExceedingTwoLanes(preview.parseResult.courses)
-            if (badDaysNew.isNotEmpty()) {
-                onError(context.getString(R.string.import_three_layers_kept, dayNames(badDaysNew, context)))
-            }
-            onImported()
-        }
-        ImportApplyMode.AppendNonConflict -> {
-            val cleanCourses = preview.parseResult.courses.filterNot { incoming ->
-                preview.existingCourses.any { existing -> coursesConflict(incoming, existing) }
-            }
-            if (cleanCourses.isEmpty()) {
-                onError(context.getString(R.string.import_all_conflict))
-                return
-            }
-            // v7.10.16x 三层闸门改相对判定(用户 2026-09-10 报"预览 8 门全不冲突,
-            // 仅追加不冲突却 toast 全部冲突"): 旧 dropThreeLayerCourses 用
-            // daysExceedingTwoLanes **绝对**判定 — 目标表本来就有超层天(此前追加过
-            // 冲突课表)时, 那天上的无辜候选全剔, 误报全冲突。与 AppendAsNew
-            // (v7.10.16j)同规: 只剔**让某天新超 2 层**的候选(因它而恶化才拦),
-            // 原表已有超层不再连坐。
-            val survivors = cleanCourses.filter { cand ->
-                com.lingion.sleepy.util.ConflictLayoutEngine.daysExceedingTwoLanes(preview.existingCourses + cand) ==
-                    com.lingion.sleepy.util.ConflictLayoutEngine.daysExceedingTwoLanes(preview.existingCourses)
-            }
-            if (survivors.isEmpty()) {
-                onError(context.getString(R.string.import_all_conflict))
-                return
-            }
-            if (survivors.size < cleanCourses.size) {
-                val droppedDays = conflictDaysBetween(cleanCourses, survivors)
-                onError(context.getString(R.string.import_three_layers_dropped, dayNames(droppedDays, context)))
-            }
-            if (preview.parseResult.groupIdsAuthoritative) {
-                repo.insertCoursesKeepingGroups(survivors.map { it.copy(id = 0, tableId = preview.targetTableId) })
-            } else {
-                repo.insertCourses(survivors.map { it.copy(id = 0, tableId = preview.targetTableId) })
-            }
-            // v7.10.16k 无损延伸: 老表作息∪导入作息, 并拓到导入课程实际到达的最大节。
-            // 旧代码 timeJson 空白(粘贴文本常态)就整段跳过 → 课程入库了课表却不延伸 = 静默丢。
-            // 2026-09-23: 绑定共享作息表时写入兼容列不生效(水合读 period); 写回真正 owner。
-            val existingTable = repo.getTable(preview.targetTableId)
-            if (existingTable != null) {
-                val bound = existingTable.periodTableId?.let { repo.getPeriodTable(it) }
-                val extended = TimeTableUtils.mergeMostComplete(
-                    currentJson = bound?.timeJson ?: existingTable.timeJson,
-                    incomingJson = preview.parseResult.timeJson,
-                    requiredNodeCount = preview.parseResult.nodesPerDay
-                )
-                if (bound != null) {
-                    if (extended != bound.timeJson) {
-                        val newMaxNode = TimeTableUtils.parseTimeSlotRows(extended).maxOfOrNull { it.node } ?: bound.nodesPerDay
-                        repo.savePeriodTable(bound.copy(timeJson = extended, nodesPerDay = newMaxNode))
-                    }
-                } else if (extended != existingTable.timeJson) {
-                    val newMaxNode = TimeTableUtils.parseTimeSlotRows(extended).maxOfOrNull { it.node } ?: existingTable.nodesPerDay
-                    repo.updateTable(existingTable.copy(timeJson = extended, nodesPerDay = newMaxNode))
-                }
-            }
-            onImported()
-        }
-        ImportApplyMode.AppendAsNew -> {
-            // 当前课表 + 导入数据合并 → 新课表(用户命名)
-            val base = repo.getTable(preview.targetTableId)
-            val incoming = preview.parseResult
-            // v7.10.16k: 时间表 = 用户确认框里的 confirmedTimeJson 优先(它本身就是
-            // mergeMostComplete 的无损合并初值, 用户又可手拓); 万一为空白再兜底无损合并。
-            // mergedRows 恒非空(mergeMostComplete 至少 1 行), nodesPerDay 恒取行数。
-            val mergedTimeJson = confirmedTimeJson.ifBlank {
-                TimeTableUtils.mergeMostComplete(
-                    currentJson = base?.timeJson ?: "",
-                    incomingJson = incoming.timeJson,
-                    requiredNodeCount = incoming.nodesPerDay
-                )
-            }
-            val mergedRows = TimeTableUtils.parseTimeSlotRows(mergedTimeJson)
-            // 用户 2026-10-05(2a): 合并新建课表同样恒建+绑作息表(以 mergedTimeJson 为源)。
-            val mergedName = uniqueImportedTableName(confirmedTableName, repo.getAllTables().map { it.name }, context)
-            val mergedPeriod = PeriodTableEntity(
-                name = TimeTableUtils.suggestUniqueName(
-                    mergedName, repo.getAllTables().map { it.name }, repo.getAllPeriodTables().map { it.name }
-                ),
-                nodesPerDay = mergedRows.size.coerceAtLeast(1),
-                timeJson = mergedTimeJson
-            )
-            // 当前课表原课 + 导入课程合并导入新课表
-            // v7.10.16i: 老课全量保留(dropThreeLayerCourses 只返回候选幸存者)。
-            // v7.10.16j(用户 2026-09-03「新课表=纯老表复制」): 三层闸门改为**只拦新增冲突** —
-            // 旧实现 trial=全部+候选, 原表某天已有 3 层(如先追加过冲突课表)时该天
-            // 所有导入课连完全不重叠的也被全灭。改为: 候选违规判定只看**新增候选本身
-            // 是否比原表多出新层**(before/after 对比, 与编辑课程校验同规)。
-            val cleanIncoming = incoming.courses.filterNot { inc ->
-                preview.existingCourses.any { existing -> coursesConflict(inc, existing) }
-            }
-            val oldCourses = base?.let { repo.getCourses(it.id) } ?: emptyList()
-            val beforeDays = com.lingion.sleepy.util.ConflictLayoutEngine.daysExceedingTwoLanes(oldCourses)
-            val afterDays = com.lingion.sleepy.util.ConflictLayoutEngine
-                .daysExceedingTwoLanes(oldCourses + cleanIncoming)
-            if (afterDays != beforeDays) {
-                val droppedDays = afterDays - beforeDays
-                onError(context.getString(R.string.import_three_layers_kept, dayNames(droppedDays, context)))
-            }
-            // 全量合并入库: 老课 + 全部非重复导入课(仅提示, 不再剔除 — 闸门只拦编辑恶化,
-            // 合并是新建课表, 用户明确要的就是并集)
-            // AppendAsNew 合并新老课: 导入侧 groupId 权威时仅对导入课保组, 老课照原样保组
-            repo.importNewTable(
-                table = TimeTableEntity(
-                    name = mergedName,
-                    startDate = confirmedStartDate,
-                    maxWeek = if (incoming.maxWeek > 0) incoming.maxWeek else base?.maxWeek ?: 20,
-                    nodesPerDay = mergedRows.size.coerceAtLeast(1),
-                    timeJson = mergedTimeJson,
-                    color = base?.color ?: "#FF6750A4"
-                ),
-                courses = oldCourses + cleanIncoming,
-                periodTable = mergedPeriod,
-                keepGroups = preview.parseResult.groupIdsAuthoritative
-            )
-            onImported()
-        }
-        ImportApplyMode.AppendAll -> {
-            // 连冲突课一起追加进当前课表 — 冲突/闸门全部放行, 仅提示(与整表新建同策略)。
-            // 用户 2026-09-03: 该按钮的存在意义就是"冲突也要进来", 剔除即违背语义。
-            val cleanCourses = preview.parseResult.courses
-            if (cleanCourses.isEmpty()) {
-                onError(context.getString(R.string.import_content_empty))
-                return
-            }
-            val badDays = com.lingion.sleepy.util.ConflictLayoutEngine
-                .daysExceedingTwoLanes(preview.existingCourses + cleanCourses)
-            if (badDays.isNotEmpty()) {
-                onError(context.getString(R.string.import_three_layers_kept, dayNames(badDays, context)))
-            }
-            if (preview.parseResult.groupIdsAuthoritative) {
-                repo.insertCoursesKeepingGroups(cleanCourses.map { it.copy(id = 0, tableId = preview.targetTableId) })
-            } else {
-                repo.insertCourses(cleanCourses.map { it.copy(id = 0, tableId = preview.targetTableId) })
-            }
-            // v7.10.16k: 节次无损延伸 — 与 AppendNonConflict 同策略(不再要求导入带 timeJson)
-            // 2026-09-23: 绑定态写 period_tables(真正 owner), 不污染兼容列。
-            val existingTable = repo.getTable(preview.targetTableId)
-            if (existingTable != null) {
-                val bound = existingTable.periodTableId?.let { repo.getPeriodTable(it) }
-                val extended = TimeTableUtils.mergeMostComplete(
-                    currentJson = bound?.timeJson ?: existingTable.timeJson,
-                    incomingJson = preview.parseResult.timeJson,
-                    requiredNodeCount = preview.parseResult.nodesPerDay
-                )
-                if (bound != null) {
-                    if (extended != bound.timeJson) {
-                        val newMaxNode = TimeTableUtils.parseTimeSlotRows(extended).maxOfOrNull { it.node } ?: bound.nodesPerDay
-                        repo.savePeriodTable(bound.copy(timeJson = extended, nodesPerDay = newMaxNode))
-                    }
-                } else if (extended != existingTable.timeJson) {
-                    val newMaxNode = TimeTableUtils.parseTimeSlotRows(extended).maxOfOrNull { it.node } ?: existingTable.nodesPerDay
-                    repo.updateTable(existingTable.copy(timeJson = extended, nodesPerDay = newMaxNode))
-                }
-            }
-            onImported()
-        }
-    }
-    } finally {
-        // 批边界收口 — 无论哪个分支 return, 撤回批都到此结束
-        com.lingion.sleepy.data.undo.UndoManager.endBatch()
-    }
-}
-
-/**
- * [已废止 v7.10.16x] 旧三层冲突闸门(追加路径唯一调用方已改相对判定, 与
- * AppendAsNew v7.10.16j 同规) — 保留函数体便于回溯, 不再有调用方。
- * 旧策略"导入数据服从闸门(超层课不入库)"在绝对判定下会连坐原表已有超层天
- * 上的无辜候选, 即 2026-09-10 用户报的"预览全不冲突→追加报全冲突"根因。
- */
-@Suppress("unused")
-private fun dropThreeLayerCourses(
-    keepers: List<com.lingion.sleepy.data.entity.CourseEntity>,
-    candidates: List<com.lingion.sleepy.data.entity.CourseEntity>
-): List<com.lingion.sleepy.data.entity.CourseEntity> {
-    val out = keepers.toMutableList()
-    return candidates.filter { cand ->
-        val trial = out + cand
-        com.lingion.sleepy.util.ConflictLayoutEngine.daysExceedingTwoLanes(trial).isEmpty().also { ok ->
-            if (ok) out.add(cand)
-        }
-    }
-}
-
-/** 被剔除课所在的 day 集合(用于提示文案)。 */
-private fun conflictDaysBetween(
-    before: List<com.lingion.sleepy.data.entity.CourseEntity>,
-    after: List<com.lingion.sleepy.data.entity.CourseEntity>
-): Set<Int> = (before.toSet() - after.toSet()).map { it.day }.toSet()
-
-private fun dayNames(days: Set<Int>, context: android.content.Context): String =
-    days.sorted().joinToString(" / ") { com.lingion.sleepy.util.DateUtils.localizedDay(it, context) }
-
-private fun coursesConflict(a: CourseEntity, b: CourseEntity): Boolean {
-    if (a.day != b.day) return false
-    if (a.endWeek < b.startWeek || b.endWeek < a.startWeek) return false
-    val aStart = a.startNode
-    val aEnd = a.startNode + a.step - 1
-    val bStart = b.startNode
-    val bEnd = b.startNode + b.step - 1
-    return aStart <= bEnd && bStart <= aEnd
-}
-
-private fun uniqueImportedTableName(base: String, existingNames: List<String>, context: android.content.Context): String {
-    val default = context.getString(R.string.default_table_name)
-    val effective = base.ifBlank { default }
-    if (effective !in existingNames) return effective.ifBlank { "${default}1" }
-    var index = 2
-    while ("${effective}$index" in existingNames || "${effective}($index)" in existingNames) index++
-    return "${effective}$index"
+    val nodes = TimeTableUtils.parseTimeSlotRows(confirmedTimeJson).maxOfOrNull { it.node }
+        ?: preview.parseResult.nodesPerDay.coerceAtLeast(1)
+    val tableName = confirmedTableName.trim().ifBlank { context.getString(R.string.default_table_name) }
+    val importedPeriod = com.lingion.sleepy.util.importedPeriodTableDraft(
+        bindingId = bindPeriodTableId,
+        name = preview.parseResult.periodTable?.name?.takeIf { it.isNotBlank() } ?: tableName,
+        confirmedTimeJson = confirmedTimeJson,
+    )?.copy(nodesPerDay = nodes, smartConfigJson = confirmedSmartConfigJson)
+    repo.importNewTable(
+        table = TimeTableEntity(
+            name = tableName,
+            startDate = confirmedStartDate,
+            maxWeek = maxOf(preview.parseResult.maxWeek, preview.parseResult.courses.maxOfOrNull { it.endWeek } ?: 20),
+            nodesPerDay = nodes,
+            timeJson = confirmedTimeJson,
+            smartConfigJson = confirmedSmartConfigJson,
+            periodTableId = bindPeriodTableId,
+        ),
+        courses = preview.parseResult.courses,
+        periodTable = importedPeriod,
+        bindPeriodTableId = bindPeriodTableId,
+        keepGroups = preview.parseResult.groupIdsAuthoritative,
+    )
+    onImported()
 }
