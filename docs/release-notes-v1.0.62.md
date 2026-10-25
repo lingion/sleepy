@@ -32,7 +32,7 @@ Three modes in Appearance → Course colors: Classic (the old hash scatter, unch
 
 Daily and tomorrow reminders used to fire one notification per timetable. Now all tables merge into a single compact list sorted by class time, with a [timetable] prefix per entry when more than one table contributes. Tapping it opens the unified daily agenda, which also accepts a date and jumps straight there.
 
-**Evidence:** PRs #176 (2026-10-14), #178 (2026-10-14).
+**Evidence:** PRs #176 (2026-10-14, contributor @Cold577), #178 (2026-10-14).
 
 ### Before-class reminder: banner / fluid cloud as one switch
 
@@ -98,13 +98,13 @@ The week grid desktop widget now skips empty days the same way the phone-column 
 
 Fixes and adaptations landed for: Tsinghua (PKU) import, East China University of Political Science & Law (coordinate-accurate), South China Agricultural (week coordinates), Southeast University v2 auto-fetch, Northwestern Polytechnical University graduate (old interface), new Qingguo three timetable layouts (old grid still compatible), new URP array variant (old fallback kept), new & old Superzhi structures, Kingo ZX report + week-grid parsing, and South China "zf" output-format drift under the updated parser library. Nanning Normal University's new Superzhi timetable is newly supported (user capture: 15 courses, 33 schedule records pinned in tests).
 
-**Evidence:** PRs #119, #120, #121, #122, #123, #124, #126, #128, #129, #131, #177 (2026-10-13/14), #218 (2026-10-21), all cross-verified per the cross-repo SOP.
+**Evidence:** PRs #119, #120, #121, #122, #123, #128, #129, #177 (2026-10-13/14), #124, #126, #131 (2026-10-13, contributor @Kerry1020), #218 (2026-10-21), all cross-verified per the cross-repo SOP.
 
 ## Fixes
 
 - **Switching to week view could crash the app.** Equal-height day capsules used a feedback loop that grew the strip until the screen overflowed. Two-pass measurement replaced it; both the ratchet and the broken first attempt are pinned by contract tests. **Evidence:** PR #192 (2026-10-19).
 - **Course cards shrank next to long-break bands.** The break was deducted twice (once in coordinates, once in height), clipping capsules touching a band. Card height now ignores the band entirely. **Evidence:** PR #184 (2026-10-18).
-- **Grid lines and course cards were misaligned.** Horizontal rules sat on row tops while cards filled rows, so card tops hugged a line and bottoms floated. Rules moved to the gap midpoint; cards breathe symmetrically (widget and Compose views both). **Evidence:** PR #159 (2026-10-11).
+- **Grid lines and course cards were misaligned.** Horizontal rules sat on row tops while cards filled rows, so card tops hugged a line and bottoms floated. Rules moved to the gap midpoint; cards breathe symmetrically (widget and Compose views both). **Evidence:** PR #159 (2026-10-11, contributor @YYiChen).
 - **Makeup-day class copying was wrong.** Swapped-class scheduling now filters by the source day's full date (week range, odd/even weeks included) and places by the target date; details resolve back to the original course. **Evidence:** PR #162 (2026-10-13).
 - **Three-day window widget face had scrambled column order across Sunday boundaries.** **Evidence:** PR #188 (2026-10-18).
 
@@ -126,6 +126,8 @@ Fixes and adaptations landed for: Tsinghua (PKU) import, East China University o
   - `app-x86_64-release.apk`: `115168a1a978a43a5014fc5f0385871278320c45bdf457609f634d7fe93bc047` (7,321,216 bytes)
   - `app-universal-release.apk`: `4371f1bb239197122f6a9468943f9bda7ff49c2f8ce62e9f2fc4c5474587e0cd` (7,420,046 bytes)
   - Signing certificate SHA-256 `5D:97:52:2B:A8:FA:B0:C1:4A:BC:D8:14:FE:92:BB:0D:EF:19:91:49:AB:D0:DF:72:40:1A:52:80:87:B7:0F:09` — same identity as every prior release; release CI asserts it against the secret keystore.
+
+- Contributors this release: @Kerry1020 (school parser wave — PRs #124, #126, #131), @YYiChen (widget day-skip #158, grid alignment #159), @Cold577 (merged multi-table reminders #176), @jim139129 (Gradle/AGP build compatibility #182, CI Temurin check #222).
 
 ---
 
@@ -163,7 +165,7 @@ Fixes and adaptations landed for: Tsinghua (PKU) import, East China University o
 
 每日/明日提醒不再一课表发一条。所有课表合并成一条紧凑列表,按上课时间排序,多表时每条带 [课表名] 前缀。点按进入统一每日议程,支持给定日期直达。
 
-**依据:** PR #176(2026-10-14)、#178(2026-10-14)。
+**依据:** PR #176(2026-10-14,贡献者 @Cold577)、#178(2026-10-14)。
 
 ### 课前提醒:横幅 / 流体云二选一
 
@@ -229,13 +231,13 @@ Fixes and adaptations landed for: Tsinghua (PKU) import, East China University o
 
 本轮落地:清华导入、华政按真实坐标、华南农周次坐标、东南大学 v2 自动抓取、西工大研究生旧版界面、新青果三种课表布局(旧网格兼容保留)、新 URP 数组变体(旧版回退保留)、新旧强智结构、Kingo ZX 报表与星期网格解析、以及解析库升级后旧正方输出格式漂移适配。南宁师范大学新版强智课表新支持(用户采集样本:15 门课程、33 条排课记录入测试)。
 
-**依据:** PR #119、#120、#121、#122、#123、#124、#126、#128、#129、#131、#177(2026-10-13/14)、#218(2026-10-21),全部按跨仓验证 SOP 核过。
+**依据:** PR #119、#120、#121、#122、#123、#128、#129、#177(2026-10-13/14)、#124、#126、#131(2026-10-13,贡献者 @Kerry1020)、#218(2026-10-21),全部按跨仓验证 SOP 核过。
 
 ## 修复
 
 - **切周视图闪退。** 顶部胶囊等高此前走正反馈棘轮,切几次周撑爆屏幕。改为两遍测量;棘轮本身和失败过的第一版都由契约测试锁死。**依据:** PR #192(2026-10-19)。
 - **薄带旁的课程卡回缩。** 长课间带厚被双扣(坐标让位一次、卡高再减一次),贴带胶囊不满行。卡高彻底不含带厚。**依据:** PR #184(2026-10-18)。
-- **网格线与课程卡不对齐。** 横线画在格顶、卡占满格,卡顶贴线卡底悬空。横线移到行间隙中点,上下对称(课表视图与小组件同步)。**依据:** PR #159(2026-10-11)。
+- **网格线与课程卡不对齐。** 横线画在格顶、卡占满格,卡顶贴线卡底悬空。横线移到行间隙中点,上下对称(课表视图与小组件同步)。**依据:** PR #159(2026-10-11,贡献者 @YYiChen)。
 - **调休补课取错课。** 调课现在按源日期完整筛周次与单双周,按目标日期排程,详情回原课程实体。**依据:** PR #162(2026-10-13)。
 - **三天窗口组件跨周日列序错乱。** **依据:** PR #188(2026-10-18)。
 
@@ -257,3 +259,4 @@ Fixes and adaptations landed for: Tsinghua (PKU) import, East China University o
   - `app-x86_64-release.apk`: `115168a1a978a43a5014fc5f0385871278320c45bdf457609f634d7fe93bc047`(7,321,216 字节)
   - `app-universal-release.apk`: `4371f1bb239197122f6a9468943f9bda7ff49c2f8ce62e9f2fc4c5474587e0cd`(7,420,046 字节)
   - 签名证书 SHA-256 `5D:97:52:2B:A8:FA:B0:C1:4A:BC:D8:14:FE:92:BB:0D:EF:19:91:49:AB:D0:DF:72:40:1A:52:80:87:B7:0F:09` — 与此前所有版本同一身份;CI 发布前对 secret keystore 断言此指纹。
+- 本版贡献者:@Kerry1020(教务解析器波次 — PR #124、#126、#131)、@YYiChen(组件跳无课日 #158、网格线对齐 #159)、@Cold577(多表提醒合并 #176)、@jim139129(Gradle/AGP 构建兼容 #182、CI Temurin 检查 #222)。
