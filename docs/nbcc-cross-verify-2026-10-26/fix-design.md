@@ -298,4 +298,44 @@ invariant 实现位置:`app/src/test/java/com/lingion/sleepy/data/jw/NbccClassic
 2. wengine 相对 endpoint 在 WebView 重写下的解析行为——无凭据不可预证,失败落 err 分支 + §6.3 备选形态留待 Step 8 实测驱动。
 3. NBCC 教务页学期 ID 实际取值(279 为学生应用样例)——运行时提取,非设计常量化,fixture 标注合成来源。
 
+---
+
+## 8. 增补设计:课节详情钟点获取(taskTable,2026-10-27 报修驱动)
+
+### 8.1 报修与根因(用户原话锚点)
+
+用户报:「有的课点进去之后是有节次时间的,但是我们没抓到」,凭证 = 大学生心理健康(2班)详情弹层截图(教室 奉化号楼奉6-01阶梯教室 / 节数 3-4节 / 时间 10:15-11:40 / 教师 李焱波 / 起止周 6 8 10 12 14 16 18)。
+
+根因(终局调研 27 仓实锤,致谢已落 664152d7): 经典 EAMS `courseTableForStd!courseTable.action` 响应的 `new TaskActivity(...)` 只编码节次编号(index = D*unitCount+P),**响应体内全校无 HH:MM 钟点**;钟点存在于逐课时的服务端渲染详情页 `taskTable.action?lesson.id=<id>`(openurp 源码实锤: `taskTable()` 装配 `timeSetting` → `TimeSetting → List<CourseUnit> → CourseUnit{indexno, beginAt, endAt}`)。我方形态 B 只抓课表主响应,periods 恒为空表,节次时间列自然缺失——不是解析 bug,是数据源面窄。
+
+### 8.2 终局调研四判定(公开侧,零凭据)
+
+- Q1: GitHub 全检索**无任何公开仓解析过 taskTable.action 响应**——全部命中都是课表页出链形态 `onclick="return bg.Go(this,null)"`(beangle/bui 源码证明 bg.Go = 普通同源 GET 返回 HTML;kissTJU 只拼链接从不解析响应 = 关键负样本)。
+- Q2: 弹层时间来自服务端渲染的 taskTable HTML,不是前端 JS 数组(TaskActivity 构造函数字段 = teacher/room/validWeeksBitmap,无钟点映射;asliujinhe/NeuEams、WeCuit fork 双源互证)。
+- Q3: 公开侧拿到过钟点的学生工具全部硬编码本地 time_slots 表(ECNU ecnuics.py、CDUTCM),唯一例外 TJU 从 courseTable 行头读官方钟点(tjuse/tju-python)——硬编码违背「校方权威数据」原则,行头钟点在 NBCC 部署被省略(hua-yi-yi fixture 与 duzhaokun123 旁证: 同一 timeSetting 不同模板打印风格),故 NBCC 只能走详情页。
+- Q4: 无公开 NBCC 移动弹层样本;钉钉路线永久作废,不展开。
+
+### 8.3 设计形态(复用既有 periods 通路,签名零改动)
+
+抓取链扩展在 `CLASSIC_EAMS_FETCH_JS` 内,主响应解析成功后:
+
+1. 从已渲染课表 DOM 收集课时详情链接的 `lesson.id` 参数(bg.Go(this,null) 的 href,同源 `taskTable.action`)。
+2. 逐课时同源 GET(串行,`credentials:'same-origin'`,上限 ~15 次,请求间限速)——每个详情响应提取「节数 + 时间」对(如 3-4节 + 10:15-11:40 → 第3节下界 10:15、第4节上界 11:40)。
+3. 跨课时合并推断全节次表: 每节取观测到的最晚 start 与最早 end;覆盖满 unitCount 全部节次才产出,否则如实残缺(见 8.4 降级)。
+4. 以既有 `__sleepyBridge.onWiseduResult({ok,data,periods})` 通道回传 `periods = [[node,"HH:MM","HH:MM"],...]`,消费链零改动: JwWebViewLoginScreen.kt:175-189 解析 → :243 onHtmlCaptured → JwImportActivity.kt:823 periodMap 预填 → :851 JwImportDraftPeriod 持久化(位点已实测核验,CQU:189/YETHAN:200-238 为先例)。
+
+### 8.4 三条硬条件(实现闸,缺一不准合)
+
+1. **探针采集闸**: 在拿到一份真实 NBCC taskTable.action 响应样本(大概率需学生自愿回传)之前,**禁写提取 regex、禁造 fixture**。本节只锁链路形态与消费面,正则字面量等实物到位后按 SOP Step 7 补。
+2. **强制降级路径**: 任一详情请求失败/无权限(openurp 未选课返回「没有权限」形态)/超时预算耗尽 → 该课时放弃、保留节次编号、periods 不完整时预览层照旧走「请补充节次时间」fallback(现有 UI 承接),**绝不硬编码默认钟点表**伪装校方数据。
+3. **跨语言 invariant(SOP 铁律3)**: 节数/时间提取 pattern 的 Kotlin 常量与 JS 字面量逐字符相等,测试锁死;lesson.id 收集 pattern 同理。
+
+### 8.5 爆炸半径
+
+改动全部在 CLASSIC_EAMS_FETCH_JS(仅 NBCC 条目引用)与 ClassicEamsWebVpn.kt 常量区;48 所既有 classic_eams 校走各自条目 enableFetch=false 或原 JS,零波及。回滚 = revert 单 commit。风险账追加: 逐课时 GET 对校方服务器的请求放大(~15 次/导入)已用串行+限速+上限约束,属只读 GET,与人在页面逐条点开弹层等价。
+
+### 8.6 状态
+
+设计定稿,实现**阻塞在 8.4-1 采集闸**——待真实 NBCC taskTable 响应样本(向已回传学生请求自愿采集: 浏览器登录教务 → 点开任意一课详情 → 另开该链接 → 保存页面源码回传,零凭据外泄面)。样本到位后 Step 7 出 regex+fixture+invariant,Step 8 全量验证。
+
 
