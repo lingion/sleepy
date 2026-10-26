@@ -1,0 +1,1209 @@
+[
+ {
+  "repo": "yeliqin666/xjtu-toolbox-android",
+  "verdict": "INDIRECT",
+  "license": "GPL-3.0",
+  "license_source": "API",
+  "files": [
+   "feature/webvpn/src/commonMain/kotlin/com/xjtu/toolbox/webvpn/WebVpnConverterScreen.kt",
+   "docs/agent-web-spec.md",
+   "README.md"
+  ],
+  "why": "西交 wengine WebVPN 转换契约(服务端 convert API)+正方 jwapp 课表接口属同协议族,URL 改写形态可借鉴但登录链在服务端,无 NBCC 直接证据"
+ },
+ {
+  "repo": "974294341-bit/stdu-cli",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "src/modules/login.js",
+   "src/modules/course.js",
+   "src/modules/course-parser.js"
+  ],
+  "why": "wengine-auth(wengine)+正方 V9 双族完整登录重定向链与 xnm/xqm/kzlx POST 参数体,与 NBCC 同 wengine 门户+正方 EAMS 栈,形态高度可借鉴,非 NBCC 本校"
+ },
+ {
+  "repo": "forget-forever/mark",
+  "verdict": "INDIRECT",
+  "license": "NOASSERTION",
+  "license_source": "API",
+  "files": [
+   "application/api/model/Loginvpn.php",
+   "application/api/controller/v1/Loginvpn.php",
+   "application/api/controller/v1/Jwlogin.php",
+   "README.md"
+  ],
+  "why": "江西理工 webvpn users/sign_in 门户与 NBCC 完全同款(Rails 风格 sign_in+authenticity_token 表单字段),登录 POST 参数体与重定向取 cookie 链可借鉴,非 NBCC 本校"
+ },
+ {
+  "repo": "DanXi-Dev/DanXi",
+  "verdict": "INDIRECT",
+  "license": "GPL-3.0",
+  "license_source": "API",
+  "files": [
+   "lib/util/webvpn_proxy.dart",
+   "lib/util/io/cache_manager_with_webvpn.dart",
+   "lib/util/io/user_agent_interceptor.dart",
+   "README.md"
+  ],
+  "why": "复旦 wengine WebVPN 代理路由/UA 拦截器/cookie 持久化工程实现成熟,同 wengine 产品族可借鉴架构,登录链为复旦 CAS,非 NBCC"
+ },
+ {
+  "repo": "yan-xiaoo/XJTUToolBox",
+  "verdict": "INDIRECT",
+  "license": "GPL-3.0",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "app/sub_interfaces/WebVPNConvertInterface.py",
+   "auth/new_login.py"
+  ],
+  "why": "西交 CAS 状态机登录+WebVPN 转换界面+正方 jwapp 课表接口,同 wengine/正方族形态可借鉴,非 NBCC"
+ },
+ {
+  "repo": "LeafCreeper/Fudan_iCourse_Subscriber",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "src/api/webvpn.py",
+   "frontend/js/crypto.js"
+  ],
+  "why": "wengine AES-128-CFB 主机名加密(整块反馈 hex 输出)与 NBCC 门户同族,密码加密实现可移植,目标校为复旦,非 NBCC"
+ },
+ {
+  "repo": "spencerwooo/bit-webvpn-converter",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "README.md"
+  ],
+  "why": "北理工 wengine 加密前缀 77726476706e69737468656265737421(hex of wrdvpnisthebest!)示例完整,同族 URL 编码形态可借鉴,非 NBCC"
+ },
+ {
+  "repo": "genshen/wssocks-plugin-ustb",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "plugins/vpn/vpn.go",
+   "plugins/vpn/host_encrypt.go",
+   "plugins/vpn/passwd/auto_login.go",
+   "plugins/vpn/webview/vpn_chromedp.go"
+  ],
+  "why": "北科 wengine do-login/do-confirm-login 登录端点+AES-CFB 主机加密,同 wengine 族登录链可借鉴,非 NBCC"
+ },
+ {
+  "repo": "smartThise/OneTHU",
+  "verdict": "INDIRECT",
+  "license": "NOASSERTION",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "packages/core/src/crypto/webvpn.ts",
+   "packages/core/src/zhjwxk/client.ts"
+  ],
+  "why": "清华 wengine AES-128-CFB URL 编码(补0至16倍数+截断规则)与正方系 zhjwxk 客户端全链,同族加密细节可借鉴,非 NBCC"
+ },
+ {
+  "repo": "HF-CYGG/Dawn-Course",
+  "verdict": "INDIRECT",
+  "license": "GPL-3.0",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "app/src/main/assets/js/generic_provider.js",
+   "app/src/main/assets/js/zf_check_table_state.js",
+   "app/src/main/assets/js/zf_open_menu.js"
+  ],
+  "why": "强智/正方 DOM 注入解析(学年学期选择器检测+xnm/xqm 锚)属正方 EAMS 邻近协议族,WebView 注入课表形态可借鉴,非 NBCC"
+ },
+ {
+  "repo": "yang-er/HandSchool",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "HandSchool.JLU/Services/WebVpn/WebVpn.cs",
+   "HandSchool.JLU/Services/WebVpn/WebVpnUtil.cs",
+   "HandSchool.JLU/InfoQuery/ClassSchedule.cs",
+   "README.md"
+  ],
+  "why": "吉林大学 wengine 产品票据 cookie 命名(wengine_vpn_ticket*)+do-login/do-confirm-login 两段 POST 登录链,与 NBCC 同 wengine 产品,登录形态高度可借鉴,非 NBCC"
+ },
+ {
+  "repo": "Runa-Asahi/SuperJLU",
+  "verdict": "INDIRECT",
+  "license": "NOASSERTION",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "jlu_toolkit/webvpn.py",
+   "jlu_toolkit/web_login.py"
+  ],
+  "why": "吉大 CAS service-ticket 接入 wengine WebVPN 的路由/解码实现(vpn_url_decode)与 jwxt 课表客户端,同族登录接入形态可借鉴,非 NBCC"
+ },
+ {
+  "repo": "keyi6/webvpn4dut",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "README.md"
+  ],
+  "why": "大连工大 wengine 加密前缀 URL 原理说明(encode 函数已从站点下线有备份),同族 hex 前缀证据,非 NBCC;仓库 archived 但内容仍有效"
+ },
+ {
+  "repo": "w43322/neu-webvpn-anysite",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "crypto.py"
+  ],
+  "why": "东北大学 wengine URL 加密 AES-CFB 实例(校侧 key/iv 各异的直接证据),同族可借鉴,非 NBCC"
+ },
+ {
+  "repo": "CreamPig233/neu_wisedu2wakeup",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "neu_wisedu2wakeup.py",
+   "extract_schedule.js"
+  ],
+  "why": "东北大学 wengine WebVPN(密码/URL AES-CFB 加密+vpn-12-o2 主机编码)× 正方 jwapp 课表 API 全链,与 NBCC 同 wengine+正方双族,UA 固定与加密改写代码可借鉴,非 NBCC"
+ },
+ {
+  "repo": "LeafCreeper/New_Fudan_Course_Grade_Checker",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "src/webvpn.py",
+   "src/encrypt.py"
+  ],
+  "why": "wengine AES URL 加解密+经典正方 /student/for-std/ 页面形态(与 NBCC EAMS 同代),解析与加密代码可借鉴,目标校复旦,非 NBCC"
+ },
+ {
+  "repo": "ZYYO666/fuck-shuwei",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "src/base/login.js",
+   "public/assets/CoursePage-DUlEQnJy.js"
+  ],
+  "why": "树维 EAMS /eams/loginExt.action 登录链:页面内嵌 SHA1('salt-…') 提取 salt、SHA1(salt-password) 密码加密、form-urlencoded 参数体,树维 EAMS 与 NBCC 经典 EAMS 同名路径体系,登录加密形态可直接对照借鉴,非 NBCC"
+ },
+ {
+  "repo": "Lucent-Snow/zju-scholar",
+  "verdict": "INDIRECT",
+  "license": "GPL-3.0",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "scripts/zju_webvpn.py",
+   "scripts/zju_login.py",
+   "scripts/zju_courses.py"
+  ],
+  "why": "浙大 wengine ticket cookie 登录+AES-CFB-128 URL 编码+课表抓取全链,同族登录链可借鉴,非 NBCC"
+ },
+ {
+  "repo": "xianfei/BUPT-Course-Assistant",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "jwxt.js",
+   "main.js"
+  ],
+  "why": "北邮 wengine do-login 登录+7772…hex 前缀+内层正方 jsxsd(xsd)课表/成绩端点全链,同 wengine+正方双族证据,非 NBCC"
+ },
+ {
+  "repo": "Limour-dev/daily_fudan_core",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "FDU_WebVPN.py",
+   "aes_cfb.py"
+  ],
+  "why": "复旦 webvpn 完整 wengine AES-CFB(key=iv=默认盐)主机加密与 hex 前缀 URL 编解码,与 NBCC 同协议族可借鉴,但非 NBCC 本校证据"
+ },
+ {
+  "repo": "Metaphorme/webVPN_mitm",
+  "verdict": "INDIRECT",
+  "license": "MPL-2.0",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "webVPN_mitm/url_conversion.py",
+   "webVPN_mitm/cpu_webvpn.py"
+  ],
+  "why": "mitmproxy 转发插件内置 wengine URL 加解密(默认盐)与含桌面 UA/sec-ch-ua 的登录请求头样例,同族参考(仓库已 archived 但推送 2024-03 未过十年否决线)"
+ },
+ {
+  "repo": "BeautyyuYanli/DLUT-login",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "readme.md",
+   "java_ver/DesEncryptUtils.java"
+  ],
+  "why": "统一认证+webvpn 自动登录链参考,口令加密为 DLUT 自研 DES(非 wengine hex),异校异盐仅可借鉴登录流程形态"
+ },
+ {
+  "repo": "cywd123/WebVPN-Converter",
+  "verdict": "INDIRECT",
+  "license": "Apache-2.0",
+  "license_source": "API",
+  "files": [
+   "readme.md",
+   "js/convert.js"
+  ],
+  "why": "汕大 webvpn 主机名替换映射形态(点转横线+-s/-p:8118),与 NBCC wengine hex 路径改写同厂商不同产品线,URL 改写参考"
+ },
+ {
+  "repo": "Tenor-John/obsidian-scholarium",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "agent-canvas-demo/WEBVPN_COOKIE_SETUP.md"
+  ],
+  "why": "论文下载场景明确警告 wengine hex 盐按校勿硬编码、主张真实浏览器复用登录态,与 NBCC 的 WebView 登录态路线同法方法论参考,无协议参数体"
+ },
+ {
+  "repo": "kagg886/SYLU-Educational-Office-Accesser",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "second-class/src/commonMain/kotlin/top/kagg886/eoa/vpn/VPNClient.kt",
+   "second-class/src/commonMain/kotlin/top/kagg886/eoa/vpn/internal/aes.kt",
+   "eoa-lib/network-html-api/src/commonMain/kotlin/top/kagg886/sylu_eoa/api/html/EOAHTMLClient.kt",
+   "eoa-lib/network-html-api/src/commonMain/kotlin/top/kagg886/sylu_eoa/api/html/util/login-util.kt"
+  ],
+  "why": "wengine webvpn CAS 登录(滑验证码/pwdEncryptSalt AES-CBC 随机前缀加密/wengine_vpn_ticket)+ 正方教务 xtgl/cjcx 接口与 Cookie 过期检测(login-util)双链完整,对 NBCC(wengine+正方族)最可借鉴"
+ },
+ {
+  "repo": "KaranocaVe/uestc-redirect-extension",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "readme.md",
+   "src/lib/config.ts",
+   "src/lib/url-convert.ts",
+   "src/api/encrypt/route.ts"
+  ],
+  "why": "通用 wengine AES-CFB URL 转换 Chrome 插件,key/iv 参数化且默认盐与 NBCC 同族实现一致,算法可直接对照"
+ },
+ {
+  "repo": "vivym/webvpn-ng",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "webvpn_ng/login.py",
+   "README.md"
+  ],
+  "why": "北航 CAS execution 表单登录 + d.buaa webvpn(?cas_login=true)登录链与 chisel 隧道形态参考,异校异部署"
+ },
+ {
+  "repo": "BobH233/LexueSwiftUI",
+  "verdict": "INDIRECT",
+  "license": "GPL-3.0",
+  "license_source": "API",
+  "files": [
+   "LexueSwiftUI/Network/Webvpn.swift",
+   "LexueSwiftUI/Network/BITLogin.swift",
+   "README.md"
+  ],
+  "why": "BIT authserver CAS(salt AES-CBC 加密口令)+ wengine_vpn_ticket 提取与 Webvpn-Cookie 手工构造,iOS Swift 实现同族参考"
+ },
+ {
+  "repo": "vivym/webvpn-py",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "webvpn/login.py",
+   "webvpn/client.py",
+   "README.md"
+  ],
+  "why": "webvpn-ng 的 aiohttp 异步版,同一条北航 CAS+webvpn 登录链参考"
+ },
+ {
+  "repo": "RekaYOO/NEU-JWXT-Toolkit",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "backend/core/network/webvpn.py",
+   "backend/core/auth/client.py",
+   "docs/功能/WebVPN校外访问.md"
+  ],
+  "why": "wengine URL 编解码器 + 校用盐(b0A58…非默认盐)实锤「盐按校勿写死」,auth client 含 /wengine-vpn/cookie CSRF 与 vpn-12-o2- 代理参数处理,与 NBCC 登录链形态同族,批内质量最高"
+ },
+ {
+  "repo": "abcde2333/NcepuJw",
+  "verdict": "INDIRECT",
+  "license": "GPL-3.0",
+  "license_source": "API",
+  "files": [
+   "app/src/main/java/com/ncepu/jw/data/Webvpn.kt",
+   "app/src/main/java/com/ncepu/jw/data/JwClient.kt",
+   "app/src/main/java/com/ncepu/jw/data/QiangzhiCrypto.kt"
+  ],
+  "why": "Android/Kotlin 实现 wengine 默认盐 hex 加密 + COOKIE_INFO 桥接 + /wengine-vpn/cookie?method=get 取 CSRF 登录链(与 NBCC 门户流程同形),教务侧为强智 jsxsd 与 NBCC 正方不同"
+ },
+ {
+  "repo": "0patsick0/danxi-daily-skill",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "danxi_daily/webvpn.py",
+   "README.md"
+  ],
+  "why": "复旦打卡工具内独立复刻 wengine hex 前缀算法与 cookie/origin 重写代理层,同族可借鉴"
+ },
+ {
+  "repo": "LittlePorcupine/dlut-webvpn-web",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "api/index.py"
+  ],
+  "why": "大工 webvpn 同款 AES-CFB hex URL 加密的 Vercel 网页版,盐为校用自定义值,实证盐按校差异"
+ },
+ {
+  "repo": "sapphire-xu/nidong",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "src-tauri/src/webvpn.rs",
+   "src-tauri/src/crypto.rs"
+  ],
+  "why": "东北大学桌面看板 Rust 实现 wengine encrypt_host(hex(key)+密文)+ CAS service 登录入口,与 NBCC 同族参考"
+ },
+ {
+  "repo": "Mythologyli/websocket-via-webvpn",
+  "verdict": "INDIRECT",
+  "license": "GPL-3.0",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "login.go"
+  ],
+  "why": "浙大深信服 aS 门户登录链(TwfID+RSA+CSRF)Go 实现,与 NBCC wengine hex 同厂商不同产品线,容器登录参考"
+ },
+ {
+  "repo": "Frank-678/hitwh-webvpn-reverse",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "calc.js"
+  ],
+  "why": "wengine hex 加密最小实现(CryptoJS AES-CFB NoPadding 截断),README 自述即 wrdvpn-url-calc,算法与 NBCC 前端可直接对照"
+ },
+ {
+  "repo": "zeife4/zzuli-grade-monitor",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "grade_monitor.py"
+  ],
+  "why": "郑州轻工业大学 webvpn 登录密码 AES-CFB 加密(校用变体盐 wrdvpnisawesome!)+ Playwright 教务门户导航成绩监控,盐按校实证"
+ },
+ {
+  "repo": "key-zhzr/BJUT-Auto-Login",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "src-tauri/src/billing/webvpn.rs"
+  ],
+  "why": "北工大校园网自动登录(Rust/Tauri)内置 wengine 默认盐硬编码前缀常量与 wengine-vpn-token-login 通路,同族参考"
+ },
+ {
+  "repo": "Limour-dev/webvpn-fudan",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "FDU_WebVPN.py"
+  ],
+  "why": "daily_fudan_core 抽出的复旦 webvpn API 独立封装,同一段 wengine 默认盐 AES-CFB 编解码参考"
+ },
+ {
+  "repo": "Yummy-He/JLU-WebVPN",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "js/converter.js"
+  ],
+  "why": "吉大 webvpn URL 转换器,前缀+XOR 加密老一代深信服形态(非 AES-CFB),同厂商不同代际形态参考"
+ },
+ {
+  "repo": "Tiosa205g/touda_wifi_float",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "src/touda.py"
+  ],
+  "why": "汕大深信服 aS 门户完整登录链(login_auth.csp/TwfID/RSA+TOTP 动态口令/login_psw.csp)+主机名替换双形态,同厂商不同产品线参考"
+ },
+ {
+  "repo": "Fighting05/NKU-GradeTracker",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "v3.0/src/core/auth.py",
+   "v3.0/src/utils/crypto.py",
+   "nku_grades.py"
+  ],
+  "why": "wengine 登录全链(/wengine-vpn/cookie 取 CSRF → /wengine-vpn/input 逐字段喂值 → api/v1/login AES-CBC 定盐口令)+ 正方 EAMS /eams/teach/grade/course/person!search.action 解析,与 NBCC"
+ },
+ {
+  "repo": "foxdogcmd/toolbox",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "app/src/main/java/com/foxxd/toolbox/tools/webvpn/WebVpn.kt",
+   "app/src/main/java/com/foxxd/toolbox/tools/grades/GradeClient.kt",
+   "README.md"
+  ],
+  "why": "平顶山学院 Android/Kotlin 工具箱:webengine hex 算法注释完备(默认盐+按 host 前缀常量),工程形态与 Sleepy 最近,可借鉴"
+ },
+ {
+  "repo": "gaowanlu/Cours",
+  "verdict": "INDIRECT",
+  "license": "GPL-3.0",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "service/service/webVpnService.js"
+  ],
+  "why": "广西科技 webvpn CAS ST 票据换 wengine_vpn_ticket 的 Node 服务端登录链,同族票据形态参考"
+ },
+ {
+  "repo": "wilinz/webvpn-guet",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "webvpn.py"
+  ],
+  "why": "同协议族(网瑞达 WRD/wengine)WebVPN 的 AES-128-CFB 固定密钥 hex 前缀 URL 互转完整实现,README 明示可改 institution 移植到任意 WRD 校"
+ },
+ {
+  "repo": "linf04/TcpOverWebvpn",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "readme.md",
+   "main.go"
+  ],
+  "why": "同为 wengine WebVPN 部署,给出 wengine_vpn_ticket 会话 Cookie 与 route 字段的真实形态,可佐证同族网关的登录态结构"
+ },
+ {
+  "repo": "ninthseason/nuist-vpn.io",
+  "verdict": "INDIRECT",
+  "license": "Apache-2.0",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "index.html"
+  ],
+  "why": "页面本身只是 URL 输入跳转,但 README 携带南信大 wengine 门户的真实代理前缀样例,可作同族门户形态旁证"
+ },
+ {
+  "repo": "MilLoong/UESTC-EAMS-Helper-Python",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "uestc_eams_helper.py"
+  ],
+  "why": "电子科大统一身份认证 CAS 登录链(pwdEncryptSalt 提取+AES-CBC 密码加密+ticket 消费)与 EAMS 课表/成绩接口完整可用,属同目标形态(教务门户经 CAS)的协议参考"
+ },
+ {
+  "repo": "liyue983/nku_lib_reservation",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "webvpn.py"
+  ],
+  "why": "南开 WRD WebVPN 全自动登录链(_lt 正则提取+AES-CFB hex 前缀+CAS ajax 表单参数体)完整,是同族网关账密自动登录的直接范本"
+ },
+ {
+  "repo": "lunarx3/webvpn-converter",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "script.js",
+   "presets.js"
+  ],
+  "why": "纯前端 WRD/wengine 链接转换器,密钥可配置并默认 wrdvpnisthebest!,URL 组装规则与 nku/guet 实现互相印证"
+ },
+ {
+  "repo": "vivym/buaa-webvpn-tunnel",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "client.js"
+  ],
+  "why": "北航 WRD 网关的 hex 前缀+端口(http-23380)+tunnel push 轮询通道真实 URL 形态,佐证同族网关的隧道 API"
+ },
+ {
+  "repo": "SMU-CAA/webv2ray-updater",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "src/main.py"
+  ],
+  "why": "WRD hex 前缀包 CAS 登录页的完整自动登录链(execution/validateCode/_eventId 参数体+PyTorch 验证码识别+登录成功判据),同族可直接套用"
+ },
+ {
+  "repo": "Slowist-Lee/website-converter",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "script.js"
+  ],
+  "why": "浙大旧版 WRD WebVPN 的油猴转换器,固定 key+AES-CFB+hex 反解正则齐备,注意其自述新版 WebVPN 已改形态"
+ },
+ {
+  "repo": "HanversionOvO/UESTC-WebVPN-Converter",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "src/content/login-handler.ts"
+  ],
+  "why": "UESTC 统一身份 CAS 密码前端加密复刻(64 位随机前缀+AES-CBC+固定 salt),与 MilLoong 服务端实现互为印证"
+ },
+ {
+  "repo": "DE3PDARKFANTASY/cauc-campus-assistant",
+  "verdict": "INDIRECT",
+  "license": "GPL-3.0",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "android/app/src/main/assets/public/js/api.js"
+  ],
+  "why": "民航大学第三方 Android 校园助手完整源码:域名改写式 WebVPN 入口+webvpn-token 种 Cookie+正方 kbcx 课表端点(xskbcxMobile 系列/gnmkdm 参数),同协议族可借鉴"
+ },
+ {
+  "repo": "2745518585/thu-auth",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "src/thu_network_autoauth/webvpn.py"
+  ],
+  "why": "清华 wengine 变体:每用户 key/IV 由 /user/info JSON 动态下发(非全局 wrdvpnisthebest!),iv.hex()+密文 hex 前缀组装一致——提示同族不同部署密钥不可写死"
+ },
+ {
+  "repo": "WilliamPeterMatthew/webvpn-url-page",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "config.js",
+   "convert.js"
+  ],
+  "why": "中科大 WRD WebVPN 静态互转页,CFB+NoPadding+keyHex 前缀的 URL 双向构造完整"
+ },
+ {
+  "repo": "BIT-BOBH/WebvpnExploit",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "src/components/ReqLogin.vue"
+  ],
+  "why": "README 是无关空模板(ViteCI,描述与实际矛盾),但 ReqLogin.vue 硬编码北理工乐学等内网系统的 WRD hex 前缀直达 URL,同族门户入口实例"
+ },
+ {
+  "repo": "xqNO5/ahu-campus-card",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "ahu_client/webvpn.py",
+   "ahu_client/cas_des.py"
+  ],
+  "why": "深信服 WebVPN(非 WRD 族)但 CAS 登录链含 DES strEnc 复刻、桌面 UA 伪装与微信 UA 客户端侧门控实测——正是 NBCC 移动 UA 入口缺陷的同型先例"
+ },
+ {
+  "repo": "Yqloss/neu-webvpn-converter",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "extension/converter.js"
+  ],
+  "why": "东北大学 WRD 族转换器但密钥为校定 b0A58a69394ce73@(非全局默认)——证明同族协议 key 按校定制,移植 NBCC 时须先从其页面 JS 提取本校密钥"
+ },
+ {
+  "repo": "Walvez/hebmu-library-skill",
+  "verdict": "INDIRECT",
+  "license": "NOASSERTION",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "references/hebmu-webvpn-route.md"
+  ],
+  "why": "河北医大 WRD 路线册把 hex 前缀规律(固定 32 字符+主机名加密)、CAS 登录页交互与登录判定写成可执行文档,同族门户操作形态参考"
+ },
+ {
+  "repo": "BH4GMI/sues-campus-entry",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "docs/PROTOCOL.md",
+   "android/app/src/main/java/app/webvpn/entry/EntryFlow.kt"
+  ],
+  "why": "上海工程技术 WRD 门户实测协议文档:hex 编码不可写死、前缀从 /user/portal_groups 资源接口读取、教务 SSO 支点与 WebView 自动填提交状态机——同族 WebVPN 加教务直达最完整范本"
+ },
+ {
+  "repo": "spx86/papervpn",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md"
+  ],
+  "why": "海南大学 wengine 网关 token 结构(IV+AES-CFB 主机名、按主机确定性)与 wengine_vpn_ticket 会话复用描述,同族形态印证"
+ },
+ {
+  "repo": "Johnsheng1/JUST-ToolKit",
+  "verdict": "INDIRECT",
+  "license": "Apache-2.0",
+  "license_source": "API",
+  "files": [
+   "just-webvpn-jumper/just-webvpn-jumper.user.js",
+   "just_vpn_cookie/just_vpn_login.py"
+  ],
+  "why": "江苏科大为易安联(enlink)WebVPN 另一厂商族:webvpn 前缀 hex、RSA 密码加密、注入 JS 改写坑(Next.js hydration),厂商不同但入口逆向方法论可借鉴"
+ },
+ {
+  "repo": "likangxian1007/danta-mcp",
+  "verdict": "INDIRECT",
+  "license": "GPL-3.0",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "danta_client.py"
+  ],
+  "why": "复旦 WRD 网关 Python 客户端:AES-CFB 主机改写+UIS 一次登录+磁盘会话缓存+失败风控纪律,同族自动化范本"
+ },
+ {
+  "repo": "RekaYOO/NEU-Academic-WebVPN",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "webvpn.js",
+   "README.md"
+  ],
+  "why": "东北大学学术访问扩展,校定密钥 b0A58a69394ce73@ 的 hex 前缀 62304135386136393339346365373340 与 URL 组装完整,同族密钥按校定制又一实证"
+ },
+ {
+  "repo": "fsfgrafb/tcp-over-websocket",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "docs/protocol.md",
+   "src/client/auth.rs"
+  ],
+  "why": "苏州工学院 wengine WebVPN 完整客户端登录链:set-fingerprint 激活、/https/十六进制前缀 CAS 代理路径、execution 令牌、RSA(getPubKey) 加密验证码、wengine_vpn_ticket 票据名与 wrdvpn1-32hex 格式,同协议族参数体可直接借鉴"
+ },
+ {
+  "repo": "FangZhangDev/zju-course-digest",
+  "verdict": "INDIRECT",
+  "license": "GPL-3.0",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "scripts/zju_webvpn.py",
+   "scripts/zju_login.py",
+   "scripts/zju_courses.py"
+  ],
+  "why": "wengine WebVPN 双密钥(AES-CFB128,wrdvpnisthebest!/wrdvpnisawesome!)URL+密码加密与 do-login/CAS 登录链,再穿透到正方 jwglxt 教务,与 NBCC 同协议族且 Python 形态可参考"
+ },
+ {
+  "repo": "kaaass/jlu-webvpn-assistant",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "src/logic/vpn/encrypt.js",
+   "src/logic/vpn/url-transformer.js",
+   "src/logic/vpn/credentials.js"
+  ],
+  "why": "吉林大学 wengine WebVPN 助手:动态获取 wrdvpnIV/wrdvpnKey 做主机名 AES 加解密、URL 方案正则解析与 vpn-12-oN/wrdrecordvisit 参数剥离,登录链与 URL 变换形态可借鉴"
+ },
+ {
+  "repo": "eWloYW8/ZJUWebVPN",
+  "verdict": "INDIRECT",
+  "license": "WTFPL",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "ZJUWebVPN.py"
+  ],
+  "why": "通用 wengine WebVPN Python 会话类:登录页 regex 抠密码加密 key/iv、/do-login 表单体、/user/info 取 wrdvpnIV/wrdvpnKey,是参数化 baseURL 的同族实现,NBCC 适配可直接套用其流程"
+ },
+ {
+  "repo": "liujiaqi7998/Clash.Meta_webvpn_pass",
+  "verdict": "INDIRECT",
+  "license": "GPL-3.0",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "component/webvpn/webvpn.go"
+  ],
+  "why": "Clash.Meta 分支内嵌 wengine WebVPN 隧道:拉取 wrdvpnIV/wrdvpnKey、AES-CFB 加密 URL 主机名输出 hex(iv)+hex(ct) 并 TrimLeft 去零,Go 语言同协议参考"
+ },
+ {
+  "repo": "MiracleHYH/EasyLife_XJTU",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "utils/webvpn.py",
+   "config/URLs.py"
+  ],
+  "why": "西安交大 wengine 系 WebVPN:Selenium 从页面 JS 全局读 wrdvpnKey/wrdvpnIV 后本地 AES-CFB 加密主机名拼 /scheme[-port]/hex 路径,浏览器态取密钥的替代路径可借鉴"
+ },
+ {
+  "repo": "lNwNl/webvpn-proxy",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "webvpn_core.py"
+  ],
+  "why": "河北大学 wengine WebVPN 本地代理:按前缀探测 wengine_vpn_ticketv* cookie、密码密钥 wrdvpnisawesome!、hex(iv)+hex(ct) 拼 URL,登录与票据提取代码简短可抄"
+ },
+ {
+  "repo": "IShiraiKurokoI/DLUTModernWebvpnBrowser",
+  "verdict": "INDIRECT",
+  "license": "AGPL-3.0",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "DLUTModernWebvpnBrowser/Helpers/DES.cs",
+   "DLUTModernWebvpnBrowser/Entities/WebvpnKey.cs",
+   "DLUTModernWebvpnBrowser/Helpers/ScriptEngine.cs"
+  ],
+  "why": "大连理工 wengine WebVPN 浏览器:内嵌 JScript 跑 strEnc 三向 DES 加密 Uid+Password+lt 得 rsa 参数、全局保存 WebvpnKey Key/IV,同校同协议族的 CAS 密码加密参数体参考"
+ },
+ {
+  "repo": "zymooll/Better-Sicau",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "packages/sicau-core/src/webvpn.mjs",
+   "packages/sicau-core/src/jiaowu.mjs",
+   "packages/sicau-core/src/parsers.mjs"
+  ],
+  "why": "四川农大 wengine WebVPN 完整链:/https/ 十六进制代理前缀(即 wrdvpnisthebest 前缀)+验证码/扫码/短信登录+AES 响应解密+教务 asp 页课表成绩解析,是同族中登录加教务解析最全的工程参考"
+ },
+ {
+  "repo": "liyue983/nankai-webvpn",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "webvpn.py",
+   "example.py"
+  ],
+  "why": "南开大学 wengine WebVPN+SSO:固定 wrdvpnisthebest 密钥的 AES-CFB 主机名加密、md5 密码、sso/loadcode 动态 rand 链与 vpn-12-o2- 查询参数,同协议族登录参数参考"
+ },
+ {
+  "repo": "CrackTC/jlu_cas",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "main.ts",
+   "des.ts"
+  ],
+  "why": "吉林大学 wengine WebVPN CAS 登录 30 行最小复现:先 GET /login?cas_login=true 拿 wengine_vpn_ticket 与 #lt,三密钥 DES strEnc 出 rsa 参数体 POST /tpass/login,登录参数体结构对 NBCC 同族可直接对照"
+ },
+ {
+  "repo": "123456lj7q/Jsoup-Android-Timetable",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "src/main/java/com/example/dynamicschooltimetable/ParseHtml.java",
+   "src/main/java/com/example/dynamicschooltimetable/MainActivity.java",
+   "src/main/java/com/example/dynamicschooltimetable/NormalizeParams.java"
+  ],
+  "why": "正方课表 HTML 解析形态可借鉴:Jsoup 按 #table1 tbody、星期-节次 id(k-i)、.title 与 p/next 提取课程/教师/教室/周次,无登录链与 NBCC 证据"
+ },
+ {
+  "repo": "Zhanhao-liu/doi-fetch",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "extension/webvpn.js",
+   "src/doifetch/auth.py",
+   "src/doifetch/data/schools.json"
+  ],
+  "why": "网瑞达 wengine WebVPN URL 编解码完整实现(JS 自研 AES-CFB128 + Python auth.py),含 wengine_vpn_ticket 登录标记、22 省高校 webvpn 域名目录(浙江无 NBCC)与 Playwright 反检测 UA 处理,同协议族可借鉴"
+ },
+ {
+  "repo": "SwufeFox/swufe-cnki",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "src/wengine.mjs",
+   "src/cas.mjs"
+  ],
+  "why": "wengine WebVPN URL 加密完整还原(AES-128-CFB、补'0'、iv-hex+密文截断,与门户前端 36edf52.js 模块 403 实测逐字符一致)+ 金智 CAS 登录链(pwdEncryptSalt、AES-128-CBC 密码、wengine_vpn_ticket 落地),同协议族强参考"
+ },
+ {
+  "repo": "cherrchen/swufe-webvpn-codec",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "packages/webvpn-core-js/src/codec/wrd-codec.ts",
+   "docs/architecture/adr/ADR-0013-js-core-aes-cfb128.md"
+  ],
+  "why": "网瑞达 WRD WebVPN codec 参考实现库(TS/Python 双实现+共享测试向量,token=iv_hex+ct_hex,含 scheme[-port] 段与校验),面向教务系统 jwxt 桥接,同协议族最完整工程化参考"
+ },
+ {
+  "repo": "sansssssss1/hhu-vpn-agent",
+  "verdict": "INDIRECT",
+  "license": "NOASSERTION",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "hhuvpn/webvpn.py",
+   "hhuvpn/secret.py"
+  ],
+  "why": "河海大学网瑞达 wEngine WebVPN 完整链路:CAS 统一认证(AES 加密密码、pwdEncryptSalt/execution/lt 提取)→ wengine_vpn_ticket cookie → sig(host)=hex(key)+AES-128-CFB 加密 URL,同协议族强参考"
+ },
+ {
+  "repo": "qwasd7680/nbt-cal-export",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "internal/app/browser.go",
+   "internal/app/timetable.go"
+  ],
+  "why": "宁波工程学院(同市不同校)正方 JWXT 课表链路:webvpn 入口 jwxt-443.webvpn.nbt.edu.cn、xskbcx gnmkdm=N2151、zcd/xqj/kcmc/cdmc/jxb_id 字段解析、CAS 表单选择器(#pwdFromId/#fm1),正方协议族可借鉴但非 NBCC"
+ },
+ {
+  "repo": "guoPhineas/WRD-WengineVPN-Proxy-Converter-App",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "WRDWebVPN-Convert/AppModel.swift"
+  ],
+  "why": "wengine WebVPN 的 iOS/macOS 纯 Swift 客户端:自实现 AES-CFB128 兼容 PyCryptodome segment_size=128,cookie 存 Keychain,URL 加解密回环预览,同协议族移动端参考"
+ },
+ {
+  "repo": "guoPhineas/WRD-WengineVPN-Proxy-Converter",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "webvpn_proxy.py"
+  ],
+  "why": "网瑞达 wengine 转本地 HTTP 代理:cookie 名模式 wengine_vpn_ticket<host下划线化>、URL 路径 /scheme[-port]/<hex>/path 解析与防二次加密、Location 回写,登录链与改写规则完整可借鉴"
+ },
+ {
+  "repo": "wy723161060/neuq-classroom-query",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "src/fetcher.rs",
+   "src/client.rs"
+  ],
+  "why": "东北大学秦皇岛分校 WebVPN 门户+正方 EAMS 全链:门户 _csrf/do-login 登录、wisedu CAS AES-128-CBC(64随机+密码,key=salt)与本地 SHA1(salt-password) 双登录路径、登录成功判据 homeExt.action、桌面 Chrome UA、单会话"
+ },
+ {
+  "repo": "KaranocaVe/uestc-webvpn-redirector-userscript",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "uestc-webvpn-redirector.user.js"
+  ],
+  "why": "UESTC wengine WebVPN 油猴重定向脚本:浏览器端 aes-js 加密主机名、scheme[-port] 协议集合与双向地址转换,同协议族前端改写参考"
+ },
+ {
+  "repo": "LyuFG1999/xjtu-webvpn-extension",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "content-login.js"
+  ],
+  "why": "西交管网瑞达 webvpn MV3 扩展:纯 JS AES-128-CFB 加密域名改写导航(经 FIPS-197/OpenSSL 对照验证),登录页账号选择器统一身份认证形态可借鉴"
+ },
+ {
+  "repo": "Tianyvli/SCUTScoreChecker",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "src/SCUTScoreChecker/Services/AuthWebViewService.cs"
+  ],
+  "why": "华南理工教务双入口登录态管理可借鉴:校园网直连 jw2018.jw.scut.edu.cn(JSESSIONID/clwz_blc_ cookie)与 webvpn.scut.edu.cn(_webvpn_key)分流探测、WebView2 桌面会话与 origin 白名单,非 wengine 加密实现"
+ },
+ {
+  "repo": "mcitem/webvpn-converter",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "src/lib.rs"
+  ],
+  "why": "Rust 版网瑞达 wengine URL 转换器(CSVPN 岭南大学):AES-128-CFB、iv-hex 前缀、scheme[-port] 段解析、真实 URL 回环测试,同协议族最小实现参考"
+ },
+ {
+  "repo": "3-Tian/zju-paper-fetcher",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "wvpn_url.py"
+  ],
+  "why": "浙大网瑞达 wengine 加密 URL 生成器(与门户 zju.js 等价、经真实链接回环校验):补'0'、CFB128、密文截断到 host 长度,同协议族极简参考"
+ },
+ {
+  "repo": "Agoin-314260/XiaoAi-timetable-adapted-for-Shuwei-education-management-system-import",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   "README.md",
+   "provider.js",
+   "parser.js",
+   "timer.js"
+  ],
+  "why": "树维 eams 教务系统(URL 含 /eams/,courseTableForStd!courseTable.action 特征)完整登录链与课表解析实证,适配校为韩山师范学院而非 NBCC,同协议族登录参数体/SHA1 盐提取/ids 提取正则可直接借鉴"
+ },
+ {
+  "repo": "SJYssr/FuckShuwei",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   {
+    "path": "README.md",
+    "purpose": "树维智能选课系统说明"
+   },
+   {
+    "path": "src/base/login.js",
+    "purpose": "树维 EAMS 登录链(salt 提取+SHA1 密码+POST 参数体)"
+   },
+   {
+    "path": "src/base/request.js",
+    "purpose": "axios 实例与登录过期检测(页面文本含 过期/登录 判定)"
+   },
+   {
+    "path": "src/base/getProfileId.js",
+    "purpose": "选课轮次 profileId 正则提取"
+   }
+  ],
+  "why": "树维(shuwei)EAMS 教务登录链完整参考:salt 正则、SHA1(salt-密码) 加密、loginExt.action 参数体、profileId 与 lessonJSONs 提取,属任务协议族之一,可借鉴登录链形态,但非 NBCC 同校证据。"
+ },
+ {
+  "repo": "xswxswb/fuck-shuwei",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   {
+    "path": "src/module/login.js",
+    "purpose": "树维 EAMS 登录链(与 SJYssr 同实现)"
+   },
+   {
+    "path": "src/module/getProfileId.js",
+    "purpose": "选课轮次 profileId 正则提取"
+   }
+  ],
+  "why": "与 SJYssr/FuckShuwei 同源的树维 EAMS 抢课脚本,登录链与 profileId 提取形态可借鉴,属同协议族参考,非 NBCC 同校证据。"
+ },
+ {
+  "repo": "DustinKarl004/eams_mobileapp",
+  "verdict": "NEGATIVE",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   {
+    "path": "README.md",
+    "purpose": "仅一行标题"
+   },
+   {
+    "path": "LoginScreen.js",
+    "purpose": "登录页实现(证伪 EAMS 教务假设)"
+   }
+  ],
+  "why": "仓库名 eams 与正方/树维 EAMS 教务撞名,实际是海外招生申请类 React Native 应用,登录走 Firebase email/password 与 Firestore 验证,与中文教务 EAMS 协议完全无关,证据与检索假设矛盾。"
+ },
+ {
+  "repo": "klren0312/dingdingQrcodeLoginDemo",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   {
+    "path": "server.js",
+    "purpose": "钉钉扫码回调 authCode 换 accessToken 再取用户信息"
+   }
+  ],
+  "why": "钉钉新版 oauth2 扫码登录换票链(authCode 到 userAccessToken 到 users/me)的最小 NodeJS 参考,可佐证 NBCC 移动 UA 钉钉 SPA 场景的钉钉授权码换票形态,非教务协议本身证据。"
+ },
+ {
+  "repo": "njydsz/ydsz-micro",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   {
+    "path": "comm/effects/common-ui/src/ui/authentication/dingding-login.vue",
+    "purpose": "钉钉扫码登录前端组件(内嵌二维码与跳转授权)"
+   }
+  ],
+  "why": "钉钉扫码登录前端形态参考:官方 h5-dingtalk-login SDK 内嵌二维码与 login.dingtalk.com/oauth2/auth 参数拼装完整,可借鉴 NBCC 钉钉容器入口的 UA/授权参数行为,非教务协议证据。"
+ },
+ {
+  "repo": "au-to/dingding-login-mini",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   {
+    "path": "backend/routes/auth.js",
+    "purpose": "钉钉扫码登录、回调换票、容器内免登三条链的最小实现"
+   }
+  ],
+  "why": "钉钉登录/换票三形态最清晰参考:扫码授权 URL 参数、authCode 换 userAccessToken、容器内免登 authCode 换企业 token,可借鉴 NBCC 钉钉入口的换票协议形态,非教务协议本身证据。"
+ },
+ {
+  "repo": "JackYanzhe/dingding-login",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   {
+    "path": "dingding-login-master/src/main/java/Controller/DingDingLoginController.java",
+    "purpose": "老版钉钉扫码与第三方授权跳转链(Java)"
+   }
+  ],
+  "why": "老版钉钉(oapi.dingtalk.com qrconnect/sns_authorize,scope=snsapi_login)扫码与免登跳转形态参考,与新版 v1.0 oauth2 并存可佐证钉钉入口演进,非 NBCC 教务证据。"
+ },
+ {
+  "repo": "chenzhuoxi/GDUST_timetable",
+  "verdict": "INDIRECT",
+  "license": null,
+  "license_source": "API",
+  "files": [
+   {
+    "path": "gdust_timetable.py",
+    "purpose": "wengine WebVPN 代理 URL、wengine_vpn_ticket cookie、CAS 登录链、TOKEN 换票、课表 API"
+   },
+   {
+    "path": "README.md",
+    "purpose": "WebVPN 双网络模式说明"
+   }
+  ],
+  "why": "同协议族 wengine WebVPN 的完整实现参考:hex 加密代理前缀路径、wengine_vpn_ticket<校域下划线> cookie 命名、CAS 登录后经 WebVPN 反代访问教务门户的三段链与 TOKEN 头失效重试,对 NBCC WebVPN 登录链与 hex 前缀维度可直接借鉴,但非 NBCC "
+ },
+ {
+  "repo": "wuhanzaina/jenkins-login-dingding",
+  "verdict": "INDIRECT",
+  "license": "MIT",
+  "license_source": "API",
+  "files": [
+   {
+    "path": "src/main/java/org/jenkinsci/plugins/DingTalkSecurityRealm.java",
+    "purpose": "服务端完整钉钉 OAuth 登录闭环(commenceLogin/finishLogin 换票)"
+   }
+  ],
+  "why": "钉钉 OAuth2 扫码登录的服务端完整闭环参考(state 防 CSRF、code 换 userAccessToken、users/me 取 userid),形态与 NBCC 移动 UA 钉钉 SPA 的授权链同族,可借鉴换票参数,非教务协议证据。"
+ }
+]

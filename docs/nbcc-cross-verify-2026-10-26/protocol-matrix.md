@@ -57,3 +57,24 @@
 3. 形态 C(密码传递器)调研结论:先例存在、对本校非必需 — 如实回应用户「考虑新增」命题。
 4. 形态 D 对本校排除。
 5. 待 Step 3 verdict 补:同族仓数分布、各形态可借鉴参数细节、shuwei 错配的他仓旁证。
+
+## Step 3 合并后补记(2026-10-26, 268 verdict 全量, 只补行不翻形态)
+
+来源 = `findings.json`(POSITIVE 1 / INDIRECT 108 / NEGATIVE 1 / NULL_EVIDENCE 158)。
+
+### 形态 A 增援行(原生 wengine 链可借鉴参数)
+- `StevenWin818/wenginetunnel`(Go, GUET, MPL-2.0):登录页隐藏字段正则 `<input[^>]*(?:id|name)=…`(cas_login.go),AES-CFB crypto.go 与本校 URL 盐同族 — A 形态「表单要素抓取」的实现参照。
+- `forget-forever/mark`(PHP, 旧门户 Rails 形态):`utf8=✓ + authenticity_token + user[login] + user[password]` 提交体,与 NBCC 旧门户 `/users/sign_in` 逐要素同构 — 佐证旧门户时代登录体形态,但旧门户已 302 下线(pc-entry-evidence §3.1),历史参照。
+- `974294341-bit/stdu-cli`(JS):`浏览器访问教务域 → 302 → wengine 代理域` 的回跳建模 + `xsxx.XH ?? xsxx.xh` 学号提取 — 与 NBCC「教务 vhost 只在门户会话内可达」同构(Q2 形态旁证)。
+
+### shuwei 错配的他仓旁证(支撑 schools.json type 修正)
+- 树维真形态仓(`ZYYO666/fuck-shuwei` 等):`SHA1('<salt>-'+pwd)` 登录体 + `loginExt.action` 入口 — 树维引擎指纹与 NBCC 实测 `TaskActivity`/`courseTableForStd!courseTable.action` 指纹完全不同源。NBCC 学生应用(POSITIVE)与本校 `JwClassicEamsParser` 双源锁 classic EAMS;WakeUp `xatu_shuwei` 猜配定性为厂商名混标(pc-entry-evidence §2)。
+
+### NEGATIVE 档记录
+- `DustinKarl004/eams_mobileapp`:名为 EAMS 实为 Firebase 自建课表 app,无教务协议证据 — 排除,防后续战役再撞名。
+
+### 钉钉系仓横向说明(路线裁决不变)
+- Step 3 命中的 dingding 族仓(dingdingQrcodeLoginDemo/ydsz-micro/dingding-login 等)全部按「人类路径不存在钉钉依赖」的用户裁决归档为反向旁证:它们印证的是「企业微信/钉钉容器登录」另一条产品路线,与 NBCC 教务直登路径无关,不进任何修复候选。
+
+### 同族规模分布(全量铁律的账面)
+- 268 候选中 wengine/WebVPN 协议族相关(POSITIVE+INDIRECT)=109,占 41%;纯噪声 NULL_EVIDENCE=158。第二批致谢清单 = 信号面剔既有 11 仓 = 101 仓(`/tmp/nbcc-research/second-attribution-candidates.json`,随 findings 归档)。
