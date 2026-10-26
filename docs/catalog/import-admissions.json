@@ -6264,20 +6264,6 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
-    "catalogId": "moe:4133012645",
-    "name": "宁波城市职业技术学院",
-    "url": "https://webvpn.nbcc.edu.cn/login",
-    "type": "shuwei_json",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 2091,
-    "checkedAt": "2026-10-16",
-    "http": 200,
-    "title": "WEBVPN",
-    "fingerprints": [],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "ownershipAction": "retained-wakeup-declared-owner"
-  },
-  {
     "catalogId": "moe:4134013345",
     "name": "安庆职业技术学院",
     "url": "http://jw.aqvtc.edu.cn/aqzyjw/cas/login.action",

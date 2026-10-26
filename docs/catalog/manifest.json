@@ -1,11 +1,11 @@
 {
   "generatedAsOf": "2026-10-14",
-  "baselineCount": 350,
+  "baselineCount": 351,
   "catalogCount": 4140,
   "statusCounts": {
     "supported": 348,
-    "grad_supported": 2,
     "unverified": 1128,
+    "grad_supported": 2,
     "pending": 2361,
     "grad_pending": 301
   },
@@ -21,7 +21,7 @@
   "sources": [
     {
       "path": "scripts/data/school_catalog_baseline.json",
-      "sha256": "98f65af07cf252ecc66b36580effd4f172a3253c27886a4466f143361f75691a"
+      "sha256": "58febf8eeaf71c4f32076810ef54a3c76a065fdc5f2bd8eb8fcf2e27f28d4af8"
     },
     {
       "path": "scripts/data/official_schools.json",
@@ -60,9 +60,9 @@
       "contradicted": 1
     },
     "actions": {
-      "retained-existing-config-ownership-unresolved": 137,
+      "retained-existing-config-ownership-unresolved": 138,
       "ownership-confirmed": 748,
-      "retained-wakeup-declared-owner": 592,
+      "retained-wakeup-declared-owner": 591,
       "withheld-new-unproven-owner": 590,
       "withheld-domain-collision": 32,
       "corrected-official-entry": 1
@@ -1666,6 +1666,14 @@
         "ownershipStatus": "verified",
         "action": "ownership-confirmed",
         "operationalUrl": "http://jwxt.imu.edu.cn/login",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4133012645",
+        "name": "宁波城市职业技术学院",
+        "ownershipStatus": "unknown",
+        "action": "retained-existing-config-ownership-unresolved",
+        "operationalUrl": "https://webvpn.nbcc.edu.cn/login",
         "authenticatedImportTested": false
       },
       {
@@ -7026,14 +7034,6 @@
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
-        "authenticatedImportTested": false
-      },
-      {
-        "catalogId": "moe:4133012645",
-        "name": "宁波城市职业技术学院",
-        "ownershipStatus": "unknown",
-        "action": "retained-wakeup-declared-owner",
-        "operationalUrl": "https://webvpn.nbcc.edu.cn/login",
         "authenticatedImportTested": false
       },
       {

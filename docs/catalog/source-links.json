@@ -3323,6 +3323,27 @@
       "sourceName": "内蒙古大学"
     }
   ],
+  "moe:4133012645": [
+    {
+      "sourceId": "moe-2026-regular",
+      "sourceRow": 1009,
+      "sourceSchoolId": "moe:4133012645",
+      "match": "exact-name",
+      "name": "宁波城市职业技术学院"
+    },
+    {
+      "sourceId": "wakeup-6.1.06-asset",
+      "sourceRow": 2091,
+      "match": "trimmed-exact-name",
+      "sourceName": "宁波城市职业技术学院"
+    },
+    {
+      "sourceId": "wakeup-52.36-user-attachment",
+      "sourceRow": 768,
+      "match": "trimmed-exact-name",
+      "sourceName": "宁波城市职业技术学院"
+    }
+  ],
   "N_宁波幼儿师范高等专科学校": [
     {
       "sourceId": "moe-2026-regular",
@@ -41182,27 +41203,6 @@
       "sourceRow": 774,
       "match": "trimmed-exact-name",
       "sourceName": "宁波财经学院"
-    }
-  ],
-  "moe:4133012645": [
-    {
-      "sourceId": "moe-2026-regular",
-      "sourceRow": 1009,
-      "sourceSchoolId": "moe:4133012645",
-      "match": "exact-name",
-      "name": "宁波城市职业技术学院"
-    },
-    {
-      "sourceId": "wakeup-6.1.06-asset",
-      "sourceRow": 2091,
-      "match": "trimmed-exact-name",
-      "sourceName": "宁波城市职业技术学院"
-    },
-    {
-      "sourceId": "wakeup-52.36-user-attachment",
-      "sourceRow": 768,
-      "match": "trimmed-exact-name",
-      "sourceName": "宁波城市职业技术学院"
     }
   ],
   "wakeup:5a134dab02b374e88286": [

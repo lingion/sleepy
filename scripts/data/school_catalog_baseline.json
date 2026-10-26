@@ -1882,6 +1882,17 @@
   },
   {
     "sortKey": "N",
+    "name": "宁波城市职业技术学院",
+    "url": "https://webvpn.nbcc.edu.cn/login",
+    "type": "classic_eams",
+    "status": "unverified",
+    "aliases": [],
+    "sortKeyFull": "ningbochengshizhiyejishuxueyuan",
+    "enableFetch": true,
+    "catalogId": "moe:4133012645"
+  },
+  {
+    "sortKey": "N",
     "name": "宁波幼儿师范高等专科学校",
     "url": "https://jwweb.ncec.edu.cn/jwglxt/xtgl/login_slogin.html",
     "type": "zf_new",

@@ -2474,7 +2474,7 @@
 | 内蒙古医科大学 | 待适配 | neimengguyikedaxue |  |  | moe-2026-regular, wakeup-6.1.06-asset; moe:4115010132 |
 | 内蒙古艺术学院 | 待适配 | neimengguyishuxueyuan |  |  | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset; moe:4115014531 |
 | 宁波财经学院 | 待验证·可尝试 | ningbocaijingxueyuan | https://atrust.nbufe.edu.cn/portal/ | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset; moe:4133013001 |
-| 宁波城市职业技术学院 | 待验证·可尝试 | ningbochengshizhiyejishuxueyuan | https://webvpn.nbcc.edu.cn/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset; moe:4133012645 |
+| 宁波城市职业技术学院 | 待验证·可尝试 | ningbochengshizhiyejishuxueyuan | https://webvpn.nbcc.edu.cn/login | classic_eams | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset; moe:4133012645 |
 | 宁波大红鹰学院 | 待适配 | ningbodahongyingxueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset; wakeup:5a134dab02b374e88286 |
 | 宁波大学 | 待适配 | ningbodaxue |  |  | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset; moe:4133011646 |
 | 宁波大学科学技术学院 | 待验证·可尝试 | ningbodaxuekexuejishuxueyuan | https://cas.ndky.edu.cn/authserver/login | classic_eams | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset; moe:4133013277 |
@@ -4274,8 +4274,8 @@
 | kingo_new | 164 |
 | chaoxing | 135 |
 | wisedu | 54 |
-| classic_eams | 48 |
-| shuwei_json | 34 |
+| classic_eams | 49 |
+| shuwei_json | 33 |
 | zf | 33 |
 | urp_new | 31 |
 | cf | 29 |
