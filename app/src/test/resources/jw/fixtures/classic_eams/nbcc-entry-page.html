@@ -1,0 +1,94 @@
+<!-- fixture classic_eams/nbcc-entry-page.html — 合成自 Wangxiaolu0716/class-schedule 实测
+     「我的课表」入口页形态(档案 docs/nbcc-cross-verify-2026-10-26 采集样本), 脱敏改写:
+     零真实姓名/学号(2024 前缀合成号), 结构逐要素保留。用途: ClassicEamsWebVpnTest
+     反串表单回归 — 干扰表单排前, 提取必须锚定课表表单作用域。 -->
+<html><head><title>我的课表 - 合成样本</title></head><body>
+<div id="toolbar00000000001"></div>
+<script type="text/javascript">
+  bar = bg.ui.toolbar("toolbar00000000001",'成绩查询');
+</script>
+<form id="gradeQueryForm" name="gradeQueryForm" action="/eams/queryScoreForStd.action" method="post" target="">
+	<input type="hidden" name="project.id" value="9">
+	<div id="gradeDiv" class="ajax_container"></div>
+</form>
+<script language="JavaScript">
+	var form = document.gradeQueryForm;
+   	function queryGrade(){
+   		bg.form.addInput(form,"ids","2024999999");
+       	bg.form.submit(form,"queryScoreForStd!queryScore.action","gradeDiv");
+   	}
+ </script>
+<div style="background: url('/eams/static/images/semesterBarBg.png') repeat-x scroll 50% 50% #DEEDF7;border: 1px solid #AED0EA;color: #222222;font-weight: bold;height:28px;">
+
+<form id="courseTableForm" name="courseTableForm" action="/eams/courseTableForStd.action" method="post" target="">
+
+<div style="margin-left:4px;margin-top:2px;float:left;line-height:22px;height:22px;">
+		<input type="hidden" name="ignoreHead" value="1">
+	<label for="courseTableType" class="title">课表类型:</label>
+	<select id="courseTableType" name="setting.kind" onchange="searchTable()" style="width:120px">
+		<option value="std">学生课表</option>
+		<option value="class">班级课表</option>
+	</select>
+	|
+	<label for="startWeek" class="title">选择教学周:</label>
+	<select id="startWeek" name="startWeek" onchange="searchTable()">
+			<option value="">全部</option>
+    	<option value="1">第1周</option><option value="2">第2周</option>
+    </select>
+    |
+
+</div>
+<div style="margin-left:10px;margin-top:2px;float:left;line-height:18px;height:22px;">
+<label for="semesterBar20826294511">项目:</label>
+<select id="semesterBar20826294511" name="project.id">
+
+</select>
+	<label for="semesterBar20826294511Semester" class="title">学年学期:</label>
+	<input id="semesterBar20826294511Semester" class="calendar-text calendar-text-state-default" title="学年学期" type="text" value="" readonly="true">
+	<div class="calendar-bar" tabindex="-1">
+		<input id="semesterCalendar_target" type="hidden" name="semester.id" value="">
+	</div>
+	<script type="text/javascript">
+		if(jQuery.struts2_jquery.scriptCache["/scripts/semesterCalendar.js?s2j="+jQuery.struts2_jquery.version]){
+			jQuery("#semesterBar20826294511Semester").semesterCalendar({empty:"false",onChange:"",value:"279"},"searchTable()");
+		}else{
+			jQuery.struts2_jquery.require("/scripts/semesterCalendar.js",function(){
+				jQuery("#semesterBar20826294511Semester").semesterCalendar({empty:"false",onChange:"",value:"279"},"searchTable()");
+			},'/eams/static');
+		}
+
+	</script>
+<input type="submit" value="切换学期" onclick="searchTable();return false;">
+</div>
+
+</form>
+</div><table class="indexpanel">
+	<tbody><tr>
+		<td class="index_content">
+<div id="contentDiv" class="ajax_container"></div>
+<div id="manualArrangeCourseTable" class="ajax_container"></div>
+
+		</td>
+	</tr>
+</tbody></table>
+<script language="JavaScript">
+	var form = document.courseTableForm;
+   	function searchTable(){
+   		if(jQuery("#courseTableType").val()=="std"){
+   			bg.form.addInput(form,"ids","2024000001");
+   		}else{
+   			bg.form.addInput(form,"ids","3651");
+   		}
+       	bg.form.submit(form,"courseTableForStd!courseTable.action","contentDiv");
+   	}
+
+	function confirmCourseTable(){
+		if(confirm("课表是否确认无误?")){
+			form.target="main";
+			bg.form.addInput(form,"courseTableCheckId","")
+      		bg.form.submit(form,"courseTableForStd!confirmCourseTable.action");
+      		form.target="contentDiv";
+      	}
+	}
+ </script>
+</body></html>

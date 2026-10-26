@@ -70,6 +70,7 @@ import com.lingion.sleepy.data.jw.JwImportViewModel
 import com.lingion.sleepy.data.jw.JwProtocol
 import com.lingion.sleepy.data.jw.JwSchoolInfo
 import com.lingion.sleepy.data.jw.eams5PathPrefixFor
+import com.lingion.sleepy.data.jw.initialDesktopUa
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import kotlinx.coroutines.launch
 
@@ -137,7 +138,9 @@ fun JwWebViewLoginScreen(
     val urlDraft = rememberTextFieldState(school.url)
     var editingUrl by remember { mutableStateOf(false) }
     // #18: 桌面 UA 开关 — true 时重建 WebView 用 Chrome 桌面 UA
-    var desktopUa by remember { mutableStateOf(false) }
+    // NBCC Q1 门户形态初值 true (门户按 UA 分流, 默认移动 UA 被送进钉钉专用 SPA);
+    // 其余校 initialDesktopUa=false → 行为与旧 `mutableStateOf(false)` 完全一致 (批B §3.5)。
+    var desktopUa by remember { mutableStateOf(initialDesktopUa(school)) }
     var uaSwitchReload by remember { mutableStateOf(0) }
     val logToken = remember { java.util.concurrent.atomic.AtomicLong(0) }
     val webviewNotReadyMsg = stringResource(R.string.jw_webview_not_ready)
@@ -531,6 +534,13 @@ fun JwWebViewLoginScreen(
                     // 节次时间从行首格 [HH:MM-HH:MM] 抽出随 periods 回传。
                     if (school.type == JwProtocol.TYPE_BJTU) {
                         evaluateFetchWithTimeout(wv, BJTU_FETCH_JS)
+                        return@CaptureBar
+                    }
+                    // NBCC 经典正方 EAMS 形态B (2026-10-26 批B): 两条件分支原样 (批B Ruling 修订),
+                    // 门户停留 hint 在 JS 内部 (复刻 EAMS5 one.hfut.edu.cn 门户拦截模式)。
+                    // 48 校 enableFetch 恒 false → 零影响 (批A 已证)。
+                    if (school.type == JwProtocol.TYPE_CLASSIC_EAMS && school.enableFetch) {
+                        evaluateFetchWithTimeout(wv, CLASSIC_EAMS_FETCH_JS)
                         return@CaptureBar
                     }
                     // 合工大 EAMS5: 四段 fetch (course-table → info/<sid> → get-data → POST schedule-table/datum)
@@ -1934,6 +1944,114 @@ private const val EAMS5_FETCH_JS = """
     });
   } catch(err) {
     window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(err)}));
+  }
+})();
+"""
+
+/**
+ * NBCC (宁波城市职业技术学院) 经典正方 EAMS 形态B同源 fetch (2026-10-26 批B,
+ * fix-design §3.1 五步链逐句落地; 骨架复刻 EAMS5_FETCH_JS, HFUT 经验移植)。
+ *
+ * 数据流: 用户在 WebView 人工登录门户 → 教务管理→我的课表 (app 零接触凭据) →
+ * 点「导入此页」→ 本 JS 页面内提取课表表单参数 → ≤3 候选 POST 相对 endpoint
+ * courseTableForStd!courseTable.action → 响应含 new TaskActivity( 即成功,
+ * 原文交 JwClassicEamsParser 解码 (JS 不解码, unitCount 判据零出现 — SOP v1.9-②)。
+ *
+ * 纪律 (§3.1-②/§2-G6/批B Ruling 修订):
+ *   - 反串表单: 只在含课表表单作用域内取参, 禁整段拼接取第一个 addInput
+ *     (Dart 实测教训: 会抓到成绩查询表单的学号);
+ *   - ids 取不到 → err 不猜; 未登录停门户 → 精确动线 hint (复刻 EAMS5
+ *     one.hfut.edu.cn 门户拦截模式, hint 落 JS 内部, Kotlin 侧仅两条件分支);
+ *   - 全程零凭据接触 (无 password/value 属性读取, 无 URL 编解码 → 两盐零落地);
+ *   - 相对 endpoint 在 /https/<hex>/eams/ 与 vhost /eams/ 两形态下均自动保前缀;
+ *   - §4 pattern/needle/模板/缺省值与 ClassicEamsWebVpn.kt 逐字符一致,
+ *     NbccClassicEamsWebViewContractTest 锁死 (唯一容差 = JS 壳内 \/ 转义)。
+ */
+private const val CLASSIC_EAMS_FETCH_JS = """
+(function(){
+  function fail(msg){ window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:msg})); }
+  try {
+    // ① 定位课表表单上下文: 顶层 document 未命中则遍历同源 iframe (§3.1-①)
+    var pageUrl = location.href;
+    function findScope(doc){
+      var texts = [[doc.documentElement.outerHTML, location.href]];
+      var frames = doc.querySelectorAll('iframe,frame');
+      for (var i=0;i<frames.length;i++){
+        try {
+          var d = frames[i].contentDocument;
+          if (d && d.documentElement && d.defaultView) texts.push([d.documentElement.outerHTML, d.defaultView.location.href]);
+        } catch(e) {}
+      }
+      for (var j=0;j<texts.length;j++){
+        var t = texts[j][0];
+        var lower = t.toLowerCase();
+        if (lower.indexOf('coursetableforstd') < 0 && lower.indexOf('coursetableform') < 0) continue;
+        // 反串锚点 — 从 courseTableForStd 首次出现 (课表表单 action) 起切作用域:
+        // 真实页干扰成绩表单的 addInput 排在其前, 而 semesterCalendar 排在
+        // document.courseTableForm 绑定段之前 — action 锚点唯一两全 (§3.1-②)。
+        var bind = lower.indexOf('coursetableforstd');
+        if (bind < 0) bind = lower.indexOf('coursetableform');
+        if (bind < 0) continue;
+        var scope = t.substring(bind);
+        if (/addInput\(\s*form\s*,\s*["']ids["']\s*,\s*["'](\d+)["']/.test(scope) ||
+            /semesterCalendar\(\{[^}]*value\s*:\s*["'](\d+)["']/.test(scope)) {
+          pageUrl = texts[j][1];
+          return scope;
+        }
+      }
+      return null;
+    }
+    var scope = findScope(document);
+    if (!scope) {
+      fail('请先在门户进入 教务管理→我的课表 页面后再点导入');
+      return;
+    }
+    // ② 参数提取 (宽松 regex, §4; ids 取不到 → 不猜, 直接 err)
+    function pick(re){ var m = scope.match(re); return m ? m[1] : null; }
+    var ids = pick(/addInput\(\s*form\s*,\s*["']ids["']\s*,\s*["'](\d+)["']/)
+           || pick(/<[^>]*\bname\s*=\s*["']ids["'][^>]*>.*?\bvalue\s*=\s*["'](\d+)["']/);
+    if (!ids) { fail('未能从课表页提取学号参数, 请在课表页停留后重试'); return; }
+    var semCal = pick(/semesterCalendar\(\{[^}]*value\s*:\s*["'](\d+)["']/)
+              || pick(/<[^>]*\bname\s*=\s*["']semester\.id["'][^>]*>.*?\bvalue\s*=\s*["'](\d+)["']/);
+    var semHidden = pick(/<[^>]*\bname\s*=\s*["']semester\.id["'][^>]*>.*?\bvalue\s*=\s*["'](\d+)["']/);
+    var projectId = pick(/<[^>]*\bname\s*=\s*["']project\.id["'][^>]*>.*?\bvalue\s*=\s*["'](\d+)["']/) || '1';
+    // ③ 候选 ≤3 组, Dart buildCourseTableParamsCandidates 同序 (§3.1-③), 去重
+    var semesters = [];
+    if (semCal) semesters.push(semCal);
+    if (semHidden && semHidden !== semCal) semesters.push(semHidden);
+    if (semesters.length === 0) { fail('未能从课表页提取学期参数, 请在课表页停留后重试'); return; }
+    var seen = {}; var cands = [];
+    for (var s=0;s<semesters.length;s++){
+      var a = 'ignoreHead=1&setting.kind=std&startWeek=&project.id=' + projectId + '&semester.id=' + semesters[s] + '&ids=' + ids;
+      var b = 'ignoreHead=1&setting.kind=std&startWeek=&semester.id=' + semesters[s] + '&ids=' + ids;
+      if (!seen[a]) { seen[a]=1; cands.push(a); }
+      if (!seen[b]) { seen[b]=1; cands.push(b); }
+    }
+    cands = cands.slice(0,3);
+    // ④ 依序 POST 相对 endpoint (表单所在文档目录解析, 门户 hex 前缀自动保留) + ⑤ 判据链
+    var endpoint = new URL('courseTableForStd!courseTable.action', pageUrl).href;
+    var loginRe = /\/login(\?|$)|\/users\/sign_in/;
+    function next(i){
+      if (i >= cands.length) { fail('教务页未返回课表数据,请在课表页停留后重试'); return; }
+      fetch(endpoint, {
+        method:"POST",
+        credentials:"same-origin",
+        headers:{"Content-Type":"application/x-www-form-urlencoded; charset=UTF-8","X-Requested-With":"XMLHttpRequest"},
+        body:cands[i]
+      }).then(function(r){
+        return r.text().then(function(t){ return {url:r.url, text:t}; });
+      }).then(function(res){
+        if (loginRe.test(res.url)) { fail('登录态已失效,请在 WebView 内重新登录后再试'); return; }
+        if (res.text.indexOf("new TaskActivity(") >= 0) {
+          window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true, data:res.text, periods:[]}));
+          return;
+        }
+        next(i+1);
+      }).catch(function(e){ fail(String(e)); });
+    }
+    next(0);
+  } catch(err) {
+    fail(String(err));
   }
 })();
 """
