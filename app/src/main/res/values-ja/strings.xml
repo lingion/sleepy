@@ -1105,6 +1105,11 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="add_course_title">授業を追加</string>
     <string name="create_table_title">新しい時間割を作成</string>
     <string name="add_course_from_existing">既存の時間割から</string>
+    <string name="select_courses_title">授業を選択</string>
+    <string name="select_courses_all">すべて選択</string>
+    <string name="select_courses_none">すべて解除</string>
+    <string name="select_courses_count">%1$d / %2$d 件選択</string>
+    <string name="import_selection_empty">授業が選択されていません</string>
     <string name="add_course_manual">授業を手動で追加</string>
 
     <string name="import_backup_original">元の時間割をバックアップ</string>

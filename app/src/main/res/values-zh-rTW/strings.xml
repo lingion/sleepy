@@ -1072,6 +1072,11 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="add_course_title">新增課程</string>
     <string name="create_table_title">建立新課表</string>
     <string name="add_course_from_existing">從現有課表</string>
+    <string name="select_courses_title">選擇課程</string>
+    <string name="select_courses_all">全選</string>
+    <string name="select_courses_none">取消全選</string>
+    <string name="select_courses_count">已選 %1$d / 共 %2$d 門</string>
+    <string name="import_selection_empty">未選擇任何課程</string>
     <string name="add_course_manual">手動新增課程</string>
 
     <string name="import_backup_original">備份原課表</string>

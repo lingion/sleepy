@@ -1106,6 +1106,11 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="add_course_title">Añadir curso</string>
     <string name="create_table_title">Crear nuevo horario</string>
     <string name="add_course_from_existing">Desde un horario existente</string>
+    <string name="select_courses_title">Seleccionar asignaturas</string>
+    <string name="select_courses_all">Seleccionar todo</string>
+    <string name="select_courses_none">Deseleccionar todo</string>
+    <string name="select_courses_count">%1$d de %2$d seleccionadas</string>
+    <string name="import_selection_empty">No se seleccionó ninguna asignatura</string>
     <string name="add_course_manual">Añadir curso manualmente</string>
 
     <string name="import_backup_original">Hacer copia del horario original</string>

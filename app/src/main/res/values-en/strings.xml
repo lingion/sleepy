@@ -1108,6 +1108,11 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="add_course_title">Add Course</string>
     <string name="create_table_title">Create New Timetable</string>
     <string name="add_course_from_existing">From Existing Timetable</string>
+    <string name="select_courses_title">Select Courses</string>
+    <string name="select_courses_all">Select All</string>
+    <string name="select_courses_none">Deselect All</string>
+    <string name="select_courses_count">%1$d of %2$d selected</string>
+    <string name="import_selection_empty">No courses selected</string>
     <string name="add_course_manual">Add Course Manually</string>
 
     <string name="import_backup_original">Back up original timetable</string>
