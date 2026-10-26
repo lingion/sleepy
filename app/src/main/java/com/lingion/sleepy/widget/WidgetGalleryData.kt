@@ -14,6 +14,26 @@ data class WidgetGalleryCard(
 }
 
 object WidgetGalleryData {
+    /**
+     * 每排卡片的统一框宽高比: 行高由本排「大卡」(声明面积最大档)决定 ——
+     * 大卡按自身声明比例正常撑满, 同排小卡等比缩放到与大卡同高后居中(Fit)。
+     * 数据驱动自 variants 声明尺寸 + 列数, 新增档位自动跟随, 零硬编码。
+     * 用户定则「大的卡片正常撑满, 小的卡片跟它缩到一样高度」。
+     */
+    fun rowBoxAspectRatios(
+        variants: List<WidgetVariantInfo>,
+        columns: Int,
+    ): List<Float> {
+        require(columns > 0) { "columns must be positive" }
+        return variants.mapIndexed { index, _ ->
+            val rowStart = index / columns * columns
+            val row = variants.subList(rowStart, minOf(rowStart + columns, variants.size))
+            val dominant = row.maxOf { it.widthDp.toLong() * it.heightDp }
+            val leader = row.first { it.widthDp.toLong() * it.heightDp == dominant }
+            leader.widthDp.toFloat() / leader.heightDp.toFloat()
+        }
+    }
+
     fun buildCards(): List<WidgetGalleryCard> =
         ALL_WIDGET_VARIANTS.map { WidgetGalleryCard(it) }
 }

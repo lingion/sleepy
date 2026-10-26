@@ -192,16 +192,36 @@ class WidgetPreviewFacesContractTest {
             assertEquals("${xmlKey} minWidth vs registry", w, v.widthDp)
             assertEquals("${xmlKey} minHeight vs registry", h, v.heightDp)
         }
-        // 画廊源码: 卡片框比例必须来自 variant 声明尺寸, 禁统一硬编码
+        // 画廊源码: 行框 = 该排大卡(声明面积最大档)自身比例 + Fit 居中 ——
+        // 大卡正常撑满, 小卡等比缩放到与大卡同高。用户定则「大的卡片正常撑满,
+        // 小的卡片跟它缩到一样高度」。禁止全库统一压成最扁框(1.0.62 初版错误规则, 已废)。
         val gallerySrc = sequenceOf(
             File("app/src/main/java/com/lingion/sleepy/ui/screen/widget/WidgetGalleryScreen.kt"),
             File("src/main/java/com/lingion/sleepy/ui/screen/widget/WidgetGalleryScreen.kt")
         ).first { it.isFile }.readText()
         assertTrue(
-            "画廊必须按 variant 声明比例渲染(硬编码 1.6f 会让 1.2/1.0 脸留白变形)",
-            gallerySrc.contains("variant.widthDp") && gallerySrc.contains("variant.heightDp") &&
-                !Regex("""aspectRatio\(\s*1\.6f""").containsMatchIn(gallerySrc)
+            "画廊卡片必须用按排行框(rowBoxAspectRatios) + Fit 居中",
+            gallerySrc.contains("WidgetGalleryData.rowBoxAspectRatios") &&
+                gallerySrc.contains("ContentScale.Fit")
         )
+        // 行规则(2 列): 每排框比例 == 该排面积最大档的自身比例
+        val ratios = WidgetGalleryData.rowBoxAspectRatios(ALL_WIDGET_VARIANTS, 2)
+        assertEquals("每格一个行框比例", ALL_WIDGET_VARIANTS.size, ratios.size)
+        ALL_WIDGET_VARIANTS.chunked(2).zip(ratios.chunked(2)).forEachIndexed { rowIdx, (row, rowRatios) ->
+            val ratio = rowRatios.first()
+            rowRatios.forEach { assertEquals("同排两格框比例必须一致", ratio, it, 0.0001f) }
+            val leader = row.maxBy { it.widthDp.toLong() * it.heightDp }
+            assertEquals(
+                "第 ${rowIdx + 1} 排框比例必须 == 大卡(${leader.receiverClass.simpleName})自身比例(正常撑满)",
+                leader.widthDp.toFloat() / leader.heightDp.toFloat(),
+                ratio, 0.0001f
+            )
+        }
+        // 真实数据: 5 排 4×4+2×2 → 框 1.2 (小卡 1.0 被放大到同高), wide 排 → 框 1.875
+        val expected = listOf(1.2f, 1.2f, 1.2f, 1.2f, 1.2f, 1.875f, 1.875f)
+        ratios.filterIndexed { i, _ -> i % 2 == 0 }.forEachIndexed { i, r ->
+            assertEquals("第 ${i + 1} 排框比例", expected[i], r, 0.001f)
+        }
     }
 
     private fun registrySource(): String = sequenceOf(

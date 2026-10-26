@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -54,6 +54,9 @@ import com.lingion.sleepy.widget.WidgetPinRequest
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+/** 画廊每排卡片数: 行高基准(该排大卡)按此分排, 与 LazyVerticalGrid 列数同源。 */
+private const val GALLERY_COLUMNS = 2
+
 /**
  * 添加小组件画廊页(设计 §3 末层): 右上角「＋」进入,把 ALL_WIDGET_VARIANTS
  * 全部渲染成预览卡片(数量随注册表走,零硬编码)。
@@ -71,6 +74,10 @@ fun WidgetGalleryScreen(onBack: () -> Unit) {
     // 每张卡 pin 后的冷却(防连点): receiverClass 名 → 冷却中
     val cooling = remember { mutableStateOf(setOf<String>()) }
     val cards = remember { WidgetGalleryData.buildCards() }
+    // 每排框比例 = 该排大卡(声明面积最大档)的自身比例 → 大卡正常撑满, 小卡缩到同高。
+    val rowBoxAspectRatios = remember(cards) {
+        WidgetGalleryData.rowBoxAspectRatios(cards.map { it.variant }, GALLERY_COLUMNS)
+    }
 
     Scaffold(
         containerColor = colors.background,
@@ -95,15 +102,16 @@ fun WidgetGalleryScreen(onBack: () -> Unit) {
         }
     ) { padding ->
         LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
+            columns = GridCells.Fixed(GALLERY_COLUMNS),
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(cards, key = { it.receiverName }) { card ->
+            itemsIndexed(cards, key = { _, card -> card.receiverName }) { index, card ->
                 GalleryCard(
                     card = card,
+                    boxAspectRatio = rowBoxAspectRatios[index],
                     enabled = card.receiverName !in cooling.value,
                     onClick = {
                         cooling.value = cooling.value + card.receiverName
@@ -126,7 +134,12 @@ fun WidgetGalleryScreen(onBack: () -> Unit) {
 }
 
 @Composable
-private fun GalleryCard(card: WidgetGalleryCard, enabled: Boolean, onClick: () -> Unit) {
+private fun GalleryCard(
+    card: WidgetGalleryCard,
+    boxAspectRatio: Float,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
     val colors = MaterialTheme.colorScheme
     Card(
         modifier = Modifier
@@ -141,9 +154,9 @@ private fun GalleryCard(card: WidgetGalleryCard, enabled: Boolean, onClick: () -
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .fillMaxWidth()
-                    // 卡片框 = 该 variant 声明尺寸的真实比例(缩略图与桌面占地等大比例),
-                    // 统一 1.6f 会让 2×2(1.0)/4×4(1.2)脸在框内留白,与启动器预览不一致
-                    .aspectRatio(card.variant.widthDp.toFloat() / card.variant.heightDp.toFloat())
+                    // 行框 = 该排大卡自身比例: 大卡正常撑满, 小卡等比缩放到同高后居中(Fit)。
+                    // 用户定则「大的卡片正常撑满, 小的卡片跟它缩到一样高度」。
+                    .aspectRatio(boxAspectRatio)
                     .clip(RoundedCornerShape(8.dp))
                     .background(colors.surfaceContainerHighest),
                 alpha = if (enabled) 1f else 0.5f
