@@ -263,6 +263,29 @@ class Schools179CrossValidationTest {
         assertEquals("广州医科大学 应为 qz (官方通知'强智教务管理系统'+jsxsd 路径)", "qz", e.optString("type"))
     }
 
+    // ---- 7a. NBCC (宁波城市职业技术学院) 协议改判钉死 (2026-10-26 跨仓验证) ----
+
+    @Test
+    fun `nbcc entry pinned`() {
+        // 双源锁型: Wangxiaolu0716/class-schedule 硬编码 courseTablePageUrl=…/eams/courseTableForStd.action
+        // + 成功判据 TaskActivity 指纹; 本校 JwClassicEamsParser 同族互证。旧 shuwei_json 系
+        // 2026-10-16 目录战役按 WakeUp xatu_shuwei 猜配的错配(证据档 pc-entry-evidence §2)。
+        // url 裁决闸未过(Q1 门户 /login 与 Q2 jwgl.webvpn 直链双分支), OR 白名单禁锁死单分支。
+        val hits = entries().filter { it.second.optString("catalogId") == "moe:4133012645" }
+        assertEquals("catalogId moe:4133012645 必须唯一定位 NBCC 条目", 1, hits.size)
+        val e = hits.first().second
+        assertEquals("校名对位", "宁波城市职业技术学院", e.optString("name"))
+        assertEquals("应为 classic_eams (TaskActivity 指纹+Dart 参数体双源实锤)", "classic_eams", e.optString("type"))
+        assertTrue("enableFetch 必须为 true (形态B 抓取链开关)", e.optBoolean("enableFetch"))
+        assertEquals("status 保持 unverified (学生回传裁决闸未过)", "unverified", e.optString("status"))
+        val url = e.optString("url")
+        assertTrue(
+            "url 双分支 OR 白名单: Q1 门户 /login 或 Q2 jwgl.webvpn 直链, 实际=$url",
+            url == "https://webvpn.nbcc.edu.cn/login" ||
+                url == "https://jwgl.webvpn.nbcc.cn/eams/courseTableForStd.action"
+        )
+    }
+
     // ---- 8. UCAS (#18) 入口钉死 ----
 
     @Test

@@ -357,6 +357,11 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                 || Regex("""/http/[0-9a-f]+/""").containsMatchIn(u)
                 || u.contains(".webvpn.") -> {
                 when {
+                    // NBCC Q2 直链形态(jwgl.webvpn.nbcc.cn 命中 .webvpn. 重写分支):
+                    // courseTableForStd 路径锚是 classic EAMS 唯一幸存信号。锚必须全小写
+                    // 字面量——本函数入口已 lowercase(设计 §3.6 原文含大写 S 的字面量系死代码,
+                    // 控制器修正,见 task-7a-brief)。置于 nuit 之前: 谓词互斥,先后无行为差。
+                    u.contains("coursetableforstd") -> JwProtocol.TYPE_CLASSIC_EAMS
                     u.contains("jw.nuit.edu.cn") -> JwProtocol.TYPE_NUIT
             u.contains("i.kust.edu.cn") || u.contains("kust.edu.cn") || u.contains("kmust.edu.cn") -> JwProtocol.TYPE_KUST
             u.contains("/jwapp/") -> JwProtocol.TYPE_WISEDU

@@ -1,0 +1,22 @@
+{
+  "title": "NBCC 新门户 wengine /https/<hex>/ 重写形态下的 classic EAMS 课表入口 (Q1 落地形态)",
+  "expected": {
+    "protocol": "classic_eams (TYPE_CLASSIC_EAMS)",
+    "protocolBasis": "hex 段 = AES-128-CFB(key=iv='wrdvpnisthebest!') 离线加密 'jwgl.webvpn.nbcc.cn' 的真实产物(证据档 pc-entry-evidence §3.1 三源锁定), 尾部明文 /eams/courseTableForStd.action 是判型唯一依赖; 外层 ①a coursetableforstd 锚(既有)直接命中, 且 /https/<hex>/ 不落入内层 webvpn when('/https/' 不含 '/http/' 子串、'webvpn.nbcc.edu.cn' 主机名点前是双斜杠不满足 '.webvpn.')",
+    "courseCount": "n/a (URL 层判型样本)",
+    "errorClass": "期望: 无错误; 旧配置(shuwei_json)下该 URL 判 classic_eams 而条目类型错配, 分派进 JwShuweiParser 必 0 课",
+    "detectProtocolFromUrlNow": "classic_eams",
+    "detectProtocolFromUrlAfterT6": "classic_eams",
+    "verification": "URL 层断言 detectProtocolFromUrl 返回 classic_eams; 判型只依赖尾部明文, hex 段换任意值不影响"
+  },
+  "parserImpact": "type 改判 classic_eams + enableFetch=true 后, 该形态 URL 由 JwClassicEamsParser 接管(内嵌 TaskActivity JS 课表); #manualArrangeCourseTable DOM 是空壳禁走(JwProtocol.kt:285 注释)。本件与 JwProtocolDetectionTest webvpn.nbcc-q1-hex-classic-eams 断言成对。",
+  "sourceRefs": [
+    "docs/nbcc-cross-verify-2026-10-26/pc-entry-evidence.md §1/§3.1 (Dart school_config 硬编码 + hex codec 三源复现)",
+    "JwImportViewModel.kt detectProtocolFromUrlImpl 外层 ①a coursetableforstd 锚",
+    "JwProtocol.kt:285 TYPE_CLASSIC_EAMS; JwClassicEamsParser 现役",
+    "fix-design.md §1.4 Q1 分支 + 控制器 Ruling(Step7 落 Q1 形态, url 门户 /login 不动)"
+  ],
+  "input": "nbcc-https-hex.txt",
+  "inputUrl": "https://webvpn.nbcc.edu.cn/https/77726476706e69737468656265737421fae0469069276d52681887e2965720367f1df6/eams/courseTableForStd.action",
+  "sampleKind": "webvpn-url"
+}

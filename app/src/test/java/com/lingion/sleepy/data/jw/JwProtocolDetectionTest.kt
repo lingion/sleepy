@@ -159,6 +159,17 @@ class JwProtocolDetectionTest(
                 null, "urp", null)
             c += arrayOf("webvpn.urpold-httphex", "https://webvpn.example.edu.cn/http/8d2f6a/xkAction.do?actionType=6",
                 null, "urp", null)
+            // NBCC 两形态 (2026-10-26 classic_eams 改判, 证据 pc-entry-evidence §1/§3.1):
+            //   Q1 门户重写态 — hex 段为离线加密产物(key=iv=wrdvpnisthebest!, jwgl.webvpn.nbcc.cn),
+            //   尾部明文 /eams/courseTableForStd.action 命中外层 ①a 既有锚。
+            //   Q2 直链态 — host 含 .webvpn. 落入内层 webvpn when, 需补 coursetableforstd 小写锚。
+            c += arrayOf("webvpn.nbcc-q1-hex-classic-eams",
+                "https://webvpn.nbcc.edu.cn/https/77726476706e69737468656265737421fae0469069276d52681887e2965720367f1df6/eams/courseTableForStd.action",
+                null, "classic_eams", null)
+            c += arrayOf("webvpn.nbcc-q2-direct-classic-eams",
+                "https://jwgl.webvpn.nbcc.cn/eams/courseTableForStd.action",
+                null, "classic_eams", null)
+
             // cf/pku/bnuz webvpn 形态 — URL 层判型必须返回 null(case.json 明确):
             //   路径重写形态下青果/北大/北师珠无可靠 URL 指纹,判定必须由 HTML 层接管
             c += arrayOf("webvpn.cf-webhost-null", "https://webvpn.example.edu.cn/webvpn/jxfw.example.edu.cn/xsgrkbcx!xsAllKbList.action",
