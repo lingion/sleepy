@@ -33,6 +33,7 @@
     <string name="tab_today">今日</string>
     <string name="tab_mine">マイ</string>
     <string name="tab_manage">管理</string>
+    <string name="manage_title">時間割管理</string>
 
     <string name="schedule_empty">時間割がまだありません</string>
     <string name="schedule_empty_hint">「管理」からインポートするか、最初の時間割を手動で作成してください。</string>

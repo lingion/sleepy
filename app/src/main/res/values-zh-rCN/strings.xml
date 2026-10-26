@@ -34,6 +34,7 @@
     <string name="tab_today">今日</string>
     <string name="tab_mine">我的</string>
     <string name="tab_manage">课表管理</string>
+    <string name="manage_title">课表管理</string>
 
     <!-- Schedule screen -->
     <string name="schedule_empty">还没有课表</string>

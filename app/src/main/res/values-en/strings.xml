@@ -33,6 +33,7 @@
     <string name="tab_today">Today</string>
     <string name="tab_mine">Me</string>
     <string name="tab_manage">Manage</string>
+    <string name="manage_title">Timetable management</string>
 
     <string name="schedule_empty">No schedule yet</string>
     <string name="schedule_empty_hint">Go to Manage to import, or manually create your first timetable.</string>

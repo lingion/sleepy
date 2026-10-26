@@ -33,6 +33,7 @@
     <string name="tab_today">今日</string>
     <string name="tab_mine">我的</string>
     <string name="tab_manage">課表管理</string>
+    <string name="manage_title">課表管理</string>
 
     <string name="schedule_empty">還沒有課表</string>
     <string name="schedule_empty_hint">前往「課表管理」匯入，或手動建立第一張課表。</string>

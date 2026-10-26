@@ -66,6 +66,14 @@ fun ManagementPage(
             ),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // 页首大标题(2026-10-26 用户定令恢复): 底部导航短标签 "Manage" 不动, 页面用全称
+            item {
+                Text(
+                    text = stringResource(R.string.manage_title),
+                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                    color = colors.onBackground
+                )
+            }
             item {
                 Row(
                     modifier = Modifier
