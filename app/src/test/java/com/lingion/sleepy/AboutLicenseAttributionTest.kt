@@ -66,7 +66,7 @@ class AboutLicenseAttributionTest {
 
     private val PER_SCHOOL_ATTRIBUTIONS = listOf(
         // 合肥工业大学 HFUT
-        Attribution("HFUT-Schedule", "MIT"),
+        Attribution("HFUT-Schedule", "Apache-2.0"),
         Attribution("HfutOpenApi", "BoynChan"),
         Attribution("hfut_schedule_hacker", "Aoi-cn"),
         Attribution("django-hfut-auth", "elonzh"),
