@@ -22,6 +22,7 @@
 - 「参考 HFUT 当时的经验」 → 考古 github/main: `034525cf`(#25 四段链)、`963d929f`(#46 节次查表)、`fc38a18a`(WakeUp 反汇编)、对抗 fixture 组 `jw_fixtures/adversarial/webvpn-urls/`(pku/bnuz/cf)、`HfutPortalEams5WebViewContractTest` 等
 - ~~问学生: 不用钉钉怎么进教务~~ **已答(2026-10-26 用户原话)**: 「没有人用钉钉」;人在浏览器走「门户 → PC 教务 → 教务账号直接登录」→ `nbcc_pc_entry` 证据由调研 agent 按新优先级收集
 - **新增根因项(纠偏后)**: 门户按 UA 分流,桌面 UA 是否给出 PC 教务磁贴(非钉钉 SPA)= Step 6 首选验证面
+- **nbcc_pc_entry 已闭环(2026-10-26 当日)**: 见同档 `pc-entry-evidence.md` — PC 教务 = `jwgl.webvpn.nbcc.cn/eams/courseTableForStd.action`,协议 = 经典正方 EAMS(`TYPE_CLASSIC_EAMS` 现役),现配 shuwei_json 属错配;两枚开放问题(新门户桌面磁贴/jwgl 域解析)归 Step 6 实测分支
 
 ## 完成门槛(gate)
 

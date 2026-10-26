@@ -63,4 +63,4 @@
 | G5 | 移动端 SPA 兜底手输页账号体系与 PC 教务不同源;但人真实路线=浏览器 PC 教务直登,无钉钉 | 用户原话「没有人用钉钉…在网页上也可以用教务账号登录」 |
 | G6 | 无密码传递通路(JS↔原生 bridge 只有采集用 `__sleepyNetworkBridge`,无凭据注入面) | JwDiagnosticSession.kt:171 |
 
-G4 是我方可直接修复的入口缺陷(UA 策略/门户磁贴选择);修复目标改为学生真实路径 = 桌面 UA 进门户取 PC 教务磁贴。PC 教务入口 URL 证据待 Step 2 调研收敛(nbcc_pc_entry)。钉钉模拟路线经用户否决,不再作为候选。
+G4 是我方可直接修复的入口缺陷(UA 策略/门户磁贴选择);修复目标 = 桌面 UA 进门户取 PC 教务磁贴。**nbcc_pc_entry 已闭环**: PC 教务 = `jwgl.webvpn.nbcc.cn/eams/courseTableForStd.action`,数据接口 `POST /eams/courseTableForStd!courseTable.action`,响应含 `new TaskActivity` = 经典正方 EAMS 格式 → 现配 `shuwei_json` 属类型错配,本仓 `TYPE_CLASSIC_EAMS` + `JwClassicEamsParser` 现役可直接承接(先例: 电子科大/上财/湖南师大/南航);但学生工具实证「旧门户桌面登录流程不可用,强制移动 UA 反而直达 PC EAMS」→ 桌面 UA 假设需按两门户分支实测。证据与开放问题全文见 `pc-entry-evidence.md`。钉钉模拟路线经用户否决,不再作为候选。
