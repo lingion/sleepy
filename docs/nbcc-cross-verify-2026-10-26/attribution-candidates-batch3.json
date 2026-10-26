@@ -1,0 +1,281 @@
+[
+  {
+    "repo": "tequed232/Dolphin-Schedule",
+    "verdict": "INDIRECT",
+    "license": "MIT",
+    "license_source": "API",
+    "files": [
+      "ui/src/lib/import.ts"
+    ],
+    "why": "读取 import.ts:课表导入链引用 eams 详情获取形态,佐证课节详情为独立请求"
+  },
+  {
+    "repo": "RO-M-A/better-class-schedule",
+    "verdict": "INDIRECT",
+    "license": "MIT",
+    "license_source": "API",
+    "files": [
+      "src/parsers/scheduleParser.ts"
+    ],
+    "why": "读取 scheduleParser.ts:EAMS 课表 DOM 解析器,佐证详情需二次请求形态"
+  },
+  {
+    "repo": "iLOVESZU-1/szu-course-scraper",
+    "verdict": "INDIRECT",
+    "license": "MIT",
+    "license_source": "API",
+    "files": [
+      "content-script.js"
+    ],
+    "why": "读取 content-script.js:深大教务抓取脚本含 taskTable 详情链接形态"
+  },
+  {
+    "repo": "ChuXuanbbll/kissTJU",
+    "verdict": "INDIRECT",
+    "license": "MIT",
+    "license_source": "API",
+    "files": [
+      "project/chuxuan.js"
+    ],
+    "why": "读取 chuxuan.js:taskTable URL 仅拼链接给用户新开窗口、从不解析响应——「公开侧无 taskTable 响应解析先例」的关键负样本"
+  },
+  {
+    "repo": "weNEU/neu-eone",
+    "verdict": "INDIRECT",
+    "license": "MIT",
+    "license_source": "API",
+    "files": [
+      "src/nespider.py"
+    ],
+    "why": "读取 nespider.py:东北大学教务爬虫,详情链形态旁证"
+  },
+  {
+    "repo": "sharpdeep/assistant-server",
+    "verdict": "INDIRECT",
+    "license": "Apache-2.0",
+    "license_source": "API",
+    "files": [
+      "core/model.py",
+      "core/util.py"
+    ],
+    "why": "读取 model.py/util.py:assistant-server 内 taskTable.action 锚链接形态,佐证课表页出链但响应未被抓取"
+  },
+  {
+    "repo": "sunshineclt/NKU-Helper",
+    "verdict": "INDIRECT",
+    "license": "GPL-3.0",
+    "license_source": "API",
+    "files": [
+      "NKU Helper/今天/CourseDetailTableViewController.swift"
+    ],
+    "why": "读取 CourseDetailTableViewController.swift:南开课程详情=独立控制器形态旁证"
+  },
+  {
+    "repo": "hua-yi-yi/CourseSchedule",
+    "verdict": "INDIRECT",
+    "license": "GPL-3.0",
+    "license_source": "API",
+    "files": [
+      "app/src/test/resources/haust/real-course-table.html"
+    ],
+    "why": "读取真实 courseTable 响应 fixture:TaskActivity 指纹校际互证;同一部署内正式行与午辅行钟点打印不一致(部署风格实锤)"
+  },
+  {
+    "repo": "openurp/edu-eams-webapp",
+    "verdict": "INDIRECT",
+    "license": "GPL-3.0",
+    "license_source": "API",
+    "files": [
+      "core/src/main/scala/org/openurp/edu/eams/core/service/TimeSettingService.scala",
+      "schedule/src/main/scala/org/openurp/edu/eams/teach/schedule/web/action/CourseTableForStdAction.scala"
+    ],
+    "why": "读取 TimeSettingService/CourseTableForStdAction 源码:taskTable() 装配 timeSetting 的服务端源头实锤(Q2 判定的直接证据)"
+  },
+  {
+    "repo": "tjuse/tju-python",
+    "verdict": "INDIRECT",
+    "license": "GPL-3.0",
+    "license_source": "API",
+    "files": [
+      "src/tju/parser/schedule.py",
+      "tests/resources/website/schedule_ug_class.html",
+      "tests/resources/website/schedule_ug_std.html",
+      "tests/resources/parsed/parsed_schedule_ug_std.json"
+    ],
+    "why": "读取解析器与 fixtures:天大从 courseTable 行头取权威时钟(第一节 08:30-09:15),对比 NBCC 部署省略行头钟点——同一 timeSetting 不同模板打印风格"
+  },
+  {
+    "repo": "GDUTMeow/gdut-course-grabber",
+    "verdict": "INDIRECT",
+    "license": "AGPL-3.0",
+    "license_source": "API",
+    "files": [
+      "static/index.html"
+    ],
+    "why": "读取 static/index.html:选课抓取器页面引用 eams 详情形态"
+  },
+  {
+    "repo": "RinnMoe/CHDXK",
+    "verdict": "INDIRECT",
+    "license": "AGPL-3.0",
+    "license_source": "API",
+    "files": [
+      "tools/bkjw-course-source/test/fixtures/detail.html"
+    ],
+    "why": "读取 detail.html fixture:课程详情独立响应形态直接样本"
+  },
+  {
+    "repo": "horizon86/MI-AICourseTable",
+    "verdict": "INDIRECT",
+    "license": "AGPL-3.0",
+    "license_source": "API",
+    "files": [
+      "provider.js"
+    ],
+    "why": "读取 provider.js:课表 provider 止步节次编号(index=D*unitCount+P),佐证课表主体响应无钟点"
+  },
+  {
+    "repo": "beangle/bui",
+    "verdict": "INDIRECT",
+    "license": "LGPL-3.0",
+    "license_source": "API",
+    "files": [
+      "static/src/main/resources/js/beangle.js"
+    ],
+    "why": "读取 beangle.js 301-410 行:bg.Go 读 obj.href 走 ajax/改 location,证明 taskTable.action 是普通同源 GET 返回 HTML"
+  },
+  {
+    "repo": "openurp/edu-api4j",
+    "verdict": "INDIRECT",
+    "license": "LGPL-3.0",
+    "license_source": "API",
+    "files": [
+      "api4j/src/main/java/org/openurp/base/edu/model/CourseUnit.java",
+      "api4j/src/main/java/org/openurp/base/edu/model/TimeSetting.java"
+    ],
+    "why": "读取 CourseUnit.java/TimeSetting.java:indexno 节次+beginAt/endAt 时钟数据模型(Step 6 修复设计时间字段的权威定义)"
+  },
+  {
+    "repo": "code-cycler/course_schedule_for_CHD",
+    "verdict": "INDIRECT",
+    "license": "NOASSERTION",
+    "license_source": "API",
+    "files": [
+      "docs/eams-urls.txt"
+    ],
+    "why": "读取 eams-urls.txt:NOASSERTION,EAMS 端点清单含 taskTable 详情 URL"
+  },
+  {
+    "repo": "AST-hong/swust-course-grabber",
+    "verdict": "INDIRECT",
+    "license": "NOASSERTION",
+    "license_source": "API",
+    "files": [
+      "main.py"
+    ],
+    "why": "读取 main.py:西南科大课表抓取器含详情字段形态"
+  },
+  {
+    "repo": "Anya1014CN/SmartSNUT.cn",
+    "verdict": "INDIRECT",
+    "license": "NOASSERTION",
+    "license_source": "API",
+    "files": [
+      "Docs/UserManual/Functions/JiaoWu/CourseTableForStd.md"
+    ],
+    "why": "内联读取 CourseTableForStd.md 手册:正方课表功能文档含详情弹层形态描述"
+  },
+  {
+    "repo": "duzhaokun123/XSYU_AI_schedule",
+    "verdict": "INDIRECT",
+    "license": "NOASSERTION",
+    "license_source": "API",
+    "files": [
+      "table.html"
+    ],
+    "why": "读取 table.html fixture:XSYU 课表页形态,NBCC 同型行头无钟点部署旁证"
+  },
+  {
+    "repo": "mayapony/AIschedule",
+    "verdict": "INDIRECT",
+    "license": "NOASSERTION",
+    "license_source": "API",
+    "files": [
+      "Table.js",
+      "main.html"
+    ],
+    "why": "读取 Table.js/main.html:EAMS 课表页与详情弹层形态"
+  },
+  {
+    "repo": "jqorz/JavaTestArray",
+    "verdict": "INDIRECT",
+    "license": "NOASSERTION",
+    "license_source": "API",
+    "files": [
+      "src/timetable/TimetableParser.kt"
+    ],
+    "why": "读取 TimetableParser.kt:TaskActivity 形态解析器,双源锁型旁证,止步节次编号"
+  },
+  {
+    "repo": "uestcio/uestc-sdk",
+    "verdict": "INDIRECT",
+    "license": "NOASSERTION",
+    "license_source": "API",
+    "files": [
+      "src/utils/urls.js",
+      "test/helpers/parser.test.js"
+    ],
+    "why": "读取 urls.js/parser.test.js:电子科大 URL 构造与解析测试;fixture 中 taskTable 仅为锚链接,HH:MM 属考试安排块非课表"
+  },
+  {
+    "repo": "yuexps/cqust-schedule-miuix",
+    "verdict": "INDIRECT",
+    "license": "NOASSERTION",
+    "license_source": "API",
+    "files": [
+      "app/src/main/kotlin/top/msfxp/schedule/data/api/CqustEamsParser.kt"
+    ],
+    "why": "读取 CqustEamsParser.kt:重科 EAMS 解析器含节次时间字段形态"
+  },
+  {
+    "repo": "SJF-ECNU/ECNUCourseTableToolForIOS",
+    "verdict": "INDIRECT",
+    "license": "NOASSERTION",
+    "license_source": "API",
+    "files": [
+      "ecnuics.py",
+      "ecnu_course.ics"
+    ],
+    "why": "读取 ecnuics.py:华师大从 TaskActivity 取第N节再查硬编码 time_slots 表生成 ICS——反证 NBCC 应走详情获取校方权威钟点"
+  },
+  {
+    "repo": "asliujinhe/NeuEams",
+    "verdict": "INDIRECT",
+    "license": "NOASSERTION",
+    "license_source": "API",
+    "files": [
+      "src/main/resources/activity.js"
+    ],
+    "why": "读取 activity.js:TaskActivity 构造函数无节次到钟点映射(字段=teacher/room/validWeeksBitmap),双源互证前端无钟点"
+  },
+  {
+    "repo": "openurp/base",
+    "verdict": "INDIRECT",
+    "license": "NOASSERTION",
+    "license_source": "API",
+    "files": [
+      "webapp/src/main/resources/org/openurp/base/web/action/info/edu/timesetting/index.ftl"
+    ],
+    "why": "内联读取 timesetting/index.ftl:时间设置管理页模板,TimeSetting 产品形态旁证"
+  },
+  {
+    "repo": "WeCuit/WeCuit-Backen-JAVA",
+    "verdict": "INDIRECT",
+    "license": "NOASSERTION",
+    "license_source": "API",
+    "files": [
+      "src/test/resources/temp.html"
+    ],
+    "why": "读取 temp.html fixture:成都信息工程大学定制 TaskActivity fork,仅改合并逻辑无钟点映射"
+  }
+]
