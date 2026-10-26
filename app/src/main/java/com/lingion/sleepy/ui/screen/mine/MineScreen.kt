@@ -15,9 +15,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Widgets
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -107,6 +109,11 @@ fun MineScreen(
                         .clip(SleepyTheme.shapes.large)
                         .background(colors.surfaceContainer)
                 ) {
+                    // 2026-10-26 用户定令: 恢复被课程清单整合删掉的两个直达入口。
+                    SettingsItem(icon = Icons.Outlined.Edit, label = stringResource(R.string.all_tables), onClick = onOpenAllTables)
+                    Divider()
+                    SettingsItem(icon = Icons.Outlined.Schedule, label = stringResource(R.string.mine_period_tables), onClick = onOpenPeriodTables)
+                    Divider()
                     SettingsItem(icon = Icons.Outlined.Notifications, label = stringResource(R.string.reminder_title), onClick = onOpenReminder)
                     Divider()
                     SettingsItem(icon = Icons.Outlined.Palette, label = stringResource(R.string.mine_appearance), onClick = onOpenAppearance)

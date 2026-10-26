@@ -12,7 +12,8 @@ import java.io.File
  *  A. 管理页「当前课表摘要卡」左侧 → 编辑当前课表；仅「查看全部」→ 所有课表页。
  *     无课表时保留摘要和提示，禁用编辑入口。
  *  B. 我的页「课表数」卡可点 → 所有课表;「课程数」卡可点 → 新课程清单页;
- *     「作息表数」卡可点 → 作息表管理；下方不再重复显示课表、作息表和导出入口。
+ *     「作息表数」卡可点 → 作息表管理；设置列保留所有课表与作息表两直达入口
+ *     (2026-10-26 用户定令恢复),导出入口维持移除。
  *  C. 课表主页 TopBar 撤回/取消撤回合胶囊: 一体显隐(hasUndo||hasRedo 才挂载),
  *     体育场形状(CircleShape+两半 32dp)+中缝 1dp 淡淡竖线
  *  D. 课程清单(CourseListScreen)路由+导航入口齐全; 课程清单按 courseName 聚合,
@@ -107,9 +108,11 @@ class MineNavRedoCourseListContractTest {
             """StatItem\(\s*value\s*=\s*periodTableCount\.toString\(\)\s*,\s*label\s*=\s*stringResource\(R\.string\.mine_stat_period_tables\)\s*,\s*onClick\s*=\s*onOpenPeriodTables\s*\)"""
         ).containsMatchIn(mineScreen)
         assertTrue("作息表数格必须进入作息表管理", periodTablesClickable)
-        for (removedLabel in listOf("all_tables", "mine_period_tables", "mine_export")) {
-            assertFalse("我的页不应保留重复列表入口：$removedLabel", mineScreen.contains("R.string.$removedLabel"))
-        }
+        // 2026-10-26 用户定令: 我的页恢复「所有课表」「作息表」两设置入口,
+        // 与统计卡并存(入口在下方设置列, 统计卡仍各连其页); 导出入口维持移除。
+        assertTrue("我的页应保留所有课表入口", mineScreen.contains("R.string.all_tables"))
+        assertTrue("我的页应保留作息表入口", mineScreen.contains("R.string.mine_period_tables"))
+        assertFalse("我的页不应保留导出入口", mineScreen.contains("R.string.mine_export"))
     }
 
     @Test
