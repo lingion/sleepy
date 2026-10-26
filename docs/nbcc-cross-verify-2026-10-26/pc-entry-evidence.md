@@ -64,5 +64,6 @@ final SchoolConfig nbccSchool = SchoolConfig(
 ## 6. 证据采集方法记录(可复用)
 
 - wengine hex 编解码: `key=b'wrdvpnisthebest!'`,AES-128-CFB,iv=key,segment_size=128,密文前置 key 的 hex(`77726476706e69737468656265737421`…)。`fae04690…2d` → `jwglapp.nbcc.cn` 验证通过。注: HFUT 档案盐值 `wrdvpnisthebest!`,我方 dump 内 NBCC 亦此盐;另见 NEU `b0A58a69394ce73@` 异盐先例 — 盐值是按校部署常量,不得跨校写死。
+- 盐值冲突已结案(2026-10-26): NBCC **新门户**登录页存档 `/tmp/nbcc-research/raw/files/nbcc_webvpn_login.html` 明文两次出现 `encrypt(data[i].value, "wrdvpnisawesome!", "wrdvpnisawesome!")`(password 字段提交前加密)——即 NBCC 门户**密码加密盐 = `wrdvpnisawesome!`**,与我方 dump **URL hex 前缀盐 = `wrdvpnisthebest!`** 并存无矛盾:两者用途不同(表单密码密文 vs 代理 URL 编解码),且各有独立证据(门户页 JS 原文 / 实解密出 `jwglapp.nbcc.cn` 的可复现结果)。Step 6 若做原生登录链,密码字段必须用 `wrdvpnisawesome!`,URL 编解码必须用 `wrdvpnisthebest!`,不得互换。
 - 未登录态 VPN 探测对任意内网域一律 302→/login,**无区分度**;存在性判定必须走公开索引/学生工具,禁撞库枚举。
 - crt.sh 通配: `*.nbcc.cn`  SAN 仅见 zhsj/mail/webvpn 等,无教务直域 — 教务必经 VPN 通道,与双源证据吻合。
