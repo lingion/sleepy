@@ -1,0 +1,27 @@
+<!-- NBCC-FIX-3: synthesized real-shape page shell before client-side fill; no data rows. -->
+<html><head><title>宁波城市职业技术学院 综合教务管理系统</title></head>
+<body>
+<div class="breadcrumb">
+    <a href="/eams/index.action">首页</a> &gt; <span>学生课表</span>
+    <form id="courseTableForm" name="courseTableForm" action="/eams/courseTableForStd!courseTable.action" method="post">
+        <select id="s" name="semester.id"><option value="">请选择</option></select>
+        <select id="p" name="project.id"><option value="">选项A</option><option value="">选项B</option></select>
+    </form>
+</div>
+<div id="noArrangeCourse">
+    <table width="100%" id="manualArrangeCourseTable" align="center" class="gridtable" style="text-align:center" border="1">
+        <tbody>
+        <tr><td class="space"></td><td>周一</td><td>周二</td><td>周三</td><td>周四</td><td>周五</td><td>周六</td><td>周日</td></tr>
+        <tr><td class="space">第一节</td><td id="TD0_0" style="backGround-Color:#ffffff;font-size:12px"></td><td id="TD1_0" style="backGround-Color:#ffffff;font-size:12px"></td><td id="TD2_0" style="backGround-Color:#ffffff;font-size:12px"></td><td id="TD3_0" style="backGround-Color:#ffffff;font-size:12px"></td><td id="TD4_0" style="backGround-Color:#ffffff;font-size:12px"></td><td id="TD5_0" style="backGround-Color:#ffffff;font-size:12px"></td><td id="TD6_0" style="backGround-Color:#ffffff;font-size:12px"></td></tr>
+        <tr><td class="space">第二节</td><td id="TD0_1" style="backGround-Color:#ffffff;font-size:12px"></td><td id="TD1_1" style="backGround-Color:#ffffff;font-size:12px"></td><td id="TD2_1" style="backGround-Color:#ffffff;font-size:12px"></td><td id="TD3_1" style="backGround-Color:#ffffff;font-size:12px"></td><td id="TD4_1" style="backGround-Color:#ffffff;font-size:12px"></td><td id="TD5_1" style="backGround-Color:#ffffff;font-size:12px"></td><td id="TD6_1" style="backGround-Color:#ffffff;font-size:12px"></td></tr>
+        </tbody>
+    </table>
+</div>
+<script language="JavaScript">
+    function confirmCourseTable() {
+        var form = document.courseTableForm;
+        bg.form.addInput(form,"ids","");
+        form.submit(courseTableForm);
+    }
+</script>
+</body></html>

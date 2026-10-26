@@ -1,6 +1,7 @@
 package com.lingion.sleepy.data.jw
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -320,5 +321,153 @@ class JwClassicEamsParserTest {
         assertEquals("市场营销学(理论)", courses[0].name)
         assertEquals("数据库实验(上机)", courses[1].name)
         assertEquals("《红楼梦》导读", courses[2].name)
+    }
+
+    // ==================================================================
+    // NBCC (批C 2026-10-26) — 双源合成成功样本 + 三型反例 (fix-design §5.1/§5.2)
+    // fixture 目录 jw/fixtures/classic_eams/ (nwupl/lixin 先例同规);
+    // 成功样本合成依据 = Wangxiaolu0716 Dart parser 头注真实样例 + 真实抓页结构,
+    // 全部脱敏 (零真实姓名/学号, 公开通课名)。
+    // ==================================================================
+
+    private fun nbccFixture(name: String): String {
+        val stream = javaClass.classLoader?.getResourceAsStream("jw/fixtures/classic_eams/$name")
+        org.junit.Assert.assertNotNull("测试资源 jw/fixtures/classic_eams/$name 应存在", stream)
+        return stream!!.bufferedReader(Charsets.UTF_8).use { it.readText() }
+    }
+
+    @Test
+    fun `nbcc 成功样本 join反查 字面教师 数字index 三块逐形断言`() {
+        val page = nbccFixture("nbcc-course-table-action.html")
+        val courses = JwClassicEamsParser(page).generateCourseList()
+        // 块1 教师join反查 12 周 + 块2 单周位图 5 周 + 块3 双周位图 4 周
+        assertEquals("三块按周展开总行数不符: ${courses.size}", 21, courses.size)
+
+        // 块1: actTeacherName.join(',') → 块前 var actTeachers 反查, 双师 "/" 连
+        val pe = courses.filter { it.name == "体育健康-1(020D01G35)" }
+        assertEquals(12, pe.size)
+        assertEquals("赵老师/钱老师", pe.first().teacher)
+        assertEquals("体育馆-201乒乓球馆", pe.first().room)
+        // index =3*unitCount+2 / +3 → day=4, 连堂 3-4 节
+        assertEquals(4, pe.first().day)
+        assertEquals(3, pe.first().startNode)
+        assertEquals(4, pe.first().endNode)
+        // 真实样例位图 "000001111011111111…" → 第 5-8,10-17 周逐周展开, 每周 type=0
+        assertEquals(listOf(5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17), pe.map { it.startWeek })
+        assertTrue("逐周展开必须 startWeek==endWeek", pe.all { it.startWeek == it.endWeek })
+        assertTrue("位图单双周逐周天然表达, type 恒 0", pe.all { it.type == 0 })
+
+        // 块2: 老版第 2 参引号字面教师 + 单周位图形态
+        val mao = courses.filter { it.name.startsWith("毛泽东思想") }
+        assertEquals(5, mao.size)
+        assertEquals("孙老师", mao.first().teacher)
+        // index =0*unitCount+9 / +10 → day=1, 10-11 节连堂
+        assertEquals(1, mao.first().day)
+        assertEquals(10, mao.first().startNode)
+        assertEquals(11, mao.first().endNode)
+        // 位图 "0101010101…" 下标1即第1周 → 单周 1,3,5,7,9
+        assertEquals(listOf(1, 3, 5, 7, 9), mao.map { it.startWeek })
+
+        // 块3: 纯数字 index 形态 (兼容 Dart 变体) — 42 = 3*12+6 → day=4, node=7
+        val math = courses.filter { it.name.startsWith("高等数学") }
+        assertEquals(4, math.size)
+        assertEquals("李老师", math.first().teacher)
+        assertEquals(4, math.first().day)
+        assertEquals(7, math.first().startNode)
+        assertEquals(7, math.first().endNode)
+        // 位图 "0010101010…" → 双周 2,4,6,8
+        assertEquals(listOf(2, 4, 6, 8), math.map { it.startWeek })
+    }
+
+    @Test
+    fun `nbcc 成功样本 unitCount 取值必须来自页面而非写死`() {
+        val page = nbccFixture("nbcc-course-table-action.html")
+        // 页面值 12→13 原位改写: `D*unitCount+P` 两块 day/node 不变, 纯数字 index 块
+        // 重排 42 = 3*13+3 → day=4, node=4 — 证明数字 index 换算吃页面 unitCount。
+        val rewritten = page.replace("var unitCount = 12;", "var unitCount = 13;")
+        assertTrue("改写锚必须命中(fixture 漂移预警)", rewritten != page)
+        val math = JwClassicEamsParser(rewritten).generateCourseList()
+            .first { it.name.startsWith("高等数学") }
+        assertEquals(4, math.day)
+        assertEquals(4, math.startNode)
+        val pe = JwClassicEamsParser(rewritten).generateCourseList()
+            .first { it.name == "体育健康-1(020D01G35)" }
+        assertEquals(4, pe.day)
+        assertEquals(3, pe.startNode)
+    }
+
+    @Test
+    fun `nbcc 成功样本 confidence 95 五锚全中`() {
+        val parser = JwClassicEamsParser(nbccFixture("nbcc-course-table-action.html"))
+        assertEquals(95, parser.confidence())
+        assertEquals(
+            listOf(
+                "table#manualArrangeCourseTable",
+                "new TaskActivity(...)",
+                "var unitCount = N",
+                "table0.marshalTable",
+                "courseTableForStd",
+            ),
+            parser.matchedFeatures()
+        )
+    }
+
+    // -------- 反例 a: 空壳无数据 (JS 渲染前形态) --------
+
+    @Test
+    fun `nbcc 空壳页 零课 零置信度`() {
+        val page = nbccFixture("nbcc-empty-shell.html")
+        val parser = JwClassicEamsParser(page)
+        // capture 面成功判据 needle("new TaskActivity(")已由批B JS 即停逻辑覆盖
+        // (NbccClassicEamsWebViewContractTest `JS 内含 §4 字面量三件套…`), 此处锁 parser 面。
+        assertEquals("空壳不得自带活动判据", 0, parser.confidence())
+        assertTrue("空壳必须 0 课 (禁伪成功落库)", parser.generateCourseList().isEmpty())
+        // registry 兜底面: 空壳不产生任何 ≥80 出课行 → selectBest 空, 不串型
+        val (best, _) = JwParserRegistry.selectBest(page)
+        assertTrue("全链裁决必须拒收空壳: $best", best.isEmpty())
+    }
+
+    // -------- 反例 b: 树维 JSON 混入, adjudicate 不串型 --------
+
+    @Test
+    fun `nbcc 树维混入JSON classic零锚 shuwei命中 裁决不串型`() {
+        val json = nbccFixture("nbcc-shuwei-mixed.json")
+        val classic = JwClassicEamsParser(json)
+        assertEquals("树维 JSON 不得给 classic 任何置信度", 0, classic.confidence())
+        assertTrue("classic 面对 JSON 必须 0 课不崩", classic.generateCourseList().isEmpty())
+
+        val shuwei = JwShuweiParser(json)
+        assertEquals("activities marker 必须命中 90", 90, shuwei.confidence())
+        assertEquals(2, shuwei.generateCourseList().size)
+
+        val (best, attempts) = JwParserRegistry.selectBest(json)
+        val classicRow = attempts.first { it.type == JwProtocol.TYPE_CLASSIC_EAMS }
+        assertEquals(0, classicRow.courseCount)
+        assertEquals(0, classicRow.confidence)
+        assertEquals("裁决赢家必须是树维 2 课, 不许串型", 2, best.size)
+        assertTrue(best.any { it.name.startsWith("毛泽东思想") && it.type == 0 && it.startWeek == 1 && it.endWeek == 8 })
+        assertTrue(best.any { it.name == "体育健康-1" && it.type == 2 && it.startWeek == 2 && it.endWeek == 8 })
+    }
+
+    // -------- 反例 c: 移动 UA SPA 壳 — 错误入口清晰失败, 钉钉时代形态不复现 --------
+
+    @Test
+    fun `nbcc 移动SPA壳 判型null 锚零命中 WRONG_PAGE`() {
+        val shell = nbccFixture("nbcc-mobile-spa-shell.html")
+        // 判型层: HTML 级零命中 → null 走兜底 (批A 只锚了 URL 面, HTML 面本就不该认识它)
+        assertNull(JwImportViewModel.detectProtocolFromHtmlForTest(shell))
+        // capture 层: 容器锚零命中 → 照 Xju 先例以 FrameSnapshot 单帧走裁决
+        assertTrue(
+            "SPA 壳不得命中任何容器锚",
+            com.lingion.sleepy.ui.screen.imports.FrameTraversalTree.findAnchors(shell).isEmpty()
+        )
+        val snapshots = com.lingion.sleepy.ui.screen.imports.FrameSnapshot.fromJson(
+            """{"ok":true,"url":"https://webvpn.nbcc.edu.cn/","depth":0,"frames":[{"name":"(top)","src":"https://webvpn.nbcc.edu.cn/","depth":0,"path":[],"html":${org.json.JSONObject.quote(shell)},"blocked":""}]}"""
+        )
+        val r = com.lingion.sleepy.ui.screen.imports.FrameTraversalTree.selectBestFrame(snapshots)
+        assertEquals(
+            "无锚非登录壳必须 WRONG_PAGE 清晰失败, 绝不落伪成功",
+            com.lingion.sleepy.ui.screen.imports.FrameCaptureStatus.WRONG_PAGE, r.status
+        )
     }
 }

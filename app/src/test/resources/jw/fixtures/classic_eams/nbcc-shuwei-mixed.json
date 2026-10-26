@@ -1,0 +1,25 @@
+{
+  "code": 200,
+  "data": {
+    "activities": [
+      {
+        "courseName": "毛泽东思想和中国特色社会主义理论体系概论",
+        "weekday": 1,
+        "startSection": 1,
+        "endSection": 2,
+        "weeksStr": "1-8周",
+        "classroomName": "教学楼-101",
+        "teacherName": "孙老师"
+      },
+      {
+        "courseName": "体育健康-1",
+        "weekday": 4,
+        "startSection": 3,
+        "endSection": 4,
+        "weeksStr": "2-8双周",
+        "classroomName": "体育馆-201",
+        "teacherName": "赵老师/钱老师"
+      }
+    ]
+  }
+}

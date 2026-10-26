@@ -1,0 +1,38 @@
+<!-- NBCC-FIX-2: real-shape archived excerpt; form-B password-encryption constant kept verbatim (public frontend constant, not a credential); credentials removed. -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>WEBVPN</title>
+</head>
+<body>
+<div class="login-container">
+    <form id="form" class="layui-form">
+        <input type="hidden" name="_csrf" value="">
+        <input type="text" name="username" id="username" placeholder="请输入账号" autocomplete="off">
+        <input type="password" name="password" id="password" placeholder="请输入密码" autocomplete="off">
+        <button type="button" id="login" class="layui-btn">登 录</button>
+    </form>
+</div>
+<script type="text/javascript">
+    $('#login').click(function() {
+        var data = $('#form').serializeArray()
+        $("#error-message").hide()
+            for (var i in data) {
+                if (data[i].name === "password") {
+                    data[i].value = encrypt(data[i].value, "wrdvpnisawesome!", "wrdvpnisawesome!")
+                }
+            }
+        $('#loginLoading').css('display', 'inline-block')
+        $.post('/do-login', data, function(res) {
+            setTimeout(function(){
+                $('#loginLoading').css('display', 'none')
+            },200)
+        })
+    });
+    function sessionExpired() {
+        layer.msg("您的账号IP发生变化，请重新登录");
+    }
+</script>
+</body>
+</html>

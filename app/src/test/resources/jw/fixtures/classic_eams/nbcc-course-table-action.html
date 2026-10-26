@@ -1,0 +1,44 @@
+<!-- NBCC-FIX-1: synthesized from the real-shape sample in Wangxiaolu0716 class-schedule Dart parser header + nbcc capture structure (batchA 三源之一); credentials removed, synthetic names/ids only. -->
+<html><head><title>宁波城市职业技术学院 综合教务管理系统</title></head>
+<body>
+<form id="courseTableForm" name="courseTableForm" action="/eams/courseTableForStd!courseTable.action" method="post">
+<table width="100%" id="manualArrangeCourseTable" align="center" class="gridtable" style="text-align:center" border="1">
+  <tbody><tr><td id="TD0_0" style="backGround-Color:#ffffff;font-size:12px"></td></tr></tbody>
+</table>
+</form>
+<script language="JavaScript">
+        // function CourseTable in TaskActivity.js
+        var language = "zh";
+        var table0 = new CourseTable(2026,98);
+        var unitCount = 12;
+        var index=0;
+        var activity=null;
+                var teachers = [{id:1,name:"赵老师",lab:false},{id:2,name:"钱老师",lab:false}];
+                var actTeachers = [{id:1,name:"赵老师",lab:false},{id:2,name:"钱老师",lab:false}];
+                var actTeacherId = [];
+                var actTeacherName = [];
+                for (var i = 0; i < actTeachers.length; i++) {
+                        actTeacherId.push(actTeachers[i].id);
+                        actTeacherName.push(actTeachers[i].name);
+                }
+                        activity = new TaskActivity(actTeacherId.join(','),actTeacherName.join(','),"20001(020D01G35)","体育健康-1(020D01G35)","526","体育馆-201乒乓球馆","00000111101111111100000000000000000000000000000000000",null,null,"","","");
+                        index =3*unitCount+2;
+                        table0.activities[index][table0.activities[index].length]=activity;
+                        index =3*unitCount+3;
+                        table0.activities[index][table0.activities[index].length]=activity;
+                var actTeachers = [];
+                        activity = new TaskActivity("2","孙老师","20002(032A04C02)","毛泽东思想和中国特色社会主义理论体系概论(032A04C02)","263","教学楼-101","01010101010000000000000000000000000000000000000000000",null,null,"","","");
+                        index =0*unitCount+9;
+                        table0.activities[index][table0.activities[index].length]=activity;
+                        index =0*unitCount+10;
+                        table0.activities[index][table0.activities[index].length]=activity;
+                var actTeachers = [];
+                        activity = new TaskActivity("3","李老师","20003(032A04C03)","高等数学(下)(032A04C03)","264","教学楼-202","00101010100000000000000000000000000000000000000000000",null,null,"","","");
+                        index =42;
+                        table0.activities[index][table0.activities[index].length]=activity;
+                var ids="2024000001";
+                bg.form.addInput(form,"ids","2024000001");
+                jQuery("#halfSelect").semesterCalendar({"onChange":"","value":"279"},"searchTable()");
+            table0.marshalTable(2,1,21);
+</script>
+</body></html>

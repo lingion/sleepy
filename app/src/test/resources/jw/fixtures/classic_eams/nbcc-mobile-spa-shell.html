@@ -1,0 +1,29 @@
+<!-- NBCC-FIX-4: real-shape mobile-UA portal shell captured at the wrong entry; no EAMS data region by design. -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="viewport-fit=cover, width=100, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>移动门户</title>
+    <link rel="stylesheet" href="/mobile/build/cordova.css">
+</head>
+<body>
+<ion-app>
+    <ion-split-pane content-id="main">
+        <ion-menu content-id="main">
+            <ion-header><ion-toolbar><ion-title>工作台</ion-title></ion-toolbar></ion-header>
+            <ion-content>
+                <ion-list id="menu-list">
+                    <ion-menu-toggle auto-hide="false"><ion-item>消息</ion-item></ion-menu-toggle>
+                    <ion-menu-toggle auto-hide="false"><ion-item>应用中心</ion-item></ion-menu-toggle>
+                </ion-list>
+            </ion-content>
+        </ion-menu>
+        <ion-router-outlet id="main"></ion-router-outlet>
+    </ion-split-pane>
+</ion-app>
+<app-root _nghost-c0="" ng-version="5.2.11"><ion-router-outlet anchor="app_root" name="entered"></ion-router-outlet></app-root>
+<script src="/mobile/build/polyfills.js" defer></script>
+<script src="/mobile/build/cordova.js" defer></script>
+</body>
+</html>
