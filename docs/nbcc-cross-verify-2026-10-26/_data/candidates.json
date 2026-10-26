@@ -1,0 +1,5310 @@
+[
+ {
+  "repo": "vczero/serverless-colleage",
+  "url": "https://github.com/vczero/serverless-colleage",
+  "stars": 72,
+  "pushed_at": "2024-06-16T06:07:57Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "NBCC"
+  ],
+  "relevance": "NBCC 本校直接命中: 2600多所高校信息原始数据",
+  "matched_by": [
+   "code_10.json"
+  ],
+  "key_code_hits": [
+   "大学详情/宁波城市职业技术学院.json"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "LonelyMarch/OpenWakeUp",
+  "url": "https://github.com/LonelyMarch/OpenWakeUp",
+  "stars": 7,
+  "pushed_at": "2026-09-25T05:23:40Z",
+  "archived": false,
+  "license": "AGPL-3.0",
+  "language": "Kotlin",
+  "tags": [
+   "NBCC",
+   "eams/教务"
+  ],
+  "relevance": "全国 1962 校课表 App:schools.json 第1156条=宁波城市职业技术学院(webvpn.nbcc.cn,标注 xatu_shuwei,与本校 EAMS fixture 证据矛盾,需留意)",
+  "matched_by": [
+   "pin:deep-extraction"
+  ],
+  "key_code_hits": [
+   "app/src/main/assets/schools.json",
+   "app/src/main/java/com/openwakeup/parser/web/XatuShuweiParser.kt"
+  ],
+  "pc_entry_evidence": "指向:assets/schools.json 宁波城市条目仅给门户 webvpn.nbcc.cn/users/sign_in,未给 PC 教务直链;type=xatu_shuwei 与 NBCC fixture(TaskActivity 正方)矛盾",
+  "login_form": null
+ },
+ {
+  "repo": "1837620622/gaokao-admission-crawler",
+  "url": "https://github.com/1837620622/gaokao-admission-crawler",
+  "stars": 4,
+  "pushed_at": "2026-06-28T12:20:54Z",
+  "archived": false,
+  "license": null,
+  "language": "Python",
+  "tags": [
+   "NBCC"
+  ],
+  "relevance": "NBCC 本校直接命中: 2025全国高校专业录取分数线爬虫 - 2707所学校14.3万条录取数据(Crawler for gaokao.cn admission scores, rankings & e",
+  "matched_by": [
+   "code_10.json"
+  ],
+  "key_code_hits": [
+   "gaokao_data/01771_宁波城市职业技术学院.json"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "SunGg12138/china-colleges",
+  "url": "https://github.com/SunGg12138/china-colleges",
+  "stars": 3,
+  "pushed_at": "2020-01-05T09:12:02Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "NBCC"
+  ],
+  "relevance": "NBCC 本校直接命中: 中国大学信息库",
+  "matched_by": [
+   "code_10.json"
+  ],
+  "key_code_hits": [
+   "colleges/宁波城市职业技术学院.json"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Wangxiaolu0716/class-schedule",
+  "url": "https://github.com/Wangxiaolu0716/class-schedule",
+  "stars": 1,
+  "pushed_at": "2026-10-20T05:02:31Z",
+  "archived": false,
+  "license": "NOASSERTION(PolyForm Noncommercial 1.0.0)",
+  "language": "Dart",
+  "tags": [
+   "NBCC",
+   "eams/教务",
+   "webvpn"
+  ],
+  "relevance": "NBCC 本校学生开源课表 App(Flutter):内置 nbcc SchoolConfig 与正方 EAMS TaskActivity 解析器、WebVPN WebView 登录+同源 fetch 导入全链,本案最高价值参考",
+  "matched_by": [
+   "pin:deep-extraction"
+  ],
+  "key_code_hits": [
+   "lib/import/school_config.dart",
+   "lib/import/eams_course_table_parser.dart",
+   "lib/import/webview_import_screen.dart",
+   "test/fixtures/nbcc_course_table.html"
+  ],
+  "pc_entry_evidence": "有:lib/import/school_config.dart 明文记录 NBCC PC 教务入口 https://jwgl.webvpn.nbcc.cn/eams/courseTableForStd.action(正方 EAMS 桌面页,经 WebVPN 反代),配 courseTableForStd!courseTable.action 数据端点与脱敏 fixture 佐证",
+  "login_form": "WebView 用户登录 webvpn.nbcc.cn + 同源 fetch 教务 action(不接触凭据);强制移动端 UA 注释称桌面端登录流程不可用"
+ },
+ {
+  "repo": "yeliqin666/xjtu-toolbox-android",
+  "url": "https://github.com/yeliqin666/xjtu-toolbox-android",
+  "stars": 89,
+  "pushed_at": "2026-10-24T03:57:29Z",
+  "archived": false,
+  "license": "GPL-3.0",
+  "language": "Kotlin",
+  "tags": [
+   "webvpn",
+   "eams/教务"
+  ],
+  "relevance": "WebVPN+教务双命中(登录链/协议参考). 交兵安卓工具箱",
+  "matched_by": [
+   "codeY_04.json",
+   "code_04.json",
+   "code_09.json"
+  ],
+  "key_code_hits": [
+   "app/src/main/java/com/xjtu/toolbox/browser/BrowserScreen.kt",
+   "desktop/src/main/kotlin/com/xjtu/toolbox/desktop/DesktopAuth.kt",
+   "desktop/src/main/kotlin/com/xjtu/toolbox/desktop/ToolboxDesktopApp.kt",
+   "docs/api-contract.md",
+   "docs/parity-ledger.md",
+   "feature/score/src/commonMain/kotlin/com/xjtu/toolbox/jwapp/JwappScoreScreen.kt",
+   "feature/score/src/commonMain/kotlin/com/xjtu/toolbox/jwapp/JwappScoreViewModel.kt",
+   "feature/score/src/jvmTest/kotlin/com/xjtu/toolbox/jwapp/JwappScoreViewModelTest.kt"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "974294341-bit/stdu-cli",
+  "url": "https://github.com/974294341-bit/stdu-cli",
+  "stars": 0,
+  "pushed_at": "2026-10-26T05:08:08Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "JavaScript",
+  "tags": [
+   "webvpn",
+   "eams/教务"
+  ],
+  "relevance": "WebVPN+教务双命中(登录链/协议参考). 面向 AI Agent 的石家庄铁道大学（STDU）校园服务 CLI：课表、成绩、空闲教室。WebVPN + CAS + 正方 V9。",
+  "matched_by": [
+   "repoX_12.json",
+   "repoY_10.json",
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "forget-forever/mark",
+  "url": "https://github.com/forget-forever/mark",
+  "stars": 0,
+  "pushed_at": "2022-07-31T12:28:34Z",
+  "archived": false,
+  "license": "NOASSERTION",
+  "language": "PHP",
+  "tags": [
+   "webvpn",
+   "eams/教务"
+  ],
+  "relevance": "WebVPN+教务双命中(登录链/协议参考). 关于江西理工大学大学强智教务系统，金智办事大厅门户，深信服webvpn的模拟登陆代码。",
+  "matched_by": [
+   "repoX_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": "强智教务+金智门户+深信服 webvpn 模拟登录笔记(江西理工)"
+ },
+ {
+  "repo": "cirosantilli/x86-bare-metal-examples",
+  "url": "https://github.com/cirosantilli/x86-bare-metal-examples",
+  "stars": 5414,
+  "pushed_at": "2022-07-18T05:40:51Z",
+  "archived": false,
+  "license": "NOASSERTION",
+  "language": "Assembly",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "[疑似术语歧义:operating system,x86] 教务(EAMS/正方/树维/强智)协议参考: Dozens of minimal operating systems to learn x86 system programming. Tested on U",
+  "matched_by": [
+   "repoX_17.json",
+   "repo_12.json",
+   "repo_13.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "DanXi-Dev/DanXi",
+  "url": "https://github.com/DanXi-Dev/DanXi",
+  "stars": 434,
+  "pushed_at": "2026-10-21T13:25:13Z",
+  "archived": false,
+  "license": "GPL-3.0",
+  "language": "Dart",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: [Windows / Mac / Linux / Android / iOS] Maybe the best all-rounded service app f",
+  "matched_by": [
+   "code_09.json"
+  ],
+  "key_code_hits": [
+   "lib/util/webvpn_proxy.dart"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "cirosantilli/cirosantilli",
+  "url": "https://github.com/cirosantilli/cirosantilli",
+  "stars": 321,
+  "pushed_at": "2026-09-22T07:03:41Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "[疑似术语歧义:建筑] 教务(EAMS/正方/树维/强智)协议参考: 小粉红小朋友们，新issue 在这儿开： https://github.com/cirosantilli/china-dictatorship/issues #",
+  "matched_by": [
+   "repoX_17.json",
+   "repo_12.json",
+   "repo_13.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "lcandy2/webvpn-converter",
+  "url": "https://github.com/lcandy2/webvpn-converter",
+  "stars": 250,
+  "pushed_at": "2026-05-28T16:35:57Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "TypeScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 轻松访问校内网络资源，无需繁琐设置，只需粘贴链接，常规网址即刻转化为您学校的Web VPN网址。",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "yan-xiaoo/XJTUToolBox",
+  "url": "https://github.com/yan-xiaoo/XJTUToolBox",
+  "stars": 209,
+  "pushed_at": "2026-10-22T13:42:02Z",
+  "archived": false,
+  "license": "GPL-3.0",
+  "language": "Python",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "[疑似术语歧义:考勤] 教务(EAMS/正方/树维/强智)协议参考: 仙交百宝箱，提供西安交通大学考勤查询、课表查询、快速评教等多种服务",
+  "matched_by": [
+   "codeY_04.json",
+   "code_09.json"
+  ],
+  "key_code_hits": [
+   "README.md",
+   "app/sessions/jwapp_session.py",
+   "auth/constant.py",
+   "docs/.vitepress/config.mts",
+   "docs/development/introduction.md",
+   "docs/development/jwapp.md",
+   "docs/development/jwxt.md",
+   "docs/development/session.md"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "LeafCreeper/Fudan_iCourse_Subscriber",
+  "url": "https://github.com/LeafCreeper/Fudan_iCourse_Subscriber",
+  "stars": 188,
+  "pushed_at": "2026-10-17T14:26:30Z",
+  "archived": false,
+  "license": null,
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 定时抓取你的课程的icourse录屏，在线进行语音转写调用大模型进行摘要，推送到你的邮箱。再也不用亲自上课了！",
+  "matched_by": [
+   "code_09.json"
+  ],
+  "key_code_hits": [
+   "src/api/webvpn.py"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Chiu-xaH/HFUT-Schedule",
+  "url": "https://github.com/Chiu-xaH/HFUT-Schedule",
+  "stars": 170,
+  "pushed_at": "2026-10-25T16:10:15Z",
+  "archived": false,
+  "license": "Apache-2.0",
+  "language": "Kotlin",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 适用于合肥工业大学（HFUT）本科生的校园服务聚合类 Android 应用，覆盖了教学、⽣活、校内服务等 40+ 场景与功能，包括但不限于教务、校园卡等；使⽤现",
+  "matched_by": [
+   "code_04.json",
+   "code_06.json",
+   "code_07.json",
+   "code_09.json"
+  ],
+  "key_code_hits": [
+   "app/src/main/java/com/hfut/schedule/logic/model/enumeration/CasLoginType.kt",
+   "docs/HfutApi.md",
+   "network-api/src/main/java/com/hfut/schedule/network/api/inf/JxglstuService.kt",
+   "network-api/src/main/java/com/hfut/schedule/network/api/inf/WebVpnService.kt",
+   "tools/webvpn/webvpn.py",
+   "tools/教务系统登录思路.txt"
+  ],
+  "pc_entry_evidence": "无(HFUT 校):webvpn 后直达 eams5-student PC 登录链可作形态参考",
+  "login_form": "wengine 原生链:GET login?cas_login=true 取票,GET wengine-vpn/cookie?method=get 取 key/iv,POST /http/<hex>/cas/login 表单,GET eams5-student/neusoft-sso/login 换教务会话"
+ },
+ {
+  "repo": "spencerwooo/bit-webvpn-converter",
+  "url": "https://github.com/spencerwooo/bit-webvpn-converter",
+  "stars": 88,
+  "pushed_at": "2026-01-30T18:46:23Z",
+  "archived": false,
+  "license": null,
+  "language": "TypeScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Web VPN converter.",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "ESWZY/webvpn-dlut",
+  "url": "https://github.com/ESWZY/webvpn-dlut",
+  "stars": 80,
+  "pushed_at": "2024-05-26T15:42:31Z",
+  "archived": false,
+  "license": null,
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: WRD 的 WebVPN 的 URL 互转原理🌚",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "lingion/sleepy",
+  "url": "https://github.com/lingion/sleepy",
+  "stars": 74,
+  "pushed_at": "2026-10-25T12:11:56Z",
+  "archived": false,
+  "license": "GPL-3.0",
+  "language": "Kotlin",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: Sleepy 课程表 — Material You 设计的纯净 Android 课表 App，多视图/小组件/教务导入/HSV配色",
+  "matched_by": [
+   "codeY_04.json",
+   "code_06.json",
+   "code_07.json"
+  ],
+  "key_code_hits": [
+   "app/src/main/java/com/lingion/sleepy/data/jw/Eams5PathPrefix.kt",
+   "app/src/main/java/com/lingion/sleepy/data/jw/JwProtocol.kt",
+   "app/src/main/java/com/lingion/sleepy/data/jw/JwWiseduParser.kt",
+   "docs/catalog/EVIDENCE_GENERATION_REPORT.md",
+   "docs/history/ahu-cross-verify-2026-09-06/current-code-state.md",
+   "docs/history/buaa-cross-verify-2026-09-06/protocol-matrix.md",
+   "docs/history/hfut-cross-verify-2026-09-06/findings.json",
+   "docs/history/hfut-cross-verify-2026-09-09/protocol-matrix.md"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "genshen/wssocks-plugin-ustb",
+  "url": "https://github.com/genshen/wssocks-plugin-ustb",
+  "stars": 66,
+  "pushed_at": "2026-01-28T09:10:28Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Go",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: accessing internal network of USTB outside school. USTB/BUPT（或其他基于webvpn的高校） 网络访",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "remoon-net/xhe-webvpn",
+  "url": "https://github.com/remoon-net/xhe-webvpn",
+  "stars": 52,
+  "pushed_at": "2024-06-05T04:41:13Z",
+  "archived": false,
+  "license": "AGPL-3.0",
+  "language": "Go",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: xhe vpn in web (链接为演示视频)",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "smartThise/OneTHU",
+  "url": "https://github.com/smartThise/OneTHU",
+  "stars": 48,
+  "pushed_at": "2026-10-23T14:22:22Z",
+  "archived": false,
+  "license": "NOASSERTION",
+  "language": "TypeScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 清华学生的校园 APP 与 Agent 的 Tauri 统一重构",
+  "matched_by": [
+   "code_04.json"
+  ],
+  "key_code_hits": [
+   "apps/desktop/src-tauri/src/lib.rs",
+   "apps/desktop/src/lib/infoLib.ts",
+   "docs/ui-copy-audit.md",
+   "packages/core/src/auth/demoLogin.ts",
+   "packages/core/src/http.ts",
+   "packages/core/src/info/client.ts",
+   "packages/core/src/info/urls.ts",
+   "packages/core/src/zhjwxk/client.ts"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "HF-CYGG/Dawn-Course",
+  "url": "https://github.com/HF-CYGG/Dawn-Course",
+  "stars": 46,
+  "pushed_at": "2026-09-05T06:40:15Z",
+  "archived": false,
+  "license": "GPL-3.0",
+  "language": "Kotlin",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: 一个免费、轻量的开源课程表app（已适配新旧正方、强智、青果教务系统）",
+  "matched_by": [
+   "repoY_08.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "yang-er/HandSchool",
+  "url": "https://github.com/yang-er/HandSchool",
+  "stars": 35,
+  "pushed_at": "2024-07-20T19:02:55Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "C#",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: HandSchool App Project",
+  "matched_by": [
+   "code_04.json"
+  ],
+  "key_code_hits": [
+   "HandSchool.JLU/Services/WebVpn/WebVpn.cs"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "baihe26/zju-literature-downloader",
+  "url": "https://github.com/baihe26/zju-literature-downloader",
+  "stars": 35,
+  "pushed_at": "2026-10-23T14:00:16Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Codex/Claude skill for downloading, verifying, and reading academic PDFs through",
+  "matched_by": [
+   "repoX_12.json",
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Runa-Asahi/SuperJLU",
+  "url": "https://github.com/Runa-Asahi/SuperJLU",
+  "stars": 33,
+  "pushed_at": "2026-10-25T11:39:11Z",
+  "archived": false,
+  "license": "NOASSERTION",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: SuperJLU —— 吉大人的一站式服务：课表、成绩加权分析、绩点、考试、空教室、培养方案、OA 与学院通知；Windows exe / Android ap",
+  "matched_by": [
+   "codeY_04.json",
+   "code_09.json"
+  ],
+  "key_code_hits": [
+   "docs/cli.md",
+   "docs/offcampus-network.md",
+   "jlu_toolkit/campus.py",
+   "jlu_toolkit/jwxt.py",
+   "jlu_toolkit/sso.py",
+   "jlu_toolkit/webvpn.py",
+   "wechat/README.md",
+   "wechat/server/network_probe.py"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "keyi6/webvpn4dut",
+  "url": "https://github.com/keyi6/webvpn4dut",
+  "stars": 28,
+  "pushed_at": "2020-04-30T01:19:53Z",
+  "archived": true,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: extended web vpn for DUT",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Stardust1001/WebVPN",
+  "url": "https://github.com/Stardust1001/WebVPN",
+  "stars": 28,
+  "pushed_at": "2026-09-28T05:02:18Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Rust",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: WebVPN, fully proxy all websites",
+  "matched_by": [
+   "repoX_12.json",
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "w43322/neu-webvpn-anysite",
+  "url": "https://github.com/w43322/neu-webvpn-anysite",
+  "stars": 26,
+  "pushed_at": "2024-02-18T07:43:07Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: A way of accessing the campus network of NEU, using webvpn.",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "CreamPig233/neu_wisedu2wakeup",
+  "url": "https://github.com/CreamPig233/neu_wisedu2wakeup",
+  "stars": 24,
+  "pushed_at": "2026-09-02T10:23:13Z",
+  "archived": false,
+  "license": null,
+  "language": "Python",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: neu_wisedu2wakeup",
+  "matched_by": [
+   "code_09.json"
+  ],
+  "key_code_hits": [
+   "neu_wisedu2wakeup.py"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "sunyifeisb-art/CNKI-PDF-Downloader",
+  "url": "https://github.com/sunyifeisb-art/CNKI-PDF-Downloader",
+  "stars": 24,
+  "pushed_at": "2026-05-19T14:33:45Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: CNKI 论文 PDF 批量下载助手。支持抓取本页、批量抓链、期刊等级补全、批量下载与 WebVPN 场景；前提是账号本身具备知网下载权限。",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "LeafCreeper/New_Fudan_Course_Grade_Checker",
+  "url": "https://github.com/LeafCreeper/New_Fudan_Course_Grade_Checker",
+  "stars": 22,
+  "pushed_at": "2026-08-19T05:20:19Z",
+  "archived": false,
+  "license": null,
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 定时检测新版教务系统中的成绩，用QQ邮箱SMTP服务推送成绩更新到学邮。",
+  "matched_by": [
+   "code_09.json"
+  ],
+  "key_code_hits": [
+   "src/webvpn.py"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "ZYYO666/fuck-shuwei",
+  "url": "https://github.com/ZYYO666/fuck-shuwei",
+  "stars": 22,
+  "pushed_at": "2026-09-26T04:03:18Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: 一个综合树维教务系统的选课排课客户端基于nodejs",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Lucent-Snow/zju-scholar",
+  "url": "https://github.com/Lucent-Snow/zju-scholar",
+  "stars": 21,
+  "pushed_at": "2026-07-29T07:07:48Z",
+  "archived": false,
+  "license": "GPL-3.0",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: ZJU Scholar — Claude Code Skill for Zhejiang University academic data (timetable",
+  "matched_by": [
+   "code_04.json"
+  ],
+  "key_code_hits": [
+   "scripts/zju_webvpn.py"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "xianfei/BUPT-Course-Assistant",
+  "url": "https://github.com/xianfei/BUPT-Course-Assistant",
+  "stars": 19,
+  "pushed_at": "2023-03-05T21:50:56Z",
+  "archived": false,
+  "license": null,
+  "language": "SCSS",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 北邮课程小助手——电脑端跨平台的课表、查成绩、看校内新闻平台，自带北邮WebVPN可校外使用",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Limour-dev/daily_fudan_core",
+  "url": "https://github.com/Limour-dev/daily_fudan_core",
+  "stars": 17,
+  "pushed_at": "2022-12-09T08:16:17Z",
+  "archived": false,
+  "license": null,
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: daily_fudan的代码，无需fork；请fork https://github.com/Limour-dev/daily_fudan_actions 来自",
+  "matched_by": [
+   "code_04.json",
+   "code_09.json"
+  ],
+  "key_code_hits": [
+   "FDU_WebVPN.py"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Metaphorme/webVPN_mitm",
+  "url": "https://github.com/Metaphorme/webVPN_mitm",
+  "stars": 17,
+  "pushed_at": "2024-03-15T08:26:46Z",
+  "archived": true,
+  "license": "MPL-2.0",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: webVPN_mitm 是一个基于 mitmproxy 的插件，实现利用 webVPN 进行 HTTP/HTTPS/WebSocket 数据转发。",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "bzp2010/webvpn",
+  "url": "https://github.com/bzp2010/webvpn",
+  "stars": 16,
+  "pushed_at": "2025-06-20T16:43:45Z",
+  "archived": false,
+  "license": "Apache-2.0",
+  "language": "Go",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: A WebVPN for access to internal resource. [WIP]",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "BeautyyuYanli/DLUT-login",
+  "url": "https://github.com/BeautyyuYanli/DLUT-login",
+  "stars": 16,
+  "pushed_at": "2022-09-17T15:35:15Z",
+  "archived": true,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 自动化登陆大连理工大学统一认证系统和 webvpn 系统",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "cywd123/WebVPN-Converter",
+  "url": "https://github.com/cywd123/WebVPN-Converter",
+  "stars": 15,
+  "pushed_at": "2024-10-19T08:50:21Z",
+  "archived": false,
+  "license": "Apache-2.0",
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: WebVPN-Converter",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Tenor-John/obsidian-scholarium",
+  "url": "https://github.com/Tenor-John/obsidian-scholarium",
+  "stars": 14,
+  "pushed_at": "2026-10-10T09:13:46Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Scholarium (from Latin scholaris, \"of scholars\") is your all-in-one research wor",
+  "matched_by": [
+   "code_09.json"
+  ],
+  "key_code_hits": [
+   "agent-canvas-demo/DOWNLOAD_PIPELINE.md",
+   "agent-canvas-demo/WEBVPN_COOKIE_SETUP.md",
+   "agent-canvas-demo/skills/paper-downloader/SKILL.md"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "kagg886/SYLU-Educational-Office-Accesser",
+  "url": "https://github.com/kagg886/SYLU-Educational-Office-Accesser",
+  "stars": 14,
+  "pushed_at": "2025-10-29T13:09:02Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Kotlin",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: 爬取sylu教务网数据并生成课表。此程序也可适用于使用正方教务系统的学校",
+  "matched_by": [
+   "code_09.json"
+  ],
+  "key_code_hits": [
+   "second-class/src/commonMain/kotlin/top/kagg886/eoa/vpn/VPNClient.kt"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "KaranocaVe/uestc-redirect-extension",
+  "url": "https://github.com/KaranocaVe/uestc-redirect-extension",
+  "stars": 14,
+  "pushed_at": "2025-08-30T07:00:26Z",
+  "archived": false,
+  "license": null,
+  "language": "TypeScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 电子科技大学 WebVPN 自动重定向助手",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "dlutor/dlutvpn",
+  "url": "https://github.com/dlutor/dlutvpn",
+  "stars": 11,
+  "pushed_at": "2022-05-18T12:36:37Z",
+  "archived": false,
+  "license": "Apache-2.0",
+  "language": null,
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 大连理工大学webVPN浏览器插件",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "vivym/webvpn-ng",
+  "url": "https://github.com/vivym/webvpn-ng",
+  "stars": 10,
+  "pushed_at": "2023-03-20T02:54:26Z",
+  "archived": false,
+  "license": null,
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: webvpn-ng",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "BobH233/LexueSwiftUI",
+  "url": "https://github.com/BobH233/LexueSwiftUI",
+  "stars": 9,
+  "pushed_at": "2026-03-31T08:33:01Z",
+  "archived": false,
+  "license": "GPL-3.0",
+  "language": "Swift",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: i乐学助手：开源的北理工乐学app",
+  "matched_by": [
+   "code_09.json"
+  ],
+  "key_code_hits": [
+   "LexueSwiftUI/Network/Webvpn.swift"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "vivym/webvpn-py",
+  "url": "https://github.com/vivym/webvpn-py",
+  "stars": 9,
+  "pushed_at": "2022-06-21T15:04:36Z",
+  "archived": false,
+  "license": null,
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: webvpn-py",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "RekaYOO/NEU-JWXT-Toolkit",
+  "url": "https://github.com/RekaYOO/NEU-JWXT-Toolkit",
+  "stars": 8,
+  "pushed_at": "2026-10-20T03:30:31Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 东北大学教务系统学生端第三方工具箱",
+  "matched_by": [
+   "code_04.json",
+   "code_09.json"
+  ],
+  "key_code_hits": [
+   "backend/core/auth/client.py",
+   "backend/core/network/webvpn.py",
+   "docs/功能/WebVPN校外访问.md"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "abcde2333/NcepuJw",
+  "url": "https://github.com/abcde2333/NcepuJw",
+  "stars": 8,
+  "pushed_at": "2026-10-17T05:48:56Z",
+  "archived": false,
+  "license": "GPL-3.0",
+  "language": "Kotlin",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: 非官方华北电力大学（保定）教务系统 Android 客户端(强智 jsxsd 逆向)+ 慧生活798 饮水机 + U净洗衣机 | Kotlin + Compos",
+  "matched_by": [
+   "code_04.json"
+  ],
+  "key_code_hits": [
+   "app/src/main/java/com/ncepu/jw/data/JwClient.kt"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "0patsick0/danxi-daily-skill",
+  "url": "https://github.com/0patsick0/danxi-daily-skill",
+  "stars": 7,
+  "pushed_at": "2026-10-25T15:39:45Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: danxi-daily-skill",
+  "matched_by": [
+   "code_09.json"
+  ],
+  "key_code_hits": [
+   "danxi_daily/webvpn.py"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "szw0407/SDU-webvpn-helper",
+  "url": "https://github.com/szw0407/SDU-webvpn-helper",
+  "stars": 7,
+  "pushed_at": "2025-07-30T16:28:06Z",
+  "archived": false,
+  "license": "AGPL-3.0",
+  "language": null,
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: SDU-webvpn-helper",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Jamesits/webvpn-portal-skin-routeros",
+  "url": "https://github.com/Jamesits/webvpn-portal-skin-routeros",
+  "stars": 7,
+  "pushed_at": "2018-06-10T09:21:10Z",
+  "archived": false,
+  "license": null,
+  "language": "HTML",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: RouterOS style Cisco Clientless SSL VPN / AnyConnect login portal.",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "MilLoong/UESTC-EAMS-Helper-App",
+  "url": "https://github.com/MilLoong/UESTC-EAMS-Helper-App",
+  "stars": 7,
+  "pushed_at": "2026-10-24T07:50:15Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Kotlin",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: UESTC 教务系统助手，安卓 App，支持 课表信息、考试时间、考试成绩 查询，2026 最新",
+  "matched_by": [
+   "repo_07.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无(UESTC 校):eamsapp 移动 API 换票链",
+  "login_form": "Idas CAS 原生链+短信二次认证,移动教务 eamsapp 用 ticket 换 JWT(JSESSIONID 即 JWT),/api/ydzc-app/* REST"
+ },
+ {
+  "repo": "LittlePorcupine/dlut-webvpn-web",
+  "url": "https://github.com/LittlePorcupine/dlut-webvpn-web",
+  "stars": 6,
+  "pushed_at": "2024-12-24T01:53:45Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "HTML",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 将大工普通网址转换为 DLUT WebVPN 链接。支持 HTTP/HTTPS 协议，部署在 Vercel，提供Web页面。",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "sapphire-xu/nidong",
+  "url": "https://github.com/sapphire-xu/nidong",
+  "stars": 5,
+  "pushed_at": "2026-10-18T12:25:28Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Rust",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 东北大学桌面看板，集成了余额查看、课程日程表、校园网免流量文件传输、校园网自动登录等功能。",
+  "matched_by": [
+   "codeY_04.json",
+   "code_09.json"
+  ],
+  "key_code_hits": [
+   "docs/开发文档.md",
+   "docs/给AI.md",
+   "src-tauri/src/webvpn.rs"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Mythologyli/websocket-via-webvpn",
+  "url": "https://github.com/Mythologyli/websocket-via-webvpn",
+  "stars": 5,
+  "pushed_at": "2023-11-08T09:02:06Z",
+  "archived": false,
+  "license": "GPL-3.0",
+  "language": "Go",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 通过浙大 Web VPN 访问内网中的 WebSocket 服务",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Frank-678/hitwh-webvpn-reverse",
+  "url": "https://github.com/Frank-678/hitwh-webvpn-reverse",
+  "stars": 5,
+  "pushed_at": "2026-08-28T10:02:31Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: actually wrdvpn-url-calc",
+  "matched_by": [
+   "repoX_12.json",
+   "repo_01.json",
+   "repo_04.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "zeife4/zzuli-grade-monitor",
+  "url": "https://github.com/zeife4/zzuli-grade-monitor",
+  "stars": 5,
+  "pushed_at": "2026-07-24T14:41:16Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 郑州轻工业大学 WebVPN 成绩监控脚本",
+  "matched_by": [
+   "repoX_12.json",
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "m-one-w/M1WEngine",
+  "url": "https://github.com/m-one-w/M1WEngine",
+  "stars": 5,
+  "pushed_at": "2024-03-29T09:47:07Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "[疑似术语歧义:game engine] WebVPN 登录/URL 加解密参考: Open source game engine built on pygame",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "key-zhzr/BJUT-Auto-Login",
+  "url": "https://github.com/key-zhzr/BJUT-Auto-Login",
+  "stars": 4,
+  "pushed_at": "2026-10-25T17:31:52Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Rust",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 简单易用的北京工业大学校园网自动登录工具",
+  "matched_by": [
+   "code_09.json"
+  ],
+  "key_code_hits": [
+   "src-tauri/src/billing/webvpn.rs"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Limour-dev/webvpn-fudan",
+  "url": "https://github.com/Limour-dev/webvpn-fudan",
+  "stars": 4,
+  "pushed_at": "2022-06-15T09:11:38Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 复旦大学webvpn的API封装。https://webvpn.fudan.edu.cn/",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Yummy-He/JLU-WebVPN",
+  "url": "https://github.com/Yummy-He/JLU-WebVPN",
+  "stars": 4,
+  "pushed_at": "2026-07-26T04:23:07Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 用校园网访问所有网站~",
+  "matched_by": [
+   "repoX_12.json",
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "YDX-2147483647/virtual-BIT-network",
+  "url": "https://github.com/YDX-2147483647/virtual-BIT-network",
+  "stars": 4,
+  "pushed_at": "2026-10-17T11:11:02Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "TypeScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: BIT WebVPN 登录与转换（≈ Fetch API）",
+  "matched_by": [
+   "repoX_12.json",
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "qiyang-ustc/CASPaperTunneling",
+  "url": "https://github.com/qiyang-ustc/CASPaperTunneling",
+  "stars": 4,
+  "pushed_at": "2022-12-02T05:55:33Z",
+  "archived": false,
+  "license": "GPL-3.0",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Help you enjoy downloading papers with CAS(Chinese Academy of Sciences) webVPN",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Tiosa205g/touda_wifi_float",
+  "url": "https://github.com/Tiosa205g/touda_wifi_float",
+  "stars": 4,
+  "pushed_at": "2026-10-11T04:10:04Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 汕大自动登录校园网、webvpn工具",
+  "matched_by": [
+   "repoX_12.json",
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Fighting05/NKU-GradeTracker",
+  "url": "https://github.com/Fighting05/NKU-GradeTracker",
+  "stars": 3,
+  "pushed_at": "2026-01-27T16:00:18Z",
+  "archived": false,
+  "license": null,
+  "language": "HTML",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 南开大学(NKU)成绩查询助手，基于南开大学webvpn以及教务系统，提供多种成绩查询，再也不怕妈妈不知道我的成绩出了",
+  "matched_by": [
+   "code_04.json"
+  ],
+  "key_code_hits": [
+   "nku_grades.py",
+   "v3.0/src/core/auth.py"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "foxdogcmd/toolbox",
+  "url": "https://github.com/foxdogcmd/toolbox",
+  "stars": 3,
+  "pushed_at": "2026-09-23T07:39:22Z",
+  "archived": false,
+  "license": null,
+  "language": "Kotlin",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: toolbox",
+  "matched_by": [
+   "code_04.json"
+  ],
+  "key_code_hits": [
+   "app/src/main/java/com/foxxd/toolbox/tools/jyjs/BorrowActivity.kt",
+   "app/src/main/java/com/foxxd/toolbox/tools/leave/LeaveActivity.kt",
+   "app/src/main/java/com/foxxd/toolbox/tools/webvpn/WebVpnActivity.kt"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "gaowanlu/Cours",
+  "url": "https://github.com/gaowanlu/Cours",
+  "stars": 3,
+  "pushed_at": "2022-09-07T07:17:39Z",
+  "archived": false,
+  "license": "GPL-3.0",
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: guet cours web app",
+  "matched_by": [
+   "code_09.json"
+  ],
+  "key_code_hits": [
+   "service/service/webVpnMasterService.js",
+   "service/service/webVpnService.js"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "dchidell/webvpncert",
+  "url": "https://github.com/dchidell/webvpncert",
+  "stars": 3,
+  "pushed_at": "2017-12-12T17:56:26Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Python script to import SSL certificates into IOS routers for WEBVPN",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "liangzi-aha/webVpn",
+  "url": "https://github.com/liangzi-aha/webVpn",
+  "stars": 3,
+  "pushed_at": "2021-10-22T03:55:01Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: webVpn项目",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "wilinz/webvpn-guet",
+  "url": "https://github.com/wilinz/webvpn-guet",
+  "stars": 3,
+  "pushed_at": "2024-05-24T16:10:58Z",
+  "archived": false,
+  "license": null,
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 桂林电子科技大学 WRD 的 WebVPN 的 URL 互转原理🌚",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "linf04/TcpOverWebvpn",
+  "url": "https://github.com/linf04/TcpOverWebvpn",
+  "stars": 3,
+  "pushed_at": "2025-12-29T14:23:49Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Go",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 使用网瑞达WebVPN作为中转服务器，在校内设备和校外设备之间建立高速转发",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "ninthseason/nuist-vpn.io",
+  "url": "https://github.com/ninthseason/nuist-vpn.io",
+  "stars": 3,
+  "pushed_at": "2022-09-21T11:13:52Z",
+  "archived": false,
+  "license": "Apache-2.0",
+  "language": "HTML",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Provide a page for NUIST's webvpn to redirect.",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "jiangdongtieb/SUFE-Research-Harness-",
+  "url": "https://github.com/jiangdongtieb/SUFE-Research-Harness-",
+  "stars": 3,
+  "pushed_at": "2026-09-30T03:41:14Z",
+  "archived": false,
+  "license": null,
+  "language": "PowerShell",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 给上财同学用的科研检索框架：在专用Chrome登录学校 WebVPN 后，由 AI 在 ScienceDirect 等数据库（其他数据库可以自行添加）替你检索、",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Sean-Nishi/M1Wengine",
+  "url": "https://github.com/Sean-Nishi/M1Wengine",
+  "stars": 3,
+  "pushed_at": "2024-02-06T19:15:41Z",
+  "archived": false,
+  "license": null,
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: A action-adventure game developed with Python 3.11.1 and pygame. Complete missio",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "MilLoong/UESTC-EAMS-Helper-Python",
+  "url": "https://github.com/MilLoong/UESTC-EAMS-Helper-Python",
+  "stars": 3,
+  "pushed_at": "2026-10-23T12:34:41Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Python",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: UESTC 教务系统助手，Python 脚本，支持 课表信息、考试时间、考试成绩 查询，2026 最新",
+  "matched_by": [
+   "repo_07.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "FHfanshu/ZJXU-CampusHub",
+  "url": "https://github.com/FHfanshu/ZJXU-CampusHub",
+  "stars": 2,
+  "pushed_at": "2026-10-17T09:19:54Z",
+  "archived": false,
+  "license": "GPL-3.0",
+  "language": "Dart",
+  "tags": [
+   "eams/教务",
+   "钉钉"
+  ],
+  "relevance": "「密码传递器」公开先例:WebViewQuickFill setInputValue 向登录表单注入凭据,credential_store 在开源版被打桩(真实存储闭源)",
+  "matched_by": [
+   "pin:deep-extraction"
+  ],
+  "key_code_hits": [
+   "lib/features/webview/webview_page.dart",
+   "lib/core/auth/credential_store.dart",
+   "lib/features/auth/unified_auth_login_page.dart"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": "WebView 表单注入凭据(setInputValue),真实凭据存储开源版打桩"
+ },
+ {
+  "repo": "liyue983/nku_lib_reservation",
+  "url": "https://github.com/liyue983/nku_lib_reservation",
+  "stars": 2,
+  "pushed_at": "2022-01-04T16:32:36Z",
+  "archived": false,
+  "license": null,
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: nku_lib_reservation",
+  "matched_by": [
+   "code_05.json",
+   "code_09.json"
+  ],
+  "key_code_hits": [
+   "webvpn.py"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "xlmnxp/WebVPN",
+  "url": "https://github.com/xlmnxp/WebVPN",
+  "stars": 2,
+  "pushed_at": "2022-03-23T23:20:51Z",
+  "archived": false,
+  "license": null,
+  "language": "Rust",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: P2P VPN over WebRTC",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "pixia1234/webvpn",
+  "url": "https://github.com/pixia1234/webvpn",
+  "stars": 2,
+  "pushed_at": "2025-11-27T08:45:41Z",
+  "archived": false,
+  "license": null,
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: webvpn",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "lunarx3/webvpn-converter",
+  "url": "https://github.com/lunarx3/webvpn-converter",
+  "stars": 2,
+  "pushed_at": "2026-06-21T12:10:35Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "CSS",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 校园内网 WebVPN 智能链接转换器",
+  "matched_by": [
+   "repoX_12.json",
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "xiaoshakj12-ctrl/WebVPN",
+  "url": "https://github.com/xiaoshakj12-ctrl/WebVPN",
+  "stars": 2,
+  "pushed_at": "2026-07-27T09:17:47Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 一款支持安全审计的WebVPN隧道软件，支持HTTP、SSH、RDP。",
+  "matched_by": [
+   "repoX_12.json",
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "vivym/buaa-webvpn-tunnel",
+  "url": "https://github.com/vivym/buaa-webvpn-tunnel",
+  "stars": 2,
+  "pushed_at": "2022-04-08T09:35:35Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: buaa-webvpn-tunnel",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "SMU-CAA/webv2ray-updater",
+  "url": "https://github.com/SMU-CAA/webv2ray-updater",
+  "stars": 2,
+  "pushed_at": "2023-03-25T19:43:02Z",
+  "archived": false,
+  "license": null,
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 在 WebVPN 中运行 V2Ray 代理",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Slowist-Lee/website-converter",
+  "url": "https://github.com/Slowist-Lee/website-converter",
+  "stars": 2,
+  "pushed_at": "2026-02-23T05:02:29Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: A url converter specifically for ZJU WebVPN",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "HanversionOvO/UESTC-WebVPN-Converter",
+  "url": "https://github.com/HanversionOvO/UESTC-WebVPN-Converter",
+  "stars": 2,
+  "pushed_at": "2026-05-23T12:53:08Z",
+  "archived": false,
+  "license": null,
+  "language": "TypeScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: an extension that converts basic UESTC links into WebVPN links",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "DE3PDARKFANTASY/cauc-campus-assistant",
+  "url": "https://github.com/DE3PDARKFANTASY/cauc-campus-assistant",
+  "stars": 2,
+  "pushed_at": "2026-10-20T14:12:38Z",
+  "archived": false,
+  "license": "GPL-3.0",
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 中国民航大学第三方开源校园助手（Android）｜课表/考试/空教室/校园网认证与设备管理/宿舍电费/校园卡/期末评教｜GPLv3 · 无广告 · 凭据不出本机",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "psyattack/WEngine-Plus",
+  "url": "https://github.com/psyattack/WEngine-Plus",
+  "stars": 2,
+  "pushed_at": "2026-10-15T16:36:27Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: WEngine-Plus is an all-in-one upgrade suite for Wallpaper Engine.",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Niemand-co/WEngine",
+  "url": "https://github.com/Niemand-co/WEngine",
+  "stars": 2,
+  "pushed_at": "2023-06-03T01:39:56Z",
+  "archived": false,
+  "license": null,
+  "language": "C++",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: WEngine",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "2745518585/thu-auth",
+  "url": "https://github.com/2745518585/thu-auth",
+  "stars": 1,
+  "pushed_at": "2026-10-19T04:39:02Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Thu Network AutoAuth",
+  "matched_by": [
+   "code_05.json"
+  ],
+  "key_code_hits": [
+   "src/thu_network_autoauth/log.py",
+   "src/thu_network_autoauth/webvpn.py",
+   "tests/test_resilience.py"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "WilliamPeterMatthew/webvpn-url-page",
+  "url": "https://github.com/WilliamPeterMatthew/webvpn-url-page",
+  "stars": 1,
+  "pushed_at": "2024-06-26T16:49:53Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: A convert page of WebVPN",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "BIT-BOBH/WebvpnExploit",
+  "url": "https://github.com/BIT-BOBH/WebvpnExploit",
+  "stars": 1,
+  "pushed_at": "2022-10-13T15:44:58Z",
+  "archived": false,
+  "license": null,
+  "language": "Vue",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Exploit of cross domain vulnerabilities of webvpn",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "dysprosium231/litloop-paper-agent",
+  "url": "https://github.com/dysprosium231/litloop-paper-agent",
+  "stars": 1,
+  "pushed_at": "2026-10-25T13:25:29Z",
+  "archived": false,
+  "license": "Apache-2.0",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 学术论文 Agent：检索 → 下载（校园网 / CARSI / WebVPN）→ Zotero 归档 → 分析归纳 | Academic paper agen",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "xiaoxin2016/wvpn",
+  "url": "https://github.com/xiaoxin2016/wvpn",
+  "stars": 1,
+  "pushed_at": "2026-10-23T02:26:50Z",
+  "archived": false,
+  "license": null,
+  "language": "Go",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 一个用 Go 实现的 WebVPN 网关：使用邮箱验证码登录，在门户里输入任意 http/https 地址， 由网关代为访问并改写响应，本质上是一个按目标动态路",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "xqNO5/ahu-campus-card",
+  "url": "https://github.com/xqNO5/ahu-campus-card",
+  "stars": 1,
+  "pushed_at": "2026-10-10T19:02:08Z",
+  "archived": false,
+  "license": null,
+  "language": "Kotlin",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 安徽大学校园卡二维码客户端：WebVPN/CAS 协议逆向 + 零依赖 Android 应用（含纯 Kotlin 二维码编码器）",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Yqloss/neu-webvpn-converter",
+  "url": "https://github.com/Yqloss/neu-webvpn-converter",
+  "stars": 1,
+  "pushed_at": "2026-10-01T17:04:35Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: neu-webvpn-converter",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "DreamDZL/HZCU-NewTab",
+  "url": "https://github.com/DreamDZL/HZCU-NewTab",
+  "stars": 1,
+  "pushed_at": "2026-09-29T19:32:32Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 浙大城市学院（HZCU）新标签页扩展，提供常用校内入口与校园 WebVPN 访问。",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Walvez/hebmu-library-skill",
+  "url": "https://github.com/Walvez/hebmu-library-skill",
+  "stars": 1,
+  "pushed_at": "2026-09-27T15:27:27Z",
+  "archived": false,
+  "license": "NOASSERTION",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 河北医科大学图书馆文献检索与下载 Skill: WebVPN 隧道 CNKI/万方/yiigle/FMRS 检索-下载-入 Zotero 全管线 · Hebei",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "BH4GMI/sues-campus-entry",
+  "url": "https://github.com/BH4GMI/sues-campus-entry",
+  "stars": 1,
+  "pushed_at": "2026-09-19T11:04:16Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Kotlin",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 教务直达：上海工程技术大学教务系统与 WebVPN 的快捷入口，Windows / Android 两端实现，打开即登录，不做课程导入。",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "spx86/papervpn",
+  "url": "https://github.com/spx86/papervpn",
+  "stars": 1,
+  "pushed_at": "2026-09-13T09:42:13Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "[疑似术语歧义:x86] WebVPN 登录/URL 加解密参考: Download paywalled papers (IEEE Xplore / Elsevier ScienceDirect) through the Hai",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Johnsheng1/JUST-ToolKit",
+  "url": "https://github.com/Johnsheng1/JUST-ToolKit",
+  "stars": 1,
+  "pushed_at": "2026-08-29T14:46:12Z",
+  "archived": false,
+  "license": "Apache-2.0",
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 这是一个江苏科技大学的工具箱集合，当前涵盖：Webvpn反向代理，统一认证平台自动登录",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "likangxian1007/danta-mcp",
+  "url": "https://github.com/likangxian1007/danta-mcp",
+  "stars": 1,
+  "pushed_at": "2026-08-25T11:57:39Z",
+  "archived": false,
+  "license": "GPL-3.0",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: MCP server for Fudan University's Tree Hole (树洞) and DanKe course reviews (旦克) —",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "RekaYOO/NEU-Academic-WebVPN",
+  "url": "https://github.com/RekaYOO/NEU-Academic-WebVPN",
+  "stars": 1,
+  "pushed_at": "2026-08-07T10:08:06Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: NEU-Academic-WebVPN",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "FUjr/tvpn",
+  "url": "https://github.com/FUjr/tvpn",
+  "stars": 1,
+  "pushed_at": "2026-08-03T06:23:02Z",
+  "archived": false,
+  "license": "AGPL-3.0",
+  "language": "Go",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: A server-backed WebVPN with local and LDAP authentication, policy controls, URL ",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "wangch0108/WEngine",
+  "url": "https://github.com/wangch0108/WEngine",
+  "stars": 1,
+  "pushed_at": "2025-06-20T02:49:15Z",
+  "archived": false,
+  "license": null,
+  "language": "C++",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: WEngine",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "anshul-bharat/wengine",
+  "url": "https://github.com/anshul-bharat/wengine",
+  "stars": 1,
+  "pushed_at": "2024-11-10T14:33:16Z",
+  "archived": false,
+  "license": "CC0-1.0",
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "[疑似术语歧义:webgpu] WebVPN 登录/URL 加解密参考: Graphics Engine based on WebGPU",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Anthony-wangh/WEngine",
+  "url": "https://github.com/Anthony-wangh/WEngine",
+  "stars": 1,
+  "pushed_at": "2024-10-09T02:42:12Z",
+  "archived": false,
+  "license": null,
+  "language": "C#",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "[疑似术语歧义:unity] WebVPN 登录/URL 加解密参考: Unity通用型框架-基于GF，yooAssets",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "WangHeng23/wEngine",
+  "url": "https://github.com/WangHeng23/wEngine",
+  "stars": 1,
+  "pushed_at": "2024-05-31T15:48:04Z",
+  "archived": false,
+  "license": null,
+  "language": "C++",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: wEngine",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "x-rag-x/EAMS-Project",
+  "url": "https://github.com/x-rag-x/EAMS-Project",
+  "stars": 1,
+  "pushed_at": "2026-10-26T03:29:18Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: EAMS-Project",
+  "matched_by": [
+   "repo_07.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "3dverse/manufacturing-showcase",
+  "url": "https://github.com/3dverse/manufacturing-showcase",
+  "stars": 1,
+  "pushed_at": "2026-10-15T09:05:02Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "TypeScript",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: A manufacturing digital twin built on 3dverse. It connects enterprise systems (E",
+  "matched_by": [
+   "repo_07.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "ousama52/EAMS",
+  "url": "https://github.com/ousama52/EAMS",
+  "stars": 1,
+  "pushed_at": "2026-10-15T04:56:07Z",
+  "archived": false,
+  "license": null,
+  "language": "TypeScript",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "[疑似术语歧义:attendance] 教务(EAMS/正方/树维/强智)协议参考: React web application for employee and attendance management using the same Fire",
+  "matched_by": [
+   "repo_07.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Shuweis/shuweis.github.io",
+  "url": "https://github.com/Shuweis/shuweis.github.io",
+  "stars": 1,
+  "pushed_at": "2026-10-19T13:18:40Z",
+  "archived": false,
+  "license": null,
+  "language": "HTML",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: Shuwei Shi's Homepage",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "s5wang/s5wang.github.io",
+  "url": "https://github.com/s5wang/s5wang.github.io",
+  "stars": 1,
+  "pushed_at": "2026-10-08T13:55:12Z",
+  "archived": false,
+  "license": null,
+  "language": "TeX",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: Academic personal website for Shuwei Wang",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "he-shuwei/he-shuwei.github.io",
+  "url": "https://github.com/he-shuwei/he-shuwei.github.io",
+  "stars": 1,
+  "pushed_at": "2026-09-19T13:28:34Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "SCSS",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: he-shuwei.github.io",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "xgl1103/Shuwei-CUP",
+  "url": "https://github.com/xgl1103/Shuwei-CUP",
+  "stars": 1,
+  "pushed_at": "2026-09-13T08:10:39Z",
+  "archived": false,
+  "license": null,
+  "language": "Python",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: Shuwei-CUP",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "LLLfish/2026-ShuWei-Cup-IMMC-A-Q2",
+  "url": "https://github.com/LLLfish/2026-ShuWei-Cup-IMMC-A-Q2",
+  "stars": 1,
+  "pushed_at": "2026-05-25T10:55:06Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Python",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: 关于2026年第十一届数维杯大学生数学建模挑战赛（春季赛）A题第二问的思路与代码分享。",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Riyer4ever/2025SHUWEICUPAutumn",
+  "url": "https://github.com/Riyer4ever/2025SHUWEICUPAutumn",
+  "stars": 1,
+  "pushed_at": "2025-11-22T14:48:11Z",
+  "archived": false,
+  "license": "GPL-3.0",
+  "language": "Python",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: 2025SHUWEICUPAutumn",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "shuweic/shuweic",
+  "url": "https://github.com/shuweic/shuweic",
+  "stars": 1,
+  "pushed_at": "2025-11-06T21:34:38Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: shuweic",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Tai-Jing/ShuweiCup-2024",
+  "url": "https://github.com/Tai-Jing/ShuweiCup-2024",
+  "stars": 1,
+  "pushed_at": "2025-07-13T15:05:01Z",
+  "archived": false,
+  "license": null,
+  "language": "Jupyter Notebook",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: Shuwei Cup Mathematical Modeling Competition（2024 D）",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "fsfgrafb/tcp-over-websocket",
+  "url": "https://github.com/fsfgrafb/tcp-over-websocket",
+  "stars": 0,
+  "pushed_at": "1970-01-01T00:00:00Z",
+  "archived": null,
+  "license": null,
+  "language": null,
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Rust TCP over WebSocket 转发工具，用于通过 SZUT WebVPN 访问内网 TCP 服务。",
+  "matched_by": [
+   "code_04.json",
+   "code_09.json",
+   "repo_01.json"
+  ],
+  "key_code_hits": [
+   "src/client/auth.rs"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "FangZhangDev/zju-course-digest",
+  "url": "https://github.com/FangZhangDev/zju-course-digest",
+  "stars": 0,
+  "pushed_at": "2026-09-18T06:17:38Z",
+  "archived": false,
+  "license": "GPL-3.0",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: ZJU course auto-digest AI Agent Skill",
+  "matched_by": [
+   "code_04.json"
+  ],
+  "key_code_hits": [
+   "scripts/zju_webvpn.py"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "kaaass/jlu-webvpn-assistant",
+  "url": "https://github.com/kaaass/jlu-webvpn-assistant",
+  "stars": 0,
+  "pushed_at": "1970-01-01T00:00:00Z",
+  "archived": null,
+  "license": null,
+  "language": null,
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: A Tampermonkey script for better using JLU WebVPN",
+  "matched_by": [
+   "code_05.json",
+   "repoX_12.json"
+  ],
+  "key_code_hits": [
+   "src/logic/vpn/credentials.js"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "eWloYW8/ZJUWebVPN",
+  "url": "https://github.com/eWloYW8/ZJUWebVPN",
+  "stars": 0,
+  "pushed_at": "1970-01-01T00:00:00Z",
+  "archived": null,
+  "license": null,
+  "language": null,
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: A Python wrapper for accessing Zhejiang University WebVPN automatically. Compati",
+  "matched_by": [
+   "code_05.json",
+   "repoX_12.json"
+  ],
+  "key_code_hits": [
+   "ZJUWebVPN.py"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "liujiaqi7998/Clash.Meta_webvpn_pass",
+  "url": "https://github.com/liujiaqi7998/Clash.Meta_webvpn_pass",
+  "stars": 0,
+  "pushed_at": "1970-01-01T00:00:00Z",
+  "archived": null,
+  "license": null,
+  "language": null,
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 为Clash.Meta增加webvpn隧道代理",
+  "matched_by": [
+   "code_05.json",
+   "repoX_12.json"
+  ],
+  "key_code_hits": [
+   "component/webvpn/webvpn.go"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "MiracleHYH/EasyLife_XJTU",
+  "url": "https://github.com/MiracleHYH/EasyLife_XJTU",
+  "stars": 0,
+  "pushed_at": "2025-05-22T02:15:22Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: EasyLife_XJTU",
+  "matched_by": [
+   "code_05.json"
+  ],
+  "key_code_hits": [
+   "utils/webvpn.py"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "lNwNl/webvpn-proxy",
+  "url": "https://github.com/lNwNl/webvpn-proxy",
+  "stars": 0,
+  "pushed_at": "2026-05-15T13:18:19Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: webvpn-proxy",
+  "matched_by": [
+   "code_05.json"
+  ],
+  "key_code_hits": [
+   "webvpn_core.py"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "xiaobei97/wengine-vpn-decryptor",
+  "url": "https://github.com/xiaobei97/wengine-vpn-decryptor",
+  "stars": 0,
+  "pushed_at": "1970-01-01T00:00:00Z",
+  "archived": null,
+  "license": null,
+  "language": null,
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 一个专门用于解密东北大学等高校使用的 Wengine-VPN 系统加密 URL 的 Python 工具。本工具通过逆向分析 JavaScript 源代码，实现了",
+  "matched_by": [
+   "code_05.json",
+   "repo_02.json",
+   "repo_03.json"
+  ],
+  "key_code_hits": [
+   "README.md"
+  ],
+  "pc_entry_evidence": "无(NEU 校):wengine /https|/http-<port>/<hex>/ URL 结构解析器",
+  "login_form": "无登录实现,仅 URL 解密(AES-CFB,固定 key/iv)"
+ },
+ {
+  "repo": "IShiraiKurokoI/DLUTModernWebvpnBrowser",
+  "url": "https://github.com/IShiraiKurokoI/DLUTModernWebvpnBrowser",
+  "stars": 0,
+  "pushed_at": "1970-01-01T00:00:00Z",
+  "archived": null,
+  "license": null,
+  "language": null,
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 大连理工大学webvpn浏览器",
+  "matched_by": [
+   "code_05.json",
+   "repoX_12.json"
+  ],
+  "key_code_hits": [
+   "DLUTModernWebvpnBrowser/Pages/WebViewPage.xaml.cs"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "zymooll/Better-Sicau",
+  "url": "https://github.com/zymooll/Better-Sicau",
+  "stars": 0,
+  "pushed_at": "2026-07-21T12:35:04Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Better-Sicau",
+  "matched_by": [
+   "code_05.json",
+   "code_09.json"
+  ],
+  "key_code_hits": [
+   "webvpn_jiaowu_technical_logic.md"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "liyue983/nankai-webvpn",
+  "url": "https://github.com/liyue983/nankai-webvpn",
+  "stars": 0,
+  "pushed_at": "1970-01-01T00:00:00Z",
+  "archived": null,
+  "license": null,
+  "language": null,
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: nankai-webvpn",
+  "matched_by": [
+   "code_05.json",
+   "repoX_12.json"
+  ],
+  "key_code_hits": [
+   "webvpn.py"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "CrackTC/jlu_cas",
+  "url": "https://github.com/CrackTC/jlu_cas",
+  "stars": 0,
+  "pushed_at": "2024-09-03T08:26:26Z",
+  "archived": false,
+  "license": null,
+  "language": "TypeScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: JLU WebVPN CAS Authentication Example",
+  "matched_by": [
+   "code_09.json"
+  ],
+  "key_code_hits": [
+   "main.ts"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "rendi25-ui/webvpn",
+  "url": "https://github.com/rendi25-ui/webvpn",
+  "stars": 0,
+  "pushed_at": "2025-12-05T13:24:52Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: webvpn",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "harry1080/WebVPN-Intranet-Website-Survival-Detection-Demo",
+  "url": "https://github.com/harry1080/WebVPN-Intranet-Website-Survival-Detection-Demo",
+  "stars": 0,
+  "pushed_at": "2022-05-09T15:29:59Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 一个用于深信服 WebVPN 内网网站存活探测的 Demo",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "zaid-prince/vpnweb",
+  "url": "https://github.com/zaid-prince/vpnweb",
+  "stars": 0,
+  "pushed_at": "2026-01-21T21:47:40Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: webvpn",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "egorfilatov523-netizen/webvpn3",
+  "url": "https://github.com/egorfilatov523-netizen/webvpn3",
+  "stars": 0,
+  "pushed_at": "2026-05-21T20:35:06Z",
+  "archived": false,
+  "license": null,
+  "language": "HTML",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: webvpn3",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "egorfilatov523-netizen/webvpn5",
+  "url": "https://github.com/egorfilatov523-netizen/webvpn5",
+  "stars": 0,
+  "pushed_at": "2026-05-23T09:24:37Z",
+  "archived": false,
+  "license": null,
+  "language": "HTML",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: webvpn5",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "egorfilatov523-netizen/webvpn4",
+  "url": "https://github.com/egorfilatov523-netizen/webvpn4",
+  "stars": 0,
+  "pushed_at": "2026-05-22T19:34:21Z",
+  "archived": false,
+  "license": null,
+  "language": "HTML",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: webvpn4",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "123456lj7q/Jsoup-Android-Timetable",
+  "url": "https://github.com/123456lj7q/Jsoup-Android-Timetable",
+  "stars": 0,
+  "pushed_at": "2022-12-14T14:03:10Z",
+  "archived": false,
+  "license": null,
+  "language": "Java",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: 这是一个兼容正方教务系统的网页解析器，用于开发安卓移动端的高校课程表，并用以实现类似超级课程表的效果",
+  "matched_by": [
+   "repoY_06.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Zhanhao-liu/doi-fetch",
+  "url": "https://github.com/Zhanhao-liu/doi-fetch",
+  "stars": 0,
+  "pushed_at": "2026-10-26T01:21:41Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: ??? DOI,???????? PDF ?????;???? WebVPN ?????????????Zotero ??",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "noahvogt/openconnect-ms-auth",
+  "url": "https://github.com/noahvogt/openconnect-ms-auth",
+  "stars": 0,
+  "pushed_at": "2026-10-26T00:40:43Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Fetch an openconnect webvpn cookie from an MFA enabled Microsoft account",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "LCBRST/WebVPN",
+  "url": "https://github.com/LCBRST/WebVPN",
+  "stars": 0,
+  "pushed_at": "2026-10-21T19:36:25Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Go",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: A WebVPN based on Cloudflare",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "SwufeFox/swufe-cnki",
+  "url": "https://github.com/SwufeFox/swufe-cnki",
+  "stars": 0,
+  "pushed_at": "2026-10-21T12:16:24Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 通过西南财经大学 WebVPN 检索 / 下载 CNKI（知网）文献的命令行工具，面向 AI / agent 使用。",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Antigen-1/webvpn-server",
+  "url": "https://github.com/Antigen-1/webvpn-server",
+  "stars": 0,
+  "pushed_at": "2026-10-20T11:40:26Z",
+  "archived": false,
+  "license": "NOASSERTION",
+  "language": "Racket",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: webvpn-server",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "ezlife/allow-paste-on-chaoxing",
+  "url": "https://github.com/ezlife/allow-paste-on-chaoxing",
+  "stars": 0,
+  "pushed_at": "2026-10-19T12:21:12Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 绕过超星 UEditor 答题框的粘贴拦截，支持校内 WebVPN 代理环境，针对重庆科技大学设置。",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "0xnullsect0r/webvpn",
+  "url": "https://github.com/0xnullsect0r/webvpn",
+  "stars": 0,
+  "pushed_at": "2026-10-14T18:32:54Z",
+  "archived": false,
+  "license": "AGPL-3.0",
+  "language": "TypeScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: webvpn",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "sqlalala9-jpg/ultimate-literature-pdf-fetch",
+  "url": "https://github.com/sqlalala9-jpg/ultimate-literature-pdf-fetch",
+  "stars": 0,
+  "pushed_at": "2026-10-12T15:03:18Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 文献 PDF 下载终极版技能：OA/出版商/浏览器/机构 WebVPN/知网 多通道批量取 PDF，含校验与交付规范。机构与中文通道默认未知，启用时前置询问。",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "zizhangla/fudan-fulltext-skill",
+  "url": "https://github.com/zizhangla/fudan-fulltext-skill",
+  "stars": 0,
+  "pushed_at": "2026-10-11T15:13:42Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Codex skill for legitimate Fudan institutional fulltext access: CARSI first, Web",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "ketanvpn/webvpn",
+  "url": "https://github.com/ketanvpn/webvpn",
+  "stars": 0,
+  "pushed_at": "2026-10-02T12:47:37Z",
+  "archived": false,
+  "license": null,
+  "language": "TypeScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: app web untuk vpn potato script",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "cherrchen/swufe-webvpn-codec",
+  "url": "https://github.com/cherrchen/swufe-webvpn-codec",
+  "stars": 0,
+  "pushed_at": "2026-10-02T10:50:44Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "TypeScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: swufe-webvpn-codec",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "fancywindy/neuq-metalib-access",
+  "url": "https://github.com/fancywindy/neuq-metalib-access",
+  "stars": 0,
+  "pushed_at": "2026-10-01T12:44:15Z",
+  "archived": false,
+  "license": null,
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 东北大学秦皇岛分校校园WebVPN混合接力检索skill：复用真实登录态查171个MetaLib库（知网/万方/WOS/Scopus/SciFinder/中外专",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "sansssssss1/hhu-vpn-agent",
+  "url": "https://github.com/sansssssss1/hhu-vpn-agent",
+  "stars": 0,
+  "pushed_at": "2026-10-01T03:07:33Z",
+  "archived": false,
+  "license": "NOASSERTION",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 河海大学校园网自动登录 + 学校 WebVPN 文献数据库接入（ScienceDirect/知网等）；核心可独立运行，agent 联动为可选",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "HMS-Victoria/paper-finder",
+  "url": "https://github.com/HMS-Victoria/paper-finder",
+  "stars": 0,
+  "pushed_at": "2026-09-21T03:07:08Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Windows 学术论文检索与下载助手，支持多源搜索、模糊匹配、引用复制及华东师大 WebVPN。",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "qwasd7680/nbt-cal-export",
+  "url": "https://github.com/qwasd7680/nbt-cal-export",
+  "stars": 0,
+  "pushed_at": "2026-09-19T18:24:59Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Go",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Go CLI for NBT personal timetable ICS export, supporting campus JWXT and WebVPN.",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "bourdenarthur4-cyber/webvpn",
+  "url": "https://github.com/bourdenarthur4-cyber/webvpn",
+  "stars": 0,
+  "pushed_at": "2026-09-19T07:08:41Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Mon terminal Libux",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "guoPhineas/WRD-WengineVPN-Proxy-Converter-App",
+  "url": "https://github.com/guoPhineas/WRD-WengineVPN-Proxy-Converter-App",
+  "stars": 0,
+  "pushed_at": "2026-09-13T11:23:35Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Swift",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Convert WRD-WebVPN to VPN on iOS/macOS",
+  "matched_by": [
+   "repo_01.json",
+   "repo_02.json",
+   "repo_03.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "guoPhineas/WRD-WengineVPN-Proxy-Converter",
+  "url": "https://github.com/guoPhineas/WRD-WengineVPN-Proxy-Converter",
+  "stars": 0,
+  "pushed_at": "2026-09-13T10:40:09Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Convert WRD-WebVPN to http proxy.",
+  "matched_by": [
+   "repo_01.json",
+   "repo_02.json",
+   "repo_03.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "wy723161060/neuq-classroom-query",
+  "url": "https://github.com/wy723161060/neuq-classroom-query",
+  "stars": 0,
+  "pushed_at": "2026-09-11T09:19:03Z",
+  "archived": false,
+  "license": null,
+  "language": "Rust",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 东北大学秦皇岛分校（NEUQ）空闲教室总表（非官方）— GitHub Actions 每小时经 WebVPN 统一认证抓取教务空教室，直传 Cloudflare",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "KaranocaVe/uestc-webvpn-redirector-userscript",
+  "url": "https://github.com/KaranocaVe/uestc-webvpn-redirector-userscript",
+  "stars": 0,
+  "pushed_at": "2026-09-04T08:32:37Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Tampermonkey userscript for automatic UESTC WebVPN redirection",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "wangxuanooi/webvpn",
+  "url": "https://github.com/wangxuanooi/webvpn",
+  "stars": 0,
+  "pushed_at": "2026-08-12T04:44:57Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 自己写的基于python的webvpn，能够智能改写，但有几个问题解决不了，希望参考的人能够帮助一下。",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "LyuFG1999/xjtu-webvpn-extension",
+  "url": "https://github.com/LyuFG1999/xjtu-webvpn-extension",
+  "stars": 0,
+  "pushed_at": "2026-08-05T06:17:50Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 校外自动跳转 XJTU WebVPN 的浏览器扩展(MV3):可配置域名/正则接入规则,自动探测直连,无需 Python、mitmproxy 与根证书",
+  "matched_by": [
+   "repo_01.json",
+   "repo_04.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "JudeScarbrough/WebVPN",
+  "url": "https://github.com/JudeScarbrough/WebVPN",
+  "stars": 0,
+  "pushed_at": "2026-07-26T19:18:06Z",
+  "archived": false,
+  "license": null,
+  "language": "TypeScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: WebVPN",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Tianyvli/SCUTScoreChecker",
+  "url": "https://github.com/Tianyvli/SCUTScoreChecker",
+  "stars": 0,
+  "pushed_at": "2026-07-23T14:34:37Z",
+  "archived": false,
+  "license": null,
+  "language": "C#",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 华南理工大学成绩定时查询 Windows 桌面应用，支持校园网直连与 WebVPN 自动切换。",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "mcitem/webvpn-converter",
+  "url": "https://github.com/mcitem/webvpn-converter",
+  "stars": 0,
+  "pushed_at": "2026-07-15T17:29:09Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Rust",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Wrd WebVPN Converter for Rust (lnu CSVPN)",
+  "matched_by": [
+   "repo_01.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Fake-Oxygen/Wengine",
+  "url": "https://github.com/Fake-Oxygen/Wengine",
+  "stars": 0,
+  "pushed_at": "2026-10-25T18:32:45Z",
+  "archived": false,
+  "license": null,
+  "language": "C++",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Wengine",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "WWWalenok/WEngine-v1",
+  "url": "https://github.com/WWWalenok/WEngine-v1",
+  "stars": 0,
+  "pushed_at": "2026-10-23T16:38:20Z",
+  "archived": false,
+  "license": null,
+  "language": "C++",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: WEngine-v1",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "WildanDeveloper/WEngine",
+  "url": "https://github.com/WildanDeveloper/WEngine",
+  "stars": 0,
+  "pushed_at": "2026-09-24T11:37:49Z",
+  "archived": false,
+  "license": null,
+  "language": "Rust",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Blazing-fast CPU-first AI Engine in Rust + C++ AVX-512 by WildanDev",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "bwally0/wengine",
+  "url": "https://github.com/bwally0/wengine",
+  "stars": 0,
+  "pushed_at": "2026-08-16T18:23:13Z",
+  "archived": false,
+  "license": null,
+  "language": "C++",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: wengine",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "LUISDASARTIMANHAS/WEngine",
+  "url": "https://github.com/LUISDASARTIMANHAS/WEngine",
+  "stars": 0,
+  "pushed_at": "2026-08-08T02:55:11Z",
+  "archived": false,
+  "license": "GPL-3.0",
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Motor de jogo 2/3D para navegador, desenvolvido em JavaScript com foco em simpli",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "btunaq/StudyWEngine",
+  "url": "https://github.com/btunaq/StudyWEngine",
+  "stars": 0,
+  "pushed_at": "2026-08-05T21:37:35Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Wallpaper engine para uma área de trabalho interativa focada em anotações de est",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "ZYTEric/BUU-WebVPN-Convertor",
+  "url": "https://github.com/ZYTEric/BUU-WebVPN-Convertor",
+  "stars": 0,
+  "pushed_at": "2026-06-20T16:18:37Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: 北京网瑞达 Wengine SSL VPN 的 URL 加密/解密工具，本脚本以BUU（北京联合大学）为例来演示。",
+  "matched_by": [
+   "repo_02.json",
+   "repo_03.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "3-Tian/zju-paper-fetcher",
+  "url": "https://github.com/3-Tian/zju-paper-fetcher",
+  "stars": 0,
+  "pushed_at": "2026-06-15T15:47:44Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Give it a DOI: download papers you have legitimate access to through ZJU (wengin",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "StevenWin818/wenginetunnel",
+  "url": "https://github.com/StevenWin818/wenginetunnel",
+  "stars": 0,
+  "pushed_at": "2026-06-02T17:04:14Z",
+  "archived": false,
+  "license": "MPL-2.0",
+  "language": "Go",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: WEngineTunnel (webvpn2ssl) 是一款专为桂林电子科技大学 (GUET) 定制开发的 Android 端 VPN 与透明代理客户端。",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无(GUET 校):原生 wengine+CAS 全链,门户登录后经 /https/<hex>/ 代理访问校内 PC 系统,形态与 NBCC 门户桌面版一致",
+  "login_form": "原生 CAS:GET 登录页取 execution/pwdEncryptSalt,AES-128-CBC(64位随机前缀+密码)后 POST,判 wengine_vpn_ticket cookie;含 BFP 指纹与短信 MFA"
+ },
+ {
+  "repo": "laurenttossy214-stack/courses-offered-",
+  "url": "https://github.com/laurenttossy214-stack/courses-offered-",
+  "stars": 0,
+  "pushed_at": "2026-05-01T23:04:35Z",
+  "archived": false,
+  "license": null,
+  "language": "HTML",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: JIFUNZE ILI UKUE NA KUWA MSAADA KWA WENGINE",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "CodingYoda1/wengine",
+  "url": "https://github.com/CodingYoda1/wengine",
+  "stars": 0,
+  "pushed_at": "2026-04-21T18:42:57Z",
+  "archived": false,
+  "license": "Apache-2.0",
+  "language": "Java",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: wengine",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "DumbLua/WEngine",
+  "url": "https://github.com/DumbLua/WEngine",
+  "stars": 0,
+  "pushed_at": "2026-04-14T20:19:50Z",
+  "archived": false,
+  "license": null,
+  "language": "Lua",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Não pode se considerar uma engine",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "alxschneider/WoWEngineS-andbox",
+  "url": "https://github.com/alxschneider/WoWEngineS-andbox",
+  "stars": 0,
+  "pushed_at": "2026-04-05T17:15:45Z",
+  "archived": false,
+  "license": null,
+  "language": "C#",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: WoWEngineS-andbox",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "kavislavis/wengine",
+  "url": "https://github.com/kavislavis/wengine",
+  "stars": 0,
+  "pushed_at": "2026-04-04T01:22:43Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: wengine",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "chillindylan8/WEngine5",
+  "url": "https://github.com/chillindylan8/WEngine5",
+  "stars": 0,
+  "pushed_at": "2026-03-18T16:40:36Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "[疑似术语歧义:game engine,unity] WebVPN 登录/URL 加解密参考: WEngine5 — A Unity-Like C++ Game Engine IDE",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "benedictononga2000-cloud/fbn-schools",
+  "url": "https://github.com/benedictononga2000-cloud/fbn-schools",
+  "stars": 0,
+  "pushed_at": "2026-03-12T15:31:13Z",
+  "archived": false,
+  "license": "Apache-2.0",
+  "language": null,
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: iweze kutumza taarifa za wanafunzi na wfanyakazi wengine zaidi ya 4000 pia iwe. ",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Willixxm/WEngine-Xenon",
+  "url": "https://github.com/Willixxm/WEngine-Xenon",
+  "stars": 0,
+  "pushed_at": "2026-02-28T11:36:15Z",
+  "archived": false,
+  "license": null,
+  "language": "C",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "[疑似术语歧义:game engine] WebVPN 登录/URL 加解密参考: Xenon clone with Custom game engine",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "twhaleydev/wengine",
+  "url": "https://github.com/twhaleydev/wengine",
+  "stars": 0,
+  "pushed_at": "2026-02-06T00:41:31Z",
+  "archived": false,
+  "license": null,
+  "language": "C#",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: wengine",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "NH2-2710/CEN2010---Software-Wengineering-I---Final-Project",
+  "url": "https://github.com/NH2-2710/CEN2010---Software-Wengineering-I---Final-Project",
+  "stars": 0,
+  "pushed_at": "2026-02-03T03:30:52Z",
+  "archived": false,
+  "license": null,
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Final project",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "edgeservotec/PoWEngine",
+  "url": "https://github.com/edgeservotec/PoWEngine",
+  "stars": 0,
+  "pushed_at": "2025-11-09T07:41:35Z",
+  "archived": false,
+  "license": "Apache-2.0",
+  "language": null,
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: # A Tool for Instant Block",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "weezard12/WEngineTiles",
+  "url": "https://github.com/weezard12/WEngineTiles",
+  "stars": 0,
+  "pushed_at": "2025-09-28T09:05:21Z",
+  "archived": false,
+  "license": null,
+  "language": "C#",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: WEngineTiles",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "jarenm1/wengine",
+  "url": "https://github.com/jarenm1/wengine",
+  "stars": 0,
+  "pushed_at": "2025-09-27T04:13:04Z",
+  "archived": false,
+  "license": null,
+  "language": "Rust",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: wengine",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "superglubglub/wengine",
+  "url": "https://github.com/superglubglub/wengine",
+  "stars": 0,
+  "pushed_at": "2025-07-25T19:42:19Z",
+  "archived": false,
+  "license": null,
+  "language": "Python",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: wengine",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "canon1002/WEngine",
+  "url": "https://github.com/canon1002/WEngine",
+  "stars": 0,
+  "pushed_at": "2025-07-16T02:26:34Z",
+  "archived": false,
+  "license": null,
+  "language": "C++",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: WEngine",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "JustaCakedUpGnome/WoWEngineTrial",
+  "url": "https://github.com/JustaCakedUpGnome/WoWEngineTrial",
+  "stars": 0,
+  "pushed_at": "2025-06-06T20:08:32Z",
+  "archived": false,
+  "license": null,
+  "language": "Makefile",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: WoWEngineTrial",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "WiseMrMusa/wengine",
+  "url": "https://github.com/WiseMrMusa/wengine",
+  "stars": 0,
+  "pushed_at": "2025-05-18T15:43:22Z",
+  "archived": false,
+  "license": null,
+  "language": "TypeScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: wengine",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "emiljapelt/wengine",
+  "url": "https://github.com/emiljapelt/wengine",
+  "stars": 0,
+  "pushed_at": "2025-05-15T15:03:29Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: wengine",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "W1LTOFF/Wengine",
+  "url": "https://github.com/W1LTOFF/Wengine",
+  "stars": 0,
+  "pushed_at": "2025-05-01T21:41:02Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: Wengine",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Alpagateau/wengine",
+  "url": "https://github.com/Alpagateau/wengine",
+  "stars": 0,
+  "pushed_at": "2025-04-01T21:56:23Z",
+  "archived": false,
+  "license": null,
+  "language": "C++",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: You may never know",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "StudioWEngineers/StudioWEngineers.github.io",
+  "url": "https://github.com/StudioWEngineers/StudioWEngineers.github.io",
+  "stars": 0,
+  "pushed_at": "2025-01-10T19:12:53Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: StudioWEngineers.github.io",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "W1LTOFF/wengine-old",
+  "url": "https://github.com/W1LTOFF/wengine-old",
+  "stars": 0,
+  "pushed_at": "2024-11-20T14:36:31Z",
+  "archived": false,
+  "license": null,
+  "language": "C++",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: wengine-old",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Wedsonsystem/wenginestudio",
+  "url": "https://github.com/Wedsonsystem/wenginestudio",
+  "stars": 0,
+  "pushed_at": "2024-11-06T00:21:52Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: wenginestudio",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "mrn2929/wengine",
+  "url": "https://github.com/mrn2929/wengine",
+  "stars": 0,
+  "pushed_at": "2024-07-29T04:06:13Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: wengine",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "BlackdBlook/wEngine",
+  "url": "https://github.com/BlackdBlook/wEngine",
+  "stars": 0,
+  "pushed_at": "2024-06-11T01:10:45Z",
+  "archived": false,
+  "license": null,
+  "language": "TypeScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: wEngine",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "VL1ry/eXIxbi5WEngineeXIxbi5WEngineeXIxbi5WEngine",
+  "url": "https://github.com/VL1ry/eXIxbi5WEngineeXIxbi5WEngineeXIxbi5WEngine",
+  "stars": 0,
+  "pushed_at": "2024-05-07T09:12:11Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: eXIxbi5W Engine",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "BrianoFelps/ProjetoWEngine",
+  "url": "https://github.com/BrianoFelps/ProjetoWEngine",
+  "stars": 0,
+  "pushed_at": "2024-03-11T18:45:16Z",
+  "archived": false,
+  "license": null,
+  "language": "HTML",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: ProjetoWEngine",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "thakhani2/wengine",
+  "url": "https://github.com/thakhani2/wengine",
+  "stars": 0,
+  "pushed_at": "2023-10-11T13:03:40Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "WebVPN 登录/URL 加解密参考: wengine",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "wenjinghuan999/wengine",
+  "url": "https://github.com/wenjinghuan999/wengine",
+  "stars": 0,
+  "pushed_at": "2023-09-30T03:40:47Z",
+  "archived": false,
+  "license": "GPL-3.0",
+  "language": "C++",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "[疑似术语歧义:game engine] WebVPN 登录/URL 加解密参考: A toy game engine based on Vulkan.",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "NysoS/wengine-npm-package",
+  "url": "https://github.com/NysoS/wengine-npm-package",
+  "stars": 0,
+  "pushed_at": "2023-07-07T07:56:32Z",
+  "archived": false,
+  "license": "GPL-3.0",
+  "language": "TypeScript",
+  "tags": [
+   "webvpn"
+  ],
+  "relevance": "[疑似术语歧义:game engine] WebVPN 登录/URL 加解密参考: Web game engine",
+  "matched_by": [
+   "repo_02.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "api-evangelist/maintainx",
+  "url": "https://github.com/api-evangelist/maintainx",
+  "stars": 0,
+  "pushed_at": "2026-10-26T04:57:51Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: MaintainX — independent third-party profile of a public API surface, by API Evan",
+  "matched_by": [
+   "repo_07.json",
+   "repo_20.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Alifakbr/EAMS",
+  "url": "https://github.com/Alifakbr/EAMS",
+  "stars": 0,
+  "pushed_at": "2026-10-25T16:36:42Z",
+  "archived": false,
+  "license": null,
+  "language": "TypeScript",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: EAMS",
+  "matched_by": [
+   "repo_07.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "shenni-xiaodanta/eams",
+  "url": "https://github.com/shenni-xiaodanta/eams",
+  "stars": 0,
+  "pushed_at": "2026-10-25T14:18:25Z",
+  "archived": false,
+  "license": null,
+  "language": "Python",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: eams",
+  "matched_by": [
+   "repo_07.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "jamua6707-arch/EAMS",
+  "url": "https://github.com/jamua6707-arch/EAMS",
+  "stars": 0,
+  "pushed_at": "2026-10-25T11:55:59Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: EAMS",
+  "matched_by": [
+   "repo_07.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "xr6733/eams",
+  "url": "https://github.com/xr6733/eams",
+  "stars": 0,
+  "pushed_at": "2026-10-25T09:49:10Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: eams",
+  "matched_by": [
+   "repo_07.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "omar1111eamsa/omar1111eamsa",
+  "url": "https://github.com/omar1111eamsa/omar1111eamsa",
+  "stars": 0,
+  "pushed_at": "2026-10-25T03:56:22Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: My GitHub profile README — DevOps / DevSecOps & Platform Engineer (GitOps, Kuber",
+  "matched_by": [
+   "repo_07.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "thai-eams/thai-eams.github.io",
+  "url": "https://github.com/thai-eams/thai-eams.github.io",
+  "stars": 0,
+  "pushed_at": "2026-10-24T20:11:37Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "HTML",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: Thai ElectroAcoustic Music Society (TEAMS) Official Site",
+  "matched_by": [
+   "repo_07.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "TiZER1908/EAMSystem",
+  "url": "https://github.com/TiZER1908/EAMSystem",
+  "stars": 0,
+  "pushed_at": "2026-10-24T15:01:30Z",
+  "archived": false,
+  "license": null,
+  "language": "Vue",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: EAMSystem",
+  "matched_by": [
+   "repo_07.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "MilLoong/UESTC-EAMS-Helper-Server",
+  "url": "https://github.com/MilLoong/UESTC-EAMS-Helper-Server",
+  "stars": 0,
+  "pushed_at": "2026-10-24T07:55:37Z",
+  "archived": false,
+  "license": null,
+  "language": "Python",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: UESTC 教务系统助手，服务端",
+  "matched_by": [
+   "repo_07.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "cvreyes1002/Projects-EAMS",
+  "url": "https://github.com/cvreyes1002/Projects-EAMS",
+  "stars": 0,
+  "pushed_at": "2026-10-24T07:37:53Z",
+  "archived": false,
+  "license": null,
+  "language": "TypeScript",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "[疑似术语歧义:attendance] 教务(EAMS/正方/树维/强智)协议参考: Employee Attendance Management System",
+  "matched_by": [
+   "repo_07.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "gdytch/eams-back-end",
+  "url": "https://github.com/gdytch/eams-back-end",
+  "stars": 0,
+  "pushed_at": "2026-10-23T12:38:37Z",
+  "archived": false,
+  "license": null,
+  "language": "PHP",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "[疑似术语歧义:attendance] 教务(EAMS/正方/树维/强智)协议参考: SEPUM Event Attendance Management System",
+  "matched_by": [
+   "repo_07.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "palantalashreya/EAMS",
+  "url": "https://github.com/palantalashreya/EAMS",
+  "stars": 0,
+  "pushed_at": "2026-10-22T07:41:05Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: Exhaled-Ammonia-Monitoring-System",
+  "matched_by": [
+   "repo_07.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "jackyqiubao1-jpg/eamstream",
+  "url": "https://github.com/jackyqiubao1-jpg/eamstream",
+  "stars": 0,
+  "pushed_at": "2026-10-21T17:02:54Z",
+  "archived": false,
+  "license": null,
+  "language": "HTML",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: EAMStream — IBM Maximo / EAM technical blog (Hugo + PaperMod)",
+  "matched_by": [
+   "repo_07.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "genusitsolution-ops/eams",
+  "url": "https://github.com/genusitsolution-ops/eams",
+  "stars": 0,
+  "pushed_at": "2026-10-17T16:39:37Z",
+  "archived": false,
+  "license": null,
+  "language": "Kotlin",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: eams",
+  "matched_by": [
+   "repo_07.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Pranjal-negi24/Emergency-Ambulance-Management-System-EAMS-",
+  "url": "https://github.com/Pranjal-negi24/Emergency-Ambulance-Management-System-EAMS-",
+  "stars": 0,
+  "pushed_at": "2026-10-17T02:19:51Z",
+  "archived": false,
+  "license": null,
+  "language": "C++",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: The Emergency Ambulance Management System (EAMS) is a C++17-based project design",
+  "matched_by": [
+   "repo_07.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "haobakoya/glo-eams-mobile",
+  "url": "https://github.com/haobakoya/glo-eams-mobile",
+  "stars": 0,
+  "pushed_at": "2026-10-15T09:06:07Z",
+  "archived": false,
+  "license": null,
+  "language": "Dart",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "[疑似术语歧义:attendance] 教务(EAMS/正方/树维/强智)协议参考: GLO Enterprise Attendance Management Systems",
+  "matched_by": [
+   "repo_07.json",
+   "repo_20.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Soirmoreover1/EAMS5",
+  "url": "https://github.com/Soirmoreover1/EAMS5",
+  "stars": 0,
+  "pushed_at": "2024-06-13T11:29:51Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: EAMS5",
+  "matched_by": [
+   "repo_08.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "VerseXuShuwei/VerseXuShuwei",
+  "url": "https://github.com/VerseXuShuwei/VerseXuShuwei",
+  "stars": 0,
+  "pushed_at": "2026-10-26T02:53:07Z",
+  "archived": false,
+  "license": null,
+  "language": "Python",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: VerseXuShuwei",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Shuwei-Goat/Shuwei-Goat",
+  "url": "https://github.com/Shuwei-Goat/Shuwei-Goat",
+  "stars": 0,
+  "pushed_at": "2026-10-25T07:41:45Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: Shuwei-Goat",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "shuwei-zhao/shuwei-zhao.github.io",
+  "url": "https://github.com/shuwei-zhao/shuwei-zhao.github.io",
+  "stars": 0,
+  "pushed_at": "2026-10-23T12:53:17Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "HTML",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: Personal academic homepage for Shuwei Zhao",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Phoenix1996/shuweibing",
+  "url": "https://github.com/Phoenix1996/shuweibing",
+  "stars": 0,
+  "pushed_at": "2026-10-12T11:38:26Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "C++",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: Netease onmyoji windows clients manager",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "shuwei12/shuwei12.github.io",
+  "url": "https://github.com/shuwei12/shuwei12.github.io",
+  "stars": 0,
+  "pushed_at": "2026-10-03T15:13:37Z",
+  "archived": false,
+  "license": null,
+  "language": "HTML",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: shuwei12.github.io",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "shuweiji085-byte/shuweiji085",
+  "url": "https://github.com/shuweiji085-byte/shuweiji085",
+  "stars": 0,
+  "pushed_at": "2026-09-29T02:41:16Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: shuweiji085",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "xushuwei281/SC2079-Group-16-",
+  "url": "https://github.com/xushuwei281/SC2079-Group-16-",
+  "stars": 0,
+  "pushed_at": "2026-09-28T10:03:56Z",
+  "archived": false,
+  "license": null,
+  "language": "C",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: Shuwei's duplicate",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "spellbookrz/Shuwei_Zhou_Homepage",
+  "url": "https://github.com/spellbookrz/Shuwei_Zhou_Homepage",
+  "stars": 0,
+  "pushed_at": "2026-10-25T12:57:47Z",
+  "archived": false,
+  "license": null,
+  "language": "SCSS",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: The latest academic homepage for Shuwei Zhou",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "shuwei1004/shuwei-s-repository",
+  "url": "https://github.com/shuwei1004/shuwei-s-repository",
+  "stars": 0,
+  "pushed_at": "2026-09-20T13:11:43Z",
+  "archived": false,
+  "license": null,
+  "language": "Lua",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: There are many useful tools in this repository",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Agoin-314260/XiaoAi-timetable-adapted-for-Shuwei-education-management-system-import",
+  "url": "https://github.com/Agoin-314260/XiaoAi-timetable-adapted-for-Shuwei-education-management-system-import",
+  "stars": 0,
+  "pushed_at": "2026-09-16T06:03:45Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: 可以解决树维系统在手机显示的课程表问题，基于已死的官方导入适配小爱伴侣",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "syzlm2001/shuwei-mathematical-modeling",
+  "url": "https://github.com/syzlm2001/shuwei-mathematical-modeling",
+  "stars": 0,
+  "pushed_at": "2026-09-04T03:26:06Z",
+  "archived": false,
+  "license": null,
+  "language": "Python",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: shuwei-mathematical-modeling",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "ShuweiShao/ShuweiShao.github.io",
+  "url": "https://github.com/ShuweiShao/ShuweiShao.github.io",
+  "stars": 0,
+  "pushed_at": "2026-09-01T17:12:36Z",
+  "archived": false,
+  "license": null,
+  "language": "HTML",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: Academic homepage of Shuwei Shao, NTU MARS Lab.",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Jamswit/CV",
+  "url": "https://github.com/Jamswit/CV",
+  "stars": 0,
+  "pushed_at": "2026-08-10T09:35:04Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: Resume of Shuwei Zhang",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Shuwei-Song/Shuwei-Song.github.io",
+  "url": "https://github.com/Shuwei-Song/Shuwei-Song.github.io",
+  "stars": 0,
+  "pushed_at": "2026-07-30T09:06:11Z",
+  "archived": false,
+  "license": null,
+  "language": "HTML",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: Shuwei-Song.github.io",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "dsw-jlu-rgzn/shuwei-homepage",
+  "url": "https://github.com/dsw-jlu-rgzn/shuwei-homepage",
+  "stars": 0,
+  "pushed_at": "2026-07-01T02:48:24Z",
+  "archived": false,
+  "license": null,
+  "language": "HTML",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: shuwei-homepage",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "luckycyong/shuwei-hotpot",
+  "url": "https://github.com/luckycyong/shuwei-hotpot",
+  "stars": 0,
+  "pushed_at": "2026-05-29T18:13:04Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: 火锅门店自助点餐微信小程序",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "shuwei777/shuweiart",
+  "url": "https://github.com/shuwei777/shuweiart",
+  "stars": 0,
+  "pushed_at": "2026-05-28T13:12:26Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: shuweiart",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "wangkai-tech23/DSMI-Dynamic-Sparse-Model-Inversion-",
+  "url": "https://github.com/wangkai-tech23/DSMI-Dynamic-Sparse-Model-Inversion-",
+  "stars": 0,
+  "pushed_at": "2026-05-15T03:09:01Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: Shuwei Zhang",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "yuki9984/shuweiyuedong",
+  "url": "https://github.com/yuki9984/shuweiyuedong",
+  "stars": 0,
+  "pushed_at": "2026-05-10T11:48:40Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: shuweiyuedong",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "HLL007007/2026shuweibei",
+  "url": "https://github.com/HLL007007/2026shuweibei",
+  "stars": 0,
+  "pushed_at": "2026-05-09T13:06:36Z",
+  "archived": false,
+  "license": null,
+  "language": "Jupyter Notebook",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: 2026shuweibei",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "fatemeeting/SHUWEI",
+  "url": "https://github.com/fatemeeting/SHUWEI",
+  "stars": 0,
+  "pushed_at": "2026-05-09T11:01:22Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: classifying of multiple types of files",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "shu-102/shuweibin",
+  "url": "https://github.com/shu-102/shuweibin",
+  "stars": 0,
+  "pushed_at": "2026-05-08T23:28:02Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: shuweibin",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "xijunyuan/SHUWEI-CUP-2026-5",
+  "url": "https://github.com/xijunyuan/SHUWEI-CUP-2026-5",
+  "stars": 0,
+  "pushed_at": "2026-05-08T17:29:13Z",
+  "archived": false,
+  "license": "MIT",
+  "language": null,
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: This repository is created for shuwei cup, containing the codes needed.",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "xdz997/shuweibei",
+  "url": "https://github.com/xdz997/shuweibei",
+  "stars": 0,
+  "pushed_at": "2026-05-08T01:56:30Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: shuweibei",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "971851309/shuwei-cup-modeling",
+  "url": "https://github.com/971851309/shuwei-cup-modeling",
+  "stars": 0,
+  "pushed_at": "2026-04-09T11:59:53Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: Portfolio: 数维杯",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "shuge-x/shuweisi-website",
+  "url": "https://github.com/shuge-x/shuweisi-website",
+  "stars": 0,
+  "pushed_at": "2026-02-17T05:23:43Z",
+  "archived": false,
+  "license": null,
+  "language": "Shell",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: 术维斯1号个人介绍网站 - AI朋友与助手",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "shuweiivywang/shuweiivywang.github.io",
+  "url": "https://github.com/shuweiivywang/shuweiivywang.github.io",
+  "stars": 0,
+  "pushed_at": "2026-01-25T00:20:00Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "HTML",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: portfolio",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "shuwei0225/shuwei0225.github.io",
+  "url": "https://github.com/shuwei0225/shuwei0225.github.io",
+  "stars": 0,
+  "pushed_at": "2025-12-18T00:41:26Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "CSS",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: professional-portfolio",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Gao-Kai-Zhi/Group7_VR_Exhibition_of_SHUWEIXI_v2",
+  "url": "https://github.com/Gao-Kai-Zhi/Group7_VR_Exhibition_of_SHUWEIXI_v2",
+  "stars": 0,
+  "pushed_at": "2025-12-13T18:37:23Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: 第七組_沉浸式校內展體驗： 《穿越數位系的創意空間》",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Gao-Kai-Zhi/Group7_VR_Exhibition_of_SHUWEIXI",
+  "url": "https://github.com/Gao-Kai-Zhi/Group7_VR_Exhibition_of_SHUWEIXI",
+  "stars": 0,
+  "pushed_at": "2025-12-13T18:23:07Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: 第七組_沉浸式校內展體驗穿越數位系的創意空間",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "shuweilin68-netizen/shuweilin-",
+  "url": "https://github.com/shuweilin68-netizen/shuweilin-",
+  "stars": 0,
+  "pushed_at": "2025-12-10T02:49:38Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: shuweilin-",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "Shuwei-Li/Shuwei-Li.github.io",
+  "url": "https://github.com/Shuwei-Li/Shuwei-Li.github.io",
+  "stars": 0,
+  "pushed_at": "2025-12-08T03:30:23Z",
+  "archived": false,
+  "license": null,
+  "language": "HTML",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: Shuwei-Li.github.io",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "shuweicheng84/shuweicheng.iris",
+  "url": "https://github.com/shuweicheng84/shuweicheng.iris",
+  "stars": 0,
+  "pushed_at": "2025-11-19T14:59:07Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "TeX",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: shuweicheng.iris",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "shuweicheng84/shuweicheng.go",
+  "url": "https://github.com/shuweicheng84/shuweicheng.go",
+  "stars": 0,
+  "pushed_at": "2025-11-19T14:17:48Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "TeX",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: shuweicheng.go",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "ushio-ushio/Shuwei2025B",
+  "url": "https://github.com/ushio-ushio/Shuwei2025B",
+  "stars": 0,
+  "pushed_at": "2025-11-18T09:03:20Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: Shuwei2025B",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "aa0978033119-max/shuwei.github.io",
+  "url": "https://github.com/aa0978033119-max/shuwei.github.io",
+  "stars": 0,
+  "pushed_at": "2025-11-15T09:43:10Z",
+  "archived": false,
+  "license": null,
+  "language": "HTML",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: shuwei.github.io",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "shuweikuo-tw/shuwei.kuo",
+  "url": "https://github.com/shuweikuo-tw/shuwei.kuo",
+  "stars": 0,
+  "pushed_at": "2025-11-08T06:24:53Z",
+  "archived": false,
+  "license": null,
+  "language": "Vue",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: Shuwei's web-based resume.",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "SJYssr/FuckShuwei",
+  "url": "https://github.com/SJYssr/FuckShuwei",
+  "stars": 0,
+  "pushed_at": "2025-07-09T01:35:46Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: 树维抢课系统",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "xswxswb/fuck-shuwei",
+  "url": "https://github.com/xswxswb/fuck-shuwei",
+  "stars": 0,
+  "pushed_at": "2025-06-22T02:41:47Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: fuck-shuwei",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "youmenl0769/shuweibeiguosaiyouxiulunwenziyuanxiazai",
+  "url": "https://github.com/youmenl0769/shuweibeiguosaiyouxiulunwenziyuanxiazai",
+  "stars": 0,
+  "pushed_at": "2025-06-01T14:35:34Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: shuweibeiguosaiyouxiulunwenziyuanxiazai",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "xubios/shuweibei",
+  "url": "https://github.com/xubios/shuweibei",
+  "stars": 0,
+  "pushed_at": "2025-05-28T07:15:59Z",
+  "archived": false,
+  "license": null,
+  "language": null,
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: shuweibei",
+  "matched_by": [
+   "repo_14.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "DustinKarl004/eams_mobileapp",
+  "url": "https://github.com/DustinKarl004/eams_mobileapp",
+  "stars": 0,
+  "pushed_at": "2025-02-16T03:40:16Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "eams/教务"
+  ],
+  "relevance": "教务(EAMS/正方/树维/强智)协议参考: eams_mobileapp",
+  "matched_by": [
+   "repo_20.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "YDX-2147483647/bulletin-issues-transferred",
+  "url": "https://github.com/YDX-2147483647/bulletin-issues-transferred",
+  "stars": 34,
+  "pushed_at": "2026-01-14T11:28:14Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "TypeScript",
+  "tags": [
+   "钉钉"
+  ],
+  "relevance": "钉钉登录/换票参考: 汇总 BIT 各种网站的通知。（以及钉钉、RSS插件等）",
+  "matched_by": [
+   "repoX_12.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "klren0312/dingdingQrcodeLoginDemo",
+  "url": "https://github.com/klren0312/dingdingQrcodeLoginDemo",
+  "stars": 4,
+  "pushed_at": "2024-02-23T03:02:02Z",
+  "archived": false,
+  "license": null,
+  "language": "JavaScript",
+  "tags": [
+   "钉钉"
+  ],
+  "relevance": "钉钉登录/换票参考: 钉钉扫码登录demo 使用NodeJS",
+  "matched_by": [
+   "repo_10.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "njydsz/ydsz-micro",
+  "url": "https://github.com/njydsz/ydsz-micro",
+  "stars": 3,
+  "pushed_at": "2026-10-25T13:04:11Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "TypeScript",
+  "tags": [
+   "钉钉"
+  ],
+  "relevance": "钉钉登录/换票参考: Ydsz Micro 即云顶数字-快速开发框架的前端微应用代码仓库。您的⭐️ Star ⭐️是我们迭代的动力！",
+  "matched_by": [
+   "code_08.json"
+  ],
+  "key_code_hits": [
+   "comm/effects/common-ui/src/ui/authentication/dingding-login.vue",
+   "comm/effects/common-ui/src/ui/authentication/third-party-login.vue"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "intp41455/hr-payroll-platform",
+  "url": "https://github.com/intp41455/hr-payroll-platform",
+  "stars": 0,
+  "pushed_at": "1970-01-01T00:00:00Z",
+  "archived": null,
+  "license": null,
+  "language": null,
+  "tags": [
+   "钉钉"
+  ],
+  "relevance": "钉钉登录/换票参考: Enterprise HR + Payroll platform. Rules-as-data architecture: salary grades, all",
+  "matched_by": [
+   "codeY_05.json"
+  ],
+  "key_code_hits": [
+   "src/modules/selfservice/dingtalk_selfservice_portal.js"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "au-to/dingding-login-mini",
+  "url": "https://github.com/au-to/dingding-login-mini",
+  "stars": 0,
+  "pushed_at": "1970-01-01T00:00:00Z",
+  "archived": null,
+  "license": null,
+  "language": null,
+  "tags": [
+   "钉钉"
+  ],
+  "relevance": "钉钉登录/换票参考: 企业内应用接入钉钉扫码登录最小demo",
+  "matched_by": [
+   "code_08.json",
+   "repo_10.json"
+  ],
+  "key_code_hits": [
+   "README.md",
+   "backend/package.json",
+   "frontend/package.json",
+   "package.json"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "JackYanzhe/dingding-login",
+  "url": "https://github.com/JackYanzhe/dingding-login",
+  "stars": 0,
+  "pushed_at": "1970-01-01T00:00:00Z",
+  "archived": null,
+  "license": null,
+  "language": null,
+  "tags": [
+   "钉钉"
+  ],
+  "relevance": "钉钉登录/换票参考: dingding-login",
+  "matched_by": [
+   "code_08.json",
+   "repo_10.json"
+  ],
+  "key_code_hits": [
+   "dingding-login-master/.project",
+   "dingding-login-master/pom.xml",
+   "dingding-login-master/src/main/webapp/sysLogin.jsp"
+  ],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "chenzhuoxi/GDUST_timetable",
+  "url": "https://github.com/chenzhuoxi/GDUST_timetable",
+  "stars": 0,
+  "pushed_at": "2026-06-14T05:49:49Z",
+  "archived": false,
+  "license": null,
+  "language": "Python",
+  "tags": [
+   "钉钉"
+  ],
+  "relevance": "钉钉登录/换票参考: 忍不了广科钉钉查课程表转圈圈慢得一批还没有桌面小部件于是做了个脚本把整个学期课程表扒下来做成json，顺便拿flutter做了个带桌面小部件的轻量apk用来看课",
+  "matched_by": [
+   "repoY_08.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ },
+ {
+  "repo": "wuhanzaina/jenkins-login-dingding",
+  "url": "https://github.com/wuhanzaina/jenkins-login-dingding",
+  "stars": 0,
+  "pushed_at": "2025-07-23T10:29:01Z",
+  "archived": false,
+  "license": "MIT",
+  "language": "Java",
+  "tags": [
+   "钉钉"
+  ],
+  "relevance": "钉钉登录/换票参考: jenkins钉钉登录插件",
+  "matched_by": [
+   "repo_10.json"
+  ],
+  "key_code_hits": [],
+  "pc_entry_evidence": "无",
+  "login_form": null
+ }
+]
