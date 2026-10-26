@@ -59,8 +59,8 @@
 | G1 | pick() 无 shuwei/EAMS-mobile 分支 → 通用抓取 | JwFetchProtocol.kt:14-35 |
 | G2 | `/https/<hex>/` 正则零支持(hex 前缀识别与剥离) | JwFetchProtocol.kt:38,55-61 |
 | G3 | ANCHORS 无 SPA/Ionic 容器指纹 | JwWebViewFrameCapture.kt:125-127 |
-| G4 | 钉钉容器换票死结: SPA 在 WebView 内 notInDingTalk,换票 POST 不发出 → 兜底登录页又依赖验证码(采集包 console 实锤) | dump console.txt +70358ms |
-| G5 | 若学生账号体系不同源(VPN 门户票 ≠ EAMS 内部账号),手输必「密码错误」 | dump netlog 零 nbcc POST + 门户 API 全带票成功 |
+| G4 | **我方入口缺陷(2026-10-26 用户纠偏重定性)**: WebView 默认移动 UA → 门户分流 /m/portal → 钉钉专用 SPA。UA 开关仅手动(:140 desktopUa=false),无按校/按协议族自动桌面化 | netlog 请求头 `V2314A…Mobile Safari` + JwWebViewLoginScreen.kt:140 |
+| G5 | 移动端 SPA 兜底手输页账号体系与 PC 教务不同源;但人真实路线=浏览器 PC 教务直登,无钉钉 | 用户原话「没有人用钉钉…在网页上也可以用教务账号登录」 |
 | G6 | 无密码传递通路(JS↔原生 bridge 只有采集用 `__sleepyNetworkBridge`,无凭据注入面) | JwDiagnosticSession.kt:171 |
 
-G4/G5 属校园侧设计约束,修复路径选择(钉钉模拟 / authCode 注入 / PC 端直连 / 密码传递器)待 Step 2-4 调研矩阵收敛后定。
+G4 是我方可直接修复的入口缺陷(UA 策略/门户磁贴选择);修复目标改为学生真实路径 = 桌面 UA 进门户取 PC 教务磁贴。PC 教务入口 URL 证据待 Step 2 调研收敛(nbcc_pc_entry)。钉钉模拟路线经用户否决,不再作为候选。
