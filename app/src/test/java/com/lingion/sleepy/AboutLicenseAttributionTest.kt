@@ -52,6 +52,14 @@ class AboutLicenseAttributionTest {
         Attribution("FlowCourse", "GPL-3.0"),
         Attribution("iwut", "AGPL-3.0"),
         Attribution("shangkeschedule", "Apache-2.0"),
+        // NBCC 2026-10 SOP 调研触达: wengine WebVPN 协议族 7 仓 (Step 5.5 致谢前置)
+        Attribution("StevenWin818/wenginetunnel", "MPL-2.0"),
+        Attribution("xiaobei97/wengine-vpn-decryptor", "xiaobei97"),
+        Attribution("lcandy2/webvpn-converter", "MIT"),
+        Attribution("ESWZY/webvpn-dlut", "ESWZY"),
+        Attribution("ZYTEric/BUU-WebVPN-Convertor", "MIT"),
+        Attribution("YDX-2147483647/virtual-BIT-network", "MIT"),
+        Attribution("FHfanshu/ZJXU-CampusHub", "GPL-3.0"),
     )
 
     // ----- 单校项目 (PerSchool) token 集: 每校 + 该校仓库 token -----
@@ -431,6 +439,13 @@ class AboutLicenseAttributionTest {
         Attribution("Weather174/SCAU-Course-Assistant", ""),
         Attribution("ToMo517/Scau_Course_bot-main", ""),
         Attribution("visionyimian/scau_class_table", ""),
+        // 宁波城市职业技术学院 NBCC (2026-10 SOP cross-verified, Step 5.5 致谢前置, 4 仓全量纳入)
+        // HFUT-Schedule 实物核证 Apache-2.0 (school-hfut 卡既有 "MIT" 系历史错标, 修正归后续独立
+        // commit); NBCC 卡不重复其 license, token 取作者名 Chiu-xaH。UESTC 条目对齐既有空串写法。
+        Attribution("Wangxiaolu0716/class-schedule", "PolyForm Noncommercial"),
+        Attribution("LonelyMarch/OpenWakeUp", "AGPL-3.0"),
+        Attribution("Chiu-xaH/HFUT-Schedule", "Chiu-xaH"),
+        Attribution("MilLoong/UESTC-EAMS-Helper-App", ""),
     )
 
     // ----- 贡献者 (Contributors) token 集: 直接提交代码并合入的开发者, 与上游参考仓库致谢区分 -----

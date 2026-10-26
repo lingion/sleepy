@@ -357,6 +357,10 @@ private val attributionEntries: List<AttributionEntry> = listOf(
     AttributionEntry(
         "foundational-shangkeschedule", "「上课」shangkeschedule (qiqqqqq517)", "Apache-2.0",
         "1776 校学校登记表在名单交叉复核中的对照数据源"
+    ),
+    AttributionEntry(
+        "wengine-vpn-refs", "wengine WebVPN 协议族调研对照 (NBCC 2026-10)", "跨校协议参考",
+        "wengine WebVPN protocol family references: StevenWin818/wenginetunnel (StevenWin818; MPL-2.0; protocol reference); xiaobei97/wengine-vpn-decryptor (xiaobei97; no LICENSE; protocol reference); lcandy2/webvpn-converter (lcandy2; MIT; protocol reference); ESWZY/webvpn-dlut (ESWZY; no LICENSE; protocol reference); ZYTEric/BUU-WebVPN-Convertor (ZYTEric; MIT; protocol reference); YDX-2147483647/virtual-BIT-network (YDX-2147483647; MIT; protocol reference); FHfanshu/ZJXU-CampusHub (FHfanshu; GPL-3.0; password-passing precedent, protocol reference)."
     )
 )
 
@@ -673,6 +677,13 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
             "neiro-o/seuGrabber\n" +
             "arnoliudaxia/shanghaitech-chooseCourse-query\n" +
             "fangd123/funhubu"
+    ),
+    PerSchoolEntry(
+        "school-nbcc", "宁波城市职业技术学院 NBCC",
+        "Wangxiaolu0716/class-schedule (Wangxiaolu0716, PolyForm Noncommercial 1.0.0, GitHub API NOASSERTION)\n" +
+            "LonelyMarch/OpenWakeUp (LonelyMarch, AGPL-3.0)\n" +
+            "Chiu-xaH/HFUT-Schedule (Chiu-xaH, wengine 原生链形态参照与 hex 盐值互证)\n" +
+            "MilLoong/UESTC-EAMS-Helper-App (MilLoong, MIT, 移动教务 JWT 形态旁证)"
     )
 )
 

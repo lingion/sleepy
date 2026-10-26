@@ -1,0 +1,13 @@
+[
+  {"project": "Wangxiaolu0716/class-schedule", "author": "Wangxiaolu0716", "license_or_None": "PolyForm Noncommercial 1.0.0 (NOASSERTION)", "role_in_verification": "NBCC PC 教务入口/端点/参数体/TaskActivity 成功判据头号证据(本校学生实测)"},
+  {"project": "LonelyMarch/OpenWakeUp", "author": "LonelyMarch", "license_or_None": "AGPL-3.0", "role_in_verification": "xatu_shuwei 猜配源头证据(错配定性), 未复用代码"},
+  {"project": "Chiu-xaH/HFUT-Schedule", "author": "Chiu-xaH", "license_or_None": "Apache-2.0", "role_in_verification": "wengine 原生链形态参照(既有致谢, 本轮 hex 盐值互证)"},
+  {"project": "StevenWin818/wenginetunnel", "author": "StevenWin818", "license_or_None": "MPL-2.0", "role_in_verification": "wengine AES-CFB URL 编解码与 CAS 原生链形态参照"},
+  {"project": "xiaobei97/wengine-vpn-decryptor", "author": "xiaobei97", "license_or_None": null, "role_in_verification": "wengine hex 前缀正则与解密公式公开逆向参照"},
+  {"project": "FHfanshu/ZJXU-CampusHub", "author": "FHfanshu", "license_or_None": "GPL-3.0", "role_in_verification": "密码传递器(WebView setInputValue)先例参照, 开源版凭据存储打桩"},
+  {"project": "MilLoong/UESTC-EAMS-Helper-App", "author": "MilLoong", "license_or_None": "MIT", "role_in_verification": "移动教务票据换 JWT 形态旁证(既有致谢, 本校不同构仅设计参照)"},
+  {"project": "lcandy2/webvpn-converter", "author": "lcandy2", "license_or_None": "MIT", "role_in_verification": "WRD WebVPN URL 互转工具族横对照"},
+  {"project": "ESWZY/webvpn-dlut", "author": "ESWZY", "license_or_None": null, "role_in_verification": "WRD WebVPN URL 转换原理横对照"},
+  {"project": "ZYTEric/BUU-WebVPN-Convertor", "author": "ZYTEric", "license_or_None": "MIT", "role_in_verification": "wengine URL hex 加解密横对照"},
+  {"project": "YDX-2147483647/virtual-BIT-network", "author": "YDX-2147483647", "license_or_None": "MIT", "role_in_verification": "wengine TS 客户端横对照"}
+]
