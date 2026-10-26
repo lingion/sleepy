@@ -30,6 +30,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Description
@@ -274,14 +275,8 @@ fun AddTableScreen(
                     Text(stringResource(R.string.manage_no_table_hint), color = colors.onSurfaceVariant)
                 }
             }
-            if (!addingCourses) {
-                Text(
-                    text = stringResource(R.string.import_new_table_hint),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = colors.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-            }
+            // 2026-10-26 用户定令: 子页面形态下「（将作为新课表创建）」提示行多余, 删除。
+            // 键 import_new_table_hint 保留 — 预览对话框标题区仍引用它。
 
             // 行 1：教务直连
             ImportMethodRow(
@@ -351,6 +346,16 @@ fun AddTableScreen(
                 }
             }
 
+            // 手动入口行(2026-10-26 用户定令): 由底部通栏大按钮改为与其他路径一致的方法行,
+            // 位置固定在「粘贴课表文本」折叠块之后、「从文件导入」之前。
+            // 加课模式 = 手动添加课程(跳课程录入页); 新建模式 = 新建空白课表。
+            ImportMethodRow(
+                icon = Icons.Outlined.Add,
+                label = stringResource(if (addingCourses) R.string.add_course_manual else R.string.manage_create_blank_table),
+                enabled = canImport,
+                onClick = onCreateNewTable
+            )
+
             // 行 3：从文件导入
             ImportMethodRow(
                 icon = Icons.Outlined.FileUpload,
@@ -410,15 +415,7 @@ fun AddTableScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-            Button(
-                onClick = onCreateNewTable,
-                modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
-                enabled = canImport,
-                shape = SleepyTheme.Buttons.shape,
-            ) {
-                Text(stringResource(if (addingCourses) R.string.add_course_manual else R.string.manage_create_blank_table))
-            }
+            // 2026-10-26 用户定令: 原底部通栏大按钮改方法行, 移入上方路径列表(行位 356)。
             Spacer(modifier = Modifier.height(24.dp))
         }
 
