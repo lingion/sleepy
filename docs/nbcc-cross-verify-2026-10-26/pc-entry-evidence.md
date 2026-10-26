@@ -49,6 +49,13 @@ final SchoolConfig nbccSchool = SchoolConfig(
 - 开放问题 Q2: `jwgl.webvpn.nbcc.cn` 在公共 DNS(223.5.5.5/8.8.8.8/114)无解析 — 疑为登录后门户注入的解析记录或 wengine 重写域(`webvpn 匿名-443` 形态如 `jwgl-webvpn-nbcc-cn-443.webvpn.nbcc.edu.cn` 待验)。旧门户是否仍在服务、其移动登录后是否仍直达该 PC 页。
 - 两问均**不阻塞协议适配设计**(TaskActivity 解析与参数体已由双源证据锁死),阻塞的是入口 URL 的最终配置值 → Step 6 给出两分支,实测(无凭据 + 学生自愿回传)后二选一。
 
+### 3.1 Q1/Q2 无凭据复测补记(2026-10-26 控制器独立复现,脚本 /tmp/nbcc-research/tools/probe_q1q2.sh)
+
+- **旧门户已整站下线跳转(双源确认)**: `webvpn.nbcc.cn/users/sign_in` 匿名 GET 实测 302 → `https://webvpn.nbcc.edu.cn`(根路径),与调研 agent 报告吻合;上表旧行「GET 200,53914B」系战役早期快照,已被现网推翻。学生应用 loginUrl 指旧门户 = 靠 302 自动升级进新门户,其「强制移动 UA」需求归属旧门户时代。
+- **codec 离线独立复现(第三源)**: 用 key=iv=`wrdvpnisthebest!` AES-128-CFB128 离线加密 `jwgl.webvpn.nbcc.cn`,输出 `…21fae0469069276d52681887e2965720367f1df6` 与调研 agent 独立推算逐字符相同;`jwglapp.nbcc.cn` 前缀与之共享 `fae04690` 首 4 字节后分叉,与 dump 捕获值形态一致。NBCC 部署盐 = 该 key 三源锁定(我方 dump 实解 / 调研 agent 公开样本 / 本复现)。
+- **Q2 判别力负面结果(重要)**: 匿名 GET 新门户 `/https/<hex>/` 全链,`jwgl.webvpn.nbcc.cn` 与**故意编造的不存在域** `zzz-nonexistent-9k2nbcc.cn` 返回完全相同(302→/login + 同 body)→ wengine 网关鉴权前置、解码后不暴露内网解析差异,**无凭据 hex 探测对「目标 vhost 是否存在」零判别力**。调研 agent「302 而非域名错误=路由器识别了该 vhost」的论证不成立(对照组同形)。Q2 裁决维持原案 = 学生自愿回传实测。
+- **Q1 状态**: 无凭据侧不可达(门户磁贴列表在登录态后),仍需新采集包;不阻塞,阻塞面记录不变。
+
 ## 4. 与既有根因档案的关系
 
 - 本档不推翻 `scope.md` 已定稿根因(UA 分流进移动门户 → 钉钉 SPA → 手输页「密码错误」);本档补的是「正确路径的目的地」: PC 教务 = 正方 EAMS courseTableForStd,登录主体 = 教务账号(学生应用免接触钉钉)。
