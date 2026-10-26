@@ -8,7 +8,7 @@ import java.io.File
 
 /**
  * 北京交通大学 (AA, aa.bjtu.edu.cn) 解析器测试 — issue #19, 教务跨仓验证 SOP 2026-09-09。
- * fixture 来自协议 matrix 交叉证实的页面形状 (docs/bjtu-cross-verify-2026-09-09/)。
+ * fixture 来自协议 matrix 交叉证实的页面形状 (docs/history/bjtu-cross-verify-2026-09-09/)。
  */
 class JwBjtuParserTest {
 

@@ -9,7 +9,7 @@ import org.junit.Test
  * 新疆大学（研究生）yjspy.xju.edu.cn 收录闸 — 2026-09-16 SOP 增量。
  *
  * 协议族 xju_post（WakeUp 兼容层）已在 main；本轮 = 学校收录 + 抓取通路锚点 + URL 判型。
- * 证据链: docs/xju-postgraduate-cross-verify-2026-09-16/
+ * 证据链: docs/history/xju-postgraduate-cross-verify-2026-09-16/
  *   - 实测探针: frameset(TopMenuFrame/MenuFrame/PageFrame) + App_Themes/Gwork + ReLogin 表单
  *   - 同族三仓: hrbust Pg (eduData-GoBack) / UPC+CUG (shiguang) / SCAU-Grad 旁证
  *

@@ -1,6 +1,6 @@
 # cf_new / 新青果 NTSS fixture
 
-本目录是 `JwCfNewParser` 的脱敏合成 fixture，不是江西中医药大学真实登录态采集包。PR #50 未附原始响应；现场响应证据缺口记录在 `docs/jxutcm-cross-verify-2026-09-19/scope.md`。
+本目录是 `JwCfNewParser` 的脱敏合成 fixture，不是江西中医药大学真实登录态采集包。PR #50 未附原始响应；现场响应证据缺口记录在 `docs/history/jxutcm-cross-verify-2026-09-19/scope.md`。
 
 ## 来源与边界
 

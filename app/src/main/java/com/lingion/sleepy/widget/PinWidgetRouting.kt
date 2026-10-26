@@ -5,7 +5,7 @@ package com.lingion.sleepy.widget
  *
  * 设计动机（跨厂商 pin 路径统一）: 大陆主流启动器（HyperOS / ColorOS / OriginOS /
  * MagicOS / OneUI / Flyme）对 `AppWidgetManager.requestPinAppWidget` 的行为差异
- * 见 `docs/widget-vendor-specs/INDEX.md` — Sleepy 侧唯一能做的是保证 pin 入口
+ * 见 `docs/vendors/widget-vendor-specs/INDEX.md` — Sleepy 侧唯一能做的是保证 pin 入口
  * 对**全部变体**都可路由，而不是只接了历史 4 个。
  *
  * 路由表从 [ALL_WIDGET_VARIANTS] 派生（single source of truth）：接受两类 key —

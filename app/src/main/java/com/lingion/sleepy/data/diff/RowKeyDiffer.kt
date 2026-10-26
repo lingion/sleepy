@@ -15,8 +15,6 @@ import com.lingion.sleepy.data.entity.CourseEntity
  *
  * 替代 [com.lingion.sleepy.data.dao.CourseDao.replaceGroup] 的整组覆盖模式 —
  * 旧模式会丢数据(同名课多地点编辑一处带崩全局)
- *
- * 详见 docs/superpowers/specs/2026-09-07-sleepy-issue-22-same-name-multi-location-design.md §4.2
  */
 object RowKeyDiffer {
 

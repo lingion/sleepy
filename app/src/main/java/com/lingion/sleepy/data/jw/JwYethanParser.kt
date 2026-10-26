@@ -41,7 +41,7 @@ import kotlinx.serialization.json.jsonPrimitive
  *
  * 外部佐证：AmaneSuzuha000/SWJTU_Login（YHXT API + ytoken cookie 直接证据）、
  * 1-nuo/swjtu-course-grabber（ytoken 请求头）、Arex-lbb/auto-course-grabber（A0422 失效码）。
- * 协议证据：docs/swjtu-cross-verify-2026-09-15/（11 仓）。
+ * 协议证据：docs/history/swjtu-cross-verify-2026-09-15/（11 仓）。
  */
 class JwYethanParser(source: String) : JwParser(source) {
 

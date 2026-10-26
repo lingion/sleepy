@@ -5,7 +5,7 @@ import org.jsoup.Jsoup
 
 /** SCAU timetable HTML parser. Three independently gated shapes: pinned greyovo Njw2017
  * Element UI DOM, WakeUp border-grid DOM, and WakeUp old bordercolor row pairs.
- * Evidence and limitations: docs/scau-cross-verify-2026-10-13/. */
+ * Evidence and limitations: docs/history/scau-cross-verify-2026-10-13/. */
 class JwScauParser(source: String) : JwParser(source) {
 
     companion object {

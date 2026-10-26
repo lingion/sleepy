@@ -1,0 +1,33 @@
+{
+  "repo": "YZune/WakeUpSchedule",
+  "sha": "5d439287a22a64b36d14c08c81bd9fc7bb9a53db",
+  "license": null,
+  "verdict": "NEGATIVE",
+  "evidence_paths": [
+    "https://api.github.com/repos/YZune/WakeUpSchedule",
+    "https://api.github.com/repos/YZune/WakeUpSchedule/commits/5d439287a22a64b36d14c08c81bd9fc7bb9a53db",
+    "https://github.com/YZune/WakeUpSchedule/blob/5d439287a22a64b36d14c08c81bd9fc7bb9a53db/README.md",
+    "https://api.github.com/repos/YZune/WakeUpSchedule/git/trees/5d439287a22a64b36d14c08c81bd9fc7bb9a53db?recursive=1",
+    "https://api.github.com/repos/lingion/wakeup-mod/commits/879f0d6781da19d1da9300d5eda6b0c2629b6a63",
+    "https://github.com/lingion/wakeup-mod/blob/879f0d6781da19d1da9300d5eda6b0c2629b6a63/wakeup-android-project/app/src/main/java/com/suda/yzune/wakeupschedule/schedule_parser/parser/THUParser.java",
+    "/Users/lingion_k/sleepy/docs/history/wakeup-parity-thu-2026-10-06/protocol-matrix.md",
+    "/Users/lingion_k/sleepy/docs/history/wakeup-parity-thu-2026-10-06/attribution-candidates.json"
+  ],
+  "confirmed": [
+    "The named YZune/WakeUpSchedule repository is a non-fork 2018 project; its README explicitly says it only imports Suzhou University courses. Its pinned full tree has no THUParser.java, no schedule_parser/parser/THUParser.java path, and no LICENSE file; GitHub license metadata is null.",
+    "The THUParser.java path cited by Sleepy exists instead in lingion/wakeup-mod at pinned SHA 879f0d6781da19d1da9300d5eda6b0c2629b6a63. Its README identifies the tree as reverse-engineered WakeUp v6.1.06, not the 2018 YZune GitHub source. GitHub API marks this repository as non-fork, but its README documents derivative origin.",
+    "That decompiled THUParser has start/end arrays [0,1,3,6,8,10,12] and [0,2,5,7,9,11,14], gridColumns/gridData extraction, a 14-slot time table ending 21:45, C1 strHTML/strHTML1 handling, C2 blue_red_none branch, and explicit 全周/前八周/后八周/单周/双周 handling. These facts belong to the derivative APK source tree, not the named YZune repository."
+  ],
+  "contradictions": [
+    "Sleepy docs attribute THUParser.java and Apache-2.0 licensing to YZune/WakeUpSchedule; the named repository lacks both. Its README limits course import to Suzhou University.",
+    "Sleepy attribution list records 3,500 stars for the named repository; current GitHub metadata reports 29.",
+    "The 14-slot WakeUp table in the inspected derivative source uses slot 10 17:05-17:50, slot 11 17:55-18:40, slot 12 19:20-20:05, slot 13 20:10-20:55, slot 14 21:00-21:45. Sleepy protocol-matrix lists different times for slots 10-14, ending 22:00, despite calling the source span 08:00-21:45.",
+    "The C1/C2/week claims are supported by the decompiled derivative source but are misattributed to YZune/WakeUpSchedule as an independent upstream repository."
+  ],
+  "limits": [
+    "No school login or live endpoint call; the inspected derivative is decompiled APK code, not authenticated original publisher source.",
+    "Null license is established for the named YZune repository via API and pinned tree; no Apache-2.0 grant for the decompiled derivative was verified.",
+    "The current public repository counts and availability may change after this audit."
+  ],
+  "attribution_needed": true
+}

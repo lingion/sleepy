@@ -27,7 +27,7 @@ import android.util.Log
  *    注入不做闸门 (official docs: filterWhenNoPermission=false lets the system fall
  *    back gracefully, so client-side gating only starves the island path).
  *
- * Sources: see docs/live-cards/{xiaomi,vivo,meizu,samsung}/REUSE.md and the cloned corpus.
+ * Sources: see docs/vendors/live-cards/{xiaomi,vivo,meizu,samsung}/REUSE.md and the cloned corpus.
  */
 object VendorLiveCardSupport {
 

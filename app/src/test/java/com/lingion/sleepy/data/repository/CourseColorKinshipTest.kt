@@ -9,7 +9,7 @@ import org.junit.Test
 import java.util.UUID
 
 /**
- * step-4 契约测试（spec docs/spec-course-color-harmony-2026-10-18.md §2.4/§6 测试7）:
+ * step-4 契约测试（spec docs/architecture/spec-course-color-harmony-2026-10-18.md §2.4/§6 测试7）:
  *   1. 认亲 — 二次导入同名课 → groupId 继承 → 持久 hue 直接命中 → 颜色跨导入不变
  *   2. 新课只增不改 — 增量 hue 规划永不移动既有组的色相（钉死性, spec §2.3）
  *   3. CLASSIC 档零写入 — anchor=null 时规划产出空表（升级用户 course_colors 保持空）

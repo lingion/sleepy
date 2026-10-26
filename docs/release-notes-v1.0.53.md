@@ -8,7 +8,7 @@
 
 The today widget on the OPPO launcher was stuck — its top bar vanished, two layers appeared stacked on top of each other, and scrolling did nothing. That was a regression that came back with the v10 per-row children attempt. This release returns the today widget to the same form as TwoDay and WeekList: one opaque long bitmap inside the launcher's native ListView. The top bar is back, the layers don't double up, and the launcher scrolls the whole thing itself.
 
-Cross-vendor compatibility layer is documented for the six main launchers (Huawei, Honor, Xiaomi, OPPO, vivo, Meizu, Samsung) in `docs/widget-vendor-specs/`. Every pin-routable variant has a single source of truth in `PinWidgetRouting`.
+Cross-vendor compatibility layer is documented for the six main launchers (Huawei, Honor, Xiaomi, OPPO, vivo, Meizu, Samsung) in `docs/vendors/widget-vendor-specs/`. Every pin-routable variant has a single source of truth in `PinWidgetRouting`.
 
 ### UCAS lands on the SEP login portal
 
@@ -96,7 +96,7 @@ The widget picker on every launcher now shows the preview.
 
 之前 OPPO 桌面上的今日小组件卡死了:顶栏不见,两层图错位叠在一起,拖动没反应。这是 v10 改逐行子项带回来的回归。本版回到 TwoDay / WeekList 的形态:一张不透明的长位图,包在桌面自带的 ListView 里。顶栏回来了,图层不重叠,桌面自己滚。
 
-跨厂商兼容层落地文档已写进 `docs/widget-vendor-specs/`,覆盖六家主流桌面(华为 / 荣耀 / 小米 / OPPO / vivo / 魅族 / 三星)。所有可 pin 的小组件变体在 `PinWidgetRouting` 里有单一真值源。
+跨厂商兼容层落地文档已写进 `docs/vendors/widget-vendor-specs/`,覆盖六家主流桌面(华为 / 荣耀 / 小米 / OPPO / vivo / 魅族 / 三星)。所有可 pin 的小组件变体在 `PinWidgetRouting` 里有单一真值源。
 
 ### UCAS 进的是 SEP 登录门户
 

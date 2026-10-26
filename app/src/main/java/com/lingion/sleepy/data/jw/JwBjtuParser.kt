@@ -9,7 +9,7 @@ import org.jsoup.nodes.Element
  *
  * # 协议证据
  * BJTU = 自研 Django 系 (CAS SSO + MIS 门户桥 + AA 教学支撑平台)。7 维对比矩阵与
- * 24 候选逐仓 verdict 见 docs/bjtu-cross-verify-2026-09-09/ (POSITIVE 12 / INDIRECT 7 /
+ * 24 候选逐仓 verdict 见 docs/history/bjtu-cross-verify-2026-09-09/ (POSITIVE 12 / INDIRECT 7 /
  * NULL_EVIDENCE 2 / NEGATIVE 2 / FETCH_FAILED 1)。与 Sleepy 既有协议族 (正方/强智/金智/
  * URP/jwglxt/自建门户 REST) 均不同构, 故独立 TYPE_BJTU。
  *

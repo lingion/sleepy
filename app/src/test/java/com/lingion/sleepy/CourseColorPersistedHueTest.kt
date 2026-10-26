@@ -12,7 +12,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * step-3 契约测试（spec docs/spec-course-color-harmony-2026-10-18.md §2.3/§6 测试3′/4/8）:
+ * step-3 契约测试（spec docs/architecture/spec-course-color-harmony-2026-10-18.md §2.3/§6 测试3′/4/8）:
  *   1. CLASSIC 零变化 — persistedHue=null 时四入口与 v1.0.61 stableHue 路径逐值相等（测试8）
  *   2. persistedHue 注入 — 非 null 时派生档取持久 hue, 明暗只切 S/L 不动 hue（测试3′）
  *   3. resolveAnchor 三档决策 + 三路径 hue 解析一致（测试4）

@@ -10,7 +10,7 @@ import org.junit.Test
 /**
  * 华南农业大学 (SCAU) jwxt.scau.edu.cn 解析器测试 — SOP v1.11
  *
- * 测试覆盖 docs/scau-cross-verify-2026-10-13/protocol-matrix.md 及原始 13 个 regex_invariants (INV-12 跳过,
+ * 测试覆盖 docs/history/scau-cross-verify-2026-10-13/protocol-matrix.md 及原始 13 个 regex_invariants (INV-12 跳过,
  * 该选择器为 AIScheduleSCAU 独有, WakeUp 主备路径均不命中):
  *   INV-1  节次 regex
  *   INV-2  周次片段过滤

@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 
 /**
- * 课程持久色相表（spec docs/spec-course-color-harmony-2026-10-18.md §3.1）。
+ * 课程持久色相表（spec docs/architecture/spec-course-color-harmony-2026-10-18.md §3.1）。
  *
  * 颜色绑定 groupId（课程身份标识），跨导入/改名稳定 —— 重导入经认亲继承
  * 旧 groupId 即命中旧 hue；改名同 row 同 gid 不动。

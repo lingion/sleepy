@@ -27,6 +27,8 @@ issues/
 
 # Temp query/result files (e.g. ad-hoc web search dumps)
 q*.json
+# Reviewed historical evidence is not a temporary query result.
+!docs/history/wakeup-parity-thu-2026-10-06/evidence/qualified-candidates.json
 *.tmp
 *.bak
 .claude/

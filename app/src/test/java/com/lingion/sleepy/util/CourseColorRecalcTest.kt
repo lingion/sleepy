@@ -7,7 +7,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * step-5 重算层契约（spec docs/spec-course-color-harmony-2026-10-18.md §2.3 时机1/2/3/6）:
+ * step-5 重算层契约（spec docs/architecture/spec-course-color-harmony-2026-10-18.md §2.3 时机1/2/3/6）:
  *   - 全表重算 = 以新 anchor 重排所有 gid（用户已批准"换主题重排课表整体颜色"）;
  *   - CLASSIC（anchor=null）零写 — 渲染走 stableHue 老路径, 表保持不动（红线 spec §2.1）;
  *   - 重算结果仍满足安全弧禁区不变量 + 同批 ≥10° 间距（与 §2.2 同源纯函数保证）;

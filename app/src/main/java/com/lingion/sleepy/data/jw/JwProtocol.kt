@@ -150,7 +150,7 @@ object JwProtocol {
      * WebView 会话内同源 fetch 双端点:
      *   GET /course_selection/courseselect/stuschedule/        本学期课表
      *   GET /course_selection/courseselecttask/schedule/       选课任务课表 (全学期)
-     * 协议证据: docs/bjtu-cross-verify-2026-09-09/ (24 仓 POSITIVE 12, issue #19)。
+     * 协议证据: docs/history/bjtu-cross-verify-2026-09-09/ (24 仓 POSITIVE 12, issue #19)。
      * 上游协议形态: HFDLYS/BJTUselfService (MIT) + wan300/bjtu_mis_Android (MIT) — 算法自写。
      */
     const val TYPE_BJTU = "bjtu"
@@ -167,7 +167,7 @@ object JwProtocol {
      * classTime{N} "7、10-12、14-15周 星期三 5节"（顿号枚举只作用于周次列表，共享一个
      * 「星期X 节」后缀）；classTime{N}/classPlace{N} 成对槽位 1..40。
      * SM2 `_j` 加密只在 /register/…、/sport/…（选课），课表接口无 SM2，Sleepy 不需要。
-     * 协议证据：docs/swjtu-cross-verify-2026-09-15/（11 仓，2026-09-15 采集包实锤）。
+     * 协议证据：docs/history/swjtu-cross-verify-2026-09-15/（11 仓，2026-09-15 采集包实锤）。
      * 外部佐证：AmaneSuzuha000/SWJTU_Login、1-nuo/swjtu-course-grabber、
      * Arex-lbb/auto-course-grabber（失效码）。
      */

@@ -62,7 +62,7 @@ object CourseColorUtil {
         ((groupId.hashCode().toLong() * GOLDEN_ANGLE) % 360f + 360f) % 360f
 
     /**
-     * 主题和谐化色相 — 安全弧公式（spec docs/spec-course-color-harmony-2026-10-18.md §2.2）。
+     * 主题和谐化色相 — 安全弧公式（spec docs/architecture/spec-course-color-harmony-2026-10-18.md §2.2）。
      *
      * 以 anchor（主题 primary / 用户种子色的色相）为原点，色环挖掉两段禁区，
      * 把 [0,240) 均匀映射进剩余两允许弧：

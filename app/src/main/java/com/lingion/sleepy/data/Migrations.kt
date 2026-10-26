@@ -135,7 +135,7 @@ internal val MIGRATION_10_11_STATEMENTS: List<String> = listOf(
 )
 
 /**
- * v11 → v12: 课程持久色相表 course_colors (spec docs/spec-course-color-harmony-2026-10-18.md §3)
+ * v11 → v12: 课程持久色相表 course_colors (spec docs/architecture/spec-course-color-harmony-2026-10-18.md §3)
  *   - 新表 (tableKey, groupId) 复合主键 → hue REAL
  *   - 不回填: CLASSIC 档不读表, 首次切入派生档时由重算全量写入
  */

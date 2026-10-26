@@ -5,7 +5,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * 课程配色和谐化契约测试（spec: docs/spec-course-color-harmony-2026-10-18.md §6 测试 1/2/3′）。
+ * 课程配色和谐化契约测试（spec: docs/architecture/spec-course-color-harmony-2026-10-18.md §6 测试 1/2/3′）。
  *
  * 锁的不变量：
  *  1. 禁区不变量 — 对任意 anchor × 任意 groupId，safeArcHue / resolveHueWithSpacing

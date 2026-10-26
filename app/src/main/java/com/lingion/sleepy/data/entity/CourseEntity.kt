@@ -88,8 +88,6 @@ data class CourseEntity(
      *   0 = GROUP  — 跟随整门课程组色 (默认,旧数据全部走这个)
      *   1 = AUTO   — 自动色,渲染时按 row 自身 id 相对同组行序号实时算
      *   2 = CUSTOM — 自定义色,color 字段存十六进制
-     *
-     * 详见 docs/superpowers/specs/2026-09-07-sleepy-issue-22-same-name-multi-location-design.md §5.1
      */
     @ColumnInfo(name = "colorMode", defaultValue = "0") val colorMode: Int = 0,
 

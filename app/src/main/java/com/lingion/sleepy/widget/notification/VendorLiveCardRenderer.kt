@@ -66,11 +66,11 @@ fun progressStyleFor(progressPercent: Int): NotificationCompat.ProgressStyle =
  *    construction as v1.0.56. No Xiaomi-private extras are attached; HyperOS decides
  *    whether that eligible ongoing notification is surfaced in the status-bar island.
  *  - vivo:  ~/third-party-live-cards/vivo/originos-toolkit (MIT)
- *    and docs/live-cards/vivo/REUSE.md + origin-isle-readonly PROTOCOL.md
+ *    and docs/vendors/live-cards/vivo/REUSE.md + origin-isle-readonly PROTOCOL.md
  *  - Meizu:  ~/third-party-live-cards/meizu/Pinme (Apache-2.0)
- *    and docs/live-cards/meizu/REUSE.md
+ *    and docs/vendors/live-cards/meizu/REUSE.md
  *  - Samsung: ~/third-party-live-cards/samsung/CompressorEdge (MIT)
- *    and docs/live-cards/samsung/REUSE.md
+ *    and docs/vendors/live-cards/samsung/REUSE.md
  */
 object VendorLiveCardRenderer {
 

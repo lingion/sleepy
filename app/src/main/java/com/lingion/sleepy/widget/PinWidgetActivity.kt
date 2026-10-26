@@ -25,7 +25,7 @@ class PinWidgetActivity : ComponentActivity() {
         val supported = awm.isRequestPinAppWidgetSupported
         val type = intent.getStringExtra(EXTRA_WIDGET)
         // 路由表派生自 ALL_WIDGET_VARIANTS（10/10 变体全覆盖），解析在 PinWidgetRouting（纯函数可测）。
-        // 各厂商 requestPinAppWidget 行为差异见 docs/widget-vendor-specs/INDEX.md。
+        // 各厂商 requestPinAppWidget 行为差异见 docs/vendors/widget-vendor-specs/INDEX.md。
         val cn = android.content.ComponentName(this, PinWidgetRouting.resolveClass(type))
         Log.d("PinWidget", "supported=$supported, provider=$cn")
 

@@ -8,7 +8,7 @@ import org.junit.Test
 
 /**
  * 甲案 作息冲突三选项 — 编辑会话状态模型契约
- * (docs/superpowers/specs/2026-09-24-period-table-conflict-resolution-design.md §2.1/§2.2)。
+ * 覆盖编辑会话内的作息变更、策略选择与取消恢复。
  *
  * 锁不变量:
  *   1. 未改作息 → hasScheduleChanged=false, 普通保存不弹窗

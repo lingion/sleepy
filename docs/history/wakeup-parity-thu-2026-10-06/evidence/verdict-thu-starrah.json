@@ -1,0 +1,36 @@
+{
+  "repo": "Starrah/THUCourseHelper",
+  "sha": "64a543518f9007e2b5a615582bd049acf5d2ada9",
+  "license": "MIT; copyright 2020 Starrah & SerCharles",
+  "verdict": "POSITIVE",
+  "evidence_paths": [
+    "https://api.github.com/repos/Starrah/THUCourseHelper",
+    "https://api.github.com/repos/Starrah/THUCourseHelper/commits/64a543518f9007e2b5a615582bd049acf5d2ada9",
+    "https://github.com/Starrah/THUCourseHelper/blob/64a543518f9007e2b5a615582bd049acf5d2ada9/README.md",
+    "https://github.com/Starrah/THUCourseHelper/blob/64a543518f9007e2b5a615582bd049acf5d2ada9/LICENSE",
+    "https://github.com/Starrah/THUCourseHelper/blob/64a543518f9007e2b5a615582bd049acf5d2ada9/app/src/main/java/cn/starrah/thu_course_helper/onlinedata/thu/THUCourseDataSouce.kt#L236-L273",
+    "https://github.com/Starrah/THUCourseHelper/blob/64a543518f9007e2b5a615582bd049acf5d2ada9/app/src/main/java/cn/starrah/thu_course_helper/onlinedata/thu/THUCourseDataSouce.kt#L851-L989",
+    "/Users/lingion_k/research/jw-pr-audit-20261013/THUCourseDataSouce.kt (SHA-256 6506e53cc894aeac543c23d113cfd6fef289a74c48d0ba0537f3466371b898eb; matches pinned GitHub contents)",
+    "/Users/lingion_k/sleepy/docs/history/wakeup-parity-thu-2026-10-06/protocol-matrix.md",
+    "/Users/lingion_k/sleepy/docs/history/wakeup-parity-thu-2026-10-06/attribution-candidates.json"
+  ],
+  "confirmed": [
+    "GitHub confirms public unarchived Kotlin project; master tip pinned above, dated 2020-09-16; repository LICENSE and README both identify MIT.",
+    "README describes a Tsinghua Android course manager and says undergraduate data originates from the course-selection system, parsed from HTML into CalendarItemData.",
+    "Undergraduate timetable entry loadAllCourses GETs /syxk.vsyxkKcapb.do?m=ztkbSearch&p_xnxq=<term>&pathContent=整体课表 under zhjwxk.cic.tsinghua.edu.cn; response GBK; campus network/session required. Graduate branch throws TODO.",
+    "parseRawZTKB isolates function setInitValue() through Event.observe and parses C1 mainHref, title, full-width-semicolon strHTML1 metadata, and a<big>_<day> grid coordinates via state machine.",
+    "PAT_C2 recognizes blue_red_none with p_id, title and detail; dealWithC2Class handles group/place/weeks and optional hour range, or big-section timing. This is substantive upstream C2 parsing."
+  ],
+  "contradictions": [
+    "Sleepy protocol-matrix.md and attribution-candidates.json report 1.7k stars; GitHub repository metadata currently reports 24.",
+    "Sleepy docs assert this parser independently confirms START_NODE_MAP/END_NODE_MAP and hard-coded 14-slot clock times; inspected parser uses term.timeRule/CREP.timeRule and contains neither claimed maps nor clock literals. Attribution to this file is unsupported.",
+    "Sleepy docs say no code reuse because languages differ, but upstream parser is Kotlin and Sleepy parser is Kotlin.",
+    "Sleepy protocol-matrix.md calls clock span 08:00–21:45 while its last listed slot ends at 22:00."
+  ],
+  "limits": [
+    "No school login or live endpoint test; historical 2020 pinned source does not prove current production behavior.",
+    "Single-candidate audit cannot validate other repositories or consensus claims.",
+    "Local parser SHA-256 matched contents fetched at pinned commit."
+  ],
+  "attribution_needed": true
+}
