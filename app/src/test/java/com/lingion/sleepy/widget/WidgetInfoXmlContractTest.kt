@@ -160,9 +160,15 @@ class WidgetInfoXmlContractTest {
         }
     }
 
-    /** vivo 原子组件要求每个 receiver 都声明三件套，供智慧桌面识别和展示。 */
+    /** vivo 互斥规则——`vivo_widget` 三件套声明把组件标成 OriginOS 原子组件，
+     *  而原子组件是 vivo 平台审核制（上架组件平台 + 审核 7-10 工作日 + 发版二次
+     *  审核）。Sleepy 从未申请审核（docs/widget-vendor-specs/vivo/atomic-widget-dev-notes.md:
+     *  "Sleepy 走通道 1，不做通道 2 伪装"），未审核声明会把组件从智慧桌面标准
+     *  AppWidget 池摘走 → 无法添加/编辑/删除（2026-10-26 vivo 群反馈，同 2026-09-29
+     *  小米 miuiWidget 摘除案 #65 的镜像问题）。永久走标准 Android Widget 通路。 */
     @Test
-    fun `every widget receiver declares vivo atomic component metadata`() {
+    fun `no widget receiver declares unaudited vivo atomic component metadata`() {
+        val vivoKeys = setOf("vivo_widget", "vivoWidgetVersion", "vivo.widget.description")
         val receivers = manifest.getElementsByTagName("receiver")
         for (i in 0 until receivers.length) {
             val receiver = receivers.item(i) as Element
@@ -179,22 +185,14 @@ class WidgetInfoXmlContractTest {
                 provider
             } ?: continue
             val receiverName = receiver.getAttribute("android:name")
-            fun metadata(name: String): Element? {
-                val metas = receiver.getElementsByTagName("meta-data")
-                for (j in 0 until metas.length) {
-                    val meta = metas.item(j) as Element
-                    if (meta.getAttribute("android:name") == name) return meta
-                }
-                return null
+            val metas = receiver.getElementsByTagName("meta-data")
+            for (j in 0 until metas.length) {
+                val meta = metas.item(j) as Element
+                assertFalse(
+                    "$receiverName must NOT declare vivo atomic-component metadata (unaudited claim pulls the widget off OriginOS's standard AppWidget pool)",
+                    meta.getAttribute("android:name") in vivoKeys
+                )
             }
-            assertTrue("$receiverName must declare vivo_widget=true", metadata("vivo_widget")?.getAttribute("android:value") == "true")
-            val version = metadata("vivoWidgetVersion")?.getAttribute("android:value")?.toIntOrNull()
-            assertTrue("$receiverName must declare positive vivoWidgetVersion", version != null && version > 0)
-            val description = metadata("vivo.widget.description")
-            assertTrue(
-                "$receiverName must declare vivo.widget.description resource",
-                description?.getAttribute("android:resource")?.startsWith("@string/") == true
-            )
             assertTrue("$receiverName provider metadata must remain present", providerMeta.getAttribute("android:resource").isNotEmpty())
         }
     }

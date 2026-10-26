@@ -130,9 +130,6 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/today_widget_info" />
-            <meta-data android:name="vivo_widget" android:value="true" />
-            <meta-data android:name="vivoWidgetVersion" android:value="1" />
-            <meta-data android:name="vivo.widget.description" android:resource="@string/widget_today_description" />
         </receiver>
 
         <receiver
@@ -145,9 +142,6 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/today_small_widget_info" />
-            <meta-data android:name="vivo_widget" android:value="true" />
-            <meta-data android:name="vivoWidgetVersion" android:value="1" />
-            <meta-data android:name="vivo.widget.description" android:resource="@string/widget_today_small_description" />
         </receiver>
 
         <receiver
@@ -160,9 +154,6 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/today_wide_widget_info" />
-            <meta-data android:name="vivo_widget" android:value="true" />
-            <meta-data android:name="vivoWidgetVersion" android:value="1" />
-            <meta-data android:name="vivo.widget.description" android:resource="@string/widget_today_wide_description" />
         </receiver>
 
         <receiver
@@ -175,9 +166,6 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/twoday_wide_widget_info" />
-            <meta-data android:name="vivo_widget" android:value="true" />
-            <meta-data android:name="vivoWidgetVersion" android:value="1" />
-            <meta-data android:name="vivo.widget.description" android:resource="@string/widget_twoday_wide_description" />
         </receiver>
 
         <receiver
@@ -190,9 +178,6 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/weeklist_wide_widget_info" />
-            <meta-data android:name="vivo_widget" android:value="true" />
-            <meta-data android:name="vivoWidgetVersion" android:value="1" />
-            <meta-data android:name="vivo.widget.description" android:resource="@string/widget_week_list_wide_description" />
         </receiver>
 
         <receiver
@@ -205,9 +190,6 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/week_list_widget_info" />
-            <meta-data android:name="vivo_widget" android:value="true" />
-            <meta-data android:name="vivoWidgetVersion" android:value="1" />
-            <meta-data android:name="vivo.widget.description" android:resource="@string/widget_week_list_description" />
         </receiver>
 
         <receiver
@@ -220,9 +202,6 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/week_list_small_widget_info" />
-            <meta-data android:name="vivo_widget" android:value="true" />
-            <meta-data android:name="vivoWidgetVersion" android:value="1" />
-            <meta-data android:name="vivo.widget.description" android:resource="@string/widget_week_list_small_description" />
         </receiver>
 
         <receiver
@@ -235,9 +214,6 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/week_view_widget_info" />
-            <meta-data android:name="vivo_widget" android:value="true" />
-            <meta-data android:name="vivoWidgetVersion" android:value="1" />
-            <meta-data android:name="vivo.widget.description" android:resource="@string/widget_week_view_description" />
         </receiver>
 
         <receiver
@@ -250,9 +226,6 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/week_view_small_widget_info" />
-            <meta-data android:name="vivo_widget" android:value="true" />
-            <meta-data android:name="vivoWidgetVersion" android:value="1" />
-            <meta-data android:name="vivo.widget.description" android:resource="@string/widget_week_view_small_description" />
         </receiver>
 
         <receiver
@@ -265,9 +238,6 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/week_grid_widget_info" />
-            <meta-data android:name="vivo_widget" android:value="true" />
-            <meta-data android:name="vivoWidgetVersion" android:value="1" />
-            <meta-data android:name="vivo.widget.description" android:resource="@string/widget_week_grid_description" />
         </receiver>
 
         <receiver
@@ -280,9 +250,6 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/week_grid_small_widget_info" />
-            <meta-data android:name="vivo_widget" android:value="true" />
-            <meta-data android:name="vivoWidgetVersion" android:value="1" />
-            <meta-data android:name="vivo.widget.description" android:resource="@string/widget_week_grid_small_description" />
         </receiver>
 
         <receiver
@@ -295,9 +262,6 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/twoday_widget_info" />
-            <meta-data android:name="vivo_widget" android:value="true" />
-            <meta-data android:name="vivoWidgetVersion" android:value="1" />
-            <meta-data android:name="vivo.widget.description" android:resource="@string/widget_twoday_description" />
         </receiver>
 
         <receiver
@@ -310,9 +274,6 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/twoday_small_widget_info" />
-            <meta-data android:name="vivo_widget" android:value="true" />
-            <meta-data android:name="vivoWidgetVersion" android:value="1" />
-            <meta-data android:name="vivo.widget.description" android:resource="@string/widget_twoday_small_description" />
         </receiver>
 
         <!-- Daily boot receiver: reschedule notifications -->

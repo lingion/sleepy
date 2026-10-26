@@ -14,7 +14,8 @@
     <string name="widget_week_view_label">本周课表（周视图）</string>
     <string name="widget_week_view_small_label">本周课表（周视图）· 小</string>
 
-    <!-- vivo OriginOS 原子组件详情页描述；版本由各 receiver 的 vivoWidgetVersion 管理。 -->
+    <!-- 各组件描述文案：原 vivo 原子组件声明（vivo.widget.description）使用；未走组件平台审核，
+         声明已摘除，字符串保留供后续走审核通道时复用。 -->
     <string name="widget_today_description">显示今天的课程安排</string>
     <string name="widget_today_small_description">以紧凑卡片显示今天的课程</string>
     <string name="widget_today_wide_description">以宽卡片显示今天的课程</string>
