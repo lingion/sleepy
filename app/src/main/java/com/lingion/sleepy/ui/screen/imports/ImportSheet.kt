@@ -132,14 +132,11 @@ fun AddTableScreen(
     var importJustApplied by remember { mutableStateOf(false) }
     val snackbar = remember { androidx.compose.material3.SnackbarHostState() }
     var showExistingTables by remember { mutableStateOf(false) }
+    // 2026-10-26 用户定令: 加课模式每条导入路径解析后先进入逐组勾选界面。
+    var pendingSelection by remember { mutableStateOf<ImportPreview?>(null) }
     val canImport = !isLoading && (!addingCourses || state.tables.any { it.id == targetTableId })
 
-    fun acceptPreview(value: ImportPreview?) {
-        value ?: return
-        if (addingCourses && value.parseResult.courses.isEmpty()) {
-            errorMsg = context.getString(R.string.import_content_empty)
-            return
-        }
+    fun commitPreview(value: ImportPreview) {
         confirmedStartDate = value.parseResult.startDate.ifBlank { java.time.LocalDate.now().toString() }
         confirmedTableName = value.parseResult.tableName.ifBlank { defaultTableName }
         confirmedTimeJson = TimeTableUtils.mergeMostComplete(
@@ -150,6 +147,19 @@ fun AddTableScreen(
         )
         confirmedBindPeriodTableId = null
         preview = value
+    }
+
+    fun acceptPreview(value: ImportPreview?) {
+        value ?: return
+        if (addingCourses && value.parseResult.courses.isEmpty()) {
+            errorMsg = context.getString(R.string.import_content_empty)
+            return
+        }
+        if (addingCourses) {
+            pendingSelection = value
+            return
+        }
+        commitPreview(value)
     }
 
     // 外部 app (文件管理器 / 其他课表 app) 通过 Intent 打开 json 时,
@@ -575,6 +585,26 @@ fun AddTableScreen(
                 }
             )
         }
+    }
+
+    // 2026-10-26 用户定令: 加课模式解析后先勾选, 确认才进 ImportPreviewDialog。
+    pendingSelection?.let { staged ->
+        CourseSelectionSheet(
+            parseResult = staged.parseResult,
+            onDismiss = { pendingSelection = null },
+            onConfirm = { selectedKeys ->
+                pendingSelection = null
+                val filtered = staged.parseResult.courses.filter { importCourseGroupKey(it) in selectedKeys }
+                // 勾选为空 = 全部取消 → 提示而非静默回到空预览
+                if (filtered.isEmpty()) {
+                    errorMsg = context.getString(R.string.import_selection_empty)
+                } else {
+                    scope.launch {
+                        commitPreview(buildImportPreview(staged.parseResult.copy(courses = filtered), targetTableId, context))
+                    }
+                }
+            }
+        )
     }
 
     if (showExistingTables) {

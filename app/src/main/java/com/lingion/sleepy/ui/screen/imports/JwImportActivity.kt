@@ -152,6 +152,11 @@ class JwImportActivity : ComponentActivity() {
                 var importFinished by remember { mutableStateOf(false) }
                 var isApplying by remember { mutableStateOf(false) }
                 var importPreview by remember { mutableStateOf<ImportPreview?>(null) }
+                // 2026-10-26 用户定令: 加课路(Stage.Preview 仅在 targetTableId>0 时到达)
+                // 解析后先逐组勾选, 确认后才进 ImportPreviewDialog。
+                var courseSelectionDone by remember { mutableStateOf(false) }
+                // 勾选确认后到重建 preview 完成前, 勾选页保持在场, 避免全量数据闪现确认框。
+                var courseSelectionApplying by remember { mutableStateOf(false) }
                 var thuSkippedCount by remember { mutableIntStateOf(0) }
                 var exitDraftState by remember { mutableStateOf(ExitDraftState()) }
                 // 解析后的课程暂存 + 配置确认状态
@@ -512,6 +517,9 @@ class JwImportActivity : ComponentActivity() {
 
                     stage is Stage.Preview && parsedCourses.isNotEmpty() -> {
                         LaunchedEffect(parsedCourses) {
+                            // 重新解析即重新勾选: 全量数据变了, 旧的勾选结论作废。
+                            courseSelectionDone = false
+                            courseSelectionApplying = false
                             try {
                                 val repo = SleepyApp.get().repository
                                 val targetId = targetTableId
@@ -541,6 +549,38 @@ class JwImportActivity : ComponentActivity() {
                         }
                         BackHandler { requestExit() }
                         importPreview?.let { preview ->
+                            if (!courseSelectionDone) {
+                                // 加课路第一步: 逐组勾选要添加的课程; 确认前不进冲突决策框。
+                                CourseSelectionSheet(
+                                    parseResult = preview.parseResult,
+                                    onDismiss = { requestExit() },
+                                    onConfirm = { selectedKeys ->
+                                        if (!courseSelectionApplying) {
+                                            courseSelectionApplying = true
+                                            scope.launch {
+                                                try {
+                                                    val filtered = preview.parseResult.courses
+                                                        .filter { importCourseGroupKey(it) in selectedKeys }
+                                                    if (filtered.isEmpty()) {
+                                                        errorMsg = getString(R.string.import_selection_empty)
+                                                    } else {
+                                                        importPreview = buildImportPreview(
+                                                            parseResult = preview.parseResult.copy(courses = filtered),
+                                                            tableId = targetTableId,
+                                                            context = this@JwImportActivity,
+                                                        )
+                                                        courseSelectionDone = true
+                                                    }
+                                                } catch (e: Exception) {
+                                                    errorMsg = getString(R.string.jw_parse_failed, e.message ?: "")
+                                                } finally {
+                                                    courseSelectionApplying = false
+                                                }
+                                            }
+                                        }
+                                    }
+                                )
+                            } else {
                             ImportPreviewDialog(
                                 preview = preview,
                                 parserWarning = if (parsedSchool?.type == JwProtocol.TYPE_THU && thuSkippedCount > 0)
@@ -562,6 +602,7 @@ class JwImportActivity : ComponentActivity() {
                                     }
                                 }
                             )
+                            }
                         }
                     }
 
