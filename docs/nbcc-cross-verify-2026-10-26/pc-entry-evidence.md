@@ -56,6 +56,14 @@ final SchoolConfig nbccSchool = SchoolConfig(
 - **Q2 判别力负面结果(重要)**: 匿名 GET 新门户 `/https/<hex>/` 全链,`jwgl.webvpn.nbcc.cn` 与**故意编造的不存在域** `zzz-nonexistent-9k2nbcc.cn` 返回完全相同(302→/login + 同 body)→ wengine 网关鉴权前置、解码后不暴露内网解析差异,**无凭据 hex 探测对「目标 vhost 是否存在」零判别力**。调研 agent「302 而非域名错误=路由器识别了该 vhost」的论证不成立(对照组同形)。Q2 裁决维持原案 = 学生自愿回传实测。
 - **Q1 状态**: 无凭据侧不可达(门户磁贴列表在登录态后),仍需新采集包;不阻塞,阻塞面记录不变。
 
+### 3.2 终局裁决(2026-10-26 学生自愿回传实测, SOP v1.15-④ 最终裁决闸)
+
+- **回传凭证**(用户转达, 本机 1.0.62-debug 构建自本分支 3906b098): 「[Sleepy导入成功] app=1.0.62-debug (10062) date=2026-10-26 school=宁波城市职业技术学院 catalogId=moe:4133012645 status=unverified protocol=金智教务（经典 EAMS）(classic_eams) url=https://webvpn.nbcc.edu.cn/login courses=146」并明示「实测可以导入了, 我可以 verify 它了」。
+- **裁决结论**: Q1 门户路径 = 活路径。桌面 UA → `webvpn.nbcc.edu.cn/login` 直登 → PC 教务磁贴 → classic_eams 课表页 → 形态B 同源抓取 → 146 门课导入成功。全链(协议改判 + 桌面 UA 初值 + 形态B 抓取)实机验证通过。
+- **Q2 状态**: jwgl.webvpn 直链不再需要裁决——Q1 已实证走通, 双分支 pinned 解除, 条目 url 钉死 Q1 单值(§3.1 已证 hex 探测零判别力, 学生实测是唯一且已到的裁决源)。
+- **落地动作**: baseline 行 status 改判 supported(显式落字表达状态跃迁; isSupported 计数 350→351, 双计数闸同步); 钉死测试 status/url 断言收紧; schools-list 该行改「已实现配置」。
+- **零凭据接触复核**: 回传全程登录由学生本人在 WebView 内完成, 抓取 JS 无 password 读取(铁律不变), 回传内容仅导入统计, 无凭据外泄面。
+
 ## 4. 与既有根因档案的关系
 
 - 本档不推翻 `scope.md` 已定稿根因(UA 分流进移动门户 → 钉钉 SPA → 手输页「密码错误」);本档补的是「正确路径的目的地」: PC 教务 = 正方 EAMS courseTableForStd,登录主体 = 教务账号(学生应用免接触钉钉)。

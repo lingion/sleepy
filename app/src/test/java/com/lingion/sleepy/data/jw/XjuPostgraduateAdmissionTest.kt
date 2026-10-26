@@ -35,14 +35,15 @@ class XjuPostgraduateAdmissionTest {
     }
 
     @Test
-    fun `main assets preserves 350 supported entries independently of directory expansion`() {
+    fun `main assets preserves 351 supported entries independently of directory expansion`() {
         val main = String(javaClass.classLoader!!.getResource("jw/schools.json")!!.readBytes())
         // 计数闸双副本同值（主副本由 JwJouAdaptationTest 锁 1:1, 这里锁总数）
         // 2026-10-04 收录惠州学院(zf_new) → 348
         // 2026-10-10 收录湖北商贸学院(zf_new) → 349
         val count = JwImportViewModel.parseSchoolsJson(main).count { it.isSupported }
         // 2026-10-13 收录清华大学 THU → 350
-        assertEquals("Existing supported entry count remains 350", 350, count)
+        // 2026-10-26 NBCC verify（学生回传实测通过）→ 351
+        assertEquals("Existing supported entry count remains 351", 351, count)
     }
 
     // ---------- ② URL 判型 ----------

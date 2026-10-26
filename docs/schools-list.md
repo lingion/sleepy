@@ -1,6 +1,6 @@
 # 学校目录
 
-> 共 4140 个目录条目：已实现配置 350；待验证、需确认后尝试 1128；待适配 2662。数据基准：2026-10-14。
+> 共 4140 个目录条目：已实现配置 351；待验证、需确认后尝试 1127；待适配 2662。数据基准：2026-10-14。
 
 目录收录不等于教务导入支持。已实现配置沿用历史状态，也不保证每校当前登录均已实机验证；待验证条目仅有公开入口和候选协议证据，未登录测试；待适配条目没有可启用的导入配置。
 
@@ -2474,7 +2474,7 @@
 | 内蒙古医科大学 | 待适配 | neimengguyikedaxue |  |  | moe-2026-regular, wakeup-6.1.06-asset; moe:4115010132 |
 | 内蒙古艺术学院 | 待适配 | neimengguyishuxueyuan |  |  | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset; moe:4115014531 |
 | 宁波财经学院 | 待验证·可尝试 | ningbocaijingxueyuan | https://atrust.nbufe.edu.cn/portal/ | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset; moe:4133013001 |
-| 宁波城市职业技术学院 | 待验证·可尝试 | ningbochengshizhiyejishuxueyuan | https://webvpn.nbcc.edu.cn/login | classic_eams | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset; moe:4133012645 |
+| 宁波城市职业技术学院 | 已实现配置 | ningbochengshizhiyejishuxueyuan | https://webvpn.nbcc.edu.cn/login | classic_eams | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset; moe:4133012645 |
 | 宁波大红鹰学院 | 待适配 | ningbodahongyingxueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset; wakeup:5a134dab02b374e88286 |
 | 宁波大学 | 待适配 | ningbodaxue |  |  | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset; moe:4133011646 |
 | 宁波大学科学技术学院 | 待验证·可尝试 | ningbodaxuekexuejishuxueyuan | https://cas.ndky.edu.cn/authserver/login | classic_eams | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset; moe:4133013277 |

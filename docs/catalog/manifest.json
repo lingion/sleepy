@@ -3,9 +3,9 @@
   "baselineCount": 351,
   "catalogCount": 4140,
   "statusCounts": {
-    "supported": 348,
-    "unverified": 1128,
+    "supported": 349,
     "grad_supported": 2,
+    "unverified": 1127,
     "pending": 2361,
     "grad_pending": 301
   },
@@ -21,7 +21,7 @@
   "sources": [
     {
       "path": "scripts/data/school_catalog_baseline.json",
-      "sha256": "58febf8eeaf71c4f32076810ef54a3c76a065fdc5f2bd8eb8fcf2e27f28d4af8"
+      "sha256": "1841724eb2c422bf8ed4ec2b880738c923ffbfa4a9a69b39088ac057886980da"
     },
     {
       "path": "scripts/data/official_schools.json",

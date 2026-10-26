@@ -1885,7 +1885,7 @@
     "name": "宁波城市职业技术学院",
     "url": "https://webvpn.nbcc.edu.cn/login",
     "type": "classic_eams",
-    "status": "unverified",
+    "status": "supported",
     "aliases": [],
     "sortKeyFull": "ningbochengshizhiyejishuxueyuan",
     "enableFetch": true,
