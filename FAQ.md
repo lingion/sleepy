@@ -1,6 +1,6 @@
 # Sleepy · 轻课表 FAQ
 
-> 这份 FAQ 只写当前代码和公开发布物能核实的事实，更新时间：2026-10-25。完整的页面说明、导入格式和适配记录见 [项目 Wiki](https://github.com/lingion/sleepy/wiki)。
+> 这份 FAQ 只写当前代码和公开发布物能核实的事实，更新时间：2026-10-26。完整的页面说明、导入格式和适配记录见 [项目 Wiki](https://github.com/lingion/sleepy/wiki)。
 
 ## 项目是什么
 
@@ -39,7 +39,7 @@
 - `universal`：包含所有上述 ABI；不确定架构时可选
 
 ### 有 iOS、Windows 或网页版本吗？
-本仓库原生应用面向 Android。另有[独立在线体验](https://sleepy.qdp.qzz.io)，不代表网页与原生 Android 的功能完全相同；原生平台支持以项目发布物为准。
+本仓库原生应用面向 Android。iOS 版在独立仓库 [lingion/sleepy-ios](https://github.com/lingion/sleepy-ios) 维护：SwiftUI + WidgetKit 原生实现，iOS 16.0 起，与 Android 版功能对齐，IPA 从该仓库 [Releases](https://github.com/lingion/sleepy-ios/releases) 下载（当前为未签名构建，安装前需自行重签）。另有[官网](https://sleepy.is-my.app)与[在线体验](https://sleepy.qdp.qzz.io)；在线体验不代表网页与原生应用的功能完全相同。Windows 版暂无。
 
 ## 导入与导出
 

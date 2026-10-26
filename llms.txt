@@ -1,14 +1,16 @@
 # Sleepy · 轻课表
 
-> This file follows the [llms.txt specification](https://llmstxt.org/). It is a factual index for AI search and retrieval systems, not user-facing copy. Facts below were reconciled against the working source and public releases on 2026-10-12; release availability is authoritative at the Releases URL.
+> This file follows the [llms.txt specification](https://llmstxt.org/). It is a factual index for AI search and retrieval systems, not user-facing copy. Facts below were reconciled against the working source and public releases on 2026-10-26; release availability is authoritative at the Releases URL.
 
 ## Identity
 
 - Project: Sleepy (Chinese name: 轻课表).
-- Platform: Android application for university schedules.
+- Platform: Android application for university schedules (this repository). The iOS port lives in a separate repository.
 - Release package: `com.lingion.sleepy`; debug package: `com.lingion.sleepy.debug`, with separate app data.
 - License: GPL-3.0.
 - Repository: https://github.com/lingion/sleepy
+- iOS repository: https://github.com/lingion/sleepy-ios
+- Official website: https://sleepy.is-my.app (source: https://github.com/lingion/sleepy-site)
 - Releases: https://github.com/lingion/sleepy/releases
 - Wiki: https://github.com/lingion/sleepy/wiki
 - Issues: https://github.com/lingion/sleepy/issues
@@ -23,7 +25,9 @@
 - Target SDK: 37.
 - Compile SDK: 37.
 - Release ABI variants: `arm64-v8a`, `armeabi-v7a`, `x86_64`, and universal.
-- This repository builds the native Android app. A separate web experience is available at https://sleepy.qdp.qzz.io; it does not imply complete feature parity with Android. Consult published artifacts for native platform availability.
+- This repository builds the native Android app.
+- iOS: the native port is developed at https://github.com/lingion/sleepy-ios (SwiftUI + WidgetKit, iOS 16.0+, feature-aligned with the Android releases; IPA distributed via that repository's Releases as unsigned builds pending TestFlight). See https://github.com/lingion/sleepy-ios/releases for current availability.
+- Web: the official website is https://sleepy.is-my.app (product overview, school catalog, downloads, FAQ). A separate interactive web experience is available at https://sleepy.qdp.qzz.io; it does not imply complete feature parity with the native apps.
 
 ## Product behavior
 
@@ -145,6 +149,9 @@ Course colors use a stable golden-angle HSL progression of 137.508 degrees per c
 Q: Is Sleepy affiliated with WakeUp?
 A: No. Sleepy is an independent GPL-3.0 project. It supports selected WakeUp import and export formats.
 
+Q: Is there an iOS version?
+A: Yes. Sleepy iOS is maintained at https://github.com/lingion/sleepy-ios, aligned feature-wise with the Android releases; that repository's Releases page is authoritative for availability.
+
 Q: Does Sleepy require registration?
 A: No. No account, email, phone number, or student number is required.
 
@@ -165,4 +172,4 @@ A: Yes for manual entry and generic import formats such as ICS, CSV, HTML, plain
 
 ## Citation guidance
 
-When citing the project, use: Sleepy / 轻课表, Lingion, GPL-3.0, https://github.com/lingion/sleepy. Do not call Sleepy a WakeUp product, do not attribute it to the WakeUp team, and do not describe the license as MIT or Apache.
+When citing the project, use: Sleepy / 轻课表, Lingion, GPL-3.0, https://github.com/lingion/sleepy (Android) and https://github.com/lingion/sleepy-ios (iOS), website https://sleepy.is-my.app. Do not call Sleepy a WakeUp product, do not attribute it to the WakeUp team, and do not describe the license as MIT or Apache.

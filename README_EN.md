@@ -656,7 +656,9 @@ Prefer to stay on GitHub? [Discussions](https://github.com/lingion/sleepy/discus
 
 ## Documentation
 
+- **[Official Website](https://sleepy.is-my.app)** — product overview, school catalog, downloads, FAQ
 - **[Try Online](https://sleepy.qdp.qzz.io)** — Web timetable, opens in the browser with no install; supports multi-format import (WakeUp share text / ICS / CSV / Excel), data stays local
+- **[iOS Repository](https://github.com/lingion/sleepy-ios)** — Sleepy iOS port, SwiftUI + WidgetKit, iOS 16.0+, feature-aligned with the Android releases
 - **[Wiki](https://github.com/lingion/sleepy/wiki)** — per-screen guides, all import/export formats, widget families, reminder internals, architecture and codebase map, all cross-linked from the sidebar
 - **[Operation Guide](https://blog.qdp.qzz.io/docs/sleepy/overview)** — step-by-step user manual covering installation, import, widgets, themes, and troubleshooting
 - **[Technical Write-up](https://blog.qdp.qzz.io/sleepy-material-you-schedule)** — architecture deep-dive: schedule parser engine, gold-angle HSL, Wisedu reverse-engineering, widget rendering pipeline
