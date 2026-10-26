@@ -114,13 +114,8 @@ fun CourseListScreen(
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                item {
-                    Text(
-                        text = stringResource(R.string.course_list_subtitle),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = colors.onSurfaceVariant
-                    )
-                }
+                // 2026-10-26 用户定令: 删除「当前课表的全部课程」副标题行。
+                // course_list_subtitle 键保留(六 locale 契约锁), 仅 UI 不再渲染。
                 items(grouped) { group -> CourseGroupCard(group) }
             }
         }
