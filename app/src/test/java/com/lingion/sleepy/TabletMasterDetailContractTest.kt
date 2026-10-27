@@ -25,7 +25,7 @@ class TabletMasterDetailContractTest {
     @Test
     fun wide_screen_has_two_pane_layout() {
         assertFalse("PLAN 标记必须清除(实现已落地)", navHostSrc.contains("// PLAN:wide-merged"))
-        assertTrue("宽屏分支应有 Row 双栏容器", navHostSrc.contains("if (!isCompact)"))
+        assertTrue("双栏分支必须有宽屏加横屏双闸", navHostSrc.contains("if (!isCompact && !portrait)"))
         val railSection = navHostSrc.indexOf("NavigationRail")
         assertTrue("宽屏导航锚点 NavigationRail 必须存在", railSection >= 0)
         val rowAfterRail = navHostSrc.indexOf("Row(", railSection)
@@ -35,6 +35,21 @@ class TabletMasterDetailContractTest {
             minOf(rowAfterRail + 8000, navHostSrc.length),
         )
         assertTrue("宽屏 Row 内必须有 ScheduleScreen 调用", rowBody.contains("ScheduleScreen("))
+    }
+
+    @Test
+    fun portrait_tablet_falls_back_to_single_pane() {
+        // 同窗报修(2026-10-27): 平板竖屏宽 800dp 也过 !isCompact 闸 → 被强分双栏。
+        // 契约: 双栏必须再加横屏闸;竖屏判据 = 宽<高(逐帧真实几何,不依赖 orientation 枚举)。
+        val gate = Regex("""val\s+portrait\s*=.*screenWidthDp\s*<.*screenHeightDp""")
+        assertTrue("必须存在 portrait 几何判定 val", gate.containsMatchIn(navHostSrc))
+        assertTrue(
+            "双栏分支条件必须含 !portrait 闸",
+            navHostSrc.contains("if (!isCompact && !portrait)"),
+        )
+        // 竖屏宽屏设备落到手机形态分支: dock 或底栏 Scaffold 必须仍在双栏分支之后可达
+        val gateIdx = navHostSrc.indexOf("if (!isCompact && !portrait)")
+        assertTrue("分支链完整", gateIdx > 0 && navHostSrc.indexOf("else if (navDock)", gateIdx) > gateIdx)
     }
 
     @Test

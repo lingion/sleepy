@@ -46,6 +46,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -477,8 +478,12 @@ private fun MainRoute(
     val activity = ctxForExit as? android.app.Activity
     val sizeClass = activity?.let { calculateWindowSizeClass(it) }
     val isCompact = sizeClass == null || sizeClass.widthSizeClass == WindowWidthSizeClass.Compact
+    // 同学报修(2026-10-27): 平板竖屏宽度也过 !isCompact 闸 → 被强分双栏,比例不适。
+    // 双栏再加横屏闸: 竖屏判据用逐帧真实几何(宽<高),不依赖 orientation 枚举(分屏/自由窗口下枚举不可靠)。
+    val configuration = LocalConfiguration.current
+    val portrait = configuration.screenWidthDp < configuration.screenHeightDp
 
-    if (!isCompact) {
+    if (!isCompact && !portrait) {
         // 平板宽屏 Master-Detail (PLAN:wide-merged):
         // 左 50% = ScheduleScreen 永久固定;右 50% = Today/Manage/Mine (跟用户切 rail 项);
         // Rail: 当前选中的 tab 跟 Schedule 组合成跑道胶囊(高亮),其它两个普通单图标。
