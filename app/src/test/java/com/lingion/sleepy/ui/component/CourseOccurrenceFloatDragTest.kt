@@ -33,6 +33,9 @@ class CourseOccurrenceFloatDragTest {
     @get:Rule val compose = createComposeRule()
     private val course = CourseEntity(id = 7, tableId = 1, groupId = "math", courseName = "FloatMath",
         day = 1, startNode = 1, step = 2, startWeek = 1, endWeek = 16, color = "#FF6750A4")
+    // 置灰「同组其他格不动」的对照卡: 不同星期不同节次的第二条课。
+    private val other = CourseEntity(id = 8, tableId = 1, groupId = "eng", courseName = "OtherCourse",
+        day = 3, startNode = 4, step = 1, startWeek = 1, endWeek = 16, color = "#FF00A000")
 
     private val slots = TimeTableUtils.timeSlotsFor(TimeTableUtils.DEFAULT_TIME_JSON)
     private val moves = mutableListOf<Move>()
@@ -46,6 +49,7 @@ class CourseOccurrenceFloatDragTest {
 
     private fun grid(
         state: CourseFloatState = CourseFloatState(),
+        courses: List<CourseEntity> = listOf(course),
         onMove: ((CourseEntity, Int, Int, Int, Boolean, (Boolean) -> Unit) -> Unit)? =
             { c, d, n, s, resizeOnly, onResult ->
                 moves.add(Move(c.id, d, n, s, resizeOnly)); onResult(saved)
@@ -58,7 +62,7 @@ class CourseOccurrenceFloatDragTest {
         compose.setContent {
             SleepyThemeProvider(darkTheme = false, themeKey = "default") {
                 Box(Modifier.size(360.dp, 640.dp)) {
-                    CardsGridView(courses = listOf(course), timeSlots = slots,
+                    CardsGridView(courses = courses, timeSlots = slots,
                         floatState = state,
                         onQuickAdd = onQuickAdd,
                         onOccurrenceMove = onMove, onOccurrenceDelete = onDelete,
@@ -370,5 +374,46 @@ class CourseOccurrenceFloatDragTest {
             assertTrue(moves.isEmpty()) // 无 pending → 不走确认管线
             assertNull(state.course)
         }
+    }
+
+    // ---- 拖拽置灰 (2026-10-27 用户裁决: 原占位格纯降透明度, 范围=仅拖拽中仅原格) ----
+
+    @Test fun draggingDimsOnlyTheOriginPlaceholderAndSparesOtherCells() {
+        val state = CourseFloatState()
+        grid(state, courses = listOf(course, other))
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        compose.runOnIdle { assertFalse(state.dragging) }
+        // 未进拖拽 → 原格不置灰 (浮起态只浮卡离开原位, 置灰语义从属拖拽)
+        compose.onNodeWithTag("float-dim").assertDoesNotExist()
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(80f, 80f), 200) // 越浮起死区 → 进拖拽
+        }
+        compose.runOnIdle { assertTrue(state.dragging) }
+        // 有且仅有一张置灰卡 — 被拖起的原占位; 同组其他格不动。
+        compose.onAllNodesWithTag("float-dim").assertCountEquals(1)
+    }
+
+    @Test fun releasingTheDragRestoresThePlaceholderToFullOpacity() {
+        val state = CourseFloatState()
+        grid(state)
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(80f, 80f), 200)
+        }
+        compose.onAllNodesWithTag("float-dim").assertCountEquals(1)
+        // 合法落点(第3天第4节) → 落库收层: 置灰随浮动态整体消失
+        val card = compose.onNodeWithTag("float-card").fetchSemanticsNode().boundsInRoot
+        val target = compose.onNodeWithTag("add-course-3-4").fetchSemanticsNode().boundsInRoot
+        compose.onNodeWithTag("float-card").performTouchInput {
+            moveBy(Offset(target.center.x - card.center.x, target.top - card.top), 300)
+            up()
+        }
+        compose.runOnIdle {
+            assertEquals(listOf(Move(7L, 3, 4, 2, false)), moves)
+            assertNull(state.course)
+        }
+        compose.onNodeWithTag("float-dim").assertDoesNotExist()
     }
 }

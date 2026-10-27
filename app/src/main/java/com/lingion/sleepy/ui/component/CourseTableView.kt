@@ -44,6 +44,7 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
@@ -923,6 +924,13 @@ fun CardsGridView(
                             isGrey = course.day in greyDays,
                             scale = scale,
                             cornerRatio = cornerRatio,
+                            // 置灰范围 (用户裁决 2026-10-27): 仅拖拽期间、仅被拖起那一格的原占位卡 —
+                            // 同星期且同起止节次的身份判等; 同组其他格与跟手浮卡都不动。
+                            dragDimmed = floatState.dragging &&
+                                floatState.course?.id == course.id &&
+                                course.day == floatState.day &&
+                                course.startNode == floatState.originStartNode &&
+                                course.startNode + course.step.coerceAtLeast(1) - 1 == floatState.originEndNode,
                             groupRows = courses.filter { it.groupId == course.groupId }
                         )
                     }
@@ -1203,6 +1211,9 @@ internal fun CourseOverlayCard(
     // 浮动态连续手势(A 契约): 非 null 即整卡交互改走该修饰符(长按浮起→不松手即拖),
     // onClick/onLongClick 不再挂载 — 与 onClick 可空模式同款, 调用方只传一个语义开关。
     liftGesture: Modifier? = null,
+    // 拖拽置灰 (2026-10-27 用户裁决): 被拖起课程的原占位卡在拖拽期间纯降透明度置灰
+    // (Material 3 disabled-content 档, SleepyTheme.Alpha.dragDim)。跟手浮卡不传, 恒全亮。
+    dragDimmed: Boolean = false,
 ) {
     val palette = SleepyTheme.palette
     val colors = MaterialTheme.colorScheme
@@ -1245,6 +1256,8 @@ internal fun CourseOverlayCard(
     Box(
         modifier = modifier
             .padding(sd(2f))
+            // 拖拽置灰 (边缘翻页特性): 原占位卡整卡纯降透明度, 浮卡跟手恒全亮。
+            .then(if (dragDimmed) Modifier.graphicsLayer { alpha = SleepyTheme.Alpha.dragDim }.testTag("float-dim") else Modifier)
             .clip(shape)
             .background(effectiveBg)
             .then(liftGesture ?: if (onClick != null) Modifier.noRippleCombinedClickable(onClick, onLongClick) else Modifier)
