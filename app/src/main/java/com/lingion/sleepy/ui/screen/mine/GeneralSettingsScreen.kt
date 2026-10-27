@@ -27,11 +27,11 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -716,17 +716,20 @@ fun GeneralSettingsScreen(
                             )
                         }
                         val undoDepthFieldDesc = stringResource(R.string.settings_undo_depth_label)
-                        OutlinedTextField(
+                        // 统一色块输入框(2026-08-25 定令: 全 app TextField + fieldShape/fieldColors, 禁描线),
+                        // 宽 120.dp 照 ReminderScreen 课前分钟数字行先例, 不设 label(标题已在左列)。
+                        TextField(
                             value = undoDepthInput,
                             onValueChange = { txt ->
                                 if (undoDepthFilter.matches(txt)) undoDepthInput = txt
                             },
-                            label = { Text("") },
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                             modifier = Modifier
-                                .width(88.dp)
-                                .semantics { contentDescription = undoDepthFieldDesc }
+                                .width(120.dp)
+                                .semantics { contentDescription = undoDepthFieldDesc },
+                            shape = SleepyTheme.fieldShape,
+                            colors = SleepyTheme.fieldColors()
                         )
                     }
                 }
