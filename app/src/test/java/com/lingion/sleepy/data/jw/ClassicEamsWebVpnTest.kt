@@ -15,8 +15,8 @@ import java.io.File
  *   2) 反串表单纪律 — 成绩查询表单排前时, 提取必须锚定课表表单作用域
  *      (Dart 实测教训: 整段拼接取第一个 addInput 会抓到成绩表单学号);
  *   3) buildCandidates ≤3 组、去 project 变体、去重、缺省 project=1;
- *   4) initialDesktopUa 四校表 — 只有 NBCC-Q1 门户形态吃桌面 UA, 其余零影响
- *      (48 校 enableFetch 恒 false 的爆炸半径闸在函数面同样成立)。
+ *   4) initialDesktopUa 校表白名单 — 只有 NBCC-Q1 门户形态与南开 eamis 吃桌面 UA,
+ *      其余校零影响 (enableFetch 恒 false 或 host 不匹配的爆炸半径闸在函数面同样成立)。
  */
 class ClassicEamsWebVpnTest {
 
@@ -160,16 +160,23 @@ class ClassicEamsWebVpnTest {
         assertEquals(emptyList<String>(), ClassicEamsWebVpn.buildCandidates(scope))
     }
 
-    // ---- ④ initialDesktopUa 四校表 ----
+    // ---- ④ initialDesktopUa 校表白名单 ----
 
     @Test
-    fun `initialDesktopUa 仅 NBCC-Q1 门户形态为 true`() {
+    fun `initialDesktopUa 仅 NBCC-Q1 门户与南开 eamis 为 true`() {
         // NBCC-Q1: 门户 /login + classic_eams + enableFetch → true
         assertTrue(ClassicEamsWebVpn.initialDesktopUa(
             school("https://webvpn.nbcc.edu.cn/login", JwProtocol.TYPE_CLASSIC_EAMS, true)))
         // NBCC hex 段深层路径同样吃门户 host → true
         assertTrue(ClassicEamsWebVpn.initialDesktopUa(
             school("https://webvpn.nbcc.edu.cn/https/77726476/eams/courseTableForStd.action",
+                JwProtocol.TYPE_CLASSIC_EAMS, true)))
+        // 南开 eamis 根 (issue #236 UA 条件输出排查, WakeUp 6.6.2 反汇编同型解法) → true
+        assertTrue(ClassicEamsWebVpn.initialDesktopUa(
+            school("https://eamis.nankai.edu.cn/", JwProtocol.TYPE_CLASSIC_EAMS, true)))
+        // 南开深层 action 路径同样吃 host → true
+        assertTrue(ClassicEamsWebVpn.initialDesktopUa(
+            school("https://eamis.nankai.edu.cn/eams/courseTableForStd.action",
                 JwProtocol.TYPE_CLASSIC_EAMS, true)))
         // NBCC-Q2: jwgl.webvpn 直链 host 非门户 → false
         assertFalse(ClassicEamsWebVpn.initialDesktopUa(
@@ -179,12 +186,18 @@ class ClassicEamsWebVpnTest {
         assertFalse(ClassicEamsWebVpn.initialDesktopUa(
             school("https://jwgl.hpu.edu.cn/eams/courseTableForStd.action",
                 JwProtocol.TYPE_CLASSIC_EAMS, false)))
-        // classic_eams + enableFetch 但非 NBCC 门户 host (假设第二校) → false
+        // classic_eams + enableFetch 但非白名单 host (假设第二校) → false
         assertFalse(ClassicEamsWebVpn.initialDesktopUa(
             school("https://webvpn.other.edu.cn/login", JwProtocol.TYPE_CLASSIC_EAMS, true)))
         // NBCC 门户 host 但 type 不同 → false
         assertFalse(ClassicEamsWebVpn.initialDesktopUa(
             school("https://webvpn.nbcc.edu.cn/login", "shuwei_json", true)))
+        // 南开 host 但 enableFetch=false → false (爆炸半径闸对南开同样成立)
+        assertFalse(ClassicEamsWebVpn.initialDesktopUa(
+            school("https://eamis.nankai.edu.cn/", JwProtocol.TYPE_CLASSIC_EAMS, false)))
+        // 南开 host 但 type 不同 → false
+        assertFalse(ClassicEamsWebVpn.initialDesktopUa(
+            school("https://eamis.nankai.edu.cn/", "shuwei_json", true)))
         // url 非法/为空 → false
         assertFalse(ClassicEamsWebVpn.initialDesktopUa(school("", JwProtocol.TYPE_CLASSIC_EAMS, true)))
         assertFalse(ClassicEamsWebVpn.initialDesktopUa(school("ht tp://bad url", JwProtocol.TYPE_CLASSIC_EAMS, true)))
