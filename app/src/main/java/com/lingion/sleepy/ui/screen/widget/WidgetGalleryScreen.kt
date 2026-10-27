@@ -1,12 +1,9 @@
 package com.lingion.sleepy.ui.screen.widget
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,10 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,7 +32,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -45,7 +39,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
-import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.widget.PinResult
 import com.lingion.sleepy.widget.WidgetGalleryCard
@@ -141,34 +134,30 @@ private fun GalleryCard(
     onClick: () -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
-    Card(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .then(if (enabled) Modifier.noRippleClickable(onClick) else Modifier)
-            .padding(10.dp)
+            .then(if (enabled) Modifier.noRippleClickable(onClick) else Modifier),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Image(
-                painter = painterResource(card.variant.previewImageRes),
-                contentDescription = stringResource(card.variant.displayNameRes),
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    // 行框 = 该排大卡自身比例: 大卡正常撑满, 小卡等比缩放到同高后居中(Fit)。
-                    // 用户定则「大的卡片正常撑满, 小的卡片跟它缩到一样高度」。
-                    .aspectRatio(boxAspectRatio)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(colors.surfaceContainerHighest),
-                alpha = if (enabled) 1f else 0.5f
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = stringResource(card.variant.displayNameRes),
-                style = MaterialTheme.typography.titleSmall,
-                color = if (enabled) colors.onSurface else colors.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                maxLines = 2
-            )
-        }
+        Image(
+            painter = painterResource(card.variant.previewImageRes),
+            contentDescription = stringResource(card.variant.displayNameRes),
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .fillMaxWidth()
+                // 行框 = 该排大卡自身比例: 大卡正常撑满, 小卡等比缩放到同高后居中(Fit)。
+                // 用户定则「大的卡片正常撑满, 小的卡片跟它缩到一样高度」。
+                .aspectRatio(boxAspectRatio),
+            alpha = if (enabled) 1f else 0.5f
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = stringResource(card.variant.displayNameRes),
+            style = MaterialTheme.typography.titleSmall,
+            color = if (enabled) colors.onSurface else colors.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            maxLines = 2
+        )
     }
 }
