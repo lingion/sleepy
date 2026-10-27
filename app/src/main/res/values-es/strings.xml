@@ -261,8 +261,6 @@
     <string name="course_note">Nota (opcional)</string>
     <string name="week_range">Rango de semanas</string>
     <string name="week_range_sub">Rango de semanas por defecto del curso; usa \"Aplicar a todas las franjas\" para sobrescribir cada franja</string>
-    <string name="start_week">Semana inicial</string>
-    <string name="end_week">Semana final</string>
     <string name="meeting_slots">Horarios</string>
     <string name="meeting_slots_sub">Un curso puede tener cualquier número de horarios; cada uno puede seleccionar varios días</string>
     <string name="slot_n">Horario %1$d</string>
@@ -273,7 +271,6 @@
     <string name="slot_summary_time_range">%1$s–%2$s</string>
     <string name="slot_summary_teacher">Profesor: %1$s</string>
     <string name="slot_summary_room">Aula: %1$s</string>
-    <string name="slot_week_range">Semanas</string>
     <string name="slot_week_order">La semana de inicio de la franja %1$d no puede ser posterior a la de fin</string>
     <string name="apply_to_all_slots">Aplicar a todas las franjas</string>
     <string name="week_every">Todas las semanas</string>
@@ -286,8 +283,6 @@
     <string name="delete_course_confirm">¿Eliminar curso \"%1$s\"? Esta acción no se puede deshacer.</string>
     <string name="select_at_least_one_day">Selecciona al menos un día</string>
     <string name="delete_slot">Eliminar horario de períodos</string>
-    <string name="start_node">Período inicial</string>
-    <string name="step_count">Períodos</string>
     <string name="start_time">Hora de inicio</string>
     <string name="end_time">Hora de fin</string>
     <string name="mode_by_node">Por período</string>
@@ -298,7 +293,6 @@
     <string name="slot_start_node_positive">El período de inicio del horario %1$d debe ser mayor que 0</string>
     <string name="slot_step_positive">Los períodos consecutivos del horario %1$d deben ser mayores que 0</string>
     <string name="slot_step_exceeds_max">El horario %1$d ocupa los períodos %2$d–%3$d y supera el máximo del horario (%4$d)</string>
-    <string name="slot_step_clamped_hint">La entrada supera el máximo de períodos (el horario actual tiene %3$d). Para añadir más períodos, ve a Gestión de horarios y edita el número de períodos del horario actual</string>
     <string name="conflict_detail_title">Conflicto con cursos existentes</string>
     <string name="conflict_detail_save_anyway">Guardar igualmente</string>
     <string name="conflict_detail_go_back">Volver</string>

@@ -261,8 +261,6 @@
     <string name="course_note">メモ（任意）</string>
     <string name="week_range">週次範囲</string>
     <string name="week_range_sub">コマのデフォルト週範囲。「すべてのコマに適用」で一括上書きできます</string>
-    <string name="start_week">開始週</string>
-    <string name="end_week">終了週</string>
     <string name="meeting_slots">時限</string>
     <string name="meeting_slots_sub">任意の数の時限を追加できます。各時限で複数の曜日を選択可能</string>
     <string name="slot_n">時限 %1$d</string>
@@ -273,7 +271,6 @@
     <string name="slot_summary_time_range">%1$s～%2$s</string>
     <string name="slot_summary_teacher">担当：%1$s</string>
     <string name="slot_summary_room">教室：%1$s</string>
-    <string name="slot_week_range">週範囲</string>
     <string name="slot_week_order">コマ %1$d の開始週は終了週より後にはできません</string>
     <string name="apply_to_all_slots">すべてのコマに適用</string>
     <string name="week_every">毎週</string>
@@ -286,8 +283,6 @@
     <string name="delete_course_confirm">授業「%1$s」を削除しますか？この操作は取り消せません。</string>
     <string name="select_at_least_one_day">少なくとも1日選択してください</string>
     <string name="delete_slot">時限を削除</string>
-    <string name="start_node">開始時限</string>
-    <string name="step_count">時限数</string>
     <string name="start_time">開始時刻</string>
     <string name="end_time">終了時刻</string>
     <string name="mode_by_node">時限で</string>
@@ -298,7 +293,6 @@
     <string name="slot_start_node_positive">スロット %1$d の開始時限は0より大きくなければなりません</string>
     <string name="slot_step_positive">スロット %1$d の連続時限数は0より大きくなければなりません</string>
     <string name="slot_step_exceeds_max">スロット %1$d の %2$d-%3$d 時限は時間割の最大時限（%4$d）を超えています</string>
-    <string name="slot_step_clamped_hint">入力が最大時限を超えています（現在の時間割は %3$d 時限まで）。時限数を増やすには、時間割管理画面で現在の時間割を編集してください</string>
     <string name="conflict_detail_title">既存の授業と時間が重複しています</string>
     <string name="conflict_detail_save_anyway">それでも保存</string>
     <string name="conflict_detail_go_back">戻って修正</string>

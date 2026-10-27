@@ -261,8 +261,6 @@
     <string name="course_note">備註（可選）</string>
     <string name="week_range">週次範圍</string>
     <string name="week_range_sub">整門課的預設週次；用「套用到所有時段」批次覆蓋各時段</string>
-    <string name="start_week">起始週</string>
-    <string name="end_week">結束週</string>
     <string name="meeting_slots">上課時段</string>
     <string name="meeting_slots_sub">一個課程可有任意多個時段；每個時段都可多選星期，並可按節次或按時間錄入</string>
     <string name="slot_n">時段 %1$d</string>
@@ -273,7 +271,6 @@
     <string name="slot_summary_time_range">%1$s–%2$s</string>
     <string name="slot_summary_teacher">老師：%1$s</string>
     <string name="slot_summary_room">地點：%1$s</string>
-    <string name="slot_week_range">週次</string>
     <string name="slot_week_order">時段 %1$d 的起始週不能晚於結束週</string>
     <string name="apply_to_all_slots">套用到所有時段</string>
     <string name="week_every">每週</string>
@@ -286,8 +283,6 @@
     <string name="delete_course_confirm">確定要刪除課程「%1$s」嗎？此操作不可撤銷。</string>
     <string name="select_at_least_one_day">至少選一天</string>
     <string name="delete_slot">刪除時段</string>
-    <string name="start_node">開始第幾節</string>
-    <string name="step_count">連上幾節</string>
     <string name="start_time">開始時間</string>
     <string name="end_time">結束時間</string>
     <string name="mode_by_node">按節次</string>
@@ -298,7 +293,6 @@
     <string name="slot_start_node_positive">時段 %1$d 的開始節必須大於 0</string>
     <string name="slot_step_positive">時段 %1$d 的連上節數必須大於 0</string>
     <string name="slot_step_exceeds_max">時段 %1$d 第 %2$d-%3$d 節已超出課表最大節次（%4$d 節）</string>
-    <string name="slot_step_clamped_hint">輸入已超出最大節次（當前課表共 %3$d 節），如需更多節次請到課表管理頁面編輯當前課表的節數</string>
     <string name="conflict_detail_title">與已有課程時間衝突</string>
     <string name="conflict_detail_save_anyway">仍然儲存</string>
     <string name="conflict_detail_go_back">返回修改</string>

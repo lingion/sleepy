@@ -289,8 +289,6 @@
     <string name="import_multi_location_warning_detail">「%1$s」有 %2$d 个不同上课地点,导入后会作为独立节次展示</string>
     <string name="week_range">周次范围</string>
     <string name="week_range_sub">整门课的默认周次；用「应用到所有时段」批量覆盖各时段</string>
-    <string name="start_week">起始周</string>
-    <string name="end_week">结束周</string>
     <string name="meeting_slots">上课时段</string>
     <string name="meeting_slots_sub">一个课程可有任意多个时段；每个时段都可多选星期，并可按节次或按时间录入</string>
     <string name="slot_n">时段 %1$d</string>
@@ -301,7 +299,6 @@
     <string name="slot_summary_time_range">%1$s–%2$s</string>
     <string name="slot_summary_teacher">老师：%1$s</string>
     <string name="slot_summary_room">地点：%1$s</string>
-    <string name="slot_week_range">周次</string>
     <string name="slot_week_order">时段 %1$d 的起始周不能晚于结束周</string>
     <string name="apply_to_all_slots">应用到所有时段</string>
     <string name="week_every">每周</string>
@@ -314,8 +311,6 @@
     <string name="delete_course_confirm">确定要删除课程「%1$s」吗？此操作不可撤销。</string>
     <string name="select_at_least_one_day">至少选一天</string>
     <string name="delete_slot">删除时段</string>
-    <string name="start_node">开始第几节</string>
-    <string name="step_count">连上几节</string>
     <string name="start_time">开始时间</string>
     <string name="end_time">结束时间</string>
     <string name="mode_by_node">按节次</string>
@@ -326,7 +321,6 @@
     <string name="slot_start_node_positive">时段 %1$d 的开始节必须大于 0</string>
     <string name="slot_step_positive">时段 %1$d 的连上节数必须大于 0</string>
     <string name="slot_step_exceeds_max">时段 %1$d 第 %2$d-%3$d 节已超出课表最大节次（%4$d 节）</string>
-    <string name="slot_step_clamped_hint">输入已超出最大节次（当前课表共 %3$d 节），如需更多节数请到课表管理页面编辑当前课表的节数</string>
     <string name="conflict_detail_title">与已有课程时间冲突</string>
     <string name="conflict_detail_save_anyway">仍然保存</string>
     <string name="conflict_detail_go_back">返回修改</string>

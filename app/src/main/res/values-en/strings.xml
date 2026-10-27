@@ -273,8 +273,6 @@
     <string name="color_refresh">Shuffle auto color</string>
     <string name="week_range">Week Range</string>
     <string name="week_range_sub">Default week range for the course; use \"Apply to all slots\" to overwrite every slot</string>
-    <string name="start_week">Start Week</string>
-    <string name="end_week">End Week</string>
     <string name="meeting_slots">Time Slots</string>
     <string name="meeting_slots_sub">A course can have any number of time slots; each can select multiple days</string>
     <string name="slot_n">Slot %1$d</string>
@@ -285,7 +283,6 @@
     <string name="slot_summary_time_range">%1$s–%2$s</string>
     <string name="slot_summary_teacher">Teacher: %1$s</string>
     <string name="slot_summary_room">Room: %1$s</string>
-    <string name="slot_week_range">Weeks</string>
     <string name="slot_week_order">Slot %1$d start week cannot be after its end week</string>
     <string name="apply_to_all_slots">Apply to all slots</string>
     <string name="week_every">Weekly</string>
@@ -298,8 +295,6 @@
     <string name="delete_course_confirm">Delete course \"%1$s\"? This cannot be undone.</string>
     <string name="select_at_least_one_day">Select at least one day</string>
     <string name="delete_slot">Remove slot</string>
-    <string name="start_node">Start Period</string>
-    <string name="step_count">Periods</string>
     <string name="start_time">Start Time</string>
     <string name="end_time">End Time</string>
     <string name="mode_by_node">By Period</string>
@@ -310,7 +305,6 @@
     <string name="slot_start_node_positive">Slot %1$d start period must be greater than 0</string>
     <string name="slot_step_positive">Slot %1$d consecutive periods must be greater than 0</string>
     <string name="slot_step_exceeds_max">Slot %1$d periods %2$d–%3$d exceed the timetable\'s max period (%4$d)</string>
-    <string name="slot_step_clamped_hint">Input exceeds the max period (%3$d). To add more periods, go to Timetable Manager and edit the current timetable\'s period count</string>
     <string name="conflict_detail_title">Conflicts with existing courses</string>
     <string name="conflict_detail_save_anyway">Save anyway</string>
     <string name="conflict_detail_go_back">Go back</string>
