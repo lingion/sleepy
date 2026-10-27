@@ -1,0 +1,268 @@
+[
+ {
+  "project": "zawnpn/NKU-EAMIS",
+  "author": "zawnpn",
+  "license_or_None": "MIT",
+  "verdict": "POSITIVE",
+  "role_in_verification": "课表/成绩/考试/选课全端点串 + addInput ids regex 头号证据"
+ },
+ {
+  "project": "zawnpn/NKU-EAMIS_Server",
+  "author": "zawnpn",
+  "license_or_None": "MIT",
+  "verdict": "POSITIVE",
+  "role_in_verification": "NKU-EAMIS 同源 CGI 封装, 会话流程顺序佐证"
+ },
+ {
+  "project": "zawnpn/NKU-EAMIS_MiniApp",
+  "author": "zawnpn",
+  "license_or_None": "MIT",
+  "verdict": "INDIRECT",
+  "role_in_verification": "同作者小程序形态, 间接佐证端点稳定"
+ },
+ {
+  "project": "suhipek/eamis-helper",
+  "author": "suhipek",
+  "license_or_None": "WTFPL",
+  "verdict": "POSITIVE",
+  "role_in_verification": "API library 独立复现 courseTableForStd 链 (WTFPL)"
+ },
+ {
+  "project": "TsXor/NK-eamis",
+  "author": "TsXor",
+  "license_or_None": "none (no license file; GitHub API license=null)",
+  "verdict": "POSITIVE",
+  "role_in_verification": "2025 活跃仓, 协议串近期存续证据"
+ },
+ {
+  "project": "Fighting05/NKU-GradeTracker",
+  "author": "Fighting05",
+  "license_or_None": "未声明",
+  "verdict": "POSITIVE",
+  "role_in_verification": "成绩链佐证 classic_eams 现役"
+ },
+ {
+  "project": "RYX0309/NKU-eamis",
+  "author": "RYX0309",
+  "license_or_None": "AGPL-3.0",
+  "verdict": "POSITIVE",
+  "role_in_verification": "独立 client 实现, 端点交叉"
+ },
+ {
+  "project": "Sazzzzzz/SchedulEase",
+  "author": "Sazzzzzz",
+  "license_or_None": "Unlicense",
+  "verdict": "POSITIVE",
+  "role_in_verification": "课表抓取交叉证据 (Unlicense)"
+ },
+ {
+  "project": "LoveGump/Nankai-Scripts",
+  "author": "LoveGump",
+  "license_or_None": "none (no LICENSE file; GitHub API license=null)",
+  "verdict": "POSITIVE",
+  "role_in_verification": "脚本集协议串"
+ },
+ {
+  "project": "SunriseFox/FuckNKUCourses",
+  "author": "SunriseFox",
+  "license_or_None": "none / anti-license ('YOU ARE NOT ALLOWED TO DISTRIBUTE IT, MODIFY IT OR EVEN USE IT' in README and proxy.js header)",
+  "verdict": "INDIRECT",
+  "role_in_verification": "反许可声明仓库: 仅引用协议事实, 凭据中转端点/代码零复用"
+ },
+ {
+  "project": "LetsStudyTogether/OneClickEvaluate",
+  "author": "LetsStudyTogether",
+  "license_or_None": "none",
+  "verdict": "POSITIVE",
+  "role_in_verification": "评教链, 佐证 eamis 会话形态"
+ },
+ {
+  "project": "LetsStudyTogether/NKU_eamis_semester_grade",
+  "author": "LetsStudyTogether",
+  "license_or_None": "none",
+  "verdict": "POSITIVE",
+  "role_in_verification": "学期成绩链, 佐证 semester.id 用法"
+ },
+ {
+  "project": "a4001234567/NKU_Project",
+  "author": "a4001234567",
+  "license_or_None": "none",
+  "verdict": "POSITIVE",
+  "role_in_verification": "多模块协议证据; 其凭据 relay 端点按红线不复用"
+ },
+ {
+  "project": "StevenSai/Nku-Score-By-Steven",
+  "author": "StevenSai",
+  "license_or_None": "Apache-2.0",
+  "verdict": "POSITIVE",
+  "role_in_verification": "成绩抓取 (Apache-2.0)"
+ },
+ {
+  "project": "sunshineclt/NKU-Helper",
+  "author": "sunshineclt",
+  "license_or_None": "GPL-3.0",
+  "verdict": "POSITIVE",
+  "role_in_verification": "课表+成绩 (GPL-3.0, 既有致谢延续)"
+ },
+ {
+  "project": "Everything-in-NKU/NKU-CourseHelper",
+  "author": "Everything-in-NKU",
+  "license_or_None": "未声明",
+  "verdict": "POSITIVE",
+  "role_in_verification": "课表辅助证据"
+ },
+ {
+  "project": "Ching-Yee-Chan/NKUCH",
+  "author": "Ching-Yee-Chan",
+  "license_or_None": "未声明",
+  "verdict": "INDIRECT",
+  "role_in_verification": "客户端形态间接佐证"
+ },
+ {
+  "project": "jxy18100/nku-",
+  "author": "jxy18100",
+  "license_or_None": "MIT (README only; GitHub API license field null)",
+  "verdict": "POSITIVE",
+  "role_in_verification": "活体抓取响应形态 + 学期号 4384 真实值 (fixture 学期锚点来源)"
+ },
+ {
+  "project": "john8654john/nankai-schedule",
+  "author": "john8654john",
+  "license_or_None": "未声明",
+  "verdict": "NEGATIVE",
+  "role_in_verification": "NEGATIVE: 日本南海电铁同名误命中, 协议边界仍致谢"
+ },
+ {
+  "project": "xiong-ZH-zq/NKU-Lecture-Helper",
+  "author": "xiong-ZH-zq",
+  "license_or_None": "未声明",
+  "verdict": "NULL_EVIDENCE",
+  "role_in_verification": "空仓库, 协议边界致谢"
+ },
+ {
+  "project": "qiqqqqq517/shangkeschedule",
+  "author": "qiqqqqq517",
+  "license_or_None": "Apache-2.0",
+  "verdict": "POSITIVE",
+  "role_in_verification": "课表形态交叉 (既有致谢条目延续)"
+ },
+ {
+  "project": "augustlies/tangli",
+  "author": "augustlies",
+  "license_or_None": "GPL-3.0",
+  "verdict": "POSITIVE",
+  "role_in_verification": "南开课表工具 (GPL-3.0)"
+ },
+ {
+  "project": "baoozak/timetable",
+  "author": "baoozak",
+  "license_or_None": "MIT",
+  "verdict": "POSITIVE",
+  "role_in_verification": "课表导出交叉 (MIT)"
+ },
+ {
+  "project": "shuakami/timetable",
+  "author": "shuakami",
+  "license_or_None": "GPL-3.0",
+  "verdict": "POSITIVE",
+  "role_in_verification": "南开 fork 课表 (GPL-3.0)"
+ },
+ {
+  "project": "LonelyMarch/OpenWakeUp",
+  "author": "LonelyMarch",
+  "license_or_None": "AGPL-3.0",
+  "verdict": "POSITIVE",
+  "role_in_verification": "既有致谢条目: 本校协议资产来源之一 (H2 复核南开目录命中)"
+ },
+ {
+  "project": "Aetik-yue/hormone",
+  "author": "Aetik-yue",
+  "license_or_None": "none",
+  "verdict": "POSITIVE",
+  "role_in_verification": "既有致谢条目, 南开课表消费端"
+ },
+ {
+  "project": "KeenTeam1990/HutHelper",
+  "author": "KeenTeam1990",
+  "license_or_None": "LGPL-2.1",
+  "verdict": "INDIRECT",
+  "role_in_verification": "H2 复核: 目录含南开条目, 多校形态对照"
+ },
+ {
+  "project": "Fun-James/NKU-SearchEngine",
+  "author": "Fun-James",
+  "license_or_None": "未声明",
+  "verdict": "INDIRECT",
+  "role_in_verification": "课程搜索间接证据"
+ },
+ {
+  "project": "wusir96/Nk-University-Search-System",
+  "author": "wusir96",
+  "license_or_None": "未声明",
+  "verdict": "POSITIVE",
+  "role_in_verification": "课程搜索间接证据"
+ },
+ {
+  "project": "Lllsir0202/IR",
+  "author": "Lllsir0202",
+  "license_or_None": "未声明",
+  "verdict": "INDIRECT",
+  "role_in_verification": "教务间接引用"
+ },
+ {
+  "project": "ZSH0608/NKU_CS_homework_materials",
+  "author": "ZSH0608",
+  "license_or_None": "未声明",
+  "verdict": "NULL_EVIDENCE",
+  "role_in_verification": "NULL_EVIDENCE, 教务相关协议边界致谢"
+ },
+ {
+  "project": "XmShrine/trick_1",
+  "author": "XmShrine",
+  "license_or_None": "未声明",
+  "verdict": "INDIRECT",
+  "role_in_verification": "间接引用"
+ },
+ {
+  "project": "Because66666/nkuwiki_web",
+  "author": "Because66666",
+  "license_or_None": "MIT",
+  "verdict": "INDIRECT",
+  "role_in_verification": " wiki 间接, 入口形态佐证"
+ },
+ {
+  "project": "MineGuYan/MineGuYan.github.io",
+  "author": "MineGuYan",
+  "license_or_None": "MIT",
+  "verdict": "INDIRECT",
+  "role_in_verification": "个人站间接"
+ },
+ {
+  "project": "liyue983/nankai-webvpn",
+  "author": "liyue983",
+  "license_or_None": "未声明",
+  "verdict": "POSITIVE",
+  "role_in_verification": "WebVPN 形态对照 (南开直连可用, 无 VPN 层结论旁证)"
+ },
+ {
+  "project": "WangshuXC/Ir",
+  "author": "WangshuXC",
+  "license_or_None": "未声明",
+  "verdict": "POSITIVE",
+  "role_in_verification": "课表 IR 形态交叉"
+ },
+ {
+  "project": "Ducky97/CDN_checker",
+  "author": "Ducky97",
+  "license_or_None": "未声明",
+  "verdict": "INDIRECT",
+  "role_in_verification": "NULL_EVIDENCE, 教务相关协议边界致谢"
+ },
+ {
+  "project": "NKUCS-ICU/NKUCS.ICU",
+  "author": "NKUCS-ICU",
+  "license_or_None": "GPL-3.0",
+  "verdict": "NULL_EVIDENCE",
+  "role_in_verification": "经验指北 wiki, 仅 prose 提及 eamis (stray 记录按候选集内条目计)"
+ }
+]
