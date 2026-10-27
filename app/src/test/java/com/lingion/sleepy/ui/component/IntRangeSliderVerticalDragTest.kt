@@ -98,19 +98,28 @@ class IntRangeSliderVerticalDragTest {
     @Test
     fun freeze_locks_page_on_main_pass_and_filters_y_on_initial_pass() {
         val src = findUpward("app/src/main/java/com/lingion/sleepy/ui/component/IntRangeSlider.kt").readText()
-        // Main pass = 绝对冻结: 每帧无条件整体消费, 外层滚动容器寸步不得 (两协程各一处)
+        // Main pass = 绝对冻结: 每帧无条件整体消费, 外层滚动容器寸步不得
         assertEquals(1, countOccurrences(src, "awaitPointerEvent(PointerEventPass.Main)"))
-        assertEquals(2, countOccurrences(src, "event.changes.forEach { it.consume() }"))
+        assertEquals(1, countOccurrences(src, "event.changes.forEach { it.consume() }"))
         // down 帧也吃 (首帧不留给外层累计)
         assertEquals(1, countOccurrences(src, "down.consume()"))
-        // Initial pass = 按压期滑块 Y 免疫: 纵向占优帧先于子级消费
+        // Initial pass = 按压期滑块 Y 免疫: 纵向占优帧先于子级消费 (逐指吃, 只吃那根)
         assertEquals(1, countOccurrences(src, "awaitPointerEvent(PointerEventPass.Initial)"))
+        assertEquals(1, countOccurrences(src, "change.consume()"))
         // 接管检测必须保留: 拖动期 Initial 再拦纵帧会杀 drag() 的 motionConsumed
         // (子级读取时刻 isConsumed → 拖动取消), 接管后 Initial 整体静默。
         // "if (!dragTakenOver)" 全文只许出现 1 次 = 只在 Initial 协程; Main 协程的
         // 冻结消费不许带任何条件 (旧版据此静默 → 接管前横帧 Y 漏给页面, 已废弃)
-        assertEquals(1, countOccurrences(src, "if (change.isConsumed && !vetoedThisFrame) dragTakenOver = true"))
+        assertEquals(1, countOccurrences(src, "if (change.isConsumed && change.id !in vetoedPointerIds) dragTakenOver = true"))
         assertEquals(1, countOccurrences(src, "if (!dragTakenOver) {"))
+        // 多指 (五次修正, 真机"掌缘先落→滑拇指→掌缘抬→页面照滚"根因): 冻结窗口
+        // 按区域内全部按压手指计, 两协程同款存活判据, 单指 break 不得复活
+        assertEquals(2, countOccurrences(src, "if (change.pressed) pressed.add(change.id) else pressed.remove(change.id)"))
+        assertEquals(2, countOccurrences(src, "if (pressed.isEmpty()) break"))
+        assertEquals(0, countOccurrences(src, "?: break"))
+        // 逐指接管区分: 单布尔会把掌缘的自家拦截误当成滑拇指的子级接管
+        // (Initial 继续拦 → drag 取消坑), 旧布尔名不得复活
+        assertEquals(0, countOccurrences(src, "vetoedThisFrame"))
         // PointerInputScope 不实现 CoroutineScope, 兄弟协程须套 coroutineScope (material3 RangeSlider 同款)
         assertEquals(1, countOccurrences(src, "coroutineScope {"))
         assertEquals(1, countOccurrences(src, "import kotlinx.coroutines.coroutineScope"))
