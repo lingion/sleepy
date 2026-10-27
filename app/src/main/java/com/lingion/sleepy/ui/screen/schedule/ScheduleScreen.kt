@@ -187,13 +187,18 @@ fun ScheduleScreen(
 
     Column(
         modifier = Modifier.fillMaxSize().dismissQuickAddOnOutsidePress(quickAddState)
-            // D 契约: 屏根空档按下也要先走「是否调整持续节次」确认 — 时间域用
-            // floatState.week(浮起时快照, 屏根看不到网格 currentWeek); 无 pending 时
-            // confirmPendingResizeBeforeDismiss 自会直接收层。
+            // D 契约: 屏根空档按下也要先走「是否调整持续节次」确认 — 被拖的一次课
+            // 住在起拖页 (floatState.originWeek, 浮起时快照), 时间域取它而不是翻页后的
+            // floatState.week; 无 pending 时 confirmPendingResizeBeforeDismiss 自会直接收层。
             .dismissFloatOnOutsidePress(floatState) {
                 floatState.confirmPendingResizeBeforeDismiss { lifted, day, node, step, onResult ->
                     runFloatOccurrence(
-                        { it.move(lifted, floatState.week, day, node, step, FloatEditIntent.SPAN_RESIZE) },
+                        {
+                            it.move(
+                                lifted, floatState.week, day, node, step, FloatEditIntent.SPAN_RESIZE,
+                                sourceWeek = floatState.originWeek,
+                            )
+                        },
                         onResult,
                     )
                 }
@@ -475,26 +480,31 @@ fun ScheduleScreen(
                         onOccurrenceMove = { projected, day, node, step, resizeOnly, onResult ->
                             runFloatOccurrence(
                                 {
+                                    // 跨周拖拽: 被拖的一次课在 originWeek 页上(浮起快照),
+                                    // week = 松手页 — 从起拖周拆出、落到松手周的目标格。
+                                    // 同周时两值相等, 行为不变。
                                     it.move(
                                         projected, floatState.week, day, node, step,
                                         if (resizeOnly) FloatEditIntent.SPAN_RESIZE else FloatEditIntent.MOVE,
+                                        sourceWeek = floatState.originWeek,
                                     )
                                 },
                                 onResult,
                             )
                         },
+                        // 浮框只在「仍浮起未落库」时可见 — 所操作的就是起拖那一格
+                        // (originWeek), 不是翻页后的宿主页。
                         onOccurrenceDelete = { projected ->
-                            runFloatOccurrence(work = { it.delete(projected, floatState.week) })
+                            runFloatOccurrence(work = { it.delete(projected, floatState.originWeek) })
                         },
                         // 浮窗「调整本次」→ 解析当次 occurrence 并直达编辑表单(不再二次点击)。
-                        // 时间域 = floatState.week — 跨周拖拽后浮框落在新页, 编辑的就是新页这一格。
                         onOccurrenceEdit = { projected ->
                             occurrenceEditDirect = true
                             val table = state.currentTable
                             val original = state.courses.firstOrNull { it.id == projected.id }
                             if (table != null && original != null) {
                                 selectedOccurrence = com.lingion.sleepy.util.CourseOccurrences.resolve(
-                                    original, DateUtils.dateOfWeek(table.startDate, floatState.week, projected.day), state.transfers
+                                    original, DateUtils.dateOfWeek(table.startDate, floatState.originWeek, projected.day), state.transfers
                                 )
                             }
                         },

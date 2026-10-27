@@ -631,10 +631,13 @@ fun CardsGridView(
             fun commitFloatDrop() {
                 val course = floatState.course ?: return
                 if (!floatState.dragging) return // 浮卡上的轻点: 不提交也不弹回(原位仍浮起)。
-                // 落点 = 卡片中心列 + 顶边最近节次; 任一环越界 = 非法落点, 弹回原位。
+                // 落点 = 卡片中心列 + 顶边最近节次。列向钳位 (2026-10-28 用户反馈:
+                // 压右缘松手曾整段静默弹回、像什么都没发生): 水平出界一律吸附到最近
+                // 合法列 — 边缘区落点 = 首/末列。纵向出格(顶边吸附不到任何节次、
+                // 跨度越出末节)仍是非法落点 → 弹回。
                 val centerRatio =
                     (floatState.x + floatState.width / 2f - timeW - gapW).value / (colW + gapW).value
-                val dayIdx = floor(centerRatio).toInt()
+                val dayIdx = floor(centerRatio).toInt().coerceIn(0, sortedDays.lastIndex)
                 val cardTopPx = with(headerDensity) { floatState.y.toPx() }
                 val snapped = floatGridNodes.minByOrNull { node ->
                     val b = floatBoundary(node, false) ?: return@minByOrNull Float.MAX_VALUE
@@ -643,9 +646,7 @@ fun CardsGridView(
                 val maxNode = floatGridNodes.maxOrNull()
                 // 跨度按"节次号连续"校验(午餐空隙不打断合法性), 只要求落点不越出末节。
                 val endNode = snapped?.let { it + floatState.step - 1 }
-                if (dayIdx !in sortedDays.indices || snapped == null || endNode == null ||
-                    maxNode == null || endNode > maxNode
-                ) {
+                if (snapped == null || endNode == null || maxNode == null || endNode > maxNode) {
                     springFloatBack()
                     return
                 }
@@ -683,7 +684,9 @@ fun CardsGridView(
                     }
                     if (dir != held) { held = dir; elapsed = 0L }
                     floatState.edgeDir = dir
-                    if (dir == 0) { floatState.edgeBlocked = 0; floatState.peekProgress = 0f; continue }
+                    // 回到格内 = 重新武装: 允许下一次满驻留翻页 (2026-10-28 用户反馈:
+                    // 旧实现仍压边就每 500ms 连翻, 根本停不了)。
+                    if (dir == 0) { floatState.edgeBlocked = 0; floatState.peekProgress = 0f; floatState.edgeArmed = true; continue }
                     val atBoundary = (dir < 0 && floatState.week <= 1) || (dir > 0 && floatState.week >= floatMaxWeek)
                     floatState.edgeBlocked = if (atBoundary) dir else 0
                     if (atBoundary) {
@@ -691,11 +694,14 @@ fun CardsGridView(
                         floatState.peekProgress = 1f
                         continue
                     }
+                    if (!floatState.edgeArmed) { floatState.peekProgress = 0f; continue }
                     elapsed += FLOAT_EDGE_DWELL_STEP_MS
                     floatState.peekProgress = (elapsed.toFloat() / FLOAT_EDGE_DWELL_MS).coerceIn(0f, 1f)
                     if (elapsed >= FLOAT_EDGE_DWELL_MS) {
                         // 驻留满: 周号先行 — 浮层/计时/落点几何同帧整体换宿主(排他 currentWeek==week),
-                        // 补偿平移把卡钉在指下, 300ms 页滑期间不飘; 仍压边则 elapsed=0 重计下一页。
+                        // 补偿平移把卡钉在指下, 300ms 页滑期间不飘。一次驻留只翻一页:
+                        // 翻过即消耗(edgeArmed=false), 必须收回格内再压出来才翻下一页。
+                        floatState.edgeArmed = false
                         floatState.week += dir
                         elapsed = 0L
                         held = 0
@@ -992,6 +998,7 @@ fun CardsGridView(
                                     floatState.dragOriginCx = floatState.x + floatState.width / 2f
                                     floatState.anchorRootLeftPx = floatRootLeftPx
                                     floatState.anchorScrollDp = with(headerDensity) { scrollState.value.toDp() }
+                                    floatState.edgeArmed = true // 否决弹回后再拖 = 新一次拖拽, 重新武装
                                 },
                                 onDrag = { amount ->
                                     with(headerDensity) {
@@ -1104,6 +1111,7 @@ fun CardsGridView(
                                 floatState.dragOriginCx = floatState.x + floatState.width / 2f
                                 floatState.anchorRootLeftPx = floatRootLeftPx
                                 floatState.anchorScrollDp = with(headerDensity) { scrollState.value.toDp() }
+                                floatState.edgeArmed = true // 否决弹回后再拖 = 新一次拖拽, 重新武装
                             },
                             onDrag = { amount ->
                                 with(headerDensity) {

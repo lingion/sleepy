@@ -102,6 +102,10 @@ class CourseFloatState {
     /** 进入拖拽瞬间起拖页的纵向滚动 (dp) — 翻页换宿主后各页几何同构, 新宿主据此
      *  对齐滚动量, 卡悬停行 = 视觉行; 落点判定本就在内容坐标系, 双保险。 */
     var anchorScrollDp: Dp by mutableStateOf(0.dp)
+    /** 一次驻留只许翻一页 (2026-10-28 用户反馈: 压边无限连翻停不了):
+     *  翻页即消耗, 直到手指回到格内 (dir==0 轮询) 才复位重新计时。
+     *  非组合读取 → 普通 var; 计时器换页重启 (week 入键) 也不得复活消耗量。 */
+    var edgeArmed = true
 
     /** 把手拉伸未获确认 → 位置/高度回到拉起时的原样, 浮卡本身留在原位。 */
     fun revertSpan() {
@@ -152,6 +156,7 @@ class CourseFloatState {
         edgeDir = 0
         edgeBlocked = 0
         peekProgress = 0f
+        edgeArmed = true
         cardBounds = null
         popupBounds = null
     }

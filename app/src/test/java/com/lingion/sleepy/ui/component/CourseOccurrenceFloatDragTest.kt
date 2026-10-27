@@ -221,17 +221,23 @@ class CourseOccurrenceFloatDragTest {
     }
 
     @Test fun droppingOutsideTheGridSpringsBackAndCancelsTheMove() {
+        // 2026-10-28 钳位契约: 水平出界一律吸最近合法列(见右缘提交例), 弹回只剩一种 —
+        // 跨度越出末节 (endNode > maxNode)。首段位移照搬通过的右缘例(横向为主,
+        // 确保浮卡手势被拖拽接管), 第二段再纵推越过末行: snapped=12, step=2 →
+        // endNode 13 非法 → 弹回。(纯纵向起手会被网格 verticalScroll 劫走, 探针实证。)
         val state = CourseFloatState()
         grid(state)
         compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
         val card = compose.onNodeWithTag("float-card").fetchSemanticsNode().boundsInRoot
+        val target = compose.onNodeWithTag("add-course-7-4").fetchSemanticsNode().boundsInRoot
         compose.onNodeWithTag("float-card").performTouchInput {
             down(center)
-            moveBy(Offset(700f, 150f), 300)
+            moveBy(Offset(target.center.x - card.center.x, target.top - card.top), 300)
+            moveBy(Offset(0f, 900f), 200) // 卡顶越到末行(第12节)以下 → endNode 13
             up()
         }
         compose.runOnIdle {
-            assertTrue(moves.isEmpty())
+            assertEquals(emptyList<Move>(), moves)
             assertFalse(state.dragging)
             assertNotNull(state.course)
         }
@@ -483,7 +489,9 @@ class CourseOccurrenceFloatDragTest {
         }
     }
 
-    @Test fun holdingTheEdgeFlipsEachPageWithAFreshDwell() {
+    /** 2026-10-28 用户反馈: 压住右缘就无限连翻、根本停不了 — 一次驻留只许翻一页,
+     *  翻过即消耗; 必须把手收回格内重新压边, 才重新计时翻下一页。 */
+    @Test fun oneDwellFlipsExactlyOnePageAndHoldingTheEdgeStopsThere() {
         val state = CourseFloatState()
         grid(state, floatMaxWeek = 16)
         compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
@@ -494,14 +502,52 @@ class CourseOccurrenceFloatDragTest {
         flushEdgePolling()
         compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS)
         compose.runOnIdle { assertEquals(2, state.week) }
-        // 第二次翻页要等换页重启的调度开销 — 每页满 500ms 起步, 无加速。
+        // 继续压住: 驻留已消耗, 再久也不翻 — 行为契约, 取代旧「每页连翻」。
         flushEdgePolling()
-        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS)
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS * 4)
+        compose.runOnIdle {
+            assertEquals(2, state.week)
+            assertEquals(listOf(1), edgeCalls)
+            assertFalse(state.edgeArmed)
+        }
+        // 收回格内 → 重新武装。
+        compose.onNodeWithTag("float-card").performTouchInput { moveBy(Offset(-200.dp.toPx(), 0f), 100) }
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_STEP_MS * 2)
+        compose.runOnIdle { assertTrue(state.edgeArmed) }
+        // 再压右缘: 满一个新 500ms 才翻第二页。
+        compose.onNodeWithTag("float-card").performTouchInput { moveBy(Offset(200.dp.toPx(), 0f), 100) }
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS - 100)
+        compose.runOnIdle {
+            assertEquals(2, state.week)
+            assertEquals(listOf(1), edgeCalls)
+        }
+        compose.mainClock.advanceTimeBy(200)
         compose.runOnIdle {
             assertEquals(3, state.week)
             assertEquals(listOf(1, 1), edgeCalls)
         }
         compose.onNodeWithTag("float-card").performTouchInput { up() }
+    }
+
+    /** 2026-10-28 用户反馈: 压右缘松手曾整段静默弹回 — 水平出界不得吞掉拖拽,
+     *  必须钳位吸附最近合法列并提交 (纵向出格才弹回)。 */
+    @Test fun releasingWhilePinnedToTheRightEdgeCommitsTheLastVisibleColumn() {
+        val state = CourseFloatState()
+        grid(state)
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        val card = compose.onNodeWithTag("float-card").fetchSemanticsNode().boundsInRoot
+        val target = compose.onNodeWithTag("add-course-7-4").fetchSemanticsNode().boundsInRoot
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(target.center.x - card.center.x, target.top - card.top), 300)
+            moveBy(Offset(120f, 0f), 100) // 越拖越出右缘 → 中心落在网格外 (dayIdx 7)
+            up()
+        }
+        compose.runOnIdle {
+            // 钳到末列 (day=7), 行向照常吸附 — 松手必须是一次真实提交, 不是静默弹回。
+            assertEquals(listOf(Move(7L, 7, 4, 2, false)), moves)
+            assertNull(state.course)
+        }
     }
 
     @Test fun semesterBoundaryKeepsTheWeekAndBlocksTheFlip() {

@@ -13,6 +13,7 @@ import org.junit.Test
 class EdgePagingContractTest {
 
     private val edgePeek = readProjectSource("app/src/main/java/com/lingion/sleepy/ui/component/EdgePeek.kt")
+    private val edgeOrFloatState = readProjectSource("app/src/main/java/com/lingion/sleepy/ui/component/FloatOccurrence.kt")
     private val tableView = readProjectSource("app/src/main/java/com/lingion/sleepy/ui/component/CourseTableView.kt")
     private val schedule = readProjectSource("app/src/main/java/com/lingion/sleepy/ui/screen/schedule/ScheduleScreen.kt")
     private val theme = readProjectSource("app/src/main/java/com/lingion/sleepy/ui/theme/Theme.kt")
@@ -39,6 +40,15 @@ class EdgePagingContractTest {
         assertTrue("学期尾禁翻", tableView.contains("dir > 0 && floatState.week >= floatMaxWeek"))
     }
 
+    @Test fun oneDwellFlipsOnePageAndReArmsOnlyBackInTheGrid() {
+        // 2026-10-28 用户反馈: 压边无限连翻停不了 — 翻过即消耗, 收回格内(dir==0)才重新武装。
+        assertTrue("翻过即消耗", tableView.contains("floatState.edgeArmed = false"))
+        assertTrue("未武装不计时", tableView.contains("if (!floatState.edgeArmed)"))
+        assertTrue("回格重新武装", tableView.contains("floatState.edgeArmed = true; continue"))
+        assertTrue("武装字段默认开", edgeOrFloatState.contains("var edgeArmed = true"))
+        assertTrue("松手重新武装", edgeOrFloatState.contains("edgeArmed = true"))
+    }
+
     @Test fun dimScopeIsOriginPageOnly() {
         // 周复现课程在目标页同 id/同日/同节次 — 无原页守卫会把落点卡误压暗。
         assertTrue(tableView.contains("currentWeek == floatState.originWeek"))
@@ -55,10 +65,19 @@ class EdgePagingContractTest {
         // 时间域以浮起页为准 — 跨周翻页后落点必须写目标周, 不能再拿「页号+1」。
         // (move 调用跨行, 锁「projected, floatState.week, day, node, step」子串)
         assertTrue("移动走浮起周", schedule.contains("projected, floatState.week, day, node, step"))
-        assertTrue("删除走浮起周", schedule.contains("it.delete(projected, floatState.week)"))
-        assertTrue("编辑走浮起周", schedule.contains("table.startDate, floatState.week, projected.day"))
+        // 被拖的那一次课住在起拖页 — 跨周翻页后 resolve/删除/编辑全按 originWeek,
+        // 落库才按松手页 (2026-10-28 用户反馈: 单周号致翻页松手静默无效)。
+        assertTrue("移动带起拖周", schedule.contains("sourceWeek = floatState.originWeek"))
+        assertTrue("删除走起拖周", schedule.contains("it.delete(projected, floatState.originWeek)"))
+        assertTrue("编辑走起拖周", schedule.contains("table.startDate, floatState.originWeek, projected.day"))
         assertTrue("settledPage 回写", schedule.contains("floatState.week = pagerState.settledPage + 1"))
         // 屏根周变化收起浮层 — 拖拽中例外(边缘翻页正是要改周)。
         assertTrue("收起守卫", schedule.contains("if (!floatState.dragging && floatState.active && floatState.week != state.selectedWeek)"))
+    }
+
+    @Test fun horizontalEdgeReleaseClampsInsteadOfBouncing() {
+        // 2026-10-28 用户反馈: 压右缘松手曾「像完全没有任何发生」—
+        // 水平出界钳到最近可见列, 纵向非法(末行以下)才弹回。
+        assertTrue("列钳位", tableView.contains("coerceIn(0, sortedDays.lastIndex)"))
     }
 }
