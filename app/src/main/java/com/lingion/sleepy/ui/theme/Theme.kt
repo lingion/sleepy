@@ -383,6 +383,11 @@ object SleepyTheme {
 
         /** 未选中态强调减弱(按钮/文字提示) */
         const val inactive = 0.6f
+
+        /** 拖拽置灰 — 被拖起课程的原占位卡在拖拽期间的纯不透明度。
+         *  取 Material 3 disabled-content 档(androidx compose/material3
+         *  tokens/CheckboxTokens.kt SelectedDisabledContainerOpacity = 0.38f)。 */
+        const val dragDim = 0.38f
     }
 
     /** 统一输入框形状 — 全 app 输入框唯一档位(此前 large/medium 混用) */
