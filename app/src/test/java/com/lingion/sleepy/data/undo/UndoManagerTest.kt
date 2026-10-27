@@ -7,19 +7,19 @@ import org.junit.Test
 class UndoManagerTest {
 
     @Test
-    fun `capture stores single slot and poll drains it`() {
+    fun `capture stores latest step and poll drains it`() {
         UndoManager.clear()
         val t = TimeTableEntity(id = 1, name = "T", startDate = "2026-09-01")
         UndoManager.capture(listOf(t), emptyList(), 1L)
         check(UndoManager.hasSnapshot)
         val snap = UndoManager.poll()
         check(snap?.defaultTableId == 1L)
-        check(!UndoManager.hasSnapshot)          // poll 即清空(单级)
+        check(!UndoManager.hasSnapshot)          // poll 即弹栈顶(栈空后无步可退)
         check(UndoManager.poll() == null)        // 二次 poll 为空
     }
 
     @Test
-    fun `capture overwrites previous snapshot`() {
+    fun `latest capture becomes newest step on stack`() {
         UndoManager.clear()
         UndoManager.capture(emptyList(), emptyList(), null)
         UndoManager.capture(
@@ -187,5 +187,151 @@ class UndoManagerTest {
         // 关键: 用户做了新动作(capture C') → redo 必清
         UndoManager.capture(emptyList(), emptyList(), 2L)
         check(!UndoManager.hasRedoSnapshot)    // 关键断言:新写清 redo
+    }
+
+    // ────────────────────────────────────────────────────────────────────
+    // 2026-10-27 多步化套件 — slot/redoSlot 改双栈(末元素=栈顶=最近一步),
+    // maxDepth 控制裁剪: -1 无限、0 禁用、N 保留最近 N 步。
+    // 每条用例首行 clear(), try/finally 末尾恢复默认深度, 单例状态不许泄漏。
+    // ────────────────────────────────────────────────────────────────────
+
+    private fun table(id: Long) = TimeTableEntity(id = id, name = "T$id", startDate = "")
+
+    @Test
+    fun `multi capture builds stack and poll pops newest first`() {
+        UndoManager.clear()
+        try {
+            UndoManager.capture(listOf(table(1)), emptyList(), 1L)
+            UndoManager.capture(listOf(table(2)), emptyList(), 2L)
+            UndoManager.capture(listOf(table(3)), emptyList(), 3L)
+            check(UndoManager.poll()?.defaultTableId == 3L)  // 栈顶 = 最近一步
+            check(UndoManager.poll()?.defaultTableId == 2L)
+            check(UndoManager.poll()?.defaultTableId == 1L)
+            check(UndoManager.poll() == null)                // 三步弹空
+            check(!UndoManager.hasSnapshot)
+        } finally {
+            UndoManager.applyMaxDepth(UndoManager.DEFAULT_MAX_DEPTH)
+        }
+    }
+
+    @Test
+    fun `positive depth cap trims oldest on capture`() {
+        UndoManager.clear()
+        try {
+            UndoManager.applyMaxDepth(2)
+            for (i in 1L..4L) UndoManager.capture(listOf(table(i)), emptyList(), i)
+            check(UndoManager.poll()?.defaultTableId == 4L)  // id 1..4 连拍, 1、2 被裁剪
+            check(UndoManager.poll()?.defaultTableId == 3L)
+            check(!UndoManager.hasSnapshot)
+        } finally {
+            UndoManager.applyMaxDepth(UndoManager.DEFAULT_MAX_DEPTH)
+        }
+    }
+
+    @Test
+    fun `maxDepth zero disables capture and clears existing stacks`() {
+        UndoManager.clear()
+        try {
+            UndoManager.capture(listOf(table(1)), emptyList(), 1L)
+            UndoManager.applyMaxDepth(0)
+            check(!UndoManager.hasSnapshot)                  // 置 0 立即清空两条栈
+            UndoManager.capture(listOf(table(2)), emptyList(), 2L)
+            check(!UndoManager.hasSnapshot)                  // 0 深度下 capture 禁用
+            check(UndoManager.poll() == null)
+        } finally {
+            UndoManager.applyMaxDepth(UndoManager.DEFAULT_MAX_DEPTH)
+        }
+    }
+
+    @Test
+    fun `unlimited depth keeps every capture`() {
+        UndoManager.clear()
+        try {
+            UndoManager.applyMaxDepth(-1)
+            for (i in 1L..30L) UndoManager.capture(listOf(table(i)), emptyList(), i)
+            for (k in 1..30) {
+                check(UndoManager.poll()?.defaultTableId == 30L - k + 1)  // 新→旧全数在栈
+            }
+            check(!UndoManager.hasSnapshot)
+        } finally {
+            UndoManager.applyMaxDepth(UndoManager.DEFAULT_MAX_DEPTH)
+        }
+    }
+
+    @Test
+    fun `new capture clears redo stack but not undo stack`() {
+        UndoManager.clear()
+        try {
+            UndoManager.capture(listOf(table(1)), emptyList(), 1L)
+            UndoManager.poll()
+            val r = UndoSnapshot(tables = emptyList(), courses = emptyList(), defaultTableId = null)
+            UndoManager.recordRedo(r)
+            UndoManager.capture(listOf(table(2)), emptyList(), 2L)
+            check(!UndoManager.hasRedoSnapshot)              // 新写动作 = redo 作废
+            check(UndoManager.hasSnapshot)                   // undo 栈不受影响
+        } finally {
+            UndoManager.applyMaxDepth(UndoManager.DEFAULT_MAX_DEPTH)
+        }
+    }
+
+    @Test
+    fun `redo stack pops newest first and reinsert lands on undo top`() {
+        UndoManager.clear()
+        try {
+            val r1 = UndoSnapshot(tables = emptyList(), courses = emptyList(), defaultTableId = 11L)
+            val r2 = UndoSnapshot(tables = emptyList(), courses = emptyList(), defaultTableId = 22L)
+            UndoManager.recordRedo(r1)
+            UndoManager.recordRedo(r2)
+            check(UndoManager.pollRedo() === r2)             // redo 栈同样末元素先弹
+            check(UndoManager.pollRedo() === r1)
+            val q = UndoSnapshot(tables = emptyList(), courses = emptyList(), defaultTableId = 33L)
+            UndoManager.reinsertForRedoSymmetry(q)
+            check(UndoManager.poll() === q)                  // 重填落到 undo 栈顶
+        } finally {
+            UndoManager.applyMaxDepth(UndoManager.DEFAULT_MAX_DEPTH)
+        }
+    }
+
+    @Test
+    fun `applyMaxDepth shrink trims both stacks to newest n`() {
+        UndoManager.clear()
+        try {
+            for (i in 1L..4L) UndoManager.capture(listOf(table(i)), emptyList(), i)
+            UndoManager.poll()                               // 弹走 C4
+            val r1 = UndoSnapshot(tables = emptyList(), courses = emptyList(), defaultTableId = 4L)
+            UndoManager.recordRedo(r1)
+            UndoManager.poll()                               // 弹走 C3
+            val r2 = UndoSnapshot(tables = emptyList(), courses = emptyList(), defaultTableId = 3L)
+            UndoManager.recordRedo(r2)
+            UndoManager.applyMaxDepth(2)                     // 两条栈各剩最近 2 条
+            check(UndoManager.poll()?.defaultTableId == 2L)  // C3、C4 已弹走, 剩 C1、C2
+            check(UndoManager.poll()?.defaultTableId == 1L)
+            check(!UndoManager.hasSnapshot)
+            val top = UndoManager.pollRedo()                 // redo 序: R2 后压入 = 先弹
+            check(top?.defaultTableId == 3L)
+            val bottom = UndoManager.pollRedo()
+            check(bottom?.defaultTableId == 4L)
+            check(!UndoManager.hasRedoSnapshot)
+        } finally {
+            UndoManager.applyMaxDepth(UndoManager.DEFAULT_MAX_DEPTH)
+        }
+    }
+
+    @Test
+    fun `batch pushes one entry and stacks after previous action`() {
+        UndoManager.clear()
+        try {
+            UndoManager.capture(listOf(table(1)), emptyList(), 1L)   // 上一动作留栈
+            UndoManager.beginBatch()
+            UndoManager.capture(listOf(table(2)), emptyList(), 2L)   // 批内首拍生效
+            UndoManager.capture(listOf(table(3)), emptyList(), 3L)   // 批内后续拍丢弃
+            UndoManager.endBatch()
+            check(UndoManager.poll()?.defaultTableId == 2L)          // 批内保首拍
+            check(UndoManager.poll()?.defaultTableId == 1L)          // 上一步仍在栈里
+            check(UndoManager.poll() == null)
+        } finally {
+            UndoManager.endBatch()   // 防 begin 后异常泄漏 batchDepth(本用例已配平)
+            UndoManager.applyMaxDepth(UndoManager.DEFAULT_MAX_DEPTH)
+        }
     }
 }
