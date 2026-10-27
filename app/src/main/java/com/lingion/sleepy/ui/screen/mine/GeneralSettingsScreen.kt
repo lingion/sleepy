@@ -690,6 +690,8 @@ fun GeneralSettingsScreen(
                     HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     // 多步撤回 spec D2: 撤回步数设置行(标题左、输入框右, 照本文件晚间起始 TimePickerField 行)。
                     // 用 KeyboardType.Text + "-?" 正则过滤而非 Number: 系统数字键盘无负号键, -1 是法定输入。
+                    // 过滤正则提为组合期单例(remember), 避免每次按键重编译。
+                    val undoDepthFilter = remember { Regex("^-?\\d{0,6}$") }
                     LaunchedEffect(undoDepthInput) {
                         if (undoDepthInput.isBlank()) return@LaunchedEffect
                         val v = undoDepthInput.toIntOrNull() ?: return@LaunchedEffect // 溢出/非整数不落库
@@ -717,7 +719,7 @@ fun GeneralSettingsScreen(
                         OutlinedTextField(
                             value = undoDepthInput,
                             onValueChange = { txt ->
-                                if (Regex("^-?\\d{0,6}$").matches(txt)) undoDepthInput = txt
+                                if (undoDepthFilter.matches(txt)) undoDepthInput = txt
                             },
                             label = { Text("") },
                             singleLine = true,
