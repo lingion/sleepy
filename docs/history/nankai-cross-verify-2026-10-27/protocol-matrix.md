@@ -13,7 +13,7 @@
 | studentId 形态 | 学号 | 学号（2023 级起 10 位, fixture 合成 `2000000001` 形态） | 一致 |
 | API path / 请求方法 | POST `/eams/courseTableForStd!courseTable.action`, 体 `ignoreHead=1&setting.kind=std&startWeek=&project.id=1&semester.id=&ids=` | 同左逐字（bucket-A/B 多仓端点串一致）; 学期号 = `semesterCalendar({…,value:"4384"})` 真实页面为**不引号 key** 形态 | 一致; 学期号当前值 4384（jxy18100 实测） |
 | 会话失效形态 | 响应不含 `new TaskActivity` → 门户回登录 | 回跳 IAM 登录页（LOGIN_FINGERMENTS 双指纹 score≥2 判 SESSION_EXPIRED）; 自动动线内 loginRe 命中 → 「登录态已失效,请在 WebView 内重新登录后再试」 | 南开多一条**主动**失效判据（entry GET 阶段即可判, 不必等 POST 空手而归） |
-| 反爬/传输障碍 | 深信服打残页面 jQuery → 原生 fetch; UA 分流（移动 UA 被送进钉钉 SPA） | 未见 UA 分流证据; 38 仓 2017-2026 跨度均正常协议串; 根域本机不可达属校园网侧限制 | 南开无 UA 分支需求 |
+| 反爬/传输障碍 | 深信服打残页面 jQuery → 原生 fetch; UA 分流（移动 UA 被送进钉钉 SPA） | 38 仓 2017-2026 跨度均正常协议串; 根域本机不可达属校园网侧限制。**修正（2026-10-27 报告人活体包）**: home.action 实捕帧 head 为空、netlog 零子资源请求 + jQuery/bg ReferenceError → UA 条件输出存疑, 详见 reporter-dump-analysis.md 残余风险节 | 南开 UA 分支从「无需求」改「存疑·活体回传第一排查项」 |
 
 ## 同族互证（课表页形态锚点）
 
