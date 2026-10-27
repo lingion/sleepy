@@ -71,6 +71,55 @@ object ClassicEamsWebVpn {
      */
     val CLASSIC_EAMS_DESKTOP_UA_HOSTS = setOf("webvpn.nbcc.edu.cn", "eamis.nankai.edu.cn")
 
+    /**
+     * WakeUp 6.6.2 桌面 UA 基础串 (classes6.dex 三处常量逐字原样: toggle 桌面分支 +
+     * createWebView 拼接基串)。替换我方旧 Chrome/121 串 (用户 2026-10-27 令全栈照抄)。
+     */
+    val WAKEUP_DESKTOP_UA_BASE =
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) " +
+            "Chrome/99.0.4844.88 Safari/537.36"
+
+    /**
+     * WakeUp 6.6.2 toggle 关闭态移动伪装串 (逐字原样, 华为浏览器 PGT-AN10 形态)。
+     * 关键性质: 无 `wv` — 显式设置即剥离裸 WebView 身份证 (南开 UA 条件输出假设的对症动作)。
+     * 仅在本会话用户手动切回手机态时施加; 从未切换的 WebView 保持内核默认 UA —
+     * 与 WakeUp createWebView 一致 (falsely 默认态不动 UA, 伪装只发生在 toggle 路径)。
+     */
+    val WAKEUP_MOBILE_SPOOF_UA =
+        "Mozilla/5.0 (Linux; Android 13; PGT-AN10; HMSCore 6.11.0.332) AppleWebKit/537.36 " +
+            "(KHTML, like Gecko) Chrome/99.0.4844.88 HuaweiBrowser/14.0.2.300 Mobile Safari/537.36"
+
+    /**
+     * 桌面 UA 尾保留标记 (WakeUp `wakeup_vc` 同型机制, 换我方 token)。取证事实: 官方包
+     * 全 APK `wakeup_vc` 仅此一处出现、零写入方 — 该分支是防御性预留 (供热修/外部把
+     * 标记注入系统 UA 后, 桌面替换保留标记及其后文本)。我方同样无写入方, 机制照抄备用。
+     */
+    val UA_TAIL_MARKER = "sleepy_vc"
+
+    /** 尾检索起点 (WakeUp indexOf(fromIndex=6) 逐字照抄: 跳过 "Mozilla/" 前缀区)。 */
+    private const val UA_TAIL_SEARCH_FROM = 6
+
+    /**
+     * 桌面 UA 组合 (WakeUp createWebView 桌面分支逐语义照抄): [UA_TAIL_MARKER] 在
+     * 起点 [UA_TAIL_SEARCH_FROM] 之后命中 (index>0) → 基础串 + 自命中位起全文;
+     * 未命中/空/非法 → 纯基础串 (WakeUp 原语义未命中不改写, 我方因 Chrome/121→99
+     * 版本跨度大于其 99→99 恒等, 统一落到 WakeUp 桌面串更忠实)。
+     */
+    fun desktopUserAgent(defaultUa: String?): String {
+        val idx = defaultUa?.indexOf(UA_TAIL_MARKER, UA_TAIL_SEARCH_FROM) ?: -1
+        return if (idx > 0)
+            WAKEUP_DESKTOP_UA_BASE + " " + defaultUa!!.substring(idx)
+        else WAKEUP_DESKTOP_UA_BASE
+    }
+
+    /**
+     * 桌面 UA 初值裁决 (WakeUp 初始化链照抄: 白名单强制开校 → pref 值决定 → 默认 false;
+     * 我方 pref 三态 = 无记录回退校表初值)。[stored] null=用户从未切换过 (出厂态),
+     * 非 null=用户最后一次的显式选择, 跨会话覆盖校表白名单默认。
+     */
+    fun resolveDesktopUaInitial(stored: Boolean?, schoolDefault: Boolean): Boolean =
+        stored ?: schoolDefault
+
     private val idsRe = Regex(CLASSIC_EAMS_IDS_RE)
     private val idsInputRe = Regex(CLASSIC_EAMS_IDS_INPUT_RE)
     private val semesterCalRe = Regex(CLASSIC_EAMS_SEMESTER_CAL_RE)
