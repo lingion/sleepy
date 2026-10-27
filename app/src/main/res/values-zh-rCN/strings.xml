@@ -397,6 +397,9 @@
     <string name="settings_grid_pinch_zoom_sub">在课表上用双指上下捏放改变行高；关闭后不可捏放</string>
     <string name="settings_lab">实验室</string>
     <string name="settings_lab_sub">实验性功能，默认关闭，可能随版本调整</string>
+    <string name="settings_undo_depth">撤回保留步数</string>
+    <string name="settings_undo_depth_sub">-1 为无限, 0 为关闭撤回, 其他数字保留相应步数。默认 5。历史仅存于内存, 杀进程即清空。</string>
+    <string name="settings_undo_depth_label">撤回保留步数输入框</string>
     <string name="settings_migration">数据迁移</string>
     <string name="settings_migration_sub">打包全部课表、作息、偏好与小组件配置为 .sleepybackup 文件，可在新设备上恢复</string>
     <string name="settings_migration_export">导出全量迁移配置</string>

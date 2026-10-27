@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Check
@@ -26,6 +27,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -34,6 +36,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,12 +51,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.AppDatabase
 import com.lingion.sleepy.data.migration.MigrationExecutor
 import com.lingion.sleepy.data.migration.MigrationModule
+import com.lingion.sleepy.data.undo.UndoManager
 import com.lingion.sleepy.ui.component.DisplayModeOption
 import com.lingion.sleepy.ui.component.SectionHeader
 import com.lingion.sleepy.ui.component.SettingsFlatCard
@@ -133,6 +140,8 @@ fun GeneralSettingsScreen(
     var vertPunct by remember { mutableStateOf(AppPrefs.isVertPunctReplace(context)) }
     var gridShowSeparators by remember { mutableStateOf(AppPrefs.isGridShowSeparators(context)) }
     var gridLongBreakSpacing by remember { mutableStateOf(AppPrefs.isGridLongBreakSpacing(context)) }
+    // 多步撤回 spec D2: 实验室撤回步数输入态 — 初始值取持久偏好(默认 5)
+    var undoDepthInput by remember { mutableStateOf(AppPrefs.getUndoDepth(context).toString()) }
 
     // 显示项变更后立即刷小组件(管线自 AppearanceScreen 迁移保留)
     val widgetScope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
@@ -678,6 +687,46 @@ fun GeneralSettingsScreen(
                             refreshWidgets()
                         }
                     )
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    // 多步撤回 spec D2: 撤回步数设置行(标题左、输入框右, 照本文件晚间起始 TimePickerField 行)。
+                    // 用 KeyboardType.Text + "-?" 正则过滤而非 Number: 系统数字键盘无负号键, -1 是法定输入。
+                    LaunchedEffect(undoDepthInput) {
+                        if (undoDepthInput.isBlank()) return@LaunchedEffect
+                        val v = undoDepthInput.toIntOrNull() ?: return@LaunchedEffect // 溢出/非整数不落库
+                        AppPrefs.setUndoDepth(context, v)
+                        UndoManager.applyMaxDepth(v)
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.settings_undo_depth),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = colors.onSurface
+                            )
+                            Text(
+                                text = stringResource(R.string.settings_undo_depth_sub),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = colors.onSurfaceVariant
+                            )
+                        }
+                        val undoDepthFieldDesc = stringResource(R.string.settings_undo_depth_label)
+                        OutlinedTextField(
+                            value = undoDepthInput,
+                            onValueChange = { txt ->
+                                if (Regex("^-?\\d{0,6}$").matches(txt)) undoDepthInput = txt
+                            },
+                            label = { Text("") },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                            modifier = Modifier
+                                .width(88.dp)
+                                .semantics { contentDescription = undoDepthFieldDesc }
+                        )
+                    }
                 }
             }
 

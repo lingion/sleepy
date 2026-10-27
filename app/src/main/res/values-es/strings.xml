@@ -349,6 +349,9 @@
     <string name="settings_grid_pinch_zoom_sub">Pellizco vertical con dos dedos en el horario para cambiar la altura de fila; desactivado si está apagado</string>
     <string name="settings_lab">Laboratorio</string>
     <string name="settings_lab_sub">Funciones experimentales, desactivadas por defecto; pueden cambiar entre versiones</string>
+    <string name="settings_undo_depth">Pasos conservados al deshacer</string>
+    <string name="settings_undo_depth_sub">-1 para ilimitado, 0 para desactivar deshacer, cualquier otro número conserva esa cantidad de pasos. Valor predeterminado: 5. El historial se guarda solo en memoria y se borra al terminar el proceso de la aplicación.</string>
+    <string name="settings_undo_depth_label">Campo de pasos conservados al deshacer</string>
     <string name="settings_migration">Migración de datos</string>
     <string name="settings_migration_sub">Empaqueta todos los horarios, cuadros de periodos, preferencias y ajustes de widgets en un archivo .sleepybackup que puedes restaurar en otro dispositivo</string>
     <string name="settings_migration_export">Exportar copia de migración completa</string>

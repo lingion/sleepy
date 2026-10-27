@@ -349,6 +349,9 @@
     <string name="settings_grid_pinch_zoom_sub">時間割上で2本指の上下ピンチを行の高さ変更に使います。オフでは無効</string>
     <string name="settings_lab">ラボ</string>
     <string name="settings_lab_sub">実験的な機能。デフォルトはオフで、バージョンによって変更される可能性があります</string>
+    <string name="settings_undo_depth">取り消しの保持ステップ数</string>
+    <string name="settings_undo_depth_sub">-1 は無制限、0 は取り消しを無効、その他の数はそのステップ数を保持。デフォルトは 5。履歴はメモリ内にのみ保存され、プロセス終了時に消去されます。</string>
+    <string name="settings_undo_depth_label">取り消し保持ステップ数の入力欄</string>
 <string name="settings_migration">データ移行</string>
     <string name="settings_migration_sub">すべての時間割・時程・設定・ウィジェット設定を .sleepybackup ファイルにまとめ、新しい端末で復元できます</string>
     <string name="settings_migration_export">移行バックアップを書き出す</string>

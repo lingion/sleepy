@@ -361,6 +361,9 @@
     <string name="settings_grid_pinch_zoom_sub">Use a two-finger vertical pinch on the timetable to change row height; disabled when off</string>
     <string name="settings_lab">Lab</string>
     <string name="settings_lab_sub">Experimental features, off by default and may change between versions</string>
+    <string name="settings_undo_depth">Undo history depth</string>
+    <string name="settings_undo_depth_sub">-1 for unlimited, 0 to disable undo, any other number keeps that many steps. Default 5. History lives in memory only and clears when the app process ends.</string>
+    <string name="settings_undo_depth_label">Undo history depth input</string>
     <string name="settings_migration">Data migration</string>
     <string name="settings_migration_sub">Pack all timetables, period tables, preferences and widget settings into a .sleepybackup file that can be restored on a new device</string>
     <string name="settings_migration_export">Export full migration backup</string>
