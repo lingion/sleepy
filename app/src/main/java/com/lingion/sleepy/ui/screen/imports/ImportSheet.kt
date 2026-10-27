@@ -80,6 +80,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
+import com.lingion.sleepy.data.jw.WakeUpShareClient
 import com.lingion.sleepy.data.entity.PeriodTableEntity
 import com.lingion.sleepy.data.entity.SmartPeriodConfig
 import com.lingion.sleepy.data.entity.TimeTableEntity
@@ -1449,8 +1450,20 @@ private suspend fun buildImportPreview(
         onError(context.getString(R.string.import_content_empty))
         return null
     }
+    // WakeUP 分享口令 → 拾光 wake_up.js v6.1.70 等价在线协议链(两段官方 POST)。
+    // looksLikeShareCode 窄窗判别 — JSON/ICS/HTML/纯文本等离线形态不可能命中, 不与既有解析通路抢入口;
+    // 口令、签名与 token 不落日志。
+    val payload = if (WakeUpShareClient.looksLikeShareCode(text)) {
+        runCatching { WakeUpShareClient.fetchScheduleJson(text) }
+            .getOrElse {
+                onError(context.getString(R.string.import_failed, it.message))
+                return null
+            }
+    } else {
+        text
+    }
     // 新建入口使用 0L；加课入口始终携带用户进入页面时的目标 ID。
-    val result = ScheduleParser.parse(text, tableId)
+    val result = ScheduleParser.parse(payload, tableId)
     return result.fold(
         onSuccess = { parseResult ->
             buildImportPreview(parseResult, tableId, context)
