@@ -1,0 +1,20 @@
+<!-- NK-FIX-2: synthesized 南开 eamis 课表入口页 (courseTableForStd.action) scope 形态 —
+     jxy18100 scrape_now.py 直接 navigate 该 URL 即得带 addInput+semesterCalendar 的表单页;
+     semesterCalendar value=4384 为 scrape_now.py 实测真实学期号, 学号 2023 前缀合成, 零真实凭据。
+     用途: NankaiClassicEamsWebViewContractTest scope 提取回归 + buildCandidates 候选体钉死。 -->
+<html><head><title>我的课表 - 合成样本</title></head><body>
+<form id="courseTableForm" name="courseTableForm" action="/eams/courseTableForStd!courseTable.action" method="post">
+  <input type="hidden" name="ignoreHead" value="1">
+  <input type="hidden" name="setting.kind" value="std">
+  <input type="hidden" name="startWeek" value="">
+  <input type="hidden" name="project.id" value="1">
+  <input type="hidden" name="semester.id" value="">
+  <input type="hidden" name="ids" value="2023000001">
+  <div id="halfSelect"></div>
+</form>
+<script language="JavaScript">
+  var form = document.courseTableForm;
+  function searchTable(){ bg.form.addInput(form,"ids","2023000001"); bg.form.submit(form,"courseTableForStd!courseTable.action","courseTableDiv"); }
+  jQuery("#halfSelect").semesterCalendar({onChange:"",value:"4384"},"searchTable()");
+</script>
+</body></html>

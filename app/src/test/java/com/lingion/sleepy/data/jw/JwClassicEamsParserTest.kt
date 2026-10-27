@@ -412,6 +412,31 @@ class JwClassicEamsParserTest {
         )
     }
 
+    // -------- 南开 (issue #236) 同族形态五锚全中 --------
+
+    @Test
+    fun `nankai 成功样本 confidence 95 五锚全中与 NBCC 同族互证`() {
+        val parser = JwClassicEamsParser(nbccFixture("nankai-course-table-action.html"))
+        assertEquals(95, parser.confidence())
+        assertEquals(
+            listOf(
+                "table#manualArrangeCourseTable",
+                "new TaskActivity(...)",
+                "var unitCount = N",
+                "table0.marshalTable",
+                "courseTableForStd",
+            ),
+            parser.matchedFeatures()
+        )
+        // 位图周数即行数 (mergeConsecutiveNodes 把块内多 index 合成单 slot):
+        // 数学分析A 12 周 + 高等代数B 10 周 + 形势与政策 1 周 = 23 行
+        val courses = parser.generateCourseList()
+        assertEquals("南开样本出课行数不符: ${courses.map { "${it.name}@w${it.startWeek}" }}", 23, courses.size)
+        assertTrue("必须含数学分析A", courses.any { it.name.contains("数学分析A") })
+        assertTrue("必须含高等代数B", courses.any { it.name.contains("高等代数B") })
+        assertTrue("必须含形势与政策 (线性 index 42 形态)", courses.any { it.name.contains("形势与政策") })
+    }
+
     // -------- 反例 a: 空壳无数据 (JS 渲染前形态) --------
 
     @Test

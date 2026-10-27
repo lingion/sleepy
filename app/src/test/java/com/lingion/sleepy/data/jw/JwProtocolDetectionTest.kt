@@ -169,6 +169,15 @@ class JwProtocolDetectionTest(
             c += arrayOf("webvpn.nbcc-q2-direct-classic-eams",
                 "https://jwgl.webvpn.nbcc.cn/eams/courseTableForStd.action",
                 null, "classic_eams", null)
+            // 南开 (issue #236): eamis 直链课表路径命中 ①a 既有小写锚;
+            // 根 URL 无路径指纹 → URL 层 null, 判型由 catalog type=classic_eams 权威接管
+            // (未登录根页 = 148 字节桩页, wusir96 实测, 同样零 HTML 指纹)。
+            c += arrayOf("url.nankai-course-table-direct-classic-eams",
+                "https://eamis.nankai.edu.cn/eams/courseTableForStd.action",
+                null, "classic_eams", null)
+            c += arrayOf("url.nankai-root-null",
+                "https://eamis.nankai.edu.cn/",
+                null, null, null)
 
             // cf/pku/bnuz webvpn 形态 — URL 层判型必须返回 null(case.json 明确):
             //   路径重写形态下青果/北大/北师珠无可靠 URL 指纹,判定必须由 HTML 层接管
