@@ -58,6 +58,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -76,6 +77,9 @@ import kotlinx.coroutines.launch
 
 /** fetch JS 注入超时: 教务宕机时 20s 无桥回调即报超时, 禁无限 pending。 */
 private const val FETCH_TIMEOUT_MS = 20_000L
+
+/** sg_asset 专用超时: 拾光适配脚本逐周请求可达 60s+, 20s 闸会误杀慢部署。 */
+internal const val SG_ASSET_TIMEOUT_MS = 120_000L
 
 /** Chrome 121 / Windows 10 桌面 UA — 无 Android; Safari 等 iPhone 词汇, 触发门户桌面版布局 */
 private const val DESKTOP_USER_AGENT =
@@ -143,6 +147,7 @@ fun JwWebViewLoginScreen(
     var desktopUa by remember { mutableStateOf(initialDesktopUa(school)) }
     var uaSwitchReload by remember { mutableStateOf(0) }
     val logToken = remember { java.util.concurrent.atomic.AtomicLong(0) }
+    val sgContext = LocalContext.current
     val webviewNotReadyMsg = stringResource(R.string.jw_webview_not_ready)
     val fetchingMsg = stringResource(R.string.jw_fetching)
     val fetchFailedNoResponseMsg = stringResource(R.string.jw_fetch_failed_no_response)
@@ -265,7 +270,7 @@ fun JwWebViewLoginScreen(
 
     // fetch JS 注入超时闸: evaluateJavascript 无内建超时, 教务宕机/挂起时
     // 桥回调永远不来, 用户只见「正在抓取」无限 pending。20s 无回调即报超时。
-    fun evaluateFetchWithTimeout(wv: WebView, js: String) {
+    fun evaluateFetchWithTimeout(wv: WebView, js: String, timeoutMs: Long = FETCH_TIMEOUT_MS) {
         var answered = false
         val beginToken = logToken.incrementAndGet()
         wv.evaluateJavascript(js) {
@@ -282,7 +287,7 @@ fun JwWebViewLoginScreen(
                     fetchTimeoutMsg,
                 )
             }
-        }, FETCH_TIMEOUT_MS)
+        }, timeoutMs)
     }
 
     // 浏览器式地址栏: 校验 + 规范化 + 提交导航。
@@ -437,6 +442,26 @@ fun JwWebViewLoginScreen(
                     val url = wv.url ?: ""
                     Log.d("JwWebView", "capture tapped, current url=$url")
                     scope.launch { snackbar.showSnackbar(fetchingMsg) }
+                    // sg_asset (拾光适配脚本通用通路, 上游 shiguang_warehouse MIT):
+                    // 按 vendor manifest 取该校拾光 JS, 前置桥接 shim 后整段 evaluate。
+                    // 解码唯一落点 = JwSgAssetParser (shim 只传输)。脚本可跑数十秒,
+                    // 超时闸放宽到 SG_ASSET_TIMEOUT_MS; manifest 无条目直接明错,
+                    // 不悄悄落 outerHTML 抓取 (避免把「没适配」伪装成「没课表」)。
+                    if (school.type == JwProtocol.TYPE_SG_ASSET) {
+                        val js = JwSgAssetBridge.bridgeJs(sgContext, school.name)
+                        if (js == null) {
+                            val msg = fetchFailedFmt.format("该校暂无拾光适配脚本")
+                            onCaptureError(
+                                FrameCaptureResult(null, "", emptyList(),
+                                    status = FrameCaptureStatus.UNKNOWN,
+                                    diagnosticHint = msg),
+                                msg,
+                            )
+                        } else {
+                            evaluateFetchWithTimeout(wv, js, SG_ASSET_TIMEOUT_MS)
+                        }
+                        return@CaptureBar
+                    }
                     // THU 的登录/门户页不含课表脚本。用户登录后先打开“整体课表”并
                     // 选择学期，再点“导入此页”；下方通用 frame 抓取识别 setInitValue。
                     // 不根据当前日期猜 p_xnxq，也不在未验证的 URL 上自动请求。
