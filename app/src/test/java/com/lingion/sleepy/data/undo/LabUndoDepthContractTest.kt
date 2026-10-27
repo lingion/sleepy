@@ -50,11 +50,13 @@ class LabUndoDepthContractTest {
     }
 
     @Test
-    fun `lab input filter allows minus sign for the unlimited tier`() {
-        // -1 是法定输入; 照抄 KeyboardType.Number 无负号键的翻车先例
+    fun `lab input filter requires the full digit pattern outside comments`() {
+        // -1 是法定输入, 过滤正则必须留在代码里; 注释含 -? 字样不算数:
+        // 先剥每行行内注释, 再要求源码 Regex 字面量的完整模式, 防"删正则留注释"的空过。
+        val codeOnly = labSegment.lines().joinToString("\n") { it.substringBefore("//") }
         assertTrue(
-            "输入过滤正则必须含 -? — Number 键盘无负号键, 否则 -1 无法键入",
-            "-?" in labSegment
+            "输入过滤必须含完整模式 -?\\\\d{0,6}(源码 Regex 字面量形态) — 删正则只留注释即变红",
+            """-?\\d{0,6}""" in codeOnly
         )
     }
 
