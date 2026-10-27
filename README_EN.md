@@ -22,7 +22,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">中文</a> · <a href="README_EN.md">English</a> · <a href="https://github.com/lingion/sleepy/wiki">Wiki</a> · <a href="https://github.com/lingion/sleepy/releases/latest">Download APK</a> · <a href="https://github.com/lingion/sleepy/releases">All versions</a> · <a href="docs/adapt-kit/README.md">Add your university</a> · <a href="https://sleepy.is-my.app">Website</a> · <a href="https://sleepy.qdp.qzz.io">Try Online</a> · <a href="#community">💬 Community</a> · <a href="sponsor.md">Sponsor</a>
+  <a href="README.md">中文</a> · <a href="README_EN.md">English</a> · <a href="https://github.com/lingion/sleepy/wiki">Wiki</a> · <a href="https://github.com/lingion/sleepy/releases/latest">Download APK</a> · <a href="https://github.com/lingion/sleepy/releases">All versions</a> · <a href="docs/adapt-kit/README.md">Add your university</a> · <a href="https://sleepy.is-my.app">Website</a> · <a href="https://sleepy.is-my.app/preview">Try Online</a> · <a href="#community">💬 Community</a> · <a href="sponsor.md">Sponsor</a>
 </p>
 
 ---
@@ -657,7 +657,7 @@ Prefer to stay on GitHub? [Discussions](https://github.com/lingion/sleepy/discus
 ## Documentation
 
 - **[Official Website](https://sleepy.is-my.app)** — product overview, school catalog, downloads, FAQ
-- **[Try Online](https://sleepy.qdp.qzz.io)** — Web timetable, opens in the browser with no install; supports multi-format import (WakeUp share text / ICS / CSV / Excel), data stays local
+- **[Try Online](https://sleepy.is-my.app/preview)** — Web timetable, opens in the browser with no install; supports multi-format import (WakeUp share text / ICS / CSV / Excel), data stays local
 - **[iOS Repository](https://github.com/lingion/sleepy-ios)** — Sleepy iOS port, SwiftUI + WidgetKit, iOS 16.0+, feature-aligned with the Android releases
 - **[Wiki](https://github.com/lingion/sleepy/wiki)** — per-screen guides, all import/export formats, widget families, reminder internals, architecture and codebase map, all cross-linked from the sidebar
 - **[Operation Guide](https://blog.qdp.qzz.io/docs/sleepy/overview)** — step-by-step user manual covering installation, import, widgets, themes, and troubleshooting

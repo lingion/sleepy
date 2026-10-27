@@ -27,7 +27,7 @@
 - Release ABI variants: `arm64-v8a`, `armeabi-v7a`, `x86_64`, and universal.
 - This repository builds the native Android app.
 - iOS: the native port is developed at https://github.com/lingion/sleepy-ios (SwiftUI + WidgetKit, iOS 16.0+, feature-aligned with the Android releases; IPA distributed via that repository's Releases as unsigned builds pending TestFlight). See https://github.com/lingion/sleepy-ios/releases for current availability.
-- Web: the official website is https://sleepy.is-my.app (product overview, school catalog, downloads, FAQ). A separate interactive web experience is available at https://sleepy.qdp.qzz.io; it does not imply complete feature parity with the native apps.
+- Web: the official website is https://sleepy.is-my.app (product overview, school catalog, downloads, FAQ). A separate interactive web experience is available at https://sleepy.is-my.app/preview; it does not imply complete feature parity with the native apps.
 
 ## Product behavior
 

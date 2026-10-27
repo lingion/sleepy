@@ -22,7 +22,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">中文</a> · <a href="README_EN.md">English</a> · <a href="https://github.com/lingion/sleepy/wiki">Wiki 手册</a> · <a href="https://github.com/lingion/sleepy/releases/latest">Download APK</a> · <a href="https://github.com/lingion/sleepy/releases">全部版本</a> · <a href="docs/adapt-kit/README.md">让你的学校支持教务直连</a> · <a href="https://sleepy.is-my.app">官网</a> · <a href="https://sleepy.qdp.qzz.io">在线体验</a> · <a href="#社区">💬 社区</a> · <a href="sponsor.md">赞助</a>
+  <a href="README.md">中文</a> · <a href="README_EN.md">English</a> · <a href="https://github.com/lingion/sleepy/wiki">Wiki 手册</a> · <a href="https://github.com/lingion/sleepy/releases/latest">Download APK</a> · <a href="https://github.com/lingion/sleepy/releases">全部版本</a> · <a href="docs/adapt-kit/README.md">让你的学校支持教务直连</a> · <a href="https://sleepy.is-my.app">官网</a> · <a href="https://sleepy.is-my.app/preview">在线体验</a> · <a href="#社区">💬 社区</a> · <a href="sponsor.md">赞助</a>
 </p>
 
 ---
@@ -674,7 +674,7 @@ Bug 反馈和新学校适配请提交到 [Issues](https://github.com/lingion/sle
 ## 文档
 
 - **[官网](https://sleepy.is-my.app)** — 项目主页：功能介绍、学校名录、下载中心、常见问答
-- **[在线体验](https://sleepy.qdp.qzz.io)** — Web 版课表，浏览器打开即用，无需安装；支持多格式导入（WakeUp 分享文本 / ICS / CSV / Excel），数据仅存本地
+- **[在线体验](https://sleepy.is-my.app/preview)** — Web 版课表，浏览器打开即用，无需安装；支持多格式导入（WakeUp 分享文本 / ICS / CSV / Excel），数据仅存本地
 - **[iOS 版仓库](https://github.com/lingion/sleepy-ios)** — Sleepy 课程表 iOS 移植版，SwiftUI + WidgetKit，iOS 16.0 起，与 Android 版功能对齐
 - **[Wiki](https://github.com/lingion/sleepy/wiki)** — 各页面说明、导入/导出格式、小组件类型、提醒实现、架构与代码地图，可通过侧栏导航
 - **[使用指南](https://blog.qdp.qzz.io/docs/sleepy/overview)** — 涵盖安装、导入、小组件、主题和故障排查的分步说明
