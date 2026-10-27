@@ -171,6 +171,22 @@ def wakeup_declared_owner(proof, url):
     )
 
 
+def shiguang_declared_owner(proof, url):
+    """ShiGuang (shiguang_warehouse) entries are likewise third-party claims.
+
+    Same fail-closed bar as the WakeUp declaration: an independent probe that
+    reached this exact operational URL with HTTP 200 over a public host. Rows
+    retained this way stay unverified — no authenticated import was tested.
+    """
+    return (
+        proof.get("source") == "shiguang-batch-probe"
+        and proof.get("http") == 200
+        and "REDACTED" not in url
+        and valid_url(url)
+        and public_host(url)
+    )
+
+
 def endpoint_key(url):
     """Only a missing root slash/default port is equivalent without evidence."""
     if not valid_url(url):
@@ -444,6 +460,8 @@ def apply_ownership(rows, evidence, baseline_names, renames=None, domain_poison=
         if status == "unknown" and row["name"] not in baseline_names:
             if wakeup_declared_owner(proof, row["url"]):
                 return "retained-wakeup-declared-owner", row["url"]
+            if shiguang_declared_owner(proof, row["url"]):
+                return "retained-shiguang-declared-owner", row["url"]
             return "withheld-new-unproven-owner", ""
         if status == "unknown":
             return "retained-existing-config-ownership-unresolved", row["url"]
@@ -469,7 +487,8 @@ def apply_ownership(rows, evidence, baseline_names, renames=None, domain_poison=
             snapshot = dict(row)
             snapshot["url"] = final_url
             predicted_rows[key] = snapshot
-        if action in {"retained-wakeup-declared-owner", "corrected-official-entry"}:
+        if action in {"retained-wakeup-declared-owner", "retained-shiguang-declared-owner",
+                      "corrected-official-entry"}:
             candidate_keys.append(key)
 
     if domain_poison is None:

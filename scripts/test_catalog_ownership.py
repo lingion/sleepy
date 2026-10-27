@@ -106,6 +106,46 @@ class OwnershipTest(unittest.TestCase):
         self.assertEqual('grad_unverified', row['status'])
         self.assertEqual('retained-wakeup-declared-owner', result['action'])
 
+    def test_shiguang_declared_public_live_owner_is_retained_unverified(self):
+        self.proof.update(source='shiguang-batch-probe', http=200)
+        row, result = self.apply()
+        self.assertEqual(self.row['url'], row['url'])
+        self.assertEqual('zf_new', row['type'])
+        self.assertEqual('unverified', row['status'])
+        self.assertFalse(row.get('enableFetch', False))
+        self.assertEqual('retained-shiguang-declared-owner', result['action'])
+
+    def test_shiguang_declaration_needs_live_public_evidence(self):
+        for patch in [
+            dict(http=0),
+            dict(http=404),
+            dict(source='import'),
+            dict(url='http://10.10.181.1/jw'),
+            dict(url='http://[fd00::1]/jw'),
+            dict(url='https://example.invalid/REDACTED/jw'),
+        ]:
+            row = copy.deepcopy(self.row)
+            self.proof = dict(catalogId='school:1', name='甲大学', status='unknown', sources=[],
+                              source='shiguang-batch-probe', http=200)
+            self.proof['url'] = row['url'] = patch.pop('url', row['url'])
+            self.proof.update(patch)
+            result = apply_ownership([row], {'entries': [copy.deepcopy(self.proof)]}, set())[0]
+            with self.subTest(**patch):
+                self.assertEqual(('', None, 'pending', False), (row['url'], row['type'], row['status'], row['enableFetch']))
+                self.assertEqual('withheld-new-unproven-owner', result['action'])
+        self.proof = dict(catalogId='school:1', name='甲大学', url=self.row['url'], status='unknown', sources=[])
+        row, result = self.apply()
+        self.assertEqual('', row['url'])
+        self.assertEqual('withheld-new-unproven-owner', result['action'])
+
+    def test_shiguang_retained_graduate_identity_stays_grad_scoped(self):
+        self.row['name'] = self.proof['name'] = '甲大学 - 研究生'
+        self.row['status'] = 'grad_unverified'
+        self.proof.update(source='shiguang-batch-probe', http=200)
+        row, result = self.apply()
+        self.assertEqual('grad_unverified', row['status'])
+        self.assertEqual('retained-shiguang-declared-owner', result['action'])
+
     def test_unreachable_page_does_not_invalidate_previous_import_evidence(self):
         self.row['status'] = 'supported'
         row, result = self.apply(['甲大学'])
@@ -327,9 +367,9 @@ class DomainCollisionGateTest(unittest.TestCase):
     """The collision gate: a promotion that would make a previously
     resolvable SchoolDomainMatch lookup fail-closed must be withheld."""
 
-    def wake_proof(self, row):
+    def wake_proof(self, row, source='wakeup-batch-probe'):
         return dict(catalogId=row['catalogId'], name=row['name'], url=row['url'],
-                    status='unknown', sources=[], source='wakeup-batch-probe', http=200)
+                    status='unknown', sources=[], source=source, http=200)
 
     def baseline(self, catalogId, name, url):
         return dict(catalogId=catalogId, name=name, url=url, type='zf', status=None)
@@ -337,11 +377,11 @@ class DomainCollisionGateTest(unittest.TestCase):
     def candidate(self, catalogId, name, url):
         return dict(catalogId=catalogId, name=name, url=url, type='zf', status='unverified')
 
-    def run_gate(self, head_rows, baselines, candidates):
+    def run_gate(self, head_rows, baselines, candidates, source='wakeup-batch-probe'):
         rows = baselines + candidates
         entries = []
         for r in rows:
-            p = self.wake_proof(r)
+            p = self.wake_proof(r, source)
             p.update(status='unknown')
             entries.append(p)
         baseline_names = {r['name'] for r in baselines}
@@ -393,6 +433,22 @@ class DomainCollisionGateTest(unittest.TestCase):
         actions = self.run_gate(b, b, [c])
         self.assertEqual('retained-wakeup-declared-owner', actions['c1'])
         self.assertEqual('https://jw3.chaoxing.com/', c['url'])
+
+    def test_shiguang_promotion_joins_the_collision_gate(self):
+        # ShiGuang-retained rows are operational URLs too: they must poison the
+        # baseline lookup exactly like WakeUp-retained rows, or a second school
+        # on the same host silently breaks SchoolDomainMatch.
+        b = [self.baseline('b1', '甲大学', 'https://jw.example.edu.cn/')]
+        sg = self.candidate('c1', '丙大学', 'https://jw.example.edu.cn/x')
+        actions = self.run_gate(b, b, [sg], source='shiguang-batch-probe')
+        self.assertEqual('withheld-domain-collision', actions['c1'])
+        self.assertEqual('', sg['url'])
+        # On a non-colliding host the same row is retained under the ShiGuang action.
+        b2 = [self.baseline('b1', '甲大学', 'https://jw.other.edu.cn/')]
+        sg2 = self.candidate('c1', '丙大学', 'https://jw.example.edu.cn/x')
+        actions = self.run_gate(b2, b2, [sg2], source='shiguang-batch-probe')
+        self.assertEqual('retained-shiguang-declared-owner', actions['c1'])
+        self.assertEqual('https://jw.example.edu.cn/x', sg2['url'])
 
     def test_gate_disabled_without_domain_reference(self):
         b = [self.baseline('b1', '甲大学', 'https://jw.example.edu.cn/')]
