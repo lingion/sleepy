@@ -80,10 +80,28 @@ class CourseFloatState {
     var originStartNode: Int = 1
     var originEndNode: Int = 1
     var originHeight: Dp = 0.dp
+    /** 起拖那一页的周号 — 置灰只认原占位格, 跨周翻页后原页依旧置灰。 */
+    var originWeek: Int = 1
     val step: Int get() = (endNode - startNode + 1).coerceAtLeast(1)
     val active: Boolean get() = course != null
     /** 浮卡当前跨度与拉起时不同 — 空白点击/返回键须先走「是否调整持续节次」确认。 */
     val spanChanged: Boolean get() = course != null && (startNode != originStartNode || endNode != originEndNode)
+
+    // ---- 边缘翻页拖拽 (2026-10-27 用户裁决: 拖到周缘自动翻上/下周, 放手即落对应槽位) ----
+    // 方向记号全场统一: +1 = 右缘 = 下一周, -1 = 左缘 = 上一周, 0 = 不在边缘。
+    /** Semester 边界触界方向 (周 1 再往前 / maxWeek 再往后): 驻留计时禁用, peek 静止示形。 */
+    var edgeBlocked: Int by mutableStateOf(0)
+    /** 当前压住的边缘方向 — peek 与驻留计时的驱动键。 */
+    var edgeDir: Int by mutableStateOf(0)
+    /** 边缘驻留进度 0..1 — 网格每 50ms 步进写入, peek 淡入用它。 */
+    var peekProgress: Float by mutableStateOf(0f)
+    /** 起拖页网格主体左缘 (px, root 坐标系) — 翻页动画期浮层反平移补偿的基准。 */
+    var anchorRootLeftPx by mutableStateOf(0f)
+    /** 进入拖拽瞬间的卡片中心 x (网格坐标) — 边缘判据的防误触锚 (需位移超 slop)。 */
+    var dragOriginCx: Dp by mutableStateOf(0.dp)
+    /** 进入拖拽瞬间起拖页的纵向滚动 (dp) — 翻页换宿主后各页几何同构, 新宿主据此
+     *  对齐滚动量, 卡悬停行 = 视觉行; 落点判定本就在内容坐标系, 双保险。 */
+    var anchorScrollDp: Dp by mutableStateOf(0.dp)
 
     /** 把手拉伸未获确认 → 位置/高度回到拉起时的原样, 浮卡本身留在原位。 */
     fun revertSpan() {
@@ -129,7 +147,11 @@ class CourseFloatState {
         this.isGrey = isGrey
         originX = x; originY = y
         originStartNode = startNode; originEndNode = endNode; originHeight = height
+        originWeek = week
         dragging = false
+        edgeDir = 0
+        edgeBlocked = 0
+        peekProgress = 0f
         cardBounds = null
         popupBounds = null
     }
@@ -137,6 +159,8 @@ class CourseFloatState {
     fun dismiss() {
         course = null
         dragging = false
+        edgeBlocked = 0
+        peekProgress = 0f
         cardBounds = null
         popupBounds = null
     }

@@ -47,6 +47,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalConfiguration
@@ -81,6 +83,7 @@ import com.lingion.sleepy.util.PeriodHeaderFormatter
 import com.lingion.sleepy.util.MealBreakDetector
 import com.lingion.sleepy.util.GridSeparatorGeometry
 import com.lingion.sleepy.util.TimetableViewportPolicy
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
 import java.time.LocalTime
 import kotlin.math.abs
@@ -168,6 +171,12 @@ fun CardsGridView(
     // 浮窗「调整本次」直达回调: 用户已在浮窗点过调整, 调用方应直接展开编辑表单。
     // null = 退回长按通道(存量调用方契约不变)。
     onOccurrenceEdit: ((CourseEntity) -> Unit)? = null,
+    // 边缘翻页拖拽 (2026-10-27 用户裁决): 卡片压住左/右缘驻留满 FLOAT_EDGE_DWELL_MS
+    // 时触发, dir=-1 上一周 / +1 下一周; 学期边界由网格挡回(edgeBlocked), 不会走到这里。
+    // null(默认) = 特性关闭, 存量调用方(Widget 预览)行为逐字节不变。
+    onEdgeDrag: ((Int) -> Unit)? = null,
+    // 学期末周(= pagerMaxWeek) — 边缘驻留到界判断用。0(默认)= 无翻页宿主, 特性关闭。
+    floatMaxWeek: Int = 0,
 ) {
     val colors = MaterialTheme.colorScheme
     val floatAware = onOccurrenceMove != null
@@ -183,8 +192,10 @@ fun CardsGridView(
     LaunchedEffect(currentWeek, startDate, courses, timeSlots, visibleDays, quickAddEnabled) {
         quickAddState.dismiss()
     }
+    // 拖拽进行中不早杀: 边缘翻页落库会重发射 courses — 此时 dismiss 会腰斩手势流
+    // (2026-10-27 边缘翻页特性: 落库发生在 commitFloatDrop 之后, 收层由管线自己走)。
     LaunchedEffect(currentWeek, startDate, courses, timeSlots, visibleDays, quickAddEnabled) {
-        floatState.dismiss()
+        if (!floatState.dragging) floatState.dismiss()
     }
     androidx.activity.compose.BackHandler(enabled = quickAddEnabled && quickAddState.selection != null) { quickAddState.dismiss() }
     // D 契约: 拉伸未确认时返回键 = 空白点击 — 先走确认, 无 pending 才直接关浮层。
@@ -530,10 +541,23 @@ fun CardsGridView(
             // renderEffect 自包含(整层进模糊纹理), 浮层若做 Column 子节点会被一起糊掉,
             // 故 overlay y = floatState.y + headH + gapH − scrollState (抵消表头与滚动)。
             var floatDragPx by remember { mutableFloatStateOf(0f) }
+            // 边缘翻页锚点: 本页网格左缘实时值(root 坐标 px); 起拖页快照存 floatState.anchorRootLeftPx。
+            var floatRootLeftPx by remember { mutableFloatStateOf(0f) }
             // 滚动偏移只在浮起态读取 — 平时不在 body 读 scrollState.value,
             // 避免每帧滚动重组整个 BoxWithConstraints 子树。
             val floatScrollDp =
-                if (floatState.active) with(headerDensity) { scrollState.value.toDp() } else 0.dp
+                // 拖拽中用锚点快照: 翻页换宿主的当帧新页 scrollState 还是 0(同步 effect
+                // 要等组合后才跑), 直读会跳一行; 非拖拽态读实时值(旧行为不变)。
+                if (!floatState.active) 0.dp
+                else if (floatState.dragging) floatState.anchorScrollDp
+                else with(headerDensity) { scrollState.value.toDp() }
+            // 排他宿主接管时新页滚动对齐拖拽锚: 各页 rememberScrollState 独立(新页=0),
+            // 不同步则卡悬停行与视觉行错位一行以上。同步后宿主页几何与起拖页逐 dp 相同。
+            LaunchedEffect(floatState.active, floatState.dragging, floatState.week, currentWeek) {
+                if (floatState.active && floatState.dragging && currentWeek == floatState.week) {
+                    scrollState.scrollTo(with(headerDensity) { floatState.anchorScrollDp.toPx().roundToInt() })
+                }
+            }
             val floatGridNodes = renderSlots.filter { !it.isPlaceholder }.map { it.nodeStart }
             // 卡片顶/底边在网格坐标系的 dp 边界 (bottom=true 取底边, 与胶囊同口径)。
             fun floatBoundary(node: Int, bottom: Boolean): Dp? {
@@ -632,9 +656,63 @@ fun CardsGridView(
                 }
             }
 
+            // ---- 边缘翻页 (2026-10-27 用户裁决: 压住左右缘驻留满 500ms 自动翻周) ----
+            // 单一写入者: 拖拽期间 50ms 轮询自当前卡位推导方向并累计驻留 —
+            // 手指静止压边同样计时; week 入键 → 换页即整效重启, 邻页实例与旧页实例
+            // 即刻退出(不空转), 新宿主 elapsed/held 天然归零(逐页满 500ms, 无加速)。
+            LaunchedEffect(floatState.dragging, floatState.week) {
+                // 非宿主页静默退出: 不写共享态 — 清场由宿主页负责, 免得邻页抢先抹掉进度。
+                if (currentWeek != floatState.week) return@LaunchedEffect
+                if (!floatState.dragging || onEdgeDrag == null || floatMaxWeek <= 0) {
+                    floatState.edgeDir = 0
+                    floatState.edgeBlocked = 0
+                    floatState.peekProgress = 0f
+                    return@LaunchedEffect
+                }
+                var held = 0
+                var elapsed = 0L
+                while (true) {
+                    delay(FLOAT_EDGE_DWELL_STEP_MS)
+                    val cx = (floatState.x + floatState.width / 2f).value
+                    // 防误触: 拖拽起点起水平位移未超 slop 不判边缘 (FullCalendar everMoved 同构)。
+                    val dir = when {
+                        abs(cx - floatState.dragOriginCx.value) < FLOAT_EDGE_SLOP_DP -> 0
+                        cx < FLOAT_EDGE_ZONE_DP -> -1
+                        cx > maxWidth.value - FLOAT_EDGE_ZONE_DP -> 1
+                        else -> 0
+                    }
+                    if (dir != held) { held = dir; elapsed = 0L }
+                    floatState.edgeDir = dir
+                    if (dir == 0) { floatState.edgeBlocked = 0; floatState.peekProgress = 0f; continue }
+                    val atBoundary = (dir < 0 && floatState.week <= 1) || (dir > 0 && floatState.week >= floatMaxWeek)
+                    floatState.edgeBlocked = if (atBoundary) dir else 0
+                    if (atBoundary) {
+                        // 学期边界: 无计时, peek 静止示形, 放手弹回。
+                        floatState.peekProgress = 1f
+                        continue
+                    }
+                    elapsed += FLOAT_EDGE_DWELL_STEP_MS
+                    floatState.peekProgress = (elapsed.toFloat() / FLOAT_EDGE_DWELL_MS).coerceIn(0f, 1f)
+                    if (elapsed >= FLOAT_EDGE_DWELL_MS) {
+                        // 驻留满: 周号先行 — 浮层/计时/落点几何同帧整体换宿主(排他 currentWeek==week),
+                        // 补偿平移把卡钉在指下, 300ms 页滑期间不飘; 仍压边则 elapsed=0 重计下一页。
+                        floatState.week += dir
+                        elapsed = 0L
+                        held = 0
+                        floatState.peekProgress = 0f
+                        onEdgeDrag.invoke(dir)
+                    }
+                }
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    // 边缘翻页锚点: 本页网格主体在 root 坐标系的左缘。翻页动画 300ms 内
+                    // 浮层用「起拖页左缘 − 当前宿主左缘」反平移钉在指下; 位移符号由实测
+                    // 坐标天然决定, 不依赖 pager 内部 offset 公式。仅浮动态写值 —
+                    // 平时回调零写入, 不给滚动加重组。
+                    .onGloballyPositioned { if (floatState.active) floatRootLeftPx = it.boundsInRoot().left }
                     .then(
                         // v1.0.56 T3: 实验室开关默认关 — 手势不挂即捏不动; 开=原行为
                         if (pinchZoomEnabled) Modifier.verticalResizeGesture(
@@ -908,7 +986,13 @@ fun CardsGridView(
                                 lifted = { floatState.active },
                                 onTap = { onCourseClick(course) },
                                 onLift = { liftCourse(course) },
-                                onDragStart = { floatState.dragging = true },
+                                onDragStart = {
+                                    floatState.dragging = true
+                                    // 边缘判据锚: 拖拽起点中心 + 主体左缘/滚动量快照(翻页换宿主对齐用)。
+                                    floatState.dragOriginCx = floatState.x + floatState.width / 2f
+                                    floatState.anchorRootLeftPx = floatRootLeftPx
+                                    floatState.anchorScrollDp = with(headerDensity) { scrollState.value.toDp() }
+                                },
                                 onDrag = { amount ->
                                     with(headerDensity) {
                                         floatState.x += amount.x.toDp()
@@ -925,11 +1009,12 @@ fun CardsGridView(
                             scale = scale,
                             cornerRatio = cornerRatio,
                             // 置灰范围 (用户裁决 2026-10-27): 仅拖拽期间、仅被拖起那一格的原占位卡 —
-                            // 同星期且同起止节次的身份判等; 同组其他格与跟手浮卡都不动。
-                            dragDimmed = floatState.dragging &&
+                            // 同星期且同起止节次的身份判等 + 只在原起拖页(currentWeek==originWeek)置灰。
+                            // 跨周翻页后原页仍组合(排他宿主换到目标页渲染浮层), 原占位格继续置灰;
+                            // 目标页那张「同 id/同日/同节次」的周复真实课卡绝不置灰 — 它正是落点, 压暗会误导。
+                            dragDimmed = floatState.dragging && currentWeek == floatState.originWeek &&
                                 floatState.course?.id == course.id &&
-                                course.day == floatState.day &&
-                                course.startNode == floatState.originStartNode &&
+                                course.day == floatState.day && course.startNode == floatState.originStartNode &&
                                 course.startNode + course.step.coerceAtLeast(1) - 1 == floatState.originEndNode,
                             groupRows = courses.filter { it.groupId == course.groupId }
                         )
@@ -989,7 +1074,10 @@ fun CardsGridView(
                 }
 
                 // ---- 浮起的课程卡 + 遮罩 + 小浮框 (滚动 Column 的兄弟节点, 不进模糊纹理) ----
-                if (floatState.active) {
+                // 排他宿主: 浮层只渲染在 currentWeek == floatState.week 的那一页 —
+                // 边缘翻页把 week bump 到新页的同一帧, 浮层/驻留计时/落点几何整体换宿主,
+                // 动画中的旧页不再重复渲染, 也不会双份计时。
+                if (floatState.active && currentWeek == floatState.week) {
                     val lifted = floatState.course
                     // API 26-30 无 RenderEffect — 压暗兜底把视觉焦点让给浮卡。
                     val scrimAlpha = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) 0.35f else 0.10f
@@ -999,6 +1087,11 @@ fun CardsGridView(
                             .testTag("float-backdrop")
                             .background(colors.scrim.copy(alpha = scrimAlpha))
                     )
+                    // 翻页动画期跟手补偿: 「起拖页左缘 − 本宿主左缘」的实测位移反平移 —
+                    // pager 滑 300ms 内卡钉在指下不随页飘; 静止两周差为 0, 无副作用。
+                    val followShift = Modifier.graphicsLayer {
+                        translationX = floatState.anchorRootLeftPx - floatRootLeftPx
+                    }
                     if (lifted != null) {
                         val overlayY = floatState.y + headH + gapH - floatScrollDp
                         FloatingOccurrenceCard(
@@ -1006,7 +1099,12 @@ fun CardsGridView(
                             scale = scale,
                             cornerRatio = cornerRatio,
                             groupRows = courses.filter { it.groupId == lifted.groupId },
-                            onDragStart = { floatState.dragging = true },
+                            onDragStart = {
+                                floatState.dragging = true
+                                floatState.dragOriginCx = floatState.x + floatState.width / 2f
+                                floatState.anchorRootLeftPx = floatRootLeftPx
+                                floatState.anchorScrollDp = with(headerDensity) { scrollState.value.toDp() }
+                            },
                             onDrag = { amount ->
                                 with(headerDensity) {
                                     floatState.x += amount.x.toDp()
@@ -1016,17 +1114,36 @@ fun CardsGridView(
                             onDrop = { commitFloatDrop() },
                             onResizeStart = { top -> seedFloatResize(top) },
                             onResize = { top, delta -> applyFloatResize(top, delta) },
-                            modifier = Modifier
+                            modifier = followShift
                                 .offset(x = floatState.x, y = overlayY)
                                 .width(floatState.width)
                                 .height(floatState.height),
                         )
+                        // 边缘预览条: 拖拽压边期间左右各挂一个候选(显隐由 edgeDir/peekProgress 决定)。
+                        if (onEdgeDrag != null && floatMaxWeek > 0 && floatState.dragging) {
+                            FloatEdgePeek(
+                                dir = -1,
+                                progress = if (floatState.edgeDir < 0 || floatState.edgeBlocked < 0) floatState.peekProgress else 0f,
+                                targetWeek = (floatState.week - 1).coerceAtLeast(1),
+                                blocked = floatState.week <= 1,
+                                scale = scale,
+                                modifier = Modifier.align(Alignment.CenterStart),
+                            )
+                            FloatEdgePeek(
+                                dir = 1,
+                                progress = if (floatState.edgeDir > 0 || floatState.edgeBlocked > 0) floatState.peekProgress else 0f,
+                                targetWeek = (floatState.week + 1).coerceAtMost(floatMaxWeek),
+                                blocked = floatState.week >= floatMaxWeek,
+                                scale = scale,
+                                modifier = Modifier.align(Alignment.CenterEnd),
+                            )
+                        }
                         if (!floatState.dragging) {
                             // 浮框宽于列宽(文案"调整本次|删除本次" ≈ 2×列宽): 容器收列宽,
                             // 内容 wrapContentWidth(unbounded) 量自然宽并居中溢出绘制 —
                             // 否则 Row 被压到列宽, 右半段(删除)宽度塌缩为 0 不可点。
                             Box(
-                                modifier = Modifier
+                                modifier = followShift
                                     .offset(
                                         x = floatState.x,
                                         y = (overlayY - d(36f)).coerceAtLeast(0.dp),
@@ -1211,7 +1328,7 @@ internal fun CourseOverlayCard(
     // 浮动态连续手势(A 契约): 非 null 即整卡交互改走该修饰符(长按浮起→不松手即拖),
     // onClick/onLongClick 不再挂载 — 与 onClick 可空模式同款, 调用方只传一个语义开关。
     liftGesture: Modifier? = null,
-    // 拖拽置灰 (2026-10-27 用户裁决): 被拖起课程的原占位卡在拖拽期间纯降透明度置灰
+    // 边缘翻页特性 (2026-10-27 用户裁决): 被拖起课程的原占位卡在拖拽期间纯降透明度置灰
     // (Material 3 disabled-content 档, SleepyTheme.Alpha.dragDim)。跟手浮卡不传, 恒全亮。
     dragDimmed: Boolean = false,
 ) {

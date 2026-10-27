@@ -41,6 +41,10 @@ class CourseOccurrenceFloatDragTest {
     private val moves = mutableListOf<Move>()
     private val deleted = mutableListOf<Long>()
     private val longPressed = mutableListOf<Long>()
+    private val edgeCalls = mutableListOf<Int>()
+    // 边缘翻页测试的 pager 替身: 生产里 week bump → 新页 currentWeek 与之相等;
+    // 单网格用可变态跟住 floatState.week, 模拟换宿主后的排他渲染与逐页重计。
+    private val hostWeek = androidx.compose.runtime.mutableIntStateOf(1)
     private var clicks = 0
     // C 契约: 落库回调 — true=已保存收层, false=否决弹回。测试按需翻转。
     private var saved = true
@@ -50,6 +54,7 @@ class CourseOccurrenceFloatDragTest {
     private fun grid(
         state: CourseFloatState = CourseFloatState(),
         courses: List<CourseEntity> = listOf(course),
+        currentWeek: Int? = null,
         onMove: ((CourseEntity, Int, Int, Int, Boolean, (Boolean) -> Unit) -> Unit)? =
             { c, d, n, s, resizeOnly, onResult ->
                 moves.add(Move(c.id, d, n, s, resizeOnly)); onResult(saved)
@@ -58,15 +63,22 @@ class CourseOccurrenceFloatDragTest {
         onLongPress: (CourseEntity) -> Unit = { longPressed.add(it.id) },
         onOccurrenceEdit: ((CourseEntity) -> Unit)? = null,
         onQuickAdd: ((Int, Int, Int) -> Unit)? = { _, _, _ -> },
+        floatMaxWeek: Int = 0,
     ) {
+        val week = currentWeek
         compose.setContent {
             SleepyThemeProvider(darkTheme = false, themeKey = "default") {
                 Box(Modifier.size(360.dp, 640.dp)) {
                     CardsGridView(courses = courses, timeSlots = slots,
                         floatState = state,
+                        // 读在组合内: hostWeek 变更 → 重组换 currentWeek, 模拟 pager 换宿主。
+                        currentWeek = week ?: hostWeek.value,
                         onQuickAdd = onQuickAdd,
                         onOccurrenceMove = onMove, onOccurrenceDelete = onDelete,
                         onOccurrenceEdit = onOccurrenceEdit,
+                        // 翻页回调 = pager 替身: 记方向 + 宿主周号跟住 bump 后的 floatState.week
+                        onEdgeDrag = { dir -> edgeCalls.add(dir); hostWeek.value = state.week },
+                        floatMaxWeek = floatMaxWeek,
                         onCourseClick = { clicks++ }, onCourseLongClick = onLongPress)
                 }
             }
@@ -415,5 +427,160 @@ class CourseOccurrenceFloatDragTest {
             assertNull(state.course)
         }
         compose.onNodeWithTag("float-dim").assertDoesNotExist()
+    }
+
+    // ---- 边缘驻留翻页 (2026-10-27 用户裁决: 72dp 缘区 · 500ms 驻留 · 逐页重计) ----
+
+    /** 计时器以 dragging 为键 — 翻真后需一次重组重启, 新实例的首步轮询要额外放行;
+     *  week bump 同样重启(宿主换页)。断言方向/驻留前先 flush 这段调度开销。 */
+    private fun flushEdgePolling(steps: Int = 2) {
+        compose.runOnIdle { }
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_STEP_MS * steps)
+    }
+
+    @Test fun dwellingOnTheRightEdgeFlipsToNextWeekAndPeeksFirst() {
+        val state = CourseFloatState()
+        grid(state, floatMaxWeek = 16)
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(330.dp.toPx(), 40f), 100) // 中心推入右缘 72dp 区
+        }
+        flushEdgePolling()
+        compose.runOnIdle {
+            assertTrue(state.dragging)
+            assertEquals(1, state.week)
+            assertEquals(1, state.edgeDir)     // 方向已判出
+            assertTrue(edgeCalls.isEmpty())    // 驻留未过半: 不许翻
+        }
+        compose.onNodeWithTag("float-peek-right").assertExists()
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS) // 越 500ms → 翻一周
+        compose.runOnIdle {
+            assertEquals(2, state.week)
+            assertEquals(listOf(1), edgeCalls)
+            // 换页重计: 旧页驻留不得结转(结转即满 1.0 → 首步就连翻)。
+            // 判据取行为而非瞬时值 — 新页在同一时间片内已开始步进, 数值不可控;
+            // 未满一个新 500ms 绝不再翻, 才正是「逐页重计、无加速」。
+            assertTrue(state.peekProgress < 1f)
+        }
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS - 200)
+        compose.runOnIdle {
+            assertEquals(2, state.week)
+            assertEquals(listOf(1), edgeCalls)
+        }
+        // 回到格内放手 → 落点在目标周(currentWeek 已换 2)照常提交。
+        // 位移按「目标根坐标 − 卡当前根坐标」实时差, 卡此时悬在缘区外(400dp),
+        // 若仍按初值平移会落在网格外 → 非法落点弹回。
+        val target = compose.onNodeWithTag("add-course-3-4").fetchSemanticsNode().boundsInRoot
+        val card = compose.onNodeWithTag("float-card").fetchSemanticsNode().boundsInRoot
+        compose.onNodeWithTag("float-card").performTouchInput {
+            moveBy(Offset(target.center.x - card.center.x, target.top - card.top), 100)
+            up()
+        }
+        compose.runOnIdle {
+            assertEquals(listOf(Move(7L, 3, 4, 2, false)), moves)
+            assertNull(state.course)
+        }
+    }
+
+    @Test fun holdingTheEdgeFlipsEachPageWithAFreshDwell() {
+        val state = CourseFloatState()
+        grid(state, floatMaxWeek = 16)
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(330.dp.toPx(), 40f), 100)
+        }
+        flushEdgePolling()
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS)
+        compose.runOnIdle { assertEquals(2, state.week) }
+        // 第二次翻页要等换页重启的调度开销 — 每页满 500ms 起步, 无加速。
+        flushEdgePolling()
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS)
+        compose.runOnIdle {
+            assertEquals(3, state.week)
+            assertEquals(listOf(1, 1), edgeCalls)
+        }
+        compose.onNodeWithTag("float-card").performTouchInput { up() }
+    }
+
+    @Test fun semesterBoundaryKeepsTheWeekAndBlocksTheFlip() {
+        val state = CourseFloatState()
+        grid(state, floatMaxWeek = 16) // 第 1 周左缘 = 学期头, 禁翻
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            // 卡中心原在 day1 列; 向左推入 72dp 缘区(位移需越 8dp slop)
+            moveBy(Offset(-60.dp.toPx(), 40f), 100)
+        }
+        flushEdgePolling()
+        compose.runOnIdle {
+            assertEquals(1, state.week)
+            assertTrue(edgeCalls.isEmpty())
+            assertEquals(-1, state.edgeBlocked)
+            assertEquals(1f, state.peekProgress) // 边界 peek 静止示形
+        }
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS * 2) // 驻留再久也不翻
+        compose.runOnIdle {
+            assertEquals(1, state.week)
+            assertTrue(edgeCalls.isEmpty())
+        }
+        compose.onNodeWithTag("float-peek-left").assertExists()
+        compose.onNodeWithTag("float-card").performTouchInput { up() }
+    }
+
+    @Test fun semesterTailBlocksTheForwardFlip() {
+        val state = CourseFloatState()
+        grid(state, currentWeek = 16, floatMaxWeek = 16)
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(330.dp.toPx(), 40f), 100)
+        }
+        flushEdgePolling()
+        compose.runOnIdle {
+            assertEquals(1, state.edgeBlocked)
+            assertEquals(16, state.week)
+            assertTrue(edgeCalls.isEmpty())
+        }
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS * 2)
+        compose.runOnIdle {
+            assertEquals(16, state.week)
+            assertTrue(edgeCalls.isEmpty())
+        }
+        compose.onNodeWithTag("float-card").performTouchInput { up() }
+    }
+
+    @Test fun directionChangeRestartsTheDwellForTheNewEdge() {
+        val state = CourseFloatState()
+        grid(state, floatMaxWeek = 16)
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(330.dp.toPx(), 40f), 100) // 右缘 → 驻留满 → 翻到第 2 周
+        }
+        flushEdgePolling()
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS)
+        compose.runOnIdle {
+            assertEquals(2, state.week)
+            assertEquals(listOf(1), edgeCalls)
+        }
+        flushEdgePolling() // 换页重启开销
+        compose.onNodeWithTag("float-card").performTouchInput { moveBy(Offset(-160.dp.toPx(), 0f), 100) }
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_STEP_MS * 2)
+        compose.runOnIdle { assertEquals(0, state.edgeDir) } // 回到格内: 不驻留
+        // 再压左缘: 换向即复位 — 上一方向的驻留时长不得计入新方向。
+        compose.onNodeWithTag("float-card").performTouchInput { moveBy(Offset(-190.dp.toPx(), 0f), 100) }
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS - 100)
+        compose.runOnIdle {
+            assertEquals(2, state.week)
+            assertEquals(listOf(1), edgeCalls) // 未满 500ms → 不许翻
+        }
+        compose.mainClock.advanceTimeBy(200)
+        compose.runOnIdle {
+            assertEquals(1, state.week) // 满 → 翻回上一周
+            assertEquals(listOf(1, -1), edgeCalls)
+        }
+        compose.onNodeWithTag("float-card").performTouchInput { up() }
     }
 }
