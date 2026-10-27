@@ -13,7 +13,7 @@
 3. `JwWebViewLoginScreen.kt`: dispatcher `if (scope) run(); else tryEntryPage(...)`; 原提取链不变。
 4. `schools.json`（主+测试双写）+ catalog manifest/baseline: 南开 `enableFetch: true`。
 5. fixture 四件: `nankai-entry-page.html`（学期真实形态 `{onChange:"",value:"4384"}` 不引号 key）、`nankai-course-table-action.html`（三块 23 行, 含线性 index=42 与 join-teachers 反查）、`nankai-iam-login-page.html`（双指纹登录页）+ 148B 根壳反例（测试内联断言）。
-6. 测试面: NankaiClassicEamsWebViewContractTest 5 条（跨语言 invariant / 行为面 / 形态B 零凭据复检 / 双源提取候选体 / isLoginUrl）; FrameCapture +2; Parser +1（南开样本 confidence 95 五锚 + 23 行行数锁）; ProtocolDetection +2（课表直链判 classic_eams, 根 URL 判 null）; Schools179 pinned 南开开闸钉死（**故意不断言 status**, 等 zzask77 活体回传再裁）。
+6. 测试面: NankaiClassicEamsWebViewContractTest 5 条（跨语言 invariant / 行为面 / 形态B 零凭据复检 / 双源提取候选体 / isLoginUrl）; FrameCapture +2; Parser +1（南开样本 confidence 95 五锚 + 23 行行数锁）; ProtocolDetection +2（课表直链判 classic_eams, 根 URL 判 null）; Schools179 pinned 南开开闸钉死（status 断言已随 zzask77 真机「可以正常导入」回传闭闸, 见 reporter-dump-analysis.md 裁决闸节）。
 
 ## Step 7 抓到的两个自造错误（教训入档）
 
