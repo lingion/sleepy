@@ -258,7 +258,9 @@ class JwNewSchoolsTest {
             JwProtocol.TYPE_USTC, JwProtocol.TYPE_SCU, JwProtocol.TYPE_NEU, JwProtocol.TYPE_BJTU,
             JwProtocol.TYPE_WHUT, JwProtocol.TYPE_CLASSIC_EAMS, JwProtocol.TYPE_YETHAN,
             JwProtocol.TYPE_XJU_POST, JwProtocol.TYPE_CF_NEW,
-            JwProtocol.TYPE_KUST, JwProtocol.TYPE_NUIT, JwProtocol.TYPE_THU
+            JwProtocol.TYPE_KUST, JwProtocol.TYPE_NUIT, JwProtocol.TYPE_THU,
+            // 8e3524cc 批量晋升后 hniu 进入目录, JwParserRegistry:126 运行时路由已就位
+            JwProtocol.TYPE_HNIU
         )
         val pendingTypes = listOf(
             "com.lingion.sleepy.data.jw.JwChengFangParser" to "cf",
