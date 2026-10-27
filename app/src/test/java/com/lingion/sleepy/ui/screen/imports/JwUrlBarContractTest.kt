@@ -58,7 +58,9 @@ class JwUrlBarContractTest {
     @Test
     fun screen_hides_secondary_actions_while_editing_to_preserve_url_field_width() {
         assertTrue(screen.contains("if (!editingUrl) {"))
-        assertTrue(screen.contains("desktopUa = !desktopUa"))
+        // toggle 三态化 (#236): 显式选择写 desktopChoice + 落盘, 有效态由 resolver 派生
+        assertTrue(screen.contains("desktopChoice = newChoice"))
+        assertTrue(screen.contains("AppPrefs.setWebviewDesktopUa(ctx, newChoice)"))
         assertTrue(screen.contains("webViewRef?.reload()"))
     }
 

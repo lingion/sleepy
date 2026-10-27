@@ -65,6 +65,61 @@ object ClassicEamsWebVpn {
     /** 会话失效判据 (302 跟随后最终 URL)。 */
     val CLASSIC_EAMS_LOGIN_URL_RE = """/login(\?|$)|/users/sign_in"""
 
+    /**
+     * 桌面 UA 初值 host 白名单 (parse host 精确相等, 非正则 — 与 CLASSIC_EAMS_NANKAI_HOST_RE
+     * 用途不同不可互换: 后者镜像 JS 侧 fetch 动线 host 判据)。
+     */
+    val CLASSIC_EAMS_DESKTOP_UA_HOSTS = setOf("webvpn.nbcc.edu.cn", "eamis.nankai.edu.cn")
+
+    /**
+     * WakeUp 6.6.2 桌面 UA 基础串 (classes6.dex 三处常量逐字原样: toggle 桌面分支 +
+     * createWebView 拼接基串)。替换我方旧 Chrome/121 串 (用户 2026-10-27 令全栈照抄)。
+     */
+    val WAKEUP_DESKTOP_UA_BASE =
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) " +
+            "Chrome/99.0.4844.88 Safari/537.36"
+
+    /**
+     * WakeUp 6.6.2 toggle 关闭态移动伪装串 (逐字原样, 华为浏览器 PGT-AN10 形态)。
+     * 关键性质: 无 `wv` — 显式设置即剥离裸 WebView 身份证 (南开 UA 条件输出假设的对症动作)。
+     * 仅在本会话用户手动切回手机态时施加; 从未切换的 WebView 保持内核默认 UA —
+     * 与 WakeUp createWebView 一致 (falsely 默认态不动 UA, 伪装只发生在 toggle 路径)。
+     */
+    val WAKEUP_MOBILE_SPOOF_UA =
+        "Mozilla/5.0 (Linux; Android 13; PGT-AN10; HMSCore 6.11.0.332) AppleWebKit/537.36 " +
+            "(KHTML, like Gecko) Chrome/99.0.4844.88 HuaweiBrowser/14.0.2.300 Mobile Safari/537.36"
+
+    /**
+     * 桌面 UA 尾保留标记 (WakeUp `wakeup_vc` 同型机制, 换我方 token)。取证事实: 官方包
+     * 全 APK `wakeup_vc` 仅此一处出现、零写入方 — 该分支是防御性预留 (供热修/外部把
+     * 标记注入系统 UA 后, 桌面替换保留标记及其后文本)。我方同样无写入方, 机制照抄备用。
+     */
+    val UA_TAIL_MARKER = "sleepy_vc"
+
+    /** 尾检索起点 (WakeUp indexOf(fromIndex=6) 逐字照抄: 跳过 "Mozilla/" 前缀区)。 */
+    private const val UA_TAIL_SEARCH_FROM = 6
+
+    /**
+     * 桌面 UA 组合 (WakeUp createWebView 桌面分支逐语义照抄): [UA_TAIL_MARKER] 在
+     * 起点 [UA_TAIL_SEARCH_FROM] 之后命中 (index>0) → 基础串 + 自命中位起全文;
+     * 未命中/空/非法 → 纯基础串 (WakeUp 原语义未命中不改写, 我方因 Chrome/121→99
+     * 版本跨度大于其 99→99 恒等, 统一落到 WakeUp 桌面串更忠实)。
+     */
+    fun desktopUserAgent(defaultUa: String?): String {
+        val idx = defaultUa?.indexOf(UA_TAIL_MARKER, UA_TAIL_SEARCH_FROM) ?: -1
+        return if (idx > 0)
+            WAKEUP_DESKTOP_UA_BASE + " " + defaultUa!!.substring(idx)
+        else WAKEUP_DESKTOP_UA_BASE
+    }
+
+    /**
+     * 桌面 UA 初值裁决 (WakeUp 初始化链照抄: 白名单强制开校 → pref 值决定 → 默认 false;
+     * 我方 pref 三态 = 无记录回退校表初值)。[stored] null=用户从未切换过 (出厂态),
+     * 非 null=用户最后一次的显式选择, 跨会话覆盖校表白名单默认。
+     */
+    fun resolveDesktopUaInitial(stored: Boolean?, schoolDefault: Boolean): Boolean =
+        stored ?: schoolDefault
+
     private val idsRe = Regex(CLASSIC_EAMS_IDS_RE)
     private val idsInputRe = Regex(CLASSIC_EAMS_IDS_INPUT_RE)
     private val semesterCalRe = Regex(CLASSIC_EAMS_SEMESTER_CAL_RE)
@@ -125,13 +180,18 @@ object ClassicEamsWebVpn {
 
     /**
      * 桌面 UA 初值 (设计 §3.5): 判据 = type==classic_eams ∧ enableFetch ∧
-     * hostOf(url)=="webvpn.nbcc.edu.cn" (门户 Q1 形态)。
-     * Q2 直链 (jwgl.webvpn.nbcc.cn) 本身就是 PC 教务页, 无需桌面 UA 切换;
-     * 其余 48 校 enableFetch 恒 false 或 host 不匹配 → false, 零影响。
+     * hostOf(url) ∈ {webvpn.nbcc.edu.cn, eamis.nankai.edu.cn}。
+     * NBCC 门户 Q1 形态: 深信服把移动 UA 送进钉钉专用残废 SPA (issue #227 战役)。
+     * 南开 eamis (issue #236): zzask77 dump 7/7 请求全带 Android WebView 指纹而
+     * home.action 返回 head 空壳; WakeUp 官方 6.6.2 APK 反汇编证实同业同样把裸
+     * WebView 指纹当威胁 — is_webview_desktop_mode 双态均经 setUserAgentString
+     * 主动剥离 wv 标记 (桌面态整换 Windows Chrome UA), 本白名单即该形态复用。
+     * NBCC-Q2 直链 (jwgl.webvpn.nbcc.cn) 本身就是 PC 教务页, 无需桌面 UA 切换;
+     * 其余校 enableFetch 恒 false 或 host 不匹配 → false, 零影响。
      */
     fun initialDesktopUa(school: JwSchoolInfo): Boolean =
         school.type == JwProtocol.TYPE_CLASSIC_EAMS && school.enableFetch &&
-            hostOf(school.url) == "webvpn.nbcc.edu.cn"
+            hostOf(school.url) in CLASSIC_EAMS_DESKTOP_UA_HOSTS
 
     private fun hostOf(url: String): String? = runCatching {
         val uri = java.net.URI(url)

@@ -58,6 +58,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -65,22 +66,19 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
+import com.lingion.sleepy.data.jw.ClassicEamsWebVpn
 import com.lingion.sleepy.data.jw.EAMS5_PREFIX_PLACEHOLDER
 import com.lingion.sleepy.data.jw.JwImportViewModel
 import com.lingion.sleepy.data.jw.JwProtocol
 import com.lingion.sleepy.data.jw.JwSchoolInfo
 import com.lingion.sleepy.data.jw.eams5PathPrefixFor
 import com.lingion.sleepy.data.jw.initialDesktopUa
+import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import kotlinx.coroutines.launch
 
 /** fetch JS 注入超时: 教务宕机时 20s 无桥回调即报超时, 禁无限 pending。 */
 private const val FETCH_TIMEOUT_MS = 20_000L
-
-/** Chrome 121 / Windows 10 桌面 UA — 无 Android; Safari 等 iPhone 词汇, 触发门户桌面版布局 */
-private const val DESKTOP_USER_AGENT =
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) " +
-        "Chrome/121.0.0.0 Safari/537.36"
 
 /**
  * 桌面模式 viewport 覆盖 JS (issue #18 PCUA 不生效修复)。
@@ -137,10 +135,14 @@ fun JwWebViewLoginScreen(
     // bring-into-view 跟随光标 (TextFieldCoreModifierNode.updateScrollState)。
     val urlDraft = rememberTextFieldState(school.url)
     var editingUrl by remember { mutableStateOf(false) }
-    // #18: 桌面 UA 开关 — true 时重建 WebView 用 Chrome 桌面 UA
-    // NBCC Q1 门户形态初值 true (门户按 UA 分流, 默认移动 UA 被送进钉钉专用 SPA);
-    // 其余校 initialDesktopUa=false → 行为与旧 `mutableStateOf(false)` 完全一致 (批B §3.5)。
-    var desktopUa by remember { mutableStateOf(initialDesktopUa(school)) }
+    // #18 + issue #236 全栈照抄: 桌面 UA 开关三态化 (WakeUp is_webview_desktop_mode 同型)。
+    // null = 用户从未切换 → 初值由校表白名单裁决 (NBCC Q1 门户 / 南开 eamis 默认桌面,
+    // 其余校 false = 旧 `mutableStateOf(false)` 行为, 零影响); 非 null = 用户最后一次
+    // 显式选择, 跨会话保持 (AppPrefs 三态键, toggle 即落盘)。
+    val ctx = LocalContext.current
+    val schoolDefaultDesktop = initialDesktopUa(school)
+    var desktopChoice by remember { mutableStateOf(AppPrefs.getWebviewDesktopUa(ctx)) }
+    val desktopUa = ClassicEamsWebVpn.resolveDesktopUaInitial(desktopChoice, schoolDefaultDesktop)
     var uaSwitchReload by remember { mutableStateOf(0) }
     val logToken = remember { java.util.concurrent.atomic.AtomicLong(0) }
     val webviewNotReadyMsg = stringResource(R.string.jw_webview_not_ready)
@@ -380,7 +382,11 @@ fun JwWebViewLoginScreen(
                         // 同步保留 cookie (CookieManager 全局共享) 与当前 URL
                         IconButton(
                             onClick = {
-                                desktopUa = !desktopUa
+                                // 显式选择即刻落盘 (WakeUp toggle putBoolean+apply 同型):
+                                // 此后校表白名单不再覆写用户意志, 跨会话保持。
+                                val newChoice = !desktopUa
+                                desktopChoice = newChoice
+                                AppPrefs.setWebviewDesktopUa(ctx, newChoice)
                                 uaSwitchReload++   // 触发 JwWebView 重建 (UA 创建期生效)
                             },
                             enabled = webViewRef != null
@@ -616,6 +622,7 @@ fun JwWebViewLoginScreen(
                 url = school.url.ifBlank { "https://www.baidu.com" },
                 school = school,
                 desktopUa = desktopUa,
+                desktopChoice = desktopChoice,
                 recreateKey = uaSwitchReload,
                 onProgressChange = { p -> progress = p },
                 onNavigationUrlChanged = { url ->
@@ -666,6 +673,7 @@ private fun JwWebView(
     url: String,
     school: JwSchoolInfo,
     desktopUa: Boolean,
+    desktopChoice: Boolean?,
     recreateKey: Int,
     onProgressChange: (Int) -> Unit,
     onNavigationUrlChanged: (String?) -> Unit = {},
@@ -703,10 +711,15 @@ private fun JwWebView(
                     builtInZoomControls = true
                     displayZoomControls = false
                     if (desktopUa) {
-                        // Chrome 桌面 UA — SEP 布局对 UA 零差异, 真正的桌面布局由
-                        // onPageFinished 后的 viewport 覆盖 JS (DESKTOP_VIEWPORT_JS) 触发
-                        userAgentString = DESKTOP_USER_AGENT
-                        useWideViewPort = true
+                        // WakeUp createWebView 桌面分支组合: Chrome/99 桌面串 + sleepy_vc
+                        // 尾保留 (dex 语义)。SEP 布局对 UA 零差异, 真正的桌面布局由
+                        // onPageFinished 后的 viewport 覆盖 JS (DESKTOP_VIEWPORT_JS) 触发。
+                        userAgentString = ClassicEamsWebVpn.desktopUserAgent(userAgentString)
+                    } else if (desktopChoice == false) {
+                        // 用户显式切回手机态 → 华为浏览器伪装串 (WakeUp toggle 关闭态
+                        // 同型, 剥离 wv)。从未切换的三态空值不落入本分支 — 内核默认 UA
+                        // 不动, WakeUp if-eqz 跳过 UA 代码同构。
+                        userAgentString = ClassicEamsWebVpn.WAKEUP_MOBILE_SPOOF_UA
                     }
                 }
                 // 正常 WebView 配置
