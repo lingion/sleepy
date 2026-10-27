@@ -13,17 +13,19 @@ import javax.xml.parsers.DocumentBuilderFactory
  * 纯 JVM 读源头文件断言(先例: [com.lingion.sleepy.widget.WidgetInfoXmlContractTest],
  * 仓库无 Robolectric,声明式 XML 读源等价于读打包产物)。
  *
- * 锁死三件事:
+ * 锁死四件事(2026-10-27 真机实测后定形:EMUI/HarmonyOS 桌面「风格」染色实测生效,
+ * 反馈两点 —— 右 2 列须淡出主次、整层占满无白边须缩):
  * 1. 两个 adaptive-icon(ic_launcher / ic_launcher_round)都声明 monochrome 层 —— Android 13+
  *    主题图标与 Android 16 QPR2+ 自动重着色依赖该层,缺行即回退系统自动推导形状;
- * 2. monochrome vector 必须是单色纯不透明填充(#FFFFFF 全等) —— 启动器按主题色着色时读取的是
- *    形状 alpha,任何非纯白/带透明度/渐变都会污染着色(官方 adaptive icons 文档);
- * 3. 17 枚胶囊几何与品牌源 public/favicon.svg(iOS AppIcon 比例版)逐 rect 一致(容差 0.02)
- *    —— 防止后续有人"顺手美化"图标把波形改样。favicon 期望表与仓库外真源同步:
- *    sleepy-site 侧 favicon 若再变,本表必须同批改。
- *
- * 形状安全区:胶囊 bbox 55.4% × 59.7% ≤ 61.1%(66dp/108dp 单目标蒙版安全区),
- * 断言 3 的坐标表同时锁住这一比例(越界即形状被裁)。
+ * 2. 单色 = 全 path #FFFFFF;主次层次只允许一种表达:favicon 源 #C2C4D0 的右 2 列 4 枚胶囊
+ *    fillAlpha=0.45(启动器 tint 保留 alpha → 淡主题色),其余胶囊禁 fillAlpha。禁 stroke/渐变;
+ * 3. 17 枚胶囊几何 = 品牌源 public/favicon.svg(iOS AppIcon 比例版)rect 表 × themeScale(0.70),
+ *    绕 (256,256) 等比缩放,容差 0.02 —— 既锁"波形不被人顺手改样",也锁"留白比例不回弹"。
+ *    favicon 期望表与仓库外真源同步:sleepy-site 侧 favicon 若再变,本表必须同批改。
+ * 4. 缩放经 <group android:scaleX/scaleY pivot(256,256)> 声明化实现(pathData 与 favicon 源
+ *    逐字一致,缩放不回写坐标)—— scale 必须 0.70,缩放后 bbox 38.8% × 41.8%(=0.70×原
+ *    55.4%/59.7%) ≤ 45% viewport,远小于 66dp/108dp 单目标蒙版安全区(61.1%),
+ *    四周一圈可见底色(真机反馈「占满无白边」的反向锁)。
  */
 class LauncherIconMonochromeContractTest {
 
@@ -59,14 +61,21 @@ class LauncherIconMonochromeContractTest {
         }
     }
 
+    /** favicon 源 #C2C4D0 组 = 右 2 列 4 枚(波形退潮段,表序 13..16)。主次层级的唯一合法淡出对象。 */
+    private val secondaryIndices = setOf(13, 14, 15, 16)
+
     @Test
-    fun monochromeIsSingleColorOpaque() {
+    fun monochromeIsSingleColorWithSecondaryAlpha() {
         val fills = monochromePaths.map { it.getAttribute("android:fillColor") }.distinct()
-        assertEquals("单色契约:全部 path 共用一种填充", listOf("#FFFFFF"), fills)
-        monochromePaths.forEach {
-            val alpha = it.getAttribute("android:fillAlpha")
-            assertTrue("禁 fillAlpha(主题着色读 alpha 形状)", alpha.isEmpty() || alpha == "1.0")
-            assertTrue("禁 stroke 渐变类属性", it.getAttribute("android:strokeColor").isEmpty())
+        assertEquals("单色契约:全部 path 共用一种填充(禁第二色相)", listOf("#FFFFFF"), fills)
+        monochromePaths.forEachIndexed { i, p ->
+            val alpha = p.getAttribute("android:fillAlpha")
+            if (i in secondaryIndices) {
+                assertEquals("次列 $i 必须淡出(真机反馈:右 2 列灰/淡,主次分明)", "0.45", alpha)
+            } else {
+                assertTrue("主列禁 fillAlpha", alpha.isEmpty() || alpha == "1.0")
+            }
+            assertTrue("禁 stroke 渐变类属性", p.getAttribute("android:strokeColor").isEmpty())
         }
     }
 
@@ -94,6 +103,9 @@ class LauncherIconMonochromeContractTest {
         }
     }
 
+    /** 主题层整体缩放:真机反馈「占满无白边」→ 绕 (256,256) 缩 70%,bbox 露出四周底色。 */
+    private val themeScale = 0.70
+
     /** 期望表 = sleepy-site public/favicon.svg 的 17 枚 rect(x y w h,rx=13.23 或 12.49),逐字照抄。 */
     private val faviconCapsules = listOf(
         Capsule(114.18, 153.86, 26.45, 86.71),
@@ -118,6 +130,23 @@ class LauncherIconMonochromeContractTest {
     @Test
     fun capsulesMatchFaviconGeometryAndSafeZone() {
         assertEquals("胶囊数必须 = favicon 17 枚", 17, actualCapsules.size)
+        // 缩放声明化:vector 根下恰 1 个 <group>,scaleX=scaleY=themeScale,pivot 居中 (256,256),
+        // path 全部挂其下。pathData 保持 favicon 原坐标 → 逐字表不变;"顺手改坐标"与"缩放回弹"皆红。
+        val vecRoot = parse(File(mainRes, "drawable/ic_launcher_monochrome.xml"))
+        val groups = vecRoot.getElementsByTagName("group")
+        assertEquals("monochrome 必须恰有 1 个缩放 group", 1, groups.length)
+        val g = groups.item(0) as Element
+        assertEquals("scaleX", themeScale.toString(), g.getAttribute("android:scaleX"))
+        assertEquals("scaleY", themeScale.toString(), g.getAttribute("android:scaleY"))
+        assertEquals("pivotX", "256", g.getAttribute("android:pivotX"))
+        assertEquals("pivotY", "256", g.getAttribute("android:pivotY"))
+        // path 必须真挂在该缩放 group 下(移出去 = 缩放失效而 pathData 断言照样绿,假绿封堵)。
+        // 注意:monochromePaths 来自另一次 parse 的 DOM 实例,跨 document 引用不等,按属性匹配。
+        monochromePaths.forEach {
+            val parent = it.parentNode as Element
+            assertEquals("父节点须为缩放 group", "group", parent.tagName)
+            assertEquals("父 group scale", themeScale.toString(), parent.getAttribute("android:scaleX"))
+        }
         val d = 0.02 // vector 转写圆角取整容差
         faviconCapsules.forEachIndexed { i, exp ->
             val a = actualCapsules[i]

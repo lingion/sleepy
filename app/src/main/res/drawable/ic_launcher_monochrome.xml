@@ -1,15 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Themed icon layer (Android 13+ / API 33). 17-capsule geometry transcribed
-     verbatim from public/favicon.svg (512 canvas == 108dp viewport x4.74), iOS-ratio
-     version (mark 55% x 60%, centered; bbox 283.6 x 305.7 src units = 59.9 x 64.6dp,
-     inside the 66dp safe zone). Single-color fill is overridden by the launcher with
-     the theme color; the system reads alpha shape only, so main/debug PNG inversion
-     convention does not apply to this layer. -->
+<!-- Themed icon layer (Android 13+ / API 33; EMUI/HarmonyOS「风格」染色实测生效).
+     17-capsule geometry transcribed verbatim from public/favicon.svg (512 canvas ==
+     108dp viewport x4.74), iOS-ratio version, then scaled 0.70 around (256,256) via
+     <group> (2026-10-27 device feedback: full-bleed looked cramped -> bbox now
+     38.8% x 41.8% of viewport, leaving a visible ring of surface color; far inside
+     the 66dp/108dp single-shape safe zone). Hierarchy is expressed ONLY through
+     alpha: the 4 right-column capsules (favicon #C2C4D0 group, table idx 13..16)
+     carry fillAlpha=0.45 so the launcher tint renders them as a lighter shade of
+     the theme color (device feedback #1); the other 13 stay fully opaque. Fill is
+     #FFFFFF throughout - the launcher overrides it with the theme color and reads
+     alpha as the shape, so main/debug PNG inversion convention does not apply. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="512"
     android:viewportHeight="512">
+    <group
+        android:name="theme_scale"
+        android:scaleX="0.7"
+        android:scaleY="0.7"
+        android:pivotX="256"
+        android:pivotY="256">
         <path android:fillColor="#FFFFFF" android:pathData="M127.41,153.86h0.00a13.22,13.22 0 0 1 13.22,13.22v60.26a13.22,13.22 0 0 1 -13.22,13.22h-0.00a13.22,13.22 0 0 1 -13.22,-13.22v-60.26a13.22,13.22 0 0 1 13.22,-13.22z"/>
         <path android:fillColor="#FFFFFF" android:pathData="M127.41,314.05h0.00a13.22,13.22 0 0 1 13.22,13.22v17.64a13.22,13.22 0 0 1 -13.22,13.22h-0.00a13.22,13.22 0 0 1 -13.22,-13.22v-17.64a13.22,13.22 0 0 1 13.22,-13.22z"/>
         <path android:fillColor="#FFFFFF" android:pathData="M170.03,128.14h0.00a13.22,13.22 0 0 1 13.22,13.22v119.04a13.22,13.22 0 0 1 -13.22,13.22h-0.00a13.22,13.22 0 0 1 -13.22,-13.22v-119.04a13.22,13.22 0 0 1 13.22,-13.22z"/>
@@ -23,8 +34,11 @@
         <path android:fillColor="#FFFFFF" android:pathData="M298.62,111.24h0.74a12.49,12.49 0 0 1 12.49,12.49v11.03a12.49,12.49 0 0 1 -12.49,12.49h-0.74a12.49,12.49 0 0 1 -12.49,-12.49v-11.03a12.49,12.49 0 0 1 12.49,-12.49z"/>
         <path android:fillColor="#FFFFFF" android:pathData="M298.62,195.75h0.74a12.49,12.49 0 0 1 12.49,12.49v61.73a12.49,12.49 0 0 1 -12.49,12.49h-0.74a12.49,12.49 0 0 1 -12.49,-12.49v-61.73a12.49,12.49 0 0 1 12.49,-12.49z"/>
         <path android:fillColor="#FFFFFF" android:pathData="M298.62,330.95h0.74a12.49,12.49 0 0 1 12.49,12.49v44.83a12.49,12.49 0 0 1 -12.49,12.49h-0.74a12.49,12.49 0 0 1 -12.49,-12.49v-44.83a12.49,12.49 0 0 1 12.49,-12.49z"/>
-        <path android:fillColor="#FFFFFF" android:pathData="M341.24,136.96h0.74a12.49,12.49 0 0 1 12.49,12.49v27.93a12.49,12.49 0 0 1 -12.49,12.49h-0.74a12.49,12.49 0 0 1 -12.49,-12.49v-27.93a12.49,12.49 0 0 1 12.49,-12.49z"/>
-        <path android:fillColor="#FFFFFF" android:pathData="M384.59,153.86h0.74a12.49,12.49 0 0 1 12.49,12.49v19.11a12.49,12.49 0 0 1 -12.49,12.49h-0.74a12.49,12.49 0 0 1 -12.49,-12.49v-19.11a12.49,12.49 0 0 1 12.49,-12.49z"/>
-        <path android:fillColor="#FFFFFF" android:pathData="M384.59,271.43h0.74a12.49,12.49 0 0 1 12.49,12.49v61.73a12.49,12.49 0 0 1 -12.49,12.49h-0.74a12.49,12.49 0 0 1 -12.49,-12.49v-61.73a12.49,12.49 0 0 1 12.49,-12.49z"/>
-        <path android:fillColor="#FFFFFF" android:pathData="M341.24,238.36h0.74a12.49,12.49 0 0 1 12.49,12.49v119.78a12.49,12.49 0 0 1 -12.49,12.49h-0.74a12.49,12.49 0 0 1 -12.49,-12.49v-119.78a12.49,12.49 0 0 1 12.49,-12.49z"/>
+        <!-- 右 2 列(x=328.75 / 372.10,favicon 源 #C2C4D0 组)淡出:fillAlpha 0.45,
+             主题色染色后呈淡主题色 —— 真机反馈主次分层,左 5 列保持全不透明 -->
+        <path android:fillColor="#FFFFFF" android:fillAlpha="0.45" android:pathData="M341.24,136.96h0.74a12.49,12.49 0 0 1 12.49,12.49v27.93a12.49,12.49 0 0 1 -12.49,12.49h-0.74a12.49,12.49 0 0 1 -12.49,-12.49v-27.93a12.49,12.49 0 0 1 12.49,-12.49z"/>
+        <path android:fillColor="#FFFFFF" android:fillAlpha="0.45" android:pathData="M384.59,153.86h0.74a12.49,12.49 0 0 1 12.49,12.49v19.11a12.49,12.49 0 0 1 -12.49,12.49h-0.74a12.49,12.49 0 0 1 -12.49,-12.49v-19.11a12.49,12.49 0 0 1 12.49,-12.49z"/>
+        <path android:fillColor="#FFFFFF" android:fillAlpha="0.45" android:pathData="M384.59,271.43h0.74a12.49,12.49 0 0 1 12.49,12.49v61.73a12.49,12.49 0 0 1 -12.49,12.49h-0.74a12.49,12.49 0 0 1 -12.49,-12.49v-61.73a12.49,12.49 0 0 1 12.49,-12.49z"/>
+        <path android:fillColor="#FFFFFF" android:fillAlpha="0.45" android:pathData="M341.24,238.36h0.74a12.49,12.49 0 0 1 12.49,12.49v119.78a12.49,12.49 0 0 1 -12.49,12.49h-0.74a12.49,12.49 0 0 1 -12.49,-12.49v-119.78a12.49,12.49 0 0 1 12.49,-12.49z"/>
+    </group>
 </vector>
