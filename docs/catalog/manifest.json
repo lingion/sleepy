@@ -5,8 +5,8 @@
   "statusCounts": {
     "supported": 349,
     "grad_supported": 2,
-    "unverified": 1127,
-    "pending": 2361,
+    "unverified": 1169,
+    "pending": 2319,
     "grad_pending": 301
   },
   "sourceCounts": {
@@ -37,7 +37,7 @@
     },
     {
       "path": "scripts/data/school_import_admissions.json",
-      "sha256": "989970806f61ae4ce51cbdff76e3912bb17b4b6f2ddcaf8691f4d6140a3d5488"
+      "sha256": "635de633eba3c281b0ecabcccb74058808da7397f9ea83d7323a68d4d8604e96"
     },
     {
       "path": "scripts/data/school_catalog_renames.json",
@@ -45,7 +45,7 @@
     },
     {
       "path": "scripts/data/school_url_evidence.json",
-      "sha256": "ef6cbebed0ba55650edb24c08cb86a329a897c6ba3e962938ff52a7bd8e7f99d"
+      "sha256": "4270d6c4196639cc20f7eb6a96f2d2ab5aee67f99adb4be1cb1ba75f5f61f55e"
     },
     {
       "path": "scripts/data/school_catalog_domain_reference.json",
@@ -63,8 +63,9 @@
       "retained-existing-config-ownership-unresolved": 138,
       "ownership-confirmed": 748,
       "retained-wakeup-declared-owner": 591,
-      "withheld-new-unproven-owner": 590,
-      "withheld-domain-collision": 32,
+      "withheld-new-unproven-owner": 549,
+      "retained-shiguang-declared-owner": 42,
+      "withheld-domain-collision": 31,
       "corrected-official-entry": 1
     },
     "decisions": [
@@ -3112,8 +3113,8 @@
         "catalogId": "moe:4111011414",
         "name": "中国石油大学（北京）",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://bk.cup.edu.cn/student/login",
         "authenticatedImportTested": false
       },
       {
@@ -3312,8 +3313,8 @@
         "catalogId": "moe:4112010059",
         "name": "中国民航大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://webvpn.cauc.edu.cn/?returnUrl=https%3A%2F%2Fhttp-jwgl-cauc-edu-cn-80.webvpn.cauc.edu.cn%2Fxtgl%2Flogin_slogin.html",
         "authenticatedImportTested": false
       },
       {
@@ -3392,8 +3393,8 @@
         "catalogId": "moe:4112010792",
         "name": "天津城建大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://authserver.tcu.edu.cn/authserver/login?service=https%3A%2F%2Fjwxs.tcu.edu.cn%2Flogin",
         "authenticatedImportTested": false
       },
       {
@@ -3632,8 +3633,8 @@
         "catalogId": "moe:4113010086",
         "name": "河北农业大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "http://urp.hebau.edu.cn:1009/jwapp/sys/homeapp/home/index.html#/",
         "authenticatedImportTested": false
       },
       {
@@ -4512,8 +4513,8 @@
         "catalogId": "moe:4115011709",
         "name": "呼和浩特民族学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://webvpn.imnc.edu.cn/https/77726476706e69737468656265737421f1e2559434357a467b1ac7a5955b207bbad4ca0bdfea/authserver/login?service=https%3A%2F%2Fwebvpn.imnc.edu.cn%2Flogin%3Fcas_login%3Dtrue",
         "authenticatedImportTested": false
       },
       {
@@ -5232,8 +5233,8 @@
         "catalogId": "moe:4122011437",
         "name": "长春工程学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://webvpn.ccit.edu.cn/auth/login",
         "authenticatedImportTested": false
       },
       {
@@ -5400,8 +5401,8 @@
         "catalogId": "moe:4123010224",
         "name": "东北农业大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://authserver.neau.edu.cn/authserver/login?service=https%3A%2F%2Fwebvpn.neau.edu.cn%2Fusers%2Fauth%2Fcas%2Fcallback%3Furl",
         "authenticatedImportTested": false
       },
       {
@@ -5424,8 +5425,8 @@
         "catalogId": "moe:4123010232",
         "name": "齐齐哈尔大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://webvpn.qqhru.edu.cn/users/sign_in",
         "authenticatedImportTested": false
       },
       {
@@ -5944,16 +5945,16 @@
         "catalogId": "moe:4132010319",
         "name": "南京师范大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://authserver.nnu.edu.cn/authserver/login?service=https://hsnnu.nnu.edu.cn/login",
         "authenticatedImportTested": false
       },
       {
         "catalogId": "moe:4132010320",
         "name": "江苏师范大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://i.jsnu.edu.cn/home",
         "authenticatedImportTested": false
       },
       {
@@ -6048,8 +6049,8 @@
         "catalogId": "moe:4132011998",
         "name": "徐州工程学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "http://jwglxt.xzit.edu.cn/jwglxt/xtgl/login_slogin.html",
         "authenticatedImportTested": false
       },
       {
@@ -6544,8 +6545,8 @@
         "catalogId": "moe:4132013114",
         "name": "常州机电职业技术学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://webapp.czimt.edu.cn/fingerprint",
         "authenticatedImportTested": false
       },
       {
@@ -6992,8 +6993,8 @@
         "catalogId": "moe:4133014207",
         "name": "上海财经大学浙江学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://cass.shufe-zj.edu.cn/cas/login?service=http%3A%2F%2Fjwxt.shufe-zj.edu.cn%2Fkbcx%2Fxskbcx_cxXskbcxIndex.html%3Fgnmkdm%3DN2151%26layout%3Ddefault",
         "authenticatedImportTested": false
       },
       {
@@ -7448,8 +7449,8 @@
         "catalogId": "moe:4134013614",
         "name": "马鞍山学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://jwxt.masu.edu.cn/",
         "authenticatedImportTested": false
       },
       {
@@ -7848,8 +7849,8 @@
         "catalogId": "moe:4135011311",
         "name": "三明学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://tpass.fjsmu.edu.cn/cas/login?service=https%3A%2F%2Fone.fjsmu.edu.cn%2Ftp_up%2Fview%3Fm%3Dup",
         "authenticatedImportTested": false
       },
       {
@@ -7920,8 +7921,8 @@
         "catalogId": "moe:4135012928",
         "name": "泉州职业技术大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://jw.qvtu.edu.cn/jsxsd/",
         "authenticatedImportTested": false
       },
       {
@@ -8176,8 +8177,8 @@
         "catalogId": "moe:4136010407",
         "name": "江西理工大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://authserver.jxust.edu.cn/authserver/login?service=https://jw.jxust.edu.cn/jsxsd/",
         "authenticatedImportTested": false
       },
       {
@@ -8664,8 +8665,8 @@
         "catalogId": "moe:4137010423",
         "name": "中国海洋大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://id.ouc.edu.cn/sso/login?service=https%3A%2F%2Fjwgl2024.ouc.edu.cn%2F",
         "authenticatedImportTested": false
       },
       {
@@ -8824,8 +8825,8 @@
         "catalogId": "moe:4137011510",
         "name": "山东交通学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://wwebvpn.sdjtu.edu.cn/fingerprint",
         "authenticatedImportTested": false
       },
       {
@@ -9488,32 +9489,32 @@
         "catalogId": "moe:4141010459",
         "name": "郑州大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://cas.s.zzu.edu.cn/cas/a/login?service=https%3A%2F%2Fjwxt.zzu.edu.cn%2Fstudent%2Fsso%2Flogin",
         "authenticatedImportTested": false
       },
       {
         "catalogId": "moe:4141010460",
         "name": "河南理工大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://uia.hpu.edu.cn/cas/login?service=https%3A%2F%2Fwebvpn.hpu.edu.cn%2Fhuauauth%2Fcaslogin",
         "authenticatedImportTested": false
       },
       {
         "catalogId": "moe:4141010463",
         "name": "河南工业大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://jwglxt.haut.edu.cn/jwglxt/xtgl/login_slogin.html",
         "authenticatedImportTested": false
       },
       {
         "catalogId": "moe:4141010464",
         "name": "河南科技大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://vpn.haust.edu.cn/portal/",
         "authenticatedImportTested": false
       },
       {
@@ -9600,8 +9601,8 @@
         "catalogId": "moe:4141010480",
         "name": "许昌学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://jwglxt.xcu.edu.cn/jwglxt/xtgl/login_slogin.html",
         "authenticatedImportTested": false
       },
       {
@@ -10328,8 +10329,8 @@
         "catalogId": "moe:4142010519",
         "name": "湖北文理学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://hbuas.jw.chaoxing.com/admin/login",
         "authenticatedImportTested": false
       },
       {
@@ -10872,8 +10873,8 @@
         "catalogId": "moe:4143010546",
         "name": "衡阳师范学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://hysfjw.hynu.edu.cn/jsxsd/",
         "authenticatedImportTested": false
       },
       {
@@ -11136,8 +11137,8 @@
         "catalogId": "moe:4143010865",
         "name": "湖南信息职业技术学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://authserver.hniu.cn/authserver/login?service=https%3A%2F%2Fehall.hniu.cn%3A443%2Flogin%3Fservice%3Dhttps%3A%2F%2Fehall.hniu.cn%2Fnew%2Findex.html%3Fbrowser%3Dno%25EF%25BC%2589#StudentAffairsA",
         "authenticatedImportTested": false
       },
       {
@@ -11240,8 +11241,8 @@
         "catalogId": "moe:4143012845",
         "name": "湖南邮电职业技术学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "http://jx.hnxyjf.com:10081/jsxsd/",
         "authenticatedImportTested": false
       },
       {
@@ -11552,8 +11553,8 @@
         "catalogId": "moe:4144010580",
         "name": "肇庆学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://webvpn.zqu.edu.cn/login",
         "authenticatedImportTested": false
       },
       {
@@ -11616,8 +11617,8 @@
         "catalogId": "moe:4144011106",
         "name": "广州航海学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "http://jwx.gzmtu.edu.cn/jwglxt/xtgl/login_slogin.html",
         "authenticatedImportTested": false
       },
       {
@@ -11696,8 +11697,8 @@
         "catalogId": "moe:4144012668",
         "name": "广州理工学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://ids.gzist.edu.cn/lyuapServer/login?service=http%3A%2F%2Fjw.gzist.edu.cn%2Fsso%2Flyiotlogin",
         "authenticatedImportTested": false
       },
       {
@@ -11800,8 +11801,8 @@
         "catalogId": "moe:4144010833",
         "name": "广东轻工职业技术大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://jw.gdipu.edu.cn/",
         "authenticatedImportTested": false
       },
       {
@@ -11816,8 +11817,8 @@
         "catalogId": "moe:4144010861",
         "name": "广东交通职业技术学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://cas.gdcp.edu.cn/",
         "authenticatedImportTested": false
       },
       {
@@ -12376,8 +12377,8 @@
         "catalogId": "moe:4145011607",
         "name": "北部湾大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://zhjw.bbgu.edu.cn/workspace/home",
         "authenticatedImportTested": false
       },
       {
@@ -12840,8 +12841,8 @@
         "catalogId": "moe:4150011551",
         "name": "重庆科技大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://web.cqust.edu.cn/http/77726476706e69737468656265737421f3f652d224217d436a468ca88d1b203b/authserver/login?service=https%3A%2F%2Fweb.cqust.edu.cn%2Flogin%3Fcas_login%3Dtrue",
         "authenticatedImportTested": false
       },
       {
@@ -12872,8 +12873,8 @@
         "catalogId": "moe:4150012608",
         "name": "重庆工程学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://a.cqie.edu.cn/cas/login?service=https%3A%2F%2Fi.cqie.edu.cn%2Fportal_main%2FtoPortalPage",
         "authenticatedImportTested": false
       },
       {
@@ -12896,8 +12897,8 @@
         "catalogId": "moe:4150013548",
         "name": "重庆人文科技学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://https-auth-cqrk-edu-cn-443.webvpn.cqrk.edu.cn:8480/cas/login?service=http%3A%2F%2Fportal.cqrk.edu.cn&rewrite=1",
         "authenticatedImportTested": false
       },
       {
@@ -13448,8 +13449,8 @@
         "catalogId": "moe:4111012802",
         "name": "吉利学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-domain-collision",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://jw.guc.edu.cn/yethan/UserAction?setAction=userLogin",
         "authenticatedImportTested": false
       },
       {
@@ -13528,8 +13529,8 @@
         "catalogId": "moe:4151012762",
         "name": "四川工商职业技术学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "http://jw.sctbc.edu.cn/xtgl/login_slogin.html",
         "authenticatedImportTested": false
       },
       {
@@ -14232,8 +14233,8 @@
         "catalogId": "moe:4153010677",
         "name": "西南林业大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://jw.swfu.edu.cn/jwglxt/xtgl/login_slogin.html",
         "authenticatedImportTested": false
       },
       {
@@ -14720,8 +14721,8 @@
         "catalogId": "moe:4161010712",
         "name": "西北农林科技大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://newehall.nwafu.edu.cn/ywtb-portal/Lite/index.html?browser=no#/cusHall",
         "authenticatedImportTested": false
       },
       {
@@ -16848,8 +16849,8 @@
         "catalogId": "wakeup:8b9f605b579e47335bbe",
         "name": "中国石油大学（北京）克拉玛依校区",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-shiguang-declared-owner",
+        "operationalUrl": "https://eams.cupk.edu.cn/student/login",
         "authenticatedImportTested": false
       },
       {

@@ -768,6 +768,22 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4143012845",
+    "name": "湖南邮电职业技术学院",
+    "url": "http://jx.hnxyjf.com:10081/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1190,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
     "catalogId": "moe:4142014755",
     "name": "湖北孝感美珈职业学院",
     "url": "http://42.247.9.91:8083/jsxsd/",
@@ -1424,6 +1440,22 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4151012762",
+    "name": "四川工商职业技术学院",
+    "url": "http://jw.sctbc.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2237,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
     "catalogId": "moe:4134012812",
     "name": "宿州职业技术学院",
     "url": "http://jwxt.szzy.edu.cn/xtgl/login_slogin.html",
@@ -1518,6 +1550,22 @@
     ],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "ownership-confirmed"
+  },
+  {
+    "catalogId": "moe:4135011311",
+    "name": "三明学院",
+    "url": "https://tpass.fjsmu.edu.cn/cas/login?service=https%3A%2F%2Fone.fjsmu.edu.cn%2Ftp_up%2Fview%3Fm%3Dup",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2601,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "统一身份认证",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
   },
   {
     "catalogId": "moe:4131013893",
@@ -2522,6 +2570,20 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4133014207",
+    "name": "上海财经大学浙江学院",
+    "url": "https://cass.shufe-zj.edu.cn/cas/login?service=http%3A%2F%2Fjwxt.shufe-zj.edu.cn%2Fkbcx%2Fxskbcx_cxXskbcxIndex.html%3Fgnmkdm%3DN2151%26layout%3Ddefault",
+    "type": "zf_new",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 828,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
     "catalogId": "moe:4136010405",
     "name": "东华理工大学",
     "url": "https://authserver.ecut.edu.cn/authserver/login",
@@ -2548,6 +2610,20 @@
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "retained-wakeup-declared-owner"
+  },
+  {
+    "catalogId": "moe:4123010224",
+    "name": "东北农业大学",
+    "url": "https://authserver.neau.edu.cn/authserver/login?service=https%3A%2F%2Fwebvpn.neau.edu.cn%2Fusers%2Fauth%2Fcas%2Fcallback%3Furl",
+    "type": "urp_new",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 201,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
   },
   {
     "catalogId": "moe:4144014263",
@@ -2764,6 +2840,20 @@
     "ownershipAction": "retained-wakeup-declared-owner"
   },
   {
+    "catalogId": "moe:4137010423",
+    "name": "中国海洋大学",
+    "url": "https://id.ouc.edu.cn/sso/login?service=https%3A%2F%2Fjwgl2024.ouc.edu.cn%2F",
+    "type": "kingo_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3478,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "统一身份认证",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
     "catalogId": "moe:4137010425",
     "name": "中国石油大学（华东）",
     "url": "https://cas.upc.edu.cn/cas/login",
@@ -2778,6 +2868,36 @@
     "ownershipAction": "retained-wakeup-declared-owner"
   },
   {
+    "catalogId": "moe:4112010059",
+    "name": "中国民航大学",
+    "url": "https://webvpn.cauc.edu.cn/?returnUrl=https%3A%2F%2Fhttp-jwgl-cauc-edu-cn-80.webvpn.cauc.edu.cn%2Fxtgl%2Flogin_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3480,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
+    "catalogId": "moe:4111011414",
+    "name": "中国石油大学（北京）",
+    "url": "https://bk.cup.edu.cn/student/login",
+    "type": "shuwei_json",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 1204,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "登入页面",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
     "catalogId": "moe:4133010355",
     "name": "中国美术学院",
     "url": "https://home.caa.edu.cn/zfca/login",
@@ -2790,6 +2910,22 @@
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "ownership-confirmed"
+  },
+  {
+    "catalogId": "wakeup:8b9f605b579e47335bbe",
+    "name": "中国石油大学（北京）克拉玛依校区",
+    "url": "https://eams.cupk.edu.cn/student/login",
+    "type": "qz",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 1205,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "登入页面",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
   },
   {
     "catalogId": "moe:4111010046",
@@ -4092,6 +4228,20 @@
     "ownershipAction": "retained-wakeup-declared-owner"
   },
   {
+    "catalogId": "moe:4145011607",
+    "name": "北部湾大学",
+    "url": "https://zhjw.bbgu.edu.cn/workspace/home",
+    "type": "zf_new",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 90,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "智慧教务 - 北部湾大学",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
     "catalogId": "moe:4145014765",
     "name": "北海康养职业学院",
     "url": "http://cas.bhkyxy.com:9080/cas/login",
@@ -4318,6 +4468,20 @@
     ],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "ownership-confirmed"
+  },
+  {
+    "catalogId": "moe:4132010319",
+    "name": "南京师范大学",
+    "url": "https://authserver.nnu.edu.cn/authserver/login?service=https://hsnnu.nnu.edu.cn/login",
+    "type": "qz",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 731,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
   },
   {
     "catalogId": "moe:4132011460",
@@ -4738,6 +4902,22 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4111012802",
+    "name": "吉利学院",
+    "url": "https://jw.guc.edu.cn/yethan/UserAction?setAction=userLogin",
+    "type": "qz",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 564,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "用户登录-吉利学院教务管理信息系统",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
     "catalogId": "moe:4136014807",
     "name": "吉安幼儿师范高等专科学校",
     "url": "https://cas.japec.edu.cn/lyuapServer/login",
@@ -4920,6 +5100,20 @@
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "ownership-confirmed"
+  },
+  {
+    "catalogId": "moe:4115011709",
+    "name": "呼和浩特民族学院",
+    "url": "https://webvpn.imnc.edu.cn/https/77726476706e69737468656265737421f1e2559434357a467b1ac7a5955b207bbad4ca0bdfea/authserver/login?service=https%3A%2F%2Fwebvpn.imnc.edu.cn%2Flogin%3Fcas_login%3Dtrue",
+    "type": "umooc",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1331,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
   },
   {
     "catalogId": "moe:4115014283",
@@ -5928,6 +6122,20 @@
     "ownershipAction": "retained-wakeup-declared-owner"
   },
   {
+    "catalogId": "moe:4112010792",
+    "name": "天津城建大学",
+    "url": "https://authserver.tcu.edu.cn/authserver/login?service=https%3A%2F%2Fjwxs.tcu.edu.cn%2Flogin",
+    "type": "urp_new",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 997,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "统一身份认证",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
     "catalogId": "moe:4112014022",
     "name": "天津海运职业学院",
     "url": "https://hycas.tjmc.edu.cn/cas/login",
@@ -6698,6 +6906,20 @@
     "ownershipAction": "retained-wakeup-declared-owner"
   },
   {
+    "catalogId": "moe:4137011510",
+    "name": "山东交通学院",
+    "url": "https://wwebvpn.sdjtu.edu.cn/fingerprint",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2513,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
     "catalogId": "moe:4132014293",
     "name": "宿迁泽达职业技术学院",
     "url": "https://jw.zdct.cn/jwglxt/xtgl/login_slogin.html",
@@ -7367,6 +7589,20 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4132013114",
+    "name": "常州机电职业技术学院",
+    "url": "https://webapp.czimt.edu.cn/fingerprint",
+    "type": "zf_new",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 110,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
     "catalogId": "moe:4132012807",
     "name": "常州纺织服装职业技术学院",
     "url": "https://jw.cztgi.edu.cn/jwglxt/xtgl/login_slogin.html",
@@ -7411,6 +7647,20 @@
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "retained-wakeup-declared-owner"
+  },
+  {
+    "catalogId": "moe:4144010861",
+    "name": "广东交通职业技术学院",
+    "url": "https://cas.gdcp.edu.cn/",
+    "type": "qz",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 252,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "统一身份认证平台",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
   },
   {
     "catalogId": "moe:4241050709",
@@ -7765,6 +8015,20 @@
     "ownershipAction": "retained-wakeup-declared-owner"
   },
   {
+    "catalogId": "moe:4144010833",
+    "name": "广东轻工职业技术大学",
+    "url": "https://jw.gdipu.edu.cn/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 867,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
     "catalogId": "moe:4144012953",
     "name": "广东邮电职业技术学院",
     "url": "https://www.gupt.edu.cn/portal/",
@@ -7911,6 +8175,20 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4144012668",
+    "name": "广州理工学院",
+    "url": "https://ids.gzist.edu.cn/lyuapServer/login?service=http%3A%2F%2Fjw.gzist.edu.cn%2Fsso%2Flyiotlogin",
+    "type": "cf",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 308,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "统一身份认证平台",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
     "catalogId": "moe:4144013902",
     "name": "广州新华学院",
     "url": "https://xhcas.xhsysu.edu.cn/lyuapServer/login",
@@ -8035,6 +8313,20 @@
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "retained-wakeup-declared-owner"
+  },
+  {
+    "catalogId": "moe:4144011106",
+    "name": "广州航海学院",
+    "url": "http://jwx.gzmtu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 704,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
   },
   {
     "catalogId": "moe:4145013828",
@@ -8423,6 +8715,22 @@
     ],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "retained-wakeup-declared-owner"
+  },
+  {
+    "catalogId": "moe:4132011998",
+    "name": "徐州工程学院",
+    "url": "http://jwglxt.xzit.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 1080,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
   },
   {
     "catalogId": "moe:4143014867",
@@ -10117,6 +10425,20 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4132010320",
+    "name": "江苏师范大学",
+    "url": "https://i.jsnu.edu.cn/home",
+    "type": "qz_with_node",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 603,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
     "catalogId": "moe:4132013986",
     "name": "江苏大学京江学院",
     "url": "https://pass.ujs.edu.cn/cas/login",
@@ -10493,6 +10815,20 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4136010407",
+    "name": "江西理工大学",
+    "url": "https://authserver.jxust.edu.cn/authserver/login?service=https://jw.jxust.edu.cn/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1563,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "统一身份认证",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
     "catalogId": "wakeup:1ba0b53b7af2c4779dec",
     "name": "江西经济管理干部学院即江西飞行学院",
     "url": "https://jwxt.jxfu.edu.cn/",
@@ -10723,6 +11059,20 @@
     ],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "retained-wakeup-declared-owner"
+  },
+  {
+    "catalogId": "moe:4113010086",
+    "name": "河北农业大学",
+    "url": "http://urp.hebau.edu.cn:1009/jwapp/sys/homeapp/home/index.html#/",
+    "type": "qz",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 413,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
   },
   {
     "catalogId": "moe:4113013595",
@@ -11071,6 +11421,20 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4141010463",
+    "name": "河南工业大学",
+    "url": "https://jwglxt.haut.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1274,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
     "catalogId": "moe:4141013501",
     "name": "河南开封科技传媒学院",
     "url": "https://msjw.humc.edu.cn/cas/login.action",
@@ -11111,6 +11475,20 @@
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "ownership-confirmed"
+  },
+  {
+    "catalogId": "moe:4141010460",
+    "name": "河南理工大学",
+    "url": "https://uia.hpu.edu.cn/cas/login?service=https%3A%2F%2Fwebvpn.hpu.edu.cn%2Fhuauauth%2Fcaslogin",
+    "type": "shuwei_json",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1267,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "统一身份认证",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
   },
   {
     "catalogId": "moe:4141010467",
@@ -11167,6 +11545,20 @@
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "retained-wakeup-declared-owner"
+  },
+  {
+    "catalogId": "moe:4141010464",
+    "name": "河南科技大学",
+    "url": "https://vpn.haust.edu.cn/portal/",
+    "type": "classic_eams",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 447,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "Loading...",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
   },
   {
     "catalogId": "moe:4141011652",
@@ -11293,6 +11685,20 @@
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "retained-wakeup-declared-owner"
+  },
+  {
+    "catalogId": "moe:4135012928",
+    "name": "泉州职业技术大学",
+    "url": "https://jw.qvtu.edu.cn/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2164,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
   },
   {
     "catalogId": "moe:4137014345",
@@ -12179,6 +12585,20 @@
     "ownershipAction": "retained-wakeup-declared-owner"
   },
   {
+    "catalogId": "moe:4142010519",
+    "name": "湖北文理学院",
+    "url": "https://hbuas.jw.chaoxing.com/admin/login",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1005,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
     "catalogId": "moe:4142012982",
     "name": "湖北水利水电职业技术学院",
     "url": "https://ids.hbsy.cn/authserver/login",
@@ -12303,6 +12723,20 @@
     ],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "retained-wakeup-declared-owner"
+  },
+  {
+    "catalogId": "moe:4143010865",
+    "name": "湖南信息职业技术学院",
+    "url": "https://authserver.hniu.cn/authserver/login?service=https%3A%2F%2Fehall.hniu.cn%3A443%2Flogin%3Fservice%3Dhttps%3A%2F%2Fehall.hniu.cn%2Fnew%2Findex.html%3Fbrowser%3Dno%25EF%25BC%2589#StudentAffairsA",
+    "type": "hniu",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 495,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "统一身份认证",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
   },
   {
     "catalogId": "moe:4143013924",
@@ -13449,6 +13883,20 @@
     "ownershipAction": "retained-wakeup-declared-owner"
   },
   {
+    "catalogId": "moe:4144010580",
+    "name": "肇庆学院",
+    "url": "https://webvpn.zqu.edu.cn/login",
+    "type": "cf",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 1335,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
     "catalogId": "moe:4132013962",
     "name": "苏州百年职业学院",
     "url": "https://scc.jw.chaoxing.com/admin/login",
@@ -13596,6 +14044,20 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4143010546",
+    "name": "衡阳师范学院",
+    "url": "https://hysfjw.hynu.edu.cn/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 537,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
     "catalogId": "moe:4133012877",
     "name": "衢州职业技术学院",
     "url": "https://vpn.qzct.net/",
@@ -13664,6 +14126,36 @@
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "retained-wakeup-declared-owner"
+  },
+  {
+    "catalogId": "moe:4161010712",
+    "name": "西北农林科技大学",
+    "url": "https://newehall.nwafu.edu.cn/ywtb-portal/Lite/index.html?browser=no#/cusHall",
+    "type": "qz",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 1100,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "新版门户",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
+    "catalogId": "moe:4153010677",
+    "name": "西南林业大学",
+    "url": "https://jw.swfu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 1115,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
   },
   {
     "catalogId": "moe:4150010635",
@@ -13980,6 +14472,22 @@
     ],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "retained-wakeup-declared-owner"
+  },
+  {
+    "catalogId": "moe:4141010480",
+    "name": "许昌学院",
+    "url": "https://jwglxt.xcu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3094,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
   },
   {
     "catalogId": "moe:4152012850",
@@ -14674,6 +15182,20 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4141010459",
+    "name": "郑州大学",
+    "url": "https://cas.s.zzu.edu.cn/cas/a/login?service=https%3A%2F%2Fjwxt.zzu.edu.cn%2Fstudent%2Fsso%2Flogin",
+    "type": "shuwei_json",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 1279,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
     "catalogId": "moe:4141013791",
     "name": "郑州旅游职业学院",
     "url": "http://authserver.zztrc.edu.cn/authserver/login",
@@ -14800,6 +15322,20 @@
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "ownership-confirmed"
+  },
+  {
+    "catalogId": "moe:4150013548",
+    "name": "重庆人文科技学院",
+    "url": "https://https-auth-cqrk-edu-cn-443.webvpn.cqrk.edu.cn:8480/cas/login?service=http%3A%2F%2Fportal.cqrk.edu.cn&rewrite=1",
+    "type": "qz",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 143,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
   },
   {
     "catalogId": "moe:4150014830",
@@ -15064,6 +15600,20 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4150012608",
+    "name": "重庆工程学院",
+    "url": "https://a.cqie.edu.cn/cas/login?service=https%3A%2F%2Fi.cqie.edu.cn%2Fportal_main%2FtoPortalPage",
+    "type": "kingo_new",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 158,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
     "catalogId": "moe:4150014428",
     "name": "重庆幼儿师范高等专科学校",
     "url": "http://123.146.162.135:81/",
@@ -15202,6 +15752,20 @@
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "ownership-confirmed"
+  },
+  {
+    "catalogId": "moe:4150011551",
+    "name": "重庆科技大学",
+    "url": "https://web.cqust.edu.cn/http/77726476706e69737468656265737421f3f652d224217d436a468ca88d1b203b/authserver/login?service=https%3A%2F%2Fweb.cqust.edu.cn%2Flogin%3Fcas_login%3Dtrue",
+    "type": "classic_eams",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 425,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
   },
   {
     "catalogId": "moe:4150014173",
@@ -15490,6 +16054,20 @@
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "ownership-confirmed"
+  },
+  {
+    "catalogId": "moe:4122011437",
+    "name": "长春工程学院",
+    "url": "https://webvpn.ccit.edu.cn/auth/login",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 350,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
   },
   {
     "catalogId": "moe:4122013601",
@@ -16208,6 +16786,20 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4134013614",
+    "name": "马鞍山学院",
+    "url": "https://jwxt.masu.edu.cn/",
+    "type": "classic_eams",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1907,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
+  },
+  {
     "catalogId": "moe:4142010514",
     "name": "黄冈师范学院",
     "url": "http://jwglxt.hgnu.edu.cn/jwglxt/xtgl/login_slogin.html",
@@ -16436,6 +17028,20 @@
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "ownership-confirmed"
+  },
+  {
+    "catalogId": "moe:4123010232",
+    "name": "齐齐哈尔大学",
+    "url": "https://webvpn.qqhru.edu.cn/users/sign_in",
+    "type": "urp_new",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 805,
+    "checkedAt": "2026-10-27",
+    "http": 200,
+    "title": "齐齐哈尔大学 WebVPN ",
+    "fingerprints": [],
+    "limitation": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-shiguang-declared-owner"
   },
   {
     "catalogId": "moe:4137014276",

@@ -2055,14 +2055,14 @@
     "sourceMinVersion": 0,
     "mappedType": "qz",
     "probe": {
-      "url": "http://jx.189jxt.com:10081/jsxsd/",
-      "checkedAt": "2026-10-14",
+      "url": "http://jx.hnxyjf.com:10081/jsxsd/",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [
         "qz"
       ],
       "http": 200,
-      "finalUrl": "http://jx.189jxt.com:10081/jsxsd/",
+      "finalUrl": "http://jx.hnxyjf.com:10081/jsxsd/",
       "bytes": 17076,
       "title": "登录",
       "urlHints": [
@@ -2070,7 +2070,7 @@
       ]
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -3712,22 +3712,22 @@
     "sourceMinVersion": 0,
     "mappedType": "zf_new",
     "probe": {
-      "url": "https://jw.sctbc.edu.cn/xtgl/login_slogin.html",
-      "checkedAt": "2026-10-14",
+      "url": "http://jw.sctbc.edu.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [
         "zf_new"
       ],
       "http": 200,
-      "finalUrl": "https://jw.sctbc.edu.cn/xtgl/login_slogin.html",
+      "finalUrl": "http://jw.sctbc.edu.cn/xtgl/login_slogin.html",
       "bytes": 20566,
-      "title": "教学管理信息服务平台",
+      "title": "",
       "urlHints": [
         "zf_new"
       ]
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -4009,22 +4009,22 @@
     "sourceMinVersion": 0,
     "mappedType": "zf_new",
     "probe": {
-      "url": "https://jwxxt.fjsmu.edu.cn/jwglxt/xtgl/login_slogin.html",
-      "checkedAt": "2026-10-14",
+      "url": "https://tpass.fjsmu.edu.cn/cas/login?service=https%3A%2F%2Fone.fjsmu.edu.cn%2Ftp_up%2Fview%3Fm%3Dup",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [
         "zf_new"
       ],
       "http": 200,
-      "finalUrl": "https://jwxxt.fjsmu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "finalUrl": "https://tpass.fjsmu.edu.cn/cas/login?service=https%3A%2F%2Fone.fjsmu.edu.cn%2Ftp_up%2Fview%3Fm%3Dup",
       "bytes": 20608,
-      "title": "教学管理信息服务平台",
+      "title": "统一身份认证",
       "urlHints": [
         "zf_new"
       ]
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -7997,19 +7997,18 @@
     "sourceMinVersion": 0,
     "mappedType": "zf_new",
     "probe": {
-      "url": "http://jwxt.shufe-zj.edu.cn/jwglxt/xtgl/login_slogin.html",
-      "checkedAt": "2026-10-16",
+      "url": "https://cass.shufe-zj.edu.cn/cas/login?service=http%3A%2F%2Fjwxt.shufe-zj.edu.cn%2Fkbcx%2Fxskbcx_cxXskbcxIndex.html%3Fgnmkdm%3DN2151%26layout%3Ddefault",
+      "checkedAt": "2026-10-27",
       "status": "unverified",
       "fingerprints": [],
-      "http": 302,
-      "finalUrl": "https://cass.shufe-zj.edu.cn/cas/wengine-vpn-token-login",
+      "http": 200,
+      "finalUrl": "https://cass.shufe-zj.edu.cn/cas/login?service=http%3A%2F%2Fjwxt.shufe-zj.edu.cn%2Fkbcx%2Fxskbcx_cxXskbcxIndex.html%3Fgnmkdm%3DN2151%26layout%3Ddefault",
       "bytes": 214,
       "title": "",
-      "urlHints": [],
-      "error": "redirect-limit"
+      "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -8145,19 +8144,18 @@
     "sourceMinVersion": 0,
     "mappedType": "urp_new",
     "probe": {
-      "url": "http://jwc.neau.edu.cn",
-      "checkedAt": "2026-10-16",
+      "url": "https://authserver.neau.edu.cn/authserver/login?service=https%3A%2F%2Fwebvpn.neau.edu.cn%2Fusers%2Fauth%2Fcas%2Fcallback%3Furl",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "http://jwc.neau.edu.cn",
+      "http": 200,
+      "finalUrl": "https://authserver.neau.edu.cn/authserver/login?service=https%3A%2F%2Fwebvpn.neau.edu.cn%2Fusers%2Fauth%2Fcas%2Fcallback%3Furl",
       "bytes": 0,
       "title": "",
-      "urlHints": [],
-      "error": "curl-28"
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -8942,18 +8940,18 @@
     "sourceMinVersion": 0,
     "mappedType": "kingo_new",
     "probe": {
-      "url": "https://id.ouc.edu.cn/sso/login",
-      "checkedAt": "2026-10-16",
+      "url": "https://id.ouc.edu.cn/sso/login?service=https%3A%2F%2Fjwgl2024.ouc.edu.cn%2F",
+      "checkedAt": "2026-10-27",
       "status": "unverified",
       "fingerprints": [],
       "http": 200,
-      "finalUrl": "https://id.ouc.edu.cn/sso/login",
+      "finalUrl": "https://id.ouc.edu.cn/sso/login?service=https%3A%2F%2Fjwgl2024.ouc.edu.cn%2F",
       "bytes": 11901,
       "title": "统一身份认证",
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -9058,21 +9056,20 @@
     "sourceMinVersion": 0,
     "mappedType": "zf_new",
     "probe": {
-      "url": "http://jwgl.cauc.edu.cn/xtgl/login_slogin.html",
-      "checkedAt": "2026-10-16",
+      "url": "https://webvpn.cauc.edu.cn/?returnUrl=https%3A%2F%2Fhttp-jwgl-cauc-edu-cn-80.webvpn.cauc.edu.cn%2Fxtgl%2Flogin_slogin.html",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [
         "zf_new"
       ],
-      "http": 0,
-      "finalUrl": "http://jwgl.cauc.edu.cn/xtgl/login_slogin.html",
+      "http": 200,
+      "finalUrl": "https://webvpn.cauc.edu.cn/?returnUrl=https%3A%2F%2Fhttp-jwgl-cauc-edu-cn-80.webvpn.cauc.edu.cn%2Fxtgl%2Flogin_slogin.html",
       "bytes": 0,
       "title": "",
-      "urlHints": [],
-      "error": "curl-28"
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -9090,19 +9087,18 @@
     "sourceMinVersion": 0,
     "mappedType": "shuwei_json",
     "probe": {
-      "url": "https://bk.cup.edu.cn/student",
-      "checkedAt": "2026-10-16",
+      "url": "https://bk.cup.edu.cn/student/login",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "http://bk.cup.edu.cn/student/",
+      "http": 200,
+      "finalUrl": "https://bk.cup.edu.cn/student/login",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "curl-28"
+      "title": "登入页面",
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -9149,21 +9145,20 @@
     "sourceMinVersion": 0,
     "mappedType": "qz",
     "probe": {
-      "url": "http://jw.cupk.edu.cn/jsxsd/",
-      "checkedAt": "2026-10-16",
+      "url": "https://eams.cupk.edu.cn/student/login",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [
         "qz"
       ],
-      "http": 0,
-      "finalUrl": "http://jw.cupk.edu.cn/jsxsd/",
+      "http": 200,
+      "finalUrl": "https://eams.cupk.edu.cn/student/login",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "curl-28"
+      "title": "登入页面",
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -15458,19 +15453,18 @@
     "sourceMinVersion": 0,
     "mappedType": "zf_new",
     "probe": {
-      "url": "http://10.3.132.10/jwglxt/xtgl/login_slogin.html",
-      "checkedAt": "2026-10-16",
+      "url": "https://zhjw.bbgu.edu.cn/workspace/home",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "http://10.3.132.10/jwglxt/xtgl/login_slogin.html",
+      "http": 200,
+      "finalUrl": "https://zhjw.bbgu.edu.cn/workspace/home",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "non-public-url"
+      "title": "智慧教务 - 北部湾大学",
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -16344,18 +16338,18 @@
     "sourceMinVersion": 0,
     "mappedType": "qz",
     "probe": {
-      "url": "http://ehall.nnu.edu.cn/new/index.html",
-      "checkedAt": "2026-10-16",
+      "url": "https://authserver.nnu.edu.cn/authserver/login?service=https://hsnnu.nnu.edu.cn/login",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 412,
-      "finalUrl": "https://ehall.nnu.edu.cn/new/index.html",
+      "http": 200,
+      "finalUrl": "https://authserver.nnu.edu.cn/authserver/login?service=https://hsnnu.nnu.edu.cn/login",
       "bytes": 2508,
       "title": "",
       "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -18433,20 +18427,20 @@
     "sourceMinVersion": 0,
     "mappedType": "qz",
     "probe": {
-      "url": "http://49.234.155.183/jlxy/",
-      "checkedAt": "2026-10-16",
+      "url": "https://jw.guc.edu.cn/yethan/UserAction?setAction=userLogin",
+      "checkedAt": "2026-10-27",
       "status": "unverified",
       "fingerprints": [
         "qz"
       ],
       "http": 200,
-      "finalUrl": "https://49.234.155.183/jlxy/",
+      "finalUrl": "https://jw.guc.edu.cn/yethan/UserAction?setAction=userLogin",
       "bytes": 19935,
-      "title": "登录",
+      "title": "用户登录-吉利学院教务管理信息系统",
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -19705,19 +19699,18 @@
     "sourceMinVersion": 0,
     "mappedType": "umooc",
     "probe": {
-      "url": "211.82.176.48",
-      "checkedAt": "2026-10-16",
+      "url": "https://webvpn.imnc.edu.cn/https/77726476706e69737468656265737421f1e2559434357a467b1ac7a5955b207bbad4ca0bdfea/authserver/login?service=https%3A%2F%2Fwebvpn.imnc.edu.cn%2Flogin%3Fcas_login%3Dtrue",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "http://211.82.176.48",
+      "http": 200,
+      "finalUrl": "https://webvpn.imnc.edu.cn/https/77726476706e69737468656265737421f1e2559434357a467b1ac7a5955b207bbad4ca0bdfea/authserver/login?service=https%3A%2F%2Fwebvpn.imnc.edu.cn%2Flogin%3Fcas_login%3Dtrue",
       "bytes": 0,
       "title": "",
-      "urlHints": [],
-      "error": "non-public-url"
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed.",
     "mappedAt": "2026-10-17"
   },
   {
@@ -23648,20 +23641,20 @@
     "sourceMinVersion": 0,
     "mappedType": "wisedu",
     "probe": {
-      "url": "http://jw.dlutci.edu.cn/jwapp/sys/emaphome/portal/index.do",
-      "checkedAt": "2026-10-16",
+      "url": "https://jw.dlutci.edu.cn/jwapp/sys/emapfunauth/pages/welcome.do?service=https%3A%2F%2Fjw.dlutci.edu.cn%2Fjwapp%2Fsys%2Femaphome%2Fportal%2Findex.do",
+      "checkedAt": "2026-10-27",
       "status": "unverified",
       "fingerprints": [
         "wisedu"
       ],
       "http": 200,
-      "finalUrl": "https://jw.dlutci.edu.cn/jwapp/sys/emapfunauth/pages/welcome.do",
+      "finalUrl": "https://jw.dlutci.edu.cn/jwapp/sys/emapfunauth/pages/welcome.do?service=https%3A%2F%2Fjw.dlutci.edu.cn%2Fjwapp%2Fsys%2Femaphome%2Fportal%2Findex.do",
       "bytes": 1398,
       "title": "首页",
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -24475,19 +24468,18 @@
     "sourceMinVersion": 0,
     "mappedType": "urp_new",
     "probe": {
-      "url": "http://jwxs.tcu.edu.cn/",
-      "checkedAt": "2026-10-16",
+      "url": "https://authserver.tcu.edu.cn/authserver/login?service=https%3A%2F%2Fjwxs.tcu.edu.cn%2Flogin",
+      "checkedAt": "2026-10-27",
       "status": "unverified",
       "fingerprints": [],
-      "http": 302,
-      "finalUrl": "https://jwxs.tcu.edu.cn/login",
+      "http": 200,
+      "finalUrl": "https://authserver.tcu.edu.cn/authserver/login?service=https%3A%2F%2Fjwxs.tcu.edu.cn%2Flogin",
       "bytes": 130,
-      "title": "",
-      "urlHints": [],
-      "error": "redirect-limit"
+      "title": "统一身份认证",
+      "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -28338,19 +28330,18 @@
     "sourceMinVersion": 0,
     "mappedType": "qz",
     "probe": {
-      "url": "http://192.168.253.164/",
-      "checkedAt": "2026-10-16",
+      "url": "https://wwebvpn.sdjtu.edu.cn/fingerprint",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "http://192.168.253.164/",
+      "http": 200,
+      "finalUrl": "https://wwebvpn.sdjtu.edu.cn/fingerprint",
       "bytes": 0,
       "title": "",
-      "urlHints": [],
-      "error": "non-public-url"
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -31695,19 +31686,18 @@
     "sourceMinVersion": 0,
     "mappedType": "zf_new",
     "probe": {
-      "url": "http://jwc.czmec.cn/",
-      "checkedAt": "2026-10-16",
+      "url": "https://webapp.czimt.edu.cn/fingerprint",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "http://jwc.czmec.cn/",
+      "http": 200,
+      "finalUrl": "https://webapp.czimt.edu.cn/fingerprint",
       "bytes": 0,
       "title": "",
-      "urlHints": [],
-      "error": "non-public-url"
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -32085,19 +32075,18 @@
     "sourceMinVersion": 0,
     "mappedType": "qz",
     "probe": {
-      "url": "http://jw.gdcp.cn/",
-      "checkedAt": "2026-10-16",
+      "url": "https://cas.gdcp.edu.cn/",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "http://jw.gdcp.cn/",
+      "http": 200,
+      "finalUrl": "https://cas.gdcp.edu.cn/",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "curl-7"
+      "title": "统一身份认证平台",
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -33758,19 +33747,18 @@
     "sourceMinVersion": 0,
     "mappedType": "qz",
     "probe": {
-      "url": "https://jw.gdqy.edu.cn/jsxsd/",
-      "checkedAt": "2026-10-16",
+      "url": "https://jw.gdipu.edu.cn/",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "https://jw.gdqy.edu.cn/jsxsd/",
+      "http": 200,
+      "finalUrl": "https://jw.gdipu.edu.cn/",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "non-public-url"
+      "title": "登录",
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -34637,19 +34625,18 @@
     "sourceMinVersion": 0,
     "mappedType": "cf",
     "probe": {
-      "url": "http://jwgl.thxy.cn/",
-      "checkedAt": "2026-10-16",
+      "url": "https://ids.gzist.edu.cn/lyuapServer/login?service=http%3A%2F%2Fjw.gzist.edu.cn%2Fsso%2Flyiotlogin",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "http://jwgl.thxy.cn/",
+      "http": 200,
+      "finalUrl": "https://ids.gzist.edu.cn/lyuapServer/login?service=http%3A%2F%2Fjw.gzist.edu.cn%2Fsso%2Flyiotlogin",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "non-public-url"
+      "title": "统一身份认证平台",
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -35344,19 +35331,18 @@
     "sourceMinVersion": 0,
     "mappedType": "zf_new",
     "probe": {
-      "url": "http://jw.gzmtu.edu.cn/",
-      "checkedAt": "2026-10-16",
+      "url": "http://jwx.gzmtu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "http://jw.gzmtu.edu.cn/",
+      "http": 200,
+      "finalUrl": "http://jwx.gzmtu.edu.cn/jwglxt/xtgl/login_slogin.html",
       "bytes": 0,
       "title": "",
-      "urlHints": [],
-      "error": "curl-28"
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -37249,21 +37235,20 @@
     "sourceMinVersion": 0,
     "mappedType": "zf_new",
     "probe": {
-      "url": "http://218.3.178.51/jwglxt/xtgl/login_slogin.html",
-      "checkedAt": "2026-10-16",
+      "url": "http://jwglxt.xzit.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [
         "zf_new"
       ],
-      "http": 0,
-      "finalUrl": "http://218.3.178.51/jwglxt/xtgl/login_slogin.html",
+      "http": 200,
+      "finalUrl": "http://jwglxt.xzit.edu.cn/jwglxt/xtgl/login_slogin.html",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "curl-28"
+      "title": "教学管理信息服务平台",
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -44753,19 +44738,18 @@
     "sourceMinVersion": 0,
     "mappedType": "qz_with_node",
     "probe": {
-      "url": "http://sdjw.jsnu.edu.cn/",
-      "checkedAt": "2026-10-16",
+      "url": "https://i.jsnu.edu.cn/home",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "http://sdjw.jsnu.edu.cn/",
+      "http": 200,
+      "finalUrl": "https://i.jsnu.edu.cn/home",
       "bytes": 0,
       "title": "",
-      "urlHints": [],
-      "error": "non-public-url"
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -46478,18 +46462,18 @@
     "sourceMinVersion": 0,
     "mappedType": "qz",
     "probe": {
-      "url": "https://authserver.jxust.edu.cn/authserver/login?service=https%3A%2F%2Fehall.jxust.edu.cn%3A443%2Flogin%3Fservice%3Dhttps%3A%2F%2Fehall.jxust.edu.cn%2Fnew%2Findex.html",
-      "checkedAt": "2026-10-16",
+      "url": "https://authserver.jxust.edu.cn/authserver/login?service=https://jw.jxust.edu.cn/jsxsd/",
+      "checkedAt": "2026-10-27",
       "status": "unverified",
       "fingerprints": [],
       "http": 200,
-      "finalUrl": "https://authserver.jxust.edu.cn/authserver/login",
+      "finalUrl": "https://authserver.jxust.edu.cn/authserver/login?service=https://jw.jxust.edu.cn/jsxsd/",
       "bytes": 13819,
       "title": "统一身份认证",
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -47753,18 +47737,18 @@
     "sourceMinVersion": 0,
     "mappedType": "qz",
     "probe": {
-      "url": "https://www.hebau.edu.cn/info/1001/11851.htm",
-      "checkedAt": "2026-10-16",
+      "url": "http://urp.hebau.edu.cn:1009/jwapp/sys/homeapp/home/index.html#/",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 404,
-      "finalUrl": "https://www.hebau.edu.cn/info/1001/11851.htm",
+      "http": 200,
+      "finalUrl": "http://urp.hebau.edu.cn:1009/jwapp/sys/homeapp/home/index.html#/",
       "bytes": 1693,
-      "title": "404错误提示",
+      "title": "",
       "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -49614,19 +49598,18 @@
     "sourceMinVersion": 0,
     "mappedType": "zf_new",
     "probe": {
-      "url": "http://jwglxt.haut.edu.cn/",
-      "checkedAt": "2026-10-16",
+      "url": "https://jwglxt.haut.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-27",
       "status": "unverified",
       "fingerprints": [],
-      "http": 301,
-      "finalUrl": "http://jwglxt.haut.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "http": 200,
+      "finalUrl": "https://jwglxt.haut.edu.cn/jwglxt/xtgl/login_slogin.html",
       "bytes": 163,
-      "title": "",
-      "urlHints": [],
-      "error": "redirect-limit"
+      "title": "教学管理信息服务平台",
+      "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -49878,18 +49861,18 @@
     "sourceMinVersion": 0,
     "mappedType": "shuwei_json",
     "probe": {
-      "url": "https://uia.hpu.edu.cn/cas/login?service=http%3A%2F%2Fzhjw.hpu.edu.cn%2Feams%2Flogin.action#/https://zhjw.hpu.edu.cn/eams/loginExt.action",
-      "checkedAt": "2026-10-16",
+      "url": "https://uia.hpu.edu.cn/cas/login?service=https%3A%2F%2Fwebvpn.hpu.edu.cn%2Fhuauauth%2Fcaslogin",
+      "checkedAt": "2026-10-27",
       "status": "unverified",
       "fingerprints": [],
       "http": 200,
-      "finalUrl": "https://uia.hpu.edu.cn/cas/login",
+      "finalUrl": "https://uia.hpu.edu.cn/cas/login?service=https%3A%2F%2Fwebvpn.hpu.edu.cn%2Fhuauauth%2Fcaslogin",
       "bytes": 1453,
       "title": "统一身份认证",
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -50083,19 +50066,18 @@
     "sourceMinVersion": 0,
     "mappedType": "classic_eams",
     "probe": {
-      "url": "https://jwgl.haust.edu.cn/",
-      "checkedAt": "2026-10-16",
+      "url": "https://vpn.haust.edu.cn/portal/",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "https://jwgl.haust.edu.cn/",
+      "http": 200,
+      "finalUrl": "https://vpn.haust.edu.cn/portal/",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "curl-28"
+      "title": "Loading...",
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -50642,19 +50624,18 @@
     "sourceMinVersion": 0,
     "mappedType": "qz",
     "probe": {
-      "url": "http://jw.qvtu.edu.cn:51234/jsxsd",
-      "checkedAt": "2026-10-16",
+      "url": "https://jw.qvtu.edu.cn/jsxsd/",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "https://jw.qvtu.edu.cn:51234/jsxsd",
+      "http": 200,
+      "finalUrl": "https://jw.qvtu.edu.cn/jsxsd/",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "curl-35"
+      "title": "登录",
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -54646,19 +54627,18 @@
     "sourceMinVersion": 0,
     "mappedType": "qz",
     "probe": {
-      "url": "http://jwxt.hbuas.edu.cn/jsxsd",
-      "checkedAt": "2026-10-16",
+      "url": "https://hbuas.jw.chaoxing.com/admin/login",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "http://jwxt.hbuas.edu.cn/jsxsd",
+      "http": 200,
+      "finalUrl": "https://hbuas.jw.chaoxing.com/admin/login",
       "bytes": 0,
       "title": "",
-      "urlHints": [],
-      "error": "curl-28"
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -55131,19 +55111,18 @@
     "sourceMinVersion": 0,
     "mappedType": "hniu",
     "probe": {
-      "url": "http://my.hniu.cn/jwweb/ZNPK/KBFB_ClassSel.aspx",
-      "checkedAt": "2026-10-16",
+      "url": "https://authserver.hniu.cn/authserver/login?service=https%3A%2F%2Fehall.hniu.cn%3A443%2Flogin%3Fservice%3Dhttps%3A%2F%2Fehall.hniu.cn%2Fnew%2Findex.html%3Fbrowser%3Dno%25EF%25BC%2589#StudentAffairsA",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "http://my.hniu.cn/jwweb/ZNPK/KBFB_ClassSel.aspx",
+      "http": 200,
+      "finalUrl": "https://authserver.hniu.cn/authserver/login?service=https%3A%2F%2Fehall.hniu.cn%3A443%2Flogin%3Fservice%3Dhttps%3A%2F%2Fehall.hniu.cn%2Fnew%2Findex.html%3Fbrowser%3Dno%25EF%25BC%2589#StudentAffairsA",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "non-public-url"
+      "title": "统一身份认证",
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -62228,18 +62207,18 @@
     "sourceMinVersion": 0,
     "mappedType": "cf",
     "probe": {
-      "url": "http://jwgl.zqu.edu.cn",
-      "checkedAt": "2026-10-16",
+      "url": "https://webvpn.zqu.edu.cn/login",
+      "checkedAt": "2026-10-27",
       "status": "unverified",
       "fingerprints": [],
       "http": 200,
       "finalUrl": "https://webvpn.zqu.edu.cn/login",
       "bytes": 46683,
-      "title": "WebVPN",
+      "title": "",
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -63393,18 +63372,18 @@
     "sourceMinVersion": 0,
     "mappedType": "qz",
     "probe": {
-      "url": "http://59.51.24.46/hysf/",
-      "checkedAt": "2026-10-16",
+      "url": "https://hysfjw.hynu.edu.cn/jsxsd/",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 404,
-      "finalUrl": "https://59.51.24.46/hysf/",
+      "http": 200,
+      "finalUrl": "https://hysfjw.hynu.edu.cn/jsxsd/",
       "bytes": 1065,
-      "title": "404错误",
+      "title": "登录",
       "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -63747,18 +63726,18 @@
     "sourceMinVersion": 0,
     "mappedType": "qz",
     "probe": {
-      "url": "https://newehall.nwafu.edu.cn/",
-      "checkedAt": "2026-10-16",
+      "url": "https://newehall.nwafu.edu.cn/ywtb-portal/Lite/index.html?browser=no#/cusHall",
+      "checkedAt": "2026-10-27",
       "status": "unverified",
       "fingerprints": [],
       "http": 200,
-      "finalUrl": "https://newehall.nwafu.edu.cn/ywtb-portal/Lite/index.html",
+      "finalUrl": "https://newehall.nwafu.edu.cn/ywtb-portal/Lite/index.html?browser=no#/cusHall",
       "bytes": 7795,
       "title": "新版门户",
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -63776,21 +63755,20 @@
     "sourceMinVersion": 0,
     "mappedType": "zf_new",
     "probe": {
-      "url": "https://jw.swfu.edu.cn:8089/jwglxt/xtgl/login_slogin.html",
-      "checkedAt": "2026-10-16",
+      "url": "https://jw.swfu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [
         "zf_new"
       ],
-      "http": 0,
-      "finalUrl": "https://jw.swfu.edu.cn:8089/jwglxt/xtgl/login_slogin.html",
+      "http": 200,
+      "finalUrl": "https://jw.swfu.edu.cn/jwglxt/xtgl/login_slogin.html",
       "bytes": 0,
       "title": "",
-      "urlHints": [],
-      "error": "curl-35"
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -65691,8 +65669,8 @@
     "sourceMinVersion": 0,
     "mappedType": "zf_new",
     "probe": {
-      "url": "https://jwglxt.xcu.edu.cn/",
-      "checkedAt": "2026-10-16",
+      "url": "https://jwglxt.xcu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-27",
       "status": "unverified",
       "fingerprints": [
         "zf_new"
@@ -65706,7 +65684,7 @@
       ]
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -69869,19 +69847,18 @@
     "sourceMinVersion": 0,
     "mappedType": "shuwei_json",
     "probe": {
-      "url": "https://jw.v.zzu.edu.cn/eams/login.action",
-      "checkedAt": "2026-10-16",
+      "url": "https://cas.s.zzu.edu.cn/cas/a/login?service=https%3A%2F%2Fjwxt.zzu.edu.cn%2Fstudent%2Fsso%2Flogin",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "https://jw.v.zzu.edu.cn/eams/login.action",
+      "http": 200,
+      "finalUrl": "https://cas.s.zzu.edu.cn/cas/a/login?service=https%3A%2F%2Fjwxt.zzu.edu.cn%2Fstudent%2Fsso%2Flogin",
       "bytes": 0,
       "title": "",
-      "urlHints": [],
-      "error": "curl-28"
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -70904,19 +70881,18 @@
     "sourceMinVersion": 0,
     "mappedType": "qz",
     "probe": {
-      "url": "http://jwxt.cqrk.edu.cn:18080/",
-      "checkedAt": "2026-10-16",
+      "url": "https://https-auth-cqrk-edu-cn-443.webvpn.cqrk.edu.cn:8480/cas/login?service=http%3A%2F%2Fportal.cqrk.edu.cn&rewrite=1",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "http://jwxt.cqrk.edu.cn:18080/",
+      "http": 200,
+      "finalUrl": "https://https-auth-cqrk-edu-cn-443.webvpn.cqrk.edu.cn:8480/cas/login?service=http%3A%2F%2Fportal.cqrk.edu.cn&rewrite=1",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "non-public-url"
+      "title": "登录",
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -71676,18 +71652,18 @@
     "sourceMinVersion": 0,
     "mappedType": "kingo_new",
     "probe": {
-      "url": "http://jw.cqie.edu.cn/cas/login.action",
-      "checkedAt": "2026-10-16",
+      "url": "https://a.cqie.edu.cn/cas/login?service=https%3A%2F%2Fi.cqie.edu.cn%2Fportal_main%2FtoPortalPage",
+      "checkedAt": "2026-10-27",
       "status": "unverified",
       "fingerprints": [],
       "http": 200,
-      "finalUrl": "https://jw.cqie.edu.cn/cas/login.action",
+      "finalUrl": "https://a.cqie.edu.cn/cas/login?service=https%3A%2F%2Fi.cqie.edu.cn%2Fportal_main%2FtoPortalPage",
       "bytes": 35271,
-      "title": "KINGOSOFT高校智慧校园教学综合服务平台",
+      "title": "",
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -72377,19 +72353,18 @@
     "sourceMinVersion": 0,
     "mappedType": "classic_eams",
     "probe": {
-      "url": "http://jwnew.cqust.edu.cn/eams/login.action?cqustadminweb=1",
-      "checkedAt": "2026-10-16",
+      "url": "https://web.cqust.edu.cn/http/77726476706e69737468656265737421f3f652d224217d436a468ca88d1b203b/authserver/login?service=https%3A%2F%2Fweb.cqust.edu.cn%2Flogin%3Fcas_login%3Dtrue",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "http://jwnew.cqust.edu.cn/eams/login.action",
+      "http": 200,
+      "finalUrl": "https://web.cqust.edu.cn/http/77726476706e69737468656265737421f3f652d224217d436a468ca88d1b203b/authserver/login?service=https%3A%2F%2Fweb.cqust.edu.cn%2Flogin%3Fcas_login%3Dtrue",
       "bytes": 0,
       "title": "",
-      "urlHints": [],
-      "error": "curl-28"
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -73764,19 +73739,18 @@
     "sourceMinVersion": 0,
     "mappedType": "qz",
     "probe": {
-      "url": "http://cgcjw.ccit.edu.cn/jsxsd/",
-      "checkedAt": "2026-10-16",
+      "url": "https://webvpn.ccit.edu.cn/auth/login",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "http://cgcjw.ccit.edu.cn/jsxsd/",
+      "http": 200,
+      "finalUrl": "https://webvpn.ccit.edu.cn/auth/login",
       "bytes": 0,
       "title": "",
-      "urlHints": [],
-      "error": "non-public-url"
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -78204,18 +78178,18 @@
     "sourceMinVersion": 0,
     "mappedType": "classic_eams",
     "probe": {
-      "url": "https://jwxt.masu.edu.cn/eams/login.action",
-      "checkedAt": "2026-10-16",
+      "url": "https://jwxt.masu.edu.cn/",
+      "checkedAt": "2026-10-27",
       "status": "unverified",
       "fingerprints": [],
       "http": 200,
-      "finalUrl": "https://smart.masu.edu.cn:8443/",
+      "finalUrl": "https://jwxt.masu.edu.cn/",
       "bytes": 3462,
       "title": "",
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -79597,19 +79571,18 @@
     "sourceMinVersion": 0,
     "mappedType": "urp_new",
     "probe": {
-      "url": "http://172.20.139.153:7700/",
-      "checkedAt": "2026-10-16",
+      "url": "https://webvpn.qqhru.edu.cn/users/sign_in",
+      "checkedAt": "2026-10-27",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "http://172.20.139.153:7700/",
+      "http": 200,
+      "finalUrl": "https://webvpn.qqhru.edu.cn/users/sign_in",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "non-public-url"
+      "title": "齐齐哈尔大学 WebVPN ",
+      "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
