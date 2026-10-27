@@ -693,6 +693,46 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
             "LonelyMarch/OpenWakeUp (LonelyMarch, AGPL-3.0)\n" +
             "Chiu-xaH/HFUT-Schedule (Chiu-xaH, wengine 原生链形态参照与 hex 盐值互证)\n" +
             "MilLoong/UESTC-EAMS-Helper-App (MilLoong, MIT, 移动教务 JWT 形态旁证)"
+    ),
+    PerSchoolEntry(
+        "school-nankai-eamis", "南开大学 EAMIS",
+        "南开大学 EAMIS 课表导入适配的多仓交叉验证, 38 候选全量致谢 " +
+            "(OpenWakeUp、hormone、shangkeschedule 沿用既有致谢条目, 不在此重复):\n" +
+            "zawnpn/NKU-EAMIS (MIT)\n" +
+            "zawnpn/NKU-EAMIS_Server (MIT)\n" +
+            "zawnpn/NKU-EAMIS_MiniApp (MIT)\n" +
+            "suhipek/eamis-helper (WTFPL)\n" +
+            "RYX0309/NKU-eamis (AGPL-3.0)\n" +
+            "Sazzzzzz/SchedulEase (Unlicense)\n" +
+            "StevenSai/Nku-Score-By-Steven (Apache-2.0)\n" +
+            "sunshineclt/NKU-Helper (GPL-3.0)\n" +
+            "jxy18100/nku- (未声明)\n" +
+            "augustlies/tangli (GPL-3.0)\n" +
+            "baoozak/timetable (MIT)\n" +
+            "shuakami/timetable (GPL-3.0)\n" +
+            "KeenTeam1990/HutHelper (LGPL-2.1)\n" +
+            "Because66666/nkuwiki_web (MIT)\n" +
+            "MineGuYan/MineGuYan.github.io (MIT, 仅 README 声明)\n" +
+            "NKUCS-ICU/NKUCS.ICU (GPL-3.0, 教务相关协议边界)\n" +
+            "SunriseFox/FuckNKUCourses (未声明, README 反许可声明, 仅引用协议事实)\n" +
+            "TsXor/NK-eamis (未声明)\n" +
+            "Fighting05/NKU-GradeTracker (未声明)\n" +
+            "LoveGump/Nankai-Scripts (未声明)\n" +
+            "LetsStudyTogether/OneClickEvaluate (未声明)\n" +
+            "LetsStudyTogether/NKU_eamis_semester_grade (未声明)\n" +
+            "a4001234567/NKU_Project (未声明)\n" +
+            "Everything-in-NKU/NKU-CourseHelper (未声明)\n" +
+            "Ching-Yee-Chan/NKUCH (未声明)\n" +
+            "Fun-James/NKU-SearchEngine (未声明)\n" +
+            "wusir96/Nk-University-Search-System (未声明)\n" +
+            "Lllsir0202/IR (未声明)\n" +
+            "XmShrine/trick_1 (未声明)\n" +
+            "liyue983/nankai-webvpn (未声明)\n" +
+            "WangshuXC/Ir (未声明)\n" +
+            "ZSH0608/NKU_CS_homework_materials (未声明, 教务相关协议边界)\n" +
+            "Ducky97/CDN_checker (未声明, 教务相关协议边界)\n" +
+            "xiong-ZH-zq/NKU-Lecture-Helper (未声明, 空仓库, 教务相关协议边界)\n" +
+            "john8654john/nankai-schedule (未声明, 日本南海电铁同名误命中, 教务相关协议边界)"
     )
 )
 
