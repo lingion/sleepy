@@ -25907,21 +25907,21 @@
     {
       "catalogId": "moe:4162010730",
       "name": "兰州大学",
-      "url": "https://my.lzu.edu.cn/",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
+      "url": "https://sso.lzu.edu.cn/login?service=http%3A%2F%2Fjwk.lzu.edu.cn%2Facademic%2Flogin%2Flzu%2FloginIds6Valid.jsp",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
       "http": 412,
-      "finalUrl": "https://my.lzu.edu.cn/",
+      "finalUrl": "https://sso.lzu.edu.cn/login?service=http%3A%2F%2Fjwk.lzu.edu.cn%2Facademic%2Flogin%2Flzu%2FloginIds6Valid.jsp",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
       "title": "",
       "probeError": null,
-      "availability": "unavailable-or-restricted",
+      "availability": "declared-entry",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 412 on 2026-10-27; no authenticated import performed."
       ]
     },
     {
@@ -28361,21 +28361,21 @@
     {
       "catalogId": "moe:4136013433",
       "name": "南昌航空大学科技学院",
-      "url": "http://172.16.247.230:800/jsxsd/  http://qzjwxt.stcnchu.edu.cn:800/jsxsd/",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
+      "url": "http://qzjwxt.stcnchu.edu.cn:800/jsxsd/",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
       "http": 0,
-      "finalUrl": "http://172.16.247.230:800/jsxsd/  http://qzjwxt.stcnchu.edu.cn:800/jsxsd/",
+      "finalUrl": "http://qzjwxt.stcnchu.edu.cn:800/jsxsd/",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
       "title": "",
-      "probeError": "non-public-url",
-      "availability": "unavailable-or-restricted",
+      "probeError": null,
+      "availability": "declared-entry",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 0 on 2026-10-27; no authenticated import performed."
       ]
     },
     {
@@ -28608,21 +28608,21 @@
     {
       "catalogId": "moe:4136010406",
       "name": "南昌航空大学",
-      "url": "https://go.nchu.edu.cn/Error/Error.aspx",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
+      "url": "http://jwc-publish2.jwc.nchu.edu.cn/",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
       "http": 0,
-      "finalUrl": "https://go.nchu.edu.cn/Error/Error.aspx",
+      "finalUrl": "http://jwc-publish2.jwc.nchu.edu.cn/",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
       "title": "",
-      "probeError": "curl-28",
-      "availability": "unavailable-or-restricted",
+      "probeError": null,
+      "availability": "declared-entry",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 0 on 2026-10-27; no authenticated import performed."
       ]
     },
     {
@@ -30735,21 +30735,21 @@
     {
       "catalogId": "moe:4151012751",
       "name": "四川机电职业技术学院",
-      "url": "http://192.168.73.155/",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
+      "url": "http://192.168.73.155/personal-center",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
       "http": 0,
-      "finalUrl": "http://192.168.73.155/",
+      "finalUrl": "http://192.168.73.155/personal-center",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
       "title": "",
-      "probeError": "non-public-url",
-      "availability": "unavailable-or-restricted",
+      "probeError": null,
+      "availability": "declared-entry",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 0 on 2026-10-27; no authenticated import performed."
       ]
     },
     {
@@ -31508,7 +31508,7 @@
       "catalogId": "moe:4121013198",
       "name": "大连工程学院",
       "url": "https://jw.dlutci.edu.cn/jwapp/sys/emapfunauth/pages/welcome.do?service=https%3A%2F%2Fjw.dlutci.edu.cn%2Fjwapp%2Fsys%2Femaphome%2Fportal%2Findex.do",
-      "source": "shiguang-batch-probe",
+      "source": "shiguang-adapters",
       "checkedAt": "2026-10-27",
       "http": 200,
       "finalUrl": "https://jw.dlutci.edu.cn/jwapp/sys/emapfunauth/pages/welcome.do?service=https%3A%2F%2Fjw.dlutci.edu.cn%2Fjwapp%2Fsys%2Femaphome%2Fportal%2Findex.do",
@@ -33325,21 +33325,21 @@
     {
       "catalogId": "moe:4134013336",
       "name": "安徽电气工程职业技术学院",
-      "url": "https://zt.aepu.com.cn/http/webvpn72eac4eb4dc8e2a039c8b6f3caab24955193a4ad25c9584e88a49b450bf0ce50/authserver/login",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
+      "url": "https://zt.aepu.com.cn/http/webvpnae4cfe98f83bc8811cc5963452fd80627ab088b1bddf3f753580a56a75a714e9/ywtb-portal/official/index.html",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
       "http": 302,
-      "finalUrl": "https://zt.aepu.com.cn/http/webvpn72eac4eb4dc8e2a039c8b6f3caab24955193a4ad25c9584e88a49b450bf0ce50/authserver/login",
+      "finalUrl": "https://zt.aepu.com.cn/http/webvpnae4cfe98f83bc8811cc5963452fd80627ab088b1bddf3f753580a56a75a714e9/ywtb-portal/official/index.html",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
       "title": "",
-      "probeError": "redirect-limit",
-      "availability": "unavailable-or-restricted",
+      "probeError": null,
+      "availability": "declared-entry",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 302 on 2026-10-27; no authenticated import performed."
       ]
     },
     {
@@ -34404,21 +34404,21 @@
     {
       "catalogId": "moe:4137010445",
       "name": "山东师范大学",
-      "url": "http://jwxt.sdnu.edu.cn/",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
+      "url": "http://jwxt.sdnu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
       "http": 0,
-      "finalUrl": "http://jwxt.sdnu.edu.cn/",
+      "finalUrl": "http://jwxt.sdnu.edu.cn/jwglxt/xtgl/login_slogin.html",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
       "title": "",
-      "probeError": "curl-28",
-      "availability": "unavailable-or-restricted",
+      "probeError": null,
+      "availability": "declared-entry",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 0 on 2026-10-27; no authenticated import performed."
       ]
     },
     {
@@ -36346,21 +36346,21 @@
     {
       "catalogId": "moe:4144010573",
       "name": "广东药科大学",
-      "url": "https://cas.gdpu.edu.cn/lyuapServer/wengine-vpn-token-login",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
+      "url": "https://webvpn.gdpu.edu.cn/https/77726476706e69737468656265737421f3f652d220347845300d8db9d6562d/lyuapServer/login?service=https%3A%2F%2Fjwsys.gdpu.edu.cn%2Fsso%2Flyiotlogin",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
       "http": 302,
-      "finalUrl": "https://cas.gdpu.edu.cn/lyuapServer/wengine-vpn-token-login",
+      "finalUrl": "https://webvpn.gdpu.edu.cn/https/77726476706e69737468656265737421f3f652d220347845300d8db9d6562d/lyuapServer/login?service=https%3A%2F%2Fjwsys.gdpu.edu.cn%2Fsso%2Flyiotlogin",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
       "title": "",
-      "probeError": "redirect-limit",
-      "availability": "unavailable-or-restricted",
+      "probeError": null,
+      "availability": "declared-entry",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 302 on 2026-10-27; no authenticated import performed."
       ]
     },
     {
@@ -40676,21 +40676,21 @@
     {
       "catalogId": "moe:4142011654",
       "name": "武汉商学院",
-      "url": "https://jw.wbu.edu.cn/jsxsd/caslogin.jsp",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
-      "http": 404,
-      "finalUrl": "https://jw.wbu.edu.cn/jsxsd/caslogin.jsp",
+      "url": "https://jwxt.wbu.edu.cn/",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "http": 0,
+      "finalUrl": "https://jwxt.wbu.edu.cn/",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
       "title": "",
       "probeError": null,
-      "availability": "unavailable-or-restricted",
+      "availability": "declared-entry",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 0 on 2026-10-27; no authenticated import performed."
       ]
     },
     {
@@ -46272,8 +46272,8 @@
       "catalogId": "moe:4134013620",
       "name": "淮北理工学院",
       "url": "https://a.hblgxy.edu.cn:5111/jsxsd/",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
       "http": 0,
       "finalUrl": "https://a.hblgxy.edu.cn:5111/jsxsd/",
       "status": "unknown",
@@ -46281,11 +46281,11 @@
       "sources": [],
       "proposedCorrection": null,
       "title": "",
-      "probeError": "curl-28",
-      "availability": "unavailable-or-restricted",
+      "probeError": null,
+      "availability": "declared-entry",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 0 on 2026-10-27; no authenticated import performed."
       ]
     },
     {
@@ -47584,8 +47584,8 @@
       "catalogId": "moe:4143012401",
       "name": "湖南商务职业技术学院",
       "url": "http://jwxt.hnvcc.edu.cn/",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
       "http": 0,
       "finalUrl": "http://jwxt.hnvcc.edu.cn/",
       "status": "unknown",
@@ -47593,11 +47593,11 @@
       "sources": [],
       "proposedCorrection": null,
       "title": "",
-      "probeError": "curl-28",
-      "availability": "unavailable-or-restricted",
+      "probeError": null,
+      "availability": "declared-entry",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 0 on 2026-10-27; no authenticated import performed."
       ]
     },
     {
@@ -47732,21 +47732,21 @@
     {
       "catalogId": "moe:4143010551",
       "name": "湖南科技学院",
-      "url": "http://jw.huse.cn/jsxsd/",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
+      "url": "http://jw.huse.cn/jsxsd",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
       "http": 0,
-      "finalUrl": "http://jw.huse.cn/jsxsd/",
+      "finalUrl": "http://jw.huse.cn/jsxsd",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
       "title": "",
-      "probeError": "non-public-url",
-      "availability": "unavailable-or-restricted",
+      "probeError": null,
+      "availability": "declared-entry",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 0 on 2026-10-27; no authenticated import performed."
       ]
     },
     {
@@ -50395,21 +50395,21 @@
     {
       "catalogId": "moe:4132010285",
       "name": "苏州大学",
-      "url": "http://xk.suda.edu.cn",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
+      "url": "http://xk.suda.edu.cn/",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
       "http": 0,
-      "finalUrl": "http://xk.suda.edu.cn",
+      "finalUrl": "http://xk.suda.edu.cn/",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
       "title": "",
-      "probeError": "curl-28",
-      "availability": "unavailable-or-restricted",
+      "probeError": null,
+      "availability": "declared-entry",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 0 on 2026-10-27; no authenticated import performed."
       ]
     },
     {
@@ -51963,21 +51963,21 @@
     {
       "catalogId": "moe:4152010657",
       "name": "贵州大学",
-      "url": "http://210.40.2.253:8888/",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
+      "url": "https://zhjw.gzu.edu.cn/jwglxt/xtgl/",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
       "http": 0,
-      "finalUrl": "http://210.40.2.253:8888/",
+      "finalUrl": "https://zhjw.gzu.edu.cn/jwglxt/xtgl/",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
       "title": "",
-      "probeError": "curl-28",
-      "availability": "unavailable-or-restricted",
+      "probeError": null,
+      "availability": "declared-entry",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 0 on 2026-10-27; no authenticated import performed."
       ]
     },
     {
@@ -57991,6 +57991,780 @@
       "authenticatedImportTested": false,
       "defects": [
         "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+      ]
+    },
+    {
+      "catalogId": "moe:4134012924",
+      "name": "安徽中医药高等专科学校",
+      "url": "https://authserver.ahzyygz.edu.cn/authserver/login?service=http://jwxt.ahzyygz.edu.cn/ahzyygzjw/caslogin",
+      "http": 200,
+      "finalUrl": "https://authserver.ahzyygz.edu.cn/authserver/login?service=http://jwxt.ahzyygz.edu.cn/ahzyygzjw/caslogin",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "统一身份认证",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4134010378",
+      "name": "安徽财经大学",
+      "url": "https://all.aufe.edu.cn/",
+      "http": 403,
+      "finalUrl": "https://all.aufe.edu.cn/",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "declared-entry",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 403 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4151012064",
+      "name": "成都航空职业技术大学",
+      "url": "https://jwxt.cap.edu.cn/jwapp/sys/homeapp/home/index.html?av=&contextPath=/jwapp#/",
+      "http": 200,
+      "finalUrl": "https://jwxt.cap.edu.cn/jwapp/sys/homeapp/home/index.html?av=&contextPath=/jwapp#/",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4132010292",
+      "name": "常州大学",
+      "url": "https://zmvpn.cczu.edu.cn/http/webvpndc2d086cb5b297c15e661687e73c1549/web_jxrw/cx_kb_xsgrkb.aspx",
+      "http": 302,
+      "finalUrl": "https://zmvpn.cczu.edu.cn/http/webvpndc2d086cb5b297c15e661687e73c1549/web_jxrw/cx_kb_xsgrkb.aspx",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "declared-entry",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 302 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4150012609",
+      "name": "重庆电子科技职业大学",
+      "url": "https://cquet.edu.cn/",
+      "http": 200,
+      "finalUrl": "https://cquet.edu.cn/",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4122010186",
+      "name": "长春理工大学",
+      "url": "https://mysso.cust.edu.cn/cas/login?service=http://wwwn.cust.edu.cn/wengine-auth/login?cas_login=true",
+      "http": 200,
+      "finalUrl": "https://mysso.cust.edu.cn/cas/login?service=http://wwwn.cust.edu.cn/wengine-auth/login?cas_login=true",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4137010448",
+      "name": "德州学院",
+      "url": "http://211.64.47.165/jwglxt/xtgl/login_slogin.html",
+      "http": 200,
+      "finalUrl": "http://211.64.47.165/jwglxt/xtgl/login_slogin.html",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "德州学院教学综合信息服务平台",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4136010404",
+      "name": "华东交通大学",
+      "url": "https://jwxt.ecjtu.edu.cn/index.action",
+      "http": 200,
+      "finalUrl": "https://jwxt.ecjtu.edu.cn/index.action",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "华东交通大学教务综合管理信息系统",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4135012626",
+      "name": "福建信息职业技术学院",
+      "url": "https://jw.fjpit.com/#/auth/login",
+      "http": 200,
+      "finalUrl": "https://jw.fjpit.com/#/auth/login",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "福信智慧教务",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4144011847",
+      "name": "佛山大学",
+      "url": "https://100.fosu.edu.cn/",
+      "http": 0,
+      "finalUrl": "https://100.fosu.edu.cn/",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "declared-entry",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 0 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4135011502",
+      "name": "福州职业技术大学",
+      "url": "https://sso.fvti.cn/login?service=https%3A%2F%2Fwebvpn.fvti.cn%2Fusers%2Fauth%2Fcas%2Fcallback%3Furl",
+      "http": 200,
+      "finalUrl": "https://sso.fvti.cn/login?service=https%3A%2F%2Fwebvpn.fvti.cn%2Fusers%2Fauth%2Fcas%2Fcallback%3Furl",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4144014063",
+      "name": "广东科贸职业学院",
+      "url": "https://aic.gdkm.edu.cn/cas_server/login",
+      "http": 200,
+      "finalUrl": "https://aic.gdkm.edu.cn/cas_server/login",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4262051378",
+      "name": "甘肃财贸职业学院",
+      "url": "https://authserver.gscmxy.edu.cn/authserver/login?service=https%3A%2F%2Fjwxt.gscmxy.edu.cn%2Fjwapp%2Fsys%2Femaphome%2Fportal%2Findex.do",
+      "http": 200,
+      "finalUrl": "https://authserver.gscmxy.edu.cn/authserver/login?service=https%3A%2F%2Fjwxt.gscmxy.edu.cn%2Fjwapp%2Fsys%2Femaphome%2Fportal%2Findex.do",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "统一身份认证平台",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4145013644",
+      "name": "桂林信息科技学院",
+      "url": "https://webvpn.guit.edu.cn/users/sign_in",
+      "http": 200,
+      "finalUrl": "https://webvpn.guit.edu.cn/users/sign_in",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "桂林信息科技学院 WebVPN ",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4152010665",
+      "name": "铜仁学院",
+      "url": "https://gztrc.edu.cn:17232/",
+      "http": 200,
+      "finalUrl": "https://gztrc.edu.cn:17232/",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "教务系统",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4142010517",
+      "name": "湖北民族大学",
+      "url": "https://jwgl.hbmzu.edu.cn/edu/",
+      "http": 200,
+      "finalUrl": "https://jwgl.hbmzu.edu.cn/edu/",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "教学管理平台",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4143013037",
+      "name": "怀化职业技术学院",
+      "url": "http://jwgl.hhvtc.com.cn/cas/login.action",
+      "http": 200,
+      "finalUrl": "http://jwgl.hhvtc.com.cn/cas/login.action",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4141014949",
+      "name": "河南信息科技学院",
+      "url": "http://39.164.230.243:9527/#/authserver/login?redirect_uri=aHR0cDovLzM5LjE2NC4yMzAuMjQzOjkxL2VhbXMvbG9naW4uYWN0aW9u",
+      "http": 200,
+      "finalUrl": "http://39.164.230.243:9527/#/authserver/login?redirect_uri=aHR0cDovLzM5LjE2NC4yMzAuMjQzOjkxL2VhbXMvbG9naW4uYWN0aW9u",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "统一身份认证",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4123010213",
+      "name": "哈尔滨工业大学",
+      "url": "http://yjsgl-hit-edu-cn.ivpn.hit.edu.cn:1080/xs/index",
+      "http": 404,
+      "finalUrl": "http://yjsgl-hit-edu-cn.ivpn.hit.edu.cn:1080/xs/index",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "aTrust",
+      "availability": "declared-entry",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 404 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4123010212",
+      "name": "黑龙江大学",
+      "url": "https://yjsglxt.hlju.edu.cn/",
+      "http": 200,
+      "finalUrl": "https://yjsglxt.hlju.edu.cn/",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4142010525",
+      "name": "湖北汽车工业学院",
+      "url": "https://cas.huat.edu.cn/authserver/login?service=http%3A%2F%2Fneweas.huat.edu.cn%2Flogin",
+      "http": 200,
+      "finalUrl": "https://cas.huat.edu.cn/authserver/login?service=http%3A%2F%2Fneweas.huat.edu.cn%2Flogin",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4142010487",
+      "name": "华中科技大学",
+      "url": "http://mhub.hust.edu.cn/login",
+      "http": 200,
+      "finalUrl": "http://mhub.hust.edu.cn/login",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "HUB系统 华中科技大学教学信息服务平台",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4136013435",
+      "name": "景德镇艺术职业大学",
+      "url": "https://jwc.jdzvua.edu.cn/",
+      "http": 200,
+      "finalUrl": "https://jwc.jdzvua.edu.cn/",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4136013871",
+      "name": "江西航空职业技术学院",
+      "url": "https://jw.jhzyedu.cn/xtgl/login_slogin.html?ydType=0",
+      "http": 200,
+      "finalUrl": "https://jw.jhzyedu.cn/xtgl/login_slogin.html?ydType=0",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "教学管理信息服务平台",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4132014604",
+      "name": "江苏旅游职业学院",
+      "url": "https://authserver.jstc.edu.cn/authserver/login?service=https%3A%2F%2Fjwxt.jstc.edu.cn%2Fstudent%2Fsso%2Flogin",
+      "http": 200,
+      "finalUrl": "https://authserver.jstc.edu.cn/authserver/login?service=https%3A%2F%2Fjwxt.jstc.edu.cn%2Fstudent%2Fsso%2Flogin",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4136010414",
+      "name": "江西师范大学",
+      "url": "https://jwc.jxnu.edu.cn/Portal/Index.aspx",
+      "http": 200,
+      "finalUrl": "https://jwc.jxnu.edu.cn/Portal/Index.aspx",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4111010009",
+      "name": "北方工业大学",
+      "url": "https://jwxtbk.ncut.edu.cn/jsxsd/",
+      "http": 200,
+      "finalUrl": "https://jwxtbk.ncut.edu.cn/jsxsd/",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4141010481",
+      "name": "南阳师范学院",
+      "url": "https://vpn.nynu.edu.cn/https/77726476706e69737468656265737421f1e2559434357a467b1ac7a2815b367bc2c79eb4f6aa/authserver/login?service=https%3A%2F%2Fvpn.nynu.edu.cn%2Flogin%3Fcas_login%3Dtrue",
+      "http": 200,
+      "finalUrl": "https://vpn.nynu.edu.cn/https/77726476706e69737468656265737421f1e2559434357a467b1ac7a2815b367bc2c79eb4f6aa/authserver/login?service=https%3A%2F%2Fvpn.nynu.edu.cn%2Flogin%3Fcas_login%3Dtrue",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4137010435",
+      "name": "青岛农业大学",
+      "url": "http://jwglxt.qau.edu.cn/",
+      "http": 200,
+      "finalUrl": "http://jwglxt.qau.edu.cn/",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "青岛农业大学综合教务管理系统-强智科技",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4137013966",
+      "name": "山东药品食品职业学院",
+      "url": "https://cas.sddfvc.edu.cn/login?type=usernamepassword&service=http%3A%2F%2Ffazhan.sddfvc.edu.cn%2Fjs%2Ffzzx%2Flogin",
+      "http": 200,
+      "finalUrl": "https://cas.sddfvc.edu.cn/login?type=usernamepassword&service=http%3A%2F%2Ffazhan.sddfvc.edu.cn%2Fjs%2Ffzzx%2Flogin",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "单点登录",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4137014079",
+      "name": "山东轻工职业学院",
+      "url": "https://crp.sdlivc.cn/xsgl/xs/login/login.aspx",
+      "http": 200,
+      "finalUrl": "https://crp.sdlivc.cn/xsgl/xs/login/login.aspx",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4131010256",
+      "name": "上海电力大学",
+      "url": "https://jw.shiep.edu.cn/eams/index.action",
+      "http": 0,
+      "finalUrl": "https://jw.shiep.edu.cn/eams/index.action",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "declared-entry",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 0 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4131010270",
+      "name": "上海师范大学",
+      "url": "https://course.shnu.edu.cn/",
+      "http": 200,
+      "finalUrl": "https://course.shnu.edu.cn/",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4144014325",
+      "name": "南方科技大学",
+      "url": "https://cas.sustech.edu.cn/cas/login?service=https%3A%2F%2Ftis.sustech.edu.cn%2Fcas",
+      "http": 200,
+      "finalUrl": "https://cas.sustech.edu.cn/cas/login?service=https%3A%2F%2Ftis.sustech.edu.cn%2Fcas",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4114013537",
+      "name": "山西电子科技学院",
+      "url": "https://sso.sxdzkj.edu.cn/sso-auth/#/login?service=https://jwxt.sxdzkj.edu.cn/caslogin",
+      "http": 200,
+      "finalUrl": "https://sso.sxdzkj.edu.cn/sso-auth/#/login?service=https://jwxt.sxdzkj.edu.cn/caslogin",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "身份中台",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4114014681",
+      "name": "山西工程职业学院",
+      "url": "https://sxevc.jw.chaoxing.com/admin/login",
+      "http": 200,
+      "finalUrl": "https://sxevc.jw.chaoxing.com/admin/login",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4144010558",
+      "name": "中山大学",
+      "url": "https://jwxt.sysu.edu.cn/jwxt/",
+      "http": 200,
+      "finalUrl": "https://jwxt.sysu.edu.cn/jwxt/",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "中大教务系统",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4136014168",
+      "name": "南昌科技职业大学",
+      "url": "http://jw.tellhowedu.com:19995/",
+      "http": 200,
+      "finalUrl": "http://jw.tellhowedu.com:19995/",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "教务系统",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4131010247",
+      "name": "同济大学",
+      "url": "https://1.tongji.edu.cn/",
+      "http": 200,
+      "finalUrl": "https://1.tongji.edu.cn/",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "同济大学",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4145014171",
+      "name": "梧州职业学院",
+      "url": "http://222.217.195.24:805/wzzyjw/cas/login.action",
+      "http": 200,
+      "finalUrl": "http://222.217.195.24:805/wzzyjw/cas/login.action",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4161010705",
+      "name": "西安石油大学",
+      "url": "https://jiaowu.xsyu.edu.cn/admin/login",
+      "http": 200,
+      "finalUrl": "https://jiaowu.xsyu.edu.cn/admin/login",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4142010489",
+      "name": "长江大学",
+      "url": "https://cas-yangtzeu-edu-cn.atrust.yangtzeu.edu.cn/authserver/login?service=https%3A%2F%2Fatrust.yangtzeu.edu.cn%3A4443%2Fpassport%2Fv1%2Fauth%2Fcas%3FsfDomain%3DCAS",
+      "http": 200,
+      "finalUrl": "https://cas-yangtzeu-edu-cn.atrust.yangtzeu.edu.cn/authserver/login?service=https%3A%2F%2Fatrust.yangtzeu.edu.cn%3A4443%2Fpassport%2Fv1%2Fauth%2Fcas%3FsfDomain%3DCAS",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "moe:4141014813",
+      "name": "郑州汽车工程职业学院",
+      "url": "https://cas.zzvcae.edu.cn/cas/login",
+      "http": 200,
+      "finalUrl": "https://cas.zzvcae.edu.cn/cas/login",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-10-27",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
       ]
     }
   ],

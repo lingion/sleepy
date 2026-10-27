@@ -146,6 +146,52 @@ class OwnershipTest(unittest.TestCase):
         self.assertEqual('grad_unverified', row['status'])
         self.assertEqual('retained-shiguang-declared-owner', result['action'])
 
+    def test_shiguang_adapters_owner_is_retained_without_live_probe(self):
+        # Full-absorption ruling (2026-10-27): every shiguang_warehouse adapter
+        # declaration is a third-party ownership claim. A failed or absent
+        # probe (timeout, 403, 302) is not a rejection — the row lands
+        # unverified, never tested, importable by user choice.
+        for http in [None, 0, 302, 403, 412]:
+            row = copy.deepcopy(self.row)
+            self.proof = dict(catalogId='school:1', name='甲大学', url=self.row['url'],
+                              status='unknown', sources=[], source='shiguang-adapters')
+            if http is not None:
+                self.proof['http'] = http
+            result = apply_ownership([row], {'entries': [copy.deepcopy(self.proof)]}, set())[0]
+            with self.subTest(http=http):
+                self.assertEqual(self.row['url'], row['url'])
+                self.assertEqual('unverified', row['status'])
+                self.assertFalse(row.get('enableFetch', False))
+                self.assertEqual('retained-shiguang-adapters-owner', result['action'])
+
+    def test_shiguang_adapters_declaration_still_needs_safe_public_url(self):
+        # Dropping the liveness bar must not drop the safety bar: credentials,
+        # redaction, loopback or non-HTTP targets stay withheld outright.
+        for patch in [
+            dict(source='import'),
+            dict(url='http://10.10.181.1/jw'),
+            dict(url='http://[fd00::1]/jw'),
+            dict(url='https://example.invalid/REDACTED/jw'),
+            dict(url='ftp://example.edu.cn/jw'),
+        ]:
+            row = copy.deepcopy(self.row)
+            self.proof = dict(catalogId='school:1', name='甲大学', status='unknown', sources=[],
+                              source='shiguang-adapters', http=0)
+            self.proof['url'] = row['url'] = patch.pop('url', row['url'])
+            self.proof.update(patch)
+            result = apply_ownership([row], {'entries': [copy.deepcopy(self.proof)]}, set())[0]
+            with self.subTest(**patch):
+                self.assertEqual(('', None, 'pending', False), (row['url'], row['type'], row['status'], row['enableFetch']))
+                self.assertEqual('withheld-new-unproven-owner', result['action'])
+
+    def test_shiguang_adapters_retained_graduate_identity_stays_grad_scoped(self):
+        self.row['name'] = self.proof['name'] = '甲大学 - 研究生'
+        self.row['status'] = 'grad_unverified'
+        self.proof.update(source='shiguang-adapters', http=0)
+        row, result = self.apply()
+        self.assertEqual('grad_unverified', row['status'])
+        self.assertEqual('retained-shiguang-adapters-owner', result['action'])
+
     def test_unreachable_page_does_not_invalidate_previous_import_evidence(self):
         self.row['status'] = 'supported'
         row, result = self.apply(['甲大学'])

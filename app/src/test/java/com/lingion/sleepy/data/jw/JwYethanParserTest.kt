@@ -164,7 +164,7 @@ class JwYethanParserTest {
 
     @Test
     fun `ALL_TYPES contains yethan right after bjtu - count gate 33`() {
-        assertEquals("新增 KUST/NUIT 后 ALL_TYPES 应为 35 项", 35, JwProtocol.ALL_TYPES.size)
+        assertEquals("新增 sg_asset 后 ALL_TYPES 应为 36 项", 36, JwProtocol.ALL_TYPES.size)
         assertTrue("ALL_TYPES 必须含 TYPE_YETHAN", JwProtocol.ALL_TYPES.contains(JwProtocol.TYPE_YETHAN))
         val idxBjtu = JwProtocol.ALL_TYPES.indexOf(JwProtocol.TYPE_BJTU)
         val idxYethan = JwProtocol.ALL_TYPES.indexOf(JwProtocol.TYPE_YETHAN)

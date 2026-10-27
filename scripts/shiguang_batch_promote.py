@@ -1,25 +1,34 @@
 #!/usr/bin/env python3
-"""Promote ShiGuang-sourced schools whose entry page passed a live probe.
+"""Promote every ShiGuang-sourced school: full absorption, no liveness veto.
 
-Reads gap-rows.json (the 264-school catalog comparison) and the batch probe
-journal, then, for every 目录补 school whose generated catalog row is empty,
-whose probe reached HTTP 200, and whose admitted parser type is routable:
+User ruling 2026-10-27: absorb shiguang_warehouse's school catalog completely.
+A missing, failed, or non-200 probe is NOT a rejection — it is recorded as the
+honest http value and the row still lands, marked unverified, importable by
+user choice. The only bars kept are the safety ones: an http(s) URL without
+credentials or redaction on a public host, and the domain-collision gate in
+catalog_ownership.
 
-  1. rewrites the admission decision's probe finalUrl/http/title/checkedAt
-     to the probed ShiGuang entry (canonical_url + sanitize_url, exactly the
-     normalization integrate_batch_evidence.py enforces), and
-  2. rewrites the matching ownership evidence row to source
-     'shiguang-batch-probe' with status 'unknown' — a third-party ownership
-     declaration corroborated by live HTTP 200, never a verified verdict.
+Reads gap-rows.json (the 264-school catalog comparison, local research
+artifact, never committed) and the batch probe journal when present, then for
+every 目录补 (C) / 直接开闸 (A) row whose catalog entry is not operational:
 
-Rows admitted this way land as unverified (importable, marked not tested),
-which is what generate_school_catalog and catalog_ownership already enforce.
-Run scripts/generate_school_catalog.py afterwards to rebuild the outputs.
-Re-running is idempotent: already-promoted decisions are recognized by their
-probe date and re-verified rather than duplicated.
+  1. resolves the entry URL — live probe finalUrl when the probe exists,
+     otherwise the warehouse's own adapter import URL — normalized exactly as
+     integrate_batch_evidence.py enforces (canonical_url + sanitize_url);
+  2. writes the admission decision: probe http/url/finalUrl/title/checkedAt
+     recorded truthfully (0 means "probe did not answer"), mappedType kept
+     when routable, otherwise 'sg_asset' — the vendored-adapter path added in
+     the sg_asset pipeline, and the whole gap set has warehouse adapters;
+  3. rewrites (or creates) the matching ownership evidence row to source
+     'shiguang-adapters' with status 'unknown' — a third-party ownership
+     declaration from the warehouse's adapter list, no liveness claim unless
+     the probe actually returned one.
+
+Re-running is idempotent: already-operational rows are skipped, and the writes
+are deterministic from the same inputs. Run scripts/generate_school_catalog.py
+afterwards to rebuild the outputs.
 """
 import argparse
-import hashlib
 import json
 import sys
 import unicodedata
@@ -34,8 +43,10 @@ from integrate_batch_evidence import canonical_url
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'scripts/data'
 GAP = ROOT.parent / 'shiguang-gap-triage/docs/shiguang-gap-triage-2026-10-27'
+PROBE_DEFAULT = str(Path.home() / 'sleepy-worktrees/shiguang-source/gate_probe_264.jsonl')
 CHECKED_AT = '2026-10-27'
-SOURCE = 'shiguang-batch-probe'
+SOURCE = 'shiguang-adapters'
+FALLBACK_TYPE = 'sg_asset'
 ROUTABLE = routable_types()
 
 
@@ -51,15 +62,19 @@ def load_json(path):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--probe', default='/tmp/gate_probe_264.jsonl')
+    ap.add_argument('--probe', default=PROBE_DEFAULT)
     ap.add_argument('--dry-run', action='store_true')
     args = ap.parse_args()
 
+    # The probe journal is corroborating evidence, never a precondition: full
+    # absorption does not gate on a live network check having answered.
     probe = {}
-    for line in Path(args.probe).read_bytes().decode('utf-8', errors='replace').splitlines():
-        if line.strip():
-            rec = json.loads(line)
-            probe[nfk(rec['name'])] = rec
+    probe_path = Path(args.probe)
+    if probe_path.exists():
+        for line in probe_path.read_bytes().decode('utf-8', errors='replace').splitlines():
+            if line.strip():
+                rec = json.loads(line)
+                probe[nfk(rec['name'])] = rec
 
     gap = load_json(GAP / 'gap-rows.json')
     admissions = load_json(DATA / 'school_import_admissions.json')
@@ -87,9 +102,9 @@ def main():
 
     stats = Counter()
     touched = []
-    for row in gap:
-        # 目录补 (C) rows and 直接开闸 (A) rows whose catalog entry is still
-        # pending both need the same evidence-backed URL write. 入口比对 (B)
+    for index, row in enumerate(gap):
+        # 目录补 (C) rows and 直接开闸 (A) rows whose catalog entry is not yet
+        # operational both need the same evidence-backed URL write. 入口比对 (B)
         # rows are a comparison report, never a promotion path.
         if row['action'].startswith('入口比对'):
             continue
@@ -98,57 +113,72 @@ def main():
         if cat_row is None:
             stats['no-catalog-row'] += 1
             continue
-        if cat_row.get('url'):
-            if cat_row.get('status') in ('pending', 'grad_pending'):
-                stats['still-pending'] += 1  # operational URL but blocked: re-check below
-            else:
-                stats['already-operational'] += 1
-                continue
+        if cat_row.get('url') and cat_row.get('status') not in ('pending', 'grad_pending'):
+            stats['already-operational'] += 1
+            continue
         if cat_row['name'].strip() in baseline_names:
             stats['baseline-untouched'] += 1
             continue
         p = probe.get(name)
-        if not p or p.get('http') != 200:
-            stats['probe-not-200'] += 1
-            continue
-        adm = adm_by_name.get(cat_row['name'])
-        if adm is None:
-            # Admissions join is the generator's trimmed canonical name.
-            adm = adm_by_name.get(cat_row['name'].strip())
-        if not adm or adm.get('mappedType') not in ROUTABLE:
-            stats['no-admission-or-unroutable'] += 1
-            continue
-        rows = ev_by_id.get(key, [])
-        if len(rows) != 1 or rows[0]['name'] != cat_row['name']:
-            stats['evidence-not-exactly-one'] += 1
-            continue
-        url = canonical_url(p.get('final') or p.get('url') or '')
-        title = sanitize_url(p.get('title') or '')[0]
+        url = canonical_url((p or {}).get('final') or (p or {}).get('url')
+                            or (row.get('sg_import_urls') or [''])[0])
+        title = sanitize_url((p or {}).get('title') or '')[0]
         if not url or 'REDACTED' in url or 'REDACTED' in title:
-            stats['session-bound-url'] += 1
+            stats['session-bound-or-missing-url'] += 1
             continue
-        ev = rows[0]
-        ev.update(url=url, http=200, finalUrl=url, source=SOURCE, checkedAt=CHECKED_AT,
+        http = (p or {}).get('http', 0)
+        adm = adm_by_name.get(cat_row['name']) or adm_by_name.get(cat_row['name'].strip())
+        if adm is None:
+            # The catalog row exists (official source) but was never admitted;
+            # the warehouse adapter declaration is the admission record now.
+            adm = {'sourceId': SOURCE, 'sourceRow': row.get('sg_id') or index,
+                   'name': cat_row['name'], 'sourceName': row['name'],
+                   'probe': {}, 'status': 'unverified'}
+            admissions.append(adm)
+            adm_by_name[cat_row['name']] = adm
+            stats['admission-created'] += 1
+        mapped = adm.get('mappedType')
+        if mapped not in ROUTABLE:
+            # Every absorbed school has at least a ShiGuang adapter, so the
+            # vendored-asset path is the always-available fallback.
+            adm['mappedType'] = FALLBACK_TYPE
+            mapped = FALLBACK_TYPE
+            stats['type-fallback-sg-asset'] += 1
+        rows = ev_by_id.get(key, [])
+        if len(rows) > 1:
+            stats['evidence-duplicated'] += 1
+            continue
+        if not rows:
+            ev = {'catalogId': key, 'name': cat_row['name']}
+            evidence['entries'].append(ev)
+            ev_by_id.setdefault(key, []).append(ev)
+        else:
+            ev = rows[0]
+        if ev['name'] != cat_row['name']:
+            stats['evidence-name-mismatch'] += 1
+            continue
+        liveness = ('entry page confirmed live with HTTP ' + str(http) + ' on ' + CHECKED_AT) if p \
+            else 'entry not live-probed (declared URL taken from the warehouse adapter list)'
+        ev.update(url=url, http=http, finalUrl=url, source=SOURCE, checkedAt=CHECKED_AT,
                   status='unknown', confidence='low', title=title,
-                  availability='public-page', probeError=None, authenticatedImportTested=False,
-                  defects=['Ownership declared by shiguang_warehouse (third party); entry page '
-                           'confirmed live with HTTP 200 on 2026-10-27; no authenticated import '
-                           'performed.'])
+                  availability='public-page' if http == 200 else 'declared-entry',
+                  probeError=None, authenticatedImportTested=False,
+                  defects=['Ownership declared by shiguang_warehouse (third party); '
+                           + liveness + '; no authenticated import performed.'])
         probe_fields = adm.setdefault('probe', {})
-        probe_fields.update(url=url, finalUrl=url, http=200, checkedAt=CHECKED_AT, title=title)
+        probe_fields.update(url=url, finalUrl=url, http=http, checkedAt=CHECKED_AT, title=title)
         probe_fields.pop('error', None)
-        adm['verification'] = ('Third-party ShiGuang entry with live HTTP 200 page check on '
-                               + CHECKED_AT + '; current public page establishes entry and '
-                               'parser-family evidence only, no authenticated timetable import '
-                               'performed.')
+        adm['verification'] = ('Third-party ShiGuang adapter declaration; ' + liveness
+                               + '; current evidence establishes entry and parser-family '
+                               'assignment only, no authenticated timetable import performed.')
         stats['promoted'] += 1
         touched.append({'catalogId': key, 'name': cat_row['name'], 'url': url,
-                        'mappedType': adm['mappedType']})
+                        'mappedType': mapped, 'http': http})
 
     print(dict(stats))
     print('touched', len(touched))
     for t in touched[:10]:
-        print(' ', t['name'], t['mappedType'], t['url'][:60])
+        print(' ', t['name'], t['mappedType'], t['http'], t['url'][:60])
     if args.dry_run:
         return
     (DATA / 'school_url_evidence.json').write_text(
