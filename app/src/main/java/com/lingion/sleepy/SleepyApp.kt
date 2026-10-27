@@ -6,6 +6,7 @@ import android.util.Log
 import com.lingion.sleepy.data.AppDatabase
 import com.lingion.sleepy.data.repository.ScheduleRepository
 import com.lingion.sleepy.data.repository.ImportDraftRepository
+import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.HolidayManager
 import com.lingion.sleepy.widget.WidgetUpdater
 import com.lingion.sleepy.widget.notification.CourseNotificationScheduler
@@ -38,6 +39,9 @@ class SleepyApp : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        // 撤回深度偏好启动同步: 一次性 getInt 与下方 NotificationManagerCompat.cancel 同量级,
+        // 放启动预热协程里会与首笔写操作竞态, 故在 onCreate 主线程同步执行。
+        com.lingion.sleepy.data.undo.UndoManager.applyMaxDepth(AppPrefs.getUndoDepth(this))
         androidx.core.app.NotificationManagerCompat.from(this)
             .cancel(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE)
         // 课程持久色相缓存首载（spec §2.1 渲染层）— 之后靠 changeBus/invalidate 刷新。

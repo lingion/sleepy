@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Configuration
 import androidx.core.content.edit
+import com.lingion.sleepy.data.undo.UndoManager
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -79,6 +80,7 @@ object AppPrefs {
     const val KEY_VERT_PUNCT_REPLACE = "vert_punct_replace" // bool default false (方案B开关)
     const val KEY_WIDGET_COLORLESS = "widget_colorless" // bool default false
     const val KEY_COURSE_COLORLESS = "course_colorless" // bool default false (App 课程胶囊专用)
+    const val KEY_UNDO_DEPTH = "undo_depth" // Int: -1 无限, 0 禁用撤回, N 保留 N 步; 默认 5(多步撤回 spec D2)
 
     // ===== 课程配色三档模式 (spec-course-color-harmony §2.1) =====
     // 默认 CLASSIC=0 — 升级用户不切档则渲染零变化（stableHue 老路径, 不读 course_colors 表）
@@ -269,6 +271,10 @@ object AppPrefs {
     fun setBeforeClassMinutes(ctx: Context, minutes: Int) {
         sp(ctx).edit().putInt(KEY_BEFORE_CLASS_MINUTES, minutes).apply()
     }
+
+    /** 撤回深度 — default 5; 不设 coerce: 合法域由输入控件挡, 存储层原样存 */
+    fun getUndoDepth(ctx: Context): Int = sp(ctx).getInt(KEY_UNDO_DEPTH, UndoManager.DEFAULT_MAX_DEPTH)
+    fun setUndoDepth(ctx: Context, v: Int) { sp(ctx).edit().putInt(KEY_UNDO_DEPTH, v).apply() }
 
     fun getCalendarTargetId(ctx: Context): Long = sp(ctx).getLong(KEY_CALENDAR_TARGET_ID, -1L)
     fun setCalendarTargetId(ctx: Context, id: Long) { sp(ctx).edit().putLong(KEY_CALENDAR_TARGET_ID, id).apply() }
