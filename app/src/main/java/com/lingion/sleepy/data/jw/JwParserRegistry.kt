@@ -69,6 +69,7 @@ object JwParserRegistry {
         JwProtocol.TYPE_QZ_OLD to 145,
         JwProtocol.TYPE_KINGO_ZX to 205,
         JwProtocol.TYPE_SCAU to 200,
+        JwProtocol.TYPE_SG_ASSET to 210,
     )
 
     private val FACTORIES: Map<String, (String) -> JwParser> = linkedMapOf(
@@ -125,6 +126,8 @@ object JwParserRegistry {
         JwProtocol.TYPE_HNUST to { html: String -> JwHnustParser(html) },
         JwProtocol.TYPE_HNIU to { html: String -> JwHniuparser(html) },
         JwProtocol.TYPE_SCAU to ::JwScauParser,
+        // sg_asset: source 不是 HTML 而是拾光脚本 saveImportedCourses 提交的课程 JSON
+        JwProtocol.TYPE_SG_ASSET to ::JwSgAssetParser,
     )
 
     fun allCandidates(html: String): List<Pair<String?, JwParser>> =
