@@ -113,7 +113,7 @@ class NbccClassicEamsWebViewContractTest {
         val screen = loadSourceFile("com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt")
         assertTrue("CaptureBar 必须落两条件分支 (批B Ruling 修订)",
             screen.contains("if (school.type == JwProtocol.TYPE_CLASSIC_EAMS && school.enableFetch) {"))
-        assertTrue("desktopUa 初值必须接 initialDesktopUa",
-            screen.contains("mutableStateOf(initialDesktopUa(school))"))
+        assertTrue("desktopUa 初值必须接 initialDesktopUa (#236 照抄后作为三态裁决的校表默认输入)",
+            screen.contains("val schoolDefaultDesktop = initialDesktopUa(school)"))
     }
 }
