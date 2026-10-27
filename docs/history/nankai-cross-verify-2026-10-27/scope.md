@@ -38,4 +38,4 @@
 
 - 形态B 零凭据: FETCH JS 永不触碰 password 字段; 仓库凭据中转端点（a4001234567/NKU_Project 的 82.157.171.33/cgi-bin/login_new、SunriseFox 反许可代码）一律不复用, 仅引用协议事实。
 - eamis.nankai.edu.cn 本机不可达（校园网侧限制）, 全程零活体登录探测; 证据 = 公开代码逆向 + 无凭据端点形态。
-- URL 裁决闸: 南开目录条目 status 保持不加断言, 等 zzask77 回传活体采集后再定（pinned test 注释已写明）。
+- URL 裁决闸: 已闭（2026-10-27 当日）——zzask77 真机回传「可以正常导入」(issue #236 comment 6435933798), 南开 status 显式钉 supported, pinned test 加断言（详见 reporter-dump-analysis.md 裁决闸节）。
