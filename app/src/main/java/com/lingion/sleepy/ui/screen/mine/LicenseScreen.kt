@@ -340,7 +340,7 @@ private val attributionEntries: List<AttributionEntry> = listOf(
     ),
     AttributionEntry(
         "foundational-shiguang", "shiguang_warehouse (XingHeYuZhuan)", "MIT",
-        "武汉理工大学 kcbcxby 协议、经典金智 EAMS (hunnu/uestc/hpu) 与新正方网格视图 (zhengfang_01) 的协议形态参考"
+        "武汉理工大学 kcbcxby 协议、经典金智 EAMS (hunnu/uestc/hpu) 与新正方网格视图 (zhengfang_01) 的协议形态参考；264 校适配清单与 starlink.js、wake_up.js 在线协议链形态调研"
     ),
     AttributionEntry(
         "foundational-zfn", "zfn_api (openschoolcn)", "MPL-2.0",
