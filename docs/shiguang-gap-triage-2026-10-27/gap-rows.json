@@ -1,0 +1,6647 @@
+[
+ {
+  "sg_id": "AEPU",
+  "name": "安徽电气工程职业技术学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://zt.aepu.com.cn/http/webvpnae4cfe98f83bc8811cc5963452fd80627ab088b1bddf3f753580a56a75a714e9/ywtb-portal/official/index.html#/hall"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4134013336",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "AHSZU",
+  "name": "宿州学院",
+  "province": "",
+  "city": "",
+  "family": "kingo_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://211.86.128.194/suzxyjw/cas/login.action"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "kingo_new",
+  "sleepy_entry_url": "http://211.86.128.194/suzxyjw/cas/login.action",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4134010379",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "AHZYYGZ",
+  "name": "安徽中医药高等专科学校",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://authserver.ahzyygz.edu.cn/authserver/login?service=http://jwxt.ahzyygz.edu.cn/ahzyygzjw/caslogin"
+  ],
+  "maintainers": [
+   "glxgo"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4134012924",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "AUFE",
+  "name": "安徽财经大学",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 2,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://all.aufe.edu.cn",
+   "http://vpn.aufe.edu.cn"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4134010378",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "BBGU",
+  "name": "北部湾大学",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://zhjw.bbgu.edu.cn/workspace/home"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4145011607",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "BJTU",
+  "name": "北京交通大学",
+  "province": "北京市",
+  "city": "北京市",
+  "family": "bjtu",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://mis.bjtu.edu.cn/home/"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": "bjtu",
+  "sleepy_entry_url": "https://aa.bjtu.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "B_北京交通大学",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "BNUZH",
+  "name": "北京师范大学珠海校区",
+  "province": "",
+  "city": "",
+  "family": "kingo_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxt.bnuzh.edu.cn/caslogin"
+  ],
+  "maintainers": [
+   "sbVAN"
+  ],
+  "sleepy_entry_type": "kingo_new",
+  "sleepy_entry_url": "https://www.bnuzh.edu.cn",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "wakeup:69ef97267bcf7239c827",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "BTBU",
+  "name": "北京工商大学",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwgl.btbu.edu.cn/"
+  ],
+  "maintainers": [
+   "lztttt"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "https://sso.btbu.edu.cn/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4111010011",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "BUPT",
+  "name": "北京邮电大学",
+  "province": "北京市",
+  "city": "北京市",
+  "family": "qz_with_node",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwgl.bupt.edu.cn/jsxsd/"
+  ],
+  "maintainers": [
+   "cstkn"
+  ],
+  "sleepy_entry_type": "qz_with_node",
+  "sleepy_entry_url": "https://webvpn.bupt.edu.cn/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4111010013",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "CAPU",
+  "name": "成都航空职业技术大学",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxt.cap.edu.cn/jwapp/sys/homeapp/home/index.html?av=&contextPath=/jwapp#/"
+  ],
+  "maintainers": [
+   "Xuan-Xuann"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4151012064",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "CAUC",
+  "name": "中国民航大学",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://http-jwgl-cauc-edu-cn-80.webvpn.cauc.edu.cn/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4112010059",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "CCIT",
+  "name": "长春工程学院",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://webvpn.ccit.edu.cn/auth/login"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4122011437",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "CCSUT",
+  "name": "长沙工业学院",
+  "province": "",
+  "city": "",
+  "family": "chaoxing",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://auth.ccsut.cn/backstage/cas/login?service=https%3A%2F%2Fehall.ccsut.cn%2Fbackstage%2Fcas-proxy%2Fapp%2Fredirect%3FserverName%3Dhttps%253A%252F%252Fehall.ccsut.cn%26wechatBindFlag%3D1"
+  ],
+  "maintainers": [
+   "小漫君"
+  ],
+  "sleepy_entry_type": "chaoxing",
+  "sleepy_entry_url": "https://csgyxy.jw.chaoxing.com/admin/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4143012652",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "CCZU",
+  "name": "常州大学",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://zmvpn.cczu.edu.cn/http/webvpndc2d086cb5b297c15e661687e73c1549/web_jxrw/cx_kb_xsgrkb.aspx"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4132010292",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "CDUTCM",
+  "name": "成都中医药大学",
+  "province": "",
+  "city": "",
+  "family": "cf",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwweb.cdutcm.edu.cn/"
+  ],
+  "maintainers": [
+   "wwwhyDB"
+  ],
+  "sleepy_entry_type": "cf",
+  "sleepy_entry_url": "https://jwweb.cdutcm.edu.cn/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4151010633",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "CFEC",
+  "name": "重庆财经学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwmis.cfec.edu.cn/jwglxt/kbcx/xskbcx_cxXskbcxIndex.html?gnmkdm=N2151&layout=default"
+  ],
+  "maintainers": [
+   "glxgo"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://jwmis.cfec.edu.cn/jwglxt/xtgl/login_slogin.html",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4150013590",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "CJLU",
+  "name": "中国计量大学",
+  "province": "浙江省",
+  "city": "杭州市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxt.cjlu.edu.cn/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "salt-fishes, ying-ck"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://jwxt.cjlu.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "Z_中国计量大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "CMC",
+  "name": "成都医学院",
+  "province": "",
+  "city": "",
+  "family": "cf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwweb.cmc.edu.cn/"
+  ],
+  "maintainers": [
+   "linlinli000"
+  ],
+  "sleepy_entry_type": "cf_new",
+  "sleepy_entry_url": "https://jwweb.cmc.edu.cn/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4151013705",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "CQCIVC",
+  "name": "重庆化工职业学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://dc.cqcivc.cn/cas/login?service=http://jwxt.cqcivc.edu.cn/sso/zllogin"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://dc.cqcivc.cn/cas/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4150014315",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "CQCST",
+  "name": "重庆城市科技学院",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jw.cqcst.edu.cn/cqdxcskjxy_jsxsd/"
+  ],
+  "maintainers": [
+   "Mutx163"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "http://cquccjw.minghuaetc.com/cqdxcskjxy/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4150012616",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "CQEPC",
+  "name": "重庆航天职业技术学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jw.cqepc.cn/"
+  ],
+  "maintainers": [
+   "yang01"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://jw.cqepc.cn/jwglxt/xtgl/login_slogin.html",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4150010870",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "CQIE",
+  "name": "重庆工程学院",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://i.cqie.edu.cn/"
+  ],
+  "maintainers": [
+   "haha12358"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4150012608",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "CQJTU",
+  "name": "重庆交通大学",
+  "province": "重庆市",
+  "city": "重庆市",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwgln.cqjtu.edu.cn/jsxsd/sso.jsp"
+  ],
+  "maintainers": [
+   "烛谛"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "https://jwgln.cqjtu.edu.cn/jsxsd/sso.jsp",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "C_重庆交通大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "CQRK",
+  "name": "重庆人文科技学院",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://https-auth-cqrk-edu-cn-443.webvpn.cqrk.edu.cn:8480/cas/login?service=http%3A%2F%2Fportal.cqrk.edu.cn&rewrite=1"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4150013548",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "CQTBI",
+  "name": "重庆工商职业学院",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://szxy.cqtbi.edu.cn/cqdddt/index.html?v=0.3672285490800563"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "https://jwgl.cqtbi.edu.cn/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4150013967",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "CQU",
+  "name": "重庆大学",
+  "province": "重庆市",
+  "city": "重庆市",
+  "family": "cqu",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://my.cqu.edu.cn/"
+  ],
+  "maintainers": [
+   "茵符草"
+  ],
+  "sleepy_entry_type": "cqu",
+  "sleepy_entry_url": "https://my.cqu.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "C_重庆大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "CQUET",
+  "name": "重庆电子科技职业大学",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://cquet.edu.cn/"
+  ],
+  "maintainers": [
+   "Mutx666"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4150012609",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "CQUST",
+  "name": "重庆科技大学",
+  "province": "",
+  "city": "",
+  "family": "classic_eams",
+  "family_source": "JS 形态判定",
+  "adapters": 3,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://web.cqust.edu.cn/",
+   "http://jwnew.cqust.edu.ex2.http.80.ipv6.cqust.edu.cn/eams/login.action",
+   "http://jwnew.cqust.edu.cn/eams/login.action"
+  ],
+  "maintainers": [
+   "yuexps"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4150011551",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "CQUT",
+  "name": "重庆理工大学",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://timetable-cfc.cqut.edu.cn/"
+  ],
+  "maintainers": [
+   "Dawn Drizzle"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://uis.cqut.edu.cn/unified_identity_logon/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4150011660",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "CSU",
+  "name": "中南大学",
+  "province": "湖南省",
+  "city": "长沙市",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://ca.csu.edu.cn/authserver/login?service=http%3A%2F%2Fcsujwc.its.csu.edu.cn%2Fsso.jsp"
+  ],
+  "maintainers": [
+   "GaLeKu"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "http://csujwc.its.csu.edu.cn/jsxsd/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "Z_中南大学",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "CSUFT",
+  "name": "中南林业科技大学",
+  "province": "湖南省",
+  "city": "长沙市",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://webvpn.csuft.edu.cn/"
+  ],
+  "maintainers": [
+   "jinnianliuxing"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "http://jwgl.csuft.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "Z_中南林业科技大学",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "CTGU",
+  "name": "三峡大学",
+  "province": "湖北省",
+  "city": "宜昌市",
+  "family": "wisedu",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwxt.ctgu.edu.cn/jwapp/sys/yjsrzfwapp/dbLogin/main.do"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "wisedu",
+  "sleepy_entry_url": "http://jwxt.ctgu.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "S_三峡大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "CUG",
+  "name": "中国地质大学(武汉)",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "JS 形态判定",
+  "adapters": 2,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE",
+   "POSTGRADUATE"
+  ],
+  "sg_import_urls": [
+   "https://sfrz.cug.edu.cn/authserver/login?service=https%3A%2F%2Fi.cug.edu.cn%2Fweb%2F%3FCASLOGIN%3DCASLOGIN",
+   "https://epo.cug.edu.cn"
+  ],
+  "maintainers": [
+   "JiaLiFuNia",
+   "kncatl"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "wakeup:6fc92fda6d6b50eb9e5f",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "CUIT",
+  "name": "成都信息工程大学",
+  "province": "",
+  "city": "",
+  "family": "shuwei_json",
+  "family_source": "目录已注 type",
+  "adapters": 2,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://ywtb.cuit.edu.cn/",
+   "https://jwc.cuit.edu.cn/"
+  ],
+  "maintainers": [
+   "igugyj(Pfolg)"
+  ],
+  "sleepy_entry_type": "shuwei_json",
+  "sleepy_entry_url": "https://ywtb.cuit.edu.cn/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4151010621",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "CUP",
+  "name": "中国石油大学(北京)",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 2,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE",
+   "POSTGRADUATE"
+  ],
+  "sg_import_urls": [
+   "https://bk.cup.edu.cn/student/",
+   "https://gmis.cup.edu.cn/gmis/student/default/index"
+  ],
+  "maintainers": [
+   "larryyan"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4111011414",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "CUPK",
+  "name": "中国石油大学（北京）克拉玛依校区",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://eams.cupk.edu.cn/student/"
+  ],
+  "maintainers": [
+   "ARK-VALLEY"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "wakeup:8b9f605b579e47335bbe",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "CUST",
+  "name": "长春理工大学",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 2,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE",
+   "POSTGRADUATE"
+  ],
+  "sg_import_urls": [
+   "https://kbpro.cust.edu.cn/Schedule/",
+   "https://kbpro.cust.edu.cn/Schedule/"
+  ],
+  "maintainers": [
+   "itdong"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4122010186",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "CWXU",
+  "name": "无锡学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwgl.cwxu.edu.cn/jwglxt/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "ewiro"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://jwgl.cwxu.edu.cn/jwglxt/xtgl/login_slogin.html",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4132013982",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "CZIMT",
+  "name": "常州机电职业技术学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://webapp.czimt.edu.cn"
+  ],
+  "maintainers": [
+   "ShallowY"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4132013114",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "DLMU",
+  "name": "大连海事大学",
+  "province": "",
+  "city": "",
+  "family": "shuwei_json",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jw.xpaas.dlmu.edu.cn/eams"
+  ],
+  "maintainers": [
+   "whynusn"
+  ],
+  "sleepy_entry_type": "shuwei_json",
+  "sleepy_entry_url": "https://id.dlmu.edu.cn/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4121010151",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "DLU",
+  "name": "大连大学",
+  "province": "辽宁省",
+  "city": "大连市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://webvpn.dlu.edu.cn/login"
+  ],
+  "maintainers": [
+   "platinumyrh"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://202.199.155.130/jwglxt",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "D_大连大学",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "DLUT",
+  "name": "大连理工大学",
+  "province": "",
+  "city": "",
+  "family": "cumtb",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jxgl.dlut.edu.cn/student/for-std/course-table"
+  ],
+  "maintainers": [
+   "dffzcqs78694"
+  ],
+  "sleepy_entry_type": "cumtb",
+  "sleepy_entry_url": "http://jxgl.dlut.edu.cn/student/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4121010141",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "DLUTCI",
+  "name": "大连工程学院",
+  "province": "辽宁省",
+  "city": "大连市",
+  "family": "wisedu",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jw.dlutci.edu.cn"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": "wisedu",
+  "sleepy_entry_url": "http://jw.dlutci.edu.cn/jwapp/sys/emaphome/portal/index.do",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "moe:4121013198",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "DZU",
+  "name": "德州学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://211.64.47.165/jwglxt/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "yvmu"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4137010448",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "ECJTU",
+  "name": "华东交通大学",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxt.ecjtu.edu.cn/index.action"
+  ],
+  "maintainers": [
+   "glxgo"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4136010404",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "FAFU",
+  "name": "福建农林大学",
+  "province": "福建省",
+  "city": "福州市",
+  "family": "zf_1",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwgl.fafu.edu.cn/"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": "zf_1",
+  "sleepy_entry_url": "http://jwgl.fafu.edu.cn",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "F_福建农林大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "FIT",
+  "name": "福州理工学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://oaa.fitedu.net/jwglxt/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://oaa.fitedu.net/jwglxt/xtgl/login_slogin.html",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4135013773",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "FJCPC",
+  "name": "福建船政交通职业学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://webvpn.fjcpc.edu.cn/"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://sso.fjcpc.edu.cn/ZAS/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4135010866",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "FJNU",
+  "name": "福建师范大学",
+  "province": "福建省",
+  "city": "福州市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "POSTGRADUATE"
+  ],
+  "sg_import_urls": [
+   "https://gedu.fjnu.edu.cn/cas/login?service=https%3A%2F%2Fgedu.fjnu.edu.cn%2Findex"
+  ],
+  "maintainers": [
+   "Hui0069"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://jwglxt.fjnu.edu.cn/jwglxt/xtgl/login_slogin.html",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "F_福建师范大学",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "FJPIT",
+  "name": "福建信息职业技术学院",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jw.fjpit.com/#/auth/login"
+  ],
+  "maintainers": [
+   "Panda君"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4135012626",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "FOSU",
+  "name": "佛山大学",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://100.fosu.edu.cn/"
+  ],
+  "maintainers": [
+   "e7g"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4144011847",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "FVTI",
+  "name": "福州职业技术大学",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jw.webvpn.fvti.cn/Framework/lyssoNew/login.php"
+  ],
+  "maintainers": [
+   "Panda君"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4135011502",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "GDCP",
+  "name": "广东交通职业技术学院",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 2,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://cas.gdcp.edu.cn/",
+   "https://jw.gdcp.edu.cn/"
+  ],
+  "maintainers": [
+   "Haooz",
+   "小漫君"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4144010861",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "GDIPU",
+  "name": "广东轻工职业技术大学",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jw.gdipu.edu.cn"
+  ],
+  "maintainers": [
+   "LittleArray"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4144010833",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "GDIT",
+  "name": "广东科学技术职业学院",
+  "province": "广东省",
+  "city": "广州市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://ids.gdit.edu.cn/authserver/login?service=https://wbdt.gdit.edu.cn/shiro-cas"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://jw.gdit.edu.cn/jwglxt/xtgl/login_slogin.html",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "G_广东科学技术职业学院",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "GDKM",
+  "name": "广东科贸职业学院",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://aic.gdkm.edu.cn/cas_server/login"
+  ],
+  "maintainers": [
+   "qwwshs"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4144014063",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "GDOU",
+  "name": "广东海洋大学",
+  "province": "广东省",
+  "city": "湛江市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 4,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jw.gdou.edu.cn/",
+   "https://wfw.gdou.edu.cn/https://jw.gdou.edu.cn/",
+   "https://wfw.gdou.edu.cn/https://jw.gdou.edu.cn/",
+   "https://jxpj.gdou.edu.cn/wx/?universitycode=10566"
+  ],
+  "maintainers": [
+   "Mccurtain",
+   "Yihe-ng",
+   "Yihe-ng，海大百事通"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://jw.gdou.edu.cn/xtgl/login_slogin.html",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "G_广东海洋大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "GDPU",
+  "name": "广东药科大学",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://webvpn.gdpu.edu.cn/https/77726476706e69737468656265737421f3f652d220347845300d8db9d6562d/lyuapServer/login?service=https%3A%2F%2Fjwsys.gdpu.edu.cn%2Fsso%2Flyiotlogin"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4144010573",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "GDUST",
+  "name": "广东科技学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://webvpn.gdust.edu.cn/https/77726476706e69737468656265737421f3f652d220347d436a468ca88d1b203b/cas/?service=https%3A%2F%2Fwebvpn.gdust.edu.cn%2Flogin%3Fcas_login%3Dtrue"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://portal.gdust.edu.cn/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4144013719",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "GDUT",
+  "name": "广东工业大学",
+  "province": "广东省",
+  "city": "广州市",
+  "family": "cf",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://authserver.gdut.edu.cn/authserver/login?service=https%3A%2F%2Fjxfw.gdut.edu.cn%2Fnew%2FssoLogin"
+  ],
+  "maintainers": [
+   "forer4433"
+  ],
+  "sleepy_entry_type": "cf",
+  "sleepy_entry_url": "http://jxfw.gdut.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "G_广东工业大学",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "GLMU",
+  "name": "桂林医科大学",
+  "province": "",
+  "city": "",
+  "family": "cf",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://ejwc.glmu.edu.cn/"
+  ],
+  "maintainers": [
+   "xhh李"
+  ],
+  "sleepy_entry_type": "cf",
+  "sleepy_entry_url": "https://ejwc.glmu.edu.cn",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4145010601",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "GPNU",
+  "name": "广东技术师范大学",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwglxt.gpnu.edu.cn/sso/lyiotlogin"
+  ],
+  "maintainers": [
+   "moondish"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://cas-443.webvpn.gpnu.edu.cn/lyuapServer/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4144010588",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "GSCMXY",
+  "name": "甘肃财贸职业学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxt.gscmxy.edu.cn/"
+  ],
+  "maintainers": [
+   "ShallowY"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4262051378",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "GSMC",
+  "name": "甘肃医学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jw.gsmc.edu.cn/jwglxt/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://115.155.160.104/jwglxt/xtgl/login_slogin.html",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4162011805",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "GUC",
+  "name": "吉利学院",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jw.guc.edu.cn/yethan/UserAction?setAction=userLogin"
+  ],
+  "maintainers": [
+   "Selffox"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4111012802",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "GUIT",
+  "name": "桂林信息科技学院",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://172-16-18-132.webvpn.guit.edu.cn"
+  ],
+  "maintainers": [
+   "Mercury"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4145013644",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "GXCME",
+  "name": "广西机电职业技术学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://sso.gxcme.edu.cn/login?service=https://nportal.gxcme.edu.cn/login"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://sso.gxcme.edu.cn/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4145010867",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "GXDLXY",
+  "name": "广西电力职业技术学院",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jw.gxdlxy.com/jsxsd/framework/xsMain.jsp"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "https://ids.vpn.gxdlxy.com/authserver/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4145013831",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "GXMU",
+  "name": "广西医科大学",
+  "province": "",
+  "city": "",
+  "family": "cf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://cas.gxmu.edu.cn/lyuapServer/login"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": "cf_new",
+  "sleepy_entry_url": "http://jwxt.gxmu.edu.cn/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4145010598",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "GZHMU",
+  "name": "广州医科大学",
+  "province": "广东省",
+  "city": "广州市",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://webvpn.gzhmu.edu.cn/"
+  ],
+  "maintainers": [
+   "小漫君"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "https://jwgl.gzhmu.edu.cn/jsxsd",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "G_广州医科大学",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "GZIST",
+  "name": "广州理工学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "JS 形态判定",
+  "adapters": 2,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://ids.gzist.edu.cn/lyuapServer/login?service=http%3A%2F%2Fjw.gzist.edu.cn%2Fsso%2Flyiotlogin",
+   "https://webvpn.gzist.edu.cn/login"
+  ],
+  "maintainers": [
+   "YT-O5"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4144012668",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "GZMTU",
+  "name": "广州航海学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwx.gzmtu.edu.cn/jwglxt/kbcx/xskbcx_cxXskbcxIndex.html?gnmkdm=N2151&layout=default"
+  ],
+  "maintainers": [
+   "weiwei221206"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4144011106",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "GZST",
+  "name": "广州松田职业学院",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jw.educationgroup.cn/gzstzyxy_jsxsd/"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "https://jw.educationgroup.cn/gzasc_jsxsd/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "moe:4144014125",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "GZTCME",
+  "name": "贵州机电职业技术学院",
+  "province": "",
+  "city": "",
+  "family": "chaoxing",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxt.gztcme.cn/jwglxt/kbcx/xskbcx_cxXskbcxIndex.html?gnmkdm=N2151&layout=default"
+  ],
+  "maintainers": [
+   "Panda君"
+  ],
+  "sleepy_entry_type": "chaoxing",
+  "sleepy_entry_url": "https://gzjdvc.mh.chaoxing.com/page/135966/show",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4152014733",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "GZTRC",
+  "name": "铜仁学院",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 2,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://gztrc.edu.cn:17232/",
+   "https://gztrc.edu.cn:17230/yjw/pages/login/login.html"
+  ],
+  "maintainers": [
+   "Daoguan-king"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4152010665",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "GZU",
+  "name": "贵州大学",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://zhjw.gzu.edu.cn/jwglxt/xtgl/"
+  ],
+  "maintainers": [
+   "Daoguan-king"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4152010657",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "HAUE",
+  "name": "河南工程学院",
+  "province": "河南省",
+  "city": "郑州市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://106.system.haue.edu.cn/jwglxt/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "拉里"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://jwgl.haue.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "H_河南工程学院",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "HAUST",
+  "name": "河南科技大学",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://vpn.haust.edu.cn"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4141010464",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "HAUT",
+  "name": "河南工业大学",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwglxt.haut.edu.cn/jwglxt/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4141010463",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "HBDFXY",
+  "name": "河北东方学院",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://219.148.95.56:10000/jsxsd/"
+  ],
+  "maintainers": [
+   "小漫君"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "http://219.148.95.56:10000/jsxsd/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4113014225",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "HBGUHX",
+  "name": "河北地质大学华信学院",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://61.182.88.214:8090"
+  ],
+  "maintainers": [
+   "未来之乡"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "http://61.182.88.214:8090",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4113013594",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "HBLGXY",
+  "name": "淮北理工学院",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://a.hblgxy.edu.cn:5111/jsxsd/"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4134013620",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "HBMU",
+  "name": "湖北医药学院",
+  "province": "湖北省",
+  "city": "十堰市",
+  "family": "cf",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jw.hbmu.edu.cn/"
+  ],
+  "maintainers": [
+   "xhh李"
+  ],
+  "sleepy_entry_type": "cf",
+  "sleepy_entry_url": "https://jw.hbmu.edu.cn",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "H_湖北医药学院",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "HBMZU",
+  "name": "湖北民族大学",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwgl.hbmzu.edu.cn/edu/"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4142010517",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "HBUAS",
+  "name": "湖北文理学院",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://hbuas.jw.chaoxing.com/admin/login"
+  ],
+  "maintainers": [
+   "salt-fishes"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4142010519",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "HEBAU",
+  "name": "河北农业大学",
+  "province": "",
+  "city": "",
+  "family": "wisedu",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://urp.hebau.edu.cn:1009/jwapp/sys/homeapp/home/index.html#/"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": "wisedu",
+  "sleepy_entry_url": "http://urp.hebau.edu.cn:1009/jwapp/sys/yjsrzfwapp/dbLogin/main.do",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4113010086",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "HEBEU",
+  "name": "河北工程大学",
+  "province": "河北省",
+  "city": "邯郸市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwglxxfwpt.hebeu.edu.cn/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "Nanawwa"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://jwglxxfwpt.hebeu.edu.cn/xtgl/login_slogin.html",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "H_河北工程大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "HFNU",
+  "name": "合肥师范学院",
+  "province": "安徽省",
+  "city": "合肥市",
+  "family": "classic_eams",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jw.hfnu.edu.cn/eams/loginExt.action"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "classic_eams",
+  "sleepy_entry_url": "http://jw.hfnu.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "H_合肥师范学院",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "HHTC",
+  "name": "怀化学院",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwmis.hhtc.edu.cn/"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "https://jwmis.hhtc.edu.cn/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4143010548",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "HHVTC",
+  "name": "怀化职业技术学院",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwgl.hhvtc.com.cn/"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4143013037",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "HIIT",
+  "name": "河南信息科技学院",
+  "province": "",
+  "city": "",
+  "family": "classic_eams",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://39.164.230.243:9527/#/authserver/login?redirect_uri=aHR0cDovLzM5LjE2NC4yMzAuMjQzOjkxL2VhbXMvbG9naW4uYWN0aW9u"
+  ],
+  "maintainers": [
+   "Mercury"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4141014949",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "HIST",
+  "name": "河南科技学院",
+  "province": "",
+  "city": "",
+  "family": "kingo_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwgl.hist.edu.cn/cas/login.action"
+  ],
+  "maintainers": [
+   "zixij644-elaborate"
+  ],
+  "sleepy_entry_type": "kingo_new",
+  "sleepy_entry_url": "http://jwgl.hist.edu.cn/cas/login.action",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4141010467",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "HIT",
+  "name": "哈尔滨工业大学",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "POSTGRADUATE"
+  ],
+  "sg_import_urls": [
+   "http://yjsgl-hit-edu-cn.ivpn.hit.edu.cn:1080/xs/index"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4123010213",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "HLJU",
+  "name": "黑龙江大学",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 2,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE",
+   "POSTGRADUATE"
+  ],
+  "sg_import_urls": [
+   "https://yjsglxt.hlju.edu.cn/",
+   "http://xsxk.hlju.edu.cn/"
+  ],
+  "maintainers": [
+   "Haooz",
+   "lixu-030506"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4123010212",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "HNIE",
+  "name": "湖南工程学院",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwcmis.hnie.edu.cn"
+  ],
+  "maintainers": [
+   "Mercury"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "http://jwcmis.hnie.edu.cn",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4143011342",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "HNIU",
+  "name": "湖南信息职业技术学院",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://authserver.hniu.cn/authserver/login?service=https%3A%2F%2Fehall.hniu.cn%3A443%2Flogin%3Fservice%3Dhttps%3A%2F%2Fehall.hniu.cn%2Fnew%2Findex.html%3Fbrowser%3Dno%25EF%25BC%2589#StudentAffairsA"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4143010865",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "HNNU",
+  "name": "淮南师范学院",
+  "province": "安徽省",
+  "city": "淮南市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://xxmh.hnnu.edu.cn/zhxy/"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://211.70.176.173/jwglxt/xtgl/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "H_淮南师范学院",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "HNPTC",
+  "name": "湖南邮电职业技术学院",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jx.hnxyjf.com:10081/jsxsd/"
+  ],
+  "maintainers": [
+   "小漫君"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4143012845",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "HNSF",
+  "name": "河南师范大学",
+  "province": "",
+  "city": "",
+  "family": "cf_new",
+  "family_source": "目录已注 type",
+  "adapters": 2,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwc.htu.edu.cn/",
+   "https://jwc.htu.edu.cn/"
+  ],
+  "maintainers": [
+   "一颗",
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "cf_new",
+  "sleepy_entry_url": "https://jwc.htu.edu.cn",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4141010476",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "HNU",
+  "name": "湖南大学",
+  "province": "湖南省",
+  "city": "长沙市",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://hdjw.hnu.edu.cn/jsxsd/sso.jsp"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "https://cas.hnu.edu.cn/cas/login?service=http://hdjw.hnu.edu.cn/gld/sso.jsp",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "H_湖南大学",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "HNUST",
+  "name": "湖南科技大学",
+  "province": "湖南省",
+  "city": "湘潭市",
+  "family": "hnust",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://kdjw.hnust.edu.cn/"
+  ],
+  "maintainers": [
+   "dezige131"
+  ],
+  "sleepy_entry_type": "hnust",
+  "sleepy_entry_url": "https://kdjw.hnust.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "H_湖南科技大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "HNVCC",
+  "name": "湖南商务职业技术学院",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwxt.hnvcc.edu.cn/"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4143012401",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "HNZY",
+  "name": "河南职业技术学院",
+  "province": "",
+  "city": "",
+  "family": "kingo_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://one.hnzj.edu.cn/common-service/kcb-pc/personage/personage"
+  ],
+  "maintainers": [
+   "一颗"
+  ],
+  "sleepy_entry_type": "kingo_new",
+  "sleepy_entry_url": "https://we.hnzj.edu.cn/sso/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4141010824",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "HPU",
+  "name": "河南理工大学",
+  "province": "",
+  "city": "",
+  "family": "classic_eams",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://zhjw.hpu.edu.cn/eams/login.action"
+  ],
+  "maintainers": [
+   "ca1q1an"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4141010460",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "HQU",
+  "name": "华侨大学",
+  "province": "福建省",
+  "city": "泉州市",
+  "family": "wisedu",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://atrust.hqu.edu.cn/portal/?redirectid=0.6668972084789097#/login"
+  ],
+  "maintainers": [
+   "Xuan-Xuann"
+  ],
+  "sleepy_entry_type": "wisedu",
+  "sleepy_entry_url": "https://jwc.hqu.edu.cn",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "H_华侨大学",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "HRBEU",
+  "name": "哈尔滨工程大学",
+  "province": "黑龙江省",
+  "city": "哈尔滨市",
+  "family": "wisedu",
+  "family_source": "目录已注 type",
+  "adapters": 2,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE",
+   "POSTGRADUATE"
+  ],
+  "sg_import_urls": [
+   "https://jwgl.hrbeu.edu.cn/jwapp/sys/emaphome/portal/index.do",
+   "https://yjs.hrbeu.edu.cn/"
+  ],
+  "maintainers": [
+   "penguinway"
+  ],
+  "sleepy_entry_type": "wisedu",
+  "sleepy_entry_url": "https://jwgl.hrbeu.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "H_哈尔滨工程大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "HUALIXY",
+  "name": "广州华立学院",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jw.hualixy.edu.cn/sso/ddlogin"
+  ],
+  "maintainers": [
+   "小漫君"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "https://www.hltz.net/hlxy_jsxsd/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4144013656",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "HUAT",
+  "name": "湖北汽车工业学院",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://cas.huat.edu.cn/authserver/login?service=http%3A%2F%2Fneweas.huat.edu.cn%2Flogin"
+  ],
+  "maintainers": [
+   "老考滤一下"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4142010525",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "HUAYU",
+  "name": "山东华宇工学院",
+  "province": "山东省",
+  "city": "德州市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwgl.huayu.edu.cn/jwglxt/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "Noxiouskoala1"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://jwgl.huayu.edu.cn/jwglxt/xtgl/login_slogin.html",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "S_山东华宇工学院",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "HUEB",
+  "name": "河北经贸大学",
+  "province": "河北省",
+  "city": "石家庄市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://202-206-194-100.vpn.hueb.edu.cn:8118/jwglxt/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://202-206-194-100.vpn.hueb.edu.cn:8118/jwglxt/xtgl/login_slogin.html",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "H_河北经贸大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "HUEL",
+  "name": "河南财经政法大学",
+  "province": "河南省",
+  "city": "郑州市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://xk.huel.edu.cn"
+  ],
+  "maintainers": [
+   "Mercury"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://xk.huel.edu.cn/jwglxt/xtgl/login_slogin.html",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "H_河南财经政法大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "HUNAU",
+  "name": "湖南农业大学",
+  "province": "湖南省",
+  "city": "长沙市",
+  "family": "zf",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://webvpn.hunau.edu.cn/login?cas_login=true"
+  ],
+  "maintainers": [
+   "salt-fishes"
+  ],
+  "sleepy_entry_type": "zf",
+  "sleepy_entry_url": "https://jwc.hunau.edu.cn/jwglxt/xtgl/login_slogin.html",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "H_湖南农业大学",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "HUNNU",
+  "name": "湖南师范大学",
+  "province": "湖南省",
+  "city": "长沙市",
+  "family": "classic_eams",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwglnew.hunnu.edu.cn/eams/courseTableForStd.action"
+  ],
+  "maintainers": [
+   "EarOfWheat"
+  ],
+  "sleepy_entry_type": "classic_eams",
+  "sleepy_entry_url": "https://jwglnew.hunnu.edu.cn/eams/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "H_湖南师范大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "HUSE",
+  "name": "湖南科技学院",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jw.huse.cn/jsxsd"
+  ],
+  "maintainers": [
+   "KevinZ"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4143010551",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "HUST",
+  "name": "华中科技大学",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://mhub.hust.edu.cn"
+  ],
+  "maintainers": [
+   "Lucas04-nhr"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4142010487",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "HUUC",
+  "name": "河南城建学院",
+  "province": "",
+  "city": "",
+  "family": "chaoxing",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwglxt.huuc.edu.cn:8061/admin/login"
+  ],
+  "maintainers": [
+   "拉里"
+  ],
+  "sleepy_entry_type": "chaoxing",
+  "sleepy_entry_url": "https://icas.huuc.edu.cn/cas/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4141011765",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "HYNU",
+  "name": "衡阳师范学院",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://hysfjw.hynu.edu.cn/jsxsd/"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4143010546",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "HZU",
+  "name": "菏泽学院",
+  "province": "山东省",
+  "city": "菏泽市",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://222.206.176.102/jsxsd/"
+  ],
+  "maintainers": [
+   "yukoimi"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "https://222.206.176.102/jsxsd/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "H_菏泽学院",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "IMNC",
+  "name": "呼和浩特民族学院",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 2,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://webvpn.imnc.edu.cn",
+   "http://211.82.176.48/academic/login/imnc/loginIds6.jsp"
+  ],
+  "maintainers": [
+   "浮笙-WindDrift"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4115011709",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "IMU",
+  "name": "内蒙古大学",
+  "province": "",
+  "city": "呼和浩特市",
+  "family": "urp_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxt.imu.edu.cn/login"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "urp_new",
+  "sleepy_entry_url": "http://jwxt.imu.edu.cn/login",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "N_内蒙古大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "IMUT",
+  "name": "内蒙古工业大学",
+  "province": "",
+  "city": "",
+  "family": "umooc",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jw.imut.edu.cn/academic/login/imut/loginIds6Valid.jsp"
+  ],
+  "maintainers": [
+   "wuko233"
+  ],
+  "sleepy_entry_type": "umooc",
+  "sleepy_entry_url": "https://authserver.imut.edu.cn/cas/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4115010128",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "JDZVUA",
+  "name": "景德镇艺术职业大学",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwc.jdzvua.edu.cn/"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4136013435",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "JHZYEDU",
+  "name": "江西航空职业技术学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jw.jhzyedu.cn/xtgl/login_slogin.html?ydType=0"
+  ],
+  "maintainers": [
+   "JN"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4136013871",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "JLU",
+  "name": "吉林大学",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 2,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://iedu.jlu.edu.cn/",
+   "https://vpn.jlu.edu.cn/login"
+  ],
+  "maintainers": [
+   "Leimeng52mc"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "https://vpn.jlu.edu.cn/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4122010183",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "JNMC",
+  "name": "济宁医学院",
+  "province": "",
+  "city": "",
+  "family": "cf",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://210.44.16.13/"
+  ],
+  "maintainers": [
+   "yukoimi"
+  ],
+  "sleepy_entry_type": "cf",
+  "sleepy_entry_url": "http://210.44.16.13/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4137010443",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "JNU",
+  "name": "暨南大学",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jw.jnu.edu.cn"
+  ],
+  "maintainers": [
+   "White-Dew-Boy"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "https://icas.jnu.edu.cn/cas/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4144010559",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "JSEI",
+  "name": "江苏电子信息职业学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 2,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://webvpn.jsei.edu.cn/",
+   "https://ehall.jsei.edu.cn/new/index.html"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://authserver-443.webvpn.jsei.edu.cn/authserver/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4132012805",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "JSNU",
+  "name": "江苏师范大学",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://i.jsnu.edu.cn/home"
+  ],
+  "maintainers": [
+   "dezige131"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4132010320",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "JSTC",
+  "name": "江苏旅游职业学院",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://authserver.jstc.edu.cn/authserver/login?service=https%3A%2F%2Fjwxt.jstc.edu.cn%2Fstudent%2Fsso%2Flogin"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4132014604",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "JUST",
+  "name": "江苏科技大学",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://my.just.edu.cn/"
+  ],
+  "maintainers": [
+   "abyss-stars"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://www.just.edu.cn",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4132010289",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "JXFU",
+  "name": "江西飞行学院",
+  "province": "",
+  "city": "",
+  "family": "cf",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxt.jxfu.edu.cn/"
+  ],
+  "maintainers": [
+   "dezige131"
+  ],
+  "sleepy_entry_type": "cf",
+  "sleepy_entry_url": "https://jwxt.jxfu.edu.cn/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4136014839",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "JXNU",
+  "name": "江西师范大学",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwc.jxnu.edu.cn/"
+  ],
+  "maintainers": [
+   "glxgo"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4136010414",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "JXUST",
+  "name": "江西理工大学",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://authserver.jxust.edu.cn/authserver/login?service=https://jw.jxust.edu.cn/jsxsd/"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4136010407",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "JYVTC",
+  "name": "济源职业技术学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwgl.jyvtc.edu.cn/jyvtcjw/"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://jwgl.jyvtc.edu.cn/rump_frontend/login/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4141012768",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "KSU",
+  "name": "喀什大学",
+  "province": "新疆",
+  "city": "喀什地区",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://cas.ksu.edu.cn/cas/login?service=https://jwnet.ksu.edu.cn/sso/ddlogin"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://jwc.ksu.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "K_喀什大学",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "LCUDCC",
+  "name": "聊城大学东昌学院",
+  "province": "山东省",
+  "city": "聊城市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jw.lcudcc.edu.cn/jwglxt/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://jw.lcudcc.edu.cn/jwglxt/xtgl/login_slogin.html",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "L_聊城大学东昌学院",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "LIDAPOLY",
+  "name": "上海立达学院",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jw.lidapoly.edu.cn/shldzyjsxy_jsxsd"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "https://shldxyjw.yinghuaonline.com/shldzyjsxy/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4131012587",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "LIT",
+  "name": "洛阳理工学院",
+  "province": "",
+  "city": "",
+  "family": "cf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://lljw.lit.edu.cn/"
+  ],
+  "maintainers": [
+   "小漫君"
+  ],
+  "sleepy_entry_type": "cf_new",
+  "sleepy_entry_url": "https://lljw.lit.edu.cn/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4141011070",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "LNU",
+  "name": "辽宁大学",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwstudent.lnu.edu.cn/"
+  ],
+  "maintainers": [
+   "739C1AE2"
+  ],
+  "sleepy_entry_type": "urp_new",
+  "sleepy_entry_url": "http://jwstudent.lnu.edu.cn/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4121010140",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "LUT",
+  "name": "兰州理工大学",
+  "province": "甘肃省",
+  "city": "兰州市",
+  "family": "wisedu",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxt.lut.edu.cn/"
+  ],
+  "maintainers": [
+   "Colton"
+  ],
+  "sleepy_entry_type": "wisedu",
+  "sleepy_entry_url": "https://jwxt.lut.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "L_兰州理工大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "LYU",
+  "name": "临沂大学",
+  "province": "山东省",
+  "city": "临沂市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://sdp.lyu.edu.cn/https/webvpn3146b55e2aeee09087ebc4ebe6dbd770/jwglxt/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://jwgl.lyu.edu.cn/jwglxt",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "L_临沂大学",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "LZU",
+  "name": "兰州大学",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwk.lzu.edu.cn/academic/common/security/login.jsp"
+  ],
+  "maintainers": [
+   "yalerove"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4162010730",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "MASU",
+  "name": "马鞍山学院",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxt.masu.edu.cn/"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4134013614",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "MKU",
+  "name": "闽南科技学院",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwgl.mku.edu.cn/"
+  ],
+  "maintainers": [
+   "Mutx163"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "https://jwgl.mku.edu.cn/jsxsd/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4135012992",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "MMPT",
+  "name": "茂名职业技术学院",
+  "province": "广东省",
+  "city": "茂名市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwc.mmpt.edu.cn/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "一颗"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://jwc.mmvtc.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "M_茂名职业技术学院",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "MYSY",
+  "name": "绵阳师范学院",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jw.mtc.edu.cn/"
+  ],
+  "maintainers": [
+   "Guzheng3"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "http://sso.mtc.edu.cn/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4151010639",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "NANKAI",
+  "name": "南开大学",
+  "province": "天津市",
+  "city": "天津市",
+  "family": "classic_eams",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "POSTGRADUATE"
+  ],
+  "sg_import_urls": [
+   "https://yjs.nankai.edu.cn/py/page/student/grkcb.htm"
+  ],
+  "maintainers": [
+   "Cure"
+  ],
+  "sleepy_entry_type": "classic_eams",
+  "sleepy_entry_url": "https://eamis.nankai.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "N_南开大学",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "NBUT",
+  "name": "宁波工程学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwxt.nbut.edu.cn/jwglxt/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "xiekeqing"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://jwxt.nbut.edu.cn/jwglxt/xtgl/login_slogin.html",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4133011058",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "NCHU",
+  "name": "南昌航空大学",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwc-publish2.jwc.nchu.edu.cn/"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4136010406",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "NCUT",
+  "name": "北方工业大学",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxtbk.ncut.edu.cn/jsxsd/"
+  ],
+  "maintainers": [
+   "EnderHCO3"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4111010009",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "NEAU",
+  "name": "东北农业大学",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://webvpn.neau.edu.cn/"
+  ],
+  "maintainers": [
+   "dezige131"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4123010224",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "NEFU",
+  "name": "东北林业大学",
+  "province": "黑龙江省",
+  "city": "哈尔滨市",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxt.nefu.edu.cn/jsxsd/"
+  ],
+  "maintainers": [
+   "Chr0n0stasis"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "http://jwcnew.nefu.edu.cn/dblydx_jsxsd/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "D_东北林业大学",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "NENU",
+  "name": "东北师范大学",
+  "province": "",
+  "city": "",
+  "family": "qz_old",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://bkjx.nenu.edu.cn/"
+  ],
+  "maintainers": [
+   "dezige131"
+  ],
+  "sleepy_entry_type": "qz_old",
+  "sleepy_entry_url": "https://authserver-443.webvpn.nenu.edu.cn/authserver/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4122010200",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "NEU",
+  "name": "东北大学",
+  "province": "辽宁省",
+  "city": "沈阳市",
+  "family": "neu",
+  "family_source": "目录已注 type",
+  "adapters": 2,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE",
+   "POSTGRADUATE"
+  ],
+  "sg_import_urls": [
+   "http://jwxt.neu.edu.cn/",
+   "https://yjs.neu.edu.cn/"
+  ],
+  "maintainers": [
+   "Vera-zero"
+  ],
+  "sleepy_entry_type": "neu",
+  "sleepy_entry_url": "https://jwxt.neu.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "D_东北大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "NEUQ",
+  "name": "东北大学秦皇岛分校",
+  "province": "河北省",
+  "city": "秦皇岛市",
+  "family": "classic_eams",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxt.neuq.edu.cn"
+  ],
+  "maintainers": [
+   "aryunm"
+  ],
+  "sleepy_entry_type": "classic_eams",
+  "sleepy_entry_url": "http://jwxt.neuq.edu.cn/eams/localLogin.action",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "D_东北大学秦皇岛分校",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "NIIT",
+  "name": "南京工业职业技术大学",
+  "province": "",
+  "city": "",
+  "family": "wisedu",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxt.niit.edu.cn/"
+  ],
+  "maintainers": [
+   "nifs1729"
+  ],
+  "sleepy_entry_type": "wisedu",
+  "sleepy_entry_url": "https://auth.njuit.edu.cn/cas/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4132010850",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "NJCIT",
+  "name": "南京信息职业技术学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jw.njcit.cn/sso/lyiotlogin"
+  ],
+  "maintainers": [
+   "astraumbra"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://i.njcit.cn",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4132013112",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "NJFU",
+  "name": "南京林业大学",
+  "province": "江苏省",
+  "city": "南京市",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxt.njfu.edu.cn/sso.jsp"
+  ],
+  "maintainers": [
+   "Mercury"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "http://jwxt.njfu.edu.cn/jsxsd",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "N_南京林业大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "NJNU",
+  "name": "南京师范大学",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://authserver.nnu.edu.cn/authserver/login?service=https://hsnnu.nnu.edu.cn/login"
+  ],
+  "maintainers": [
+   "aryunm"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4132010319",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "NJTECH",
+  "name": "南京工业大学",
+  "province": "江苏省",
+  "city": "南京市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwgl.njtech.edu.cn/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://jwgl.njtech.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "N_南京工业大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "NJUPT",
+  "name": "南京邮电大学",
+  "province": "",
+  "city": "",
+  "family": "zf",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://i.njupt.edu.cn/"
+  ],
+  "maintainers": [
+   "kemi-20"
+  ],
+  "sleepy_entry_type": "zf",
+  "sleepy_entry_url": "http://jwxt.njupt.edu.cn/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4132010293",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "NTU",
+  "name": "南通大学",
+  "province": "江苏省",
+  "city": "南通市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://tdjw.ntu.edu.cn/jwglxt/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "MX703"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://tdjw.ntu.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "N_南通大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "NUAA",
+  "name": "南京航空航天大学",
+  "province": "江苏省",
+  "city": "南京市",
+  "family": "classic_eams",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://aao-eas.nuaa.edu.cn/eams/login.action"
+  ],
+  "maintainers": [
+   "kemi-20"
+  ],
+  "sleepy_entry_type": "classic_eams",
+  "sleepy_entry_url": "https://aao-eas.nuaa.edu.cn/eams/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "N_南京航空航天大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "NUIST",
+  "name": "南京信息工程大学",
+  "province": "江苏省",
+  "city": "南京市",
+  "family": "wisedu",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxt.nuist.edu.cn/"
+  ],
+  "maintainers": [
+   "wild0408"
+  ],
+  "sleepy_entry_type": "wisedu",
+  "sleepy_entry_url": "http://jwxt.nuist.edu.cn/jwapp/sys/wdkb/*default/index.do?EMAP_LANG=zh#/xskcb",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "N_南京信息工程大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "NWAFU",
+  "name": "西北农林科技大学",
+  "province": "",
+  "city": "",
+  "family": "wisedu",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://newehall.nwafu.edu.cn/"
+  ],
+  "maintainers": [
+   "123zhuzhu61"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4161010712",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "NWPU",
+  "name": "西北工业大学",
+  "province": "",
+  "city": "",
+  "family": "shuwei_json",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://ecampus.nwpu.edu.cn/"
+  ],
+  "maintainers": [
+   "zengzoxiong"
+  ],
+  "sleepy_entry_type": "shuwei_json",
+  "sleepy_entry_url": "https://uis.nwpu.edu.cn/cas/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4161010699",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "NYNU",
+  "name": "南阳师范学院",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://vpn.nynu.edu.cn/"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4141010481",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "OUC",
+  "name": "中国海洋大学",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://id.ouc.edu.cn/sso/login?service=https%3A%2F%2Fjwgl2024.ouc.edu.cn%2F"
+  ],
+  "maintainers": [
+   "anOsprey"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4137010423",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "QAU",
+  "name": "青岛农业大学",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwglxt.qau.edu.cn/"
+  ],
+  "maintainers": [
+   "ReGoMark"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4137010435",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "QDHHC",
+  "name": "青岛黄海学院",
+  "province": "山东省",
+  "city": "青岛市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwxt.qdhhc.edu.cn/jwglxt/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://jwxt.qdhhc.edu.cn/jwglxt/xtgl/login_slogin.html",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "Q_青岛黄海学院",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "QDU",
+  "name": "青岛大学",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://xjw.qdu.edu.cn/"
+  ],
+  "maintainers": [
+   "JellyfisHawthorn"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "http://xjw.qdu.edu.cn",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4137011065",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "QFNU",
+  "name": "曲阜师范大学",
+  "province": "",
+  "city": "",
+  "family": "qz_with_node",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://zhjw.qfnu.edu.cn/jsxsd/"
+  ],
+  "maintainers": [
+   "Yumu-banxia"
+  ],
+  "sleepy_entry_type": "qz_with_node",
+  "sleepy_entry_url": "http://zhjw.qfnu.edu.cn/sso.jsp",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4137010446",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "QHNU",
+  "name": "青海师范大学",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "POSTGRADUATE"
+  ],
+  "sg_import_urls": [
+   "http://one.qhnu.edu.cn/default/portal/index.jsp"
+  ],
+  "maintainers": [
+   "shixiaogaoya"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "http://idsnew.qhnu.edu.cn/authserver/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4163010746",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "QQHRIT",
+  "name": "齐齐哈尔工程学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://tysf.qqhrit.com:20261/cas/login"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://portal.qqhrit.com:2180/cas/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4123012729",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "QQHRU",
+  "name": "齐齐哈尔大学",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://webvpn.qqhru.edu.cn/users/sign_in"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4123010232",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "QUT",
+  "name": "青岛理工大学",
+  "province": "山东省",
+  "city": "青岛市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jxgl.qut.edu.cn/jwglxt/xtgl/index_initMenu.html"
+  ],
+  "maintainers": [
+   "LucasAndrew0120"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://jxgl.qut.edu.cn/jwglxt",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "Q_青岛理工大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "QVTU",
+  "name": "泉州职业技术大学",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jw.qvtu.edu.cn/jsxsd/"
+  ],
+  "maintainers": [
+   "suiren0219"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4135012928",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "SANYEDU",
+  "name": "湖南三一工业职业技术学院",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://ehall.sanyedu.com/new/index.html"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "https://ehall.sanyedu.com/new/index.html",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4143014322",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "SCEMI",
+  "name": "四川机电职业技术学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://192.168.73.155/personal-center"
+  ],
+  "maintainers": [
+   "小漫君"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4151012751",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "SCETOP",
+  "name": "四川托普信息技术职业学院",
+  "province": "",
+  "city": "",
+  "family": "zf",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://zf.scetop.com/default2.aspx"
+  ],
+  "maintainers": [
+   "psenY"
+  ],
+  "sleepy_entry_type": "zf",
+  "sleepy_entry_url": "http://zf.scetop.com/default2.aspx",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4151012963",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "SCNU",
+  "name": "华南师范大学",
+  "province": "广东省",
+  "city": "广州市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxt.scnu.edu.cn/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "YewFence"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://jwxt.scnu.edu.cn/jwglxt",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "H_华南师范大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "SCTBC",
+  "name": "四川工商职业技术学院",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jw.sctbc.edu.cn/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "dclindev"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4151012762",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "SCUEC",
+  "name": "中南民族大学",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://webvpn.scuec.edu.cn/"
+  ],
+  "maintainers": [
+   "Zellon0w0"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "https://webvpn.scuec.edu.cn/users/sign_in",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4142010524",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "SCUT",
+  "name": "华南理工大学",
+  "province": "广东省",
+  "city": "广州市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 2,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://xsjw2018-jw.webvpn.scut.edu.cn/",
+   "http://xsjw2018.jw.scut.edu.cn/"
+  ],
+  "maintainers": [
+   "dezige131"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://xsjw2018.jw.scut.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "H_华南理工大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "SDDFVC",
+  "name": "山东药品食品职业学院",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://cas.sddfvc.edu.cn/login?type=usernamepassword&service=http%3A%2F%2Ffazhan.sddfvc.edu.cn%2Fjs%2Ffzzx%2Flogin"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4137013966",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "SDIPCT",
+  "name": "山东石油化工学院",
+  "province": "",
+  "city": "",
+  "family": "cf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://webvpn.sdipct.edu.cn/https/77726476706e69737468656265737421fae0598869236c596e0b9de29d51367bd943/"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "cf_new",
+  "sleepy_entry_url": "https://www.sdipct.edu.cn/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4137013386",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "SDJTU",
+  "name": "山东交通学院",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://wwebvpn.sdjtu.edu.cn"
+  ],
+  "maintainers": [
+   "WuL0ong"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4137011510",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "SDLIVC",
+  "name": "山东轻工职业学院",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://crp.sdlivc.cn/xsgl/xs/login/login.aspx"
+  ],
+  "maintainers": [
+   "赛博丁真"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4137014079",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "SDNU",
+  "name": "山东师范大学",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwxt.sdnu.edu.cn/jwglxt/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "LiquoriceHy"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4137010445",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "SDUFE",
+  "name": "山东财经大学",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jw.sdufe.edu.cn/"
+  ],
+  "maintainers": [
+   "Kurisu90"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "http://jw.sdufe.edu.cn",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4137010456",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "SDWCVC",
+  "name": "山东水利职业学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://sso.sdwcvc.cn/"
+  ],
+  "maintainers": [
+   "小漫君"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://jw.sdwcvc.edu.cn/eams/loginExt.action",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4137012946",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "SHIEP",
+  "name": "上海电力大学",
+  "province": "",
+  "city": "",
+  "family": "classic_eams",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jw.shiep.edu.cn/eams/index.action"
+  ],
+  "maintainers": [
+   "zt11125"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4131010256",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "SHNU",
+  "name": "上海师范大学",
+  "province": "",
+  "city": "",
+  "family": "classic_eams",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://course.shnu.edu.cn/"
+  ],
+  "maintainers": [
+   "FaQxD233"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4131010270",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "SHUFEZJ",
+  "name": "上海财经大学浙江学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxt.shufe-zj.edu.cn/kbcx/xskbcx_cxXskbcxIndex.html?gnmkdm=N2151&layout=default"
+  ],
+  "maintainers": [
+   "ZnonEn"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4133014207",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "SHXY",
+  "name": "绥化学院",
+  "province": "",
+  "city": "",
+  "family": "cf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwgl.shxy.edu.cn/"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": "cf_new",
+  "sleepy_entry_url": "http://jwgl.shxy.edu.cn",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4123010236",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "SHZQ",
+  "name": "上海中侨职业技术大学",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://cas.shzq.edu.cn/cas/login?service=https://jw.shzq.edu.cn/sso/ddlogin"
+  ],
+  "maintainers": [
+   "Kredenk"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://jw.shzq.edu.cn/jwglxt/xtgl/login_slogin.html",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4131012915",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "SICNU",
+  "name": "四川师范大学",
+  "province": "",
+  "city": "",
+  "family": "shuwei_json",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://202.115.194.60/"
+  ],
+  "maintainers": [
+   "llingqing"
+  ],
+  "sleepy_entry_type": "shuwei_json",
+  "sleepy_entry_url": "http://jwcxk.sicnu.edu.cn/student/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4151010636",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "SMU",
+  "name": "南方医科大学",
+  "province": "广东省",
+  "city": "广州市",
+  "family": "cf",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://zhjw.smu.edu.cn"
+  ],
+  "maintainers": [
+   "NekoJackie"
+  ],
+  "sleepy_entry_type": "cf",
+  "sleepy_entry_url": "http://zhjw.smu.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "N_南方医科大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "SMXY",
+  "name": "三明学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://one.fjsmu.edu.cn/tp_up/view?m=up"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4135011311",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "STCNCHU",
+  "name": "南昌航空大学科技学院",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://qzjwxt.stcnchu.edu.cn:800/jsxsd/"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4136013433",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "SUDA",
+  "name": "苏州大学",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://xk.suda.edu.cn/"
+  ],
+  "maintainers": [
+   "BernardYan2357"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4132010285",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "SUSTECH",
+  "name": "南方科技大学",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://cas.sustech.edu.cn/cas/login?service=https%3A%2F%2Ftis.sustech.edu.cn%2Fcas"
+  ],
+  "maintainers": [
+   "yusancky"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4144014325",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "SWFU",
+  "name": "西南林业大学",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jw.swfu.edu.cn/jwglxt/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4153010677",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "SWJTU",
+  "name": "西南交通大学",
+  "province": "四川省",
+  "city": "成都市",
+  "family": "yethan",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://yhxt.swjtu.edu.cn/study/teach/course/stu-course-list"
+  ],
+  "maintainers": [
+   "Weedy233"
+  ],
+  "sleepy_entry_type": "yethan",
+  "sleepy_entry_url": "https://yhxt.swjtu.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "X_西南交通大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "SWU",
+  "name": "西南大学",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://i.swu.edu.cn/"
+  ],
+  "maintainers": [
+   "小漫君"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://v4study.eduwest.com/login.shtml",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4150010635",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "SXDZKJ",
+  "name": "山西电子科技学院",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://sso.sxdzkj.edu.cn/sso-auth/#/login?service=https://jwxt.sxdzkj.edu.cn/caslogin"
+  ],
+  "maintainers": [
+   "REnss3536"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4114013537",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "SXGCXY",
+  "name": "山西工程职业学院",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://sxevc.jw.chaoxing.com/admin/login"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4114014681",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "SYIST",
+  "name": "沈阳科技学院",
+  "province": "",
+  "city": "",
+  "family": "wisedu",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwxt.syist.edu.cn:30334/jwapp/sys/emaphome/portal/index.do"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "wisedu",
+  "sleepy_entry_url": "http://jwxt.syist.edu.cn:30334/jwapp/sys/emapfunauth/pages/funauth-login.do",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4121013621",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "SYSU",
+  "name": "中山大学",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 2,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE",
+   "POSTGRADUATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxt.sysu.edu.cn/",
+   "https://cms.sysu.edu.cn/"
+  ],
+  "maintainers": [
+   "JR2714",
+   "JXCZ"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4144010558",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "TARU",
+  "name": "塔里木大学",
+  "province": "",
+  "city": "阿拉尔市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://auth.taru.edu.cn/cas/login?service=https%3A%2F%2Fhall.taru.edu.cn%2FserviceHall"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://jwgl.taru.edu.cn/jwglxt/xtgl/login_slogin.html",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "T_塔里木大学",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "TCU",
+  "name": "天津城建大学",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://authserver.tcu.edu.cn/authserver/login?service=https%3A%2F%2Fjwxs.tcu.edu.cn%2Flogin"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4112010792",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "THDM",
+  "name": "南昌科技职业大学",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jw.tellhowedu.com:19995/"
+  ],
+  "maintainers": [
+   "HOLLOWDREAM"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4136014168",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "TJAU",
+  "name": "天津农学院",
+  "province": "",
+  "city": "",
+  "family": "shuwei_json",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwxt.tjau.edu.cn/eams/homeExt.action"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "shuwei_json",
+  "sleepy_entry_url": "http://jwxt.tjau.edu.cn/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4112010061",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "TONGJI",
+  "name": "同济大学",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://1.tongji.edu.cn/"
+  ],
+  "maintainers": [
+   "Linho1219"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4131010247",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "TSU",
+  "name": "泰山学院",
+  "province": "",
+  "city": "",
+  "family": "kingo_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwxt.tsu.edu.cn"
+  ],
+  "maintainers": [
+   "素绫理"
+  ],
+  "sleepy_entry_type": "kingo_new",
+  "sleepy_entry_url": "http://jwxt.tsu.edu.cn/cas/login.action",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4137010453",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "TUST",
+  "name": "天津科技大学",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://id.tust.edu.cn/authserver/login?service=http://jwxtxs.tust.edu.cn:46110/j_spring_cas_security_check"
+  ],
+  "maintainers": [
+   "oneepointer"
+  ],
+  "sleepy_entry_type": "urp_new",
+  "sleepy_entry_url": "https://id.tust.edu.cn/authserver/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4112010057",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "UESTC",
+  "name": "电子科技大学",
+  "province": "四川省",
+  "city": "成都市",
+  "family": "classic_eams",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://eams.uestc.edu.cn/eams"
+  ],
+  "maintainers": [
+   "CorunLing"
+  ],
+  "sleepy_entry_type": "classic_eams",
+  "sleepy_entry_url": "http://eams.uestc.edu.cn/eams/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "D_电子科技大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "UJN",
+  "name": "济南大学",
+  "province": "山东省",
+  "city": "济南市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://sso.ujn.edu.cn/tpass/login?service=http%3A%2F%2Fjwgl.ujn.edu.cn%2Fsso%2Fdriotlogin"
+  ],
+  "maintainers": [
+   "Moyu"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://jwgl.ujn.edu.cn/jwglxt/xtgl/login_slogin.html",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "J_济南大学",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "UJS",
+  "name": "江苏大学",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 2,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE",
+   "POSTGRADUATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxt.ujs.edu.cn/sso/jziotlogin",
+   "http://yjsgll.ujs.edu.cn/pyxx/"
+  ],
+  "maintainers": [
+   "洛初 Github@gongfuture"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://xuanke.ujs.edu.cn/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4132010299",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "UPC",
+  "name": "中国石油大学(华东)",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "JS 形态判定",
+  "adapters": 2,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE",
+   "POSTGRADUATE"
+  ],
+  "sg_import_urls": [
+   "https://webvpn.upc.edu.cn/users/sign_in",
+   "https://degrees.upc.edu.cn/"
+  ],
+  "maintainers": [
+   "Haooz",
+   "星河欲转"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4111011414",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "USC",
+  "name": "南华大学",
+  "province": "湖南省",
+  "city": "衡阳市",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwzx.usc.edu.cn:8924"
+  ],
+  "maintainers": [
+   "UVhyx"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "http://61.187.179.66:8924/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "N_南华大学",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "USTC",
+  "name": "中国科学技术大学",
+  "province": "安徽省",
+  "city": "合肥市",
+  "family": "wisedu",
+  "family_source": "目录已注 type",
+  "adapters": 2,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE",
+   "POSTGRADUATE"
+  ],
+  "sg_import_urls": [
+   "https://id.ustc.edu.cn/cas/login?service=https%3A%2F%2Fjw.ustc.edu.cn%2Fucas-sso%2Flogin",
+   "https://yjs1.ustc.edu.cn/gsapp/sys/yjsrzfwapp/dbLogin/main.do"
+  ],
+  "maintainers": [
+   "Enthusjast",
+   "hydrofluoric07"
+  ],
+  "sleepy_entry_type": "wisedu",
+  "sleepy_entry_url": "https://yjs1.ustc.edu.cn",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "Z_中国科学技术大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "USTL",
+  "name": "辽宁科技大学",
+  "province": "辽宁省",
+  "city": "鞍山市",
+  "family": "chaoxing",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://ustl.jw.chaoxing.com/admin/login"
+  ],
+  "maintainers": [
+   "Cure"
+  ],
+  "sleepy_entry_type": "chaoxing",
+  "sleepy_entry_url": "https://ustl.jw.chaoxing.com/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "L_辽宁科技大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "UZZ",
+  "name": "枣庄学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://iam.uzz.edu.cn/esc-sso/login/page"
+  ],
+  "maintainers": [
+   "素绫理"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://iam.uzz.edu.cn/esc-sso/login/page",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4137010904",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "WBU",
+  "name": "武汉商学院",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "JS 形态判定",
+  "adapters": 2,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxt.wbu.edu.cn/",
+   "https://webvpn.wbu.edu.cn/"
+  ],
+  "maintainers": [
+   "HJWqa"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4142011654",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "WENHUA",
+  "name": "文华学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jw1.hustwenhua.net/jwglxt/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "glxgo"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://jw1.hustwenhua.net/jwglxt/xtgl/login_slogin.html",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4142013262",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "WHCB",
+  "name": "武汉船舶职业技术学院",
+  "province": "湖北省",
+  "city": "武汉市",
+  "family": "wisedu",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jw.wspc.edu.cn/jwapp/sys/wdkb/*default/index.do?EMAP_LANG=zh#/xskcb"
+  ],
+  "maintainers": [
+   "一丝不旺"
+  ],
+  "sleepy_entry_type": "wisedu",
+  "sleepy_entry_url": "http://jw.wspc.edu.cn/jwapp/sys/emaphome/portal/index.do",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "W_武汉船舶职业技术学院",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "WHUT",
+  "name": "武汉理工大学",
+  "province": "湖北省",
+  "city": "武汉市",
+  "family": "whut",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxt.whut.edu.cn/"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "whut",
+  "sleepy_entry_url": "https://jwxt.whut.edu.cn/jwapp/sys/homeapp/index.do?forceCas=1",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "W_武汉理工大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "WUST",
+  "name": "武汉科技大学",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://bkjx.wust.edu.cn/jsxsd/framework/xsMain.jsp"
+  ],
+  "maintainers": [
+   "xsddszrc"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "https://bkjx.wust.edu.cn/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4142010488",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "WZZY",
+  "name": "梧州职业学院",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://222.217.195.24:805/wzzyjw/cas/login.action"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4145014171",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "XATU",
+  "name": "西安工业大学",
+  "province": "",
+  "city": "",
+  "family": "classic_eams",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwgl2018.xatu.edu.cn"
+  ],
+  "maintainers": [
+   "晨熯"
+  ],
+  "sleepy_entry_type": "classic_eams",
+  "sleepy_entry_url": "http://jwgl2018.xatu.edu.cn/eams/loginExt.action",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4161010702",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "XAUAT",
+  "name": "西安建筑科技大学",
+  "province": "陕西省",
+  "city": "西安市",
+  "family": "classic_eams",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://swjw.xauat.edu.cn/student/login/"
+  ],
+  "maintainers": [
+   "Alph4rc"
+  ],
+  "sleepy_entry_type": "classic_eams",
+  "sleepy_entry_url": "https://authserver.xauat.edu.cn/authserver/login",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "X_西安建筑科技大学",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "XAUT",
+  "name": "西安理工大学",
+  "province": "陕西省",
+  "city": "西安市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwgl.xaut.edu.cn/"
+  ],
+  "maintainers": [
+   "dezige131"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://jwc.xaut.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "X_西安理工大学",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "XAWL",
+  "name": "西安文理学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwgl.xawl.edu.cn/jwglxt/"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://jwgl.xawl.edu.cn/jwglxt/xtgl/login_slogin.html",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4161011080",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "XCU",
+  "name": "许昌学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwglxt.xcu.edu.cn/jwglxt/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "拉里"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4141010480",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "XHKJZYXY",
+  "name": "宣化科技职业学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://xhkjzyxy.edu.cn:18088/cas/login?service=https%3A%2F%2Fxhkjzyxy.edu.cn%3A8387%2Fsso%2Fjziotlogin"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://manager.xhkjzyxy.edu.cn:1443/u.php",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4113014260",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "XHSYSU",
+  "name": "广州新华学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://xhcas.xhsysu.edu.cn/lyuapServer/login?service=https%3A%2F%2Fjw.xhsysu.edu.cn%2Fsso%2Flyiotlogin"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://xhcas.xhsysu.edu.cn/lyuapServer/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4144013902",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "XJIE",
+  "name": "新疆工程学院",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://authserver.xjie.edu.cn/authserver/login?service=https%3A%2F%2Fjwxt.xjie.edu.cn%2Fjsxsd%2F"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "https://authserver.xjie.edu.cn/authserver/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4165010994",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "XJTU",
+  "name": "西安交通大学",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://ehall.xjtu.edu.cn"
+  ],
+  "maintainers": [
+   "SDPD, TiaoFeng"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "https://ehall.xjtu.edu.cn/new/index.html",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4161010698",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "XJZFU",
+  "name": "新疆政法学院",
+  "province": "",
+  "city": "",
+  "family": "wisedu",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwxt.xjzfu.edu.cn/jwapp/sys/homeapp/home/index.html"
+  ],
+  "maintainers": [
+   "jesse-s4"
+  ],
+  "sleepy_entry_type": "wisedu",
+  "sleepy_entry_url": "https://authserver.xjzfu.edu.cn/authserver/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4165013628",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "XMCU",
+  "name": "厦门城市职业学院",
+  "province": "",
+  "city": "",
+  "family": "kingo_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://eone-443.webvpn.xmcu.edu.cn/"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "kingo_new",
+  "sleepy_entry_url": "https://jw.xmcu.edu.cn/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4135013973",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "XSYU",
+  "name": "西安石油大学",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jiaowu.xsyu.edu.cn/admin/login"
+  ],
+  "maintainers": [
+   "dr1am1"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4161010705",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "XUST",
+  "name": "西安科技大学",
+  "province": "陕西省",
+  "city": "西安市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwsso.xust.edu.cn/frontend/center_portal/home/index.html#/"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://jwc.xust.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "X_西安科技大学",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "XYAFU",
+  "name": "信阳农林学院",
+  "province": "",
+  "city": "",
+  "family": "kingo_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://sso.xyafu.edu.cn/sso/login?service=https%3A%2F%2Fjwgl.xyafu.edu.cn%2Fcaslogin"
+  ],
+  "maintainers": [
+   "glxgo"
+  ],
+  "sleepy_entry_type": "kingo_new",
+  "sleepy_entry_url": "https://sso.xyafu.edu.cn/sso/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4141011326",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "XZHMU",
+  "name": "徐州医科大学",
+  "province": "江苏省",
+  "city": "徐州市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "POSTGRADUATE"
+  ],
+  "sg_import_urls": [
+   "https://authserver.xzhmu.edu.cn/authserver/login?service=https%3A%2F%2Fehall.xzhmu.edu.cn%2Flogin"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://jwpt.xzhmu.edu.cn/jwglxt/xtgl/login_slogin.html",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "X_徐州医科大学",
+  "sleepy_enableFetch": null,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "XZIT",
+  "name": "徐州工程学院",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwglxt.xzit.edu.cn/jwglxt/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "盐泡"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4132011998",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "YANGTZEU",
+  "name": "长江大学",
+  "province": "",
+  "city": "",
+  "family": "classic_eams",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://cas-yangtzeu-edu-cn.atrust.yangtzeu.edu.cn/authserver/login?service=https%3A%2F%2Fatrust.yangtzeu.edu.cn%3A4443%2Fpassport%2Fv1%2Fauth%2Fcas%3FsfDomain%3DCAS"
+  ],
+  "maintainers": [
+   "Jursin"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4142010489",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "YIBINU",
+  "name": "宜宾学院",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://authserver.yibinu.edu.cn/authserver/login?service=https://ehall.yibinu.edu.cn:443/login?service=https://ehall.yibinu.edu.cn/new/index.html"
+  ],
+  "maintainers": [
+   "空灵"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "https://ehall.yibinu.edu.cn/new/index.html",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4151010641",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "YNUFE",
+  "name": "云南财经大学",
+  "province": "云南省",
+  "city": "昆明市",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://xjwis.ynufe.edu.cn/jsxsd/"
+  ],
+  "maintainers": [
+   "AxelPLN"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "https://xjwis.ynufe.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "Y_云南财经大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "YSSDUFE",
+  "name": "山东财经大学燕山学院",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://ysjw.sdufe.edu.cn:8081/jsxsd/"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "https://ysjw.sdufe.edu.cn:8081/jsxsd/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4137013383",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "YSU",
+  "name": "燕山大学",
+  "province": "河北省",
+  "city": "秦皇岛市",
+  "family": "boya_pp",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "POSTGRADUATE"
+  ],
+  "sg_import_urls": [
+   "https://cer.ysu.edu.cn/authserver/login?service=https%3A%2F%2Fyjsxt.ysu.edu.cn%2Fapi%2FcasLogin%2Fysu"
+  ],
+  "maintainers": [
+   "Haooz"
+  ],
+  "sleepy_entry_type": "boya_pp",
+  "sleepy_entry_url": "https://cer.ysu.edu.cn/authserver/login?service=https%3A%2F%2Fyjsxt.ysu.edu.cn%2Fapi%2FcasLogin%2Fysu",
+  "sleepy_status": "grad_supported",
+  "sleepy_catalogId": "Y_燕山大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "YXHMC",
+  "name": "成都银杏酒店管理学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://zfjw.gingkoc.edu.cn/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "Xuan-Xuann"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://jwxt.gingkoc.edu.cn/xtgl/login_slogin.html",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4151013670",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "YZU",
+  "name": "扬州大学",
+  "province": "",
+  "city": "",
+  "family": "urp_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://webvpn.yzu.edu.cn/login"
+  ],
+  "maintainers": [
+   "Thanatos"
+  ],
+  "sleepy_entry_type": "urp_new",
+  "sleepy_entry_url": "https://sso.yzu.edu.cn/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4132011117",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "ZCMU",
+  "name": "浙江中医药大学",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwmk.zcmu.edu.cn/jwglxt/xtgl/login_slogin.html"
+  ],
+  "maintainers": [
+   "Daoguan-king"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://jwmk.zcmu.edu.cn/jwglxt/xtgl/login_slogin.html",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4133010344",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "ZHKU",
+  "name": "仲恺农业工程学院",
+  "province": "",
+  "city": "",
+  "family": "qz",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://edu-admin.zhku.edu.cn/"
+  ],
+  "maintainers": [
+   "lc6464"
+  ],
+  "sleepy_entry_type": "qz",
+  "sleepy_entry_url": "http://edu-admin.zhku.edu.cn/",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4144011347",
+  "sleepy_enableFetch": false,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "ZJBTI",
+  "name": "浙江工商职业技术学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://webvpn.zjbti.net.cn"
+  ],
+  "maintainers": [
+   "LanRhyme"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://jwxt.zjgsu.edu.cn/jwglxt/xtgl/login_slogin.html",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4133012789",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "ZJSRU",
+  "name": "浙江树人学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://xk.jwc.zjsru.edu.cn/"
+  ],
+  "maintainers": [
+   "CagierAsh123"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://rz.zjsru.edu.cn/cas/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4133011842",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "ZJUT",
+  "name": "浙江工业大学",
+  "province": "浙江省",
+  "city": "杭州市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://www.gdjw.zjut.edu.cn/jwglxt/xtgl/login_slogin.html?kickout=1"
+  ],
+  "maintainers": [
+   "glxgo"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://www.gdjw.zjut.edu.cn/",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "Z_浙江工业大学",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "ZQU",
+  "name": "肇庆学院",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://jwgl.zqu.edu.cn/"
+  ],
+  "maintainers": [
+   "NoobLLiu"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4144010580",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "ZUA",
+  "name": "郑州航空工业管理学院",
+  "province": "河南省",
+  "city": "郑州市",
+  "family": "classic_eams",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "http://jwglxt.zua.edu.cn/eams/loginExt.action"
+  ],
+  "maintainers": [
+   "xBefore"
+  ],
+  "sleepy_entry_type": "classic_eams",
+  "sleepy_entry_url": "http://jwglxt.zua.edu.cn/eams/loginExt.action",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "Z_郑州航空工业管理学院",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "ZUST",
+  "name": "浙江科技大学",
+  "province": "",
+  "city": "",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://https-authserver-zust-edu-cn-443.webvpn.zust.edu.cn/authserver/login?appid=https://https-authserver-zust-edu-cn-443.webvpn.zust.edu.cn/authserver/logout?service=${redirect_url}&service=https://webvpn.zust.edu.cn/callback/cas/TKBCDGsz"
+  ],
+  "maintainers": [
+   "小漫君"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "http://zust.jxjy.chaoxing.com/login",
+  "sleepy_status": "unverified",
+  "sleepy_catalogId": "moe:4133011057",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "入口比对后开闸(同族但拾光 URL 主机不同)"
+ },
+ {
+  "sg_id": "ZWU",
+  "name": "浙江万里学院",
+  "province": "浙江省",
+  "city": "宁波市",
+  "family": "zf_new",
+  "family_source": "目录已注 type",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://ehall.zwu.edu.cn/_layouts/15/ZWUWSBS/BSDT/HomePage.aspx#"
+  ],
+  "maintainers": [
+   "星河欲转"
+  ],
+  "sleepy_entry_type": "zf_new",
+  "sleepy_entry_url": "https://ehall.zwu.edu.cn/_layouts/15/ZWUWSBS/BSDT/HomePage.aspx",
+  "sleepy_status": "no-entry",
+  "sleepy_catalogId": "Z_浙江万里学院",
+  "sleepy_enableFetch": null,
+  "same_host": true,
+  "action": "直接开闸对照(协议同族且入口同主机)"
+ },
+ {
+  "sg_id": "ZZU",
+  "name": "郑州大学",
+  "province": "",
+  "city": "",
+  "family": "待判定",
+  "family_source": "待判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://cas.s.zzu.edu.cn/cas/a/login?service=https%3A%2F%2Fjwxt.zzu.edu.cn%2Fstudent%2Fsso%2Flogin"
+  ],
+  "maintainers": [
+   "LilyCarry"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4141010459",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ },
+ {
+  "sg_id": "ZZVCAE",
+  "name": "郑州汽车工程职业学院",
+  "province": "",
+  "city": "",
+  "family": "classic_eams",
+  "family_source": "JS 形态判定",
+  "adapters": 1,
+  "categories": [
+   "BACHELOR_AND_ASSOCIATE"
+  ],
+  "sg_import_urls": [
+   "https://cas.zzvcae.edu.cn/cas/login"
+  ],
+  "maintainers": [
+   "Gr11nJ"
+  ],
+  "sleepy_entry_type": null,
+  "sleepy_entry_url": "",
+  "sleepy_status": "pending",
+  "sleepy_catalogId": "moe:4141014813",
+  "sleepy_enableFetch": false,
+  "same_host": false,
+  "action": "目录补 type 后开闸(仅 pending 登记)"
+ }
+]
