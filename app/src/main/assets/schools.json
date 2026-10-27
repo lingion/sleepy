@@ -1831,6 +1831,7 @@
     "name": "南开大学",
     "url": "https://eamis.nankai.edu.cn/",
     "type": "classic_eams",
+    "enableFetch": true,
     "aliases": [],
     "sortKeyFull": "nankaidaxue",
     "catalogId": "N_南开大学"
