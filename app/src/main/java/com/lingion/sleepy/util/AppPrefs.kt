@@ -118,6 +118,7 @@ object AppPrefs {
     const val KEY_UPDATE_NOTICE_DISMISSED_VERSION = "update_notice_dismissed_version" // string — 关闭该版本更新提醒
     const val KEY_HIGH_REFRESH = "high_refresh_rate" // bool default true — 窗口 preferredDisplayModeId 钉屏幕最高刷率(流畅优先); 关=跟随系统省电调度
     const val KEY_NAV_DOCK = "nav_dock" // bool default false — 底栏形态: false=贴底(通栏), true=悬浮药丸(Dock, 底边留距)
+    const val KEY_WEBVIEW_DESKTOP_UA = "webview_desktop_ua" // tri-state bool — 教务 WebView 桌面 UA 用户显式选择; 无记录=从未切换过 (校表白名单初值裁决)
     const val KEY_PERIOD_HEADER_LAYOUT = "period_header_layout" // "legacy" / "three_line", default legacy
     const val KEY_PERIOD_HEADER_STYLE = "period_header_style" // arabic / chinese / financial / circled / roman, default arabic
     const val KEY_PERIOD_HEADER_HANGING = "period_header_hanging" // Float time-width units, -1..1, default 0
@@ -370,6 +371,19 @@ object AppPrefs {
 
     fun setNavDock(ctx: Context, value: Boolean) {
         sp(ctx).edit().putBoolean(KEY_NAV_DOCK, value).apply()
+    }
+
+    /**
+     * 教务 WebView 桌面 UA 用户显式选择 (issue #236, WakeUp is_webview_desktop_mode 同型):
+     * null = 从未切换过 (出厂态, 由校表白名单初值裁决 — ClassicEamsWebVpn.resolveDesktopUaInitial);
+     * 非 null = 用户最后一次显式选择, 跨会话保持 (南开用户手动切回手机态不得被白名单覆回)。
+     */
+    fun getWebviewDesktopUa(ctx: Context): Boolean? =
+        sp(ctx).takeIf { it.contains(KEY_WEBVIEW_DESKTOP_UA) }
+            ?.getBoolean(KEY_WEBVIEW_DESKTOP_UA, false)
+
+    fun setWebviewDesktopUa(ctx: Context, value: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_WEBVIEW_DESKTOP_UA, value).apply()
     }
 
     fun getUpdateNoticeDismissedVersion(ctx: Context): String =
