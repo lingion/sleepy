@@ -28,6 +28,16 @@ object ClassicEamsWebVpn {
     /** URL/表单 frame 指纹 (小写比较)。 */
     val CLASSIC_EAMS_PAGE_ANCHOR = """courseTableForStd"""
 
+    /**
+     * 南开 (issue #236) 自动动线入口页路径 (相对当前文档解析, jxy18100 scrape_now.py +
+     * zawnpn Dart 链双源实测 = 经典 EAMS 课表入口页, 含 addInput ids + semesterCalendar)。
+     * 仅 host 命中 CLASSIC_EAMS_NANKAI_HOST_RE 时启用; NBCC 等其余校零影响。
+     */
+    val CLASSIC_EAMS_ENTRY_PATH = """courseTableForStd.action"""
+
+    /** 南开自动动线 host 判据 (镜像 CLASSIC_EAMS_FETCH_JS 内同名 regex literal)。 */
+    val CLASSIC_EAMS_NANKAI_HOST_RE = """eamis\.nankai\.edu\.cn"""
+
     /** 成功判据 — 响应文本含此串即课表数据到达 (JwClassicEamsParser 状态机同锚)。 */
     val CLASSIC_EAMS_TASK_ACTIVITY_NEEDLE = """new TaskActivity("""
 

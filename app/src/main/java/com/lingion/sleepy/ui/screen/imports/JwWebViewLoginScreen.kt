@@ -1973,8 +1973,8 @@ private const val CLASSIC_EAMS_FETCH_JS = """
   try {
     // ① 定位课表表单上下文: 顶层 document 未命中则遍历同源 iframe (§3.1-①)
     var pageUrl = location.href;
-    function findScope(doc){
-      var texts = [[doc.documentElement.outerHTML, location.href]];
+    function findScope(doc, docUrl){
+      var texts = [[doc.documentElement.outerHTML, docUrl || location.href]];
       var frames = doc.querySelectorAll('iframe,frame');
       for (var i=0;i<frames.length;i++){
         try {
@@ -2002,10 +2002,28 @@ private const val CLASSIC_EAMS_FETCH_JS = """
       return null;
     }
     var scope = findScope(document);
-    if (!scope) {
-      fail('请先在门户进入 教务管理→我的课表 页面后再点导入');
-      return;
+    var entryTried = false;
+    var loginRe = /\/login(\?|$)|\/users\/sign_in/;
+    // ①b 南开自动动线 (issue #236): 未登录 eamis 根返 148 字节桩页 (wusir96 2025-05 实测),
+    //   登录成功也不自动落到课表页 → 停门户无 scope。仅 host 命中 eamis.nankai.edu.cn (含 webvpn
+    //   hex 前缀形态) 时 GET 课表入口页取 scope 重试; 未登录被 302 踢回 /login → loginRe 报
+    //   SESSION_EXPIRED。动线 = jxy18100 scrape_now.py (直接 navigate courseTableForStd.action)
+    //   + zawnpn Dart 链 + liyue983 用户脚本直 GET 三源共识。NBCC 等其余校 host 不命中 → 行为不变。
+    function tryEntryPage(done){
+      if (scope || entryTried || !location.hostname.match(/eamis\.nankai\.edu\.cn/)) { done(); return; }
+      entryTried = true;
+      var entryUrl = new URL('courseTableForStd.action', pageUrl).href;
+      fetch(entryUrl, {credentials:"same-origin", headers:{"X-Requested-With":"XMLHttpRequest"}}).then(function(r){
+        if (loginRe.test(r.url)) { fail('登录态已失效,请在 WebView 内重新登录后再试'); return; }
+        return r.text().then(function(t){
+          var d = document.implementation.createHTMLDocument('');
+          d.documentElement.innerHTML = t;
+          scope = findScope(d, entryUrl);
+          done();
+        });
+      }).catch(function(e){ done(); });
     }
+    function run(){
     // ② 参数提取 (宽松 regex, §4; ids 取不到 → 不猜, 直接 err)
     function pick(re){ var m = scope.match(re); return m ? m[1] : null; }
     var ids = pick(/addInput\(\s*form\s*,\s*["']ids["']\s*,\s*["'](\d+)["']/)
@@ -2030,7 +2048,6 @@ private const val CLASSIC_EAMS_FETCH_JS = """
     cands = cands.slice(0,3);
     // ④ 依序 POST 相对 endpoint (表单所在文档目录解析, 门户 hex 前缀自动保留) + ⑤ 判据链
     var endpoint = new URL('courseTableForStd!courseTable.action', pageUrl).href;
-    var loginRe = /\/login(\?|$)|\/users\/sign_in/;
     function next(i){
       if (i >= cands.length) { fail('教务页未返回课表数据,请在课表页停留后重试'); return; }
       fetch(endpoint, {
@@ -2050,6 +2067,12 @@ private const val CLASSIC_EAMS_FETCH_JS = """
       }).catch(function(e){ fail(String(e)); });
     }
     next(0);
+    }
+    if (scope) run();
+    else tryEntryPage(function(){
+      if (!scope) { fail('请先在门户进入 教务管理→我的课表 页面后再点导入'); return; }
+      run();
+    });
   } catch(err) {
     fail(String(err));
   }
