@@ -24,6 +24,10 @@ import java.net.URL
  * 协议细节(两段 POST、头部、超时 15s、错误文案)与 vendor 逐条对齐;
  * 纯函数层在 WakeUpShareProtocol / WakeUpV6170Crypto, 金标向量锁定。
  * 口令、签名与 token 不落日志。
+ *
+ * 用户入口: 「课表管理 → 添加课表 → 粘贴课表文本」粘贴口令或含「分享口令」的
+ * 分享文案(AddTableScreen.buildImportPreview 的 looksLikeShareCode 窄窗判别);
+ * 外部 app 分享文本经 ImportReceiverActivity(REGISTER text/plain)透传同一通路。
  */
 internal object WakeUpShareClient {
 
