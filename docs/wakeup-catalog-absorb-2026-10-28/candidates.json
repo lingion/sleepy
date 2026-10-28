@@ -1,0 +1,67 @@
+{
+  "campaign": "wakeup-6.6.2-school-catalog-absorb",
+  "date": "2026-10-28",
+  "branch": "feat/wakeup-catalog-absorb",
+  "note": "SOP Step 2 检索矩阵触达登记(与 scope.md 检索矩阵节一一对应)。本战役主源是官方 APK 资产(逆向证据), GitHub 触达为边界交叉验证而非 parser 候选; 全量纳入纪律仍执行, 凡触达必登记, 新增触达必致谢。",
+  "primary_source": {
+    "id": "official-wakeup-6.6.2-apk-asset",
+    "kind": "shipped-catalog",
+    "asset": "school_info_android_new.txt",
+    "path": "docs/wakeup-catalog-absorb-2026-10-28/wakeup-6.6.2-school-info-decrypted.json",
+    "records": 3570,
+    "with_url": 3091,
+    "license": "未找到再分发许可; 仅事实性元数据入目录, 不含应用代码",
+    "credential_material": "AES 常量属逆向互操作证据, 仅存 docs 分析, 永不入 app 管线"
+  },
+  "sources": [
+    {
+      "id": "A",
+      "kind": "github-student-repos",
+      "count": 38,
+      "registration": "docs/history/wakeup-protocols-cross-verify-2026-09-15/candidates.json",
+      "disposition": "38 候选已于 2026-09-15 战役全量派单+全量致谢(实测该文件 candidates 计数 = 38); 本轮无新增协议族, 触达不重派, 登记引用",
+      "attribution": "已落, 无新增"
+    },
+    {
+      "id": "B",
+      "kind": "official-closed-apk",
+      "count": 1,
+      "registration": "docs/wakeup-catalog-absorb-2026-10-28/scope.md 解密定案六段",
+      "disposition": "用户自有 6.6.2 APK = 本轮直接证据源, 解密链六段定案",
+      "attribution": "闭源资产不适用开源致谢; license 口径 factual metadata only 已入 sources metadata"
+    },
+    {
+      "id": "C",
+      "kind": "vendor-server",
+      "count": 1,
+      "registration": "scope.md 装载路径双分支实锤(classes6.dex 982604/988085 区)",
+      "disposition": "api.wakeup.fun 提供同名缓存下载分支; 零凭据接触纪律, 未登录状态下不请求",
+      "attribution": "无代码触达, 不致谢"
+    },
+    {
+      "id": "D",
+      "kind": "competitor-warehouse",
+      "count": 264,
+      "registration": "docs/shiguang-batch-gate-2026-10-27/ + PR#251(main 26c1adbb)",
+      "disposition": "拾光 shiguang_warehouse 264 校战役已吸收; 本轮唯一交集 = sg_asset exact-manifest 判定输入(manifest.json 只读引用), 无新增触达",
+      "attribution": "已落(shiguang_warehouse 条目), 无新增"
+    },
+    {
+      "id": "E",
+      "kind": "boundary-cross-verify",
+      "repo": "Junyxor/LumaSchedule",
+      "url": "https://github.com/Junyxor/LumaSchedule",
+      "license": "Apache-2.0",
+      "archived": false,
+      "pushed_at": "2026-10-27T09:09:21Z",
+      "default_branch": "main",
+      "reach_files": ["scripts/convert-wakeup-school-info.mjs", "scripts/test-wakeup-school-info.mjs", "docs/wakeup-compat.md", "examples/sample-wakeup.json"],
+      "verdict": "其 WakeUp 兼容层只做 profile 与登录元数据迁移, 不复制服务端解析器; 与 Sleepy 吸收管线边界一致",
+      "code_carryover": false,
+      "attribution_required": true,
+      "attribution_landed": ["app/src/main/java/com/lingion/sleepy/ui/screen/mine/LicenseScreen.kt (foundational-lumaschedule)", "app/src/main/res/values*/strings.xml x6 (about_license_body)", "app/src/test/java/com/lingion/sleepy/AboutLicenseAttributionTest.kt (FOUNDATIONAL_ATTRIBUTIONS)"],
+      "prior_registration": "docs/history/new-urp-super-parser-cross-verify-2026-10-07/candidates.json:16443(同仓此前战役已登记 html_url)"
+    }
+  ],
+  "rejection_gate": "SOP 唯一否决 = archived 且 >10 年; 本轮触达源 E 不命中(2026-10-27 仍活跃)"
+}
