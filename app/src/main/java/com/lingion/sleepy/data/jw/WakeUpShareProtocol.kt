@@ -44,6 +44,11 @@ internal object WakeUpShareProtocol {
     )
 
     val V6170 = Constants(
+        // 2026-10-28 对真实服务端活体实测: 6.6.2 版 APK 逆向确认证书未变(signatureMd5 相同)、
+        // signAKey/keySalt 仍明文在 libbaseutil.so rodata(magic 移入 native, JS 层不再显式);
+        // 服务端不校验版本新旧——vc=450 与 vc=552/6.6.2 均返回 errNo=0, 且本常量组完整签名链
+        // 被当前服务端接受(离线逐字节重放 + Kotlin 直连双模式, 见 WakeUpLiveCrossVerifyTest)。
+        // 故不另开 V662 常量组。
         host = "https://api.wakeup.fun",
         antispamPath = "/pluto/app/antispam",
         sharePath = "/share_schedule/getv2",
