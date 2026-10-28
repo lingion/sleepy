@@ -5,14 +5,15 @@
   "statusCounts": {
     "supported": 349,
     "grad_supported": 2,
-    "unverified": 1224,
-    "pending": 2264,
-    "grad_pending": 301
+    "unverified": 1241,
+    "pending": 2247,
+    "grad_pending": 275,
+    "grad_unverified": 26
   },
   "sourceCounts": {
     "official": 3377,
-    "wakeupSchoolSourceRows": 5779,
-    "wakeupExcludedTemplateRows": 44
+    "wakeupSchoolSourceRows": 9327,
+    "wakeupExcludedTemplateRows": 66
   },
   "coverage": {
     "officialMissing": [],
@@ -29,7 +30,7 @@
     },
     {
       "path": "scripts/data/wakeup_school_sources.json",
-      "sha256": "023fdf3405f1243d5659570e4a2de4631578189088d4ced98d9836440f3e35ed"
+      "sha256": "95a65ddc107bd1764531d21b6dc7b8c56e9b9a70d9906fb9bdafb7239836f169"
     },
     {
       "path": "scripts/data/school_catalog_pinyin.json",
@@ -37,7 +38,7 @@
     },
     {
       "path": "scripts/data/school_import_admissions.json",
-      "sha256": "2b69ba2441231dd5730fb264698eb5714606236dbe8feea99516cc524ba79216"
+      "sha256": "e9c7b4ec1070aec215dc1605a2eb98afa2e0d974d5531d7a06b752bc852f2f1a"
     },
     {
       "path": "scripts/data/school_catalog_renames.json",
@@ -45,7 +46,7 @@
     },
     {
       "path": "scripts/data/school_url_evidence.json",
-      "sha256": "f17ff5809985a8473f3ccac3b989515beb583e1d97b4fa9aed97b87a58682b24"
+      "sha256": "4117e391041d2efcf37c39f008d2e9e216134618191935b7c6331001ead551e4"
     },
     {
       "path": "scripts/data/school_catalog_domain_reference.json",
@@ -55,7 +56,7 @@
   "matchingPolicy": "Exact trimmed full names plus reviewed school_catalog_renames.json; no fuzzy aliases or graduate/campus suffix removal. Historical source rows remain independently traceable.",
   "ownershipAudit": {
     "evidenceCounts": {
-      "unknown": 1394,
+      "unknown": 1440,
       "verified": 748,
       "contradicted": 1
     },
@@ -64,9 +65,10 @@
       "ownership-confirmed": 748,
       "retained-wakeup-declared-owner": 591,
       "retained-shiguang-adapters-owner": 55,
-      "withheld-new-unproven-owner": 537,
+      "withheld-new-unproven-owner": 519,
       "retained-shiguang-declared-owner": 42,
-      "withheld-domain-collision": 31,
+      "withheld-domain-collision": 52,
+      "retained-wakeup-662-declared-owner": 43,
       "corrected-official-entry": 1
     },
     "decisions": [
@@ -5418,8 +5420,8 @@
         "catalogId": "moe:4123010214",
         "name": "哈尔滨理工大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "http://202.118.201.228/",
         "authenticatedImportTested": false
       },
       {
@@ -5482,8 +5484,8 @@
         "catalogId": "moe:4123010233",
         "name": "牡丹江师范学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "http://wv.mdjnu.edu.cn/login",
         "authenticatedImportTested": false
       },
       {
@@ -5818,8 +5820,8 @@
         "catalogId": "moe:4131010856",
         "name": "上海工程技术大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://webvpn.sues.edu.cn/https/77726476706e69737468656265737421f3f652d234256d43300d8db9d6562d/cas/login",
         "authenticatedImportTested": false
       },
       {
@@ -6178,8 +6180,8 @@
         "catalogId": "moe:4132013571",
         "name": "无锡太湖学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "http://jwcnew.wxu.edu.cn/jwglxt/xtgl/login_slogin.html",
         "authenticatedImportTested": false
       },
       {
@@ -9114,8 +9116,8 @@
         "catalogId": "moe:4137013624",
         "name": "泰山科技学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://jw.tskjxy.edu.cn/",
         "authenticatedImportTested": false
       },
       {
@@ -10530,8 +10532,8 @@
         "catalogId": "moe:4142010507",
         "name": "湖北中医药大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://jwxt.hbucm.edu.cn/jwglxt/xtgl/login_slogin.html",
         "authenticatedImportTested": false
       },
       {
@@ -10666,8 +10668,8 @@
         "catalogId": "moe:4142011600",
         "name": "湖北经济学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "http://218.197.80.13/jwglxt/xtgl/login_slogin.html",
         "authenticatedImportTested": false
       },
       {
@@ -12562,8 +12564,8 @@
         "catalogId": "moe:4145010594",
         "name": "广西科技大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "http://jwxt.gxust.edu.cn/xtgl/login_slogin.html",
         "authenticatedImportTested": false
       },
       {
@@ -13234,7 +13236,7 @@
         "catalogId": "moe:4150013627",
         "name": "重庆移通学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
+        "action": "withheld-domain-collision",
         "operationalUrl": "",
         "authenticatedImportTested": false
       },
@@ -13722,8 +13724,8 @@
         "catalogId": "moe:4151013903",
         "name": "成都锦城学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://jwweb.cdjcc.edu.cn/default2.aspx",
         "authenticatedImportTested": false
       },
       {
@@ -14346,8 +14348,8 @@
         "catalogId": "moe:4152013650",
         "name": "贵阳信息科技学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://ids.gyiist.edu.cn/",
         "authenticatedImportTested": false
       },
       {
@@ -14650,8 +14652,8 @@
         "catalogId": "moe:4153010691",
         "name": "云南民族大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://i.ymu.edu.cn",
         "authenticatedImportTested": false
       },
       {
@@ -14746,8 +14748,8 @@
         "catalogId": "moe:4153014623",
         "name": "滇西应用技术大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://jwglxt.wyuas.edu.cn/",
         "authenticatedImportTested": false
       },
       {
@@ -15202,8 +15204,8 @@
         "catalogId": "moe:4161013682",
         "name": "西安工商学院",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "http://yitjw.minghuaetc.com/xxgcxy/",
         "authenticatedImportTested": false
       },
       {
@@ -15650,8 +15652,8 @@
         "catalogId": "moe:4164010749",
         "name": "宁夏大学",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://webvpn.nxu.edu.cn/https/77726476706e69737468656265737421f9f352d229287d1e7b0c9ce29b5b/authserver/login",
         "authenticatedImportTested": false
       },
       {
@@ -16015,6 +16017,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "wakeup:3906ef0ca015f317f5be",
+        "name": "安徽医科大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "http://210.45.96.114/pyxx/login.aspx",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "wakeup:e2ed19b4c9090c30af48",
         "name": "安徽师范大学（可切换学期）",
         "ownershipStatus": "unknown",
@@ -16028,6 +16038,14 @@
         "ownershipStatus": "unknown",
         "action": "retained-wakeup-declared-owner",
         "operationalUrl": "https://ids.ahcme.edu.cn/authserver/login",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:7b4329fa8565d3d5886b",
+        "name": "安庆师范大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://yjsxt.aqnu.edu.cn/allogene/login.html",
         "authenticatedImportTested": false
       },
       {
@@ -16063,6 +16081,22 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "wakeup:f12d196fb9969637072b",
+        "name": "北京理工大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "withheld-domain-collision",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:49247d474c0192760c8b",
+        "name": "北京中医药大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "http://202.204.35.224",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "wakeup:7bfc7331de690019c5e9",
         "name": "北海职业学校",
         "ownershipStatus": "unknown",
@@ -16073,6 +16107,14 @@
       {
         "catalogId": "wakeup:b9ec0a40358384d991b3",
         "name": "北京大学医学部",
+        "ownershipStatus": "unknown",
+        "action": "withheld-domain-collision",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:822aeca0f508994abb78",
+        "name": "北京林业大学 - 研究生",
         "ownershipStatus": "unknown",
         "action": "withheld-domain-collision",
         "operationalUrl": "",
@@ -16215,6 +16257,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "wakeup:349167b2378dfd897edd",
+        "name": "重庆理工大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://uis.cqut.edu.cn/unified_identity_logon/",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "wakeup:b3115f85a16825a11fbf",
         "name": "潮州卫生健康职业学院",
         "ownershipStatus": "unknown",
@@ -16255,6 +16305,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "wakeup:cd90142791c462689538",
+        "name": "东南大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "withheld-domain-collision",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "wakeup:06632242ff5077a4e26f",
         "name": "德宏师范高等专科学校",
         "ownershipStatus": "unknown",
@@ -16274,8 +16332,8 @@
         "catalogId": "wakeup:f9d8722fe37c274340a7",
         "name": "佛山职业技术学院（推荐）",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://jwgl.fspt.edu.cn/jsxsd/",
         "authenticatedImportTested": false
       },
       {
@@ -16479,10 +16537,50 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "wakeup:387f1fe2794cf99b406b",
+        "name": "河海大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://yjss.hhu.edu.cn/home/stulogin",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:eb6aa189a98ba7df705d",
+        "name": "湖南工商大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://gmis2.hutb.edu.cn/page/756770/show",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:cfe5d4016483c8a657e2",
+        "name": "华中科技大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://pass.hust.edu.cn/cas/login",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "wakeup:21f0981eb81500b0956e",
         "name": "湖南工艺美术职业学院",
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:b6f08341a87ce4404131",
+        "name": "湖北中医药大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "http://218.197.176.171/home/stulogin",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:f51a1dacaa1a121345f9",
+        "name": "华南农业大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "withheld-domain-collision",
         "operationalUrl": "",
         "authenticatedImportTested": false
       },
@@ -16591,6 +16689,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "wakeup:41229477c3533b9310e4",
+        "name": "江苏大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://pass.ujs.edu.cn/cas/login",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "wakeup:6915a4ac05c535b2fe6c",
         "name": "江苏建筑职业技术学院",
         "ownershipStatus": "unknown",
@@ -16631,11 +16737,27 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "wakeup:78de8220f50da65ec69f",
+        "name": "吉林农业大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://ids.jlau.edu.cn/cas/login",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "wakeup:88e7dca42a77887eaf02",
         "name": "江西外语外贸职业学院",
         "ownershipStatus": "unknown",
         "action": "retained-wakeup-declared-owner",
         "operationalUrl": "https://cas.jxcfs.com/lyuapServer/login",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:50194713d73ed9605ad1",
+        "name": "吉林大学(新)教务管理系统 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://vpn.jlu.edu.cn/login",
         "authenticatedImportTested": false
       },
       {
@@ -16671,6 +16793,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "wakeup:4c728ff95a83c87b1f39",
+        "name": "辽宁中医药大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://yjszs.lnutcm.edu.cn:7777/Gmis/home/stulogin",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "wakeup:2b50ce05f560231dec72",
         "name": "闽江学院",
         "ownershipStatus": "unknown",
@@ -16692,6 +16822,22 @@
         "ownershipStatus": "unknown",
         "action": "retained-wakeup-declared-owner",
         "operationalUrl": "https://imaa.jw.chaoxing.com/admin/login",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:25dcdc83dae5cbf9255e",
+        "name": "南京理工大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "http://gsmis.njust.edu.cn/",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:62bb212d08ca696009ff",
+        "name": "南方医科大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "withheld-domain-collision",
+        "operationalUrl": "",
         "authenticatedImportTested": false
       },
       {
@@ -16719,11 +16865,35 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "wakeup:ed7372c647a6efa16b2f",
+        "name": "南京农业大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "http://myportal.njau.edu.cn/new/index.html",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:934e0183c70c8cfc7c8b",
+        "name": "南京大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "withheld-domain-collision",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "wakeup:fb85d5f96995416e037d",
         "name": "南京森林警察学院",
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:277aad0eb3e7bd8004f6",
+        "name": "南华大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "http://210.43.114.81:8099/home/stulogin",
         "authenticatedImportTested": false
       },
       {
@@ -16743,8 +16913,32 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "wakeup:b7ec94808e126764cc4e",
+        "name": "宁波大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://uis.nbu.edu.cn/authserver/login",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "wakeup:dfbcf808d7904ce5978f",
         "name": "清华大学（反馈群：807321351）",
+        "ownershipStatus": "unknown",
+        "action": "withheld-domain-collision",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:5a13cb94e6c07ace5bd3",
+        "name": "清华大学（反馈群：807321351） - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "withheld-domain-collision",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:864a2a7d581e95436a65",
+        "name": "青岛理工大学 - 研究生",
         "ownershipStatus": "unknown",
         "action": "withheld-domain-collision",
         "operationalUrl": "",
@@ -16823,11 +17017,35 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "wakeup:4fa629ed46d2fc91b38b",
+        "name": "陕西师范大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "http://yjssys.snnu.edu.cn/",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "wakeup:3b1bbf3bc631d8a4e458",
         "name": "上海工程技术大学（自动导入时间）",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://webvpn.sues.edu.cn/https/77726476706e69737468656265737421f3f652d234256d43300d8db9d6562d/cas/login",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:79020be2ed7202f0c3a3",
+        "name": "四川大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "withheld-domain-collision",
         "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:06fa413ca9142bc7e831",
+        "name": "三峡大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "http://yjsgl.ctgu.edu.cn/gmis5/home/stulogin",
         "authenticatedImportTested": false
       },
       {
@@ -16871,11 +17089,27 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "wakeup:611c37ba5c0b417b6013",
+        "name": "上海大学（2024新版） - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "withheld-domain-collision",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "wakeup:c119f4e3168aaa882edf",
         "name": "四川省会理现代职业技术学校",
         "ownershipStatus": "unknown",
         "action": "retained-wakeup-declared-owner",
         "operationalUrl": "https://schlzxjw.yinghuaonline.com/hlxxdzyjsxy/",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:6156b8caaa4c572b137f",
+        "name": "石河子大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "withheld-domain-collision",
+        "operationalUrl": "",
         "authenticatedImportTested": false
       },
       {
@@ -16887,11 +17121,27 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "wakeup:b3d6def48a8b60f9ae40",
+        "name": "苏州大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://yjs.suda.edu.cn/",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "wakeup:b573cab1a43f801b2af9",
         "name": "绍兴文理学院",
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:749d7231c55fa0faa751",
+        "name": "天津理工大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://authserver.tjut.edu.cn/authserver/login",
         "authenticatedImportTested": false
       },
       {
@@ -16924,6 +17174,14 @@
         "ownershipStatus": "unknown",
         "action": "retained-wakeup-declared-owner",
         "operationalUrl": "https://trzy.jw.chaoxing.com/admin/login",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:1f433f9b1c8138ac5a16",
+        "name": "武汉轻工大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "withheld-domain-collision",
+        "operationalUrl": "",
         "authenticatedImportTested": false
       },
       {
@@ -17031,10 +17289,42 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "wakeup:11421ef3c64e8d25f8b3",
+        "name": "中国矿业大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "withheld-domain-collision",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:b0a40095c332178c36fc",
+        "name": "新疆大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "withheld-domain-collision",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:875af9326a601a689c36",
+        "name": "西北工业大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://ecampus.nwpu.edu.cn/main.html",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "wakeup:06aa768f38c367d88c30",
         "name": "杨凌职业技术学院",
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:09c98ee8bdb288b7119b",
+        "name": "延边大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "withheld-domain-collision",
         "operationalUrl": "",
         "authenticatedImportTested": false
       },
@@ -17050,8 +17340,8 @@
         "catalogId": "wakeup:27c517c10f629d797f82",
         "name": "烟台大学（从选课结果导入！）",
         "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://cas.ytu.edu.cn/lyuapServer/login",
         "authenticatedImportTested": false
       },
       {
@@ -17111,6 +17401,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "wakeup:ca2a1087f1c35dff7dde",
+        "name": "云南师范大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://yjsms.ynnu.edu.cn/home/login",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "wakeup:f549c13f5c43977595af",
         "name": "云南大学旅游文化学院",
         "ownershipStatus": "verified",
@@ -17159,6 +17457,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "wakeup:527809b806139fffbd5f",
+        "name": "中国药科大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "withheld-domain-collision",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "wakeup:5a59919166d65ec851dc",
         "name": "肇庆医学高等专科学校",
         "ownershipStatus": "verified",
@@ -17167,10 +17473,50 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "wakeup:742976123e214f338f08",
+        "name": "中国科学院大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "withheld-domain-collision",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:c5ed8c7154af5144173c",
+        "name": "中国石油大学（华东） - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://cas.upc.edu.cn/cas/login",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:10836e81a47bf390d43d",
+        "name": "中国矿业大学（北京） - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "withheld-domain-collision",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:b4dd3b4a8581586e32fb",
+        "name": "中国地质大学（武汉） - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "http://epo.cug.edu.cn/",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "wakeup:f8f52b817aff3c164e58",
         "name": "郑州铁路职业技术学院",
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:0fc2c087281cc4ccfb08",
+        "name": "中国农业大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "withheld-domain-collision",
         "operationalUrl": "",
         "authenticatedImportTested": false
       },
@@ -17191,6 +17537,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "wakeup:207f7c1d842636e1e5a6",
+        "name": "中央财经大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "https://authserver.cufe.edu.cn/authserver/login",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "wakeup:8b9f605b579e47335bbe",
         "name": "中国石油大学（北京）克拉玛依校区",
         "ownershipStatus": "unknown",
@@ -17204,6 +17558,22 @@
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:07d74411af04d7ef8993",
+        "name": "中国人民大学 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "withheld-domain-collision",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:0e033a17f0ecbedf0c5d",
+        "name": "中原工学院 - 研究生",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-662-declared-owner",
+        "operationalUrl": "http://i.zut.edu.cn/new/index.html",
         "authenticatedImportTested": false
       },
       {

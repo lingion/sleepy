@@ -2400,6 +2400,34 @@
     "ownershipAction": "retained-wakeup-declared-owner"
   },
   {
+    "catalogId": "moe:4131010856",
+    "name": "上海工程技术大学",
+    "url": "https://webvpn.sues.edu.cn/https/77726476706e69737468656265737421f3f652d234256d43300d8db9d6562d/cas/login",
+    "type": "shuwei_json",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 1792,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "统一身份认证登录",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:3b1bbf3bc631d8a4e458",
+    "name": "上海工程技术大学（自动导入时间）",
+    "url": "https://webvpn.sues.edu.cn/https/77726476706e69737468656265737421f3f652d234256d43300d8db9d6562d/cas/login",
+    "type": "eams5",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 1793,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "统一身份认证登录",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
     "catalogId": "moe:4131012588",
     "name": "上海工艺美术职业学院",
     "url": "https://authserver.sada.edu.cn/authserver/login",
@@ -3334,6 +3362,20 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4153010691",
+    "name": "云南民族大学",
+    "url": "https://i.ymu.edu.cn",
+    "type": "cumtb",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 1155,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
     "catalogId": "moe:4153014675",
     "name": "云南理工职业学院",
     "url": "https://jwxt.ynjgy.edu.cn/ynlgzyxy_jsxsd/",
@@ -3564,6 +3606,22 @@
     ],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "retained-wakeup-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:f9d8722fe37c274340a7",
+    "name": "佛山职业技术学院（推荐）",
+    "url": "https://jwgl.fspt.edu.cn/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 236,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "佛山职业技术学院综合教务管理系统-强智科技",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
   },
   {
     "catalogId": "moe:4141011326",
@@ -5454,6 +5512,20 @@
     "ownershipAction": "retained-wakeup-declared-owner"
   },
   {
+    "catalogId": "moe:4123010214",
+    "name": "哈尔滨理工大学",
+    "url": "http://202.118.201.228/",
+    "type": "umooc",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 402,
+    "checkedAt": "2026-10-28",
+    "http": 0,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
     "catalogId": "moe:4113012787",
     "name": "唐山工业职业技术大学",
     "url": "http://authserver.tsgzy.edu.cn/authserver/login",
@@ -6550,6 +6622,20 @@
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "retained-wakeup-declared-owner"
+  },
+  {
+    "catalogId": "moe:4164010749",
+    "name": "宁夏大学",
+    "url": "https://webvpn.nxu.edu.cn/https/77726476706e69737468656265737421f9f352d229287d1e7b0c9ce29b5b/authserver/login",
+    "type": "ecupl",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 764,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "宁夏大学统一身份认证平台",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
   },
   {
     "catalogId": "moe:4164010752",
@@ -8879,6 +8965,22 @@
     "ownershipAction": "retained-wakeup-declared-owner"
   },
   {
+    "catalogId": "moe:4145010594",
+    "name": "广西科技大学",
+    "url": "http://jwxt.gxust.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 328,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
     "catalogId": "moe:4145011548",
     "name": "广西财经学院",
     "url": "https://jwglxt.gxufe.edu.cn/cas/login.action",
@@ -9273,6 +9375,22 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4151013903",
+    "name": "成都锦城学院",
+    "url": "https://jwweb.cdjcc.edu.cn/default2.aspx",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2232,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "欢迎使用正方教务管理系统！请登录",
+    "fingerprints": [
+      "zf"
+    ],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
     "catalogId": "moe:4132011117",
     "name": "扬州大学",
     "url": "https://sso.yzu.edu.cn/login",
@@ -9549,6 +9667,22 @@
     ],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "retained-wakeup-declared-owner"
+  },
+  {
+    "catalogId": "moe:4132013571",
+    "name": "无锡太湖学院",
+    "url": "http://jwcnew.wxu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 1027,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "教务管理系统",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
   },
   {
     "catalogId": "moe:4132012702",
@@ -12207,6 +12341,22 @@
     "ownershipAction": "retained-wakeup-declared-owner"
   },
   {
+    "catalogId": "moe:4137013624",
+    "name": "泰山科技学院",
+    "url": "https://jw.tskjxy.edu.cn/",
+    "type": "zf_new",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 1626,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
     "catalogId": "moe:4132012917",
     "name": "泰州学院",
     "url": "https://ems.tzu.edu.cn/cas/login.action",
@@ -13037,6 +13187,22 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4142010507",
+    "name": "湖北中医药大学",
+    "url": "https://jwxt.hbucm.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 470,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
     "catalogId": "moe:4142013250",
     "name": "湖北恩施学院",
     "url": "http://mh.hbesxy.net:81/cas/login",
@@ -13153,6 +13319,22 @@
     ],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "retained-wakeup-declared-owner"
+  },
+  {
+    "catalogId": "moe:4142011600",
+    "name": "湖北经济学院",
+    "url": "http://218.197.80.13/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 488,
+    "checkedAt": "2026-10-28",
+    "http": 0,
+    "title": "",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
   },
   {
     "catalogId": "moe:4143010541",
@@ -13629,6 +13811,23 @@
     "ownershipAction": "retained-wakeup-declared-owner"
   },
   {
+    "catalogId": "moe:4153014623",
+    "name": "滇西应用技术大学",
+    "url": "https://jwglxt.wyuas.edu.cn/",
+    "type": "qz",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 231,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "zf_new",
+      "qz"
+    ],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
     "catalogId": "moe:4137013388",
     "name": "潍坊工商职业学院",
     "url": "http://221.1.106.78:8081/",
@@ -13683,6 +13882,20 @@
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "retained-wakeup-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:27c517c10f629d797f82",
+    "name": "烟台大学（从选课结果导入！）",
+    "url": "https://cas.ytu.edu.cn/lyuapServer/login",
+    "type": "urp_new",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 1168,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "办事服务大厅",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
   },
   {
     "catalogId": "moe:4137014811",
@@ -13901,6 +14114,20 @@
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "ownership-confirmed"
+  },
+  {
+    "catalogId": "moe:4123010233",
+    "name": "牡丹江师范学院",
+    "url": "http://wv.mdjnu.edu.cn/login",
+    "type": "kingo_new",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 698,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "牡丹江师范学院WEBVPN",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
   },
   {
     "catalogId": "moe:4162012835",
@@ -14878,6 +15105,20 @@
     "ownershipAction": "ownership-confirmed"
   },
   {
+    "catalogId": "moe:4161013682",
+    "name": "西安工商学院",
+    "url": "http://yitjw.minghuaetc.com/xxgcxy/",
+    "type": "qz",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 1458,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "审核中 | Reviewing",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
     "catalogId": "moe:4161013679",
     "name": "西安建筑科技大学华清学院",
     "url": "https://open.xauat-hqc.com/auth/oauth/authorize",
@@ -15238,6 +15479,20 @@
     "fingerprints": [],
     "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
     "ownershipAction": "retained-wakeup-declared-owner"
+  },
+  {
+    "catalogId": "moe:4152013650",
+    "name": "贵阳信息科技学院",
+    "url": "https://ids.gyiist.edu.cn/",
+    "type": "zf_new",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 1584,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "统一身份认证登录",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
   },
   {
     "catalogId": "moe:4152013648",
@@ -17858,5 +18113,369 @@
     "fingerprints": [],
     "limitation": "Third-party ShiGuang adapter declaration; entry page confirmed live with HTTP 200 on 2026-10-27; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
     "ownershipAction": "retained-shiguang-adapters-owner"
+  },
+  {
+    "catalogId": "wakeup:3906ef0ca015f317f5be",
+    "name": "安徽医科大学 - 研究生",
+    "url": "http://210.45.96.114/pyxx/login.aspx",
+    "type": "suda_post",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 31,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "安徽医科大学\r\n\t—研究生管理信息系统",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:7b4329fa8565d3d5886b",
+    "name": "安庆师范大学 - 研究生",
+    "url": "https://yjsxt.aqnu.edu.cn/allogene/login.html",
+    "type": "cumtb",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 57,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "Document",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:49247d474c0192760c8b",
+    "name": "北京中医药大学 - 研究生",
+    "url": "http://202.204.35.224",
+    "type": "xju_post",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 195,
+    "checkedAt": "2026-10-28",
+    "http": 0,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:349167b2378dfd897edd",
+    "name": "重庆理工大学 - 研究生",
+    "url": "https://uis.cqut.edu.cn/unified_identity_logon/",
+    "type": "south_soft",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 378,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:387f1fe2794cf99b406b",
+    "name": "河海大学 - 研究生",
+    "url": "https://yjss.hhu.edu.cn/home/stulogin",
+    "type": "south_soft",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 1108,
+    "checkedAt": "2026-10-28",
+    "http": 302,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:eb6aa189a98ba7df705d",
+    "name": "湖南工商大学 - 研究生",
+    "url": "https://gmis2.hutb.edu.cn/page/756770/show",
+    "type": "suda_post",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 1153,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "登录页",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:cfe5d4016483c8a657e2",
+    "name": "华中科技大学 - 研究生",
+    "url": "https://pass.hust.edu.cn/cas/login",
+    "type": "xju_post",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 1155,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "智慧华中大 | 统一身份认证系统",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:b6f08341a87ce4404131",
+    "name": "湖北中医药大学 - 研究生",
+    "url": "http://218.197.176.171/home/stulogin",
+    "type": "south_soft",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 1162,
+    "checkedAt": "2026-10-28",
+    "http": 0,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:41229477c3533b9310e4",
+    "name": "江苏大学 - 研究生",
+    "url": "https://pass.ujs.edu.cn/cas/login",
+    "type": "suda_post",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 1536,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "统一身份认证 统一身份认证 扫码登录",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:78de8220f50da65ec69f",
+    "name": "吉林农业大学 - 研究生",
+    "url": "https://ids.jlau.edu.cn/cas/login",
+    "type": "xju_post",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 1689,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "统一身份认证及授权访问平台",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:50194713d73ed9605ad1",
+    "name": "吉林大学(新)教务管理系统 - 研究生",
+    "url": "https://vpn.jlu.edu.cn/login",
+    "type": "qz",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 1706,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "网页版VPN系统",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:4c728ff95a83c87b1f39",
+    "name": "辽宁中医药大学 - 研究生",
+    "url": "https://yjszs.lnutcm.edu.cn:7777/Gmis/home/stulogin",
+    "type": "south_soft",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 1880,
+    "checkedAt": "2026-10-28",
+    "http": 302,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:25dcdc83dae5cbf9255e",
+    "name": "南京理工大学 - 研究生",
+    "url": "http://gsmis.njust.edu.cn/",
+    "type": "xju_post",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 1966,
+    "checkedAt": "2026-10-28",
+    "http": 412,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:ed7372c647a6efa16b2f",
+    "name": "南京农业大学 - 研究生",
+    "url": "http://myportal.njau.edu.cn/new/index.html",
+    "type": "qz",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 2036,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:277aad0eb3e7bd8004f6",
+    "name": "南华大学 - 研究生",
+    "url": "http://210.43.114.81:8099/home/stulogin",
+    "type": "suda_post",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 2062,
+    "checkedAt": "2026-10-28",
+    "http": 302,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:b7ec94808e126764cc4e",
+    "name": "宁波大学 - 研究生",
+    "url": "https://uis.nbu.edu.cn/authserver/login",
+    "type": "qz",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 2094,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "统一身份认证平台",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:4fa629ed46d2fc91b38b",
+    "name": "陕西师范大学 - 研究生",
+    "url": "http://yjssys.snnu.edu.cn/",
+    "type": "xju_post",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 2446,
+    "checkedAt": "2026-10-28",
+    "http": 0,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:06fa413ca9142bc7e831",
+    "name": "三峡大学 - 研究生",
+    "url": "http://yjsgl.ctgu.edu.cn/gmis5/home/stulogin",
+    "type": "south_soft",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 2509,
+    "checkedAt": "2026-10-28",
+    "http": 0,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:b3d6def48a8b60f9ae40",
+    "name": "苏州大学 - 研究生",
+    "url": "https://yjs.suda.edu.cn/",
+    "type": "south_soft",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 2681,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "研究生院",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:749d7231c55fa0faa751",
+    "name": "天津理工大学 - 研究生",
+    "url": "https://authserver.tjut.edu.cn/authserver/login",
+    "type": "suda_post",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 2711,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "统一身份认证平台",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:875af9326a601a689c36",
+    "name": "西北工业大学 - 研究生",
+    "url": "https://ecampus.nwpu.edu.cn/main.html",
+    "type": "nwpu_post",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 3145,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "翱翔门户",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:ca2a1087f1c35dff7dde",
+    "name": "云南师范大学 - 研究生",
+    "url": "https://yjsms.ynnu.edu.cn/home/login",
+    "type": "south_soft",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 3203,
+    "checkedAt": "2026-10-28",
+    "http": 302,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:c5ed8c7154af5144173c",
+    "name": "中国石油大学（华东） - 研究生",
+    "url": "https://cas.upc.edu.cn/cas/login",
+    "type": "xju_post",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 3401,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "CAS Login",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:b4dd3b4a8581586e32fb",
+    "name": "中国地质大学（武汉） - 研究生",
+    "url": "http://epo.cug.edu.cn/",
+    "type": "xju_post",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 3403,
+    "checkedAt": "2026-10-28",
+    "http": 0,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:207f7c1d842636e1e5a6",
+    "name": "中央财经大学 - 研究生",
+    "url": "https://authserver.cufe.edu.cn/authserver/login",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 3461,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "统一身份认证平台",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
+  },
+  {
+    "catalogId": "wakeup:0e033a17f0ecbedf0c5d",
+    "name": "中原工学院 - 研究生",
+    "url": "http://i.zut.edu.cn/new/index.html",
+    "type": "qz",
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 3496,
+    "checkedAt": "2026-10-28",
+    "http": 200,
+    "title": "",
+    "fingerprints": [],
+    "limitation": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "ownershipAction": "retained-wakeup-662-declared-owner"
   }
 ]
