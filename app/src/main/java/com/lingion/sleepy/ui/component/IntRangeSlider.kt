@@ -1,23 +1,34 @@
 package com.lingion.sleepy.ui.component
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RangeSlider
+import androidx.compose.material3.RangeSliderState
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -41,6 +52,12 @@ import kotlinx.coroutines.launch
  * 每帧 = 绝对冻结; Initial pass 拦纵向占优帧 = 滑块 Y 免疫。旧版"逐帧主轴裁决、
  * 横向帧放行给页面 + 拖动接管后静默"仍让斜拖帧的 Y 分量漏给外层列表 → 页面被
  * 带动, 与"摸到即全局冻住"不符, 已废弃。
+ *
+ * 原位置幽灵占位 (需求 2026-10-28): initialStart/initialEnd 传"打开页面时的初值
+ * 区间"时, 当前显示区间一旦拖离初值 (任一端不同), 轨道上叠一条浅色幽灵 — 初值
+ * 区间的轨道段 + 两端点细条, 提示"原来的范围是什么"; 拖回初值区间即重合不画;
+ * 初值传 null (新建课程/新时段) 永不画。幽灵是纯装饰 Canvas, 不吃手势、不进语义。
+ * 保存后离页重进即初值刷新, 幽灵自然消失, 无需额外基线管理。
  */
 @Composable
 fun IntRangeSlider(
@@ -52,6 +69,8 @@ fun IntRangeSlider(
     onValueChange: (start: Int, end: Int) -> Unit,
     modifier: Modifier = Modifier,
     label: String? = null,
+    initialStart: Int? = null,
+    initialEnd: Int? = null,
 ) {
     val colors = MaterialTheme.colorScheme
     // 只有一个可选档位 (maxStd=1 的作息表) — 滑杆两端点重合无意义, 退化成静态读数;
@@ -59,6 +78,22 @@ fun IntRangeSlider(
     val hasTwoStops = maxValue >= minValue + 1
     val displayStart = startValue.coerceIn(minValue, maxValue)
     val displayEnd = endValue.coerceIn(displayStart, maxValue)
+    // 幽灵坐标与可见性共用同一对夹取后的初值读数 (夹取规则与 displayStart/displayEnd
+    // 完全同构, 见 sliderGhostVisible 的 KDoc) — 脏数据不会画出与摘要矛盾的幽灵
+    val ghostVisible = sliderGhostVisible(
+        currentStart = displayStart,
+        currentEnd = displayEnd,
+        initialStart = initialStart,
+        initialEnd = initialEnd,
+        minValue = minValue,
+        maxValue = maxValue,
+    )
+    val ghostRange: IntRange? = if (ghostVisible && initialStart != null && initialEnd != null) {
+        val os = initialStart.coerceIn(minValue, maxValue)
+        os..initialEnd.coerceIn(os, maxValue)
+    } else {
+        null
+    }
     Column(
         modifier = (if (hasTwoStops) modifier.sliderFreezePageScroll() else modifier)
             .fillMaxWidth(),
@@ -83,21 +118,127 @@ fun IntRangeSlider(
             )
         }
         if (hasTwoStops) {
+            // 值域版 RangeSlider 重载没有 track 插槽 (且已弃用, ReplaceWith 指向此
+            // 状态版), 幽灵只能画进状态版的 track lambda — 与真轨道同盒同坐标。
+            // 控制形态照抄 material3 值域重载内部实现 (Slider.kt: 建 state 后每
+            // 组合写回 value, 拖动经 onValueChange 冒给调用方再回流)
+            val trackRange = minValue.toFloat()..maxValue.toFloat()
+            // stops = maxValue-minValue+1, 内部档位 = stops-2 (两端点之外)
+            val steps = maxValue - minValue - 1
+            val sliderState = remember(steps, trackRange) {
+                RangeSliderState(
+                    startValue = displayStart.toFloat(),
+                    endValue = displayEnd.toFloat(),
+                    steps = steps,
+                    trackRange = trackRange,
+                )
+            }
+            sliderState.startValue = displayStart.toFloat()
+            sliderState.endValue = displayEnd.toFloat()
             RangeSlider(
-                value = displayStart.toFloat()..displayEnd.toFloat(),
+                state = sliderState,
                 onValueChange = { range ->
                     val snapped = snapRangeToInt(range, minValue, maxValue)
                     onValueChange(snapped.first, snapped.second)
                 },
-                valueRange = minValue.toFloat()..maxValue.toFloat(),
-                // stops = maxValue-minValue+1, 内部档位 = stops-2 (两端点之外)
-                steps = maxValue - minValue - 1,
                 modifier = Modifier
                     .fillMaxWidth()
                     .semantics { contentDescription = if (label != null) "$label $summary" else summary },
+                track = { rangeSliderState ->
+                    // contentAlignment=Center: 真轨道 (16dp) 在盒内垂直居中, 幽灵
+                    // Canvas 撑满 thumb 全高 (44dp) — 盒高变化不移动真轨道视觉位置
+                    // (sliderHeight 本就由 44dp thumb 主导, trackOffsetY 同步抵消)
+                    Box(contentAlignment = Alignment.Center) {
+                        SliderDefaults.Track(
+                            rangeSliderState = rangeSliderState,
+                        )
+                        if (ghostRange != null) {
+                            val primary = colors.primary
+                            val ghostStart = ghostRange.first
+                            val ghostEnd = ghostRange.last
+                            Canvas(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(44.dp)
+                                    .testTag("slider-ghost"),
+                            ) {
+                                // 1:1 复刻真滑杆形态 (material3 SliderTokens 实测):
+                                // 真 thumb = HandleWidth 4dp x HandleHeight 44dp 全圆
+                                // 胶囊 (HandleShape=CornerFull), 真轨道 = 16dp 高胶囊
+                                // 垂直居中。幽灵 = 同款几何只降透明度。Canvas 宽 = 轨道
+                                // 盒宽 (与真轨道同坐标系), 高 = 44dp; 轨道段画在中部
+                                // 16dp 带内, 端条画满全高 — 与真 thumb 逐像素同形。
+                                // x 映射 = drawTrack 同款: 档位轨道两端各缩进 corner
+                                // (轨道高/2), 端点档 (frac==0/1) 走全宽线性;
+                                // RTL 按 drawTrack 的端点翻转镜像
+                                val trackH = 16.dp.toPx()
+                                val corner = trackH / 2f
+                                val trackTop = (size.height - trackH) / 2f
+                                val isRtl = layoutDirection == LayoutDirection.Rtl
+                                fun ghostX(value: Int): Float {
+                                    val frac = (value - minValue).toFloat() / (maxValue - minValue)
+                                    val f = if (isRtl) 1f - frac else frac
+                                    return if (steps > 0 && f != 0f && f != 1f) {
+                                        corner + (size.width - 2f * corner) * f
+                                    } else {
+                                        size.width * f
+                                    }
+                                }
+                                val g1 = ghostX(ghostStart)
+                                val g2 = ghostX(ghostEnd)
+                                val left = minOf(g1, g2)
+                                val right = maxOf(g1, g2)
+                                // 幽灵轨道段: 浅色胶囊, 与真轨道同高 (16dp) 同垂直位
+                                if (right - left >= 1f) {
+                                    drawRoundRect(
+                                        color = primary.copy(alpha = 0.25f),
+                                        topLeft = Offset(left, trackTop),
+                                        size = Size(right - left, trackH),
+                                        cornerRadius = CornerRadius(corner, corner),
+                                    )
+                                }
+                                // 两端条: 真 thumb 的 1:1 复刻 — 4dp 宽 x 44dp 全高
+                                // 全圆胶囊 (CornerFull), 只是半透明
+                                val barW = 4.dp.toPx()
+                                for (gx in floatArrayOf(g1, g2)) {
+                                    drawRoundRect(
+                                        color = primary.copy(alpha = 0.40f),
+                                        topLeft = Offset(gx - barW / 2f, 0f),
+                                        size = Size(barW, size.height),
+                                        cornerRadius = CornerRadius(barW / 2f, barW / 2f),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                },
             )
         }
     }
+}
+
+/**
+ * 原位置幽灵是否可见 (纯函数, 单测 IntRangeSliderGhostTest 锁定的就是它;
+ * 组件内联同款夹取+比较, 二者语义必须一致):
+ * - 初值任一为 null (新建路径无原值) → 永不可见;
+ * - 初值按显示口径同构夹取 (os = initialStart.coerceIn(min, max);
+ *   oe = initialEnd.coerceIn(os, max) — 交叉脏数据先夹起点再夹终点, 与
+ *   displayEnd.coerceIn(displayStart, maxValue) 一致);
+ * - 夹取后 (os, oe) 与当前显示区间完全重合 (未拖动或拖回原位) → 不可见;
+ * - 其余 (部分重叠也算拖离) → 可见。
+ */
+internal fun sliderGhostVisible(
+    currentStart: Int,
+    currentEnd: Int,
+    initialStart: Int?,
+    initialEnd: Int?,
+    minValue: Int,
+    maxValue: Int,
+): Boolean {
+    if (initialStart == null || initialEnd == null) return false
+    val os = initialStart.coerceIn(minValue, maxValue)
+    val oe = initialEnd.coerceIn(os, maxValue)
+    return os != currentStart || oe != currentEnd
 }
 
 /**

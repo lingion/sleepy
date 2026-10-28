@@ -146,7 +146,15 @@ internal class MeetingBlockDraft(
     note: String = "",
     color: String = "",
     colorMode: Int = com.lingion.sleepy.data.entity.CourseColorMode.GROUP,
-    val fixedDate: String? = null
+    val fixedDate: String? = null,
+    /** 滑杆原位置幽灵占位 (需求 2026-10-28): 打开页面时的原值快照, val 不可变、
+     *  不随拖动更新 — 与上面被 mutableStateOf 遮蔽的可变参数区分。新卡/新建不传
+     *  (null = 无原值 = 永不画幽灵); 构造默认值 (step=2、1..16 周) 属"新默认",
+     *  不是原值, 所以这里必须保持 null 而不是镜像那些默认。 */
+    val initialStartNode: Int? = null,
+    val initialStep: Int? = null,
+    val initialStartWeek: Int? = null,
+    val initialEndWeek: Int? = null,
 ) {
     var startNode by mutableStateOf(startNode)
     var step by mutableStateOf(step)
@@ -319,7 +327,11 @@ fun AddCourseScreen(
                         note = first.note,
                         color = first.color,
                         fixedDate = first.fixedDate,
-                        colorMode = first.colorMode
+                        colorMode = first.colorMode,
+                        initialStartNode = first.startNode,
+                        initialStep = first.step,
+                        initialStartWeek = first.startWeek,
+                        initialEndWeek = first.endWeek,
                     ))
                     // §2.4: 覆盖时间的卡补派生时长文本
                     val b = meetingBlocks.last()
@@ -626,6 +638,10 @@ fun AddCourseScreen(
                         startValue = weekShownStart,
                         endValue = weekShownEnd,
                         onValueChange = { s, e -> startWeek = s; endWeek = e },
+                        // 幽灵基线: 编辑既有课 = 打开页面时的课程周次; 新建 (editingCourse
+                        // null) 无原值, initial 保持 null → 永不画幽灵
+                        initialStart = editingCourse?.startWeek,
+                        initialEnd = editingCourse?.endWeek,
                         modifier = Modifier.padding(top = 8.dp),
                     )
                     // 显式应用 — 不再隐式下发，由用户一键覆盖所有时段
@@ -853,7 +869,11 @@ private fun initialMeetingBlock(course: CourseEntity?): MeetingBlockDraft {
         note = course.note,
         color = course.color,
         fixedDate = course.fixedDate,
-        colorMode = course.colorMode
+        colorMode = course.colorMode,
+        initialStartNode = course.startNode,
+        initialStep = course.step,
+        initialStartWeek = course.startWeek,
+        initialEndWeek = course.endWeek,
     )
 }
 
@@ -1183,6 +1203,14 @@ private fun MeetingBlockEditor(
                     block.startNode = s
                     block.step = e - s + 1
                 },
+                // 幽灵基线: 原节次区间按显示口径 startNode..startNode+step-1 换算;
+                // 两值皆非 null (编辑既有组/单卡) 才有基线, 新卡 null → 无幽灵
+                initialStart = block.initialStartNode,
+                initialEnd = if (block.initialStartNode != null && block.initialStep != null) {
+                    block.initialStartNode + block.initialStep - 1
+                } else {
+                    null
+                },
                 modifier = Modifier.padding(top = 4.dp),
             )
         }
@@ -1215,6 +1243,9 @@ private fun MeetingBlockEditor(
             startValue = blockWeekStart,
             endValue = blockWeekEnd,
             onValueChange = { s, e -> block.startWeek = s; block.endWeek = e },
+            // 幽灵基线: 本卡打开页面时的周次 (新卡 null → 无幽灵)
+            initialStart = block.initialStartWeek,
+            initialEnd = block.initialEndWeek,
             modifier = Modifier.padding(top = 4.dp),
         )
         // 单双周 + 按周次 — 4 态 SegmentedSwitcher
