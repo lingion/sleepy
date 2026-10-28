@@ -105,7 +105,9 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
      * 保留原签名 suspend fun parseHtml(html, protocolType): List<JwCourse> 不变（T9 依赖）。
      */
     suspend fun parseHtml(html: String, protocolType: String): List<JwCourse> = withContext(Dispatchers.IO) {
-        if (protocolType.isBlank()) {
+        // jw_home = 登记型（URL 可信、无服务端协议指纹）: 与空白协议同处理,
+        // 登录后按实际页面自动检测已收录协议（selectBest run-all）。
+        if (isAutoDetectProtocol(protocolType)) {
             val (result, attempts) = JwParserRegistry.selectBest(html, declaredType = null)
             lastAttempts = attempts
             lastDiagAttempts = attempts.map {
@@ -255,6 +257,13 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
         }
 
         /**
+         * 空白协议与 jw_home 登记型走同一条自动检测通路（run-all selectBest）。
+         * 纯函数便于 JVM 测试直接锁行为，parseHtml 与测试共用此谓词。
+         */
+        internal fun isAutoDetectProtocol(protocolType: String): Boolean =
+            protocolType.isBlank() || protocolType == JwProtocol.TYPE_JW_HOME
+
+        /**
          * T8 核心：显式分发的纯函数形式（不依赖 Android Context / Room）。
          */
         internal fun parseHtmlStatic(
@@ -376,6 +385,10 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                         || u.matches(Regex(""".*/jxd(/|$).*"""))
                         || u.contains("logon.do")
                         || u.contains("verifycode.servlet") -> JwProtocol.TYPE_QZ
+                    // 超星泛雅按校租户域: /http/<hex>/ 重写后原 host 以明文留在 path,
+                    // 子串锚仍可靠(2026-10-28 WakeUP 6.6.2 调查, GitHub 交叉验证)
+                    u.contains(".jw.chaoxing.com")
+                        || u.contains(".fanya.chaoxing.com") -> JwProtocol.TYPE_CHAOXING
                     u.contains("xkaction.do")
                         || u.contains("actiontype=6") -> JwProtocol.TYPE_URP
                     u.contains("thissemestercurriculum")
@@ -475,11 +488,18 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
             // ⑦a CF_NEW — 新青果 NTSS (FullCalendar 形态): /new/student/xsgrkb 唯一路径锚点
             u.contains("/new/student/xsgrkb") -> JwProtocol.TYPE_CF_NEW
 
-            // ⑦b CHAOXING — 超星综合教务 (xsd=学生端 path, queryKbForGrdb 个人课表接口)
+            // ⑦b CHAOXING — 超星综合教务 (xsd=学生端 path, queryKbForGrdb 个人课表接口;
+            //     *.jw.chaoxing.com / *.fanya.chaoxing.com = 泛雅按校租户生产入口,
+            //     2026-10-28 WakeUP 6.6.2 调查 GitHub 交叉验证: hbut.jw.chaoxing.com 等
+            //     9+ 学生仓库同端点; dump 实测 125 行 jw 租户 + 1 行 fanya 租户全带学校前缀子域。
+            //     带前导点防裸域与反向拼接: "jw.chaoxing.com".contains(".jw.chaoxing.com")=false,
+            //     "notjw.chaoxing.com"/"mirrorjw.chaoxing.com.net" 同理不误命中)
             u.matches(Regex(".*/xsd(/|$).*"))
                 || u.contains("/xsd/pkgl/")
                 || u.contains("querykbforgrdb")
-                || u.contains("sdpkkblist") -> JwProtocol.TYPE_CHAOXING
+                || u.contains("sdpkkblist")
+                || u.contains(".jw.chaoxing.com")
+                || u.contains(".fanya.chaoxing.com") -> JwProtocol.TYPE_CHAOXING
 
             // ⑧ PKU — 北大 IAAA / elective
             u.contains("elective.pku")
