@@ -23112,41 +23112,41 @@
     {
       "catalogId": "moe:4131010856",
       "name": "上海工程技术大学",
-      "url": "https://jxfw.sues.edu.cn/student/sso/login",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
-      "http": 0,
-      "finalUrl": "https://jxfw.sues.edu.cn/student/sso/login",
+      "url": "https://webvpn.sues.edu.cn/https/77726476706e69737468656265737421f3f652d234256d43300d8db9d6562d/cas/login",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "http": 200,
+      "finalUrl": "https://webvpn.sues.edu.cn/https/77726476706e69737468656265737421f3f652d234256d43300d8db9d6562d/cas/login",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
-      "title": "",
-      "probeError": "curl-28",
-      "availability": "unavailable-or-restricted",
+      "title": "统一身份认证登录",
+      "probeError": null,
+      "availability": "public-page",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
       ]
     },
     {
       "catalogId": "wakeup:3b1bbf3bc631d8a4e458",
       "name": "上海工程技术大学（自动导入时间）",
-      "url": "https://jxfw.sues.edu.cn/student/sso/login",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
-      "http": 0,
-      "finalUrl": "https://jxfw.sues.edu.cn/student/sso/login",
+      "url": "https://webvpn.sues.edu.cn/https/77726476706e69737468656265737421f3f652d234256d43300d8db9d6562d/cas/login",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "http": 200,
+      "finalUrl": "https://webvpn.sues.edu.cn/https/77726476706e69737468656265737421f3f652d234256d43300d8db9d6562d/cas/login",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
-      "title": "",
-      "probeError": "curl-28",
-      "availability": "unavailable-or-restricted",
+      "title": "统一身份认证登录",
+      "probeError": null,
+      "availability": "public-page",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
       ]
     },
     {
@@ -25144,21 +25144,21 @@
     {
       "catalogId": "moe:4153010691",
       "name": "云南民族大学",
-      "url": "http://202.203.158.158/app/index.action",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
-      "http": 0,
-      "finalUrl": "http://202.203.158.158/app/index.action",
+      "url": "https://i.ymu.edu.cn",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "http": 200,
+      "finalUrl": "https://i.ymu.edu.cn",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
       "title": "",
-      "probeError": "curl-28",
-      "availability": "unavailable-or-restricted",
+      "probeError": null,
+      "availability": "public-page",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
       ]
     },
     {
@@ -25622,21 +25622,21 @@
     {
       "catalogId": "wakeup:f9d8722fe37c274340a7",
       "name": "佛山职业技术学院（推荐）",
-      "url": "https://jwgl.fspt.net/jsxsd/",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
-      "http": 0,
-      "finalUrl": "https://jwgl.fspt.net/jsxsd/",
+      "url": "https://jwgl.fspt.edu.cn/jsxsd/",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "http": 200,
+      "finalUrl": "https://jwgl.fspt.edu.cn/jsxsd/",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
-      "title": "",
-      "probeError": "curl-28",
-      "availability": "unavailable-or-restricted",
+      "title": "佛山职业技术学院综合教务管理系统-强智科技",
+      "probeError": null,
+      "availability": "public-page",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
       ]
     },
     {
@@ -29932,21 +29932,21 @@
     {
       "catalogId": "moe:4123010214",
       "name": "哈尔滨理工大学",
-      "url": "http://jwzx.hrbust.edu.cn/homepage/index.do",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
+      "url": "http://202.118.201.228/",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
       "http": 0,
-      "finalUrl": "http://jwzx.hrbust.edu.cn/homepage/index.do",
+      "finalUrl": "http://202.118.201.228/",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
       "title": "",
       "probeError": "curl-28",
-      "availability": "unavailable-or-restricted",
+      "availability": "declared-entry",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry not confirmed live (probe answered HTTP nothing; declared URL taken from the shipped official catalog); no authenticated import performed."
       ]
     },
     {
@@ -32444,21 +32444,21 @@
     {
       "catalogId": "moe:4164010749",
       "name": "宁夏大学",
-      "url": "https://jwgl.nxu.edu.cn/index.action",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
-      "http": 0,
-      "finalUrl": "https://jwgl.nxu.edu.cn/index.action",
+      "url": "https://webvpn.nxu.edu.cn/https/77726476706e69737468656265737421f9f352d229287d1e7b0c9ce29b5b/authserver/login",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "http": 200,
+      "finalUrl": "https://webvpn.nxu.edu.cn/https/77726476706e69737468656265737421f9f352d229287d1e7b0c9ce29b5b/authserver/login",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
-      "title": "",
-      "probeError": "curl-7",
-      "availability": "unavailable-or-restricted",
+      "title": "宁夏大学统一身份认证平台",
+      "probeError": null,
+      "availability": "public-page",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
       ]
     },
     {
@@ -37532,21 +37532,21 @@
     {
       "catalogId": "moe:4145010594",
       "name": "广西科技大学",
-      "url": "http://jwxt.gxust.edu.cn:9600/xtgl/login_slogin.html",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
-      "http": 0,
-      "finalUrl": "http://jwxt.gxust.edu.cn:9600/xtgl/login_slogin.html",
+      "url": "http://jwxt.gxust.edu.cn/xtgl/login_slogin.html",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "http": 200,
+      "finalUrl": "http://jwxt.gxust.edu.cn/xtgl/login_slogin.html",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
-      "title": "",
-      "probeError": "curl-28",
-      "availability": "unavailable-or-restricted",
+      "title": "教学管理信息服务平台",
+      "probeError": null,
+      "availability": "public-page",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
       ]
     },
     {
@@ -38464,21 +38464,21 @@
     {
       "catalogId": "moe:4151013903",
       "name": "成都锦城学院",
-      "url": "https://jwweb.scujcc.cn/",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
-      "http": 404,
-      "finalUrl": "https://jwweb.scujcc.cn/",
+      "url": "https://jwweb.cdjcc.edu.cn/default2.aspx",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "http": 200,
+      "finalUrl": "https://jwweb.cdjcc.edu.cn/default2.aspx",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
-      "title": "",
+      "title": "欢迎使用正方教务管理系统！请登录",
       "probeError": null,
-      "availability": "unavailable-or-restricted",
+      "availability": "public-page",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
       ]
     },
     {
@@ -39174,21 +39174,21 @@
     {
       "catalogId": "moe:4132013571",
       "name": "无锡太湖学院",
-      "url": "http://jwcnew.thxy.org/jwglxt/xtgl/login_slogin.html",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
-      "http": 0,
-      "finalUrl": "http://jwcnew.thxy.org/jwglxt/xtgl/login_slogin.html",
+      "url": "http://jwcnew.wxu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "http": 200,
+      "finalUrl": "http://jwcnew.wxu.edu.cn/jwglxt/xtgl/login_slogin.html",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
-      "title": "",
-      "probeError": "non-public-url",
-      "availability": "unavailable-or-restricted",
+      "title": "教务管理系统",
+      "probeError": null,
+      "availability": "public-page",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
       ]
     },
     {
@@ -44815,21 +44815,21 @@
     {
       "catalogId": "moe:4137013624",
       "name": "泰山科技学院",
-      "url": "https://jw.tskjxy.com.cn/jwglxt/xtgl/login_slogin.html",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
-      "http": 0,
-      "finalUrl": "https://jw.tskjxy.com.cn/jwglxt/xtgl/login_slogin.html",
+      "url": "https://jw.tskjxy.edu.cn/",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "http": 200,
+      "finalUrl": "https://jw.tskjxy.edu.cn/",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
-      "title": "",
-      "probeError": "curl-28",
-      "availability": "unavailable-or-restricted",
+      "title": "教学管理信息服务平台",
+      "probeError": null,
+      "availability": "public-page",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
       ]
     },
     {
@@ -46765,21 +46765,21 @@
     {
       "catalogId": "moe:4142010507",
       "name": "湖北中医药大学",
-      "url": "http://jwxt.hbtcm.edu.cn/jwglxt/xtgl",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
-      "http": 0,
-      "finalUrl": "http://jwxt.hbtcm.edu.cn/jwglxt/xtgl",
+      "url": "https://jwxt.hbucm.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "http": 200,
+      "finalUrl": "https://jwxt.hbucm.edu.cn/jwglxt/xtgl/login_slogin.html",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
-      "title": "",
-      "probeError": "non-public-url",
-      "availability": "unavailable-or-restricted",
+      "title": "教学管理信息服务平台",
+      "probeError": null,
+      "availability": "public-page",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
       ]
     },
     {
@@ -46974,21 +46974,21 @@
     {
       "catalogId": "moe:4142011600",
       "name": "湖北经济学院",
-      "url": "https://jwc.hbue.edu.cn/4a/e3/c6124a150243/page.psp",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
-      "http": 410,
-      "finalUrl": "https://jwc.hbue.edu.cn/4a/e3/c6124a150243/page.psp",
+      "url": "http://218.197.80.13/jwglxt/xtgl/login_slogin.html",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "http": 0,
+      "finalUrl": "http://218.197.80.13/jwglxt/xtgl/login_slogin.html",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
       "title": "",
-      "probeError": null,
-      "availability": "unavailable-or-restricted",
+      "probeError": "curl-7",
+      "availability": "declared-entry",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry not confirmed live (probe answered HTTP nothing; declared URL taken from the shipped official catalog); no authenticated import performed."
       ]
     },
     {
@@ -48121,21 +48121,21 @@
     {
       "catalogId": "moe:4153014623",
       "name": "滇西应用技术大学",
-      "url": "http://39.129.48.107:8202/jsxsd/",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
-      "http": 0,
-      "finalUrl": "http://39.129.48.107:8202/jsxsd/",
+      "url": "https://jwglxt.wyuas.edu.cn/",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "http": 200,
+      "finalUrl": "https://jwglxt.wyuas.edu.cn/",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
-      "title": "",
-      "probeError": "curl-7",
-      "availability": "unavailable-or-restricted",
+      "title": "登录",
+      "probeError": null,
+      "availability": "public-page",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
       ]
     },
     {
@@ -48459,21 +48459,21 @@
     {
       "catalogId": "wakeup:27c517c10f629d797f82",
       "name": "烟台大学（从选课结果导入！）",
-      "url": "https://webvpn.ytu.edu.cn/https-4106/77726476706e69737468656265737421f5ff40902b7e71446b468ca88d1b203b/#/index276",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
-      "http": 0,
-      "finalUrl": "https://webvpn.ytu.edu.cn/https-4106/77726476706e69737468656265737421f5ff40902b7e71446b468ca88d1b203b/#/index276",
+      "url": "https://cas.ytu.edu.cn/lyuapServer/login",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "http": 200,
+      "finalUrl": "https://cas.ytu.edu.cn/lyuapServer/login",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
-      "title": "",
-      "probeError": "non-public-url",
-      "availability": "unavailable-or-restricted",
+      "title": "办事服务大厅",
+      "probeError": null,
+      "availability": "public-page",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
       ]
     },
     {
@@ -48953,21 +48953,21 @@
     {
       "catalogId": "moe:4123010233",
       "name": "牡丹江师范学院",
-      "url": "http://jw.mdjnu.cn/jw/cas/login.action",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
-      "http": 0,
-      "finalUrl": "http://jw.mdjnu.cn/jw/cas/login.action",
+      "url": "http://wv.mdjnu.edu.cn/login",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "http": 200,
+      "finalUrl": "http://wv.mdjnu.edu.cn/login",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
-      "title": "",
-      "probeError": "curl-28",
-      "availability": "unavailable-or-restricted",
+      "title": "牡丹江师范学院WEBVPN",
+      "probeError": null,
+      "availability": "public-page",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
       ]
     },
     {
@@ -51287,21 +51287,21 @@
     {
       "catalogId": "moe:4161013682",
       "name": "西安工商学院",
-      "url": "https://bxaitjw.yinghuaonline.com/xxgcxy/",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
-      "http": 0,
-      "finalUrl": "https://bxaitjw.yinghuaonline.com/xxgcxy/",
+      "url": "http://yitjw.minghuaetc.com/xxgcxy/",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "http": 200,
+      "finalUrl": "http://yitjw.minghuaetc.com/xxgcxy/",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
-      "title": "",
-      "probeError": "curl-28",
-      "availability": "unavailable-or-restricted",
+      "title": "审核中 | Reviewing",
+      "probeError": null,
+      "availability": "public-page",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. Endpoint did not return a public HTTP 200 page at the configured URL during the entry-evidence pass."
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
       ]
     },
     {
@@ -52281,21 +52281,21 @@
     {
       "catalogId": "moe:4152013650",
       "name": "贵阳信息科技学院",
-      "url": "http://webvpn.giist.cn/",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
-      "http": 0,
-      "finalUrl": "http://webvpn.giist.cn/",
+      "url": "https://ids.gyiist.edu.cn/",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "http": 200,
+      "finalUrl": "https://ids.gyiist.edu.cn/",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
-      "title": "",
-      "probeError": "non-public-url",
-      "availability": "unavailable-or-restricted",
+      "title": "统一身份认证登录",
+      "probeError": null,
+      "availability": "public-page",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
       ]
     },
     {
@@ -54847,21 +54847,21 @@
     {
       "catalogId": "moe:4150013627",
       "name": "重庆移通学院",
-      "url": "https://10-252-6-31.webvpn.cqytxy.edu.cn/jwglxt/xtgl/login_slogin.html",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
+      "url": "http://222.179.134.225:81/",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
       "http": 0,
-      "finalUrl": "https://10-252-6-31.webvpn.cqytxy.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "finalUrl": "http://222.179.134.225:81/",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
       "title": "",
       "probeError": "curl-28",
-      "availability": "unavailable-or-restricted",
+      "availability": "declared-entry",
       "authenticatedImportTested": false,
       "defects": [
-        "Ownership not verified; URL sourced from WakeUp database. No entry-page capture was obtained for this endpoint."
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry not confirmed live (probe answered HTTP nothing; declared URL taken from the shipped official catalog); no authenticated import performed."
       ]
     },
     {
@@ -58765,6 +58765,880 @@
       "authenticatedImportTested": false,
       "defects": [
         "Ownership declared by shiguang_warehouse (third party); entry page confirmed live with HTTP 200 on 2026-10-27; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:3906ef0ca015f317f5be",
+      "name": "安徽医科大学 - 研究生",
+      "url": "http://210.45.96.114/pyxx/login.aspx",
+      "http": 200,
+      "finalUrl": "http://210.45.96.114/pyxx/login.aspx",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "安徽医科大学\r\n\t—研究生管理信息系统",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:7b4329fa8565d3d5886b",
+      "name": "安庆师范大学 - 研究生",
+      "url": "https://yjsxt.aqnu.edu.cn/allogene/login.html",
+      "http": 200,
+      "finalUrl": "https://yjsxt.aqnu.edu.cn/allogene/login.html",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "Document",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:f12d196fb9969637072b",
+      "name": "北京理工大学 - 研究生",
+      "url": "https://jxzxehall.bit.edu.cn/new/index.html",
+      "http": 200,
+      "finalUrl": "https://jxzxehall.bit.edu.cn/new/index.html",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:49247d474c0192760c8b",
+      "name": "北京中医药大学 - 研究生",
+      "url": "http://202.204.35.224",
+      "http": 0,
+      "finalUrl": "http://202.204.35.224",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "declared-entry",
+      "probeError": "curl-28",
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry not confirmed live (probe answered HTTP nothing; declared URL taken from the shipped official catalog); no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:822aeca0f508994abb78",
+      "name": "北京林业大学 - 研究生",
+      "url": "https://graduate.bjfu.edu.cn",
+      "http": 200,
+      "finalUrl": "https://graduate.bjfu.edu.cn",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "研究生院",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:349167b2378dfd897edd",
+      "name": "重庆理工大学 - 研究生",
+      "url": "https://uis.cqut.edu.cn/unified_identity_logon/",
+      "http": 200,
+      "finalUrl": "https://uis.cqut.edu.cn/unified_identity_logon/",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:cd90142791c462689538",
+      "name": "东南大学 - 研究生",
+      "url": "https://vpn.seu.edu.cn/portal/shortcut.html",
+      "http": 200,
+      "finalUrl": "https://vpn.seu.edu.cn/portal/shortcut.html",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "Loading...",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:387f1fe2794cf99b406b",
+      "name": "河海大学 - 研究生",
+      "url": "https://yjss.hhu.edu.cn/home/stulogin",
+      "http": 302,
+      "finalUrl": "https://yjss.hhu.edu.cn/home/stulogin",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "declared-entry",
+      "probeError": "redirect-limit",
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry not confirmed live (probe answered HTTP 302; declared URL taken from the shipped official catalog); no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:eb6aa189a98ba7df705d",
+      "name": "湖南工商大学 - 研究生",
+      "url": "https://gmis2.hutb.edu.cn/page/756770/show",
+      "http": 200,
+      "finalUrl": "https://gmis2.hutb.edu.cn/page/756770/show",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "登录页",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:cfe5d4016483c8a657e2",
+      "name": "华中科技大学 - 研究生",
+      "url": "https://pass.hust.edu.cn/cas/login",
+      "http": 200,
+      "finalUrl": "https://pass.hust.edu.cn/cas/login",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "智慧华中大 | 统一身份认证系统",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:b6f08341a87ce4404131",
+      "name": "湖北中医药大学 - 研究生",
+      "url": "http://218.197.176.171/home/stulogin",
+      "http": 0,
+      "finalUrl": "http://218.197.176.171/home/stulogin",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "declared-entry",
+      "probeError": "curl-28",
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry not confirmed live (probe answered HTTP nothing; declared URL taken from the shipped official catalog); no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:f51a1dacaa1a121345f9",
+      "name": "华南农业大学 - 研究生",
+      "url": "https://yjsglxt.scau.edu.cn/",
+      "http": 403,
+      "finalUrl": "https://yjsglxt.scau.edu.cn/",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "403 - 禁止访问: 访问被拒绝。",
+      "availability": "declared-entry",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry not confirmed live (probe answered HTTP 403; declared URL taken from the shipped official catalog); no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:41229477c3533b9310e4",
+      "name": "江苏大学 - 研究生",
+      "url": "https://pass.ujs.edu.cn/cas/login",
+      "http": 200,
+      "finalUrl": "https://pass.ujs.edu.cn/cas/login",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "统一身份认证 统一身份认证 扫码登录",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:78de8220f50da65ec69f",
+      "name": "吉林农业大学 - 研究生",
+      "url": "https://ids.jlau.edu.cn/cas/login",
+      "http": 200,
+      "finalUrl": "https://ids.jlau.edu.cn/cas/login",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "统一身份认证及授权访问平台",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:50194713d73ed9605ad1",
+      "name": "吉林大学(新)教务管理系统 - 研究生",
+      "url": "https://vpn.jlu.edu.cn/login",
+      "http": 200,
+      "finalUrl": "https://vpn.jlu.edu.cn/login",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "网页版VPN系统",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:4c728ff95a83c87b1f39",
+      "name": "辽宁中医药大学 - 研究生",
+      "url": "https://yjszs.lnutcm.edu.cn:7777/Gmis/home/stulogin",
+      "http": 302,
+      "finalUrl": "https://yjszs.lnutcm.edu.cn:7777/Gmis/home/stulogin",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "declared-entry",
+      "probeError": "redirect-limit",
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry not confirmed live (probe answered HTTP 302; declared URL taken from the shipped official catalog); no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:25dcdc83dae5cbf9255e",
+      "name": "南京理工大学 - 研究生",
+      "url": "http://gsmis.njust.edu.cn/",
+      "http": 412,
+      "finalUrl": "http://gsmis.njust.edu.cn/",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "declared-entry",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry not confirmed live (probe answered HTTP 412; declared URL taken from the shipped official catalog); no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:62bb212d08ca696009ff",
+      "name": "南方医科大学 - 研究生",
+      "url": "http://uis.smu.edu.cn/login.jsp",
+      "http": 200,
+      "finalUrl": "http://uis.smu.edu.cn/login.jsp",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "南方医科大学统一身份认证平台-用户登陆",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:ed7372c647a6efa16b2f",
+      "name": "南京农业大学 - 研究生",
+      "url": "http://myportal.njau.edu.cn/new/index.html",
+      "http": 200,
+      "finalUrl": "http://myportal.njau.edu.cn/new/index.html",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:934e0183c70c8cfc7c8b",
+      "name": "南京大学 - 研究生",
+      "url": "https://ehall.nju.edu.cn/ywtb-portal/official/index.html",
+      "http": 200,
+      "finalUrl": "https://ehall.nju.edu.cn/ywtb-portal/official/index.html",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "南京大学网上办事服务大厅",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:277aad0eb3e7bd8004f6",
+      "name": "南华大学 - 研究生",
+      "url": "http://210.43.114.81:8099/home/stulogin",
+      "http": 302,
+      "finalUrl": "http://210.43.114.81:8099/home/stulogin",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "declared-entry",
+      "probeError": "redirect-limit",
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry not confirmed live (probe answered HTTP 302; declared URL taken from the shipped official catalog); no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:b7ec94808e126764cc4e",
+      "name": "宁波大学 - 研究生",
+      "url": "https://uis.nbu.edu.cn/authserver/login",
+      "http": 200,
+      "finalUrl": "https://uis.nbu.edu.cn/authserver/login",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "统一身份认证平台",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:5a13cb94e6c07ace5bd3",
+      "name": "清华大学（反馈群：807321351） - 研究生",
+      "url": "https://id.tsinghua.edu.cn/do/off/ui/auth/login/form/20843963f89b3072788f7fe75a5d9322/0",
+      "http": 200,
+      "finalUrl": "https://id.tsinghua.edu.cn/do/off/ui/auth/login/form/20843963f89b3072788f7fe75a5d9322/0",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "清华大学用户电子身份服务系统",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:864a2a7d581e95436a65",
+      "name": "青岛理工大学 - 研究生",
+      "url": "https://yjsxt.qut.edu.cn",
+      "http": 200,
+      "finalUrl": "https://yjsxt.qut.edu.cn",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "青岛理工大学研究生信息管理系统--登录窗口",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:4fa629ed46d2fc91b38b",
+      "name": "陕西师范大学 - 研究生",
+      "url": "http://yjssys.snnu.edu.cn/",
+      "http": 0,
+      "finalUrl": "http://yjssys.snnu.edu.cn/",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "declared-entry",
+      "probeError": "curl-28",
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry not confirmed live (probe answered HTTP nothing; declared URL taken from the shipped official catalog); no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:79020be2ed7202f0c3a3",
+      "name": "四川大学 - 研究生",
+      "url": "https://id.scu.edu.cn/login",
+      "http": 200,
+      "finalUrl": "https://id.scu.edu.cn/login",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "Go Login",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:06fa413ca9142bc7e831",
+      "name": "三峡大学 - 研究生",
+      "url": "http://yjsgl.ctgu.edu.cn/gmis5/home/stulogin",
+      "http": 0,
+      "finalUrl": "http://yjsgl.ctgu.edu.cn/gmis5/home/stulogin",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "declared-entry",
+      "probeError": "curl-28",
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry not confirmed live (probe answered HTTP nothing; declared URL taken from the shipped official catalog); no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:611c37ba5c0b417b6013",
+      "name": "上海大学（2024新版） - 研究生",
+      "url": "https://newsso.shu.edu.cn/oauth2/login/eyJyZXNwb25zZVR5cGUiOiJjb2RlIiwiY2xpZW50SWQiOiJ6cUZxODQwZXEybnJxRkM0dzAyWUY4NkMyNjRWNnIyMCIsImNsaWVudE5hbWUiOiLnoJTnqbbnlJ_ns7vnu58iLCJzY29wZSI6IiIsInJlZGlyZWN0VXJpIjoiaHR0cHM6Ly95anMuc2h1LmVkdS5jbi9nc2FwcC9zeXMveWpzcnpmd2FwcC9vYXV0aF9zaHUvY2FsbGJhY2svN2M4MTI2ODBkNGM5NGE1OTg2M2U5MDBlZTFhZjY1MGYuZG8iLCJzdGF0ZSI6IjdjODEyNjgwZDRjOTRhNTk4NjNlOTAwZWUxYWY2NTBmIn0=",
+      "http": 200,
+      "finalUrl": "https://newsso.shu.edu.cn/oauth2/login/eyJyZXNwb25zZVR5cGUiOiJjb2RlIiwiY2xpZW50SWQiOiJ6cUZxODQwZXEybnJxRkM0dzAyWUY4NkMyNjRWNnIyMCIsImNsaWVudE5hbWUiOiLnoJTnqbbnlJ_ns7vnu58iLCJzY29wZSI6IiIsInJlZGlyZWN0VXJpIjoiaHR0cHM6Ly95anMuc2h1LmVkdS5jbi9nc2FwcC9zeXMveWpzcnpmd2FwcC9vYXV0aF9zaHUvY2FsbGJhY2svN2M4MTI2ODBkNGM5NGE1OTg2M2U5MDBlZTFhZjY1MGYuZG8iLCJzdGF0ZSI6IjdjODEyNjgwZDRjOTRhNTk4NjNlOTAwZWUxYWY2NTBmIn0=",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "上海大学统一身份认证",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:6156b8caaa4c572b137f",
+      "name": "石河子大学 - 研究生",
+      "url": "http://gs.shzu.edu.cn/gmis5/home/stulogin",
+      "http": 302,
+      "finalUrl": "http://gs.shzu.edu.cn/gmis5/home/stulogin",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "declared-entry",
+      "probeError": "redirect-limit",
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry not confirmed live (probe answered HTTP 302; declared URL taken from the shipped official catalog); no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:b3d6def48a8b60f9ae40",
+      "name": "苏州大学 - 研究生",
+      "url": "https://yjs.suda.edu.cn/",
+      "http": 200,
+      "finalUrl": "https://yjs.suda.edu.cn/",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "研究生院",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:749d7231c55fa0faa751",
+      "name": "天津理工大学 - 研究生",
+      "url": "https://authserver.tjut.edu.cn/authserver/login",
+      "http": 200,
+      "finalUrl": "https://authserver.tjut.edu.cn/authserver/login",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "统一身份认证平台",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:1f433f9b1c8138ac5a16",
+      "name": "武汉轻工大学 - 研究生",
+      "url": "http://yjsglxt.whpu.edu.cn",
+      "http": 0,
+      "finalUrl": "http://yjsglxt.whpu.edu.cn",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "declared-entry",
+      "probeError": "curl-28",
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry not confirmed live (probe answered HTTP nothing; declared URL taken from the shipped official catalog); no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:11421ef3c64e8d25f8b3",
+      "name": "中国矿业大学 - 研究生",
+      "url": "http://yjsxt.cumt.edu.cn",
+      "http": 0,
+      "finalUrl": "http://yjsxt.cumt.edu.cn",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "declared-entry",
+      "probeError": "curl-28",
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry not confirmed live (probe answered HTTP nothing; declared URL taken from the shipped official catalog); no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:b0a40095c332178c36fc",
+      "name": "新疆大学 - 研究生",
+      "url": "https://authserver.xju.edu.cn/authserver/login",
+      "http": 200,
+      "finalUrl": "https://authserver.xju.edu.cn/authserver/login",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "统一身份认证平台",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:875af9326a601a689c36",
+      "name": "西北工业大学 - 研究生",
+      "url": "https://ecampus.nwpu.edu.cn/main.html",
+      "http": 200,
+      "finalUrl": "https://ecampus.nwpu.edu.cn/main.html",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "翱翔门户",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:09c98ee8bdb288b7119b",
+      "name": "延边大学 - 研究生",
+      "url": "https://authserver.ybu.edu.cn/authserver/login",
+      "http": 200,
+      "finalUrl": "https://authserver.ybu.edu.cn/authserver/login",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "统一身份认证 扫码登录",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:ca2a1087f1c35dff7dde",
+      "name": "云南师范大学 - 研究生",
+      "url": "https://yjsms.ynnu.edu.cn/home/login",
+      "http": 302,
+      "finalUrl": "https://yjsms.ynnu.edu.cn/home/login",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "declared-entry",
+      "probeError": "redirect-limit",
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry not confirmed live (probe answered HTTP 302; declared URL taken from the shipped official catalog); no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:527809b806139fffbd5f",
+      "name": "中国药科大学 - 研究生",
+      "url": "http://id.cpu.edu.cn/sso/login",
+      "http": 200,
+      "finalUrl": "http://id.cpu.edu.cn/sso/login",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "统一身份认证平台",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:742976123e214f338f08",
+      "name": "中国科学院大学 - 研究生",
+      "url": "https://sep.ucas.ac.cn",
+      "http": 200,
+      "finalUrl": "https://sep.ucas.ac.cn",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "SEP 教育业务接入平台",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:c5ed8c7154af5144173c",
+      "name": "中国石油大学（华东） - 研究生",
+      "url": "https://cas.upc.edu.cn/cas/login",
+      "http": 200,
+      "finalUrl": "https://cas.upc.edu.cn/cas/login",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "CAS Login",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:10836e81a47bf390d43d",
+      "name": "中国矿业大学（北京） - 研究生",
+      "url": "http://yjsglxt.cumtb.edu.cn",
+      "http": 0,
+      "finalUrl": "http://yjsglxt.cumtb.edu.cn",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "declared-entry",
+      "probeError": "curl-28",
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry not confirmed live (probe answered HTTP nothing; declared URL taken from the shipped official catalog); no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:b4dd3b4a8581586e32fb",
+      "name": "中国地质大学（武汉） - 研究生",
+      "url": "http://epo.cug.edu.cn/",
+      "http": 0,
+      "finalUrl": "http://epo.cug.edu.cn/",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "declared-entry",
+      "probeError": "curl-28",
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry not confirmed live (probe answered HTTP nothing; declared URL taken from the shipped official catalog); no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:0fc2c087281cc4ccfb08",
+      "name": "中国农业大学 - 研究生",
+      "url": "https://gmsstu.cau.edu.cn/logon",
+      "http": 200,
+      "finalUrl": "https://gmsstu.cau.edu.cn/logon",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "研究生管理系统（学生）登录页",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:207f7c1d842636e1e5a6",
+      "name": "中央财经大学 - 研究生",
+      "url": "https://authserver.cufe.edu.cn/authserver/login",
+      "http": 200,
+      "finalUrl": "https://authserver.cufe.edu.cn/authserver/login",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "统一身份认证平台",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:07d74411af04d7ef8993",
+      "name": "中国人民大学 - 研究生",
+      "url": "https://v.ruc.edu.cn/account/login",
+      "http": 200,
+      "finalUrl": "https://v.ruc.edu.cn/account/login",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "登录 - \n           中国人民大学",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
+      ]
+    },
+    {
+      "catalogId": "wakeup:0e033a17f0ecbedf0c5d",
+      "name": "中原工学院 - 研究生",
+      "url": "http://i.zut.edu.cn/new/index.html",
+      "http": 200,
+      "finalUrl": "http://i.zut.edu.cn/new/index.html",
+      "source": "wakeup-6.6.2-official-asset",
+      "checkedAt": "2026-10-28",
+      "status": "unknown",
+      "confidence": "low",
+      "title": "",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "sources": [],
+      "defects": [
+        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
       ]
     }
   ],

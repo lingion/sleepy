@@ -6512,23 +6512,21 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "eams5",
+    "mappedType": "shuwei_json",
     "probe": {
-      "url": "https://jxfw.sues.edu.cn/student/sso/login?targetUrl=/student/for-std/course-table",
-      "checkedAt": "2026-10-16",
+      "url": "https://webvpn.sues.edu.cn/https/77726476706e69737468656265737421f3f652d234256d43300d8db9d6562d/cas/login",
+      "checkedAt": "2026-10-28",
       "status": "pending",
-      "fingerprints": [
-        "eams5"
-      ],
-      "http": 0,
-      "finalUrl": "https://jxfw.sues.edu.cn/student/sso/login",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://webvpn.sues.edu.cn/https/77726476706e69737468656265737421f3f652d234256d43300d8db9d6562d/cas/login",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "curl-28"
+      "title": "统一身份认证登录",
+      "urlHints": []
     },
-    "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "sourceType662": "shuwei_new"
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -6546,21 +6544,19 @@
     "sourceMinVersion": 0,
     "mappedType": "eams5",
     "probe": {
-      "url": "https://jxfw.sues.edu.cn/student/sso/login?targetUrl=/student/for-std/course-table",
-      "checkedAt": "2026-10-16",
+      "url": "https://webvpn.sues.edu.cn/https/77726476706e69737468656265737421f3f652d234256d43300d8db9d6562d/cas/login",
+      "checkedAt": "2026-10-28",
       "status": "pending",
-      "fingerprints": [
-        "eams5"
-      ],
-      "http": 0,
-      "finalUrl": "https://jxfw.sues.edu.cn/student/sso/login",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://webvpn.sues.edu.cn/https/77726476706e69737468656265737421f3f652d234256d43300d8db9d6562d/cas/login",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "curl-28"
+      "title": "统一身份认证登录",
+      "urlHints": []
     },
-    "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "sourceType662": "sues"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -10839,19 +10835,19 @@
     "sourceMinVersion": 0,
     "mappedType": "cumtb",
     "probe": {
-      "url": "http://202.203.158.158/app/index.action",
-      "checkedAt": "2026-10-16",
+      "url": "https://i.ymu.edu.cn",
+      "checkedAt": "2026-10-28",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "http://202.203.158.158/app/index.action",
+      "http": 200,
+      "finalUrl": "https://i.ymu.edu.cn",
       "bytes": 0,
       "title": "",
-      "urlHints": [],
-      "error": "curl-28"
+      "urlHints": []
     },
-    "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "sourceType662": "cumtb"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -11731,21 +11727,23 @@
     "sourceMinVersion": 0,
     "mappedType": "qz",
     "probe": {
-      "url": "https://jwgl.fspt.net/jsxsd/",
-      "checkedAt": "2026-10-16",
+      "url": "https://jwgl.fspt.edu.cn/jsxsd/",
+      "checkedAt": "2026-10-28",
       "status": "pending",
       "fingerprints": [
         "qz"
       ],
-      "http": 0,
-      "finalUrl": "https://jwgl.fspt.net/jsxsd/",
+      "http": 200,
+      "finalUrl": "https://jwgl.fspt.edu.cn/jsxsd/",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "curl-28"
+      "title": "佛山职业技术学院综合教务管理系统-强智科技",
+      "urlHints": [
+        "qz"
+      ]
     },
-    "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "sourceType662": "qz_fspt"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -20523,20 +20521,20 @@
     "sourceMinVersion": 0,
     "mappedType": "umooc",
     "probe": {
-      "url": "http://jwzx.hrbust.edu.cn/homepage/index.do",
-      "checkedAt": "2026-10-16",
+      "url": "http://202.118.201.228/",
+      "checkedAt": "2026-10-28",
       "status": "pending",
       "fingerprints": [],
       "http": 0,
-      "finalUrl": "http://jwzx.hrbust.edu.cn/homepage/index.do",
+      "finalUrl": "http://202.118.201.228/",
       "bytes": 0,
       "title": "",
-      "urlHints": [],
-      "error": "curl-28"
+      "urlHints": []
     },
-    "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "mappedAt": "2026-10-17"
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "mappedAt": "2026-10-17",
+    "sourceType662": "umooc"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -25362,19 +25360,19 @@
     "sourceMinVersion": 0,
     "mappedType": "ecupl",
     "probe": {
-      "url": "https://jwgl.nxu.edu.cn/index.action",
-      "checkedAt": "2026-10-16",
+      "url": "https://webvpn.nxu.edu.cn/https/77726476706e69737468656265737421f9f352d229287d1e7b0c9ce29b5b/authserver/login",
+      "checkedAt": "2026-10-28",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "https://jwgl.nxu.edu.cn/index.action",
+      "http": 200,
+      "finalUrl": "https://webvpn.nxu.edu.cn/https/77726476706e69737468656265737421f9f352d229287d1e7b0c9ce29b5b/authserver/login",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "curl-7"
+      "title": "宁夏大学统一身份认证平台",
+      "urlHints": []
     },
-    "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "sourceType662": "ecupl"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -36149,21 +36147,21 @@
     "sourceMinVersion": 0,
     "mappedType": "zf_new",
     "probe": {
-      "url": "http://jwxt.gxust.edu.cn:9600/xtgl/login_slogin.html",
-      "checkedAt": "2026-10-16",
+      "url": "http://jwxt.gxust.edu.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-28",
       "status": "pending",
       "fingerprints": [
         "zf_new"
       ],
-      "http": 0,
-      "finalUrl": "http://jwxt.gxust.edu.cn:9600/xtgl/login_slogin.html",
+      "http": 200,
+      "finalUrl": "http://jwxt.gxust.edu.cn/xtgl/login_slogin.html",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "curl-28"
+      "title": "教学管理信息服务平台",
+      "urlHints": []
     },
-    "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "sourceType662": "zf"
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -38332,18 +38330,23 @@
     "sourceMinVersion": 0,
     "mappedType": "zf_new",
     "probe": {
-      "url": "http://jwweb.scujcc.cn/",
-      "checkedAt": "2026-10-16",
+      "url": "https://jwweb.cdjcc.edu.cn/default2.aspx",
+      "checkedAt": "2026-10-28",
       "status": "pending",
-      "fingerprints": [],
-      "http": 404,
-      "finalUrl": "https://jwweb.scujcc.cn/",
+      "fingerprints": [
+        "zf"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwweb.cdjcc.edu.cn/default2.aspx",
       "bytes": 689,
-      "title": "HTTP状态 404 - 未找到",
-      "urlHints": []
+      "title": "欢迎使用正方教务管理系统！请登录",
+      "urlHints": [
+        "zf"
+      ]
     },
-    "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "sourceType662": "zf"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -39998,19 +40001,23 @@
     "sourceMinVersion": 0,
     "mappedType": "zf_new",
     "probe": {
-      "url": "http://jwcnew.thxy.org/jwglxt/xtgl/login_slogin.html",
-      "checkedAt": "2026-10-16",
+      "url": "http://jwcnew.wxu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-28",
       "status": "pending",
-      "fingerprints": [],
-      "http": 0,
-      "finalUrl": "http://jwcnew.thxy.org/jwglxt/xtgl/login_slogin.html",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwcnew.wxu.edu.cn/jwglxt/xtgl/login_slogin.html",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "non-public-url"
+      "title": "教务管理系统",
+      "urlHints": [
+        "zf_new"
+      ]
     },
-    "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "sourceType662": "zf"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -50786,21 +50793,21 @@
     "sourceMinVersion": 0,
     "mappedType": "zf_new",
     "probe": {
-      "url": "https://jw.tskjxy.com.cn/jwglxt/xtgl/login_slogin.html",
-      "checkedAt": "2026-10-16",
+      "url": "https://jw.tskjxy.edu.cn/",
+      "checkedAt": "2026-10-28",
       "status": "pending",
       "fingerprints": [
         "zf_new"
       ],
-      "http": 0,
-      "finalUrl": "https://jw.tskjxy.com.cn/jwglxt/xtgl/login_slogin.html",
+      "http": 200,
+      "finalUrl": "https://jw.tskjxy.edu.cn/",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "curl-28"
+      "title": "教学管理信息服务平台",
+      "urlHints": []
     },
-    "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "sourceType662": "zf"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -54254,19 +54261,23 @@
     "sourceMinVersion": 0,
     "mappedType": "zf_new",
     "probe": {
-      "url": "http://jwxt.hbtcm.edu.cn/jwglxt/xtgl",
-      "checkedAt": "2026-10-16",
+      "url": "https://jwxt.hbucm.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-28",
       "status": "pending",
-      "fingerprints": [],
-      "http": 0,
-      "finalUrl": "http://jwxt.hbtcm.edu.cn/jwglxt/xtgl",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.hbucm.edu.cn/jwglxt/xtgl/login_slogin.html",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "non-public-url"
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
     },
-    "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "sourceType662": "zf"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -54850,18 +54861,21 @@
     "sourceMinVersion": 0,
     "mappedType": "zf_new",
     "probe": {
-      "url": "https://jwc.hbue.edu.cn/4a/e3/c6124a150243/page.htm",
-      "checkedAt": "2026-10-16",
+      "url": "http://218.197.80.13/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-28",
       "status": "pending",
-      "fingerprints": [],
-      "http": 410,
-      "finalUrl": "https://jwc.hbue.edu.cn/4a/e3/c6124a150243/page.psp",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 0,
+      "finalUrl": "http://218.197.80.13/jwglxt/xtgl/login_slogin.html",
       "bytes": 2316,
-      "title": "提示信息",
+      "title": "",
       "urlHints": []
     },
-    "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "sourceType662": "zf"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -57157,21 +57171,24 @@
     "sourceMinVersion": 0,
     "mappedType": "qz",
     "probe": {
-      "url": "http://39.129.48.107:8202/jsxsd/",
-      "checkedAt": "2026-10-16",
+      "url": "https://jwglxt.wyuas.edu.cn/",
+      "checkedAt": "2026-10-28",
       "status": "pending",
       "fingerprints": [
+        "zf_new",
         "qz"
       ],
-      "http": 0,
-      "finalUrl": "http://39.129.48.107:8202/jsxsd/",
+      "http": 200,
+      "finalUrl": "https://jwglxt.wyuas.edu.cn/",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "curl-7"
+      "title": "登录",
+      "urlHints": [
+        "zf_new"
+      ]
     },
-    "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "sourceType662": "qz"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -57983,19 +58000,19 @@
     "sourceMinVersion": 0,
     "mappedType": "urp_new",
     "probe": {
-      "url": "https://webvpn.ytu.edu.cn/https-4106/77726476706e69737468656265737421f5ff40902b7e71446b468ca88d1b203b/#/index276",
-      "checkedAt": "2026-10-16",
+      "url": "https://cas.ytu.edu.cn/lyuapServer/login",
+      "checkedAt": "2026-10-28",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "https://webvpn.ytu.edu.cn/https-4106/77726476706e69737468656265737421f5ff40902b7e71446b468ca88d1b203b/#/index276",
+      "http": 200,
+      "finalUrl": "https://cas.ytu.edu.cn/lyuapServer/login",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "non-public-url"
+      "title": "办事服务大厅",
+      "urlHints": []
     },
-    "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "sourceType662": "urp_new"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -59048,19 +59065,19 @@
     "sourceMinVersion": 0,
     "mappedType": "kingo_new",
     "probe": {
-      "url": "http://jw.mdjnu.cn/jw/cas/login.action",
-      "checkedAt": "2026-10-16",
+      "url": "http://wv.mdjnu.edu.cn/login",
+      "checkedAt": "2026-10-28",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "http://jw.mdjnu.cn/jw/cas/login.action",
+      "http": 200,
+      "finalUrl": "http://wv.mdjnu.edu.cn/login",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "curl-28"
+      "title": "牡丹江师范学院WEBVPN",
+      "urlHints": []
     },
-    "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "sourceType662": "kingo_new"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -64296,18 +64313,19 @@
     "sourceMinVersion": 0,
     "mappedType": "qz",
     "probe": {
-      "url": "http://bxaitjw.yinghuaonline.com/xxgcxy/",
-      "checkedAt": "2026-10-16",
+      "url": "http://yitjw.minghuaetc.com/xxgcxy/",
+      "checkedAt": "2026-10-28",
       "status": "unverified",
       "fingerprints": [],
       "http": 200,
-      "finalUrl": "https://bxaitjw.yinghuaonline.com/xxgcxy/",
+      "finalUrl": "http://yitjw.minghuaetc.com/xxgcxy/",
       "bytes": 15,
-      "title": "",
+      "title": "审核中 | Reviewing",
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "sourceType662": "qz"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -66836,19 +66854,19 @@
     "sourceMinVersion": 0,
     "mappedType": "zf_new",
     "probe": {
-      "url": "http://webvpn.giist.cn/",
-      "checkedAt": "2026-10-16",
+      "url": "https://ids.gyiist.edu.cn/",
+      "checkedAt": "2026-10-28",
       "status": "pending",
       "fingerprints": [],
-      "http": 0,
-      "finalUrl": "http://webvpn.giist.cn/",
+      "http": 200,
+      "finalUrl": "https://ids.gyiist.edu.cn/",
       "bytes": 0,
-      "title": "",
-      "urlHints": [],
-      "error": "non-public-url"
+      "title": "统一身份认证登录",
+      "urlHints": []
     },
-    "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "sourceType662": "zf"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -72535,21 +72553,19 @@
     "sourceMinVersion": 0,
     "mappedType": "zf_new",
     "probe": {
-      "url": "https://10-252-6-31.webvpn.cqytxy.edu.cn/jwglxt/xtgl/login_slogin.html",
-      "checkedAt": "2026-10-16",
+      "url": "http://222.179.134.225:81/",
+      "checkedAt": "2026-10-28",
       "status": "pending",
-      "fingerprints": [
-        "zf_new"
-      ],
+      "fingerprints": [],
       "http": 0,
-      "finalUrl": "https://10-252-6-31.webvpn.cqytxy.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "finalUrl": "http://222.179.134.225:81/",
       "bytes": 0,
       "title": "",
-      "urlHints": [],
-      "error": "curl-28"
+      "urlHints": []
     },
-    "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "sourceType662": "zf"
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -79842,5 +79858,1339 @@
     "status": "unverified",
     "mappedType": "sg_asset",
     "verification": "Third-party ShiGuang adapter declaration; entry page confirmed live with HTTP 200 on 2026-10-27; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 31,
+    "name": "安徽医科大学 - 研究生",
+    "sourceName": "安徽医科大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "http://210.45.96.114/pyxx/login.aspx",
+    "sourceType": "suda_post",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "suda_post",
+    "probe": {
+      "url": "http://210.45.96.114/pyxx/login.aspx",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "http://210.45.96.114/pyxx/login.aspx",
+      "bytes": 9632,
+      "title": "安徽医科大学\r\n\t—研究生管理信息系统",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 57,
+    "name": "安庆师范大学 - 研究生",
+    "sourceName": "安庆师范大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://yjsxt.aqnu.edu.cn/",
+    "sourceType": "cumtb",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "cumtb",
+    "probe": {
+      "url": "https://yjsxt.aqnu.edu.cn/allogene/login.html",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://yjsxt.aqnu.edu.cn/allogene/login.html",
+      "bytes": 1302,
+      "title": "Document",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 184,
+    "name": "北京理工大学 - 研究生",
+    "sourceName": "北京理工大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "http://jxzxehall.bit.edu.cn/new/index.html",
+    "sourceType": "jz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://jxzxehall.bit.edu.cn/new/index.html",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://jxzxehall.bit.edu.cn/new/index.html",
+      "bytes": 96940,
+      "title": "",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 195,
+    "name": "北京中医药大学 - 研究生",
+    "sourceName": "北京中医药大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "http://202.204.35.224",
+    "sourceType": "xju_post",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "xju_post",
+    "probe": {
+      "url": "http://202.204.35.224",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 0,
+      "finalUrl": "http://202.204.35.224",
+      "bytes": 0,
+      "title": "",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 214,
+    "name": "北京林业大学 - 研究生",
+    "sourceName": "北京林业大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://graduate.bjfu.edu.cn",
+    "sourceType": "south_soft",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "south_soft",
+    "probe": {
+      "url": "https://graduate.bjfu.edu.cn",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://graduate.bjfu.edu.cn",
+      "bytes": 55415,
+      "title": "研究生院",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 378,
+    "name": "重庆理工大学 - 研究生",
+    "sourceName": "重庆理工大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://uis.cqut.edu.cn/unified_identity_logon/#/login?applicationCode=XZim715",
+    "sourceType": "south_soft",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "south_soft",
+    "probe": {
+      "url": "https://uis.cqut.edu.cn/unified_identity_logon/",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://uis.cqut.edu.cn/unified_identity_logon/",
+      "bytes": 797,
+      "title": "",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 520,
+    "name": "东南大学 - 研究生",
+    "sourceName": "东南大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "http://ehall.seu.edu.cn/appShow?appId=4979568947762216",
+    "sourceType": "jz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://vpn.seu.edu.cn/portal/shortcut.html",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://vpn.seu.edu.cn/portal/shortcut.html",
+      "bytes": 5801,
+      "title": "Loading...",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 1108,
+    "name": "河海大学 - 研究生",
+    "sourceName": "河海大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "http://yjss.hhu.edu.cn/home/stulogin#",
+    "sourceType": "south_soft",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "south_soft",
+    "probe": {
+      "url": "https://yjss.hhu.edu.cn/home/stulogin",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 302,
+      "finalUrl": "https://yjss.hhu.edu.cn/home/stulogin",
+      "bytes": 131,
+      "title": "",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 1153,
+    "name": "湖南工商大学 - 研究生",
+    "sourceName": "湖南工商大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://gmis2.hutb.edu.cn/page/756770/show",
+    "sourceType": "suda_post",
+    "sourceImportType": "ziyan",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "suda_post",
+    "probe": {
+      "url": "https://gmis2.hutb.edu.cn/page/756770/show",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://gmis2.hutb.edu.cn/page/756770/show",
+      "bytes": 3066,
+      "title": "登录页",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 1155,
+    "name": "华中科技大学 - 研究生",
+    "sourceName": "华中科技大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "http://yjspy.hust.edu.cn/",
+    "sourceType": "xju_post",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "xju_post",
+    "probe": {
+      "url": "https://pass.hust.edu.cn/cas/login",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://pass.hust.edu.cn/cas/login",
+      "bytes": 13942,
+      "title": "智慧华中大 | 统一身份认证系统",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 1162,
+    "name": "湖北中医药大学 - 研究生",
+    "sourceName": "湖北中医药大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "http://218.197.176.171/home/stulogin",
+    "sourceType": "south_soft",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "south_soft",
+    "probe": {
+      "url": "http://218.197.176.171/home/stulogin",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 0,
+      "finalUrl": "http://218.197.176.171/home/stulogin",
+      "bytes": 0,
+      "title": "",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 1171,
+    "name": "华南农业大学 - 研究生",
+    "sourceName": "华南农业大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://yjsglxt.scau.edu.cn/",
+    "sourceType": "xju_post",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "xju_post",
+    "probe": {
+      "url": "https://yjsglxt.scau.edu.cn/",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 403,
+      "finalUrl": "https://yjsglxt.scau.edu.cn/",
+      "bytes": 1157,
+      "title": "403 - 禁止访问: 访问被拒绝。",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 1536,
+    "name": "江苏大学 - 研究生",
+    "sourceName": "江苏大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "http://yjsgll.ujs.edu.cn/pyxx/Default.aspx",
+    "sourceType": "suda_post",
+    "sourceImportType": "ziyan",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "suda_post",
+    "probe": {
+      "url": "https://pass.ujs.edu.cn/cas/login",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://pass.ujs.edu.cn/cas/login",
+      "bytes": 22992,
+      "title": "统一身份认证 统一身份认证 扫码登录",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 1689,
+    "name": "吉林农业大学 - 研究生",
+    "sourceName": "吉林农业大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://yjsjy.jlau.edu.cn",
+    "sourceType": "xju_post",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "xju_post",
+    "probe": {
+      "url": "https://ids.jlau.edu.cn/cas/login",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://ids.jlau.edu.cn/cas/login",
+      "bytes": 33377,
+      "title": "统一身份认证及授权访问平台",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 1706,
+    "name": "吉林大学(新)教务管理系统 - 研究生",
+    "sourceName": "吉林大学(新)教务管理系统 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://vpn.jlu.edu.cn/login",
+    "sourceType": "jz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://vpn.jlu.edu.cn/login",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://vpn.jlu.edu.cn/login",
+      "bytes": 58311,
+      "title": "网页版VPN系统",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 1880,
+    "name": "辽宁中医药大学 - 研究生",
+    "sourceName": "辽宁中医药大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://yjszs.lnutcm.edu.cn:7777/Gmis/home/stulogin",
+    "sourceType": "south_soft",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "south_soft",
+    "probe": {
+      "url": "https://yjszs.lnutcm.edu.cn:7777/Gmis/home/stulogin",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 302,
+      "finalUrl": "https://yjszs.lnutcm.edu.cn:7777/Gmis/home/stulogin",
+      "bytes": 136,
+      "title": "",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 1966,
+    "name": "南京理工大学 - 研究生",
+    "sourceName": "南京理工大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "http://gsmis.njust.edu.cn/",
+    "sourceType": "xju_post",
+    "sourceImportType": "ziyan",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "xju_post",
+    "probe": {
+      "url": "http://gsmis.njust.edu.cn/",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 412,
+      "finalUrl": "http://gsmis.njust.edu.cn/",
+      "bytes": 23996,
+      "title": "",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 1967,
+    "name": "南方医科大学 - 研究生",
+    "sourceName": "南方医科大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://yjsxt.smu.edu.cn",
+    "sourceType": "xju_post",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "xju_post",
+    "probe": {
+      "url": "http://uis.smu.edu.cn/login.jsp",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "http://uis.smu.edu.cn/login.jsp",
+      "bytes": 45594,
+      "title": "南方医科大学统一身份认证平台-用户登陆",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 2036,
+    "name": "南京农业大学 - 研究生",
+    "sourceName": "南京农业大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "http://myportal.njau.edu.cn/new/index.html",
+    "sourceType": "jz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "http://myportal.njau.edu.cn/new/index.html",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "http://myportal.njau.edu.cn/new/index.html",
+      "bytes": 96465,
+      "title": "",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 2040,
+    "name": "南京大学 - 研究生",
+    "sourceName": "南京大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://ehall.nju.edu.cn/ywtb-portal/official/index.html#/hall",
+    "sourceType": "jz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://ehall.nju.edu.cn/ywtb-portal/official/index.html",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://ehall.nju.edu.cn/ywtb-portal/official/index.html",
+      "bytes": 6556,
+      "title": "南京大学网上办事服务大厅",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 2062,
+    "name": "南华大学 - 研究生",
+    "sourceName": "南华大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "http://210.43.114.81:8099/home/stulogin",
+    "sourceType": "suda_post",
+    "sourceImportType": "ziyan",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "suda_post",
+    "probe": {
+      "url": "http://210.43.114.81:8099/home/stulogin",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 302,
+      "finalUrl": "http://210.43.114.81:8099/home/stulogin",
+      "bytes": 131,
+      "title": "",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 2094,
+    "name": "宁波大学 - 研究生",
+    "sourceName": "宁波大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://ehall.nbu.edu.cn/new/index.html",
+    "sourceType": "jz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://uis.nbu.edu.cn/authserver/login",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://uis.nbu.edu.cn/authserver/login",
+      "bytes": 30212,
+      "title": "统一身份认证平台",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 2166,
+    "name": "清华大学（反馈群：807321351） - 研究生",
+    "sourceName": "清华大学（反馈群：807321351） - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://zhjwxk.cic.tsinghua.edu.cn/xklogin.do",
+    "sourceType": "thu",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "thu",
+    "probe": {
+      "url": "https://id.tsinghua.edu.cn/do/off/ui/auth/login/form/20843963f89b3072788f7fe75a5d9322/0",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://id.tsinghua.edu.cn/do/off/ui/auth/login/form/20843963f89b3072788f7fe75a5d9322/0",
+      "bytes": 18690,
+      "title": "清华大学用户电子身份服务系统",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 2202,
+    "name": "青岛理工大学 - 研究生",
+    "sourceName": "青岛理工大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://yjsxt.qut.edu.cn",
+    "sourceType": "xju_post",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "xju_post",
+    "probe": {
+      "url": "https://yjsxt.qut.edu.cn",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://yjsxt.qut.edu.cn",
+      "bytes": 10863,
+      "title": "青岛理工大学研究生信息管理系统--登录窗口",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 2446,
+    "name": "陕西师范大学 - 研究生",
+    "sourceName": "陕西师范大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "http://yjssys.snnu.edu.cn/",
+    "sourceType": "xju_post",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "xju_post",
+    "probe": {
+      "url": "http://yjssys.snnu.edu.cn/",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 0,
+      "finalUrl": "http://yjssys.snnu.edu.cn/",
+      "bytes": 0,
+      "title": "",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 2459,
+    "name": "四川大学 - 研究生",
+    "sourceName": "四川大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://ehall.scu.edu.cn/gsapp/sys/wdkbapp/*default/index.do?THEME=cherry&amp;EMAP_LANG=zh#/xskcb",
+    "sourceType": "jz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://id.scu.edu.cn/login",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://id.scu.edu.cn/login",
+      "bytes": 1254,
+      "title": "Go Login",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 2509,
+    "name": "三峡大学 - 研究生",
+    "sourceName": "三峡大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "http://yjsgl.ctgu.edu.cn/gmis5/home/stulogin",
+    "sourceType": "south_soft",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "south_soft",
+    "probe": {
+      "url": "http://yjsgl.ctgu.edu.cn/gmis5/home/stulogin",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 0,
+      "finalUrl": "http://yjsgl.ctgu.edu.cn/gmis5/home/stulogin",
+      "bytes": 0,
+      "title": "",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 2612,
+    "name": "上海大学（2024新版） - 研究生",
+    "sourceName": "上海大学（2024新版） - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://yjs.shu.edu.cn/gsapp/sys/yjsemaphome/portal/index.do",
+    "sourceType": "jz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://newsso.shu.edu.cn/oauth2/login/eyJyZXNwb25zZVR5cGUiOiJjb2RlIiwiY2xpZW50SWQiOiJ6cUZxODQwZXEybnJxRkM0dzAyWUY4NkMyNjRWNnIyMCIsImNsaWVudE5hbWUiOiLnoJTnqbbnlJ_ns7vnu58iLCJzY29wZSI6IiIsInJlZGlyZWN0VXJpIjoiaHR0cHM6Ly95anMuc2h1LmVkdS5jbi9nc2FwcC9zeXMveWpzcnpmd2FwcC9vYXV0aF9zaHUvY2FsbGJhY2svN2M4MTI2ODBkNGM5NGE1OTg2M2U5MDBlZTFhZjY1MGYuZG8iLCJzdGF0ZSI6IjdjODEyNjgwZDRjOTRhNTk4NjNlOTAwZWUxYWY2NTBmIn0=",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://newsso.shu.edu.cn/oauth2/login/eyJyZXNwb25zZVR5cGUiOiJjb2RlIiwiY2xpZW50SWQiOiJ6cUZxODQwZXEybnJxRkM0dzAyWUY4NkMyNjRWNnIyMCIsImNsaWVudE5hbWUiOiLnoJTnqbbnlJ_ns7vnu58iLCJzY29wZSI6IiIsInJlZGlyZWN0VXJpIjoiaHR0cHM6Ly95anMuc2h1LmVkdS5jbi9nc2FwcC9zeXMveWpzcnpmd2FwcC9vYXV0aF9zaHUvY2FsbGJhY2svN2M4MTI2ODBkNGM5NGE1OTg2M2U5MDBlZTFhZjY1MGYuZG8iLCJzdGF0ZSI6IjdjODEyNjgwZDRjOTRhNTk4NjNlOTAwZWUxYWY2NTBmIn0=",
+      "bytes": 701,
+      "title": "上海大学统一身份认证",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 2635,
+    "name": "石河子大学 - 研究生",
+    "sourceName": "石河子大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "http://gs.shzu.edu.cn/gmis5/student/default/index",
+    "sourceType": "south_soft",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "south_soft",
+    "probe": {
+      "url": "http://gs.shzu.edu.cn/gmis5/home/stulogin",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 302,
+      "finalUrl": "http://gs.shzu.edu.cn/gmis5/home/stulogin",
+      "bytes": 137,
+      "title": "",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 2681,
+    "name": "苏州大学 - 研究生",
+    "sourceName": "苏州大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "http://yjs.suda.edu.cn",
+    "sourceType": "south_soft",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "south_soft",
+    "probe": {
+      "url": "https://yjs.suda.edu.cn/",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://yjs.suda.edu.cn/",
+      "bytes": 64911,
+      "title": "研究生院",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 2711,
+    "name": "天津理工大学 - 研究生",
+    "sourceName": "天津理工大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://yjsxt.tjut.edu.cn/gsapp/sys/yjsemaphome/portal/index.do",
+    "sourceType": "suda_post",
+    "sourceImportType": "ziyan",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "suda_post",
+    "probe": {
+      "url": "https://authserver.tjut.edu.cn/authserver/login",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://authserver.tjut.edu.cn/authserver/login",
+      "bytes": 17570,
+      "title": "统一身份认证平台",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 2812,
+    "name": "武汉轻工大学 - 研究生",
+    "sourceName": "武汉轻工大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "http://yjsglxt.whpu.edu.cn",
+    "sourceType": "xju_post",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "xju_post",
+    "probe": {
+      "url": "http://yjsglxt.whpu.edu.cn",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 0,
+      "finalUrl": "http://yjsglxt.whpu.edu.cn",
+      "bytes": 0,
+      "title": "",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 3117,
+    "name": "中国矿业大学 - 研究生",
+    "sourceName": "中国矿业大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "http://yjsxt.cumt.edu.cn",
+    "sourceType": "xju_post",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "xju_post",
+    "probe": {
+      "url": "http://yjsxt.cumt.edu.cn",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 0,
+      "finalUrl": "http://yjsxt.cumt.edu.cn",
+      "bytes": 0,
+      "title": "",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 3119,
+    "name": "新疆大学 - 研究生",
+    "sourceName": "新疆大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "http://yjspy.xju.edu.cn",
+    "sourceType": "xju_post",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "xju_post",
+    "probe": {
+      "url": "https://authserver.xju.edu.cn/authserver/login",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://authserver.xju.edu.cn/authserver/login",
+      "bytes": 28174,
+      "title": "统一身份认证平台",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 3145,
+    "name": "西北工业大学 - 研究生",
+    "sourceName": "西北工业大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://ecampus.nwpu.edu.cn/main.html#/Index",
+    "sourceType": "nwpu_post",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "nwpu_post",
+    "probe": {
+      "url": "https://ecampus.nwpu.edu.cn/main.html",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://ecampus.nwpu.edu.cn/main.html",
+      "bytes": 11013,
+      "title": "翱翔门户",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 3167,
+    "name": "延边大学 - 研究生",
+    "sourceName": "延边大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://authserver.ybu.edu.cn/authserver/login?service=https%3A%2F%2Fportal.ybu.edu.cn%2Flogin%3Fservice%3Dhttps%3A%2F%2Fportal.ybu.edu.cn%2Fywtb-portal%2Fofficial%2Findex.html",
+    "sourceType": "south_soft",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "south_soft",
+    "probe": {
+      "url": "https://authserver.ybu.edu.cn/authserver/login",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://authserver.ybu.edu.cn/authserver/login",
+      "bytes": 14538,
+      "title": "统一身份认证 扫码登录",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 3203,
+    "name": "云南师范大学 - 研究生",
+    "sourceName": "云南师范大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://yjsms.ynnu.edu.cn/home/login",
+    "sourceType": "south_soft",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "south_soft",
+    "probe": {
+      "url": "https://yjsms.ynnu.edu.cn/home/login",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 302,
+      "finalUrl": "https://yjsms.ynnu.edu.cn/home/login",
+      "bytes": 128,
+      "title": "",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 3381,
+    "name": "中国药科大学 - 研究生",
+    "sourceName": "中国药科大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "http://ygl.cpu.edu.cn/gmis5/oauthLogin/zgyk",
+    "sourceType": "south_soft",
+    "sourceImportType": "ziyan",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "south_soft",
+    "probe": {
+      "url": "http://id.cpu.edu.cn/sso/login",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "http://id.cpu.edu.cn/sso/login",
+      "bytes": 28371,
+      "title": "统一身份认证平台",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 3400,
+    "name": "中国科学院大学 - 研究生",
+    "sourceName": "中国科学院大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://sep.ucas.ac.cn",
+    "sourceType": "ucas",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "ucas",
+    "probe": {
+      "url": "https://sep.ucas.ac.cn",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://sep.ucas.ac.cn",
+      "bytes": 14702,
+      "title": "SEP 教育业务接入平台",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 3401,
+    "name": "中国石油大学（华东） - 研究生",
+    "sourceName": "中国石油大学（华东） - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://degrees.upc.edu.cn",
+    "sourceType": "xju_post",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "xju_post",
+    "probe": {
+      "url": "https://cas.upc.edu.cn/cas/login",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://cas.upc.edu.cn/cas/login",
+      "bytes": 10987,
+      "title": "CAS Login",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 3402,
+    "name": "中国矿业大学（北京） - 研究生",
+    "sourceName": "中国矿业大学（北京） - 研究生",
+    "sortKey": "",
+    "sourceUrl": "http://yjsglxt.cumtb.edu.cn",
+    "sourceType": "xju_post",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "xju_post",
+    "probe": {
+      "url": "http://yjsglxt.cumtb.edu.cn",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 0,
+      "finalUrl": "http://yjsglxt.cumtb.edu.cn",
+      "bytes": 0,
+      "title": "",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 3403,
+    "name": "中国地质大学（武汉） - 研究生",
+    "sourceName": "中国地质大学（武汉） - 研究生",
+    "sortKey": "",
+    "sourceUrl": "http://epo.cug.edu.cn/",
+    "sourceType": "xju_post",
+    "sourceImportType": "ziyan",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "xju_post",
+    "probe": {
+      "url": "http://epo.cug.edu.cn/",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 0,
+      "finalUrl": "http://epo.cug.edu.cn/",
+      "bytes": 0,
+      "title": "",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 3428,
+    "name": "中国农业大学 - 研究生",
+    "sourceName": "中国农业大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://gmsstu.cau.edu.cn/logon",
+    "sourceType": "south_soft",
+    "sourceImportType": "ziyan",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "south_soft",
+    "probe": {
+      "url": "https://gmsstu.cau.edu.cn/logon",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://gmsstu.cau.edu.cn/logon",
+      "bytes": 5427,
+      "title": "研究生管理系统（学生）登录页",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 3461,
+    "name": "中央财经大学 - 研究生",
+    "sourceName": "中央财经大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://yjsjy.webvpn.cufe.edu.cn/yjsxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://authserver.cufe.edu.cn/authserver/login",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://authserver.cufe.edu.cn/authserver/login",
+      "bytes": 30177,
+      "title": "统一身份认证平台",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 3495,
+    "name": "中国人民大学 - 研究生",
+    "sourceName": "中国人民大学 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "https://v.ruc.edu.cn/",
+    "sourceType": "jz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://v.ruc.edu.cn/account/login",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "https://v.ruc.edu.cn/account/login",
+      "bytes": 21467,
+      "title": "登录 - \n           中国人民大学",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.6.2-official-asset",
+    "sourceRow": 3496,
+    "name": "中原工学院 - 研究生",
+    "sourceName": "中原工学院 - 研究生",
+    "sortKey": "",
+    "sourceUrl": "http://i.zut.edu.cn/new/index.html",
+    "sourceType": "jz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "http://i.zut.edu.cn/new/index.html",
+      "checkedAt": "2026-10-28",
+      "status": "unverified",
+      "fingerprints": [],
+      "http": 200,
+      "finalUrl": "http://i.zut.edu.cn/new/index.html",
+      "bytes": 97146,
+      "title": "",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
   }
 ]
