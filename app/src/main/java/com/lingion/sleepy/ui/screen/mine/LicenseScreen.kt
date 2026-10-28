@@ -343,6 +343,10 @@ private val attributionEntries: List<AttributionEntry> = listOf(
         "武汉理工大学 kcbcxby 协议、经典金智 EAMS (hunnu/uestc/hpu) 与新正方网格视图 (zhengfang_01) 的协议形态参考；264 校适配清单与 starlink.js、wake_up.js 在线协议链形态调研；282 个教务适配脚本以 MIT 原文随包分发于 assets/third_party/shiguang/"
     ),
     AttributionEntry(
+        "foundational-lumaschedule", "LumaSchedule (Junyxor)", "Apache-2.0",
+        "WakeUP 官方教务目录 6.6.2 吸收战役的边界交叉验证: 其 convert-wakeup-school-info.mjs / compat.md 证明 WakeUp 兼容层只做 profile 与登录元数据迁移、不复制服务端解析器;未复用代码"
+    ),
+    AttributionEntry(
         "foundational-zfn", "zfn_api (openschoolcn)", "MPL-2.0",
         "新正方 jwglxt kbList 接口形态交叉验证"
     ),

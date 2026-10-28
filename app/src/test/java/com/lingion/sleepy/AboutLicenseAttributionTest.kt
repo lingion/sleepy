@@ -48,6 +48,8 @@ class AboutLicenseAttributionTest {
         Attribution("WakeupSchedule_Kotlin", "Apache-2.0"),
         Attribution("cqu.js", ""),
         Attribution("shiguang_warehouse", "MIT"),
+        // WakeUP 6.6.2 目录吸收战役 Step 5.5 致谢前置 (2026-10-28, LumaSchedule 边界交叉验证触达)
+        Attribution("LumaSchedule", "Apache-2.0"),
         Attribution("zfn_api", "MPL-2.0"),
         Attribution("FlowCourse", "GPL-3.0"),
         Attribution("iwut", "AGPL-3.0"),
