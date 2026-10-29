@@ -157,4 +157,26 @@ class EdgePagingContractTest {
         // 水平出界钳到最近可见列, 纵向非法(末行以下)才弹回。
         assertTrue("列钳位", tableView.contains("coerceIn(0, sortedDays.lastIndex)"))
     }
+
+    @Test fun gridCardDragDeltasConvertToRootButFloatingCardStaysLocal() {
+        // 场景C (2026-10-29 用户反馈「翻页之后只能上下拖」) 的接线锁:
+        // 边缘翻页把起拖页物理平移一整屏, 被捕获指针流仍住在平移节点上 —
+        // 网格卡 continuousFloatLift 的逐帧 delta 必须经 localToRoot 换算, 否则
+        // 换页帧混入整页位移, 卡钉死末列缘带、edgeArmed 永不复归。
+        // 行为锁: CourseOccurrenceFloatDragTest.dragAfterThePageFlipKeepsHorizontalControl
+        // (FloatPager 双页替身真平移 — 单页替身从不移动节点, 正是本 bug 的 JVM 盲区)。
+        assertTrue("网格卡路径捕获坐标做 root 换算",
+            Regex("""var coordinates: LayoutCoordinates\? by remember \{ mutableStateOf\(null\) \}""").containsMatchIn(edgeOrFloatState))
+        assertTrue("delta 取 root 差值",
+            Regex("""coordinates\?\.localToRoot\(change\.position\)""").containsMatchIn(edgeOrFloatState))
+        assertTrue("死区锚同样落 root", Regex("""localToRoot\(previous\)""").containsMatchIn(edgeOrFloatState))
+        // 反向锁: 浮卡节点自身随 floatState.x/y 逐帧平移 — 对它做 root 换算会把
+        // 节点自位移二次计入(反馈放大, 实测全量回归 11 红)。拖浮卡路径必须保持
+        // detectDragGestures 原样本地 amount。
+        val floatCardBlock = edgeOrFloatState.substringAfter("internal fun FloatingOccurrenceCard")
+            .substringBefore("internal fun FloatActionPopup")
+        assertTrue("浮卡路径无 localToRoot", !floatCardBlock.contains("localToRoot"))
+        assertTrue("浮卡保持本地 amount 直传",
+            floatCardBlock.contains("drag(amount)"))
+    }
 }
