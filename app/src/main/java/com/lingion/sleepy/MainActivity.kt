@@ -10,6 +10,9 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.SizeTransform
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -58,6 +61,8 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.ui.platform.LocalDensity
 import com.lingion.sleepy.ui.component.PillNavItemSpec
+import com.lingion.sleepy.ui.component.sleepyContentEnter
+import com.lingion.sleepy.ui.component.sleepyContentExit
 import com.lingion.sleepy.ui.screen.manage.ManagementPage
 import com.lingion.sleepy.ui.screen.widget.WidgetManagementScreen
 import com.lingion.sleepy.ui.screen.widget.WidgetEditScreen
@@ -306,46 +311,62 @@ internal fun MainTabs(
     holder: SaveableStateHolder,
     updateNoticeVisible: Boolean = false
 ) {
-    // tab 往返滚动位置保真: when 条件组合同样整页移除被切走的 tab, 各 tab 内容包
+    // tab 往返滚动位置保真: AnimatedContent 过渡期同时组合新旧两页, 各页内容包
     // SaveableStateProvider(currentTab.name) — key 稳定(tab 枚举名), 返回时恢复。
     // 注意: scheduleViewMode 会话态仍由 AppRoot 持有(§1.4 契约), 此处只管组合作用域。
+    // MD3E content 家族过渡 (Task 3): scale 0.92↔1 + fade, 规格来自 SleepyMotion 工厂;
+    // transitionSpec lambda 非可组合, 工厂结果须在组合体内先算好再捕获 (Task 2 教训)。
     val session = navigator.session
-    when (currentTab) {
-        Tab.Schedule -> holder.SaveableStateProvider(currentTab.name) {
-            ScheduleScreen(
-                viewMode = viewMode,
-                onViewModeChange = onViewModeChange,
-                onGoImport = { setCurrentTab(Tab.Manage); navigator.openAddTable() },
-                onManualAdd = { navigator.openAddCourse() },
-                onAddAt = navigator::openAddCourseAt,
-                onCreateTable = onCreateNewTable,
-                onEditCourse = { course -> session.beginEditCourse(course); navigator.openAddCourse(course.id, editing = true) })
-        }
-        Tab.Today -> holder.SaveableStateProvider(currentTab.name) {
-            TodayScreen(onEditCourse = { course -> session.beginEditCourse(course); navigator.openAddCourse(course.id, editing = true) })
-        }
-        Tab.Manage -> holder.SaveableStateProvider(currentTab.name) {
-            ManagementPage(
-                onAddTable = { navigator.openAddTable() },
-                onManualAdd = { navigator.openAddCourseEntry(mainVm.state.value.selectedTableId ?: 0L) },
-                onEditCurrentTable = { navigator.openEditTable() },
-                onOpenPeriodTables = { navigator.openPeriodTables() },
-                onExportRequested = { navigator.openExport() },
-                onOpenAllTables = { navigator.openAllTables() },
-                viewModel = mainVm,
+    val tabEnter = sleepyContentEnter()
+    val tabExit = sleepyContentExit()
+    AnimatedContent(
+        targetState = currentTab,
+        transitionSpec = {
+            ContentTransform(
+                targetContentEnter = tabEnter,
+                initialContentExit = tabExit,
+                // 四页尺寸差异大, togetherWith 默认 clip=true 会裁切过渡内容
+                sizeTransform = SizeTransform(clip = false),
             )
-        }
-        Tab.Mine -> holder.SaveableStateProvider(currentTab.name) {
-            MineScreen(
-                onOpenAllTables = { navigator.openAllTables() },
-                onOpenCourseList = { navigator.openCourseList() },
-                onOpenPeriodTables = { navigator.openPeriodTables() },
-                onOpenAppearance = { navigator.openAppearance() },
-                onOpenGeneral = { navigator.openGeneral() },
-                onOpenWidgetSettings = { navigator.openWidgetSettings() },
-                onOpenReminder = { navigator.openReminder() },
-                onOpenAbout = { navigator.openAbout() },
-                updateNoticeVisible = updateNoticeVisible)
+        },
+    ) { currentTab ->
+        when (currentTab) {
+            Tab.Schedule -> holder.SaveableStateProvider(currentTab.name) {
+                ScheduleScreen(
+                    viewMode = viewMode,
+                    onViewModeChange = onViewModeChange,
+                    onGoImport = { setCurrentTab(Tab.Manage); navigator.openAddTable() },
+                    onManualAdd = { navigator.openAddCourse() },
+                    onAddAt = navigator::openAddCourseAt,
+                    onCreateTable = onCreateNewTable,
+                    onEditCourse = { course -> session.beginEditCourse(course); navigator.openAddCourse(course.id, editing = true) })
+            }
+            Tab.Today -> holder.SaveableStateProvider(currentTab.name) {
+                TodayScreen(onEditCourse = { course -> session.beginEditCourse(course); navigator.openAddCourse(course.id, editing = true) })
+            }
+            Tab.Manage -> holder.SaveableStateProvider(currentTab.name) {
+                ManagementPage(
+                    onAddTable = { navigator.openAddTable() },
+                    onManualAdd = { navigator.openAddCourseEntry(mainVm.state.value.selectedTableId ?: 0L) },
+                    onEditCurrentTable = { navigator.openEditTable() },
+                    onOpenPeriodTables = { navigator.openPeriodTables() },
+                    onExportRequested = { navigator.openExport() },
+                    onOpenAllTables = { navigator.openAllTables() },
+                    viewModel = mainVm,
+                )
+            }
+            Tab.Mine -> holder.SaveableStateProvider(currentTab.name) {
+                MineScreen(
+                    onOpenAllTables = { navigator.openAllTables() },
+                    onOpenCourseList = { navigator.openCourseList() },
+                    onOpenPeriodTables = { navigator.openPeriodTables() },
+                    onOpenAppearance = { navigator.openAppearance() },
+                    onOpenGeneral = { navigator.openGeneral() },
+                    onOpenWidgetSettings = { navigator.openWidgetSettings() },
+                    onOpenReminder = { navigator.openReminder() },
+                    onOpenAbout = { navigator.openAbout() },
+                    updateNoticeVisible = updateNoticeVisible)
+            }
         }
     }
 }
