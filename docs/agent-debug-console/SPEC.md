@@ -27,12 +27,12 @@
 
 ## 3. 命令面（HTTP 契约草案）
 
-单端口 `tcp:3737`（`adb forward tcp:3737 localabstract:sleepy-debug`），除 `/v1/hello` 外全部要求 `X-Sleepy-Token` 头。响应统一 `{"ok":true,"data":...}` / `{"ok":false,"error":...}`。
+单端口 `tcp:3737`（`adb forward tcp:3737 tcp:3737`，服务器绑 `127.0.0.1`；NanoHTTPD 2.3.1 仅支持 TCP ServerSocket，localabstract 方案经实现核验不可行，2026-10-29 定稿改此），除 `/v1/hello` 外全部要求 `X-Sleepy-Token` 头。响应统一 `{"ok":true,"data":...}` / `{"ok":false,"error":...}`。
 
 | 端点 | 语义 |
 |---|---|
 | POST /v1/hello | 探活+能力清单+debug 包/release 开关态。无需 token |
-| POST /v1/enable | **release 隐藏开关专用**: adb 本地进程(读 /proc 校验调用者 uid 属 shell/root 或 SELinux context)提交口令 `sleepy.is-my.app` → 签发 24h token, 写内存标志位。debug 包跳过此步(编译期常量默认开) |
+| POST /v1/enable | **release 隐藏开关专用**: 仅当 UI 侧连点版本号 7 次进入"等待解锁"态(内存标志, 60s 过期)时接受; 提交口令 `sleepy.is-my.app` → 签发 24h token, 写内存标志位; 口令错 3 次后指数退避防刷。TCP 回环无法核调用者 uid(旧稿 /proc 校验仅 localabstract 可行, 随传输定稿废止)。debug 包跳过此步(编译期常量默认开) |
 | POST /v1/clock | `{mode:"offset"|"absolute"|"reset", epochMs 或 dayOffset}` 设置虚拟时钟; GET 读当前虚拟 now + 偏移量 |
 | GET /v1/ui/tree | 当前前台 Activity、Compose 语义节点树(testTag/role/text/bounds)、可交互元素清单 |
 | POST /v1/ui/find | `{testTag? text? textContains? className? role? index?}` → bounds/可点击性/scroll 可达性 |
@@ -51,7 +51,7 @@
 
 ## 4. 技术选型（已实测确认，非猜测）
 
-- 语言/框架: Kotlin；HTTP 服务器采用 **新增依赖 org.nanohttpd:nanohttpd:2.3.1**（2026-10-29 规划期实测证伪了本稿早前"已是依赖"的错误声明——build.gradle.kts 与 libs.versions.toml 均无此库）。按 SPEC 自身纪律"引入新 Gradle 依赖 = Ask first"，此条已经用户同轮"其他的怎么功能强怎么来"裁决豁免：NanoHTTPD 为纯 Java 单 jar、体积极小、支持 localabstract 绑定，是功能最强且成本最低的方案。备选裸 ServerSocket 微服务器仅在依赖引入被 CI/规则阻断时回退。
+- 语言/框架: Kotlin；HTTP 服务器采用 **新增依赖 org.nanohttpd:nanohttpd:2.3.1**（2026-10-29 规划期实测证伪了本稿早前"已是依赖"的错误声明——build.gradle.kts 与 libs.versions.toml 均无此库）。按 SPEC 自身纪律"引入新 Gradle 依赖 = Ask first"，此条已经用户同轮"其他的怎么功能强怎么来"裁决豁免：NanoHTTPD 为纯 Java 单 jar、体积极小，是功能最强且成本最低的方案。核验注记：2.3.1 仅支持 TCP ServerSocket（绑 127.0.0.1 回环），localabstract 传输不可行，已随 §3 定稿改为回环 TCP。备选裸 ServerSocket 微服务器仅在依赖引入被 CI/规则阻断时回退。
 - 不用 AccessibilityService（用户态要授权、UI 无法全自动开）；语义手势走 `View.performClick()` / 向视图树派发 `MotionEvent`（坐标兜底），Compose 语义定位靠补全的 `Modifier.testTag` + `findViewByPredicate` 遍历。
 - Compose 全库 testTag 补全: 一次性给所有交互控件补 `Modifier.testTag(...)`，纳入 ui-ops。
 - 虚拟时钟: 新建 `object AppClock : java.time.Clock`，收敛 **58 处** `LocalDate.now()/LocalTime.now()` + `System.currentTimeMillis()` 调用点（实测 33 文件，规划期复核）。改动面大，须有测试锁。
