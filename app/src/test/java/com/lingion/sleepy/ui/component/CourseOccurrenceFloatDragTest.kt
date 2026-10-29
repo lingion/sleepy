@@ -1,7 +1,9 @@
 package com.lingion.sleepy.ui.component
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.*
@@ -77,10 +79,64 @@ class CourseOccurrenceFloatDragTest {
                         onOccurrenceMove = onMove, onOccurrenceDelete = onDelete,
                         onOccurrenceEdit = onOccurrenceEdit,
                         // 翻页回调 = pager 替身: 记方向 + 宿主周号跟住 bump 后的 floatState.week
-                        onEdgeDrag = { dir -> edgeCalls.add(dir); hostWeek.value = state.week },
+                        onEdgeDrag = { dir ->
+                            edgeCalls.add(dir)
+                            hostWeek.value = state.week
+                        },
                         floatMaxWeek = floatMaxWeek,
                         onCourseClick = { clicks++ }, onCourseLongClick = onLongPress)
                 }
+            }
+        }
+    }
+
+    /**
+     * 场景C 替身 (2026-10-29): 真 HorizontalPager(beyondViewportPageCount=1) 的物理平移
+     * 在 JVM 复现 — 两页各 360dp 并排, 起拖页(第1页, 带被跟踪的网格卡节点)随 week bump
+     * 整页左移一屏(offset 布局位移, 指针命中与本地坐标据此换算, 与真 Pager 同构),
+     * 新宿主(第2页)落回 root x=0 静止; 指针流仍由被捕获的起拖页节点持有。
+     * 既有单页替身翻页只换 currentWeek、从不平移节点 — 正是场景C「翻页后横向失控」
+     * 在 JVM 全绿的盲区。第2页课程留空: 避免 FloatMath 双节点歧义, 跨周几何本就同构。
+     */
+    @Composable
+    private fun FloatPager(state: CourseFloatState) {
+        val shift = 360.dp * (state.week - 1)
+        Box(Modifier.size(360.dp, 640.dp)) {
+            Box(Modifier.offset(x = -shift)) {
+                CardsGridView(
+                    courses = listOf(course),
+                    timeSlots = slots,
+                    floatState = state,
+                    currentWeek = 1,
+                    onQuickAdd = { _, _, _ -> },
+                    onOccurrenceMove = { c, d, n, s, resizeOnly, onResult ->
+                        moves.add(Move(c.id, d, n, s, resizeOnly)); onResult(saved)
+                    },
+                    onOccurrenceDelete = { deleted.add(it.id) },
+                    onOccurrenceEdit = null,
+                    onEdgeDrag = { dir -> edgeCalls.add(dir) },
+                    floatMaxWeek = 16,
+                    onCourseClick = { clicks++ },
+                    onCourseLongClick = { longPressed.add(it.id) },
+                )
+            }
+            Box(Modifier.offset(x = 360.dp - shift)) {
+                CardsGridView(
+                    courses = emptyList(),
+                    timeSlots = slots,
+                    floatState = state,
+                    currentWeek = 2,
+                    onQuickAdd = { _, _, _ -> },
+                    onOccurrenceMove = { c, d, n, s, resizeOnly, onResult ->
+                        moves.add(Move(c.id, d, n, s, resizeOnly)); onResult(saved)
+                    },
+                    onOccurrenceDelete = { deleted.add(it.id) },
+                    onOccurrenceEdit = null,
+                    onEdgeDrag = { dir -> edgeCalls.add(dir) },
+                    floatMaxWeek = 16,
+                    onCourseClick = { clicks++ },
+                    onCourseLongClick = { longPressed.add(it.id) },
+                )
             }
         }
     }
@@ -590,6 +646,68 @@ class CourseOccurrenceFloatDragTest {
             assertEquals(listOf(Move(7L, 7, 4, 2, false)), moves)
             assertNull(state.course)
         }
+    }
+
+    /** 场景C 用双页替身挂载 (不平移节点的单页 grid 是盲区, 见 FloatPager KDoc)。 */
+    private fun pager(state: CourseFloatState) {
+        compose.setContent {
+            SleepyThemeProvider(darkTheme = false, themeKey = "default") { FloatPager(state) }
+        }
+    }
+
+    /**
+     * 场景C (2026-10-29 用户反馈「翻页之后只能上下拖」): 同一无松手按压流里 长按浮起 →
+     * 压右缘驻留翻周 → 继续按住向左回拉。真 HorizontalPager 把起拖页(被捕获指针流的
+     * 网格卡节点)物理左移一屏, continuousFloatLift 的逐帧 delta 是节点本地坐标 =
+     * root 位移 − 节点平移 → 换页那一帧多送 +360dp 污染, 卡钉死右缘: edgeDir 恒 1、
+     * edgeArmed 永不复归、横向输入全丢(纵向不受水平平移影响 = 「只能上下拖」)。
+     * 修复 = delta 换算到 root 坐标 (captured LayoutCoordinates.localToRoot)。
+     * 修复前本测试必须红: 回拉 150dp 后 x 不减反增、edgeDir 不得归零。
+     * 选择器口径: 浮起后 grid 与浮卡各有一个 FloatMath 文本节点 — 首块须在浮起前
+     * 锁网格节点(此刻唯一), 后续块走 float-card: 它在换页后随宿主平移仍唯一稳定,
+     * 注入的 MOVE 经已消费指针持续送达被捕获的起拖页节点 (与真机同构)。 */
+    @Test fun dragAfterThePageFlipKeepsHorizontalControl() {
+        val state = CourseFloatState()
+        pager(state)
+        val edgeDx = with(compose.density) { 330.dp.toPx() }
+        compose.onNodeWithText("FloatMath").performTouchInput {
+            down(center)
+            moveTo(center, delayMillis = 900) // 长按超时 → 浮起
+            moveBy(Offset(24f, 18f), 100)     // 死区内小抖, 不进拖拽
+        }
+        compose.runOnIdle { assertTrue("替身须能浮起", state.active) }
+        compose.onNodeWithTag("float-card").performTouchInput {
+            moveBy(Offset(edgeDx, 40f), 100) // 越死区进拖拽, 中心压过列带右缘触发线
+        }
+        flushEdgePolling()
+        compose.runOnIdle {
+            assertTrue(state.dragging)
+            assertEquals("驻留未过半不许翻", 1, state.week)
+            assertEquals(1, state.edgeDir)
+        }
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS) // 越 500ms → 翻第 2 页(起拖页平移)
+        compose.runOnIdle {
+            assertEquals(2, state.week)
+            assertEquals(listOf(1), edgeCalls)
+            assertFalse("翻过即消耗", state.edgeArmed)
+        }
+        var xAtFlip = 0.dp
+        compose.runOnIdle { xAtFlip = state.x }
+        // 翻页后手指向左回拉 150dp (root 坐标)。修复后卡随指左移、回到格内重新武装;
+        // 修复前换页帧的 +360dp 本地坐标污染压过回拉, 卡钉死缘带、横向失控。
+        compose.onNodeWithTag("float-card").performTouchInput {
+            moveBy(Offset(-with(compose.density) { 150.dp.toPx() }, 0f), 100)
+        }
+        flushEdgePolling(steps = 4)
+        compose.runOnIdle {
+            assertTrue(
+                "翻页后横向控制须恢复: 回拉 150dp 后 x 应显著小于翻页瞬间的 x (实际 $xAtFlip → ${state.x})",
+                state.x < xAtFlip - 50.dp,
+            )
+            assertEquals("卡心回到格内 → 不再压缘", 0, state.edgeDir)
+            assertTrue("回格即重新武装", state.edgeArmed)
+        }
+        compose.onNodeWithTag("float-card").performTouchInput { up() }
     }
 
     @Test fun semesterBoundaryKeepsTheWeekAndBlocksTheFlip() {

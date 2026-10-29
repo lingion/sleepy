@@ -245,6 +245,13 @@ fun Modifier.dismissFloatOnOutsidePress(
  * 与浮卡自身 detectDragGestures 同一 commitFloatDrop 路径。浮起后未移动即松手 →
  * 什么都不做(卡片保持浮起, 与旧长按浮起一致)。[lifted] 为真(已有浮卡)时整段
  * 静默 — 空档消费通常已先一步拦下, 这里是兜底。
+ *
+ * 拖拽段位移一律换算到 root 坐标再回调 (场景C, 2026-10-29 用户反馈「翻页之后只能
+ * 上下拖」): change.position 相对接收节点, 边缘翻页把起拖页(本节点在页容器里)
+ * 物理平移一整屏 — 换页那一帧本地坐标跳变一个页宽, 直接当位移即污染
+ * floatState.x: 卡钉死末列缘带, edgeArmed 永不复归, 横向输入全丢(纵向不受水平
+ * 平移影响 = 「只能上下拖」)。localToRoot 后的差值对任意时刻的节点平移都守恒,
+ * 静止节点上 root delta ≡ local delta, 既有单页用例行为不变。
  */
 fun Modifier.continuousFloatLift(
     lifted: () -> Boolean,
@@ -260,7 +267,11 @@ fun Modifier.continuousFloatLift(
     val dragStart by rememberUpdatedState(onDragStart)
     val drag by rememberUpdatedState(onDrag)
     val drop by rememberUpdatedState(onDrop)
-    pointerInput(Unit) {
+    // 场景C 换算基准: 本节点坐标 → root 坐标。与 dismissFloatOnOutsidePress 同捕获
+    // 模式; 节点换页平移时 localToRoot 随之更新, delta 守恒。null 帧(尚未布局)退化为
+    // 本地坐标 — 与修复前同行为, 不崩不丢事件。
+    var coordinates: LayoutCoordinates? by remember { mutableStateOf(null) }
+    onGloballyPositioned { coordinates = it }.pointerInput(Unit) {
         awaitEachGesture {
             val down = awaitFirstDown(requireUnconsumed = false)
             if (down.isConsumed || isLifted()) return@awaitEachGesture
@@ -300,8 +311,11 @@ fun Modifier.continuousFloatLift(
             // TouchSlopDetector 用「自锚点累计位移 ≥ touchSlop」判据; 长按转拖拽比官方
             // 「按下即拖」多一段持按, 抖动抑制取 2×touchSlop。死区内仍逐帧消费 —
             // 浮起即已认领手势, 不许滚动劫走 (与旧行为一致); 越区首帧一次性补齐累计位移,
-            // 卡落到指下, 终帧位移量与旧算法逐帧相同 → 落点判定不受影响。
-            val anchor = previous
+            // 终帧位移量与旧算法逐帧相同 → 落点判定不受影响。
+            // 死区锚与逐帧位移同取 root 系: 长按段(浮起前)不会有翻页(翻页先要浮起
+            // 并拖拽), 故 anchor 的 root 值在浮起当帧锁定即恒真。
+            val anchorRoot = coordinates?.localToRoot(previous) ?: previous
+            var previousRoot = anchorRoot
             val liftSlop = viewConfiguration.touchSlop * 2f
             while (true) {
                 val event = awaitPointerEvent()
@@ -310,14 +324,15 @@ fun Modifier.continuousFloatLift(
                 // 拖拽段不设越界判据(detectDragGestures 同口径 — 拖出卡面正是常态),
                 // 只认被消费: 消费 = 被滚动/他方抢走, 立即按 drop 收尾交落点判定。
                 if (change.isConsumed) break
-                val delta = change.position - previous
-                previous = change.position
                 change.consume()
+                val rootNow = coordinates?.localToRoot(change.position) ?: change.position
+                val delta = rootNow - previousRoot
+                previousRoot = rootNow
                 if (dragging) {
                     if (delta != Offset.Zero) drag(delta)
                     continue
                 }
-                val accumulated = change.position - anchor
+                val accumulated = rootNow - anchorRoot
                 if (accumulated.getDistance() <= liftSlop) continue
                 dragging = true
                 dragStart()
@@ -331,6 +346,9 @@ fun Modifier.continuousFloatLift(
 /**
  * 浮起的课程卡: 复用 [CourseOverlayCard] 的取色/文案渲染(去掉内层点击 —
  * 浮卡只响应拖拽), 上下 14dp 边缘把手与加课胶囊同款手势语义。
+ * 拖拽位移保持本地 delta: 浮卡节点本身随 floatState.x/y 逐帧平移, root 换算会把
+ * 节点自位移二次计入 (反馈放大, 越界弹回) — 场景C 的失控只发生在网格卡起手那条
+ * continuousFloatLift 路径, 由它自己做 root 换算。
  */
 @Composable
 internal fun FloatingOccurrenceCard(
