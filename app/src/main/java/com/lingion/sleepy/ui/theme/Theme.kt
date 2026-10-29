@@ -447,6 +447,9 @@ object SleepyTheme {
 private fun animateColorSlot(target: Color, label: String): Color =
     animateColorAsState(
         targetValue = target,
+        // 这里不能读 MaterialTheme.motionScheme — transitioning() 正在构造将要
+        // 安装的 scheme, 读外层 CompositionLocal 拿到的是默认档; 故直取
+        // expressive() 单例 (与 :590 provider 安装同档)。
         animationSpec = MotionScheme.expressive().defaultEffectsSpec<Color>(),
         label = label,
     ).value

@@ -15,7 +15,8 @@ import org.junit.Test
  *   2. 遮罩 fadeIn/fadeOut 走 motionScheme fastEffects — 且 API 分档兜底值
  *      (26-30 = 0.35, 31+ = 0.10) 是用户实测定值, 抽成纯函数 scrimAlphaFor 锁死。
  *   3. 网格模糊半径 0→20dp 经 animateFloatAsState(defaultSpatialSpec) 缓动,
- *      gridFloatBlur 改为收半径参数(纯渲染), 判据抽成 floatBlurRadiusDp 纯函数。
+ *      gridFloatBlur 收半径读取 lambda(终审 I-2: 半径在 graphicsLayer 的 draw
+ *      相位求值, 组合相不再读动画 State), 判据抽成 floatBlurRadiusDp 纯函数。
  *   4. 浮框/卡片入场 = sleepyPopup 家族 (scale 0.8 + fast 对); 浮框退场 scale+fade,
  *      卡片收层瞬时移除 (brief 只为卡片定入场); 胶囊同 popup 家族。
  *      遮罩/浮框/卡片/胶囊全部经 AnimatedVisibility — 排空后节点删除语义保留,
@@ -113,9 +114,17 @@ class FloatLayerMotionContractTest {
             Regex("""animateFloatAsState\(""").containsMatchIn(tableSource))
         assertTrue("缓动规格必须来自 motionScheme defaultSpatial",
             tableSource.contains("defaultSpatialSpec"))
-        assertTrue("gridFloatBlur 必须改为收 Float 半径的纯渲染函数",
-            Regex("""internal fun Modifier\.gridFloatBlur\(\s*\w+\s*:\s*Float""")
+        assertTrue("gridFloatBlur 必须收 () -> Float 半径读取 lambda (draw 相位求值)",
+            Regex("""internal fun Modifier\.gridFloatBlur\(\s*\w+\s*:\s*\(\)\s*->\s*Float""")
                 .containsMatchIn(floatSource))
+        // 终审 I-2 锁 (lockstep): 调用点必须在 draw 相位读半径 —
+        // lambda 挂载形态存在, 组合相裸读形态禁止复活。
+        assertTrue("调用点必须以 gridFloatBlur { ... } lambda 形态挂载",
+            tableSource.contains("gridFloatBlur {"))
+        assertFalse("禁止组合相裸读 gridFloatBlur(floatBlurRadiusPx) — 每帧 recompose 最密子树",
+            tableSource.contains("gridFloatBlur(floatBlurRadiusPx)"))
+        assertTrue("floatBlurRadiusPx 必须是 State 句柄 (val = animateFloatAsState, 无 by 委托)",
+            Regex("""val floatBlurRadiusPx = animateFloatAsState\(""").containsMatchIn(tableSource))
     }
 
     // ---- 契约 5: tag 存活 ----

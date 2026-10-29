@@ -554,7 +554,8 @@ fun CardsGridView(
                 }
             }
             // 网格模糊半径缓动: 0↔20dp 经 animateFloatAsState(defaultSpatial), 不再同帧硬开合。
-            val floatBlurRadiusPx by animateFloatAsState(
+            // 终审 I-2: 此处不 `by` 委托 — 保持 State 句柄, 读取推迟到挂载处的 draw 相位
+            val floatBlurRadiusPx = animateFloatAsState(
                 targetValue = with(headerDensity) { floatBlurRadiusDp(floatState.active, floatState.dragging).toPx() },
                 animationSpec = motion.defaultSpatialSpec<Float>(),
                 label = "floatGridBlur",
@@ -675,12 +676,11 @@ fun CardsGridView(
                     modifier = Modifier
                         .fillMaxWidth()
                         .verticalScroll(scrollState)
-                        .then(
-                            // 浮起=整层网格进高斯模糊纹理; 半径经 animateFloatAsState 缓动,
-                            // 移动中缓向 0 (模糊与浮框消失同帧起步, 不再硬切)。0 半径不挂层。
-                            if (floatBlurRadiusPx > 0f) Modifier.gridFloatBlur(floatBlurRadiusPx)
-                            else Modifier
-                        )
+                        // 浮起=整层网格进高斯模糊纹理; 半径经 animateFloatAsState 缓动,
+                        // 移动中缓向 0 (模糊与浮框消失同帧起步, 不再硬切)。终审 I-2:
+                        // 半径在 draw 相位读取 (lambda 体跑在 graphicsLayer 里), 动画
+                        // 每帧只触发重绘不重组本列; 零半径不设 renderEffect。
+                        .gridFloatBlur { floatBlurRadiusPx.value }
                 ) {
                 // ---- 表头：自然 Compose Row ----
                 Row(

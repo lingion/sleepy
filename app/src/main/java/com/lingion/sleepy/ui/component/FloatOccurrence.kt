@@ -191,11 +191,15 @@ internal fun scrimAlphaFor(sdkInt: Int): Float =
 internal fun floatBlurRadiusDp(active: Boolean, dragging: Boolean): Dp =
     if (active && !dragging) 20.dp else 0.dp
 
-/** 浮起时模糊整个网格内容层 — API 31+ 高斯模糊; 26-30 无 RenderEffect, 由遮罩压暗兜底。 */
+/** 浮起时模糊整个网格内容层 — API 31+ 高斯模糊; 26-30 无 RenderEffect, 由遮罩压暗兜底。
+ *  半径经 lambda 在 graphicsLayer 的 draw 相位读取 (终审 I-2): 动画 State 的每帧
+ *  变化只触发重绘, 不再重组挂载它的整棵子树; graphicsLayer 恒挂, 零半径不设
+ *  renderEffect (与旧"0 半径不挂层"的可见行为等价)。 */
 @SuppressLint("NewApi")
-internal fun Modifier.gridFloatBlur(radiusPx: Float): Modifier = graphicsLayer {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && radiusPx > 0f) {
-        renderEffect = BlurEffect(radiusPx, radiusPx)
+internal fun Modifier.gridFloatBlur(radiusPx: () -> Float): Modifier = graphicsLayer {
+    val r = radiusPx()
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && r > 0f) {
+        renderEffect = BlurEffect(r, r)
     }
 }
 
