@@ -27,8 +27,16 @@ object CommandRouter {
 
     private class Route(val requiresToken: Boolean, val handler: suspend (ConsoleRequest) -> String)
 
-    /** path → (METHOD → route)。同一路径可挂多个方法（GET 读 / POST 写）。 */
-    private val routes = LinkedHashMap<String, MutableMap<String, Route>>()
+    /**
+     * path → (METHOD → route)。同一路径可挂多个方法（GET 读 / POST 写）。
+     *
+     * 两层都用 ConcurrentHashMap：写路径（register/remove/reset）另有 @Synchronized
+     * 互斥，这里的并发保证是给 [dispatch] 的**无锁读**——NanoHTTPD worker 线程随时可能
+     * 在读表，debug 源集 provider 又会在运行期补注册端点。LinkedHashMap 读与写并发
+     * 是数据竞争（可见性不保证、极端下结构性撕裂）。CHM 的写对后续读立即可见
+     * （volatile 语义），满足"运行期注册后 dispatch 立即可见"。
+     */
+    private val routes = java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.ConcurrentHashMap<String, Route>>()
 
     /**
      * 注册端点。同一 path+method 重复注册直接失败——端点撞名属装配 bug，
@@ -42,7 +50,7 @@ object CommandRouter {
         handler: suspend (ConsoleRequest) -> String,
     ) {
         val m = method.uppercase()
-        val byMethod = routes.getOrPut(path) { LinkedHashMap() }
+        val byMethod = routes.computeIfAbsent(path) { java.util.concurrent.ConcurrentHashMap() }
         check(!byMethod.containsKey(m)) { "duplicate route: $m $path" }
         byMethod[m] = Route(requiresToken, handler)
     }

@@ -22,9 +22,6 @@ class DebugConsoleServer : NanoHTTPD(HOST, PORT) {
         const val PORT = 3737
         const val TOKEN_HEADER = "X-Sleepy-Token"
         private const val MIME_JSON = "application/json"
-
-        /** 免 token 端点白名单（仅这两个，SPEC §3）。 */
-        private val TOKEN_FREE_PATHS = setOf("/v1/hello", "/v1/enable")
     }
 
     val audit = AuditLog()
@@ -47,7 +44,8 @@ class DebugConsoleServer : NanoHTTPD(HOST, PORT) {
     }
 
     private fun handleRequest(method: String, path: String, token: String?, session: IHTTPSession): Pair<Int, String> {
-        if (path !in TOKEN_FREE_PATHS && (!DebugGate.isActive || !TokenStore.verify(token))) {
+        // Task 2 收编：401 判定抽入纯函数 AuthGate（SPEC §6 release 鉴权拒绝路径单测锁真值表）
+        if (AuthGate.shouldReject(path, DebugGate.isActive, TokenStore.verify(token))) {
             return 401 to Envelope.err(401, "missing or invalid token")
         }
         val req = ConsoleRequest(
