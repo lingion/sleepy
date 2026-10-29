@@ -3,6 +3,7 @@ package com.lingion.sleepy.console
 import android.app.Application
 import android.util.Log
 import com.lingion.sleepy.BuildConfig
+import com.lingion.sleepy.console.handlers.DataOpsRuntime
 import java.util.concurrent.atomic.AtomicBoolean
 import org.json.JSONObject
 
@@ -26,15 +27,16 @@ object ConsoleBootstrap {
 
     /** debug 源集 StartupProvider 入口；release 解锁后才允许调 [start]。 */
     fun onCreate(app: Application) {
-        if (BuildConfig.DEBUG) start()
+        if (BuildConfig.DEBUG) start(app)
     }
 
-    /** 幂等启动：注册默认端点 → 起服务器 → DebugGate 激活（debugBuild 取编译期常量）。 */
-    fun start() {
+    /** 幂等启动：注册默认端点 → 装配 data-ops → 起服务器 → DebugGate 激活（debugBuild 取编译期常量）。 */
+    fun start(app: Application) {
         if (!started.compareAndSet(false, true)) return
         try {
             TokenStore.reset(passphrase = BuildConfig.CONSOLE_ENABLE_PASSPHRASE)
             registerDefaultHandlers()
+            DataOpsRuntime.install(app)
             val s = DebugConsoleServer()
             s.start()
             server = s

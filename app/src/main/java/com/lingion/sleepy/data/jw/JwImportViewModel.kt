@@ -81,6 +81,8 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                     throw e
                 } catch (_: Exception) { emptyMap() }
                 val list = parseSchoolsJson(text)
+                    // console data-ops 覆盖层（无覆盖时原样透传；main 侧唯一接入点）
+                    .let(com.lingion.sleepy.console.CatalogOverrideStore::applyTo)
                     .map { it.copy(cities = cityIndex[it.name].orEmpty()) }
                     .filter { it.url.isNotBlank() }  // 只显示有URL的学校，避免用户看到大量不可用选项
                 _schools.value = list
