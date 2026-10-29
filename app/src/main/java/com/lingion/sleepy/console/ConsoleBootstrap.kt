@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import com.lingion.sleepy.BuildConfig
 import com.lingion.sleepy.console.handlers.DataOpsRuntime
+import com.lingion.sleepy.console.ui.UiOpsRuntime
 import java.util.concurrent.atomic.AtomicBoolean
 import org.json.JSONObject
 
@@ -37,6 +38,7 @@ object ConsoleBootstrap {
             TokenStore.reset(passphrase = BuildConfig.CONSOLE_ENABLE_PASSPHRASE)
             registerDefaultHandlers()
             DataOpsRuntime.install(app)
+            UiOpsRuntime.install(app)
             val s = DebugConsoleServer()
             s.start()
             server = s
