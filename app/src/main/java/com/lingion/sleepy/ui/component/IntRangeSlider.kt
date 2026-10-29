@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -268,6 +269,64 @@ internal fun sliderGhostVisible(
     val os = initialStart.coerceIn(minValue, maxValue)
     val oe = initialEnd.coerceIn(os, maxValue)
     return os != currentStart || oe != currentEnd
+}
+
+/**
+ * 单头滑杆原值幽灵是否可见 (纯函数, 单测 SingleSliderGhostTest 锁定)。
+ * 需求 2026-10-29 用户定义原话语义: 原设 7dp 改成 8dp/6dp 时, 原 7dp 位置出现
+ * 幽灵提醒"这是他上一次的结果"; 拖回原刻度即消失; 退出页面重进基线重算
+ * (基线 = 进页/开弹窗一刻的取值, 由各调用点 remember 一次性捕获, 绝不接 setter)。
+ * - baseline null (新建/无原值路径) → 永不可见;
+ * - |current - baseline| <= epsilon → 不可见 (判"已回到原刻度点"); epsilon 由调用点
+ *   按各自最小量化步进取半档 (0.1 步进 → 0.05; 1/20 缩放档 → 0.025; 整数 dp 档 →
+ *   0.5; 色相 1 度档 → 0.5) — 浮点拖动落在档位中点附近时判得住;
+ * - NaN/Inf (脏值或换算意外) → 不可见: abs(NaN-x)<=eps 恒 false 会误判"拖离",
+ *   幽灵宁可不画不可乱画。
+ */
+internal fun singleSliderGhostVisible(
+    current: Float,
+    baseline: Float?,
+    epsilon: Float,
+): Boolean {
+    if (baseline == null) return false
+    if (!current.isFinite() || !baseline.isFinite()) return false
+    return abs(current - baseline) > epsilon
+}
+
+/**
+ * 单头滑杆轨道上的原值细条 (纯装饰, 需求 2026-10-29; 形态 = 用户裁定的"一条细条",
+ * 单值没有区间段, 不做轨道段)。仿 material3 默认 thumb 竖胶囊形态: 4dp 宽 x 全高
+ * 圆头, primary 低透明 — 与双头幽灵端点细条 (本文件 RangeSlider track 内) 同观感族。
+ *
+ * 几何与色值单点: 拇指半宽 4dp / 轨道两端缩进 8dp / 细条宽 4dp / alpha 0.40 只准
+ * 出现在下面这一处 — material3 Slider 轨道盒 = slider 全宽两端各缩进 thumbWidth/2,
+ * frac 0..1 线性映射进该内缩区; 调用点 Canvas 用 matchParentSize 撑整条 Slider 边界
+ * (高由 44dp thumb 主导)时细条与真 thumb 逐像素同形同位。色相条等自定义底衬不进
+ * 本件 (对比配方另画, 见 HueSlider), 本件服务标准 material3 Slider。
+ *
+ * 非交互铁律: 零 pointerInput、零语义 (testTag 由调用点挂在本件返回的布局上时
+ * 仅服务 Robolectric 存在性断言, 不参与朗读), 幽灵纯渲染 — 落库节奏仍归调用点
+ * onValueChangeFinished 一克不动。BoxScope 扩展 = 本件只准放进 Box{ Slider; … }
+ * 的轨道边界内 (matchParentSize 是 BoxScope 能力), 与双头幽灵同宿主形态。
+ */
+@Composable
+internal fun BoxScope.SingleSliderGhostMark(
+    baselineFrac: Float,
+    modifier: Modifier = Modifier,
+) {
+    val primary = MaterialTheme.colorScheme.primary
+    Canvas(modifier.matchParentSize()) {
+        val thumbHalf = 4.dp.toPx()
+        val barW = 4.dp.toPx()
+        val frac = baselineFrac.coerceIn(0f, 1f)
+        val x = thumbHalf + (size.width - 2f * thumbHalf) * frac
+        drawRoundRect(
+            color = primary.copy(alpha = 0.40f),
+            topLeft = Offset(x - barW / 2f, 0f),
+            size = Size(barW, size.height),
+            cornerRadius = CornerRadius(barW / 2f, barW / 2f),
+        )
+    }
 }
 
 /**
