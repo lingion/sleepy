@@ -21,6 +21,6 @@ kotlin {
             api("androidx.compose.ui:ui:1.11.2")
             implementation("io.github.kyant0:shapes:1.2.0")
         }
-        all { languageSettings.enableLanguageFeature("ContextParameters") }
+        // ContextParameters is stable in Kotlin 2.0+; enableLanguageFeature deprecated in Gradle Kotlin DSL
     }
 }
