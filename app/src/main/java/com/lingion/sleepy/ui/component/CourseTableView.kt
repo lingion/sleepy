@@ -713,10 +713,22 @@ fun CardsGridView(
                     delay(FLOAT_EDGE_DWELL_STEP_MS)
                     val cx = (floatState.x + floatState.width / 2f).value
                     // 防误触: 拖拽起点起水平位移未超 slop 不判边缘 (FullCalendar everMoved 同构)。
+                    // 触发域 (2026-10-29 用户裁决, 替换旧「容器缘内缩 72dp」): 中心须**压入列带
+                    // 外缘 10dp**才算翻周意图 — 对齐 Lawnchair Workspace.setDropLayoutForDragObject:
+                    // 中心命中本页可见列 = 落子(verifyInsidePage 路), 翻页只属邻页命中路
+                    // (checkDragObjectIsOverNeighbourPages, 页边界即视口缘)。旧缘区(屏宽 360dp 时
+                    // cx>288)整个吞掉周日列(列心≈338)连周六大半: 落子与翻页共用一片手势域互相
+                    // 打架 — 拖到周日必被翻走, 翻完中心仍贴缘, 横向微调全程在缘区内 edgeArmed
+                    // 永不复归, 看着像「只能上下拖」。现在列心距触发线 ≈8dp, 各列落子全程安全;
+                    // 真翻页须把中心按死网格缘 500ms — LC 悬停邻屏同等强度。
+                    // (LC 用 finger/视觉中心双极点取最值; 本浮层被容器裁剪只有视觉中心可用,
+                    //  故保留 FLOAT_EDGE_ZONE_DP 作列带内缘容差。)
+                    val bandLeft = (timeW + gapW).value
+                    val bandRight = (timeW + gapW + (colW + gapW) * dayCount - gapW).value
                     val dir = when {
                         abs(cx - floatState.dragOriginCx.value) < FLOAT_EDGE_SLOP_DP -> 0
-                        cx < FLOAT_EDGE_ZONE_DP -> -1
-                        cx > maxWidth.value - FLOAT_EDGE_ZONE_DP -> 1
+                        cx < bandLeft + FLOAT_EDGE_ZONE_DP -> -1
+                        cx > bandRight - FLOAT_EDGE_ZONE_DP -> 1
                         else -> 0
                     }
                     if (dir != held) { held = dir; elapsed = 0L }

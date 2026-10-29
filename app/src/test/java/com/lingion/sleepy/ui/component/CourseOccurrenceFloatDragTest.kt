@@ -435,7 +435,8 @@ class CourseOccurrenceFloatDragTest {
         compose.onNodeWithTag("float-dim").assertDoesNotExist()
     }
 
-    // ---- 边缘驻留翻页 (2026-10-27 用户裁决: 72dp 缘区 · 500ms 驻留 · 逐页重计) ----
+    // ---- 边缘驻留翻页 (判据 2026-10-29 修正: 列带外缘 10dp · 500ms 驻留 · 逐页重计;
+    // 旧「容器缘内缩 72dp」吞掉周日列, 落子/翻页手势域重叠, 见 EdgePeek.kt KDoc) ----
 
     /** 计时器以 dragging 为键 — 翻真后需一次重组重启, 新实例的首步轮询要额外放行;
      *  week bump 同样重启(宿主换页)。断言方向/驻留前先 flush 这段调度开销。 */
@@ -448,10 +449,16 @@ class CourseOccurrenceFloatDragTest {
         val state = CourseFloatState()
         grid(state, floatMaxWeek = 16)
         compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        // 磁吸渲染后 float-card 的 bounds = 吸附投影位 (≠ 手指位); 导航一律基于
+        // 「lift 原点 + 累计位移」的手指真值 — 手指落在哪, 投影才吸到哪。
+        val lift = compose.onNodeWithTag("float-card").fetchSemanticsNode().boundsInRoot
+        val liftCx = (lift.left + lift.right) / 2f
+        val edgeDx = with(compose.density) { 330.dp.toPx() } // 中心压过列带右缘触发线(345dp 处)
         compose.onNodeWithTag("float-card").performTouchInput {
             down(center)
-            moveBy(Offset(330.dp.toPx(), 40f), 100) // 中心推入右缘 72dp 区
+            moveBy(Offset(edgeDx, 40f), 100)
         }
+        val fingerCx = liftCx + edgeDx
         flushEdgePolling()
         compose.runOnIdle {
             assertTrue(state.dragging)
@@ -475,14 +482,16 @@ class CourseOccurrenceFloatDragTest {
             assertEquals(listOf(1), edgeCalls)
         }
         // 回到格内放手 → 落点在目标周(currentWeek 已换 2)照常提交。
-        // 位移按「目标根坐标 − 卡当前根坐标」实时差, 卡此时悬在缘区外(400dp),
-        // 若仍按初值平移会落在网格外 → 非法落点弹回。
+        // (旧写法按 float-card bounds 导航 — 磁吸后那是渲染位而非手指位,
+        //  位移被整体带偏一列, 2026-10-29 f8a4e336 回归 day=5 的根因。
+        //  投影读手指真值: x 对齐目标列中心(down(center) 抓中心, 卡中心=手指x);
+        //  y 按「卡顶跟手值」对齐目标顶 — 卡顶=lift.top+首移 40px。)
         val target = compose.onNodeWithTag("add-course-3-4").fetchSemanticsNode().boundsInRoot
-        val card = compose.onNodeWithTag("float-card").fetchSemanticsNode().boundsInRoot
+        val cardTopFollow = lift.top + 40f
         compose.onNodeWithTag("float-card").performTouchInput {
-            moveBy(Offset(target.center.x - card.center.x, target.top - card.top), 100)
-            up()
+            moveBy(Offset(target.center.x - fingerCx, target.top - cardTopFollow), 100)
         }
+        compose.onNodeWithTag("float-card").performTouchInput { up() }
         compose.runOnIdle {
             assertEquals(listOf(Move(7L, 3, 4, 2, false)), moves)
             assertNull(state.course)
@@ -550,13 +559,46 @@ class CourseOccurrenceFloatDragTest {
         }
     }
 
+    /** 2026-10-29 用户反馈: 把课拖到周日列(落子意图)被缘区吞了 — 中心一进周日列
+     *  就踩翻页雷, 驻停 500ms 非但落不成周日反而翻了周; 翻完仍贴缘, 横向微调全程
+     *  在缘区内 edgeArmed 永不复归 → 看着像「只能上下拖」。
+     *  对齐 Lawnchair 语义(Workspace.verifyInsidePage: 中心悬在本页可见列 = 落子,
+     *  永不翻页; 翻页只属 checkDragObjectIsOverNeighbourPages 的邻页命中):
+     *  周日列中心驻停 2×500ms 不许翻, 松手落 day=7、week 不变。 */
+    @Test fun dwellingOverTheSundayColumnDropsOnSundayInsteadOfFlipping() {
+        val state = CourseFloatState()
+        grid(state, floatMaxWeek = 16)
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        val card = compose.onNodeWithTag("float-card").fetchSemanticsNode().boundsInRoot
+        val target = compose.onNodeWithTag("add-course-7-4").fetchSemanticsNode().boundsInRoot
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(target.center.x - card.center.x, target.top - card.top), 300)
+        }
+        flushEdgePolling()
+        compose.runOnIdle {
+            assertTrue(state.dragging)
+            assertEquals(0, state.edgeDir) // 页内合法列 = 落子, 不是翻页候选
+        }
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS * 2) // 驻停两倍时长
+        compose.runOnIdle {
+            assertEquals(1, state.week)
+            assertTrue(edgeCalls.isEmpty())
+        }
+        compose.onNodeWithTag("float-card").performTouchInput { up() }
+        compose.runOnIdle {
+            assertEquals(listOf(Move(7L, 7, 4, 2, false)), moves)
+            assertNull(state.course)
+        }
+    }
+
     @Test fun semesterBoundaryKeepsTheWeekAndBlocksTheFlip() {
         val state = CourseFloatState()
         grid(state, floatMaxWeek = 16) // 第 1 周左缘 = 学期头, 禁翻
         compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
         compose.onNodeWithTag("float-card").performTouchInput {
             down(center)
-            // 卡中心原在 day1 列; 向左推入 72dp 缘区(位移需越 8dp slop)
+            // 卡中心原在 day1 列; 向左压过列带左缘触发线(≈61dp 处, 位移需越 8dp slop)
             moveBy(Offset(-60.dp.toPx(), 40f), 100)
         }
         flushEdgePolling()

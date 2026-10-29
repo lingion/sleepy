@@ -31,20 +31,30 @@ import com.lingion.sleepy.R
  * 数值出处(2026-10-27 官方文档与实现交叉验证, 用户裁决采纳):
  * - 停留 500ms 换页: ItemTouchHelper 边缘滚动与 pragmatic-drag-and-drop 的
  *   timeDampeningDurationMs(400) 同量级, Baymard 触控研究上限 500 — 取整 500;
- * - 边缘区 72dp: FullCalendar AutoScroller edgeThreshold(50px@mdpi) 放大到
- *   拇指可及的 Material 触控目标档位(56dp+8dp slop);
+ * - 边缘区 10dp【2026-10-29 修正, 用户反馈: 拖到周日列被缘区吞掉】: 判据对齐
+ *   Lawnchair Workspace — 翻页候选只来自「中心命中邻页」(checkDragObjectIsOverNeighbourPages
+ *   → verifyInsidePage, 页边界即视口缘), 中心悬在本页任何可见列 = 落子, 永不翻页。
+ *   旧 72dp 内缩带把整个末列(周日)连同大半末-1列划进触发区: 落子与翻页两个意图
+ *   共用一片手势域, 互相打架 (周日列中心 ≈ 屏宽-23dp, 一进列就踩雷)。
+ *   10dp ≈ 「压死屏缘才算翻页意图」, 等效 LC 的越页命中;
  * - 翻页动画 300ms + 曲线 (0.1,0.1,0,1): 预测性返回官方动效规格
  *   (developer.android.com/design/architecture/predictive-back, CN 镜像同文);
  * - 预览条进入缩放 110%→100%、淡入阈值 35%: 同上预测性返回 enter/fade 规格;
  * - 防误触位移 8dp: Compose touchSlop 名义档位, FullCalendar everMoved 方向守卫同构。
  */
-internal const val FLOAT_EDGE_ZONE_DP = 72f
+internal const val FLOAT_EDGE_ZONE_DP = 10f
 internal const val FLOAT_EDGE_DWELL_MS = 500L
 internal const val FLOAT_EDGE_DWELL_STEP_MS = 50L
 internal const val FLOAT_PAGE_ANIM_MS = 300L
 // 吸附跳格动画时长 — Lawnchair CellLayout.REORDER_ANIMATION_DURATION(HEAD 实测)。
-// 曲线复用 FLOAT_PAGE_EASING(减速易出, 与源库 DECELERATE_QUINT 同向; AOSP Interpolators
-// 的具体控制点未单独拉取核实, 以已裁决的预测性返回曲线代替, 语义等价)。
+// 曲线口径 (2026-10-29 逐行核实源库, 修正早前「quint=吸附曲线」的误记):
+// - Lawnchair 拖拽中 DragView 恒跟手 (applyTranslation), 卡本身不做吸附动画;
+//   吸附格靠 visualizeDropLocation 画淡入淡出轮廓 — DECELERATE_QUINT(1-(1-t)^5)
+//   只是该轮廓 alpha 淡出曲线 (CellLayout:312), 不是位移曲线。
+// - 邻居让位 shuffle 走 animateChildToPosition(150ms), 未设插值器 = 系统默认
+//   ACCELERATE_DECELERATE。
+// - 我们的「卡随投影跳」是用户裁决的渲染模型 (2026-10-29 f8a4e336), 位移曲线
+//   取 FLOAT_PAGE_EASING (预测性返回规格) — 属自选, 非源库移植。
 internal const val FLOAT_SNAP_ANIM_MS = 150L
 internal const val FLOAT_PEEK_FADE_START = 0.35f
 internal const val FLOAT_PEEK_ENTER_SCALE = 1.10f

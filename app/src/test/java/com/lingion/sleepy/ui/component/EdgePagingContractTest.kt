@@ -19,7 +19,18 @@ class EdgePagingContractTest {
     private val theme = readProjectSource("app/src/main/java/com/lingion/sleepy/ui/theme/Theme.kt")
 
     @Test fun edgeGeometryAndTimingMatchTheRatifiedValues() {
-        assertTrue("边缘区 72dp", edgePeek.contains("FLOAT_EDGE_ZONE_DP = 72f"))
+        // 2026-10-29 用户反馈「拖到周日列就翻页」后裁决: 触发域从「容器缘内缩 72dp」
+        // 改为「列带外缘 10dp」— 72dp 带整个吞掉末列, 落子与翻页手势域重叠 (根因见
+        // CourseTableView 轮询注释 + Lawnchair Workspace.verifyInsidePage 语义)。
+        // 判据行为锁: CourseOccurrenceFloatDragTest.dwellingOverTheSundayColumn…
+        assertTrue("缘容差 10dp", edgePeek.contains("FLOAT_EDGE_ZONE_DP = 10f"))
+        assertTrue("触发线取列带缘", listOf(
+            "cx < bandLeft + FLOAT_EDGE_ZONE_DP -> -1",
+            "cx > bandRight - FLOAT_EDGE_ZONE_DP -> 1",
+        ).all { tableView.contains(it) })
+        assertTrue("列带含时间列右缘", tableView.contains("val bandLeft = (timeW + gapW).value"))
+        assertTrue("列带止于末列右缘(扣尾隙)",
+            tableView.contains("(colW + gapW) * dayCount - gapW).value"))
         assertTrue("驻留 500ms", edgePeek.contains("FLOAT_EDGE_DWELL_MS = 500L"))
         assertTrue("翻页动画 300ms", edgePeek.contains("FLOAT_PAGE_ANIM_MS = 300L"))
         assertTrue("防误触位移 8dp", edgePeek.contains("FLOAT_EDGE_SLOP_DP = 8f"))
