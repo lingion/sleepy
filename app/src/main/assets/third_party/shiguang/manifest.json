@@ -4278,7 +4278,7 @@
     },
     {
       "path": "js/CQCST/cqcst_01.js",
-      "sha256": "32464036f3a9a0aba06b53a2d7b4465936f252b452d1342b79873a9a8c20ed88"
+      "sha256": "d4916440baec58d13cc669ec9848cb4600e008eba1f5eeef02d5a1bc620859a8"
     },
     {
       "path": "js/CQEPC/cqepc.js",
@@ -4470,7 +4470,7 @@
     },
     {
       "path": "js/GLMU/glmu.js",
-      "sha256": "e558f0879fa934c29d7f99d799cd9b2291d2fef7cf93ca387aa0d66b958a4af8"
+      "sha256": "f861086387744b64e47b3cd57abda8bc9da34116c1af4f4cd4ab2b8cb0f82733"
     },
     {
       "path": "js/GLOBAL_TOOLS/starlink.js",
@@ -4534,7 +4534,7 @@
     },
     {
       "path": "js/GZTRC/gztrc.js",
-      "sha256": "ec618f0d58d6323f5c4b425ee8099a9269658fae6c0034aea9e7da5cd891cd43"
+      "sha256": "e793240f2c1a157068d0946d6e5091133aeb0ba8c76dc761c68cf415159bdef9"
     },
     {
       "path": "js/GZTRC/gztrc_old.js",
@@ -4542,11 +4542,11 @@
     },
     {
       "path": "js/GZU/gzu.js",
-      "sha256": "727b1a888c6f740fadbe801c135fa1d1edea87a9a01bf5293413deb392f6f68b"
+      "sha256": "e13270592c6a8bcf1bd30e73a987627cd7667f9c5f1d6c0e4f8ad7c0bc519a54"
     },
     {
       "path": "js/HAUE/haue_01.js",
-      "sha256": "34d19bf7dd88798ee6998374d3dfd551d124f992c8059ff44a558c647977afa6"
+      "sha256": "9ac5c3754a69c2974ee15c3230223c09319310cfe1467a6ec2e3910dce1eaca5"
     },
     {
       "path": "js/HAUST/haust.js",
@@ -4570,7 +4570,7 @@
     },
     {
       "path": "js/HBMU/hbmu.js",
-      "sha256": "c4cf8e7e5e1bdd2743d37c9e94d9b14a8e7e135d365bcf171e0a4b4a0390f95d"
+      "sha256": "89622592d6ec23ebb62a2eda358ce09fca51daa721dbfab276aee47914287fc8"
     },
     {
       "path": "js/HBMZU/hbmzu.js",
@@ -4810,7 +4810,7 @@
     },
     {
       "path": "js/LUT/LUT.js",
-      "sha256": "756ebb91c4fac224677e815274e650430f1276d6d997c093ae13a1a493f2fc69"
+      "sha256": "9e1af3d93aa1b255fd9575e8999e78c0b58ebaa380fff3af36c69298f29622fe"
     },
     {
       "path": "js/LYU/lyu.js",
@@ -4850,7 +4850,7 @@
     },
     {
       "path": "js/NCUT/ncut_01.js",
-      "sha256": "a31de7eb8544a22aadc978f58adb3da8d69be5957cb8d993f1ca84bd5111799a"
+      "sha256": "0e7f112296a8a2bab8a4e81740c43e66060af93945d62982b2294e9e791a4953"
     },
     {
       "path": "js/NEAU/NEAU_01.js",
@@ -5046,7 +5046,7 @@
     },
     {
       "path": "js/SMU/smu_01.js",
-      "sha256": "6b8304f86ca079856c46ffd1c271ae640ffc119830a50290ee3c7a3c15ab39ed"
+      "sha256": "99dbb1d1f1c362e8107322cd1889985c1b289fe07ff4f5fa0f2f70cacdd5c274"
     },
     {
       "path": "js/SMXY/smxy.js",
@@ -5170,7 +5170,7 @@
     },
     {
       "path": "js/WBU/wbu_02.js",
-      "sha256": "081a6ba2ff782fc90cc0046513f09f90ecc6f6f3a759bfb91de88d3a5f21e4a0"
+      "sha256": "2b732e3b0e8fd8aa8497db0e40391376f2cdc2062e20eed9d00ff62aab88f907"
     },
     {
       "path": "js/WENHUA/wenhua_01.js",
@@ -5210,7 +5210,7 @@
     },
     {
       "path": "js/XCU/xcu_01.js",
-      "sha256": "f5bd1cb0e4f03b82105937fc15ed14092a715bd33f91f5bc2270d5a0aaa7bab5"
+      "sha256": "34b6304c1631dc594eef9ba1f1257e4579cff20dcf084a82f2e55b08241e72f1"
     },
     {
       "path": "js/XHKJZYXY/xhkjzyxy_01.js",
@@ -5286,7 +5286,7 @@
     },
     {
       "path": "js/ZCMU/zcmu.js",
-      "sha256": "41b6fb66176f59c1d83a902a1ca4a7697558ecb36995fbc4078f7a8c63b606c4"
+      "sha256": "7e0e5406c240f998d58c7794ff5c6207a3debf1559b3dd659ecd39afbd1c8a22"
     },
     {
       "path": "js/ZHKU/zhku_lc6464.js",
