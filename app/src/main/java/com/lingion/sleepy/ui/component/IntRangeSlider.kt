@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -152,15 +153,29 @@ fun IntRangeSlider(
                         SliderDefaults.Track(
                             rangeSliderState = rangeSliderState,
                         )
-                        if (ghostRange != null) {
-                            val primary = colors.primary
-                            val ghostStart = ghostRange.first
-                            val ghostEnd = ghostRange.last
-                            Canvas(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(44.dp)
-                                    .testTag("slider-ghost"),
+                        // MD3E (Task 6): 幽灵弹入弹出走 popup 家族 (T1 工厂)。
+                        // testTag 挂 AnimatedVisibility 而非 Canvas — 退场播放期间
+                        // 节点仍在树内, 存在性断言语义与旧直挂一致; 隐藏播完即
+                        // 真移除 (不许改 alpha 常驻 — 管线测试锁初始无节点)。
+                        // this@Column: Box 作用域无 AnimatedVisibility 扩展,
+                        // 外层 Column 版不许隐式接收者 (DSL 闸) — CourseTableView:969 同款修法;
+                        // .align 父级数据仍由本 Box 布局消费, 落位不受重载选择影响。
+                        this@Column.AnimatedVisibility(
+                            visible = ghostRange != null,
+                            enter = sleepyPopupEnter(),
+                            exit = sleepyPopupExit(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("slider-ghost"),
+                        ) {
+                            if (ghostRange != null) {
+                                val primary = colors.primary
+                                val ghostStart = ghostRange.first
+                                val ghostEnd = ghostRange.last
+                                Canvas(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(44.dp),
                             ) {
                                 // 1:1 复刻真滑杆形态 (material3 SliderTokens 实测):
                                 // 真 thumb = HandleWidth 4dp x HandleHeight 44dp 全圆
@@ -208,6 +223,7 @@ fun IntRangeSlider(
                                         cornerRadius = CornerRadius(barW / 2f, barW / 2f),
                                     )
                                 }
+                            }
                             }
                         }
                     }

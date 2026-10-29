@@ -72,14 +72,15 @@ class ScheduleReturnRestoreRaceContractTest {
         )
     }
 
-    /** 契约 2 (回归保护): selectedWeek effect 的程序化滚动守卫不回退 */
+    /** 契约 2 (回归保护): selectedWeek effect 的程序化滚动守卫不回退
+     *  (2026-10-29 Task 6 lockstep: 跳页改 animateScrollToPage 缓动, 锚点随改名同步) */
     @Test
     fun selected_week_scroll_keeps_sync_guard() {
         val body = screenSource.substringAfter("LaunchedEffect(state.selectedWeek)")
             .substringBefore("LaunchedEffect(pagerState.currentPage)")
         assertTrue(
-            "scrollToPage must be preceded by syncingFromState = true (2026-09-13 fix, no regression)",
-            body.indexOf("syncingFromState = true") in 0 until body.indexOf("pagerState.scrollToPage")
+            "animateScrollToPage must be preceded by syncingFromState = true (2026-09-13 fix, no regression)",
+            body.indexOf("syncingFromState = true") in 0 until body.indexOf("pagerState.animateScrollToPage")
         )
     }
 }
