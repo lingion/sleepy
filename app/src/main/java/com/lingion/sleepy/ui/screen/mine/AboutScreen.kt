@@ -64,6 +64,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.BuildConfig
 import com.lingion.sleepy.R
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.FeedbackComposer
@@ -227,7 +228,10 @@ fun AboutScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.about_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(
+                        onClick = onBack,
+                        modifier = Modifier.dbgTag("about_back", role = "button")
+                    ) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
@@ -343,7 +347,7 @@ fun AboutScreen(
                     Button(
                         onClick = { checkUpdate() },
                         enabled = uiState !is UpdateUiState.Checking,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().dbgTag("about_update_check", role = "button")
                     ) {
                         Icon(Icons.Outlined.Download, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
@@ -380,7 +384,7 @@ fun AboutScreen(
                         )
                     }
                     // IconButton 而非裸 Icon+clickable — 裸 20dp 图标的涟漪半径过小且无 48dp 最小触达区
-                    IconButton(onClick = {
+                    IconButton(modifier = Modifier.dbgTag("about_author_link", role = "button"), onClick = {
                         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/lingion")))
                     }) {
                         Icon(
@@ -418,7 +422,7 @@ fun AboutScreen(
                             textDecoration = TextDecoration.Underline
                         )
                     }
-                    IconButton(onClick = {
+                    IconButton(modifier = Modifier.dbgTag("about_source_link", role = "button"), onClick = {
                         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/lingion/sleepy")))
                     }) {
                         Icon(
@@ -456,7 +460,7 @@ fun AboutScreen(
                             textDecoration = TextDecoration.Underline
                         )
                     }
-                    IconButton(onClick = {
+                    IconButton(modifier = Modifier.dbgTag("about_privacy_link", role = "button"), onClick = {
                         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://sleepy.qdp.qzz.io/privacy")))
                     }) {
                         Icon(
@@ -493,7 +497,9 @@ fun AboutScreen(
                             color = colors.onSurfaceVariant
                         )
                     }
-                    IconButton(onClick = { openGitHubFeedback() }) {
+                    IconButton(
+                        modifier = Modifier.dbgTag("about_feedback_github", role = "button"),
+                        onClick = { openGitHubFeedback() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
                             contentDescription = stringResource(R.string.about_feedback_github),
@@ -501,7 +507,9 @@ fun AboutScreen(
                             modifier = Modifier.size(20.dp)
                         )
                     }
-                    IconButton(onClick = { openEmailFeedback() }) {
+                    IconButton(
+                        modifier = Modifier.dbgTag("about_feedback_email", role = "button"),
+                        onClick = { openEmailFeedback() }) {
                         Icon(
                             imageVector = Icons.Outlined.Email,
                             contentDescription = stringResource(R.string.about_feedback_email),
@@ -521,6 +529,7 @@ fun AboutScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .noRippleClickable { joinQqGroup() }
+                        .dbgTag("about_qq_group", role = "button")
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Groups,
@@ -541,7 +550,9 @@ fun AboutScreen(
                             color = colors.onSurfaceVariant
                         )
                     }
-                    IconButton(onClick = { joinQqGroup() }) {
+                    IconButton(
+                        modifier = Modifier.dbgTag("about_qq_copy", role = "button"),
+                        onClick = { joinQqGroup() }) {
                         Icon(
                             imageVector = Icons.Outlined.ContentCopy,
                             contentDescription = stringResource(R.string.about_qq_copy_action),
@@ -561,6 +572,7 @@ fun AboutScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .noRippleClickable(onOpenLicense)
+                        .dbgTag("about_license_entry", role = "button")
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
@@ -610,6 +622,7 @@ fun AboutScreen(
                             AppPrefs.setUpdateCheckEnabled(context, v)
                             if (!v) UpdateNotifier.clearCache()
                         },
+                        modifier = Modifier.dbgTag("about_update_switch", text = stringResource(R.string.about_update_check), role = "switch"),
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = colors.onPrimary,
                             checkedTrackColor = colors.primary,
@@ -671,7 +684,8 @@ private fun UpdateBanner(
         Row(
             modifier = Modifier
                 .weight(1f)
-                .noRippleClickable(onClick),
+                .noRippleClickable(onClick)
+                .dbgTag("about_update_banner", role = "button"),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
@@ -694,7 +708,9 @@ private fun UpdateBanner(
                 modifier = Modifier.size(18.dp)
             )
         }
-        IconButton(onClick = onDismiss) {
+        IconButton(
+            modifier = Modifier.dbgTag("about_update_dismiss", role = "button"),
+            onClick = onDismiss) {
             Icon(
                 imageVector = Icons.Outlined.Close,
                 contentDescription = stringResource(R.string.about_update_dismiss),
