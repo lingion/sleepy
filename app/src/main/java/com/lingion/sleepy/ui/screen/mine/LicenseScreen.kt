@@ -1,10 +1,6 @@
 package com.lingion.sleepy.ui.screen.mine
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -42,6 +38,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
+import com.lingion.sleepy.ui.component.sleepyExpandSpecs
 import com.lingion.sleepy.ui.theme.SleepyTheme
 
 /**
@@ -154,10 +151,12 @@ fun LicenseScreen(onBack: () -> Unit) {
                             )
                         }
                     }
+                    // MD3E (Task 7a): 展开家族 — 尺寸 fastSpatial + 淡入淡出 motionScheme
+                    val expandSpecs = sleepyExpandSpecs()
                     AnimatedVisibility(
                         visible = bodyExpanded,
-                        enter = expandVertically() + fadeIn(),
-                        exit = shrinkVertically() + fadeOut()
+                        enter = expandSpecs.enter,
+                        exit = expandSpecs.exit,
                     ) {
                         Column(modifier = Modifier.padding(top = 8.dp)) {
                             Text(
@@ -270,10 +269,12 @@ private fun AttributionCard(
                 color = colors.onSurfaceVariant
             )
         }
+        // MD3E (Task 7a): 展开家族 — 尺寸 fastSpatial + 淡入淡出 motionScheme
+        val expandSpecs = sleepyExpandSpecs()
         AnimatedVisibility(
             visible = expanded && expandedContent != null,
-            enter = expandVertically() + fadeIn(),
-            exit = shrinkVertically() + fadeOut()
+            enter = expandSpecs.enter,
+            exit = expandSpecs.exit,
         ) {
             Spacer(modifier = Modifier.height(6.dp))
             expandedContent?.invoke()

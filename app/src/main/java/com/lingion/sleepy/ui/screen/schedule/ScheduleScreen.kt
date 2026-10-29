@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.screen.schedule
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -75,6 +76,8 @@ import com.lingion.sleepy.ui.component.CourseDetailSheet
 import com.lingion.sleepy.ui.component.FullWeekView
 import com.lingion.sleepy.ui.component.SectionHead
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
+import com.lingion.sleepy.ui.component.sleepyPopupEnter
+import com.lingion.sleepy.ui.component.sleepyPopupExit
 import com.lingion.sleepy.ui.component.ShareScheduleSheet
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
@@ -319,12 +322,15 @@ fun ScheduleScreen(
             }
 
             // ViewModel 变化（TopBar 箭头/下拉菜单点击 / 切表）→ 同步 Pager。
+            // MD3E (Task 6): 程序化跳页一律缓动 — scrollToPage → animateScrollToPage
+            // (计划裁决无瞬时例外); syncingFromState 守卫与 try/finally 结构不变,
+            // 由两份 race 契约测试锁新字面量 (lockstep 改写 2026-10-29)。
             LaunchedEffect(state.selectedWeek) {
                 val targetPage = (state.selectedWeek - 1).coerceIn(0, pagerMaxWeek - 1)
                 if (pagerState.currentPage != targetPage) {
                     syncingFromState = true
                     try {
-                        pagerState.scrollToPage(targetPage)
+                        pagerState.animateScrollToPage(targetPage)
                     } finally {
                         syncingFromState = false
                     }
@@ -631,17 +637,25 @@ private fun TopBar(
                 // 2026-09-21 用户令: 撤回/取消撤回合成一个体育场形状(两半圆+中间矩形)胶囊,
                 // 一起出现一起消失, 中间一条淡淡竖线 — TopBar 空间紧张, 单胶囊比两个分立按钮省位。
                 // 无 undo 也无 redo 时整个胶囊隐藏; scale tick 仍独立圆形按钮(语义不同, 不入胶囊)。
+                // MD3E (Task 6): 显隐走 AnimatedVisibility popup 家族 — 一体显隐语义不变,
+                // 出入场补上 popup 签名性格 (0.8 尺度弹入弹出)。
                 val hasUndo = com.lingion.sleepy.data.undo.UndoManager.hasSnapshot
                 val hasRedo = com.lingion.sleepy.data.undo.UndoManager.hasRedoSnapshot
-                if (hasUndo || hasRedo) {
-                    Spacer(modifier = Modifier.width(6.dp))
-                    UndoRedoCapsule(
-                        showUndo = hasUndo,
-                        showRedo = hasRedo,
-                        scale = capsuleScale,
-                        onUndo = onUndo,
-                        onRedo = onRedo
-                    )
+                AnimatedVisibility(
+                    visible = hasUndo || hasRedo,
+                    enter = sleepyPopupEnter(),
+                    exit = sleepyPopupExit(),
+                ) {
+                    Row {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        UndoRedoCapsule(
+                            showUndo = hasUndo,
+                            showRedo = hasRedo,
+                            scale = capsuleScale,
+                            onUndo = onUndo,
+                            onRedo = onRedo
+                        )
+                    }
                 }
                 // 2026-09-16 用户令: 捏合未确认时 tick 单列,与数据撤回胶囊互不干涉;
                 // tick=落盘长期生效, 撤回=回到上次确认值(语义不同, 不并入胶囊)。

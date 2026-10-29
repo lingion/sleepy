@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,7 +16,10 @@ import androidx.compose.material3.RangeSliderState
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -94,6 +98,13 @@ fun IntRangeSlider(
     } else {
         null
     }
+    // 终审 I-1: 退场帧保留的幽灵快照 — ghostRange 在拖回初值的同一次重组翻 null,
+    // 与 visible=false 同帧; 内容若直读 ghostRange, Canvas 在退场第 0 帧即被拆走,
+    // sleepyPopupExit 只剩空壳动画 (弹入真实、退出硬切)。组合期直写保留最后非空
+    // 快照供内容判据 (CourseTableView retainedLifted 同款模式); 快照一旦现身不再
+    // 复位 null — 无妨, 退场播完 AnimatedVisibility 移除整棵子树, 终态存在性不变。
+    var lastGhostRange by remember { mutableStateOf<IntRange?>(null) }
+    ghostRange?.let { lastGhostRange = it }
     Column(
         modifier = (if (hasTwoStops) modifier.sliderFreezePageScroll() else modifier)
             .fillMaxWidth(),
@@ -152,15 +163,32 @@ fun IntRangeSlider(
                         SliderDefaults.Track(
                             rangeSliderState = rangeSliderState,
                         )
-                        if (ghostRange != null) {
-                            val primary = colors.primary
-                            val ghostStart = ghostRange.first
-                            val ghostEnd = ghostRange.last
-                            Canvas(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(44.dp)
-                                    .testTag("slider-ghost"),
+                        // MD3E (Task 6) + 终审 I-1: 幽灵弹入弹出走 popup 家族 (T1 工厂)。
+                        // testTag 仍挂 AnimatedVisibility — 存在性 = 终态语义不变
+                        // (管线测试锁初始无节点、退场播完移除); 退场期间绘制内容经
+                        // lastGhostRange 快照保留, 弹出动画真实播放 (CourseTableView
+                        // retainedLifted 同款模式)。不许改 alpha 常驻。
+                        // this@Column: Box 作用域无 AnimatedVisibility 扩展,
+                        // 外层 Column 版不许隐式接收者 (DSL 闸) — CourseTableView:969 同款修法;
+                        // .align 父级数据仍由本 Box 布局消费, 落位不受重载选择影响。
+                        this@Column.AnimatedVisibility(
+                            visible = ghostRange != null,
+                            enter = sleepyPopupEnter(),
+                            exit = sleepyPopupExit(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("slider-ghost"),
+                        ) {
+                            val ghost = lastGhostRange
+                            if (ghost != null) {
+                                val primary = colors.primary
+                                val ghostStart = ghost.first
+                                val ghostEnd = ghost.last
+                                Canvas(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(44.dp)
+                                        .testTag("slider-ghost-canvas"),
                             ) {
                                 // 1:1 复刻真滑杆形态 (material3 SliderTokens 实测):
                                 // 真 thumb = HandleWidth 4dp x HandleHeight 44dp 全圆
@@ -208,6 +236,7 @@ fun IntRangeSlider(
                                         cornerRadius = CornerRadius(barW / 2f, barW / 2f),
                                     )
                                 }
+                            }
                             }
                         }
                     }
