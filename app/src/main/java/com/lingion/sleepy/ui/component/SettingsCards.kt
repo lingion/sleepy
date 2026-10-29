@@ -1,6 +1,7 @@
 package com.lingion.sleepy.ui.component
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -29,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -163,14 +165,29 @@ fun SettingsFlatCard(
 @Composable
 fun DisplayModeOption(label: String, subtitle: String, selected: Boolean, onClick: () -> Unit) {
     val colors = MaterialTheme.colorScheme
+    // MD3E (Task 7b): 选中态色彩/徽标切换统一走 motionScheme — 文字色 fastEffects
+    // 缓动, Check 徽标弹入弹出吃 popup mini 家族 (与 T6 徽标/幽灵同族)。
+    val labelColor by animateColorAsState(
+        targetValue = if (selected) colors.primary else colors.onSurface,
+        animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
+        label = "displayModeOptionLabel",
+    )
     Row(modifier = Modifier.fillMaxWidth().noRippleClickable(onClick).padding(vertical = 10.dp, horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = label, style = MaterialTheme.typography.bodyLarge, color = if (selected) colors.primary else colors.onSurface)
+            Text(text = label, style = MaterialTheme.typography.bodyLarge, color = labelColor)
             if (subtitle.isNotEmpty()) {
                 Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
             }
         }
-        if (selected) Icon(Icons.Outlined.Check, null, tint = colors.primary, modifier = Modifier.size(20.dp))
+        AnimatedVisibility(
+            visible = selected,
+            enter = sleepyPopupEnter(),
+            exit = sleepyPopupExit(),
+            modifier = Modifier.testTag("display-mode-check"),
+        ) {
+            // 徽标只伴随 selected 态存在 (含退场插帧), tint 恒 primary — 显隐交 popup 家族。
+            Icon(Icons.Outlined.Check, null, tint = colors.primary, modifier = Modifier.size(20.dp))
+        }
     }
 }
 

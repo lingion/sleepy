@@ -19,7 +19,8 @@ import java.io.File
  *   2. 全部 5 处 ExpandMore chevron 一律 animateFloatAsState 0→180 defaultSpatial
  *      + Modifier.rotate — 禁 rotate(if (expanded) 180f else 0f) 瞬时硬翻。
  *   3. 反向闸: 展开家族不许退化为 animateContentSize 常驻 alpha 或 if 直挂 —
- *      站点文件里 AnimatedVisibility 计数只增不减。
+ *      站点文件里展开家族的 enter 消费点计数只增不减 (7b 起同文件可能另有
+ *      popup 家族徽标 AV, 裸 AnimatedVisibility 计数不再是家族口径)。
  *
  * 载体形态: 7a 全部是纯 UI 折叠站点, 按 T3-T6 定型先例用源码结构锁定;
  * SettingsCard (公开组件、无 VM 依赖) 的行为终态另有 Robolectric 管线测试
@@ -50,10 +51,13 @@ class ExpandChevronMotionContractTest {
             "$name 必须取 sleepyExpandSpecs() (T1 工厂, 单一调参点)",
             Regex("""sleepyExpandSpecs\(\)""").containsMatchIn(src)
         )
+        // 家族口径: 只数展开站点的 `enter = \w+\.enter` 消费点, 不数裸
+        // AnimatedVisibility( — 7b 起 SettingsCards 同文件又挂了 popup mini
+        // 家族的徽标 AV (enter = sleepyPopupEnter()), 裸计数会误报站点增建。
         assertEquals(
-            "$name 展开站点数应为 $expectSites (AnimatedVisibility 只增不减)",
+            "$name 展开站点数应为 $expectSites (enter = xxx.enter 消费点只增不减)",
             expectSites,
-            Regex("""AnimatedVisibility\(""").findAll(src).count()
+            Regex("""enter = \w+\.enter\b""").findAll(src).count()
         )
         // 工厂结果必须先算后捕获再进 enter/exit 槽 (transitionSpec lambda 非
         // composable 的 T2 教训对 @Composable 工厂同样成立的统一写法)

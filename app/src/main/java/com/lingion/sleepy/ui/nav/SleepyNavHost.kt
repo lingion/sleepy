@@ -40,6 +40,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.togetherWith
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -764,8 +765,17 @@ private fun CombinedRailItem(
     onClick: () -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
-    val containerColor = if (selected) colors.primaryContainer else androidx.compose.ui.graphics.Color.Transparent
-    val iconColor = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant
+    // MD3E (Task 7b): 跑道胶囊选中进/出色走 fastEffects 缓动, 禁瞬时硬切。
+    val containerColor by animateColorAsState(
+        targetValue = if (selected) colors.primaryContainer else androidx.compose.ui.graphics.Color.Transparent,
+        animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
+        label = "combinedRailContainer",
+    )
+    val iconColor by animateColorAsState(
+        targetValue = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant,
+        animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
+        label = "combinedRailIcon",
+    )
     Column(
         modifier = Modifier
             .padding(horizontal = 8.dp, vertical = 4.dp)
