@@ -728,9 +728,16 @@ class AboutLicenseAttributionTest {
     fun `license expansion uses the shared enter and exit animations`() {
         val src = File(basePath.parentFile, "java/com/lingion/sleepy/ui/screen/mine/LicenseScreen.kt")
             .readText()
-        val animationCount = Regex("enter = expandVertically\\(\\) \\+ fadeIn\\(\\)").findAll(src).count()
-        assertTrue("致谢导语和学校卡都必须使用统一展开动画", animationCount >= 2)
-        assertTrue("致谢收起必须使用 shrinkVertically + fadeOut", src.contains("exit = shrinkVertically() + fadeOut()"))
+        // MD3E Task 7a lockstep: 展开家族收进 sleepyExpandSpecs() 工厂 (单一调参点),
+        // 旧字面量 enter = expandVertically() + fadeIn() 转正为工厂字段消费。
+        val animationCount = Regex("sleepyExpandSpecs\\(\\)").findAll(src).count()
+        assertTrue("致谢导语卡和学校卡都必须各取一次 sleepyExpandSpecs() 工厂", animationCount >= 2)
+        assertTrue("展开入场必须消费工厂 enter 字段", Regex("enter = \\w+\\.enter").containsMatchIn(src))
+        assertTrue("收起退场必须消费工厂 exit 字段", Regex("exit = \\w+\\.exit").containsMatchIn(src))
+        assertTrue(
+            "致谢展开不得退化为裸 expandVertically() (默认 spring 与 Expressive 脱节)",
+            !Regex("expandVertically\\(\\)").containsMatchIn(src)
+        )
         assertTrue("可展开内容必须始终由 AnimatedVisibility 管理,不能用 if 直接移除", src.contains("visible = expanded && expandedContent != null"))
     }
 

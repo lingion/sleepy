@@ -2,10 +2,6 @@ package com.lingion.sleepy.ui.component
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -66,8 +62,10 @@ fun SectionHeader(title: String, subtitle: String? = null) {
 @Composable
 fun SettingsCard(title: String, expanded: Boolean, onToggle: () -> Unit, content: @Composable () -> Unit) {
     val colors = MaterialTheme.colorScheme
+    // MD3E (Task 7a): chevron 旋转走 defaultSpatial (收稳不弹, 与展开家族同拍)
     val arrowRotation by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
+        animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>(),
         label = "settings-arrow"
     )
     Column(
@@ -86,11 +84,13 @@ fun SettingsCard(title: String, expanded: Boolean, onToggle: () -> Unit, content
                     .rotate(arrowRotation)
             )
         }
-        // 展开动画: 高度+淡入同拍, 替代此前 if(expanded) 瞬间弹出
+        // 展开动画 (MD3E Task 7a): 尺寸 fastSpatial + 淡入淡出走 motionScheme,
+        // 工厂先行取值再进 enter/exit 槽 (T5 rowExpand 先例)
+        val expandSpecs = sleepyExpandSpecs()
         AnimatedVisibility(
             visible = expanded,
-            enter = expandVertically() + fadeIn(),
-            exit = shrinkVertically() + fadeOut()
+            enter = expandSpecs.enter,
+            exit = expandSpecs.exit,
         ) {
             Column {
                 Spacer(modifier = Modifier.height(4.dp))

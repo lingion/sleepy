@@ -7,10 +7,6 @@ import com.lingion.sleepy.ui.component.ColorPickerDialog
 import com.lingion.sleepy.ui.component.IntRangeSlider
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -83,6 +79,7 @@ import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
 import com.lingion.sleepy.ui.component.TimePickerField
+import com.lingion.sleepy.ui.component.sleepyExpandSpecs
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.CourseColorUtil
@@ -1416,8 +1413,10 @@ private fun IrregularOptionsSection(
     onDeselectEdge: (releasedNode: Int) -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
+    // MD3E (Task 7a): chevron 旋转走 defaultSpatial (收稳不弹, 与展开家族同拍)
     val arrowRotation by animateFloatAsState(
         targetValue = if (block.irregularOptionsExpanded) 180f else 0f,
+        animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>(),
         label = "irregular-options-arrow"
     )
     Column(
@@ -1476,10 +1475,11 @@ private fun IrregularOptionsSection(
                     .rotate(arrowRotation)
             )
         }
+        val expandSpecs = sleepyExpandSpecs()
         AnimatedVisibility(
             visible = block.irregularOptionsExpanded,
-            enter = expandVertically() + fadeIn(),
-            exit = shrinkVertically() + fadeOut()
+            enter = expandSpecs.enter,
+            exit = expandSpecs.exit,
         ) {
             Column(
                 modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp),

@@ -10,8 +10,6 @@ import org.json.JSONArray
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -90,6 +88,7 @@ import com.lingion.sleepy.data.parser.ScheduleParser
 import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.TimeSlotEditor
 import com.lingion.sleepy.ui.component.resolveAutoPeriodConfig
+import com.lingion.sleepy.ui.component.sleepyExpandSpecs
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
@@ -305,10 +304,13 @@ fun AddTableScreen(
                 enabled = canImport,
                 onClick = { textExpanded = !textExpanded }
             )
+            // MD3E (Task 7a): 走展开家族 (尺寸 fastSpatial + 淡入淡出 motionScheme);
+            // 旧版无 fadeIn, 工厂补齐 — 与全应用折叠一致性优先
+            val expandSpecs = sleepyExpandSpecs()
             AnimatedVisibility(
                 visible = textExpanded,
-                enter = expandVertically(),
-                exit = shrinkVertically()
+                enter = expandSpecs.enter,
+                exit = expandSpecs.exit,
             ) {
                 Column(
                     modifier = Modifier
