@@ -115,6 +115,32 @@ class EdgePagingContractTest {
         assertTrue("chipPending 为组合态", edgeOrFloatState.contains("var chipPending by mutableStateOf(false)"))
     }
 
+    @Test fun floatingCardRendersSnapProjectionNotFinger() {
+        // 渲染接线锁 (2026-10-29): 浮卡/浮框位置尺寸必须读 snap* 的动画值, 不读跟手位。
+        // 磁吸视觉的全部意义在「卡随投影走」— 若哪天有人把 offset 改回 floatState.x/y,
+        // 吸附计算照跑、落库照对, 但用户看着像没吸住, 且单测全绿无人报警。
+        // 同时钉死三条退路都把 snap 同步回跟手位/原位 (非法投影/弹回/否决拉伸),
+        // 否则卡会卡在一个已作废的投影上。
+        assertTrue("跳格时长常量 150ms", edgePeek.contains("FLOAT_SNAP_ANIM_MS = 150L"))
+        assertTrue("渲染动画时长取常量", tableView.contains("tween<Dp>(FLOAT_SNAP_ANIM_MS.toInt()"))
+        assertTrue("x/y/高三路动画自 snap*",
+            listOf(
+                "animateDpAsState(floatState.snapX",
+                "animateDpAsState(floatState.snapY",
+                "animateDpAsState(floatState.snapHeight",
+            ).all { tableView.contains(it) }
+        )
+        assertTrue("浮卡 offset 读动画值不读跟手位", tableView.contains(".offset(x = renderX, y = overlayY)"))
+        assertTrue("浮卡高度读动画值", tableView.contains(".height(renderH)"))
+        assertTrue("浮框跟随同一动画值", tableView.contains("x = renderX,"))
+        assertTrue("滚动补偿加在动画之外(overlayY 由 renderY 派生)",
+            tableView.contains("val overlayY = renderY + headH + gapH - floatScrollDp")
+        )
+        assertTrue("非法投影退回跟手位", Regex("""floatState\.snapX = floatState\.x""").containsMatchIn(tableView))
+        assertTrue("弹回同步 snap", Regex("""floatState\.snapY = floatState\.y""").containsMatchIn(tableView))
+        assertTrue("否决拉伸同步 snap", edgeOrFloatState.contains("snapY = originY"))
+    }
+
     @Test fun horizontalEdgeReleaseClampsInsteadOfBouncing() {
         // 2026-10-28 用户反馈: 压右缘松手曾「像完全没有任何发生」—
         // 水平出界钳到最近可见列, 纵向非法(末行以下)才弹回。

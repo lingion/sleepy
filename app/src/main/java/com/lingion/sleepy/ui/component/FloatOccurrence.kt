@@ -53,6 +53,12 @@ import com.lingion.sleepy.ui.theme.noRippleClickable
 import kotlinx.coroutines.withTimeout
 
 /**
+ * 拖拽吸附落点投影 (2026-10-28 移植 Lawnchair): 宿主网格坐标 — 列下标(对 sortedDays,
+ * 水平出界已钳首/末列) + 吸附起始节次 + 跨度。每 MOVE 帧写、松手消费, 所见即所得。
+ */
+data class OccurrenceDropTarget(val dayIndex: Int, val startNode: Int, val step: Int)
+
+/**
  * 长按浮起交互的状态容器 — 与 [QuickAddCourseState] 同级模式(由调用方持有,
  * 翻页/周切换不丢)。卡片从网格浮到顶层: 背景高斯模糊 + 编辑/删除小浮框;
  * 拖拽开始后模糊与浮框消失, 只有卡片跟手; 合法落点吸附节次并回调移动该次课,
@@ -111,6 +117,15 @@ class CourseFloatState {
      *  路上从未打开, chip 永远停在起拖周。边缘翻页翻过即置位, 屏根 effect 在
      *  「非拖拽且 (浮起或待回写)」时消费清零。作 effect 键 → 必须是快照态。 */
     var chipPending by mutableStateOf(false)
+    // ---- 吸附投影 (2026-10-28 移植 Lawnchair findNearestArea + 150ms 跳格) ----
+    // 每个 MOVE 帧把卡片「吸附投影」写进 snap*: 卡随投影走(磁吸跳格), 松手即所见;
+    // 非法投影(纵向越出格区/跨度越末节) snap 退回跟手位, 松手弹回。
+    /** 每帧吸附落点 — 松手直接消费它, 所见即所得; null = 非法落点。 */
+    var dropTarget: OccurrenceDropTarget? by mutableStateOf(null)
+    /** 投影后的渲染位/尺寸 (网格坐标 dp) — 浮卡 modifier 读它, 150ms 动画收敛。 */
+    var snapX: Dp by mutableStateOf(0.dp)
+    var snapY: Dp by mutableStateOf(0.dp)
+    var snapHeight: Dp by mutableStateOf(0.dp)
 
     /** 把手拉伸未获确认 → 位置/高度回到拉起时的原样, 浮卡本身留在原位。 */
     fun revertSpan() {
@@ -118,6 +133,9 @@ class CourseFloatState {
         endNode = originEndNode
         y = originY
         height = originHeight
+        // 渲染读 snap* (吸附投影) — 否决拉伸后投影同步回原位, 否则浮卡停在拉伸预览位。
+        snapY = originY
+        snapHeight = originHeight
     }
 
     /**
@@ -162,6 +180,8 @@ class CourseFloatState {
         edgeBlocked = 0
         peekProgress = 0f
         edgeArmed = true
+        dropTarget = null
+        snapX = x; snapY = y; snapHeight = height // 未拖拽 = 原位渲染
         cardBounds = null
         popupBounds = null
     }
@@ -171,6 +191,7 @@ class CourseFloatState {
         dragging = false
         edgeBlocked = 0
         peekProgress = 0f
+        dropTarget = null
         cardBounds = null
         popupBounds = null
     }

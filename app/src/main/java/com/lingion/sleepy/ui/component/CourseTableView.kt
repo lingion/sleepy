@@ -1,6 +1,8 @@
 package com.lingion.sleepy.ui.component
 
 import android.os.Build
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -591,6 +593,48 @@ fun CardsGridView(
                     isGrey = course.day in greyDays,
                 )
             }
+            // ---- 吸附投影 (2026-10-28 移植 Lawnchair: Workspace.onDragOver →
+            // CellLayout.findNearestAreaIgnoreOccupied → 150ms 跳格动画) ----
+            // 每 MOVE 帧把卡片按「视觉中心 → 最近格」投影到吸附落点:
+            // 列 = 中心比例 floor + 钳首/末列 (水平出界永不丢拖拽);
+            // 行 = 顶边最近节次, 跨度按节次号连续校验不越末节 (与旧落点判据逐条同口径);
+            // 合法投影 → 卡随投影走(磁吸跳格, 跨行「跳」一下), 松手即所见;
+            // 非法投影 → snap 退回跟手位(卡留指下), 松手弹回 — 弹回语义不变。
+            // (声明顺序: 必须在 seedFloatResize/applyFloatResize 之前 —
+            //  Kotlin 局部函数须先声明后使用, 626 行拉伸处调用它。)
+            fun projectFloatDrop(): OccurrenceDropTarget? {
+                val centerRatio =
+                    (floatState.x + floatState.width / 2f - timeW - gapW).value / (colW + gapW).value
+                val dayIndex = floor(centerRatio).toInt().coerceIn(0, sortedDays.lastIndex)
+                val cardTopPx = with(headerDensity) { floatState.y.toPx() }
+                val startNode = floatGridNodes.minByOrNull { node ->
+                    val b = floatBoundary(node, false) ?: return@minByOrNull Float.MAX_VALUE
+                    abs(with(headerDensity) { b.toPx() } - cardTopPx)
+                }
+                val maxNode = floatGridNodes.maxOrNull()
+                val endNode = startNode?.let { it + floatState.step - 1 }
+                if (startNode == null || endNode == null || maxNode == null || endNode > maxNode) return null
+                return OccurrenceDropTarget(dayIndex, startNode, floatState.step)
+            }
+            fun applyFloatSnap() {
+                val drop = projectFloatDrop()
+                floatState.dropTarget = drop
+                if (drop == null) {
+                    // 未吸附: 渲染位退回跟手位 — 卡永远在指下, 跳只发生在合法吸附之间。
+                    floatState.snapX = floatState.x
+                    floatState.snapY = floatState.y
+                    floatState.snapHeight = floatState.height
+                    return
+                }
+                val nodeIdx = slotIndexOf(drop.startNode)
+                floatState.snapX = timeW + gapW + (colW + gapW) * drop.dayIndex
+                floatState.snapY = yOfRows(nodeIdx.toFloat())
+                floatState.snapHeight = TimetableViewportPolicy.longBreakCardHeightDp(
+                    naturalSpanDp = (naturalSpan((nodeIdx + drop.step).toFloat()) -
+                        naturalSpan(nodeIdx.toFloat())).value,
+                    gapDp = gapH.value,
+                ).dp
+            }
             fun seedFloatResize(top: Boolean) {
                 val boundary = floatBoundary(if (top) floatState.startNode else floatState.endNode, !top)
                     ?: return
@@ -621,36 +665,29 @@ fun CardsGridView(
                 val endIdx = slotIndexOf(floatState.endNode)
                 floatState.height =
                     yOfRows(endIdx.toFloat()) + rowHeightAt(endIdx) - gapH - floatState.y
+                applyFloatSnap() // 跨度变了 → 吸附投影同步(step 随 endNode-startNode+1)
             }
             // 非法落点/拖拽撤销共用的弹回: 位置复位 + dragging=false → 模糊与浮框同帧回归。
             fun springFloatBack() {
                 floatState.dragging = false
                 floatState.x = floatState.originX
                 floatState.y = floatState.originY
+                // 弹回 = 跟手位渲染(退回原位), 吸附投影随之作废 (下次 lift 重新种)。
+                floatState.dropTarget = null
+                floatState.snapX = floatState.x
+                floatState.snapY = floatState.y
+                floatState.snapHeight = floatState.height
             }
             fun commitFloatDrop() {
                 val course = floatState.course ?: return
                 if (!floatState.dragging) return // 浮卡上的轻点: 不提交也不弹回(原位仍浮起)。
-                // 落点 = 卡片中心列 + 顶边最近节次。列向钳位 (2026-10-28 用户反馈:
-                // 压右缘松手曾整段静默弹回、像什么都没发生): 水平出界一律吸附到最近
-                // 合法列 — 边缘区落点 = 首/末列。纵向出格(顶边吸附不到任何节次、
-                // 跨度越出末节)仍是非法落点 → 弹回。
-                val centerRatio =
-                    (floatState.x + floatState.width / 2f - timeW - gapW).value / (colW + gapW).value
-                val dayIdx = floor(centerRatio).toInt().coerceIn(0, sortedDays.lastIndex)
-                val cardTopPx = with(headerDensity) { floatState.y.toPx() }
-                val snapped = floatGridNodes.minByOrNull { node ->
-                    val b = floatBoundary(node, false) ?: return@minByOrNull Float.MAX_VALUE
-                    abs(with(headerDensity) { b.toPx() } - cardTopPx)
-                }
-                val maxNode = floatGridNodes.maxOrNull()
-                // 跨度按"节次号连续"校验(午餐空隙不打断合法性), 只要求落点不越出末节。
-                val endNode = snapped?.let { it + floatState.step - 1 }
-                if (snapped == null || endNode == null || maxNode == null || endNode > maxNode) {
-                    springFloatBack()
-                    return
-                }
-                onOccurrenceMove?.invoke(course, sortedDays[dayIdx], snapped, floatState.step, false) { saved ->
+                // 落点 = 本帧重算的吸附投影 — 与拖拽期每帧同一个 projectFloatDrop,
+                // 所见即所得 (Lawnchair: dropLocation 即最后 onDragOver 的吸附位)。
+                // 列向钳位 (2026-10-28 用户反馈: 压右缘松手曾整段静默弹回): 水平出界
+                // 一律吸附首/末列; 纵向出格/跨度越末节 = 非法 → 弹回。
+                applyFloatSnap()
+                val drop = floatState.dropTarget ?: run { springFloatBack(); return }
+                onOccurrenceMove?.invoke(course, sortedDays[drop.dayIndex], drop.startNode, drop.step, false) { saved ->
                     // C 契约: 落库成功才收层; 否决/过期 → 弹回原位浮着(拉伸 pending 随卡保留,
                     // 由空白点击/返回键走「是否调整持续节次」确认)。
                     if (saved) floatState.dismiss() else springFloatBack()
@@ -1008,6 +1045,7 @@ fun CardsGridView(
                                         floatState.x += amount.x.toDp()
                                         floatState.y += amount.y.toDp()
                                     }
+                                    applyFloatSnap() // 吸附投影 (Lawnchair): 每帧算落点, 卡随投影走
                                 },
                                 onDrop = { commitFloatDrop() },
                             ) else null,
@@ -1103,7 +1141,16 @@ fun CardsGridView(
                         translationX = floatState.anchorRootLeftPx - floatRootLeftPx
                     }
                     if (lifted != null) {
-                        val overlayY = floatState.y + headH + gapH - floatScrollDp
+                        // 吸附投影渲染 (Lawnchair 磁吸跳格): 浮卡/浮框位置读 snap* 的
+                        // 150ms 动画值 — 每 MOVE 帧 applyFloatSnap 写投影, 卡「跳」向
+                        // 吸附格收敛; 非法投影时 snap = 跟手位, 卡留指下; 弹回路
+                        // springFloatBack 写回原位, 弹回同样走这条动画(收敛而非瞬移)。
+                        // 滚动补偿留在动画外 — 翻页/纵滚是即时效应, 混进 150ms 会拖影。
+                        val snapSpec = tween<Dp>(FLOAT_SNAP_ANIM_MS.toInt(), easing = FLOAT_PAGE_EASING)
+                        val renderX by animateDpAsState(floatState.snapX, animationSpec = snapSpec, label = "float-snap-x")
+                        val renderY by animateDpAsState(floatState.snapY, animationSpec = snapSpec, label = "float-snap-y")
+                        val renderH by animateDpAsState(floatState.snapHeight, animationSpec = snapSpec, label = "float-snap-h")
+                        val overlayY = renderY + headH + gapH - floatScrollDp
                         FloatingOccurrenceCard(
                             state = floatState,
                             scale = scale,
@@ -1121,14 +1168,15 @@ fun CardsGridView(
                                     floatState.x += amount.x.toDp()
                                     floatState.y += amount.y.toDp()
                                 }
+                                applyFloatSnap() // 吸附投影 (Lawnchair): 每帧算落点, 卡随投影走
                             },
                             onDrop = { commitFloatDrop() },
                             onResizeStart = { top -> seedFloatResize(top) },
                             onResize = { top, delta -> applyFloatResize(top, delta) },
                             modifier = followShift
-                                .offset(x = floatState.x, y = overlayY)
+                                .offset(x = renderX, y = overlayY)
                                 .width(floatState.width)
-                                .height(floatState.height),
+                                .height(renderH),
                         )
                         // 边缘预览条: 拖拽压边期间左右各挂一个候选(显隐由 edgeDir/peekProgress 决定)。
                         if (onEdgeDrag != null && floatMaxWeek > 0 && floatState.dragging) {
@@ -1156,7 +1204,7 @@ fun CardsGridView(
                             Box(
                                 modifier = followShift
                                     .offset(
-                                        x = floatState.x,
+                                        x = renderX,
                                         y = (overlayY - d(36f)).coerceAtLeast(0.dp),
                                     )
                                     .width(floatState.width),

@@ -42,6 +42,10 @@ internal const val FLOAT_EDGE_ZONE_DP = 72f
 internal const val FLOAT_EDGE_DWELL_MS = 500L
 internal const val FLOAT_EDGE_DWELL_STEP_MS = 50L
 internal const val FLOAT_PAGE_ANIM_MS = 300L
+// 吸附跳格动画时长 — Lawnchair CellLayout.REORDER_ANIMATION_DURATION(HEAD 实测)。
+// 曲线复用 FLOAT_PAGE_EASING(减速易出, 与源库 DECELERATE_QUINT 同向; AOSP Interpolators
+// 的具体控制点未单独拉取核实, 以已裁决的预测性返回曲线代替, 语义等价)。
+internal const val FLOAT_SNAP_ANIM_MS = 150L
 internal const val FLOAT_PEEK_FADE_START = 0.35f
 internal const val FLOAT_PEEK_ENTER_SCALE = 1.10f
 internal const val FLOAT_EDGE_SLOP_DP = 8f
