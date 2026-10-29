@@ -67,10 +67,6 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.lingion.sleepy.R
-import com.lingion.sleepy.ui.component.NavDockSpec
-import com.lingion.sleepy.ui.component.PillNavigationBar
-import com.lingion.sleepy.ui.component.PillNavItemSpec
-import com.lingion.sleepy.ui.component.PillBarState
 import com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding
 import com.lingion.sleepy.ui.screen.edit.AddCourseScreen
 import com.lingion.sleepy.ui.screen.mine.AllTablesScreen
@@ -139,7 +135,6 @@ internal fun SleepyNavHost(
     currentTableId: Long?,
     mainScope: CoroutineScope,
     onCreateNewTable: () -> Unit,
-    pillBarState: PillBarState,
 ) {
     val session = navigator.session
     val updateNoticeVisible by UpdateNotifier.noticeVisible.collectAsState()
@@ -191,7 +186,6 @@ internal fun SleepyNavHost(
                 onScheduleViewModeChange = onScheduleViewModeChange,
                 onCreateNewTable = onCreateNewTable,
                 updateNoticeVisible = updateNoticeVisible,
-                pillBarState = pillBarState,
             )
         }
 
@@ -454,9 +448,7 @@ private fun MainRoute(
     onScheduleViewModeChange: (ViewMode) -> Unit,
     onCreateNewTable: () -> Unit,
     updateNoticeVisible: Boolean,
-    pillBarState: PillBarState,
 ) {
-    val navItems = Tab.entries.map { PillNavItemSpec(it.icon, stringResource(it.labelRes), badge = updateNoticeVisible && it == Tab.Mine) }
     val holder: SaveableStateHolder = rememberSaveableStateHolder()
     // 双击退出只在课表页生效;其它 tab 第一次返回回课表页。
     val ctxForExit = LocalContext.current
@@ -474,8 +466,8 @@ private fun MainRoute(
         }
     }
 
-    // issue#45 ③横屏/平板: 自研 PillNavigationBar 无此形态,官方 NavigationRail 有 → 用官方。
-    // 官方没有悬浮药丸 Dock → Compact 且 navDock=true 时保留自研 PillNavigationBar(dock=true)。
+    // issue#45 ③横屏/平板: 官方 NavigationRail 有此形态 → 宽屏 rail 保留官方。
+    // 贴底/悬浮 Dock: 两形态均迁至液态玻璃宿主 LiquidGlassNavHost (kyant backdrop 采样内容层)。
     val activity = ctxForExit as? android.app.Activity
     val sizeClass = activity?.let { calculateWindowSizeClass(it) }
     val isCompact = sizeClass == null || sizeClass.widthSizeClass == WindowWidthSizeClass.Compact
@@ -502,6 +494,13 @@ private fun MainRoute(
         }
         val onTabletManualAdd: () -> Unit = { navigator.openAddCourse() }
         val colors = MaterialTheme.colorScheme
+        // 液态玻璃: 宽屏内容整棵子树录进采样根, 通栏玻璃导航条盖回顶部 (贴底摆位)。
+        LiquidGlassNavHost(
+            currentTab = currentTab,
+            onTabSelected = { tab -> setCurrentTab(tab) },
+            updateNoticeVisible = updateNoticeVisible,
+            floating = false,
+        ) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
@@ -648,71 +647,49 @@ private fun MainRoute(
                 }
             }
         }
-    } else if (navDock) {
-        // Compact + 悬浮 Dock: 官方无此形态 → 保留自研 PillNavigationBar(dock=true)
-        var dockExtraDp by remember { mutableStateOf(NavDockSpec.capsuleHeight + NavDockSpec.bottomFloat) }
-        var dockOverlayPx by remember { mutableStateOf(0) }
-        val densityForDock = LocalDensity.current
-        if (dockOverlayPx > 0) {
-            dockExtraDp = with(densityForDock) { dockOverlayPx.toDp() }
         }
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .windowInsetsPadding(WindowInsets.statusBars)
+    } else if (navDock) {
+        // Compact + 悬浮 Dock: 官方无此形态 → 液态玻璃悬浮胶囊 (kyant backdrop 采样内容层)
+        LiquidGlassNavHost(
+            currentTab = currentTab,
+            onTabSelected = { tab -> setCurrentTab(tab) },
+            updateNoticeVisible = updateNoticeVisible,
+            floating = true,
         ) {
-            androidx.compose.runtime.CompositionLocalProvider(
-                LocalNavExtraBottomPadding provides dockExtraDp
-            ) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    MainTabs(
-                        currentTab = currentTab,
-                        setCurrentTab = setCurrentTab,
-                        navigator = navigator,
-                        mainVm = mainVm,
-                        mainScope = mainScope,
-                        viewMode = scheduleViewMode,
-                        onViewModeChange = onScheduleViewModeChange,
-                        onCreateNewTable = onCreateNewTable,
-                        holder = holder,
-                        updateNoticeVisible = updateNoticeVisible,
-                    )
-                }
-            }
             Box(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .onGloballyPositioned { c -> dockOverlayPx = c.size.height }
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .windowInsetsPadding(WindowInsets.statusBars),
             ) {
-                PillNavigationBar(
-                    items = navItems,
-                    selectedIndex = currentTab.ordinal,
-                    onSelect = { setCurrentTab(Tab.entries[it]) },
-                    dock = true,
-                    state = pillBarState,
+                MainTabs(
+                    currentTab = currentTab,
+                    setCurrentTab = setCurrentTab,
+                    navigator = navigator,
+                    mainVm = mainVm,
+                    mainScope = mainScope,
+                    viewMode = scheduleViewMode,
+                    onViewModeChange = onScheduleViewModeChange,
+                    onCreateNewTable = onCreateNewTable,
+                    holder = holder,
+                    updateNoticeVisible = updateNoticeVisible,
                 )
             }
         }
     } else {
-        // Compact + 贴底: 官方有 NavigationBar → 用官方(替自研贴底形态)
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            containerColor = MaterialTheme.colorScheme.background,
-            bottomBar = {
-                NavigationBar {
-                    Tab.entries.forEach { tab ->
-                        NavigationBarItem(
-                            selected = currentTab == tab,
-                            onClick = { setCurrentTab(tab) },
-                            icon = { NavigationTabIcon(tab, showUpdateDot = updateNoticeVisible && tab == Tab.Mine) },
-                            label = { Text(stringResource(tab.labelRes)) },
-                        )
-                    }
-                }
-            },
-        ) { padding ->
-            Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+        // Compact + 贴底: 液态玻璃通栏胶囊, 收进手势条安全区
+        LiquidGlassNavHost(
+            currentTab = currentTab,
+            onTabSelected = { tab -> setCurrentTab(tab) },
+            updateNoticeVisible = updateNoticeVisible,
+            floating = false,
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .windowInsetsPadding(WindowInsets.statusBars),
+            ) {
                 MainTabs(
                     currentTab = currentTab,
                     setCurrentTab = setCurrentTab,
@@ -731,8 +708,8 @@ private fun MainRoute(
 }
 
 /**
- * 官方 NavigationBar / NavigationRail 的 tab 图标 — Mine 且有更新提醒时右上角画主题色小圆点。
- * 三种导航形态(贴底/Rail/悬浮 Dock)与自研 PillNavigationBar 共用同一 noticeVisible 状态。
+ * 官方 NavigationRail 的 tab 图标 — Mine 且有更新提醒时右上角画主题色小圆点。
+ * 贴底/悬浮 Dock 两形态走 LiquidGlassNavHost, 与 Rail 共用同一 noticeVisible 状态。
  */
 @Composable
 private fun NavigationTabIcon(tab: Tab, showUpdateDot: Boolean) {
