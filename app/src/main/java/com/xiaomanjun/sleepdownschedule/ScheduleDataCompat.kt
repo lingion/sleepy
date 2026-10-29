@@ -29,6 +29,4 @@ typealias DockAlignment = com.xiaomanjun.sleepdownschedule.model.DockAlignment
 typealias HomeStartMode = com.xiaomanjun.sleepdownschedule.model.HomeStartMode
 typealias ScheduleTermState = com.xiaomanjun.sleepdownschedule.model.ScheduleTermState
 
-// BuildConfig redirect — the sleepy project uses com.lingion.sleepy.BuildConfig
-// This typealias makes old SleepDown imports resolve to the new BuildConfig.
-typealias BuildConfig = com.lingion.sleepy.BuildConfig
+// BuildConfig is provided by BuildConfig.kt stub in this package
