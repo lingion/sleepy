@@ -56,6 +56,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.AppDatabase
 import com.lingion.sleepy.data.migration.MigrationExecutor
@@ -260,7 +261,7 @@ fun GeneralSettingsScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.mine_general)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = onBack, modifier = Modifier.dbgTag("general_back", role = "button")) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
@@ -291,6 +292,7 @@ fun GeneralSettingsScreen(
                         stringResource(R.string.settings_display_time)
                     ),
                     selectedKey = if (displayMode == "node") 0 else 1,
+                    dbg = "general_display_mode",
                     onSelect = { i ->
                         val v = if (i == 0) "node" else "time"
                         displayMode = v; AppPrefs.setDisplayMode(context, v); refreshWidgets()
@@ -312,6 +314,7 @@ fun GeneralSettingsScreen(
                         "teacher" -> 1
                         else -> 2
                     },
+                    dbg = "general_grid_sub_info",
                     onSelect = { i ->
                         val v = listOf("room", "teacher", "none")[i]
                         gridSubInfo = v; AppPrefs.setGridSubInfo(context, v); refreshWidgets()
@@ -321,12 +324,13 @@ fun GeneralSettingsScreen(
 
             // 主页显示(issue#8): 网格/周视图各一个缩放 70%~130% + 圆角 0%~200%(5% 吸附) + 周视图两栏开关
             item {
-                SettingsCard(title = stringResource(R.string.settings_pill), expanded = "gridScale" in expandedSections, onToggle = { toggleSection("gridScale") }) {
+                SettingsCard(title = stringResource(R.string.settings_pill), expanded = "gridScale" in expandedSections, dbg = "general_pill_card", onToggle = { toggleSection("gridScale") }) {
                     // 样式参数(缩放/圆角)已迁外观与主题, 这里只保留内容/可见性参数
                     HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     SettingToggleRow(
                         label = stringResource(R.string.settings_week_two_column),
                         checked = weekTwoColumn,
+                        dbg = "general_week_two_column",
                         onCheckedChange = { weekTwoColumn = it; AppPrefs.setWeekTwoColumn(context, it) }
                     )
                     // 分栏标准 — 两栏开启时才需要选
@@ -336,6 +340,7 @@ fun GeneralSettingsScreen(
                             label = stringResource(R.string.settings_week_two_column_days),
                             subtitle = "",
                             selected = weekTwoColumnMode == "days",
+                            dbg = "general_two_column_mode",
                             onClick = { weekTwoColumnMode = "days"; AppPrefs.setWeekTwoColumnMode(context, "days") }
                         )
                         HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
@@ -343,6 +348,7 @@ fun GeneralSettingsScreen(
                             label = stringResource(R.string.settings_week_two_column_balance),
                             subtitle = "",
                             selected = weekTwoColumnMode == "balance",
+                            dbg = "general_two_column_mode",
                             onClick = { weekTwoColumnMode = "balance"; AppPrefs.setWeekTwoColumnMode(context, "balance") }
                         )
                     }
@@ -351,6 +357,7 @@ fun GeneralSettingsScreen(
                     SettingToggleRow(
                         label = stringResource(R.string.settings_week_hide_empty),
                         checked = weekHideEmptyDays,
+                        dbg = "general_hide_empty_days",
                         onCheckedChange = { weekHideEmptyDays = it; AppPrefs.setWeekHideEmptyDays(context, it) }
                     )
                     // issue#26 课程别名: 周视图/网格场景 原名/别名 二选一, 关=原名 开=别名(自独立卡挪入, 行为零变化)
@@ -358,12 +365,14 @@ fun GeneralSettingsScreen(
                     SettingToggleRow(
                         label = stringResource(R.string.settings_week_alias),
                         checked = weekUseAlias,
+                        dbg = "general_week_alias",
                         onCheckedChange = { weekUseAlias = it; AppPrefs.setWeekUseAlias(context, it) }
                     )
                     HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     SettingToggleRow(
                         label = stringResource(R.string.settings_grid_alias),
                         checked = gridUseAlias,
+                        dbg = "general_grid_alias",
                         onCheckedChange = { gridUseAlias = it; AppPrefs.setGridUseAlias(context, it) }
                     )
                     // 表头日期 — 网格视图列头 + 小组件列头共用的开关
@@ -371,6 +380,7 @@ fun GeneralSettingsScreen(
                     SettingToggleRow(
                         label = stringResource(R.string.settings_show_date),
                         checked = showDate,
+                        dbg = "general_show_date",
                         onCheckedChange = { showDate = it; AppPrefs.setShowDate(context, it); refreshWidgets() }
                     )
                     // 视图切换栏属于课表显示设置, 与主页显示参数放在同一子选项内
@@ -378,6 +388,7 @@ fun GeneralSettingsScreen(
                     SettingToggleRow(
                         label = stringResource(R.string.settings_show_view_switcher),
                         checked = showViewSwitcher,
+                        dbg = "general_show_view_switcher",
                         onCheckedChange = {
                             showViewSwitcher = it
                             AppPrefs.setShowViewSwitcher(context, it)
@@ -390,7 +401,7 @@ fun GeneralSettingsScreen(
 
             // 显示星期: 周一~周日多选
             item {
-                SettingsCard(title = stringResource(R.string.settings_visible_days), expanded = "visibleDays" in expandedSections, onToggle = { toggleSection("visibleDays") }) {
+                SettingsCard(title = stringResource(R.string.settings_visible_days), expanded = "visibleDays" in expandedSections, dbg = "general_visible_days_card", onToggle = { toggleSection("visibleDays") }) {
                     Text(text = stringResource(R.string.settings_visible_days_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
                     (1..7).forEach { day ->
                         val checked = day in visibleDays
@@ -398,7 +409,9 @@ fun GeneralSettingsScreen(
                             modifier = Modifier.fillMaxWidth().noRippleClickable {
                                 val n = if (checked) visibleDays - day else visibleDays + day
                                 if (n.isNotEmpty()) { visibleDays = n; AppPrefs.setVisibleDays(context, n); refreshWidgets() }
-                            }.padding(vertical = 8.dp, horizontal = 4.dp),
+                            }
+                                .dbgTag("general_visible_day#$day", text = DateUtils.localizedDay(day, context), role = "switch")
+                                .padding(vertical = 8.dp, horizontal = 4.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -421,6 +434,7 @@ fun GeneralSettingsScreen(
                         .clip(SleepyTheme.shapes.large)
                         .background(colors.surfaceContainer)
                         .noRippleClickable(onOpenHoliday)
+                        .dbgTag("general_holiday_entry", text = stringResource(R.string.settings_holiday_title), role = "button")
                         .padding(horizontal = 16.dp, vertical = 14.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -458,6 +472,7 @@ fun GeneralSettingsScreen(
                         stringResource(R.string.settings_start_view_cards)
                     ),
                     selectedKey = if (startView == "full") 0 else 1,
+                    dbg = "general_start_view",
                     onSelect = { i ->
                         val v = if (i == 0) "full" else "cards"
                         startView = v; AppPrefs.setStartView(context, v)
@@ -495,6 +510,7 @@ fun GeneralSettingsScreen(
                         },
                         colors = SwitchDefaults.colors(checkedThumbColor = colors.onPrimary, checkedTrackColor = colors.primary),
                         modifier = Modifier.heightIn(max = 32.dp)
+                            .dbgTag("general_high_refresh", text = stringResource(R.string.settings_high_refresh), role = "switch")
                     )
                 }
             }
@@ -509,6 +525,7 @@ fun GeneralSettingsScreen(
                         stringResource(R.string.settings_nav_style_floating)
                     ),
                     selectedKey = if (navDock) 1 else 0,
+                    dbg = "general_nav_style",
                     onSelect = { idx ->
                         val on = idx == 1
                         if (navDock != on) {
@@ -534,7 +551,9 @@ fun GeneralSettingsScreen(
                 ) {
                     // 折叠头: 当前语言值 + 展开箭头(2026-09-21: 组标题已示「语言」, 卡标题禁两遍, 改显当前值)
                     Row(
-                        modifier = Modifier.fillMaxWidth().noRippleClickable { languageExpanded = !languageExpanded }.padding(16.dp),
+                        modifier = Modifier.fillMaxWidth().noRippleClickable { languageExpanded = !languageExpanded }
+                            .dbgTag("general_language_card", text = currentLabel, role = "button")
+                            .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
@@ -567,7 +586,9 @@ fun GeneralSettingsScreen(
                                         language = code
                                         AppPrefs.setLanguage(context, code)
                                         (context as? android.app.Activity)?.recreate()
-                                    }.padding(vertical = 10.dp, horizontal = 4.dp),
+                                    }
+                                        .dbgTag("general_language#$code", text = label, role = "radio")
+                                        .padding(vertical = 10.dp, horizontal = 4.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
@@ -604,6 +625,7 @@ fun GeneralSettingsScreen(
                         label = stringResource(R.string.settings_grid_adaptive_height),
                         subtitle = stringResource(R.string.settings_grid_adaptive_height_sub),
                         checked = gridAdaptiveHeight,
+                        dbg = "general_grid_adaptive_height",
                         onCheckedChange = {
                             gridAdaptiveHeight = it
                             AppPrefs.setGridAdaptiveHeight(context, it)
@@ -615,6 +637,7 @@ fun GeneralSettingsScreen(
                         label = stringResource(R.string.settings_grid_pinch_zoom),
                         subtitle = stringResource(R.string.settings_grid_pinch_zoom_sub),
                         checked = gridPinchZoom,
+                        dbg = "general_grid_pinch_zoom",
                         onCheckedChange = {
                             gridPinchZoom = it
                             AppPrefs.setGridPinchZoom(context, it)
@@ -625,6 +648,7 @@ fun GeneralSettingsScreen(
                         label = stringResource(R.string.settings_grid_auto_hide_evening),
                         subtitle = stringResource(R.string.settings_grid_auto_hide_evening_sub),
                         checked = autoHideEmptyEvening,
+                        dbg = "general_auto_hide_evening",
                         onCheckedChange = {
                             autoHideEmptyEvening = it
                             AppPrefs.setGridAutoHideEmptyEvening(context, it)
@@ -651,6 +675,7 @@ fun GeneralSettingsScreen(
                                 },
                                 label = "",
                                 modifier = Modifier.width(150.dp)
+                                    .dbgTag("general_evening_start", role = "button")
                             )
                         }
                     }
@@ -659,6 +684,7 @@ fun GeneralSettingsScreen(
                         label = stringResource(R.string.settings_vert_punct),
                         subtitle = stringResource(R.string.settings_vert_punct_sub),
                         checked = vertPunct,
+                        dbg = "general_vert_punct",
                         onCheckedChange = {
                             vertPunct = it
                             AppPrefs.setVertPunctReplace(context, it)
@@ -670,6 +696,7 @@ fun GeneralSettingsScreen(
                         label = stringResource(R.string.settings_grid_show_separators),
                         subtitle = stringResource(R.string.settings_grid_show_separators_sub),
                         checked = gridShowSeparators,
+                        dbg = "general_grid_show_separators",
                         onCheckedChange = {
                             gridShowSeparators = it
                             AppPrefs.setGridShowSeparators(context, it)
@@ -681,6 +708,7 @@ fun GeneralSettingsScreen(
                         label = stringResource(R.string.settings_grid_long_break_spacing),
                         subtitle = stringResource(R.string.settings_grid_long_break_spacing_sub),
                         checked = gridLongBreakSpacing,
+                        dbg = "general_grid_long_break_spacing",
                         onCheckedChange = {
                             gridLongBreakSpacing = it
                             AppPrefs.setGridLongBreakSpacing(context, it)
@@ -727,7 +755,8 @@ fun GeneralSettingsScreen(
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                             modifier = Modifier
                                 .width(120.dp)
-                                .semantics { contentDescription = undoDepthFieldDesc },
+                                .semantics { contentDescription = undoDepthFieldDesc }
+                                .dbgTag("general_undo_depth_field", text = undoDepthFieldDesc, role = "textbox"),
                             shape = SleepyTheme.fieldShape,
                             colors = SleepyTheme.fieldColors()
                         )
@@ -757,6 +786,7 @@ fun GeneralSettingsScreen(
                     Row(
                         modifier = Modifier.fillMaxWidth()
                             .noRippleClickable { onMigrationExportClick() }
+                            .dbgTag("general_migration_export", text = stringResource(R.string.settings_migration_export), role = "button")
                             .alpha(if (migrationBusy) 0.5f else 1f)
                             .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -785,6 +815,7 @@ fun GeneralSettingsScreen(
                             .noRippleClickable {
                                 if (!migrationBusy) importLauncher.launch(arrayOf("application/zip", "application/octet-stream"))
                             }
+                            .dbgTag("general_migration_import", text = stringResource(R.string.settings_migration_import), role = "button")
                             .alpha(if (migrationBusy) 0.5f else 1f)
                             .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -819,16 +850,19 @@ fun GeneralSettingsScreen(
             text = { Text(stringResource(R.string.settings_migration_import_dialog_text)) },
             confirmButton = {
                 Row {
-                    TextButton(onClick = { showImportDialog = false; runMigrationImport(MigrationExecutor.ImportMode.OVERWRITE) }) {
+                    TextButton(onClick = { showImportDialog = false; runMigrationImport(MigrationExecutor.ImportMode.OVERWRITE) },
+                        modifier = Modifier.dbgTag("general_import_overwrite", role = "button")) {
                         Text(stringResource(R.string.settings_migration_import_overwrite))
                     }
-                    TextButton(onClick = { showImportDialog = false; runMigrationImport(MigrationExecutor.ImportMode.MERGE) }) {
+                    TextButton(onClick = { showImportDialog = false; runMigrationImport(MigrationExecutor.ImportMode.MERGE) },
+                        modifier = Modifier.dbgTag("general_import_merge", role = "button")) {
                         Text(stringResource(R.string.settings_migration_import_merge))
                     }
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showImportDialog = false; pendingImportBytes = null }) {
+                TextButton(onClick = { showImportDialog = false; pendingImportBytes = null },
+                    modifier = Modifier.dbgTag("general_import_cancel", role = "button")) {
                     Text(stringResource(R.string.cancel))
                 }
             }
