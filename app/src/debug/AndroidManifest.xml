@@ -11,6 +11,14 @@
     <uses-permission android:name="com.lingion.sleepy.permission.DEBUG_TOOL" />
 
     <application>
+        <!-- Debug: Agent Debug Console 自动装配入口（Application.onCreate 前触发,
+             仅 debug 构建存在; release APK 物理不含该组件, 端口不会绑）。 -->
+        <provider
+            android:name="com.lingion.sleepy.debug.DebugConsoleProvider"
+            android:authorities="${applicationId}.debug-console"
+            android:exported="false"
+            android:initOrder="100" />
+
         <!-- Debug: 注入课表 / 触发流体云 / 清理测试数据（走 ScheduleParser + repository 真实链路） -->
         <activity
             android:name=".debug.DebugImportReceiver"
