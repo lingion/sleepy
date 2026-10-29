@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import java.time.Instant
@@ -56,7 +57,10 @@ fun DatePickerField(
     label: String,
     modifier: Modifier = Modifier,
     shape: CornerBasedShape = SleepyTheme.fieldShape,
-    isError: Boolean = false
+    isError: Boolean = false,
+    // 调试台语义身份: 传 tag → 输入框=<tag>、日历按钮=<tag>_pick、
+    // 弹窗 确定/取消=<tag>_pick_confirm/_dismiss; null = 不打标, 既有调用点零影响
+    dbgTag: String? = null
 ) {
     val colors = MaterialTheme.colorScheme
     var showPicker by remember { mutableStateOf(false) }
@@ -72,14 +76,17 @@ fun DatePickerField(
             onValueChange = onValueChange,
             label = { Text(label) },
             singleLine = true,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f)
+                .then(dbgTag?.let { Modifier.dbgTag(it, text = label, role = "textbox") } ?: Modifier),
             shape = shape,
             isError = isError,
             colors = fieldColors
         )
         IconButton(
             onClick = { showPicker = true },
-            modifier = Modifier.padding(start = 4.dp)
+            modifier = Modifier
+                .padding(start = 4.dp)
+                .then(dbgTag?.let { Modifier.dbgTag("${it}_pick", role = "button") } ?: Modifier)
         ) {
             Icon(
                 Icons.Outlined.CalendarMonth,
@@ -105,12 +112,14 @@ fun DatePickerField(
                         }
                         showPicker = false
                     },
+                    modifier = dbgTag?.let { Modifier.dbgTag("${it}_pick_confirm", role = "button") } ?: Modifier,
                     shape = SleepyTheme.shapes.medium
                 ) { Text(stringResource(R.string.ok), maxLines = 1) }
             },
             dismissButton = {
                 Button(
                     onClick = { showPicker = false },
+                    modifier = dbgTag?.let { Modifier.dbgTag("${it}_pick_dismiss", role = "button") } ?: Modifier,
                     shape = SleepyTheme.shapes.medium,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -134,7 +143,9 @@ fun TimePickerField(
     onValueChange: (String) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
-    shape: CornerBasedShape = SleepyTheme.fieldShape
+    shape: CornerBasedShape = SleepyTheme.fieldShape,
+    // 调试台语义身份: 传 tag → 字段=<tag>、弹窗 确定/取消=<tag>_pick_confirm/_dismiss
+    dbgTag: String? = null
 ) {
     val colors = MaterialTheme.colorScheme
     var showPicker by remember { mutableStateOf(false) }
@@ -152,6 +163,7 @@ fun TimePickerField(
         modifier = modifier
             .clip(shape)
             .noRippleClickable { showPicker = true }
+            .then(dbgTag?.let { Modifier.dbgTag(it, text = label, role = "textbox") } ?: Modifier)
     ) {
         TextField(
             value = value,
@@ -184,7 +196,8 @@ fun TimePickerField(
                             showPicker = false
                         },
                         dismissText = stringResource(R.string.cancel),
-                        onDismiss = { showPicker = false }
+                        onDismiss = { showPicker = false },
+                        dbgTagPrefix = dbgTag?.let { "${it}_pick" }
                     )
                 }
             },
