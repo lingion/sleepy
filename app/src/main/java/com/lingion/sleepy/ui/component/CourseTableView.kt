@@ -207,6 +207,7 @@ fun CardsGridView(
                 it == AppPrefs.KEY_PERIOD_HEADER_HANGING ||
                 it == AppPrefs.KEY_PERIOD_HEADER_SHOW_X ||
                 it == AppPrefs.KEY_PERIOD_HEADER_HIDE_TIME ||
+                it == AppPrefs.KEY_PERIOD_HEADER_TIME_ALIGNMENT ||
                 it == AppPrefs.KEY_GRID_SHOW_SEPARATORS ||
                 it == AppPrefs.KEY_GRID_LONG_BREAK_SPACING
         }.collect { prefVersion++ }
@@ -283,6 +284,7 @@ fun CardsGridView(
     val headerLayout = AppPrefs.getPeriodHeaderLayout(context)
     val headerHanging = AppPrefs.getPeriodHeaderHanging(context)
     val headerShowX = AppPrefs.isPeriodHeaderShowX(context)
+    val headerTimeAlignment = AppPrefs.getPeriodHeaderTimeAlignment(context)
     val headerTextMeasurer = rememberTextMeasurer()
     val headerDensity = LocalDensity.current
     // columnFont/columnPlacements 需真实行高, 故搁后到 rowHeightDp 可用后 (见下 BoxWithConstraints)。
@@ -312,6 +314,7 @@ fun CardsGridView(
             LocalDensity.current,
             headerShowX,
             AppPrefs.isPeriodHeaderHideTime(context),
+            headerTimeAlignment == "center",
         )
             // 下限与三行式同一防挤压口径
             .coerceAtLeast(d(46f))
@@ -492,7 +495,12 @@ fun CardsGridView(
                     // 偏移现在以卡片内容框 (SingleTimeHeadCell padding 之内) 为原点 —
                     // PeriodHeaderCellContent 根 padding 已拆 (双重 pad 修复, 2026-10-04),
                     // 此处不再 +padDp, 否则全列墨迹右偏一个 pad (设备实锤右溢 7px)。
-                    legacyDashColumnPx(rows, padPx = 0f).dashCenterX.toDp()
+                    val geometry = if (headerTimeAlignment == "center") {
+                        legacyCenteredColumnPx(rows, padPx = 0f)
+                    } else {
+                        legacyDashColumnPx(rows, padPx = 0f)
+                    }
+                    geometry.dashCenterX.toDp()
                 }
             }
             // 用户令 2026-09-30: 整列统一卡宽 — 所有行卡片 = timeW (整列最宽包络),
