@@ -328,11 +328,12 @@ Appearance → Schedule display offers stacked, folded-corner, and side-bar conf
 
 ## OPPO Fluid Cloud
 
-Since v1.0.37 the before-class reminder supports a Fluid Cloud style: `FluidCloudService` (foreground service) renders course name, time, and room via `NotificationCompat.ProgressStyle`, with a progress bar that advances toward class time, persistently visible in the status bar (off by default). OPPO/OnePlus Seedling card integration materials are ready but **not yet wired into the build**.
+**The Android 16 Live Updates path is integrated**: the foreground `FluidCloudService` uses `VendorLiveCardRenderer` to build a `NotificationCompat.ProgressStyle` notification and request promoted ongoing presentation. OPPO / OnePlus / realme share a ColorOS rendering branch. The repository records device behavior on RMX6688 / ColorOS 16; capsule and card presentation still depends on the device, OS, and permissions, so the feature remains experimental.
 
-- OPPO `SeedlingSupportSDK-lite 3.0.7` AAR sits in `app/libs/` (minSdk 26); gradle does not yet declare the dependency; `SeedlingCardWidgetProvider` is unimplemented
-- UPK source project in [`oppo-fluid-cloud-upk/`](oppo-fluid-cloud-upk/) (API 2.0, `immediate` trigger, `notification/statusbar` entry)
-- OPPO-assigned values (`identifier`, `intent`, etc.) remain as `REPLACE_WITH_OPPO_*` placeholders — see that directory's README
+- Select Fluid Cloud under Mine → Reminders → Before-class reminder (banner is the default; the two modes are exclusive). The capsule can show course name, time, room, or countdown; progress updates every 15 seconds and stops when class starts
+- The reminder page offers a two-minute test and a stop action, checking notification permission, Live Updates authorization, and vendor capability state. OPPO-family devices on API 36+ prioritize the Live Updates authorization page. Permission alone does not prove a card is visible; older systems or unpromoted notifications use a normal progress notification, while denied notification permission still affects visibility
+- **The dedicated Pantanal / Seedling SDK + UPK path remains unintegrated**: the `SeedlingSupportSDK-lite 3.0.7` AAR in `app/libs/` is not a Gradle dependency, and `SeedlingCardWidgetProvider` is neither implemented nor registered. [`oppo-fluid-cloud-upk/`](oppo-fluid-cloud-upk/) is a source skeleton with `REPLACE_WITH_OPPO_*` placeholders, not release or acceptance evidence
+- See [OPPO / ColorOS integration status](docs/vendors/oppo-coloros-fluid-cloud.md) (Chinese) for code references, the two paths, and verification limits
 
 ---
 
@@ -359,7 +360,7 @@ Entry: "Mine" → "Reminders". The master toggle is off by default; turning it o
 - **Per-timetable reminders**: open Mine → Reminders → Timetable reminders to see every timetable and toggle each one. Changes save immediately and retain existing choices. You can configure them while the master switch is off; they take effect when it is enabled. The timetable editor no longer contains this switch.
 - Today, tomorrow, and before-class reminders provide live schedule previews
 - Date rules distinguish public holidays, transferred days, make-up workdays, and ordinary weekends
-- Before-class reminders can use a notification banner and experimental live notifications; the page includes main-field selection, a test action, and notification/alarm/battery reliability diagnostics
+- Before-class reminders use either a notification banner or experimental live notifications; switching to banner stops the live notification service. The page includes main-field selection, test and stop actions, and notification/alarm/battery reliability diagnostics
 - Optional automatic Do Not Disturb during class; it restores the previous state at the class boundary and remains vendor/permission dependent
 
 ---
@@ -562,7 +563,7 @@ sleepy/
 │   └── logo.png                                               # README logo
 ├── assets/                                                    # Original logo asset
 ├── gh-pages/                                                  # Online timetable site
-├── oppo-fluid-cloud-upk/                                      # OPPO Fluid Cloud UPK source (not wired into the build)
+├── oppo-fluid-cloud-upk/                                      # Pantanal/Seedling UPK skeleton (dedicated path not integrated)
 ├── artifacts/                                                 # Archived build outputs
 ├── scripts/                                                   # School catalog generation, validation, and version maintenance
 ├── tools/                                                     # Widget previews, device verification, and academic capture tools

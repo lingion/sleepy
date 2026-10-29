@@ -25,13 +25,13 @@
 | 2 | **小米** | 原生 AppWidget 免审核直用;要负一屏露出走 MIUI 小部件(邮件报备 + widget.xiaomi.com 审核);超级岛走提报制 | 中 |
 | 3 | **华为** | 鸿蒙原生 Form Kit 卡片(必须 2×2)+ AGC 服务直达上负一屏(审批 1h);Android APK 在 NEXT 无形态 | 需鸿蒙原生 |
 | 4 | **荣耀** | 安卓卡片 = AppWidget + `com.hihonor.widget.type=honorcard`;负一屏露出需商务 BD;灵动胶囊媒体类免开发 | 负一屏白名单 |
-| 5 | **OPPO** | 标准 AppWidget 可上负一屏插件位(id=13335);Seedling/流体云必须商务授权码(UPK);图标变形无声明 API | 商务主导 |
+| 5 | **OPPO** | 标准 AppWidget 可上负一屏插件位(id=13335);Pantanal/Seedling 专用通道按原资料需商务授权码(UPK);Sleepy 已实现 Android 16 Live Updates 通道，见[接入状态](./oppo-coloros-fluid-cloud.md);图标变形无声明 API | 专用通道商务主导；Live Updates 需设备授权与验证 |
 | 6 | **魅族** | 仅标准 AppWidget + shortcuts + 状态栏歌词 | 几乎无门 |
 
 ## 跨域结论(各域详版见对应 INDEX)
 - **长按菜单**: 只有 vivo(图标 ≤4 + 组件气泡 ≤4)与华为(卡片长按自定义区)给了官方扩展位。
 - **图标拖长变形**: 只有 OPPO 有官方记载(1×2/2×1/2×2,**1×3 无官方档位**),且为系统行为无声明 API;vivo 是组件级拖拽。
-- **实时信息卡片(灵动岛类)**: 华为实况窗 Kit 开放 > 荣耀灵动胶囊(媒体免开发) ≈ 小米超级岛(提报制) ≈ vivo 原子通知(履约白名单) ≈ OPPO 流体云(UPK+商务) > 魅族无 → 详版 [live-cards/](./live-cards/INDEX.md)。
+- **实时信息卡片(灵动岛类)**: 华为实况窗 Kit 开放 > 荣耀灵动胶囊(媒体免开发) ≈ 小米超级岛(提报制) ≈ vivo 原子通知(履约白名单) ≈ OPPO Pantanal 流体云(UPK+商务) > 魅族无 → 详版 [live-cards/](./live-cards/INDEX.md)。此为原平台调研比较；Sleepy 另已实现 OPPO 家族的 Android Live Updates 通道，展示仍需逐机验证。
 
 ## 缺口总账(需实测/工单,无公开数据)
 - OPPO: 图标变形能否声明额外档位(1×3)→ 开放平台工单;ColorOS 15/16 卡片设计规范更新版;智能侧边栏接入。

@@ -2,6 +2,8 @@
 
 # OPPO ColorOS — 流体云 (Fluid Cloud) 能力总览
 
+> 2026-10-29 实现复核：Sleepy 已接入 Android 16 Live Updates 通道，OPPO / 一加 / realme 共用 ColorOS 分支；Pantanal / Seedling 专用通道尚未接入。以下为 2026-09 的 Pantanal 平台资料快照，其中 UPK/SDK 要求限于专用通道；当前代码和验证范围见 [接入状态](../../oppo-coloros-fluid-cloud.md)。
+
 > 结论先行: **流体云是 OPPO 泛在服务 (Ubiquitous Service / 泛在服务卡片) 体系下的一种展现形态, 不是普通 Android Notification 的样式扩展**. 形态 = 气泡 + 胶囊 + 面板 三形态按优先级升降级, 入口覆盖手机/平板/折叠屏/车机/手表/耳机, 与苹果 Live Activities 的 compact/minimal/expanded 同构, 但**走的是 UPK 包 (类似 PWA) + 宿主 APK 两条路**, 不是 ActivityKit 风格的本地 Capability.
 
 ## 一、官方定性 (doc_id=13270 原文)
