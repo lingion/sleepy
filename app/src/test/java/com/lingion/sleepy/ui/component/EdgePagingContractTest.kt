@@ -44,7 +44,8 @@ class EdgePagingContractTest {
         // 2026-10-28 用户反馈: 压边无限连翻停不了 — 翻过即消耗, 收回格内(dir==0)才重新武装。
         assertTrue("翻过即消耗", tableView.contains("floatState.edgeArmed = false"))
         assertTrue("未武装不计时", tableView.contains("if (!floatState.edgeArmed)"))
-        assertTrue("回格重新武装", tableView.contains("floatState.edgeArmed = true; continue"))
+        // 工作区更新: 回格同时清 blocked/peek — 停形预览条随重新武装归零。
+        assertTrue("回格重新武装", tableView.contains("floatState.edgeArmed = true; floatState.edgeBlocked = 0; floatState.peekProgress = 0f; continue"))
         assertTrue("武装字段默认开", edgeOrFloatState.contains("var edgeArmed = true"))
         assertTrue("松手重新武装", edgeOrFloatState.contains("edgeArmed = true"))
     }
@@ -73,6 +74,45 @@ class EdgePagingContractTest {
         assertTrue("settledPage 回写", schedule.contains("floatState.week = pagerState.settledPage + 1"))
         // 屏根周变化收起浮层 — 拖拽中例外(边缘翻页正是要改周)。
         assertTrue("收起守卫", schedule.contains("if (!floatState.dragging && floatState.active && floatState.week != state.selectedWeek)"))
+    }
+
+    @Test fun settledPageWriteBackReachesViewModelChip() {
+        // 2026-10-28 真机实证: 边缘翻页落库正确, 但顶栏周 chip 停在起拖周(第 2 周),
+        // 网格已是第 3 周 — 左箭头从第 3 周直接跳回第 1 周, 导航错位一周。
+        // 根因: settledPage 落位 effect 只回写 floatState.week, 漏了 ViewModel —
+        // 程序化 animateScrollToPage 被 currentPage effect 的手势守卫有意拦截
+        // (2026-09-13 防闪烁环), 落位后必须在此补 changeWeek, 双通道才一致。
+        val body = schedule.substringAfter("LaunchedEffect(\n                pagerState.settledPage")
+            .substringBefore("LaunchedEffect(pagerState.currentPage)")
+        // (?m)^\s* 只认行首代码 — 注释里出现同名字符串不算数
+        // (回退验证时曾被注释假绿, 2026-10-28)。
+        assertTrue(
+            "settledPage 落位须回写 ViewModel(changeWeek), 否则 chip 与浏览周脱节",
+            Regex("""(?m)^\s*viewModel\.changeWeek\(pagerState\.settledPage \+ 1\)""").containsMatchIn(body)
+        )
+        // 回写受「非拖拽中」守卫 — 拖拽期回写会腰斩手势(原注释口径)。
+        assertTrue(
+            "回写须在非拖拽守卫内",
+            Regex("""!floatState\.dragging""").containsMatchIn(body)
+        )
+        // 根因二(同日二补, 真机 replay 实证): 旧守卫「active && !dragging」在合法落点
+        // 路上从未打开 — 松手走 dismiss() 把两值同帧落 false, effect 永远等不到
+        // 「浮着但不拖」的瞬间, chip 仍停起拖周。改由 chipPending 记账: 翻页置位,
+        // effect 在「!dragging && (active || chipPending)」消费, 翻过页必回写 chip。
+        assertTrue(
+            "回写条件须含 chipPending(救合法落点路)",
+            Regex("""floatState\.active \|\| floatState\.chipPending""").containsMatchIn(body)
+        )
+        assertTrue("chipPending 须作 effect 键", body.contains("floatState.chipPending,"))
+        assertTrue("消费后须清零", Regex("""(?m)^\s*floatState\.chipPending = false""").containsMatchIn(body))
+        // 翻页即置位 — 翻过页(week bump)才置, 且早于 onEdgeDrag 同帧生效。
+        assertTrue("翻过页置位", tableView.contains("floatState.chipPending = true"))
+        assertTrue(
+            "置位在 week bump 之后 onEdgeDrag 之前",
+            tableView.substringBefore("floatState.chipPending = true").contains("floatState.week += dir"),
+        )
+        // 字段须是快照态(作 effect 键须可观察)。
+        assertTrue("chipPending 为组合态", edgeOrFloatState.contains("var chipPending by mutableStateOf(false)"))
     }
 
     @Test fun horizontalEdgeReleaseClampsInsteadOfBouncing() {

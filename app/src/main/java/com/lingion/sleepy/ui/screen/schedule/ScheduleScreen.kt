@@ -325,9 +325,23 @@ fun ScheduleScreen(
 
             // 边缘翻页落位: 每次驻留满换页, week 即逻辑真相 (网格 bump),
             // pager 静止后回写 ViewModel — VM 与 week 双通道一致, 拖拽期间不回写(防腰斩)。
-            LaunchedEffect(pagerState.settledPage, floatState.active, floatState.dragging) {
-                if (floatState.active && !floatState.dragging) {
+            // changeWeek 半句 2026-10-28 真机补: 程序化 animateScrollToPage 被下方
+            // currentPage effect 的手势守卫(isScrollInProgress)有意拦截(09-13 防闪烁环),
+            // 漏写则顶栏 chip 停在起拖周 — 网格第 3 周、chip 第 2 周、左箭头跳回第 1 周。
+            // chipPending 半句同日二补: 原守卫「active && !dragging」在合法落点路上
+            // 从未打开 — 松手即 dismiss(), active 与 dragging 同帧落 false, effect 再也
+            // 等不到「浮着但不拖」的瞬间, chip 仍停起拖周。翻过页置位, 这里在
+            // 「非拖拽 且 (浮着 或 待回写)」时统一消费(弹回路/审批弹窗路同样命中)。
+            LaunchedEffect(
+                pagerState.settledPage,
+                floatState.active,
+                floatState.dragging,
+                floatState.chipPending,
+            ) {
+                if (!floatState.dragging && (floatState.active || floatState.chipPending)) {
                     floatState.week = pagerState.settledPage + 1
+                    viewModel.changeWeek(pagerState.settledPage + 1)
+                    floatState.chipPending = false
                 }
             }
 

@@ -106,6 +106,11 @@ class CourseFloatState {
      *  翻页即消耗, 直到手指回到格内 (dir==0 轮询) 才复位重新计时。
      *  非组合读取 → 普通 var; 计时器换页重启 (week 入键) 也不得复活消耗量。 */
     var edgeArmed = true
+    /** 顶栏周 chip 待回写 (2026-10-28 真机实证): 合法落点松手走 dismiss — active 与
+     *  dragging 同帧落 false, settledPage effect 的「active && !dragging」窗口在这条
+     *  路上从未打开, chip 永远停在起拖周。边缘翻页翻过即置位, 屏根 effect 在
+     *  「非拖拽且 (浮起或待回写)」时消费清零。作 effect 键 → 必须是快照态。 */
+    var chipPending by mutableStateOf(false)
 
     /** 把手拉伸未获确认 → 位置/高度回到拉起时的原样, 浮卡本身留在原位。 */
     fun revertSpan() {

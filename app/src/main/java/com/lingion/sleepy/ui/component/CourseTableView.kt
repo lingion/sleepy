@@ -686,7 +686,9 @@ fun CardsGridView(
                     floatState.edgeDir = dir
                     // 回到格内 = 重新武装: 允许下一次满驻留翻页 (2026-10-28 用户反馈:
                     // 旧实现仍压边就每 500ms 连翻, 根本停不了)。
-                    if (dir == 0) { floatState.edgeBlocked = 0; floatState.peekProgress = 0f; floatState.edgeArmed = true; continue }
+                    if (dir == 0) {
+                        floatState.edgeArmed = true; floatState.edgeBlocked = 0; floatState.peekProgress = 0f; continue
+                    }
                     val atBoundary = (dir < 0 && floatState.week <= 1) || (dir > 0 && floatState.week >= floatMaxWeek)
                     floatState.edgeBlocked = if (atBoundary) dir else 0
                     if (atBoundary) {
@@ -703,6 +705,7 @@ fun CardsGridView(
                         // 翻过即消耗(edgeArmed=false), 必须收回格内再压出来才翻下一页。
                         floatState.edgeArmed = false
                         floatState.week += dir
+                        floatState.chipPending = true // 翻过页 → 顶栏 chip 待回写 (松手/落位时消费)
                         elapsed = 0L
                         held = 0
                         floatState.peekProgress = 0f
