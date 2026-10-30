@@ -197,7 +197,8 @@ fun TimeSlotEditor(
             )
             Mode.Auto -> SmartPeriodEditor(
                 config = smartConfig,
-                onConfigChange = onSmartConfigChange
+                onConfigChange = onSmartConfigChange,
+                dbgTagPrefix = dbgTagPrefix?.let { "${it}_auto" }
             )
             Mode.PeriodTable -> PeriodTableBindTab(
                 options = periodTableOptions.filterNot { it.id == excludePeriodTableId },
