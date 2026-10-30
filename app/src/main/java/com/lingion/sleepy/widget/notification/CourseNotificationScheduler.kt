@@ -31,6 +31,7 @@ import kotlinx.coroutines.sync.withLock
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 课程通知调度器 — 支持每日提醒 + 每节课前提醒。
@@ -217,8 +218,8 @@ class CourseNotificationScheduler private constructor(
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         val target = LocalTime.of(hour, minute)
-        var next = LocalDate.now().atTime(target)
-        if (!LocalTime.now().isBefore(target)) next = next.plusDays(1)
+        var next = LocalDate.now(AppClock).atTime(target)
+        if (!LocalTime.now(AppClock).isBefore(target)) next = next.plusDays(1)
         val epoch = next.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
         setRepeatingAlarm(alarmManager, epoch, AlarmManager.INTERVAL_DAY, pending)
@@ -232,8 +233,8 @@ class CourseNotificationScheduler private constructor(
 
         // Schedule at 00:05 every day — 每日全窗口重同步(幂等)
         val target = LocalTime.of(0, 5)
-        var next = LocalDate.now().atTime(target)
-        if (LocalTime.now().isAfter(target)) next = next.plusDays(1)
+        var next = LocalDate.now(AppClock).atTime(target)
+        if (LocalTime.now(AppClock).isAfter(target)) next = next.plusDays(1)
         val epoch = next.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
         setRepeatingAlarm(alarmManager, epoch, AlarmManager.INTERVAL_DAY, pending)
@@ -364,8 +365,8 @@ class CourseNotificationScheduler private constructor(
         if (!AppPrefs.isReminderEnabled(app) || !AppPrefs.isBeforeClassEnabled(app)) return false
         if (!AppPrefs.isBeforeClassFluidEnabled(app)) return false
         val minutes = AppPrefs.getBeforeClassMinutes(app)
-        val today = LocalDate.now()
-        val now = System.currentTimeMillis()
+        val today = LocalDate.now(AppClock)
+        val now = AppClock.millis()
         // 每表独立提醒: 扫描所有开启提醒的课表, 取课前窗口内最早开始的一节
         val repo = SleepyApp.get().repository
         val tables = repo.getAllTables().filter { it.reminderEnabled }.map { t ->
@@ -495,8 +496,8 @@ internal interface BeforeClassAlarmPort {
 internal class AndroidBeforeClassEnv(private val ctx: Context) : BeforeClassEnv {
     override fun isBeforeClassEnabled(): Boolean = AppPrefs.isBeforeClassEnabled(ctx)
     override fun beforeClassMinutes(): Int = AppPrefs.getBeforeClassMinutes(ctx)
-    override fun nowEpochMs(): Long = System.currentTimeMillis()
-    override fun todayDate(): LocalDate = LocalDate.now()
+    override fun nowEpochMs(): Long = AppClock.millis()
+    override fun todayDate(): LocalDate = LocalDate.now(AppClock)
 
     // 独立文件: 闹钟是本机状态, 不能跟 sleepy_prefs.xml 一起被云备份/换机迁移带走
     private val ledger get() = ctx.getSharedPreferences(LEDGER_FILE, Context.MODE_PRIVATE)
@@ -595,7 +596,7 @@ class DailyNotifyReceiver : BroadcastReceiver() {
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             sendScheduleSummary(
                 context = context,
-                targetDate = LocalDate.now(),
+                targetDate = LocalDate.now(AppClock),
                 isTomorrowPreview = false
             )
         }
@@ -614,7 +615,7 @@ class TomorrowNotifyReceiver : BroadcastReceiver() {
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             sendScheduleSummary(
                 context = context,
-                targetDate = LocalDate.now().plusDays(1),
+                targetDate = LocalDate.now(AppClock).plusDays(1),
                 isTomorrowPreview = true
             )
         }
@@ -730,7 +731,7 @@ class BeforeClassNotifyReceiver : BroadcastReceiver() {
                     .takeUnless { it == Long.MIN_VALUE }
                 val date = intent.getStringExtra("reminderDate")
                     ?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
-                    ?: LocalDate.now()
+                    ?: LocalDate.now(AppClock)
                 // 每表独立提醒: 闹钟所属课表不再要求是当前课表, 只要该表仍存在且开启提醒即可弹
                 val resolvedTableId = tableId
                     ?: com.lingion.sleepy.widget.WidgetTableResolver.resolveCurrentTable()?.id
@@ -798,8 +799,8 @@ class BeforeClassNotifyReceiver : BroadcastReceiver() {
                 putExtra("startTime", startTime)
                 putExtra("endTime", intent.getStringExtra("endTime").orEmpty())
                 putExtra("startNode", intent.getIntExtra("startNode", 0))
-                putExtra("notifyEpoch", intent.getLongExtra("notifyEpoch", System.currentTimeMillis()))
-                putExtra("classEpoch", intent.getLongExtra("classEpoch", System.currentTimeMillis()))
+                putExtra("notifyEpoch", intent.getLongExtra("notifyEpoch", AppClock.millis()))
+                putExtra("classEpoch", intent.getLongExtra("classEpoch", AppClock.millis()))
             }
             ContextCompat.startForegroundService(context, serviceIntent)
             return

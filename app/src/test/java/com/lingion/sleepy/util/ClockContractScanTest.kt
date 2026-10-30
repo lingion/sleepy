@@ -31,6 +31,9 @@ class ClockContractScanTest {
             .filter { it.name != "AppClock.kt" }
             .flatMap { file ->
                 file.readLines().mapIndexedNotNull { lineNo, line ->
+                    // 注释行(KDoc 里引用 "LocalDate.now()" 是文档语义不是调用)豁免
+                    val t = line.trim()
+                    if (t.startsWith("//") || t.startsWith("*") || t.startsWith("/*")) return@mapIndexedNotNull null
                     val hit = BareNow.pattern.containsMatchIn(line)
                     if (hit) "${file.relativeTo(root)}:${lineNo + 1}: ${line.trim()}" else null
                 }

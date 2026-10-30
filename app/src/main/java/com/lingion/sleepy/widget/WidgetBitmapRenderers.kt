@@ -19,6 +19,7 @@ import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.util.WeekDisplayStatus
 import java.time.LocalDate
 import kotlin.math.roundToInt
+import com.lingion.sleepy.util.AppClock
 
 /**
  * Canvas bitmap 渲染器 — 各 Receiver.loadDataSync 拉数据后由本对象渲染，
@@ -766,7 +767,7 @@ object WidgetBitmapRenderers {
         visibleByCol: List<List<com.lingion.sleepy.data.entity.CourseEntity>?>?,
         footerByCol: List<String?>?
     ): Bitmap {
-        val todayDow = LocalDate.now().dayOfWeek.value
+        val todayDow = LocalDate.now(AppClock).dayOfWeek.value
         val visibleDays = AppPrefs.getVisibleDays(context)
         // compact 脸日列 = compactShownDays 单一口径 (compactWindow 优先, 可跨上下周)
         val compactData = data.copy(days = compactShownDays(data, visibleDays, todayDow))
@@ -837,7 +838,7 @@ object WidgetBitmapRenderers {
             return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
         }
 
-        val todayDow = LocalDate.now().dayOfWeek.value
+        val todayDow = LocalDate.now(AppClock).dayOfWeek.value
         val colGap = 4f * density
         val dayCount = shownDays.size
         val colW = (innerW - colGap * (dayCount - 1)) / dayCount
@@ -1108,7 +1109,7 @@ object WidgetBitmapRenderers {
         context: Context, data: WeekData, wDp: Float, hDp: Float,
         maxCoursesPerDay: Int = 5
     ): Bitmap {
-        val todayDow = LocalDate.now().dayOfWeek.value
+        val todayDow = LocalDate.now(AppClock).dayOfWeek.value
         // visibleDays 同 Regular 档读法(决策 D5-12): 空集回退全周防御; 日列走 compactShownDays 单一口径
         val visibleDays = AppPrefs.getVisibleDays(context)
         val compactData = data.copy(days = compactShownDays(data, visibleDays, todayDow))
@@ -1161,7 +1162,7 @@ object WidgetBitmapRenderers {
             return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
         }
 
-        val todayDow = LocalDate.now().dayOfWeek.value
+        val todayDow = LocalDate.now(AppClock).dayOfWeek.value
         val colGap = 4f * density
         val dayCount = shownDays.size
         val colW = (innerW - colGap * (dayCount - 1)) / dayCount

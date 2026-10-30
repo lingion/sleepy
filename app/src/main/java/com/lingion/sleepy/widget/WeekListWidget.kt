@@ -16,6 +16,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 桌面 WeekList 小组件 — 同步 RemoteViews + Canvas (v1.0.29 起, 从 Glance 移植)。
@@ -51,7 +52,7 @@ open class WeekListWidgetReceiver : AppWidgetProvider() {
             WidgetBitmapRenderers.weekListContentHeightDp(
                 context,
                 data.copy(days = WidgetBitmapRenderers.compactShownDays(
-                    data, visibleDays, LocalDate.now().dayOfWeek.value
+                    data, visibleDays, LocalDate.now(AppClock).dayOfWeek.value
                 ))
             )
         } else WidgetBitmapRenderers.weekListContentHeightDp(context, data)
@@ -166,7 +167,7 @@ open class WeekListWidgetReceiver : AppWidgetProvider() {
          * [WidgetTableResolver.resolveCurrentTable] when no binding exists.
          */
         fun loadDataSync(context: Context, appWidgetId: Int): WeekData {
-            val today = LocalDate.now()
+            val today = LocalDate.now(AppClock)
             val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
             val isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(context, isSystemDark)
             val themeKey = com.lingion.sleepy.util.AppPrefs.getThemeKey(context)
