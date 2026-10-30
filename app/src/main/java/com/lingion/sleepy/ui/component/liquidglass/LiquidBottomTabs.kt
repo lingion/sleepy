@@ -102,6 +102,10 @@ fun LiquidBottomTabs(
     isLightThemeOverride: Boolean? = null,
     lightContainerColor: Color = Color(0xFFFAFAFA),
     lightAccentColor: Color = Color(0xFF0088FF),
+    darkAccentColor: Color = Color(0xFF0091FF),
+    // 选中态强调色 = 主题色(FlClash navigation_dock.dart: tint = colorScheme.primary,
+    // 明暗两制皆然)。调用方传 MaterialTheme.colorScheme.primary;默认值仅兜底。
+    accentColorOverride: Color? = null,
     useOfficialGlassParameters: Boolean = false,
     containerSurfaceEnabled: Boolean = true,
     leadingWidth: Dp = 0.dp,
@@ -124,7 +128,8 @@ fun LiquidBottomTabs(
         label = "LiquidBottomTabsContainerAlpha"
     )
     val accentColor by animateColorAsState(
-        targetValue = if (isLightTheme) lightAccentColor else Color(0xFF0091FF),
+        targetValue = accentColorOverride
+            ?: if (isLightTheme) lightAccentColor else darkAccentColor,
         animationSpec = tween(220),
         label = "LiquidBottomTabsAccentColor"
     )

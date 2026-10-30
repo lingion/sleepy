@@ -109,6 +109,9 @@ internal fun LiquidGlassNavBar(
         indicatorHeight = NavDockSpec.itemSeat,
         isLightThemeOverride = !isDark,
         lightAccentColor = colors.primary,
+        darkAccentColor = colors.primary,
+        // FlClash 对齐: 选中 tint = colorScheme.primary 明暗同色, 不走内置蓝
+        accentColorOverride = colors.primary,
     ) {
         tabs.forEachIndexed { index, tab ->
             val selected = index == tabs.indexOf(currentTab)
