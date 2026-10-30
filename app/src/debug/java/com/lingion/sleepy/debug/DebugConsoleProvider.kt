@@ -6,6 +6,7 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.net.Uri
 import com.lingion.sleepy.console.ConsoleBootstrap
+import com.lingion.sleepy.debug.console.TriggerHandler
 
 /**
  * debug 源集的 console 自动装配入口 — release APK 物理不含本类（SPEC §5.1）。
@@ -21,6 +22,8 @@ class DebugConsoleProvider : ContentProvider() {
 
     override fun onCreate(): Boolean {
         (context?.applicationContext as? Application)?.let { app ->
+            // debug-only 端点必须在服务器 start 之前注册（既定扩展时序位, Task 5）
+            TriggerHandler.registerAll(app)
             ConsoleBootstrap.onCreate(app)
         }
         return true
