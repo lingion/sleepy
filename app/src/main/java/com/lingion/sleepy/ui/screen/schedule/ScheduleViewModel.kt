@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
+import com.lingion.sleepy.util.AppClock
 
 data class ScheduleState(
     val tables: List<TimeTableEntity> = emptyList(),
@@ -234,7 +235,7 @@ class ScheduleViewModel : ViewModel() {
         viewModelScope.launch {
             combine(
                 repo.observeAllTables(),
-                kotlinx.coroutines.flow.flowOf(LocalDate.now())
+                kotlinx.coroutines.flow.flowOf(LocalDate.now(AppClock))
             ) { tables, _ -> tables }
                 .collect { tables ->
                     if (tables.isEmpty()) {
@@ -293,7 +294,7 @@ class ScheduleViewModel : ViewModel() {
                             WeekDisplayResolver.resolve(
                                 startDate = it.startDate,
                                 maxWeek = it.maxWeek,
-                                now = LocalDateTime.now(),
+                                now = LocalDateTime.now(AppClock),
                                 courses = courses,
                                 timeJson = it.timeJson,
                                 enabled = AppPrefs.isNearestBusyDay(SleepyApp.get()),
@@ -392,7 +393,7 @@ class ScheduleViewModel : ViewModel() {
         var index = _state.value.tables.size + 1
         var name = com.lingion.sleepy.SleepyApp.get().getString(R.string.default_table_with_num, index)
         while (name in existingNames) { index++; name = com.lingion.sleepy.SleepyApp.get().getString(R.string.default_table_with_num, index) }
-        val now = LocalDate.now()
+        val now = LocalDate.now(AppClock)
         val lastWeekMonday = now.with(java.time.DayOfWeek.MONDAY).minusWeeks(1)
         // 没有任何表时，新表自动 isDefault = true，避免出现"无默认表"
         val isFirstTable = _state.value.tables.isEmpty()
@@ -590,7 +591,7 @@ class ScheduleViewModel : ViewModel() {
         val context = WeekDisplayResolver.resolve(
             startDate = table.startDate,
             maxWeek = table.maxWeek,
-            now = LocalDateTime.now(),
+            now = LocalDateTime.now(AppClock),
             courses = current.courses,
             timeJson = table.timeJson,
             enabled = AppPrefs.isNearestBusyDay(SleepyApp.get()),

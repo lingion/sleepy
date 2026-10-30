@@ -97,6 +97,7 @@ import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import com.lingion.sleepy.util.AppClock
 
 private enum class DailyReminderTimeTarget { Today, Tomorrow }
 
@@ -125,7 +126,7 @@ private suspend fun loadReminderSchedulePreview(): ReminderSchedulePreview? = wi
         SleepyApp.get().repository.getCourses(table.id)
     }.getOrNull()?.takeIf { it.isNotEmpty() } ?: return@withContext null
     val nodes = TimeTableUtils.parseNodes(table.timeJson)
-    val today = LocalDate.now()
+    val today = LocalDate.now(AppClock)
 
     fun coursesOn(date: LocalDate): List<CourseEntity> {
         return com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(
@@ -154,7 +155,7 @@ private suspend fun loadReminderSchedulePreview(): ReminderSchedulePreview? = wi
         val candidate = coursesOn(date)
             .mapNotNull { course ->
                 val start = courseStartTime(course, nodes) ?: return@mapNotNull null
-                if (offset == 0 && !start.isAfter(LocalTime.now())) return@mapNotNull null
+                if (offset == 0 && !start.isAfter(LocalTime.now(AppClock))) return@mapNotNull null
                 ReminderCoursePreview(date, course, start.format(PREVIEW_TIME_FORMAT))
             }
             .minByOrNull { it.startTime }

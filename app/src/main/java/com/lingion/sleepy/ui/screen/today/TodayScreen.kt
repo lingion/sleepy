@@ -54,6 +54,7 @@ import com.lingion.sleepy.util.CourseHueStore
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import java.time.LocalDate
+import com.lingion.sleepy.util.AppClock
 
 @Composable
 fun TodayScreen(
@@ -61,7 +62,7 @@ fun TodayScreen(
     viewModel: ScheduleViewModel = viewModel(),
     // JVM 像素 golden 需要钉死日期 (Robolectric 无法回拨 System.currentTimeMillis);
     // 生产调用点不传 = 行为不变。同款先例: FullWeekView.todayDate。
-    today: LocalDate = LocalDate.now(),
+    today: LocalDate = LocalDate.now(AppClock),
 ) {
     val state by viewModel.state.collectAsState()
     // issue#44: 取课走反向查(补班日=sourceDate 的课, 放假日=无课), 未映射走自然星期
@@ -194,7 +195,7 @@ fun CompactTodayPane(
     viewModel: ScheduleViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsState()
-    val today = LocalDate.now()
+    val today = LocalDate.now(AppClock)
     val courseDate = state.courseDateFor(today)
     val dayOfWeek = courseDate?.dayOfWeek?.value
     val actualWeek = state.currentTable?.let { DateUtils.currentWeek(it.startDate, courseDate ?: today) } ?: state.currentWeek

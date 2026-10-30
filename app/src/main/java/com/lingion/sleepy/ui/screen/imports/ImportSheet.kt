@@ -95,6 +95,7 @@ import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import kotlinx.coroutines.launch
+import com.lingion.sleepy.util.AppClock
 
 /** 全屏导入入口：新建课表或向指定课表添加课程。 */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -139,7 +140,7 @@ fun AddTableScreen(
     val canImport = !isLoading && (!addingCourses || state.tables.any { it.id == targetTableId })
 
     fun commitPreview(value: ImportPreview) {
-        confirmedStartDate = value.parseResult.startDate.ifBlank { java.time.LocalDate.now().toString() }
+        confirmedStartDate = value.parseResult.startDate.ifBlank { java.time.LocalDate.now(AppClock).toString() }
         confirmedTableName = value.parseResult.tableName.ifBlank { defaultTableName }
         confirmedTimeJson = TimeTableUtils.mergeMostComplete(
             currentJson = "",

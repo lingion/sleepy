@@ -85,6 +85,7 @@ import java.time.LocalTime
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.roundToInt
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 时段定义 — 5 个时段（对应 HTML 里的 5 个 slot-row）
@@ -137,7 +138,7 @@ fun CardsGridView(
     startDate: String = "",
     currentWeek: Int = 1,
     today: Int = DateUtils.todayDayOfWeek(),
-    todayDate: java.time.LocalDate = java.time.LocalDate.now(),
+    todayDate: java.time.LocalDate = java.time.LocalDate.now(AppClock),
     onCourseClick: (CourseEntity) -> Unit,
     onCourseLongClick: ((CourseEntity) -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -1373,7 +1374,7 @@ fun FullWeekView(
     displayMode: String = "node",
     timeJson: String = "",
     today: Int = DateUtils.todayDayOfWeek(),
-    todayDate: java.time.LocalDate = java.time.LocalDate.now(),
+    todayDate: java.time.LocalDate = java.time.LocalDate.now(AppClock),
     startDate: String = "",
     currentWeek: Int = 1,
     onCourseClick: (CourseEntity) -> Unit,
