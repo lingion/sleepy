@@ -63,6 +63,7 @@ fun PeriodHeaderSettingsScreen(onBack: () -> Unit) {
     var hangingUnits by remember { mutableStateOf(AppPrefs.getPeriodHeaderHanging(context)) }
     var showX by remember { mutableStateOf(AppPrefs.isPeriodHeaderShowX(context)) }
     var hideTime by remember { mutableStateOf(AppPrefs.isPeriodHeaderHideTime(context)) }
+    var timeAlignment by remember { mutableStateOf(AppPrefs.getPeriodHeaderTimeAlignment(context)) }
 
     Scaffold(
         topBar = {
@@ -90,6 +91,7 @@ fun PeriodHeaderSettingsScreen(onBack: () -> Unit) {
                     hangingUnits = hangingUnits,
                     showX = showX,
                     hideTime = hideTime,
+                    timeAlignment = timeAlignment,
                     onStyleSelected = {
                         style = it
                         AppPrefs.setPeriodHeaderStyle(context, it)
@@ -163,6 +165,26 @@ fun PeriodHeaderSettingsScreen(onBack: () -> Unit) {
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text(
+                                stringResource(R.string.appearance_header_time_alignment),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            SegmentedSwitcher(
+                                options = listOf(
+                                    "dash" to stringResource(R.string.appearance_header_alignment_dash),
+                                    "center" to stringResource(R.string.appearance_header_alignment_center),
+                                ).mapIndexed { index, (_, label) -> index to label },
+                                selected = if (timeAlignment == "center") 1 else 0,
+                                onSelect = { index ->
+                                    timeAlignment = if (index == 1) "center" else "dash"
+                                    AppPrefs.setPeriodHeaderTimeAlignment(context, timeAlignment)
+                                },
+                                modifier = Modifier.fillMaxWidth().height(40.dp),
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                            )
+                        }
                     }
                     if (layout == "three_line") {
                         Text(
@@ -191,6 +213,7 @@ private fun HeaderStylePreviews(
     hangingUnits: Float,
     showX: Boolean,
     hideTime: Boolean,
+    timeAlignment: String,
     onStyleSelected: (String) -> Unit,
 ) {
     val previewSlot = remember {
@@ -231,6 +254,7 @@ private fun HeaderStylePreviews(
                 density = density,
                 showX = showX,
                 hideTime = hideTime,
+                centerTime = timeAlignment == "center",
             )
         }
     }

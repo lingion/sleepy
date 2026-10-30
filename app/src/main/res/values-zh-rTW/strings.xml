@@ -596,6 +596,9 @@
     <string name="appearance_header_layout">佈局</string>
     <string name="appearance_header_hide_time">隱藏時間列</string>
     <string name="appearance_header_hide_time_sub">舊式表頭僅顯示節次，不顯示上課時間（實驗性，預設關閉）</string>
+    <string name="appearance_header_time_alignment">時間對齊方式</string>
+    <string name="appearance_header_alignment_dash">短橫線對齊</string>
+    <string name="appearance_header_alignment_center">時間整體置中</string>
     <string name="appearance_layout_horizontal">橫排佈局</string>
     <string name="appearance_layout_legacy">舊式表頭</string>
     <string name="appearance_layout_legacy_sub">保持原有的節次與時間顯示方式</string>

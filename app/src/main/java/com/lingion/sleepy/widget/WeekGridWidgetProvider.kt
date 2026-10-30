@@ -482,6 +482,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             val widgetHeaderStyle = AppPrefs.getPeriodHeaderStyle(context)
             val widgetHeaderHanging = AppPrefs.getPeriodHeaderHanging(context).coerceIn(-1f, 1f)
             val widgetHeaderShowX = AppPrefs.isPeriodHeaderShowX(context)
+            val widgetHeaderTimeAlignment = AppPrefs.getPeriodHeaderTimeAlignment(context)
 
             // §4.4 颜色池 — 显式补 surfaceContainerLow,旧链漏导 → 卡片底色硬用 surfaceContainer,时间列卡片与预览色不一致。
             val bgSurfaceLow = scheme.surfaceContainerLow.toIntArgb()
@@ -645,7 +646,18 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                         p.color = fgOnSurfaceVar
                         p.textSize = (rowH * 0.20f).coerceAtMost(dp(7f).toFloat()).coerceAtLeast(dp(4f).toFloat())
                         p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-                        c.drawText(slot.timeString, centerX, cy + p.textSize * 1.6f, p)
+                        val timeY = cy + p.textSize * 1.6f
+                        if (widgetHeaderTimeAlignment == "dash") {
+                            val dashW = p.measureText("-")
+                            val startW = p.measureText(slot.displayStart)
+                            p.textAlign = Paint.Align.LEFT
+                            c.drawText(slot.displayStart, centerX - startW - dashW / 2f, timeY, p)
+                            c.drawText("-", centerX - dashW / 2f, timeY, p)
+                            c.drawText(slot.displayEnd, centerX + dashW / 2f, timeY, p)
+                            p.textAlign = Paint.Align.CENTER
+                        } else {
+                            c.drawText(slot.timeString, centerX, timeY, p)
+                        }
                     }
                 }
             }
