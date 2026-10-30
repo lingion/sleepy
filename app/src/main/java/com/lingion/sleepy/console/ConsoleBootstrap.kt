@@ -6,6 +6,8 @@ import com.lingion.sleepy.BuildConfig
 import com.lingion.sleepy.console.handlers.ClockHandler
 import com.lingion.sleepy.console.handlers.EnableFlow
 import com.lingion.sleepy.console.handlers.JwMockHandler
+import com.lingion.sleepy.console.handlers.LogHandler
+import com.lingion.sleepy.console.handlers.SessionHandler
 import com.lingion.sleepy.console.handlers.UnlockTapCounter
 import com.lingion.sleepy.console.handlers.DataOpsRuntime
 import com.lingion.sleepy.console.ui.UiOpsRuntime
@@ -33,6 +35,9 @@ object ConsoleBootstrap {
 
     private val started = AtomicBoolean(false)
     private var server: DebugConsoleServer? = null
+
+    /** /v1/log 读审计环的受控访问面(LogHandler 唯一消费者)。 */
+    val audit: AuditLog? get() = server?.audit
     @Volatile
     private var appRef: Application? = null
 
@@ -101,6 +106,8 @@ object ConsoleBootstrap {
 
     private fun registerAllCapabilities(app: Application) {
         ClockHandler.registerAll()
+        SessionHandler.registerAll(app)
+        LogHandler.registerAll()
         JwMockHandler.registerAll(app)
         DataOpsRuntime.install(app)
         UiOpsRuntime.install(app)

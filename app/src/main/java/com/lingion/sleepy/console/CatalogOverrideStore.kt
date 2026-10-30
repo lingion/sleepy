@@ -108,6 +108,15 @@ object CatalogOverrideStore {
         return true
     }
 
+    /** 全清覆盖层（console session/reset 用）: 内存与持久文件一并归零。 */
+    @Synchronized
+    fun clearAll(): Boolean {
+        val had = overrides.isNotEmpty()
+        overrides.clear()
+        persistFile?.let { runCatching { it.delete() } }
+        return had
+    }
+
     /**
      * 读取链套用：把覆盖合并进 assets 解析出的目录行（按 name 匹配）。
      * 无覆盖的条目原样透传（同一实例引用，零开销）。

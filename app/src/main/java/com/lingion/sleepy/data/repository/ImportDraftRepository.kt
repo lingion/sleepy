@@ -44,4 +44,7 @@ class ImportDraftRepository(private val db: AppDatabase) {
     }
 
     suspend fun delete(id: String) = dao.deleteById(id)
+
+    /** console session/reset 用: 草稿是调试过程物, 全清(用户数据零触碰判据见 SessionHandler)。 */
+    suspend fun clearAll() = dao.deleteAll()
 }
