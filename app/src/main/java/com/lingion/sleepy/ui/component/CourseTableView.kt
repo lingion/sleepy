@@ -694,7 +694,8 @@ fun CardsGridView(
                 }
             }
 
-            // ---- 边缘翻页 (2026-10-27 用户裁决: 压住左右缘驻留满 500ms 自动翻周) ----
+            // ---- 边缘翻页 (2026-10-27 裁决 · 2026-10-30 通性修正: 压住即每满 500ms 翻一页,
+            // 左右缘镜像同一 10dp 容差, 方向不限、周数不限) ----
             // 单一写入者: 拖拽期间 50ms 轮询自当前卡位推导方向并累计驻留 —
             // 手指静止压边同样计时; week 入键 → 换页即整效重启, 邻页实例与旧页实例
             // 即刻退出(不空转), 新宿主 elapsed/held 天然归零(逐页满 500ms, 无加速)。
@@ -711,48 +712,47 @@ fun CardsGridView(
                 var elapsed = 0L
                 while (true) {
                     delay(FLOAT_EDGE_DWELL_STEP_MS)
+                    // 每步重验宿主: 本页刚被 bump 走 (currentWeek 是本实例捕获的旧页号) →
+                    // 即刻静默退出。只在 effect 开头查一次的写法会让旧实例活到重组取消为止,
+                    // 与新宿主实例双写计时/双翻 (2026-10-30 诊断: 换页 +300ms 即多翻一页)。
+                    if (currentWeek != floatState.week) return@LaunchedEffect
                     val cx = (floatState.x + floatState.width / 2f).value
                     // 防误触: 拖拽起点起水平位移未超 slop 不判边缘 (FullCalendar everMoved 同构)。
-                    // 触发域 (2026-10-29 用户裁决, 替换旧「容器缘内缩 72dp」): 中心须**压入列带
-                    // 外缘 10dp**才算翻周意图 — 对齐 Lawnchair Workspace.setDropLayoutForDragObject:
-                    // 中心命中本页可见列 = 落子(verifyInsidePage 路), 翻页只属邻页命中路
-                    // (checkDragObjectIsOverNeighbourPages, 页边界即视口缘)。旧缘区(屏宽 360dp 时
-                    // cx>288)整个吞掉周日列(列心≈338)连周六大半: 落子与翻页共用一片手势域互相
-                    // 打架 — 拖到周日必被翻走, 翻完中心仍贴缘, 横向微调全程在缘区内 edgeArmed
-                    // 永不复归, 看着像「只能上下拖」。现在列心距触发线 ≈8dp, 各列落子全程安全;
-                    // 真翻页须把中心按死网格缘 500ms — LC 悬停邻屏同等强度。
-                    // (LC 用 finger/视觉中心双极点取最值; 本浮层被容器裁剪只有视觉中心可用,
-                    //  故保留 FLOAT_EDGE_ZONE_DP 作列带内缘容差。)
-                    val bandLeft = (timeW + gapW).value
-                    val bandRight = (timeW + gapW + (colW + gapW) * dayCount - gapW).value
+                    // 触发域 (2026-10-30 用户裁决, 替换「列带外缘 10dp」): 判据锚**可视表格
+                    // 外壳缘**, 左右各内缩同一 FLOAT_EDGE_ZONE_DP — 镜像对称。旧判据锚列带缘:
+                    // 右线 bandRight≈maxWidth-gapW 几乎贴屏缘, 左线 bandLeft=timeW+gapW 却把
+                    // 整条时间列划进触发区 (≈61dp 内缩 vs 右缘 15dp) — 同屏两个边距, 「往下翻页
+                    // 要这个页边距, 往上翻页就不是」(用户原话)。外壳缘镜像后两侧手感一致,
+                    // 且左缘触发区比旧判据更窄 (时间列回归纯装饰域, 压时间列不再翻页)。
+                    // 落子安全不变: 末列列心距右触发线仍 ≈ 列宽/2 + 5dp, 首列同理 —
+                    // 各列落子全程在区外 (Lawnchair verifyInsidePage 语义维持)。
                     val dir = when {
                         abs(cx - floatState.dragOriginCx.value) < FLOAT_EDGE_SLOP_DP -> 0
-                        cx < bandLeft + FLOAT_EDGE_ZONE_DP -> -1
-                        cx > bandRight - FLOAT_EDGE_ZONE_DP -> 1
+                        cx < FLOAT_EDGE_ZONE_DP -> -1
+                        cx > maxWidth.value - FLOAT_EDGE_ZONE_DP -> 1
                         else -> 0
                     }
                     if (dir != held) { held = dir; elapsed = 0L }
                     floatState.edgeDir = dir
-                    // 回到格内 = 重新武装: 允许下一次满驻留翻页 (2026-10-28 用户反馈:
-                    // 旧实现仍压边就每 500ms 连翻, 根本停不了)。
                     if (dir == 0) {
-                        floatState.edgeArmed = true; floatState.edgeBlocked = 0; floatState.peekProgress = 0f; continue
+                        // 收回格内 = 停表清形; 再压缘重新计满一个整驻留 (节奏即「停」的手段,
+                        // 2026-10-30 起取代旧「消耗锁」— 停不再靠翻过即死, 靠的是 500ms/页)。
+                        floatState.edgeBlocked = 0; floatState.peekProgress = 0f; continue
                     }
                     val atBoundary = (dir < 0 && floatState.week <= 1) || (dir > 0 && floatState.week >= floatMaxWeek)
                     floatState.edgeBlocked = if (atBoundary) dir else 0
                     if (atBoundary) {
-                        // 学期边界: 无计时, peek 静止示形, 放手弹回。
+                        // 学期边界: 无计时, peek 静止示形, 放手弹回。连翻模式同样在此自然挡停。
                         floatState.peekProgress = 1f
                         continue
                     }
-                    if (!floatState.edgeArmed) { floatState.peekProgress = 0f; continue }
                     elapsed += FLOAT_EDGE_DWELL_STEP_MS
                     floatState.peekProgress = (elapsed.toFloat() / FLOAT_EDGE_DWELL_MS).coerceIn(0f, 1f)
                     if (elapsed >= FLOAT_EDGE_DWELL_MS) {
                         // 驻留满: 周号先行 — 浮层/计时/落点几何同帧整体换宿主(排他 currentWeek==week),
-                        // 补偿平移把卡钉在指下, 300ms 页滑期间不飘。一次驻留只翻一页:
-                        // 翻过即消耗(edgeArmed=false), 必须收回格内再压出来才翻下一页。
-                        floatState.edgeArmed = false
+                        // 补偿平移把卡钉在指下, 300ms 页滑期间不飘。week bump → 本 effect 重启,
+                        // elapsed/held 天然归零 → 压住不放就是每满一个整驻留再翻一页 (通性:
+                        // 一周与一百周同一机制, 2026-10-30 用户裁决取代「一次驻留一页」旧模)。
                         floatState.week += dir
                         floatState.chipPending = true // 翻过页 → 顶栏 chip 待回写 (松手/落位时消费)
                         elapsed = 0L
@@ -1050,7 +1050,6 @@ fun CardsGridView(
                                     floatState.dragOriginCx = floatState.x + floatState.width / 2f
                                     floatState.anchorRootLeftPx = floatRootLeftPx
                                     floatState.anchorScrollDp = with(headerDensity) { scrollState.value.toDp() }
-                                    floatState.edgeArmed = true // 否决弹回后再拖 = 新一次拖拽, 重新武装
                                 },
                                 onDrag = { amount ->
                                     with(headerDensity) {
@@ -1173,7 +1172,6 @@ fun CardsGridView(
                                 floatState.dragOriginCx = floatState.x + floatState.width / 2f
                                 floatState.anchorRootLeftPx = floatRootLeftPx
                                 floatState.anchorScrollDp = with(headerDensity) { scrollState.value.toDp() }
-                                floatState.edgeArmed = true // 否决弹回后再拖 = 新一次拖拽, 重新武装
                             },
                             onDrag = { amount ->
                                 with(headerDensity) {

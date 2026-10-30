@@ -491,7 +491,7 @@ class CourseOccurrenceFloatDragTest {
         compose.onNodeWithTag("float-dim").assertDoesNotExist()
     }
 
-    // ---- 边缘驻留翻页 (判据 2026-10-29 修正: 列带外缘 10dp · 500ms 驻留 · 逐页重计;
+    // ---- 边缘驻留翻页 (判据 2026-10-30 通性修正: 外壳缘镜像 10dp · 每满 500ms 翻一页;
     // 旧「容器缘内缩 72dp」吞掉周日列, 落子/翻页手势域重叠, 见 EdgePeek.kt KDoc) ----
 
     /** 计时器以 dragging 为键 — 翻真后需一次重组重启, 新实例的首步轮询要额外放行;
@@ -499,6 +499,22 @@ class CourseOccurrenceFloatDragTest {
     private fun flushEdgePolling(steps: Int = 2) {
         compose.runOnIdle { }
         compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_STEP_MS * steps)
+    }
+
+    /** 压缘导航一律基于 state.x 实测值 (非卡 bounds — 磁吸渲染/插帧会吃掉部分位移,
+     *  2026-10-30 诊断实测: 按 bounds 算的 delta 到达 floatState.x 时少 ≈15dp)。
+     *  把卡中心精确开到 targetCx.dp 处: 轮询判据看的正是 state.x+width/2。 */
+    private fun driveCxTo(state: CourseFloatState, targetCx: Int) {
+        // 首程 move 会被拖拽 slop 吃掉一段 (实测 ≈16dp) → 收敛式两轮: 重读 state 真值补差。
+        repeat(3) {
+            var deltaPx = 0f
+            compose.runOnIdle {
+                val cxDp = (state.x + state.width / 2f).value
+                deltaPx = with(compose.density) { (targetCx - cxDp).dp.toPx() }
+            }
+            if (kotlin.math.abs(deltaPx) <= 1f) return
+            compose.onNodeWithTag("float-card").performTouchInput { moveBy(Offset(deltaPx, 0f), 20) }
+        }
     }
 
     @Test fun dwellingOnTheRightEdgeFlipsToNextWeekAndPeeksFirst() {
@@ -509,7 +525,7 @@ class CourseOccurrenceFloatDragTest {
         // 「lift 原点 + 累计位移」的手指真值 — 手指落在哪, 投影才吸到哪。
         val lift = compose.onNodeWithTag("float-card").fetchSemanticsNode().boundsInRoot
         val liftCx = (lift.left + lift.right) / 2f
-        val edgeDx = with(compose.density) { 330.dp.toPx() } // 中心压过列带右缘触发线(345dp 处)
+        val edgeDx = with(compose.density) { 330.dp.toPx() } // 中心压过外壳右缘触发线(350dp 处)
         compose.onNodeWithTag("float-card").performTouchInput {
             down(center)
             moveBy(Offset(edgeDx, 40f), 100)
@@ -527,15 +543,9 @@ class CourseOccurrenceFloatDragTest {
         compose.runOnIdle {
             assertEquals(2, state.week)
             assertEquals(listOf(1), edgeCalls)
-            // 换页重计: 旧页驻留不得结转(结转即满 1.0 → 首步就连翻)。
-            // 判据取行为而非瞬时值 — 新页在同一时间片内已开始步进, 数值不可控;
-            // 未满一个新 500ms 绝不再翻, 才正是「逐页重计、无加速」。
+            // 换页重计: 旧页驻留不得结转(结转即满 1.0 → 首步就连翻) — 行为锁在
+            // holdingTheEdgeFlips…(逐页满整驻留才再翻); 此处只钉 peek 未越界。
             assertTrue(state.peekProgress < 1f)
-        }
-        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS - 200)
-        compose.runOnIdle {
-            assertEquals(2, state.week)
-            assertEquals(listOf(1), edgeCalls)
         }
         // 回到格内放手 → 落点在目标周(currentWeek 已换 2)照常提交。
         // (旧写法按 float-card bounds 导航 — 磁吸后那是渲染位而非手指位,
@@ -554,9 +564,13 @@ class CourseOccurrenceFloatDragTest {
         }
     }
 
-    /** 2026-10-28 用户反馈: 压住右缘就无限连翻、根本停不了 — 一次驻留只许翻一页,
-     *  翻过即消耗; 必须把手收回格内重新压边, 才重新计时翻下一页。 */
-    @Test fun oneDwellFlipsExactlyOnePageAndHoldingTheEdgeStopsThere() {
+    /**
+     * 2026-10-28 旧模型 (一次驻留翻一页后须回格重武装) 被 2026-10-30 用户裁决推翻:
+     * 「能往后翻一周，不能往后翻两周。那我后面往后翻 100 周，你修 100 次是吗?」
+     * 通性模型 = 压住即每满一个 500ms 翻一页, 方向不限、周数不限, 学期界自然挡停;
+     * 停的手段是 500ms 节奏本身(收回格内即停表), 不是消耗锁。
+     */
+    @Test fun holdingTheEdgeFlipsOnePagePerFullDwellInBothDirections() {
         val state = CourseFloatState()
         grid(state, floatMaxWeek = 16)
         compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
@@ -567,29 +581,73 @@ class CourseOccurrenceFloatDragTest {
         flushEdgePolling()
         compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS)
         compose.runOnIdle { assertEquals(2, state.week) }
-        // 继续压住: 驻留已消耗, 再久也不翻 — 行为契约, 取代旧「每页连翻」。
-        flushEdgePolling()
-        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS * 4)
-        compose.runOnIdle {
-            assertEquals(2, state.week)
-            assertEquals(listOf(1), edgeCalls)
-            assertFalse(state.edgeArmed)
-        }
-        // 收回格内 → 重新武装。
-        compose.onNodeWithTag("float-card").performTouchInput { moveBy(Offset(-200.dp.toPx(), 0f), 100) }
-        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_STEP_MS * 2)
-        compose.runOnIdle { assertTrue(state.edgeArmed) }
-        // 再压右缘: 满一个新 500ms 才翻第二页。
-        compose.onNodeWithTag("float-card").performTouchInput { moveBy(Offset(200.dp.toPx(), 0f), 100) }
-        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS - 100)
-        compose.runOnIdle {
-            assertEquals(2, state.week)
-            assertEquals(listOf(1), edgeCalls)
-        }
-        compose.mainClock.advanceTimeBy(200)
+        // 不松手、不回格, 继续压住: 每个整驻留(含换宿主重启开销 ≈50ms)再翻一页。
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS + 100)
         compose.runOnIdle {
             assertEquals(3, state.week)
             assertEquals(listOf(1, 1), edgeCalls)
+        }
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS + 100)
+        compose.runOnIdle {
+            assertEquals(4, state.week)
+            assertEquals(listOf(1, 1, 1), edgeCalls)
+        }
+        // 第 5 页: 换页后本实例 el=450 (换宿主首步在翻页同窗内已计), 再满一个驻留即翻。
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS - 100)
+        compose.runOnIdle {
+            assertEquals(5, state.week)
+            assertEquals(listOf(1, 1, 1, 1), edgeCalls)
+        }
+        // 收回格内 → 表停: dir=0 每步复位驻留, 压再久不再翻。旧模型「翻过即消耗」
+        // 的停止语义由 500ms/页 节奏取代 (2026-10-30 用户裁决)。
+        driveCxTo(state, 180)
+        flushEdgePolling()
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS * 3)
+        compose.runOnIdle {
+            assertEquals(5, state.week)
+            assertEquals(listOf(1, 1, 1, 1), edgeCalls)
+        }
+        compose.onNodeWithTag("float-card").performTouchInput { up() }
+    }
+
+    /**
+     * 2026-10-30 用户裁决: 「往下翻页要这个页边距, 往上翻页也得在这个页边距」—
+     * 触发线锚定**可视表格外壳缘**同一 10dp 容差, 左右镜像。旧判据锚列带缘:
+     * 左线在首列缘(时间列整条被吞, ≈61dp 内缩), 右线却贴屏缘(15dp) — 同屏不同边距。
+     * 本测试钉对称: 距屏缘 20dp 处左右都**不**翻 (旧模型左翻右不翻 = 红),
+     * 压进 5dp 处左右都翻 (镜像)。
+     */
+    @Test fun triggerZonesAreMirrorSymmetricAtTheContainerEdge() {
+        val state = CourseFloatState()
+        hostWeek.value = 2 // 从第 2 周起: 左缘翻上一周不得被学期头挡停 (那是另一条契约)
+        grid(state, floatMaxWeek = 16)
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        compose.onNodeWithTag("float-card").performTouchInput { down(center) }
+        // 左: 中心停在容器左缘内 20dp。旧判据锚列带左缘 ≈61dp → 必翻 (红点);
+        // 新判据锚外壳缘 10dp 容差 → 20dp 在区外, 不翻。
+        driveCxTo(state, 20)
+        flushEdgePolling()
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS * 2)
+        compose.runOnIdle {
+            assertEquals("距缘 20dp 不许翻页", 0, state.edgeDir)
+            assertEquals(2, state.week)
+            assertTrue(edgeCalls.isEmpty())
+        }
+        // 左: 压进 5dp (<10dp 触发线) → 满驻留翻上一周。
+        driveCxTo(state, 5)
+        flushEdgePolling()
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS)
+        compose.runOnIdle {
+            assertEquals(1, state.week)
+            assertEquals(listOf(-1), edgeCalls)
+        }
+        // 右镜像: 压进右缘 (中心 > 360-10=350dp) → 同样满驻留翻回下一周。
+        driveCxTo(state, 355)
+        flushEdgePolling()
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS)
+        compose.runOnIdle {
+            assertEquals(2, state.week)
+            assertEquals(listOf(-1, 1), edgeCalls)
         }
         compose.onNodeWithTag("float-card").performTouchInput { up() }
     }
@@ -617,7 +675,7 @@ class CourseOccurrenceFloatDragTest {
 
     /** 2026-10-29 用户反馈: 把课拖到周日列(落子意图)被缘区吞了 — 中心一进周日列
      *  就踩翻页雷, 驻停 500ms 非但落不成周日反而翻了周; 翻完仍贴缘, 横向微调全程
-     *  在缘区内 edgeArmed 永不复归 → 看着像「只能上下拖」。
+     *  在缘区内 edgeDir 恒 1 不放手 → 看着像「只能上下拖」。
      *  对齐 Lawnchair 语义(Workspace.verifyInsidePage: 中心悬在本页可见列 = 落子,
      *  永不翻页; 翻页只属 checkDragObjectIsOverNeighbourPages 的邻页命中):
      *  周日列中心驻停 2×500ms 不许翻, 松手落 day=7、week 不变。 */
@@ -660,7 +718,7 @@ class CourseOccurrenceFloatDragTest {
      * 压右缘驻留翻周 → 继续按住向左回拉。真 HorizontalPager 把起拖页(被捕获指针流的
      * 网格卡节点)物理左移一屏, continuousFloatLift 的逐帧 delta 是节点本地坐标 =
      * root 位移 − 节点平移 → 换页那一帧多送 +360dp 污染, 卡钉死右缘: edgeDir 恒 1、
-     * edgeArmed 永不复归、横向输入全丢(纵向不受水平平移影响 = 「只能上下拖」)。
+     * edgeDir 恒 1、横向输入全丢(纵向不受水平平移影响 = 「只能上下拖」)。
      * 修复 = delta 换算到 root 坐标 (captured LayoutCoordinates.localToRoot)。
      * 修复前本测试必须红: 回拉 150dp 后 x 不减反增、edgeDir 不得归零。
      * 选择器口径: 浮起后 grid 与浮卡各有一个 FloatMath 文本节点 — 首块须在浮起前
@@ -689,7 +747,6 @@ class CourseOccurrenceFloatDragTest {
         compose.runOnIdle {
             assertEquals(2, state.week)
             assertEquals(listOf(1), edgeCalls)
-            assertFalse("翻过即消耗", state.edgeArmed)
         }
         var xAtFlip = 0.dp
         compose.runOnIdle { xAtFlip = state.x }
@@ -705,7 +762,6 @@ class CourseOccurrenceFloatDragTest {
                 state.x < xAtFlip - 50.dp,
             )
             assertEquals("卡心回到格内 → 不再压缘", 0, state.edgeDir)
-            assertTrue("回格即重新武装", state.edgeArmed)
         }
         compose.onNodeWithTag("float-card").performTouchInput { up() }
     }
@@ -714,11 +770,9 @@ class CourseOccurrenceFloatDragTest {
         val state = CourseFloatState()
         grid(state, floatMaxWeek = 16) // 第 1 周左缘 = 学期头, 禁翻
         compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
-        compose.onNodeWithTag("float-card").performTouchInput {
-            down(center)
-            // 卡中心原在 day1 列; 向左压过列带左缘触发线(≈61dp 处, 位移需越 8dp slop)
-            moveBy(Offset(-60.dp.toPx(), 40f), 100)
-        }
+        compose.onNodeWithTag("float-card").performTouchInput { down(center) }
+        // 卡中心原在 day1 列; 精确压到距外壳左缘 5dp 的触发区内 (判据 cx < 10dp)。
+        driveCxTo(state, 5)
         flushEdgePolling()
         compose.runOnIdle {
             assertEquals(1, state.week)
@@ -776,7 +830,8 @@ class CourseOccurrenceFloatDragTest {
         compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_STEP_MS * 2)
         compose.runOnIdle { assertEquals(0, state.edgeDir) } // 回到格内: 不驻留
         // 再压左缘: 换向即复位 — 上一方向的驻留时长不得计入新方向。
-        compose.onNodeWithTag("float-card").performTouchInput { moveBy(Offset(-190.dp.toPx(), 0f), 100) }
+        // (新触发线锚外壳缘: 中心须 < 10dp 才算压左缘 — 72+330−160−245 = −3dp。)
+        compose.onNodeWithTag("float-card").performTouchInput { moveBy(Offset(-245.dp.toPx(), 0f), 100) }
         compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS - 100)
         compose.runOnIdle {
             assertEquals(2, state.week)

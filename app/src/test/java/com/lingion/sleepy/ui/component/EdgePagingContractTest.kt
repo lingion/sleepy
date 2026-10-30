@@ -19,18 +19,16 @@ class EdgePagingContractTest {
     private val theme = readProjectSource("app/src/main/java/com/lingion/sleepy/ui/theme/Theme.kt")
 
     @Test fun edgeGeometryAndTimingMatchTheRatifiedValues() {
-        // 2026-10-29 用户反馈「拖到周日列就翻页」后裁决: 触发域从「容器缘内缩 72dp」
-        // 改为「列带外缘 10dp」— 72dp 带整个吞掉末列, 落子与翻页手势域重叠 (根因见
-        // CourseTableView 轮询注释 + Lawnchair Workspace.verifyInsidePage 语义)。
-        // 判据行为锁: CourseOccurrenceFloatDragTest.dwellingOverTheSundayColumn…
+        // 2026-10-30 用户裁决 (替换 2026-10-29「列带外缘 10dp」): 触发线锚**可视表格外壳缘**,
+        // 左右各内缩同一 FLOAT_EDGE_ZONE_DP — 镜像对称。旧判据锚列带缘: 右线贴屏缘(15dp)
+        // 而左线把整条时间列划进触发区(≈61dp) — 同屏两个边距, 「往下翻页要这个页边距,
+        // 往上翻页就不是」。行为锁: CourseOccurrenceFloatDragTest
+        // .triggerZonesAreMirrorSymmetricAtTheContainerEdge。
         assertTrue("缘容差 10dp", edgePeek.contains("FLOAT_EDGE_ZONE_DP = 10f"))
-        assertTrue("触发线取列带缘", listOf(
-            "cx < bandLeft + FLOAT_EDGE_ZONE_DP -> -1",
-            "cx > bandRight - FLOAT_EDGE_ZONE_DP -> 1",
+        assertTrue("左右触发线镜像锚外壳缘(同一容差)", listOf(
+            "cx < FLOAT_EDGE_ZONE_DP -> -1",
+            "cx > maxWidth.value - FLOAT_EDGE_ZONE_DP -> 1",
         ).all { tableView.contains(it) })
-        assertTrue("列带含时间列右缘", tableView.contains("val bandLeft = (timeW + gapW).value"))
-        assertTrue("列带止于末列右缘(扣尾隙)",
-            tableView.contains("(colW + gapW) * dayCount - gapW).value"))
         assertTrue("驻留 500ms", edgePeek.contains("FLOAT_EDGE_DWELL_MS = 500L"))
         assertTrue("翻页动画 300ms", edgePeek.contains("FLOAT_PAGE_ANIM_MS = 300L"))
         assertTrue("防误触位移 8dp", edgePeek.contains("FLOAT_EDGE_SLOP_DP = 8f"))
@@ -51,14 +49,18 @@ class EdgePagingContractTest {
         assertTrue("学期尾禁翻", tableView.contains("dir > 0 && floatState.week >= floatMaxWeek"))
     }
 
-    @Test fun oneDwellFlipsOnePageAndReArmsOnlyBackInTheGrid() {
-        // 2026-10-28 用户反馈: 压边无限连翻停不了 — 翻过即消耗, 收回格内(dir==0)才重新武装。
-        assertTrue("翻过即消耗", tableView.contains("floatState.edgeArmed = false"))
-        assertTrue("未武装不计时", tableView.contains("if (!floatState.edgeArmed)"))
-        // 工作区更新: 回格同时清 blocked/peek — 停形预览条随重新武装归零。
-        assertTrue("回格重新武装", tableView.contains("floatState.edgeArmed = true; floatState.edgeBlocked = 0; floatState.peekProgress = 0f; continue"))
-        assertTrue("武装字段默认开", edgeOrFloatState.contains("var edgeArmed = true"))
-        assertTrue("松手重新武装", edgeOrFloatState.contains("edgeArmed = true"))
+    @Test fun holdingTheEdgeFlipsPerPageNoConsumeLockExists() {
+        // 2026-10-30 用户裁决 (替换 2026-10-28「一次驻留一页, 翻过即消耗, 回格重武装」):
+        // 「能往后翻一周，不能往后翻两周。那我后面往后翻 100 周，你修 100 次是吗?」
+        // 通性模型 = 压住即每满一个整驻留再翻一页, 方向不限、周数不限。逐页重计靠
+        // week 入键的 effect 重启 (elapsed/held 天然归零), 不靠消耗锁 — 消耗字段连
+        // 同它的武装/复位管线整体删除, 反向锁钉死它不得复活。
+        assertTrue("翻过即清零重计(逐页满驻留)",
+            Regex("""floatState\.week \+= dir[\s\S]{0,120}elapsed = 0L\s*\n\s*held = 0""").containsMatchIn(tableView))
+        assertTrue("消耗锁字段已删, 禁复活", !edgeOrFloatState.contains("edgeArmed"))
+        assertTrue("轮询内禁武装检查", !tableView.contains("floatState.edgeArmed"))
+        // 收回格内 = 停表清形 (节奏即「停」的手段)。
+        assertTrue("回格停表清形", tableView.contains("floatState.edgeBlocked = 0; floatState.peekProgress = 0f; continue"))
     }
 
     @Test fun dimScopeIsOriginPageOnly() {
@@ -162,7 +164,7 @@ class EdgePagingContractTest {
         // 场景C (2026-10-29 用户反馈「翻页之后只能上下拖」) 的接线锁:
         // 边缘翻页把起拖页物理平移一整屏, 被捕获指针流仍住在平移节点上 —
         // 网格卡 continuousFloatLift 的逐帧 delta 必须经 localToRoot 换算, 否则
-        // 换页帧混入整页位移, 卡钉死末列缘带、edgeArmed 永不复归。
+        // 换页帧混入整页位移, 卡钉死末列缘带、edgeDir 恒 1 不放手。
         // 行为锁: CourseOccurrenceFloatDragTest.dragAfterThePageFlipKeepsHorizontalControl
         // (FloatPager 双页替身真平移 — 单页替身从不移动节点, 正是本 bug 的 JVM 盲区)。
         assertTrue("网格卡路径捕获坐标做 root 换算",
