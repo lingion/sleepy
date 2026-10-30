@@ -22,6 +22,7 @@ import java.io.File
 import java.time.LocalDate
 import java.util.Base64
 import java.util.UUID
+import com.lingion.sleepy.util.AppClock
 
 // Task 2 data-ops — 六个端点的 handler 面（SPEC §3 /v1/data/*）。
 //
@@ -91,7 +92,7 @@ class CatalogDeps(
 class CourseDeps(
     val readFile: (String) -> String?,
     val readClipboard: (() -> String?)? = null,
-    val today: () -> String = { LocalDate.now().toString() },
+    val today: () -> String = { LocalDate.now(AppClock).toString() },
 )
 
 // ============================================================================
@@ -635,7 +636,7 @@ object DataOpsRuntime {
                         cm?.primaryClip?.takeIf { it.itemCount > 0 }
                             ?.getItemAt(0)?.coerceToText(app)?.toString()
                     },
-                    today = { LocalDate.now().toString() },
+                    today = { LocalDate.now(AppClock).toString() },
                 )
             },
         )
