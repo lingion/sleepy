@@ -250,6 +250,12 @@ fun LiquidBottomTabs(
         val currentIsLtr by rememberUpdatedState(isLtr)
         val currentLeadingInset by rememberUpdatedState(with(density) { (horizontalPadding + leadingWidth).toPx() })
         var dragging by remember(tabsCount) { mutableStateOf(false) }
+        // FlClash navigation_dock.dart 1083/1108: HapticFeedback.selectionClick() 在
+        // 拖拽扫过新 tab 与 fling 换目标两处触发; 普通点按无震动。selectionClick 在
+        // Android = PlatformChannel 的 HapticFeedbackConstants.CLOCK_TICK(非 Compose
+        // VirtualKey), 用 LocalView 直调同一常量保持 1:1。
+        val hapticView = androidx.compose.ui.platform.LocalView.current
+        val lastHapticIndex = remember(tabsCount) { intArrayOf(selectedTabIndex()) }
         val dampedDragAnimation = remember(animationScope, tabsCount) {
             DampedDragAnimation(
                 animationScope = animationScope,
@@ -261,6 +267,13 @@ fun LiquidBottomTabs(
                 onDragStarted = { dragging = true },
                 onDragStopped = {
                     val targetIndex = targetValue.fastRoundToInt().fastCoerceIn(0, tabsCount - 1)
+                    // FlClash _fling: 松手惯性换目标与按压位不同 → 再补一次 tick
+                    if (targetIndex != lastHapticIndex[0]) {
+                        lastHapticIndex[0] = targetIndex
+                        hapticView.performHapticFeedback(
+                            android.view.HapticFeedbackConstants.CLOCK_TICK
+                        )
+                    }
                     dragging = false
                     animateToValue(targetIndex.toFloat())
                     // The Topbar is first composed during the sidebar morph, when navigation is
@@ -274,10 +287,17 @@ fun LiquidBottomTabs(
                     }
                 },
                 onDrag = { _, dragAmount ->
-                    updateValue(
-                        (targetValue + dragAmount.x / currentTabWidth * if (currentIsLtr) 1f else -1f)
-                            .fastCoerceIn(0f, (tabsCount - 1).toFloat())
-                    )
+                    val next = (targetValue + dragAmount.x / currentTabWidth * if (currentIsLtr) 1f else -1f)
+                        .fastCoerceIn(0f, (tabsCount - 1).toFloat())
+                    updateValue(next)
+                    // 扫过新 tab 中心 = FlClash _handlePanUpdate 的 index != _pressedIndex 分支
+                    val crossedIndex = next.fastRoundToInt().fastCoerceIn(0, tabsCount - 1)
+                    if (crossedIndex != lastHapticIndex[0]) {
+                        lastHapticIndex[0] = crossedIndex
+                        hapticView.performHapticFeedback(
+                            android.view.HapticFeedbackConstants.CLOCK_TICK
+                        )
+                    }
                     animationScope.launch {
                         offsetAnimation.snapTo(offsetAnimation.value + dragAmount.x)
                     }
@@ -285,8 +305,12 @@ fun LiquidBottomTabs(
             )
         }
         LaunchedEffect(selectedIndex, dragging) {
-            if (!dragging && abs(dampedDragAnimation.targetValue - selectedIndex.toFloat()) > 0.01f) {
-                dampedDragAnimation.animateToValue(selectedIndex.toFloat())
+            if (!dragging) {
+                // 点按(无震动)后同步基准, 防下次拖拽首帧误报 crossing
+                lastHapticIndex[0] = selectedIndex
+                if (abs(dampedDragAnimation.targetValue - selectedIndex.toFloat()) > 0.01f) {
+                    dampedDragAnimation.animateToValue(selectedIndex.toFloat())
+                }
             }
         }
 
