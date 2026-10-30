@@ -58,6 +58,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -76,6 +77,9 @@ import kotlinx.coroutines.launch
 
 /** fetch JS 注入超时: 教务宕机时 20s 无桥回调即报超时, 禁无限 pending。 */
 private const val FETCH_TIMEOUT_MS = 20_000L
+
+/** sg_asset 专用超时: 拾光适配脚本逐周请求可达 60s+, 20s 闸会误杀慢部署。 */
+internal const val SG_ASSET_TIMEOUT_MS = 120_000L
 
 /** Chrome 121 / Windows 10 桌面 UA — 无 Android; Safari 等 iPhone 词汇, 触发门户桌面版布局 */
 private const val DESKTOP_USER_AGENT =
@@ -143,6 +147,7 @@ fun JwWebViewLoginScreen(
     var desktopUa by remember { mutableStateOf(initialDesktopUa(school)) }
     var uaSwitchReload by remember { mutableStateOf(0) }
     val logToken = remember { java.util.concurrent.atomic.AtomicLong(0) }
+    val sgContext = LocalContext.current
     val webviewNotReadyMsg = stringResource(R.string.jw_webview_not_ready)
     val fetchingMsg = stringResource(R.string.jw_fetching)
     val fetchFailedNoResponseMsg = stringResource(R.string.jw_fetch_failed_no_response)
@@ -265,7 +270,7 @@ fun JwWebViewLoginScreen(
 
     // fetch JS 注入超时闸: evaluateJavascript 无内建超时, 教务宕机/挂起时
     // 桥回调永远不来, 用户只见「正在抓取」无限 pending。20s 无回调即报超时。
-    fun evaluateFetchWithTimeout(wv: WebView, js: String) {
+    fun evaluateFetchWithTimeout(wv: WebView, js: String, timeoutMs: Long = FETCH_TIMEOUT_MS) {
         var answered = false
         val beginToken = logToken.incrementAndGet()
         wv.evaluateJavascript(js) {
@@ -282,7 +287,7 @@ fun JwWebViewLoginScreen(
                     fetchTimeoutMsg,
                 )
             }
-        }, FETCH_TIMEOUT_MS)
+        }, timeoutMs)
     }
 
     // 浏览器式地址栏: 校验 + 规范化 + 提交导航。
@@ -437,6 +442,26 @@ fun JwWebViewLoginScreen(
                     val url = wv.url ?: ""
                     Log.d("JwWebView", "capture tapped, current url=$url")
                     scope.launch { snackbar.showSnackbar(fetchingMsg) }
+                    // sg_asset (拾光适配脚本通用通路, 上游 shiguang_warehouse MIT):
+                    // 按 vendor manifest 取该校拾光 JS, 前置桥接 shim 后整段 evaluate。
+                    // 解码唯一落点 = JwSgAssetParser (shim 只传输)。脚本可跑数十秒,
+                    // 超时闸放宽到 SG_ASSET_TIMEOUT_MS; manifest 无条目直接明错,
+                    // 不悄悄落 outerHTML 抓取 (避免把「没适配」伪装成「没课表」)。
+                    if (school.type == JwProtocol.TYPE_SG_ASSET) {
+                        val js = JwSgAssetBridge.bridgeJs(sgContext, school.name)
+                        if (js == null) {
+                            val msg = fetchFailedFmt.format("该校暂无拾光适配脚本")
+                            onCaptureError(
+                                FrameCaptureResult(null, "", emptyList(),
+                                    status = FrameCaptureStatus.UNKNOWN,
+                                    diagnosticHint = msg),
+                                msg,
+                            )
+                        } else {
+                            evaluateFetchWithTimeout(wv, js, SG_ASSET_TIMEOUT_MS)
+                        }
+                        return@CaptureBar
+                    }
                     // THU 的登录/门户页不含课表脚本。用户登录后先打开“整体课表”并
                     // 选择学期，再点“导入此页”；下方通用 frame 抓取识别 setInitValue。
                     // 不根据当前日期猜 p_xnxq，也不在未验证的 URL 上自动请求。
@@ -1973,8 +1998,8 @@ private const val CLASSIC_EAMS_FETCH_JS = """
   try {
     // ① 定位课表表单上下文: 顶层 document 未命中则遍历同源 iframe (§3.1-①)
     var pageUrl = location.href;
-    function findScope(doc){
-      var texts = [[doc.documentElement.outerHTML, location.href]];
+    function findScope(doc, docUrl){
+      var texts = [[doc.documentElement.outerHTML, docUrl || location.href]];
       var frames = doc.querySelectorAll('iframe,frame');
       for (var i=0;i<frames.length;i++){
         try {
@@ -2002,10 +2027,28 @@ private const val CLASSIC_EAMS_FETCH_JS = """
       return null;
     }
     var scope = findScope(document);
-    if (!scope) {
-      fail('请先在门户进入 教务管理→我的课表 页面后再点导入');
-      return;
+    var entryTried = false;
+    var loginRe = /\/login(\?|$)|\/users\/sign_in/;
+    // ①b 南开自动动线 (issue #236): 未登录 eamis 根返 148 字节桩页 (wusir96 2025-05 实测),
+    //   登录成功也不自动落到课表页 → 停门户无 scope。仅 host 命中 eamis.nankai.edu.cn (含 webvpn
+    //   hex 前缀形态) 时 GET 课表入口页取 scope 重试; 未登录被 302 踢回 /login → loginRe 报
+    //   SESSION_EXPIRED。动线 = jxy18100 scrape_now.py (直接 navigate courseTableForStd.action)
+    //   + zawnpn Dart 链 + liyue983 用户脚本直 GET 三源共识。NBCC 等其余校 host 不命中 → 行为不变。
+    function tryEntryPage(done){
+      if (scope || entryTried || !location.hostname.match(/eamis\.nankai\.edu\.cn/)) { done(); return; }
+      entryTried = true;
+      var entryUrl = new URL('courseTableForStd.action', pageUrl).href;
+      fetch(entryUrl, {credentials:"same-origin", headers:{"X-Requested-With":"XMLHttpRequest"}}).then(function(r){
+        if (loginRe.test(r.url)) { fail('登录态已失效,请在 WebView 内重新登录后再试'); return; }
+        return r.text().then(function(t){
+          var d = document.implementation.createHTMLDocument('');
+          d.documentElement.innerHTML = t;
+          scope = findScope(d, entryUrl);
+          done();
+        });
+      }).catch(function(e){ done(); });
     }
+    function run(){
     // ② 参数提取 (宽松 regex, §4; ids 取不到 → 不猜, 直接 err)
     function pick(re){ var m = scope.match(re); return m ? m[1] : null; }
     var ids = pick(/addInput\(\s*form\s*,\s*["']ids["']\s*,\s*["'](\d+)["']/)
@@ -2030,7 +2073,6 @@ private const val CLASSIC_EAMS_FETCH_JS = """
     cands = cands.slice(0,3);
     // ④ 依序 POST 相对 endpoint (表单所在文档目录解析, 门户 hex 前缀自动保留) + ⑤ 判据链
     var endpoint = new URL('courseTableForStd!courseTable.action', pageUrl).href;
-    var loginRe = /\/login(\?|$)|\/users\/sign_in/;
     function next(i){
       if (i >= cands.length) { fail('教务页未返回课表数据,请在课表页停留后重试'); return; }
       fetch(endpoint, {
@@ -2050,6 +2092,12 @@ private const val CLASSIC_EAMS_FETCH_JS = """
       }).catch(function(e){ fail(String(e)); });
     }
     next(0);
+    }
+    if (scope) run();
+    else tryEntryPage(function(){
+      if (!scope) { fail('请先在门户进入 教务管理→我的课表 页面后再点导入'); return; }
+      run();
+    });
   } catch(err) {
     fail(String(err));
   }

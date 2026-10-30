@@ -1,0 +1,47 @@
+<!-- NK-FIX-1: synthesized from jxy18100/nku- scrape_now.py response shape + NBCC nbcc-course-table-action.html
+     same-vfamily skeleton (classic EAMS courseTableForStd!courseTable.action). Credentials removed,
+     synthetic names/ids only; semester.id=4384 is the real Nankai value seen in scrape_now.py.
+     Bitmap/week arithmetic locked by JwClassicEamsParserTest: unitCount=12; blocks expand by week
+     count (indexPairs merge to one slot): block1 12 wks + block2 10 wks + block3 (linear 42 = day3
+     p6) 1 wk = 23 rows. semesterCalendar uses real unquoted-key form {onChange:"",value:"4384"}. -->
+<html><head><title>南开大学 综合教务管理系统</title></head>
+<body>
+<form id="courseTableForm" name="courseTableForm" action="/eams/courseTableForStd!courseTable.action" method="post">
+<table width="100%" id="manualArrangeCourseTable" align="center" class="gridtable" style="text-align:center" border="1">
+  <tbody><tr><td id="TD0_0" style="backGround-Color:#ffffff;font-size:12px"></td></tr></tbody>
+</table>
+</form>
+<script language="JavaScript">
+        // function CourseTable in TaskActivity.js
+        var language = "zh";
+        var table0 = new CourseTable(2025,98);
+        var unitCount = 12;
+        var index=0;
+        var activity=null;
+                var teachers = [{id:1,name:"李老师",lab:false},{id:2,name:"王老师",lab:false}];
+                var actTeachers = [{id:1,name:"李老师",lab:false},{id:2,name:"王老师",lab:false}];
+                var actTeacherId = [];
+                var actTeacherName = [];
+                for (var i = 0; i < actTeachers.length; i++) {
+                        actTeacherId.push(actTeachers[i].id);
+                        actTeacherName.push(actTeachers[i].name);
+                }
+                        activity = new TaskActivity(actTeacherId.join(','),actTeacherName.join(','),"20001(100101G1)","数学分析A(100101G1)","701","伯苓楼-101","0000011110111111110000000000000000000000000000",null,null,"","","");
+                        index =0*unitCount+1;
+                        table0.activities[index][table0.activities[index].length]=activity;
+                        index =3*unitCount+9;
+                        table0.activities[index][table0.activities[index].length]=activity;
+                var actTeachers = [];
+                        activity = new TaskActivity("3","张老师","20002(100202G2)","高等代数B(100202G2)","702","省身楼-205","01111111111000000000000000000000000000000000000",null,null,"","","");
+                        index =1*unitCount+4;
+                        table0.activities[index][table0.activities[index].length]=activity;
+                var actTeachers = [];
+                        activity = new TaskActivity("4","陈老师","20003(100303G3)","形势与政策(100303G3)","703","主楼-报告厅","00000000000000000000100000000000000000000000000",null,null,"","","");
+                        index =42;
+                        table0.activities[index][table0.activities[index].length]=activity;
+                var ids="2023000001";
+                bg.form.addInput(form,"ids","2023000001");
+                jQuery("#halfSelect").semesterCalendar({onChange:"",value:"4384"},"searchTable()");
+            table0.marshalTable(2,1,21);
+</script>
+</body></html>

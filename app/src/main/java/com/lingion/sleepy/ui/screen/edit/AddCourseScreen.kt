@@ -4,12 +4,9 @@ import com.lingion.sleepy.util.AppPrefs
 
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.ColorPickerDialog
+import com.lingion.sleepy.ui.component.IntRangeSlider
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -82,6 +79,7 @@ import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
 import com.lingion.sleepy.ui.component.TimePickerField
+import com.lingion.sleepy.ui.component.sleepyExpandSpecs
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.CourseColorUtil
@@ -145,7 +143,15 @@ internal class MeetingBlockDraft(
     note: String = "",
     color: String = "",
     colorMode: Int = com.lingion.sleepy.data.entity.CourseColorMode.GROUP,
-    val fixedDate: String? = null
+    val fixedDate: String? = null,
+    /** 滑杆原位置幽灵占位 (需求 2026-10-28): 打开页面时的原值快照, val 不可变、
+     *  不随拖动更新 — 与上面被 mutableStateOf 遮蔽的可变参数区分。新卡/新建不传
+     *  (null = 无原值 = 永不画幽灵); 构造默认值 (step=2、1..16 周) 属"新默认",
+     *  不是原值, 所以这里必须保持 null 而不是镜像那些默认。 */
+    val initialStartNode: Int? = null,
+    val initialStep: Int? = null,
+    val initialStartWeek: Int? = null,
+    val initialEndWeek: Int? = null,
 ) {
     var startNode by mutableStateOf(startNode)
     var step by mutableStateOf(step)
@@ -168,9 +174,6 @@ internal class MeetingBlockDraft(
     var isIrregularTime by mutableStateOf(isIrregularTime)
     /** 非常规选项折叠栏: 编辑已启用任一非常规项的卡时自动展开, 否则默认收起 (普通课程主路径不被"非常规"字样干扰) */
     var irregularOptionsExpanded by mutableStateOf(isIrregularNode || isIrregularTime)
-    // issue#9 延伸: NumberField 把超界输入静默夹紧时, 置 true → 编辑器顶红块提示
-    // 用户感知到"我输 100 被改成了 2", 而不是无报错地接受了错值
-    var clamped by mutableStateOf(false)
 
     /** §3.3 契约: 本卡生效起止 = 覆盖值 / 槽位默认 / 标准节次时间, 单一出口 */
     fun effectiveRange(timeJson: String): Pair<String, String>? =
@@ -234,6 +237,9 @@ fun AddCourseScreen(
     }
     // 标准 1..N 连续节次上界 — 标准卡片 startNode/step 的取值范围
     val maxStd = remember(effectiveTimeJson) { TimeTableUtils.maxStandardNode(effectiveTimeJson) }
+    // 周次上界 — 与课表网格同源 (table.maxWeek, EditTableScreen「总周数」可调 1..999);
+    // 无表回退 30 (app 全局周数不变式: Xiaoai/JW 导入均封顶 1..30)
+    val maxWeek = currentTable?.maxWeek?.coerceIn(1, 30) ?: 30
 
     var courseName by remember(editingCourse?.id) { mutableStateOf(editingCourse?.courseName ?: "") }
     // issue#26: 课程别名(可选) — 空串 = 处处显示原名; 组级属性, 编辑页保存时整组覆盖
@@ -318,7 +324,11 @@ fun AddCourseScreen(
                         note = first.note,
                         color = first.color,
                         fixedDate = first.fixedDate,
-                        colorMode = first.colorMode
+                        colorMode = first.colorMode,
+                        initialStartNode = first.startNode,
+                        initialStep = first.step,
+                        initialStartWeek = first.startWeek,
+                        initialEndWeek = first.endWeek,
                     ))
                     // §2.4: 覆盖时间的卡补派生时长文本
                     val b = meetingBlocks.last()
@@ -610,29 +620,27 @@ fun AddCourseScreen(
                     title = stringResource(R.string.week_range),
                     subtitle = stringResource(R.string.week_range_sub)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        NumberField(
-                            label = stringResource(R.string.start_week),
-                            value = startWeek,
-                            min = 1,
-                            max = 30,
-                            modifier = Modifier.weight(1f),
-                            shape = fieldShape,
-                            colors = fieldColors
-                        ) { startWeek = it }
-                        NumberField(
-                            label = stringResource(R.string.end_week),
-                            value = endWeek,
-                            min = 1,
-                            max = 30,
-                            modifier = Modifier.weight(1f),
-                            shape = fieldShape,
-                            colors = fieldColors
-                        ) { endWeek = it }
-                    }
+                    // 显示口径夹进 1..maxWeek: 导入脏数据(越界周次)时摘要与滑杆读数一致,
+                    // 与节次滑杆同构; 落库仍按原值, 域外周次在课表网格本来就不渲染。
+                    val weekShownStart = startWeek.coerceIn(1, maxWeek)
+                    val weekShownEnd = endWeek.coerceIn(weekShownStart, maxWeek)
+                    IntRangeSlider(
+                        summary = if (weekShownStart == weekShownEnd) {
+                            stringResource(R.string.slot_summary_week_single, weekShownStart)
+                        } else {
+                            stringResource(R.string.slot_summary_week_range, weekShownStart, weekShownEnd)
+                        },
+                        minValue = 1,
+                        maxValue = maxWeek,
+                        startValue = weekShownStart,
+                        endValue = weekShownEnd,
+                        onValueChange = { s, e -> startWeek = s; endWeek = e },
+                        // 幽灵基线: 编辑既有课 = 打开页面时的课程周次; 新建 (editingCourse
+                        // null) 无原值, initial 保持 null → 永不画幽灵
+                        initialStart = editingCourse?.startWeek,
+                        initialEnd = editingCourse?.endWeek,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
                     // 显式应用 — 不再隐式下发，由用户一键覆盖所有时段
                     FilledTonalButton(
                         onClick = {
@@ -680,6 +688,7 @@ fun AddCourseScreen(
                     fieldShape = fieldShape,
                     fieldColors = fieldColors,
                     maxStd = maxStd,
+                    maxWeek = maxWeek,
                     timeJson = effectiveTimeJson,
                     candidates = TimeTableUtils.edgeCandidates(effectiveTimeJson),
                     onRemove = { meetingBlocks.remove(block) },
@@ -857,7 +866,11 @@ private fun initialMeetingBlock(course: CourseEntity?): MeetingBlockDraft {
         note = course.note,
         color = course.color,
         fixedDate = course.fixedDate,
-        colorMode = course.colorMode
+        colorMode = course.colorMode,
+        initialStartNode = course.startNode,
+        initialStep = course.step,
+        initialStartWeek = course.startWeek,
+        initialEndWeek = course.endWeek,
     )
 }
 
@@ -1117,6 +1130,7 @@ private fun MeetingBlockEditor(
     fieldShape: CornerBasedShape,
     fieldColors: androidx.compose.material3.TextFieldColors,
     maxStd: Int,
+    maxWeek: Int,
     timeJson: String,
     candidates: List<TimeTableUtils.EdgeCandidate>,
     onRemove: () -> Unit,
@@ -1130,25 +1144,10 @@ private fun MeetingBlockEditor(
             .fillMaxWidth()
             .clip(SleepyTheme.shapes.large)
             // 错误态: errorContainer 色块底替代 error 描边 (2026-08-25 色块统一)
-            // issue#9 延伸: NumberField 被夹紧时 block.clamped=true 也走 errorContainer,
-            // 提示用户"输入超界被改值"
-            .background(if (issues.isNotEmpty() || block.clamped) colors.errorContainer else colors.surfaceContainerHigh)
+            .background(if (issues.isNotEmpty()) colors.errorContainer else colors.surfaceContainerHigh)
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // issue#9 延伸: 用户输了超出 maxStd 的数字时显示提示, 并提供去课表管理的快捷入口
-        if (block.clamped) {
-            Text(
-                text = stringResource(
-                    R.string.slot_step_clamped_hint,
-                    block.startNode,
-                    block.startNode + block.step - 1,
-                    maxStd
-                ),
-                style = MaterialTheme.typography.labelSmall,
-                color = colors.onErrorContainer
-            )
-        }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -1176,37 +1175,41 @@ private fun MeetingBlockEditor(
             if (day in block.days) block.days.remove(day) else block.days.add(day)
         })
 
-        // 标准卡: startNode/step, 1..maxStd — 普通课程主路径, 不被"非常规"折叠栏干扰
+        // 标准卡: 第 startNode..(startNode+step-1) 节, 1..maxStd — MD3 双头滑杆整数区间,
+        // 一头拖开始节一头拖结束节; steps 吸附整数档位, 物理上拖不出交叉/越界 (issue#9
+        // 的"输入超界"路径随数字框一起消失, clamped 提示机制作废删除)。
+        // 普通课程主路径, 不被"非常规"折叠栏干扰; 非常规节次卡走槽位选择, 不渲染滑杆。
         if (!block.isIrregularNode) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                NumberField(
-                    label = stringResource(R.string.start_node),
-                    value = block.startNode,
-                    min = 1,
-                    max = maxStd,
-                    modifier = Modifier.weight(1f),
-                    shape = fieldShape,
-                    colors = fieldColors,
-                    onClamp = { block.clamped = true }
-                ) { v ->
-                    block.startNode = v
-                    val stepCap = (maxStd - block.startNode + 1).coerceAtLeast(1)
-                    if (block.step > stepCap) block.step = stepCap
-                }
-                NumberField(
-                    label = stringResource(R.string.step_count),
-                    value = block.step,
-                    min = 1,
-                    max = (maxStd - block.startNode + 1).coerceAtLeast(1),
-                    modifier = Modifier.weight(1f),
-                    shape = fieldShape,
-                    colors = fieldColors,
-                    onClamp = { block.clamped = true }
-                ) { v -> block.step = v }
+            // 显示口径统一夹进 1..maxStd: 导入脏数据(越界/交叉)时滑杆与摘要读数一致,
+            // 落库前 validateCourseDraft 仍按原值报 issue#9 错误, 不会静默吞掉。
+            val nodeStart = block.startNode.coerceIn(1, maxStd)
+            val nodeEnd = (block.startNode + block.step - 1).coerceIn(nodeStart, maxStd)
+            val nodeCount = nodeEnd - nodeStart + 1
+            val nodeSummary = if (nodeCount <= 1) {
+                stringResource(R.string.slot_summary_period_single, nodeStart)
+            } else {
+                stringResource(R.string.slot_summary_period_range, nodeStart, nodeEnd, nodeCount)
             }
+            IntRangeSlider(
+                summary = nodeSummary,
+                minValue = 1,
+                maxValue = maxStd,
+                startValue = nodeStart,
+                endValue = nodeEnd,
+                onValueChange = { s, e ->
+                    block.startNode = s
+                    block.step = e - s + 1
+                },
+                // 幽灵基线: 原节次区间按显示口径 startNode..startNode+step-1 换算;
+                // 两值皆非 null (编辑既有组/单卡) 才有基线, 新卡 null → 无幽灵
+                initialStart = block.initialStartNode,
+                initialEnd = if (block.initialStartNode != null && block.initialStep != null) {
+                    block.initialStartNode + block.initialStep - 1
+                } else {
+                    null
+                },
+                modifier = Modifier.padding(top = 4.dp),
+            )
         }
 
         // issue#23 逐卡: 非常规节次 / 非常规时间 — 收进同一折叠栏 (用户反馈 2026-09-09:
@@ -1222,30 +1225,26 @@ private fun MeetingBlockEditor(
             onDeselectEdge = onDeselectEdge
         )
 
-        // 周次 — 每时段独立
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            NumberField(
-                label = stringResource(R.string.slot_week_range) + " " + stringResource(R.string.start_week),
-                value = block.startWeek,
-                min = 1,
-                max = 30,
-                modifier = Modifier.weight(1f),
-                shape = fieldShape,
-                colors = fieldColors
-            ) { block.startWeek = it }
-            NumberField(
-                label = stringResource(R.string.slot_week_range) + " " + stringResource(R.string.end_week),
-                value = block.endWeek,
-                min = 1,
-                max = 30,
-                modifier = Modifier.weight(1f),
-                shape = fieldShape,
-                colors = fieldColors
-            ) { block.endWeek = it }
-        }
+        // 周次 — 每时段独立, MD3 双头滑杆 (第 X–Y 周), 域 1..maxWeek 与课表网格同源。
+        // 显示口径夹进域内 (导入脏数据/新卡默认 16 周越界时读数一致), 落库仍按原值。
+        val blockWeekStart = block.startWeek.coerceIn(1, maxWeek)
+        val blockWeekEnd = block.endWeek.coerceIn(blockWeekStart, maxWeek)
+        IntRangeSlider(
+            summary = if (blockWeekStart == blockWeekEnd) {
+                stringResource(R.string.slot_summary_week_single, blockWeekStart)
+            } else {
+                stringResource(R.string.slot_summary_week_range, blockWeekStart, blockWeekEnd)
+            },
+            minValue = 1,
+            maxValue = maxWeek,
+            startValue = blockWeekStart,
+            endValue = blockWeekEnd,
+            onValueChange = { s, e -> block.startWeek = s; block.endWeek = e },
+            // 幽灵基线: 本卡打开页面时的周次 (新卡 null → 无幽灵)
+            initialStart = block.initialStartWeek,
+            initialEnd = block.initialEndWeek,
+            modifier = Modifier.padding(top = 4.dp),
+        )
         // 单双周 + 按周次 — 4 态 SegmentedSwitcher
         // 0=每周 1=单周 2=双周 3=按周次列实际指定的周（导入 type=3 单次实验课时出现）
         SegmentedSwitcher(
@@ -1414,8 +1413,10 @@ private fun IrregularOptionsSection(
     onDeselectEdge: (releasedNode: Int) -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
+    // MD3E (Task 7a): chevron 旋转走 defaultSpatial (收稳不弹, 与展开家族同拍)
     val arrowRotation by animateFloatAsState(
         targetValue = if (block.irregularOptionsExpanded) 180f else 0f,
+        animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>(),
         label = "irregular-options-arrow"
     )
     Column(
@@ -1474,10 +1475,11 @@ private fun IrregularOptionsSection(
                     .rotate(arrowRotation)
             )
         }
+        val expandSpecs = sleepyExpandSpecs()
         AnimatedVisibility(
             visible = block.irregularOptionsExpanded,
-            enter = expandVertically() + fadeIn(),
-            exit = shrinkVertically() + fadeOut()
+            enter = expandSpecs.enter,
+            exit = expandSpecs.exit,
         ) {
             Column(
                 modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
@@ -1498,7 +1500,6 @@ private fun IrregularOptionsSection(
                             block.selectedEdgeNode = 0
                             onDeselectEdge(released)
                         }
-                        block.clamped = false
                     }
                 )
 
@@ -1999,9 +2000,6 @@ private fun NumberField(
     modifier: Modifier = Modifier,
     shape: CornerBasedShape,
     colors: androidx.compose.material3.TextFieldColors,
-    // issue#9 延伸: 输入超界 → 被 coerce 改值时回调, 让父级置 block.clamped=true
-    // 必须放在 onChange 之前, 否则 trailing lambda 会自动绑给 onClamp 而漏 onChange
-    onClamp: (() -> Unit)? = null,
     onChange: (Int) -> Unit
 ) {
     var text by remember { mutableStateOf(value.toString()) }
@@ -2024,9 +2022,7 @@ private fun NumberField(
             } else {
                 val v = txt.toIntOrNull()
                 if (v != null) {
-                    val coerced = v.coerceIn(min, max)
-                    if (coerced != v) onClamp?.invoke()
-                    onChange(coerced)
+                    onChange(v.coerceIn(min, max))
                 }
                 // 非数字字符不回调，但保留 text 让用户继续编辑
             }

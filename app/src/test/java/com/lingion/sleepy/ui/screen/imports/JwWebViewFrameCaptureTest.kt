@@ -310,6 +310,31 @@ class JwWebViewFrameCaptureTest {
         assertFalse(FrameTraversalTree.findAnchors(html).contains("_dgdata"))
     }
 
+    // ---------- 南开 #236: classic_eams 锚点 + IAM 登录指纹 ----------
+
+    @Test
+    fun `nankai course grid is an anchor and root stub is not`() {
+        val html = javaClass.classLoader.getResourceAsStream("jw/fixtures/classic_eams/nankai-course-table-action.html")!!
+            .bufferedReader(Charsets.UTF_8).use { it.readText() }
+        assertTrue("manualArrangeCourseTable 必须命中 ANCHORS (南开 #236 新增)",
+            FrameTraversalTree.findAnchors(html).contains("manualArrangeCourseTable"))
+        // wusir96 2025-05 实测: 未登录 eamis 根返 148 字节桩页 — 不得误判登录/课表
+        val stub = """<html><head><title></title></head><body></body></html>"""
+        assertFalse("空桩页不得命中任何锚点", FrameTraversalTree.findAnchors(stub).isNotEmpty())
+        assertFalse("空桩页不得判登录页", FrameTraversalTree.looksLikeLoginPage(stub))
+    }
+
+    @Test
+    fun `nankai IAM gen3 login page trips fingerprint score`() {
+        val html = javaClass.classLoader.getResourceAsStream("jw/fixtures/classic_eams/nankai-iam-login-page.html")!!
+            .bufferedReader(Charsets.UTF_8).use { it.readText() }
+        assertTrue("IAM 飞连登录页必须判 SESSION_EXPIRED (password_account_input + iam.nankai.edu.cn 同页)",
+            FrameTraversalTree.looksLikeLoginPage(html))
+        // 单指纹不足分: 只有 host 出现、无账号输入框 → 不误伤 (e.g. 页面仅外链 IAM 资源)
+        val single = """<html><link href="https://iam.nankai.edu.cn/x.css"></html>"""
+        assertFalse("单指纹不得误判登录页", FrameTraversalTree.looksLikeLoginPage(single))
+    }
+
     // ---------- fromJson 容错 ----------
 
     @Test

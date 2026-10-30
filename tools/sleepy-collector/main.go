@@ -495,6 +495,12 @@ func (c *Collector) onEventTab(tabSeq int, ev interface{}) {
 		return
 	}
 
+	// Network callbacks and the response-body worker share recs/order/reqRec
+	// with readers. Keep the network event mutation under the same tmu used
+	// by snapshots; CDP actions remain in the body-fetch worker, never here.
+	c.tmu.Lock()
+	defer c.tmu.Unlock()
+
 	switch e := ev.(type) {
 	case *network.EventRequestWillBeSent:
 		// G4: 重定向逐跳记录 — 302 链 (CAS SSO → 教务) 是登录态排障的命脉,
@@ -646,8 +652,10 @@ func (c *Collector) fetchBodyInto(tabSeq int, k reqKey, r *reqRec) {
 		body, err = getBody()
 	}
 	if err == nil && len(body) > 0 {
+		c.tmu.Lock()
 		r.body = string(body)
 		c.mineValues(r.body)
+		c.tmu.Unlock()
 	}
 }
 

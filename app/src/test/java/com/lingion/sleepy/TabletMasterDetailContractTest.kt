@@ -130,10 +130,18 @@ class TabletMasterDetailContractTest {
     @Test
     fun right_half_animated_content() {
         assertTrue("右半边用 AnimatedContent", navHostSrc.contains("AnimatedContent("))
+        // MD3E 全量过闸 (M3 motion Task 2): 旧 fadeIn/fadeOut(tween(200)) 字面量退场,
+        // 右半区转场与页面转场同走 SleepyMotion content 家族 — 工厂结果先算后捕获,
+        // 在 transitionSpec 里 togetherWith 成对。意图不变: 仍锁"入/退成对 + 无手搓时长"。
         assertTrue(
-            "右半边 fadeIn+togetherWith+fadeOut 200ms",
-            Regex("""fadeIn\(.*tween\(200\).*togetherWith.*fadeOut\(.*tween\(200""")
-                .containsMatchIn(navHostSrc),
+            "右半边必须用 sleepyContentEnter()/sleepyContentExit() 捕获后 togetherWith 组转场",
+            Regex("""val\s+contentEnter\s*=\s*sleepyContentEnter\(\)""").containsMatchIn(navHostSrc) &&
+                Regex("""val\s+contentExit\s*=\s*sleepyContentExit\(\)""").containsMatchIn(navHostSrc) &&
+                Regex("""contentEnter\s+togetherWith\s+contentExit""").containsMatchIn(navHostSrc),
+        )
+        assertFalse(
+            "右半边不得残留硬编码 tween(200) 淡入淡出(全走 motionScheme 工厂)",
+            navHostSrc.contains("tween(200)"),
         )
     }
 

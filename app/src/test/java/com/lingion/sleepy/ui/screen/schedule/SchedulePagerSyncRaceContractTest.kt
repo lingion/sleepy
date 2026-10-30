@@ -40,18 +40,20 @@ class SchedulePagerSyncRaceContractTest {
         loadSource("ui/screen/schedule/ScheduleScreen.kt")
     }
 
-    /** 契约 1: scrollToPage 前必须设置 syncingFromState = true */
+    /** 契约 1: animateScrollToPage 前必须设置 syncingFromState = true
+     *  (2026-10-29 Task 6 lockstep: 程序化跳页改缓动 animateScrollToPage,
+     *   字面量锚点随改名同步; 守卫语义本身不变) */
     @Test
     fun sync_guard_sets_syncing_true_before_scroll() {
         val body = screenSource.substringAfter("LaunchedEffect(state.selectedWeek)")
             .substringBefore("LaunchedEffect(pagerState.currentPage)")
         assertTrue(
-            "Before calling pagerState.scrollToPage, syncingFromState must be set to true",
+            "Before calling pagerState.animateScrollToPage, syncingFromState must be set to true",
             Regex("""syncingFromState\s*=\s*true""").containsMatchIn(body)
         )
         assertTrue(
-            "syncingFromState = true must appear before scrollToPage call",
-            body.indexOf("syncingFromState = true") < body.indexOf("pagerState.scrollToPage")
+            "syncingFromState = true must appear before animateScrollToPage call",
+            body.indexOf("syncingFromState = true") < body.indexOf("pagerState.animateScrollToPage")
         )
     }
 

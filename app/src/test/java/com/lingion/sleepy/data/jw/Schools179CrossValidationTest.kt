@@ -286,6 +286,29 @@ class Schools179CrossValidationTest {
         )
     }
 
+    // ---- 7b. 南开大学 (issue #236) classic_eams 形态B 开闸钉死 (2026-10-27 跨仓验证) ----
+
+    @Test
+    fun `nankai entry pinned`() {
+        // 38 仓全量调研 (Step 9 落 docs/history/nankai-cross-verify-2026-10-27 档案): 厂商=金智经典 EAMS 实锤 —
+        // jxy18100/nku- scrape_now.py 直接 navigate …/eams/courseTableForStd.action +
+        // fetch courseTableForStd!courseTable.action?semester.id=4384; zawnpn Dart 链、
+        // liyue983 用户脚本同端点三源共识。reporter「树莓教务」说法证伪 (38 仓零提及)。
+        // status 裁决闸已闭 (2026-10-27): zzask77 真机装 1.0.62-debug 测试包, 根 URL 导入
+        // 回传「可以正常导入」(issue #236 comment 6435933798) — IAM 飞连登录链 WebView 实测通过。
+        val hits = entries().filter { it.second.optString("catalogId") == "N_南开大学" }
+        assertEquals("catalogId N_南开大学 必须唯一定位南开条目", 1, hits.size)
+        val e = hits.first().second
+        assertEquals("校名对位", "南开大学", e.optString("name"))
+        assertEquals("应为 classic_eams (三源端点共识+TaskActivity 同族互证)", "classic_eams", e.optString("type"))
+        assertEquals("status 显式钉 supported (zzask77 真机回传裁决, 缺省隐式 supported 变显式)", "supported", e.optString("status"))
+        assertTrue("enableFetch 必须为 true (形态B 抓取链开关, #236 战役落点)", e.optBoolean("enableFetch"))
+        assertEquals(
+            "url 钉死 eamis 根 (未登录返 148 字节桩页系 wusir96 实测形态, 登录由 WebView 完成)",
+            "https://eamis.nankai.edu.cn/", e.optString("url")
+        )
+    }
+
     // ---- 8. UCAS (#18) 入口钉死 ----
 
     @Test

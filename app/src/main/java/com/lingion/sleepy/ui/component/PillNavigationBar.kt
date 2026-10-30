@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -44,6 +45,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
@@ -259,10 +261,20 @@ fun PillNavigationBar(
                                 tint = lerp(colors.onSurfaceVariant, colors.onSurface, iconCov),
                                 modifier = Modifier.size(20.dp)
                             )
-                            if (item.badge) {
+                            // MD3E (Task 6): 徽标点弹入弹出走 popup 家族 — 通知类
+                            // 点缀硬切太生硬; testTag 锁存在性终态 (管线测试用)。
+                            // this@Column: 最内层 Box 作用域无 AnimatedVisibility 扩展,
+                            // 外层 Column 版不许隐式接收者 (DSL 闸) — 显式指定。
+                            this@Column.AnimatedVisibility(
+                                visible = item.badge,
+                                enter = sleepyPopupEnter(),
+                                exit = sleepyPopupExit(),
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .testTag("nav-badge"),
+                            ) {
                                 Box(
                                     Modifier
-                                        .align(Alignment.TopEnd)
                                         .size(7.dp)
                                         .background(colors.primary, CircleShape)
                                 )
@@ -417,10 +429,17 @@ private fun DockNavigationBar(
                             tint = lerp(colors.onSurfaceVariant, colors.onSecondaryContainer, iconCov),
                             modifier = Modifier.size(24.dp)
                         )
-                        if (item.badge) {
+                        // MD3E (Task 6): Dock 形态徽标点同款 popup 家族 (与贴底两处一致)
+                        this@Column.AnimatedVisibility(
+                            visible = item.badge,
+                            enter = sleepyPopupEnter(),
+                            exit = sleepyPopupExit(),
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .testTag("nav-badge"),
+                        ) {
                             Box(
                                 Modifier
-                                    .align(Alignment.TopEnd)
                                     .size(7.dp)
                                     .background(colors.primary, CircleShape)
                             )

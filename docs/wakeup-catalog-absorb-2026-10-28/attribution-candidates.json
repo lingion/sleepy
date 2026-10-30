@@ -1,0 +1,34 @@
+{
+  "campaign": "wakeup-6.6.2-school-catalog-absorb",
+  "date": "2026-10-28",
+  "sop_step": "5.5 致谢清单补全(强制前置, 已先于数据写入完成)",
+  "rule": "凡触达仓库一律致谢; 1:1 对应 candidates.json 触达登记",
+  "attributions": [
+    {
+      "name": "LumaSchedule",
+      "owner": "Junyxor",
+      "url": "https://github.com/Junyxor/LumaSchedule",
+      "license": "Apache-2.0",
+      "reason": "边界交叉验证: 其 scripts/convert-wakeup-school-info.mjs 与 docs/wakeup-compat.md 证明 WakeUp 兼容层只做 profile 与登录元数据迁移、不复制服务端解析器; 未复用代码",
+      "landed_at": {
+        "kotlin": "app/src/main/java/com/lingion/sleepy/ui/screen/mine/LicenseScreen.kt (foundational-lumaschedule)",
+        "test": "app/src/test/java/com/lingion/sleepy/AboutLicenseAttributionTest.kt (Attribution(\"LumaSchedule\", \"Apache-2.0\"))",
+        "strings": [
+          "app/src/main/res/values/strings.xml",
+          "app/src/main/res/values-zh-rCN/strings.xml",
+          "app/src/main/res/values-zh-rTW/strings.xml",
+          "app/src/main/res/values-en/strings.xml",
+          "app/src/main/res/values-ja/strings.xml",
+          "app/src/main/res/values-es/strings.xml"
+        ],
+        "locale_contract": "ALL_RELEASED_LOCALES = values, zh-rCN, zh-rTW, en, ja, es (values-en 为独立实体目录)"
+      }
+    }
+  ],
+  "no_new_attribution": [
+    "源 A 38 候选: 2026-09-15 战役已全量致谢(docs/history/wakeup-protocols-cross-verify-2026-09-15/)",
+    "源 B 官方闭源 APK: 非开源仓库, license 口径(factual metadata only)入 sources metadata.wakeup662Asset, 不适用开源致谢",
+    "源 C api.wakeup.fun: 零代码触达",
+    "源 D 拾光 shiguang_warehouse: 前战役已致谢, 本轮仅只读 manifest 交集"
+  ]
+}

@@ -1,8 +1,10 @@
 package com.lingion.sleepy.ui.theme
 
 import android.os.Build
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
@@ -430,6 +432,82 @@ object SleepyTheme {
     }
 }
 
+/**
+ * MD3E (Task 8): 主题切换色彩缓动 — 官方 AnimatedTheme/AnimatedMaterialTheme
+ * 已从 material3 移除 (1.5.0-beta02 classes.jar 零命中), 等价语义在此单点
+ * 重建: ColorScheme 48 个色彩槽逐槽 animateColorAsState, 规格取
+ * MotionScheme.expressive().defaultEffectsSpec (色彩族走 effects 档)。
+ * 选型裁决: 否决整树 Crossfade (瞬态双组合重挂载会威胁 NavDisplay /
+ * rememberSaveable / DisposableEffect 状态存活 — 本文件历史注释记录的
+ * preset early-return 丢状态事故即同类风险); 否决 per-surface 逐点改造
+ * (一次性整树切仍硬切)。re-provide transitioning scheme = 树形状不变,
+ * 全部消费者零改动即全局渐变。
+ */
+@Composable
+private fun animateColorSlot(target: Color, label: String): Color =
+    animateColorAsState(
+        targetValue = target,
+        // 这里不能读 MaterialTheme.motionScheme — transitioning() 正在构造将要
+        // 安装的 scheme, 读外层 CompositionLocal 拿到的是默认档; 故直取
+        // expressive() 单例 (与 :590 provider 安装同档)。
+        animationSpec = MotionScheme.expressive().defaultEffectsSpec<Color>(),
+        label = label,
+    ).value
+
+@Composable
+private fun ColorScheme.transitioning(): ColorScheme =
+    // 48 槽全量显式传 (copy 的默认参数是基线 preset 值, 漏一槽即硬切)
+    copy(
+        primary = animateColorSlot(primary, "themePrimary"),
+        onPrimary = animateColorSlot(onPrimary, "themeOnPrimary"),
+        primaryContainer = animateColorSlot(primaryContainer, "themePrimaryContainer"),
+        onPrimaryContainer = animateColorSlot(onPrimaryContainer, "themeOnPrimaryContainer"),
+        inversePrimary = animateColorSlot(inversePrimary, "themeInversePrimary"),
+        secondary = animateColorSlot(secondary, "themeSecondary"),
+        onSecondary = animateColorSlot(onSecondary, "themeOnSecondary"),
+        secondaryContainer = animateColorSlot(secondaryContainer, "themeSecondaryContainer"),
+        onSecondaryContainer = animateColorSlot(onSecondaryContainer, "themeOnSecondaryContainer"),
+        tertiary = animateColorSlot(tertiary, "themeTertiary"),
+        onTertiary = animateColorSlot(onTertiary, "themeOnTertiary"),
+        tertiaryContainer = animateColorSlot(tertiaryContainer, "themeTertiaryContainer"),
+        onTertiaryContainer = animateColorSlot(onTertiaryContainer, "themeOnTertiaryContainer"),
+        background = animateColorSlot(background, "themeBackground"),
+        onBackground = animateColorSlot(onBackground, "themeOnBackground"),
+        surface = animateColorSlot(surface, "themeSurface"),
+        onSurface = animateColorSlot(onSurface, "themeOnSurface"),
+        surfaceVariant = animateColorSlot(surfaceVariant, "themeSurfaceVariant"),
+        onSurfaceVariant = animateColorSlot(onSurfaceVariant, "themeOnSurfaceVariant"),
+        surfaceTint = animateColorSlot(surfaceTint, "themeSurfaceTint"),
+        inverseSurface = animateColorSlot(inverseSurface, "themeInverseSurface"),
+        inverseOnSurface = animateColorSlot(inverseOnSurface, "themeInverseOnSurface"),
+        error = animateColorSlot(error, "themeError"),
+        onError = animateColorSlot(onError, "themeOnError"),
+        errorContainer = animateColorSlot(errorContainer, "themeErrorContainer"),
+        onErrorContainer = animateColorSlot(onErrorContainer, "themeOnErrorContainer"),
+        outline = animateColorSlot(outline, "themeOutline"),
+        outlineVariant = animateColorSlot(outlineVariant, "themeOutlineVariant"),
+        scrim = animateColorSlot(scrim, "themeScrim"),
+        surfaceBright = animateColorSlot(surfaceBright, "themeSurfaceBright"),
+        surfaceDim = animateColorSlot(surfaceDim, "themeSurfaceDim"),
+        surfaceContainer = animateColorSlot(surfaceContainer, "themeSurfaceContainer"),
+        surfaceContainerHigh = animateColorSlot(surfaceContainerHigh, "themeSurfaceContainerHigh"),
+        surfaceContainerHighest = animateColorSlot(surfaceContainerHighest, "themeSurfaceContainerHighest"),
+        surfaceContainerLow = animateColorSlot(surfaceContainerLow, "themeSurfaceContainerLow"),
+        surfaceContainerLowest = animateColorSlot(surfaceContainerLowest, "themeSurfaceContainerLowest"),
+        primaryFixed = animateColorSlot(primaryFixed, "themePrimaryFixed"),
+        primaryFixedDim = animateColorSlot(primaryFixedDim, "themePrimaryFixedDim"),
+        onPrimaryFixed = animateColorSlot(onPrimaryFixed, "themeOnPrimaryFixed"),
+        onPrimaryFixedVariant = animateColorSlot(onPrimaryFixedVariant, "themeOnPrimaryFixedVariant"),
+        secondaryFixed = animateColorSlot(secondaryFixed, "themeSecondaryFixed"),
+        secondaryFixedDim = animateColorSlot(secondaryFixedDim, "themeSecondaryFixedDim"),
+        onSecondaryFixed = animateColorSlot(onSecondaryFixed, "themeOnSecondaryFixed"),
+        onSecondaryFixedVariant = animateColorSlot(onSecondaryFixedVariant, "themeOnSecondaryFixedVariant"),
+        tertiaryFixed = animateColorSlot(tertiaryFixed, "themeTertiaryFixed"),
+        tertiaryFixedDim = animateColorSlot(tertiaryFixedDim, "themeTertiaryFixedDim"),
+        onTertiaryFixed = animateColorSlot(onTertiaryFixed, "themeOnTertiaryFixed"),
+        onTertiaryFixedVariant = animateColorSlot(onTertiaryFixedVariant, "themeOnTertiaryFixedVariant"),
+    )
+
 @Composable
 fun SleepyThemeProvider(
     darkTheme: Boolean = false,
@@ -486,7 +564,8 @@ fun SleepyThemeProvider(
         else -> if (darkTheme) preset.dark else preset.light
     }
     val palette = if (darkTheme) DarkCoursePalette else LightCoursePalette
-    val m3Scheme = wakeToM3Scheme(wc, darkTheme)
+    // MD3E (Task 8): 主题切档时 48 色彩槽逐槽缓动到新值, 消费者零改动全局渐变。
+    val m3Scheme = wakeToM3Scheme(wc, darkTheme).transitioning()
 
     CompositionLocalProvider(LocalCoursePalette provides palette) {
         // 系统栏外观随应用主题联动(官方 edge-to-edge 指南): enableEdgeToEdge 是一次性

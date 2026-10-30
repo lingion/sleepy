@@ -1,0 +1,18 @@
+<!-- NK-FIX-3: synthesized 南开三代统一身份认证 IAM (飞连) 登录页指纹形态 — 2026-10 issue #236
+     调研 bucket 实锤: 输入框 id password_account_input / password_password_input,
+     资源 host iam.nankai.edu.cn; 页面结构为合成复刻, 零凭据、零真实用户数据。
+     用途: JwWebViewFrameCaptureTest looksLikeLoginPage 指纹回归 (两条同页必齐 → score>=2)。 -->
+<!DOCTYPE html>
+<html><head>
+  <title>统一身份认证</title>
+  <link rel="stylesheet" href="https://iam.nankai.edu.cn/auth/resources/css/login.css">
+</head><body>
+<div id="login-box">
+  <form id="login-form" action="https://iam.nankai.edu.cn/auth/login" method="post">
+    <input type="text" id="password_account_input" name="account" placeholder="用户名">
+    <input type="password" id="password_password_input" name="password" placeholder="请输入密码">
+    <button type="submit">登录</button>
+  </form>
+</div>
+<script src="https://iam.nankai.edu.cn/auth/resources/js/login.js"></script>
+</body></html>

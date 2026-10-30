@@ -1,0 +1,995 @@
+[
+ {
+  "repo_name": "zawnpn/NKU-EAMIS",
+  "stars": 10,
+  "default_branch": "master",
+  "license": "MIT",
+  "license_source": "github-api|LICENSE file",
+  "relevant_files": [
+   {
+    "path": "nkueamis/nkueamis.py",
+    "purpose": "Full CLI client for Nankai EAMIS: login, grade, course table, exam, course selection — all endpoints + parse regexes",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "README_CN.md",
+    "purpose": "Confirms system name NKU Education Affairs Management Information System (南开大学教学管理信息系统), usage of semester format [Year]-[Year]:[Semester]",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "student ID is used directly as 'username' POST field to login.action; no captcha, no encoding observed. Session = requests.session carrying JSESSIONID cookie; current-semester id additionally arrives as a 'semester.id' cookie in Set-Cookie and is re-sent as POST field 'semester.id'.",
+  "exact_regex_or_code_snippet": "HOME_URL = 'http://eamis.nankai.edu.cn'\nLOGIN_URL = HOME_URL + '/eams/login.action'\nCOURSETABLE_CLASS_URL = HOME_URL + '/eams/courseTableForStd.action'\nCOURSETABLE_ID_URL = HOME_URL + '/eams/courseTableForStd!innerIndex.action'\nCOURSETABLE_URL = HOME_URL + '/eams/courseTableForStd!courseTable.action'\n\nstd_id_pattern = re.compile('bg\\\\.form\\\\.addInput\\\\(form,\"ids\",\"(.+?)\"\\\\);')\nsemester_id = re.findall('semester\\\\.id=(.+?);', response.headers['Set-Cookie'])[0]\ncourse_data = {'setting.kind': 'std', 'semester.id': semester_id, 'ids': course_ids}\ncourses = sess.post(COURSETABLE_URL, data=course_data)\ncourse_info_pattern = re.compile('\\)\",\"(.+?)\\(.+?\\)\",\".*?\",\"(.*?)\",\"0*1*0*\"')\ncourse_time_pattern = re.compile('=(.+?)\\\\*unitCount\\\\+(.+?);')\nteacher_pattern = re.compile('var teachers = \\\\[{id:.*?,name:\"(.+?)\",lab:.*?}\\\\];')",
+  "verdict": "POSITIVE",
+  "verdict_reason": "Complete real Nankai EAMIS protocol: exact endpoints for 课表 (courseTableForStd!courseTable.action POST with setting.kind/semester.id/ids), 成绩 (myPlanCompl!innerIndex.action, tr-with-8-td HTML), 考试 (stdExam!examTable.action), 选课 (stdElectCourse!batchOperator.action operator0=id:true), 学期 (dataQuery.action dataType=semesterCalendar). Login = POST username+password to /eams/login.action, no captcha. Timetable content lives in embedded <script> JS vars (bg.form.addInput ids, var teachers=[...], *unitCount+ position math), not HTML table rows. Struts '.action' + '/eams/' + bg.Go/semester.id cookie shape = 正方-style classic_eams, matching our registration; corroborates that /eams/home.action is only the portal shell and the timetable requires the courseTableForStd chain. Note repo uses http:// not https://. No 树莓教务/vendor-switch mention anywhere in repo (grep 树莓|raspberry|正方|树维|金智|urmp = zero hits). Code dated 2017 (author 2017-07); structure matches our capture's Struts/bg.Go shell, so no contradiction of current shape, but endpoints are pre-2017 vintage and captcha presence today cannot be excluded from this repo.",
+  "bucket": "A"
+ },
+ {
+  "repo_name": "zawnpn/NKU-EAMIS_Server",
+  "stars": 4,
+  "default_branch": "master",
+  "license": "MIT",
+  "license_source": "github-api|LICENSE file",
+  "relevant_files": [
+   {
+    "path": "cgi-bin/nkueamis.py",
+    "purpose": "Near-identical copy of the NKU-EAMIS client lib (minus CLI/elect-course), refactored to return dict/JSON course+grade data",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "cgi-bin/main.py",
+    "purpose": "CGI wrapper exposing login/detail/grade/course as POST func= queries; shows session flow order: log_in -> STD_DETAIL_URL?projectId=1 -> determine_semester_id -> get_course_table",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "Workflow_URL.txt",
+    "purpose": "iOS Workflow shortcut URL (legacy client)",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "username/password POSTed to eamis /eams/login.action unchanged (server receives them from miniapp as form fields, calls log_in()); JSESSIONID held in requests.session, semester id parsed from Set-Cookie 'semester.id=(.+?);'.",
+  "exact_regex_or_code_snippet": "sess.get(COURSETABLE_CLASS_URL + '?projectId=%s' % project_id)\nresponse = sess.get(COURSETABLE_ID_URL + '?projectId=%s' % project_id)\nsemester_id = re.findall('semester\\\\.id=(.+?);', response.headers['Set-Cookie'])[0]\nstd_id = re.compile('bg\\\\.form\\\\.addInput\\\\(form,\"ids\",\"(.+?)\"\\\\);').findall(response.content.decode())\n# exam id with explicit cookies:\nheaders = {'Cookie': 'JSESSIONID=%s; semester.id=%s' % (sess.cookies.items()[0][1], semester_id)}\npattern = re.compile('\\'/eams/stdExam!examTable\\\\.action\\\\?examBatch\\\\.id=(.+?)\\'')",
+  "verdict": "POSITIVE",
+  "verdict_reason": "Independent restatement of the same real Nankai EAMIS endpoint map (login/stdDetail/myPlanCompl/dataQuery/courseTableForStd!courseTable/stdExam) plus explicit JSESSIONID + semester.id cookie handling, which confirms our capture observation that bg.Go AJAX / home.action is only the logged-in shell. Also documents required visit order (courseTableForStd.action -> courseTableForStd!innerIndex.action -> POST courseTable.action) that our in-app import likely missed. No vendor-switch or 树莓教务 mention.",
+  "bucket": "A"
+ },
+ {
+  "repo_name": "zawnpn/NKU-EAMIS_MiniApp",
+  "stars": 8,
+  "default_branch": "master",
+  "license": "MIT",
+  "license_source": "github-api|LICENSE file",
+  "relevant_files": [
+   {
+    "path": "config.js",
+    "purpose": "Points the whole app at the author's own CGI server https://wx.oncemath.com/cgi-bin/main.py — the only network target",
+    "lines_with_protocol": false
+   },
+   {
+    "path": "pages/courses/courses.js",
+    "purpose": "Course-table UI page; fetches rendered table via POST {username,password,func:'course',semester} to srvUrl, no eamis traffic",
+    "lines_with_protocol": false
+   },
+   {
+    "path": "pages/login/login.js",
+    "purpose": "Login form POSTs username(学号)/password with func:'detail' to srvUrl",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "None in this repo — student ID/password are forwarded as plain form fields to the author's wrapper server (NKU-EAMIS_Server), which performs the actual eamis login; the eamis protocol itself is not visible in this repo's source.",
+  "exact_regex_or_code_snippet": "var srvUrl = \"https://wx.oncemath.com/cgi-bin/main.py\"\nwx.request({ url: srvUrl, data: { username: inputs['username'], password: inputs['password'], func: 'detail' }, method: 'POST', header: { \"Content-Type\": \"application/x-www-form-urlencoded\" } })",
+  "verdict": "INDIRECT",
+  "verdict_reason": "WeChat mini-program touches the Nankai registrar only through the author's own wrapper API (wx.oncemath.com/cgi-bin/main.py = the NKU-EAMIS_Server repo in this same bucket); no eamis.nankai.edu.cn endpoint, cookie, or parse logic appears in this repo's files (grep nankai|eamis across js/wxml/json = zero hits). Protocol evidence exists but lives behind the wrapper, which we already have as repo 2.",
+  "bucket": "A"
+ },
+ {
+  "repo_name": "suhipek/eamis-helper",
+  "stars": 2,
+  "default_branch": "main",
+  "license": "WTFPL",
+  "license_source": "LICENSE file in repo + GitHub API license.spdx_id",
+  "relevant_files": [
+   {
+    "path": "eamis.py",
+    "purpose": "Complete EAMIS+SSO API client: cookie bootstrap, SSO RSA login, semester query, timetable entry endpoint, course-election endpoints",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "README.md",
+    "purpose": "Names the system 'E站(nku eamis)'; documents captcha bypass and semester.id cookie",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "No student-ID scraping: login uses username/password directly. POST https://sso.nankai.edu.cn/sso/login with form fields {ajax:'1', username:<stu_id>, password:md5(password), lt:<epoch_ms timestamp>, rand:<from GET /sso/loadcode JSON .rand>, t:RSA_PKCS1_v1_5(password) base64 with hardcoded 1024-bit SSO public key, roleType:'', service:'https://eamis.nankai.edu.cn/eams/login.action;jsessionid=<JSESSIONID>', loginType:'0'}. JSESSIONID obtained by GET https://eamis.nankai.edu.cn/eams/homeExt.action with allow_redirects=False (cookie-only). README claims sliding captcha is bypassed ('绕过SSO滑动验证码(迫真)登录E站', last line is the joke tag). Login check = GET /eams/home.action status 200.",
+  "exact_regex_or_code_snippet": "def get_course_table(self, project_id): ... requests.get(f'https://eamis.nankai.edu.cn/eams/courseTableForStd!innerIndex.action?projectId=1&_={timestamp}', cookies=self.cookie_eamis) ... pattern = r'if\\(jQuery\\(\"#courseTableType\"\\)\\.val\\(\\)==\"std\"\\){\\s*bg\\.form\\.addInput\\(form,\"ids\",\"(\\d+)\"\\);' ... ids = match.group(1)  # TODO: prase the course table",
+  "verdict": "POSITIVE",
+  "verdict_reason": "Verbatim Nankai endpoints for the exact family our capture stalled on: /eams/homeExt.action (cookie seed), /eams/home.action, /eams/dataQuery.action?dataType=semesterCalendar, /eams/courseTableForStd!innerIndex.action?projectId=1 (timetable page), stdElectCourse!{innerIndex,defaultPage,data,queryStdCount,batchOperator}.action (electing), sso.nankai.edu.cn/sso/login + /sso/loadcode. Confirms Struts classic_eams shape with bg.* AJAX containers still live as of 2023-09. Timetable page embeds the student course-table 'ids' in an inline jQuery snippet (regex above); parsing itself is left as TODO. Grades endpoint absent.",
+  "bucket": "B"
+ },
+ {
+  "repo_name": "TsXor/NK-eamis",
+  "stars": 2,
+  "default_branch": "main",
+  "license": "none (no license file; GitHub API license=null)",
+  "license_source": "repo working tree + GitHub API",
+  "relevant_files": [
+   {
+    "path": "eamis_sys/api.py",
+    "purpose": "EamisClient: stdElectCourse! endpoints, rate-limit quirk handling, semester_id via #qr_script, HTML selectors",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "eamis_sys/webview_auth.py",
+    "purpose": "webview login to https://eamis.nankai.edu.cn/eams/home.action; logged-in probe = document.querySelector('#mainTable') not null",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "test_data/202408/display.html",
+    "purpose": "REAL saved HTML fixture (SingleFile, url https://eamis.nankai.edu.cn/eams/stdElectCourse!defaultPage.action?electionProfile.id=1620, saved 2024-08-24) — electing page, NOT the week-grid timetable",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "test_data/202501/eamis_snapshot.json",
+    "purpose": "Real full_data snapshot {semester_id:'4324', sections:[[ElectProfile,LessonData...]], std_count} — machine-readable lesson schedule fields",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "eamis_sys/dtypes.py",
+    "purpose": "LessonData schema: arrangeInfo[] {weekDay, weekState (50-char bitstring e.g. '001111111111111110000000000000000000000000000000000000'), weekStateDigest '2-16', startUnit/endUnit, startTime/endTime minutes (1600/1740), roomIds, rooms}",
+    "lines_with_protocol": true
+   }
+  ],
+  "studentId_extraction_approach": "No scraping of a student ID from HTML. Two auth paths: (1) from_webview() opens https://eamis.nankai.edu.cn/eams/home.action in a webview (Feilian/飞连 SSO handled by browser), harvests cookies after probing window for '#mainTable'; (2) from_account(user, password) delegates SSO to external lib nku_sso.NKUIAMAuth (https://github.com/TsXor/nku_sso, README says 飞连 API reverse-engineered there). Server quirks documented: must GET /eams/stdElectCourse.action then /eams/stdElectCourse!defaultPage.action?electionProfile.id=<id> before any data call, else 500; rate limiter triggers '不要过快点击' body.",
+  "exact_regex_or_code_snippet": "display.html verbatim anchors: '<table cellspacing=0 cellpadding=0 border=0 id=electGroupResultsTable class=electGroupResultsTable ...>' | '<table class=gridtable id=electableLessonList>' with '<thead class=gridhead><th style=width:55px>...<th ...>星期一</th>...<th ...>星期日</th>' (7 weekday cols + section-number col) | '<tr id=lesson588126 class=\"electGridTr electGridTr-odd\"><td colspan=2>0444<td>BUSI0022<td><a ... class=lessonListOperator href=## operator=ELECTION>选课</a>' | '<tr class=electGroupResult id=root_0_1_0 parentnode=root_0_1 nodelevel=2 coursetypeid=367>' | api.py: soup.find(id=\"qr_script\")['src'] -> parse_qs(query)['semesterId'][0]; load_js(resp.text, 'lessonJSONs') via JSPyBridge because 'eamis十分奇葩地将含数据的JS脚本作为请求的回复'",
+  "verdict": "POSITIVE",
+  "verdict_reason": "Real 2024-2025 endpoints + a genuine saved HTML fixture + real JSON snapshots of the same classic_eams (Struts '!' action-bang) stack the app registers. The fixture is the 选课 defaultPage shape (electGridTr rows keyed lesson<id>, gridtable id=electableLessonList), not the 课表 week grid — for the actual timetable page shape the evidence is suhipek's courseTableForStd!innerIndex.action. Confirms login now sits behind 飞连 (Feilian) SSO; a bare POST to eamis itself no longer suffices. No 成绩/grade endpoint in either repo.",
+  "bucket": "B"
+ },
+ {
+  "repo_name": "Fighting05/NKU-GradeTracker",
+  "stars": 3,
+  "default_branch": "main",
+  "license": null,
+  "license_source": "api.github.com/repos/Fighting05/NKU-GradeTracker (license field null); /license endpoint 404; no LICENSE file in tree",
+  "relevant_files": [
+   {
+    "path": "eamis_direct_login.py",
+    "purpose": "direct (non-WebVPN) CAS login against IAM + EAMIS; AES password encryption; csrf-token cookie handling",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "nku_grades.py",
+    "purpose": "monolithic v2 tool: WebVPN 8-step login (wengine-vpn/cookie, /input, api/v1/login), eamis home.action access, grade query 4-step chain, grade HTML detection",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "v3.0/src/core/auth.py",
+    "purpose": "WebVPN authenticator port (same endpoints as nku_grades.py login)",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "v3.0/src/core/grades.py",
+    "purpose": "grade query chain: person.action -> dataQuery.action (semesterCalendar, entityId) -> person!search.action; HTML parse of tbody id containing grid+_data; column indices",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "v3.0/src/core/semester.py",
+    "purpose": "semester list via dataQuery.action tagId=semesterBar<NN>Semester; regex semesters:{...},yearIndex + {id:NNNN,schoolYear:\"...\",name:\"...\"}; known semesterIds (4262/4284/4304/4324/4344/4364)",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "v3.0/src/utils/crypto.py",
+    "purpose": "AES-CBC encrypt_password, fixed key 8bfa9ad090fbbf87e518f1ce24a93eee iv fbfae671950f423b58d49b91ff6a22b9 (extracted from WebVPN frontend JS)",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "功能说明.md (v3.0)",
+    "purpose": "describes WebVPN 8-step login flow, requires access to webvpn.nankai.edu.cn",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "none — no studentId extraction; identifies session success by page content instead",
+  "exact_regex_or_code_snippet": "POST https://iam.nankai.edu.cn/api/v1/login?os=web body {\"login_scene\":\"feilian\",\"account_type\":\"userid\",\"account\":\"<学号>\",\"password\":\"<AES-CBC-hex>\"} headers Csrf-Token from csrf-token cookie; Grade: GET/POST /eams/teach/grade/course/person.action data {project.id:'1', semester.id:<id>}; re.search(r'semesterBar(\\d+)Semester'); POST /eams/dataQuery.action {tagId:'semesterBar<N>Semester', dataType:'semesterCalendar', value:<semesterId>, empty:'false'}; POST dataQuery {entityId:'1'}; GET /eams/teach/grade/course/person!search.action?semesterId=<id>&projectType=&_=<ts>; table = soup.find('tbody', id=lambda x: 'grid' in x and '_data' in x); WebVPN path prefix: https://webvpn.nankai.edu.cn/https/77726476706e69737468656265737421f5f64c95347e6651700388a5d6502720dc08a5/eams/... (hex = 'webvpnisthebest!' + token) with query param vpn-12-o2-eamis.nankai.edu.cn=",
+  "verdict": "POSITIVE",
+  "verdict_reason": "Live (pushed 2026-01) protocol evidence for Nankai: confirms classic_eams Struts .action shape is still current, gives exact grade endpoints + HTML table anchor (tbody id grid*_data), full IAM/CAS login incl. AES key/iv, csrf-token handling, and the WebVPN (Sangfor-style wengine) remote-access path with hex-encoded /https/<prefix>/ routing; no captcha in any flow. Contains NO timetable endpoint — only 成绩 + 学期 — so it corroborates the vendor/login layer but cannot supply the 课表 page shape.",
+  "bucket": "C"
+ },
+ {
+  "repo_name": "RYX0309/NKU-eamis",
+  "stars": 0,
+  "default_branch": "main",
+  "license": "AGPL-3.0",
+  "license_source": "api.github.com/repos/RYX0309/NKU-eamis license.spdx_id=AGPL-3.0; LICENSE blob 34523 bytes present",
+  "relevant_files": [
+   {
+    "path": "login.py",
+    "purpose": "eamis_account: AES-CBC password encrypt; IAM login POST api/v1/login?os=web; SSO redirect chain through eamis/home.action to get JSESSIONID+srv_id cookies; preload stdElectCourse pages per profileId",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "mynetwork.py",
+    "purpose": "request wrapper: full live GET sample headers for stdElectCourse!defaultPage.action (Cookie: srv_id=xxx; JSESSIONID=xxx.std6, Referer stdElectCourse.action); UA pinning",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "utils.py",
+    "purpose": "选课 endpoints: stdElectCourse!queryStdCount.action?projectId=1&semesterId=<id>, stdElectCourse!data.action?profileId=<id>, POST stdElectCourse!batchOperator.action?profileId=<id> with form {optype:'true', operator0:'<id>:true:0', lesson0:'<id>', expLessonGroup_<id>:<groupId>}; success/failure text checks ('成功'/'失败'...'</br>')",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "json_dump.py",
+    "purpose": "lesson JSON fields: no/id/name/expLessonGroups[].id (course number 0849-style, internal lesson id 6-digit)",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "lesson_json.py",
+    "purpose": "parser for JS-object response of queryStdCount (non-strict-JSON: keys unquoted, single quotes) — lessonId2Counts {sc,lc,upsc,uplc,plc,puplc,expLessonGroups{indexNo,stdCount,stdCountLimit}}",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "config.toml.example",
+    "purpose": "semesterId 4262, profileId examples 1620/1631/1690",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "README.md",
+    "purpose": "抢课 script intro; WebVPN login listed as WIP; mentions upstream wiki at lazy-forever/NKU-eamis",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "login success only: POST https://iam.nankai.edu.cn/api/v1/login?os=web returns code 0 for success (docstring sample: right {\"code\":0,...\"result\":\"success\"}, wrong {\"code\":10110001,...}); account id is the 学号 itself, no studentId scraping",
+  "exact_regex_or_code_snippet": "key='8bfa9ad090fbbf87e518f1ce24a93eee' iv='fbfae671950f423b58d49b91ff6a22b9' AES-CBC PKCS7 pad -> hex; GET https://eamis.nankai.edu.cn/eams/home.action -> follow Location to IAM (iam.nankai.edu.cn) -> POST /api/v1/login?os=web json {\"login_scene\":\"feilian\",\"account_type\":\"userid\",\"account\":username,\"password\":encrypted_hex} -> GET data.next.link -> redirect back -> eamis cookies srv_id + JSESSIONID; GET https://eamis.nankai.edu.cn/eams/stdElectCourse.action (Referer required for defaultPage); GET /eams/stdElectCourse!defaultPage.action?electionProfile.id=1690; GET /eams/stdElectCourse!data.action?profileId=<p>; GET /eams/stdElectCourse!queryStdCount.action?projectId=1&semesterId=4262; POST /eams/stdElectCourse!batchOperator.action?profileId=<p> data {optype:'true', operator0:'577482:true:0', lesson0:'577482', expLessonGroup_577482:'5644'}; cookie names srv_id, JSESSIONID suffix '.std6'; semester id 4262 = 2024-2025 term1",
+  "verdict": "POSITIVE",
+  "verdict_reason": "Live (pushed 2026-01) 选课-side evidence: complete IAM SSO login chain with AES-CBC fixed key/iv, no captcha, cookie names (srv_id, JSESSIONID.*.std6), all stdElectCourse endpoints verbatim incl. batchOperator POST params and non-strict JS-object response shape. Confirms system is still classic_eams Struts (Xxx!method.action) as of Jan 2026. NO timetable (课表) endpoint — only 选课 — and no stored HTML. AGPL-3.0: reference for protocol reading only, do not vendor code.",
+  "bucket": "C"
+ },
+ {
+  "repo_name": "Sazzzzzz/SchedulEase",
+  "stars": 4,
+  "default_branch": "main",
+  "license": "Unlicense",
+  "license_source": "LICENSE file (public-domain text) + GitHub API license.spdx_id=Unlicense",
+  "relevant_files": [
+   {
+    "path": "eamis/service.py",
+    "purpose": "live EAMIS client: login via IAM API, profile scraping, course data, election POST — all endpoint constants verbatim",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "reference/eamis_api.ipynb",
+    "purpose": "full reverse-engineering notes: redirect chain, csrf-token cookie, CryptoJS password encryption JS source, course JSON schema with weekState/arrangeInfo, election response HTML",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "common/config.py",
+    "purpose": "encrypt() — Python port of the site's CryptoJS AES-CBC password scheme",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "reference/bisect_test.py",
+    "purpose": "requests-based login replay; session expiry bisect result = 30 min",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "tests/test_data.json",
+    "purpose": "real captured 2025 summer-term NKU course records (id/name/code/teachers/campusName/arrangeInfo weekDay+startUnit+endUnit+rooms)",
+    "lines_with_protocol": true
+   }
+  ],
+  "studentId_extraction_approach": "account = user ID (e.g. 2911311) submitted as JSON 'account' field to IAM login; no scraping of student id from HTML",
+  "exact_regex_or_code_snippet": "LOGIN_API = LOGIN_URL.join(\"/api/v1/login?os=web\") ... json={\"login_scene\": \"feilian\", \"account_type\": \"userid\", \"account\": self.account, \"password\": self.encrypted_password} with header \"Csrf-Token\": self.client.cookies.get(\"csrf-token\", \"\"); password crypt = AES-CBC(key=MD5(\"9007199254740991\").hexdigest(), iv=SHA1(key)[:16] as utf8 bytes, PKCS7 pad, hex out)",
+  "verdict": "POSITIVE",
+  "verdict_reason": "Complete live protocol pushed 2026-09: auth is NOT the classic eams login.action form — it is SSO at https://iam.nankai.edu.cn/api/v1/login?os=web (JSON POST, csrf-token cookie/header, login_scene=feilian), reached by 4 redirects from https://eamis.nankai.edu.cn/eams/homeExt.action; back-end is Struts classic_eams (stdElectCourse.action, stdElectCourse!data.action, stdElectCourse!batchOperator.action etc); session JSESSIONID, ~30min usable expiry, rate limit needs >=0.4s between requests. Course data endpoint returns JS assignment of HJSON, arrangeInfo carries weekDay/startUnit/endUnit/rooms/weekState — exactly the timetable grid fields Sleepy needs. Note: repo only exercises the election pages; it does NOT document a 课表/成绩 page URL (e.g. no myCourseTable action captured).",
+  "bucket": "D"
+ },
+ {
+  "repo_name": "LoveGump/Nankai-Scripts",
+  "stars": 1,
+  "default_branch": "main",
+  "license": "none (no LICENSE file; GitHub API license=null)",
+  "license_source": "repo file listing + GitHub API",
+  "relevant_files": [
+   {
+    "path": "选课工具/select-course.mjs",
+    "purpose": "Playwright DOM automation against eamis.nankai.edu.cn, 2026-10-21 — proof system shape is current; URLs + table/button selectors verbatim",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "互评脚本/peer-assessment.user.js",
+    "purpose": "userscript for a different Nankai system fuxue.nankai.edu.cn/student/otherstu/* (慕课互评) — second domain, unrelated to EAMIS",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "manual login by the user in a real Chrome window (统一身份认证 SSO page); script detects login by hostname === 'eamis.nankai.edu.cn' — never touches credentials",
+  "exact_regex_or_code_snippet": "indexUrl: 'https://eamis.nankai.edu.cn/eams/stdElectCourse!innerIndex.action?projectId=1', electionUrl: 'https://eamis.nankai.edu.cn/eams/stdElectCourse!defaultPage.action?electionProfile.id=2079'; row matching a[href*=\"lesson.id=...\"] inside tr, buttons /^选课|选择|选中$/; rate-limit texts /请不要点击过快|操作过于频繁|请求过于频繁/, fatal /请求参数非法|参数非法/",
+  "verdict": "POSITIVE",
+  "verdict_reason": "Most recent evidence (pushed 2026-10-21) that eamis.nankai.edu.cn with Struts !action URLs is still the live system: user confirms 统一身份认证 (IAM SSO) login lands on eamis hostname, course list renders as tr rows with lesson.id links and courseNo first column, election is a click+confirm-dialog flow. Corroborates SchedulEase endpoints (innerIndex.action is a new one). DOM-shape evidence for the election table; no 课表/成绩 page here either.",
+  "bucket": "D"
+ },
+ {
+  "repo_name": "SunriseFox/FuckNKUCourses",
+  "stars": 6,
+  "default_branch": "master",
+  "license": "none / anti-license ('YOU ARE NOT ALLOWED TO DISTRIBUTE IT, MODIFY IT OR EVEN USE IT' in README and proxy.js header)",
+  "license_source": "README.md + proxy.js header comment",
+  "relevant_files": [
+   {
+    "path": "proxy.js",
+    "purpose": "2018 MITM HTTP proxy replaying election POSTs; documents login session mechanics of the era",
+    "lines_with_protocol": true
+   }
+  ],
+  "studentId_extraction_approach": "captures the browser's own POST to /eams/login.action (form login_req saved for replay) — credentials flow through the legacy in-app login form, pre-IAM architecture",
+  "exact_regex_or_code_snippet": "if(req.url.indexOf('eams/stdElectCourse!batchOperator.action?') !== -1) ... else if(req.url.indexOf('/eams/login.action') !== -1){ login_req = req; } and redirect-to-login detection: proxy_res.headers['Location'].indexOf('eamis.nankai.edu.cn/eams/login.action')",
+  "verdict": "INDIRECT",
+  "verdict_reason": "2018 vintage: confirms same Struts backend (stdElectCourse!batchOperator.action, stdElectCourse!data.action, lesson0 param, 成功/冲突/已经选过 response strings, JSESSION-style session via login.action) but login was then the plain /eams/login.action form; current flow is IAM SSO + csrf-token + encrypted password, so its login architecture is obsolete. Useful only as corroboration that the eams course endpoints have been stable since 2018. Anti-license — cite/attribution required but no reuse.",
+  "bucket": "D"
+ },
+ {
+  "repo_name": "LetsStudyTogether/OneClickEvaluate",
+  "stars": 13,
+  "default_branch": "master",
+  "license": "none",
+  "license_source": "no LICENSE file in repo listing",
+  "relevant_files": [
+   {
+    "path": "click.js",
+    "purpose": "console user-script: one-click course evaluation; shows evaluate link href pattern, score radio onclick values, form name, save endpoint, bg.Go form submit into contentDiv",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "README.md",
+    "purpose": "confirms url https://eamis.nankai.edu.cn/ and logged-in-portal workflow (semester set manually on page before run)",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "none - runs inside logged-in browser session, relies on session cookies (JSESSIONID implicit), never handles credentials",
+  "exact_regex_or_code_snippet": "var form = document.courseEvaluateEditForm; bg.form.submit(form, \"/eams/quality/course/evaluate/lesson-evaluate!saveCourseEvaluate.action\", \"contentDiv\");",
+  "verdict": "POSITIVE",
+  "verdict_reason": "Real endpoint (lesson-evaluate!saveCourseEvaluate.action) plus DOM contract of eval pages: Struts action!method.action URLs, bg.Go bg.form.submit into 'contentDiv', jQuery selectors input[value^='评教'], td[val=4083]/td[index=20] semester grid, a[href*='eva'] menu link. Corroborates classic_eams/Zhengfang Struts shape; no timetable (course table) endpoint here.",
+  "bucket": "E"
+ },
+ {
+  "repo_name": "LetsStudyTogether/NKU_eamis_semester_grade",
+  "stars": null,
+  "default_branch": "master",
+  "license": "none",
+  "license_source": "no LICENSE file in repo listing",
+  "relevant_files": [
+   {
+    "path": "grade.js",
+    "purpose": "console scraper of all-semester grade table: menu path, tab selector, tbody tr/td column layout (col1 学期, col5 课程性质, col6 学分, col8 成绩)",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "README.md",
+    "purpose": "confirms EAMIS platform + works from any eamis page via jQuery",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "none - DOM scrape inside logged-in browser page, no auth handling",
+  "exact_regex_or_code_snippet": "document.querySelector(\"tbody[id*='data'] > tr:nth-child(\" + line + \") > td:nth-child(8)\").textContent.trim()  // with: document.querySelector(\"#menu_panel > ul > li.expand > ul > div > li:nth-child(10) > a\").click(); $(\"div[title='所有学期成绩']\").click()",
+  "verdict": "POSITIVE",
+  "verdict_reason": "Verbatim DOM shape of the grade page: data injected in tbody with id containing 'data', menu_panel sidebar with li.expand submenu, tab element div[title='所有学期成绩']. Confirms AJAX pagelets inside portal shell (matches our /eams/home.action capture). No timetable endpoint, no credentials.",
+  "bucket": "E"
+ },
+ {
+  "repo_name": "a4001234567/NKU_Project",
+  "stars": null,
+  "default_branch": "main",
+  "license": "none",
+  "license_source": "no LICENSE file in repo listing",
+  "relevant_files": [
+   {
+    "path": "login_standalone.py",
+    "purpose": "full self-contained auth: EAMIS->SSO redirect chain, SSO login POST params (lt/rand/MD5+RSA password), new IAM 飞连 login POST with fixed AES key/iv + csrf-token cookie",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "auto_select.py",
+    "purpose": "course selection endpoints and POST body format (stdElectCourse!batchOperator/data/defaultPage with profileId)",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "login.py",
+    "purpose": "login routed through third-party relay http://82.157.171.33/cgi-bin/login_new (RSA+AES envelope) - do NOT reuse; shows same EAMIS redirect chain",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "useragents",
+    "purpose": "UA pool for session headers (UA sensitivity hint)",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "username == 学号 (account.ID posted directly as 'username' to /sso/login; password MD5-hashed and also RSA-encrypted as field 't'); session held by cookies incl. MYSELF_SESSION at SSO, JSESSIONID at eamis",
+  "exact_regex_or_code_snippet": "data = dict(ajax=1, username=account.ID, password=hexmd5(bytes(account.PASSWORD,'utf-8')), lt=lt, rand=rand, t=t, roleType='', service=service_name, loginType=0); response = login_session.post(ssourl+\"/sso/login\",data=data)   # with lt_finder = re.compile(r\"var _lt = \\\"(\\d+)\\\";\") and POST /sso/loadcode returning {'rand':...}",
+  "verdict": "POSITIVE",
+  "verdict_reason": "Only repo with real machine credentials flow: eamis home.action -> 302 Location chain -> sso.nankai.edu.cn/sso/login?service=... (GET page extracts var _lt, POST /sso/loadcode for rand, POST /sso/login ajax=1 form). Also newer IAM path iam.nankai.edu.cn /api/v1/login?os=web (login_scene=feilian, AES-CBC hex password, csrf-token header/cookie). Elective endpoints stdElectCourse!batchOperator.action?profileId=N with operator0={cID}:true:0. Strongly matches classic_eams/Zhengfang Struts signature (action!method.action). Caveat: no 课表/timetable query endpoint in this bucket; no captcha image flow observed (loadcode returns rand token only, for this 2022-2025 era code).",
+  "bucket": "E"
+ },
+ {
+  "repo_name": "StevenSai/Nku-Score-By-Steven",
+  "stars": 2,
+  "default_branch": "master",
+  "license": "Apache-2.0",
+  "license_source": "GitHub API license.spdx_id",
+  "relevant_files": [
+   {
+    "path": "app/src/main/java/com/Steven/NkuScore/WebLogger.java",
+    "purpose": "HTTP login + score fetch + GPA regex parsing of old Nankai Zhengfang JW (IP 222.30.49.10)",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "app/src/main/java/com/Steven/NkuScore/MainActivity.java",
+    "purpose": "WebView login UI; password piped through javascript:StevenSecurity()",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "Regex on HTML text of /xsxk/studiedAction.do response",
+  "exact_regex_or_code_snippet": "HttpGet(\"http://222.30.49.10/ValidateCode\") for captcha+Set-Cookie; POST \"http://222.30.49.10/stdloginAction.do\" fields usercode_text,userpwd_text,checkcode_text,operation,submittype(GBK \"确 认\"); score: GET /xsxk/scoreAlarmAction.do, GET /xsxk/studiedAction.do, paginate GET /xsxk/studiedPageAction.do?page=next; Pattern.compile(\"学号：\\\\d+\"); Pattern.compile(\"(<tr bgcolor=\\\"#FFFFFF\\\">(( *\\t\\t.*?)+?) *\\t</tr>)\"); Pattern.compile(\"<td align=\\\"center\\\" class=\\\"NavText\\\">[A-C]\\\\s.*?\"); teacher eval /evaluate/stdevatea/queryCourseAction.do",
+  "verdict": "POSITIVE",
+  "verdict_reason": "Full login+score protocol of the OLD Nankai 正方 integrated academic-affairs system (Struts .do, NavText tables, GBK form) at bare IP 222.30.49.10, but 2017-vintage: predates today's eamis.nankai.edu.cn EAMIS; historical/vendor evidence only, no timetable endpoint.",
+  "bucket": "F"
+ },
+ {
+  "repo_name": "sunshineclt/NKU-Helper",
+  "stars": 15,
+  "default_branch": "master",
+  "license": "GPL-3.0",
+  "license_source": "GitHub API license.spdx_id",
+  "relevant_files": [
+   {
+    "path": "NKU Helper/Network/NKNetworkCourseHandler.swift",
+    "purpose": "TIMETABLE (课表) fetch: selectedAction.do?operation=kebiao + per-slot selectedAllAction.do + regex td parsing",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "NKU Helper/Network/登陆/NKNetworkLoginHandler.swift",
+    "purpose": "RSA-encrypted login POST stdloginAction.do, error strings 用户不存在或密码错误/请输入正确的验证码",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "NKU Helper/Network/功能/查成绩/NKNetworkGradeHandler.swift",
+    "purpose": "score via /xsxk/studiedAction.do, NavText td regex",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "NKU Helper/Network/NKNetworkUserInfoHandler.swift",
+    "purpose": "profile via /studymanager/stdbaseinfo/queryAction.do (GB2312 decode)",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "NKU Helper/设置/AccountInfo/RSA.html",
+    "purpose": "ohdave RSA JS (2010 Fuchun patch) used to encrypt userpwd_text — Zhengfang signature",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "NKU Helper/Network/NKNetworkBase.swift",
+    "purpose": "app's own backend base https://pikkacho.cn/api/v1/ (proxy), not school protocol",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "userID entered by user; server echoes 学号 in HTML; parsed positionally from td class=NavText/DetailMsg",
+  "exact_regex_or_code_snippet": "GET \"http://222.30.49.10/xsxk/selectedAction.do?operation=kebiao\"; NSRegularExpression(\"<td[^<>]*?height=\\\"(\\\\d*?)\\\"[^<>]*?>\\\\s*?.*?(coursearrangeseq=.*?&&classroomincode=.*?&&week=.*?&&begphase=.*?&&ifkebiao=yes)\"); detail GET \"http://222.30.49.10/xsxk/selectedAllAction.do?\" + matched query; paginate GET /xsxk/selectedPageAction.do?page=next; login POST body \"operation=&usercode_text=%@&userpwd_text=%@&checkcode_text=%@&submittype=%C8%%B7+%%C8%%CF\"; captcha GET /ValidateCode",
+  "verdict": "POSITIVE",
+  "verdict_reason": "Strongest of bucket: real 课表 endpoint (selectedAction.do?operation=kebiao with coursearrangeseq/classroomincode/week/begphase link-params), login incl. RSA password, score, profile — all against old Zhengfang JW 222.30.49.10 (2017). Historical-only vs current eamis.nankai.edu.cn, but confirms vendor = 正方 and gives timetable HTML shape (height attr td grid, ifkebiao=yes).",
+  "bucket": "F"
+ },
+ {
+  "repo_name": "Everything-in-NKU/NKU-CourseHelper",
+  "stars": 0,
+  "default_branch": "master",
+  "license": null,
+  "license_source": "GitHub API license=None (no LICENSE file)",
+  "relevant_files": [
+   {
+    "path": "manifest.json",
+    "purpose": "content-script matches http://222.30.32.10/* — the Nankai 选课 host (different IP from 49.10)",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "js/content_script.js",
+    "purpose": "DOM evidence: leftFrame/mainFrame frameset, pathname /xsxk/studiedAction.do, /xsxk/studiedPageAction.do, /xsxk/selectMianInitAction.do, /xsxk/swichAction.do; getElementsByClassName(\"NavText\") 8-cells-per-row score table; README: login failure caused by malformed HTML tag attr on login page",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "js/selectMianInitAction.js",
+    "purpose": "fixes 选课 page next/prev paging by form resubmit (input[0]=operation, input[1]=index)",
+    "lines_with_protocol": true
+   }
+  ],
+  "studentId_extraction_approach": "none (DOM userscript; reads 学分绩 from NavText cells, greets 欢迎 name from page)",
+  "exact_regex_or_code_snippet": "no regex; selectors: mf.getElementsByClassName(\"NavText style1\")[8]/[10], array[8*i+3].innerHTML.indexOf(\"A\")..(\"E\"); pages: /xsxk/studiedAction.do, /xsxk/selectMianInitAction.do, /xsxk/swichAction.do",
+  "verdict": "POSITIVE",
+  "verdict_reason": "Browser-side DOM/URL evidence of the same 正方-era system on 222.30.32.10 (2016): frameset layout, .do pathnames, NavText score-table shape. Historical-only; no EAMIS.",
+  "bucket": "F"
+ },
+ {
+  "repo_name": "Ching-Yee-Chan/NKUCH",
+  "stars": 0,
+  "default_branch": "master",
+  "license": null,
+  "license_source": "GitHub API license=None",
+  "relevant_files": [
+   {
+    "path": "NKUCH/course.txt",
+    "purpose": "offline dump of 选课手册 course catalog (~3.3MB, JS-object-like name fields)",
+    "lines_with_protocol": false
+   },
+   {
+    "path": "NKUCH/detail.txt",
+    "purpose": "15.8MB dump of course-detail HTML snapshots: class=\"Table cke_show_border\", MsoTableGrid, Word-pasted 课程简介 markup; 考核方式/成绩记录方式/平时成绩(30%) layout",
+    "lines_with_protocol": false
+   },
+   {
+    "path": "NKUCH/search.cpp etc.",
+    "purpose": "Qt GUI reading bundled txt only — zero network code (grep http in *.cpp/*.h empty)",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "none — fully offline catalog browser",
+  "exact_regex_or_code_snippet": "n/a (no live requests; static snapshot of old 正方 选课手册 pages)",
+  "verdict": "INDIRECT",
+  "verdict_reason": "No protocol at all; only HTML fixtures captured from the old course-handbook site. Value: shape of 课程详情 tables + 树莓 verbatim check. 树莓 hits are course content only — 名称:'树莓派Python开发' (course.txt:77527,132747) and a 微机原理 course blurb '树莓派基金会树莓派系列微型计算机系统' (detail.txt:117836) — NOT any 'raspberry' academic-affairs system.",
+  "bucket": "F"
+ },
+ {
+  "repo_name": "jxy18100/nku-",
+  "stars": 0,
+  "default_branch": "main",
+  "license": "MIT (README only; GitHub API license field null)",
+  "license_source": "README.md line 71",
+  "relevant_files": [
+   {
+    "path": "nk-course-schedule/scrape_now.py",
+    "purpose": "Live Selenium scraper, 2026-05, real login form ids + timetable endpoints",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "nk-course-schedule/nk_course_scraper.py",
+    "purpose": "Scraper v1: guesses courseTableForStudent.action (stale/wrong), console-extract fallback",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "nk-course-schedule/nk-courses.json",
+    "purpose": "Real 2026-spring student timetable export (day 1-7, startPeriod/endPeriod 1-12, weeks 1-16, teacher/location)",
+    "lines_with_protocol": false
+   },
+   {
+    "path": "nk-course-schedule/README.md",
+    "purpose": "2026 spring calendar: week1 = 2026-02-23, 20 teaching weeks",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "Login via unified-auth page fields password_account_input / password_password_input (student-number account), then GET /eams/courseTableForStd!courseTable.action?semester.id=4384 with same-origin cookies",
+  "exact_regex_or_code_snippet": "driver.find_element(By.ID,'password_account_input'); driver.find_element(By.ID,'password_password_input'); fetch('/eams/courseTableForStd!courseTable.action?semester.id=4384', {credentials:'same-origin'})",
+  "verdict": "POSITIVE",
+  "verdict_reason": "2026-05 evidence that eamis.nankai.edu.cn still serves classic Struts /eams/courseTableForStd!courseTable.action (with !!method syntax, URP-style) and real login DOM ids; semester.id=4384 observed spring-2026. No 树莓教务 mention anywhere — claim not supported by this repo's working endpoints.",
+  "bucket": "G"
+ },
+ {
+  "repo_name": "john8654john/nankai-schedule",
+  "stars": 0,
+  "default_branch": "main",
+  "license": null,
+  "license_source": "GitHub API null, no LICENSE file",
+  "relevant_files": [],
+  "studentId_extraction_approach": "none",
+  "exact_regex_or_code_snippet": "",
+  "verdict": "NEGATIVE",
+  "verdict_reason": "Name collision: 'nankai' = 南海/Nankai Railway (Japan). index.html title 機場電車時刻表 (airport train timetable), schedule_data.json keys kix-namba-wd etc. (Kansai airport line). Zero relation to Nankai University 南开大学 or eamis. Rejected as candidate.",
+  "bucket": "G"
+ },
+ {
+  "repo_name": "xiong-ZH-zq/NKU-Lecture-Helper",
+  "stars": 0,
+  "default_branch": "main",
+  "license": null,
+  "license_source": "GitHub API license=None",
+  "relevant_files": [],
+  "studentId_extraction_approach": "n/a",
+  "exact_regex_or_code_snippet": "n/a",
+  "verdict": "NULL_EVIDENCE",
+  "verdict_reason": "Repository is EMPTY: clone has no commits ('main does not have any commits yet'), GitHub contents API returns 404 'This repository is empty.' — README description (选课手册 PDF 生成表格) has no code behind it.",
+  "bucket": "F"
+ },
+ {
+  "repo_name": "qiqqqqq517/shangkeschedule",
+  "stars": 31,
+  "default_branch": "main",
+  "license": "Apache-2.0",
+  "license_source": "GitHub API license.spdx_id",
+  "relevant_files": [
+   {
+    "path": "shared/assets/offline_repo/schools/timetable_schools.json",
+    "purpose": "catalog entry (3 Nankai records: nankai, nankai_yjs, u_58efc231)",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "shared/assets/offline_repo/schools/resources/qiangzhi/",
+    "purpose": "undergraduate qiangzhi adapter folder"
+   },
+   {
+    "path": "shared/assets/offline_repo/schools/resources/NANKAI_YJS/nankai_yjs.js",
+    "purpose": "graduate (allogene platform) timetable scraping adapter, real-account tested per CHANGELOG v3.68.0",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "shared/src/commonMain/kotlin/com/shangkeschedule/ui/schoolselection/list/SchoolListEntry.kt",
+    "purpose": "code comment: Nankai undergrad=folder qiangzhi/, grad=folder NANKAI_YJS/, two catalog records must be kept",
+    "lines_with_protocol": false
+   },
+   {
+    "path": "CHANGELOG.md",
+    "purpose": "v3.68.0 (2026-09-24) entry describing Nankai graduate allogene adapter incl. WebVPN dual entry",
+    "lines_with_protocol": true
+   }
+  ],
+  "studentId_extraction_approach": "Undergrad: type=qiangzhi (强智), http://eamis.nankai.edu.cn/. Graduate: separate record type=allogene, https://yjs.nankai.edu.cn/py/page/student/grkcb.htm with dedicated DOM-scraper. Binhai College (merged-back school): type=zhengfang_new via ehall.nankai.edu.cn/jwglxt. Vendored lineage: identical to baoozak/timetable catalog plus the two Nankai-specific additions.",
+  "exact_regex_or_code_snippet": "{\n  \"id\": \"nankai\",\n  \"name\": \"南开大学\",\n  \"type\": \"qiangzhi\",\n  \"url\": \"http://eamis.nankai.edu.cn/\"\n}\n{\n  \"id\": \"nankai_yjs\",\n  \"name\": \"南开大学 - 研究生\",\n  \"type\": \"allogene\",\n  \"url\": \"https://yjs.nankai.edu.cn/py/page/student/grkcb.htm\"\n}\n{\n  \"id\": \"u_58efc231\",\n  \"name\": \"南开大学滨海学院\",\n  \"type\": \"zhengfang_new\",\n  \"url\": \"https://ehall.nankai.edu.cn/jwglxt/xtgl/login_slogin.html\"\n}",
+  "verdict": "POSITIVE",
+  "verdict_reason": "Catalog assigns 强智 (qiangzhi) to Nankai undergrad at the same eamis URL we use, plus a fully implemented, real-account-tested graduate adapter (allogene, yjs.nankai.edu.cn, WebVPN dual path). Strongest independent vendor classification in this bucket — two-layer (undergrad qiangzhi + grad allogene) and recent (v3.68.0 2026-09-24, repo pushed 2026-10-26).",
+  "bucket": "H"
+ },
+ {
+  "repo_name": "augustlies/tangli",
+  "stars": 1,
+  "default_branch": "main",
+  "license": "GPL-3.0",
+  "license_source": "GitHub API license.spdx_id",
+  "relevant_files": [
+   {
+    "path": "app/src/main/assets/school-directory.json",
+    "purpose": "catalog entry",
+    "lines_with_protocol": true
+   }
+  ],
+  "studentId_extraction_approach": "南开大学 = type qiangzhi, http://eamis.nankai.edu.cn/ (array row [\"南开大学\",\"qiangzhi\",\"http://eamis.nankai.edu.cn/\"]). File self-declares source: vendored copy of baoozak/timetable utils/schools.json (MIT), note says entries not individually verified.",
+  "exact_regex_or_code_snippet": "[\"南开大学\", \"qiangzhi\", \"http://eamis.nankai.edu.cn/\"]",
+  "verdict": "POSITIVE",
+  "verdict_reason": "Gives usable vendor classification (qiangzhi + same eamis URL), but independent weight is low: the catalog explicitly states it is a copied, unverified snapshot of baoozak/timetable.",
+  "bucket": "H"
+ },
+ {
+  "repo_name": "baoozak/timetable",
+  "stars": 64,
+  "default_branch": "main",
+  "license": "MIT",
+  "license_source": "GitHub API license.spdx_id",
+  "relevant_files": [
+   {
+    "path": "utils/schools.json",
+    "purpose": "catalog entry — this file is the upstream source that tangli and shuakami vendored",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "utils/parsers/qiangzhi.js",
+    "purpose": "强智教务系统 parser: DOM scrape of #kbtable / .timetable / any table containing 星期, cells with .kbcontent",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "utils/parsers/qiangzhi_old.js",
+    "purpose": "legacy 强智 variant"
+   }
+  ],
+  "studentId_extraction_approach": "南开大学 = type qiangzhi (强智), http://eamis.nankai.edu.cn/. qiangzhi parser scrapes the classic 强智 timetable DOM (kbtable / .kbcontent), i.e. expects the old 强智 URP-style page, not jwglxt JSON endpoints.",
+  "exact_regex_or_code_snippet": "{\"id\": \"nankai\", \"name\": \"南开大学\", \"type\": \"qiangzhi\", \"url\": \"http://eamis.nankai.edu.cn/\"}",
+  "verdict": "POSITIVE",
+  "verdict_reason": "Canonical upstream catalog (64 stars, MIT) plus an actual qiangzhi DOM parser; the vendor call '强智' for eamis.nankai.edu.cn originates here and propagates to tangli/shuakami/shangkeschedule-lineage entries.",
+  "bucket": "H"
+ },
+ {
+  "repo_name": "shuakami/timetable",
+  "stars": 17,
+  "default_branch": "main",
+  "license": "GPL-3.0",
+  "license_source": "GitHub API license.spdx_id",
+  "relevant_files": [
+   {
+    "path": "src/domain/edu/schools.json",
+    "purpose": "catalog entry (flat array-of-arrays schema, same row order/values as baoozak lineage)",
+    "lines_with_protocol": true
+   }
+  ],
+  "studentId_extraction_approach": "南开大学 = type qiangzhi, http://eamis.nankai.edu.cn/ — byte-identical row to the baoozak catalog lineage.",
+  "exact_regex_or_code_snippet": "[\"南开大学\",\"qiangzhi\",\"http://eamis.nankai.edu.cn/\"]",
+  "verdict": "POSITIVE",
+  "verdict_reason": "Usable vendor classification (qiangzhi + eamis URL), but a vendored member of the same baoozak catalog family, so it corroborates rather than independently confirms.",
+  "bucket": "H"
+ },
+ {
+  "repo_name": "LonelyMarch/OpenWakeUp",
+  "stars": 7,
+  "default_branch": "master",
+  "license": "AGPL-3.0",
+  "license_source": "GitHub API license.spdx_id (controller spot-check via contents API of app/src/main/assets/schools.json)",
+  "relevant_files": [
+   {
+    "path": "app/src/main/assets/schools.json",
+    "purpose": "competitor catalog: 南开大学 registered type=shuwei_json url=https://eamis.nankai.edu.cn/; 南开大学滨海学院 type=shuwei_json url=http://bhjw.nankai.edu.cn/eams/loginExt.action",
+    "lines_with_protocol": true
+   }
+  ],
+  "studentId_extraction_approach": "n/a (catalog-level evidence only; parser internals not read by controller — bucket agent may add)",
+  "exact_regex_or_code_snippet": "{\"name\": \"南开大学\", \"sortKey\": \"N\", \"type\": \"shuwei_json\", \"url\": \"https://eamis.nankai.edu.cn/\"}",
+  "verdict": "POSITIVE",
+  "verdict_reason": "Independent competitor catalog registers 南开本科 at eamis.nankai.edu.cn (https) and 滨海学院 at bhjw.nankai.edu.cn/eams/loginExt.action — the loginExt.action endpoint is the classic_eams family entry shape, corroborating the EAMIS Struts deployment and the dual-campus split (bhjw = Binhai, separate host).",
+  "bucket": "H2"
+ },
+ {
+  "repo_name": "Aetik-yue/hormone",
+  "stars": 4,
+  "default_branch": "develop",
+  "license": "none",
+  "license_source": "GitHub API returns license=none; none field",
+  "relevant_files": [
+   {
+    "path": "lib/features/import/data/school_adapter.dart",
+    "purpose": "hardcoded school adapter registry, Nankai at lines 160-163",
+    "lines_with_protocol": true
+   }
+  ],
+  "studentId_extraction_approach": "南开大学 = ConfiguredSchoolAdapter(loginUrl 'http://eamis.nankai.edu.cn/', system AcademicSystemType.qiangzhi); slug map '南开大学' -> 'nankaidaxue' (line 357).",
+  "exact_regex_or_code_snippet": "const ConfiguredSchoolAdapter(\n    schoolName: '南开大学',\n    loginUrl: 'http://eamis.nankai.edu.cn/',\n    system: AcademicSystemType.qiangzhi,\n  ),",
+  "verdict": "POSITIVE",
+  "verdict_reason": "Independent Dart implementation (different lineage than the baoozak catalog family — its row set diverges, e.g. Nanjing U is kingosoft/jw.nju.edu.cn here vs wisedu/ehall in the baoozak lineage) still lands on qiangzhi + http eamis URL. Adds cross-lineage corroboration for the 强智 assignment.",
+  "bucket": "H"
+ },
+ {
+  "repo_name": "KeenTeam1990/HutHelper",
+  "stars": 3,
+  "default_branch": "master",
+  "license": "LGPL-2.1",
+  "license_source": "GitHub API license=null (no LICENSE detected) (backfilled from Step 2 inventory)",
+  "relevant_files": [
+   {
+    "path": "JSON/schools.json",
+    "purpose": "competitor catalog (iOS, dead ~2017): 南开大学 cmsURL=http://eamis.nankai.edu.cn/ cmsSys=custom, libURL=http://222.30.49.141/ libSys=njhuiwen",
+    "lines_with_protocol": true
+   }
+  ],
+  "studentId_extraction_approach": "n/a (catalog-level evidence only)",
+  "exact_regex_or_code_snippet": "{\"name\": \"南开大学\", \"cmsURL\": \"http://eamis.nankai.edu.cn/\", \"cmsSys\": \"custom\", \"libURL\": \"http://222.30.49.141/\", \"libSys\": \"njhuiwen\"}",
+  "verdict": "INDIRECT",
+  "verdict_reason": "2017-era iOS app catalog lists 南开 教务 as cmsSys=custom at eamis.nankai.edu.cn (http) plus 图书馆 at bare IP 222.30.49.x (same IP neighborhood as the old 正方 49.10/49.14 hosts) — corroborates the EAMIS domain's age (custom = per-school adapter, no protocol detail). No login/timetable protocol content; value is catalog lineage only.",
+  "bucket": "H2"
+ },
+ {
+  "repo_name": "Fun-James/NKU-SearchEngine",
+  "stars": 0,
+  "default_branch": "main",
+  "license": null,
+  "license_source": "gh api",
+  "relevant_files": [
+   {
+    "path": "app/data/snapshots/b40232adb9b34426701be5096c2a5c4c.html",
+    "purpose": "archived 南开大学滨海学院教务部 page linking http://bhjw.nankai.edu.cn/eams/loginExt.action (eams login endpoint of Binhai campus instance)",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "app/data/snapshots/4c798dfca02b1415d056281cb64f95e3.html",
+    "purpose": "archived 校历 page with nav anchor <a href=\"https://eamis.nankai.edu.cn\" title=\"教学管理信息系统\">",
+    "lines_with_protocol": false
+   },
+   {
+    "path": "app/crawler/spider.py",
+    "purpose": "crawler seed is only https://www.nankai.edu.cn/",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "none",
+  "exact_regex_or_code_snippet": "<a href=\"http://bhjw.nankai.edu.cn/eams/loginExt.action\" rel=\"noopener noreferrer\" target=\"_blank\">; <a href=\"https://eamis.nankai.edu.cn\" title=\"选课系统\" class=\"\" target=\"_self\">选课系统</a>",
+  "verdict": "INDIRECT",
+  "verdict_reason": "10k archived snapshots of PUBLIC nankai sites (seed www.nankai.edu.cn, depth 2). 121 snapshots carry bare links to https://eamis.nankai.edu.cn labeled 教学管理信息系统/选课系统; one deep link to /eams/loginExt.action (Binhai instance, public page only — never crawled eamis itself). Confirms system naming and the eams action-style URL family. Fixtures copied to /tmp/nankai-search/fixtures/funjames-*.",
+  "bucket": "I"
+ },
+ {
+  "repo_name": "wusir96/Nk-University-Search-System",
+  "stars": 0,
+  "default_branch": "main",
+  "license": null,
+  "license_source": "gh api",
+  "relevant_files": [
+   {
+    "path": "Spider/download_links_2025_05_29_07_45_08/pages/page_231.json",
+    "purpose": "unauthenticated crawler hit on eamis root: 148-byte stub, no title, zero links",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "Spider/download_links_2025_05_29_07_45_08/crawler.log",
+    "purpose": "log line 329: Fetching: https://eamis.nankai.edu.cn/ 2025-05-29 07:49:26",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "none",
+  "exact_regex_or_code_snippet": "{\"id\": 231, \"url\": \"https://eamis.nankai.edu.cn/\", \"title\": \"No Title\", \"content_length\": 148, \"links_found\": 0, \"documents_found\": 0, \"crawl_time\": \"2025-05-29T07:49:27.052982\"}",
+  "verdict": "POSITIVE",
+  "verdict_reason": "Independent 2025-05 crawl evidence that eamis.nankai.edu.cn root returns only a 148-byte stub page to unauthenticated requests (no title, no links) — directly corroborates issue #236's logged-in-but-blank symptom shape: any fetch lacking the SSO/session chain sees an effectively empty document.",
+  "bucket": "I"
+ },
+ {
+  "repo_name": "Lllsir0202/IR",
+  "stars": 1,
+  "default_branch": "main",
+  "license": null,
+  "license_source": "gh api",
+  "relevant_files": [
+   {
+    "path": "test/00bb10d5-3fb6-4871-8d49-b4a756c79ac3.pdf.json",
+    "purpose": "extracted text of official 南开大学2022年暑期学校本科生选课通知 (教务处) — names eamis URL, credential semantics, campus-network/VPN requirement",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "none (official notice text only)",
+  "exact_regex_or_code_snippet": "选课全部采用网络选课方式，网址：http://eamis.nankai.edu.cn，账号密码与南开大学信息门户账号密码相同。为保证选课顺利，请连接校园网或登录VPN进行选课。",
+  "verdict": "INDIRECT",
+  "verdict_reason": "Information-retrieval homework indexing crawled nankai documents; one embedded official notice states eamis credentials equal the 信息门户 (unified identity) account and that off-campus users MUST connect via campus network or VPN. Fixture copied to /tmp/nankai-search/fixtures/lllsir0202-2022-summer-course-selection-notice.pdf.json.",
+  "bucket": "I"
+ },
+ {
+  "repo_name": "ZSH0608/NKU_CS_homework_materials",
+  "stars": 0,
+  "default_branch": "main",
+  "license": null,
+  "license_source": "gh api (full clone abandoned at 400MB/47k files; evidence via gh api tree + code search + raw contents)",
+  "relevant_files": [
+   {
+    "path": "信息检索/2413157_张书晗_hw4/代码/config/seeds.yaml",
+    "purpose": "crawler seeds: jwc.nankai.edu.cn, news, www — eamis never seeded or crawled",
+    "lines_with_protocol": false
+   },
+   {
+    "path": "信息检索/2413157_张书晗_hw4/代码/data/snapshots/bb3f8f1cc143c6a8.html",
+    "purpose": "one public news page containing a single external href https://eamis.nankai.edu.cn",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "none",
+  "exact_regex_or_code_snippet": "",
+  "verdict": "NULL_EVIDENCE",
+  "verdict_reason": "Scrapy whole-site crawler over public nankai domains only; repo-wide code search finds eamis exclusively as one dead-link href inside a 智能基座 notice snapshot. No eams endpoints, no auth code. Fixture copied to /tmp/nankai-search/fixtures/zsh0608-hw4-bb3f8f1c-eamis-anchor.html for completeness.",
+  "bucket": "I"
+ },
+ {
+  "repo_name": "XmShrine/trick_1",
+  "stars": 0,
+  "default_branch": "main",
+  "license": null,
+  "license_source": "gh api",
+  "relevant_files": [
+   {
+    "path": "CHO_cls/tools/tpl_js.html",
+    "purpose": "self-contained 选课/课表 simulator built from parsing the official 选课手册 PDF; renders week x 节次 grid; disclaims '一切以教学管理信息系统 eamis.nankai.edu.cn 为准'",
+    "lines_with_protocol": false
+   },
+   {
+    "path": "CHO_cls/tools/README.md",
+    "purpose": "pdftotext -bbox-layout pipeline extracting 选课序号/课程名称/名额/时段 columns from the handbook",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "none (static PDF-parsed handbook data, no live system contact)",
+  "exact_regex_or_code_snippet": "本页仅用于个人模拟排课，名额为手册公布值、不是实时余量；一切以教学管理信息系统 eamis.nankai.edu.cn 为准。",
+  "verdict": "INDIRECT",
+  "verdict_reason": "NOV 2026 数学科学学院 course-selection practice tool. No HTTP against eamis, but its data model (选课序号/教学班/名额/星期×节次 grid) mirrors the official handbook's timetable shape — mild format reference. Confirms system's official Chinese name 教学管理信息系统.",
+  "bucket": "I"
+ },
+ {
+  "repo_name": "Because66666/nkuwiki_web",
+  "stars": 0,
+  "default_branch": "main",
+  "license": "MIT",
+  "license_source": "gh api",
+  "relevant_files": [
+   {
+    "path": "src/docx/links.md",
+    "purpose": "curated student links page",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "none",
+  "exact_regex_or_code_snippet": "[📇 南开大学教务系统](https://eamis.nankai.edu.cn/) | [🧑🏻‍🏫 南开大学教务部](https://jwc.nankai.edu.cn/) | 南开大学网关 http://202.113.18.106",
+  "verdict": "INDIRECT",
+  "verdict_reason": "Wiki links page confirms our registration URL exactly (https://eamis.nankai.edu.cn/) as the student-facing '教务系统', alongside 教务部 jwc.nankai.edu.cn and campus gateway. No protocol detail.",
+  "bucket": "I"
+ },
+ {
+  "repo_name": "MineGuYan/MineGuYan.github.io",
+  "stars": 0,
+  "default_branch": "main",
+  "license": "MIT",
+  "license_source": "repo README (MIT License); gh api license field null",
+  "relevant_files": [
+   {
+    "path": "src/posts/nankai-course-selectionutorial.md",
+    "purpose": "student 选课教程 (2025-08): eamis URL marked key, login = 学号 + 初始密码(身份证后六位), 预选/正选/补退选 flow, timetable-grid UI description",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "none",
+  "exact_regex_or_code_snippet": "网址⭐：https://eamis.nankai.edu.cn/  登录方式：可用统一身份认证账号登录（账号：学号，密码：初始为身份证号后六位）",
+  "verdict": "INDIRECT",
+  "verdict_reason": "Tutorial text with URLs is INDICATIVE per brief: confirms current (2025) access model — student-id account, unified identity login, eamis at root domain. No endpoints or scraping code.",
+  "bucket": "I"
+ },
+ {
+  "repo_name": "liyue983/nankai-webvpn",
+  "stars": 2,
+  "default_branch": "main",
+  "license": null,
+  "license_source": "gh api",
+  "relevant_files": [
+   {
+    "path": "webvpn.py",
+    "purpose": "full off-campus access chain: webvpn.nankai.edu.cn + sso.nankai.edu.cn CAS login (wrdvpn AES key 'wrdvpnisthebest!', hex-encoded URL rewriting, ticket flow)",
+    "lines_with_protocol": true
+   },
+   {
+    "path": "README.md",
+    "purpose": "usage example reaching eamis eams endpoints through the vpn session and regex-scraping the personal-detail page",
+    "lines_with_protocol": true
+   }
+  ],
+  "studentId_extraction_approach": "HTML regex on stdDetail page: re.compile('姓名：</td>.*?<td>(.+?)</td>', re.S)",
+  "exact_regex_or_code_snippet": "vpn.get('http://eamis.nankai.edu.cn/eams/homeExt.action'); vpn.get('http://eamis.nankai.edu.cn/eams/stdDetail!innerIndex.action?projectId=1'); encrypUrl(): vpn_url + '/https/' + hex(scheme+':/'+url-ish) e.g. '/https/77726476706e69737468656265737421...' (wrdvpn '77726476706e697374686562657374' = 'wdvpnisthebest' hex)",
+  "verdict": "POSITIVE",
+  "verdict_reason": "2021 off-campus access architecture for eamis: all internal services (eamis, sso) are gated behind webvpn.nankai.edu.cn with CAS ticket login at sso.nankai.edu.cn and per-URL hex-encoded proxy paths. Also supplies two more eams endpoints (homeExt.action, stdDetail!innerIndex.action?projectId=1) and proves eamis serves real content over http:// scheme inside the proxy. Directly explains why an in-app capture session can come back logged-in-but-blank off-campus: without the webvpn proxy path eamis returns the stub page, and proxied subresources carry rewritten URLs.",
+  "bucket": "I"
+ },
+ {
+  "repo_name": "WangshuXC/Ir",
+  "stars": 2,
+  "default_branch": "main",
+  "license": null,
+  "license_source": "gh api",
+  "relevant_files": [
+   {
+    "path": "index_build.ipynb",
+    "purpose": "cell 10 (2023-12): replayed browser DevTools 'Copy as cURL'-style request against the student course-table endpoint with full session cookies",
+    "lines_with_protocol": true
+   }
+  ],
+  "studentId_extraction_approach": "endpoint+cookie capture, not an extractor",
+  "exact_regex_or_code_snippet": "url = 'http://eamis.nankai.edu.cn/eams/courseTableForStd!courseTable.action'; Cookie: 'LOGIN=32313130393531; SCREEN_NAME=73464572696541455345593d; srv_id=a50f326fb19923bb50fd263015ae7257; JSESSIONID=1370C1EC5A6FE1D3D4661DD67F22FBA8.std3; semester.id=4284'; Referer same as URL; X-Requested-With: XMLHttpRequest; Content-Length: 81 (body not preserved, data={})",
+  "verdict": "POSITIVE",
+  "verdict_reason": "GOLD: archived real authenticated-request template for the Nankai timetable endpoint /eams/courseTableForStd!courseTable.action. Decoded LOGIN cookie hex = '2110951' (student id), JSESSIONID carries '.std3' backend suffix, semester.id=4284 is a live semester id, server accepts http with Origin https. Fixture copied to /tmp/nankai-search/fixtures/wangshuxc-courseTable-cell10.py.",
+  "bucket": "I"
+ },
+ {
+  "repo_name": "Ducky97/CDN_checker",
+  "stars": 20,
+  "default_branch": "master",
+  "license": null,
+  "license_source": "gh api",
+  "relevant_files": [
+   {
+    "path": "dataset/get_fulldomain/get_fulldomain/output/domain/dnsres/nankai.edu.cn_DNSres.txt",
+    "purpose": "2020-04 DNS sweep rows for eamis/webvpn",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "none",
+  "exact_regex_or_code_snippet": "eamis.nankai.edu.cn. 3600 IN A 222.30.45.122  (row 246) | webvpn.nankai.edu.cn. 3600 IN A 60.29.153.198 (rows 878/880)",
+  "verdict": "INDIRECT",
+  "verdict_reason": "Only dataset rows as asked: eamis appears in 4 fulldomain lists and resolves (April 2020) to 222.30.45.122 — a Nankai campus-network block, i.e. historically on-campus-only resolution, consistent with webvpn being required off-campus. 6-year-old snapshot, no protocol content.",
+  "bucket": "I"
+ },
+ {
+  "repo_name": "NKUCS-ICU/NKUCS.ICU",
+  "stars": 285,
+  "default_branch": "main",
+  "license": "GPL-3.0",
+  "license_source": "gh api",
+  "relevant_files": [
+   {
+    "path": "experiences/minor_trans/trans_0.md",
+    "purpose": "prose mention '流程上按要求eamis申请' — confirms eamis is the student-facing system name",
+    "lines_with_protocol": false
+   }
+  ],
+  "studentId_extraction_approach": "none",
+  "exact_regex_or_code_snippet": "",
+  "verdict": "NULL_EVIDENCE",
+  "verdict_reason": "Course-experience wiki only; single prose 'eamis' mention plus generic 教务系统/教务部 references. No URLs to eamis, no endpoints, no captures.",
+  "bucket": "I"
+ }
+]

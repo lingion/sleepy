@@ -48,6 +48,8 @@ class AboutLicenseAttributionTest {
         Attribution("WakeupSchedule_Kotlin", "Apache-2.0"),
         Attribution("cqu.js", ""),
         Attribution("shiguang_warehouse", "MIT"),
+        // WakeUP 6.6.2 目录吸收战役 Step 5.5 致谢前置 (2026-10-28, LumaSchedule 边界交叉验证触达)
+        Attribution("LumaSchedule", "Apache-2.0"),
         Attribution("zfn_api", "MPL-2.0"),
         Attribution("FlowCourse", "GPL-3.0"),
         Attribution("iwut", "AGPL-3.0"),
@@ -577,6 +579,43 @@ class AboutLicenseAttributionTest {
         Attribution("LonelyMarch/OpenWakeUp", "AGPL-3.0"),
         Attribution("Chiu-xaH/HFUT-Schedule", "Chiu-xaH"),
         Attribution("MilLoong/UESTC-EAMS-Helper-App", ""),
+        // 南开大学 EAMIS (2026-10-27 issue #236 SOP cross-verified, Step 5.5 致谢前置, 38 候选全量纳入)。
+        // sunshineclt/NKU-Helper、Fighting05/NKU-GradeTracker、liyue983/nankai-webvpn 已有既有 token, 不重复;
+        // OpenWakeUp、hormone、shangkeschedule 沿用既有条目, 不在本批。
+        // 实物复核 (gh api license + README 正文): jxy18100/nku- 无顶层 README 亦无 LICENSE → 未声明;
+        // MineGuYan README 确实含 MIT License 文本 → 记 MIT (仅 README 声明); NKUCS-ICU 实测 GPL-3.0。
+        Attribution("zawnpn/NKU-EAMIS", "MIT"),
+        Attribution("zawnpn/NKU-EAMIS_Server", "MIT"),
+        Attribution("zawnpn/NKU-EAMIS_MiniApp", "MIT"),
+        Attribution("baoozak/timetable", "MIT"),
+        Attribution("Because66666/nkuwiki_web", "MIT"),
+        Attribution("MineGuYan/MineGuYan.github.io", "MIT"),
+        Attribution("suhipek/eamis-helper", "WTFPL"),
+        Attribution("RYX0309/NKU-eamis", "AGPL-3.0"),
+        Attribution("NKUCS-ICU/NKUCS.ICU", "GPL-3.0"),
+        Attribution("Sazzzzzz/SchedulEase", "Unlicense"),
+        Attribution("StevenSai/Nku-Score-By-Steven", "Apache-2.0"),
+        Attribution("augustlies/tangli", "GPL-3.0"),
+        Attribution("shuakami/timetable", "GPL-3.0"),
+        Attribution("KeenTeam1990/HutHelper", "LGPL-2.1"),
+        Attribution("jxy18100/nku-", "jxy18100"),
+        Attribution("SunriseFox/FuckNKUCourses", "SunriseFox"),
+        Attribution("TsXor/NK-eamis", "TsXor"),
+        Attribution("LoveGump/Nankai-Scripts", "LoveGump"),
+        Attribution("LetsStudyTogether/OneClickEvaluate", "LetsStudyTogether"),
+        Attribution("LetsStudyTogether/NKU_eamis_semester_grade", "LetsStudyTogether"),
+        Attribution("a4001234567/NKU_Project", "a4001234567"),
+        Attribution("Everything-in-NKU/NKU-CourseHelper", "Everything-in-NKU"),
+        Attribution("Ching-Yee-Chan/NKUCH", "Ching-Yee-Chan"),
+        Attribution("Fun-James/NKU-SearchEngine", "Fun-James"),
+        Attribution("wusir96/Nk-University-Search-System", "wusir96"),
+        Attribution("Lllsir0202/IR", "Lllsir0202"),
+        Attribution("XmShrine/trick_1", "XmShrine"),
+        Attribution("WangshuXC/Ir", "WangshuXC"),
+        Attribution("ZSH0608/NKU_CS_homework_materials", "ZSH0608"),
+        Attribution("Ducky97/CDN_checker", "Ducky97"),
+        Attribution("xiong-ZH-zq/NKU-Lecture-Helper", "xiong-ZH-zq"),
+        Attribution("john8654john/nankai-schedule", "john8654john"),
     )
 
     // ----- 贡献者 (Contributors) token 集: 直接提交代码并合入的开发者, 与上游参考仓库致谢区分 -----
@@ -689,9 +728,16 @@ class AboutLicenseAttributionTest {
     fun `license expansion uses the shared enter and exit animations`() {
         val src = File(basePath.parentFile, "java/com/lingion/sleepy/ui/screen/mine/LicenseScreen.kt")
             .readText()
-        val animationCount = Regex("enter = expandVertically\\(\\) \\+ fadeIn\\(\\)").findAll(src).count()
-        assertTrue("致谢导语和学校卡都必须使用统一展开动画", animationCount >= 2)
-        assertTrue("致谢收起必须使用 shrinkVertically + fadeOut", src.contains("exit = shrinkVertically() + fadeOut()"))
+        // MD3E Task 7a lockstep: 展开家族收进 sleepyExpandSpecs() 工厂 (单一调参点),
+        // 旧字面量 enter = expandVertically() + fadeIn() 转正为工厂字段消费。
+        val animationCount = Regex("sleepyExpandSpecs\\(\\)").findAll(src).count()
+        assertTrue("致谢导语卡和学校卡都必须各取一次 sleepyExpandSpecs() 工厂", animationCount >= 2)
+        assertTrue("展开入场必须消费工厂 enter 字段", Regex("enter = \\w+\\.enter").containsMatchIn(src))
+        assertTrue("收起退场必须消费工厂 exit 字段", Regex("exit = \\w+\\.exit").containsMatchIn(src))
+        assertTrue(
+            "致谢展开不得退化为裸 expandVertically() (默认 spring 与 Expressive 脱节)",
+            !Regex("expandVertically\\(\\)").containsMatchIn(src)
+        )
         assertTrue("可展开内容必须始终由 AnimatedVisibility 管理,不能用 if 直接移除", src.contains("visible = expanded && expandedContent != null"))
     }
 

@@ -1,0 +1,345 @@
+[
+ {
+  "repo_name": "zawnpn/NKU-EAMIS",
+  "bucket": "A",
+  "verdict": "POSITIVE",
+  "stars": 10,
+  "license": "MIT",
+  "pushed_at": "2020-07-27T10:57:46Z",
+  "summary": "Complete real Nankai EAMIS protocol: exact endpoints for 课表 (courseTableForStd!courseTable.action POST with setting.kind/semester.id/ids), 成绩 (myPlanCompl!innerIndex.action, tr-with-8-td HTML), 考试 (st"
+ },
+ {
+  "repo_name": "zawnpn/NKU-EAMIS_Server",
+  "bucket": "A",
+  "verdict": "POSITIVE",
+  "stars": 4,
+  "license": "MIT",
+  "pushed_at": "2020-07-14T01:48:32Z",
+  "summary": "Independent restatement of the same real Nankai EAMIS endpoint map (login/stdDetail/myPlanCompl/dataQuery/courseTableForStd!courseTable/stdExam) plus explicit JSESSIONID + semester.id cookie handling,"
+ },
+ {
+  "repo_name": "zawnpn/NKU-EAMIS_MiniApp",
+  "bucket": "A",
+  "verdict": "INDIRECT",
+  "stars": 8,
+  "license": "MIT",
+  "pushed_at": "2020-07-27T10:58:20Z",
+  "summary": "WeChat mini-program touches the Nankai registrar only through the author's own wrapper API (wx.oncemath.com/cgi-bin/main.py = the NKU-EAMIS_Server repo in this same bucket); no eamis.nankai.edu.cn end"
+ },
+ {
+  "repo_name": "suhipek/eamis-helper",
+  "bucket": "B",
+  "verdict": "POSITIVE",
+  "stars": 2,
+  "license": "WTFPL",
+  "pushed_at": "2023-09-01T03:10:23Z",
+  "summary": "Verbatim Nankai endpoints for the exact family our capture stalled on: /eams/homeExt.action (cookie seed), /eams/home.action, /eams/dataQuery.action?dataType=semesterCalendar, /eams/courseTableForStd!"
+ },
+ {
+  "repo_name": "TsXor/NK-eamis",
+  "bucket": "B",
+  "verdict": "POSITIVE",
+  "stars": 2,
+  "license": "none (no license file; GitHub API license=null)",
+  "pushed_at": "2025-01-10T07:17:52Z",
+  "summary": "Real 2024-2025 endpoints + a genuine saved HTML fixture + real JSON snapshots of the same classic_eams (Struts '!' action-bang) stack the app registers"
+ },
+ {
+  "repo_name": "Fighting05/NKU-GradeTracker",
+  "bucket": "C",
+  "verdict": "POSITIVE",
+  "stars": 3,
+  "license": null,
+  "pushed_at": "2026-01-27T16:00:18Z",
+  "summary": "Live (pushed 2026-01) protocol evidence for Nankai: confirms classic_eams Struts .action shape is still current, gives exact grade endpoints + HTML table anchor (tbody id grid*_data), full IAM/CAS log"
+ },
+ {
+  "repo_name": "RYX0309/NKU-eamis",
+  "bucket": "C",
+  "verdict": "POSITIVE",
+  "stars": 0,
+  "license": "AGPL-3.0",
+  "pushed_at": "2026-01-28T08:35:00Z",
+  "summary": "Live (pushed 2026-01) 选课-side evidence: complete IAM SSO login chain with AES-CBC fixed key/iv, no captcha, cookie names (srv_id, JSESSIONID.*.std6), all stdElectCourse endpoints verbatim incl"
+ },
+ {
+  "repo_name": "Sazzzzzz/SchedulEase",
+  "bucket": "D",
+  "verdict": "POSITIVE",
+  "stars": 4,
+  "license": "Unlicense",
+  "pushed_at": "2026-09-23T07:20:13Z",
+  "summary": "Complete live protocol pushed 2026-09: auth is NOT the classic eams login.action form — it is SSO at https://iam.nankai.edu.cn/api/v1/login?os=web (JSON POST, csrf-token cookie/header, login_scene=fei"
+ },
+ {
+  "repo_name": "LoveGump/Nankai-Scripts",
+  "bucket": "D",
+  "verdict": "POSITIVE",
+  "stars": 1,
+  "license": "none (no LICENSE file; GitHub API license=null)",
+  "pushed_at": "2026-10-21T07:16:05Z",
+  "summary": "Most recent evidence (pushed 2026-10-21) that eamis.nankai.edu.cn with Struts !action URLs is still the live system: user confirms 统一身份认证 (IAM SSO) login lands on eamis hostname, course list renders a"
+ },
+ {
+  "repo_name": "SunriseFox/FuckNKUCourses",
+  "bucket": "D",
+  "verdict": "INDIRECT",
+  "stars": 6,
+  "license": "none / anti-license ('YOU ARE NOT ALLOWED TO DISTRIBUTE IT, MODIFY IT OR EVEN USE IT' in README and proxy.js header)",
+  "pushed_at": "2018-01-17T10:41:40Z",
+  "summary": "2018 vintage: confirms same Struts backend (stdElectCourse!batchOperator.action, stdElectCourse!data.action, lesson0 param, 成功/冲突/已经选过 response strings, JSESSION-style session via login.action) but lo"
+ },
+ {
+  "repo_name": "LetsStudyTogether/OneClickEvaluate",
+  "bucket": "E",
+  "verdict": "POSITIVE",
+  "stars": 13,
+  "license": "none",
+  "pushed_at": "2020-01-06T10:32:42Z",
+  "summary": "Real endpoint (lesson-evaluate!saveCourseEvaluate.action) plus DOM contract of eval pages: Struts action!method.action URLs, bg.Go bg.form.submit into 'contentDiv', jQuery selectors input[value^='评教']"
+ },
+ {
+  "repo_name": "LetsStudyTogether/NKU_eamis_semester_grade",
+  "bucket": "E",
+  "verdict": "POSITIVE",
+  "stars": null,
+  "license": "none",
+  "pushed_at": "2019-05-09T12:11:34Z",
+  "summary": "Verbatim DOM shape of the grade page: data injected in tbody with id containing 'data', menu_panel sidebar with li.expand submenu, tab element div[title='所有学期成绩']"
+ },
+ {
+  "repo_name": "a4001234567/NKU_Project",
+  "bucket": "E",
+  "verdict": "POSITIVE",
+  "stars": null,
+  "license": "none",
+  "pushed_at": "2025-01-12T11:24:33Z",
+  "summary": "Only repo with real machine credentials flow: eamis home.action -> 302 Location chain -> sso.nankai.edu.cn/sso/login?service=.."
+ },
+ {
+  "repo_name": "StevenSai/Nku-Score-By-Steven",
+  "bucket": "F",
+  "verdict": "POSITIVE",
+  "stars": 2,
+  "license": "Apache-2.0",
+  "pushed_at": "2017-01-02T14:04:07Z",
+  "summary": "Full login+score protocol of the OLD Nankai 正方 integrated academic-affairs system (Struts .do, NavText tables, GBK form) at bare IP 222.30.49.10, but 2017-vintage: predates today's eamis.nankai.edu.cn"
+ },
+ {
+  "repo_name": "sunshineclt/NKU-Helper",
+  "bucket": "F",
+  "verdict": "POSITIVE",
+  "stars": 15,
+  "license": "GPL-3.0",
+  "pushed_at": "2017-12-20T02:41:55Z",
+  "summary": "Strongest of bucket: real 课表 endpoint (selectedAction.do?operation=kebiao with coursearrangeseq/classroomincode/week/begphase link-params), login incl"
+ },
+ {
+  "repo_name": "Everything-in-NKU/NKU-CourseHelper",
+  "bucket": "F",
+  "verdict": "POSITIVE",
+  "stars": 0,
+  "license": null,
+  "pushed_at": "2016-01-05T06:05:04Z",
+  "summary": "Browser-side DOM/URL evidence of the same 正方-era system on 222.30.32.10 (2016): frameset layout, .do pathnames, NavText score-table shape"
+ },
+ {
+  "repo_name": "Ching-Yee-Chan/NKUCH",
+  "bucket": "F",
+  "verdict": "INDIRECT",
+  "stars": 0,
+  "license": null,
+  "pushed_at": "2022-03-15T10:32:21Z",
+  "summary": "No protocol at all; only HTML fixtures captured from the old course-handbook site"
+ },
+ {
+  "repo_name": "jxy18100/nku-",
+  "bucket": "G",
+  "verdict": "POSITIVE",
+  "stars": 0,
+  "license": "MIT (README only; GitHub API license field null)",
+  "pushed_at": "2026-05-25T12:49:48Z",
+  "summary": "2026-05 evidence that eamis.nankai.edu.cn still serves classic Struts /eams/courseTableForStd!courseTable.action (with !!method syntax, URP-style) and real login DOM ids; semester.id=4384 observed spr"
+ },
+ {
+  "repo_name": "john8654john/nankai-schedule",
+  "bucket": "G",
+  "verdict": "NEGATIVE",
+  "stars": 0,
+  "license": null,
+  "pushed_at": "2026-10-04T06:23:53Z",
+  "summary": "Name collision: 'nankai' = 南海/Nankai Railway (Japan)"
+ },
+ {
+  "repo_name": "xiong-ZH-zq/NKU-Lecture-Helper",
+  "bucket": "F",
+  "verdict": "NULL_EVIDENCE",
+  "stars": 0,
+  "license": null,
+  "pushed_at": "2023-12-26T08:40:00Z",
+  "summary": "Repository is EMPTY: clone has no commits ('main does not have any commits yet'), GitHub contents API returns 404 'This repository is empty.' — README description (选课手册 PDF 生成表格) has no code behind it"
+ },
+ {
+  "repo_name": "qiqqqqq517/shangkeschedule",
+  "bucket": "H",
+  "verdict": "POSITIVE",
+  "stars": 31,
+  "license": "Apache-2.0",
+  "pushed_at": "2026-10-26T05:52:59Z",
+  "summary": "Catalog assigns 强智 (qiangzhi) to Nankai undergrad at the same eamis URL we use, plus a fully implemented, real-account-tested graduate adapter (allogene, yjs.nankai.edu.cn, WebVPN dual path)"
+ },
+ {
+  "repo_name": "augustlies/tangli",
+  "bucket": "H",
+  "verdict": "POSITIVE",
+  "stars": 1,
+  "license": "GPL-3.0",
+  "pushed_at": "2026-10-26T18:14:28Z",
+  "summary": "Gives usable vendor classification (qiangzhi + same eamis URL), but independent weight is low: the catalog explicitly states it is a copied, unverified snapshot of baoozak/timetable"
+ },
+ {
+  "repo_name": "baoozak/timetable",
+  "bucket": "H",
+  "verdict": "POSITIVE",
+  "stars": 64,
+  "license": "MIT",
+  "pushed_at": "2026-03-26T11:40:01Z",
+  "summary": "Canonical upstream catalog (64 stars, MIT) plus an actual qiangzhi DOM parser; the vendor call '强智' for eamis.nankai.edu.cn originates here and propagates to tangli/shuakami/shangkeschedule-lineage en"
+ },
+ {
+  "repo_name": "shuakami/timetable",
+  "bucket": "H",
+  "verdict": "POSITIVE",
+  "stars": 17,
+  "license": "GPL-3.0",
+  "pushed_at": "2026-09-16T12:42:51Z",
+  "summary": "Usable vendor classification (qiangzhi + eamis URL), but a vendored member of the same baoozak catalog family, so it corroborates rather than independently confirms"
+ },
+ {
+  "repo_name": "LonelyMarch/OpenWakeUp",
+  "bucket": "H2",
+  "verdict": "POSITIVE",
+  "stars": 7,
+  "license": "AGPL-3.0",
+  "pushed_at": "2026-09-25T05:23:40Z",
+  "summary": "Independent competitor catalog registers 南开本科 at eamis.nankai.edu.cn (https) and 滨海学院 at bhjw.nankai.edu.cn/eams/loginExt.action — the loginExt.action endpoint is the classic_eams family entry shape, "
+ },
+ {
+  "repo_name": "Aetik-yue/hormone",
+  "bucket": "H",
+  "verdict": "POSITIVE",
+  "stars": 4,
+  "license": "none",
+  "pushed_at": "2026-09-08T05:38:56Z",
+  "summary": "Independent Dart implementation (different lineage than the baoozak catalog family — its row set diverges, e.g"
+ },
+ {
+  "repo_name": "KeenTeam1990/HutHelper",
+  "bucket": "H2",
+  "verdict": "INDIRECT",
+  "stars": 3,
+  "license": "LGPL-2.1",
+  "pushed_at": "2017-11-12T10:44:25Z",
+  "summary": "2017-era iOS app catalog lists 南开 教务 as cmsSys=custom at eamis.nankai.edu.cn (http) plus 图书馆 at bare IP 222.30.49.x (same IP neighborhood as the old 正方 49.10/49.14 hosts) — corroborates the EAMIS doma",
+  "license_source": " (backfilled from Step 2 inventory)"
+ },
+ {
+  "repo_name": "Fun-James/NKU-SearchEngine",
+  "bucket": "I",
+  "verdict": "INDIRECT",
+  "stars": 0,
+  "license": null,
+  "pushed_at": "2025-06-17T02:04:39Z",
+  "summary": "10k archived snapshots of PUBLIC nankai sites (seed www.nankai.edu.cn, depth 2)"
+ },
+ {
+  "repo_name": "wusir96/Nk-University-Search-System",
+  "bucket": "I",
+  "verdict": "POSITIVE",
+  "stars": 0,
+  "license": null,
+  "pushed_at": "2025-07-05T17:16:38Z",
+  "summary": "Independent 2025-05 crawl evidence that eamis.nankai.edu.cn root returns only a 148-byte stub page to unauthenticated requests (no title, no links) — directly corroborates issue #236's logged-in-but-b"
+ },
+ {
+  "repo_name": "Lllsir0202/IR",
+  "bucket": "I",
+  "verdict": "INDIRECT",
+  "stars": 1,
+  "license": null,
+  "pushed_at": "2025-01-12T10:34:01Z",
+  "summary": "Information-retrieval homework indexing crawled nankai documents; one embedded official notice states eamis credentials equal the 信息门户 (unified identity) account and that off-campus users MUST connect"
+ },
+ {
+  "repo_name": "ZSH0608/NKU_CS_homework_materials",
+  "bucket": "I",
+  "verdict": "NULL_EVIDENCE",
+  "stars": 0,
+  "license": null,
+  "pushed_at": "2026-09-15T10:11:33Z",
+  "summary": "Scrapy whole-site crawler over public nankai domains only; repo-wide code search finds eamis exclusively as one dead-link href inside a 智能基座 notice snapshot"
+ },
+ {
+  "repo_name": "XmShrine/trick_1",
+  "bucket": "I",
+  "verdict": "INDIRECT",
+  "stars": 0,
+  "license": null,
+  "pushed_at": "2026-10-23T12:16:30Z",
+  "summary": "NOV 2026 数学科学学院 course-selection practice tool"
+ },
+ {
+  "repo_name": "Because66666/nkuwiki_web",
+  "bucket": "I",
+  "verdict": "INDIRECT",
+  "stars": 0,
+  "license": "MIT",
+  "pushed_at": "2025-06-17T12:39:28Z",
+  "summary": "Wiki links page confirms our registration URL exactly (https://eamis.nankai.edu.cn/) as the student-facing '教务系统', alongside 教务部 jwc.nankai.edu.cn and campus gateway"
+ },
+ {
+  "repo_name": "MineGuYan/MineGuYan.github.io",
+  "bucket": "I",
+  "verdict": "INDIRECT",
+  "stars": 0,
+  "license": "MIT",
+  "pushed_at": "2026-03-05T09:40:47Z",
+  "summary": "Tutorial text with URLs is INDICATIVE per brief: confirms current (2025) access model — student-id account, unified identity login, eamis at root domain"
+ },
+ {
+  "repo_name": "liyue983/nankai-webvpn",
+  "bucket": "I",
+  "verdict": "POSITIVE",
+  "stars": 2,
+  "license": null,
+  "pushed_at": "2021-12-22T08:55:56Z",
+  "summary": "2021 off-campus access architecture for eamis: all internal services (eamis, sso) are gated behind webvpn.nankai.edu.cn with CAS ticket login at sso.nankai.edu.cn and per-URL hex-encoded proxy paths"
+ },
+ {
+  "repo_name": "WangshuXC/Ir",
+  "bucket": "I",
+  "verdict": "POSITIVE",
+  "stars": 2,
+  "license": null,
+  "pushed_at": "2023-12-31T02:37:33Z",
+  "summary": "GOLD: archived real authenticated-request template for the Nankai timetable endpoint /eams/courseTableForStd!courseTable.action"
+ },
+ {
+  "repo_name": "Ducky97/CDN_checker",
+  "bucket": "I",
+  "verdict": "INDIRECT",
+  "stars": 20,
+  "license": null,
+  "pushed_at": "2020-09-19T08:05:08Z",
+  "summary": "Only dataset rows as asked: eamis appears in 4 fulldomain lists and resolves (April 2020) to 222.30.45.122 — a Nankai campus-network block, i.e"
+ },
+ {
+  "repo_name": "NKUCS-ICU/NKUCS.ICU",
+  "bucket": "I",
+  "verdict": "NULL_EVIDENCE",
+  "stars": 285,
+  "license": "GPL-3.0",
+  "pushed_at": "2026-08-24T18:25:04Z",
+  "summary": "Course-experience wiki only; single prose 'eamis' mention plus generic 教务系统/教务部 references"
+ }
+]

@@ -40,10 +40,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.togetherWith
-import androidx.compose.animation.core.tween
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -58,16 +56,15 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import android.widget.Toast
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.ContentTransform
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.NavBackStack
-import androidx.navigation3.scene.Scene
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding
+import com.lingion.sleepy.ui.component.sleepyContentEnter
+import com.lingion.sleepy.ui.component.sleepyContentExit
 import com.lingion.sleepy.ui.screen.edit.AddCourseScreen
 import com.lingion.sleepy.ui.screen.mine.AllTablesScreen
 import com.lingion.sleepy.ui.screen.mine.CourseListScreen
@@ -158,8 +155,9 @@ internal fun SleepyNavHost(
         onDeepLinkConsumed()
     }
 
-    val predictiveSpec: (AnimatedContentTransitionScope<Scene<NavKey>>, Int) -> ContentTransform =
-        { _, _ -> sleepyPredictivePopTransform }
+    val forwardTransform = sleepyForwardTransform()
+    val popTransform = sleepyPopTransform()
+    val predictivePopTransform = sleepyPredictivePopTransform()
 
     NavDisplay(
         backStack = nav,
@@ -167,9 +165,9 @@ internal fun SleepyNavHost(
             rememberSaveableStateHolderNavEntryDecorator(),
         ),
         onBack = { navigator.pop() },
-        transitionSpec = { sleepyForwardTransform },
-        popTransitionSpec = { sleepyPopTransform },
-        predictivePopTransitionSpec = predictiveSpec,
+        transitionSpec = { forwardTransform },
+        popTransitionSpec = { popTransform },
+        predictivePopTransitionSpec = { _ -> predictivePopTransform },
         entryProvider = entryProvider {
         entry<SleepyRoute.Main> {
 
@@ -744,8 +742,17 @@ private fun CombinedRailItem(
     onClick: () -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
-    val containerColor = if (selected) colors.primaryContainer else androidx.compose.ui.graphics.Color.Transparent
-    val iconColor = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant
+    // MD3E (Task 7b): 跑道胶囊选中进/出色走 fastEffects 缓动, 禁瞬时硬切。
+    val containerColor by animateColorAsState(
+        targetValue = if (selected) colors.primaryContainer else androidx.compose.ui.graphics.Color.Transparent,
+        animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
+        label = "combinedRailContainer",
+    )
+    val iconColor by animateColorAsState(
+        targetValue = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant,
+        animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
+        label = "combinedRailIcon",
+    )
     Column(
         modifier = Modifier
             .padding(horizontal = 8.dp, vertical = 4.dp)
@@ -810,7 +817,8 @@ private fun PlainRailItem(
 
 /**
  * 右半边内容 — AnimatedContent 包 3 个子页 (Today / Manage / Mine)。
- * 200ms 渐隐渐显。子页面跳转回调全部接到 navigator (避免空 lambda 让按钮"点不动")。
+ * MD3E content 家族缩放淡入淡出 (sleepyContent* 工厂, 与页面转场同族)。
+ * 子页面跳转回调全部接到 navigator (避免空 lambda 让按钮"点不动")。
  */
 @Composable
 private fun RightHalfContent(
@@ -820,10 +828,12 @@ private fun RightHalfContent(
     onTabletEditCourse: (CourseEntity) -> Unit,
     onTabletManualAdd: () -> Unit,
 ) {
+    val contentEnter = sleepyContentEnter()
+    val contentExit = sleepyContentExit()
     AnimatedContent(
         targetState = currentTab,
         transitionSpec = {
-            fadeIn(animationSpec = tween(200)) togetherWith fadeOut(animationSpec = tween(200))
+            contentEnter togetherWith contentExit
         },
         label = "right-half-tab-switch",
     ) { tab ->

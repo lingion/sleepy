@@ -1,0 +1,626 @@
+{
+ "campaign": "nankai-cross-verify-2026-10-27",
+ "issue": "#236",
+ "school": "南开大学 (Nankai University, eamis.nankai.edu.cn)",
+ "sop_version": "v1.15",
+ "search_date": "2026-10-27",
+ "search_matrix": [
+  "repo_中:南开|nankai|NKU x eamis|教务|课表",
+  "code_南开大学+eamis",
+  "code_courseTableForStd+nankai",
+  "code_tree: 树莓|raspberry 反证检索",
+  "domains: eamis.nankai.edu.cn 全量 code search"
+ ],
+ "veto_rule": "SOP v1.15 唯一否决 = archived 且 >10 年; 本轮 0 条被否",
+ "candidates": [
+  {
+   "repository": "zawnpn/NKU-EAMIS",
+   "url": "https://github.com/zawnpn/NKU-EAMIS",
+   "stars": 10,
+   "language": "Python",
+   "pushed_at": "2020-07-27T10:57:46Z",
+   "archived": false,
+   "license": "MIT",
+   "default_branch": "master",
+   "description": "A simple tool to help get information in NKU-EAMIS(NKU Education Affairs Management Information System).",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "zawnpn/NKU-EAMIS_Server",
+   "url": "https://github.com/zawnpn/NKU-EAMIS_Server",
+   "stars": 4,
+   "language": "Python",
+   "pushed_at": "2020-07-14T01:48:32Z",
+   "archived": false,
+   "license": "MIT",
+   "default_branch": "master",
+   "description": "Server APIs for NKU-EAMIS",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "zawnpn/NKU-EAMIS_MiniApp",
+   "url": "https://github.com/zawnpn/NKU-EAMIS_MiniApp",
+   "stars": 8,
+   "language": "JavaScript",
+   "pushed_at": "2020-07-27T10:58:20Z",
+   "archived": false,
+   "license": "MIT",
+   "default_branch": "master",
+   "description": "NKU Helper (MiniApp)",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "suhipek/eamis-helper",
+   "url": "https://github.com/suhipek/eamis-helper",
+   "stars": 2,
+   "language": "Python",
+   "pushed_at": "2023-09-01T03:10:23Z",
+   "archived": false,
+   "license": "WTFPL",
+   "default_branch": "main",
+   "description": "E站(NKU eamis)助手~ API library for NKU eamis",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "TsXor/NK-eamis",
+   "url": "https://github.com/TsXor/NK-eamis",
+   "stars": 2,
+   "language": "Python",
+   "pushed_at": "2025-01-10T07:17:52Z",
+   "archived": false,
+   "license": null,
+   "default_branch": "main",
+   "description": "",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "Fighting05/NKU-GradeTracker",
+   "url": "https://github.com/Fighting05/NKU-GradeTracker",
+   "stars": 3,
+   "language": "HTML",
+   "pushed_at": "2026-01-27T16:00:18Z",
+   "archived": false,
+   "license": null,
+   "default_branch": "main",
+   "description": "南开大学(NKU)成绩查询助手，基于南开大学webvpn以及教务系统，提供多种成绩查询，再也不怕妈妈不知道我的成绩出了",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "RYX0309/NKU-eamis",
+   "url": "https://github.com/RYX0309/NKU-eamis",
+   "stars": 0,
+   "language": "-",
+   "pushed_at": "2026-01-28T08:35:00Z",
+   "archived": false,
+   "license": "AGPL-3.0",
+   "default_branch": "main",
+   "description": "nku 南开大学(Nankai University) eamis教务系统抢课脚本，包括定时抢课、补退选监控抢课",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "Sazzzzzz/SchedulEase",
+   "url": "https://github.com/Sazzzzzz/SchedulEase",
+   "stars": 4,
+   "language": "Python",
+   "pushed_at": "2026-09-23T07:20:13Z",
+   "archived": false,
+   "license": "Unlicense",
+   "default_branch": "main",
+   "description": "南开大学 TUI 选课助手",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "LoveGump/Nankai-Scripts",
+   "url": "https://github.com/LoveGump/Nankai-Scripts",
+   "stars": 1,
+   "language": "JavaScript",
+   "pushed_at": "2026-10-21T07:16:05Z",
+   "archived": false,
+   "license": null,
+   "default_branch": "main",
+   "description": "南开大学生存脚本",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "SunriseFox/FuckNKUCourses",
+   "url": "https://github.com/SunriseFox/FuckNKUCourses",
+   "stars": 6,
+   "language": "JavaScript",
+   "pushed_at": "2018-01-17T10:41:40Z",
+   "archived": false,
+   "license": null,
+   "default_branch": "master",
+   "description": "南开新系统的选课脚本（代理模式）",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "LetsStudyTogether/OneClickEvaluate",
+   "url": "https://github.com/LetsStudyTogether/OneClickEvaluate",
+   "stars": 13,
+   "language": "JavaScript",
+   "pushed_at": "2020-01-06T10:32:42Z",
+   "archived": false,
+   "license": null,
+   "default_branch": "master",
+   "description": "南开大学eamis系统一键评教脚本",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "LetsStudyTogether/NKU_eamis_semester_grade",
+   "url": "https://github.com/LetsStudyTogether/NKU_eamis_semester_grade",
+   "stars": 0,
+   "language": "JavaScript",
+   "pushed_at": "2019-05-09T12:11:34Z",
+   "archived": false,
+   "license": null,
+   "default_branch": "master",
+   "description": "南开大学EAMIS各学期学分绩计算器",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "a4001234567/NKU_Project",
+   "url": "https://github.com/a4001234567/NKU_Project",
+   "stars": 1,
+   "language": "Python",
+   "pushed_at": "2025-01-12T11:24:33Z",
+   "archived": false,
+   "license": null,
+   "default_branch": "main",
+   "description": "Automatic procedure for Nankai University",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "StevenSai/Nku-Score-By-Steven",
+   "url": "https://github.com/StevenSai/Nku-Score-By-Steven",
+   "stars": 2,
+   "language": "Java",
+   "pushed_at": "2017-01-02T14:04:07Z",
+   "archived": false,
+   "license": "Apache-2.0",
+   "default_branch": "master",
+   "description": "南开大学教务查分“第三方”Android客户端   - -",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "sunshineclt/NKU-Helper",
+   "url": "https://github.com/sunshineclt/NKU-Helper",
+   "stars": 15,
+   "language": "Swift",
+   "pushed_at": "2017-12-20T02:41:55Z",
+   "archived": false,
+   "license": "GPL-3.0",
+   "default_branch": "master",
+   "description": "Campus App for Nankai University",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "Everything-in-NKU/NKU-CourseHelper",
+   "url": "https://github.com/Everything-in-NKU/NKU-CourseHelper",
+   "stars": 0,
+   "language": "JavaScript",
+   "pushed_at": "2016-01-05T06:05:04Z",
+   "archived": false,
+   "license": null,
+   "default_branch": "master",
+   "description": "用于修复选课系统的问题及增加计算学分绩和查询课程的功能",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "Ching-Yee-Chan/NKUCH",
+   "url": "https://github.com/Ching-Yee-Chan/NKUCH",
+   "stars": 0,
+   "language": "C++",
+   "pushed_at": "2022-03-15T10:32:21Z",
+   "archived": false,
+   "license": null,
+   "default_branch": "master",
+   "description": "Nankai University Class Helper - a small scheduling tool with QT UI",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "jxy18100/nku-",
+   "url": "https://github.com/jxy18100/nku-",
+   "stars": 0,
+   "language": "JavaScript",
+   "pushed_at": "2026-05-25T12:49:48Z",
+   "archived": false,
+   "license": null,
+   "default_branch": "main",
+   "description": "Repository name: nk-course-schedule Description: 南开课表 - 纯前端课程表工具 Public ✓ 不用勾任何东西",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "john8654john/nankai-schedule",
+   "url": "https://github.com/john8654john/nankai-schedule",
+   "stars": 0,
+   "language": "HTML",
+   "pushed_at": "2026-10-04T06:23:53Z",
+   "archived": false,
+   "license": null,
+   "default_branch": "main",
+   "description": "",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "xiong-ZH-zq/NKU-Lecture-Helper",
+   "url": "https://github.com/xiong-ZH-zq/NKU-Lecture-Helper",
+   "stars": 0,
+   "language": "-",
+   "pushed_at": "2023-12-26T08:40:00Z",
+   "archived": false,
+   "license": null,
+   "default_branch": "main",
+   "description": "根据南开选课手册PDF生成表格的选课助手",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "qiqqqqq517/shangkeschedule",
+   "url": "https://github.com/qiqqqqq517/shangkeschedule",
+   "stars": 31,
+   "language": "Kotlin",
+   "pushed_at": "2026-10-26T05:52:59Z",
+   "archived": false,
+   "license": "Apache-2.0",
+   "default_branch": "main",
+   "description": "开源无广告课程表 App「上课」：Kotlin Multiplatform + Compose Multiplatform，课表/日程/成绩绩点/教务一键导入/情侣课表/桌面小组件。EN Open-source ad-free schedule app.",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "augustlies/tangli",
+   "url": "https://github.com/augustlies/tangli",
+   "stars": 1,
+   "language": "Java",
+   "pushed_at": "2026-10-26T18:14:28Z",
+   "archived": false,
+   "license": "GPL-3.0",
+   "default_branch": "main",
+   "description": "给大学生的开源安卓课表：一句话用 AI 改课表，支持正方/强智/金智教务导入，查成绩、挡开屏广告",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "baoozak/timetable",
+   "url": "https://github.com/baoozak/timetable",
+   "stars": 64,
+   "language": "Vue",
+   "pushed_at": "2026-03-26T11:40:01Z",
+   "archived": false,
+   "license": "MIT",
+   "default_branch": "main",
+   "description": "下节啥课：一个无广美观有提醒的课表软件",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "shuakami/timetable",
+   "url": "https://github.com/shuakami/timetable",
+   "stars": 17,
+   "language": "TypeScript",
+   "pushed_at": "2026-09-16T12:42:51Z",
+   "archived": false,
+   "license": "GPL-3.0",
+   "default_branch": "main",
+   "description": "嘎嘎课程表 · 免费无广告的 Android 课程表 App。大学生课表：教务系统/Excel/ICS/CSV/JSON 多源导入、AI 一键转换、冲突检测、变更记录、学科贴纸、桌面小组件、写入系统日历。",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "LonelyMarch/OpenWakeUp",
+   "url": "https://github.com/LonelyMarch/OpenWakeUp",
+   "stars": 7,
+   "language": "Kotlin",
+   "pushed_at": "2026-09-25T05:23:40Z",
+   "archived": false,
+   "license": "AGPL-3.0",
+   "default_branch": "master",
+   "description": "OpenWakeUp 课程表",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "Aetik-yue/hormone",
+   "url": "https://github.com/Aetik-yue/hormone",
+   "stars": 4,
+   "language": "Dart",
+   "pushed_at": "2026-09-08T05:38:56Z",
+   "archived": false,
+   "license": null,
+   "default_branch": "develop",
+   "description": "Hormone 课表 - 简洁轻量的大学课程表 Flutter App",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "KeenTeam1990/HutHelper",
+   "url": "https://github.com/KeenTeam1990/HutHelper",
+   "stars": 3,
+   "language": "Objective-C",
+   "pushed_at": "2017-11-12T10:44:25Z",
+   "archived": false,
+   "license": "LGPL-2.1",
+   "default_branch": "master",
+   "description": "🏫校园助手",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "Fun-James/NKU-SearchEngine",
+   "url": "https://github.com/Fun-James/NKU-SearchEngine",
+   "stars": 0,
+   "language": "HTML",
+   "pushed_at": "2025-06-17T02:04:39Z",
+   "archived": false,
+   "license": null,
+   "default_branch": "main",
+   "description": "南开校内资源搜索引擎",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "wusir96/Nk-University-Search-System",
+   "url": "https://github.com/wusir96/Nk-University-Search-System",
+   "stars": 0,
+   "language": "Python",
+   "pushed_at": "2025-07-05T17:16:38Z",
+   "archived": false,
+   "license": null,
+   "default_branch": "main",
+   "description": "信息检索课程作业",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "Lllsir0202/IR",
+   "url": "https://github.com/Lllsir0202/IR",
+   "stars": 1,
+   "language": "HTML",
+   "pushed_at": "2025-01-12T10:34:01Z",
+   "archived": false,
+   "license": null,
+   "default_branch": "main",
+   "description": "This is a simple web search engine",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "ZSH0608/NKU_CS_homework_materials",
+   "url": "https://github.com/ZSH0608/NKU_CS_homework_materials",
+   "stars": 0,
+   "language": "HTML",
+   "pushed_at": "2026-09-15T10:11:33Z",
+   "archived": false,
+   "license": null,
+   "default_branch": "main",
+   "description": "NKU CS 作业&资料（大二下）",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "XmShrine/trick_1",
+   "url": "https://github.com/XmShrine/trick_1",
+   "stars": 0,
+   "language": "HTML",
+   "pushed_at": "2026-10-23T12:16:30Z",
+   "archived": false,
+   "license": null,
+   "default_branch": "main",
+   "description": "",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "Because66666/nkuwiki_web",
+   "url": "https://github.com/Because66666/nkuwiki_web",
+   "stars": 0,
+   "language": "HTML",
+   "pushed_at": "2025-06-17T12:39:28Z",
+   "archived": false,
+   "license": "MIT",
+   "default_branch": "main",
+   "description": "一个网页前端，使用theme-hope.vuejs.press进行构建",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "MineGuYan/MineGuYan.github.io",
+   "url": "https://github.com/MineGuYan/MineGuYan.github.io",
+   "stars": 0,
+   "language": "JavaScript",
+   "pushed_at": "2026-03-05T09:40:47Z",
+   "archived": false,
+   "license": null,
+   "default_branch": "main",
+   "description": "孤渊雪的个人博客",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "liyue983/nankai-webvpn",
+   "url": "https://github.com/liyue983/nankai-webvpn",
+   "stars": 2,
+   "language": "Python",
+   "pushed_at": "2021-12-22T08:55:56Z",
+   "archived": false,
+   "license": null,
+   "default_branch": "main",
+   "description": "",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "WangshuXC/Ir",
+   "url": "https://github.com/WangshuXC/Ir",
+   "stars": 2,
+   "language": "Jupyter Notebook",
+   "pushed_at": "2023-12-31T02:37:33Z",
+   "archived": false,
+   "license": null,
+   "default_branch": "main",
+   "description": "nku 2023 信息检索原理 温延龙",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "Ducky97/CDN_checker",
+   "url": "https://github.com/Ducky97/CDN_checker",
+   "stars": 20,
+   "language": "Python",
+   "pushed_at": "2020-09-19T08:05:08Z",
+   "archived": false,
+   "license": null,
+   "default_branch": "master",
+   "description": "用于检测网站是否使用了CDN机制。",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  },
+  {
+   "repository": "NKUCS-ICU/NKUCS.ICU",
+   "url": "https://github.com/NKUCS-ICU/NKUCS.ICU",
+   "stars": 285,
+   "language": "Python",
+   "pushed_at": "2026-08-24T18:25:04Z",
+   "archived": false,
+   "license": "GPL-3.0",
+   "default_branch": "main",
+   "description": "南开大学计网经验指北 ",
+   "tags": [
+    "NKU",
+    "eamis.nankai.edu.cn"
+   ],
+   "relevance": "南开大学 eamis 教务学生维护仓库(SOP Step 2 检索矩阵全量命中)"
+  }
+ ],
+ "note": "cand_meta.tsv 第28行 starlake1009/sleepy 系本项目自身 fork 误入检索,最终清单(cand_final.tsv)已剔除,不是外部协议源。"
+}

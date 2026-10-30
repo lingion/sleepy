@@ -123,7 +123,10 @@ object FrameTraversalTree {
      * 匹配语义: 对 frame 的 outerHTML 小写化后做 id="/class=" 属性子串匹配; 不做裸子串匹配。
      */
     val ANCHORS: List<String> = listOf(
-        "Table1", "blacktab", "kbtable", "kbgrid_table_0", "kblist_table", "kbList", "kbxx", "timetable", "_dgdata", "pageRpt", "mytable", "reportArea", "xkinfo", "sample-table-1"
+        "Table1", "blacktab", "kbtable", "kbgrid_table_0", "kblist_table", "kbList", "kbxx", "timetable", "_dgdata", "pageRpt", "mytable", "reportArea", "xkinfo", "sample-table-1",
+        // 经典 EAMS 课表网格容器 (南开 #236; JwClassicEamsParser 95 分锚, NBCC 同族互证)。
+        // 用户手点进课表页时 generic DFS 通路也能兜住; 空壳表页由 parser 置信度分层处理。
+        "manualArrangeCourseTable"
     )
 
     /** THU 网格课程由页面脚本填入 aN_M 单元；需要完整脚本指纹，不能仅凭泛用 id 命中。 */
@@ -195,6 +198,11 @@ object FrameTraversalTree {
         "action=\"default.aspx\"" to "bnuz",
         "j_spring_security_check" to "urp_new",
         "cas/login" to "sso-cas",
+        // 南开三代统一身份认证 = IAM 飞连登录页 (2026-10 #236 调研实锤: 输入框 id
+        // password_account_input/password_password_input, host iam.nankai.edu.cn;
+        // 二代 sso.nankai.edu.cn CAS 已由 cas/login 锚覆盖)。两指纹同页必齐 → score≥2。
+        "password_account_input" to "nankai-iam",
+        "iam.nankai.edu.cn" to "nankai-iam",
         "请输入密码" to "通用",
         "会话已超时" to "通用",
         "请重新登录" to "通用",
