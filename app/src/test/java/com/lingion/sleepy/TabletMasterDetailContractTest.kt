@@ -82,8 +82,12 @@ class TabletMasterDetailContractTest {
     @Test
     fun compact_phone_branches_untouched() {
         assertFalse("手机 dock 分支禁被误删", navHostSrc.contains("// PLAN:wide-merged"))
-        assertTrue("手机 dock(PillNavigationBar)必须保留", navHostSrc.contains("PillNavigationBar"))
-        assertTrue("手机底栏(NavigationBar)必须保留", navHostSrc.contains("NavigationBar("))
+        // 2026-10 液态玻璃移植: 手机两形态(贴底/悬浮 Dock)统一改走 LiquidGlassNavHost 宿主,
+        // 旧断言字面量 PillNavigationBar(/NavigationBar( 随官方底栏与自研 Dock 移出 MainRoute 而失效。
+        // 不变量本意不变 = 平板重构后手机导航仍完整: 宿主在 + 贴底(floating=false)/悬浮(floating=true)两摆位都在。
+        assertTrue("手机导航必须保留 (LiquidGlassNavHost 宿主)", navHostSrc.contains("LiquidGlassNavHost("))
+        assertTrue("手机悬浮 Dock 摆位必须保留", navHostSrc.contains("floating = true"))
+        assertTrue("手机贴底摆位必须保留", navHostSrc.contains("floating = false"))
     }
 
     @Test

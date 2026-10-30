@@ -201,6 +201,10 @@ dependencies {
     implementation(libs.compose.animation)
     implementation(libs.compose.foundation)
 
+    // Liquid Glass — Kyant Backdrop rendering engine + shapes (from SleepDown assets)
+    implementation(project(":kyant-backdrop"))
+    implementation("io.github.kyant0:shapes:1.2.0")
+
     // Activity + Lifecycle
     implementation(libs.androidx.core)
     implementation(libs.activity.compose)

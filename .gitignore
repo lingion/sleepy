@@ -87,3 +87,6 @@ docs/PARSER_SPEC_REPORT.md
 docs/YSU_BOYA_PP_IMPORT.md
 docs/four-school-cross-validation-*.md
 __pycache__/
+
+# Git worktrees (local isolation, never commit)
+.worktrees/

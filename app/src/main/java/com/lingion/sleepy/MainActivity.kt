@@ -51,8 +51,6 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.screen.edit.AddCourseScreen
 import com.lingion.sleepy.ui.component.NavDockSpec
-import com.lingion.sleepy.ui.component.PillNavigationBar
-import com.lingion.sleepy.ui.component.PillBarState
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.WindowInsets
@@ -60,7 +58,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.ui.platform.LocalDensity
-import com.lingion.sleepy.ui.component.PillNavItemSpec
 import com.lingion.sleepy.ui.component.sleepyContentEnter
 import com.lingion.sleepy.ui.component.sleepyContentExit
 import com.lingion.sleepy.ui.screen.manage.ManagementPage
@@ -258,10 +255,6 @@ private fun AppRoot(
     val mainState by mainVm.state.collectAsState()
     val navigator = rememberSleepyNavigator()
     val nav = navigator.backStack
-    // 底栏 thumb 状态提升到 NavDisplay 之外: entry<Main> 在 push 子页时会被销毁,
-    // pop 返回时高亮若随 entry 重建,首帧会闪现在课表 tab 再挪回目标 tab
-    // (2026-09-21 用户报障)。放这层后 pop 重建首帧即正确。
-    val pillBarState = remember { PillBarState() }
 
     // 外部导入与空态引导共用全屏添加课表页。
     LaunchedEffect(pendingImportText) {
@@ -294,7 +287,6 @@ private fun AppRoot(
                 navigator.openEditTable(tableId = newId, pendingNew = newId, prevDefault = previousId)
             }
         },
-        pillBarState = pillBarState,
     )
 }
 

@@ -557,9 +557,9 @@ class NavHostMigrationContractTest {
         }
     }
 
-    // ─── issue#45 ③ 自适应导航: 官方有→官方, 官方无→保留自研 Dock ───
+    // ─── issue#45 ③ 自适应导航: 宽屏官方 Rail; 贴底/Dock 两形态 2026-10 起迁液态玻璃 ───
     @Test
-    fun mainRoute_uses_official_nav_where_official_exists_and_keeps_self_dock() {
+    fun mainRoute_uses_official_rail_for_wide_and_liquid_glass_for_compact_forms() {
         val route = balancedBlock(navHostSrc, "private fun MainRoute(", maxChars = 20000)
 
         // ③ 横屏/平板: 必须按 WindowWidthSizeClass 分支, 非 Compact 用官方 NavigationRail
@@ -578,24 +578,29 @@ class NavHostMigrationContractTest {
             Regex("""CombinedRailItem\(""").containsMatchIn(route)
         )
 
-        // 贴底: 官方有 NavigationBar → 用官方, 不得再用自研 PillNavigationBar 贴底形态
+        // 贴底/悬浮 Dock: 两形态均已迁至液态玻璃导航 (LiquidGlassNavHost,
+        // kyant backdrop 采样内容层) — 官方 NavigationBar 与自研
+        // PillNavigationBar 都不再参与 MainRoute 的贴底/悬浮分支。
+        // 悬浮形态必须 floating = true, 且两形态都不得残留旧组件调用。
         assertTrue(
-            "Compact 贴底必须用官方 NavigationBar",
-            Regex("""NavigationBar\s*\{""").containsMatchIn(route)
+            "Compact 贴底/悬浮必须走 LiquidGlassNavHost 宿主",
+            Regex("""LiquidGlassNavHost\(""").containsMatchIn(route)
         )
         assertTrue(
-            "Compact 贴底必须用官方 NavigationBarItem",
-            Regex("""NavigationBarItem\(""").containsMatchIn(route)
+            "悬浮 Dock 必须 floating = true (胶囊悬起摆位)",
+            Regex("""LiquidGlassNavHost\([\s\S]*?floating\s*=\s*true""").containsMatchIn(route)
         )
         assertFalse(
-            "贴底形态已改官方 NavigationBar, 不得残留 PillNavigationBar(dock = false)",
+            "贴底形态已改液态玻璃, 不得残留 PillNavigationBar(dock = false)",
             Regex("""dock\s*=\s*false""").containsMatchIn(route)
         )
-
-        // 悬浮 Dock: 官方无此形态 → 必须保留自研 PillNavigationBar(dock = true)
-        assertTrue(
-            "官方无悬浮药丸 Dock, 必须保留自研 PillNavigationBar(dock = true)",
-            Regex("""PillNavigationBar\([\s\S]*?dock\s*=\s*true""").containsMatchIn(route)
+        assertFalse(
+            "悬浮 Dock 已改液态玻璃, 不得残留自研 PillNavigationBar 调用",
+            Regex("""PillNavigationBar\(""").containsMatchIn(route)
+        )
+        assertFalse(
+            "贴底已改液态玻璃, 官方 NavigationBar 调用不得再出现在 MainRoute",
+            Regex("""NavigationBar\s*\{""").containsMatchIn(route)
         )
     }
 }

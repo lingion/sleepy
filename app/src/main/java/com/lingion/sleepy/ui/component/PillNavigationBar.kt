@@ -53,6 +53,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 
@@ -94,6 +95,65 @@ object NavDockSpec {
     val itemSeat = 56.dp           // 每 tab 座位宽(≥48dp 触摸目标)
     val itemGap = 4.dp             // 座位间距
     val innerPad = 8.dp            // 胶囊内边距
+
+    // ══ FlClash 玻璃引擎几何 (DockGlassBar/NavDockMotion/DockPointerMachine 消费) ══
+    // 数值全部对齐 navigation_dock.dart v0.9.1; 与上方液态玻璃宿主规格并存,
+    // 各走各的渲染路径(API33+ kyant / API31-32 AGSL 引擎)。
+    val barHeight = 62.dp        // FlClash _barHeight
+    val edgeMargin = 21.dp       // _edgeMargin(屏幕左右)
+    val barPadding = 4.dp        // _barPadding(条内容内边距)
+    val minLens = 84.dp          // _minLensWidth(色块最小宽)
+    val maxItemExtent = 86.dp    // _maxItemExtent(<5 tab 条宽封顶=count*此值+barPadding*4 的 86)
+    val fullWidthCount = 5       // _fullWidthCount(达到即占满弹性宽)
+    val shadowRoom = 8.dp        // _shadowRoom(条上方投影预留)
+    val glassBottomFloat = 21.dp // FlClash 悬浮底距基准(实际取 max(此值, 手势条高))
+    val iconSize = 28.dp         // _iconSize
+    val labelSize = 10.sp        // _labelSize
+    val labelMinSize = 9.sp      // _minLabelSize
+    val labelLineHeight = 14.5.sp // _labelLeading(1131-1136: leading 14.5 逻辑px)
+    val labelGap = 2.dp          // _labelGap
+    val labelInset = 2.dp        // _labelInset(label 横向内收)
+    val lensGrowth = 8.dp        // _lensGrowth(按压 lift 每边外扩 8*2*lift)
+    val jellyAspect = 1.4f       // _jellyAspect
+    val overdrag = 0.35f         // _overdrag(位置越界橡皮筋 limit)
+    val pullLimit = 7f / 32f     // _pullLimit(条体越界拉伸 limit=短边*7/32)
+    val flingProjectionMs = 100f // _flingProjection(甩动投影时长)
+
+    // ══ 玻璃分支运动学常量 (navigation_dock.dart line 24-56, dp/逻辑单位) ══
+    val hitSlop = 8.dp           // _hitSlop(条外 8dp 内触摸仍命中)
+    val touchSlop = 18f          // kTouchSlop(Flutter 全局拖动阈值, 逻辑 dp)
+    const val lensMagnify = 0.16f      // _lensMagnify(色块内容随 lift 放大率)
+    const val liftSnap = 0.975f        // _liftSnap(落回门槛: lift 先升够才允许落)
+    const val liftRelease = 0.04f      // _liftRelease(lens 到座 ±0.04 才落 lift)
+    const val hoverMagnet = 0.2f       // _hoverMagnet(悬停色块偏座率)
+    const val hoverParallax = 0.5f     // _hoverParallax(图标视差率)
+    const val hoverAlpha = 0.08f       // _hoverAlpha(悬停高亮上限)
+    const val hoverSwell = 0.4f        // _hoverSwell(悬停整条微胀)
+    const val jellySpeed = 3f          // _jellySpeed(座位/秒饱和基准)
+    const val jellyStretch = 0.2f      // _jellyStretch(快滑横向拉伸上限)
+    const val jellyBrake = 25f         // _jellyBrake(座位/秒²刹车饱和)
+    const val jellySquash = 0.15f      // _jellySquash(急停纵向压扁上限)
+    const val glowReach = 28f          // _glowReach(dp, 触点光晕半径基准)
+    const val glowGrowth = 3f          // _glowGrowth(淡出扩散倍率)
+    const val glowPeak = 0.06f         // _glowPeak(光晕强度上限)
+    const val glowWash = 0.7f          // _glowWash(全条泛光份额)
+    const val pressGrowth = 1f / 8f    // _pressGrowth(整条按压膨胀)
+    const val maxPressGrowth = 16f     // _maxPressGrowth(dp 绝对封顶)
+    const val pullStretch = 0.5f       // _pullStretch(越界拖幅横拉率)
+
+    /**
+     * FlClash `NavigationDock.heightOf`: 条实高随系统字号增大 —
+     * `62 + textScaler.scale(10) - 10`,即 label 行按 fontScale 长出的部分
+     * 加进条高,文字放大永不截尾。返回 Dp(density 无关)。
+     */
+    fun heightOf(density: androidx.compose.ui.unit.Density): androidx.compose.ui.unit.Dp =
+        barHeight + (labelSize.value * (density.fontScale - 1f)).dp
+
+    /** FlClash `insetOf` 的 dp 表达: 内容从条底边缘起算 = 条高 + 底距(不含 shadowRoom)。 */
+    fun contentInset(
+        density: androidx.compose.ui.unit.Density,
+        gestureBarHeight: androidx.compose.ui.unit.Dp,
+    ): androidx.compose.ui.unit.Dp = heightOf(density) + glassBottomFloat.coerceAtLeast(gestureBarHeight)
 }
 
 /**
