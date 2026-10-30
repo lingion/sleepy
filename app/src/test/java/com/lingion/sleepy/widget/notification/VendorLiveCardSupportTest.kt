@@ -24,13 +24,10 @@ class VendorLiveCardSupportTest {
         // On JVM the class is missing the hidden API -> undefined behavior only
         // when we actually call. Lock the symbol existence for downstream calls.
         // (The class itself is on the bootclasspath only on device.)
-        if (method != null) {
-            assertEquals(4, method.parameterTypes.size)
-        } else {
-            // The hidden method is device-specific; JVM tests only verify that
-            // its absence is handled without throwing.
-            assertTrue(true)
-        }
+        assertTrue(
+            "setSuperXInfosSceneList must keep the four-parameter signature when exposed",
+            method == null || method.parameterTypes.size == 4,
+        )
     }
 
     @Test
