@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -53,5 +54,32 @@ class SingleSliderGhostTest {
         assertFalse(singleSliderGhostVisible(current = 7f, baseline = Float.NEGATIVE_INFINITY, epsilon = 0.05f))
         // abs(NaN - x) <= epsilon 在 IEEE754 恒 false → 会误判"可见", 显式挡掉
         assertFalse(singleSliderGhostVisible(current = Float.NaN, baseline = Float.NaN, epsilon = 0.05f))
+    }
+
+    /**
+     * singleSliderGhostX 手算锁值 (终审 Finding 1 的纯函数面): 复刻 material3
+     * 1.5.0-beta02 SliderLayout — trackW = W - thumbW, 起点缩进 thumbW/2,
+     * 离散内部刻度按 corner = trackH/2 再缩进, 端点回全轨线性 (isOnFirstOrLastStep)。
+     * 手算组 W=720 / thumbW=8 / trackH=32 (corner=16) → trackW=712:
+     * - 连续 steps=0: frac=0 → 4+0=4; frac=0.5 → 4+round(356)=360; frac=1 → 4+712=716
+     *   (旧公式 thumbHalf 名错实为全宽 8px: 8+(720-16)f → 端点 8/712, 各偏真 thumb
+     *   中心 4px = 半条细条 — 细条半透明, 肉眼即见错位);
+     * - 离散 steps=19: 端点同连续, frac=0.5 亦同 (圆角缩进组对称), 内部 frac=0.25 →
+     *   4+round(0.25*(712-32))+16 = 4+170+16 = 190 (旧公式 183 — 7px 偏差且随轨道
+     *   长度放大, 正是终审指出的量级);
+     * - frac 越界夹取 0..1 后走端点语义。
+     */
+    @Test
+    fun ghost_x_replicates_material3_thumb_placement() {
+        assertEquals(4f, singleSliderGhostX(720f, 0f, steps = 0, thumbWidthPx = 8f, trackHeightPx = 32f), 0f)
+        assertEquals(360f, singleSliderGhostX(720f, 0.5f, steps = 0, thumbWidthPx = 8f, trackHeightPx = 32f), 0f)
+        assertEquals(716f, singleSliderGhostX(720f, 1f, steps = 0, thumbWidthPx = 8f, trackHeightPx = 32f), 0f)
+        assertEquals(4f, singleSliderGhostX(720f, 0f, steps = 19, thumbWidthPx = 8f, trackHeightPx = 32f), 0f)
+        assertEquals(360f, singleSliderGhostX(720f, 0.5f, steps = 19, thumbWidthPx = 8f, trackHeightPx = 32f), 0f)
+        assertEquals(716f, singleSliderGhostX(720f, 1f, steps = 19, thumbWidthPx = 8f, trackHeightPx = 32f), 0f)
+        assertEquals(190f, singleSliderGhostX(720f, 0.25f, steps = 19, thumbWidthPx = 8f, trackHeightPx = 32f), 0f)
+        // 越界夹取
+        assertEquals(4f, singleSliderGhostX(720f, -0.3f, steps = 19, thumbWidthPx = 8f, trackHeightPx = 32f), 0f)
+        assertEquals(716f, singleSliderGhostX(720f, 1.4f, steps = 0, thumbWidthPx = 8f, trackHeightPx = 32f), 0f)
     }
 }

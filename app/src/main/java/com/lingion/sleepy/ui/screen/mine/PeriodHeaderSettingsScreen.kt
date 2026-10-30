@@ -212,6 +212,7 @@ fun PeriodHeaderSettingsScreen(onBack: () -> Unit) {
                                 SingleSliderGhostMark(
                                     baselineFrac = (hangingBaseline - (-1f)) / 2f,
                                     modifier = Modifier.testTag("header-hanging-ghost"),
+                                    steps = 19,
                                 )
                             }
                         }

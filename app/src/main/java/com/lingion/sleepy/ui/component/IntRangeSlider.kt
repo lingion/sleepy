@@ -294,15 +294,42 @@ internal fun singleSliderGhostVisible(
 }
 
 /**
+ * 单头幽灵细条中心 x (px) — 1:1 复刻 material3 1.5.0-beta02 SliderLayout 的 thumb
+ * 摆放公式 (Slider.kt Layout measurable 实测): 轨道盒 = 全宽两端共缩进一个
+ * thumbWidth (trackW = W - thumbW), 盒起点缩进 thumbWidth/2; 档位 (steps>0) 的
+ * 内部刻度再按轨道圆角 (trackHeight/2) 内缩, 端点刻度 (frac==0/1) 回全轨线性 —
+ * 与真 thumb 的 isOnFirstOrLastStep 分支逐字对应。thumb 中心 = thumbWidth/2 +
+ * round(...)。调用点 Canvas matchParentSize 与 Slider 布局节点同盒 (探针实测),
+ * 故本式产出的 x 即真 thumb 中心所在。
+ */
+internal fun singleSliderGhostX(
+    nodeWidthPx: Float,
+    frac: Float,
+    steps: Int,
+    thumbWidthPx: Float,
+    trackHeightPx: Float,
+): Float {
+    val f = frac.coerceIn(0f, 1f)
+    val trackW = nodeWidthPx - thumbWidthPx
+    val corner = trackHeightPx / 2f
+    val offset = if (steps > 0 && f != 0f && f != 1f) {
+        ((trackW - 2f * corner) * f).roundToInt() + corner
+    } else {
+        (trackW * f).roundToInt().toFloat()
+    }
+    return thumbWidthPx / 2f + offset
+}
+
+/**
  * 单头滑杆轨道上的原值细条 (纯装饰, 需求 2026-10-29; 形态 = 用户裁定的"一条细条",
  * 单值没有区间段, 不做轨道段)。仿 material3 默认 thumb 竖胶囊形态: 4dp 宽 x 全高
  * 圆头, primary 低透明 — 与双头幽灵端点细条 (本文件 RangeSlider track 内) 同观感族。
  *
- * 几何与色值单点: 拇指半宽 4dp / 轨道两端缩进 8dp / 细条宽 4dp / alpha 0.40 只准
- * 出现在下面这一处 — material3 Slider 轨道盒 = slider 全宽两端各缩进 thumbWidth/2,
- * frac 0..1 线性映射进该内缩区; 调用点 Canvas 用 matchParentSize 撑整条 Slider 边界
- * (高由 44dp thumb 主导)时细条与真 thumb 逐像素同形同位。色相条等自定义底衬不进
- * 本件 (对比配方另画, 见 HueSlider), 本件服务标准 material3 Slider。
+ * 几何与色值单点: thumb 宽 4dp / 轨道高 16dp / 细条宽 4dp / alpha 0.40 只准出现在
+ * 下面这一处 — 摆位走 singleSliderGhostX (material3 摆放公式逐字复刻); 调用点
+ * Slider 有档位时必须把同一 steps 传进本件, 幽灵与真 thumb 才同分支同刻度。
+ * 色相条等自定义底衬不进本件 (对比配方另画, 见 HueSlider), 本件服务标准
+ * material3 Slider。RTL 镜像与双头幽灵同法 (frac 翻转, 公式对称)。
  *
  * 非交互铁律: 零 pointerInput、零语义 (testTag 由调用点挂在本件返回的布局上时
  * 仅服务 Robolectric 存在性断言, 不参与朗读), 幽灵纯渲染 — 落库节奏仍归调用点
@@ -313,13 +340,19 @@ internal fun singleSliderGhostVisible(
 internal fun BoxScope.SingleSliderGhostMark(
     baselineFrac: Float,
     modifier: Modifier = Modifier,
+    steps: Int = 0,
 ) {
     val primary = MaterialTheme.colorScheme.primary
     Canvas(modifier.matchParentSize()) {
-        val thumbHalf = 4.dp.toPx()
+        val thumbW = 4.dp.toPx()
+        val trackH = 16.dp.toPx()
         val barW = 4.dp.toPx()
-        val frac = baselineFrac.coerceIn(0f, 1f)
-        val x = thumbHalf + (size.width - 2f * thumbHalf) * frac
+        val frac = if (layoutDirection == LayoutDirection.Rtl) {
+            1f - baselineFrac.coerceIn(0f, 1f)
+        } else {
+            baselineFrac
+        }
+        val x = singleSliderGhostX(size.width, frac, steps, thumbW, trackH)
         drawRoundRect(
             color = primary.copy(alpha = 0.40f),
             topLeft = Offset(x - barW / 2f, 0f),
