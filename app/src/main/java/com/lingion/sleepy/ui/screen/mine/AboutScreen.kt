@@ -64,6 +64,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.BuildConfig
 import com.lingion.sleepy.R
+import com.lingion.sleepy.console.ConsoleBootstrap
+import com.lingion.sleepy.console.handlers.UnlockTapCounter
 import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
@@ -285,10 +287,21 @@ fun AboutScreen(
                     color = colors.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
+                // release 隐藏开关（Task 7, SPEC §5.2）: 连点版本号 7 次(60s 窗口)
+                // → armForUnlock 绑端口等待 /v1/enable; debug 构建无副作用短路。
+                val appContext = LocalContext.current.applicationContext
+                    as android.app.Application
                 Text(
                     text = "v${BuildConfig.VERSION_NAME}",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = colors.onSurfaceVariant
+                    color = colors.onSurfaceVariant,
+                    modifier = Modifier
+                        .noRippleClickable {
+                            if (UnlockTapCounter.registerTap(System.currentTimeMillis())) {
+                                ConsoleBootstrap.armForUnlock(appContext)
+                            }
+                        }
+                        .dbgTag("about_version", text = "v${BuildConfig.VERSION_NAME}", role = "button")
                 )
                 Spacer(modifier = Modifier.height(24.dp))
             }

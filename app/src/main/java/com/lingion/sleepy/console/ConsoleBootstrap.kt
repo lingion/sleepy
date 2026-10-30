@@ -4,7 +4,9 @@ import android.app.Application
 import android.util.Log
 import com.lingion.sleepy.BuildConfig
 import com.lingion.sleepy.console.handlers.ClockHandler
+import com.lingion.sleepy.console.handlers.EnableFlow
 import com.lingion.sleepy.console.handlers.JwMockHandler
+import com.lingion.sleepy.console.handlers.UnlockTapCounter
 import com.lingion.sleepy.console.handlers.DataOpsRuntime
 import com.lingion.sleepy.console.ui.UiOpsRuntime
 import java.util.concurrent.atomic.AtomicBoolean
@@ -13,9 +15,13 @@ import org.json.JSONObject
 /**
  * console 装配入口 — 唯一知道“开关态 → 服务器生命周期”映射的地方。
  *
- * debug 包：由 debug 源集 DebugConsoleProvider 调 [onCreate]，无条件启动。
- * release 包：默认物理不启动（SPEC §5.1）；隐藏开关解锁流程属 Task 7，
- * 届时解锁成功才调 [start]。Task 1 的 /v1/enable 只做 TokenStore 挂壳。
+ * debug 包：由 debug 源集 DebugConsoleProvider 调 [onCreate]，无条件启动全能力。
+ * release 包（Task 7 完整流程）：默认物理不监听端口（SPEC §5.1 红线 1）；
+ * AboutScreen 连点版本号 7 次 → [armForUnlock] 只绑"等待 enable"服务
+ * （仅 /v1/hello + /v1/enable 可达 — AuthGate 在 DebugGate.isActive=false 时
+ * 拒一切其他路径）；口令对 → [finishReleaseUnlock] 补注册全部 handler 并把
+ * 能力面按解锁态降级（catalog/trigger/jw-mock 各自 403 红线）。一键失活 =
+ * [stop]（停服 + 清 token + DebugGate.invalidate，红线 3 全程零持久化）。
  *
  * 扩展点（控制器裁决）：[registerDefaultHandlers] 定义 main 侧默认端点，
  * [addHandler] 暴露注册通道给 debug 源集（DebugConsoleProvider 在 start 之前注册
@@ -27,27 +33,27 @@ object ConsoleBootstrap {
 
     private val started = AtomicBoolean(false)
     private var server: DebugConsoleServer? = null
+    @Volatile
+    private var appRef: Application? = null
 
-    /** debug 源集 StartupProvider 入口；release 解锁后才允许调 [start]。 */
+    /** debug 源集 StartupProvider 入口；release 连点 armed 后才经 [armForUnlock] 绑端口。 */
     fun onCreate(app: Application) {
-        if (BuildConfig.DEBUG) start(app)
+        if (BuildConfig.DEBUG) start(app) else rememberApp(app)
     }
 
-    /** 幂等启动：注册默认端点 → 装配 data-ops → 起服务器 → DebugGate 激活（debugBuild 取编译期常量）。 */
+    /** release: SleepyApp.onCreate 直调, 只存 Application 引用(不碰端口/不激活任何门位)。 */
+    fun rememberApp(app: Application) {
+        if (appRef == null) appRef = app
+    }
+
+    /** 幂等启动（debug 全能力路径）：注册全部端点 → 装配运行时 → 起服务器 → 激活。 */
     fun start(app: Application) {
         if (!started.compareAndSet(false, true)) return
         try {
-            TokenStore.reset(passphrase = BuildConfig.CONSOLE_ENABLE_PASSPHRASE)
-            registerDefaultHandlers()
-            ClockHandler.registerAll()
-            JwMockHandler.registerAll(app)
-            DataOpsRuntime.install(app)
-            UiOpsRuntime.install(app)
-            val s = DebugConsoleServer()
-            s.start()
-            server = s
+            appRef = app
+            bindAwaitingServer(app)
+            registerAllCapabilities(app)
             DebugGate.activate(debugBuild = BuildConfig.DEBUG, releaseUnlocked = DebugGate.isReleaseUnlocked)
-            Log.i(TAG, "debug console listening on 127.0.0.1:${DebugConsoleServer.PORT}")
         } catch (t: Throwable) {
             // SPEC §9.4：绑定失败必须在启动日志显式报错，且不留下半活状态
             started.set(false)
@@ -56,12 +62,60 @@ object ConsoleBootstrap {
         }
     }
 
+    /**
+     * release 连点 7 次后调用：只绑端口 + 注册免 token 的 hello/enable —
+     * 其他路径此刻物理 401（AuthGate 真值表），"等待解锁"不扩大攻击面。
+     * 幂等；重复 arm 不重绑。
+     */
+    fun armForUnlock(app: Application) {
+        if (appRef == null) appRef = app
+        if (started.get()) return
+        if (!started.compareAndSet(false, true)) return
+        try {
+            bindAwaitingServer(app)
+        } catch (t: Throwable) {
+            started.set(false)
+            server = null
+            Log.e(TAG, "release unlock-await bind failed :${DebugConsoleServer.PORT}", t)
+        }
+    }
+
+    /**
+     * release 解锁成功后的能力面补注册（enable handler 内调）— 与 debug
+     * [start] 同一集合，唯一差异 = DebugGate.debugBuild=false，红线 2/降级面
+     * 由各自 handler 内部按 debugBuild 判定（catalog 写 403 / trigger 未注册
+     * 物理 404 / jw-mock 403）。
+     */
+    fun finishReleaseUnlock() {
+        appRef?.let { registerAllCapabilities(it) }
+    }
+
+    private fun bindAwaitingServer(app: Application) {
+        TokenStore.reset(passphrase = BuildConfig.CONSOLE_ENABLE_PASSPHRASE)
+        registerDefaultHandlers()
+        val s = DebugConsoleServer()
+        s.start()
+        server = s
+        Log.i(TAG, "console listening on 127.0.0.1:${DebugConsoleServer.PORT} (debug=${BuildConfig.DEBUG})")
+    }
+
+    private fun registerAllCapabilities(app: Application) {
+        ClockHandler.registerAll()
+        JwMockHandler.registerAll(app)
+        DataOpsRuntime.install(app)
+        UiOpsRuntime.install(app)
+        Log.i(TAG, "debug console listening on 127.0.0.1:${DebugConsoleServer.PORT}")
+    }
+
+    /** 失活（红条一键 / 测试复位）：停服 + 清 token + 门位归零，红线 3。 */
     fun stop() {
         if (!started.compareAndSet(true, false)) return
         runCatching { server?.stop() }
         server = null
         DebugGate.invalidate()
         TokenStore.revoke()
+        UnlockTapCounter.reset()
+        CommandRouter.reset()
     }
 
     /**
@@ -95,21 +149,29 @@ object ConsoleBootstrap {
             )
         }
         addHandler("/v1/enable", "POST", requiresToken = false) { req ->
-            // Task 1 挂壳：完整解锁流程（UI 连点 7 次 arm + 红条）是 Task 7 的活；
-            // 这里只锁 TokenStore 纯逻辑通路。result 四态 = UnlockResult 枚举名。
+            // Task 7 完整流程：EnableFlow 五分支状态机（JVM 锁于 ReleaseGateUnitTest）。
+            // debug 构建短路 ALREADY_ACTIVE — 口令不参与任何 debug 侧分支(红线 4)。
             val passphrase = try {
                 JSONObject(req.body).getString("passphrase")
             } catch (_: Exception) {
                 return@addHandler Envelope.err(400, "body requires {\"passphrase\":...}")
             }
-            when (TokenStore.attemptUnlock(passphrase)) {
-                UnlockResult.OK -> {
+            when (EnableFlow.attempt(passphrase)) {
+                EnableFlow.Result.ALREADY_ACTIVE -> Envelope.ok("{\"result\":\"ALREADY_ACTIVE\"}")
+                EnableFlow.Result.OK -> {
+                    finishReleaseUnlock()
+                    UnlockTapCounter.reset()
                     val token = TokenStore.issue()
-                    Envelope.ok(if (token != null) "{\"result\":\"OK\",\"token\":\"$token\"}" else "{\"result\":\"OK\"}")
+                    val expires = TokenStore.expiresAtMs()
+                    Envelope.ok(
+                        "{\"result\":\"OK\"" +
+                            (if (token != null) ",\"token\":\"$token\"" else "") +
+                            (if (expires != null) ",\"expiresAt\":$expires" else "") + "}"
+                    )
                 }
-                UnlockResult.WRONG_PASSPHRASE -> Envelope.ok("{\"result\":\"WRONG_PASSPHRASE\"}")
-                UnlockResult.BACKOFF -> Envelope.ok("{\"result\":\"BACKOFF\"}")
-                UnlockResult.NOT_ARMED -> Envelope.ok("{\"result\":\"NOT_ARMED\"}")
+                EnableFlow.Result.WRONG_PASSPHRASE -> Envelope.ok("{\"result\":\"WRONG_PASSPHRASE\"}")
+                EnableFlow.Result.BACKOFF -> Envelope.ok("{\"result\":\"BACKOFF\"}")
+                EnableFlow.Result.NOT_ARMED -> Envelope.ok("{\"result\":\"NOT_ARMED\"}")
             }
         }
     }

@@ -107,6 +107,14 @@ object TokenStore {
         return constantTimeEquals(token.toByteArray(), current.toByteArray())
     }
 
+    /** 当前 token 到期时刻（epoch ms）；无有效 token → null。响应体只回这个派生值, 不回口令。 */
+    @Synchronized
+    fun expiresAtMs(): Long? {
+        val t = token ?: return null
+        if (now() - issuedAt >= TOKEN_TTL_MS) return null
+        return issuedAt + TOKEN_TTL_MS
+    }
+
     /** 立即吊销 token（invalidate / session 复位用）。 */
     @Synchronized
     fun revoke() {
