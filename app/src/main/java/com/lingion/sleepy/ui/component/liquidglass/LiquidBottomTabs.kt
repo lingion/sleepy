@@ -271,7 +271,8 @@ fun LiquidBottomTabs(
                     if (targetIndex != lastHapticIndex[0]) {
                         lastHapticIndex[0] = targetIndex
                         hapticView.performHapticFeedback(
-                            android.view.HapticFeedbackConstants.CLOCK_TICK
+                            android.view.HapticFeedbackConstants.CLOCK_TICK,
+                            android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING,
                         )
                     }
                     dragging = false
@@ -295,7 +296,8 @@ fun LiquidBottomTabs(
                     if (crossedIndex != lastHapticIndex[0]) {
                         lastHapticIndex[0] = crossedIndex
                         hapticView.performHapticFeedback(
-                            android.view.HapticFeedbackConstants.CLOCK_TICK
+                            android.view.HapticFeedbackConstants.CLOCK_TICK,
+                            android.view.HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING,
                         )
                     }
                     animationScope.launch {

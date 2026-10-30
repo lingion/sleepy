@@ -13,18 +13,32 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.rememberGraphicsLayer
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyant.backdrop.backdrops.LayerBackdrop
 import com.lingion.sleepy.Tab
+import com.lingion.sleepy.ui.component.GlassBackdropHolder
+import com.lingion.sleepy.ui.component.GlassPillBar
 import com.lingion.sleepy.ui.component.NavDockSpec
 import com.lingion.sleepy.ui.component.liquidglass.LiquidBottomTab
 import com.lingion.sleepy.ui.component.liquidglass.LiquidBottomTabs
@@ -50,39 +64,101 @@ internal fun LiquidGlassNavHost(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    val rootBackdrop: LayerBackdrop = rememberGlassLayerBackdrop(
-        domain = GlassBackdropDomain.Content,
-        providerId = "liquid-nav-root",
-    )
+    // 渲染引擎分流(2026-10-30): API 33+ = kyant-backdrop 根采样(官方稳定面);
+    // API < 33 = FlClash 全量 AGSL 移植栈(GlassPillBar → DockGlassBar,
+    // LiquidGlassEngine 需 31+, 26–30 引擎取不到 → 栈内逐 pane 短路 classic 实底)。
+    val useLegacyGlass = android.os.Build.VERSION.SDK_INT < 33
     val density = LocalDensity.current
     val navBarsBottom = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
+    // 滚动内容页尾余量: kyant = 胶囊高 + 摆位底距; AGSL 栈 = FlClash 内容 inset
+    // (条高随字号 + 底距取 max(21dp, 手势条)), 与旧 dock 分支同式。
+    val legacyReserve = NavDockSpec.contentInset(density, navBarsBottom)
     val bottomPad = if (floating) {
         (NavDockSpec.bottomFloat + 4.dp).coerceAtLeast(navBarsBottom + NavDockSpec.bottomFloat)
     } else {
         navBarsBottom + 6.dp
     }
     val horizontalPad = if (floating) NavDockSpec.horizontalMargin else 8.dp
-    // 滚动内容页尾余量 = 胶囊高 + 胶囊底边距屏幕底的距离 (同原 dock 分支实测语义)。
-    val reserveBottom = NavDockSpec.capsuleHeight + bottomPad
+    val reserveBottom = if (useLegacyGlass) legacyReserve else NavDockSpec.capsuleHeight + bottomPad
+    val rootBackdrop: LayerBackdrop = rememberGlassLayerBackdrop(
+        domain = GlassBackdropDomain.Content,
+        providerId = "liquid-nav-root",
+    )
+    val legacyHolder = if (useLegacyGlass) remember { GlassBackdropHolder() } else null
     Box(modifier.fillMaxSize()) {
-        androidx.compose.runtime.CompositionLocalProvider(
+        CompositionLocalProvider(
             com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding provides reserveBottom,
         ) {
-            Box(Modifier.fillMaxSize().glassBackdropProducer(rootBackdrop)) {
-                content()
+            if (legacyHolder != null) {
+                // AGSL 分支内容捕获: drawWithContent 把内容录进 GraphicsLayer,
+                // 逐帧 toImageBitmap 写回 holder(一帧滞后 = FlClash _Replay 语义)。
+                // 必须走 4 参显式 record(density, layoutDirection, size, block):
+                // 便利重载沿用层旧尺寸(首帧 IntSize.Zero)→ toImageBitmap 抛异常
+                // 被吞 → holder.bitmap 恒 null → 三 pane 永不绘制。
+                val contentLayer = rememberGraphicsLayer()
+                val captureOriginPx = remember { mutableStateOf(Offset.Zero) }
+                LaunchedEffect(legacyHolder) {
+                    while (true) {
+                        withFrameMillis { }
+                        try {
+                            legacyHolder.bitmap = contentLayer.toImageBitmap().asAndroidBitmap()
+                            legacyHolder.originRootPx = captureOriginPx.value
+                        } catch (e: Exception) {
+                            // 首帧层未就绪
+                        }
+                    }
+                }
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .drawWithContent {
+                            contentLayer.record(
+                                this,
+                                layoutDirection,
+                                IntSize(size.width.toInt(), size.height.toInt()),
+                            ) {
+                                this@drawWithContent.drawContent()
+                            }
+                            drawContent()
+                        }
+                        .onGloballyPositioned { c ->
+                            captureOriginPx.value = Offset(c.positionInRoot().x, c.positionInRoot().y)
+                        }
+                ) {
+                    content()
+                }
+            } else {
+                Box(Modifier.fillMaxSize().glassBackdropProducer(rootBackdrop)) {
+                    content()
+                }
             }
         }
+        // AGSL 栈自带摆位(edgeMargin 21dp / bottomDp=max(21, 手势条) / shadowRoom),
+        // 外层不再加 padding, 否则双重底距。
         Box(
-            Modifier
-                .align(Alignment.BottomCenter)
-                .padding(horizontal = horizontalPad, vertical = bottomPad)
+            if (legacyHolder != null) {
+                Modifier.align(Alignment.BottomCenter).fillMaxWidth()
+            } else {
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(horizontal = horizontalPad, vertical = bottomPad)
+            }
         ) {
-            LiquidGlassNavBar(
-                currentTab = currentTab,
-                onTabSelected = onTabSelected,
-                updateNoticeVisible = updateNoticeVisible,
-                backdrop = rootBackdrop,
-            )
+            if (legacyHolder != null) {
+                GlassPillBar(
+                    currentTab = currentTab,
+                    onTabSelected = onTabSelected,
+                    updateNoticeVisible = updateNoticeVisible,
+                    backdropHolder = legacyHolder,
+                )
+            } else {
+                LiquidGlassNavBar(
+                    currentTab = currentTab,
+                    onTabSelected = onTabSelected,
+                    updateNoticeVisible = updateNoticeVisible,
+                    backdrop = rootBackdrop,
+                )
+            }
         }
     }
 }
