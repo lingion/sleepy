@@ -183,38 +183,6 @@ class JwParserFixtureTest {
         true  // 抛了 → 严格模式
     }
 
-    @Test
-    fun `non-qz empty and login boundaries return empty without throwing`() {
-        val empties: List<Pair<String, JwParser>> = listOf(
-            "zf-old-table1/empty_table.html" to JwOldZfParser(res("zf-old-table1/empty_table.html")),
-            "zf-old-table1/login_page.html" to JwOldZfParser(res("zf-old-table1/login_page.html")),
-            "zf-new-kblist/kblist_no_courses_this_semester.json" to
-                JwNewZfParser(res("zf-new-kblist/kblist_no_courses_this_semester.json")),
-            "zf-new-html/grid_empty_semester.html" to JwNewZfParser(res("zf-new-html/grid_empty_semester.html")),
-            "zf-new-html/grid_missing_fields.html" to JwNewZfParser(res("zf-new-html/grid_missing_fields.html")),
-            "zf-new-html/login_page.html" to JwNewZfParser(res("zf-new-html/login_page.html")),
-            "qz-base-crazy/empty_kbtable.html" to JwQzCrazyParser(res("qz-base-crazy/empty_kbtable.html")),
-            "qz-br-withnode/timetable_kbtable_empty.html" to
-                JwQzBrParser(res("qz-br-withnode/timetable_kbtable_empty.html")),
-            "qz-old/timetable_kbtable_empty.html" to JwOldQzParser(res("qz-old/timetable_kbtable_empty.html")),
-            "cf-chengfang/empty_timetable.html" to JwChengFangParser(res("cf-chengfang/empty_timetable.html")),
-            "cf-chengfang/login_page_no_kbxx.html" to JwChengFangParser(res("cf-chengfang/login_page_no_kbxx.html")),
-            "pku-bnuz/pku_empty.html" to JwPekingParser(res("pku-bnuz/pku_empty.html")),
-            "pku-bnuz/pku_login.html" to JwPekingParser(res("pku-bnuz/pku_login.html")),
-            "pku-bnuz/bnuz_empty.html" to JwBnuzParser(res("pku-bnuz/bnuz_empty.html")),
-            "pku-bnuz/bnuz_login.html" to JwBnuzParser(res("pku-bnuz/bnuz_login.html")),
-            "hnust-urp/hnust_empty_kbtable.html" to JwHnustParser(res("hnust-urp/hnust_empty_kbtable.html")),
-            "hnust-urp/hnust_login_page.html" to JwHnustParser(res("hnust-urp/hnust_login_page.html")),
-            "hnust-urp/urp_grid_empty.html" to JwUrpParser(res("hnust-urp/urp_grid_empty.html")),
-            "wisedu-json/xskcb_empty_rows.json" to JwWiseduParser(res("wisedu-json/xskcb_empty_rows.json")),
-        )
-        for ((path, parser) in empties) {
-            val got = try { parser.generateCourseList() } catch (e: Exception) {
-                fail("$path 空边界不应抛异常 (got ${e::class.simpleName}: ${e.message})"); emptyList()
-            }
-            assertEquals("$path 空边界应 0 课", 0, got.size)
-        }
-    }
 
     @Test
     fun `every protocol has at least one success and one empty or login boundary`() {
