@@ -331,7 +331,8 @@ fun EditTableScreen(
                                     TimeSlotEditorPeriodTableOption(it.id, it.name, it.nodesPerDay)
                                 },
                                 selectedPeriodTableId = pendingBind,
-                                onSelectPeriodTable = { pendingBind = it }
+                                onSelectPeriodTable = { pendingBind = it },
+                                dbgTagPrefix = "edit_table_slot"
                             )
                         }
                     }
