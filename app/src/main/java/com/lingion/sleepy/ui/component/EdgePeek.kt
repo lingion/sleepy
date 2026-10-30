@@ -31,12 +31,12 @@ import com.lingion.sleepy.R
  * 数值出处(2026-10-27 官方文档与实现交叉验证, 用户裁决采纳):
  * - 停留 500ms 换页: ItemTouchHelper 边缘滚动与 pragmatic-drag-and-drop 的
  *   timeDampeningDurationMs(400) 同量级, Baymard 触控研究上限 500 — 取整 500;
- * - 边缘区 10dp【2026-10-29 修正, 用户反馈: 拖到周日列被缘区吞掉】: 判据对齐
- *   Lawnchair Workspace — 翻页候选只来自「中心命中邻页」(checkDragObjectIsOverNeighbourPages
- *   → verifyInsidePage, 页边界即视口缘), 中心悬在本页任何可见列 = 落子, 永不翻页。
- *   旧 72dp 内缩带把整个末列(周日)连同大半末-1列划进触发区: 落子与翻页两个意图
- *   共用一片手势域, 互相打架 (周日列中心 ≈ 屏宽-23dp, 一进列就踩雷)。
- *   10dp ≈ 「压死屏缘才算翻页意图」, 等效 LC 的越页命中;
+ * - 边缘区 10dp【2026-10-30 用户裁决, 替换 2026-10-29「列带外缘 10dp」】: 触发线锚
+ *   **可视表格外壳缘**, 左右各内缩同一 10dp — 镜像对称。旧判据锚列带缘: 右线贴屏缘
+ *   (≈15dp) 而左线把整条时间列划进触发区 (≈61dp) — 「往下翻页要这个页边距, 往上翻页
+ *   就不是」(用户原话)。落子安全不变: 末列/首列列心距各自触发线仍 ≈ 列宽/2 + 5dp,
+ *   各列落子全程在区外 (Lawnchair verifyInsidePage 语义维持: 中心悬在本页可见列 =
+ *   落子, 永不翻页; 翻页只属越页命中);
  * - 翻页动画 300ms + 曲线 (0.1,0.1,0,1): 预测性返回官方动效规格
  *   (developer.android.com/design/architecture/predictive-back, CN 镜像同文);
  * - 预览条进入缩放 110%→100%、淡入阈值 35%: 同上预测性返回 enter/fade 规格;

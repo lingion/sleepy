@@ -372,7 +372,8 @@ fun ScheduleScreen(
                 state = pagerState,
                 // 边缘翻页特性: 相邻页保持 compose — 浮态宿主随 week 换页时新页几何立即可用,
                 // 且拖拽手势流(pointerInput)不因页回收而腰斩。默认 0 会 dispose 邻页。
-                beyondViewportPageCount = 1,
+                // beyondViewportPageCount = 1 (拖拽中保持全部周不被回收, 避免起拖页被回收腰斩手势)
+                beyondViewportPageCount = if (floatState.dragging) (pagerMaxWeek - 1).coerceAtLeast(1) else 1,
                 modifier = Modifier.fillMaxSize()
             ) { page ->
                 // page 是 0-based 周索引，独立于 state.currentWeek 过滤课程
@@ -482,7 +483,7 @@ fun ScheduleScreen(
                             // tween 按用户裁决 300ms 与预测返回规格)。目标页与网格 bump 的 week 一致。
                             floatScope.launch {
                                 pagerState.animateScrollToPage(
-                                    (pagerState.settledPage + dir).coerceIn(0, pagerMaxWeek - 1),
+                                    (floatState.week - 1).coerceIn(0, pagerMaxWeek - 1),
                                     animationSpec = tween(
                                         durationMillis = com.lingion.sleepy.ui.component.FLOAT_PAGE_ANIM_MS.toInt(),
                                         easing = com.lingion.sleepy.ui.component.FLOAT_PAGE_EASING,
