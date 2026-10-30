@@ -145,7 +145,7 @@ internal fun OccurrenceEditor(occurrence: CourseOccurrence, table: TimeTableEnti
                     val nodeStart = rawStart.coerceIn(1, maxStd)
                     val nodeEnd = (rawStart + rawCount - 1).coerceIn(nodeStart, maxStd)
                     val nodeCount = nodeEnd - nodeStart + 1
-                    // <=1 兼 1 (nodeEnd 夹取下界=nodeStart, >1 构造上不可达), 与 AddCourseScreen 逐字同
+                    // nodeEnd 夹取下界=nodeStart ⇒ nodeCount ≥ 1 恒成立 (<1 不可达, <=1 即 ==1), 与 AddCourseScreen 逐字同
                     val nodeSummary = if (nodeCount <= 1) {
                         context.getString(R.string.slot_summary_period_single, nodeStart)
                     } else {

@@ -53,6 +53,10 @@ class HeaderHangingGhostContractTest {
         )
         assertTrue("未消费共享渲染件", src.contains("SingleSliderGhostMark("))
         assertTrue(
+            "渲染件必须挂与真 Slider 同档 steps = 19 (删则幽灵走连续分支, 内部刻度偏至 ~7px)",
+            Regex("""SingleSliderGhostMark\([\s\S]{0,400}?steps\s*=\s*19""").containsMatchIn(src),
+        )
+        assertTrue(
             "frac 换算必须按域 -1..1: (hangingBaseline - (-1f)) / 2f",
             Regex("""\(\s*hangingBaseline\s*-\s*\(\s*-1f\s*\)\s*\)\s*/\s*2f""").containsMatchIn(src),
         )
