@@ -621,6 +621,9 @@ private fun CourseColorSection(
                 dbgTagPrefix = "course_color_segment",
             )
             if (!colorless && mode == AppPrefs.COURSE_COLOR_MODE_CUSTOM) {
+                // 幽灵基线 (spec §3.1 色相变体): remember 落在 if 块内 = CUSTOM 编辑区
+                // 首次进组合时刻的 seed; 离开再进 (块销毁重建) 基线重算 — 同"进页时刻"语义。
+                val hueBaseline = remember { seed.coerceAtLeast(0f) }
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -643,6 +646,7 @@ private fun CourseColorSection(
                     hue = sliderHue,
                     onHueChange = { sliderHue = it.roundToInt().toFloat() },
                     onHueCommit = { onSeedCommit(it.roundToInt().toFloat()) },
+                    initialHue = hueBaseline,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp)

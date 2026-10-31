@@ -2,6 +2,9 @@ package com.lingion.sleepy.ui.component
 
 import android.annotation.SuppressLint
 import android.os.Build
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.VectorConverter
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -108,6 +111,40 @@ class CourseFloatState {
     internal var cardBounds: Rect? by mutableStateOf(null)
     internal var popupBounds: Rect? by mutableStateOf(null)
 
+    // ---- 弹簧归位 (Task 4: springFloatBack 名实相符) ----
+    // springFloatBack 不再瞬时写回 x/y, 只置 returnTick; 宿主 LaunchedEffect(returnTick)
+    // 调 animateReturnToOrigin, 用 motionScheme defaultSpatial 把 x/y 弹簧落回原点。
+    // Animatable 持在状态对象里(宿主 remember 同一实例, 重组不丢进度); Dp 无
+    // VectorConverter 于 DpOffset — 位置拆两个 Animatable<Dp>。
+    var returnTick: Int by mutableStateOf(0)
+        private set
+    private val xAnimatable = Animatable(0.dp, Dp.VectorConverter)
+    private val yAnimatable = Animatable(0.dp, Dp.VectorConverter)
+
+    /** 请求弹簧归位 — 自增 returnTick 唤醒宿主 LaunchedEffect。 */
+    fun requestReturnToOrigin() {
+        returnTick++
+    }
+
+    /**
+     * 归位协程体: 先 syncToFields 保证起点与当前 x/y 一致(首轮/外部直写后),
+     * 再 animateTo(origin) — 收敛终值精确等于 originX/originY, 故 runOnIdle
+     * 排空后的精确相等断言(FloatDragTest :282/:360)继续成立。
+     * 门闩: !dragging — 归位途中再抓卡时拖拽写 x/y 优先; course 身份判据 —
+     * 归位途中收层(dismiss)或改浮他卡后, 陈旧协程不得再写当前 x/y。
+     */
+    suspend fun animateReturnToOrigin(specX: FiniteAnimationSpec<Dp>, specY: FiniteAnimationSpec<Dp>) {
+        val anchored = course ?: return
+        xAnimatable.syncToFields(x)
+        yAnimatable.syncToFields(y)
+        xAnimatable.animateTo(originX, specX, block = { if (!dragging && course === anchored) x = value })
+        yAnimatable.animateTo(originY, specY, block = { if (!dragging && course === anchored) y = value })
+    }
+
+    private suspend fun Animatable<Dp, *>.syncToFields(target: Dp) {
+        if (value != target) snapTo(target)
+    }
+
     fun lift(
         course: CourseEntity,
         day: Int,
@@ -142,12 +179,27 @@ class CourseFloatState {
     }
 }
 
-/** 浮起时模糊整个网格内容层 — API 31+ 高斯模糊; 26-30 无 RenderEffect, 由遮罩压暗兜底。 */
+/**
+ * 遮罩不透明度分档 (用户实测定值, EMUI/Android 11 压暗被系统压缩 → 兜底加深):
+ * API 26-30 无 RenderEffect → 0.35 压暗兜底; API 31+ 模糊已让位浮卡 → 0.10 轻罩。
+ * 纯函数便于测试锁值; AnimatedVisibility 只负责 opacity 0→该档值的淡入淡出。
+ */
+internal fun scrimAlphaFor(sdkInt: Int): Float =
+    if (sdkInt < Build.VERSION_CODES.S) 0.35f else 0.10f
+
+/** 网格模糊目标半径 (dp): 浮起且静止才糊, 拖拽中/收层复原 0 — 缓动交给宿主。 */
+internal fun floatBlurRadiusDp(active: Boolean, dragging: Boolean): Dp =
+    if (active && !dragging) 20.dp else 0.dp
+
+/** 浮起时模糊整个网格内容层 — API 31+ 高斯模糊; 26-30 无 RenderEffect, 由遮罩压暗兜底。
+ *  半径经 lambda 在 graphicsLayer 的 draw 相位读取 (终审 I-2): 动画 State 的每帧
+ *  变化只触发重绘, 不再重组挂载它的整棵子树; graphicsLayer 恒挂, 零半径不设
+ *  renderEffect (与旧"0 半径不挂层"的可见行为等价)。 */
 @SuppressLint("NewApi")
-internal fun Modifier.gridFloatBlur(): Modifier = graphicsLayer {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        val radius = 20.dp.toPx()
-        renderEffect = BlurEffect(radius, radius)
+internal fun Modifier.gridFloatBlur(radiusPx: () -> Float): Modifier = graphicsLayer {
+    val r = radiusPx()
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && r > 0f) {
+        renderEffect = BlurEffect(r, r)
     }
 }
 

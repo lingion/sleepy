@@ -1,5 +1,7 @@
 [evidence=A/B] 数据源: vivo dev.vivo.com.cn/doc 894·895·896·930(A) · 小米 dev.mi.com pId=2131·2146(A) · OPPO coloros.com/article/A00000075(A)+潘塔纳尔接入文档(A) · 华为 developer.huawei.com Live View Kit(A, 见 ../huawei/) · 魅族 demo 实证(A/B, 见 ../meizu/) · 荣耀 honor.com 支持页+developer.honor.com(B) 抓取时间 2026-09-18
 
+> 2026-10-29 实现复核：以下为 2026-09 的平台横评与优先级快照。Sleepy 当前已实现 OPPO / 一加 / realme 共用的 Android 16 Live Updates 通道；“OPPO 挂起观察”仅保留为原 Pantanal 专用通道评估语境。当前代码依据和验证范围见 [OPPO / ColorOS 接入状态](../../oppo-coloros-fluid-cloud.md)。
+
 # 跨厂商 · china-live-cards-comparison.md
 
 > 证据等级说明: A=官方文档落盘 / B=搜索快照+媒体。**华为/小米/OPPO/vivo/魅族五列主体为 A; 荣耀列整体 B; Apple 仅作对照常识(B, 本轮未落盘, 详见 gaps.md)**。目标: 读完本表能定"Sleepy 先接哪家"。

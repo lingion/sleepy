@@ -1,10 +1,7 @@
 package com.lingion.sleepy.ui.screen.mine
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -61,6 +58,7 @@ import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.PeriodTableOption as TimeSlotEditorPeriodTableOption
 import com.lingion.sleepy.ui.component.TimeSlotEditor
+import com.lingion.sleepy.ui.component.sleepyExpandSpecs
 import com.lingion.sleepy.ui.screen.schedule.SchedulePolicy
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -275,18 +273,26 @@ fun EditTableScreen(
                                 color = colors.onSurfaceVariant
                             )
                         }
+                        // MD3E (Task 7a): chevron 旋转走 defaultSpatial (收稳不弹, 与展开家族同拍)
+                        val slotsArrowRotation by animateFloatAsState(
+                            targetValue = if (timeSlotsExpanded) 180f else 0f,
+                            animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>(),
+                            label = "time-slots-arrow"
+                        )
                         Icon(
                             Icons.Outlined.ExpandMore,
                             contentDescription = null,
                             tint = colors.onSurfaceVariant,
-                            modifier = Modifier.rotate(if (timeSlotsExpanded) 180f else 0f)
+                            modifier = Modifier.rotate(slotsArrowRotation)
                         )
                     }
 
+                    // MD3E (Task 7a): 展开家族 — 尺寸 fastSpatial + 淡入淡出 motionScheme
+                    val expandSpecs = sleepyExpandSpecs()
                     AnimatedVisibility(
                         visible = timeSlotsExpanded,
-                        enter = expandVertically() + fadeIn(),
-                        exit = shrinkVertically() + fadeOut()
+                        enter = expandSpecs.enter,
+                        exit = expandSpecs.exit,
                     ) {
                         Column(
                             modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)

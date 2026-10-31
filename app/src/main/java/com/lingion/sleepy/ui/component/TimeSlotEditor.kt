@@ -1,7 +1,11 @@
 package com.lingion.sleepy.ui.component
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -50,12 +54,14 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.lingion.sleepy.R
@@ -338,8 +344,15 @@ private fun ManualTimeSlotEditor(
     var targetIndex by remember { mutableStateOf<Int?>(null) }
     val density = LocalDensity.current
     val rowGapPx = with(density) { ROW_GAP_DP.toPx() }
-    // Animatable: spring 驱动 dragOffset, 修 P1 rubber-banding + P3 瞬移无回弹
+    // Animatable: 弹簧驱动 dragOffset, 修 P1 rubber-banding + P3 瞬移无回弹
     val dragOffsetY = remember { Animatable(0f) }
+    // MD3E 规格 (Task 5): settle/取消 = fastSpatial (回弹落定性格),
+    // 非法弹回/边界冻结 = defaultSpatial (收稳不弹)。pointerInput 启动时捕获。
+    val motion = MaterialTheme.motionScheme
+    val settleSpec = motion.fastSpatialSpec<Float>()
+    val returnSpec = motion.defaultSpatialSpec<Float>()
+    val rowHostSpec = motion.defaultSpatialSpec<IntSize>()
+    val rowExpand = sleepyExpandSpecs()
     val rowHeightPx = remember { mutableStateOf(1f) }
     val coroutineScope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
@@ -364,12 +377,13 @@ private fun ManualTimeSlotEditor(
                 // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 小号色块按钮
                 Button(
                     onClick = { onRowsChange(TimeTableUtils.appendEmptyRow(rows)) },
-                    modifier = dbgTagPrefix?.let { Modifier.dbgTag("${it}_add", role = "button") } ?: Modifier,
+                    modifier = dbgTagPrefix?.let { Modifier.dbgTag("${it}_add", role = "button") }
+                        ?: Modifier.testTag("timeslot-add-row"),
                     shape = SleepyTheme.shapes.medium,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colors.secondaryContainer,
                         contentColor = colors.onSecondaryContainer
-                    )
+                    ),
                 ) {
                     Icon(
                         Icons.Outlined.Add,
@@ -389,10 +403,12 @@ private fun ManualTimeSlotEditor(
                 )
             }
 
-            // Rows
+            // Rows — animateContentSize: 增删行时面板高度平滑过渡
+            // (行在普通 Column, 无 lazy 列表 → animateItem() 不适用, 计划宣告的 fallback)。
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .animateContentSize(rowHostSpec)
                     .background(colors.surfaceContainerLow, SleepyTheme.shapes.large)
                     .padding(10.dp),
                 verticalArrangement = Arrangement.spacedBy(ROW_GAP_DP)
@@ -412,6 +428,22 @@ private fun ManualTimeSlotEditor(
                     }
                     val longPressLabel = stringResource(R.string.timeslot_longpress_to_reorder)
                     val courseNodeLabel = stringResource(R.string.course_node_format, index + 1)
+                    // 入场配方 (官方 "普通列表里新项的动画" 模式): remember 槽位按组合位置
+                    // 记忆 — 末尾增行只有新槽位首播展开入场; 中间删行时后续行落在既有
+                    // 槽位 (state 已是 true) → 不重播, 高度收拢交给宿主 animateContentSize。
+                    val rowVisible = remember { MutableTransitionState(false).apply { targetState = true } }
+                    this@Column.AnimatedVisibility(
+                        visibleState = rowVisible,
+                        enter = rowExpand.enter,
+                        exit = rowExpand.exit,
+                        // zIndex 随拖拽态上浮: 行现在是 AV 的子节点, 兄弟行的绘制次序由
+                        // AV (宿主 Column 的直接子节点) 决定 — 层级必须挂在 AV 上,
+                        // 挂进行内部 (TimeSlotRowItem) 只在单子树内生效, 拖起卡片会被后续行盖住。
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .zIndex(if (isDragging) 1f else 0f)
+                            .testTag("timeslot-row"),
+                    ) {
                     val rowLongPress = Modifier.pointerInput(index, reorderEnabled) {
                         if (!reorderEnabled) return@pointerInput
                         detectDragGesturesAfterLongPress(
@@ -424,7 +456,7 @@ private fun ManualTimeSlotEditor(
                             },
                             onDragCancel = {
                                 coroutineScope.launch {
-                                    dragOffsetY.animateTo(0f, spring())
+                                    dragOffsetY.animateTo(0f, settleSpec)
                                     draggingIndex = null
                                     targetIndex = null
                                     invalidTarget = false
@@ -448,7 +480,7 @@ private fun ManualTimeSlotEditor(
                                     displayRows = reordered
                                     onRowsChange(reordered)
                                     coroutineScope.launch {
-                                        dragOffsetY.animateTo(0f, spring())
+                                        dragOffsetY.animateTo(0f, settleSpec)
                                         snackbarHostState.showSnackbar(
                                             message = invalidMsg,
                                             duration = androidx.compose.material3.SnackbarDuration.Short
@@ -460,7 +492,7 @@ private fun ManualTimeSlotEditor(
                                     invalidTarget = false
                                     displayRows = rows
                                     coroutineScope.launch {
-                                        dragOffsetY.animateTo(0f, spring())
+                                        dragOffsetY.animateTo(0f, returnSpec)
                                     }
                                 }
                             },
@@ -483,11 +515,11 @@ private fun ManualTimeSlotEditor(
                                 val nowInvalid = !TimeTableUtils.canReorderTimeSlot(displayRows, from, to, courses)
                                 if (nowInvalid && !invalidTarget) {
                                     haptic.performHapticFeedback(HapticFeedbackType.Reject)
-                                    // 冻结: snap 到 (to - from) 行偏 — 边界位停止跟随手指
+                                    // 冻结: 弹簧 snap 到 (to - from) 行偏 — 边界位停止跟随手指
                                     coroutineScope.launch {
                                         dragOffsetY.animateTo(
                                             (to - from) * rowPitch,
-                                            spring()
+                                            returnSpec
                                         )
                                     }
                                 }
@@ -511,7 +543,6 @@ private fun ManualTimeSlotEditor(
                         deleteTag = dbgTagPrefix?.let { "${it}_row#${index}_delete" },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .zIndex(if (isDragging) 1f else 0f)
                             .offset { IntOffset(0, dragOffsetY.value.toInt()) }
                             .onSizeChanged { size -> if (size.height > 0) rowHeightPx.value = size.height.toFloat() }
                             .semantics(mergeDescendants = true) {
@@ -525,6 +556,7 @@ private fun ManualTimeSlotEditor(
                         onEndChange = { newEnd -> onRowsChange(displayRows.map { if (it.node == row.node) it.copy(end = newEnd) else it }) },
                         onDelete = { onRowsChange(TimeTableUtils.removeAndRenumber(displayRows, row.node)) }
                     )
+                    }
                 }
             }
         }
@@ -556,14 +588,23 @@ private fun TimeSlotRowItem(
     onDelete: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
-    val containerColor = when {
-        dropInvalid -> colors.errorContainer
-        isDragging -> colors.primaryContainer
-        isBlank -> colors.secondaryContainer  // 空白行特权视觉: 整卡浅色
-        else -> colors.surface
-    }
+    val motion = MaterialTheme.motionScheme
+    // MD3E (Task 5): 色彩族互换 (错误容器/主容器/空白/面) 走 defaultEffects 缓动,
+    // 高度 0↔6dp 走 defaultSpatial — 拖起/落下不再硬切。
+    val containerColor by animateColorAsState(
+        targetValue = when {
+            dropInvalid -> colors.errorContainer
+            isDragging -> colors.primaryContainer
+            isBlank -> colors.secondaryContainer  // 空白行特权视觉: 整卡浅色
+            else -> colors.surface
+        },
+        animationSpec = motion.defaultEffectsSpec(),
+    )
     val rowShape = SleepyTheme.shapes.medium
-    val dragElevation = if (isDragging) 6.dp else 0.dp
+    val dragElevation by animateDpAsState(
+        targetValue = if (isDragging) 6.dp else 0.dp,
+        animationSpec = motion.defaultSpatialSpec(),
+    )
     val dropBorderModifier = if (isDropTarget) Modifier.border(
         width = 2.dp,
         color = colors.primary,
@@ -628,7 +669,8 @@ private fun TimeSlotRowItem(
                     onClick = onDelete,
                     modifier = Modifier
                         .size(32.dp)
-                        .then(deleteTag?.let { Modifier.dbgTag(it, role = "button") } ?: Modifier)
+                        .then(deleteTag?.let { Modifier.dbgTag(it, role = "button") }
+                            ?: Modifier.testTag("timeslot-delete"))
                 ) {
                     Icon(
                         Icons.Outlined.RemoveCircleOutline,

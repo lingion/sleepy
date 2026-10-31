@@ -4,6 +4,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -68,6 +70,7 @@ import com.lingion.sleepy.ui.component.SettingsFlatCard
 import com.lingion.sleepy.ui.component.SettingsCard
 import com.lingion.sleepy.ui.component.SettingToggleRow
 import com.lingion.sleepy.ui.component.TimePickerField
+import com.lingion.sleepy.ui.component.sleepyExpandSpecs
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
@@ -563,17 +566,26 @@ fun GeneralSettingsScreen(
                                 color = colors.onSurface
                             )
                         }
+                        // MD3E (Task 7a): chevron 旋转走 defaultSpatial (收稳不弹, 与展开家族同拍)
+                        val langArrowRotation by animateFloatAsState(
+                            targetValue = if (languageExpanded) 180f else 0f,
+                            animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>(),
+                            label = "language-arrow"
+                        )
                         Icon(
                             Icons.Outlined.ExpandMore,
                             contentDescription = null,
                             tint = colors.onSurfaceVariant,
-                            modifier = Modifier.rotate(if (languageExpanded) 180f else 0f)
+                            modifier = Modifier.rotate(langArrowRotation)
                         )
                     }
-                    androidx.compose.animation.AnimatedVisibility(
+                    // MD3E (Task 7a): 旧全限定名一并转正; 展开家族 = 尺寸 fastSpatial
+                    // + 淡入淡出 motionScheme
+                    val expandSpecs = sleepyExpandSpecs()
+                    AnimatedVisibility(
                         visible = languageExpanded,
-                        enter = androidx.compose.animation.expandVertically() + androidx.compose.animation.fadeIn(),
-                        exit = androidx.compose.animation.shrinkVertically() + androidx.compose.animation.fadeOut()
+                        enter = expandSpecs.enter,
+                        exit = expandSpecs.exit,
                     ) {
                         Column(
                             modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),

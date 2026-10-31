@@ -347,11 +347,12 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 
 ## OPPO 流体云
 
-v1.0.37 起课前提醒支持流体云样式：`FluidCloudService` 前台服务以 `NotificationCompat.ProgressStyle` 展示课程名、时间、教室，进度条随上课时间推进，状态栏持续可见（设置项默认关闭）。OPPO/一加 Seedling 卡片的接入材料已备好但**尚未接入构建**。
+**已接入 Android 16 Live Updates 通道**：`FluidCloudService` 前台服务通过 `VendorLiveCardRenderer` 构建 `NotificationCompat.ProgressStyle` 实时通知，并请求 promoted ongoing 展示。OPPO / 一加 / realme 共用 ColorOS 适配分支；仓库已有 RMX6688 / ColorOS 16 的真机行为记录，实际胶囊和卡片展示仍取决于机型、系统版本及授权，保留实验标记。
 
-- OPPO `SeedlingSupportSDK-lite 3.0.7` AAR 在 `app/libs/`（要求 minSdk 26），gradle 尚未声明依赖，`SeedlingCardWidgetProvider` 未实现
-- UPK 源工程见 [`oppo-fluid-cloud-upk/`](oppo-fluid-cloud-upk/)（API 2.0，`immediate` 触发，`notification/statusbar` 入口）
-- `identifier`、`intent` 等 OPPO 分配值在工程中保留为 `REPLACE_WITH_OPPO_*` 占位，详见该目录 README
+- 在「我的 → 提醒 → 课前提醒」选择「流体云」（默认使用横幅，两者互斥）；支持课程名、时间、教室或倒计时作为胶囊主显示内容，进度每 15 秒更新，上课时结束
+- 提醒页提供 2 分钟测试投放和结束入口，并检查通知权限、系统实时更新授权及厂商能力状态；OPPO 家族 API 36+ 优先跳转实时更新授权页。权限允许不代表卡片已显示；旧系统或未获提升时按普通进度通知展示，通知权限关闭仍会影响可见性
+- **Pantanal / Seedling SDK + UPK 专用通道尚未接入**：`app/libs/` 中的 `SeedlingSupportSDK-lite 3.0.7` AAR 未声明为 Gradle 依赖，`SeedlingCardWidgetProvider` 未实现或注册；[`oppo-fluid-cloud-upk/`](oppo-fluid-cloud-upk/) 仅为源工程骨架，仍保留 `REPLACE_WITH_OPPO_*` 占位，不能作为发布或验收证据
+- 代码依据、两条通道的边界及验证范围见 [OPPO / ColorOS 接入状态](docs/vendors/oppo-coloros-fluid-cloud.md)
 
 ---
 
@@ -373,7 +374,7 @@ v1.0.37 起课前提醒支持流体云样式：`FluidCloudService` 前台服务�
 - **分课表提醒**：在「我的 → 提醒 → 课表提醒」查看全部课表，逐表开关并立即保存；沿用已有设置，关闭总开关时仍可预先配置，开启总开关后生效。编辑课表页面不再放置提醒开关。
 - 今日、明日和课前提醒提供当前课表的动态内容预览
 - 日期规则可分别配置法定节假日、调休日、补班日和普通周末
-- 课前提醒可分别选择通知横幅和实验性流体云；流体云支持主显示字段选择、测试入口与通知/精确闹钟/电池等可靠性状态检查
+- 课前提醒在通知横幅和实验性流体云之间二选一，切回横幅会停止流体云服务；流体云支持主显示字段选择、测试与结束入口，以及通知/精确闹钟/电池等可靠性状态检查
 - **上课自动勿扰**：授予系统勿扰访问权限后，上课期间开启勿扰，下课恢复
 - 课前分钟数**自由输入**（1–999，胶囊型输入框，非硬编码选项）
 - 提醒内容**动态查询当天课表**，无课则推送「今日 X 号，今天没有课程」
@@ -581,7 +582,7 @@ sleepy/
 │   └── logo.png                                               # README 顶部标志
 ├── assets/                                                    # 原始标志图片
 ├── gh-pages/                                                  # 在线课表页面
-├── oppo-fluid-cloud-upk/                                      # OPPO 流体云 UPK 源工程（未接入构建）
+├── oppo-fluid-cloud-upk/                                      # Pantanal/Seedling UPK 骨架（专用通道未接入）
 ├── artifacts/                                                 # 已归档构建产物
 ├── scripts/                                                   # 学校目录生成、校验与版本维护脚本
 ├── tools/                                                     # 小组件预览、设备验证与教务采集工具

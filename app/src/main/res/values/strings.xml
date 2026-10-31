@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Sleepy 课程表</string>
     <string name="widget_today_label">今日课程</string>
     <string name="widget_today_small_label">今日课程 · 小</string>
@@ -888,7 +888,7 @@
     <string name="about_feedback_email_body">请描述你遇到的问题或建议：\n\n— 环境 —\n（选填）\n</string>
     <string name="about_feedback_no_mail_app">未找到可用的邮件应用，请改用 GitHub Issue</string>
     <string name="about_license_title">开源声明</string>
-    <string name="about_license_body">SCAU protocol references: greyovo/ScheduleXParser_SCAU, greyovo/AIScheduleSCAU, N0B0d7-rzddn/SCAU-course-tool, CberYellowstone/Course-Hunter-SCAU, Weather174/SCAU-Course-Assistant, ToMo517/Scau_Course_bot-main, visionyimian/scau_class_table.\n\n本应用部分教务导入适配参考了以下开源项目的公开实现。按跨校普适项目 / 单校项目两类组织，单校卡展开后可查看该校所参考的所有学生维护项目。
+    <string name="about_license_body" tools:ignore="Typos">SCAU protocol references: greyovo/ScheduleXParser_SCAU, greyovo/AIScheduleSCAU, N0B0d7-rzddn/SCAU-course-tool, CberYellowstone/Course-Hunter-SCAU, Weather174/SCAU-Course-Assistant, ToMo517/Scau_Course_bot-main, visionyimian/scau_class_table.\n\n本应用部分教务导入适配参考了以下开源项目的公开实现。按跨校普适项目 / 单校项目两类组织，单校卡展开后可查看该校所参考的所有学生维护项目。
 
 跨校普适：WakeUp 课程表 (YZune, Apache-2.0) 与 WakeupSchedule_BUPT (dIT8Zv, Apache-2.0) 强智/强智变体/老版正方/URP/青果/湖南科大等十二个教务解析器;WakeupSchedule_Kotlin (Apache-2.0) 经典金智 EAMS;时光课程表 cqu.js 重庆大学门户 REST;shiguang_warehouse (XingHeYuZhuan, MIT) 武汉理工与经典 EAMS、新正方网格视图、264 校目录比对与 starlink.js、wake_up.js 协议链形态调研;282 个教务适配脚本以 MIT 原文随包分发于 assets/third_party/shiguang/;LumaSchedule (Junyxor, Apache-2.0) WakeUP 6.6.2 官方教务目录吸收战役边界交叉验证 (仅 profile 与登录元数据迁移, 未复制服务端解析器, 未复用代码);zfn_api (openschoolcn, MPL-2.0) 与 FlowCourse (jiaweiyaya, GPL-3.0) 新正方 kbList 形态交叉验证;iwut (TokenTeam, AGPL-3.0, 仅参考协议形态) 武汉理工节次映射;「上课」shangkeschedule (qiqqqqq517, Apache-2.0) 与 WakeUp 课程表学校登记数据名单复核。
 
@@ -985,6 +985,9 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="appearance_header_show_x">显示“第 X 节”</string>
     <string name="appearance_header_hide_time">隐藏时间行</string>
     <string name="appearance_header_hide_time_sub">旧式表头只显示节次，不显示上课时间（实验性，默认关闭）</string>
+    <string name="appearance_header_time_alignment">时间对齐方式</string>
+    <string name="appearance_header_alignment_dash">短横线对齐</string>
+    <string name="appearance_header_alignment_center">时间整体居中</string>
     <string name="appearance_header_hanging">左右移动 %1$s 个开始时间宽度</string>
     <string name="appearance_section_widget">小组件</string>
     <!-- i18n: hardcoded string extraction -->
