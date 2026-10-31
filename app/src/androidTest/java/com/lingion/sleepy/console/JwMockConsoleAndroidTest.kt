@@ -32,6 +32,11 @@ class JwMockConsoleAndroidTest {
     fun injectRule() {
         val app = InstrumentationRegistry.getInstrumentation().targetContext
             .applicationContext as android.app.Application
+        // 测试隔离（2026-10-30 设备全量实跑）：前序 DebugBannerAndroidTest 的
+        // @After DebugGate.reset() 把进程级 debugBuild 清零 → guard() 判 403,
+        // 本类两用例 @Before 注入全挂。guard 是红线 2 正确行为不动 —
+        // 每用例自立场, 与 provider 装配(debug 包恒 debugBuild=true)同构。
+        DebugGate.activate(debugBuild = true, releaseUnlocked = false)
         MockRuleStore.init(app)
         MockRuleStore.clear()
         val put = JSONObject(JwMockHandler.handlePut(app,

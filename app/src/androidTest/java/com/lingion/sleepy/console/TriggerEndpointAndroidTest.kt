@@ -49,13 +49,17 @@ class TriggerEndpointAndroidTest {
 
     @Test
     fun addSoonestCourse_viaHandler_landsCourseAtVirtualNowPlusDelay() = runBlocking {
-        // 虚拟时间拨到 08:00 整, delayMin=2 → 课应落在 08:02（真实时间无关）
+        // 虚拟时间拨到 08:00 整, delayMin=2 → 课应落在 08:02（真实时间无关）。
+        // atTime(8,0) 派生的 epoch 本就是整秒(上海偏移为整小时, nanos=0), 无需再钉。
+        // 守卫断言必须截纳秒: AppClock 是 ticking clock(System.currentTimeMillis+offset),
+        // setAbsolute 与读取之间真实时钟必 tick 出亚毫秒~毫秒级正偏移 —— 设备实跑
+        // 2026-10-30 取证 expected:<08:00> but was:<08:00:00.001>。亚秒抖动不影响
+        // DB 面断言: DebugTriggers 用 String.format("%02d:%02d") 截到分钟。
         val base = LocalTime.of(8, 0)
-        val real = System.currentTimeMillis()
         val virtual = java.time.LocalDate.now(AppClock).atTime(base)
             .atZone(java.time.ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli()
         AppClock.setAbsolute(virtual)
-        assertEquals(base, LocalTime.now(AppClock))
+        assertEquals("守卫: 锚定秒必须生效(截亚秒抖动)", base, LocalTime.now(AppClock).withNano(0))
 
         val resp = JSONObject(TriggerHandler.handle(app,
             """{"type":"add_soonest_course","delayMin":2,"courseName":"$tag 课","room":"$tag 楼"}"""))
