@@ -51,6 +51,8 @@ object SessionHandler {
     }
 
     private fun handle(app: Application): String = try {
+        // volatile 面归零走本函数唯一入口(时钟+mock), 摘要字段与实现不脱钩
+        resetVolatileState()
         val repo = SleepyApp.get().repository
         val summary = runBlocking {
             val all = repo.getAllTables().map { ConsoleTable(it.id, it.name) }
