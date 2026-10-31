@@ -187,6 +187,22 @@ class ConsoleAcceptanceAndroidTest {
         val unauth = wireCall("GET", "/v1/clock", "", token = null)
         assertEquals(401, unauth.code)
         assertEquals(401, JSONObject(unauth.body!!.string()).getInt("code"))
+
+        // POST-with-body 必须走真 socket 到 handler(2026-10-31 M1 真机复盘):
+        // dispatch 直调不过 NanoHTTPD 临时文件层, 抓不到外部客户端 body 丢失。
+        // 默认 TempFileManager 写 java.io.tmpdir=/tmp(app 不可写, 771 shell) →
+        // 读空。dayOffset=2 拨完必须能在 GET 快照里看到 2 天偏移。
+        val posted = wireCall("POST", "/v1/clock",
+            """{"mode":"offset","dayOffset":2}""", token)
+        assertEquals(200, posted.code)
+        val pb = JSONObject(posted.body!!.string())
+        assertTrue("真 wire POST body 必须送达 handler(空=回环坏): " + pb.opt("error"),
+            pb.getBoolean("ok"))
+        val snap = JSONObject(wireCall("GET", "/v1/clock", "", token).body!!.string())
+        assertEquals("dayOffset=2 必须经真 socket 送达 handler",
+            2L * 86_400_000L, snap.getJSONObject("data").getLong("offsetMs"))
+        // 用例自清: 复位虚拟时钟, 不污染同类其他用例
+        wireCall("POST", "/v1/clock", """{"mode":"reset"}""", token)
     }
 
     // ---- wire helpers: 真 HTTP 环(optHttp 禁用自动重定向, 状态行逐字节到达) ----

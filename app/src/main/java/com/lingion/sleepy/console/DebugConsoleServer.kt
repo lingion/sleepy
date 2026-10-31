@@ -15,13 +15,23 @@ import java.io.File
  *
  * 出口统一 [Envelope]，HTTP 状态码与 envelope 的 code 字段对齐。
  */
-class DebugConsoleServer : NanoHTTPD(HOST, PORT) {
+class DebugConsoleServer(tempDir: File? = null) : NanoHTTPD(HOST, PORT) {
 
     companion object {
         const val HOST = "127.0.0.1"
         const val PORT = 3737
         const val TOKEN_HEADER = "X-Sleepy-Token"
         private const val MIME_JSON = "application/json"
+        private const val URLENCODED_MIME = "application/x-www-form-urlencoded"
+    }
+
+    init {
+        // Android 经典坑(2026-10-31 M1 真机复盘): nanohttpd 2.3.1 默认
+        // DefaultTempFileManager 把 POST body 写进 java.io.tmpdir — Android 上
+        // /tmp 归 shell 771, app 进程不可写 → parseBody 落盘失败, 外部客户端
+        // (curl/M1/Python)的 body 恒空。改指 app 私有 cache 子目录。
+        // tempDir=null 保持 nanohttpd 默认行为(JVM 测试面 tmpdir 可写)。
+        tempDir?.let { setTempFileManagerFactory(CacheTempFileManagerFactory(it)) }
     }
 
     override fun serve(session: IHTTPSession): Response {
@@ -58,18 +68,46 @@ class DebugConsoleServer : NanoHTTPD(HOST, PORT) {
     }
 
     /**
-     * NanoHTTPD 2.3.1 把非表单 POST 体写进临时文件、路径放 parseBody 结果的 "content" 键；
-     * 控制面只收原始 JSON 体，读出后即删临时文件（请求体不留痕迹）。
+     * 请求体读取。nanohttpd 2.3.1 实测语义(2026-10-31 M1 复盘 + 源码逐行核验,
+     * 与 javadoc 相反; 行号指 fi/iki/elonen/NanoHTTPD.java 2.3.1):
+     *  - POST 非 multipart 非 urlencoded → files["postData"] = 体字符串
+     *    (内存分支 <1024B, 大体会经 tmp bucket; L1164–1186)
+     *  - POST application/x-www-form-urlencoded → decodeParms 把值并进
+     *    session.parameters(L1178–1179), files 为空; 原始体串只留存在
+     *    session.queryParameterString(decodeParms L839 先存原串再分词,
+     *    且分词只进 parameters 不动 qps)。
+     *  - PUT → files["content"] = saveTmpFile 落盘路径(L1187–1189), 依赖可写
+     *    tmpdir(构造注入已修)。PATCH 库无分支(L1164/L1187 只判 POST/PUT),
+     *    体不可读; console 路由表无 PATCH, 不受影响。
+     * 只查 content 会让全部 POST 恒空 — M1 真机复盘根因(读不出体, 写端点全 400)。
      */
     private fun readBody(session: IHTTPSession): String {
         return try {
             val files = HashMap<String, String>()
             session.parseBody(files)
-            val contentPath = files["content"] ?: return ""
-            val f = File(contentPath)
-            val text = if (f.exists()) f.readText() else ""
-            runCatching { f.delete() }
-            text
+            val contentPath = files["content"]
+            if (!contentPath.isNullOrEmpty()) {
+                // PUT: 临时文件读完即删(请求体不留痕迹)
+                val f = File(contentPath)
+                val text = if (f.exists()) f.readText() else ""
+                runCatching { f.delete() }
+                text
+            } else {
+                val postData = files["postData"]
+                if (!postData.isNullOrEmpty()) {
+                    postData
+                } else if (session.method == NanoHTTPD.Method.POST &&
+                    session.headers["content-type"]
+                        ?.startsWith(URLENCODED_MIME, ignoreCase = true) == true
+                ) {
+                    // urlencoded 体已不可逆分词; qps 是唯一原始面。URI query 也写
+                    // qps(decodeHeader L683), 但 urlencoded POST 的体 decodeParms
+                    // 必然后执行(L1179)覆盖之 → 此处 qps 恒为体原文。空体 = ""。
+                    session.queryParameterString ?: ""
+                } else {
+                    ""
+                }
+            }
         } catch (_: Throwable) {
             ""
         }
@@ -109,5 +147,41 @@ class DebugConsoleServer : NanoHTTPD(HOST, PORT) {
     override fun stop() {
         runCatching { super.stop() }
         // 审计环 ConsoleAudit 刻意不清：失活/重绑后 /v1/log 仍能回看本轮证据
+    }
+}
+
+/**
+ * POST body 临时文件工厂 — 复刻 nanohttpd DefaultTempFileManager 语义,
+ * 唯一差异 = 落盘目录可注入（app 私有 cache 子目录, 恒可写）。
+ * readBody 经 parseBody 的 "content" 键拿到 getName() 绝对路径, 零改动兼容。
+ */
+internal class CacheTempFileManagerFactory(private val dir: File) :
+    NanoHTTPD.TempFileManagerFactory {
+
+    override fun create(): NanoHTTPD.TempFileManager = object : NanoHTTPD.TempFileManager {
+        // 可空参数是契约要求: 库内 parseBody→saveTmpFile 固定传 null hint
+        // (NanoHTTPD.java L1188/L1204), DefaultTempFileManager 是 Java 无空检;
+        // Kotlin 覆写声明非空 String 会被 intrinsic 空检炸成 Error 吃掉整个体
+        // (2026-10-31 customTempDir 探针复现: NPE on parameter prefix)。
+        override fun createTempFile(prefix: String?): NanoHTTPD.TempFile {
+            val suffix = prefix?.takeIf { it.isNotBlank() }?.let { "-$it" } ?: ""
+            val file = File(dir, "nanoHTTPD-$suffix-${System.nanoTime()}.tmp")
+            return object : NanoHTTPD.TempFile {
+                override fun getName(): String = file.absolutePath
+                override fun open(): java.io.OutputStream = java.io.BufferedOutputStream(
+                    java.io.FileOutputStream(file)
+                )
+                override fun delete() {
+                    runCatching { file.delete() }
+                }
+            }
+        }
+
+        override fun clear() {
+            // 每请求 readBody 后即删自文件; 这里兜底清残留(PowerfulResponse 等
+            // 未消费路径), 只删本工厂命名前缀, 不碰目录其他内容。
+            dir.listFiles()?.filter { it.name.startsWith("nanoHTTPD-") }
+                ?.forEach { runCatching { it.delete() } }
+        }
     }
 }

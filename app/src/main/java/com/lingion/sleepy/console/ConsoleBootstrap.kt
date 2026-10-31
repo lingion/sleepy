@@ -100,7 +100,10 @@ object ConsoleBootstrap {
         // release arm 路径物理不进入本分支, 口令解锁仍走 EnableFlow→finishReleaseUnlock。
         if (BuildConfig.DEBUG) TokenStore.grantNewToken()
         registerDefaultHandlers()
-        val s = DebugConsoleServer()
+        // POST body 临时目录 = app 私有 cache/console-tmp(恒可写); 默认 tmpdir=/tmp
+        // 在 Android 上 app 不可写 → 外部客户端 body 全丢(2026-10-31 M1 复盘)
+        val tmpDir = java.io.File(app.cacheDir, "console-tmp").apply { mkdirs() }
+        val s = DebugConsoleServer(tmpDir)
         s.start()
         server = s
         Log.i(TAG, "console listening on 127.0.0.1:${DebugConsoleServer.PORT} (debug=${BuildConfig.DEBUG})")
