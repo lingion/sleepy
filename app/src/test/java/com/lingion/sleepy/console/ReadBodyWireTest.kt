@@ -1,8 +1,10 @@
 package com.lingion.sleepy.console
 
+import com.lingion.sleepy.util.AppLog
 import org.json.JSONObject
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -131,6 +133,37 @@ class ReadBodyWireTest {
             assertEquals("""{"mode":"reset"}""", JSONObject(resp).getJSONObject("data").getString("body"))
             assertTrue("注入目录无残留", tmp.listFiles()?.isEmpty() != false)
         } finally {
+            tmp.delete()
+        }
+    }
+
+    @Test
+    fun tmpDirMissing_putFaultInjection_bodyEmptyAndExceptionLogged() {
+        // R1 评审锁(根因 3 失败形态回归防线): catch-all 吞异常不得再"body 恒空、
+        // 无日志"。故障注入: 服务器装配后删掉注入目录 → PUT 落盘时
+        // FileOutputStream 抛 java.io.FileNotFoundException, 被 saveTmpFile
+        // catch-Exception 包成 Error(NanoHTTPD.java L1204/L1211-1212)→ 进
+        // readBody catch。判据: 应答仍 200 且体空(降级语义), AppLog 环必现
+        // 异常记录, 且日志绝不带请求体内容。
+        server.stop()
+        val tmp = File(System.getProperty("java.io.tmpdir"), "console-tmp-fault-${System.nanoTime()}")
+        tmp.mkdirs()
+        try {
+            server = DebugConsoleServer(tmp)
+            server.start()
+            tmp.delete() // 装配完成后抽走目录 = 落盘必炸
+            AppLog.clear()
+            val resp = post("/echo", """{"mode":"reset"}""", "application/json", method = "PUT")
+            assertEquals("降级语义: 读体失败仍回空体", "", JSONObject(resp).getJSONObject("data").getString("body"))
+            val logged = AppLog.snapshot().lastOrNull {
+                it.level == "E" && it.message.contains("readBody")
+            }
+            assertNotNull("异常必须入日志环(静默吞通道已封死)", logged)
+            assertTrue("记录异常类名+message: ${logged?.message}",
+                logged!!.message.contains("java.io.FileNotFoundException"))
+            assertFalse("请求体内容禁止进入日志", logged.message.contains("reset"))
+        } finally {
+            tmp.mkdirs()
             tmp.delete()
         }
     }

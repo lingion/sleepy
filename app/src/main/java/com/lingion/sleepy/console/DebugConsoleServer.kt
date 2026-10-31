@@ -1,5 +1,6 @@
 package com.lingion.sleepy.console
 
+import com.lingion.sleepy.util.AppLog
 import fi.iki.elonen.NanoHTTPD
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
@@ -23,6 +24,7 @@ class DebugConsoleServer(tempDir: File? = null) : NanoHTTPD(HOST, PORT) {
         const val TOKEN_HEADER = "X-Sleepy-Token"
         private const val MIME_JSON = "application/json"
         private const val URLENCODED_MIME = "application/x-www-form-urlencoded"
+        private const val TAG = "SleepyConsole"
     }
 
     init {
@@ -108,7 +110,14 @@ class DebugConsoleServer(tempDir: File? = null) : NanoHTTPD(HOST, PORT) {
                     ""
                 }
             }
-        } catch (_: Throwable) {
+        } catch (t: Throwable) {
+            // 评审 R1(根因 3 教训): 降级语义保持空体, 但静默吞通道封死 — 异常
+            // 类名+message 必进 AppLog(设备侧 /v1/log 可读回), 绝不记请求体本身。
+            // 库内 saveTmpFile/getTmpBucket 把真故障包成 java.lang.Error(L1212/
+            // L1105), 故记录根因链末端类名; AppLog.e 尾追 t.message + logcat 全栈。
+            // JVM 安全: 单测 returnDefaultValues=true, android.util.Log 面返 0 不炸。
+            val root = generateSequence(t) { it.cause }.last()
+            AppLog.e(TAG, "readBody failed (root: ${root::class.java.name})", t)
             ""
         }
     }
