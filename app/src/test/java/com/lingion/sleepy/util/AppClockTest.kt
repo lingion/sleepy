@@ -7,6 +7,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 
 /**
  * Task 4 虚拟时钟核心语义：
@@ -27,7 +28,9 @@ class AppClockTest {
             .atZone(ZoneId.of("Asia/Shanghai")).toInstant().toEpochMilli()
         AppClock.setAbsolute(target)
         assertEquals(LocalDate.of(2027, 1, 1), LocalDate.now(AppClock))
-        assertEquals(LocalTime.of(8, 30), LocalTime.now(AppClock))
+        // setAbsolute 用真实 System.currentTimeMillis() 反算 offset, 断言时跨出 1ms tick
+        // 会读到 08:30:00.001; 截到秒吸收 tick, 真实偏移错误仍由下一行 ±2ms 兜住
+        assertEquals(LocalTime.of(8, 30), LocalTime.now(AppClock).truncatedTo(ChronoUnit.SECONDS))
         assertEquals(target.toDouble(), AppClock.millis().toDouble(), 2.0)
     }
 
