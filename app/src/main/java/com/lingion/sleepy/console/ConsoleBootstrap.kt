@@ -158,8 +158,11 @@ object ConsoleBootstrap {
                     ",\"debugBuild\":${DebugGate.debugBuild}" +
                     ",\"unlocked\":${DebugGate.isReleaseUnlocked}" +
                     ",\"active\":${DebugGate.isActive}" +
-                    // debug 装配已自动签发 → 调用方直接可取(token 红线: 只回内存态现值)
-                    ",\"token\":${TokenStore.issue()?.let { "\"$it\"" } ?: "null"}}"
+                    // token 红线（评审 F1）: hello 免 token, release 解锁态回显=任意三方
+                    // app 本机 POST 即窃活 token → AuthGate 形同虚设。仅 debug 构建回显
+                    // 内存现值(SPEC §3 探活可取); release 恒 null — agent 从 /v1/enable
+                    // 成功响应拿 token, 零功能损失。
+                    ",\"token\":${if (DebugGate.debugBuild) TokenStore.issue()?.let { "\"$it\"" } ?: "null" else "null"}}"
             )
         }
         addHandler("/v1/enable", "POST", requiresToken = false) { req ->
