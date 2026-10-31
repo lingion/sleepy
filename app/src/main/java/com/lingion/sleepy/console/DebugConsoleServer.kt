@@ -24,8 +24,6 @@ class DebugConsoleServer : NanoHTTPD(HOST, PORT) {
         private const val MIME_JSON = "application/json"
     }
 
-    val audit = AuditLog()
-
     override fun serve(session: IHTTPSession): Response {
         val path = session.uri ?: "/"
         val method = session.method?.name ?: "GET"
@@ -39,12 +37,15 @@ class DebugConsoleServer : NanoHTTPD(HOST, PORT) {
             // 服务器层兜底：任何未收敛异常也不能裸抛（NanoHTTPD 裸抛会断连接）
             500 to Envelope.err(500, "server failure: ${t::class.simpleName}")
         }
-        audit.record(method, path, token, status, System.currentTimeMillis())
+        ConsoleAudit.log.record(method, path, token, status, System.currentTimeMillis())
         return newFixedLengthResponse(StatusLine(status), MIME_JSON, body)
     }
 
     private fun handleRequest(method: String, path: String, token: String?, session: IHTTPSession): Pair<Int, String> {
-        // Task 2 收编：401 判定抽入纯函数 AuthGate（SPEC §6 release 鉴权拒绝路径单测锁真值表）
+        // Task 2 收编：401 判定抽入纯函数 AuthGate（SPEC §6 release 鉴权拒绝路径单测锁真值表）。
+        // 真值表不区分构建（SPEC §5.2"无例外"字面成立）；debug 包的可用性由
+        // ConsoleBootstrap.bind 时自动签发 token + /v1/hello 暴露保证（SPEC §3
+        // "debug 包跳过此步"= 跳口令与连点 arm, 不跳 token 本身）。
         if (AuthGate.shouldReject(path, DebugGate.isActive, TokenStore.verify(token))) {
             return 401 to Envelope.err(401, "missing or invalid token")
         }
@@ -86,22 +87,27 @@ class DebugConsoleServer : NanoHTTPD(HOST, PORT) {
      * 精确 HTTP 状态行。不直接用 NanoHTTPD.Status 枚举命名常量——2.3.1 里
      * UNAUTHORIZED=403、FORBIDDEN=401（历史命名错位），直接引用会发错状态码；
      * envelope 的 code 才是真源，这里按数值构造。
+     *
+     * 契约（2026-10-30 真机/模拟双失败复盘, 本地 NanoHTTPD 2.3.1 源码字节码核验）:
+     * NanoHTTPD 组装状态行 = "HTTP/1.1" + getDescription() + " \r\n" — 描述必须
+     * 自带数字码（与内置 Status.OK.getDescription()="200 OK" 同构），只回 "OK"
+     * 会发出 `HTTP/1.1OK` 式畸形状态行, 标准 HTTP 客户端全数无法解析。
      */
     private class StatusLine(private val code: Int) : Response.IStatus {
         override fun getRequestStatus(): Int = code
         override fun getDescription(): String = when (code) {
-            200 -> "OK"
-            400 -> "Bad Request"
-            401 -> "Unauthorized"
-            403 -> "Forbidden"
-            404 -> "Not Found"
-            429 -> "Too Many Requests"
-            else -> "Error $code"
+            200 -> "200 OK"
+            400 -> "400 Bad Request"
+            401 -> "401 Unauthorized"
+            403 -> "403 Forbidden"
+            404 -> "404 Not Found"
+            429 -> "429 Too Many Requests"
+            else -> "$code SleepyConsole"
         }
     }
 
     override fun stop() {
         runCatching { super.stop() }
-        audit.clear()
+        // 审计环 ConsoleAudit 刻意不清：失活/重绑后 /v1/log 仍能回看本轮证据
     }
 }

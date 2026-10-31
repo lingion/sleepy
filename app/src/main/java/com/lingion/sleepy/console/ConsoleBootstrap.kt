@@ -36,8 +36,6 @@ object ConsoleBootstrap {
     private val started = AtomicBoolean(false)
     private var server: DebugConsoleServer? = null
 
-    /** /v1/log 读审计环的受控访问面(LogHandler 唯一消费者)。 */
-    val audit: AuditLog? get() = server?.audit
     @Volatile
     private var appRef: Application? = null
 
@@ -97,6 +95,10 @@ object ConsoleBootstrap {
 
     private fun bindAwaitingServer(app: Application) {
         TokenStore.reset(passphrase = BuildConfig.CONSOLE_ENABLE_PASSPHRASE)
+        // debug 包装配即签发(零口令路径): SPEC §3"debug 跳过此步"= 跳口令与连点
+        // arm, 不跳 token 本身 — AuthGate 真值表对两种构建一视同仁(§5.2 无例外)。
+        // release arm 路径物理不进入本分支, 口令解锁仍走 EnableFlow→finishReleaseUnlock。
+        if (BuildConfig.DEBUG) TokenStore.grantNewToken()
         registerDefaultHandlers()
         val s = DebugConsoleServer()
         s.start()
@@ -152,7 +154,9 @@ object ConsoleBootstrap {
                 "{\"paths\":[$paths]" +
                     ",\"debugBuild\":${DebugGate.debugBuild}" +
                     ",\"unlocked\":${DebugGate.isReleaseUnlocked}" +
-                    ",\"active\":${DebugGate.isActive}}"
+                    ",\"active\":${DebugGate.isActive}" +
+                    // debug 装配已自动签发 → 调用方直接可取(token 红线: 只回内存态现值)
+                    ",\"token\":${TokenStore.issue()?.let { "\"$it\"" } ?: "null"}}"
             )
         }
         addHandler("/v1/enable", "POST", requiresToken = false) { req ->

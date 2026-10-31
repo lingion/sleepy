@@ -5,7 +5,14 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.util.AppClock
 import kotlinx.coroutines.runBlocking
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
+import org.json.JSONArray
 import org.json.JSONObject
+import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -36,6 +43,10 @@ class ConsoleAcceptanceAndroidTest {
         app = InstrumentationRegistry.getInstrumentation().targetContext
             .applicationContext as android.app.Application
         assertTrue("debug 包 console 必须已激活", DebugGate.isActive && DebugGate.debugBuild)
+        // 测试隔离（2026-10-30 全量实跑）：同类 clockToFuture… 用例末尾的
+        // /v1/session/reset 会 revoke token（TokenStore 注释"session 复位用"），
+        // JUnit 方法序不可依赖 → 每用例自签, 与 provider debug 装配同构。
+        TokenStore.grantNewToken()
     }
 
     /** SPEC#1: /v1/hello 返回能力清单, 且清单含全 21 路由。 */
@@ -103,10 +114,11 @@ class ConsoleAcceptanceAndroidTest {
         val resp = JSONObject(dispatch("/v1/ui/find", "POST",
             """{"testTag":"about_version"}"""))
         // 关于页未必在前台 → 命中 0 合法; 断言端点语义正确而非节点存在
-        assertTrue(resp.getBoolean("ok"))
-        val nodes = resp.getJSONObject("data").getJSONArray("nodes")
-        (0 until nodes.length()).forEach { i ->
-            val n = nodes.getJSONObject(i)
+        assertTrue("find 必须可答: " + resp.opt("error"), resp.getBoolean("ok"))
+        // handler 出参键 = hits(UiSelectorUnitTest 锁的契约面), 不是 nodes
+        val hits = resp.getJSONObject("data").getJSONArray("hits")
+        (0 until hits.length()).forEach { i ->
+            val n = hits.getJSONObject(i)
             assertNotNull("find 命中必须带 bounds", n.getJSONObject("bounds"))
             assertTrue("可点击面必须显式回 clickable", n.has("clickable"))
         }
@@ -115,6 +127,8 @@ class ConsoleAcceptanceAndroidTest {
     /** SPEC#5 mock 面: 注入即命中、清后即放; 解析入库活体链归 M2 验收(WebView 需登录页)。 */
     @Test
     fun jwMock_injectionRoundTrip() {
+        // 规则表进程级 — 先清, 计数断言才对同进程其他注入隔离
+        MockRuleStore.clear()
         val put = JSONObject(dispatch("/v1/jw/mock", "POST",
             """{"url_pattern":"https://mock.acc/.*","respond_with":"html","body":"<html>$tag</html>"}"""))
         assertTrue(put.getBoolean("ok"))
@@ -126,16 +140,75 @@ class ConsoleAcceptanceAndroidTest {
             .getJSONObject("data").getJSONArray("rules").length())
     }
 
-    /** /v1/log 双环面: 结构存在即可, 内容随会话增长。 */
+    /**
+     * /v1/log 双环面 + 自证闭环: app 环结构存在; audit 环只收经 HTTP serve() 的
+     * 请求(dispatch 直调不入环) → 先打一发真 wire hello, 再断言该请求已入环。
+     */
     @Test
-    fun log_returnsBothRings() {
+    fun log_auditRing_recordsRealHttpRequests() {
+        val before = auditCount()
+        wireHello()
         val resp = JSONObject(dispatch("/v1/log", "GET", ""))
         assertTrue(resp.getBoolean("ok"))
         val data = resp.getJSONObject("data")
         assertNotNull(data.getJSONArray("app"))
         val audit = data.getJSONArray("audit")
-        // 本测试自身已发过多条 console 请求 → 审计环非空(自证闭环)
-        assertTrue("audit 环必须记录到本会话请求", audit.length() > 0)
+        assertTrue("audit 环必须记录到刚发出的 wire 请求(前值=$before 现值=${audit.length()})",
+            audit.length() > before)
+        val last = audit.getJSONObject(audit.length() - 1)
+        assertEquals("/v1/hello", last.getString("path"))
+        assertEquals(200, last.getInt("code"))
+    }
+
+    /**
+     * wire 契约回归(2026-10-30 复盘): NanoHTTPD 2.3.1 状态行 =
+     * "HTTP/1.1"+getDescription()+" \r\n", StatusLine 描述必须自带数字码 —
+     * 畸形行(`HTTP/1.1OK`)标准客户端全数拒收。2xx/4xx 双形态同测。
+     */
+    @Test
+    fun wireResponses_carryStandardStatusLines() {
+        val hello = wireCall("POST", "/v1/hello", "")
+        assertEquals(200, hello.code)
+        assertEquals("application/json", hello.header("Content-Type")?.substringBefore(";"))
+        val body = JSONObject(hello.body!!.string())
+        assertTrue(body.getBoolean("ok"))
+        // debug 装配自动签发 → hello 必须带 token(SPEC §3: 跳口令不跳 token)
+        // 长度字面值 = 实现面 32B x2 hex = 128(JVM GrantNewTokenUnitTest:47 同钉;
+        // 2026-10-30 设备实跑 token 为 null 暴露本行 64 是错口径, 一并纠)
+        assertTrue("debug hello 必须暴露 token",
+            body.getJSONObject("data").getString("token").length == 128)
+
+        val token = TokenStore.issue()
+        val clock = wireCall("GET", "/v1/clock", "", token)
+        assertEquals(200, clock.code)
+        assertTrue(JSONObject(clock.body!!.string()).getBoolean("ok"))
+
+        // 错误面同样必须是可解析的标准状态行(401 = 无 token 打受保护端点)
+        val unauth = wireCall("GET", "/v1/clock", "", token = null)
+        assertEquals(401, unauth.code)
+        assertEquals(401, JSONObject(unauth.body!!.string()).getInt("code"))
+    }
+
+    // ---- wire helpers: 真 HTTP 环(optHttp 禁用自动重定向, 状态行逐字节到达) ----
+
+    private fun auditCount(): Int =
+        JSONObject(dispatch("/v1/log", "GET", "")).getJSONObject("data")
+            .getJSONArray("audit").length()
+
+    private fun wireHello(): Response = wireCall("POST", "/v1/hello", "")
+
+    private val http by lazy {
+        OkHttpClient.Builder().connectTimeout(5, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS).build()
+    }
+
+    private fun wireCall(method: String, path: String, body: String, token: String? = TokenStore.issue()): Response {
+        val media = "application/json; charset=utf-8".toMediaType()
+        val req = Request.Builder().url("http://127.0.0.1:3737$path")
+            .method(method, if (method == "GET") null else body.toRequestBody(media))
+            .apply { token?.let { header("X-Sleepy-Token", it) } }
+            .build()
+        return http.newCall(req).execute()
     }
 
     // 测试线程即桥: dispatch 内部 runBlocking — 与生产 DebugConsoleServer.serve

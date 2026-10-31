@@ -88,6 +88,23 @@ object TokenStore {
         return UnlockResult.OK
     }
 
+    /**
+     * debug 装配专用直接签发（SPEC §3 "debug 包跳过此步" = 跳口令与连点 arm,
+     * 不跳 token 本身）：不经 attemptUnlock —— 零口令接触、不消费失败计数与
+     * 退避窗口（红线 4 口令面零污染）。release 路径物理不调本函数。
+     */
+    @Synchronized
+    fun grantNewToken() {
+        val sb = StringBuilder(64)
+        val bytes = ByteArray(32)
+        repeat(2) {
+            random.nextBytes(bytes)
+            for (b in bytes) sb.append("%02x".format(b))
+        }
+        token = sb.toString()
+        issuedAt = now()
+    }
+
     /** 当前有效 token；无 token 或已过期返回 null（过期时顺手清掉）。 */
     @Synchronized
     fun issue(): String? {

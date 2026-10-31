@@ -19,7 +19,9 @@ object LogHandler {
     fun registerAll() {
         ConsoleBootstrap.addHandler("/v1/log", "GET", requiresToken = true) { req ->
             val limit = req.query["limit"]?.toIntOrNull()?.takeIf { it > 0 }
-            val audit = ConsoleBootstrap.audit
+            // 审计环挂进程级 ConsoleAudit（失活/重绑不丢证据）；只记经 HTTP 的
+            // serve() 请求 — 测试内 CommandRouter.dispatch 直调不经服务器, 不在此环。
+            val audit = com.lingion.sleepy.console.ConsoleAudit.log
             val auditArr = org.json.JSONArray()
             audit?.entries()?.let { list ->
                 (if (limit != null) list.takeLast(limit) else list).forEach { auditArr.put(it) }

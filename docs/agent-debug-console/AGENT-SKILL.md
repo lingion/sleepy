@@ -21,7 +21,7 @@
 
 | 方法 | 路径 | 用途 | 请求体（JSON）| 关键响应字段 |
 |---|---|---|---|---|
-| POST | /v1/hello | 探活+能力清单（免 token）| 空 | `paths[], debugBuild, unlocked, active` |
+| POST | /v1/hello | 探活+能力清单（免 token）| 空 | `paths[], debugBuild, unlocked, active, token`（debug 包装配已自动签发, 直接可取; release 未解锁 = null）|
 | POST | /v1/enable | release 口令解锁（免 token）| `{passphrase}` | `result, token, expiresAt` |
 | GET | /v1/clock | 读虚拟时钟 | — | `virtualNowEpochMs, offsetMs, realNowEpochMs` |
 | POST | /v1/clock | 设虚拟时钟 | `{mode:"offset"\|"absolute"\|"reset", deltaMs?\|dayOffset?\|epochMs?}` | 同上 |
