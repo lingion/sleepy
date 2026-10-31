@@ -8,7 +8,9 @@ import com.lingion.sleepy.util.CourseHueStore
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.WeekDisplayContext
 import com.lingion.sleepy.util.WeekDisplayResolver
+import java.time.LocalDate
 import java.time.LocalDateTime
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 小部件统一读取课表并计算展示日，避免各 provider 各自判定"今天之后最近一节有课的天"。
@@ -51,14 +53,14 @@ internal data class WidgetWeekSource(
      * - NORMAL 档：原 today
      * - NEAREST_BUSY_DAY 档：被自动跳到的最近有课那一天
      */
-    fun resolvedToday(now: java.time.LocalDate = java.time.LocalDate.now()): java.time.LocalDate =
+    fun resolvedToday(now: java.time.LocalDate = LocalDate.now(AppClock)): java.time.LocalDate =
         if (display.status == com.lingion.sleepy.util.WeekDisplayStatus.NEAREST_BUSY_DAY)
             display.targetDate
         else now
 }
 
 internal object WidgetWeekDataLoader {
-    suspend fun resolve(appWidgetId: Int, now: LocalDateTime = LocalDateTime.now()): WidgetWeekSource? {
+    suspend fun resolve(appWidgetId: Int, now: LocalDateTime = LocalDateTime.now(AppClock)): WidgetWeekSource? {
         val app = SleepyApp.get()
         // spec §2.3 刷新源③: 五个 widget 装载器全部经由本函数 — 单点自刷持久 hue
         // 快照, 保证 Canvas 同步读 hueFor 与实际渲染同帧一致。配色是增值数据,

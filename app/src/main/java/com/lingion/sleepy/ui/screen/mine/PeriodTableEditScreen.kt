@@ -274,7 +274,8 @@ fun PeriodTableEditScreen(
                                         ?: smartConfig.value
                                 },
                                 smartConfig = smartConfig.value,
-                                onSmartConfigChange = { smartConfig.value = it }
+                                onSmartConfigChange = { smartConfig.value = it },
+                                dbgTagPrefix = "period_table_edit_slot"
                                 // 作息表编辑页只允许编辑本表内容; 活绑定仅由课程表→作息表入口提供。
                             )
                         }

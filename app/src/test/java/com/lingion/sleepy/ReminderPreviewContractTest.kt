@@ -35,7 +35,7 @@ class ReminderPreviewContractTest {
         assertTrue(source.contains("date, table.startDate, table.maxWeek, allCourses"))
         assertTrue(source.contains("AppPrefs.getHolidayTransfers(SleepyApp.get(), table.id)"))
         assertTrue(source.contains("today.plusDays(1)"))
-        assertTrue(source.contains("LocalTime.now()"))
+        assertTrue(source.contains("LocalTime.now(AppClock)"))
     }
 
     @Test

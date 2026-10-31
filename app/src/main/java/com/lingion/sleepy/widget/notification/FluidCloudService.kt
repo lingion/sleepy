@@ -10,6 +10,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.lingion.sleepy.MainActivity
 import com.lingion.sleepy.R
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 进程内投放状态真源: 服务存活 = 投放中。
@@ -56,7 +57,7 @@ class FluidCloudService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         CourseNotificationScheduler.ensureNotificationChannels(this)
         val preserveTest = intent?.getBooleanExtra(EXTRA_RECONCILE, false) == true &&
-            FluidCastState.testCasting && classEpoch > System.currentTimeMillis()
+            FluidCastState.testCasting && classEpoch > AppClock.millis()
         if (intent?.action == ACTION_STOP) {
             if (!preserveTest) stopCloudNotification()
             return START_NOT_STICKY
@@ -71,7 +72,7 @@ class FluidCloudService : Service() {
         )
         val reuseSession = canReuseFluidSession(
             activeIdentity, nextIdentity, FluidCastState.casting,
-            intent?.action == ACTION_TEST, System.currentTimeMillis(),
+            intent?.action == ACTION_TEST, AppClock.millis(),
         )
         if (!reuseSession) {
             session.stop()
@@ -79,7 +80,7 @@ class FluidCloudService : Service() {
         }
         if (intent?.action == ACTION_TEST) {
             // 流体云测试入口: 用示例课程强制唤起一次, 窗口 2 分钟(进度条真实推进)。
-            val now = System.currentTimeMillis()
+            val now = AppClock.millis()
             courseName = getString(R.string.reminder_fluid_test_course)
             room = getString(R.string.reminder_fluid_test_room)
             teacher = ""
@@ -100,12 +101,12 @@ class FluidCloudService : Service() {
         }
 
         if (notifyEpoch <= 0L || classEpoch <= notifyEpoch) {
-            val now = System.currentTimeMillis()
+            val now = AppClock.millis()
             notifyEpoch = now
             classEpoch = now + 1L
         }
 
-        if (classEpoch <= System.currentTimeMillis()) {
+        if (classEpoch <= AppClock.millis()) {
             stopCloudNotification()
             return START_NOT_STICKY
         }
@@ -123,7 +124,7 @@ class FluidCloudService : Service() {
     }
 
     private fun postProgressNotification(updateSequence: Int) {
-        val now = System.currentTimeMillis()
+        val now = AppClock.millis()
         val state = CourseLiveCardState(
             courseName = courseName,
             room = room,

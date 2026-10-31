@@ -41,6 +41,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 import kotlin.math.roundToInt
+import com.lingion.sleepy.util.AppClock
 
 /**
  * v19: WeekGrid widget — RemoteViews + Bitmap + Canvas
@@ -132,7 +133,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
         // REGULAR 或容器被拖大 ≥150dp → 全量网格排版(行为与改动前逐字节一致)。
         val variant = variantHint
         if (variant == WidgetVariant.SMALL && wDp < 150f) {
-            val todayData = WidgetBitmapRenderers.weekGridMinimumTodayData(data, LocalDate.now())
+            val todayData = WidgetBitmapRenderers.weekGridMinimumTodayData(data, LocalDate.now(AppClock))
             Log.d(TAG, "vSmall minimum → today face: courses=${todayData.courses.size}")
             TodayWidgetReceiver.pushTodayData(context, awm, widgetId, WidgetVariant.SMALL, todayData)
             return
@@ -1023,7 +1024,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
         }
 
         fun loadWeekData(context: Context, appWidgetId: Int): WeekData {
-            val today = LocalDate.now()
+            val today = LocalDate.now(AppClock)
             val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
             val isDark = AppPrefs.isDarkMode(context, isSystemDark)
             val themeKey = AppPrefs.getThemeKey(context)

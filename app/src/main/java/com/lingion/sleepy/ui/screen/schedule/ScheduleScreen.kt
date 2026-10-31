@@ -66,6 +66,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.ui.component.CardsGridView
@@ -294,6 +295,7 @@ fun ScheduleScreen(
                     options = ViewMode.entries.map { it to stringResource(it.labelRes) },
                     selected = viewMode,
                     onSelect = onViewModeChange,
+                    dbgTagPrefix = "schedule_view_segment",
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -553,6 +555,7 @@ private fun TableSwitcherDialog(
                             .clip(SleepyTheme.shapes.small)
                             .background(if (isCurrent) colors.primaryContainer else colors.surfaceContainer)
                             .noRippleClickable { onSelect(table.id) }
+                            .dbgTag("schedule_table_item", text = table.name, role = "button")
                             .padding(vertical = 10.dp, horizontal = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -631,6 +634,7 @@ private fun TopBar(
             ) {
                 WeekNavButton(
                     icon = Icons.Outlined.CalendarMonth,
+                    tag = "schedule_switch_table",
                     contentDescriptionRes = R.string.schedule_switch_table,
                     onClick = onSwitchTable
                 )
@@ -663,6 +667,7 @@ private fun TopBar(
                     Spacer(modifier = Modifier.width(6.dp))
                     WeekNavButton(
                         icon = Icons.Outlined.Check,
+                        tag = "schedule_scale_keep",
                         contentDescriptionRes = R.string.schedule_scale_keep,
                         onClick = onScaleCommit
                     )
@@ -676,7 +681,7 @@ private fun TopBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-            WeekNavButton(icon = Icons.Outlined.ChevronLeft, onClick = onPrevWeek)
+            WeekNavButton(icon = Icons.Outlined.ChevronLeft, tag = "schedule_prev_week", onClick = onPrevWeek)
 
             Spacer(modifier = Modifier.width(8.dp))
 
@@ -688,12 +693,13 @@ private fun TopBar(
                     DateUtils.SemesterStatus.AFTER_END -> R.string.semester_ended
                     else -> 0
                 }
+                val weekLabel = if (statusRes == 0)
+                    stringResource(R.string.schedule_current_week, currentWeek)
+                else "${stringResource(statusRes)} · ${stringResource(R.string.schedule_week_prefix, currentWeek)}"
                 Text(
                     // 表头语义永远=第 N 周(学期外带状态前缀但仍保留周数)。
                     // 最近有课日只能影响自动选中的周, 不能改写表头文案或点击行为。
-                    text = if (statusRes == 0)
-                        stringResource(R.string.schedule_current_week, currentWeek)
-                    else "${stringResource(statusRes)} · ${stringResource(R.string.schedule_week_prefix, currentWeek)}",
+                    text = weekLabel,
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                     color = if (isOnActual) colors.onPrimaryContainer else colors.primary,
                     modifier = Modifier
@@ -708,6 +714,7 @@ private fun TopBar(
                                 onJumpToActual()
                             }
                         }
+                        .dbgTag("schedule_week_label", text = weekLabel, role = "button")
                         .padding(horizontal = 14.dp, vertical = 4.dp)
                 )
 
@@ -745,7 +752,8 @@ private fun TopBar(
                                         .noRippleClickable {
                                             onSelectWeek(w)
                                             menuOpen = false
-                                        },
+                                        }
+                                        .dbgTag("schedule_week#$w", text = w.toString(), role = "button"),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
@@ -764,7 +772,7 @@ private fun TopBar(
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            WeekNavButton(icon = Icons.Outlined.ChevronRight, onClick = onNextWeek)
+            WeekNavButton(icon = Icons.Outlined.ChevronRight, tag = "schedule_next_week", onClick = onNextWeek)
         }
 
             // 右侧操作区: 加课 + 分享 — 与翻页箭头同款圆形底, Box 右缘绝对定位
@@ -774,12 +782,14 @@ private fun TopBar(
             ) {
                 WeekNavButton(
                     icon = Icons.Outlined.Add,
+                    tag = "schedule_add_course",
                     contentDescriptionRes = R.string.schedule_add_course,
                     onClick = onAddCourse
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 WeekNavButton(
                     icon = Icons.Outlined.IosShare,
+                    tag = "schedule_share",
                     contentDescriptionRes = R.string.schedule_share_table,
                     onClick = onShare
                 )
@@ -791,6 +801,7 @@ private fun TopBar(
 @Composable
 private fun WeekNavButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
+    tag: String,
     onClick: () -> Unit,
     contentDescriptionRes: Int? = null
 ) {
@@ -801,6 +812,7 @@ private fun WeekNavButton(
             .clip(CircleShape)
             .background(colors.surfaceContainerHigh)
             .noRippleClickable(onClick)
+            .dbgTag(tag, role = "button")
             .padding(6.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -842,7 +854,8 @@ private fun UndoRedoCapsule(
                     if (scale == 1f) Modifier.size(width = 32.dp, height = 32.dp)
                     else Modifier.size(width = halfSize, height = halfSize)
                 )
-                .noRippleClickable(enabled = showUndo, onClick = onUndo),
+                .noRippleClickable(enabled = showUndo, onClick = onUndo)
+                .dbgTag("schedule_undo", text = stringResource(R.string.schedule_undo), role = "button"),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -865,7 +878,8 @@ private fun UndoRedoCapsule(
                     if (scale == 1f) Modifier.size(width = 32.dp, height = 32.dp)
                     else Modifier.size(width = halfSize, height = halfSize)
                 )
-                .noRippleClickable(enabled = showRedo, onClick = onRedo),
+                .noRippleClickable(enabled = showRedo, onClick = onRedo)
+                .dbgTag("schedule_redo", text = stringResource(R.string.schedule_redo), role = "button"),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -906,7 +920,7 @@ private fun NoCourseState(
         )
         Button(
             onClick = onAddCourse,
-            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
+            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight).dbgTag("schedule_add", role = "button"),
             shape = SleepyTheme.Buttons.shape,
         ) {
             Text(stringResource(R.string.schedule_manual_first))
@@ -915,7 +929,7 @@ private fun NoCourseState(
         // 仅保留 Sleepy 的 56dp CTA 高度档位(官方无此 token)。
         FilledTonalButton(
             onClick = onImport,
-            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
+            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight).dbgTag("schedule_import", role = "button"),
             shape = SleepyTheme.Buttons.shape,
         ) {
             Text(stringResource(R.string.schedule_go_manage))
@@ -952,7 +966,7 @@ private fun EmptyState(
         // 主按钮 = 导入第一张课表 (用户反馈: "前往课表管理"引导性不足)
         Button(
             onClick = onGoImport,
-            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
+            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight).dbgTag("schedule_go_import", role = "button"),
             shape = SleepyTheme.Buttons.shape,
         ) {
             Text(stringResource(R.string.schedule_empty_import))
@@ -961,7 +975,7 @@ private fun EmptyState(
         // [intentional custom] FilledTonalButton + ctaHeight: 同上, 仅保留 56dp CTA 档位。
         FilledTonalButton(
             onClick = onCreateTable,
-            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
+            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight).dbgTag("schedule_create_table", role = "button"),
             shape = SleepyTheme.Buttons.shape,
         ) {
             Text(stringResource(R.string.schedule_empty_create_table))

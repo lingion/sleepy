@@ -55,6 +55,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.component.HueSlider
 import com.lingion.sleepy.ui.component.SectionHeader
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
@@ -151,7 +152,7 @@ fun AppearanceScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.mine_appearance)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = onBack, modifier = Modifier.dbgTag("settings_back", role = "button")) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back))
                     }
                 },
@@ -247,6 +248,7 @@ fun AppearanceScreen(
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
+                    dbgTagPrefix = "settings_mode_segment",
                 )
             }
 
@@ -325,6 +327,7 @@ fun AppearanceScreen(
             item {
                 AppearanceNavigationRow(
                     title = stringResource(R.string.appearance_period_header),
+                    tag = "settings_period_header",
                     onClick = onOpenPeriodHeaderSettings,
                 )
             }
@@ -379,7 +382,8 @@ private fun SystemThemeCard(selected: Boolean, onClick: () -> Unit) {
     // 2026-08-25 用户指令: 全 app 纯色块禁描线 — 选中态只用色块层级+对勾表达
     val bgColor = if (selected) colors.primaryContainer else colors.surfaceContainer
     Surface(
-        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).noRippleClickable(onClick),
+        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).noRippleClickable(onClick)
+            .dbgTag("settings_theme", text = "system", role = "button"),
         color = bgColor, shape = SleepyTheme.shapes.large
     ) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -404,7 +408,8 @@ private fun PresetThemeCard(preset: ThemePreset, selected: Boolean, onClick: () 
     // 2026-08-25 用户指令: 全 app 纯色块禁描线 — 选中态只用色块层级+对勾表达
     val bgColor = if (selected) colors.primaryContainer else colors.surfaceContainer
     Surface(
-        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).noRippleClickable(onClick),
+        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).noRippleClickable(onClick)
+            .dbgTag("settings_theme", text = stringResource(preset.nameRes), role = "button"),
         color = bgColor, shape = SleepyTheme.shapes.large
     ) {
         Column(Modifier.padding(16.dp)) {
@@ -441,7 +446,8 @@ private fun NewThemeCard(onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .height(96.dp)
-            .noRippleClickable(onClick),
+            .noRippleClickable(onClick)
+            .dbgTag("settings_theme_new", role = "button"),
         contentAlignment = Alignment.Center
     ) {
         DashedCircleWithPlus(size = 40.dp, strokeColor = colors.onSurface, tint = colors.onSurface)
@@ -495,7 +501,8 @@ private fun CustomThemeCard(
     val scheme = remember(theme, isDark) { CustomSchemeDeriver.derive(theme, isDark) }
     val bgColor = if (selected) colors.primaryContainer else colors.surfaceContainer
     Surface(
-        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).noRippleClickable(onClick),
+        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).noRippleClickable(onClick)
+            .dbgTag("settings_theme", text = theme.name, role = "button"),
         color = bgColor, shape = SleepyTheme.shapes.large
     ) {
         Column(Modifier.padding(16.dp)) {
@@ -510,7 +517,8 @@ private fun CustomThemeCard(
                         .size(28.dp)
                         .clip(SleepyTheme.shapes.small)
                         .background(colors.surfaceContainerHighest)
-                        .noRippleClickable(onEdit),
+                        .noRippleClickable(onEdit)
+                        .dbgTag("settings_theme_edit", text = theme.name, role = "button"),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -610,6 +618,7 @@ private fun CourseColorSection(
                 },
                 modifier = Modifier.fillMaxWidth(),
                 containerColor = colors.surfaceContainerHighest,
+                dbgTagPrefix = "course_color_segment",
             )
             if (!colorless && mode == AppPrefs.COURSE_COLOR_MODE_CUSTOM) {
                 // 幽灵基线 (spec §3.1 色相变体): remember 落在 if 块内 = CUSTOM 编辑区
@@ -642,7 +651,8 @@ private fun CourseColorSection(
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp)
                         .height(36.dp)
-                        .clip(SleepyTheme.shapes.large),
+                        .clip(SleepyTheme.shapes.large)
+                        .dbgTag("settings_color_seed", role = "slider", clickable = false),
                 )
             }
             Spacer(Modifier.height(4.dp))
@@ -678,7 +688,8 @@ private fun CourseColorSection(
                 Spacer(Modifier.height(8.dp))
                 FilledTonalButton(
                     onClick = onRecalc,
-                    modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
+                    modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight)
+                        .dbgTag("settings_recalc_button", role = "button"),
                     shape = SleepyTheme.Buttons.shape,
                 ) {
                     Text(stringResource(R.string.course_color_recalc))

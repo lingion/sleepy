@@ -65,6 +65,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.lingion.sleepy.R
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.data.entity.SmartPeriodConfig
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
@@ -158,7 +159,11 @@ fun TimeSlotEditor(
     periodTableOptions: List<PeriodTableOption> = emptyList(),
     selectedPeriodTableId: Long? = null,
     onSelectPeriodTable: (Long?) -> Unit = {},
-    excludePeriodTableId: Long? = null
+    excludePeriodTableId: Long? = null,
+    // 调试台语义身份前缀: 传 prefix → Tab=<prefix>_mode#i、加行=<prefix>_add、
+    // 行=<prefix>_row#i、删行=<prefix>_row#i_delete、起止=<prefix>_row#i_start/_end、
+    // 作息绑定=<prefix>_bind_none/_bind#<id>; null = 不打标, 既有调用点零影响
+    dbgTagPrefix: String? = null
 ) {
     var mode by remember { mutableStateOf(Mode.Manual) }
 
@@ -183,7 +188,8 @@ fun TimeSlotEditor(
         ModeTabSwitch(
             current = mode,
             onChange = { next -> if (next == Mode.Auto) switchToAuto() else mode = next },
-            hasPeriodTableTab = periodTableOptions.isNotEmpty() || selectedPeriodTableId != null
+            hasPeriodTableTab = periodTableOptions.isNotEmpty() || selectedPeriodTableId != null,
+            dbgTagPrefix = dbgTagPrefix
         )
         Spacer(Modifier.height(8.dp))
 
@@ -192,16 +198,19 @@ fun TimeSlotEditor(
                 rows = rows,
                 onRowsChange = onRowsChange,
                 reorderEnabled = reorderEnabled,
-                courses = courses
+                courses = courses,
+                dbgTagPrefix = dbgTagPrefix
             )
             Mode.Auto -> SmartPeriodEditor(
                 config = smartConfig,
-                onConfigChange = onSmartConfigChange
+                onConfigChange = onSmartConfigChange,
+                dbgTagPrefix = dbgTagPrefix?.let { "${it}_auto" }
             )
             Mode.PeriodTable -> PeriodTableBindTab(
                 options = periodTableOptions.filterNot { it.id == excludePeriodTableId },
                 selectedId = selectedPeriodTableId,
-                onSelect = onSelectPeriodTable
+                onSelect = onSelectPeriodTable,
+                dbgTagPrefix = dbgTagPrefix
             )
         }
     }
@@ -215,7 +224,12 @@ enum class Mode { Manual, Auto, PeriodTable }
 data class PeriodTableOption(val id: Long, val name: String, val nodesPerDay: Int)
 
 @Composable
-private fun ModeTabSwitch(current: Mode, onChange: (Mode) -> Unit, hasPeriodTableTab: Boolean) {
+private fun ModeTabSwitch(
+    current: Mode,
+    onChange: (Mode) -> Unit,
+    hasPeriodTableTab: Boolean,
+    dbgTagPrefix: String? = null
+) {
     // 2026-08-25 用户指令: 全 app 统一色块禁描线 — M3 SegmentedButton 是描边风格,
     // 换项目统一的 SegmentedSwitcher (主页周视图/网格同款)
     val modes = if (hasPeriodTableTab) Mode.entries else listOf(Mode.Manual, Mode.Auto)
@@ -231,6 +245,7 @@ private fun ModeTabSwitch(current: Mode, onChange: (Mode) -> Unit, hasPeriodTabl
         },
         selected = current,
         onSelect = onChange,
+        dbgTagPrefix = dbgTagPrefix?.let { "${it}_mode" },
         modifier = Modifier.fillMaxWidth()
     )
 }
@@ -244,7 +259,8 @@ private fun ModeTabSwitch(current: Mode, onChange: (Mode) -> Unit, hasPeriodTabl
 private fun PeriodTableBindTab(
     options: List<PeriodTableOption>,
     selectedId: Long?,
-    onSelect: (Long?) -> Unit
+    onSelect: (Long?) -> Unit,
+    dbgTagPrefix: String? = null
 ) {
     val colors = MaterialTheme.colorScheme
     Column(
@@ -258,14 +274,16 @@ private fun PeriodTableBindTab(
         BindChoiceRow(
             title = stringResource(R.string.period_table_unbound),
             selected = selectedId == null,
-            onClick = { onSelect(null) }
+            onClick = { onSelect(null) },
+            tag = dbgTagPrefix?.let { "${it}_bind_none" }
         )
         options.forEach { opt ->
             BindChoiceRow(
                 title = opt.name,
                 subtitle = stringResource(R.string.period_table_nodes_count, opt.nodesPerDay),
                 selected = selectedId == opt.id,
-                onClick = { onSelect(opt.id) }
+                onClick = { onSelect(opt.id) },
+                tag = dbgTagPrefix?.let { "${it}_bind#${opt.id}" }
             )
         }
     }
@@ -273,7 +291,7 @@ private fun PeriodTableBindTab(
 
 /** 选中态=primaryContainer 色块+对勾(UI 纯色块禁描边规则, 与换绑卡 BindOptionRow 同构) */
 @Composable
-private fun BindChoiceRow(title: String, selected: Boolean, onClick: () -> Unit, subtitle: String? = null) {
+private fun BindChoiceRow(title: String, selected: Boolean, onClick: () -> Unit, subtitle: String? = null, tag: String? = null) {
     val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
@@ -281,6 +299,7 @@ private fun BindChoiceRow(title: String, selected: Boolean, onClick: () -> Unit,
             .clip(SleepyTheme.shapes.medium)
             .background(if (selected) colors.primaryContainer else colors.surface)
             .noRippleClickable(onClick)
+            .then(tag?.let { Modifier.dbgTag(it, text = title, role = "radio") } ?: Modifier)
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -316,6 +335,7 @@ private fun ManualTimeSlotEditor(
     onRowsChange: (List<TimeSlotRow>) -> Unit,
     reorderEnabled: Boolean,
     courses: List<com.lingion.sleepy.data.entity.CourseEntity>,
+    dbgTagPrefix: String? = null,
     modifier: Modifier = Modifier
 ) {
     var displayRows by remember { mutableStateOf(rows) }
@@ -357,12 +377,13 @@ private fun ManualTimeSlotEditor(
                 // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 小号色块按钮
                 Button(
                     onClick = { onRowsChange(TimeTableUtils.appendEmptyRow(rows)) },
+                    modifier = dbgTagPrefix?.let { Modifier.dbgTag("${it}_add", role = "button") }
+                        ?: Modifier.testTag("timeslot-add-row"),
                     shape = SleepyTheme.shapes.medium,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colors.secondaryContainer,
                         contentColor = colors.onSecondaryContainer
                     ),
-                    modifier = Modifier.testTag("timeslot-add-row"),
                 ) {
                     Icon(
                         Icons.Outlined.Add,
@@ -516,6 +537,10 @@ private fun ManualTimeSlotEditor(
                         dropInvalid = dropInvalid,
                         longPressModifier = rowLongPress,
                         offsetY = dragOffsetY.value,
+                        rowTag = dbgTagPrefix?.let { "${it}_row#$index" },
+                        startTag = dbgTagPrefix?.let { "${it}_row#${index}_start" },
+                        endTag = dbgTagPrefix?.let { "${it}_row#${index}_end" },
+                        deleteTag = dbgTagPrefix?.let { "${it}_row#${index}_delete" },
                         modifier = Modifier
                             .fillMaxWidth()
                             .offset { IntOffset(0, dragOffsetY.value.toInt()) }
@@ -553,6 +578,10 @@ private fun TimeSlotRowItem(
     dropInvalid: Boolean,
     longPressModifier: Modifier,
     offsetY: Float,
+    startTag: String? = null,
+    endTag: String? = null,
+    deleteTag: String? = null,
+    rowTag: String? = null,
     modifier: Modifier = Modifier,
     onStartChange: (String) -> Unit,
     onEndChange: (String) -> Unit,
@@ -602,6 +631,15 @@ private fun TimeSlotRowItem(
                 .background(containerColor)
                 .then(dropBorderModifier)
                 .then(if (reorderEnabled) longPressModifier else Modifier)
+                .then(
+                    rowTag?.let {
+                        Modifier.dbgTag(
+                            it,
+                            text = stringResource(R.string.course_node_format, row.node),
+                            clickable = false
+                        )
+                    } ?: Modifier
+                )
                 .padding(horizontal = 10.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -616,18 +654,23 @@ private fun TimeSlotRowItem(
                 value = row.start,
                 onValueChange = onStartChange,
                 label = stringResource(R.string.start_label),
+                dbgTag = startTag,
                 modifier = Modifier.weight(1f)
             )
             TimePickerField(
                 value = row.end,
                 onValueChange = onEndChange,
                 label = stringResource(R.string.end_label),
+                dbgTag = endTag,
                 modifier = Modifier.weight(1f)
             )
             if (canDelete) {
                 IconButton(
                     onClick = onDelete,
-                    modifier = Modifier.size(32.dp).testTag("timeslot-delete")
+                    modifier = Modifier
+                        .size(32.dp)
+                        .then(deleteTag?.let { Modifier.dbgTag(it, role = "button") }
+                            ?: Modifier.testTag("timeslot-delete"))
                 ) {
                     Icon(
                         Icons.Outlined.RemoveCircleOutline,

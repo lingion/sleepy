@@ -35,6 +35,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 
@@ -62,7 +63,14 @@ fun SectionHeader(title: String, subtitle: String? = null) {
 }
 
 @Composable
-fun SettingsCard(title: String, expanded: Boolean, onToggle: () -> Unit, content: @Composable () -> Unit) {
+fun SettingsCard(
+    title: String,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    // ui-ops 语义身份(屏前缀_控件语义), null = 不打标(既有调用点行为不变)
+    dbg: String? = null,
+    content: @Composable () -> Unit,
+) {
     val colors = MaterialTheme.colorScheme
     // MD3E (Task 7a): chevron 旋转走 defaultSpatial (收稳不弹, 与展开家族同拍)
     val arrowRotation by animateFloatAsState(
@@ -71,7 +79,9 @@ fun SettingsCard(title: String, expanded: Boolean, onToggle: () -> Unit, content
         label = "settings-arrow"
     )
     Column(
-        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).noRippleClickable(onToggle).padding(16.dp),
+        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).noRippleClickable(onToggle)
+            .then(dbg?.let { Modifier.dbgTag(it, text = title, role = "button") } ?: Modifier)
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -115,6 +125,8 @@ fun SettingsFlatCard(
     options: List<String> = emptyList(),
     selectedKey: Int = 0,
     onSelect: (Int) -> Unit = {},
+    // ui-ops: 非空 = 内嵌分段每段注册 "<dbg>#<index>"(带选项文本), null 不打标
+    dbg: String? = null,
     content: @Composable ColumnScope.() -> Unit = {}
 ) {
     val colors = MaterialTheme.colorScheme
@@ -151,7 +163,8 @@ fun SettingsFlatCard(
                     onSelect = onSelect,
                     // 高度 36dp: 介于开关本体(32)与组件默认(42)之间 — 轨道不挤, 行高仍与开关行一致
                     modifier = Modifier.width(tabWidth).height(36.dp),
-                    containerColor = colors.surfaceContainerHighest
+                    containerColor = colors.surfaceContainerHighest,
+                    dbgTagPrefix = dbg,
                 )
             }
         }
@@ -163,7 +176,14 @@ fun SettingsFlatCard(
 }
 
 @Composable
-fun DisplayModeOption(label: String, subtitle: String, selected: Boolean, onClick: () -> Unit) {
+fun DisplayModeOption(
+    label: String,
+    subtitle: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    // ui-ops 语义身份(屏前缀_控件语义), null = 不打标(既有调用点行为不变)
+    dbg: String? = null,
+) {
     val colors = MaterialTheme.colorScheme
     // MD3E (Task 7b): 选中态色彩/徽标切换统一走 motionScheme — 文字色 fastEffects
     // 缓动, Check 徽标弹入弹出吃 popup mini 家族 (与 T6 徽标/幽灵同族)。
@@ -172,7 +192,9 @@ fun DisplayModeOption(label: String, subtitle: String, selected: Boolean, onClic
         animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
         label = "displayModeOptionLabel",
     )
-    Row(modifier = Modifier.fillMaxWidth().noRippleClickable(onClick).padding(vertical = 10.dp, horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = Modifier.fillMaxWidth().noRippleClickable(onClick)
+        .then(dbg?.let { Modifier.dbgTag(it, text = label, role = "radio") } ?: Modifier)
+        .padding(vertical = 10.dp, horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
             Text(text = label, style = MaterialTheme.typography.bodyLarge, color = labelColor)
             if (subtitle.isNotEmpty()) {
@@ -192,7 +214,14 @@ fun DisplayModeOption(label: String, subtitle: String, selected: Boolean, onClic
 }
 
 @Composable
-fun SettingToggleRow(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit, subtitle: String? = null) {
+fun SettingToggleRow(
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    subtitle: String? = null,
+    // ui-ops 语义身份(屏前缀_控件语义), null = 不打标(既有调用点行为不变)
+    dbg: String? = null,
+) {
     val colors = MaterialTheme.colorScheme
     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
@@ -201,6 +230,7 @@ fun SettingToggleRow(label: String, checked: Boolean, onCheckedChange: (Boolean)
                 Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
             }
         }
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
+        Switch(checked = checked, onCheckedChange = onCheckedChange,
+            modifier = Modifier.then(dbg?.let { Modifier.dbgTag(it, text = label, role = "switch") } ?: Modifier))
     }
 }

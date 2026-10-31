@@ -22,6 +22,7 @@ import com.lingion.sleepy.util.TimeTableUtils
 import java.time.LocalDate
 import java.time.DayOfWeek
 import java.time.temporal.TemporalAdjusters
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 教务直连导入 ViewModel
@@ -81,6 +82,8 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                     throw e
                 } catch (_: Exception) { emptyMap() }
                 val list = parseSchoolsJson(text)
+                    // console data-ops 覆盖层（无覆盖时原样透传；main 侧唯一接入点）
+                    .let(com.lingion.sleepy.console.CatalogOverrideStore::applyTo)
                     .map { it.copy(cities = cityIndex[it.name].orEmpty()) }
                     .filter { it.url.isNotBlank() }  // 只显示有URL的学校，避免用户看到大量不可用选项
                 _schools.value = list
@@ -777,7 +780,7 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
      * 如果当前是寒暑假（2月/8月），回退到上一学期。
      */
     private fun computeCurrentSemesterStart(): String {
-        val today = LocalDate.now()
+        val today = LocalDate.now(AppClock)
         val month = today.monthValue
         val semesterStartYear = if (month in 8..12) today.year else today.year - 1
         val semesterStartMonth = if (month in 8..12) 9 else 2

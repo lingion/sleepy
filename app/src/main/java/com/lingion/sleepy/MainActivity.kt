@@ -173,6 +173,9 @@ class MainActivity : ComponentActivity() {
                 themeKey = themeKey,
                 customThemeVersion = customThemesJson
             ) {
+                // release 解锁红条（Task 7）: Box 顶层覆盖, 只在解锁态占最上沿,
+                // 零命中不排布局 — debug 常态与未解锁 release 完全无感。
+                androidx.compose.foundation.layout.Box(Modifier.fillMaxSize()) {
                 AppRoot(
                     themeMode = themeMode,
                     onThemeModeChange = { mode ->
@@ -189,6 +192,8 @@ class MainActivity : ComponentActivity() {
                     pendingImportText = pendingImportText,
                     consumePendingImportText = { MainActivity.pendingImportText = null }
                 )
+                    com.lingion.sleepy.console.DebugModeBanner()
+                }
             }
         }
     }

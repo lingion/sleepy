@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.lingion.sleepy.util.TimeTableUtils
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 课表实体 (TimeTable) — 一个课表包含多个课程
@@ -40,7 +41,7 @@ data class TimeTableEntity(
      */
     @ColumnInfo(name = "smartConfigJson") val smartConfigJson: String = "",
 
-    @ColumnInfo(name = "createdAt") val createdAt: Long = System.currentTimeMillis(),
+    @ColumnInfo(name = "createdAt") val createdAt: Long = AppClock.millis(),
 
     /**
      * issue#40 绑定的独立时间节次表 (period_tables.id)。null = 未绑定(用旧 timeJson 兼容列)。

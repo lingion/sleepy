@@ -35,6 +35,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
+import com.lingion.sleepy.util.AppClock
 
 /**
  * WeekGridWidget 真复刻 — 1:1 复刻 ScheduleScreen 的 CardsGridView（app 内"网格"视图）
@@ -126,7 +127,7 @@ private data class ScreenData(
 )
 
 private suspend fun loadScreenData(): ScreenData {
-    val today = LocalDate.now()
+    val today = LocalDate.now(AppClock)
     return try {
         val app = SleepyApp.get()
         val repo = app.repository

@@ -72,6 +72,7 @@ import com.lingion.sleepy.data.jw.JwProtocol
 import com.lingion.sleepy.data.jw.JwSchoolInfo
 import com.lingion.sleepy.data.jw.eams5PathPrefixFor
 import com.lingion.sleepy.data.jw.initialDesktopUa
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import kotlinx.coroutines.launch
 
@@ -330,7 +331,7 @@ fun JwWebViewLoginScreen(
                     if (editingUrl) {
                         OutlinedTextField(
                             state = urlDraft,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().dbgTag("jw_url_field", role = "textbox"),
                             lineLimits = TextFieldLineLimits.SingleLine,
                             placeholder = { Text(stringResource(R.string.jw_url_hint)) },
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
@@ -351,6 +352,7 @@ fun JwWebViewLoginScreen(
                 },
                 navigationIcon = {
                     IconButton(
+                        modifier = Modifier.dbgTag("jw_back", role = "button"),
                         onClick = {
                             if (editingUrl) editingUrl = false else onBack()
                         }
@@ -360,6 +362,9 @@ fun JwWebViewLoginScreen(
                 },
                 actions = {
                     IconButton(
+                        modifier = Modifier.dbgTag("jw_url_edit", text = stringResource(
+                            if (editingUrl) R.string.jw_url_submit else R.string.jw_edit_url
+                        ), role = "button"),
                         onClick = {
                             if (editingUrl) {
                                 submitUrl()
@@ -384,6 +389,10 @@ fun JwWebViewLoginScreen(
                         // 桌面 UA 可见。切换 = 销毁重建 WebView (UA 只在创建期生效),
                         // 同步保留 cookie (CookieManager 全局共享) 与当前 URL
                         IconButton(
+                            modifier = Modifier.dbgTag("jw_toggle_ua", text = stringResource(
+                                if (desktopUa) R.string.jw_toggle_mobile_ua
+                                else R.string.jw_toggle_desktop_ua
+                            ), role = "button"),
                             onClick = {
                                 desktopUa = !desktopUa
                                 uaSwitchReload++   // 触发 JwWebView 重建 (UA 创建期生效)
@@ -401,6 +410,7 @@ fun JwWebViewLoginScreen(
                             )
                         }
                         IconButton(
+                            modifier = Modifier.dbgTag("jw_refresh", text = stringResource(R.string.jw_refresh), role = "button"),
                             onClick = { webViewRef?.reload() },
                             enabled = webViewRef != null
                         ) {
@@ -704,7 +714,7 @@ private fun JwWebView(
     var lastUrl by remember { mutableStateOf(url) }
     key(recreateKey) {
         AndroidView(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().dbgTag("jw_webview", text = lastUrl, role = "webview", clickable = false),
         factory = { context ->
             val schoolHost = lastUrl.toUri().host.orEmpty()
             WebView(context).apply {
@@ -835,6 +845,7 @@ private fun CaptureBar(enabled: Boolean, navigationHint: String? = null, onCaptu
         Button(
             onClick = onCapture,
             enabled = enabled,
+            modifier = Modifier.dbgTag("jw_capture", text = stringResource(R.string.jw_import_page), role = "button"),
             shape = SleepyTheme.shapes.extraLarge,
         ) {
             Icon(

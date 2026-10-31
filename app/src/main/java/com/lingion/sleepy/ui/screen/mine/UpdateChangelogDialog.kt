@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.util.MarkdownBlocks
 
@@ -135,7 +136,7 @@ fun UpdateChangelogDialog(
                             ) {
                                 Button(
                                     onClick = onDismiss,
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier.weight(1f).dbgTag("about_update_cancel", role = "button"),
                                     shape = SleepyTheme.Buttons.shape,
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = colors.secondaryContainer,
@@ -146,7 +147,7 @@ fun UpdateChangelogDialog(
                                 }
                                 Button(
                                     onClick = { onDownload(version, changelog, url) },
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier.weight(1f).dbgTag("about_update_download", role = "button"),
                                     shape = SleepyTheme.Buttons.shape
                                 ) {
                                     Text(stringResource(R.string.update_download), maxLines = 1)
@@ -156,7 +157,7 @@ fun UpdateChangelogDialog(
                         is UpdateUiState.Downloading -> {
                             Button(
                                 onClick = { onCancelDownload() },
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().dbgTag("about_update_cancel_download", role = "button"),
                                 shape = SleepyTheme.Buttons.shape,
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = colors.secondaryContainer,
@@ -173,7 +174,7 @@ fun UpdateChangelogDialog(
                             ) {
                                 Button(
                                     onClick = onDismiss,
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier.weight(1f).dbgTag("about_update_fail_cancel", role = "button"),
                                     shape = SleepyTheme.Buttons.shape,
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = colors.secondaryContainer,
@@ -184,7 +185,7 @@ fun UpdateChangelogDialog(
                                 }
                                 Button(
                                     onClick = { onRetry(version, changelog, url) },
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier.weight(1f).dbgTag("about_update_retry", role = "button"),
                                     shape = SleepyTheme.Buttons.shape
                                 ) {
                                     Text(stringResource(R.string.update_retry), maxLines = 1)
