@@ -25,22 +25,22 @@
 | POST | /v1/enable | release 口令解锁（免 token）| `{passphrase}` | `result, token, expiresAt` |
 | GET | /v1/clock | 读虚拟时钟 | — | `virtualNowEpochMs, offsetMs, realNowEpochMs` |
 | POST | /v1/clock | 设虚拟时钟 | `{mode:"offset"\|"absolute"\|"reset", deltaMs?\|dayOffset?\|epochMs?}` | 同上 |
-| GET | /v1/data/tables | 全课表+课程读出 | — | `tables[]` |
-| POST | /v1/data/table | 表操作 | `{op:"create"\|"delete"\|"setDefault"\|"rename", ...}` | `id` / 摘要 |
-| POST | /v1/data/course | 课程注入（结构化或文本通路）| `{tableId, courses:[...]}` 或 `{text}` | `inserted` |
-| POST | /v1/data/timesetting | 作息 timeJson 设 | `{tableId, timeJson}` | 摘要 |
-| GET | /v1/data/prefs | 读 prefs（console_ 前缀键导出排除）| — | `prefs{}` |
-| POST | /v1/data/prefs | 写 prefs（仅白名单键）| `{key, value}` | 摘要 |
-| POST | /v1/data/catalog | 教务目录覆盖层（debug 限定, release 403）| `{name, status?, type?, url?, clear?}` | 摘要 |
-| GET | /v1/ui/tree | 语义树+View 树 dump | — | `activity, nodes[], fingerprint` |
-| POST | /v1/ui/find | selector 定位 | `{testTag?\|text?\|textContains?\|className?\|role?\|clickable?[, index]}` | `nodes[]` 含 bounds/center |
-| POST | /v1/ui/action | 语义手势 | `{selector?...}或{x,y}`, `action:"tap"\|"longPress"\|"doubleTap"\|"swipe"\|"drag"\|"scroll"\|"input"\|"back"...`, payload 对齐 | `diff{appeared,disappeared,focus,textChanged,activityChanged}` |
-| GET | /v1/ui/screenshot | 截屏 | — | `image` = base64 PNG（长边≤1568）|
+| GET | /v1/data/tables | 全课表+课程读出 | — | `tables[], periodTables[], defaultTableId` |
+| POST | /v1/data/table | 表操作（无 rename, 改名走 update）| `{op:"create"\|"update"\|"delete"\|"setDefault", ...}`：create 必 `name,startDate`（可 `maxWeek?,nodesPerDay?,timeJson?,color?,isDefault?,reminderEnabled?`）；update 必 `id`+改动字段；delete/setDefault 必 `id` | create→`id`；update→表 JSON；delete→`deleted`；setDefault→`defaultTableId` |
+| POST | /v1/data/course | 课程注入（结构化或文本通路）| 直插 `{tableId, courses:[CourseEntity 字段…]}` 或文本 `{text}`/`{b64}`/`{path}`（path 支持 "clipboard"；文本通路新建表承载）| `tableId, inserted`（直插加 `courseIds[]`；文本加 `droppedLines[]`、`warnings?`）|
+| POST | /v1/data/timesetting | 作息节次表增改删（按 op 形参, 非 tableId+timeJson 二元组）| `{op:"create"\|"update"\|"delete", ...}`：create 必 `name`（可 `nodesPerDay?,timeJson?,smartConfigJson?`）；update 必 `id`+改动字段；delete 必 `id` | create→`id`；update→`id,boundCount`；delete→`deleted` |
+| GET | /v1/data/prefs | 读 prefs（console_ 前缀键导出排除）| — | `values{}`（扁平 map）|
+| POST | /v1/data/prefs | 写 prefs（部分更新, 任意键均可写 = 非白名单制；唯一限制 console_ 前缀键整批拒写 400 零写入）| 扁平 map `{key: value, ...}`（JSON null=删该键；String/Int/Boolean/Long 四类, 其余按 String 存）| `applied` |
+| POST | /v1/data/catalog | 教务目录覆盖层（set 限 debug 构建, release 解锁态 403；get 只读可用）| `{op:"get"\|"set", name, status?, type?, url?}`（set 至少一项；无 clear 键, 清除走 session/reset）| 目录行 `name,sortKey,url,type,status,enableFetch,overridden`（set 加 `persisted`）|
+| GET | /v1/ui/tree | 语义树+View 树 dump | — | `activity, nodes[], dump[], fingerprint{activity,tags,focus,textHash}` |
+| POST | /v1/ui/find | selector 定位（无命中回空集, 不 404）| `{testTag?\|text?\|textContains?\|className?\|role?\|clickable?[, index]}` | `hits[]`（节点含 bounds/center）, `total` |
+| POST | /v1/ui/action | 语义手势 | `{action:"tap"\|"longTap"\|"doubleTap"\|"swipe"\|"drag"\|"scroll"\|"input"\|"back"\|"home"\|"recents"\|"key", selector?{...}\|{x,y}[, toX,toY\|direction,amount][, durationMs][, text][, keyCode]}` | `matched, diff{appeared,disappeared,focus,textChanged,activityChanged}` |
+| GET | /v1/ui/screenshot | 截屏 | — | `format, bytes, image` = base64 PNG（长边≤1568）|
 | POST | /v1/trigger | 事件触发（debug 专属, release 404）| `{type:"before_class_alarm"\|"fluid_cloud"\|"live_card"\|"notification"\|"sync"\|"import_helper"\|"restore_and_cleanup"\|"delete_non_default_tables"\|"clear_fluid_notification"\|"test_before_class"\|"schedule_before_class_now"\|"add_soonest_course", ...}` | `type, result` |
 | POST | /v1/jw/mock | 注入回放规则（release 403）| `{url_pattern, respond_with:"file"\|"b64"\|"html", body, content_type?, status?, headers?}` | `url_pattern, bytes, rules_total` |
 | GET | /v1/jw/mock | 规则列表 | — | `rules[]` |
 | DELETE | /v1/jw/mock | 删规则/清全部 | `{url_pattern}` 或 `{all:true}` | `removed`/`cleared` |
-| POST | /v1/session/reset | 会话归零 | 空 | `tables_deleted[], tables_kept, clock_reset, mock_rules_cleared, catalog_overrides_cleared` |
+| POST | /v1/session/reset | 会话归零 | 空 | `tables_deleted[], tables_kept, clock_reset, mock_rules_cleared, catalog_overrides_cleared, token_ttl_ms` |
 | GET | /v1/log | 日志双环 | query `?limit=N` | `app[], audit[]` |
 
 ## 语义寻址约定（dbgTag）
