@@ -11,6 +11,7 @@ import com.lingion.sleepy.console.handlers.SessionHandler
 import com.lingion.sleepy.console.handlers.UnlockTapCounter
 import com.lingion.sleepy.console.handlers.DataOpsRuntime
 import com.lingion.sleepy.console.ui.UiOpsRuntime
+import com.lingion.sleepy.util.AppLog
 import java.util.concurrent.atomic.AtomicBoolean
 import org.json.JSONObject
 
@@ -102,7 +103,13 @@ object ConsoleBootstrap {
         registerDefaultHandlers()
         // POST body 临时目录 = app 私有 cache/console-tmp(恒可写); 默认 tmpdir=/tmp
         // 在 Android 上 app 不可写 → 外部客户端 body 全丢(2026-10-31 M1 复盘)
-        val tmpDir = java.io.File(app.cacheDir, "console-tmp").apply { mkdirs() }
+        // 评审 F3: mkdirs() 返回值必须检查 — 建不成则 tmp-bucket 落盘分支恒炸、
+        // 大体请求体静默读空。mkdirs 对"已存在"也回 false, 故判据 = 建不成且
+        // 不是目录才报错(重启后缓存目录残留属正常态, 不误报)。路径无敏感内容。
+        val tmpDir = java.io.File(app.cacheDir, "console-tmp")
+        if (!tmpDir.mkdirs() && !tmpDir.isDirectory) {
+            AppLog.e(TAG, "console-tmp dir not creatable: ${tmpDir.absolutePath} (temp-file body reads will fail)")
+        }
         val s = DebugConsoleServer(tmpDir)
         s.start()
         server = s
