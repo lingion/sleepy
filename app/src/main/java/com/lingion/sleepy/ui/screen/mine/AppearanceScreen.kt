@@ -57,6 +57,7 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.ui.component.HueSlider
 import com.lingion.sleepy.ui.component.SectionHeader
+import com.lingion.sleepy.ui.component.SegmentOption
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
 import com.lingion.sleepy.ui.theme.CustomSchemeDeriver
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -91,6 +92,7 @@ fun AppearanceScreen(
     val context = LocalContext.current
     val colors = MaterialTheme.colorScheme
     val currentKey by AppPrefs.themeKeyFlow(context).collectAsState(initial = AppPrefs.getThemeKey(context))
+    val dockTheme by AppPrefs.dockThemeFlow(context).collectAsState(initial = AppPrefs.getDockTheme(context))
     val selectedMode = themeMode
     // 自定义主题编辑器 overlay(创建时 editingTheme=null;微调时载入草稿)
     var showEditor by remember { mutableStateOf(false) }
@@ -244,6 +246,35 @@ fun AppearanceScreen(
                             // 色相不同/预设深浅 primary 不同)→ 按 spec §2.3 时机2 重算保表与
                             // 新课补色同 anchor。CUSTOM 档 anchor=种子(与深浅无关),不重算。
                             if (courseColorMode == AppPrefs.COURSE_COLOR_MODE_FOLLOW_THEME) recalcAllCourses()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
+            // ── Section②·1 Dock 主题 ──
+            item {
+                SectionHeader(title = stringResource(R.string.appearance_section_dock_theme))
+            }
+
+            item {
+                val dockOptions = listOf(
+                    SegmentOption(
+                        value = AppPrefs.DOCK_THEME_CLASSIC,
+                        label = stringResource(R.string.dock_theme_classic)
+                    ),
+                    SegmentOption(
+                        value = AppPrefs.DOCK_THEME_LIQUID_GLASS,
+                        label = stringResource(R.string.dock_theme_liquid_glass),
+                        badge = stringResource(R.string.dock_theme_experimental)
+                    )
+                )
+                SegmentedSwitcher(
+                    options = dockOptions,
+                    selected = dockTheme,
+                    onSelect = { newTheme ->
+                        if (newTheme != dockTheme) {
+                            AppPrefs.setDockTheme(context, newTheme)
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
