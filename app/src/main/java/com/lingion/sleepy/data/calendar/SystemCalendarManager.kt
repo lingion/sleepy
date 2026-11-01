@@ -22,6 +22,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import com.lingion.sleepy.util.AppClock
 
 enum class CalendarImportRange { NEXT_WEEK, NEXT_MONTH, SEMESTER }
 
@@ -121,7 +122,7 @@ object SystemCalendarManager {
         table: TimeTableEntity,
         courses: List<CourseEntity>,
         options: CalendarImportOptions,
-        today: LocalDate = LocalDate.now()
+        today: LocalDate = LocalDate.now(AppClock)
     ): CalendarImportPreview {
         val (from, until) = selectedDateRange(table, options.range, today, if (options.applyHolidayTransfers) AppPrefs.getHolidayTransfers(context, table.id) else emptyList())
         val (specs, invalid) = buildEventSpecs(context, table, courses, options, from, until)

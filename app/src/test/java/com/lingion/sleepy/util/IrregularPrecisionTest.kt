@@ -95,8 +95,8 @@ class IrregularPrecisionTest {
         // 占位行权重仍 < 1(不整行拉满) 且 ≥ 下限
         plan.slots.forEachIndexed { i, s ->
             if (s.isPlaceholder) {
-                assert(ws[i] >= PLACEHOLDER_MIN_WEIGHT)
-                assert(ws[i] < 1f)
+                assertTrue(ws[i] >= PLACEHOLDER_MIN_WEIGHT)
+                assertTrue(ws[i] < 1f)
             }
         }
     }

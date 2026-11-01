@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.temporal.WeekFields
 import java.util.Locale
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 日期/周次工具 — 完全不依赖 Android Context，单元测试方便。
@@ -17,7 +18,7 @@ object DateUtils {
 
     enum class SemesterStatus { BEFORE_START, IN_RANGE, AFTER_END }
 
-    fun semesterStatus(startDate: String, maxWeek: Int, today: LocalDate = LocalDate.now()): SemesterStatus {
+    fun semesterStatus(startDate: String, maxWeek: Int, today: LocalDate = LocalDate.now(AppClock)): SemesterStatus {
         return try {
             // 与 currentWeek 同一归一口径: 非周一 startDate 必须落到所在周周一,
             // 否则 raw 比较与周数计算劈叉 (issue #5 类: startDate=周二, currentWeek
@@ -32,7 +33,7 @@ object DateUtils {
     }
 
     /** 计算当前是学期第几周（1-based）；学期外统一钳制到可浏览范围。 */
-    fun currentWeek(startDate: String, today: LocalDate = LocalDate.now()): Int {
+    fun currentWeek(startDate: String, today: LocalDate = LocalDate.now(AppClock)): Int {
         return try {
             val start = mondayOf(LocalDate.parse(startDate, dateFormat))
             val days = ChronoUnit.DAYS.between(start, today)
@@ -43,7 +44,7 @@ object DateUtils {
     }
 
     /** 今天是星期几（1=周一, 7=周日） */
-    fun todayDayOfWeek(today: LocalDate = LocalDate.now()): Int {
+    fun todayDayOfWeek(today: LocalDate = LocalDate.now(AppClock)): Int {
         // Java DayOfWeek.MONDAY = 1 ... SUNDAY = 7
         return today.dayOfWeek.value
     }
@@ -77,7 +78,7 @@ object DateUtils {
     }
 
     /** 比较具体日历日期，不把 weekday 当作跨周的“今天”标记。 */
-    fun isDateToday(date: LocalDate, today: LocalDate = LocalDate.now()): Boolean = date == today
+    fun isDateToday(date: LocalDate, today: LocalDate = LocalDate.now(AppClock)): Boolean = date == today
 
     /** ISO 周编号 */
     fun isoWeekNumber(date: LocalDate): Int = date.get(isoWeekFields.weekOfWeekBasedYear())

@@ -1,0 +1,401 @@
+{
+ "constants": {
+  "host": "https://api.wakeup.fun",
+  "antispamPath": "/pluto/app/antispam",
+  "sharePath": "/share_schedule/getv2",
+  "packageName": "com.suda.yzune.wakeupschedule",
+  "versionName": "6.1.70",
+  "versionCode": 450,
+  "channel": "100271a",
+  "publicToken": "1_XPXQH3c5HRPtFHkSwi3sCCURmT25QfxM",
+  "signatureMd5": "318c6d4f74655d4f032fb0466bcfdfbc",
+  "magic": "8&%d*",
+  "signAKey": "@fG2SuLA",
+  "keySalt": "@#AIjd83#@6B"
+ },
+ "deviceDefaults": {
+  "androidId": "0000000000000000",
+  "sdk": "35",
+  "device": "Pixel 7",
+  "brand": "google",
+  "screensize": "1080x2400",
+  "abis": "arm64-v8a",
+  "appBit": "64",
+  "appId": "wakeup",
+  "downloadType": "1",
+  "nt": "wifi",
+  "province": "",
+  "city": "",
+  "area": "",
+  "deviceId": "",
+  "operatorid": "",
+  "adid": "",
+  "did": ""
+ },
+ "deviceWithIds": {
+  "cuid": "C77D5D04D94F5F56C8A0A6DC3DBF240A|0",
+  "adid": "d58a81f457529caf0e642e7f9d97e447112bd763"
+ },
+ "fixRand10": "ABCDEFGHIJ",
+ "token10": "ZX9kQ3r7Lp",
+ "nowMs": 1730000000000,
+ "md5Hex": [
+  [
+   "",
+   "d41d8cd98f00b204e9800998ecf8427e"
+  ],
+  [
+   "abc",
+   "900150983cd24fb0d6963f7d28e17f72"
+  ],
+  [
+   "8&%d*",
+   "6560c614ae407a4cf1f1c069e1f028c3"
+  ],
+  [
+   "@#AIjd83#@6B",
+   "6a57e30307ab5cb8989d1fa14922dc13"
+  ],
+  [
+   "450",
+   "f5f8590cd58a54e94377e6ae2eded4d9"
+  ],
+  [
+   "[ZX9kQ3r7Lp]@",
+   "7814b16abe533294c32da1b4e118cccd"
+  ]
+ ],
+ "md5Upper": [
+  [
+   "com.baidu0000000000000000",
+   "C77D5D04D94F5F56C8A0A6DC3DBF240A"
+  ]
+ ],
+ "extractKey": [
+  [
+   "【来自WakeUp课程表】分享口令为「Zx9kQ3r7LpTt」 快去查看吧",
+   "Zx9kQ3r7LpTt",
+   true
+  ],
+  [
+   "分享口令：abcdefgh12345678",
+   "abcdefgh12345678",
+   true
+  ],
+  [
+   "我的课表 abCdEf1234567890abcdef12345678 复制此段",
+   "abCdEf1234567890abcdef12345678",
+   true
+  ],
+  [
+   "「ZXcV34asdfGHjk」",
+   "ZXcV34asdfGHjk",
+   true
+  ],
+  [
+   "短",
+   "短",
+   "未检测到有效的 WakeUP 分享口令，请粘贴完整分享文本或口令。"
+  ],
+  [
+   "分享口令 为 Abcd_Ef-12345678 结束",
+   "Abcd_Ef-12345678",
+   true
+  ],
+  [
+   "abc-def_ghi jklmnop",
+   "abc-def_ghi",
+   true
+  ],
+  [
+   "https://example.com/s/abcdefghij12345",
+   "abcdefghij12345",
+   true
+  ]
+ ],
+ "nativeHex": {
+  "hex": "0e00030c080e06050d0b00080a02050e0f050207090807020c01010d0b0704040e0a03010803060f0d0400060a0905030f0f020c090607090c0b01000b0c040e0e05",
+  "roundtrip": "073c71a6db10457aafe4194e83b8ed22578cc1f62b6095caff34699ed3083d72a7"
+ },
+ "des": [
+  {
+   "plain": "8&%d*##ABCDEFGHIJ##318c6d4f74655d4f032fb0466bcfdfbc##C77D5D04D94F5F56C8A0A6DC3DBF240A|0",
+   "key": "@fG2SuLA",
+   "cipherHex": "4d2dcce5438a3695a0f87a4d1e89f28cdd5aef10482409a8390ff410dd2d769a8e0cd16d10e2f73a07d9602fb8e1c8c14698fce0f80bda76c8d6492b8a667327cb074271f449cb7aa15874e2cd06389e82ff72f8e27e0aa5",
+   "back": "8&%d*##ABCDEFGHIJ##318c6d4f74655d4f032fb0466bcfdfbc##C77D5D04D94F5F56C8A0A6DC3DBF240A|0"
+  },
+  {
+   "plain": "01234567",
+   "key": "passkey!",
+   "cipherHex": "bad1a3e396360ae3143e58313a6d02e8",
+   "back": "01234567"
+  },
+  {
+   "plain": "x",
+   "key": "abcdefgh",
+   "cipherHex": "5f77ae39c891a811",
+   "back": "x"
+  },
+  {
+   "plain": "12345678901234567890123456789012",
+   "key": "@fG2SuLA",
+   "cipherHex": "1ff5b33babcf4d57229464a8a497b188d6ecce379ef3e595da6ecabb85a0cbe25d66121da989294f",
+   "back": "12345678901234567890123456789012"
+  }
+ ],
+ "signA": {
+  "signA": "0b0c05040d05030200060c0c030b0106060900090a000f0a0c08090d09010007000b0d0b010501020c0d00020605010f090c0f00020f00080b0b0b04060e050907010300080b0b06000804070e0f050c0e00090b00060f04010d08070103080306020109030f0007010f0d00050b060e0103060b09020d04050106060c0e0e040d030e000402080e020f09020d03050e0805010a020e04070b030600010c070904010f0f040e010f0407070e05000a05",
+  "rand10": "DKRYfmt07E"
+ },
+ "signB": {
+  "cipherNativeHex": "010c05000f0804090f0c07040b04020f0009020b05060f0e050a0402030301050c020c000e010d070e070e0402020c050d07080302080e03080a070e0c060e0b080905060009060306080d0002090908",
+  "token": "ZX9kQ3r7Lp"
+ },
+ "rc4Key": {
+  "token": "ZX9kQ3r7Lp",
+  "key": "60c35ea2c56de5819745b87f5153eeef6a54b16abe53329c432da1b4e118d4d9dcccede2ea6e77349e45a85dc0958f5f31cd22941af1d9898bc5ba70303e7187"
+ },
+ "rc4Cases": [
+  [
+   "key=AbCdEf123456",
+   "60c35ea2c56de5819745b87f5153eeef6a54b16abe53329c432da1b4e118d4d9dcccede2ea6e77349e45a85dc0958f5f31cd22941af1d9898bc5ba70303e7187",
+   "MBR1ZaMNSIYcUxqu85MJ5w=="
+  ],
+  [
+   "hello",
+   "worldkey",
+   "K/obS2E="
+  ]
+ ],
+ "sign": "79efc9dc38e1d2dbe38dc6b6279980df",
+ "buildShareRequest": {
+  "code": "AbCdEf123456",
+  "token": "ZX9kQ3r7Lp",
+  "rc4Key": "60c35ea2c56de5819745b87f5153eeef6a54b16abe53329c432da1b4e118d4d9dcccede2ea6e77349e45a85dc0958f5f31cd22941af1d9898bc5ba70303e7187",
+  "body": "&data=MBR1ZaMNSIYcUxqu85MJ5w%3D%3D&area=&screensize=1080x2400&cuid=C77D5D04D94F5F56C8A0A6DC3DBF240A%7C0&os=android&city=&abis=arm64-v8a&channel=100271a&appBit=64&vc=450&deviceId=&token=1_XPXQH3c5HRPtFHkSwi3sCCURmT25QfxM&adid=d58a81f457529caf0e642e7f9d97e447112bd763&province=&pkgName=com.suda.yzune.wakeupschedule&appId=wakeup&download_type=1&vcname=6.1.70&sdk=35&device=Pixel+7&brand=google&operatorid=&nt=wifi&sign=2bbb5b354c38d2c071aed5bb291ed3c3&_t_=1730000000&kakorrhaphiophobia=1730000000000"
+ },
+ "formEncode": [
+  [
+   "",
+   ""
+  ],
+  [
+   "a b",
+   "a+b"
+  ],
+  [
+   "!'()*~",
+   "%21%27%28%29%2A~"
+  ],
+  [
+   "中文&=",
+   "%E4%B8%AD%E6%96%87%26%3D"
+  ],
+  [
+   "A-Z._a0",
+   "A-Z._a0"
+  ],
+  [
+   "+%",
+   "%2B%25"
+  ]
+ ],
+ "commonParams": [
+  [
+   "area",
+   ""
+  ],
+  [
+   "screensize",
+   "1080x2400"
+  ],
+  [
+   "cuid",
+   "C77D5D04D94F5F56C8A0A6DC3DBF240A|0"
+  ],
+  [
+   "os",
+   "android"
+  ],
+  [
+   "city",
+   ""
+  ],
+  [
+   "abis",
+   "arm64-v8a"
+  ],
+  [
+   "channel",
+   "100271a"
+  ],
+  [
+   "appBit",
+   "64"
+  ],
+  [
+   "vc",
+   "450"
+  ],
+  [
+   "deviceId",
+   ""
+  ],
+  [
+   "token",
+   "1_XPXQH3c5HRPtFHkSwi3sCCURmT25QfxM"
+  ],
+  [
+   "adid",
+   "d58a81f457529caf0e642e7f9d97e447112bd763"
+  ],
+  [
+   "province",
+   ""
+  ],
+  [
+   "pkgName",
+   "com.suda.yzune.wakeupschedule"
+  ],
+  [
+   "appId",
+   "wakeup"
+  ],
+  [
+   "download_type",
+   "1"
+  ],
+  [
+   "vcname",
+   "6.1.70"
+  ],
+  [
+   "sdk",
+   "35"
+  ],
+  [
+   "device",
+   "Pixel 7"
+  ],
+  [
+   "brand",
+   "google"
+  ],
+  [
+   "operatorid",
+   ""
+  ]
+ ],
+ "extractSignB": [
+  "STR",
+  "STR2",
+  "STR3",
+  "",
+  ""
+ ],
+ "shareData": "{\"courseLen\":2,\"theBreakLen\":10}\n[{\"node\":1,\"startTime\":\"08:00\",\"endTime\":\"08:55\"},{\"node\":2,\"startTime\":\"09:05\",\"endTime\":\"10:00\"},{\"node\":5,\"startTime\":\"14:00\",\"endTime\":\"14:55\"},{\"node\":3,\"startTime\":\"00:00\",\"endTime\":\"00:00\"},{\"node\":11,\"startTime\":\"19:00\",\"endTime\":\"19:55\"}]\n{\"nodes\":[1,2,3,4,5],\"startDate\":\"2025/9/1\",\"maxWeek\":20}\n[{\"id\":7,\"courseName\":\"高等数学\"},{\"id\":9,\"courseName\":\"大学英语\"},{\"id\":404,\"courseName\":\"孤儿课\"}]\n[{\"id\":7,\"teacher\":\"张老师\",\"room\":\"A101\",\"day\":1,\"startNode\":1,\"step\":2,\"startWeek\":1,\"endWeek\":8,\"type\":0},{\"id\":9,\"teacher\":\"\",\"room\":\"\",\"day\":3,\"startNode\":5,\"step\":1,\"startWeek\":2,\"endWeek\":10,\"type\":2},{\"id\":7,\"teacher\":\"张老师\",\"room\":\"B202\",\"day\":5,\"startNode\":3,\"step\":2,\"startWeek\":1,\"endWeek\":7,\"type\":1},{\"id\":null,\"teacher\":\"x\",\"room\":\"y\",\"day\":2,\"startNode\":1,\"step\":1,\"startWeek\":1,\"endWeek\":2,\"type\":0}]",
+ "shareDataPartsParsed": {
+  "courses": [
+   {
+    "name": "高等数学",
+    "teacher": "张老师",
+    "position": "A101",
+    "day": 1,
+    "startSection": 1,
+    "endSection": 2,
+    "weeks": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8
+    ]
+   },
+   {
+    "name": "大学英语",
+    "teacher": "",
+    "position": "",
+    "day": 3,
+    "startSection": 5,
+    "endSection": 5,
+    "weeks": [
+     2,
+     4,
+     6,
+     8,
+     10
+    ]
+   },
+   {
+    "name": "高等数学",
+    "teacher": "张老师",
+    "position": "B202",
+    "day": 5,
+    "startSection": 3,
+    "endSection": 4,
+    "weeks": [
+     1,
+     3,
+     5,
+     7
+    ]
+   }
+  ],
+  "timeSlots": [
+   {
+    "number": 1,
+    "startTime": "08:00",
+    "endTime": "08:55"
+   },
+   {
+    "number": 2,
+    "startTime": "09:05",
+    "endTime": "10:00"
+   },
+   {
+    "number": 5,
+    "startTime": "14:00",
+    "endTime": "14:55"
+   }
+  ]
+ },
+ "courseConfigShape": {
+  "semesterStartDate": "2025-09-01",
+  "semesterTotalWeeks": 20,
+  "defaultClassDuration": 2,
+  "defaultBreakDuration": 10
+ },
+ "dateConvertSamples": [
+  [
+   "2025/9/1",
+   "2025-09-01"
+  ],
+  [
+   "2025-09-01",
+   "2025-09-01"
+  ],
+  [
+   "2025/12/31",
+   "2025-12-31"
+  ],
+  [
+   "",
+   null
+  ],
+  [
+   "  ",
+   null
+  ],
+  [
+   "2025/13/45",
+   null
+  ],
+  [
+   "9/1/2025",
+   "2025-09-01"
+  ]
+ ]
+}

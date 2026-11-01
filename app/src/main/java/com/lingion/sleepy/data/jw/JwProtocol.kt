@@ -273,6 +273,30 @@ object JwProtocol {
     const val TYPE_WHUT = "whut"
 
     /**
+     * 拾光适配脚本通用通路 (sg_asset) — 上游协议形态: shiguang_warehouse (MIT, 星河欲转)。
+     * 不逐协议重写 parser, 而是原样 vendor 拾光 287 个适配 JS 进 assets/third_party/shiguang/,
+     * WebView 内按校 manifest (third_party/shiguang/manifest.json) 选脚本执行;
+     * 前置 shim 把 window.shiguangBridgePromise / AndroidBridge 桥合同
+     * (vendor 仓 scripts/types/shiguang-bridge.d.ts) 映射到 __sleepyBridge.onWiseduResult。
+     * 解码唯一落点 = JwSgAssetParser (消费 saveImportedCourses 课程 JSON)。
+     * 该类型校一律 unverified: 脚本级移植, 无本校实测登录导入。
+     */
+    const val TYPE_SG_ASSET = "sg_asset"
+
+    /**
+     * 教务主页登记型 (jw_home) — 2026-10-28 WakeUP 6.6.2 目录全量吸收战役新增。
+     *
+     * 语义: 该 URL 是校方生产教务入口 (官方目录/学生仓库交叉验证背书), 但我方没有
+     * 可直接声明的服务端协议指纹 (典型: 超星 ziyan 逐校服务端鉴权脚本通路、登录后
+     * 才知道真实引擎的学校主页)。行以 unverified 入目录, canImport 门经
+     * JwParserRegistry.supports("jw_home")=true 放行 → 用户点进去正常走 WebView 登录;
+     * parseHtml 对该型按空白协议处理, 登录后按实际页面自动检测已收录协议解析。
+     * JwHomeParser 本身恒空 (confidence=0), 被直接构造也不产课、不崩; 它不进
+     * TYPE_PRIORITY, 因此永远不进 run-all 候选, 零假阳性。
+     */
+    const val TYPE_JW_HOME = "jw_home"
+
+    /**
      * 经典金智/树维 EAMS (courseTableForStd!courseTable.action 系列, HTML+内嵌 JS)。
      * 课表数据在页面内嵌脚本块: new TaskActivity(教师,课名,...,周次位图) + index=D*unitCount+P;
      * HTML 表格 #manualArrangeCourseTable 是空壳 (JS 端 fillTable 渲染), 禁走 DOM。
@@ -307,6 +331,7 @@ object JwProtocol {
         TYPE_BJTU, TYPE_YETHAN,
         TYPE_ZF, TYPE_ZF_1, TYPE_URP, TYPE_URP_NEW, TYPE_ZF_NEW,
         TYPE_QZ, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE, TYPE_QZ_IEAS, TYPE_QZ_APP, TYPE_UCAS, TYPE_QZ_OLD,
+        TYPE_SG_ASSET,
     )
 
     /** WakeUp-derived types routed by the compatibility layer; kept separate from legacy UI ordering. */
@@ -363,6 +388,8 @@ object JwProtocol {
         TYPE_SCU -> "四川大学"
         TYPE_NEU -> "东北大学"
         TYPE_WHUT -> "武汉理工大学"
+        TYPE_SG_ASSET -> "拾光适配脚本（未实测）"
+        TYPE_JW_HOME -> "教务主页（未实测）"
         TYPE_LOGIN -> "特殊登录（v1 暂不支持）"
         TYPE_HELP -> "如何选择教务类型"
         TYPE_MAINTAIN -> "维护中"
@@ -388,6 +415,7 @@ object JwProtocol {
         TYPE_EAMS5 -> "eams5"
         TYPE_CLASSIC_EAMS, TYPE_KUST, TYPE_NUIT -> "other"
         TYPE_SEU, TYPE_ZJU, TYPE_USTC, TYPE_SCU, TYPE_NEU, TYPE_WHUT -> "other"
+        TYPE_SG_ASSET -> "other"
         TYPE_BJTU -> "other"
         TYPE_YETHAN -> "other"
         TYPE_HNUST, TYPE_HNIU -> "hnust"

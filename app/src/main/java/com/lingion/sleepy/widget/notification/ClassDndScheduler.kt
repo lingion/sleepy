@@ -21,6 +21,7 @@ import kotlinx.coroutines.sync.withLock
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 上课自动勿扰调度器 (参照 shiguang DndSchedulerWorker)。
@@ -125,7 +126,7 @@ class ClassDndScheduler(private val context: Context) {
             return@withLock
         }
         val intervals = buildIntervals(table)
-        val now = LocalDateTime.now()
+        val now = LocalDateTime.now(AppClock)
         if (isCurrentlyInClass(intervals, now)) applyDnd(enter = true)
         else applyDnd(enter = false)
         val b = nextBoundaries(intervals, now)
@@ -163,7 +164,7 @@ class ClassDndScheduler(private val context: Context) {
     }
 
     private suspend fun buildIntervals(table: TimeTableEntity): List<Pair<LocalDateTime, LocalDateTime>> {
-        val today = LocalDate.now()
+        val today = LocalDate.now(AppClock)
         val nodes = TimeTableUtils.parseNodes(table.timeJson)
         val result = mutableListOf<Pair<LocalDateTime, LocalDateTime>>()
         for (offsetDays in 0 until WINDOW_DAYS) {

@@ -46,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.SleepyApp
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.SmartPeriodConfig
 import com.lingion.sleepy.data.jw.JwCourse
@@ -587,6 +588,7 @@ class JwImportActivity : ComponentActivity() {
                                     getString(R.string.jw_thu_skipped_courses, thuSkippedCount) else null,
                                 onDismiss = { requestExit() },
                                 isApplying = isApplying,
+                                dbgTagPrefix = "jw_preview",
                                 onApply = { decision ->
                                     if (!isApplying) {
                                         isApplying = true
@@ -647,6 +649,7 @@ class JwImportActivity : ComponentActivity() {
                                         onValueChange = { configStartDate = it; checkpointDraft() },
                                         label = getString(R.string.import_week_start),
                                         modifier = Modifier.fillMaxWidth(),
+                                        dbgTag = "jw_date_field",
                                         // 只在日期错误时标红; 节次错误标到节次区(2026-09-20 反馈: 节次错也标日期框误导)
                                         isError = confirmError != null && (configStartDate.isBlank() ||
                                             !Regex("""^\d{4}-\d{2}-\d{2}$""").matches(configStartDate))
@@ -660,6 +663,7 @@ class JwImportActivity : ComponentActivity() {
                                         label = { Text(getString(R.string.jw_table_name_label)) },
                                         singleLine = true,
                                         modifier = Modifier.fillMaxWidth()
+                                            .dbgTag("jw_name_field", text = getString(R.string.jw_table_name_label), role = "textbox")
                                     )
                                     if (confirmError != null) {
                                         Text(text = confirmError!!, color = colors.error, style = MaterialTheme.typography.bodySmall)
@@ -690,12 +694,15 @@ class JwImportActivity : ComponentActivity() {
                                             })
                                         },
                                         selectedPeriodTableId = configBindPeriodTableId,
-                                        onSelectPeriodTable = { configBindPeriodTableId = it }
+                                        onSelectPeriodTable = { configBindPeriodTableId = it },
+                                        dbgTagPrefix = "jw_confirm_slot"
                                     )
                                 }
                             },
                             confirmButton = {
-                                TextButton(enabled = !isApplying, onClick = {
+                                TextButton(enabled = !isApplying,
+                                    modifier = Modifier.dbgTag("jw_config_confirm", text = getString(R.string.import_confirm), role = "button"),
+                                    onClick = {
                                     if (isApplying) return@TextButton
                                     if (runCatching { java.time.LocalDate.parse(configStartDate) }.isFailure) {
                                         confirmError = getString(R.string.start_date_format)
@@ -770,7 +777,7 @@ class JwImportActivity : ComponentActivity() {
                             dismissButton = {
                                 TextButton(enabled = !isApplying, onClick = {
                                     requestExit()
-                                }) {
+                                }, modifier = Modifier.dbgTag("jw_config_cancel", text = getString(R.string.cancel), role = "button")) {
                                     Text(getString(R.string.cancel))
                                 }
                             }
@@ -996,6 +1003,7 @@ class JwImportActivity : ComponentActivity() {
                                     onThird = { launchQqGroupJoin(qqGroup) },
                                     dismissText = getString(R.string.jw_import_report_copy),
                                     onDismiss = { copyTextToClipboard(reportText, "jw_import_report") },
+                                    dbgTagPrefix = "jw_report",
                                 )
                             }
                         },
@@ -1029,6 +1037,7 @@ class JwImportActivity : ComponentActivity() {
                                     onConfirm = { errorMsg = null },
                                     thirdText = getString(R.string.jw_diag_export_btn),
                                     onThird = { exportDiagnosticDump(dumpSchool) },
+                                    dbgTagPrefix = "jw_err",
                                 )
                                 // 点击导出后在同一个错误弹窗内向下展开进度区 — 用户不离开
                                 // 当前问题上下文即可看到步骤、阶段文案和百分比。

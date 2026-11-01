@@ -275,15 +275,42 @@ Export can write courses to a writable calendar on the device. Choose a calendar
 
 Five widget types across 13 fixed-size variants: Today / TwoDay / WeekList each in regular / small / wide; WeekView / WeekGrid each in regular / small. Layouts adapt to launcher sizing.
 
-| Widget | Variants | Shows | Screenshot |
-|---|---|---|---|
-| **Today** | regular / small / wide | Today's course list | <p align="left"><img src="docs/screenshots/widget-today.png" width="240"></p> |
-| **TwoDay** | regular / small / wide | Today + tomorrow, two columns | <p align="left"><img src="docs/screenshots/widget-twoday.png" width="240"></p> |
-| **WeekList** | regular / small / wide | 7-day course summary + names | <p align="left"><img src="docs/screenshots/widget-weeklist.png" width="240"></p> |
-| **WeekView** | regular / small | Week-view thumbnail (theme-colored, no capsules) | <img src="docs/screenshots/widget-weekview.png" width="240" alt="WeekView on Android launcher"> |
-| **WeekGrid** | regular / small | Time grid + course blocks | <p align="left"><img src="docs/screenshots/widget-weekgrid.png" width="200"></p> |
+<table>
+  <tr>
+    <td width="36%" valign="top" align="center">
+      <img src="docs/screenshots/widget-weekgrid.png" alt="Week-grid widget (WeekGrid)">
+      <br>
+      <sub><b>Week-grid widget (WeekGrid)</b></sub>
+    </td>
+    <td width="64%" valign="top" align="center">
+      <img src="docs/screenshots/widget-today.png" alt="Today widget (Today)">
+      <br>
+      <sub><b>Today widget (Today)</b></sub>
+      <br><br>
+      <img src="docs/screenshots/widget-twoday.png" alt="Next-two-days widget (TwoDay)">
+      <br>
+      <sub><b>Next-two-days widget (TwoDay)</b></sub>
+      <br><br>
+      <img src="docs/screenshots/widget-weekview.png" alt="Week-view widget (WeekView)">
+      <br>
+      <sub><b>Week-view widget (WeekView)</b></sub>
+      <br><br>
+      <img src="docs/screenshots/widget-weeklist.png" alt="Week-list widget (WeekList)">
+      <br>
+      <sub><b>Week-list widget (WeekList)</b></sub>
+    </td>
+  </tr>
+</table>
 
-Image sources: Today, TwoDay, and WeekList are emulator previews produced by the current production renderer through `WidgetRenderActivity`, cropped to component bounds without stretching. WeekView and WeekGrid are actual launcher widget captures. This WeekGrid image shows visible periods 1–6, not every period or the entire term. Launcher size and widget variant determine the final layout and text truncation.
+| Widget | Variants | Purpose & Notes |
+|---|---|---|
+| **WeekGrid** | regular / small | Time grid + course blocks with period labels and locations, supports snapping to nearest busy day |
+| **Today** | regular / small / wide | Today's course list with class times and room numbers |
+| **TwoDay** | regular / small / wide | Today + tomorrow in side-by-side columns, ideal for previewing tomorrow's classes |
+| **WeekView** | regular / small | Minimalist theme-colored week grid thumbnail, supports 3-day compact window |
+| **WeekList** | regular / small / wide | 7-day course counts and course name summaries, supports 3-day compact window |
+
+Image sources: Directly exported from the production widget renderer with transparent rounded corners, using the unified demo schedule from the official website. Actual desktop sizing and font truncation depend on your launcher and the chosen variant.
 
 <p align="left">
   <img src="docs/screenshots/32-widget-settings.png" width="280" alt="Per-widget timetable binding and course-name display">
@@ -328,11 +355,12 @@ Appearance → Schedule display offers stacked, folded-corner, and side-bar conf
 
 ## OPPO Fluid Cloud
 
-Since v1.0.37 the before-class reminder supports a Fluid Cloud style: `FluidCloudService` (foreground service) renders course name, time, and room via `NotificationCompat.ProgressStyle`, with a progress bar that advances toward class time, persistently visible in the status bar (off by default). OPPO/OnePlus Seedling card integration materials are ready but **not yet wired into the build**.
+**The Android 16 Live Updates path is integrated**: the foreground `FluidCloudService` uses `VendorLiveCardRenderer` to build a `NotificationCompat.ProgressStyle` notification and request promoted ongoing presentation. OPPO / OnePlus / realme share a ColorOS rendering branch. The repository records device behavior on RMX6688 / ColorOS 16; capsule and card presentation still depends on the device, OS, and permissions, so the feature remains experimental.
 
-- OPPO `SeedlingSupportSDK-lite 3.0.7` AAR sits in `app/libs/` (minSdk 26); gradle does not yet declare the dependency; `SeedlingCardWidgetProvider` is unimplemented
-- UPK source project in [`oppo-fluid-cloud-upk/`](oppo-fluid-cloud-upk/) (API 2.0, `immediate` trigger, `notification/statusbar` entry)
-- OPPO-assigned values (`identifier`, `intent`, etc.) remain as `REPLACE_WITH_OPPO_*` placeholders — see that directory's README
+- Select Fluid Cloud under Mine → Reminders → Before-class reminder (banner is the default; the two modes are exclusive). The capsule can show course name, time, room, or countdown; progress updates every 15 seconds and stops when class starts
+- The reminder page offers a two-minute test and a stop action, checking notification permission, Live Updates authorization, and vendor capability state. OPPO-family devices on API 36+ prioritize the Live Updates authorization page. Permission alone does not prove a card is visible; older systems or unpromoted notifications use a normal progress notification, while denied notification permission still affects visibility
+- **The dedicated Pantanal / Seedling SDK + UPK path remains unintegrated**: the `SeedlingSupportSDK-lite 3.0.7` AAR in `app/libs/` is not a Gradle dependency, and `SeedlingCardWidgetProvider` is neither implemented nor registered. [`oppo-fluid-cloud-upk/`](oppo-fluid-cloud-upk/) is a source skeleton with `REPLACE_WITH_OPPO_*` placeholders, not release or acceptance evidence
+- See [OPPO / ColorOS integration status](docs/vendors/oppo-coloros-fluid-cloud.md) (Chinese) for code references, the two paths, and verification limits
 
 ---
 
@@ -359,7 +387,7 @@ Entry: "Mine" → "Reminders". The master toggle is off by default; turning it o
 - **Per-timetable reminders**: open Mine → Reminders → Timetable reminders to see every timetable and toggle each one. Changes save immediately and retain existing choices. You can configure them while the master switch is off; they take effect when it is enabled. The timetable editor no longer contains this switch.
 - Today, tomorrow, and before-class reminders provide live schedule previews
 - Date rules distinguish public holidays, transferred days, make-up workdays, and ordinary weekends
-- Before-class reminders can use a notification banner and experimental live notifications; the page includes main-field selection, a test action, and notification/alarm/battery reliability diagnostics
+- Before-class reminders use either a notification banner or experimental live notifications; switching to banner stops the live notification service. The page includes main-field selection, test and stop actions, and notification/alarm/battery reliability diagnostics
 - Optional automatic Do Not Disturb during class; it restores the previous state at the class boundary and remains vendor/permission dependent
 
 ---
@@ -562,7 +590,7 @@ sleepy/
 │   └── logo.png                                               # README logo
 ├── assets/                                                    # Original logo asset
 ├── gh-pages/                                                  # Online timetable site
-├── oppo-fluid-cloud-upk/                                      # OPPO Fluid Cloud UPK source (not wired into the build)
+├── oppo-fluid-cloud-upk/                                      # Pantanal/Seedling UPK skeleton (dedicated path not integrated)
 ├── artifacts/                                                 # Archived build outputs
 ├── scripts/                                                   # School catalog generation, validation, and version maintenance
 ├── tools/                                                     # Widget previews, device verification, and academic capture tools

@@ -11,7 +11,7 @@ import java.io.File
  * 用户误以为表单不能添加正常课程。契约:
  *  - 两个开关收进同一个折叠栏「非常规选项」(irregular_options_section), 默认折叠;
  *  - 编辑已启用任一非常规项的课程时折叠栏自动展开 (否则看不到已启用项);
- *  - 标准节次字段 (start_node/step_count) 留在折叠栏外 — 普通课程主路径不受折叠影响;
+ *  - 标准节次字段 (双头滑杆 IntRangeSlider) 留在折叠栏外 — 普通课程主路径不受折叠影响;
  *  - 展开交互沿用仓库既有模式 (ExpandMore chevron 旋转 + AnimatedVisibility, 参考
  *    EditTableScreen 节次时间表 / SettingsCards.SettingsCard);
  *  - 六 locale 文案齐全 (irregular_options_section / _sub)。
@@ -183,8 +183,8 @@ class IrregularOptionsCollapseTest {
     fun standard_node_fields_stay_outside_section() {
         val src = editorSource()
         val body = editorBody(src)
-        assertTrue("标准节次字段 (start_node/step_count) 必须留在折叠栏外",
-            body.contains("R.string.start_node") && body.contains("R.string.step_count"))
+        assertTrue("标准节次字段 (双头滑杆 IntRangeSlider) 必须留在折叠栏外",
+            body.contains("IntRangeSlider(") && body.contains("R.string.slot_summary_period_range"))
         assertTrue("MeetingBlockEditor 必须挂载 IrregularOptionsSection",
             body.contains("IrregularOptionsSection("))
         assertFalse("两个非常规开关不得再平铺在 MeetingBlockEditor 主体里",

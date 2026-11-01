@@ -18,6 +18,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 课程边界刷新调度器 (设计文稿 widget-redesign-2026-09 §5)。
@@ -62,7 +63,7 @@ object WidgetBoundaryScheduler {
     fun armNext(context: Context) {
         try {
             val awm = AppWidgetManager.getInstance(context)
-            val now = LocalDateTime.now()
+            val now = LocalDateTime.now(AppClock)
             val nowMin = now.hour * 60 + now.minute
             val endMins = ArrayList<Int>()
             for (cls in BOUNDARY_FAMILIES) {
@@ -84,9 +85,9 @@ object WidgetBoundaryScheduler {
                 Log.d(TAG, "no future boundary today (endMins=${endMins.size}) — alarm cleared")
                 return
             }
-            val triggerAt = LocalDate.now().atStartOfDay(java.time.ZoneId.systemDefault())
+            val triggerAt = LocalDate.now(AppClock).atStartOfDay(java.time.ZoneId.systemDefault())
                 .plusMinutes(nextMin.toLong()).toInstant().toEpochMilli()
-            if (triggerAt <= System.currentTimeMillis()) return
+            if (triggerAt <= AppClock.millis()) return
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !am.canScheduleExactAlarms()) {
                 // 无精确权限 → 不精确 + 15-min 周期兜底, 静默降级 (评审 #12)
                 am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pending)

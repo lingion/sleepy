@@ -21,7 +21,7 @@ class TomorrowReminderWiringContractTest {
         val receiver = source.substringAfter("class TomorrowNotifyReceiver")
             .substringBefore("private suspend fun sendScheduleSummary")
 
-        assertTrue("前一晚提醒必须从次日开始计算", receiver.contains("LocalDate.now().plusDays(1)"))
+        assertTrue("前一晚提醒必须从次日开始计算", receiver.contains("LocalDate.now(AppClock).plusDays(1)"))
         assertTrue("前一晚提醒必须调用与当天相同的摘要生成函数", receiver.contains("sendScheduleSummary("))
         assertTrue("前一晚提醒必须标记为明日预告文案", receiver.contains("isTomorrowPreview = true"))
     }

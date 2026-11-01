@@ -36,6 +36,7 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import kotlin.math.roundToInt
 
@@ -66,7 +67,10 @@ fun <T> SegmentedSwitcher(
     selected: T,
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
-    containerColor: Color? = null
+    containerColor: Color? = null,
+    // ui-ops 语义定位前缀：非空时每个可点击段注册 dbgTag("<prefix>#<index>")，
+    // find/action 可按段号或 label 文本命中；默认 null 不打标，行为与旧版一致。
+    dbgTagPrefix: String? = null,
 ) {
     val colors = MaterialTheme.colorScheme
     val selectedIndex = options.indexOfFirst { it.first == selected }.coerceAtLeast(0)
@@ -125,7 +129,7 @@ fun <T> SegmentedSwitcher(
                         .background(colors.secondaryContainer)
                 )
                 // 层1..n: 点击段 — 透明, 只负责点击与无障碍
-                options.forEachIndexed { index, _ ->
+                options.forEachIndexed { index, (_, label) ->
                     Box(
                         Modifier
                             .fillMaxHeight()
@@ -134,6 +138,11 @@ fun <T> SegmentedSwitcher(
                                 indication = null
                             ) { onSelect(options[index].first) }
                             .semantics { role = Role.Button }
+                            .then(
+                                dbgTagPrefix?.let {
+                                    Modifier.dbgTag("$it#$index", text = label, role = "button")
+                                } ?: Modifier
+                            )
                     )
                 }
                 // 层n+1..2n: 文字层 — 每个字符按覆盖率 lerp 上色, 与 thumb 同帧

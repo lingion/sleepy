@@ -1,7 +1,38 @@
-# OPPO / ColorOS 流体云官方接入调查
+# OPPO / ColorOS 流体云接入状态与官方资料
 
-更新时间：2026-07-30
-来源：OPPO 开放平台官方文档 API
+实现复核：2026-10-29（当前仓库代码；本次未执行真机或 DevStudio 验证）
+
+平台资料：2026-07-30 的 OPPO 开放平台官方文档 API 快照；下文 Pantanal / Seedling 规范不代表平台现行准入政策已重新核实。
+
+## 当前接入状态
+
+**Sleepy 已接入 Android 16 Live Updates 通道，用于支持该能力的 ColorOS 流体云展示；Pantanal / Seedling SDK + UPK 专用通道尚未接入。** 两条通道需分别判断，不能用 UPK 未完成推断实时通知也未实现。
+
+| 通道或资产 | 当前状态 | 仓库依据 |
+|---|---|---|
+| Android Live Updates 通知构建 | 已实现 `ProgressStyle`、`setOngoing(true)`、`setRequestPromotedOngoing(true)` 和 `setShortCriticalText` | [VendorLiveCardRenderer.kt](../../app/src/main/java/com/lingion/sleepy/widget/notification/VendorLiveCardRenderer.kt) |
+| OPPO / 一加 / realme 展示分支 | 已实现课程信息、倒计时副行、胶囊主字段和进度环图标；未添加 OPPO 私有通知 extras | 同上，`isColorOs` 分支 |
+| 前台服务与进度生命周期 | 已接入课程提醒调度；每 15 秒更新进度，上课时结束；测试窗口为 2 分钟，支持主动停止 | [FluidCloudService.kt](../../app/src/main/java/com/lingion/sleepy/widget/notification/FluidCloudService.kt)、[FluidNotificationSession.kt](../../app/src/main/java/com/lingion/sleepy/widget/notification/FluidNotificationSession.kt)、[CourseNotificationScheduler.kt](../../app/src/main/java/com/lingion/sleepy/widget/notification/CourseNotificationScheduler.kt) |
+| 权限与设置入口 | Manifest 声明 `POST_NOTIFICATIONS` / `POST_PROMOTED_NOTIFICATIONS`；测试入口检查通知权限、实时更新授权和厂商能力状态 | [AndroidManifest.xml](../../app/src/main/AndroidManifest.xml)、[ReminderScreen.kt](../../app/src/main/java/com/lingion/sleepy/ui/screen/mine/ReminderScreen.kt) |
+| OPPO 家族设置跳转 | API 36+ 优先尝试 `android.settings.APP_NOTIFICATION_PROMOTION_SETTINGS`，再依次尝试通知渠道、厂商及应用通知页 | [VendorLiveNotificationAdapters.kt](../../app/src/main/java/com/lingion/sleepy/widget/notification/VendorLiveNotificationAdapters.kt) 中的当前候选链 |
+| Seedling SDK AAR | 仅存放在 `app/libs/seedling-support-lite-3.0.7.aar`，未声明为构建依赖 | [app/build.gradle.kts](../../app/build.gradle.kts) |
+| Seedling Provider 与业务桥接 | 未实现 `SeedlingCardWidgetProvider`，未在 Manifest 注册，也没有课程数据的 Seedling 创建/更新/结束调用 | APK 源码与 Manifest |
+| Pantanal UPK | 已有 config、card-config 和 OML 源工程骨架；仓库无生成的 UPK 产物或发布、平台验收证据 | [UPK README](../../oppo-fluid-cloud-upk/README.md) |
+
+### 使用与回退
+
+在「我的 → 提醒」开启课前提醒后，选择实验性「流体云」。默认形态为横幅，两者互斥，切回横幅会停止流体云服务。胶囊主显示内容可选课程名、时间、教室或倒计时；测试入口投放示例课程 2 分钟，也可提前结束。
+
+Android 16 / API 36+ 设备可使用原生 promoted Live Updates。当前 `NotificationCompat.ProgressStyle` 构建在旧系统上回退为普通进度通知；系统未提升通知时，也不能保证出现胶囊。通知权限关闭会影响可见性。
+
+[Android 官方 Live Updates 文档](https://developer.android.com/develop/ui/views/notifications/live-update)说明了通知样式、promoted 请求、权限和持续通知等要求，并明确厂商可增加展示条件。`canPostPromotedNotifications()` 只检查应用是否获准发送 promoted 通知，不能证明某条通知已被提升或显示。当前厂商探测在无法确定时保留 `UNKNOWN`；测试通过权限检查也不代表取得 Pantanal 平台准入。
+
+### 验证范围
+
+- [ColorOS 渲染契约测试](../../app/src/test/java/com/lingion/sleepy/widget/notification/VendorLiveCardRendererColorOsContractTest.kt)的注释记录了 RMX6688 / ColorOS 16 的胶囊短文本、卡片进度条和进度环行为；这些是仓库已有记录，本次未重新执行真机验收
+- [投放闸门契约测试](../../app/src/test/java/com/lingion/sleepy/widget/notification/FluidCastGateContractTest.kt)和[会话测试](../../app/src/test/java/com/lingion/sleepy/widget/notification/FluidNotificationSessionTest.kt)覆盖权限闸门、状态对账、首帖补发及生命周期等代码行为，不能代替厂商渲染验证
+- 「投放中」来自进程内 `FluidCastState` 服务状态，不是通知可见性或系统胶囊展示成功信号；不据此承诺所有 OPPO / 一加 / realme 机型、系统版本及触点可用
+- `REPLACE_WITH_OPPO_*`、预留 Provider 名称和本地 AAR 不能作为 Seedling 通道接入成功或平台审核通过的证据
 
 ## 官方文档入口
 
@@ -35,9 +66,11 @@ POST https://open.oppomobile.com/oneoppoapi/doc/detail
 Content-Type: application/json
 {"doc_id": 12965}
 
-## 流体云到底是什么
+## Pantanal / Seedling 流体云是什么
 
-OPPO 官方定义：流体云是泛在服务卡片的一种展示形式，不是普通 Android Notification 的样式扩展。
+以下为 Pantanal / Seedling 专用通道资料。这里的 UPK、SDK、意图、服务 ID 和审核要求不应套用于当前 Android Live Updates 通道。
+
+在这套 OPPO 官方资料中，流体云是泛在服务卡片的一种展示形式。
 
 它由 ColorOS 泛在服务框架负责渲染，支持：
 
@@ -52,9 +85,9 @@ OPPO 官方定义：流体云是泛在服务卡片的一种展示形式，不是
 
 官方产品介绍明确描述为“气泡、胶囊、面板不同形态呈现”，并将其定义为系统核心组件的实时活动全局触达。
 
-因此：NotificationCompat + IMPORTANCE_HIGH + heads-up 不是流体云。
+仅有 `IMPORTANCE_HIGH` 和 heads-up 横幅不能证明流体云展示成功；当前已实现的 Live Updates 则需结合系统授权、通知提升和具体机型表现判断。
 
-## API 与系统版本
+## Pantanal API 与系统版本
 
 流体云卡片从 API 2.0 / ColorOS 14.0 开始支持。
 
@@ -74,9 +107,9 @@ config.json：
 
 快速开始文档要求开发调试设备 ColorOS 不低于 13.1；但流体云能力本身需要 API 2.0 / ColorOS 14.0。
 
-## 必须具备的工程形态
+## Pantanal 专用通道的工程形态
 
-流体云不是直接加到现有 APK 的 Notification channel 上，而是一个 Pantanal Service Package / UPK 服务工程。
+这条专用通道需要 Pantanal Service Package / UPK 服务工程，不能仅靠现有 APK 的 Notification channel 完成。
 
 典型结构：
 
@@ -105,7 +138,7 @@ src/
    - APK 通过 SeedlingSupportSDK 提供数据、生命周期和更新
    - 需要 AndroidManifest 注册 Provider
 
-Sleepy 属于“有宿主服务”方向，因为课程数据和提醒调度都在现有 APK 内。
+Sleepy 预留的 UPK 骨架采用“有宿主服务”方向，因为课程数据和提醒调度都在现有 APK 内；当前 APK 尚未实现该宿主桥接。
 
 ## 接入前置条件
 
@@ -355,52 +388,14 @@ grade 当前有 GRADE_1 到 GRADE_5，但官方明确要求与 OPPO 沟通，不
 
 因此普通个人 APK 即使实现了 SDK 调用，也不代表 ColorOS 会把它显示为正式流体云；服务 ID、意图、UPK、签名、审核和平台资格都属于链路的一部分。
 
-## 对 Sleepy 当前代码的准确判断
+## Pantanal / Seedling 后续接入步骤
 
-当前 Sleepy 已实现：
+此处仅列专用通道的剩余工作，Android Live Updates 当前已实现的链路见本文开头。
 
-- Android NotificationChannel
-- 课前提醒
-- 高优先级通知
-- 普通横幅
-- 结构化课程文本
-- ColorOS 上的 Heads-up 展示
+1. 按届时有效的平台规则申请泛在服务资格、service ID 及课程提醒的 intent action/domain、eventCode 和 event 名称
+2. 复核已有 [UPK 骨架](../../oppo-fluid-cloud-upk/README.md)：当前为 API 2.0、`immediate`、`notification/statusbar` 入口及 sm/md/lg 尺寸；替换占位值，核对调试/发布宿主配置，并用 Pantanal DevStudio 验证 OML
+3. 将合适版本的 Seedling SDK 声明为构建依赖，实现并注册 Provider 生命周期桥接
+4. 用真实课程数据接入 SDK 创建、更新和结束卡片，独立验证权限、异常及与普通通知的去重行为
+5. 使用对应设备和 OPPO 调试工具验证胶囊、展开、收起和更新，再完成签名、审核及发布
 
-当前 Sleepy 尚未实现：
-
-- Pantanal UPK 工程
-- config.json
-- card-config.json
-- OML 流体云模板
-- 流体云页面和组件
-- SeedlingSupportSDK
-- SeedlingCardWidgetProvider
-- OPPO 分配的 service ID
-- OPPO 分配的 intent action/domain
-- OPPO 事件码和事件名
-- OPPO 服务库发布/签名/审核
-- requestShowPanel/grade 等白名单能力
-
-准确结论：
-
-```text
-普通通知横幅：已实现
-Android Heads-up：已在一加真机验证
-ColorOS 真正流体云：尚未接入
-```
-
-## 推荐实现路径
-
-1. 先申请 OPPO 泛在服务资格和 service ID
-2. 申请/确认课程提醒对应的 intent action、domain、eventCode、event 名称
-3. 安装 Pantanal DevStudio，创建“有宿主 + 流体云”工程
-4. 创建 Sleepy 的 UPK：config.json、card-config.json、OML 页面
-5. 选择 immediate 或 live 服务类型
-6. 在 card-config.json 支持 notification_sm、notification_md、notification_lg
-7. 将 SeedlingSupportSDK lite 3.0.7 集成到 Sleepy
-8. 实现 Provider 生命周期和业务数据更新
-9. 用真实课程数据调用 SDK 创建/更新泛在卡片
-10. 在 OnePlus/ColorOS 设备上用 OPPO 调试工具真机验证胶囊、展开、收起和更新
-11. 通过平台审核后再进入正式版本
-
-在拿到 OPPO service ID、intent、event 协议和 SDK/DevStudio 包之前，不应再声称 Sleepy 已支持真正流体云。
+在完成这些步骤前，只能表述为“专用通道材料和源工程骨架已准备”，不能声称 Seedling SDK 已集成、UPK 已发布或平台准入已通过。

@@ -149,8 +149,20 @@ internal fun legacyTimeWidthDp(
     density: androidx.compose.ui.unit.Density,
     showX: Boolean = false,
     hideTime: Boolean = false,
+    centerTime: Boolean = false,
 ): androidx.compose.ui.unit.Dp {
-    if (!hideTime) return legacyLineWidthDp(slots, headerStyle, scale, measurer, density, showX)
+    if (!hideTime) {
+        return if (centerTime) {
+            val rows = slots.filter { !it.isPlaceholder }.map { slot ->
+                val label = if (showX && slot.nodeStart == slot.nodeEnd) {
+                    PeriodHeaderFormatter.fullLabel(slot.nodeStart, headerStyle)
+                } else PeriodHeaderFormatter.range(slot.nodeStart, slot.nodeEnd, headerStyle)
+                legacyRowInk(slot, label, measurer, scale)
+            }
+            with(density) { legacyCenteredColumnPx(rows, 0f).columnWidthPx.toDp() } +
+                (2f * PERIOD_HEADER_CARD_PAD_DP * scale).dp
+        } else legacyLineWidthDp(slots, headerStyle, scale, measurer, density, showX)
+    }
     val labelStyle = headerLabelStyle(scale)
     var maxLabel = 0f
     for (slot in slots) {
@@ -163,6 +175,24 @@ internal fun legacyTimeWidthDp(
     }
     val content = with(density) { maxLabel.toDp() } + (2f * PERIOD_HEADER_CARD_PAD_DP * scale).dp
     return content.coerceAtLeast((36f * scale).dp)
+}
+
+/** Legacy geometry for centering the complete time range instead of its dash. */
+internal fun legacyCenteredColumnPx(rows: List<LegacyDashRowInk>, padPx: Float): LegacyDashColumn {
+    if (rows.isEmpty()) return LegacyDashColumn(0f, 0f, emptyList())
+    val halfExtent = rows.maxOf { maxOf(it.labelPx / 2f, (it.timeLeftPx + it.dashPx + it.timeRightPx) / 2f) }
+    val center = padPx + halfExtent
+    val width = 2f * halfExtent + 2f * padPx
+    return LegacyDashColumn(
+        columnWidthPx = width,
+        dashCenterX = center,
+        placements = rows.map {
+            LegacyDashPlacement(
+                labelLeft = center - it.labelPx / 2f,
+                timeLeft = center - (it.timeLeftPx + it.dashPx + it.timeRightPx) / 2f,
+            )
+        },
+    )
 }
 
 /** 老式表头单行墨迹: 标签整宽 + 时间串三段 (start / dash / end, px 实测, 含行高)。 */
@@ -363,9 +393,14 @@ fun PeriodHeaderCellContent(
             //   字号基线/行高/卡高三条输入全列同源, 解出的 fontScale 天然一致。
             val density = LocalDensity.current
             val measurer = rememberTextMeasurer()
+            val centerTime = AppPrefs.getPeriodHeaderTimeAlignment(context) == "center"
             val rowInk = legacyRowInk(slot, label, measurer, scale)
-            val axisX = sharedLegacyAxis ?: with(density) {
-                maxOf(rowInk.labelPx / 2f, rowInk.timeLeftPx).toDp()
+            val axisX = sharedLegacyAxis ?: if (centerTime) {
+                with(density) { (maxWidth.toPx() / 2f).toDp() }
+            } else {
+                with(density) {
+                    maxOf(rowInk.labelPx / 2f, rowInk.timeLeftPx + rowInk.dashPx / 2f).toDp()
+                }
             }
             val baseFont = PeriodHeaderAdaptiveFont(
                 timeSize = PeriodHeaderAdaptiveFont.BASE_TIME_SP,
@@ -410,7 +445,10 @@ fun PeriodHeaderCellContent(
             // dash 字形中心坐轴 (与模型同口径): 串左缘 = 轴 − timeLeftPx − dashPx/2
             // (2026-10-04 设备实锤漏 dashPx/2, dash 全列偏右半字宽)。
             val timeLeftDp = with(density) {
-                (axisX.toPx() - rowInk.timeLeftPx - rowInk.dashPx / 2f).toDp()
+                val offset = if (centerTime) {
+                    (rowInk.timeLeftPx + rowInk.dashPx + rowInk.timeRightPx) / 2f
+                } else rowInk.timeLeftPx + rowInk.dashPx / 2f
+                (axisX.toPx() - offset).toDp()
             }
             val labelTopDp = with(density) { vertical.labelTopPx.toDp() }
             val timeTopDp = with(density) { vertical.timeTopPx.toDp() }

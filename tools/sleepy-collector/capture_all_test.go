@@ -360,8 +360,14 @@ func TestCaptureCacheDisabledAndBodies(t *testing.T) {
 
 	// 普通响应体即时抓取
 	if !waitUntil(t, 15*time.Second, func() bool {
-		r := recByURLSuffix(c, "/api/data")
-		return r != nil && r.body != ""
+		c.tmu.Lock()
+		defer c.tmu.Unlock()
+		for _, k := range c.order {
+			if r := c.recs[k]; r != nil && strings.HasSuffix(r.url, "/api/data") && r.body != "" {
+				return true
+			}
+		}
+		return false
 	}) {
 		t.Fatal("普通 XHR 响应体未被捕获")
 	}
@@ -482,4 +488,31 @@ func TestCaptureDownload(t *testing.T) {
 	if !ok {
 		t.Fatalf("下载未被捕获 (记录=%d)", len(c.downloadEntries(8<<20)))
 	}
+}
+
+// Regression: CDP network callbacks mutate recs while polling readers walk it.
+// Run with -race; the unguarded event path used to crash the collector test.
+func TestCaptureConcurrentRecordAccess(t *testing.T) {
+	c := NewCollector()
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		for i := 0; i < 1000; i++ {
+			c.onEventTab(0, &network.EventRequestWillBeSent{
+				RequestID: network.RequestID(fmt.Sprint(i)),
+				Request:   &network.Request{URL: fmt.Sprintf("http://x/api/%d", i), Method: "GET"},
+			})
+		}
+	}()
+	for !waitUntil(t, 5*time.Second, func() bool {
+		select {
+		case <-done:
+			return true
+		default:
+			return recByURLSuffix(c, "/api/") != nil
+		}
+	}) {
+		t.Fatal("timed out waiting for concurrent network events")
+	}
+	<-done
 }

@@ -95,6 +95,9 @@ def detect_type_from_url(url):
             return 'zf'
         if '/jsxsd/' in u or re.search(r'.*/jxd(/|$).*', u) or 'logon.do' in u:
             return 'qz'
+        # /http/<hex>/ 重写把原 host 原样留在 path, 租户锚子串仍命中
+        if '.jw.chaoxing.com' in u or '.fanya.chaoxing.com' in u:
+            return 'chaoxing'
         return None
 
     # WISEDU
@@ -135,8 +138,10 @@ def detect_type_from_url(url):
     if '/xsgrkbcx' in u or '/new/xskb' in u:
         return 'cf'
 
-    # CHAOXING
-    if re.search(r'.*/xsd(/|$).*', u) or 'querykbforgrdb' in u:
+    # CHAOXING — 超星综合教务（含泛雅按校租户域 *.jw.chaoxing.com / *.fanya.chaoxing.com；
+    # 2026-10-28 WakeUP 6.6.2 调查 GitHub 交叉验证：9+ 学生仓库同端点）
+    if (re.search(r'.*/xsd(/|$).*', u) or 'querykbforgrdb' in u
+            or '.jw.chaoxing.com' in u or '.fanya.chaoxing.com' in u):
         return 'chaoxing'
 
     # PKU

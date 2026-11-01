@@ -143,12 +143,12 @@ class TodayDataLifecycleContractTest {
         val syncBody = src.substringAfter("fun loadDataSync(")
             .substringBefore("fun loadDataForDate(")
         assertTrue(
-            "loadDataSync 必须先取一次 now (val now = LocalDate.now())",
-            syncBody.contains("val now = LocalDate.now()")
+            "loadDataSync 必须先取一次 now (val now = LocalDate.now(AppClock))",
+            syncBody.contains("val now = LocalDate.now(AppClock)")
         )
-        val nowCalls = Regex("LocalDate\\.now\\(\\)").findAll(syncBody).count()
+        val nowCalls = Regex("LocalDate\\.now\\(AppClock\\)").findAll(syncBody).count()
         assertTrue(
-            "loadDataSync 里 LocalDate.now() 只允许出现 1 次 (跨午夜渲染 nav target 与" +
+            "loadDataSync 里 LocalDate.now(AppClock) 只允许出现 1 次 (跨午夜渲染 nav target 与" +
                 "isToday 口径必须一致, 当前 $nowCalls 次)",
             nowCalls == 1
         )
@@ -165,7 +165,7 @@ class TodayDataLifecycleContractTest {
         val body = src.substringAfter("fun loadDataForDate(")
         assertFalse(
             "loadDataForDate 内部禁再取第二次 now (由调用方注入, 缺省参数仅供旧调用方兼容)",
-            body.contains("val today = LocalDate.now()")
+            body.contains("val today = LocalDate.now(AppClock)")
         )
     }
 }

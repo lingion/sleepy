@@ -33,7 +33,8 @@ class JwParserRegistryTest {
 
     @Test
     fun `ALL_TYPES contains 33 routable types in priority order`() {
-        assertEquals(35, JwProtocol.ALL_TYPES.size)
+        // 2026-10-27 sg_asset (拾光通用通路, b63b5efc) 入列后 36 项。
+        assertEquals(36, JwProtocol.ALL_TYPES.size)
         assertEquals(JwProtocol.TYPE_WISEDU, JwProtocol.ALL_TYPES.first())
         assertEquals(JwProtocol.TYPE_CQU, JwProtocol.ALL_TYPES[1])
         assertEquals(JwProtocol.TYPE_CHAOXING, JwProtocol.ALL_TYPES[2])

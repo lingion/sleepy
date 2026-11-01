@@ -163,101 +163,112 @@ class NavHostMigrationContractTest {
         )
     }
 
-    // ─── Material 动效: pop 用 scaleOut + Center origin, popEnter=None, forward 对称 scale ───
+    // ─── MD3E content 家族转场: 三个 transform 统一走 sleepyContent* 工厂 (Task 2 ledger 反转裁决) ───
 
     @Test
-    fun popExit_uses_scaleOut_with_target_0_92_and_center_transformOrigin() {
-        // issue#45 第三轮 (2026-09-21): miuix 弃库 → 官方 navigation3,
-        // Material 动效同样用 scaleIn/Out + TransformOrigin.Center + 0.92,
-        // 完全对齐 Material Motion in-app 返回手势官方示例。
-        val body = balancedBlock(routesSrc, "fun sleepyPopExit")
-        assertTrue(
-            "popExit 必须调 scaleOut(0.92f, TransformOrigin.Center) — 0.92 改 0.85/0.95 都是偏离官方示例",
-            Regex(
-                """scaleOut\(\s*animationSpec\s*=\s*forwardTween\s*,\s*targetScale\s*=\s*0\.92f\s*,\s*transformOrigin\s*=\s*TransformOrigin\.Center"""
-            ).containsMatchIn(body)
-        )
-        // predictiveCommitTween 是 Material 化后的统一 tween(200ms CubicBezier(0.2,0,0,1)),
-        // 供 predictivePopTransitionSpec 手势释放(commit)时使用;popExit(程序化返回)用
-        // forwardTween。锁:tween 配置必须与 InstallerX Classic 的物理参数对齐
-        // (时长 200ms, CubicBezier 0.2/0/0/1)。
-        assertTrue(
-            "predictive commit 的 tween 必须 PredictiveDuration(200ms)+ CubicBezier(0.2, 0, 0, 1)(InstallerX Classic 物理对齐)",
-            routesSrc.contains("PredictiveDuration: Int = 200") &&
-                routesSrc.contains("CubicBezierEasing(0.2f, 0f, 0f, 1f)")
-        )
-        assertTrue(
-            "predictivePop 必须引用顶层 predictiveCommitTween(禁止函数内另起 tween 参数)",
-            Regex("""internal val sleepyPredictivePopTransform[\s\S]{0,1200}?predictiveCommitTween""").containsMatchIn(routesSrc)
-        )
-    }
-
-    @Test
-    fun popEnter_returns_None_so_target_page_stays_in_place() {
-        // 官方推荐示例 popEnter = EnterTransition.None: 返回时目标页不重画,
-        // 退出页独立缩放淡出。sleepy 之前 popEnter 是 slideIn+slideOut+1/6(返回的页面从左侧滑入),
-        // 视觉上"两层都动", 与缩放叠加会出现用户吐槽的"卡很久"。
-        val body = balancedBlock(routesSrc, "fun sleepyPopEnter")
-        assertTrue(
-            "popEnter 必须返回 EnterTransition.None(目标页原地不动画)",
-            Regex("""fun\s+sleepyPopEnter\(\)[\s\S]{0,200}?EnterTransition\.None""").containsMatchIn(routesSrc)
-        )
-        // 旧 slide 痕迹不能再出现 (滑动位移在 popEnter 路径上)
-        assertFalse(
-            "popEnter 路径内不允许出现 slideInHorizontally (Material 方案已禁返回滑入)",
-            body.contains("slideInHorizontally")
-        )
-    }
-
-    @Test
-    fun forward_enter_exit_use_mirrored_scale_92_with_220ms_tween() {
-        // 推进 (forward): enter fadeIn + scaleIn(0.92, Center); exit fadeOut + scaleOut(0.92, Center);
-        // tween(220, FastOutSlowInEasing) — 不对称 + spring 是 d7fc 那轮的二次翻车点。
-        val enterBody = balancedBlock(routesSrc, "fun sleepyForwardEnter")
-        val exitBody = balancedBlock(routesSrc, "fun sleepyForwardExit")
-        assertTrue(
-            "forwardEnter 必须用 fadeIn + scaleIn(initialScale = 0.92f, TransformOrigin.Center)",
-            enterBody.contains("fadeIn(forwardFadeInTween)") &&
-                enterBody.contains("scaleIn(") &&
-                enterBody.contains("initialScale = 0.92f") &&
-                enterBody.contains("TransformOrigin.Center")
-        )
-        assertTrue(
-            "forwardExit 必须用 fadeOut + scaleOut(targetScale = 0.92f, TransformOrigin.Center)",
-            exitBody.contains("fadeOut(forwardTween)") &&
-                exitBody.contains("scaleOut(") &&
-                exitBody.contains("targetScale = 0.92f") &&
-                exitBody.contains("TransformOrigin.Center")
-        )
-        assertTrue(
-            "enter/exit 必须引用顶层 forwardTween(其定义锁定 220ms + FastOutSlowInEasing)",
-            enterBody.contains("forwardTween") && exitBody.contains("forwardTween") &&
-                routesSrc.contains("durationMillis = ForwardDuration") &&
-                routesSrc.contains("easing = FastOutSlowInEasing")
-        )
-        assertTrue(
-            "fade 速度要锁: enter fadeIn 110ms, exit fadeOut 220ms (避免两块页面同进同出叠影)",
-            enterBody.contains("forwardFadeInTween") &&
-                exitBody.contains("forwardTween") &&
-                routesSrc.contains("durationMillis = ForwardFadeIn") &&
-                routesSrc.contains("durationMillis = ForwardDuration")
-        )
-    }
-
-    @Test
-    fun transition_constants_are_top_level_not_buried_in_function_body() {
-        // 锁参数常量化 — 修改时长要改一处而非四处。常量是 internal const val(测试可见):
+    fun nav_transforms_delegate_to_shared_content_factories() {
+        // M3 Expressive 全量过闸: forward/pop/predictive 三个 transform 不再自带 tween/spring
+        // 常量, 统一由 SleepyMotion 的 sleepyContentEnter/sleepyContentExit 工厂产出
+        // (scaleIn/Out 0.92 defaultSpatial + alpha defaultEffects)。单一调参点 = SleepyMotion.kt。
+        // 三个工厂都是 @Composable(motionScheme 要读主题), NavDisplay 非 composable 槽位在
+        // 调用点先算好 ContentTransform 再捕获 — 捕获模式本身也要锁。
         listOf(
-            "internal const val ForwardDuration",
-            "internal const val ForwardFadeIn",
-            "internal const val PredictiveDuration",
-            "predictiveCommitTween",
-        ).forEach { ident ->
+            "fun sleepyForwardTransform",
+            "fun sleepyPopTransform",
+            "fun sleepyPredictivePopTransform",
+        ).forEach { anchor ->
             assertTrue(
-                "SleepyMaterialTransition.kt 顶层必须暴露过渡参数 $ident(集中调参点, 否则动画散在 4 个函数里)",
-                Regex("""$ident\b""").containsMatchIn(routesSrc)
+                "转场工厂必须是 @Composable(读 MaterialTheme.motionScheme): $anchor",
+                Regex("@Composable\\s+internal $anchor").containsMatchIn(routesSrc)
+            )
+            val body = balancedBlock(routesSrc, anchor)
+            assertTrue(
+                "$anchor 必须用 sleepyContentEnter() 组 ContentTransform",
+                body.contains("sleepyContentEnter()")
+            )
+            assertTrue(
+                "$anchor 必须用 sleepyContentExit() 组 ContentTransform",
+                body.contains("sleepyContentExit()")
+            )
+            assertTrue(
+                "$anchor 必须保留 targetContentZIndex = 1f(目标页压层)",
+                body.contains("targetContentZIndex = 1f")
             )
         }
+        assertTrue(
+            "SleepyNavHost 必须以捕获模式消费三个 composable transform(槽位是 @DisallowComposableCalls)",
+            navHostSrc.contains("val forwardTransform = sleepyForwardTransform()") &&
+                navHostSrc.contains("val popTransform = sleepyPopTransform()") &&
+                navHostSrc.contains("val predictivePopTransform = sleepyPredictivePopTransform()")
+        )
+    }
+
+    @Test
+    fun pop_transform_reverses_none_and_slide_stays_banned() {
+        // 用户拍板 ledger 反转: 返回时目标页同样走入场动画(sleepyContentEnter),
+        // 旧「目标页原地不动画」的 EnterTransition.None 设计退场。
+        // 不减弱断言: None 出现即失败; 滑动位移在返回路径上继续永久禁止。
+        val body = balancedBlock(routesSrc, "fun sleepyPopTransform")
+        assertFalse(
+            "pop transform 不得再返回 EnterTransition.None(旧设计已被 ledger 反转)",
+            body.contains("EnterTransition.None")
+        )
+        assertFalse(
+            "转场文件不允许出现 slideInHorizontally (Material 方案已禁返回滑入)",
+            routesSrc.contains("slideInHorizontally")
+        )
+    }
+
+    @Test
+    fun mirrored_scale_lives_in_shared_factory_not_nav_literals() {
+        // 0.92 页面镜像缩放只在 SleepyMotion.kt 以 SleepyContentScaleStart 定义一次;
+        // nav 文件只消费工厂, 再声明字面量 = 调参点分裂。scaleIn/scaleOut 的缺省
+        // transformOrigin 即 Center, 由工厂实现承载, nav 文件不得重新传参固化。
+        assertFalse(
+            "SleepyMaterialTransition.kt 不得再写 0.92f 字面量(镜像缩放单点在 SleepyContentScaleStart)",
+            routesSrc.contains("0.92f")
+        )
+        assertFalse(
+            "SleepyMaterialTransition.kt 不得再写 TransformOrigin(scaleIn/Out 缺省 origin 即 Center)",
+            routesSrc.contains("TransformOrigin")
+        )
+        assertTrue(
+            "转场文件必须经 import 消费共享工厂",
+            routesSrc.contains("import com.lingion.sleepy.ui.component.sleepyContentEnter") &&
+                routesSrc.contains("import com.lingion.sleepy.ui.component.sleepyContentExit")
+        )
+    }
+
+    @Test
+    fun nav_files_have_no_hardcoded_tween_or_spring() {
+        // 单一调参点意图的存续形态(取代旧 transition_constants_are_top_level):
+        // banned-literals 守卫 — 转场文件与 NavHost 调用点都不得再写硬编码规格;
+        // predictiveCancelSpring 死代码与 InstallerX Classic 旧常量一并清除。
+        listOf("tween(", "spring(", "CubicBezierEasing", "FastOutSlowInEasing").forEach { banned ->
+            assertFalse(
+                "SleepyMaterialTransition.kt 不得含硬编码规格 $banned(全走 motionScheme)",
+                routesSrc.contains(banned)
+            )
+        }
+        listOf(
+            "ForwardDuration", "ForwardFadeIn", "PredictiveDuration", "PredictiveTweenRef",
+            "forwardTween", "forwardFadeInTween", "predictiveCommitTween", "predictiveCancelSpring",
+        ).forEach { dead ->
+            assertFalse(
+                "旧 InstallerX Classic 常量 $dead 必须从转场文件清退(不得留死代码)",
+                routesSrc.contains(dead)
+            )
+        }
+        assertFalse(
+            "SleepyNavHost.kt 不得含 tween( 字面量(右半区 AnimatedContent 走 sleepyContent* 工厂)",
+            navHostSrc.contains("tween(")
+        )
+        assertTrue(
+            "右半区 AnimatedContent 必须捕获 sleepyContentEnter()/sleepyContentExit() 结果组转场",
+            navHostSrc.contains("val contentEnter = sleepyContentEnter()") &&
+                navHostSrc.contains("val contentExit = sleepyContentExit()") &&
+                navHostSrc.contains("contentEnter togetherWith contentExit")
+        )
     }
 
     @Test

@@ -123,6 +123,7 @@ object AppPrefs {
     const val KEY_PERIOD_HEADER_HANGING = "period_header_hanging" // Float time-width units, -1..1, default 0
     const val KEY_PERIOD_HEADER_SHOW_X = "period_header_show_x" // boolean, default false
     const val KEY_PERIOD_HEADER_HIDE_TIME = "period_header_hide_time" // boolean, default false (legacy header only)
+    const val KEY_PERIOD_HEADER_TIME_ALIGNMENT = "period_header_time_alignment" // "dash" / "center", default dash
     const val KEY_THEME_MODE = "theme_mode"  // light/dark/system
     const val THEME_MODE_LIGHT = "light"
     const val THEME_MODE_DARK = "dark"
@@ -782,6 +783,18 @@ object AppPrefs {
     fun setPeriodHeaderHideTime(ctx: Context, value: Boolean) {
         sp(ctx).edit().putBoolean(KEY_PERIOD_HEADER_HIDE_TIME, value).apply()
         _changeBus.tryEmit(KEY_PERIOD_HEADER_HIDE_TIME)
+    }
+
+    fun getPeriodHeaderTimeAlignment(ctx: Context): String =
+        when (sp(ctx).getString(KEY_PERIOD_HEADER_TIME_ALIGNMENT, "dash")) {
+            "center" -> "center"
+            else -> "dash"
+        }
+
+    fun setPeriodHeaderTimeAlignment(ctx: Context, value: String) {
+        require(value == "dash" || value == "center")
+        sp(ctx).edit().putString(KEY_PERIOD_HEADER_TIME_ALIGNMENT, value).apply()
+        _changeBus.tryEmit(KEY_PERIOD_HEADER_TIME_ALIGNMENT)
     }
 
     // ===== 周视图两栏(issue#8) — 默认关 =====

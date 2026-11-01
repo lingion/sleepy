@@ -171,6 +171,59 @@ def wakeup_declared_owner(proof, url):
     )
 
 
+def shiguang_declared_owner(proof, url):
+    """ShiGuang (shiguang_warehouse) entries are likewise third-party claims.
+
+    Same fail-closed bar as the WakeUp declaration: an independent probe that
+    reached this exact operational URL with HTTP 200 over a public host. Rows
+    retained this way stay unverified — no authenticated import was tested.
+    """
+    return (
+        proof.get("source") == "shiguang-batch-probe"
+        and proof.get("http") == 200
+        and "REDACTED" not in url
+        and valid_url(url)
+        and public_host(url)
+    )
+
+
+def shiguang_adapters_declared_owner(proof, url):
+    """Full-absorption admission: the warehouse's adapter list is the claim.
+
+    User ruling 2026-10-27: absorb every ShiGuang school unconditionally,
+    marked unverified. A failed or missing liveness probe (timeout, 403, 302)
+    is not a rejection — a locally unreachable page today is not evidence the
+    declaration is wrong. The safety bar stays: valid http(s) URL, no
+    credentials, no redaction, public host. Retained rows land unverified with
+    enableFetch False, exactly like every other admission.
+    """
+    return (
+        proof.get("source") == "shiguang-adapters"
+        and "REDACTED" not in url
+        and valid_url(url)
+        and public_host(url)
+    )
+
+
+def wakeup_662_declared_owner(proof, url):
+    """Full-absorption admission: the shipped official 6.6.2 catalog is the claim.
+
+    User ruling reaffirmed 2026-10-28: absorb every WakeUP official catalog row
+    unconditionally, marked unverified. Same contract as the ShiGuang adapter
+    declaration: a failed or absent liveness probe (timeout, 403, 302) is not a
+    rejection — a locally unreachable page today is not evidence the shipped
+    entry list is wrong. The safety bar stays: valid http(s) URL, no
+    credentials, no redaction, public host. Retained rows land unverified with
+    enableFetch False, exactly like every other admission.
+    """
+    return (
+        proof.get("source") == "wakeup-6.6.2-official-asset"
+        and "REDACTED" not in url
+        and valid_url(url)
+        and public_host(url)
+    )
+
+
 def endpoint_key(url):
     """Only a missing root slash/default port is equivalent without evidence."""
     if not valid_url(url):
@@ -444,6 +497,12 @@ def apply_ownership(rows, evidence, baseline_names, renames=None, domain_poison=
         if status == "unknown" and row["name"] not in baseline_names:
             if wakeup_declared_owner(proof, row["url"]):
                 return "retained-wakeup-declared-owner", row["url"]
+            if shiguang_declared_owner(proof, row["url"]):
+                return "retained-shiguang-declared-owner", row["url"]
+            if shiguang_adapters_declared_owner(proof, row["url"]):
+                return "retained-shiguang-adapters-owner", row["url"]
+            if wakeup_662_declared_owner(proof, row["url"]):
+                return "retained-wakeup-662-declared-owner", row["url"]
             return "withheld-new-unproven-owner", ""
         if status == "unknown":
             return "retained-existing-config-ownership-unresolved", row["url"]
@@ -469,7 +528,9 @@ def apply_ownership(rows, evidence, baseline_names, renames=None, domain_poison=
             snapshot = dict(row)
             snapshot["url"] = final_url
             predicted_rows[key] = snapshot
-        if action in {"retained-wakeup-declared-owner", "corrected-official-entry"}:
+        if action in {"retained-wakeup-declared-owner", "retained-shiguang-declared-owner",
+                      "retained-shiguang-adapters-owner", "retained-wakeup-662-declared-owner",
+                      "corrected-official-entry"}:
             candidate_keys.append(key)
 
     if domain_poison is None:

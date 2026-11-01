@@ -61,6 +61,12 @@ android {
             localeFilters += listOf("zh-rCN", "zh-rTW", "en", "ja", "es")
         }
         testInstrumentationRunner = "com.lingion.sleepy.SleepyRenderTestRunner"
+
+        // Agent Debug Console 解锁口令 (SPEC §4): 编译期常量, 仅参与 /v1/enable 校验,
+        // 不落日志/不进响应体/不写文件。build 时可覆盖: -Psleepy.console.passphrase=...
+        val consolePassphrase = (findProperty("sleepy.console.passphrase") as String?)
+            ?.takeIf { it.isNotBlank() } ?: "sleepy.is-my.app"
+        buildConfigField("String", "CONSOLE_ENABLE_PASSPHRASE", "\"$consolePassphrase\"")
     }
 
     // 发布签名: 优先用环境变量注入的 keystore (release.yml 从 GitHub Secret
@@ -226,6 +232,8 @@ dependencies {
     implementation(libs.serialization.json)
     implementation(libs.jsoup)
     implementation(libs.work.runtime)
+    // Agent Debug Console HTTP 服务器 (SPEC §4 用户预授权的唯一新增依赖)
+    implementation("org.nanohttpd:nanohttpd:2.3.1")
     implementation(libs.core.splashscreen)
     implementation(libs.coil.compose)
 

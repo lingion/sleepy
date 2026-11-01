@@ -1,8 +1,10 @@
 package com.lingion.sleepy.widget.notification
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
@@ -97,11 +99,11 @@ class FluidCastStateReconciliationContractTest {
             "../app/src/main/java/com/lingion/sleepy/widget/notification/FluidCloudService.kt"
         ).readText()
         // 自停集中到 stopCloudNotification；自然到期由 session 的 finished 路由到同一入口。
-        assert(src.contains("finished = ::stopCloudNotification"))
+        assertTrue(src.contains("finished = ::stopCloudNotification"))
         val stop = src.substringAfter("private fun stopCloudNotification()").substringBefore("override fun onDestroy")
-        assert(stop.contains("session.stop()"))
-        assert(stop.contains("FluidCastState.markStopped()"))
-        assert(src.substringAfter("override fun onDestroy").contains("FluidCastState.markStopped()"))
+        assertTrue(stop.contains("session.stop()"))
+        assertTrue(stop.contains("FluidCastState.markStopped()"))
+        assertTrue(src.substringAfter("override fun onDestroy").contains("FluidCastState.markStopped()"))
         // 正常调度路径置位
         assertEquals(1, Regex("FluidCastState.markStarted").findAll(src).count())
     }
@@ -111,8 +113,8 @@ class FluidCastStateReconciliationContractTest {
         val screen = java.io.File(
             "../app/src/main/java/com/lingion/sleepy/ui/screen/mine/ReminderScreen.kt"
         ).readText()
-        assert(screen.contains("FluidCastState.casting")) { "screen must read FluidCastState.casting" }
-        assert(!screen.contains("activeNotifications")) { "screen must NOT poll notification presence" }
+        assertTrue("screen must read FluidCastState.casting", screen.contains("FluidCastState.casting"))
+        assertFalse("screen must NOT poll notification presence", screen.contains("activeNotifications"))
     }
 }
 
@@ -128,9 +130,10 @@ class FluidFirstPostReinforceContractTest {
         val src = java.io.File(
             "../app/src/main/java/com/lingion/sleepy/widget/notification/FluidCloudService.kt"
         ).readText()
-        assert(src.contains("ACTION_TEST && needsFluidFirstPostReinforcement(vendor)")) {
-            "reinforcement must be gated to ACTION_TEST and ColorOS family"
-        }
+        assertTrue(
+            "reinforcement must be gated to ACTION_TEST and ColorOS family",
+            src.contains("ACTION_TEST && needsFluidFirstPostReinforcement(vendor)"),
+        )
     }
 
     @Test
@@ -140,12 +143,11 @@ class FluidFirstPostReinforceContractTest {
         ).readText()
         // 闸门必须现场 checkSelfPermission / canPostPromotedNotifications,
         // 不读 reliabilitySnapshot 缓存 (授权返回后旧快照误拦第一次点击)。
-        assert(src.contains("nm?.let { runCatching { it.canPostPromotedNotifications() }")) {
-            "gate must probe promoted state live"
-        }
+        assertTrue(
+            "gate must probe promoted state live",
+            src.contains("nm?.let { runCatching { it.canPostPromotedNotifications() }"),
+        )
         val gateBody = src.substring(src.indexOf("fun checkFluidCastGate"), src.indexOf("fun startFluidTestCast"))
-        assert("reliabilitySnapshot" !in gateBody) {
-            "gate must not read cached reliabilitySnapshot"
-        }
+        assertFalse("gate must not read cached reliabilitySnapshot", "reliabilitySnapshot" in gateBody)
     }
 }
