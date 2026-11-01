@@ -222,6 +222,10 @@ dependencies {
 
     implementation(libs.datastore.preferences)
 
+    // 液态玻璃引擎 (Kyant0/AndroidLiquidGlass 2.0.0, third-party/kyant-backdrop)
+    implementation(project(":kyant-backdrop"))
+    implementation("io.github.kyant0:shapes:1.2.1")
+
     // Room
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
@@ -236,6 +240,11 @@ dependencies {
     implementation("org.nanohttpd:nanohttpd:2.3.1")
     implementation(libs.core.splashscreen)
     implementation(libs.coil.compose)
+
+    // HCT 色调运算 (液态玻璃暗色 tint / 镜片托盘), 移植自 FLClash 的
+    // material-color-utilities Hct; com.google.android.material:material-color-utilities
+    // 不存在于任何 Maven 仓库, 故用 API 等价的 studio.lunabee.compose 分发包。
+    implementation(libs.material.color.utilities)
 
     // Test
     testImplementation(libs.junit)

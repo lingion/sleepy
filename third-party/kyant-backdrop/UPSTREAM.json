@@ -1,0 +1,279 @@
+{
+  "repository": "Kyant0/AndroidLiquidGlass",
+  "tag": "2.0.0",
+  "commit": "bebb11a91bd97bf1dabde479f3b332ad9898731f",
+  "files": [
+    {
+      "path": "backdrop/src/androidMain/kotlin/com/kyant/backdrop/Platform.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4d0e92423fa155db13f22879b466791b5d61e3a9",
+      "size": 394,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/4d0e92423fa155db13f22879b466791b5d61e3a9"
+    },
+    {
+      "path": "backdrop/src/androidMain/kotlin/com/kyant/backdrop/RuntimeShader.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "433ad70c4b9ceabce4f2a7777c77535426c0a9a4",
+      "size": 2388,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/433ad70c4b9ceabce4f2a7777c77535426c0a9a4"
+    },
+    {
+      "path": "backdrop/src/androidMain/kotlin/com/kyant/backdrop/internal/Paint.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "081428b44ddbc620f898867211bc35fe0f55e874",
+      "size": 549,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/081428b44ddbc620f898867211bc35fe0f55e874"
+    },
+    {
+      "path": "backdrop/src/androidMain/kotlin/com/kyant/backdrop/internal/RenderEffect.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "22048e9751cae66c3edcb78f700f04015ca4a59a",
+      "size": 1652,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/22048e9751cae66c3edcb78f700f04015ca4a59a"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/Backdrop.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a617938e59473674d6b1e8e82fa36fd7cc3b5b5e",
+      "size": 462,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/a617938e59473674d6b1e8e82fa36fd7cc3b5b5e"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/BackdropEffectScope.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dc42af3c3526d4d60bfdc1d51dfe859e49edd59a",
+      "size": 2090,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/dc42af3c3526d4d60bfdc1d51dfe859e49edd59a"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/DrawBackdropModifier.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d91d6adc0fc39a58b302a262cb9e76cf62c27ed3",
+      "size": 13429,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/d91d6adc0fc39a58b302a262cb9e76cf62c27ed3"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/Platform.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "38e2b6f0b0315475ad6ca95fe720ff8d7a2c1bbe",
+      "size": 122,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/38e2b6f0b0315475ad6ca95fe720ff8d7a2c1bbe"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/RuntimeShader.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6f318f2c70b7c201b017375e62bd200ad73d6256",
+      "size": 1062,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/6f318f2c70b7c201b017375e62bd200ad73d6256"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/RuntimeShaderCache.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f7067c1b3f79c2c684521dfc20e454a8925f1a73",
+      "size": 558,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/f7067c1b3f79c2c684521dfc20e454a8925f1a73"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/backdrops/Backdrop.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "92bf6eaa948eb969faac4df7aca8f0bf246f73cd",
+      "size": 1122,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/92bf6eaa948eb969faac4df7aca8f0bf246f73cd"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/backdrops/CanvasBackdrop.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "74156ebf8c747f96a7b7bb386950d31ddefa4f90",
+      "size": 906,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/74156ebf8c747f96a7b7bb386950d31ddefa4f90"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/backdrops/CombinedBackdrop.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "943d3d77a78b535dd3c1a42db594b957cda14134",
+      "size": 2852,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/943d3d77a78b535dd3c1a42db594b957cda14134"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/backdrops/EmptyBackdrop.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7701a8cefe7648d504b446d4d823b31304a455ba",
+      "size": 702,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/7701a8cefe7648d504b446d4d823b31304a455ba"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/backdrops/LayerBackdrop.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "787f532617ab7a2375280ac5bc1f0200f2e73bb1",
+      "size": 2715,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/787f532617ab7a2375280ac5bc1f0200f2e73bb1"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/backdrops/LayerBackdropModifier.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "98bd21fa8a040a2656ebf91f7c8e6a692f27345a",
+      "size": 2035,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/98bd21fa8a040a2656ebf91f7c8e6a692f27345a"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/effects/Blur.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "39d85ba65a48aa9f9e6259ab4c88f2d8c35a5c01",
+      "size": 746,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/39d85ba65a48aa9f9e6259ab4c88f2d8c35a5c01"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/effects/ColorFilter.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0d9712b14a845571f222715da601b035dc16514f",
+      "size": 2027,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/0d9712b14a845571f222715da601b035dc16514f"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/effects/Lens.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "10af02d6f83631d91683d0b3851e70b98bd39cdd",
+      "size": 4639,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/10af02d6f83631d91683d0b3851e70b98bd39cdd"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/effects/RenderEffect.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0c6be844d659fd3dc3ee010d0f9d259363612800",
+      "size": 1103,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/0c6be844d659fd3dc3ee010d0f9d259363612800"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/highlight/Highlight.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "eda956f01d42303a9e8028543293711300ebaf82",
+      "size": 727,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/eda956f01d42303a9e8028543293711300ebaf82"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/highlight/HighlightModifier.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "60dfe3970986ffbe30ef740f5a6953da72e67b77",
+      "size": 5427,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/60dfe3970986ffbe30ef740f5a6953da72e67b77"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/highlight/HighlightStyle.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "209f5b582b4acab2ed86f18a93295f250573f663",
+      "size": 4603,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/209f5b582b4acab2ed86f18a93295f250573f663"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/internal/InverseLayerScope.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f6827ffaec43cc87798454d435b2818f01762e16",
+      "size": 4171,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/f6827ffaec43cc87798454d435b2818f01762e16"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/internal/LayerRecorder.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6876c11a9066d235c1824285d3e37bd474d4c2e0",
+      "size": 771,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/6876c11a9066d235c1824285d3e37bd474d4c2e0"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/internal/Outline.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1a555260615a5e5b9c0885e12df7a573d195c07d",
+      "size": 515,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/1a555260615a5e5b9c0885e12df7a573d195c07d"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/internal/Paint.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8274d695570fbb319910a3e18ea0da5c1c5cbef2",
+      "size": 241,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/8274d695570fbb319910a3e18ea0da5c1c5cbef2"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/internal/RenderEffect.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2e94022ab3ba94ac1b65ebc02bf4d7fbd87eb5da",
+      "size": 497,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/2e94022ab3ba94ac1b65ebc02bf4d7fbd87eb5da"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/internal/Shaders.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a96e90010335a6913eb3a829ad6f04b93567b48e",
+      "size": 6457,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/a96e90010335a6913eb3a829ad6f04b93567b48e"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/internal/ShapeProvider.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "772891689c5ca8a4003c5cb1b0d0cc2a4e1b6c2e",
+      "size": 1369,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/772891689c5ca8a4003c5cb1b0d0cc2a4e1b6c2e"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/shadow/InnerShadow.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1475bec61c88bf5b88712baf0cfdc012a74c2806",
+      "size": 1356,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/1475bec61c88bf5b88712baf0cfdc012a74c2806"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/shadow/InnerShadowModifier.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a8aecbf833cc41364f3277ff1855bf43be5bf88e",
+      "size": 5067,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/a8aecbf833cc41364f3277ff1855bf43be5bf88e"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/shadow/Shadow.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "24684f8bdecd210def11b514ca3fd50fd75e012d",
+      "size": 798,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/24684f8bdecd210def11b514ca3fd50fd75e012d"
+    },
+    {
+      "path": "backdrop/src/commonMain/kotlin/com/kyant/backdrop/shadow/ShadowModifier.kt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cd4b6e33bfad474a590a94c7a0713b6d5da04597",
+      "size": 4411,
+      "url": "https://api.github.com/repos/Kyant0/AndroidLiquidGlass/git/blobs/cd4b6e33bfad474a590a94c7a0713b6d5da04597"
+    }
+  ]
+}

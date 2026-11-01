@@ -255,7 +255,11 @@ private fun AppRoot(
             if (AppPrefs.getStartView(context) == "cards") ViewMode.Cards else ViewMode.Full
         )
     }
+    val navDockFlowVal by AppPrefs.navDockFlow(context).collectAsState(initial = AppPrefs.isNavDock(context))
     var navDock by remember { mutableStateOf(AppPrefs.isNavDock(context)) }
+    LaunchedEffect(navDockFlowVal) {
+        navDock = navDockFlowVal
+    }
     val mainScope = rememberCoroutineScope()
     val mainVm: ScheduleViewModel = viewModel()
     // composition 内读 StateFlow.value 会被 lint(StateFlowValueCalledInComposition)拦:

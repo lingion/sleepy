@@ -26,6 +26,7 @@ androidxTestJunit = "1.2.1"
 androidxTestCore = "1.7.0"
 espresso = "3.6.1"
 robolectric = "4.17"
+materialColorUtilities = "1.7.0"
 
 [libraries]
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
@@ -71,6 +72,7 @@ compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+material-color-utilities = { module = "studio.lunabee.compose:material-color-utilities", version.ref = "materialColorUtilities" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
