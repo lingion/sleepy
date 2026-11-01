@@ -121,20 +121,13 @@ fun LiquidGlassNavigationBar(
     // 外部 selectedIndex 改变时, 驱动镜头滑向目标
     LaunchedEffect(clampedSelected) {
         if (pressedIndex == null && lensSpring.target.roundToInt() != clampedSelected) {
-            val nowSec = SystemClock.uptimeMillis() / 1000.0
-            lensSpring.springTo(clampedSelected.toFloat(), FlClashSprings.TravelSpring, nowSec)
+            lensSpring.springTo(clampedSelected.toFloat(), FlClashSprings.TravelSpring)
         }
     }
 
     // ── 连续物理仿真帧循环 (withFrameNanos) ──
-    val isAnySpringActive = lensSpring.isRunning || liftSpring.isRunning ||
-        swellSpring.isRunning || stretchSpring.isRunning ||
-        jellySpring.isRunning || glowSpring.isRunning ||
-        glowSpreadSpring.isRunning || pointerId != null
-
-    LaunchedEffect(isAnySpringActive) {
-        if (!isAnySpringActive) return@LaunchedEffect
-        while (isAnySpringActive) {
+    LaunchedEffect(Unit) {
+        while (true) {
             withFrameNanos { frameTimeNanos ->
                 val nowSec = frameTimeNanos / 1_000_000_000.0
                 lensSpring.tick(nowSec)
@@ -146,9 +139,11 @@ fun LiquidGlassNavigationBar(
                 glowSpreadSpring.tick(nowSec)
 
                 // 果冻弹性 (wobble)
-                val wobbleTarget = FlClashDockPhysics.wobbleTarget(lensSpring.velocity, lensSpring.acceleration)
-                if (wobbleTarget != jellySpring.target) {
-                    jellySpring.springTo(wobbleTarget, FlClashSprings.JellySpring, nowSec)
+                if (lensSpring.isRunning) {
+                    val wobbleTarget = FlClashDockPhysics.wobbleTarget(lensSpring.velocity, lensSpring.acceleration)
+                    if (abs(wobbleTarget - jellySpring.target) > 1e-4f) {
+                        jellySpring.springTo(wobbleTarget, FlClashSprings.JellySpring)
+                    }
                 }
 
                 // 稳妥落锁收镜 (dropLift): 当手指已松开且镜片升满时, 落回沉底底盘
@@ -156,11 +151,11 @@ fun LiquidGlassNavigationBar(
                     val nearTarget = abs(lensSpring.target - lensSpring.value) <= FlClashDockPhysics.LIFT_RELEASE
                     if (liftSpring.value >= FlClashDockPhysics.LIFT_SNAP && nearTarget) {
                         dropping = false
-                        liftSpring.springTo(0f, FlClashSprings.LiftSpring, nowSec)
+                        liftSpring.springTo(0f, FlClashSprings.LiftSpring)
                     } else if (!liftSpring.isRunning && liftSpring.value > 0f && nearTarget) {
                         // 容错兜底: 若升镜已达峰停止且对准目标, 立即触发回弹落底
                         dropping = false
-                        liftSpring.springTo(0f, FlClashSprings.LiftSpring, nowSec)
+                        liftSpring.springTo(0f, FlClashSprings.LiftSpring)
                     }
                 }
             }
@@ -242,7 +237,8 @@ fun LiquidGlassNavigationBar(
     val lensPath = remember { Path() }
     val shadowPaint = remember {
         android.graphics.Paint().apply {
-            color = android.graphics.Color.TRANSPARENT
+            isAntiAlias = true
+            style = android.graphics.Paint.Style.FILL
         }
     }
     val contentShader = remember {
@@ -254,154 +250,174 @@ fun LiquidGlassNavigationBar(
             }
         } else null
     }
+    val renderEffect = remember(contentShader) {
+        if (contentShader != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            try {
+                android.graphics.RenderEffect.createRuntimeShaderEffect(
+                    contentShader,
+                    "uTexture",
+                ).asComposeRenderEffect()
+            } catch (_: Throwable) {
+                null
+            }
+        } else null
+    }
+
+    val shadowRoomDp = FlClashDockPhysics.SHADOW_ROOM.dp
 
     Box(
         modifier = modifier
             .then(totalWidthModifier)
-            .height(barHeightDp)
-            .onGloballyPositioned { coords ->
-                barWidthPx = coords.size.width.toFloat()
-                barHeightPx = coords.size.height.toFloat()
-            }
-            .graphicsLayer {
-                val pressGrowth = FlClashDockPhysics.pressGrowthOf(size.width / density.density)
-                val swellScale = 1f + swellSpring.value * pressGrowth
-                val stretchVal = stretchSpring.value
-                scaleX = swellScale * (1f + abs(stretchVal) / max(1f, size.width) * FlClashDockPhysics.PULL_STRETCH)
-                scaleY = swellScale
-                translationX = stretchVal
-            }
-            .shadow(
-                elevation = (8 * shadowStrength).dp,
-                shape = Capsule(),
-                ambientColor = colorScheme.scrim.copy(alpha = 0.08f * shadowStrength),
-                spotColor = colorScheme.scrim.copy(alpha = 0.04f * shadowStrength),
-            )
-            .then(
-                if (backdrop != null) {
-                    Modifier.drawPlainBackdrop(
-                        backdrop = backdrop,
-                        shape = { Capsule() },
-                        effects = {
-                            liquidGlass(
-                                context = context,
-                                style = LiquidGlassStyle.pill(colorScheme, dark),
-                                glow = touchGlow,
-                            )
-                        },
-                    )
-                } else {
-                    Modifier.background(
-                        colorScheme.surfaceContainer.copy(alpha = if (dark) 0.72f else 0.88f),
-                        shape = Capsule(),
-                    )
+            .height(barHeightDp + shadowRoomDp * 2)
+            .padding(vertical = shadowRoomDp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(barHeightDp)
+                .onGloballyPositioned { coords ->
+                    barWidthPx = coords.size.width.toFloat()
+                    barHeightPx = coords.size.height.toFloat()
                 }
-            )
-            .pointerInput(count, isLtr) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent()
-                        val change = event.changes.firstOrNull() ?: continue
-                        val nowSec = SystemClock.uptimeMillis() / 1000.0
+                .graphicsLayer {
+                    val pressGrowth = FlClashDockPhysics.pressGrowthOf(size.width / density.density)
+                    val swellScale = 1f + swellSpring.value * pressGrowth
+                    val stretchVal = stretchSpring.value
+                    scaleX = swellScale * (1f + abs(stretchVal) / max(1f, size.width) * FlClashDockPhysics.PULL_STRETCH)
+                    scaleY = swellScale
+                    translationX = stretchVal
+                }
+                .shadow(
+                    elevation = (8 * shadowStrength).dp,
+                    shape = Capsule(),
+                    clip = false,
+                    ambientColor = colorScheme.scrim.copy(alpha = 0.08f * shadowStrength),
+                    spotColor = colorScheme.scrim.copy(alpha = 0.04f * shadowStrength),
+                )
+                .then(
+                    if (backdrop != null) {
+                        Modifier.drawPlainBackdrop(
+                            backdrop = backdrop,
+                            shape = { Capsule() },
+                            effects = {
+                                liquidGlass(
+                                    context = context,
+                                    style = LiquidGlassStyle.pill(colorScheme, dark),
+                                    glow = touchGlow,
+                                )
+                            },
+                        )
+                    } else {
+                        Modifier.background(
+                            colorScheme.surfaceContainer.copy(alpha = if (dark) 0.72f else 0.88f),
+                            shape = Capsule(),
+                        )
+                    }
+                )
+                .pointerInput(count, isLtr) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            val change = event.changes.firstOrNull() ?: continue
 
-                        when (event.type) {
-                            PointerEventType.Press -> {
-                                pointerId = change.id.value
-                                velocityTracker.resetTracking()
-                                velocityTracker.addPosition(change.uptimeMillis, change.position)
-
-                                swellSpring.springTo(1f, FlClashSprings.PressSpring, nowSec)
-                                glowAt = change.position
-                                glowSpreadSpring.jumpTo(0f)
-                                glowSpring.springTo(1f, FlClashSprings.GlowInSpring, nowSec)
-
-                                val pos = positionAt(change.position.x)
-                                val idx = indexAt(pos)
-
-                                pressedIndex = idx
-                                pressX = change.position.x
-                                dragging = false
-                                dropping = false
-
-                                liftSpring.springTo(1f, FlClashSprings.LiftSpring, nowSec)
-                                lensSpring.springTo(idx.toFloat(), FlClashSprings.TravelSpring, nowSec)
-                                change.consume()
-                            }
-                            PointerEventType.Move -> {
-                                if (pointerId == change.id.value) {
+                            when (event.type) {
+                                PointerEventType.Press -> {
+                                    pointerId = change.id.value
+                                    velocityTracker.resetTracking()
                                     velocityTracker.addPosition(change.uptimeMillis, change.position)
+
+                                    swellSpring.springTo(1f, FlClashSprings.PressSpring)
                                     glowAt = change.position
+                                    glowSpreadSpring.jumpTo(0f)
+                                    glowSpring.springTo(1f, FlClashSprings.GlowInSpring)
 
-                                    val dx = change.position.x - pressX
-                                    if (!dragging && abs(dx) > 4f) {
-                                        dragging = true
-                                    }
+                                    val pos = positionAt(change.position.x)
+                                    val idx = indexAt(pos)
 
-                                    if (dragging) {
-                                        val overshoot = change.position.x - change.position.x.coerceIn(0f, size.width.toFloat())
-                                        val pullLimit = size.height * FlClashDockPhysics.PULL_LIMIT
-                                        stretchSpring.springTo(
-                                            FlClashDockPhysics.rubberBand(overshoot, pullLimit),
-                                            FlClashSprings.TrackSpring,
-                                            nowSec,
-                                        )
+                                    pressedIndex = idx
+                                    pressX = change.position.x
+                                    dragging = false
+                                    dropping = false
 
-                                        val pos = positionAt(change.position.x)
-                                        lensSpring.springTo(pos, FlClashSprings.FollowSpring, nowSec)
-
-                                        val idx = indexAt(pos)
-                                        if (idx != pressedIndex) {
-                                            LiquidGlassHaptics.selectionClick(view)
-                                            pressedIndex = idx
-                                        }
-                                    }
+                                    liftSpring.springTo(1f, FlClashSprings.LiftSpring)
+                                    lensSpring.springTo(idx.toFloat(), FlClashSprings.TravelSpring)
                                     change.consume()
                                 }
-                            }
-                            PointerEventType.Release -> {
-                                if (pointerId == change.id.value) {
-                                    pointerId = null
-                                    val velocityXDp = velocityTracker.calculateVelocity().x / currentDensity
+                                PointerEventType.Move -> {
+                                    if (pointerId == change.id.value) {
+                                        velocityTracker.addPosition(change.uptimeMillis, change.position)
+                                        glowAt = change.position
 
-                                    var targetIndex = pressedIndex ?: currentSelected
-                                    if (dragging) {
-                                        val direction = if (currentIsLtr) 1f else -1f
-                                        val lead = (velocityXDp / currentLayout.pitch) * direction * FlClashDockPhysics.FLING_PROJECTION_SEC.toFloat()
-                                        val projected = (lensSpring.target + lead).roundToInt().coerceIn(targetIndex - 1, targetIndex + 1).coerceIn(0, currentLastIndex)
-                                        if (projected != targetIndex) {
-                                            LiquidGlassHaptics.selectionClick(view)
-                                            targetIndex = projected
+                                        val dx = change.position.x - pressX
+                                        if (!dragging && abs(dx) > 4f) {
+                                            dragging = true
                                         }
+
+                                        if (dragging) {
+                                            val overshoot = change.position.x - change.position.x.coerceIn(0f, size.width.toFloat())
+                                            val pullLimit = size.height * FlClashDockPhysics.PULL_LIMIT
+                                            stretchSpring.springTo(
+                                                FlClashDockPhysics.rubberBand(overshoot, pullLimit),
+                                                FlClashSprings.TrackSpring,
+                                            )
+
+                                            val pos = positionAt(change.position.x)
+                                            lensSpring.springTo(pos, FlClashSprings.FollowSpring)
+
+                                            val idx = indexAt(pos)
+                                            if (idx != pressedIndex) {
+                                                LiquidGlassHaptics.selectionClick(view)
+                                                pressedIndex = idx
+                                            }
+                                        }
+                                        change.consume()
                                     }
+                                }
+                                PointerEventType.Release -> {
+                                    if (pointerId == change.id.value) {
+                                        pointerId = null
+                                        val velocityXDp = velocityTracker.calculateVelocity().x / currentDensity
 
-                                    pressedIndex = null
-                                    dragging = false
-                                    dropping = true
+                                        var targetIndex = pressedIndex ?: currentSelected
+                                        if (dragging) {
+                                            val direction = if (currentIsLtr) 1f else -1f
+                                            val lead = (velocityXDp / currentLayout.pitch) * direction * FlClashDockPhysics.FLING_PROJECTION_SEC.toFloat()
+                                            val projected = (lensSpring.target + lead).roundToInt().coerceIn(targetIndex - 1, targetIndex + 1).coerceIn(0, currentLastIndex)
+                                            if (projected != targetIndex) {
+                                                LiquidGlassHaptics.selectionClick(view)
+                                                targetIndex = projected
+                                            }
+                                        }
 
-                                    lensSpring.springTo(targetIndex.toFloat(), FlClashSprings.TravelSpring, nowSec)
-                                    stretchSpring.springTo(0f, FlClashSprings.PressSpring, nowSec)
-                                    glowSpring.springTo(0f, FlClashSprings.GlowOutSpring, nowSec)
-                                    glowSpreadSpring.springTo(1f, FlClashSprings.GlowOutSpring, nowSec)
-                                    swellSpring.springTo(0f, FlClashSprings.PressSpring, nowSec)
+                                        pressedIndex = null
+                                        dragging = false
+                                        dropping = true
 
-                                    if (liftSpring.value >= FlClashDockPhysics.LIFT_SNAP &&
-                                        abs(targetIndex.toFloat() - lensSpring.value) <= FlClashDockPhysics.LIFT_RELEASE) {
-                                        dropping = false
-                                        liftSpring.springTo(0f, FlClashSprings.LiftSpring, nowSec)
+                                        lensSpring.springTo(targetIndex.toFloat(), FlClashSprings.TravelSpring)
+                                        stretchSpring.springTo(0f, FlClashSprings.PressSpring)
+                                        glowSpring.springTo(0f, FlClashSprings.GlowOutSpring)
+                                        glowSpreadSpring.springTo(1f, FlClashSprings.GlowOutSpring)
+                                        swellSpring.springTo(0f, FlClashSprings.PressSpring)
+
+                                        if (liftSpring.value >= FlClashDockPhysics.LIFT_SNAP &&
+                                            abs(targetIndex.toFloat() - lensSpring.value) <= FlClashDockPhysics.LIFT_RELEASE) {
+                                            dropping = false
+                                            liftSpring.springTo(0f, FlClashSprings.LiftSpring)
+                                        }
+
+                                        if (targetIndex != currentSelected) {
+                                            currentOnSelect(targetIndex)
+                                        }
+                                        change.consume()
                                     }
-
-                                    if (targetIndex != currentSelected) {
-                                        currentOnSelect(targetIndex)
-                                    }
-                                    change.consume()
                                 }
                             }
                         }
                     }
                 }
-            }
-            .padding(barPaddingDp),
-    ) {
+                .padding(barPaddingDp),
+        ) {
         // ── 层1: 沉底底盘 (Resting Platter) ──
         // 纯 GPU 阶段重绘, 无子节点重组与重测量开销
         Box(
@@ -458,14 +474,19 @@ fun LiquidGlassNavigationBar(
                         // 1. FLClash 立体下沉投影: offset (0, 8.dp * lift), blur 5.dp
                         val shadowAlpha = (0.055f * shadowStrength * lift).coerceIn(0f, 1f)
                         if (shadowAlpha > 0.001f) {
-                            shadowPaint.setShadowLayer(
+                            shadowPaint.color = android.graphics.Color.argb((shadowAlpha * 255).toInt(), 0, 0, 0)
+                            shadowPaint.maskFilter = android.graphics.BlurMaskFilter(
                                 5f * density.density,
-                                0f,
-                                8f * density.density * lift,
-                                android.graphics.Color.argb((shadowAlpha * 255).toInt(), 0, 0, 0),
+                                android.graphics.BlurMaskFilter.Blur.NORMAL,
                             )
+                            val shadowOffsetY = 8f * density.density * lift
                             drawIntoCanvas { canvas ->
-                                val rectF = android.graphics.RectF(leftPx, topPx, leftPx + widthPx, topPx + heightPx)
+                                val rectF = android.graphics.RectF(
+                                    leftPx,
+                                    topPx + shadowOffsetY,
+                                    leftPx + widthPx,
+                                    topPx + heightPx + shadowOffsetY,
+                                )
                                 canvas.nativeCanvas.drawRoundRect(rectF, radiusPx, radiusPx, shadowPaint)
                             }
                         }
@@ -564,7 +585,7 @@ fun LiquidGlassNavigationBar(
                     .fillMaxSize()
                     .graphicsLayer {
                         val lift = liftSpring.value
-                        if (contentShader != null && lift > 0.01f && size.width > 0f && size.height > 0f) {
+                        if (renderEffect != null && contentShader != null && lift > 0.01f && size.width > 0f && size.height > 0f) {
                             val lensRect = FlClashDockPhysics.lensRect(
                                 position = lensSpring.value,
                                 stretch = jellySpring.value,
@@ -603,12 +624,9 @@ fun LiquidGlassNavigationBar(
                             uniforms.forEach { (name, values) ->
                                 contentShader.setFloatUniform(name, values)
                             }
-                            renderEffect = android.graphics.RenderEffect.createRuntimeShaderEffect(
-                                contentShader,
-                                "uTexture",
-                            ).asComposeRenderEffect()
+                            this.renderEffect = renderEffect
                         } else {
-                            renderEffect = null
+                            this.renderEffect = null
                         }
                     },
             ) {
@@ -621,6 +639,7 @@ fun LiquidGlassNavigationBar(
             }
         }
     }
+}
 }
 
 @Composable

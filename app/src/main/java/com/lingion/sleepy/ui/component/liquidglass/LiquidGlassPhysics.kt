@@ -224,7 +224,8 @@ class SpringState(
 
     private var simulation: SpringSimulation? = null
     private var spring: SpringDescription? = null
-    private var startSec: Double = 0.0
+    private var startSec: Double = System.nanoTime() / 1_000_000_000.0
+    private var currentSec: Double = startSec
 
     val acceleration: Float
         get() {
@@ -233,7 +234,8 @@ class SpringState(
             return ((sp.stiffness * (target - value) - sp.damping * velocity) / sp.mass).toFloat()
         }
 
-    fun springTo(newTarget: Float, newSpring: SpringDescription, currentSec: Double) {
+    fun springTo(newTarget: Float, newSpring: SpringDescription, currentSec: Double = System.nanoTime() / 1_000_000_000.0) {
+        if (target == newTarget && spring == newSpring && isRunning) return
         val currentVel = velocity.toDouble()
         val tol = SpringTolerance(
             distance = rest,
@@ -248,6 +250,7 @@ class SpringState(
         )
         spring = newSpring
         target = newTarget
+        this.currentSec = currentSec
         startSec = currentSec
         isRunning = true
     }
@@ -262,6 +265,7 @@ class SpringState(
 
     /** 每帧推进物理模拟。返回是否有数值变动。 */
     fun tick(currentSec: Double): Boolean {
+        this.currentSec = currentSec
         val sim = simulation ?: run {
             if (isRunning) isRunning = false
             return false
