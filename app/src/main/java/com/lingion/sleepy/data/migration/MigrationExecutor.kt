@@ -5,6 +5,7 @@ import com.lingion.sleepy.data.dao.CourseDao
 import com.lingion.sleepy.data.dao.ImportDraftDao
 import com.lingion.sleepy.data.dao.PeriodTableDao
 import com.lingion.sleepy.data.dao.TimeTableDao
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 全量迁移编排层: 把协议层 (ZIP) 与各模块 codec (prefs/database) 接起来。
@@ -53,7 +54,7 @@ object MigrationExecutor {
         timeTableDao: TimeTableDao,
         periodTableDao: PeriodTableDao,
         importDraftDao: ImportDraftDao,
-        createdAt: Long = System.currentTimeMillis(),
+        createdAt: Long = AppClock.millis(),
     ): ExportResult {
         val modules = MigrationModuleDeps.resolve(selected)
             .filter { it != MigrationModule.CREDENTIALS } // 暂无内容, 不进包

@@ -4,6 +4,7 @@ import com.lingion.sleepy.data.entity.CourseEntity
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
+import com.lingion.sleepy.util.AppClock
 
 /**
  * sleepy-v1 解析器(规范 §3/§4/§5/§7)。
@@ -293,7 +294,7 @@ internal object SleepyNativeParser {
     private fun unescapeCol(col: String?): String? = col?.let { SleepyNativeFormat.unescape(it.trim()) }
 
     private fun todayMonday(): String =
-        LocalDate.now().with(java.time.DayOfWeek.MONDAY).toString()
+        LocalDate.now(AppClock).with(java.time.DayOfWeek.MONDAY).toString()
 
     private fun clampField(raw: Int?, default: Int?, lo: Int, hi: Int, label: String, warnings: MutableList<String>): Int? {
         if (raw == null) return default

@@ -5,6 +5,8 @@
 > 抓取原则: 与一期 widget-vendor-specs 相同 — 优先厂商官方页 → 社区二次核实。每文件首行标注证据等级。
 > 一期 SPA 破口实录沿用: vivo=`dev.vivo.com.cn/webapi/doc/info?id=` · 魅族=`apiopen.flyme.cn/api/web/v1/doc-wiki/detail?id=` · 荣耀=Googlebot UA · 华为 developer.huawei.com=JS 墙 (用消费者支持页/开源仓库补)
 
+> 2026-10-29 实现复核：Sleepy 已接入 OPPO / 一加 / realme 共用的 Android 16 Live Updates 通道，Pantanal / Seedling SDK + UPK 专用通道仍未接入。下列厂商资料和优先级保留原抓取时点语境，当前代码、真机记录及验证范围见 [OPPO / ColorOS 接入状态](../oppo-coloros-fluid-cloud.md)。
+
 ## 术语对照 (2026-09-18 考证完毕)
 
 | 厂商 | 体系名称 | 对标苹果 | 系统版本 | 三方接入 |
@@ -12,12 +14,12 @@
 | 苹果 (参照系) | Live Activities / Dynamic Island | — | iOS 16.1+ (8h 上限自 16.2) | 开放 (ActivityKit) |
 | 华为 | 实况窗 Live View Kit | Live Activities | HarmonyOS NEXT 5.0+, ArkTS-only | AGC + Push Kit + 权益申请 (月活 1000 门槛[B]) |
 | 荣耀 | 灵动胶囊 (YOYO 建议承载) | Dynamic Island | MagicOS 8.0+ | **无公开三方 API**, 智慧服务平台协议签署制 |
-| OPPO/一加/realme | 流体云 (泛在服务) | Live Activities | ColorOS 15+ (realme UI 6.0=流体云 2.0; ColorOS 16 双兼容 Android 16 Live Updates) | 潘塔纳尔定邀企业制, fwst@oppo.com, **教育不在场景白名单** |
+| OPPO/一加/realme | 流体云 (泛在服务 / Live Updates) | Live Activities | ColorOS 15+ (realme UI 6.0=流体云 2.0; ColorOS 16 双兼容 Android 16 Live Updates) | Pantanal 专用通道按原资料需商务准入；Sleepy 已实现 Android Live Updates 通道，具体展示需按机型和授权验证 |
 | vivo/iQOO | 原子通知 / 实时胶囊 | Live Activities | OriginOS 4/5+ | extras `notification.superx.*` 本地 + VPush 云端; 邮件 oosyztz@vivo.com (7-10 工作日, 须先上架 vivo 商店) |
 | 小米 | 焦点通知 (HyperOS 2) → 超级岛 (HyperOS 3) | Live Activities | HyperOS 2+ (OS1 官方不建议接入) | extras `miui.focus.param` + MIPUSH; 邮件 mipush-permission@xiaomi.com |
 | 魅族 | 实况通知 (社区叫法, 无官方名) | Live Activities | Flyme AIOS 11.0.0+ (2024-07) | **无官方 API**; extras 隐藏键 `notification.live.*` (社区 demo 实证, 零门槛) |
 
-**Sleepy 优先级结论** (详见 _cross-vendor/china-live-cards-comparison.md): 魅族出 demo (1 天) → 小米正式接入 → vivo 第三站; 华为有余力再上; OPPO/荣耀挂起观察。共同长线 = Android 16 Live Updates (一次接入全 Android 16+ 生效)。
+**2026-09-18 调研优先级** (详见 _cross-vendor/china-live-cards-comparison.md): 魅族出 demo (1 天) → 小米正式接入 → vivo 第三站; 华为有余力再上; OPPO Pantanal / 荣耀挂起观察。Android 16 Live Updates 可共用通知构建，但实际提升和展示仍需逐厂商验证；Sleepy 的 OPPO 家族 Live Updates 通道现已实现。
 
 ## 目录
 

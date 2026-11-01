@@ -8,6 +8,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 节假日管理器 - 从网络获取法定节假日，App 内判断是否显示灰显。
@@ -265,7 +266,7 @@ object HolidayManager {
 
     /** 预加载当前年和明年的节假日数据 */
     suspend fun preload(ctx: Context) {
-        val year = LocalDate.now().year
+        val year = LocalDate.now(AppClock).year
         getYearEntries(ctx, year); getYearEntries(ctx, year + 1)
     }
 

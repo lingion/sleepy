@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
@@ -48,6 +49,8 @@ import com.lingion.sleepy.ui.component.PERIOD_HEADER_CARD_PAD_DP
 import com.lingion.sleepy.ui.component.PeriodHeaderAdaptiveFont
 import com.lingion.sleepy.ui.component.PeriodHeaderCellContent
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
+import com.lingion.sleepy.ui.component.SingleSliderGhostMark
+import com.lingion.sleepy.ui.component.singleSliderGhostVisible
 import com.lingion.sleepy.ui.component.TimeSlot
 import com.lingion.sleepy.ui.component.legacyTimeWidthDp
 import com.lingion.sleepy.ui.component.threeLineWidthDp
@@ -60,9 +63,13 @@ fun PeriodHeaderSettingsScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     var layout by remember { mutableStateOf(AppPrefs.getPeriodHeaderLayout(context)) }
     var style by remember { mutableStateOf(AppPrefs.getPeriodHeaderStyle(context)) }
-    var hangingUnits by remember { mutableStateOf(AppPrefs.getPeriodHeaderHanging(context)) }
+    // 幽灵基线 (需求 2026-10-29 用户定义原话语义, spec §3.1 第七站点): 进页时刻
+    // 一次性捕获, 现值态从基线初始化; 基线绝不接 setter (松手即落 AppPrefs)。
+    val hangingBaseline = remember { AppPrefs.getPeriodHeaderHanging(context) }
+    var hangingUnits by remember { mutableStateOf(hangingBaseline) }
     var showX by remember { mutableStateOf(AppPrefs.isPeriodHeaderShowX(context)) }
     var hideTime by remember { mutableStateOf(AppPrefs.isPeriodHeaderHideTime(context)) }
+    var timeAlignment by remember { mutableStateOf(AppPrefs.getPeriodHeaderTimeAlignment(context)) }
 
     Scaffold(
         topBar = {
@@ -90,6 +97,7 @@ fun PeriodHeaderSettingsScreen(onBack: () -> Unit) {
                     hangingUnits = hangingUnits,
                     showX = showX,
                     hideTime = hideTime,
+                    timeAlignment = timeAlignment,
                     onStyleSelected = {
                         style = it
                         AppPrefs.setPeriodHeaderStyle(context, it)
@@ -163,6 +171,26 @@ fun PeriodHeaderSettingsScreen(onBack: () -> Unit) {
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text(
+                                stringResource(R.string.appearance_header_time_alignment),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            SegmentedSwitcher(
+                                options = listOf(
+                                    "dash" to stringResource(R.string.appearance_header_alignment_dash),
+                                    "center" to stringResource(R.string.appearance_header_alignment_center),
+                                ).mapIndexed { index, (_, label) -> index to label },
+                                selected = if (timeAlignment == "center") 1 else 0,
+                                onSelect = { index ->
+                                    timeAlignment = if (index == 1) "center" else "dash"
+                                    AppPrefs.setPeriodHeaderTimeAlignment(context, timeAlignment)
+                                },
+                                modifier = Modifier.fillMaxWidth().height(40.dp),
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                            )
+                        }
                     }
                     if (layout == "three_line") {
                         Text(
@@ -170,13 +198,24 @@ fun PeriodHeaderSettingsScreen(onBack: () -> Unit) {
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
-                        Slider(
-                            value = hangingUnits,
-                            onValueChange = { hangingUnits = (it * 10f).roundToInt() / 10f },
-                            onValueChangeFinished = { AppPrefs.setPeriodHeaderHanging(context, hangingUnits) },
-                            valueRange = -1f..1f,
-                            steps = 19,
-                        )
+                        // 幽灵接线 (spec §3.1 单头变体): 拖离进页基线 → 基线刻度出现细条,
+                        // 纯装饰零手势零语义, testTag 仅供管线定位; 落库节奏一克不动。
+                        Box {
+                            Slider(
+                                value = hangingUnits,
+                                onValueChange = { hangingUnits = (it * 10f).roundToInt() / 10f },
+                                onValueChangeFinished = { AppPrefs.setPeriodHeaderHanging(context, hangingUnits) },
+                                valueRange = -1f..1f,
+                                steps = 19,
+                            )
+                            if (singleSliderGhostVisible(hangingUnits, hangingBaseline, 0.05f)) {
+                                SingleSliderGhostMark(
+                                    baselineFrac = (hangingBaseline - (-1f)) / 2f,
+                                    modifier = Modifier.testTag("header-hanging-ghost"),
+                                    steps = 19,
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -191,6 +230,7 @@ private fun HeaderStylePreviews(
     hangingUnits: Float,
     showX: Boolean,
     hideTime: Boolean,
+    timeAlignment: String,
     onStyleSelected: (String) -> Unit,
 ) {
     val previewSlot = remember {
@@ -231,6 +271,7 @@ private fun HeaderStylePreviews(
                 density = density,
                 showX = showX,
                 hideTime = hideTime,
+                centerTime = timeAlignment == "center",
             )
         }
     }

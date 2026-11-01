@@ -205,6 +205,25 @@ def shiguang_adapters_declared_owner(proof, url):
     )
 
 
+def wakeup_662_declared_owner(proof, url):
+    """Full-absorption admission: the shipped official 6.6.2 catalog is the claim.
+
+    User ruling reaffirmed 2026-10-28: absorb every WakeUP official catalog row
+    unconditionally, marked unverified. Same contract as the ShiGuang adapter
+    declaration: a failed or absent liveness probe (timeout, 403, 302) is not a
+    rejection — a locally unreachable page today is not evidence the shipped
+    entry list is wrong. The safety bar stays: valid http(s) URL, no
+    credentials, no redaction, public host. Retained rows land unverified with
+    enableFetch False, exactly like every other admission.
+    """
+    return (
+        proof.get("source") == "wakeup-6.6.2-official-asset"
+        and "REDACTED" not in url
+        and valid_url(url)
+        and public_host(url)
+    )
+
+
 def endpoint_key(url):
     """Only a missing root slash/default port is equivalent without evidence."""
     if not valid_url(url):
@@ -482,6 +501,8 @@ def apply_ownership(rows, evidence, baseline_names, renames=None, domain_poison=
                 return "retained-shiguang-declared-owner", row["url"]
             if shiguang_adapters_declared_owner(proof, row["url"]):
                 return "retained-shiguang-adapters-owner", row["url"]
+            if wakeup_662_declared_owner(proof, row["url"]):
+                return "retained-wakeup-662-declared-owner", row["url"]
             return "withheld-new-unproven-owner", ""
         if status == "unknown":
             return "retained-existing-config-ownership-unresolved", row["url"]
@@ -508,7 +529,7 @@ def apply_ownership(rows, evidence, baseline_names, renames=None, domain_poison=
             snapshot["url"] = final_url
             predicted_rows[key] = snapshot
         if action in {"retained-wakeup-declared-owner", "retained-shiguang-declared-owner",
-                      "retained-shiguang-adapters-owner",
+                      "retained-shiguang-adapters-owner", "retained-wakeup-662-declared-owner",
                       "corrected-official-entry"}:
             candidate_keys.append(key)
 

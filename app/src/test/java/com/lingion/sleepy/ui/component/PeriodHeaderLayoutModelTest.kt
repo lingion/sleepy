@@ -57,6 +57,31 @@ class PeriodHeaderLayoutModelTest {
     }
 }
 
+class LegacyCenteredColumnTest {
+    @Test
+    fun centers_complete_time_range_and_period_label_on_same_axis() {
+        val rows = listOf(
+            LegacyDashRowInk(labelPx = 20f, timeLeftPx = 30f, dashPx = 6f, timeRightPx = 36f),
+            LegacyDashRowInk(labelPx = 54f, timeLeftPx = 32f, dashPx = 6f, timeRightPx = 30f),
+        )
+        val geometry = legacyCenteredColumnPx(rows, padPx = 4f)
+        assertEquals(geometry.columnWidthPx / 2f, geometry.dashCenterX, 0.001f)
+        for ((index, row) in rows.withIndex()) {
+            val placement = geometry.placements[index]
+            assertEquals(
+                geometry.dashCenterX,
+                placement.labelLeft + row.labelPx / 2f,
+                0.001f,
+            )
+            assertEquals(
+                geometry.dashCenterX,
+                placement.timeLeft + (row.timeLeftPx + row.dashPx + row.timeRightPx) / 2f,
+                0.001f,
+            )
+        }
+    }
+}
+
 class PeriodHeaderAdaptiveFontTest {
     private val font = PeriodHeaderAdaptiveFont
 

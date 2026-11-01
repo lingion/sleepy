@@ -128,6 +128,9 @@ object JwParserRegistry {
         JwProtocol.TYPE_SCAU to ::JwScauParser,
         // sg_asset: source 不是 HTML 而是拾光脚本 saveImportedCourses 提交的课程 JSON
         JwProtocol.TYPE_SG_ASSET to ::JwSgAssetParser,
+        // jw_home: 登记型 (URL 可信、无服务端协议指纹)。恒空 parser, 只为 supports() 放行
+        // canImport 门; 刻意不进 TYPE_PRIORITY → 不进 run-all 候选, 零假阳性。
+        JwProtocol.TYPE_JW_HOME to ::JwHomeParser,
     )
 
     fun allCandidates(html: String): List<Pair<String?, JwParser>> =

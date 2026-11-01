@@ -22,6 +22,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.ui.theme.SleepyThemeProvider
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -100,6 +101,12 @@ class IntRangeSliderGhostPipelineTest {
     private fun ghostExists(): Boolean =
         compose.onAllNodesWithTag("slider-ghost").fetchSemanticsNodes().isNotEmpty()
 
+    /** 绘制内容节点 (Canvas 本体) 的存在性 — 与 wrapper 的存在性分开锁 (I-1):
+     *  wrapper 在 AnimatedVisibility 内终态语义不变; Canvas 在退场帧内存活才证明
+     *  弹退动画真的在播内容, 而非空壳。 */
+    private fun canvasExists(): Boolean =
+        compose.onAllNodesWithTag("slider-ghost-canvas").fetchSemanticsNodes().isNotEmpty()
+
     private fun dragEndThumb(fromValue: Int, deltaX: Float) {
         // 摘要文本随值变化 — 每次都要按当前值的 contentDescription 找节点
         val slider = compose.onNodeWithContentDescription("第1–${fromValue}周")
@@ -146,6 +153,62 @@ class IntRangeSliderGhostPipelineTest {
         dragEndThumb(fromValue = holder.end, deltaX = -60f)
         compose.waitForIdle()
         assertFalse("拖回原区间后幽灵必须消失 (end=${holder.end})", ghostExists())
+    }
+
+    /**
+     * 终审 I-1 (2026-10-29): 退场帧上绘制内容必须存活。拖回初值的那一帧
+     * ghostRange 重算为 null、AnimatedVisibility 同帧翻 visible=false — 若内容
+     * lambda 直接判 ghostRange, Canvas 在退场第 0 帧即被拆走, sleepyPopupExit
+     * 只给空壳放动画 (弹入真实、退出硬切)。本测试在手动时钟下逐帧泵拖回手势,
+     * 中段断言 Canvas 仍在树内 (未修复代码此断言必红), 排空后断言 wrapper 与
+     * Canvas 双双移除 (终态语义与前四个管线测试一致)。
+     */
+    @Test fun ghost_canvas_survives_exit_frames() {
+        val holder = Holder()
+        page(holder, initialStart = 1, initialEnd = 8)
+        compose.waitForIdle()
+        // 相位 1 (自动时钟): 拖离 → 幽灵弹出, 绘制内容在树内
+        dragEndThumb(fromValue = 8, deltaX = 60f)
+        compose.waitForIdle()
+        assertTrue("前置条件: 拖离必须改值", holder.end != 8)
+        assertTrue("前置条件: 弹入后 Canvas 内容必须存在", canvasExists())
+
+        // 相位 2 (手动时钟): 逐帧泵拖回手势 — down/每次 move/up 后推 16ms
+        // 再 waitForIdle 派发 (参考 ThemeSwitchCrossfadeSmokeTest 的手动泵模式)
+        val draggedEnd = holder.end
+        compose.mainClock.autoAdvance = false
+        val slider = compose.onNodeWithContentDescription("第1–${draggedEnd}周")
+        val node = slider.fetchSemanticsNode()
+        val x = endThumbX(node.boundsInRoot.width, draggedEnd)
+        val y = node.boundsInRoot.height / 2f
+        slider.performTouchInput {
+            down(Offset(x, y))
+            compose.mainClock.advanceTimeBy(16)
+            compose.waitForIdle()
+            repeat(6) {
+                moveBy(Offset(-60f / 6f, 0f))
+                compose.mainClock.advanceTimeBy(16)
+                compose.waitForIdle()
+            }
+            up()
+            compose.mainClock.advanceTimeBy(16)
+            compose.waitForIdle()
+        }
+        assertEquals("拖回手势必须真的落值 (end 回到 8), 否则本测试路由失效", 8, holder.end)
+
+        // 中段: 退场动画在跑, 绘制内容不许提前消失 (未修复代码在此即红)
+        repeat(3) {
+            compose.mainClock.advanceTimeBy(16)
+            compose.waitForIdle()
+        }
+        assertTrue("退场播放中幽灵绘制内容 (Canvas) 必须仍在树内", canvasExists())
+        assertTrue("退场播放中 wrapper 必须仍在树内", ghostExists())
+
+        // 终态: 排空后整棵 AnimatedVisibility 子树移除 — 存在性语义不变
+        compose.mainClock.advanceTimeBy(1500)
+        compose.waitForIdle()
+        assertFalse("退场完成后 wrapper 必须移除", ghostExists())
+        assertFalse("退场完成后 Canvas 必须移除", canvasExists())
     }
 
     @Test fun no_initial_range_never_shows_ghost_after_drag() {

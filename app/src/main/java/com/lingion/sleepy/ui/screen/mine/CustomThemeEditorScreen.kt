@@ -57,6 +57,7 @@ import com.lingion.sleepy.ui.theme.CustomSchemeDeriver
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import kotlin.random.Random
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 自定义主题创建/微调编辑器 — 外观页弹出(overlay 全屏页,样式仿现有 Screen)。
@@ -95,7 +96,7 @@ fun CustomThemeEditorScreen(
                 tertiary = "#EF6C00",
                 surfaceHue = 265.0,
                 surfaceChroma = 8.0,
-                createdAt = System.currentTimeMillis() / 1000
+                createdAt = AppClock.millis() / 1000
             )
         )
     }

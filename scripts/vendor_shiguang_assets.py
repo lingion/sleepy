@@ -22,11 +22,12 @@ school set by the same NFKC normalization the promotion script uses.
 
 Re-running is idempotent: same inputs produce byte-identical outputs
 (sorted keys, fixed JSON formatting), so CI --check style verification works.
+Vendored text is normalized to LF before writing and hashing. Verification
+also normalizes line endings, so Git's core.autocrlf setting can stay unchanged.
 """
 import argparse
 import hashlib
 import json
-import shutil
 import unicodedata
 from pathlib import Path
 
@@ -40,17 +41,22 @@ def nfk(name: str) -> str:
     return unicodedata.normalize('NFKC', name.strip())
 
 
+def lf_bytes(path: Path) -> bytes:
+    return path.read_bytes().replace(b'\r\n', b'\n').replace(b'\r', b'\n')
+
+
 def sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    """Hash LF-normalized content, independent of checkout line endings."""
+    return hashlib.sha256(lf_bytes(path)).hexdigest()
 
 
 def build(source: Path) -> dict:
-    index = yaml.safe_load((source / 'index/root_index.yaml').read_text())
+    index = yaml.safe_load((source / 'index/root_index.yaml').read_text(encoding='utf-8'))
     schools_out = {}
     js_seen = {}
     for entry in index['schools']:
         folder = source / 'resources' / entry['resource_folder']
-        adapters = yaml.safe_load((folder / 'adapters.yaml').read_text())
+        adapters = yaml.safe_load((folder / 'adapters.yaml').read_text(encoding='utf-8'))
         items = adapters.get('adapters') if isinstance(adapters, dict) else adapters
         for a in items or []:
             import_url = str(a.get('import_url') or '').strip()
@@ -98,7 +104,7 @@ def build(source: Path) -> dict:
             'repo': 'ShiGuangSchedule/shiguang_warehouse',
             'license': 'MIT',
             'licenseHolder': '星河欲转',
-            'cloneCommit': (source / '.git_commit').read_text().strip()
+            'cloneCommit': (source / '.git_commit').read_text(encoding='utf-8').strip()
             if (source / '.git_commit').exists() else None,
         },
         'schools': [schools_out[k] | {'matchKey': k} for k in sorted(schools_out)],
@@ -118,11 +124,11 @@ def main():
     manifest, js_seen, source = build(source)
 
     if args.check:
-        committed = json.loads((OUT / 'manifest.json').read_text())
+        committed = json.loads((OUT / 'manifest.json').read_text(encoding='utf-8'))
         assert committed == manifest, 'committed manifest differs from clone; re-run vendor script'
         dts_committed = ROOT / 'scripts/types/shiguang-bridge.d.ts'
-        assert (source / 'scripts/types/shiguang-bridge.d.ts').read_bytes() == (
-            dts_committed.read_bytes() if dts_committed.exists() else b''), \
+        assert lf_bytes(source / 'scripts/types/shiguang-bridge.d.ts') == (
+            lf_bytes(dts_committed) if dts_committed.exists() else b''), \
             'committed shiguang-bridge.d.ts differs from clone; re-run vendor script'
         for entry in manifest['scripts']:
             p = OUT / entry['path']
@@ -131,23 +137,24 @@ def main():
         return
 
     (OUT / 'js').mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(source / 'LICENSE', OUT / 'LICENSE-MIT.txt')
+    (OUT / 'LICENSE-MIT.txt').write_bytes(lf_bytes(source / 'LICENSE'))
     # 桥合同 d.ts 随 vendor 落仓 (dev-only, 不进 APK; 不变量测试的唯一方法名真源)
     types_out = ROOT / 'scripts/types'
     types_out.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(source / 'scripts/types/shiguang-bridge.d.ts',
-                    types_out / 'shiguang-bridge.d.ts')
+    (types_out / 'shiguang-bridge.d.ts').write_bytes(
+        lf_bytes(source / 'scripts/types/shiguang-bridge.d.ts'))
     copied = 0
     for entry in manifest['scripts']:
         rel = entry['path'].removeprefix('third_party/shiguang/')
         src = source / 'resources' / rel.removeprefix('js/')
         dst = OUT / rel
         dst.parent.mkdir(parents=True, exist_ok=True)
-        if not dst.exists() or sha256(dst) != entry['sha256']:
-            shutil.copyfile(src, dst)
+        data = lf_bytes(src)
+        if not dst.exists() or dst.read_bytes() != data:
+            dst.write_bytes(data)
         copied += 1
-    (OUT / 'manifest.json').write_text(
-        json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=False) + '\n')
+    (OUT / 'manifest.json').write_bytes(
+        (json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=False) + '\n').encode('utf-8'))
     print(json.dumps({'schools': len(manifest['schools']), 'scriptsCopied': copied}))
 
 

@@ -1,6 +1,7 @@
 package com.lingion.sleepy.data.jw
 
 import java.time.LocalDate
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 未验证学校导入成功后的可粘贴报告文本（离线回路, 2026-10-18）。
@@ -27,7 +28,7 @@ object JwImportReport {
         courseCount: Int,
         versionName: String,
         versionCode: Int,
-        date: LocalDate = LocalDate.now(),
+        date: LocalDate = LocalDate.now(AppClock),
     ): String = buildString {
         appendLine(PASTE_MARKER)
         appendLine("app=${versionName} (${versionCode})")

@@ -2,6 +2,7 @@ package com.lingion.sleepy.data.jw
 
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 
@@ -31,7 +32,7 @@ class JwProtocolFixtureMatrixTest {
             asserted++
         }
         // 必须至少断言 10 个(9 正样本 + CAS unknown;缺一 = 有协议族的 expected.json 被删)
-        assert(asserted >= 10) { "expected fixture count too low: $asserted" }
+        assertTrue("expected fixture count too low: $asserted", asserted >= 10)
     }
 
     @Test
@@ -51,10 +52,11 @@ class JwProtocolFixtureMatrixTest {
                     hits.any { h -> markers.getString(i).lowercase() in h.lowercase()
                             || h.lowercase() in markers.getString(i).lowercase() }
                 }
-                assert(hitCount >= 1) {
-                    val markerList = (0 until markers.length()).joinToString(",") { markers.getString(it) }
-                    "[${ef.name}] 至少 1 个 htmlMarker 应命中; got hits=$hits markers=$markerList"
-                }
+                val markerList = (0 until markers.length()).joinToString(",") { markers.getString(it) }
+                assertTrue(
+                    "[${ef.name}] htmlMarker mismatch: hits=$hits markers=$markerList",
+                    hitCount >= 1,
+                )
             }
         }
     }

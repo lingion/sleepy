@@ -42,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import kotlin.math.roundToInt
 
@@ -82,14 +83,18 @@ fun <T> SegmentedSwitcher(
     selected: T,
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
-    containerColor: Color? = null
+    containerColor: Color? = null,
+    // ui-ops 语义定位前缀：非空时每个可点击段注册 dbgTag("<prefix>#<index>")，
+    // find/action 可按段号或 label 文本命中；默认 null 不打标，行为与旧版一致。
+    dbgTagPrefix: String? = null,
 ) {
     SegmentedSwitcher(
         options = options.map { SegmentOption(it.first, it.second) },
         selected = selected,
         onSelect = onSelect,
         modifier = modifier,
-        containerColor = containerColor
+        containerColor = containerColor,
+        dbgTagPrefix = dbgTagPrefix,
     )
 }
 
@@ -100,7 +105,8 @@ fun <T> SegmentedSwitcher(
     selected: T,
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
-    containerColor: Color? = null
+    containerColor: Color? = null,
+    dbgTagPrefix: String? = null,
 ) {
     val colors = MaterialTheme.colorScheme
     val selectedIndex = options.indexOfFirst { it.value == selected }.coerceAtLeast(0)
@@ -168,6 +174,11 @@ fun <T> SegmentedSwitcher(
                                 indication = null
                             ) { onSelect(option.value) }
                             .semantics { role = Role.Button }
+                            .then(
+                                dbgTagPrefix?.let {
+                                    Modifier.dbgTag("$it#$index", text = option.label, role = "button")
+                                } ?: Modifier
+                            )
                     )
                 }
                 // 层n+1..2n: 内容层(文字+可选徽标) — 每个字符按覆盖率 lerp 上色, 与 thumb 同帧

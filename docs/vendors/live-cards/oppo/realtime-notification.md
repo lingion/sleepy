@@ -2,6 +2,8 @@
 
 # OPPO 流体云 — 实时通知行为与模板规格
 
+> 2026-10-29 实现复核：以下为 Pantanal / Seedling 专用通道的模板与行为资料快照，不是当前 APK 的渲染实现。Sleepy 已实现的 ColorOS 适配使用 Android 16 Live Updates；`SeedlingCardOptions`、OML 和 Provider 示例仍未接入，详见 [接入状态](../../oppo-coloros-fluid-cloud.md)。
+
 > 流体云不是普通通知的样式升级, 是 ColorOS 系统级 "实时活动" 通道. 行为覆盖: 形态切换/优先级/分组/锁屏/AOD/外屏/手表/耳机/车机. 本文件按 "模板分类 + 信息流转 + 实时更新机制" 三维度落盘.
 
 ## 一、形态切换与优先级 (doc 12965 + doc 12658)

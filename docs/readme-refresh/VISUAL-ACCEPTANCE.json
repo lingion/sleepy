@@ -276,49 +276,49 @@
     "result": "accepted: correct screen; intentional form/dialog content readable; 18 shows unfilled create form, 25 English school selector, 26 real demo conflict preview"
   },
   "widget-weekview.png": {
-    "sha256": "63fc2d399c30e920e65c8c079854a302925b58b24f00155f6f4e1a8cb4b808c2",
+    "sha256": "ec6f1c7b20e2c5fa35846cf6818c5c98581be4ce70994fdd8fd28b46c6c82c08",
     "size": [
-      784,
-      672
+      825,
+      550
     ],
-    "mtime": 1791855675.949648,
-    "result": "accepted: actual launcher widget at corrected height; visually reviewed without handles or stretching"
+    "mtime": 1793511491.178355,
+    "result": "accepted: production renderer preview with transparent rounded corners, matching sleepy-site demo schedule"
   },
   "widget-today.png": {
-    "sha256": "f13b2dc3c2637b60c05683e15988af5f410d3e1eb9e54a1d9c1480a606c40eab",
+    "sha256": "d2202e0caa0de24c10e56037aad405c3ef6600bf451a3ffefd55721447b0505c",
     "size": [
-      1080,
-      901
+      825,
+      343
     ],
-    "mtime": 1791819927.70702,
-    "result": "accepted: cropped production renderer preview; full emulator capture retained in raw; WeekGrid shows visible periods 1–6"
+    "mtime": 1793511491.170125,
+    "result": "accepted: production renderer preview with transparent rounded corners, matching sleepy-site demo schedule"
   },
   "widget-twoday.png": {
-    "sha256": "a33de4ca2804294d31680ca0ebbc72745357cfad79d9204d277ba401096e81bf",
+    "sha256": "9512b9adf6598ebd1dc3edfa1545d718c1fbe3aa952470ed9cf6cbd922d851f2",
     "size": [
-      1080,
-      901
+      825,
+      343
     ],
-    "mtime": 1791819927.774967,
-    "result": "accepted: cropped production renderer preview; full emulator capture retained in raw; WeekGrid shows visible periods 1–6"
+    "mtime": 1793511491.172373,
+    "result": "accepted: production renderer preview with transparent rounded corners, matching sleepy-site demo schedule"
   },
   "widget-weekgrid.png": {
-    "sha256": "dc88bcf330579c1a640b2131ae7599627dcf4b144c8b8e50249a357dd78fc0c3",
+    "sha256": "96261a5dde04f59e4a552b9134324fe969cd4d8f17be7d8833f99082c00a266c",
     "size": [
-      991,
-      1388
+      825,
+      1375
     ],
-    "mtime": 1791855209.0317774,
-    "result": "accepted: actual launcher widget at corrected height; visually reviewed without handles or stretching"
+    "mtime": 1793511491.174861,
+    "result": "accepted: production renderer preview with transparent rounded corners, matching sleepy-site demo schedule"
   },
   "widget-weeklist.png": {
-    "sha256": "8f4ce14e6a36f8367a7bc9918a28a0c8ee3a80d456b7ccfa837609a9c7541050",
+    "sha256": "03d58c608943ce0a06bb55653041cc8fc5887e3eb5c927a9154138d74f86f5d6",
     "size": [
-      1080,
-      901
+      825,
+      343
     ],
-    "mtime": 1791819927.8390872,
-    "result": "accepted: cropped production renderer preview; full emulator capture retained in raw; WeekGrid shows visible periods 1–6"
+    "mtime": 1793511491.176598,
+    "result": "accepted: production renderer preview with transparent rounded corners, matching sleepy-site demo schedule"
   },
   "32-widget-settings.png": {
     "sha256": "19eb359db0d4c5a4721545d7f0a566f22dadb854f5366e001986343b0e503e9a",
@@ -366,12 +366,12 @@
     "result": "accepted: second teaching slot editor, Tuesday periods 3–4 weeks 1–16; fictional unsaved demonstration"
   },
   "00-overview.png": {
-    "sha256": "f537dc7204d623055903d3098292578c95771bb627e010d18765df7c4f5b79c3",
+    "sha256": "a3edd837ca8404cef9a96c0a699c3c7c400f9e9258975b9df0ca681ed54efc76",
     "size": [
       2400,
       4811
     ],
-    "mtime": 1791856252.7593558,
-    "result": "accepted: original online overview explicitly requested by user; GitHub blob c00414c2cc1676544e19be4344f62c6203e0424b verified visually"
+    "mtime": 1793519627.9137304,
+    "result": "accepted: updated top banner header icon to new official logo and recomposed section 02 widgets (ref #220)"
   }
 }

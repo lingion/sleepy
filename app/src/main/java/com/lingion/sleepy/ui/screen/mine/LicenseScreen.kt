@@ -1,10 +1,6 @@
 package com.lingion.sleepy.ui.screen.mine
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -42,6 +38,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
+import com.lingion.sleepy.ui.component.sleepyExpandSpecs
 import com.lingion.sleepy.ui.theme.SleepyTheme
 
 /**
@@ -154,10 +151,12 @@ fun LicenseScreen(onBack: () -> Unit) {
                             )
                         }
                     }
+                    // MD3E (Task 7a): 展开家族 — 尺寸 fastSpatial + 淡入淡出 motionScheme
+                    val expandSpecs = sleepyExpandSpecs()
                     AnimatedVisibility(
                         visible = bodyExpanded,
-                        enter = expandVertically() + fadeIn(),
-                        exit = shrinkVertically() + fadeOut()
+                        enter = expandSpecs.enter,
+                        exit = expandSpecs.exit,
                     ) {
                         Column(modifier = Modifier.padding(top = 8.dp)) {
                             Text(
@@ -270,10 +269,12 @@ private fun AttributionCard(
                 color = colors.onSurfaceVariant
             )
         }
+        // MD3E (Task 7a): 展开家族 — 尺寸 fastSpatial + 淡入淡出 motionScheme
+        val expandSpecs = sleepyExpandSpecs()
         AnimatedVisibility(
             visible = expanded && expandedContent != null,
-            enter = expandVertically() + fadeIn(),
-            exit = shrinkVertically() + fadeOut()
+            enter = expandSpecs.enter,
+            exit = expandSpecs.exit,
         ) {
             Spacer(modifier = Modifier.height(6.dp))
             expandedContent?.invoke()
@@ -341,6 +342,10 @@ private val attributionEntries: List<AttributionEntry> = listOf(
     AttributionEntry(
         "foundational-shiguang", "shiguang_warehouse (XingHeYuZhuan)", "MIT",
         "武汉理工大学 kcbcxby 协议、经典金智 EAMS (hunnu/uestc/hpu) 与新正方网格视图 (zhengfang_01) 的协议形态参考；264 校适配清单与 starlink.js、wake_up.js 在线协议链形态调研；282 个教务适配脚本以 MIT 原文随包分发于 assets/third_party/shiguang/"
+    ),
+    AttributionEntry(
+        "foundational-lumaschedule", "LumaSchedule (Junyxor)", "Apache-2.0",
+        "WakeUP 官方教务目录 6.6.2 吸收战役的边界交叉验证: 其 convert-wakeup-school-info.mjs / compat.md 证明 WakeUp 兼容层只做 profile 与登录元数据迁移、不复制服务端解析器;未复用代码"
     ),
     AttributionEntry(
         "foundational-zfn", "zfn_api (openschoolcn)", "MPL-2.0",

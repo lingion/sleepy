@@ -1,8 +1,10 @@
 package com.lingion.sleepy.ui.component
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,7 +17,10 @@ import androidx.compose.material3.RangeSliderState
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -94,6 +99,13 @@ fun IntRangeSlider(
     } else {
         null
     }
+    // 终审 I-1: 退场帧保留的幽灵快照 — ghostRange 在拖回初值的同一次重组翻 null,
+    // 与 visible=false 同帧; 内容若直读 ghostRange, Canvas 在退场第 0 帧即被拆走,
+    // sleepyPopupExit 只剩空壳动画 (弹入真实、退出硬切)。组合期直写保留最后非空
+    // 快照供内容判据 (CourseTableView retainedLifted 同款模式); 快照一旦现身不再
+    // 复位 null — 无妨, 退场播完 AnimatedVisibility 移除整棵子树, 终态存在性不变。
+    var lastGhostRange by remember { mutableStateOf<IntRange?>(null) }
+    ghostRange?.let { lastGhostRange = it }
     Column(
         modifier = (if (hasTwoStops) modifier.sliderFreezePageScroll() else modifier)
             .fillMaxWidth(),
@@ -152,15 +164,32 @@ fun IntRangeSlider(
                         SliderDefaults.Track(
                             rangeSliderState = rangeSliderState,
                         )
-                        if (ghostRange != null) {
-                            val primary = colors.primary
-                            val ghostStart = ghostRange.first
-                            val ghostEnd = ghostRange.last
-                            Canvas(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(44.dp)
-                                    .testTag("slider-ghost"),
+                        // MD3E (Task 6) + 终审 I-1: 幽灵弹入弹出走 popup 家族 (T1 工厂)。
+                        // testTag 仍挂 AnimatedVisibility — 存在性 = 终态语义不变
+                        // (管线测试锁初始无节点、退场播完移除); 退场期间绘制内容经
+                        // lastGhostRange 快照保留, 弹出动画真实播放 (CourseTableView
+                        // retainedLifted 同款模式)。不许改 alpha 常驻。
+                        // this@Column: Box 作用域无 AnimatedVisibility 扩展,
+                        // 外层 Column 版不许隐式接收者 (DSL 闸) — CourseTableView:969 同款修法;
+                        // .align 父级数据仍由本 Box 布局消费, 落位不受重载选择影响。
+                        this@Column.AnimatedVisibility(
+                            visible = ghostRange != null,
+                            enter = sleepyPopupEnter(),
+                            exit = sleepyPopupExit(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("slider-ghost"),
+                        ) {
+                            val ghost = lastGhostRange
+                            if (ghost != null) {
+                                val primary = colors.primary
+                                val ghostStart = ghost.first
+                                val ghostEnd = ghost.last
+                                Canvas(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(44.dp)
+                                        .testTag("slider-ghost-canvas"),
                             ) {
                                 // 1:1 复刻真滑杆形态 (material3 SliderTokens 实测):
                                 // 真 thumb = HandleWidth 4dp x HandleHeight 44dp 全圆
@@ -209,6 +238,7 @@ fun IntRangeSlider(
                                     )
                                 }
                             }
+                            }
                         }
                     }
                 },
@@ -239,6 +269,97 @@ internal fun sliderGhostVisible(
     val os = initialStart.coerceIn(minValue, maxValue)
     val oe = initialEnd.coerceIn(os, maxValue)
     return os != currentStart || oe != currentEnd
+}
+
+/**
+ * 单头滑杆原值幽灵是否可见 (纯函数, 单测 SingleSliderGhostTest 锁定)。
+ * 需求 2026-10-29 用户定义原话语义: 原设 7dp 改成 8dp/6dp 时, 原 7dp 位置出现
+ * 幽灵提醒"这是他上一次的结果"; 拖回原刻度即消失; 退出页面重进基线重算
+ * (基线 = 进页/开弹窗一刻的取值, 由各调用点 remember 一次性捕获, 绝不接 setter)。
+ * - baseline null (新建/无原值路径) → 永不可见;
+ * - |current - baseline| <= epsilon → 不可见 (判"已回到原刻度点"); epsilon 由调用点
+ *   按各自最小量化步进取半档 (0.1 步进 → 0.05; 1/20 缩放档 → 0.025; 整数 dp 档 →
+ *   0.5; 色相 1 度档 → 0.5) — 浮点拖动落在档位中点附近时判得住;
+ * - NaN/Inf (脏值或换算意外) → 不可见: abs(NaN-x)<=eps 恒 false 会误判"拖离",
+ *   幽灵宁可不画不可乱画。
+ */
+internal fun singleSliderGhostVisible(
+    current: Float,
+    baseline: Float?,
+    epsilon: Float,
+): Boolean {
+    if (baseline == null) return false
+    if (!current.isFinite() || !baseline.isFinite()) return false
+    return abs(current - baseline) > epsilon
+}
+
+/**
+ * 单头幽灵细条中心 x (px) — 1:1 复刻 material3 1.5.0-beta02 SliderLayout 的 thumb
+ * 摆放公式 (Slider.kt Layout measurable 实测): 轨道盒 = 全宽两端共缩进一个
+ * thumbWidth (trackW = W - thumbW), 盒起点缩进 thumbWidth/2; 档位 (steps>0) 的
+ * 内部刻度再按轨道圆角 (trackHeight/2) 内缩, 端点刻度 (frac==0/1) 回全轨线性 —
+ * 与真 thumb 的 isOnFirstOrLastStep 分支逐字对应。thumb 中心 = thumbWidth/2 +
+ * round(...)。调用点 Canvas matchParentSize 与 Slider 布局节点同盒 (探针实测),
+ * 故本式产出的 x 即真 thumb 中心所在。
+ */
+internal fun singleSliderGhostX(
+    nodeWidthPx: Float,
+    frac: Float,
+    steps: Int,
+    thumbWidthPx: Float,
+    trackHeightPx: Float,
+): Float {
+    val f = frac.coerceIn(0f, 1f)
+    val trackW = nodeWidthPx - thumbWidthPx
+    val corner = trackHeightPx / 2f
+    val offset = if (steps > 0 && f != 0f && f != 1f) {
+        ((trackW - 2f * corner) * f).roundToInt() + corner
+    } else {
+        (trackW * f).roundToInt().toFloat()
+    }
+    return thumbWidthPx / 2f + offset
+}
+
+/**
+ * 单头滑杆轨道上的原值细条 (纯装饰, 需求 2026-10-29; 形态 = 用户裁定的"一条细条",
+ * 单值没有区间段, 不做轨道段)。仿 material3 默认 thumb 竖胶囊形态: 4dp 宽 x 全高
+ * 圆头, primary 低透明 — 与双头幽灵端点细条 (本文件 RangeSlider track 内) 同观感族。
+ *
+ * 几何与色值单点: thumb 宽 4dp / 轨道高 16dp / 细条宽 4dp / alpha 0.40 只准出现在
+ * 下面这一处 — 摆位走 singleSliderGhostX (material3 摆放公式逐字复刻); 调用点
+ * Slider 有档位时必须把同一 steps 传进本件, 幽灵与真 thumb 才同分支同刻度。
+ * 色相条等自定义底衬不进本件 (对比配方另画, 见 HueSlider), 本件服务标准
+ * material3 Slider。RTL 镜像与双头幽灵同法 (frac 翻转, 公式对称)。
+ *
+ * 非交互铁律: 零 pointerInput、零语义 (testTag 由调用点挂在本件返回的布局上时
+ * 仅服务 Robolectric 存在性断言, 不参与朗读), 幽灵纯渲染 — 落库节奏仍归调用点
+ * onValueChangeFinished 一克不动。BoxScope 扩展 = 本件只准放进 Box{ Slider; … }
+ * 的轨道边界内 (matchParentSize 是 BoxScope 能力), 与双头幽灵同宿主形态。
+ */
+@Composable
+internal fun BoxScope.SingleSliderGhostMark(
+    baselineFrac: Float,
+    modifier: Modifier = Modifier,
+    steps: Int = 0,
+) {
+    val primary = MaterialTheme.colorScheme.primary
+    Canvas(modifier.matchParentSize()) {
+        val thumbW = 4.dp.toPx()
+        val trackH = 16.dp.toPx()
+        val barW = 4.dp.toPx()
+        val frac = if (layoutDirection == LayoutDirection.Rtl) {
+            1f - baselineFrac.coerceIn(0f, 1f)
+        } else {
+            baselineFrac
+        }
+        val x = singleSliderGhostX(size.width, frac, steps, thumbW, trackH)
+        drawRoundRect(
+            color = primary.copy(alpha = 0.40f),
+            topLeft = Offset(x - barW / 2f, 0f),
+            size = Size(barW, size.height),
+            cornerRadius = CornerRadius(barW / 2f, barW / 2f),
+        )
+    }
 }
 
 /**

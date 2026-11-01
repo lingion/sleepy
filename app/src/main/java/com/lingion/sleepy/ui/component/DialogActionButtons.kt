@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.util.DialogActionsLayoutPolicyBridge
 import com.lingion.sleepy.util.DialogButtonsLayoutPolicy
@@ -58,6 +59,9 @@ fun DialogActionButtons(
     destructive: Boolean = false,
     thirdDestructive: Boolean = false,
     confirmEnabled: Boolean = true,
+    // 调试台语义身份: 传前缀则三键自动得 <prefix>_confirm / <prefix>_dismiss / <prefix>_third
+    // (复刻 SegmentedSwitcher 的 dbgTagPrefix 形态; null = 不打标, 全部既有调用点零影响)
+    dbgTagPrefix: String? = null,
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
@@ -85,6 +89,7 @@ fun DialogActionButtons(
                         onClick = onDismiss,
                         container = colors.secondaryContainer,
                         content = colors.onSecondaryContainer,
+                        dbgTag = dbgTagPrefix?.let { "${it}_dismiss" },
                         modifier = Modifier.weight(weights[wi++])
                     )
                 }
@@ -94,6 +99,7 @@ fun DialogActionButtons(
                         onClick = onThird,
                         container = if (thirdDestructive) colors.errorContainer else colors.secondaryContainer,
                         content = if (thirdDestructive) colors.onErrorContainer else colors.onSecondaryContainer,
+                        dbgTag = dbgTagPrefix?.let { "${it}_third" },
                         modifier = Modifier.weight(weights[wi++])
                     )
                 }
@@ -103,6 +109,7 @@ fun DialogActionButtons(
                     enabled = confirmEnabled,
                     container = if (destructive) colors.errorContainer else colors.primary,
                     content = if (destructive) colors.onErrorContainer else colors.onPrimary,
+                    dbgTag = dbgTagPrefix?.let { "${it}_confirm" },
                     modifier = Modifier.weight(weights[wi++])
                 )
             }
@@ -118,6 +125,7 @@ fun DialogActionButtons(
                         onClick = onDismiss,
                         container = colors.secondaryContainer,
                         content = colors.onSecondaryContainer,
+                        dbgTag = dbgTagPrefix?.let { "${it}_dismiss" },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -127,6 +135,7 @@ fun DialogActionButtons(
                         onClick = onThird,
                         container = if (thirdDestructive) colors.errorContainer else colors.secondaryContainer,
                         content = if (thirdDestructive) colors.onErrorContainer else colors.onSecondaryContainer,
+                        dbgTag = dbgTagPrefix?.let { "${it}_third" },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -136,6 +145,7 @@ fun DialogActionButtons(
                     enabled = confirmEnabled,
                     container = if (destructive) colors.errorContainer else colors.primary,
                     content = if (destructive) colors.onErrorContainer else colors.onPrimary,
+                    dbgTag = dbgTagPrefix?.let { "${it}_confirm" },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -150,12 +160,15 @@ private fun BlockButton(
     container: Color,
     content: Color,
     enabled: Boolean = true,
+    dbgTag: String? = null,
     modifier: Modifier = Modifier
 ) {
     Button(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier.height(SleepyTheme.Buttons.regularHeight),
+        modifier = modifier
+            .then(dbgTag?.let { Modifier.dbgTag(it, text = text, role = "button") } ?: Modifier)
+            .height(SleepyTheme.Buttons.regularHeight),
         shape = SleepyTheme.Buttons.shape,
         colors = ButtonDefaults.buttonColors(
             containerColor = container,

@@ -81,6 +81,7 @@ import com.lingion.sleepy.widget.notification.ReminderRescheduler
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import com.lingion.sleepy.util.AppClock
 
 private sealed interface HolidayUiState {
     data object Loading : HolidayUiState
@@ -109,7 +110,7 @@ fun HolidaySettingsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    var year by rememberSaveable { mutableStateOf(LocalDate.now().year) }
+    var year by rememberSaveable { mutableStateOf(LocalDate.now(AppClock).year) }
     var holidayGrey by remember { mutableStateOf(AppPrefs.isHolidayGreyHoliday(context)) }
     var weekendGrey by remember { mutableStateOf(AppPrefs.isHolidayGreyWeekend(context)) }
     var ignoreWorkday by remember { mutableStateOf(AppPrefs.isHolidayIgnoreWorkday(context)) }

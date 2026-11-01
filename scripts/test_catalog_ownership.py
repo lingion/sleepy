@@ -192,6 +192,52 @@ class OwnershipTest(unittest.TestCase):
         self.assertEqual('grad_unverified', row['status'])
         self.assertEqual('retained-shiguang-adapters-owner', result['action'])
 
+    def test_wakeup_662_official_asset_owner_is_retained_without_live_probe(self):
+        # Full-absorption ruling (2026-10-28): every row of the official
+        # WakeUP 6.6.2 shipped catalog is a third-party ownership declaration.
+        # A failed or absent probe (timeout, 403, 302) is not a rejection —
+        # the row lands unverified, never tested, importable by user choice.
+        for http in [None, 0, 302, 403, 412]:
+            row = copy.deepcopy(self.row)
+            self.proof = dict(catalogId='school:1', name='甲大学', url=self.row['url'],
+                              status='unknown', sources=[], source='wakeup-6.6.2-official-asset')
+            if http is not None:
+                self.proof['http'] = http
+            result = apply_ownership([row], {'entries': [copy.deepcopy(self.proof)]}, set())[0]
+            with self.subTest(http=http):
+                self.assertEqual(self.row['url'], row['url'])
+                self.assertEqual('unverified', row['status'])
+                self.assertFalse(row.get('enableFetch', False))
+                self.assertEqual('retained-wakeup-662-declared-owner', result['action'])
+
+    def test_wakeup_662_declaration_still_needs_safe_public_url(self):
+        # Dropping the liveness bar must not drop the safety bar: a non-6.6.2
+        # source, loopback host, redaction or non-HTTP target stay withheld.
+        for patch in [
+            dict(source='import'),
+            dict(url='http://10.10.181.1/jw'),
+            dict(url='http://[fd00::1]/jw'),
+            dict(url='https://example.invalid/REDACTED/jw'),
+            dict(url='ftp://example.edu.cn/jw'),
+        ]:
+            row = copy.deepcopy(self.row)
+            self.proof = dict(catalogId='school:1', name='甲大学', status='unknown', sources=[],
+                              source='wakeup-6.6.2-official-asset', http=0)
+            self.proof['url'] = row['url'] = patch.pop('url', row['url'])
+            self.proof.update(patch)
+            result = apply_ownership([row], {'entries': [copy.deepcopy(self.proof)]}, set())[0]
+            with self.subTest(**patch):
+                self.assertEqual(('', None, 'pending', False), (row['url'], row['type'], row['status'], row['enableFetch']))
+                self.assertEqual('withheld-new-unproven-owner', result['action'])
+
+    def test_wakeup_662_retained_graduate_identity_stays_grad_scoped(self):
+        self.row['name'] = self.proof['name'] = '甲大学 - 研究生'
+        self.row['status'] = 'grad_unverified'
+        self.proof.update(source='wakeup-6.6.2-official-asset', http=0)
+        row, result = self.apply()
+        self.assertEqual('grad_unverified', row['status'])
+        self.assertEqual('retained-wakeup-662-declared-owner', result['action'])
+
     def test_unreachable_page_does_not_invalidate_previous_import_evidence(self):
         self.row['status'] = 'supported'
         row, result = self.apply(['甲大学'])

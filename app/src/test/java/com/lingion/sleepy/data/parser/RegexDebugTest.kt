@@ -1,5 +1,6 @@
 package com.lingion.sleepy.data.parser
 
+import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class TimeBlockRealInputTest {
@@ -21,7 +22,7 @@ Linux操作系统实验(环宇)	何静	3教337	1	1-2	17	0
             throw AssertionError("PARSE FAILED: ${e.javaClass.simpleName}: $e\n${e.stackTrace.take(8).joinToString("\n")}")
         }
         val parsed = result.getOrThrow()
-        assert(parsed.courses.size == 2) { "courses: ${parsed.courses.size}" }
-        assert(parsed.nodesPerDay == 10) { "nodesPerDay: ${parsed.nodesPerDay}" }
+        assertEquals("courses: ${parsed.courses.size}", 2, parsed.courses.size)
+        assertEquals("nodesPerDay: ${parsed.nodesPerDay}", 10, parsed.nodesPerDay)
     }
 }

@@ -14,6 +14,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.security.SecureRandom
+import com.lingion.sleepy.util.AppClock
 
 /**
  * WakeUp 课程表分享口令协议 v6.1.70 — 拾光 GLOBAL_TOOLS/wake_up.js 的 Kotlin 等价实现。
@@ -237,7 +238,7 @@ internal object WakeUpShareProtocol {
         token: String,
         device: Device,
         commonParams: List<Pair<String, String>>,
-        nowMs: Long = System.currentTimeMillis(),
+        nowMs: Long = AppClock.millis(),
         constants: Constants = V6170,
     ): ShareRequest {
         val rc4Key = getRc4Key(token, constants)

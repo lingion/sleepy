@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Person
@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.lingion.sleepy.R
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.parser.ScheduleParser
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -115,17 +116,22 @@ fun CourseSelectionSheet(
                     },
                     actions = {
                         // 全选开关: 当前已全选 → 一键取消全选; 否则 → 一键全选。
-                        TextButton(onClick = {
-                            selected = if (selectedSet.size == allIds.size) emptyList() else allIds
-                        }) {
-                            Text(stringResource(
-                                if (selectedSet.size == allIds.size) R.string.select_courses_none
-                                else R.string.select_courses_all
-                            ))
+                        val toggleLabel = stringResource(
+                            if (selectedSet.size == allIds.size) R.string.select_courses_none
+                            else R.string.select_courses_all
+                        )
+                        TextButton(
+                            onClick = {
+                                selected = if (selectedSet.size == allIds.size) emptyList() else allIds
+                            },
+                            modifier = Modifier.dbgTag("import_select_all", text = toggleLabel, role = "button")
+                        ) {
+                            Text(toggleLabel)
                         }
                         TextButton(
                             enabled = selectedSet.isNotEmpty(),
-                            onClick = { onConfirm(selectedSet) }
+                            onClick = { onConfirm(selectedSet) },
+                            modifier = Modifier.dbgTag("import_select_confirm", text = stringResource(R.string.import_confirm), role = "button")
                         ) { Text(stringResource(R.string.import_confirm)) }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -140,8 +146,9 @@ fun CourseSelectionSheet(
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(groups, key = { it.id }) { group ->
+                itemsIndexed(groups, key = { _, g -> g.id }) { index, group ->
                     val checked = group.id in selectedSet
+                    val courseLabel = group.courseName.ifBlank { stringResource(R.string.course_detail_title) }
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -154,7 +161,8 @@ fun CourseSelectionSheet(
                             checked = checked,
                             onCheckedChange = { on ->
                                 selected = if (on) selected + group.id else selected - group.id
-                            }
+                            },
+                            modifier = Modifier.dbgTag("select_course#$index", text = courseLabel, role = "checkbox")
                         )
                         Column(
                             modifier = Modifier.fillMaxWidth(),
