@@ -294,15 +294,42 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 
 5 类 Widget × 13 个固定尺寸变体：Today / TwoDay / WeekList 各有常规 / 小 / 宽三档，WeekView / WeekGrid 各有常规 / 小两档。布局尺寸与各 launcher 自适应。
 
-| Widget | 变体 | 用途 | 截图 |
-|---|---|---|---|
-| **Today** | 常规 / 小 / 宽 | 今日课程列表 | <p align="left"><img src="docs/screenshots/widget-today.png" width="240"></p> |
-| **TwoDay** | 常规 / 小 / 宽 | 今天 + 明天（左右双栏） | <p align="left"><img src="docs/screenshots/widget-twoday.png" width="240"></p> |
-| **WeekList** | 常规 / 小 / 宽 | 7 日课程统计 + 名称 | <p align="left"><img src="docs/screenshots/widget-weeklist.png" width="240"></p> |
-| **WeekView** | 常规 / 小 | 周视图缩略（无彩色胶囊，纯主题色） | <img src="docs/screenshots/widget-weekview.png" width="240" alt="WeekView on Android launcher"> |
-| **WeekGrid** | 常规 / 小 | 时间网格 + 课程块 | <p align="left"><img src="docs/screenshots/widget-weekgrid.png" width="200"></p> |
+<table>
+  <tr>
+    <td width="36%" valign="top" align="center">
+      <img src="docs/screenshots/widget-weekgrid.png" alt="周网格小组件 (WeekGrid)">
+      <br>
+      <sub><b>周网格小组件 (WeekGrid)</b></sub>
+    </td>
+    <td width="64%" valign="top" align="center">
+      <img src="docs/screenshots/widget-today.png" alt="今日小组件 (Today)">
+      <br>
+      <sub><b>今日小组件 (Today)</b></sub>
+      <br><br>
+      <img src="docs/screenshots/widget-twoday.png" alt="未来两天小组件 (TwoDay)">
+      <br>
+      <sub><b>未来两天小组件 (TwoDay)</b></sub>
+      <br><br>
+      <img src="docs/screenshots/widget-weekview.png" alt="周视图小组件 (WeekView)">
+      <br>
+      <sub><b>周视图小组件 (WeekView)</b></sub>
+      <br><br>
+      <img src="docs/screenshots/widget-weeklist.png" alt="周列表小组件 (WeekList)">
+      <br>
+      <sub><b>周列表小组件 (WeekList)</b></sub>
+    </td>
+  </tr>
+</table>
 
-图片来源：Today、TwoDay、WeekList 为模拟器中 `WidgetRenderActivity` 调用当前生产渲染器生成的预览，裁切到组件边界，未拉伸；WeekView 和 WeekGrid 为实际桌面小组件截图。WeekGrid 此图展示当前可见的第 1–6 节，不代表完整学期或全部节次。桌面实际尺寸和字体截断由启动器及所选变体决定。
+| Widget | 变体 | 用途与特性 |
+|---|---|---|
+| **WeekGrid（周网格）** | 常规 / 小 | 时间网格 + 课程块，直观展示课程时间与地点，支持自动跳至最近有课日 |
+| **Today（今日）** | 常规 / 小 / 宽 | 今日课程列表，呈现当前与后续课程节次、时间与教室 |
+| **TwoDay（未来两天）** | 常规 / 小 / 宽 | 今天 + 明天（左右双栏），便于晚间提前掌握次日日程 |
+| **WeekView（周视图）** | 常规 / 小 | 周视图纯主题色网格缩略，支持三日紧凑窗口 |
+| **WeekList（周列表）** | 常规 / 小 / 宽 | 7 日课程统计与名称缩略，支持三日紧凑窗口 |
+
+图片来源：基于生产渲染器直出并裁切至组件边界，透明圆角背景，采用官网统一演示课表。桌面实际尺寸和字体截断由启动器及所选变体决定。
 
 <p align="left">
   <img src="docs/screenshots/32-widget-settings.png" width="280" alt="单个桌面小组件：课表绑定与课程名显示">
