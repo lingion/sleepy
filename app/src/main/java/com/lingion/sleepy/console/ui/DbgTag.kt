@@ -9,6 +9,7 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
+import com.lingion.sleepy.console.DebugGate
 import java.lang.ref.WeakReference
 import java.util.concurrent.ConcurrentHashMap
 
@@ -39,13 +40,23 @@ object TagRegistry {
     private val entries = ConcurrentHashMap<String, MutableList<Entry>>()
 
     fun put(tag: String, entry: Entry) {
+        if (!DebugGate.isActive) return
         entries.compute(tag) { _, list ->
-            (list ?: mutableListOf()).apply {
-                // 同 (view,text) 视为同节点重放置：替换旧位，防一 tag 内陈旧副本堆积
-                val old = indexOfFirst { it.viewRef.get() === entry.viewRef.get() && it.text == entry.text }
-                if (old >= 0) removeAt(old)
-                add(entry)
+            val targetList = list ?: mutableListOf()
+            val oldIndex = targetList.indexOfFirst { it.viewRef.get() === entry.viewRef.get() && it.text == entry.text }
+            if (oldIndex >= 0) {
+                val old = targetList[oldIndex]
+                if (old.left == entry.left && old.top == entry.top &&
+                    old.right == entry.right && old.bottom == entry.bottom &&
+                    old.role == entry.role && old.className == entry.className &&
+                    old.clickable == entry.clickable
+                ) {
+                    return@compute targetList
+                }
+                targetList.removeAt(oldIndex)
             }
+            targetList.add(entry)
+            targetList
         }
     }
 
@@ -128,6 +139,7 @@ fun Modifier.dbgTag(
     this
         .testTag(tag)
         .onPlaced { coords ->
+            if (!DebugGate.isActive) return@onPlaced
             val b = coords.boundsInWindow()
             TagRegistry.put(
                 tag,

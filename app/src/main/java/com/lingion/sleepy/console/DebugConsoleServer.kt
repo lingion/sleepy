@@ -16,7 +16,7 @@ import java.io.File
  *
  * 出口统一 [Envelope]，HTTP 状态码与 envelope 的 code 字段对齐。
  */
-class DebugConsoleServer(tempDir: File? = null) : NanoHTTPD(HOST, PORT) {
+class DebugConsoleServer(private val tempDir: File? = null) : NanoHTTPD(HOST, PORT) {
 
     companion object {
         const val HOST = "127.0.0.1"
@@ -155,7 +155,8 @@ class DebugConsoleServer(tempDir: File? = null) : NanoHTTPD(HOST, PORT) {
 
     override fun stop() {
         runCatching { super.stop() }
-        // 审计环 ConsoleAudit 刻意不清：失活/重绑后 /v1/log 仍能回看本轮证据
+        tempDir?.listFiles()?.filter { it.name.startsWith("nanoHTTPD-") }
+            ?.forEach { runCatching { it.delete() } }
     }
 }
 

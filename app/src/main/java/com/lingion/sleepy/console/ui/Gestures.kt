@@ -59,7 +59,13 @@ class Gestures(private val activity: Activity) {
         val down = System.currentTimeMillis() + startDelayMs
         fun post(at: Long, action: Int) {
             val e = MotionEvent.obtain(down, at, action, lx, ly, 0)
-            view.postDelayed({ view.dispatchTouchEvent(e) }, at - System.currentTimeMillis())
+            view.postDelayed({
+                try {
+                    view.dispatchTouchEvent(e)
+                } finally {
+                    e.recycle()
+                }
+            }, at - System.currentTimeMillis())
         }
         post(down, MotionEvent.ACTION_DOWN)
         post(down + holdMs, MotionEvent.ACTION_UP)
@@ -242,12 +248,19 @@ object ScreenCapture {
             return null
         }
         val scaled = downscale(bitmap)
-        bitmap.recycle()
+        if (scaled !== bitmap) {
+            bitmap.recycle()
+        }
         val out = ByteArrayOutputStream()
-        return if (scaled.compress(Bitmap.CompressFormat.PNG, 100, out)) {
-            if (scaled !== bitmap) scaled.recycle()
-            out.toByteArray()
-        } else null
+        return try {
+            if (scaled.compress(Bitmap.CompressFormat.PNG, 100, out)) {
+                out.toByteArray()
+            } else {
+                null
+            }
+        } finally {
+            scaled.recycle()
+        }
     }
 
     private fun pixelCopy(activity: Activity, bitmap: Bitmap): Boolean {

@@ -10,6 +10,7 @@ import com.lingion.sleepy.console.handlers.LogHandler
 import com.lingion.sleepy.console.handlers.SessionHandler
 import com.lingion.sleepy.console.handlers.UnlockTapCounter
 import com.lingion.sleepy.console.handlers.DataOpsRuntime
+import com.lingion.sleepy.console.ui.TagRegistry
 import com.lingion.sleepy.console.ui.UiOpsRuntime
 import com.lingion.sleepy.util.AppLog
 import java.util.concurrent.atomic.AtomicBoolean
@@ -135,6 +136,7 @@ object ConsoleBootstrap {
         TokenStore.revoke()
         UnlockTapCounter.reset()
         CommandRouter.reset()
+        TagRegistry.clear()
     }
 
     /**
