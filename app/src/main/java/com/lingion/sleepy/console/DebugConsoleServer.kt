@@ -32,8 +32,11 @@ class DebugConsoleServer(private val tempDir: File? = null) : NanoHTTPD(HOST, PO
         // DefaultTempFileManager 把 POST body 写进 java.io.tmpdir — Android 上
         // /tmp 归 shell 771, app 进程不可写 → parseBody 落盘失败, 外部客户端
         // (curl/M1/Python)的 body 恒空。改指 app 私有 cache 子目录。
-        // tempDir=null 保持 nanohttpd 默认行为(JVM 测试面 tmpdir 可写)。
-        tempDir?.let { setTempFileManagerFactory(CacheTempFileManagerFactory(it)) }
+        // JVM 默认目录也使用同一工厂：DefaultTempFile 构造时预开写句柄，
+        // Windows 下 readBody 直接删路径会失败，直到响应发完库内 clear 才关闭。
+        setTempFileManagerFactory(
+            CacheTempFileManagerFactory(tempDir ?: File(requireNotNull(System.getProperty("java.io.tmpdir"))))
+        )
     }
 
     override fun serve(session: IHTTPSession): Response {
@@ -91,9 +94,11 @@ class DebugConsoleServer(private val tempDir: File? = null) : NanoHTTPD(HOST, PO
             if (!contentPath.isNullOrEmpty()) {
                 // PUT: 临时文件读完即删(请求体不留痕迹)
                 val f = File(contentPath)
-                val text = if (f.exists()) f.readText() else ""
-                runCatching { f.delete() }
-                text
+                try {
+                    if (f.exists()) f.readText() else ""
+                } finally {
+                    runCatching { f.delete() }
+                }
             } else {
                 val postData = files["postData"]
                 if (!postData.isNullOrEmpty()) {
@@ -161,14 +166,16 @@ class DebugConsoleServer(private val tempDir: File? = null) : NanoHTTPD(HOST, PO
 }
 
 /**
- * POST body 临时文件工厂 — 复刻 nanohttpd DefaultTempFileManager 语义,
- * 唯一差异 = 落盘目录可注入（app 私有 cache 子目录, 恒可写）。
+ * 请求体临时文件工厂 — 目录可注入，且不预开库内另行按路径写入时用不到的句柄。
+ * 每个 manager 只清理自己创建的文件，避免并发请求互相删除临时文件。
  * readBody 经 parseBody 的 "content" 键拿到 getName() 绝对路径, 零改动兼容。
  */
 internal class CacheTempFileManagerFactory(private val dir: File) :
     NanoHTTPD.TempFileManagerFactory {
 
     override fun create(): NanoHTTPD.TempFileManager = object : NanoHTTPD.TempFileManager {
+        private val tempFiles = mutableListOf<NanoHTTPD.TempFile>()
+
         // 可空参数是契约要求: 库内 parseBody→saveTmpFile 固定传 null hint
         // (NanoHTTPD.java L1188/L1204), DefaultTempFileManager 是 Java 无空检;
         // Kotlin 覆写声明非空 String 会被 intrinsic 空检炸成 Error 吃掉整个体
@@ -177,21 +184,23 @@ internal class CacheTempFileManagerFactory(private val dir: File) :
             val suffix = prefix?.takeIf { it.isNotBlank() }?.let { "-$it" } ?: ""
             val file = File(dir, "nanoHTTPD-$suffix-${System.nanoTime()}.tmp")
             return object : NanoHTTPD.TempFile {
+                private var output: java.io.OutputStream? = null
+
                 override fun getName(): String = file.absolutePath
-                override fun open(): java.io.OutputStream = java.io.BufferedOutputStream(
+                override fun open(): java.io.OutputStream = output ?: java.io.BufferedOutputStream(
                     java.io.FileOutputStream(file)
-                )
+                ).also { output = it }
                 override fun delete() {
+                    runCatching { output?.close() }
                     runCatching { file.delete() }
                 }
-            }
+            }.also { tempFiles.add(it) }
         }
 
         override fun clear() {
-            // 每请求 readBody 后即删自文件; 这里兜底清残留(PowerfulResponse 等
-            // 未消费路径), 只删本工厂命名前缀, 不碰目录其他内容。
-            dir.listFiles()?.filter { it.name.startsWith("nanoHTTPD-") }
-                ?.forEach { runCatching { it.delete() } }
+            // readBody 后即删 PUT 文件；这里兜底清理本请求的其余临时文件。
+            tempFiles.forEach { runCatching { it.delete() } }
+            tempFiles.clear()
         }
     }
 }
