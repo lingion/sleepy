@@ -51,6 +51,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.kyant.backdrop.Backdrop
+import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassNavigationBar
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 
@@ -115,6 +117,7 @@ fun PillNavigationBar(
     modifier: Modifier = Modifier,
     dock: Boolean = false,
     state: PillBarState = remember { PillBarState() },
+    backdrop: Backdrop? = null,
 ) {
     val colors = MaterialTheme.colorScheme
     val density = LocalDensity.current
@@ -164,20 +167,14 @@ fun PillNavigationBar(
     }
 
     // ═══ 形态分流 ═══
-    // 贴底 = 通栏 76dp 矩形带(现状不动); Dock = iOS 26 floating tab bar 语义:
-    // 56dp 胶囊 icon-only, 半透明玻璃底+柔投影, 悬于手势条上方, 浮在内容上层
+    // 贴底 = 通栏 76dp 矩形带(现状不动); Dock = FLClash 1:1 液态玻璃悬浮导航底栏
     if (dock) {
-        DockNavigationBar(
+        LiquidGlassNavigationBar(
             items = items,
             selectedIndex = selectedIndex,
             onSelect = onSelect,
-            colors = colors,
-            density = density,
-            onBarGeometry = { x, y, laid ->
-                barRootX = x; barRootY = y; barLaidOut = laid
-            },
             modifier = modifier,
-            state = state,
+            backdrop = backdrop,
         )
         return
     }

@@ -653,7 +653,11 @@ internal object LiquidGlassSuperellipse {
         val m = (a + b) * 0.5f
         val cToM = Vec(-aToB.y, aToB.x)
         val distanceAm = aToB.length() / 2f
-        val distanceCm = sqrt(Math.fma(-distanceAm, distanceAm, r * r))
+        val distanceCm = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            sqrt(Math.fma(-distanceAm, distanceAm, r * r))
+        } else {
+            sqrt(r * r - distanceAm * distanceAm)
+        }
         return m - cToM.normalize() * distanceCm
     }
 

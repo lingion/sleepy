@@ -5,13 +5,16 @@
 package com.lingion.sleepy.ui.component.liquidglass
 
 import android.graphics.Path
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassSuperellipse.PathOp
 import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassSuperellipse.Radii
 import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassSuperellipse.Rect2
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import kotlin.math.abs
 
 /**
  * 位精度回归测试。
@@ -29,27 +32,28 @@ import org.junit.runner.RunWith
  * `atan2` 上 1 ULP，引擎 `glibc atan2f` 1 ULP 更上。本测试在右圆处
  * 允许 ≤1 ULP，见 [atMostOneUlp]。
  */
-@RunWith(AndroidJUnit4::class)
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [35])
 class LiquidGlassSuperellipsePrecisionTest {
 
     /** 两个 float 间以无符-格雷格码距离度量的最大 ULP。 */
-    private fun ulpDistance(a: Float, b: Float): Int {
-        val ia = java.lang.Float.floatToRawIntBits(a)
-        val ib = java.lang.Float.floatToRawIntBits(b)
-        val ga = if (ia < 0) 0x80000000 - ia else ia
-        val gb = if (ib < 0) 0x80000000 - ib else ib
-        val diff = ga - gb
-        return if (diff < 0) -diff else diff
+    private fun ulpDistance(a: Float, b: Float): Long {
+        val ia = java.lang.Float.floatToRawIntBits(a).toLong()
+        val ib = java.lang.Float.floatToRawIntBits(b).toLong()
+        val ga = if (ia < 0L) 0x80000000L - ia else ia
+        val gb = if (ib < 0L) 0x80000000L - ib else ib
+        return abs(ga - gb)
     }
 
     /** Cause B 允许的 ≤1 ULP 容忍。 */
     private fun atMostOneUlp(actual: Float, expected: Float) {
         val dist = ulpDistance(actual, expected)
-        assert(dist <= 1) {
+        assertTrue(
             "expected=$expected bits=${java.lang.Float.floatToRawIntBits(expected)}, " +
                 "actual=$actual bits=${java.lang.Float.floatToRawIntBits(actual)}, " +
-                "ulp=$dist"
-        }
+                "ulp=$dist",
+            dist <= 1L
+        )
     }
 
     @Test

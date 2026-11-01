@@ -79,6 +79,18 @@ internal object LiquidGlassShader {
         "uPillCenters" to 12,
     )
 
+    @Volatile
+    private var cachedSource: String? = null
+
+    fun shaderSource(context: android.content.Context): String {
+        return cachedSource ?: synchronized(this) {
+            cachedSource ?: context.assets.open("shaders/liquid_glass.agsl")
+                .bufferedReader()
+                .use { it.readText() }
+                .also { cachedSource = it }
+        }
+    }
+
     /**
      * Dart 的 `_noHaze`(liquid_glass_capture.dart:24) = `[0, 0, 1, 1, 0, 0, 0, 0]`,
      * 覆盖 `uHazeSample`(4) + `uHazeClamp`(4) 两个槽位, 故这里拆成两段。

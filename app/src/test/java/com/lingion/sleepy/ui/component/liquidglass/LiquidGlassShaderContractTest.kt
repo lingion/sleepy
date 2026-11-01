@@ -40,7 +40,10 @@ class LiquidGlassShaderContractTest {
     /** AGSL 里声明的 uniform 名 → float 个数。 */
     private fun declaredUniforms(): Map<String, Int> {
         val sizes = mutableMapOf<String, Int>()
-        val decl = Regex("""^uniform\s+(float2|float3|float4|float)\s+(\w+)\s*(\[\s*(\d+)\s*\])?\s*;""")
+        val decl = Regex(
+            """^uniform\s+(float2|float3|float4|float)\s+(\w+)\s*(\[\s*(\d+)\s*\])?\s*;""",
+            RegexOption.MULTILINE,
+        )
         decl.findAll(agsl).forEach { m ->
             val name = m.groupValues[2]
             val arrayLen = m.groupValues[4].takeIf { it.isNotEmpty() }?.toInt()
@@ -203,10 +206,7 @@ class LiquidGlassShaderContractTest {
     fun presentHazeCarriesTheStyleHazeAndItsOwnSampling() {
         val values = build(haze = true)
         assertArrayEquals(
-            floatArrayOf(
-                -12f / 2f, -8f / 2f, 1f / 2f, 1f / 2f,
-                0.5f, 0.5f, 319.5f, 63.5f,
-            ),
+            floatArrayOf(-12f / 2f, -8f / 2f, 1f / 2f, 1f / 2f),
             values.getValue("uHazeSample"),
             1e-6f,
         )
@@ -215,6 +215,7 @@ class LiquidGlassShaderContractTest {
             values.getValue("uHazeClamp"),
             1e-6f,
         )
+        assertEquals(sampleStyle().haze.toFloat(), values.getValue("uHaze")[0], 1e-6f)
     }
 
     @Test

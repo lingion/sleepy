@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -66,6 +67,8 @@ import androidx.navigation3.scene.Scene
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.NavDockSpec
 import com.lingion.sleepy.ui.component.PillNavigationBar
@@ -649,7 +652,8 @@ private fun MainRoute(
             }
         }
     } else if (navDock) {
-        // Compact + 悬浮 Dock: 官方无此形态 → 保留自研 PillNavigationBar(dock=true)
+        // Compact + 悬浮 Dock: FLClash 1:1 液态玻璃导航底栏
+        val backdrop = rememberLayerBackdrop()
         var dockExtraDp by remember { mutableStateOf(NavDockSpec.capsuleHeight + NavDockSpec.bottomFloat) }
         var dockOverlayPx by remember { mutableStateOf(0) }
         val densityForDock = LocalDensity.current
@@ -665,7 +669,11 @@ private fun MainRoute(
             androidx.compose.runtime.CompositionLocalProvider(
                 LocalNavExtraBottomPadding provides dockExtraDp
             ) {
-                Box(modifier = Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .layerBackdrop(backdrop)
+                ) {
                     MainTabs(
                         currentTab = currentTab,
                         setCurrentTab = setCurrentTab,
@@ -683,6 +691,8 @@ private fun MainRoute(
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
+                    .windowInsetsPadding(WindowInsets.navigationBars)
+                    .padding(bottom = 12.dp)
                     .onGloballyPositioned { c -> dockOverlayPx = c.size.height }
             ) {
                 PillNavigationBar(
@@ -691,6 +701,7 @@ private fun MainRoute(
                     onSelect = { setCurrentTab(Tab.entries[it]) },
                     dock = true,
                     state = pillBarState,
+                    backdrop = backdrop,
                 )
             }
         }
