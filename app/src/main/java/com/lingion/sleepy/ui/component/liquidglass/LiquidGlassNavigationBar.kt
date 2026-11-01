@@ -255,15 +255,6 @@ fun LiquidGlassNavigationBar(
             }
         } else null
     }
-    val contentShader = remember {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            try {
-                android.graphics.RuntimeShader(LiquidGlassShader.shaderSource(context))
-            } catch (_: Throwable) {
-                null
-            }
-        } else null
-    }
 
     val shadowRoomDp = 12.dp
 
@@ -711,7 +702,7 @@ fun LiquidGlassNavigationBar(
                     },
             )
 
-            // ── 层4: 镜内文字与图标 (Inside Destinations - primary, 1:1 FLClash lensContent 边缘非线性光学放大拉伸) ──
+            // ── 层4: 镜内文字与图标 (Inside Destinations - primary, 1.16x 放大, 镜片裁切) ──
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -750,74 +741,15 @@ fun LiquidGlassNavigationBar(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(barHeightDp + shadowRoomDp * 2)
-                        .graphicsLayer {
-                            val lift = liftSpring.value
-                            if (contentShader != null && lift > 0.001f && size.width > 0f && size.height > 0f) {
-                                val lensRect = FlClashDockPhysics.lensRect(
-                                    position = lensSpring.value,
-                                    stretch = jellySpring.value,
-                                    pitch = layout.pitch,
-                                    width = layout.lens,
-                                    height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
-                                    lift = lift,
-                                )
-                                val dockContentTopPx = (shadowRoomDp + FlClashDockPhysics.BAR_PADDING.dp).toPx()
-                                val dockContentLeftPx = FlClashDockPhysics.BAR_PADDING.dp.toPx()
-                                val leftPx = dockContentLeftPx + (layout.inset + lensRect.left) * density.density
-                                val topPx = dockContentTopPx + lensRect.top * density.density
-
-                                val style = LiquidGlassStyle.lensContent(colorScheme, dark).scale(lift.toDouble())
-                                val sizeDp = Size(lensRect.width, lensRect.height)
-                                val radiusDp = lensRect.height / 2f
-                                val corners = LiquidGlassCornerRadii(radiusDp, radiusDp, radiusDp, radiusDp)
-                                val originPx = Offset(leftPx, topPx)
-                                val atlasSizePx = Size(size.width, size.height)
-                                val sampling = LiquidGlassShader.sampling(
-                                    originPx = originPx,
-                                    texelsPerDp = density.density,
-                                    clampPx = Rect(0f, 0f, size.width, size.height),
-                                )
-
-                                val uniforms = LiquidGlassShader.build(
-                                    size = sizeDp,
-                                    corners = corners,
-                                    style = style,
-                                    originPx = originPx,
-                                    density = density.density,
-                                    stretch = 1f,
-                                    atlasSizePx = atlasSizePx,
-                                    sampling = sampling,
-                                    glow = LiquidGlassGlow.None,
-                                )
-                                uniforms.forEach { (name, values) ->
-                                    contentShader.setFloatUniform(name, values)
-                                }
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                    this.renderEffect = android.graphics.RenderEffect.createRuntimeShaderEffect(
-                                        contentShader,
-                                        "uTexture",
-                                    ).asComposeRenderEffect()
-                                }
-                            } else {
-                                this.renderEffect = null
-                            }
-                        },
-                    contentAlignment = Alignment.Center,
+                        .height(barHeightDp)
+                        .padding(barPaddingDp),
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(barHeightDp)
-                            .padding(barPaddingDp),
-                    ) {
-                        DestinationsRow(
-                            items = items,
-                            layout = layout,
-                            tint = colorScheme.primary,
-                            magnification = { 1f + FlClashDockPhysics.LENS_MAGNIFY * liftSpring.value },
-                        )
-                    }
+                    DestinationsRow(
+                        items = items,
+                        layout = layout,
+                        tint = colorScheme.primary,
+                        magnification = { 1f + FlClashDockPhysics.LENS_MAGNIFY * liftSpring.value },
+                    )
                 }
             }
         }
