@@ -366,12 +366,12 @@
     "result": "accepted: second teaching slot editor, Tuesday periods 3–4 weeks 1–16; fictional unsaved demonstration"
   },
   "00-overview.png": {
-    "sha256": "f537dc7204d623055903d3098292578c95771bb627e010d18765df7c4f5b79c3",
+    "sha256": "11cc77b4d6f64ae411022ddd43137246bc599efa60e70b88710a1c6281d9eecd",
     "size": [
       2400,
       4811
     ],
     "mtime": 1791856252.7593558,
-    "result": "accepted: original online overview explicitly requested by user; GitHub blob c00414c2cc1676544e19be4344f62c6203e0424b verified visually"
+    "result": "accepted: fixed black corners around section 02 widgets to blend into surface background (ref #220)"
   }
 }
