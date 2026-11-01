@@ -264,23 +264,131 @@ fun LiquidGlassNavigationBar(
         } else null
     }
 
-    val shadowRoomDp = FlClashDockPhysics.SHADOW_ROOM.dp
+    val shadowRoomDp = 12.dp
 
     Box(
         modifier = modifier
             .then(totalWidthModifier)
             .height(barHeightDp + shadowRoomDp * 2)
-            .padding(vertical = shadowRoomDp),
+            .onGloballyPositioned { coords ->
+                barWidthPx = coords.size.width.toFloat()
+                barHeightPx = coords.size.height.toFloat()
+            }
+            .pointerInput(count, isLtr) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        val change = event.changes.firstOrNull() ?: continue
+
+                        when (event.type) {
+                            PointerEventType.Press -> {
+                                pointerId = change.id.value
+                                velocityTracker.resetTracking()
+                                velocityTracker.addPosition(change.uptimeMillis, change.position)
+
+                                swellSpring.springTo(1f, FlClashSprings.PressSpring)
+                                glowAt = change.position
+                                glowSpreadSpring.jumpTo(0f)
+                                glowSpring.springTo(1f, FlClashSprings.GlowInSpring)
+
+                                val pos = positionAt(change.position.x)
+                                val idx = indexAt(pos)
+
+                                pressedIndex = idx
+                                pressX = change.position.x
+                                dragging = false
+                                dropping = false
+
+                                liftSpring.springTo(1f, FlClashSprings.LiftSpring)
+                                lensSpring.springTo(idx.toFloat(), FlClashSprings.TravelSpring)
+                                change.consume()
+                            }
+                            PointerEventType.Move -> {
+                                if (pointerId == change.id.value) {
+                                    velocityTracker.addPosition(change.uptimeMillis, change.position)
+                                    glowAt = change.position
+
+                                    val dx = change.position.x - pressX
+                                    if (!dragging && abs(dx) > 4f) {
+                                        dragging = true
+                                    }
+
+                                    if (dragging) {
+                                        val overshoot = change.position.x - change.position.x.coerceIn(0f, size.width.toFloat())
+                                        val pullLimit = size.height * FlClashDockPhysics.PULL_LIMIT
+                                        stretchSpring.springTo(
+                                            FlClashDockPhysics.rubberBand(overshoot, pullLimit),
+                                            FlClashSprings.TrackSpring,
+                                        )
+
+                                        val pos = positionAt(change.position.x)
+                                        // 100% 绝对线性位移：拖拽过程中镜头与手指位置 1:1 绝对线性同步，彻底消除时钟饥饿与顿挫卡顿
+                                        lensSpring.jumpTo(pos)
+
+                                        // 果冻外形根据瞬时滑动速度进行连续自然的弹性拉伸与挤压
+                                        val velocityXDp = velocityTracker.calculateVelocity().x / currentDensity
+                                        val velocity = velocityXDp / currentLayout.pitch
+                                        val wobbleTarget = FlClashDockPhysics.wobbleTarget(velocity, 0f)
+                                        jellySpring.springTo(wobbleTarget, FlClashSprings.JellySpring)
+
+                                        val idx = indexAt(pos)
+                                        if (idx != pressedIndex) {
+                                            LiquidGlassHaptics.selectionClick(view)
+                                            pressedIndex = idx
+                                        }
+                                    }
+                                    change.consume()
+                                }
+                            }
+                            PointerEventType.Release -> {
+                                if (pointerId == change.id.value) {
+                                    pointerId = null
+                                    val velocityXDp = velocityTracker.calculateVelocity().x / currentDensity
+
+                                    var targetIndex = pressedIndex ?: currentSelected
+                                    if (dragging) {
+                                        val direction = if (currentIsLtr) 1f else -1f
+                                        val lead = (velocityXDp / currentLayout.pitch) * direction * FlClashDockPhysics.FLING_PROJECTION_SEC.toFloat()
+                                        val projected = (lensSpring.target + lead).roundToInt().coerceIn(targetIndex - 1, targetIndex + 1).coerceIn(0, currentLastIndex)
+                                        if (projected != targetIndex) {
+                                            LiquidGlassHaptics.selectionClick(view)
+                                            targetIndex = projected
+                                        }
+                                    }
+
+                                    pressedIndex = null
+                                    dragging = false
+                                    dropping = true
+
+                                    lensSpring.springTo(targetIndex.toFloat(), FlClashSprings.TravelSpring)
+                                    stretchSpring.springTo(0f, FlClashSprings.PressSpring)
+                                    glowSpring.springTo(0f, FlClashSprings.GlowOutSpring)
+                                    glowSpreadSpring.springTo(1f, FlClashSprings.GlowOutSpring)
+                                    swellSpring.springTo(0f, FlClashSprings.PressSpring)
+
+                                    if (liftSpring.value >= FlClashDockPhysics.LIFT_SNAP &&
+                                        abs(targetIndex.toFloat() - lensSpring.value) <= FlClashDockPhysics.LIFT_RELEASE) {
+                                        dropping = false
+                                        liftSpring.springTo(0f, FlClashSprings.LiftSpring)
+                                    }
+
+                                    if (targetIndex != currentSelected) {
+                                        currentOnSelect(targetIndex)
+                                    }
+                                    change.consume()
+                                }
+                            }
+                        }
+                    }
+                }
+            },
         contentAlignment = Alignment.Center,
     ) {
+        // ── 层1: Dock 胶囊底座 (62dp) ──
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(barHeightDp)
-                .onGloballyPositioned { coords ->
-                    barWidthPx = coords.size.width.toFloat()
-                    barHeightPx = coords.size.height.toFloat()
-                }
                 .graphicsLayer {
                     val pressGrowth = FlClashDockPhysics.pressGrowthOf(size.width / density.density)
                     val swellScale = 1f + swellSpring.value * pressGrowth
@@ -316,234 +424,45 @@ fun LiquidGlassNavigationBar(
                         )
                     }
                 )
-                .pointerInput(count, isLtr) {
-                    awaitPointerEventScope {
-                        while (true) {
-                            val event = awaitPointerEvent()
-                            val change = event.changes.firstOrNull() ?: continue
-
-                            when (event.type) {
-                                PointerEventType.Press -> {
-                                    pointerId = change.id.value
-                                    velocityTracker.resetTracking()
-                                    velocityTracker.addPosition(change.uptimeMillis, change.position)
-
-                                    swellSpring.springTo(1f, FlClashSprings.PressSpring)
-                                    glowAt = change.position
-                                    glowSpreadSpring.jumpTo(0f)
-                                    glowSpring.springTo(1f, FlClashSprings.GlowInSpring)
-
-                                    val pos = positionAt(change.position.x)
-                                    val idx = indexAt(pos)
-
-                                    pressedIndex = idx
-                                    pressX = change.position.x
-                                    dragging = false
-                                    dropping = false
-
-                                    liftSpring.springTo(1f, FlClashSprings.LiftSpring)
-                                    lensSpring.springTo(idx.toFloat(), FlClashSprings.TravelSpring)
-                                    change.consume()
-                                }
-                                PointerEventType.Move -> {
-                                    if (pointerId == change.id.value) {
-                                        velocityTracker.addPosition(change.uptimeMillis, change.position)
-                                        glowAt = change.position
-
-                                        val dx = change.position.x - pressX
-                                        if (!dragging && abs(dx) > 4f) {
-                                            dragging = true
-                                        }
-
-                                        if (dragging) {
-                                            val overshoot = change.position.x - change.position.x.coerceIn(0f, size.width.toFloat())
-                                            val pullLimit = size.height * FlClashDockPhysics.PULL_LIMIT
-                                            stretchSpring.springTo(
-                                                FlClashDockPhysics.rubberBand(overshoot, pullLimit),
-                                                FlClashSprings.TrackSpring,
-                                            )
-
-                                            val pos = positionAt(change.position.x)
-                                            // 100% 绝对线性位移：拖拽过程中镜头与手指位置 1:1 绝对线性同步，彻底消除时钟饥饿与顿挫卡顿
-                                            lensSpring.jumpTo(pos)
-
-                                            // 果冻外形根据瞬时滑动速度进行连续自然的弹性拉伸与挤压
-                                            val velocityXDp = velocityTracker.calculateVelocity().x / currentDensity
-                                            val velocity = velocityXDp / currentLayout.pitch
-                                            val wobbleTarget = FlClashDockPhysics.wobbleTarget(velocity, 0f)
-                                            jellySpring.springTo(wobbleTarget, FlClashSprings.JellySpring)
-
-                                            val idx = indexAt(pos)
-                                            if (idx != pressedIndex) {
-                                                LiquidGlassHaptics.selectionClick(view)
-                                                pressedIndex = idx
-                                            }
-                                        }
-                                        change.consume()
-                                    }
-                                }
-                                PointerEventType.Release -> {
-                                    if (pointerId == change.id.value) {
-                                        pointerId = null
-                                        val velocityXDp = velocityTracker.calculateVelocity().x / currentDensity
-
-                                        var targetIndex = pressedIndex ?: currentSelected
-                                        if (dragging) {
-                                            val direction = if (currentIsLtr) 1f else -1f
-                                            val lead = (velocityXDp / currentLayout.pitch) * direction * FlClashDockPhysics.FLING_PROJECTION_SEC.toFloat()
-                                            val projected = (lensSpring.target + lead).roundToInt().coerceIn(targetIndex - 1, targetIndex + 1).coerceIn(0, currentLastIndex)
-                                            if (projected != targetIndex) {
-                                                LiquidGlassHaptics.selectionClick(view)
-                                                targetIndex = projected
-                                            }
-                                        }
-
-                                        pressedIndex = null
-                                        dragging = false
-                                        dropping = true
-
-                                        lensSpring.springTo(targetIndex.toFloat(), FlClashSprings.TravelSpring)
-                                        stretchSpring.springTo(0f, FlClashSprings.PressSpring)
-                                        glowSpring.springTo(0f, FlClashSprings.GlowOutSpring)
-                                        glowSpreadSpring.springTo(1f, FlClashSprings.GlowOutSpring)
-                                        swellSpring.springTo(0f, FlClashSprings.PressSpring)
-
-                                        if (liftSpring.value >= FlClashDockPhysics.LIFT_SNAP &&
-                                            abs(targetIndex.toFloat() - lensSpring.value) <= FlClashDockPhysics.LIFT_RELEASE) {
-                                            dropping = false
-                                            liftSpring.springTo(0f, FlClashSprings.LiftSpring)
-                                        }
-
-                                        if (targetIndex != currentSelected) {
-                                            currentOnSelect(targetIndex)
-                                        }
-                                        change.consume()
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
                 .padding(barPaddingDp),
         ) {
-        // ── 层1: 沉底底盘 (Resting Platter) ──
-        // 纯 GPU 阶段重绘, 无子节点重组与重测量开销
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .drawBehind {
-                    val lift = liftSpring.value
-                    if (lift < 1f) {
-                        val lensRect = FlClashDockPhysics.lensRect(
-                            position = lensSpring.value,
-                            stretch = jellySpring.value,
-                            pitch = layout.pitch,
-                            width = layout.lens,
-                            height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
-                            lift = lift,
-                        )
-                        val leftPx = (layout.inset + lensRect.left) * density.density
-                        val topPx = lensRect.top * density.density
-                        val widthPx = lensRect.width * density.density
-                        val heightPx = lensRect.height * density.density
-                        val radiusPx = heightPx / 2f
-                        drawRoundRect(
-                            color = platterColor.copy(alpha = 0.85f * (1f - lift.coerceIn(0f, 1f))),
-                            topLeft = Offset(leftPx, topPx),
-                            size = Size(widthPx, heightPx),
-                            cornerRadius = CornerRadius(radiusPx, radiusPx),
-                        )
-                    }
-                },
-        )
-
-        // ── 层2: 抬起的高光清亮凸透镜 (Lifted Glass Lens) ──
-        // 100% 对齐 FLClash: 8dp 立体下沉投影 + 33% 亮度提升玻璃机身 + 顶缘圆弧高光 + 发丝边缘
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .drawBehind {
-                    val lift = liftSpring.value
-                    if (lift > 0.001f) {
-                        val lensRect = FlClashDockPhysics.lensRect(
-                            position = lensSpring.value,
-                            stretch = jellySpring.value,
-                            pitch = layout.pitch,
-                            width = layout.lens,
-                            height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
-                            lift = lift,
-                        )
-                        val leftPx = (layout.inset + lensRect.left) * density.density
-                        val topPx = lensRect.top * density.density
-                        val widthPx = lensRect.width * density.density
-                        val heightPx = lensRect.height * density.density
-                        val radiusPx = heightPx / 2f
-
-                        // 1. FLClash 立体下沉投影: offset (0, 8.dp * lift), blur 8.dp
-                        val shadowAlpha = (if (dark) 0.32f else 0.16f) * lift.coerceIn(0f, 1f)
-                        if (shadowAlpha > 0.001f) {
-                            shadowPaint.color = android.graphics.Color.argb((shadowAlpha * 255).toInt(), 0, 0, 0)
-                            shadowPaint.maskFilter = android.graphics.BlurMaskFilter(
-                                8f * density.density,
-                                android.graphics.BlurMaskFilter.Blur.NORMAL,
+            // 沉底底盘: 当 lift < 1 时沉在底部的静止色块
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .drawBehind {
+                        val lift = liftSpring.value
+                        if (lift < 1f) {
+                            val lensRect = FlClashDockPhysics.lensRect(
+                                position = lensSpring.value,
+                                stretch = jellySpring.value,
+                                pitch = layout.pitch,
+                                width = layout.lens,
+                                height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
+                                lift = lift,
                             )
-                            val shadowOffsetY = 8f * density.density * lift
-                            drawIntoCanvas { canvas ->
-                                val rectF = android.graphics.RectF(
-                                    leftPx,
-                                    topPx + shadowOffsetY,
-                                    leftPx + widthPx,
-                                    topPx + heightPx + shadowOffsetY,
-                                )
-                                canvas.nativeCanvas.drawRoundRect(rectF, radiusPx, radiusPx, shadowPaint)
-                            }
+                            val leftPx = (layout.inset + lensRect.left) * density.density
+                            val topPx = lensRect.top * density.density
+                            val widthPx = lensRect.width * density.density
+                            val heightPx = lensRect.height * density.density
+                            val radiusPx = heightPx / 2f
+                            drawRoundRect(
+                                color = platterColor.copy(alpha = 0.85f * (1f - lift.coerceIn(0f, 1f))),
+                                topLeft = Offset(leftPx, topPx),
+                                size = Size(widthPx, heightPx),
+                                cornerRadius = CornerRadius(radiusPx, radiusPx),
+                            )
                         }
+                    },
+            )
+        }
 
-                        // 2. 玻璃透镜机身: 清透凸透镜
-                        val bodyColor = if (dark) {
-                            Color.White.copy(alpha = 0.14f * lift)
-                        } else {
-                            Color.White.copy(alpha = 0.35f * lift)
-                        }
-                        drawRoundRect(
-                            color = bodyColor,
-                            topLeft = Offset(leftPx, topPx),
-                            size = Size(widthPx, heightPx),
-                            cornerRadius = CornerRadius(radiusPx, radiusPx),
-                        )
-
-                        // 3. 顶缘圆弧镜面高光 (FLClash rim highlight)
-                        drawRoundRect(
-                            brush = Brush.verticalGradient(
-                                0.0f to Color.White.copy(alpha = (if (dark) 0.65f else 0.85f) * lift),
-                                0.35f to Color.White.copy(alpha = (if (dark) 0.22f else 0.35f) * lift),
-                                0.75f to Color.Transparent,
-                                startY = topPx,
-                                endY = topPx + heightPx,
-                            ),
-                            topLeft = Offset(leftPx, topPx),
-                            size = Size(widthPx, heightPx),
-                            cornerRadius = CornerRadius(radiusPx, radiusPx),
-                            style = Stroke(width = 1.3.dp.toPx()),
-                        )
-
-                        // 4. 外凸立体发丝边框
-                        drawRoundRect(
-                            color = (if (dark) Color.White.copy(alpha = 0.22f * lift) else Color.Black.copy(alpha = 0.15f * lift)),
-                            topLeft = Offset(leftPx, topPx),
-                            size = Size(widthPx, heightPx),
-                            cornerRadius = CornerRadius(radiusPx, radiusPx),
-                            style = Stroke(width = 0.6.dp.toPx()),
-                        )
-                    }
-                },
-        )
-
-        // ── 层3: 两趟式子项渲染 (Outside 外围与 Inside 镜内放大上色) ──
-        // 通道 A: 镜外区域 (Outside - onSurfaceVariant)
+        // ── 层2: 外部文字与图标 (Outside Destinations - onSurfaceVariant) ──
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
+                .height(barHeightDp)
+                .padding(barPaddingDp)
                 .drawWithContent {
                     val lift = liftSpring.value
                     val lensRect = FlClashDockPhysics.lensRect(
@@ -578,76 +497,153 @@ fun LiquidGlassNavigationBar(
             )
         }
 
-        // 通道 B: 镜内区域 (Inside - primary, 镜片升起时随动力学放大 1.16x, 并施加真实色散与凸透镜折射 AGSL 着色器)
+        // ── 层3: 浮空凸透镜 (70dp 独立上层图层，反向外凸包裹 62dp Dock，不被 Dock 裁剪！) ──
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
+                .height(barHeightDp + shadowRoomDp * 2)
+                .drawBehind {
+                    val lift = liftSpring.value
+                    if (lift > 0.001f) {
+                        val lensRect = FlClashDockPhysics.lensRect(
+                            position = lensSpring.value,
+                            stretch = jellySpring.value,
+                            pitch = layout.pitch,
+                            width = layout.lens,
+                            height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
+                            lift = lift,
+                        )
+                        // 外层坐标系: Dock 顶边在 shadowRoomDp，内槽在 shadowRoomDp + barPaddingDp
+                        val dockContentTopPx = (shadowRoomDp + FlClashDockPhysics.BAR_PADDING.dp).toPx()
+                        val dockContentLeftPx = FlClashDockPhysics.BAR_PADDING.dp.toPx()
+
+                        val leftPx = dockContentLeftPx + (layout.inset + lensRect.left) * density.density
+                        val topPx = dockContentTopPx + lensRect.top * density.density
+                        val widthPx = lensRect.width * density.density
+                        val heightPx = lensRect.height * density.density
+                        val radiusPx = heightPx / 2f
+
+                        // 1. FLClash 立体下沉投影: offset (0, 8.dp * lift), blur 8.dp
+                        val shadowAlpha = (if (dark) 0.35f else 0.18f) * lift.coerceIn(0f, 1f)
+                        if (shadowAlpha > 0.001f) {
+                            shadowPaint.color = android.graphics.Color.argb((shadowAlpha * 255).toInt(), 0, 0, 0)
+                            shadowPaint.maskFilter = android.graphics.BlurMaskFilter(
+                                8f * density.density,
+                                android.graphics.BlurMaskFilter.Blur.NORMAL,
+                            )
+                            val shadowOffsetY = 8f * density.density * lift
+                            drawIntoCanvas { canvas ->
+                                val rectF = android.graphics.RectF(
+                                    leftPx,
+                                    topPx + shadowOffsetY,
+                                    leftPx + widthPx,
+                                    topPx + heightPx + shadowOffsetY,
+                                )
+                                canvas.nativeCanvas.drawRoundRect(rectF, radiusPx, radiusPx, shadowPaint)
+                            }
+                        }
+
+                        // 2. 玻璃透镜机身: 凸透镜穹顶高光 (Dome Specular Glow)
+                        val bodyBaseAlpha = if (dark) 0.14f else 0.25f
+                        drawRoundRect(
+                            brush = Brush.radialGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = (bodyBaseAlpha + 0.12f) * lift),
+                                    Color.White.copy(alpha = bodyBaseAlpha * lift),
+                                    Color.White.copy(alpha = (bodyBaseAlpha * 0.4f) * lift),
+                                ),
+                                center = Offset(leftPx + widthPx / 2f, topPx + heightPx * 0.4f),
+                                radius = widthPx * 0.65f,
+                            ),
+                            topLeft = Offset(leftPx, topPx),
+                            size = Size(widthPx, heightPx),
+                            cornerRadius = CornerRadius(radiusPx, radiusPx),
+                        )
+
+                        // 3. 真实棱镜色散光斑 (FLClash 6.5dp Dispersion: 顶缘偏红橙，底缘偏蓝青)
+                        drawRoundRect(
+                            brush = Brush.verticalGradient(
+                                0.00f to Color(0xFFFF8A65).copy(alpha = (if (dark) 0.28f else 0.35f) * lift),
+                                0.25f to Color.White.copy(alpha = (if (dark) 0.70f else 0.85f) * lift),
+                                0.70f to Color(0xFF4FC3F7).copy(alpha = (if (dark) 0.25f else 0.30f) * lift),
+                                1.00f to Color(0xFF29B6F6).copy(alpha = (if (dark) 0.18f else 0.25f) * lift),
+                                startY = topPx,
+                                endY = topPx + heightPx,
+                            ),
+                            topLeft = Offset(leftPx, topPx),
+                            size = Size(widthPx, heightPx),
+                            cornerRadius = CornerRadius(radiusPx, radiusPx),
+                            style = Stroke(width = 1.6.dp.toPx()),
+                        )
+
+                        // 4. 顶缘圆弧镜面落光高光 (FLClash rim highlight)
+                        drawRoundRect(
+                            brush = Brush.verticalGradient(
+                                0.0f to Color.White.copy(alpha = (if (dark) 0.75f else 0.90f) * lift),
+                                0.35f to Color.White.copy(alpha = (if (dark) 0.25f else 0.40f) * lift),
+                                0.75f to Color.Transparent,
+                                startY = topPx,
+                                endY = topPx + heightPx,
+                            ),
+                            topLeft = Offset(leftPx, topPx),
+                            size = Size(widthPx, heightPx),
+                            cornerRadius = CornerRadius(radiusPx, radiusPx),
+                            style = Stroke(width = 1.2.dp.toPx()),
+                        )
+
+                        // 5. 外凸立体发丝边框
+                        drawRoundRect(
+                            color = (if (dark) Color.White.copy(alpha = 0.28f * lift) else Color.Black.copy(alpha = 0.18f * lift)),
+                            topLeft = Offset(leftPx, topPx),
+                            size = Size(widthPx, heightPx),
+                            cornerRadius = CornerRadius(radiusPx, radiusPx),
+                            style = Stroke(width = 0.7.dp.toPx()),
+                        )
+                    }
+                },
+        )
+
+        // ── 层4: 镜内文字与图标 (Inside Destinations - primary, 1.16x 放大) ──
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(barHeightDp)
+                .padding(barPaddingDp)
                 .drawWithContent {
+                    val lift = liftSpring.value
+                    val lensRect = FlClashDockPhysics.lensRect(
+                        position = lensSpring.value,
+                        stretch = jellySpring.value,
+                        pitch = layout.pitch,
+                        width = layout.lens,
+                        height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
+                        lift = lift,
+                    )
+                    val leftPx = (layout.inset + lensRect.left) * density.density
+                    val topPx = lensRect.top * density.density
+                    val widthPx = lensRect.width * density.density
+                    val heightPx = lensRect.height * density.density
+
+                    lensPath.rewind()
+                    lensPath.addRoundRect(
+                        RoundRect(
+                            rect = Rect(leftPx, topPx, leftPx + widthPx, topPx + heightPx),
+                            cornerRadius = CornerRadius(heightPx / 2f, heightPx / 2f),
+                        ),
+                    )
                     clipPath(lensPath) {
                         this@drawWithContent.drawContent()
                     }
                 },
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .graphicsLayer {
-                        val lift = liftSpring.value
-                        if (renderEffect != null && contentShader != null && lift > 0.01f && size.width > 0f && size.height > 0f) {
-                            val lensRect = FlClashDockPhysics.lensRect(
-                                position = lensSpring.value,
-                                stretch = jellySpring.value,
-                                pitch = layout.pitch,
-                                width = layout.lens,
-                                height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
-                                lift = lift,
-                            )
-                            val leftPx = (layout.inset + lensRect.left) * density.density
-                            val topPx = lensRect.top * density.density
-                            val widthPx = lensRect.width * density.density
-                            val heightPx = lensRect.height * density.density
-
-                            val style = LiquidGlassStyle.lensContent(colorScheme, dark).scale(lift.toDouble())
-                            val sizeDp = Size(lensRect.width, lensRect.height)
-                            val radiusDp = lensRect.height / 2f
-                            val corners = LiquidGlassCornerRadii(radiusDp, radiusDp, radiusDp, radiusDp)
-                            val originPx = Offset(leftPx, topPx)
-                            val atlasSizePx = Size(size.width, size.height)
-                            val sampling = LiquidGlassShader.sampling(
-                                originPx = originPx,
-                                texelsPerDp = density.density,
-                                clampPx = Rect(0f, 0f, size.width, size.height),
-                            )
-
-                            val uniforms = LiquidGlassShader.build(
-                                size = sizeDp,
-                                corners = corners,
-                                style = style,
-                                originPx = originPx,
-                                density = density.density,
-                                stretch = 1f,
-                                atlasSizePx = atlasSizePx,
-                                sampling = sampling,
-                            )
-                            uniforms.forEach { (name, values) ->
-                                contentShader.setFloatUniform(name, values)
-                            }
-                            this.renderEffect = renderEffect
-                        } else {
-                            this.renderEffect = null
-                        }
-                    },
-            ) {
-                DestinationsRow(
-                    items = items,
-                    layout = layout,
-                    tint = colorScheme.primary,
-                    magnification = { 1f + FlClashDockPhysics.LENS_MAGNIFY * liftSpring.value },
-                )
-            }
+            DestinationsRow(
+                items = items,
+                layout = layout,
+                tint = colorScheme.primary,
+                magnification = { 1f + FlClashDockPhysics.LENS_MAGNIFY * liftSpring.value },
+            )
         }
     }
-}
 }
 
 @Composable
