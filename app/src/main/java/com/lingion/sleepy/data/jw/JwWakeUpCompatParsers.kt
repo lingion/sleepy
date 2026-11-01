@@ -274,7 +274,7 @@ private object WakeUpCompat {
             val (start, end) = nodes(nodeText) ?: return emptyList()
             if (name.isBlank() || day !in 1..7) return emptyList()
             // Keep this source's week grammar strict; the generic compatibility parser is deliberately permissive.
-            val weekPattern = Regex("""^(\d{1,2})(?:[-~至](\d{1,2}))?周?(?:\(([单双])\)|([单双])周?)?$""")
+            val weekPattern = Regex("""^(\d{1,2})(?:[-~至](\d{1,2}))?周?(?:[\(（]([单双])[）\)]|([单双])周?)?$""")
             val weeks = weeksText.split(',', '，', ';', '；').mapNotNull { raw ->
                 val match = weekPattern.matchEntire(raw.filterNot(Char::isWhitespace)) ?: return@mapNotNull null
                 val first = match.groupValues[1].toIntOrNull() ?: return@mapNotNull null
@@ -289,25 +289,84 @@ private object WakeUpCompat {
 
         val myTable = buildList {
             for (doc in documents) for (table in doc.select("#mytable")) {
-                for (row in table.select("tr:not(.H)")) for ((column, cell) in row.select("td").withIndex()) {
-                    val day = column + 1
-                    if (day !in 1..7) continue
-                    var compact = false
-                    for (block in cell.children().filter { it.tagName() == "div" }) {
-                        if (block.hasClass("div1")) {
-                            compact = block.html().contains("xkinfo") && block.html().contains("&nbsp;")
-                            continue
+                fun isDayHeader(text: String, day: Int): Boolean {
+                    val t = text.trim()
+                    val name = when (day) {
+                        1 -> "一"; 2 -> "二"; 3 -> "三"; 4 -> "四"; 5 -> "五"; 6 -> "六"; 7 -> "日"
+                        else -> return false
+                    }
+                    return t == name || (day == 7 && t == "天") ||
+                        t.contains("星期$name") || (day == 7 && t.contains("星期天")) ||
+                        t.contains("周$name") || (day == 7 && t.contains("周天")) ||
+                        t.contains("星期$day") || t.contains("周$day")
+                }
+
+                var totalDays = 7
+                for (tr in table.select("tr")) {
+                    val texts = tr.children().map { it.text().trim() }
+                    val hasMon = texts.any { isDayHeader(it, 1) }
+                    val hasSun = texts.any { isDayHeader(it, 7) }
+                    val hasSat = texts.any { isDayHeader(it, 6) }
+                    val hasFri = texts.any { isDayHeader(it, 5) }
+                    if (hasMon && (hasSun || hasSat)) {
+                        totalDays = 7
+                        break
+                    } else if (hasMon && hasFri) {
+                        totalDays = 5
+                        break
+                    }
+                }
+
+                val tableCompact = table.select("div.div1").any { it.html().contains("xkinfo") }
+
+                for (row in table.select("tr:not(.H)")) {
+                    if (row.select("th").isNotEmpty() || row.children().any { isDayHeader(it.text(), 1) }) continue
+                    val allCells = row.select("td")
+                    if (allCells.isEmpty()) continue
+
+                    for ((column, cell) in allCells.withIndex()) {
+                        val day = if (allCells.size >= totalDays) {
+                            val distanceToLast = allCells.size - 1 - column
+                            if (distanceToLast >= totalDays) continue
+                            totalDays - distanceToLast
+                        } else {
+                            column + 1
                         }
-                        val html = if (compact) block.html().replace(Regex("(?i)(?:&nbsp;)+"), " ") else block.html()
-                        val lines = html.split(Regex("(?i)<br\\s*/?>")).map { Jsoup.parse(it).text().trim() }
-                        val detail = lines.getOrNull(if (compact) 1 else 2) ?: continue
-                        val name = lines.firstOrNull().orEmpty()
-                        val teacher = if (compact) detail.substringBefore(' ').trim() else lines.getOrNull(1).orEmpty()
-                        val room = lines.getOrNull(if (compact) 2 else 3).orEmpty()
-                        val timing = if (compact) detail.substringAfter(' ', "") else detail
-                        val weekText = timing.substringBefore('[').trim()
-                        val nodeText = timing.substringAfter('[', "").substringBefore(']').trim()
-                        if (weekText.isNotEmpty() && nodeText.isNotEmpty()) addAll(emit(name, teacher, room, day, nodeText, weekText))
+                        if (day !in 1..7) continue
+
+                        var compact = tableCompact
+                        val blocks = cell.children().filter { it.tagName() == "div" }.ifEmpty {
+                            if (Regex("\\[\\s*\\d+").containsMatchIn(cell.text())) listOf(cell) else emptyList()
+                        }
+                        for (block in blocks) {
+                            if (block.hasClass("div1")) {
+                                compact = block.html().contains("xkinfo") && block.html().contains("&nbsp;")
+                                continue
+                            }
+                            val html = if (compact) block.html().replace(Regex("(?i)(?:&nbsp;)+"), " ") else block.html()
+                            val lines = html.split(Regex("(?i)<br\\s*/?>")).map { Jsoup.parse(it).text().trim() }.filter { it.isNotEmpty() }
+                            val timingIdx = lines.indexOfFirst { line ->
+                                ('[' in line && ']' in line) && Regex("\\[\\s*\\d+").containsMatchIn(line)
+                            }
+                            if (timingIdx < 0) continue
+
+                            val name = lines.firstOrNull().orEmpty()
+                            val detail = lines[timingIdx]
+                            val beforeBracket = detail.substringBefore('[').trim()
+                            val nodeText = detail.substringAfter('[', "").substringBefore(']').trim()
+
+                            val compactMode = compact || (timingIdx == 1 && ' ' in beforeBracket && ',' !in beforeBracket && '，' !in beforeBracket)
+                            val (teacher, weekText) = if (compactMode && ' ' in beforeBracket) {
+                                detail.substringBefore(' ').trim() to detail.substringAfter(' ', "").substringBefore('[').trim()
+                            } else {
+                                lines.subList(1, timingIdx).joinToString(" ").trim() to beforeBracket
+                            }
+
+                            val room = lines.drop(timingIdx + 1).joinToString(" ").trim()
+                            if (name.isNotEmpty() && weekText.isNotEmpty() && nodeText.isNotEmpty()) {
+                                addAll(emit(name, teacher, room, day, nodeText, weekText))
+                            }
+                        }
                     }
                 }
             }

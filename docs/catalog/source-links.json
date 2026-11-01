@@ -3374,6 +3374,33 @@
       "sourceName": "江西中医药大学"
     }
   ],
+  "moe:4123010222": [
+    {
+      "sourceId": "moe-2026-regular",
+      "sourceRow": 620,
+      "sourceSchoolId": "moe:4123010222",
+      "match": "exact-name",
+      "name": "佳木斯大学"
+    },
+    {
+      "sourceId": "wakeup-6.1.06-asset",
+      "sourceRow": 1710,
+      "match": "trimmed-exact-name",
+      "sourceName": "佳木斯大学"
+    },
+    {
+      "sourceId": "wakeup-52.36-user-attachment",
+      "sourceRow": 2029,
+      "match": "trimmed-exact-name",
+      "sourceName": "佳木斯大学"
+    },
+    {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRow": 1710,
+      "match": "trimmed-exact-name",
+      "sourceName": "佳木斯大学"
+    }
+  ],
   "J_嘉兴大学": [
     {
       "sourceId": "moe-2026-regular",
@@ -41062,33 +41089,6 @@
       "sourceRow": 1598,
       "match": "trimmed-exact-name",
       "sourceName": "冮苏工程职业技术学院"
-    }
-  ],
-  "moe:4123010222": [
-    {
-      "sourceId": "moe-2026-regular",
-      "sourceRow": 620,
-      "sourceSchoolId": "moe:4123010222",
-      "match": "exact-name",
-      "name": "佳木斯大学"
-    },
-    {
-      "sourceId": "wakeup-6.1.06-asset",
-      "sourceRow": 1710,
-      "match": "trimmed-exact-name",
-      "sourceName": "佳木斯大学"
-    },
-    {
-      "sourceId": "wakeup-52.36-user-attachment",
-      "sourceRow": 2029,
-      "match": "trimmed-exact-name",
-      "sourceName": "佳木斯大学"
-    },
-    {
-      "sourceId": "wakeup-6.6.2-official-asset",
-      "sourceRow": 1710,
-      "match": "trimmed-exact-name",
-      "sourceName": "佳木斯大学"
     }
   ],
   "moe:4123014178": [

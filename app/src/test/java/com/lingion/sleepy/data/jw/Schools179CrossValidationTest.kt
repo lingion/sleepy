@@ -199,7 +199,8 @@ class Schools179CrossValidationTest {
         // 2026-10-10 收录湖北商贸学院(zf_new, 用户采集包 hbsm-20261010, jwxt.hbc.edu.cn 裸 /kbcx/) → 349
         // 2026-10-13 清华大学 THU：已核选课系统 host，用户在整体课表页手动导入 → 350
         // 2026-10-26 NBCC verify (classic_eams，学生回传实测 146 门课导入成功，Q1 门户路径) → 351
-        assertEquals(351, JwImportViewModel.parseSchoolsJson(schoolsJson).count { it.isSupported })
+        // 2026-11-01 佳木斯大学 (kingo_new，学生回传实测 51 门课导入成功) → 352
+        assertEquals(352, JwImportViewModel.parseSchoolsJson(schoolsJson).count { it.isSupported })
     }
 
     @Test

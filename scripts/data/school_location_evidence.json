@@ -28,7 +28,7 @@
   "inputs": [
     {
       "path": "app/src/main/assets/schools.json",
-      "sha256": "ebb43a59957db1fc00fdb9175e6f6c4b4ff0236db54ca1eb8f63f35dc27e9c07"
+      "sha256": "c671f07f6ccfe42aeb529ac76a940aac89b3986e56fdc11e8519055fcb6b33b0"
     },
     {
       "path": "app/src/main/assets/school_cities.json",

@@ -1,11 +1,11 @@
 {
   "generatedAsOf": "2026-10-14",
-  "baselineCount": 351,
+  "baselineCount": 352,
   "catalogCount": 4140,
   "statusCounts": {
-    "supported": 349,
+    "supported": 350,
     "grad_supported": 2,
-    "unverified": 2481,
+    "unverified": 2480,
     "grad_pending": 253,
     "pending": 1007,
     "grad_unverified": 48
@@ -22,7 +22,7 @@
   "sources": [
     {
       "path": "scripts/data/school_catalog_baseline.json",
-      "sha256": "1be56b7da845e1a67dd9d80f9c73ebb4fb27b830f3c86e05c0bce054989e9e85"
+      "sha256": "e3bc92637e1f737bfc77cbdec82936a17ac887f715ef29857fe6cc8b9272c3a2"
     },
     {
       "path": "scripts/data/official_schools.json",
@@ -61,9 +61,9 @@
       "contradicted": 1
     },
     "actions": {
-      "retained-existing-config-ownership-unresolved": 138,
+      "retained-existing-config-ownership-unresolved": 139,
       "ownership-confirmed": 748,
-      "retained-wakeup-declared-owner": 591,
+      "retained-wakeup-declared-owner": 590,
       "retained-wakeup-662-declared-owner": 1305,
       "retained-shiguang-adapters-owner": 55,
       "retained-shiguang-declared-owner": 42,
@@ -1302,6 +1302,14 @@
         "ownershipStatus": "verified",
         "action": "ownership-confirmed",
         "operationalUrl": "https://jiaowu.jxutcm.edu.cn/",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4123010222",
+        "name": "佳木斯大学",
+        "ownershipStatus": "unknown",
+        "action": "retained-existing-config-ownership-unresolved",
+        "operationalUrl": "https://jwxt.jmsu.edu.cn:456/jmsujw/cas/login.action",
         "authenticatedImportTested": false
       },
       {
@@ -6534,14 +6542,6 @@
         "ownershipStatus": "unknown",
         "action": "retained-wakeup-662-declared-owner",
         "operationalUrl": "http://xsurp.usth.edu.cn/gotoLogin",
-        "authenticatedImportTested": false
-      },
-      {
-        "catalogId": "moe:4123010222",
-        "name": "佳木斯大学",
-        "ownershipStatus": "unknown",
-        "action": "retained-wakeup-declared-owner",
-        "operationalUrl": "https://jwxt.jmsu.edu.cn:456/jmsujw/cas/login.action",
         "authenticatedImportTested": false
       },
       {

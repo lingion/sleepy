@@ -5328,20 +5328,6 @@
     "ownershipAction": "retained-wakeup-662-declared-owner"
   },
   {
-    "catalogId": "moe:4123010222",
-    "name": "佳木斯大学",
-    "url": "https://jwxt.jmsu.edu.cn:456/jmsujw/cas/login.action",
-    "type": "kingo_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 1710,
-    "checkedAt": "2026-10-16",
-    "http": 200,
-    "title": "KINGOSOFT高校智慧校园教学综合服务平台",
-    "fingerprints": [],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "ownershipAction": "retained-wakeup-declared-owner"
-  },
-  {
     "catalogId": "moe:4113012543",
     "name": "保定职业技术学院",
     "url": "http://mis.bvtc.com.cn/",

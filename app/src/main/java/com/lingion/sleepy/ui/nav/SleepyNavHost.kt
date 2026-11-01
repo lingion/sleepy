@@ -202,7 +202,6 @@ internal fun SleepyNavHost(
                 onBack = { navigator.pop() },
                 onCreateNewTable = onCreateNewTable,
                 onJwImportRequested = {
-                    navigator.pop()
                     context.startActivity(android.content.Intent(
                         context, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java
                     ))
