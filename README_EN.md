@@ -275,15 +275,42 @@ Export can write courses to a writable calendar on the device. Choose a calendar
 
 Five widget types across 13 fixed-size variants: Today / TwoDay / WeekList each in regular / small / wide; WeekView / WeekGrid each in regular / small. Layouts adapt to launcher sizing.
 
-| Widget | Variants | Shows | Screenshot |
-|---|---|---|---|
-| **Today** | regular / small / wide | Today's course list | <p align="left"><img src="docs/screenshots/widget-today.png" width="240"></p> |
-| **TwoDay** | regular / small / wide | Today + tomorrow, two columns | <p align="left"><img src="docs/screenshots/widget-twoday.png" width="240"></p> |
-| **WeekList** | regular / small / wide | 7-day course summary + names | <p align="left"><img src="docs/screenshots/widget-weeklist.png" width="240"></p> |
-| **WeekView** | regular / small | Week-view thumbnail (theme-colored, no capsules) | <img src="docs/screenshots/widget-weekview.png" width="240" alt="WeekView on Android launcher"> |
-| **WeekGrid** | regular / small | Time grid + course blocks | <p align="left"><img src="docs/screenshots/widget-weekgrid.png" width="200"></p> |
+<table>
+  <tr>
+    <td width="36%" valign="top" align="center">
+      <img src="docs/screenshots/widget-weekgrid.png" alt="Week-grid widget (WeekGrid)">
+      <br>
+      <sub><b>Week-grid widget (WeekGrid)</b></sub>
+    </td>
+    <td width="64%" valign="top" align="center">
+      <img src="docs/screenshots/widget-today.png" alt="Today widget (Today)">
+      <br>
+      <sub><b>Today widget (Today)</b></sub>
+      <br><br>
+      <img src="docs/screenshots/widget-twoday.png" alt="Next-two-days widget (TwoDay)">
+      <br>
+      <sub><b>Next-two-days widget (TwoDay)</b></sub>
+      <br><br>
+      <img src="docs/screenshots/widget-weekview.png" alt="Week-view widget (WeekView)">
+      <br>
+      <sub><b>Week-view widget (WeekView)</b></sub>
+      <br><br>
+      <img src="docs/screenshots/widget-weeklist.png" alt="Week-list widget (WeekList)">
+      <br>
+      <sub><b>Week-list widget (WeekList)</b></sub>
+    </td>
+  </tr>
+</table>
 
-Image sources: Today, TwoDay, and WeekList are emulator previews produced by the current production renderer through `WidgetRenderActivity`, cropped to component bounds without stretching. WeekView and WeekGrid are actual launcher widget captures. This WeekGrid image shows visible periods 1–6, not every period or the entire term. Launcher size and widget variant determine the final layout and text truncation.
+| Widget | Variants | Purpose & Notes |
+|---|---|---|
+| **WeekGrid** | regular / small | Time grid + course blocks with period labels and locations, supports snapping to nearest busy day |
+| **Today** | regular / small / wide | Today's course list with class times and room numbers |
+| **TwoDay** | regular / small / wide | Today + tomorrow in side-by-side columns, ideal for previewing tomorrow's classes |
+| **WeekView** | regular / small | Minimalist theme-colored week grid thumbnail, supports 3-day compact window |
+| **WeekList** | regular / small / wide | 7-day course counts and course name summaries, supports 3-day compact window |
+
+Image sources: Directly exported from the production widget renderer with transparent rounded corners, using the unified demo schedule from the official website. Actual desktop sizing and font truncation depend on your launcher and the chosen variant.
 
 <p align="left">
   <img src="docs/screenshots/32-widget-settings.png" width="280" alt="Per-widget timetable binding and course-name display">
