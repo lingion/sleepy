@@ -274,7 +274,7 @@ private object WakeUpCompat {
             val (start, end) = nodes(nodeText) ?: return emptyList()
             if (name.isBlank() || day !in 1..7) return emptyList()
             // Keep this source's week grammar strict; the generic compatibility parser is deliberately permissive.
-            val weekPattern = Regex("""^(\d{1,2})(?:[-~至](\d{1,2}))?周?(?:\(([单双])\)|([单双])周?)?$""")
+            val weekPattern = Regex("""^(\d{1,2})(?:[-~至](\d{1,2}))?周?(?:[\(（]([单双])[）\)]|([单双])周?)?$""")
             val weeks = weeksText.split(',', '，', ';', '；').mapNotNull { raw ->
                 val match = weekPattern.matchEntire(raw.filterNot(Char::isWhitespace)) ?: return@mapNotNull null
                 val first = match.groupValues[1].toIntOrNull() ?: return@mapNotNull null

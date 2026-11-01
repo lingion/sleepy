@@ -138,6 +138,20 @@ fun AddTableScreen(
     var pendingSelection by remember { mutableStateOf<ImportPreview?>(null) }
     val canImport = !isLoading && (!addingCourses || state.tables.any { it.id == targetTableId })
 
+    // 从 JwImportActivity 外部导入返回时: 若成功新建课表/加课则自动关闭当前添加页; 若中途返回则停留在当前添加页
+    var jwImportLaunched by rememberSaveable { mutableStateOf(false) }
+    val initialTableCount = rememberSaveable { state.tables.size }
+    val initialCourseCount = rememberSaveable { state.courses.size }
+    LaunchedEffect(state.tables.size, state.courses.size) {
+        if (jwImportLaunched) {
+            if (!addingCourses && state.tables.size > initialTableCount) {
+                onImported()
+            } else if (addingCourses && state.courses.size > initialCourseCount) {
+                onImported()
+            }
+        }
+    }
+
     fun commitPreview(value: ImportPreview) {
         confirmedStartDate = value.parseResult.startDate.ifBlank { java.time.LocalDate.now(AppClock).toString() }
         confirmedTableName = value.parseResult.tableName.ifBlank { defaultTableName }
@@ -303,7 +317,10 @@ fun AddTableScreen(
                 label = stringResource(R.string.import_jw),
                 enabled = canImport,
                 dbgTag = "import_jw",
-                onClick = onJwImportRequested
+                onClick = {
+                    jwImportLaunched = true
+                    onJwImportRequested()
+                }
             )
 
             // 行 2：从文本导入（可折叠）

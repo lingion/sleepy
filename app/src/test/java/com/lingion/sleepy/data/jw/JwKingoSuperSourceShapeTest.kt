@@ -70,6 +70,13 @@ class JwKingoSuperSourceShapeTest {
         assertEquals(15, c.endWeek)
     }
 
+    @Test fun mytableSupportsFullWidthParenthesesParity() {
+        val html = """<table id="mytable"><tr><td><div>全角单周课程<br>教师<br>1-15周（单）[5-6节]<br>A101</div></td></tr></table>"""
+        val c = JwKingoParser(html).generateCourseList().single()
+        assertEquals(1, c.type)
+        assertEquals(15, c.endWeek)
+    }
+
     @Test fun genericRegistryPrefersNewLayoutButExplicitZxStillWorks() {
         val html = """<table id="mytable"><tr><td><div>新课<br>教师<br>1-8周[1-2节]<br>A101</div></td></tr></table>"""
         val (courses, attempts) = JwParserRegistry.selectBest(html)
