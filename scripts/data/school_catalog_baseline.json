@@ -1458,6 +1458,15 @@
   },
   {
     "sortKey": "J",
+    "name": "佳木斯大学",
+    "url": "https://jwxt.jmsu.edu.cn:456/jmsujw/cas/login.action",
+    "type": "kingo_new",
+    "aliases": [],
+    "sortKeyFull": "jiamusidaxue",
+    "catalogId": "moe:4123010222"
+  },
+  {
+    "sortKey": "J",
     "name": "嘉兴大学",
     "url": "http://jwzx.zjxu.edu.cn/jwglxt/xtgl/login_slogin.html",
     "type": "zf_new",
