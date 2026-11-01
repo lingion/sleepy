@@ -366,12 +366,12 @@
     "result": "accepted: second teaching slot editor, Tuesday periods 3–4 weeks 1–16; fictional unsaved demonstration"
   },
   "00-overview.png": {
-    "sha256": "b0b3462f3b19ae7d650edbb5210de11794deca13ab250d0c6d9a283449d5dc2f",
+    "sha256": "a3edd837ca8404cef9a96c0a699c3c7c400f9e9258975b9df0ca681ed54efc76",
     "size": [
       2400,
       4811
     ],
-    "mtime": 1793517648.9659538,
-    "result": "accepted: section 02 widgets recomposed with sleepy-site v2 demo timetable and transparent rounded corners (ref #220)"
+    "mtime": 1793519627.9137304,
+    "result": "accepted: updated top banner header icon to new official logo and recomposed section 02 widgets (ref #220)"
   }
 }
