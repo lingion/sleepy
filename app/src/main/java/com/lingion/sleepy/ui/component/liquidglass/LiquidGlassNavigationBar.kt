@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component.liquidglass
 
+import android.os.Build
 import android.os.SystemClock
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -38,11 +39,16 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.asComposeRenderEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -234,6 +240,20 @@ fun LiquidGlassNavigationBar(
     val lensBaseWidthDp = layout.lens.dp
     val lensBaseHeightDp = (FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f).dp
     val lensPath = remember { Path() }
+    val shadowPaint = remember {
+        android.graphics.Paint().apply {
+            color = android.graphics.Color.TRANSPARENT
+        }
+    }
+    val contentShader = remember {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            try {
+                android.graphics.RuntimeShader(LiquidGlassShader.shaderSource(context))
+            } catch (_: Throwable) {
+                null
+            }
+        } else null
+    }
 
     Box(
         modifier = modifier
@@ -414,12 +434,12 @@ fun LiquidGlassNavigationBar(
         )
 
         // ── 层2: 抬起的高光清亮凸透镜 (Lifted Glass Lens) ──
-        // 固定尺寸 GraphicsLayer, 仅在图层属性阶段变换 translation/scale, 彻底消除逐帧缓冲区重分配与显存卡顿
+        // 100% 对齐 FLClash: 8dp 立体下沉投影 + 33% 亮度提升玻璃机身 + 顶缘圆弧高光 + 发丝边缘
         Box(
             modifier = Modifier
-                .graphicsLayer {
+                .fillMaxSize()
+                .drawBehind {
                     val lift = liftSpring.value
-                    alpha = if (lift > 0.001f) 1f else 0f
                     if (lift > 0.001f) {
                         val lensRect = FlClashDockPhysics.lensRect(
                             position = lensSpring.value,
@@ -429,38 +449,65 @@ fun LiquidGlassNavigationBar(
                             height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
                             lift = lift,
                         )
-                        translationX = (layout.inset + lensRect.left) * density.density
-                        translationY = lensRect.top * density.density
-                        scaleX = lensRect.width / layout.lens
-                        scaleY = lensRect.height / (FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f)
-                    }
-                }
-                .size(lensBaseWidthDp, lensBaseHeightDp)
-                .shadow(
-                    elevation = 5.dp,
-                    shape = Capsule(),
-                    ambientColor = colorScheme.scrim.copy(alpha = 0.055f * shadowStrength),
-                    spotColor = colorScheme.scrim.copy(alpha = 0.055f * shadowStrength),
-                )
-                .then(
-                    if (backdrop != null) {
-                        Modifier.drawPlainBackdrop(
-                            backdrop = backdrop,
-                            shape = { Capsule() },
-                            effects = {
-                                liquidGlass(
-                                    context = context,
-                                    style = LiquidGlassStyle.lens(colorScheme, dark),
-                                )
-                            },
+                        val leftPx = (layout.inset + lensRect.left) * density.density
+                        val topPx = lensRect.top * density.density
+                        val widthPx = lensRect.width * density.density
+                        val heightPx = lensRect.height * density.density
+                        val radiusPx = heightPx / 2f
+
+                        // 1. FLClash 立体下沉投影: offset (0, 8.dp * lift), blur 5.dp
+                        val shadowAlpha = (0.055f * shadowStrength * lift).coerceIn(0f, 1f)
+                        if (shadowAlpha > 0.001f) {
+                            shadowPaint.setShadowLayer(
+                                5f * density.density,
+                                0f,
+                                8f * density.density * lift,
+                                android.graphics.Color.argb((shadowAlpha * 255).toInt(), 0, 0, 0),
+                            )
+                            drawIntoCanvas { canvas ->
+                                val rectF = android.graphics.RectF(leftPx, topPx, leftPx + widthPx, topPx + heightPx)
+                                canvas.nativeCanvas.drawRoundRect(rectF, radiusPx, radiusPx, shadowPaint)
+                            }
+                        }
+
+                        // 2. 玻璃透镜机身: 深色模式下提升 33% 亮度
+                        val bodyColor = if (dark) {
+                            Color.White.copy(alpha = 0.10f * lift)
+                        } else {
+                            Color.White.copy(alpha = 0.35f * lift)
+                        }
+                        drawRoundRect(
+                            color = bodyColor,
+                            topLeft = Offset(leftPx, topPx),
+                            size = Size(widthPx, heightPx),
+                            cornerRadius = CornerRadius(radiusPx, radiusPx),
                         )
-                    } else {
-                        Modifier.background(
-                            colorScheme.surface.copy(alpha = 0.35f),
-                            shape = Capsule(),
+
+                        // 3. 顶缘圆弧镜面高光 (FLClash rim highlight)
+                        drawRoundRect(
+                            brush = Brush.verticalGradient(
+                                0.0f to Color.White.copy(alpha = 0.48f * lift),
+                                0.3f to Color.White.copy(alpha = 0.15f * lift),
+                                0.7f to Color.Transparent,
+                                startY = topPx,
+                                endY = topPx + heightPx,
+                            ),
+                            topLeft = Offset(leftPx, topPx),
+                            size = Size(widthPx, heightPx),
+                            cornerRadius = CornerRadius(radiusPx, radiusPx),
+                            style = Stroke(width = 1.3.dp.toPx()),
+                        )
+
+                        // 4. 微弱发丝边框
+                        drawRoundRect(
+                            color = Color.Black.copy(alpha = 0.18f * lift),
+                            topLeft = Offset(leftPx, topPx),
+                            size = Size(widthPx, heightPx),
+                            cornerRadius = CornerRadius(radiusPx, radiusPx),
+                            style = Stroke(width = 0.5.dp.toPx()),
                         )
                     }
-                ),
+                },
         )
 
         // ── 层3: 两趟式子项渲染 (Outside 外围与 Inside 镜内放大上色) ──
@@ -502,7 +549,7 @@ fun LiquidGlassNavigationBar(
             )
         }
 
-        // 通道 B: 镜内区域 (Inside - primary, 镜片升起时随动力学放大 1.16x)
+        // 通道 B: 镜内区域 (Inside - primary, 镜片升起时随动力学放大 1.16x, 并施加真实色散与凸透镜折射 AGSL 着色器)
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -512,12 +559,66 @@ fun LiquidGlassNavigationBar(
                     }
                 },
         ) {
-            DestinationsRow(
-                items = items,
-                layout = layout,
-                tint = colorScheme.primary,
-                magnification = { 1f + FlClashDockPhysics.LENS_MAGNIFY * liftSpring.value },
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        val lift = liftSpring.value
+                        if (contentShader != null && lift > 0.01f && size.width > 0f && size.height > 0f) {
+                            val lensRect = FlClashDockPhysics.lensRect(
+                                position = lensSpring.value,
+                                stretch = jellySpring.value,
+                                pitch = layout.pitch,
+                                width = layout.lens,
+                                height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
+                                lift = lift,
+                            )
+                            val leftPx = (layout.inset + lensRect.left) * density.density
+                            val topPx = lensRect.top * density.density
+                            val widthPx = lensRect.width * density.density
+                            val heightPx = lensRect.height * density.density
+
+                            val style = LiquidGlassStyle.lensContent(colorScheme, dark).scale(lift.toDouble())
+                            val sizeDp = Size(lensRect.width, lensRect.height)
+                            val radiusDp = lensRect.height / 2f
+                            val corners = LiquidGlassCornerRadii(radiusDp, radiusDp, radiusDp, radiusDp)
+                            val originPx = Offset(leftPx, topPx)
+                            val atlasSizePx = Size(size.width, size.height)
+                            val sampling = LiquidGlassShader.sampling(
+                                originPx = originPx,
+                                texelsPerDp = density.density,
+                                clampPx = Rect(0f, 0f, size.width, size.height),
+                            )
+
+                            val uniforms = LiquidGlassShader.build(
+                                size = sizeDp,
+                                corners = corners,
+                                style = style,
+                                originPx = originPx,
+                                density = density.density,
+                                stretch = 1f,
+                                atlasSizePx = atlasSizePx,
+                                sampling = sampling,
+                            )
+                            uniforms.forEach { (name, values) ->
+                                contentShader.setFloatUniform(name, values)
+                            }
+                            renderEffect = android.graphics.RenderEffect.createRuntimeShaderEffect(
+                                contentShader,
+                                "uTexture",
+                            ).asComposeRenderEffect()
+                        } else {
+                            renderEffect = null
+                        }
+                    },
+            ) {
+                DestinationsRow(
+                    items = items,
+                    layout = layout,
+                    tint = colorScheme.primary,
+                    magnification = { 1f + FlClashDockPhysics.LENS_MAGNIFY * liftSpring.value },
+                )
+            }
         }
     }
 }
