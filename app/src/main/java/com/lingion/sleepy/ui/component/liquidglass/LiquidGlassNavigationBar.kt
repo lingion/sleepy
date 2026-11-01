@@ -666,6 +666,14 @@ fun LiquidGlassNavigationBar(
                                 size = Size(size.width, dockHeightPx),
                                 cornerRadius = CornerRadius(dockHeightPx / 2f, dockHeightPx / 2f),
                             )
+                            // Dock 胶囊顶底微光边缘 (对齐 LiquidGlassStyle.pill rim: 0.35, 为 AGSL 透镜折射提供高反差边缘发生真实棱镜色散)
+                            drawRoundRect(
+                                color = Color.White.copy(alpha = if (dark) 0.28f else 0.40f),
+                                topLeft = Offset(0f, dockTopPx),
+                                size = Size(size.width, dockHeightPx),
+                                cornerRadius = CornerRadius(dockHeightPx / 2f, dockHeightPx / 2f),
+                                style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.dp.toPx()),
+                            )
                             // 3. 沉底槽位色块 (随起镜淡出)
                             if (lift < 1f) {
                                 val lensRect = FlClashDockPhysics.lensRect(

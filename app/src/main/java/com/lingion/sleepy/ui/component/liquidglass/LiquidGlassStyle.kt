@@ -210,16 +210,16 @@ data class LiquidGlassStyle(
             LiquidGlassStyle(
                 tint = Color.Transparent,
                 blur = 0.0,
-                refraction = -4.3,
+                refraction = -5.0,
                 bevel = 5.5,
-                saturation = 1.0,
-                brightness = if (dark) 1.33 else 1.0,
-                rim = if (dark) 0.3 else 0.6,
-                rimWidth = 1.1,
+                saturation = 1.35,
+                brightness = if (dark) 1.35 else 1.0,
+                rim = if (dark) 0.38 else 0.65,
+                rimWidth = 1.2,
                 endShade = 0.045,
-                dispersion = 6.5,
-                rimBlur = 1.5,
-                hairline = 0.42,
+                dispersion = 8.5,
+                rimBlur = 1.0,
+                hairline = 0.45,
             )
 
         fun lensContent(colorScheme: ColorScheme, dark: Boolean): LiquidGlassStyle =
