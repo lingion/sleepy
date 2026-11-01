@@ -81,6 +81,7 @@ import com.lingion.sleepy.ui.theme.SleepyTextStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleCombinedClickable
 import com.lingion.sleepy.ui.theme.noRippleClickable
+import com.lingion.sleepy.util.AppClock
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.ConflictLayoutEngine
 import com.lingion.sleepy.util.CourseColorUtil
@@ -150,7 +151,7 @@ fun CardsGridView(
     startDate: String = "",
     currentWeek: Int = 1,
     today: Int = DateUtils.todayDayOfWeek(),
-    todayDate: java.time.LocalDate = java.time.LocalDate.now(),
+    todayDate: java.time.LocalDate = java.time.LocalDate.now(AppClock),
     onCourseClick: (CourseEntity) -> Unit,
     onCourseLongClick: ((CourseEntity) -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -1651,7 +1652,7 @@ fun FullWeekView(
     displayMode: String = "node",
     timeJson: String = "",
     today: Int = DateUtils.todayDayOfWeek(),
-    todayDate: java.time.LocalDate = java.time.LocalDate.now(),
+    todayDate: java.time.LocalDate = java.time.LocalDate.now(AppClock),
     startDate: String = "",
     currentWeek: Int = 1,
     onCourseClick: (CourseEntity) -> Unit,
