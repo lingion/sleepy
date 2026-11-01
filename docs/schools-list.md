@@ -1,6 +1,6 @@
 # 学校目录
 
-> 共 4140 个目录条目：已实现配置 351；待验证、需确认后尝试 2529；待适配 1260。数据基准：2026-10-14。
+> 共 4140 个目录条目：已实现配置 352；待验证、需确认后尝试 2528；待适配 1260。数据基准：2026-10-14。
 
 目录收录不等于教务导入支持。已实现配置沿用历史状态，也不保证每校当前登录均已实机验证；待验证条目仅有公开入口和候选协议证据，未登录测试；待适配条目没有可启用的导入配置。
 
@@ -1781,7 +1781,7 @@
 | 学校 | 状态 | 别名 / 检索词 | 教务入口 | 协议候选 | 来源 / 目录 ID |
 |---|---|---|---|---|---|
 | 冮苏工程职业技术学院 | 待适配 | gangsugongchengzhiyejishuxueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:3af069f1d946c2e7e3e1 |
-| 佳木斯大学 | 待验证·可尝试 | jiamusidaxue | https://jwxt.jmsu.edu.cn:456/jmsujw/cas/login.action | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4123010222 |
+| 佳木斯大学 | 已实现配置 | jiamusidaxue | https://jwxt.jmsu.edu.cn:456/jmsujw/cas/login.action | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4123010222 |
 | 佳木斯职业学院 | 待适配 | jiamusizhiyexueyuan |  |  | moe-2026-regular; moe:4123014178 |
 | 建东职业技术学院 | 待验证·可尝试 | jiandongzhiyejishuxueyuan | http://223.112.202.60:8087/ | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132013105 |
 | 江海职业技术学院 | 待验证·可尝试 | jianghaizhiyejishuxueyuan | https://jxgl.jhu.cn/ | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132013113 |
