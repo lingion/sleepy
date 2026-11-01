@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -169,7 +170,7 @@ fun LiquidGlassNavigationBar(
     val totalWidthModifier = if (count >= FlClashDockPhysics.FULL_WIDTH_COUNT) {
         Modifier.fillMaxWidth()
     } else {
-        Modifier.width(maxExtentDp * count + barPaddingDp * 4)
+        Modifier.widthIn(max = maxExtentDp * count + barPaddingDp * 4).fillMaxWidth()
     }
 
     var barWidthPx by remember { mutableFloatStateOf(0f) }
@@ -363,7 +364,14 @@ fun LiquidGlassNavigationBar(
                                             )
 
                                             val pos = positionAt(change.position.x)
-                                            lensSpring.springTo(pos, FlClashSprings.FollowSpring)
+                                            // 100% 绝对线性位移：拖拽过程中镜头与手指位置 1:1 绝对线性同步，彻底消除时钟饥饿与顿挫卡顿
+                                            lensSpring.jumpTo(pos)
+
+                                            // 果冻外形根据瞬时滑动速度进行连续自然的弹性拉伸与挤压
+                                            val velocityXDp = velocityTracker.calculateVelocity().x / currentDensity
+                                            val velocity = velocityXDp / currentLayout.pitch
+                                            val wobbleTarget = FlClashDockPhysics.wobbleTarget(velocity, 0f)
+                                            jellySpring.springTo(wobbleTarget, FlClashSprings.JellySpring)
 
                                             val idx = indexAt(pos)
                                             if (idx != pressedIndex) {
@@ -471,12 +479,12 @@ fun LiquidGlassNavigationBar(
                         val heightPx = lensRect.height * density.density
                         val radiusPx = heightPx / 2f
 
-                        // 1. FLClash 立体下沉投影: offset (0, 8.dp * lift), blur 5.dp
-                        val shadowAlpha = (0.055f * shadowStrength * lift).coerceIn(0f, 1f)
+                        // 1. FLClash 立体下沉投影: offset (0, 8.dp * lift), blur 8.dp
+                        val shadowAlpha = (if (dark) 0.32f else 0.16f) * lift.coerceIn(0f, 1f)
                         if (shadowAlpha > 0.001f) {
                             shadowPaint.color = android.graphics.Color.argb((shadowAlpha * 255).toInt(), 0, 0, 0)
                             shadowPaint.maskFilter = android.graphics.BlurMaskFilter(
-                                5f * density.density,
+                                8f * density.density,
                                 android.graphics.BlurMaskFilter.Blur.NORMAL,
                             )
                             val shadowOffsetY = 8f * density.density * lift
@@ -491,9 +499,9 @@ fun LiquidGlassNavigationBar(
                             }
                         }
 
-                        // 2. 玻璃透镜机身: 深色模式下提升 33% 亮度
+                        // 2. 玻璃透镜机身: 清透凸透镜
                         val bodyColor = if (dark) {
-                            Color.White.copy(alpha = 0.10f * lift)
+                            Color.White.copy(alpha = 0.14f * lift)
                         } else {
                             Color.White.copy(alpha = 0.35f * lift)
                         }
@@ -507,9 +515,9 @@ fun LiquidGlassNavigationBar(
                         // 3. 顶缘圆弧镜面高光 (FLClash rim highlight)
                         drawRoundRect(
                             brush = Brush.verticalGradient(
-                                0.0f to Color.White.copy(alpha = 0.48f * lift),
-                                0.3f to Color.White.copy(alpha = 0.15f * lift),
-                                0.7f to Color.Transparent,
+                                0.0f to Color.White.copy(alpha = (if (dark) 0.65f else 0.85f) * lift),
+                                0.35f to Color.White.copy(alpha = (if (dark) 0.22f else 0.35f) * lift),
+                                0.75f to Color.Transparent,
                                 startY = topPx,
                                 endY = topPx + heightPx,
                             ),
@@ -519,13 +527,13 @@ fun LiquidGlassNavigationBar(
                             style = Stroke(width = 1.3.dp.toPx()),
                         )
 
-                        // 4. 微弱发丝边框
+                        // 4. 外凸立体发丝边框
                         drawRoundRect(
-                            color = Color.Black.copy(alpha = 0.18f * lift),
+                            color = (if (dark) Color.White.copy(alpha = 0.22f * lift) else Color.Black.copy(alpha = 0.15f * lift)),
                             topLeft = Offset(leftPx, topPx),
                             size = Size(widthPx, heightPx),
                             cornerRadius = CornerRadius(radiusPx, radiusPx),
-                            style = Stroke(width = 0.5.dp.toPx()),
+                            style = Stroke(width = 0.6.dp.toPx()),
                         )
                     }
                 },
