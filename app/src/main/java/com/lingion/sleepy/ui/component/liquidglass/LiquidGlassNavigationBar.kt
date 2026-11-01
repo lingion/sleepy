@@ -54,6 +54,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -175,6 +176,7 @@ fun LiquidGlassNavigationBar(
 
     var barWidthPx by remember { mutableFloatStateOf(0f) }
     var barHeightPx by remember { mutableFloatStateOf(0f) }
+    var dockCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     val isLtr = layoutDirection == LayoutDirection.Ltr
 
     val layout = remember(barWidthPx, density.density, count) {
@@ -251,18 +253,6 @@ fun LiquidGlassNavigationBar(
             }
         } else null
     }
-    val renderEffect = remember(contentShader) {
-        if (contentShader != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            try {
-                android.graphics.RenderEffect.createRuntimeShaderEffect(
-                    contentShader,
-                    "uTexture",
-                ).asComposeRenderEffect()
-            } catch (_: Throwable) {
-                null
-            }
-        } else null
-    }
 
     val shadowRoomDp = 12.dp
 
@@ -273,6 +263,7 @@ fun LiquidGlassNavigationBar(
             .onGloballyPositioned { coords ->
                 barWidthPx = coords.size.width.toFloat()
                 barHeightPx = coords.size.height.toFloat()
+                dockCoordinates = coords
             }
             .pointerInput(count, isLtr) {
                 awaitPointerEventScope {
@@ -513,7 +504,7 @@ fun LiquidGlassNavigationBar(
                 )
             }
 
-            // ── 层3: 浮空凸透镜 (70dp 独立上层图层，反向外凸包裹 62dp Dock，不被 Dock 裁剪！) ──
+            // ── 层3: 浮空凸透镜 (70dp 独立上层图层，运行 1:1 liquid_glass.agsl 折射着色器) ──
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -529,17 +520,14 @@ fun LiquidGlassNavigationBar(
                                 height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
                                 lift = lift,
                             )
-                            // 外层坐标系: Dock 顶边在 shadowRoomDp，内槽在 shadowRoomDp + barPaddingDp
                             val dockContentTopPx = (shadowRoomDp + FlClashDockPhysics.BAR_PADDING.dp).toPx()
                             val dockContentLeftPx = FlClashDockPhysics.BAR_PADDING.dp.toPx()
-
                             val leftPx = dockContentLeftPx + (layout.inset + lensRect.left) * density.density
                             val topPx = dockContentTopPx + lensRect.top * density.density
                             val widthPx = lensRect.width * density.density
                             val heightPx = lensRect.height * density.density
                             val radiusPx = heightPx / 2f
 
-                            // 1. FLClash 立体下沉投影: offset (0, 8.dp * lift), blur 8.dp
                             val shadowAlpha = (if (dark) 0.35f else 0.18f) * lift.coerceIn(0f, 1f)
                             if (shadowAlpha > 0.001f) {
                                 shadowPaint.color = android.graphics.Color.argb((shadowAlpha * 255).toInt(), 0, 0, 0)
@@ -558,9 +546,116 @@ fun LiquidGlassNavigationBar(
                                     canvas.nativeCanvas.drawRoundRect(rectF, radiusPx, radiusPx, shadowPaint)
                                 }
                             }
+                        }
+                    }
+                    .graphicsLayer {
+                        val lift = liftSpring.value
+                        if (contentShader != null && lift > 0.001f && size.width > 0f && size.height > 0f) {
+                            val lensRect = FlClashDockPhysics.lensRect(
+                                position = lensSpring.value,
+                                stretch = jellySpring.value,
+                                pitch = layout.pitch,
+                                width = layout.lens,
+                                height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
+                                lift = lift,
+                            )
+                            val dockContentTopPx = (shadowRoomDp + FlClashDockPhysics.BAR_PADDING.dp).toPx()
+                            val dockContentLeftPx = FlClashDockPhysics.BAR_PADDING.dp.toPx()
+                            val leftPx = dockContentLeftPx + (layout.inset + lensRect.left) * density.density
+                            val topPx = dockContentTopPx + lensRect.top * density.density
 
-                            // 2. 纯净高透液态玻璃透镜光体 (Crystal Glass Optics)
-                            // 消除白雾乳化色块，保持玻璃通透高亮质感
+                            val style = LiquidGlassStyle.lens(colorScheme, dark).scale(lift.toDouble())
+                            val sizeDp = Size(lensRect.width, lensRect.height)
+                            val radiusDp = lensRect.height / 2f
+                            val corners = LiquidGlassCornerRadii(radiusDp, radiusDp, radiusDp, radiusDp)
+                            val originPx = Offset(leftPx, topPx)
+                            val atlasSizePx = Size(size.width, size.height)
+                            val sampling = LiquidGlassShader.sampling(
+                                originPx = originPx,
+                                texelsPerDp = density.density,
+                                clampPx = Rect(0f, 0f, size.width, size.height),
+                            )
+
+                            val uniforms = LiquidGlassShader.build(
+                                size = sizeDp,
+                                corners = corners,
+                                style = style,
+                                originPx = originPx,
+                                density = density.density,
+                                stretch = 1f,
+                                atlasSizePx = atlasSizePx,
+                                sampling = sampling,
+                                glow = touchGlow,
+                            )
+                            uniforms.forEach { (name, values) ->
+                                contentShader.setFloatUniform(name, values)
+                            }
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                this.renderEffect = android.graphics.RenderEffect.createRuntimeShaderEffect(
+                                    contentShader,
+                                    "uTexture",
+                                ).asComposeRenderEffect()
+                            }
+                        } else {
+                            this.renderEffect = null
+                        }
+                    }
+                    .drawWithContent {
+                        val lift = liftSpring.value
+                        if (lift > 0.001f) {
+                            val lensRect = FlClashDockPhysics.lensRect(
+                                position = lensSpring.value,
+                                stretch = jellySpring.value,
+                                pitch = layout.pitch,
+                                width = layout.lens,
+                                height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
+                                lift = lift,
+                            )
+                            val dockContentTopPx = (shadowRoomDp + FlClashDockPhysics.BAR_PADDING.dp).toPx()
+                            val dockContentLeftPx = FlClashDockPhysics.BAR_PADDING.dp.toPx()
+                            val leftPx = dockContentLeftPx + (layout.inset + lensRect.left) * density.density
+                            val topPx = dockContentTopPx + lensRect.top * density.density
+                            val widthPx = lensRect.width * density.density
+                            val heightPx = lensRect.height * density.density
+                            val radiusPx = heightPx / 2f
+
+                            lensPath.rewind()
+                            lensPath.addRoundRect(
+                                RoundRect(
+                                    rect = Rect(leftPx, topPx, leftPx + widthPx, topPx + heightPx),
+                                    cornerRadius = CornerRadius(radiusPx, radiusPx),
+                                ),
+                            )
+
+                            clipPath(lensPath) {
+                                // 1. 实时背景图层 (Backdrop)
+                                val coords = dockCoordinates
+                                if (backdrop != null && coords != null) {
+                                    with(backdrop) {
+                                        drawBackdrop(density, coords, null)
+                                    }
+                                }
+                                // 2. 底层 Dock 胶囊背景底盘，受 AGSL 凸透镜真实物理光学弯折折射与色散
+                                val dockTopPx = shadowRoomDp.toPx()
+                                val dockHeightPx = barHeightDp.toPx()
+                                drawRoundRect(
+                                    color = colorScheme.surfaceContainer.copy(alpha = if (dark) 0.72f else 0.88f),
+                                    topLeft = Offset(0f, dockTopPx),
+                                    size = Size(size.width, dockHeightPx),
+                                    cornerRadius = CornerRadius(dockHeightPx / 2f, dockHeightPx / 2f),
+                                )
+                                // 3. 沉底槽位色块 (随起镜淡出)
+                                if (lift < 1f) {
+                                    drawRoundRect(
+                                        color = platterColor.copy(alpha = 0.85f * (1f - lift.coerceIn(0f, 1f))),
+                                        topLeft = Offset(leftPx, topPx),
+                                        size = Size(widthPx, heightPx),
+                                        cornerRadius = CornerRadius(radiusPx, radiusPx),
+                                    )
+                                }
+                            }
+
+                            // 4. 纯净高透液态玻璃透镜光体 (Crystal Glass Optics)
                             drawRoundRect(
                                 color = if (dark) Color(0xFF1E1A22).copy(alpha = 0.16f * lift) else Color.White.copy(alpha = 0.12f * lift),
                                 topLeft = Offset(leftPx, topPx),
@@ -568,53 +663,18 @@ fun LiquidGlassNavigationBar(
                                 cornerRadius = CornerRadius(radiusPx, radiusPx),
                             )
 
-                            // 3. FLClash 5.5dp 弧面边缘折射环 (Bevel Refraction Ring)
-                            val bevelWidthPx = 5.5.dp.toPx()
+                            // 5. 顶缘物理高光束 (1.0dp Top Specular Ridge)
                             drawRoundRect(
                                 brush = Brush.verticalGradient(
-                                    0.00f to Color.White.copy(alpha = (if (dark) 0.32f else 0.45f) * lift),
-                                    0.30f to Color.Transparent,
-                                    0.70f to Color.Transparent,
-                                    1.00f to Color(0xFF80D8FF).copy(alpha = (if (dark) 0.22f else 0.30f) * lift),
+                                    0.0f to Color.White.copy(alpha = (if (dark) 0.55f else 0.70f) * lift),
+                                    0.35f to Color.Transparent,
                                     startY = topPx,
                                     endY = topPx + heightPx,
                                 ),
                                 topLeft = Offset(leftPx, topPx),
                                 size = Size(widthPx, heightPx),
                                 cornerRadius = CornerRadius(radiusPx, radiusPx),
-                                style = Stroke(width = bevelWidthPx),
-                            )
-
-                            // 4. FLClash 6.5dp 棱镜色散光斑 (Chromatic Dispersion: 顶缘偏红橙，底缘偏蓝青)
-                            drawRoundRect(
-                                brush = Brush.verticalGradient(
-                                    0.00f to Color(0xFFFF7043).copy(alpha = (if (dark) 0.45f else 0.55f) * lift),
-                                    0.18f to Color(0xFFFFA726).copy(alpha = (if (dark) 0.30f else 0.40f) * lift),
-                                    0.35f to Color.White.copy(alpha = (if (dark) 0.85f else 0.95f) * lift),
-                                    0.65f to Color(0xFF00E5FF).copy(alpha = (if (dark) 0.35f else 0.45f) * lift),
-                                    1.00f to Color(0xFF0091EA).copy(alpha = (if (dark) 0.28f else 0.38f) * lift),
-                                    startY = topPx,
-                                    endY = topPx + heightPx,
-                                ),
-                                topLeft = Offset(leftPx, topPx),
-                                size = Size(widthPx, heightPx),
-                                cornerRadius = CornerRadius(radiusPx, radiusPx),
-                                style = Stroke(width = 2.4.dp.toPx()),
-                            )
-
-                            // 5. 顶缘圆弧镜面落光高光 (FLClash 1.2dp Specular Rim Highlight)
-                            drawRoundRect(
-                                brush = Brush.verticalGradient(
-                                    0.0f to Color.White.copy(alpha = (if (dark) 0.90f else 1.00f) * lift),
-                                    0.25f to Color.White.copy(alpha = (if (dark) 0.45f else 0.60f) * lift),
-                                    0.55f to Color.Transparent,
-                                    startY = topPx,
-                                    endY = topPx + heightPx,
-                                ),
-                                topLeft = Offset(leftPx, topPx),
-                                size = Size(widthPx, heightPx),
-                                cornerRadius = CornerRadius(radiusPx, radiusPx),
-                                style = Stroke(width = 1.2.dp.toPx()),
+                                style = Stroke(width = 1.0.dp.toPx()),
                             )
 
                             // 6. 底缘环境漫反射微光 (0.8dp Bottom Ambient Bounce)
