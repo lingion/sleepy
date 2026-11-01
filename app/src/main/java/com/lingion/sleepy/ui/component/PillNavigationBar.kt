@@ -119,6 +119,19 @@ fun PillNavigationBar(
     state: PillBarState = remember { PillBarState() },
     backdrop: Backdrop? = null,
 ) {
+    // ═══ 形态分流 ═══
+    // 贴底 = 通栏 76dp 矩形带(现状不动); Dock = FLClash 1:1 液态玻璃悬浮导航底栏
+    if (dock) {
+        LiquidGlassNavigationBar(
+            items = items,
+            selectedIndex = selectedIndex,
+            onSelect = onSelect,
+            modifier = modifier,
+            backdrop = backdrop,
+        )
+        return
+    }
+
     val colors = MaterialTheme.colorScheme
     val density = LocalDensity.current
     val count = items.size.coerceAtLeast(1)
@@ -164,19 +177,6 @@ fun PillNavigationBar(
             )
             state.placedIndex = idx
         }
-    }
-
-    // ═══ 形态分流 ═══
-    // 贴底 = 通栏 76dp 矩形带(现状不动); Dock = FLClash 1:1 液态玻璃悬浮导航底栏
-    if (dock) {
-        LiquidGlassNavigationBar(
-            items = items,
-            selectedIndex = selectedIndex,
-            onSelect = onSelect,
-            modifier = modifier,
-            backdrop = backdrop,
-        )
-        return
     }
 
     Box(

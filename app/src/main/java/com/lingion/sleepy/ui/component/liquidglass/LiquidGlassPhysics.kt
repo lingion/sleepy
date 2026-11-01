@@ -1,5 +1,9 @@
 package com.lingion.sleepy.ui.component.liquidglass
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Rect
 import kotlin.math.PI
 import kotlin.math.abs
@@ -201,19 +205,22 @@ class SpringSimulation(
 
 /**
  * FlClash `_Spring` 的 Kotlin 状态封装, 支持每帧动态重定目标而无初动静止顿挫。
+ *
+ * [value], [target], [velocity], [isRunning] 均由 Compose 状态支持,
+ * 确保图形变换层能在 Draw 阶段实时观察并驱动 120 FPS 平滑重绘。
  */
 class SpringState(
     initialValue: Float,
     val rest: Double = 1e-3,
 ) {
-    var value: Float = initialValue
-        private set
-    var target: Float = initialValue
-        private set
-    var velocity: Float = 0f
-        private set
-    var isRunning: Boolean = false
-        private set
+    var value: Float by mutableFloatStateOf(initialValue)
+        internal set
+    var target: Float by mutableFloatStateOf(initialValue)
+        internal set
+    var velocity: Float by mutableFloatStateOf(0f)
+        internal set
+    var isRunning: Boolean by mutableStateOf(false)
+        internal set
 
     private var simulation: SpringSimulation? = null
     private var spring: SpringDescription? = null
@@ -255,14 +262,18 @@ class SpringState(
 
     /** 每帧推进物理模拟。返回是否有数值变动。 */
     fun tick(currentSec: Double): Boolean {
-        val sim = simulation ?: return false
+        val sim = simulation ?: run {
+            if (isRunning) isRunning = false
+            return false
+        }
         val time = max(0.0, currentSec - startSec)
         if (sim.isDone(time)) {
+            val changed = value != target || velocity != 0f
             value = target
             velocity = 0f
             simulation = null
             isRunning = false
-            return true
+            return changed
         }
         val prev = value
         value = sim.x(time).toFloat()

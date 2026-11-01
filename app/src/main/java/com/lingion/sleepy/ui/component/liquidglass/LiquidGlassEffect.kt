@@ -48,49 +48,57 @@ internal fun BackdropEffectScope.liquidGlass(
         return
     }
 
-    val shaderSource = LiquidGlassShader.shaderSource(context)
-    val shader = obtainRuntimeShader("LiquidGlassShader", shaderSource)
+    try {
+        val shaderSource = LiquidGlassShader.shaderSource(context)
+        val shader = obtainRuntimeShader("LiquidGlassShader", shaderSource)
 
-    val currentSize = size
-    if (currentSize.width <= 0f || currentSize.height <= 0f) return
+        val currentSize = size
+        if (currentSize.width <= 0f || currentSize.height <= 0f) return
 
-    val corners = extractCornerRadii(currentSize)
-    val sizeDp = Size(currentSize.width / density, currentSize.height / density)
+        val corners = extractCornerRadii(currentSize)
+        val sizeDp = Size(currentSize.width / density, currentSize.height / density)
 
-    val sampling = LiquidGlassShader.sampling(
-        originPx = effectOffset,
-        texelsPerDp = density,
-        clampPx = Rect(0f, 0f, currentSize.width, currentSize.height),
-    )
-    val hazeSampling = if (style.haze > 0.0) sampling else null
+        val sampling = LiquidGlassShader.sampling(
+            originPx = effectOffset,
+            texelsPerDp = density,
+            clampPx = Rect(0f, 0f, currentSize.width, currentSize.height),
+        )
+        val hazeSampling = if (style.haze > 0.0) sampling else null
 
-    val uniforms = LiquidGlassShader.build(
-        size = sizeDp,
-        corners = corners,
-        style = style,
-        originPx = effectOffset,
-        density = density,
-        stretch = 1f,
-        atlasSizePx = currentSize,
-        sampling = sampling,
-        hazeSampling = hazeSampling,
-        outline = outline,
-        goo = goo,
-        rim = rim,
-        veil = veil,
-        glow = glow,
-    )
+        val uniforms = LiquidGlassShader.build(
+            size = sizeDp,
+            corners = corners,
+            style = style,
+            originPx = effectOffset,
+            density = density,
+            stretch = 1f,
+            atlasSizePx = currentSize,
+            sampling = sampling,
+            hazeSampling = hazeSampling,
+            outline = outline,
+            goo = goo,
+            rim = rim,
+            veil = veil,
+            glow = glow,
+        )
 
-    uniforms.forEach { (name, values) ->
-        shader.setFloatUniform(name, values)
-    }
+        uniforms.forEach { (name, values) ->
+            shader.setFloatUniform(name, values)
+        }
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        val composeRenderEffect = android.graphics.RenderEffect.createRuntimeShaderEffect(
-            shader.asAndroidRuntimeShader(),
-            "uTexture",
-        ).asComposeRenderEffect()
-        effect(composeRenderEffect)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val composeRenderEffect = android.graphics.RenderEffect.createRuntimeShaderEffect(
+                shader.asAndroidRuntimeShader(),
+                "uTexture",
+            ).asComposeRenderEffect()
+            effect(composeRenderEffect)
+        }
+    } catch (e: Throwable) {
+        android.util.Log.w("LiquidGlassEffect", "RuntimeShader fallback to blur+vibrancy", e)
+        if (style.blur > 0.0) {
+            blur(style.blur.toFloat() * density)
+        }
+        vibrancy()
     }
 }
 
