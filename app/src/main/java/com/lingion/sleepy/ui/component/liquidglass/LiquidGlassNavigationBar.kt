@@ -167,11 +167,11 @@ fun LiquidGlassNavigationBar(
     val barHeightDp = FlClashDockPhysics.BAR_HEIGHT.dp
     val barPaddingDp = FlClashDockPhysics.BAR_PADDING.dp
     val maxExtentDp = FlClashDockPhysics.MAX_ITEM_EXTENT.dp
-    val totalWidthModifier = if (count >= FlClashDockPhysics.FULL_WIDTH_COUNT) {
-        Modifier.fillMaxWidth()
-    } else {
-        Modifier.widthIn(max = maxExtentDp * count + barPaddingDp * 4).fillMaxWidth()
-    }
+    val edgeMarginDp = FlClashDockPhysics.EDGE_MARGIN.dp
+    val totalWidthModifier = Modifier
+        .padding(horizontal = edgeMarginDp)
+        .widthIn(max = maxExtentDp * count + barPaddingDp * 4)
+        .fillMaxWidth()
 
     var barWidthPx by remember { mutableFloatStateOf(0f) }
     var barHeightPx by remember { mutableFloatStateOf(0f) }
@@ -314,12 +314,21 @@ fun LiquidGlassNavigationBar(
                                     }
 
                                     if (dragging) {
-                                        val overshoot = change.position.x - change.position.x.coerceIn(0f, size.width.toFloat())
-                                        val pullLimit = size.height * FlClashDockPhysics.PULL_LIMIT
-                                        stretchSpring.springTo(
-                                            FlClashDockPhysics.rubberBand(overshoot, pullLimit),
-                                            FlClashSprings.TrackSpring,
-                                        )
+                                        val xDp = change.position.x / currentDensity
+                                        val barWidthDp = barWidthPx / currentDensity
+                                        val dxDp = if (currentIsLtr) xDp else (barWidthDp - xDp)
+                                        val rawPos = (dxDp - FlClashDockPhysics.BAR_PADDING - currentLayout.inset) / currentLayout.pitch - 0.5f
+
+                                        // 当滑块拖到最左端或最右端超过边界时，计算拉出边界的物理像素距离
+                                        val overshootPx = when {
+                                            rawPos < 0f -> rawPos * currentLayout.pitch * currentDensity
+                                            rawPos > currentLastIndex -> (rawPos - currentLastIndex) * currentLayout.pitch * currentDensity
+                                            else -> 0f
+                                        }
+                                        val pullLimit = barHeightPx * FlClashDockPhysics.PULL_LIMIT
+                                        val targetStretch = FlClashDockPhysics.rubberBand(overshootPx, pullLimit)
+                                        // 顺着手的拉力整体牵引整个 Dock
+                                        stretchSpring.springTo(targetStretch, FlClashSprings.TrackSpring)
 
                                         val pos = positionAt(change.position.x)
                                         // 100% 绝对线性位移：拖拽过程中镜头与手指位置 1:1 绝对线性同步，彻底消除时钟饥饿与顿挫卡顿
@@ -384,11 +393,11 @@ fun LiquidGlassNavigationBar(
             },
         contentAlignment = Alignment.Center,
     ) {
-        // ── 层1: Dock 胶囊底座 (62dp) ──
+        // ── 全 Dock 弹簧物理形变层 (包裹所有 4 个子层，随 stretchSpring 整体弹性位移与拉伸) ──
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(barHeightDp)
+                .height(barHeightDp + shadowRoomDp * 2)
                 .graphicsLayer {
                     val pressGrowth = FlClashDockPhysics.pressGrowthOf(size.width / density.density)
                     val swellScale = 1f + swellSpring.value * pressGrowth
@@ -396,115 +405,82 @@ fun LiquidGlassNavigationBar(
                     scaleX = swellScale * (1f + abs(stretchVal) / max(1f, size.width) * FlClashDockPhysics.PULL_STRETCH)
                     scaleY = swellScale
                     translationX = stretchVal
-                }
-                .shadow(
-                    elevation = (8 * shadowStrength).dp,
-                    shape = Capsule(),
-                    clip = false,
-                    ambientColor = colorScheme.scrim.copy(alpha = 0.08f * shadowStrength),
-                    spotColor = colorScheme.scrim.copy(alpha = 0.04f * shadowStrength),
-                )
-                .then(
-                    if (backdrop != null) {
-                        Modifier.drawPlainBackdrop(
-                            backdrop = backdrop,
-                            shape = { Capsule() },
-                            effects = {
-                                liquidGlass(
-                                    context = context,
-                                    style = LiquidGlassStyle.pill(colorScheme, dark),
-                                    glow = touchGlow,
-                                )
-                            },
-                        )
-                    } else {
-                        Modifier.background(
-                            colorScheme.surfaceContainer.copy(alpha = if (dark) 0.72f else 0.88f),
-                            shape = Capsule(),
-                        )
-                    }
-                )
-                .padding(barPaddingDp),
+                },
+            contentAlignment = Alignment.Center,
         ) {
-            // 沉底底盘: 当 lift < 1 时沉在底部的静止色块
+            // ── 层1: Dock 胶囊底座 (62dp) ──
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .drawBehind {
-                        val lift = liftSpring.value
-                        if (lift < 1f) {
-                            val lensRect = FlClashDockPhysics.lensRect(
-                                position = lensSpring.value,
-                                stretch = jellySpring.value,
-                                pitch = layout.pitch,
-                                width = layout.lens,
-                                height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
-                                lift = lift,
+                    .fillMaxWidth()
+                    .height(barHeightDp)
+                    .shadow(
+                        elevation = (8 * shadowStrength).dp,
+                        shape = Capsule(),
+                        clip = false,
+                        ambientColor = colorScheme.scrim.copy(alpha = 0.08f * shadowStrength),
+                        spotColor = colorScheme.scrim.copy(alpha = 0.04f * shadowStrength),
+                    )
+                    .then(
+                        if (backdrop != null) {
+                            Modifier.drawPlainBackdrop(
+                                backdrop = backdrop,
+                                shape = { Capsule() },
+                                effects = {
+                                    liquidGlass(
+                                        context = context,
+                                        style = LiquidGlassStyle.pill(colorScheme, dark),
+                                        glow = touchGlow,
+                                    )
+                                },
                             )
-                            val leftPx = (layout.inset + lensRect.left) * density.density
-                            val topPx = lensRect.top * density.density
-                            val widthPx = lensRect.width * density.density
-                            val heightPx = lensRect.height * density.density
-                            val radiusPx = heightPx / 2f
-                            drawRoundRect(
-                                color = platterColor.copy(alpha = 0.85f * (1f - lift.coerceIn(0f, 1f))),
-                                topLeft = Offset(leftPx, topPx),
-                                size = Size(widthPx, heightPx),
-                                cornerRadius = CornerRadius(radiusPx, radiusPx),
+                        } else {
+                            Modifier.background(
+                                colorScheme.surfaceContainer.copy(alpha = if (dark) 0.72f else 0.88f),
+                                shape = Capsule(),
                             )
                         }
-                    },
-            )
-        }
-
-        // ── 层2: 外部文字与图标 (Outside Destinations - onSurfaceVariant) ──
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(barHeightDp)
-                .padding(barPaddingDp)
-                .drawWithContent {
-                    val lift = liftSpring.value
-                    val lensRect = FlClashDockPhysics.lensRect(
-                        position = lensSpring.value,
-                        stretch = jellySpring.value,
-                        pitch = layout.pitch,
-                        width = layout.lens,
-                        height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
-                        lift = lift,
                     )
-                    val leftPx = (layout.inset + lensRect.left) * density.density
-                    val topPx = lensRect.top * density.density
-                    val widthPx = lensRect.width * density.density
-                    val heightPx = lensRect.height * density.density
+                    .padding(barPaddingDp),
+            ) {
+                // 沉底底盘: 当 lift < 1 时沉在底部的静止色块
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .drawBehind {
+                            val lift = liftSpring.value
+                            if (lift < 1f) {
+                                val lensRect = FlClashDockPhysics.lensRect(
+                                    position = lensSpring.value,
+                                    stretch = jellySpring.value,
+                                    pitch = layout.pitch,
+                                    width = layout.lens,
+                                    height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
+                                    lift = lift,
+                                )
+                                val leftPx = (layout.inset + lensRect.left) * density.density
+                                val topPx = lensRect.top * density.density
+                                val widthPx = lensRect.width * density.density
+                                val heightPx = lensRect.height * density.density
+                                val radiusPx = heightPx / 2f
+                                drawRoundRect(
+                                    color = platterColor.copy(alpha = 0.85f * (1f - lift.coerceIn(0f, 1f))),
+                                    topLeft = Offset(leftPx, topPx),
+                                    size = Size(widthPx, heightPx),
+                                    cornerRadius = CornerRadius(radiusPx, radiusPx),
+                                )
+                            }
+                        },
+                )
+            }
 
-                    lensPath.rewind()
-                    lensPath.addRoundRect(
-                        RoundRect(
-                            rect = Rect(leftPx, topPx, leftPx + widthPx, topPx + heightPx),
-                            cornerRadius = CornerRadius(heightPx / 2f, heightPx / 2f),
-                        ),
-                    )
-                    clipPath(lensPath, clipOp = ClipOp.Difference) {
-                        this@drawWithContent.drawContent()
-                    }
-                },
-        ) {
-            DestinationsRow(
-                items = items,
-                layout = layout,
-                tint = colorScheme.onSurfaceVariant,
-            )
-        }
-
-        // ── 层3: 浮空凸透镜 (70dp 独立上层图层，反向外凸包裹 62dp Dock，不被 Dock 裁剪！) ──
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(barHeightDp + shadowRoomDp * 2)
-                .drawBehind {
-                    val lift = liftSpring.value
-                    if (lift > 0.001f) {
+            // ── 层2: 外部文字与图标 (Outside Destinations - onSurfaceVariant) ──
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(barHeightDp)
+                    .padding(barPaddingDp)
+                    .drawWithContent {
+                        val lift = liftSpring.value
                         val lensRect = FlClashDockPhysics.lensRect(
                             position = lensSpring.value,
                             stretch = jellySpring.value,
@@ -513,135 +489,201 @@ fun LiquidGlassNavigationBar(
                             height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
                             lift = lift,
                         )
-                        // 外层坐标系: Dock 顶边在 shadowRoomDp，内槽在 shadowRoomDp + barPaddingDp
-                        val dockContentTopPx = (shadowRoomDp + FlClashDockPhysics.BAR_PADDING.dp).toPx()
-                        val dockContentLeftPx = FlClashDockPhysics.BAR_PADDING.dp.toPx()
-
-                        val leftPx = dockContentLeftPx + (layout.inset + lensRect.left) * density.density
-                        val topPx = dockContentTopPx + lensRect.top * density.density
+                        val leftPx = (layout.inset + lensRect.left) * density.density
+                        val topPx = lensRect.top * density.density
                         val widthPx = lensRect.width * density.density
                         val heightPx = lensRect.height * density.density
-                        val radiusPx = heightPx / 2f
 
-                        // 1. FLClash 立体下沉投影: offset (0, 8.dp * lift), blur 8.dp
-                        val shadowAlpha = (if (dark) 0.35f else 0.18f) * lift.coerceIn(0f, 1f)
-                        if (shadowAlpha > 0.001f) {
-                            shadowPaint.color = android.graphics.Color.argb((shadowAlpha * 255).toInt(), 0, 0, 0)
-                            shadowPaint.maskFilter = android.graphics.BlurMaskFilter(
-                                8f * density.density,
-                                android.graphics.BlurMaskFilter.Blur.NORMAL,
-                            )
-                            val shadowOffsetY = 8f * density.density * lift
-                            drawIntoCanvas { canvas ->
-                                val rectF = android.graphics.RectF(
-                                    leftPx,
-                                    topPx + shadowOffsetY,
-                                    leftPx + widthPx,
-                                    topPx + heightPx + shadowOffsetY,
-                                )
-                                canvas.nativeCanvas.drawRoundRect(rectF, radiusPx, radiusPx, shadowPaint)
-                            }
+                        lensPath.rewind()
+                        lensPath.addRoundRect(
+                            RoundRect(
+                                rect = Rect(leftPx, topPx, leftPx + widthPx, topPx + heightPx),
+                                cornerRadius = CornerRadius(heightPx / 2f, heightPx / 2f),
+                            ),
+                        )
+                        clipPath(lensPath, clipOp = ClipOp.Difference) {
+                            this@drawWithContent.drawContent()
                         }
+                    },
+            ) {
+                DestinationsRow(
+                    items = items,
+                    layout = layout,
+                    tint = colorScheme.onSurfaceVariant,
+                )
+            }
 
-                        // 2. 玻璃透镜机身: 凸透镜穹顶高光 (Dome Specular Glow)
-                        val bodyBaseAlpha = if (dark) 0.14f else 0.25f
-                        drawRoundRect(
-                            brush = Brush.radialGradient(
-                                colors = listOf(
-                                    Color.White.copy(alpha = (bodyBaseAlpha + 0.12f) * lift),
-                                    Color.White.copy(alpha = bodyBaseAlpha * lift),
-                                    Color.White.copy(alpha = (bodyBaseAlpha * 0.4f) * lift),
+            // ── 层3: 浮空凸透镜 (70dp 独立上层图层，反向外凸包裹 62dp Dock，不被 Dock 裁剪！) ──
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(barHeightDp + shadowRoomDp * 2)
+                    .drawBehind {
+                        val lift = liftSpring.value
+                        if (lift > 0.001f) {
+                            val lensRect = FlClashDockPhysics.lensRect(
+                                position = lensSpring.value,
+                                stretch = jellySpring.value,
+                                pitch = layout.pitch,
+                                width = layout.lens,
+                                height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
+                                lift = lift,
+                            )
+                            // 外层坐标系: Dock 顶边在 shadowRoomDp，内槽在 shadowRoomDp + barPaddingDp
+                            val dockContentTopPx = (shadowRoomDp + FlClashDockPhysics.BAR_PADDING.dp).toPx()
+                            val dockContentLeftPx = FlClashDockPhysics.BAR_PADDING.dp.toPx()
+
+                            val leftPx = dockContentLeftPx + (layout.inset + lensRect.left) * density.density
+                            val topPx = dockContentTopPx + lensRect.top * density.density
+                            val widthPx = lensRect.width * density.density
+                            val heightPx = lensRect.height * density.density
+                            val radiusPx = heightPx / 2f
+
+                            // 1. FLClash 立体下沉投影: offset (0, 8.dp * lift), blur 8.dp
+                            val shadowAlpha = (if (dark) 0.35f else 0.18f) * lift.coerceIn(0f, 1f)
+                            if (shadowAlpha > 0.001f) {
+                                shadowPaint.color = android.graphics.Color.argb((shadowAlpha * 255).toInt(), 0, 0, 0)
+                                shadowPaint.maskFilter = android.graphics.BlurMaskFilter(
+                                    8f * density.density,
+                                    android.graphics.BlurMaskFilter.Blur.NORMAL,
+                                )
+                                val shadowOffsetY = 8f * density.density * lift
+                                drawIntoCanvas { canvas ->
+                                    val rectF = android.graphics.RectF(
+                                        leftPx,
+                                        topPx + shadowOffsetY,
+                                        leftPx + widthPx,
+                                        topPx + heightPx + shadowOffsetY,
+                                    )
+                                    canvas.nativeCanvas.drawRoundRect(rectF, radiusPx, radiusPx, shadowPaint)
+                                }
+                            }
+
+                            // 2. 纯净高透液态玻璃透镜光体 (Crystal Glass Optics)
+                            // 消除白雾乳化色块，保持玻璃通透高亮质感
+                            drawRoundRect(
+                                color = if (dark) Color(0xFF1E1A22).copy(alpha = 0.16f * lift) else Color.White.copy(alpha = 0.12f * lift),
+                                topLeft = Offset(leftPx, topPx),
+                                size = Size(widthPx, heightPx),
+                                cornerRadius = CornerRadius(radiusPx, radiusPx),
+                            )
+
+                            // 3. FLClash 5.5dp 弧面边缘折射环 (Bevel Refraction Ring)
+                            val bevelWidthPx = 5.5.dp.toPx()
+                            drawRoundRect(
+                                brush = Brush.verticalGradient(
+                                    0.00f to Color.White.copy(alpha = (if (dark) 0.32f else 0.45f) * lift),
+                                    0.30f to Color.Transparent,
+                                    0.70f to Color.Transparent,
+                                    1.00f to Color(0xFF80D8FF).copy(alpha = (if (dark) 0.22f else 0.30f) * lift),
+                                    startY = topPx,
+                                    endY = topPx + heightPx,
                                 ),
-                                center = Offset(leftPx + widthPx / 2f, topPx + heightPx * 0.4f),
-                                radius = widthPx * 0.65f,
-                            ),
-                            topLeft = Offset(leftPx, topPx),
-                            size = Size(widthPx, heightPx),
-                            cornerRadius = CornerRadius(radiusPx, radiusPx),
-                        )
+                                topLeft = Offset(leftPx, topPx),
+                                size = Size(widthPx, heightPx),
+                                cornerRadius = CornerRadius(radiusPx, radiusPx),
+                                style = Stroke(width = bevelWidthPx),
+                            )
 
-                        // 3. 真实棱镜色散光斑 (FLClash 6.5dp Dispersion: 顶缘偏红橙，底缘偏蓝青)
-                        drawRoundRect(
-                            brush = Brush.verticalGradient(
-                                0.00f to Color(0xFFFF8A65).copy(alpha = (if (dark) 0.28f else 0.35f) * lift),
-                                0.25f to Color.White.copy(alpha = (if (dark) 0.70f else 0.85f) * lift),
-                                0.70f to Color(0xFF4FC3F7).copy(alpha = (if (dark) 0.25f else 0.30f) * lift),
-                                1.00f to Color(0xFF29B6F6).copy(alpha = (if (dark) 0.18f else 0.25f) * lift),
-                                startY = topPx,
-                                endY = topPx + heightPx,
-                            ),
-                            topLeft = Offset(leftPx, topPx),
-                            size = Size(widthPx, heightPx),
-                            cornerRadius = CornerRadius(radiusPx, radiusPx),
-                            style = Stroke(width = 1.6.dp.toPx()),
-                        )
+                            // 4. FLClash 6.5dp 棱镜色散光斑 (Chromatic Dispersion: 顶缘偏红橙，底缘偏蓝青)
+                            drawRoundRect(
+                                brush = Brush.verticalGradient(
+                                    0.00f to Color(0xFFFF7043).copy(alpha = (if (dark) 0.45f else 0.55f) * lift),
+                                    0.18f to Color(0xFFFFA726).copy(alpha = (if (dark) 0.30f else 0.40f) * lift),
+                                    0.35f to Color.White.copy(alpha = (if (dark) 0.85f else 0.95f) * lift),
+                                    0.65f to Color(0xFF00E5FF).copy(alpha = (if (dark) 0.35f else 0.45f) * lift),
+                                    1.00f to Color(0xFF0091EA).copy(alpha = (if (dark) 0.28f else 0.38f) * lift),
+                                    startY = topPx,
+                                    endY = topPx + heightPx,
+                                ),
+                                topLeft = Offset(leftPx, topPx),
+                                size = Size(widthPx, heightPx),
+                                cornerRadius = CornerRadius(radiusPx, radiusPx),
+                                style = Stroke(width = 2.4.dp.toPx()),
+                            )
 
-                        // 4. 顶缘圆弧镜面落光高光 (FLClash rim highlight)
-                        drawRoundRect(
-                            brush = Brush.verticalGradient(
-                                0.0f to Color.White.copy(alpha = (if (dark) 0.75f else 0.90f) * lift),
-                                0.35f to Color.White.copy(alpha = (if (dark) 0.25f else 0.40f) * lift),
-                                0.75f to Color.Transparent,
-                                startY = topPx,
-                                endY = topPx + heightPx,
-                            ),
-                            topLeft = Offset(leftPx, topPx),
-                            size = Size(widthPx, heightPx),
-                            cornerRadius = CornerRadius(radiusPx, radiusPx),
-                            style = Stroke(width = 1.2.dp.toPx()),
-                        )
+                            // 5. 顶缘圆弧镜面落光高光 (FLClash 1.2dp Specular Rim Highlight)
+                            drawRoundRect(
+                                brush = Brush.verticalGradient(
+                                    0.0f to Color.White.copy(alpha = (if (dark) 0.90f else 1.00f) * lift),
+                                    0.25f to Color.White.copy(alpha = (if (dark) 0.45f else 0.60f) * lift),
+                                    0.55f to Color.Transparent,
+                                    startY = topPx,
+                                    endY = topPx + heightPx,
+                                ),
+                                topLeft = Offset(leftPx, topPx),
+                                size = Size(widthPx, heightPx),
+                                cornerRadius = CornerRadius(radiusPx, radiusPx),
+                                style = Stroke(width = 1.2.dp.toPx()),
+                            )
 
-                        // 5. 外凸立体发丝边框
-                        drawRoundRect(
-                            color = (if (dark) Color.White.copy(alpha = 0.28f * lift) else Color.Black.copy(alpha = 0.18f * lift)),
-                            topLeft = Offset(leftPx, topPx),
-                            size = Size(widthPx, heightPx),
-                            cornerRadius = CornerRadius(radiusPx, radiusPx),
-                            style = Stroke(width = 0.7.dp.toPx()),
-                        )
-                    }
-                },
-        )
+                            // 6. 底缘环境漫反射微光 (0.8dp Bottom Ambient Bounce)
+                            drawRoundRect(
+                                brush = Brush.verticalGradient(
+                                    0.0f to Color.Transparent,
+                                    0.65f to Color.Transparent,
+                                    1.0f to Color(0xFF80D8FF).copy(alpha = (if (dark) 0.35f else 0.45f) * lift),
+                                    startY = topPx,
+                                    endY = topPx + heightPx,
+                                ),
+                                topLeft = Offset(leftPx, topPx),
+                                size = Size(widthPx, heightPx),
+                                cornerRadius = CornerRadius(radiusPx, radiusPx),
+                                style = Stroke(width = 0.8.dp.toPx()),
+                            )
 
-        // ── 层4: 镜内文字与图标 (Inside Destinations - primary, 1.16x 放大) ──
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(barHeightDp)
-                .padding(barPaddingDp)
-                .drawWithContent {
-                    val lift = liftSpring.value
-                    val lensRect = FlClashDockPhysics.lensRect(
-                        position = lensSpring.value,
-                        stretch = jellySpring.value,
-                        pitch = layout.pitch,
-                        width = layout.lens,
-                        height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
-                        lift = lift,
-                    )
-                    val leftPx = (layout.inset + lensRect.left) * density.density
-                    val topPx = lensRect.top * density.density
-                    val widthPx = lensRect.width * density.density
-                    val heightPx = lensRect.height * density.density
-
-                    lensPath.rewind()
-                    lensPath.addRoundRect(
-                        RoundRect(
-                            rect = Rect(leftPx, topPx, leftPx + widthPx, topPx + heightPx),
-                            cornerRadius = CornerRadius(heightPx / 2f, heightPx / 2f),
-                        ),
-                    )
-                    clipPath(lensPath) {
-                        this@drawWithContent.drawContent()
-                    }
-                },
-        ) {
-            DestinationsRow(
-                items = items,
-                layout = layout,
-                tint = colorScheme.primary,
-                magnification = { 1f + FlClashDockPhysics.LENS_MAGNIFY * liftSpring.value },
+                            // 7. 外凸透镜发丝双色边框 (FLClash 0.42dp Hairline Contour)
+                            drawRoundRect(
+                                color = (if (dark) Color.White.copy(alpha = 0.38f * lift) else Color(0x33000000)),
+                                topLeft = Offset(leftPx, topPx),
+                                size = Size(widthPx, heightPx),
+                                cornerRadius = CornerRadius(radiusPx, radiusPx),
+                                style = Stroke(width = 0.6.dp.toPx()),
+                            )
+                        }
+                    },
             )
+
+            // ── 层4: 镜内文字与图标 (Inside Destinations - primary, 1.16x 放大) ──
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(barHeightDp)
+                    .padding(barPaddingDp)
+                    .drawWithContent {
+                        val lift = liftSpring.value
+                        val lensRect = FlClashDockPhysics.lensRect(
+                            position = lensSpring.value,
+                            stretch = jellySpring.value,
+                            pitch = layout.pitch,
+                            width = layout.lens,
+                            height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
+                            lift = lift,
+                        )
+                        val leftPx = (layout.inset + lensRect.left) * density.density
+                        val topPx = lensRect.top * density.density
+                        val widthPx = lensRect.width * density.density
+                        val heightPx = lensRect.height * density.density
+
+                        lensPath.rewind()
+                        lensPath.addRoundRect(
+                            RoundRect(
+                                rect = Rect(leftPx, topPx, leftPx + widthPx, topPx + heightPx),
+                                cornerRadius = CornerRadius(heightPx / 2f, heightPx / 2f),
+                            ),
+                        )
+                        clipPath(lensPath) {
+                            this@drawWithContent.drawContent()
+                        }
+                    },
+            ) {
+                DestinationsRow(
+                    items = items,
+                    layout = layout,
+                    tint = colorScheme.primary,
+                    magnification = { 1f + FlClashDockPhysics.LENS_MAGNIFY * liftSpring.value },
+                )
+            }
         }
     }
 }
