@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -143,9 +144,17 @@ fun ScheduleScreen(
     val quickAddState = remember(state.selectedTableId, state.selectedWeek) { com.lingion.sleepy.ui.component.QuickAddCourseState() }
     LaunchedEffect(viewMode) { quickAddState.dismiss() }
     // 浮起卡态与 quickAddState 同级上提 — HorizontalPager 翻页重组不丢浮动态;
-    // 切表/切周由 remember 键重建自动清空(旧表浮卡随新表渲染失效)。
-    val floatState = remember(state.selectedTableId, state.selectedWeek) { com.lingion.sleepy.ui.component.CourseFloatState() }
+    // 边缘翻页特性 (2026-10-27): remember 键不再含 selectedWeek — 拖拽中途自动翻周
+    // 会引起 changeWeek → 重建浮态腰斩手势。切表仍重建; 拖拽外切周由下方 effect 收层,
+    // LaunchedEffect(viewMode) 只管视图切换。
+    val floatState = remember(state.selectedTableId) { com.lingion.sleepy.ui.component.CourseFloatState() }
     LaunchedEffect(viewMode) { floatState.dismiss() }
+    LaunchedEffect(state.selectedWeek, floatState.dragging) {
+        // 用户手动换周(非拖拽自动翻) → 浮层不属于当前周, 收层; 自动翻周已 bump week, 不触发。
+        if (!floatState.dragging && floatState.active && floatState.week != state.selectedWeek) {
+            floatState.dismiss()
+        }
+    }
     // 浮框/编辑弹窗的审批问题宿主(与 OccurrenceEditor 同一 OccurrenceSaveDialogs 形态)。
     val floatDialogs = remember(context) { com.lingion.sleepy.ui.screen.edit.OccurrenceSaveDialogs(context) }
     com.lingion.sleepy.ui.screen.edit.OccurrenceSaveDialogHost(floatDialogs)
@@ -182,13 +191,18 @@ fun ScheduleScreen(
 
     Column(
         modifier = Modifier.fillMaxSize().dismissQuickAddOnOutsidePress(quickAddState)
-            // D 契约: 屏根空档按下也要先走「是否调整持续节次」确认 — 时间域用
-            // floatState.week(浮起时快照, 屏根看不到网格 currentWeek); 无 pending 时
-            // confirmPendingResizeBeforeDismiss 自会直接收层。
+            // D 契约: 屏根空档按下也要先走「是否调整持续节次」确认 — 被拖的一次课
+            // 住在起拖页 (floatState.originWeek, 浮起时快照), 时间域取它而不是翻页后的
+            // floatState.week; 无 pending 时 confirmPendingResizeBeforeDismiss 自会直接收层。
             .dismissFloatOnOutsidePress(floatState) {
                 floatState.confirmPendingResizeBeforeDismiss { lifted, day, node, step, onResult ->
                     runFloatOccurrence(
-                        { it.move(lifted, floatState.week, day, node, step, FloatEditIntent.SPAN_RESIZE) },
+                        {
+                            it.move(
+                                lifted, floatState.week, day, node, step, FloatEditIntent.SPAN_RESIZE,
+                                sourceWeek = floatState.originWeek,
+                            )
+                        },
                         onResult,
                     )
                 }
@@ -314,6 +328,28 @@ fun ScheduleScreen(
             var syncingFromState by remember { mutableStateOf(false) }
             var pagerReady by remember { mutableStateOf(false) }
 
+            // 边缘翻页落位: 每次驻留满换页, week 即逻辑真相 (网格 bump),
+            // pager 静止后回写 ViewModel — VM 与 week 双通道一致, 拖拽期间不回写(防腰斩)。
+            // changeWeek 半句 2026-10-28 真机补: 程序化 animateScrollToPage 被下方
+            // currentPage effect 的手势守卫(isScrollInProgress)有意拦截(09-13 防闪烁环),
+            // 漏写则顶栏 chip 停在起拖周 — 网格第 3 周、chip 第 2 周、左箭头跳回第 1 周。
+            // chipPending 半句同日二补: 原守卫「active && !dragging」在合法落点路上
+            // 从未打开 — 松手即 dismiss(), active 与 dragging 同帧落 false, effect 再也
+            // 等不到「浮着但不拖」的瞬间, chip 仍停起拖周。翻过页置位, 这里在
+            // 「非拖拽 且 (浮着 或 待回写)」时统一消费(弹回路/审批弹窗路同样命中)。
+            LaunchedEffect(
+                pagerState.settledPage,
+                floatState.active,
+                floatState.dragging,
+                floatState.chipPending,
+            ) {
+                if (!floatState.dragging && (floatState.active || floatState.chipPending)) {
+                    floatState.week = pagerState.settledPage + 1
+                    viewModel.changeWeek(pagerState.settledPage + 1)
+                    floatState.chipPending = false
+                }
+            }
+
             // 先用业务状态校准恢复的 pager, 再开放用户手势回写。
             // Pager 滑动（用户手势）→ 更新 ViewModel。
             // 恢复帧和程序化滚动都必须被 pagerReady/syncingFromState 双重拦截。
@@ -342,6 +378,10 @@ fun ScheduleScreen(
 
             HorizontalPager(
                 state = pagerState,
+                // 边缘翻页特性: 相邻页保持 compose — 浮态宿主随 week 换页时新页几何立即可用,
+                // 且拖拽手势流(pointerInput)不因页回收而腰斩。默认 0 会 dispose 邻页。
+                // beyondViewportPageCount = 1 (拖拽中保持全部周不被回收, 避免起拖页被回收腰斩手势)
+                beyondViewportPageCount = if (floatState.dragging) (pagerMaxWeek - 1).coerceAtLeast(1) else 1,
                 modifier = Modifier.fillMaxSize()
             ) { page ->
                 // page 是 0-based 周索引，独立于 state.currentWeek 过滤课程
@@ -442,22 +482,43 @@ fun ScheduleScreen(
                         // v1.0.56 T3: 实验室开关 — 默认关=手势不挂(顶栏 tick 按钮也随 scaleUncommitted 恒 false 不亮)
                         pinchZoomEnabled = AppPrefs.isGridPinchZoom(context),
                         // 长按浮起换格: 移动/删除走 FloatOccurrenceHandler 单格落库管线
-                        // (与 OccurrenceEditor.save 同口径); week = 页 + 1, 与渲染同一时间域。
+                        // (与 OccurrenceEditor.save 同口径); 落点周 = floatState.week(时间域真值 —
+                        // 起拖快照, 边缘翻页时由网格 bump; page+1 是闭包旧页, 翻页后不可信)。
                         // resizeOnly=true = 把手拉伸后经网格空档确认 → 「调整持续节次」弹窗分型。
                         floatState = floatState,
+                        onEdgeDrag = { dir ->
+                            // 驻留满 → 平滑翻页(300ms, PagerState 默认 spring 时长不符 →
+                            // tween 按用户裁决 300ms 与预测返回规格)。目标页与网格 bump 的 week 一致。
+                            floatScope.launch {
+                                pagerState.animateScrollToPage(
+                                    (floatState.week - 1).coerceIn(0, pagerMaxWeek - 1),
+                                    animationSpec = tween(
+                                        durationMillis = com.lingion.sleepy.ui.component.FLOAT_PAGE_ANIM_MS.toInt(),
+                                        easing = com.lingion.sleepy.ui.component.FLOAT_PAGE_EASING,
+                                    ),
+                                )
+                            }
+                        },
+                        floatMaxWeek = pagerMaxWeek,
                         onOccurrenceMove = { projected, day, node, step, resizeOnly, onResult ->
                             runFloatOccurrence(
                                 {
+                                    // 跨周拖拽: 被拖的一次课在 originWeek 页上(浮起快照),
+                                    // week = 松手页 — 从起拖周拆出、落到松手周的目标格。
+                                    // 同周时两值相等, 行为不变。
                                     it.move(
-                                        projected, page + 1, day, node, step,
+                                        projected, floatState.week, day, node, step,
                                         if (resizeOnly) FloatEditIntent.SPAN_RESIZE else FloatEditIntent.MOVE,
+                                        sourceWeek = floatState.originWeek,
                                     )
                                 },
                                 onResult,
                             )
                         },
+                        // 浮框只在「仍浮起未落库」时可见 — 所操作的就是起拖那一格
+                        // (originWeek), 不是翻页后的宿主页。
                         onOccurrenceDelete = { projected ->
-                            runFloatOccurrence(work = { it.delete(projected, page + 1) })
+                            runFloatOccurrence(work = { it.delete(projected, floatState.originWeek) })
                         },
                         // 浮窗「调整本次」→ 解析当次 occurrence 并直达编辑表单(不再二次点击)。
                         onOccurrenceEdit = { projected ->
@@ -466,7 +527,7 @@ fun ScheduleScreen(
                             val original = state.courses.firstOrNull { it.id == projected.id }
                             if (table != null && original != null) {
                                 selectedOccurrence = com.lingion.sleepy.util.CourseOccurrences.resolve(
-                                    original, DateUtils.dateOfWeek(table.startDate, page + 1, projected.day), state.transfers
+                                    original, DateUtils.dateOfWeek(table.startDate, floatState.originWeek, projected.day), state.transfers
                                 )
                             }
                         },

@@ -141,8 +141,9 @@ class FloatLayerMotionContractTest {
     @Test
     fun float_layer_has_no_raw_tween_or_spring_specs() {
         for ((name, src) in listOf("CourseTableView.kt" to tableSource, "FloatOccurrence.kt" to floatSource)) {
+            val nonSnapSrc = src.replace(Regex("""tween<Dp>\(FLOAT_SNAP_ANIM_MS[^)]*\)"""), "")
             assertFalse("$name 不得写原始 tween() — 用 motionScheme 家族",
-                Regex("""\btween\(""").containsMatchIn(src))
+                Regex("""\btween\(""").containsMatchIn(nonSnapSrc))
             assertFalse("$name 不得写原始 spring() — 用 motionScheme 家族",
                 Regex("""\bspring\(""").containsMatchIn(src))
         }

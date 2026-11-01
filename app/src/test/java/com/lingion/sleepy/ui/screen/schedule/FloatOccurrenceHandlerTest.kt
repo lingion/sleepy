@@ -97,6 +97,54 @@ class FloatOccurrenceHandlerTest {
         }
     }
 
+    @Test fun crossWeekDropToTheSameCellStillAsksAndMovesThatOccurrence() {
+        // 2026-10-28 用户反馈: 拖到右缘翻页后松手曾「像完全没有任何发生」——
+        // 周复现课在新周同格本就有同 id 行, 旧单周号把它当「没变」静默自并入。
+        // 现在: 从起拖周 resolve, 跨周必弹窗, 原周拆出、落点周生效。
+        // 落点周同格已被本行 2-16 复现覆盖 → 与 OccurrenceEditor 同口径, 冲突二确认
+        // 必须弹出让用户裁决(否决即不动), 确认即保留重叠, 绝不再静默吞掉。
+        runWithDialogAnswers(0, 0) {
+            assertEquals(FloatOccurrenceHandler.Outcome.SAVED,
+                handler().move(course, week = 2, day = 1, node = 1, step = 2, sourceWeek = 1))
+        }
+        assertEquals(app.getString(R.string.occurrence_move_confirm_title), asked.first().first)
+        assertTrue(asked.first().second.contains("Math"))
+        assertTrue(asked.first().second.contains(app.getString(R.string.schedule_current_week, 1)))
+        assertTrue(asked.first().second.contains(app.getString(R.string.schedule_current_week, 2)))
+        assertEquals(2, asked.size) // 第二道 = 冲突确认(自身 2-16 复现行占用落点格)
+        runBlocking {
+            // 原周清空; 确认后落点周 = 复现行(2-16) + 用户批准的单周重叠块。
+            assertTrue(repo.getCoursesForDate(table, monday).isEmpty())
+            assertEquals(2, repo.getCoursesForDate(table, monday.plusWeeks(1)).size)
+            assertTrue(UndoManager.hasSnapshot) // 落库成功 → 撤回胶囊有快照
+        }
+    }
+
+    @Test fun crossWeekDropToAnotherCellMovesThatOccurrence() {
+        runWithDialogAnswers(0) {
+            assertEquals(FloatOccurrenceHandler.Outcome.SAVED,
+                handler().move(course, week = 2, day = 3, node = 4, step = 2, sourceWeek = 1))
+        }
+        runBlocking {
+            assertTrue(repo.getCoursesForDate(table, monday).isEmpty())
+            val moved = repo.getCoursesForDate(table, wednesday.plusWeeks(1)).single()
+            assertEquals(4, moved.startNode)
+            assertEquals(2, moved.step)
+            assertEquals(2, moved.startWeek)
+            assertEquals(2, moved.endWeek)
+            assertEquals(listOf(course.copy(startWeek = 2)),
+                repo.getCourses(table.id).filter { it.startWeek != it.endWeek })
+        }
+    }
+
+    @Test fun vetoOnTheCrossWeekConfirmKeepsTheScheduleUntouched() {
+        runWithDialogAnswers(null) {
+            assertEquals(FloatOccurrenceHandler.Outcome.CANCELED,
+                handler().move(course, week = 2, day = 3, node = 4, step = 2, sourceWeek = 1))
+        }
+        runBlocking { assertEquals(listOf(course), repo.getCourses(table.id)) }
+    }
+
     @Test fun dropOnAnotherCellConfirmsTheMoveBeforeAnythingSaves() {
         runWithDialogAnswers(0) {
             assertEquals(FloatOccurrenceHandler.Outcome.SAVED, handler().move(course, week = 1, day = 3, node = 4, step = 2))
