@@ -229,10 +229,10 @@ data class LiquidGlassStyle(
                 refraction = 14.0,
                 bevel = 11.2,
                 saturation = 1.0,
-                brightness = if (dark) 1.33 else 1.0,
+                brightness = 1.0,
                 rim = 0.0,
-                dispersion = 3.6,
-                rimBlur = 2.5,
+                dispersion = 0.0,
+                rimBlur = 0.0,
             )
 
         /**
