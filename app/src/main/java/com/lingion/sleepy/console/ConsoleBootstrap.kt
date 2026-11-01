@@ -10,6 +10,7 @@ import com.lingion.sleepy.console.handlers.LogHandler
 import com.lingion.sleepy.console.handlers.SessionHandler
 import com.lingion.sleepy.console.handlers.UnlockTapCounter
 import com.lingion.sleepy.console.handlers.DataOpsRuntime
+import com.lingion.sleepy.console.ui.TagRegistry
 import com.lingion.sleepy.console.ui.UiOpsRuntime
 import com.lingion.sleepy.util.AppLog
 import java.util.concurrent.atomic.AtomicBoolean
@@ -57,6 +58,7 @@ object ConsoleBootstrap {
             appRef = app
             bindAwaitingServer(app)
             registerAllCapabilities(app)
+            DebugGate.onActivationChanged = { TagRegistry.requestRefresh() }
             DebugGate.activate(debugBuild = BuildConfig.DEBUG, releaseUnlocked = DebugGate.isReleaseUnlocked)
         } catch (t: Throwable) {
             // SPEC §9.4：绑定失败必须在启动日志显式报错，且不留下半活状态
@@ -91,7 +93,9 @@ object ConsoleBootstrap {
      * 物理 404 / jw-mock 403）。
      */
     fun finishReleaseUnlock() {
+        DebugGate.onActivationChanged = { TagRegistry.requestRefresh() }
         appRef?.let { registerAllCapabilities(it) }
+        TagRegistry.requestRefresh()
     }
 
     private fun bindAwaitingServer(app: Application) {
@@ -131,10 +135,12 @@ object ConsoleBootstrap {
         if (!started.compareAndSet(true, false)) return
         runCatching { server?.stop() }
         server = null
+        DebugGate.onActivationChanged = null
         DebugGate.invalidate()
         TokenStore.revoke()
         UnlockTapCounter.reset()
         CommandRouter.reset()
+        TagRegistry.clear()
     }
 
     /**

@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Rect
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.PixelCopy
@@ -40,29 +41,53 @@ class Gestures(private val activity: Activity) {
             ?: hitTest(activity.window.decorView, x, y)
             ?: activity.window.decorView
         val (px, py) = toLocal(view, x, y)
-        return runMain(2500) {
+        val completionLatch = CountDownLatch(1)
+        val waitBudget = when {
+            doubleTap -> 600L
+            longPressMs != null && longPressMs > 0 -> longPressMs + 600L
+            else -> 400L
+        }
+        val scheduled = runMain(2500) {
             when {
                 doubleTap -> {
                     downUp(view, px, py, 0L, 60L)
-                    downUp(view, px, py, 120L, 180L)
+                    downUp(view, px, py, 120L, 180L) { completionLatch.countDown() }
                 }
                 longPressMs != null && longPressMs > 0 ->
-                    downUp(view, px, py, 0L, longPressMs + 30L)
-                else -> downUp(view, px, py, 0L, 40L)
+                    downUp(view, px, py, 0L, longPressMs + 30L) { completionLatch.countDown() }
+                else -> downUp(view, px, py, 0L, 40L) { completionLatch.countDown() }
             }
             true
         }
+        if (!scheduled) return false
+        return completionLatch.await(waitBudget, TimeUnit.MILLISECONDS)
     }
 
     /** 一次按下-抬起；holdMs 用事件时间轴表达（长按不阻塞主线程）。 */
-    private fun downUp(view: View, lx: Float, ly: Float, startDelayMs: Long, holdMs: Long) {
-        val down = System.currentTimeMillis() + startDelayMs
-        fun post(at: Long, action: Int) {
-            val e = MotionEvent.obtain(down, at, action, lx, ly, 0)
-            view.postDelayed({ view.dispatchTouchEvent(e) }, at - System.currentTimeMillis())
+    private fun downUp(
+        view: View,
+        lx: Float,
+        ly: Float,
+        startDelayMs: Long,
+        holdMs: Long,
+        onComplete: (() -> Unit)? = null
+    ) {
+        val baseUptime = SystemClock.uptimeMillis()
+        val down = baseUptime + startDelayMs
+        fun post(at: Long, action: Int, callback: (() -> Unit)? = null) {
+            val delay = (at - SystemClock.uptimeMillis()).coerceAtLeast(0L)
+            view.postDelayed({
+                val e = MotionEvent.obtain(down, at, action, lx, ly, 0)
+                try {
+                    view.dispatchTouchEvent(e)
+                } finally {
+                    e.recycle()
+                    callback?.invoke()
+                }
+            }, delay)
         }
         post(down, MotionEvent.ACTION_DOWN)
-        post(down + holdMs, MotionEvent.ACTION_UP)
+        post(down + holdMs, MotionEvent.ACTION_UP, onComplete)
     }
 
     fun swipe(x1: Int, y1: Int, x2: Int, y2: Int, durationMs: Long): Boolean =
@@ -70,7 +95,7 @@ class Gestures(private val activity: Activity) {
             val decor = activity.window.decorView
             val dur = durationMs.coerceIn(50L, 1500L)
             val steps = (dur / 16L).coerceAtLeast(4L).toInt()
-            val down = System.currentTimeMillis()
+            val down = SystemClock.uptimeMillis()
             val send: (Long, Int, Float, Float) -> Unit = { t, action, mx, my ->
                 val e = MotionEvent.obtain(down, t, action, mx, my, 0)
                 decor.dispatchTouchEvent(e)
@@ -119,11 +144,12 @@ class Gestures(private val activity: Activity) {
             }
         }
         return runMain(3000) {
+            val now = SystemClock.uptimeMillis()
             for (ch in text) {
                 val kc = keyCodeForChar(ch) ?: continue
                 val meta = if (ch.isLetter() && ch.isUpperCase()) KeyEvent.META_SHIFT_ON else 0
-                target.dispatchKeyEvent(KeyEvent(0L, System.currentTimeMillis(), KeyEvent.ACTION_DOWN, kc, 0, meta))
-                target.dispatchKeyEvent(KeyEvent(0L, System.currentTimeMillis(), KeyEvent.ACTION_UP, kc, 0, meta))
+                target.dispatchKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_DOWN, kc, 0, meta))
+                target.dispatchKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_UP, kc, 0, meta))
             }
             true
         }
@@ -158,10 +184,10 @@ class Gestures(private val activity: Activity) {
             val comp = activity as? androidx.activity.ComponentActivity
             if (comp != null) comp.onBackPressedDispatcher.onBackPressed()
             else {
-                val now = System.currentTimeMillis()
+                val now = SystemClock.uptimeMillis()
                 val decor = activity.window.decorView
-                decor.dispatchKeyEvent(KeyEvent(0L, now, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK, 0))
-                decor.dispatchKeyEvent(KeyEvent(0L, now, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK, 0))
+                decor.dispatchKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK, 0))
+                decor.dispatchKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK, 0))
             }
             true
         }
@@ -171,10 +197,10 @@ class Gestures(private val activity: Activity) {
                 "recents" -> KeyEvent.KEYCODE_APP_SWITCH
                 else -> keyCode
             }
-            val now = System.currentTimeMillis()
+            val now = SystemClock.uptimeMillis()
             val decor = activity.window.decorView
-            decor.dispatchKeyEvent(KeyEvent(0L, now, KeyEvent.ACTION_DOWN, kc, 0))
-            decor.dispatchKeyEvent(KeyEvent(0L, now, KeyEvent.ACTION_UP, kc, 0))
+            decor.dispatchKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_DOWN, kc, 0))
+            decor.dispatchKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_UP, kc, 0))
             true
         }
     }
@@ -242,12 +268,19 @@ object ScreenCapture {
             return null
         }
         val scaled = downscale(bitmap)
-        bitmap.recycle()
+        if (scaled !== bitmap) {
+            bitmap.recycle()
+        }
         val out = ByteArrayOutputStream()
-        return if (scaled.compress(Bitmap.CompressFormat.PNG, 100, out)) {
-            if (scaled !== bitmap) scaled.recycle()
-            out.toByteArray()
-        } else null
+        return try {
+            if (scaled.compress(Bitmap.CompressFormat.PNG, 100, out)) {
+                out.toByteArray()
+            } else {
+                null
+            }
+        } finally {
+            scaled.recycle()
+        }
     }
 
     private fun pixelCopy(activity: Activity, bitmap: Bitmap): Boolean {

@@ -323,4 +323,40 @@ class BridgeUnitTest {
         assertFalse(o.getBoolean("ok"))
         assertEquals(400, o.getInt("code"))
     }
+
+    @Test
+    fun grant_new_token_signs_usable_token_and_overrides_previous() {
+        TokenStore.grantNewToken()
+        val first = TokenStore.issue()
+        assertNotNull(first)
+        assertEquals(64, first!!.length)
+        assertTrue(TokenStore.verify(first))
+
+        TokenStore.grantNewToken()
+        val second = TokenStore.issue()
+        assertNotNull(second)
+        assertTrue(first != second)
+        assertFalse("旧 token 即刻失效", TokenStore.verify(first))
+        assertTrue(TokenStore.verify(second))
+    }
+
+    @Test
+    fun hello_token_echo_is_gated_by_debug_build() = runBlocking {
+        ConsoleBootstrap.registerDefaultHandlers()
+
+        // 1. debug 构建：回显活 token
+        DebugGate.activate(debugBuild = true, releaseUnlocked = false)
+        TokenStore.grantNewToken()
+        val d1 = JSONObject(CommandRouter.dispatch("/v1/hello", "POST", ConsoleRequest())).getJSONObject("data")
+        val tok = d1.getString("token")
+        assertEquals(64, tok.length)
+        assertTrue(TokenStore.verify(tok))
+
+        // 2. release 解锁态：恒 null，禁止向三方回显
+        DebugGate.reset(forTestNow = now)
+        DebugGate.armUnlock()
+        assertEquals(UnlockResult.OK, TokenStore.attemptUnlock("right-pass"))
+        val d2 = JSONObject(CommandRouter.dispatch("/v1/hello", "POST", ConsoleRequest())).getJSONObject("data")
+        assertTrue("release 解锁态 hello 禁止回显 token", d2.isNull("token"))
+    }
 }

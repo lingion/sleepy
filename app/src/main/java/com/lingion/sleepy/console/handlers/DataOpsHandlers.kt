@@ -78,6 +78,11 @@ interface ConsoleDataStore {
 interface PrefsStore {
     fun snapshot(): Map<String, Any?>
     fun put(key: String, value: Any?)
+    fun putAll(entries: Map<String, Any?>) {
+        for ((k, v) in entries) {
+            if (v == null) remove(k) else put(k, v)
+        }
+    }
     fun remove(key: String) {}
 }
 
@@ -345,17 +350,15 @@ internal fun handlePrefsPut(prefs: PrefsStore, body: String): String {
         return Envelope.err(400, "keys with prefix '$CONSOLE_KEY_PREFIX' are reserved for the console itself: $blocked")
     }
     val existing = prefs.snapshot()
-    var applied = 0
+    val batch = LinkedHashMap<String, Any?>()
     for (key in o.keys().asSequence().toList()) {
         val raw = o.get(key)
         when {
             raw === JSONObject.NULL -> {
-                prefs.remove(key)
-                applied++
+                batch[key] = null
             }
             raw is Boolean || raw is String -> {
-                prefs.put(key, raw)
-                applied++
+                batch[key] = raw
             }
             raw is Number -> {
                 // 已存在键保持原存储类型（Int 键塞 Long 会炸既有读取方）；新键按 JSON 自然类型。
@@ -364,16 +367,15 @@ internal fun handlePrefsPut(prefs: PrefsStore, body: String): String {
                     is Int -> raw.toInt()
                     else -> if (raw is Int || raw is Long) raw else raw.toString()
                 }
-                prefs.put(key, v)
-                applied++
+                batch[key] = v
             }
             else -> {
-                prefs.put(key, raw.toString())
-                applied++
+                batch[key] = raw.toString()
             }
         }
     }
-    return Envelope.ok(JSONObject().put("applied", applied).toString())
+    prefs.putAll(batch)
+    return Envelope.ok(JSONObject().put("applied", batch.size).toString())
 }
 
 /**
@@ -700,6 +702,21 @@ private class AppPrefsStore(app: Application) : PrefsStore {
 
     override fun remove(key: String) {
         sp.edit().remove(key).commit()
+    }
+
+    override fun putAll(entries: Map<String, Any?>) {
+        val e = sp.edit()
+        for ((key, value) in entries) {
+            when (value) {
+                is String -> e.putString(key, value)
+                is Boolean -> e.putBoolean(key, value)
+                is Int -> e.putInt(key, value)
+                is Long -> e.putLong(key, value)
+                null -> e.remove(key)
+                else -> e.putString(key, value.toString())
+            }
+        }
+        e.commit()
     }
 
     companion object {

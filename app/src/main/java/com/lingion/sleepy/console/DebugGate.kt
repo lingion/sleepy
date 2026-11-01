@@ -36,10 +36,14 @@ object DebugGate {
     val isUnlockArmed: Boolean
         get() = unlockArmedAt?.let { now() - it <= UNLOCK_ARM_WINDOW_MS } == true
 
+    @Volatile
+    var onActivationChanged: (() -> Unit)? = null
+
     fun activate(debugBuild: Boolean, releaseUnlocked: Boolean) {
         this.debugBuild = debugBuild
         this.isReleaseUnlocked = releaseUnlocked
         isActive = true
+        onActivationChanged?.invoke()
     }
 
     fun deactivate() {
@@ -70,5 +74,6 @@ object DebugGate {
         debugBuild = false
         isReleaseUnlocked = false
         unlockArmedAt = null
+        onActivationChanged = null
     }
 }

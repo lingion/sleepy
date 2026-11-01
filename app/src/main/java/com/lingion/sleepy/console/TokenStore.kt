@@ -75,13 +75,7 @@ object TokenStore {
             return UnlockResult.WRONG_PASSPHRASE
         }
         failCount = 0
-        val sb = StringBuilder(64)
-        val bytes = ByteArray(32)
-        repeat(2) {
-            random.nextBytes(bytes)
-            for (b in bytes) sb.append("%02x".format(b))
-        }
-        token = sb.toString()
+        token = generateRandomToken()
         issuedAt = now()
         DebugGate.clearArm()
         DebugGate.activate(debugBuild = DebugGate.debugBuild, releaseUnlocked = true)
@@ -95,13 +89,7 @@ object TokenStore {
      */
     @Synchronized
     fun grantNewToken() {
-        val sb = StringBuilder(64)
-        val bytes = ByteArray(32)
-        repeat(2) {
-            random.nextBytes(bytes)
-            for (b in bytes) sb.append("%02x".format(b))
-        }
-        token = sb.toString()
+        token = generateRandomToken()
         issuedAt = now()
     }
 
@@ -154,6 +142,20 @@ object TokenStore {
 
     private fun constantTimeEquals(a: ByteArray, b: ByteArray): Boolean =
         MessageDigest.isEqual(a, b)
+
+    private val HEX_CHARS = "0123456789abcdef".toCharArray()
+
+    private fun generateRandomToken(): String {
+        val bytes = ByteArray(32)
+        random.nextBytes(bytes)
+        val chars = CharArray(64)
+        for (i in bytes.indices) {
+            val v = bytes[i].toInt() and 0xFF
+            chars[i * 2] = HEX_CHARS[v ushr 4]
+            chars[i * 2 + 1] = HEX_CHARS[v and 0x0F]
+        }
+        return String(chars)
+    }
 
     /** 仅测试/装配复位：注入口令与假时钟，清空 token 与退避计数。 */
     fun reset(passphrase: String = "", forTestNow: () -> Long = System::currentTimeMillis) {
