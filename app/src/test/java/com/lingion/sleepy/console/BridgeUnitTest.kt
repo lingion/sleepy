@@ -329,7 +329,7 @@ class BridgeUnitTest {
         TokenStore.grantNewToken()
         val first = TokenStore.issue()
         assertNotNull(first)
-        assertEquals(128, first!!.length)
+        assertEquals(64, first!!.length)
         assertTrue(TokenStore.verify(first))
 
         TokenStore.grantNewToken()
@@ -349,7 +349,7 @@ class BridgeUnitTest {
         TokenStore.grantNewToken()
         val d1 = JSONObject(CommandRouter.dispatch("/v1/hello", "POST", ConsoleRequest())).getJSONObject("data")
         val tok = d1.getString("token")
-        assertEquals(128, tok.length)
+        assertEquals(64, tok.length)
         assertTrue(TokenStore.verify(tok))
 
         // 2. release 解锁态：恒 null，禁止向三方回显

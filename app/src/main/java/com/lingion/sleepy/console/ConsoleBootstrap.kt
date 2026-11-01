@@ -58,6 +58,7 @@ object ConsoleBootstrap {
             appRef = app
             bindAwaitingServer(app)
             registerAllCapabilities(app)
+            DebugGate.onActivationChanged = { TagRegistry.requestRefresh() }
             DebugGate.activate(debugBuild = BuildConfig.DEBUG, releaseUnlocked = DebugGate.isReleaseUnlocked)
         } catch (t: Throwable) {
             // SPEC §9.4：绑定失败必须在启动日志显式报错，且不留下半活状态
@@ -92,7 +93,9 @@ object ConsoleBootstrap {
      * 物理 404 / jw-mock 403）。
      */
     fun finishReleaseUnlock() {
+        DebugGate.onActivationChanged = { TagRegistry.requestRefresh() }
         appRef?.let { registerAllCapabilities(it) }
+        TagRegistry.requestRefresh()
     }
 
     private fun bindAwaitingServer(app: Application) {
@@ -132,6 +135,7 @@ object ConsoleBootstrap {
         if (!started.compareAndSet(true, false)) return
         runCatching { server?.stop() }
         server = null
+        DebugGate.onActivationChanged = null
         DebugGate.invalidate()
         TokenStore.revoke()
         UnlockTapCounter.reset()

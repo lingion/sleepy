@@ -9,6 +9,7 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
+import com.lingion.sleepy.console.ActivityTracker
 import com.lingion.sleepy.console.DebugGate
 import java.lang.ref.WeakReference
 import java.util.concurrent.ConcurrentHashMap
@@ -115,6 +116,15 @@ object TagRegistry {
     }
 
     fun clear() = entries.clear()
+
+    /** 激活调试门时主动请求根视图重新布局，使已组合的 View 重新触发 onPlaced 登记入表 */
+    fun requestRefresh() {
+        ActivityTracker.currentActivity()?.let { act ->
+            act.runOnUiThread {
+                act.window?.decorView?.requestLayout()
+            }
+        }
+    }
 }
 
 /**

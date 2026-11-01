@@ -146,9 +146,9 @@ object TokenStore {
     private val HEX_CHARS = "0123456789abcdef".toCharArray()
 
     private fun generateRandomToken(): String {
-        val bytes = ByteArray(64)
+        val bytes = ByteArray(32)
         random.nextBytes(bytes)
-        val chars = CharArray(128)
+        val chars = CharArray(64)
         for (i in bytes.indices) {
             val v = bytes[i].toInt() and 0xFF
             chars[i * 2] = HEX_CHARS[v ushr 4]
