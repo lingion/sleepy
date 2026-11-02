@@ -1,0 +1,32 @@
+// Injected only by Debug APK Build, including when the target predates this file.
+// Do not change the checked-out app or the normal local/release build settings.
+def selectedAbi = gradle.startParameter.projectProperties['sleepy.buildAbi'] ?: 'all'
+def nativeAbis = ['arm64-v8a', 'armeabi-v7a', 'x86_64']
+if (!(selectedAbi in (['all', 'universal'] + nativeAbis))) {
+    throw new GradleException("Unsupported sleepy.buildAbi '${selectedAbi}'")
+}
+gradle.beforeProject { project ->
+    if (project.path == ':app') {
+        project.pluginManager.withPlugin('com.android.application') {
+            project.extensions.getByName('androidComponents').finalizeDsl { android ->
+                def debugKeystore = System.getenv('SLEEPY_DEBUG_KEYSTORE')
+                if (debugKeystore) {
+                    android.signingConfigs.getByName('debug').storeFile = new File(debugKeystore)
+                }
+                android.defaultConfig.ndk.abiFilters.clear()
+                android.productFlavors.each { flavor -> flavor.ndk.abiFilters.clear() }
+                android.buildTypes.each { type -> type.ndk.abiFilters.clear() }
+                android.splits.abi.reset()
+                if (selectedAbi == 'universal') {
+                    android.splits.abi.enable = false
+                    android.splits.abi.universalApk = false
+                    android.defaultConfig.ndk.abiFilters.addAll(nativeAbis)
+                } else {
+                    android.splits.abi.enable = true
+                    android.splits.abi.include(*((selectedAbi == 'all') ? nativeAbis : [selectedAbi]))
+                    android.splits.abi.universalApk = (selectedAbi == 'all')
+                }
+            }
+        }
+    }
+}
