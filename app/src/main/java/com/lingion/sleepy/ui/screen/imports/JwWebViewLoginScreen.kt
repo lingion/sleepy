@@ -158,6 +158,7 @@ fun JwWebViewLoginScreen(
     val sepPortalHintMsg = stringResource(R.string.jw_err_ucas_sep_portal)
     val thuPageHintMsg = stringResource(R.string.jw_err_thu_course_page)
     val thuNavHintMsg = stringResource(R.string.jw_nav_hint_thu)
+    val kingoNavHintMsg = stringResource(R.string.jw_nav_hint_kingo_new)
     val fetchTimeoutMsg = stringResource(R.string.jw_fetch_timeout)
     val fetchNoCoursesMsg = stringResource(R.string.jw_fetch_no_courses)
     val fetchFallbackPeriodsMsg = stringResource(R.string.jw_fetch_fallback_periods)
@@ -435,7 +436,11 @@ fun JwWebViewLoginScreen(
         },
         bottomBar = {
             CaptureBar(
-                navigationHint = if (school.type == JwProtocol.TYPE_THU) thuNavHintMsg else null,
+                navigationHint = when (school.type) {
+                    JwProtocol.TYPE_THU -> thuNavHintMsg
+                    JwProtocol.TYPE_KINGO_NEW -> kingoNavHintMsg
+                    else -> null
+                },
                 enabled = webViewRef != null,
                 onCapture = {
                     val wv = webViewRef
