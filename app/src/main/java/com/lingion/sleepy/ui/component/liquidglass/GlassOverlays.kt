@@ -47,12 +47,18 @@ fun GlassAlertDialog(
     properties: DialogProperties = DialogProperties(),
 ) {
     val glass = overlayGlass()
+    val parentScene = LocalGlassPopupScene.current ?: LocalGlassHost.current
+    val popupScene = rememberGlassHostState()
     val carrierShape = if (glass && shape == AlertDialogDefaults.shape) FlClashGlassShape(34f) else shape
-    CompositionLocalProvider(LocalGlassOverlay provides glass) {
+    CompositionLocalProvider(
+        LocalGlassOverlay provides glass,
+        LocalGlassOverlaySamplingHost provides parentScene,
+        LocalGlassPopupScene provides popupScene,
+    ) {
         MaterialAlertDialog(
             onDismissRequest = onDismissRequest,
             confirmButton = confirmButton,
-            modifier = modifier.glassControl(shape = carrierShape, enabled = false, registerPane = false, role = GlassMaterialRole.Alert),
+            modifier = modifier.recordGlassPopupScene(popupScene).glassControl(shape = carrierShape, enabled = false, registerPane = false, role = GlassMaterialRole.Alert),
             dismissButton = dismissButton, icon = icon, title = title, text = text, shape = carrierShape,
             containerColor = if (glass) Color.Transparent else containerColor,
             iconContentColor = iconContentColor, titleContentColor = titleContentColor,
@@ -78,11 +84,17 @@ fun GlassDropdownMenu(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val glass = overlayGlass()
+    val parentScene = LocalGlassPopupScene.current ?: LocalGlassHost.current
+    val popupScene = rememberGlassHostState()
     val carrierShape = if (glass && shape == MenuDefaults.shape) FlClashGlassShape(24f) else shape
-    CompositionLocalProvider(LocalGlassOverlay provides glass) {
+    CompositionLocalProvider(
+        LocalGlassOverlay provides glass,
+        LocalGlassOverlaySamplingHost provides parentScene,
+        LocalGlassPopupScene provides popupScene,
+    ) {
         MaterialDropdownMenu(
             expanded, onDismissRequest,
-            modifier.glassControl(shape = carrierShape, enabled = false, registerPane = false, role = GlassMaterialRole.Menu),
+            modifier.recordGlassPopupScene(popupScene).glassControl(shape = carrierShape, enabled = false, registerPane = false, role = GlassMaterialRole.Menu),
             offset, scrollState, properties, carrierShape,
             if (glass) Color.Transparent else containerColor,
             if (glass) 0.dp else tonalElevation,
@@ -98,8 +110,16 @@ fun GlassDialog(
     content: @Composable () -> Unit,
 ) {
     val glass = overlayGlass()
-    CompositionLocalProvider(LocalGlassOverlay provides glass) {
-        androidx.compose.ui.window.Dialog(onDismissRequest, properties, content)
+    val parentScene = LocalGlassPopupScene.current ?: LocalGlassHost.current
+    val popupScene = rememberGlassHostState()
+    CompositionLocalProvider(
+        LocalGlassOverlay provides glass,
+        LocalGlassOverlaySamplingHost provides parentScene,
+        LocalGlassPopupScene provides popupScene,
+    ) {
+        androidx.compose.ui.window.Dialog(onDismissRequest, properties) {
+            androidx.compose.foundation.layout.Box(Modifier.recordGlassPopupScene(popupScene)) { content() }
+        }
     }
 }
 
@@ -113,10 +133,18 @@ fun GlassDatePickerDialog(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val glass = overlayGlass()
-    CompositionLocalProvider(LocalGlassOverlay provides glass) {
+    val parentScene = LocalGlassPopupScene.current ?: LocalGlassHost.current
+    val popupScene = rememberGlassHostState()
+    val carrierShape = if (glass) FlClashGlassShape(34f) else androidx.compose.material3.DatePickerDefaults.shape
+    CompositionLocalProvider(
+        LocalGlassOverlay provides glass,
+        LocalGlassOverlaySamplingHost provides parentScene,
+        LocalGlassPopupScene provides popupScene,
+    ) {
         androidx.compose.material3.DatePickerDialog(
             onDismissRequest, confirmButton,
-            modifier.glassControl(enabled = false, registerPane = false, role = GlassMaterialRole.Alert),
+            modifier.recordGlassPopupScene(popupScene).glassControl(shape = carrierShape, enabled = false, registerPane = false, role = GlassMaterialRole.Alert),
+            shape = carrierShape,
             dismissButton = dismissButton,
             colors = androidx.compose.material3.DatePickerDefaults.colors(
                 containerColor = if (glass) Color.Transparent else androidx.compose.material3.DatePickerDefaults.colors().containerColor,
@@ -144,10 +172,16 @@ fun GlassModalBottomSheet(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val glass = overlayGlass()
-    CompositionLocalProvider(LocalGlassOverlay provides glass) {
+    val parentScene = LocalGlassPopupScene.current ?: LocalGlassHost.current
+    val popupScene = rememberGlassHostState()
+    CompositionLocalProvider(
+        LocalGlassOverlay provides glass,
+        LocalGlassOverlaySamplingHost provides parentScene,
+        LocalGlassPopupScene provides popupScene,
+    ) {
         MaterialBottomSheet(
             onDismissRequest = onDismissRequest,
-            modifier = modifier.glassControl(shape = shape, enabled = false, registerPane = false, role = GlassMaterialRole.Menu),
+            modifier = modifier.recordGlassPopupScene(popupScene).glassControl(shape = shape, enabled = false, registerPane = false, role = GlassMaterialRole.Menu),
             sheetState = sheetState, sheetMaxWidth = sheetMaxWidth, shape = shape,
             containerColor = if (glass) Color.Transparent else containerColor,
             contentColor = contentColor, tonalElevation = if (glass) 0.dp else tonalElevation,
