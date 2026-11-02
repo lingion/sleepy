@@ -227,6 +227,16 @@ class PackageTest(unittest.TestCase):
             self.package("all")
 
 
+class InspectionDiagnosticTest(unittest.TestCase):
+    def test_unknown_signer_output_retains_public_diagnostic(self):
+        from unittest.mock import patch
+        badging = "package: name='com.lingion.sleepy.debug' versionCode='10063' versionName='1.0.63-debug'\napplication-debuggable\n"
+        with patch("debug_ci.find_build_tool", return_value="/sdk/tool"), patch(
+                "debug_ci.subprocess.check_output", side_effect=[badging, "public signer diagnostic"]):
+            with self.assertRaisesRegex(ValueError, "public signer diagnostic"):
+                debug_ci.inspect_apk(Path("example.apk"))
+
+
 class SummaryTest(unittest.TestCase):
     def test_partial_upload_failure_and_ephemeral_warning(self):
         summary = debug_ci.render_summary({"source_sha": SHA, "source_repository": "contributor/sleepy",

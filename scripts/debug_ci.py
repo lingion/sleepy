@@ -123,7 +123,7 @@ def inspect_apk(path):
         find_build_tool("apksigner"), "verify", "--print-certs", str(path)], text=True)
     fingerprint = re.search(r"Signer #1 certificate SHA-256 digest: ([0-9a-fA-F]+)", certificates)
     if not fingerprint:
-        raise ValueError(f"Cannot verify APK signing certificate: {path.name}")
+        raise ValueError(f"Cannot verify APK signing certificate: {path.name}; public apksigner output: {certificates.strip()!r}")
     with zipfile.ZipFile(path) as apk:
         native_abis = sorted({name.split('/')[1] for name in apk.namelist()
                               if name.startswith('lib/') and name.endswith('.so') and len(name.split('/')) >= 3})
