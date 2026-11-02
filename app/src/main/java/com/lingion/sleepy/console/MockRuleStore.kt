@@ -69,8 +69,11 @@ object MockRuleStore {
      * 拒绝空串/绝对路径/任何 `..` 段, 且 canonical 后必须仍在 filesDir 下。
      */
     fun resolveBodyFile(filesDir: File, name: String): File? {
-        if (name.isBlank() || File(name).isAbsolute) return null
-        if (name.split('/').contains("..") || name.split(File.separatorChar).contains("..")) return null
+        // 不依赖宿主 OS 的绝对路径定义：Windows 的 /foo、\foo 不算 isAbsolute。
+        if (name.isBlank() || name.startsWith('/') || name.startsWith('\\') ||
+            Regex("^[A-Za-z]:").containsMatchIn(name) || File(name).isAbsolute
+        ) return null
+        if (name.split('/', '\\').contains("..")) return null
         val target = File(filesDir, name)
         return try {
             if (target.canonicalPath == filesDir.canonicalPath ||
