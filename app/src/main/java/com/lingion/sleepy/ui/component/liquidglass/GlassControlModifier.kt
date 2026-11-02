@@ -50,6 +50,7 @@ fun Modifier.glassControl(
     check(!LocalGlassSourceContent.current) { "An optical consumer cannot be recorded as an ordinary source" }
     val host = LocalGlassHost.current
     val consumerDepth = LocalGlassDepth.current
+    val isOverlay = LocalGlassOverlay.current
     if (LocalUiStyle.current != UiStyle.LiquidGlass || host == null || LocalGlassGrouped.current) return this
     val context = LocalContext.current
     val dark = LocalDarkTheme.current
@@ -64,6 +65,11 @@ fun Modifier.glassControl(
         GlassMaterialRole.Regular -> null
         GlassMaterialRole.Menu -> LiquidGlassRim.menu(dark)
         GlassMaterialRole.Alert -> LiquidGlassRim.alert(dark)
+    }
+    val samplingHost = if (isOverlay) LocalGlassOverlaySamplingHost.current ?: host else host
+    val filterBand = samplingHost.filterBand(consumerDepth, isOverlay, material.blur.toFloat())
+    val backdrop = remember(samplingHost, consumerDepth, isOverlay, filterBand) {
+        filterBand?.backdrop(samplingHost) ?: if (isOverlay) samplingHost.overlayBackdrop else samplingHost.backdropAt(consumerDepth)
     }
     val scope = rememberCoroutineScope()
     val lift = remember { Animatable(0f) }
@@ -121,14 +127,20 @@ fun Modifier.glassControl(
             }
         }
         .drawPlainBackdrop(
-            backdrop = host.backdropAt(consumerDepth),
+            backdrop = backdrop,
             shape = { shape },
             effects = {
                 liquidGlass(
                     context = context,
                     style = material,
+                    sampledBlurPx = if (filterBand?.ready == true) material.blur.toFloat() * density else 0f,
                     outline = if (size.width > 0f && size.height > 0f && size.width.isFinite() && size.height.isFinite())
-                        (shape.createOutline(size, layoutDirection, this) as? androidx.compose.ui.graphics.Outline.Generic)?.path else null,
+                        (shape.createOutline(size, layoutDirection, this) as? androidx.compose.ui.graphics.Outline.Generic)?.path?.let { pxPath ->
+                            androidx.compose.ui.graphics.Path().apply {
+                                addPath(pxPath)
+                                transform(androidx.compose.ui.graphics.Matrix().apply { scale(1f / density, 1f / density) })
+                            }
+                        } else null,
                     rim = rim,
                     glow = LiquidGlassGlow(
                         center = origin / density,

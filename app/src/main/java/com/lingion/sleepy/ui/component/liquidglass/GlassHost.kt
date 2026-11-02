@@ -30,12 +30,35 @@ internal val LocalGlassSourceContent = compositionLocalOf { false }
  * No whole-scene capture, readback, mutable visibility flag, or replay of live glass nodes.
  * The owning layout must declare depth at a boundary which owns its clip and transforms.
  */
-class GlassHostState internal constructor(internal val sourceLayer: GraphicsLayer) {
+class GlassHostState internal constructor(internal val sourceLayer: GraphicsLayer, internal val sceneLayer: GraphicsLayer) {
     internal var coordinates: LayoutCoordinates? = null
     internal var background: Color = Color.Transparent
     internal val sources = linkedSetOf<GlassSourceSegment>()
     internal var version by mutableIntStateOf(0)
+    internal var sceneVersion by mutableIntStateOf(0)
+    internal val overlayBackdrop: Backdrop = object : Backdrop {
+        override val isCoordinatesDependent = true
+        override fun DrawScope.drawBackdrop(density: Density, coordinates: LayoutCoordinates?, layerBlock: (GraphicsLayerScope.() -> Unit)?) {
+            sceneVersion
+            val target = coordinates?.takeIf { it.isAttached } ?: return
+            val root = this@GlassHostState.coordinates?.takeIf { it.isAttached } ?: return
+            val matrix = Matrix()
+            if (transformBetween(root, target, matrix)) {
+                withTransform({ transform(matrix) }) { drawLayer(sceneLayer) }
+            }
+        }
+    }
     private val backdrops = mutableMapOf<Float, Backdrop>()
+    internal var filterBands: List<GlassFilterBand> = emptyList()
+    internal var filterDemand by mutableIntStateOf(0)
+    internal fun filterBand(depth: Float, overlay: Boolean, radiusDp: Float): GlassFilterBand? =
+        filterBands.firstOrNull { (depth == 1f || overlay) && it.overlay == overlay && it.radiusDp == radiusDp }
+            ?.also { band ->
+                if (!band.requested) {
+                    band.requested = true
+                    Snapshot.withoutReadObservation { filterDemand++ }
+                }
+            }
 
     internal fun changed() { Snapshot.withoutReadObservation { version++ } }
 
@@ -81,7 +104,16 @@ internal class GlassSourceSegment(val depth: Float, val layer: GraphicsLayer) {
 @Composable
 fun rememberGlassHostState(): GlassHostState {
     val source = rememberGraphicsLayer()
-    return remember(source) { GlassHostState(source) }
+    val scene = rememberGraphicsLayer()
+    val bands = mutableListOf<GlassFilterBand>()
+    for (overlay in listOf(false, true)) {
+        for (sigma in listOf(2.5f, 12f, 16f)) {
+            val filtered = rememberGraphicsLayer()
+            val published = rememberGraphicsLayer()
+            bands += remember(filtered, published, sigma, overlay) { GlassFilterBand(sigma, overlay, filtered, published) }
+        }
+    }
+    return remember(source, scene) { GlassHostState(source, scene) }.also { it.filterBands = bands }
 }
 
 @Composable
@@ -95,13 +127,21 @@ fun GlassHost(
     state.background = background
     CompositionLocalProvider(LocalGlassHost provides if (enabled) state else null) {
         Box(modifier.onGloballyPositioned { state.coordinates = it }.drawWithContent {
-            drawContent()
+            state.filterDemand
+            if (enabled) {
+                state.sceneLayer.record { this@drawWithContent.drawContent() }
+                drawLayer(state.sceneLayer)
+                Snapshot.withoutReadObservation { state.sceneVersion++ }
+            } else {
+                drawContent()
+            }
             val root = state.coordinates
             if (enabled && root?.isAttached == true) {
                 // Diagnostic export only. Consumers read their own strict prefix directly.
                 state.sourceLayer.record {
                     Snapshot.withoutReadObservation { with(state) { drawPrefix(1f, root) } }
                 }
+                Snapshot.withoutReadObservation { state.filterBands.forEach { it.update(this@drawWithContent, state) } }
             }
         }, content = content)
     }
@@ -163,3 +203,18 @@ internal fun transformBetween(producer: LayoutCoordinates, consumer: LayoutCoord
         true
     }
 }
+
+/** A popup publishes its complete scene for later popup windows, never for itself. */
+internal val LocalGlassPopupScene = compositionLocalOf<GlassHostState?> { null }
+internal val LocalGlassOverlaySamplingHost = compositionLocalOf<GlassHostState?> { null }
+
+internal fun Modifier.recordGlassPopupScene(state: GlassHostState): Modifier =
+    onGloballyPositioned { state.coordinates = it }.drawWithContent {
+        state.filterDemand
+        state.sceneLayer.record { this@drawWithContent.drawContent() }
+        drawLayer(state.sceneLayer)
+        Snapshot.withoutReadObservation { state.sceneVersion++ }
+        Snapshot.withoutReadObservation {
+            state.filterBands.filter { it.overlay }.forEach { it.update(this@drawWithContent, state) }
+        }
+    }
