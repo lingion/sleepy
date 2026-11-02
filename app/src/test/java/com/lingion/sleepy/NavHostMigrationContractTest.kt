@@ -598,4 +598,26 @@ class NavHostMigrationContractTest {
             Regex("""PillNavigationBar\([\s\S]*?dock\s*=\s*true""").containsMatchIn(route)
         )
     }
+
+    // ─── issue#286 横屏三键导航/系统栏 safeDrawing 避让 ───
+    @Test
+    fun mainRoute_wide_layout_uses_safeDrawing_and_consumeWindowInsets() {
+        val route = balancedBlock(navHostSrc, "private fun MainRoute(", maxChars = 20000)
+
+        // 宽屏/横屏模式必须使用 safeDrawing 处理系统栏与导航键(issue #286: 横屏三键导航在右侧, 仅 statusBars 会被三键覆盖)
+        assertTrue(
+            "宽屏/横屏 Row 必须使用 WindowInsets.safeDrawing 处理导航键和系统栏 (ref #286)",
+            Regex("""windowInsetsPadding\(\s*WindowInsets\.safeDrawing\s*\)""").containsMatchIn(route)
+        )
+        assertTrue(
+            "宽屏/横屏 Row 必须 consumeWindowInsets 避免子组件二次 padding (ref #286)",
+            Regex("""consumeWindowInsets\(\s*WindowInsets\.safeDrawing\s*\)""").containsMatchIn(route)
+        )
+        assertFalse(
+            "宽屏/横屏 Row 不得仅使用 statusBars (会导致横屏三键导航盖住右侧内容)",
+            Regex("""windowInsetsPadding\(\s*WindowInsets\.statusBars\s*\)""").containsMatchIn(
+                route.substringBefore("else if (navDock)")
+            )
+        )
+    }
 }

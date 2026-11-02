@@ -116,16 +116,7 @@ private data class SchoolSection(
  * 使用 schools.json 中的 sortKeyFull 字段（完整拼音，如 "haerbingongchengdaxue"），
  * 保证同首字母内严格按拼音字典序排列（ha < hai < hang < he ... < hua < huanan）。
  */
-private fun schoolSortKey(s: JwSchoolInfo): String {
-    val firstLetter = if (s.sortKey.isNotEmpty() && s.sortKey[0].isLetter()) {
-        s.sortKey[0].uppercase()
-    } else {
-        "★"
-    }
-    // sortKeyFull 由 pypinyin 预生成，如 "haerbingongchengdaxue"
-    // 缺失时 fallback 到 name（自定义 URL 场景）
-    return "$firstLetter|${s.sortKeyFull.ifBlank { s.name }}"
-}
+private fun schoolSortKey(s: JwSchoolInfo): String = s.sortOrderKey
 
 /** 把扁平学校列表按完整拼音排序后，按首字母分组 */
 private fun groupByLetter(schools: List<JwSchoolInfo>): List<SchoolSection> {

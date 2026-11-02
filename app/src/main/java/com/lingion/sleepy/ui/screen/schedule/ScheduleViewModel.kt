@@ -241,6 +241,7 @@ class ScheduleViewModel : ViewModel() {
                     if (tables.isEmpty()) {
                         // 没有课表就老实空着，不强行造占位表。
                         // selectedTableId = null，UI 走空态。
+                        AppPrefs.clearCurrentTableId(SleepyApp.get())
                         _state.update {
                             it.copy(
                                 tables = emptyList(),
@@ -252,12 +253,17 @@ class ScheduleViewModel : ViewModel() {
                         return@collect
                     }
                     val previous = _state.value
-                    val targetId = resolveSelectedTableId(
-                        tables = tables,
-                        selectedTableId = previous.selectedTableId,
-                        previousDefaultTableId = previous.tables.find { it.isDefault }?.id,
-                        preserveSelection = manualSelectDone,
-                    ) ?: return@collect
+                    val prefTableId = AppPrefs.getCurrentTableId(SleepyApp.get())
+                    val targetId = if (!manualSelectDone && prefTableId != null && tables.any { it.id == prefTableId }) {
+                        prefTableId
+                    } else {
+                        resolveSelectedTableId(
+                            tables = tables,
+                            selectedTableId = previous.selectedTableId,
+                            previousDefaultTableId = previous.tables.find { it.isDefault }?.id,
+                            preserveSelection = manualSelectDone,
+                        )
+                    } ?: return@collect
                     _state.update {
                         val changed = it.selectedTableId != targetId
                         it.copy(
@@ -331,6 +337,8 @@ class ScheduleViewModel : ViewModel() {
 
     fun selectTable(id: Long) {
         manualSelectDone = true
+        val app = SleepyApp.get()
+        AppPrefs.setCurrentTableId(app, id)
         // 切表 = 新学期语境, 周选择回到该表真实周(initialWeekSettled 复位, loadCourses 重新落周)
         _state.update {
             it.copy(
@@ -341,13 +349,12 @@ class ScheduleViewModel : ViewModel() {
             )
         }
         loadCourses(id)
-        // 切表后同步数据库 isDefault，使小组件严格跟随 App 当前选中表（widget 按默认表解析）
+        // 切表后同步数据库 isDefault，使小组件与流体云严格跟随 App 当前选中表
         viewModelScope.launch {
             try {
                 repo.setDefault(id)
-                com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(
-                    com.lingion.sleepy.SleepyApp.get()
-                )
+                app.notificationScheduler.reconcileActiveFluidCloud()
+                com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(app)
             } catch (_: Exception) {}
         }
     }
@@ -412,6 +419,7 @@ class ScheduleViewModel : ViewModel() {
             // 否则 loadTables 协程 observeAllTables emit 会因为 manualSelectDone=true + selectedTableId!=null
             // 继续保留旧表选择，导致 UI 显示"默认课表"而非用户新建的课表。
             manualSelectDone = true
+            AppPrefs.setCurrentTableId(SleepyApp.get(), id)
             _state.update { it.copy(selectedTableId = id) }
             loadCourses(id)
         } else {
