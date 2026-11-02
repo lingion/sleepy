@@ -228,6 +228,30 @@ class PackageTest(unittest.TestCase):
 
 
 class InspectionDiagnosticTest(unittest.TestCase):
+    def inspect_with_certificate_text(self, text):
+        from unittest.mock import patch
+        import zipfile
+        with tempfile.TemporaryDirectory() as temp:
+            apk = Path(temp) / "example.apk"
+            with zipfile.ZipFile(apk, "w"):
+                pass
+            badging = "package: name='com.lingion.sleepy.debug' versionCode='10063' versionName='1.0.63-debug'\napplication-debuggable\n"
+            with patch("debug_ci.find_build_tool", return_value="/sdk/tool"), patch(
+                    "debug_ci.subprocess.check_output", side_effect=[badging, text]):
+                return debug_ci.inspect_apk(apk)
+
+    def test_legacy_and_v2_signer_labels(self):
+        digest = "b05d0b9872c0c9f5b64a0e1f370b9d6a3dc4170805c497b1e0e64b6e516faef8"
+        for prefix in ("Signer #1", "V2 Signer:"):
+            with self.subTest(prefix=prefix):
+                result = self.inspect_with_certificate_text(f"{prefix} certificate SHA-256 digest: {digest}\n")
+                self.assertEqual(result["certificate_sha256"], digest)
+
+    def test_distinct_signing_identities_fail_closed(self):
+        text = f"Signer #1 certificate SHA-256 digest: {'a' * 64}\nV2 Signer: certificate SHA-256 digest: {'b' * 64}\n"
+        with self.assertRaises(ValueError):
+            self.inspect_with_certificate_text(text)
+
     def test_unknown_signer_output_retains_public_diagnostic(self):
         from unittest.mock import patch
         badging = "package: name='com.lingion.sleepy.debug' versionCode='10063' versionName='1.0.63-debug'\napplication-debuggable\n"
