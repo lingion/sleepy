@@ -542,14 +542,179 @@ object TimeTableUtils {
         return moved.mapIndexed { i, row -> row.copy(node = i + 1) }
     }
 
+    val MIN_TEACHING_TIME: LocalTime = LocalTime.of(6, 0)
+    val MAX_TEACHING_TIME: LocalTime = LocalTime.of(23, 59)
+
+    sealed class PeriodValidationResult {
+        object Valid : PeriodValidationResult()
+        data class Empty(val message: String = "节次列表不能为空") : PeriodValidationResult()
+        data class InvalidFormat(val node: Int, val rawStart: String, val rawEnd: String) : PeriodValidationResult()
+        data class EndBeforeStart(val node: Int, val start: String, val end: String) : PeriodValidationResult()
+        data class OutOfTeachingHours(val node: Int, val start: String, val end: String) : PeriodValidationResult()
+        data class Overlap(val prevNode: Int, val prevEnd: String, val nextNode: Int, val nextStart: String) : PeriodValidationResult()
+
+        fun errorMessage(context: android.content.Context? = null): String {
+            return when (this) {
+                is Valid -> ""
+                is Empty -> if (context != null) context.getString(com.lingion.sleepy.R.string.period_validation_empty) else message
+                is InvalidFormat -> if (context != null) context.getString(com.lingion.sleepy.R.string.period_validation_invalid_format, node)
+                    else "第 ${node} 节时间格式不正确，需为 HH:mm"
+                is EndBeforeStart -> if (context != null) context.getString(com.lingion.sleepy.R.string.period_validation_end_before_start, node, start, end)
+                    else "第 ${node} 节结束时间需晚于开始时间（当前为 $start–$end）"
+                is OutOfTeachingHours -> if (context != null) context.getString(com.lingion.sleepy.R.string.period_validation_out_of_hours, node, start, end)
+                    else "第 ${node} 节时间（$start–$end）不在合法授课时段（06:00–23:59）内"
+                is Overlap -> if (context != null) context.getString(com.lingion.sleepy.R.string.period_validation_overlap, prevNode, prevEnd, nextNode, nextStart)
+                    else "第 ${prevNode} 节与第 ${nextNode} 节时间冲突：第 ${prevNode} 节于 $prevEnd 结束，晚于第 ${nextNode} 节开始时间 $nextStart"
+            }
+        }
+    }
+
+    /**
+     * 校验整张节次表（严格防呆，拒绝保存非法作息）：
+     * 1. 列表不能为空；
+     * 2. 时间格式必须为有效 HH:mm；
+     * 3. 节次时长必须有效（start < end）；
+     * 4. 时间必须在合法授课时段（06:00–23:59）内，拦截 13:00→01:00 这类小时回绕/上下午丢失；
+     * 5. 按节点顺序，相邻节次区间不得重叠（下一节开始不得早于上一节结束）。
+     */
+    fun validatePeriodRows(rows: List<TimeSlotRow>): PeriodValidationResult {
+        if (rows.isEmpty()) return PeriodValidationResult.Empty()
+        val parsedRows = ArrayList<Triple<TimeSlotRow, LocalTime, LocalTime>>(rows.size)
+        for (row in rows) {
+            val start = runCatching { LocalTime.parse(row.start.trim()) }.getOrNull()
+            val end = runCatching { LocalTime.parse(row.end.trim()) }.getOrNull()
+            if (start == null || end == null) {
+                return PeriodValidationResult.InvalidFormat(row.node, row.start, row.end)
+            }
+            if (end <= start) {
+                return PeriodValidationResult.EndBeforeStart(row.node, row.start, row.end)
+            }
+            if (start < MIN_TEACHING_TIME || end > MAX_TEACHING_TIME) {
+                return PeriodValidationResult.OutOfTeachingHours(row.node, row.start, row.end)
+            }
+            parsedRows.add(Triple(row, start, end))
+        }
+
+        val sorted = parsedRows.sortedBy { it.first.node }
+        for (i in 0 until sorted.size - 1) {
+            val cur = sorted[i]
+            val next = sorted[i + 1]
+            if (next.second < cur.third) {
+                return PeriodValidationResult.Overlap(
+                    prevNode = cur.first.node,
+                    prevEnd = cur.first.end,
+                    nextNode = next.first.node,
+                    nextStart = next.first.start
+                )
+            }
+        }
+        return PeriodValidationResult.Valid
+    }
+
+    /** 便捷重载：通过 timeJson 字符串校验 */
+    fun validateTimeJson(timeJson: String): PeriodValidationResult {
+        if (timeJson.isBlank()) return PeriodValidationResult.Empty()
+        val rows = parseTimeSlotRows(timeJson)
+        return validatePeriodRows(rows)
+    }
+
+    /** timeJson 是否完全合法（零重叠、零小时回绕、授课时段内） */
+    fun isPeriodTableValid(timeJson: String): Boolean =
+        validateTimeJson(timeJson) is PeriodValidationResult.Valid
+
+    /**
+     * 渲染链路安全网：清洗存量脏数据供展示渲染使用（纯函数，绝对不写库）。
+     * 保证脏数据不流入今日课程渲染链路，消除相邻重叠与时段倒挂，防止吞课或布局崩溃。
+     */
+    fun sanitizeTimeJsonForDisplay(timeJson: String): String {
+        if (timeJson.isBlank()) return DEFAULT_TIME_JSON
+        val rows = parseTimeSlotRows(timeJson)
+        if (rows.isEmpty()) return DEFAULT_TIME_JSON
+        if (validatePeriodRows(rows) is PeriodValidationResult.Valid) return timeJson
+
+        val sanitized = mutableListOf<TimeSlotRow>()
+        var lastEnd = MIN_TEACHING_TIME
+
+        val sorted = rows.sortedBy { it.node }
+        for (row in sorted) {
+            var st = runCatching { LocalTime.parse(row.start.trim()) }.getOrNull()
+            var et = runCatching { LocalTime.parse(row.end.trim()) }.getOrNull()
+
+            // 1. 修复小时回绕 (如 01:00 -> 13:00)
+            if (st != null && st < MIN_TEACHING_TIME && st.hour < 12) {
+                val candidateSt = st.plusHours(12)
+                if (candidateSt >= lastEnd) {
+                    st = candidateSt
+                    if (et != null && et < MIN_TEACHING_TIME && et.hour < 12) {
+                        et = et.plusHours(12)
+                    }
+                }
+            }
+
+            // 2. 保证在授课时段内且不早于上一节结束
+            if (st == null || st < lastEnd) {
+                st = lastEnd
+            }
+            if (et == null || et <= st) {
+                val plus45 = st.plusMinutes(45)
+                et = if (plus45 > MAX_TEACHING_TIME) MAX_TEACHING_TIME else plus45
+            }
+            if (st > MAX_TEACHING_TIME) st = MAX_TEACHING_TIME.minusMinutes(10)
+            if (et > MAX_TEACHING_TIME) et = MAX_TEACHING_TIME
+
+            val sStr = String.format("%02d:%02d", st.hour, st.minute)
+            val eStr = String.format("%02d:%02d", et.hour, et.minute)
+            sanitized.add(row.copy(start = sStr, end = eStr))
+            lastEnd = et
+        }
+
+        return buildTimeJsonFromRows(sanitized)
+    }
+
+    /**
+     * 检测指定行的节次时间是否与已有其它行发生冲突（供单个节次编辑时实时标红/警告）
+     */
+    fun findConflictForSlot(rows: List<TimeSlotRow>, targetNode: Int): PeriodValidationResult? {
+        val target = rows.find { it.node == targetNode } ?: return null
+        if (target.start.isBlank() && target.end.isBlank()) return null
+        val start = runCatching { LocalTime.parse(target.start.trim()) }.getOrNull()
+        val end = runCatching { LocalTime.parse(target.end.trim()) }.getOrNull()
+        if (start == null || end == null) {
+            return PeriodValidationResult.InvalidFormat(target.node, target.start, target.end)
+        }
+        if (end <= start) {
+            return PeriodValidationResult.EndBeforeStart(target.node, target.start, target.end)
+        }
+        if (start < MIN_TEACHING_TIME || end > MAX_TEACHING_TIME) {
+            return PeriodValidationResult.OutOfTeachingHours(target.node, target.start, target.end)
+        }
+        val others = rows.filter { it.node != targetNode && it.start.isNotBlank() && it.end.isNotBlank() }
+        val prev = others.filter { it.node < targetNode }.maxByOrNull { it.node }
+        if (prev != null) {
+            val pEnd = runCatching { LocalTime.parse(prev.end.trim()) }.getOrNull()
+            if (pEnd != null && start < pEnd) {
+                return PeriodValidationResult.Overlap(prev.node, prev.end, target.node, target.start)
+            }
+        }
+        val next = others.filter { it.node > targetNode }.minByOrNull { it.node }
+        if (next != null) {
+            val nStart = runCatching { LocalTime.parse(next.start.trim()) }.getOrNull()
+            if (nStart != null && nStart < end) {
+                return PeriodValidationResult.Overlap(target.node, target.end, next.node, next.start)
+            }
+        }
+        return null
+    }
+
     fun isTimeSlotOrderValid(rows: List<TimeSlotRow>): Boolean {
-        var previous: LocalTime? = null
+        var previousEnd: LocalTime? = null
         rows.forEach { row ->
             if (row.start.isBlank() && row.end.isBlank()) return@forEach
             val start = runCatching { LocalTime.parse(row.start) }.getOrNull() ?: return false
             val end = runCatching { LocalTime.parse(row.end) }.getOrNull() ?: return false
-            if (start >= end || (previous != null && start < previous)) return false
-            previous = start
+            if (start >= end || (previousEnd != null && start < previousEnd)) return false
+            if (start < MIN_TEACHING_TIME || end > MAX_TEACHING_TIME) return false
+            previousEnd = end
         }
         return true
     }

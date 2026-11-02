@@ -1122,4 +1122,11 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="jw_import_report_copy">複製報告</string>
     <string name="jw_import_report_join_qq">加入 QQ 群</string>
     <string name="jw_import_report_done">完成</string>
+    <string name="period_validation_empty">節次列表不能為空</string>
+    <string name="period_validation_invalid_format">第 %1$d 節時間格式不正確，需為 HH:mm</string>
+    <string name="period_validation_end_before_start">第 %1$d 節結束時間需晚於開始時間（當前為 %2$s–%3$s）</string>
+    <string name="period_validation_out_of_hours">第 %1$d 節時間（%2$s–%3$s）不在合法授課時段（06:00–23:59）內</string>
+    <string name="period_validation_overlap">第 %1$d 節與第 %3$d 節時間衝突：第 %1$d 節於 %2$s 結束，晚於第 %3$d 節開始時間 %4$s</string>
+    <string name="period_conflict_detected_banner">作息表存在時間衝突（%1$s），請前往修正</string>
+    <string name="period_conflict_detected_title">作息時間衝突提示</string>
 </resources>

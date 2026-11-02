@@ -46,10 +46,11 @@ object FixedWindowCore {
 
     /** 课的真实起止分钟 — effectiveCourseTime 同一契约; 无法解析 → null。 */
     fun courseStartEndMin(c: CourseEntity, timeJson: String?): Pair<Int, Int>? {
+        val cleanTj = timeJson?.let { TimeTableUtils.sanitizeTimeJsonForDisplay(it) } ?: ""
         val eff = TimeTableUtils.effectiveCourseTime(
             c.isIrregularTime || c.ownTime,
             c.startTime, c.endTime,
-            c.startNode, c.step, timeJson ?: ""
+            c.startNode, c.step, cleanTj
         ) ?: return null
         val s = runCatching { LocalTime.parse(eff.first) }.getOrNull() ?: return null
         val e = runCatching { LocalTime.parse(eff.second) }.getOrNull() ?: return null

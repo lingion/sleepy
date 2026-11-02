@@ -527,10 +527,13 @@ private fun ManualTimeSlotEditor(
                             }
                         )
                     }
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    val conflictMsg = TimeTableUtils.findConflictForSlot(displayRows, row.node)?.errorMessage(context)
                     TimeSlotRowItem(
                         row = row.copy(node = index + 1),
                         canDelete = displayRows.size > 1,
                         isBlank = row.start.isBlank() && row.end.isBlank(),
+                        conflictMsg = conflictMsg,
                         reorderEnabled = reorderEnabled,
                         isDragging = isDragging,
                         isDropTarget = isDropTarget,
@@ -572,6 +575,7 @@ private fun TimeSlotRowItem(
     row: TimeSlotRow,
     canDelete: Boolean,
     isBlank: Boolean,
+    conflictMsg: String? = null,
     reorderEnabled: Boolean,
     isDragging: Boolean,
     isDropTarget: Boolean,
@@ -594,6 +598,7 @@ private fun TimeSlotRowItem(
     val containerColor by animateColorAsState(
         targetValue = when {
             dropInvalid -> colors.errorContainer
+            conflictMsg != null -> colors.errorContainer.copy(alpha = 0.4f)
             isDragging -> colors.primaryContainer
             isBlank -> colors.secondaryContainer  // 空白行特权视觉: 整卡浅色
             else -> colors.surface
@@ -689,6 +694,14 @@ private fun TimeSlotRowItem(
                 text = blankHint,
                 style = MaterialTheme.typography.bodySmall,
                 color = colors.onSurfaceVariant,
+                modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 4.dp)
+            )
+        }
+        if (conflictMsg != null) {
+            Text(
+                text = conflictMsg,
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.error,
                 modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 4.dp)
             )
         }

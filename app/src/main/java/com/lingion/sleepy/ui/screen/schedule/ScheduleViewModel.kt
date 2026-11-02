@@ -50,7 +50,7 @@ data class ScheduleState(
     val currentWeekCourses: List<CourseEntity>
         get() = courses.filter { it.inWeek(selectedWeek) }
             .let { list ->
-                val tj = effectiveCurrentTable?.timeJson
+                val tj = effectiveRenderTimeJson
                 if (tj == null) list else list.map { c -> c.normalizeNode(tj) }
             }
 
@@ -68,6 +68,17 @@ data class ScheduleState(
     /** issue#40: 水合后的当前表 — 节次时间域一律从这里读, 不得直接读 currentTable.timeJson */
     val effectiveCurrentTable: TimeTableEntity?
         get() = currentTable?.hydratedWith(effectivePeriodTable)
+
+    /** 保证脏数据不流入渲染链路的消毒版 timeJson */
+    val effectiveRenderTimeJson: String?
+        get() = effectiveCurrentTable?.timeJson?.let { TimeTableUtils.sanitizeTimeJsonForDisplay(it) }
+
+    /** 存量脏作息检测：若当前生效作息表存在非法重叠/小时回绕/非法时段，返回校验结果 */
+    val periodValidation: TimeTableUtils.PeriodValidationResult?
+        get() = effectiveCurrentTable?.timeJson?.let { TimeTableUtils.validateTimeJson(it) }
+
+    val hasPeriodConflict: Boolean
+        get() = periodValidation != null && periodValidation !is TimeTableUtils.PeriodValidationResult.Valid
 
     /** issue#44: 给定日期实际应"按星期几取课"; 补班日=sourceDate 星期, 放假日=无课(null), 未命中=自然星期 */
     fun courseDateFor(date: LocalDate): LocalDate? =
