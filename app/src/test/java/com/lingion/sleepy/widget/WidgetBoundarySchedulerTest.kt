@@ -40,6 +40,36 @@ class WidgetBoundarySchedulerTest {
         assertNull(WidgetBoundaryScheduler.nextBoundaryMin(listOf(480, 600), 1300))
     }
 
+    @Test fun `wide grid schedules every individual period end without legacy offset`() {
+        val periods = (1..12).map { WidePeriod(it, 480 + (it - 1) * 60, 525 + (it - 1) * 60) }
+        val date = java.time.LocalDate.of(2026, 11, 2)
+        assertEquals(date.atTime(8, 45), WidgetBoundaryScheduler.nextWidePeriodBoundary(periods, date.atTime(8, 0), 4))
+        assertEquals(date.atTime(9, 45), WidgetBoundaryScheduler.nextWidePeriodBoundary(periods, date.atTime(8, 45), 4))
+        assertEquals(date.atTime(10, 45), WidgetBoundaryScheduler.nextWidePeriodBoundary(periods, date.atTime(9, 45), 4))
+        assertNull(WidgetBoundaryScheduler.nextWidePeriodBoundary(periods, date.atTime(23, 0), 4))
+    }
+
+    @Test fun `wide grid skips alarms after final full window and unresolved timings`() {
+        val date = java.time.LocalDate.of(2026, 11, 2)
+        assertNull(WidgetBoundaryScheduler.nextWidePeriodBoundary((1..4).map { WidePeriod(it, 0, 525) }, date.atTime(8, 0), 4))
+        assertNull(WidgetBoundaryScheduler.nextWidePeriodBoundary(List(12) { WidePeriod(it + 1, null, null) }, date.atTime(8, 0), 4))
+    }
+
+    @Test fun `wide grid epoch conversion follows business zone not device zone`() {
+        val time = java.time.LocalDate.of(2026, 11, 2).atTime(8, 45)
+        val expected = time.atZone(com.lingion.sleepy.util.AppClock.zone).toInstant().toEpochMilli()
+        val old = java.util.TimeZone.getDefault()
+        try {
+            java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("America/New_York"))
+            assertEquals(expected, WidgetBoundaryScheduler.wideBoundaryEpoch(time))
+        } finally { java.util.TimeZone.setDefault(old) }
+    }
+
+    @Test fun `complete alarm recomputation holds the scheduler monitor`() {
+        val method = WidgetBoundaryScheduler::class.java.getDeclaredMethod("armNext", android.content.Context::class.java)
+        assertTrue("read, compute, cancel and set must share the same monitor", java.lang.reflect.Modifier.isSynchronized(method.modifiers))
+    }
+
     // ---- rowEndMins ----
 
     private fun course(

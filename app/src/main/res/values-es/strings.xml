@@ -1156,4 +1156,16 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="jw_import_report_copy">Copiar informe</string>
     <string name="jw_import_report_join_qq">Unirse al grupo</string>
     <string name="jw_import_report_done">Listo</string>
+
+    <string name="widget_week_grid_wide_label">Horario semanal en cuadrícula · 4×2</string>
+    <string name="widget_wide_grid_layout">Diseño de cuadrícula 4×2</string>
+    <string name="widget_wide_grid_vertical">Semana vertical, avanza cada período</string>
+    <string name="widget_wide_grid_horizontal">Tres días horizontales, avance diario</string>
+    <string name="widget_wide_grid_left">Etiquetas de días a la izquierda</string>
+    <string name="widget_wide_grid_right">Etiquetas de días a la derecha</string>
+    <string name="widget_wide_grid_shapes">Cambiar forma</string>
+    <string name="widget_wide_grid_original">Cuadrícula completa original</string>
+    <string name="widget_wide_grid_empty">No hay clases en las fechas de vista previa</string>
+    <string name="widget_wide_grid_unavailable">Este widget se ha eliminado o no está disponible</string>
+    <string name="widget_wide_grid_preview_error">No se pudieron cargar las vistas previas. Vuelve e inténtalo de nuevo.</string>
 </resources>

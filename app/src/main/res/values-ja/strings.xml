@@ -1155,4 +1155,16 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="jw_import_report_copy">報告をコピー</string>
     <string name="jw_import_report_join_qq">QQ グループに参加</string>
     <string name="jw_import_report_done">完了</string>
+
+    <string name="widget_week_grid_wide_label">週間時間割（グリッド）· 4×2</string>
+    <string name="widget_wide_grid_layout">4×2 グリッドの配置</string>
+    <string name="widget_wide_grid_vertical">縦向きの7日間・時限ごとに移動</string>
+    <string name="widget_wide_grid_horizontal">横向きの3日間・日ごとに移動</string>
+    <string name="widget_wide_grid_left">曜日ラベルを左側に表示</string>
+    <string name="widget_wide_grid_right">曜日ラベルを右側に表示</string>
+    <string name="widget_wide_grid_shapes">表示形式を切り替え</string>
+    <string name="widget_wide_grid_original">従来の全体グリッド</string>
+    <string name="widget_wide_grid_empty">プレビュー期間に授業はありません</string>
+    <string name="widget_wide_grid_unavailable">このウィジェットは削除されたか利用できません</string>
+    <string name="widget_wide_grid_preview_error">プレビューを読み込めませんでした。戻ってもう一度お試しください。</string>
 </resources>

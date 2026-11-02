@@ -1158,4 +1158,16 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="jw_import_report_copy">Copy report</string>
     <string name="jw_import_report_join_qq">Join QQ group</string>
     <string name="jw_import_report_done">Done</string>
+
+    <string name="widget_week_grid_wide_label">Week grid · 4×2</string>
+    <string name="widget_wide_grid_layout">4×2 grid layout</string>
+    <string name="widget_wide_grid_vertical">Vertical week, advance each period</string>
+    <string name="widget_wide_grid_horizontal">Horizontal three days, advance daily</string>
+    <string name="widget_wide_grid_left">Day labels on the left</string>
+    <string name="widget_wide_grid_right">Day labels on the right</string>
+    <string name="widget_wide_grid_shapes">Switch form</string>
+    <string name="widget_wide_grid_original">Original full grid</string>
+    <string name="widget_wide_grid_empty">No courses in the preview dates</string>
+    <string name="widget_wide_grid_unavailable">This widget was removed or is unavailable</string>
+    <string name="widget_wide_grid_preview_error">Could not load previews. Go back and try again.</string>
 </resources>

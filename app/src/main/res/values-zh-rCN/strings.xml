@@ -1116,4 +1116,16 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="jw_import_report_copy">复制报告</string>
     <string name="jw_import_report_join_qq">加入 QQ 群</string>
     <string name="jw_import_report_done">完成</string>
+
+    <string name="widget_week_grid_wide_label">本周课表（网格）· 4×2</string>
+    <string name="widget_wide_grid_layout">4×2 网格布局</string>
+    <string name="widget_wide_grid_vertical">竖向七天，逐节推进</string>
+    <string name="widget_wide_grid_horizontal">横向三天，逐日推进</string>
+    <string name="widget_wide_grid_left">星期标签放左侧</string>
+    <string name="widget_wide_grid_right">星期标签放右侧</string>
+    <string name="widget_wide_grid_shapes">切换形态</string>
+    <string name="widget_wide_grid_original">原有完整网格</string>
+    <string name="widget_wide_grid_empty">当前预览日期内没有课程</string>
+    <string name="widget_wide_grid_unavailable">此小组件已删除或不可用</string>
+    <string name="widget_wide_grid_preview_error">预览加载失败，请返回后重试</string>
 </resources>

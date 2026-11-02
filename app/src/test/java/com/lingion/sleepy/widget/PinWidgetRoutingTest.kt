@@ -24,7 +24,8 @@ class PinWidgetRoutingTest {
     /** simpleName 全小写 key 与历史短 key 两类入口全部可解析且指向正确类。 */
     @Test
     fun `every widget variant is routable by simple name and short key`() {
-        assertEquals(13, shortNames().size) // ALL_WIDGET_VARIANTS 数量闸
+        assertEquals(ALL_WIDGET_VARIANTS.size, shortNames().size)
+        assertEquals(WeekGridWideWidgetProvider::class.java, PinWidgetRouting.resolveClass("weekgridwide"))
         for (variant in ALL_WIDGET_VARIANTS) {
             val cls = variant.receiverClass
             // 入口 1: simpleName 全小写
