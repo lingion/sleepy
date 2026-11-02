@@ -3,7 +3,7 @@ module sleepy-collector
 go 1.27.1
 
 require (
-	github.com/chromedp/cdproto v0.158.2
+	github.com/chromedp/cdproto v0.158.6
 	github.com/chromedp/chromedp v0.21.0
 )
 

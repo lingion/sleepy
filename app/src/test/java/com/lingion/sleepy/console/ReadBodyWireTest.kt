@@ -1,6 +1,7 @@
 package com.lingion.sleepy.console
 
 import com.lingion.sleepy.util.AppLog
+import fi.iki.elonen.NanoHTTPD
 import org.json.JSONObject
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -12,6 +13,8 @@ import org.junit.Test
 import java.net.HttpURLConnection
 import java.net.URL
 import java.io.File
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * 真 HTTP 环锁定 readBody 的 nanohttpd 2.3.1 三分支语义(2026-10-31 M1 复盘:
@@ -105,10 +108,24 @@ class ReadBodyWireTest {
     @Test
     fun put_bodyTempFile_isDeletedAfterRead() {
         // 请求体不留痕迹(安全要求): PUT 临时文件读出后即删
+        // 仅追踪本请求的文件，避免系统 tmpdir 中旧文件/其他进程造成误报。
+        val tempFiles = CopyOnWriteArrayList<File>()
+        val factory = server.tempFileManagerFactory
+        server.setTempFileManagerFactory {
+            val manager = factory.create()
+            object : NanoHTTPD.TempFileManager by manager {
+                override fun createTempFile(prefix: String?): NanoHTTPD.TempFile =
+                    manager.createTempFile(prefix).also { tempFiles.add(File(it.name)) }
+            }
+        }
+        val deletedBeforeDispatch = AtomicBoolean(false)
+        ConsoleBootstrap.addHandler("/echo", "PUT", requiresToken = true) { req ->
+            deletedBeforeDispatch.set(tempFiles.isNotEmpty() && tempFiles.none { it.exists() })
+            Envelope.ok(JSONObject().put("body", req.body).toString())
+        }
         post("/echo", """{"secret":"tmpfile-must-die"}""", "application/json", method = "PUT")
-        val leftovers = File(System.getProperty("java.io.tmpdir"))
-            .listFiles { f -> f.name.startsWith("NanoHTTPD") } ?: emptyArray()
-        assertTrue("临时文件必须读后即删: ${leftovers.map { it.name }}", leftovers.isEmpty())
+        assertFalse("请求必须实际创建临时文件", tempFiles.isEmpty())
+        assertTrue("临时文件必须在分发到 handler 前删除: $tempFiles", deletedBeforeDispatch.get())
     }
 
     @Test
