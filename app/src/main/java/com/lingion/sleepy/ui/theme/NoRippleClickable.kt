@@ -28,7 +28,7 @@ fun Modifier.noRippleClickable(onClick: () -> Unit): Modifier = composed {
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
     val pressScale by animateFloatAsState(
-        targetValue = if (pressed && LocalUiStyle.current != UiStyle.LiquidGlass) SleepyPressScale else 1f,
+        targetValue = if (pressed) SleepyPressScale else 1f,
         animationSpec = MaterialTheme.motionScheme.fastEffectsSpec<Float>(),
         label = "noRipplePressScale",
     )
@@ -59,7 +59,7 @@ fun Modifier.noRippleClickable(
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
     val pressScale by animateFloatAsState(
-        targetValue = if (pressed && LocalUiStyle.current != UiStyle.LiquidGlass) SleepyPressScale else 1f,
+        targetValue = if (pressed) SleepyPressScale else 1f,
         animationSpec = MaterialTheme.motionScheme.fastEffectsSpec<Float>(),
         label = "noRipplePressScale",
     )
@@ -72,4 +72,18 @@ fun Modifier.noRippleClickable(
         enabled = enabled,
         onClick = onClick
     )
+}
+
+/** Only a control with an optical press surface suppresses classic shrink feedback. */
+fun Modifier.noRippleGlassClickable(onClick: () -> Unit): Modifier = noRippleGlassClickable(true, onClick)
+
+fun Modifier.noRippleGlassClickable(enabled: Boolean, onClick: () -> Unit): Modifier = composed {
+    if (LocalUiStyle.current == UiStyle.LiquidGlass) {
+        this.clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null, enabled = enabled, onClick = onClick,
+        )
+    } else {
+        this.noRippleClickable(enabled, onClick)
+    }
 }

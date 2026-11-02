@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.screen.mine
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
 import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import android.Manifest
@@ -1118,7 +1119,7 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                                 ),
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = if (snapshot.notificationPermissionGranted) colors.onSurfaceVariant else colors.primary,
-                                                modifier = if (snapshot.notificationPermissionGranted) Modifier else Modifier.glassControl(shape = SleepyTheme.shapes.medium).noRippleClickable {
+                                                modifier = if (snapshot.notificationPermissionGranted) Modifier else Modifier.glassControl(shape = SleepyTheme.shapes.medium).noRippleGlassClickable {
                                                     requestNotificationPermission()
                                                 }
                                             )
@@ -1137,7 +1138,7 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                                 ),
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = if (snapshot.exactAlarmAllowed) colors.onSurfaceVariant else colors.primary,
-                                                modifier = if (snapshot.exactAlarmAllowed) Modifier else Modifier.glassControl(shape = SleepyTheme.shapes.medium).noRippleClickable {
+                                                modifier = if (snapshot.exactAlarmAllowed) Modifier else Modifier.glassControl(shape = SleepyTheme.shapes.medium).noRippleGlassClickable {
                                                     openExactAlarmSettings()
                                                 }
                                             )
@@ -1152,7 +1153,7 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                                 ),
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = if (snapshot.batteryOptimizationIgnored) colors.onSurfaceVariant else colors.primary,
-                                                modifier = if (snapshot.batteryOptimizationIgnored) Modifier else Modifier.glassControl(shape = SleepyTheme.shapes.medium).noRippleClickable {
+                                                modifier = if (snapshot.batteryOptimizationIgnored) Modifier else Modifier.glassControl(shape = SleepyTheme.shapes.medium).noRippleGlassClickable {
                                                     openBatteryOptimizationSettings()
                                                 }
                                             )
@@ -1217,7 +1218,7 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                             modifier = Modifier
                                                 .padding(top = 6.dp)
                                                 .glassControl(shape = SleepyTheme.shapes.medium)
-                                                .noRippleClickable {
+                                                .noRippleGlassClickable {
                                                     val launched = cap.settingsIntents.any { spec ->
                                                         try {
                                                             val intent = Intent(spec.action).apply {

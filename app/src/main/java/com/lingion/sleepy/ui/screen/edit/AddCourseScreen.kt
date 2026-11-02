@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.screen.edit
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
 import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import com.lingion.sleepy.util.AppPrefs
@@ -1650,7 +1651,7 @@ private fun EdgeCandidatePickerDialog(
                                 if (c.exists) MaterialTheme.colorScheme.secondaryContainer
                                 else MaterialTheme.colorScheme.surfaceContainerHighest
                             ))
-                            .noRippleClickable {
+                            .noRippleGlassClickable {
                                 if (c.exists) onPickExisting(c.node) else onPickNew(c)
                             }
                             .padding(horizontal = 12.dp, vertical = 10.dp),
@@ -1978,7 +1979,7 @@ private fun MultiDayPicker(
                             .glassControl(shape = SleepyTheme.shapes.medium, selected = selected)
                             .clip(SleepyTheme.shapes.medium)
                             .background(controlFill(if (selected) colors.primary else colors.surfaceContainerHighest))
-                            .noRippleClickable { onToggleDay(day) },
+                            .noRippleGlassClickable { onToggleDay(day) },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(

@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
 import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.animation.AnimatedVisibility
@@ -301,7 +302,7 @@ private fun BindChoiceRow(title: String, selected: Boolean, onClick: () -> Unit,
             .glassControl(shape = SleepyTheme.shapes.medium, tint = if (selected) colors.primaryContainer else null)
             .clip(SleepyTheme.shapes.medium)
             .background(controlFill(if (selected) colors.primaryContainer else colors.surface))
-            .noRippleClickable(onClick)
+            .noRippleGlassClickable(onClick)
             .then(tag?.let { Modifier.dbgTag(it, text = title, role = "radio") } ?: Modifier)
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically

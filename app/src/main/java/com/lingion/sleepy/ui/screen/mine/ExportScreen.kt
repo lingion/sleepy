@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.screen.mine
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
 import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import android.Manifest
@@ -502,7 +503,7 @@ private fun PickerRow(title: String, subtitle: String?, isSelected: Boolean, onC
             .glassControl(shape = SleepyTheme.shapes.small, tint = if (isSelected) colors.primaryContainer else null)
             .clip(SleepyTheme.shapes.small)
             .background(controlFill(if (isSelected) colors.primaryContainer else colors.surfaceContainer))
-            .noRippleClickable(onClick)
+            .noRippleGlassClickable(onClick)
             .padding(vertical = 10.dp, horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -545,7 +546,7 @@ internal fun ExportItem(
         modifier = Modifier
             .fillMaxWidth()
             .glassControl(shape = SleepyTheme.shapes.medium)
-            .noRippleClickable(onClick)
+            .noRippleGlassClickable(onClick)
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

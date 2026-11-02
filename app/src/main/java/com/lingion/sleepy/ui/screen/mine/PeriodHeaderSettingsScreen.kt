@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.screen.mine
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
 import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.foundation.background
@@ -303,7 +304,7 @@ private fun HeaderStylePreviews(
                         .widthIn(min = 76.dp)
                         .glassControl(shape = SleepyTheme.shapes.medium, tint = if (value == selectedStyle) colors.primaryContainer else null)
                         .clip(SleepyTheme.shapes.medium)
-                        .noRippleClickable { onStyleSelected(value) },
+                        .noRippleGlassClickable { onStyleSelected(value) },
                     color = controlFill(if (value == selectedStyle) colors.primaryContainer else colors.surfaceContainer),
                     shape = SleepyTheme.shapes.medium,
                 ) {

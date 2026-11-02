@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.screen.mine
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
 import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import android.widget.Toast
@@ -553,7 +554,7 @@ private fun CustomThemeCard(
                         .glassControl(shape = SleepyTheme.shapes.small)
                         .clip(SleepyTheme.shapes.small)
                         .background(controlFill(colors.surfaceContainerHighest))
-                        .noRippleClickable(onEdit)
+                        .noRippleGlassClickable(onEdit)
                         .dbgTag("settings_theme_edit", text = theme.name, role = "button"),
                     contentAlignment = Alignment.Center
                 ) {

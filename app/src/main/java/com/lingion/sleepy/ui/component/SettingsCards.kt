@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
 import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.animation.AnimatedVisibility
@@ -195,7 +196,7 @@ fun DisplayModeOption(
         animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
         label = "displayModeOptionLabel",
     )
-    Row(modifier = Modifier.fillMaxWidth().glassControl(shape = SleepyTheme.shapes.medium, tint = if (selected) colors.primaryContainer else null).noRippleClickable(onClick)
+    Row(modifier = Modifier.fillMaxWidth().glassControl(shape = SleepyTheme.shapes.medium, tint = if (selected) colors.primaryContainer else null).noRippleGlassClickable(onClick)
         .then(dbg?.let { Modifier.dbgTag(it, text = label, role = "radio") } ?: Modifier)
         .padding(vertical = 10.dp, horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {

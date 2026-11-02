@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
 import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.foundation.Canvas
@@ -1231,7 +1232,7 @@ private fun ConflictCoursePickerDialog(
                             .glassControl(shape = SleepyTheme.shapes.small, tint = if (isTopLayer) colors.primaryContainer else null)
                             .clip(SleepyTheme.shapes.small)
                             .background(controlFill(if (isTopLayer) colors.primaryContainer else colors.surfaceContainer))
-                            .noRippleClickable { onPick(course.id) }
+                            .noRippleGlassClickable { onPick(course.id) }
                             .padding(vertical = 10.dp, horizontal = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {

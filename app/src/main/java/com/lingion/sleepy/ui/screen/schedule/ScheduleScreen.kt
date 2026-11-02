@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.screen.schedule
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
 import com.lingion.sleepy.ui.component.liquidglass.glassSurfaceBackground
 import com.lingion.sleepy.ui.component.liquidglass.controlFill
@@ -619,7 +620,7 @@ private fun TableSwitcherDialog(
                             .glassControl(shape = SleepyTheme.shapes.small, tint = if (isCurrent) colors.primaryContainer else null)
                             .clip(SleepyTheme.shapes.small)
                             .background(controlFill(if (isCurrent) colors.primaryContainer else colors.surfaceContainer))
-                            .noRippleClickable { onSelect(table.id) }
+                            .noRippleGlassClickable { onSelect(table.id) }
                             .dbgTag("schedule_table_item", text = table.name, role = "button")
                             .padding(vertical = 10.dp, horizontal = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -771,7 +772,7 @@ private fun TopBar(
                         .glassControl(shape = SleepyTheme.shapes.medium)
                         .clip(SleepyTheme.shapes.medium)
                         .background(controlFill(if (isOnActual) colors.primaryContainer else colors.primaryContainer.copy(alpha = SleepyTheme.Alpha.inactive)))
-                        .noRippleClickable {
+                        .noRippleGlassClickable {
                             if (isOnActual) {
                                 // 在当前实际周 → 弹下拉菜单
                                 menuOpen = true
@@ -816,7 +817,7 @@ private fun TopBar(
                                             controlFill(if (isCurrent) colors.primary
                                             else colors.surfaceContainerHigh)
                                         )
-                                        .noRippleClickable {
+                                        .noRippleGlassClickable {
                                             onSelectWeek(w)
                                             menuOpen = false
                                         }
@@ -879,7 +880,7 @@ private fun WeekNavButton(
             .glassControl()
             .clip(CircleShape)
             .background(controlFill(colors.surfaceContainerHigh))
-            .noRippleClickable(onClick)
+            .noRippleGlassClickable(onClick)
             .dbgTag(tag, role = "button")
             .padding(6.dp),
         contentAlignment = Alignment.Center
@@ -923,7 +924,7 @@ private fun UndoRedoCapsule(
                     if (scale == 1f) Modifier.size(width = 32.dp, height = 32.dp)
                     else Modifier.size(width = halfSize, height = halfSize)
                 )
-                .noRippleClickable(enabled = showUndo, onClick = onUndo)
+                .noRippleGlassClickable(enabled = showUndo, onClick = onUndo)
                 .dbgTag("schedule_undo", text = stringResource(R.string.schedule_undo), role = "button"),
             contentAlignment = Alignment.Center
         ) {
@@ -947,7 +948,7 @@ private fun UndoRedoCapsule(
                     if (scale == 1f) Modifier.size(width = 32.dp, height = 32.dp)
                     else Modifier.size(width = halfSize, height = halfSize)
                 )
-                .noRippleClickable(enabled = showRedo, onClick = onRedo)
+                .noRippleGlassClickable(enabled = showRedo, onClick = onRedo)
                 .dbgTag("schedule_redo", text = stringResource(R.string.schedule_redo), role = "button"),
             contentAlignment = Alignment.Center
         ) {

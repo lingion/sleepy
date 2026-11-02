@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.screen.imports
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
 import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import android.content.Context
@@ -729,7 +730,7 @@ private fun ImportMethodRow(
             .fillMaxWidth()
             .glassControl(shape = SleepyTheme.shapes.medium, enabled = enabled)
             .clip(SleepyTheme.shapes.medium)
-            .noRippleClickable(enabled = enabled, onClick = onClick)
+            .noRippleGlassClickable(enabled = enabled, onClick = onClick)
             .then(dbgTag?.let { Modifier.dbgTag(it, text = label, role = "button") } ?: Modifier)
             .padding(vertical = 14.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -802,7 +803,7 @@ private fun FormatRow(name: String, desc: String, dbgTag: String? = null, onDeta
                 .size(16.dp)
                 .glassControl(shape = SleepyTheme.shapes.small)
                 .clip(SleepyTheme.shapes.small)
-                .noRippleClickable(onClick = onDetail)
+                .noRippleGlassClickable(onClick = onDetail)
                 .then(dbgTag?.let { Modifier.dbgTag(it, text = name, role = "button") } ?: Modifier)
         )
     }
