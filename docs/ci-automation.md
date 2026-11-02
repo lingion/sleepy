@@ -20,27 +20,67 @@
 
 ---
 
-## 1. 手动触发的工作流 ("点菜")
+## 1. 获取 debug APK
 
-这些用 `workflow_dispatch` 触发,**不占用合入门禁**,想打就打。触发后产物存 7 天,可在 run 页面下载,或让手机/浏览器直接拉(别走本地慢代理)。
+### 1.1 提交分支后自动构建
 
-### 1.1 打 debug APK(任意架构 / 任意分支)
+向 Sleepy 的 `main` 发起非草稿 PR，或更新已有 PR，Debug APK Build 就会构建 PR 分支的 head SHA。它不构建 GitHub 临时生成的合并预览提交。草稿 PR 转为可评审后开始构建；同一个 PR 的新提交会取消未完成的旧构建，不影响其他 PR。
+
+不准备提 PR 时，也可以在自己的 fork 使用：先同步包含此工作流的代码，在 fork 的 Actions 页面启用工作流，再推送分支。fork 的分支 push 自动构建；上游仓库只为 `main` push 和 PR 构建，普通分支 push 不重复打包。tag push 不触发 debug 构建。
+
+GitHub 可能要求维护者批准外部贡献者的首次工作流运行；这一步不能绕过。fork 推送与上游 PR 的运行属于各自仓库，互不取消。
+
+自动构建一次生成四种包，每种架构分别下载：`arm64-v8a`、`armeabi-v7a`、`x86_64`、`universal`。不知道选哪个时可以用 universal。
+
+### 1.2 手动选择源码与架构
+
+打开 Actions 的 Debug APK Build，点击 Run workflow。上方分支选择决定使用哪一版工作流；下方 `ref` 留空时，也构建该分支在本次事件中的固定提交。填写 `ref` 才会覆盖源码目标，支持本仓库中的分支、标签或完整 SHA。普通群友没有上游写权限时，可以在自己的 fork 手动运行，或通过 PR 触发上游自动构建。
+
 ```bash
-gh workflow run "Debug APK Build" -f abi=arm64-v8a -f ref=main
-# abi 可选: all | arm64-v8a | armeabi-v7a | x86_64 | universal
-```
-- 用**项目自己的 debug keystore**(`DEBUG_KEYSTORE_BASE64` secret)签名,CI 产物与本地 `./gradlew assembleDebug` **签名一致,可互相覆盖安装**,数据不丢。
-- 下载产物:`gh run download <run-id> -n sleepy-debug-apk-<abi>-<n>`
+# 从选中的分支运行，只生成 V7A APK；将仓库名换成自己的 fork
+# 该分支需要包含新版工作流与辅助工具。
+gh workflow run "Debug APK Build" --repo YOUR_LOGIN/sleepy \
+  --ref feature/example -f abi=armeabi-v7a
 
-### 1.2 跑模拟器测试(Room 迁移 + Compose 像素)
+# 使用 main 的工作流构建任意已有分支，只生成 V7A APK
+# 目标分支可以早于这次 CI 改动，辅助工具来自工作流版本。
+gh workflow run "Debug APK Build" --repo lingion/sleepy \
+  --ref main -f ref=feature/example -f abi=armeabi-v7a
+
+# 使用 main 的工作流构建历史标签的 universal 包
+gh workflow run "Debug APK Build" --repo lingion/sleepy \
+  --ref main -f ref=v1.0.63 -f abi=universal
+
+# 最新主线包，ref 留空，允许使用项目固定 debug 签名
+gh workflow run "Debug APK Build" --repo lingion/sleepy --ref main -f abi=all
+```
+
+`abi` 可选 `all`、`arm64-v8a`、`armeabi-v7a`（V7A）、`x86_64`、`universal`。单选会改变实际 APK 生成配置，不只筛选上传文件。显式指定 ref 的构建和不同 ABI 请求不会互相取消；同一个目标与架构的后续手动请求会替代之前未完成的请求。
+
+### 1.3 下载、源码身份与签名
+
+进入 PR 检查对应的 Debug APK Build 运行，或直接在 Actions 中找到该次运行，展开构建摘要。每个架构有独立 artifact 下载入口；也可以从运行页面的 Artifacts 区域下载。需登录 GitHub，ZIP 内含 APK、`build-info.json` 和 `sha256sums.txt`，产物保留 7 天。
+
+APK 和 artifact 名包含 PR 或分支上下文、源码短 SHA、架构、运行编号和尝试编号，例如 `sleepy-debug-pr286-a1b2c3d4e5f6-armeabi-v7a-r20-a1`。完整 SHA、实际包名、版本、签名证书指纹和构建地址记录在元数据中。转发 APK 时不要去掉文件名里的源码身份。
+
 ```bash
-gh workflow run "Android Emulator Test" -f ref=main
-# 只想跑某几个类: -f tests=com.lingion.sleepy.data.AppDatabaseMigrationTest
+gh run list --repo lingion/sleepy --workflow "Debug APK Build" --limit 5
+gh run download RUN_ID --repo lingion/sleepy --pattern '*armeabi-v7a*' --dir ./debug-download
+# 进入下载目录后，对照 sha256sums.txt 校验 APK 与元数据
+shasum -a 256 -c sha256sums.txt
 ```
-- 白嫖 runner 的 KVM 硬件加速,这是本地最难复现的一环。
-- 结果以 XML 报告 artifact 形式存 7 天。
 
-### 1.3 iOS 无签名 IPA 构建(见 sleepy-ios 仓库)
+只有上游 `main` push，或从上游 main 手动运行且 `ref` 留空时，才使用 `DEBUG_KEYSTORE_BASE64` 的固定 debug 签名，密钥缺失会直接失败。外部 PR、fork、非主线工作流以及所有显式 ref 手动构建均使用临时签名，不能保证跨次覆盖安装。不要为了安装测试包而随意卸载有数据的旧包。
+
+当前源码的 debug 包使用 `com.lingion.sleepy.debug`，与正式版并存；历史分支可能尚未区分包名，以摘要和元数据中核验出的实际包名为准。历史代码是否还能编译也取决于其 Gradle、AGP 和依赖兼容性，工作流不会改写历史源码来修复构建。
+
+APK 构建成功只代表出了包，PR 的测试与 lint 结果需另看。现有 CI 中的 `apks-debug-signing` 是使用 debug 签名的 release 构建，用于检查 release/R8 链路，不能与本工作流的真正 debug 包混淆。
+
+### 1.4 模拟器测试
+
+当前仓库没有名为 Android Emulator Test 的手动工作流。模拟器或设备测试请按项目实际测试工具执行，不使用此前文档中的失效命令。
+
+### 1.5 iOS 无签名 IPA 构建(见 sleepy-ios 仓库)
 ```bash
 # 在 sleepy-ios 目录 (默认分支是 master)
 gh workflow run "iOS Build" -f ref=master -f config=Release
@@ -97,7 +137,7 @@ gh run list --workflow "Debug APK Build" --limit 5
 ## 5. 给贡献者:怎么加一条新的"白嫖"能力
 
 1. 在 `.github/workflows/` 新建 `*.yml`,优先用 `workflow_dispatch + inputs`(手动、可参数化),别污染 PR 门禁。
-2. 敏感值(密钥、token)一律走 `secrets.*`,缺失时**优雅回退**并打印提示,不要直接 fail。
+2. 密钥只在明确受信任的路径通过 `secrets.*` 注入，禁止向外部源码构建传入已有签名密钥。需要固定签名的主线构建缺密钥必须失败，不能静默回退。
 3. 加 `concurrency` + `timeout-minutes` + `permissions: contents: read`(最小权限)。
 4. **把它合进 main**,否则 dispatch 点不动。
 5. 回到本页 §1/§2 补一行说明,让下一个人知道有这道菜。

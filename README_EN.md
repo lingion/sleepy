@@ -670,7 +670,7 @@ java -version
 
 The wrapper downloads the Gradle version specified in `gradle/wrapper/gradle-wrapper.properties`, so a separate Gradle installation is unnecessary. The first build requires internet access to download Gradle and dependencies. Debug APKs are written to `app/build/outputs/apk/debug/`.
 
-> **Prefer a cloud build?** Manually run [Debug APK Build](.github/workflows/debug-apk.yml) with a branch or tag and an APK architecture. [Nightly Main Check](.github/workflows/nightly.yml) checks main on a schedule or on demand. Command examples are in [docs/ci-automation.md](docs/ci-automation.md); [`.github/workflows/`](.github/workflows/) defines the workflows currently available.
+> [Debug APK Build](.github/workflows/debug-apk.yml) runs automatically for non-draft PRs targeting `main`, and for branch pushes in forks once Actions is enabled. Manual runs accept a branch, tag or full commit SHA and a single architecture, including `armeabi-v7a` (V7A). Open the Actions run and select an architecture in the build summary; GitHub sign-in is required and artifacts expire after 7 days. PRs, forks and manual runs with an explicit source ref use ephemeral signing, so replacement installation across runs is not guaranteed. See [docs/ci-automation.md](docs/ci-automation.md) for commands and signing details. [Nightly Main Check](.github/workflows/nightly.yml) still checks main on a schedule or on demand.
 
 ### Install
 
