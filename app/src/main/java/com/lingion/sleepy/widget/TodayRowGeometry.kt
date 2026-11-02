@@ -69,8 +69,7 @@ object TodayRowGeometry {
     ): List<RowSpan> {
         val spans = ArrayList<RowSpan>()
         var y = contentTopDp(headerSpace)
-        val cleanTj = timeJson?.let { com.lingion.sleepy.util.TimeTableUtils.sanitizeTimeJsonForDisplay(it) } ?: timeJson
-        ConflictLayoutEngine.weekLaneRows(courses, cleanTj).forEachIndexed { idx, row ->
+        ConflictLayoutEngine.weekLaneRows(courses, timeJson).forEachIndexed { idx, row ->
             val h = rowHeightDp(row)
             spans += RowSpan(idx, row, y, y + h)
             y += h + ROW_GAP_DP

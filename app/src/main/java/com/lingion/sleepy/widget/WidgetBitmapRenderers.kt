@@ -464,7 +464,7 @@ object WidgetBitmapRenderers {
                     val laneCourses = row.courses.filter { row.laneOf[it.id] == li }
                     var ly = y
                     laneCourses.forEachIndexed { ci, laneCourse ->
-                        drawCourse(canvas, p, laneCourse, data.timeJson, laneX, ly, laneW, rowH, s, density,
+                        drawCourse(canvas, p, laneCourse, cleanTimeJson, laneX, ly, laneW, rowH, s, density,
                             fontSizeSp = 10f, colorless = colorless, displayMode = displayMode,
                             groupRows = data.courses.filter { it.groupId == laneCourse.groupId },
                             useAlias = useAlias, isGrey = data.isGrey)

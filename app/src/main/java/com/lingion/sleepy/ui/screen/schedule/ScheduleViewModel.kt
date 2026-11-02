@@ -70,16 +70,16 @@ data class ScheduleState(
     val effectiveCurrentTable: TimeTableEntity?
         get() = currentTable?.hydratedWith(effectivePeriodTable)
 
-    /** 保证脏数据不流入渲染链路的消毒版 timeJson */
+    /** Format-only display input; real clocks and persisted data remain unchanged. */
     val effectiveRenderTimeJson: String?
         get() = effectiveCurrentTable?.timeJson?.let { TimeTableUtils.sanitizeTimeJsonForDisplay(it) }
 
-    /** 存量脏作息检测：若当前生效作息表存在非法重叠/小时回绕/非法时段，返回校验结果 */
+    /** Diagnose the effective stored schedule without substituting editor defaults. */
     val periodValidation: TimeTableUtils.PeriodValidationResult?
         get() = effectiveCurrentTable?.timeJson?.let { TimeTableUtils.validateTimeJson(it) }
 
     val hasPeriodConflict: Boolean
-        get() = periodValidation != null && periodValidation !is TimeTableUtils.PeriodValidationResult.Valid
+        get() = periodValidation?.let { it !is TimeTableUtils.PeriodValidationResult.Valid } ?: false
 
     /** issue#44: 给定日期实际应"按星期几取课"; 补班日=sourceDate 星期, 放假日=无课(null), 未命中=自然星期 */
     fun courseDateFor(date: LocalDate): LocalDate? =

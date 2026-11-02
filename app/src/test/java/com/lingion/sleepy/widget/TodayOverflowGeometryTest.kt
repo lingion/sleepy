@@ -381,11 +381,9 @@ class TodayOverflowGeometryTest {
 
     @Test
     fun `today pipeline threads timeJson through window geometry and strip`() {
-        assertTrue(
-            "FIXED 窗口未按时间域聚簇",
-            widgetSource("TodayWidget.kt").readText()
-                .contains("weekLaneRows(data.courses, data.timeJson)")
-        )
+        val window = widgetSource("TodayWidget.kt").readText()
+        assertTrue("FIXED selection must derive the same format-only display input", window.contains("val displayTimeJson = TimeTableUtils.sanitizeTimeJsonForDisplay(data.timeJson)"))
+        assertTrue("Window geometry and timing must consume identical clocks", window.contains("weekLaneRows(data.courses, displayTimeJson)") && window.contains("entriesOf(rows, displayTimeJson)"))
         val r = widgetSource("WidgetBitmapRenderers.kt").readText()
         assertTrue(
             "渲染作息必须由当前课表 timeJson 清洗得到，不能丢失时间域输入",

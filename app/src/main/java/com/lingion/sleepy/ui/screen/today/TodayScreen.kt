@@ -165,7 +165,7 @@ fun TodayScreen(
                                     laneCourses.forEach { laneCourse ->
                                         TodayCourseCard(
                                             course = laneCourse,
-                                            timeJson = state.effectiveCurrentTable?.timeJson,
+                                            timeJson = renderTj,
                                             onClick = { selectedCourse = laneCourse },
                                             groupRows = todayCourses.filter { it.groupId == laneCourse.groupId }
                                         )
@@ -184,7 +184,7 @@ fun TodayScreen(
         course = selectedCourse,
         timeString = selectedCourse?.let { it.nodeString(LocalContext.current) },
         allCourses = todayCourses,
-        timeJson = state.effectiveCurrentTable?.timeJson,
+        timeJson = renderTj,
         onDismiss = { selectedCourse = null },
         onEdit = { course ->
             selectedCourse = null
@@ -283,7 +283,7 @@ fun CompactTodayPane(
                                 laneCourses.forEach { laneCourse ->
                                     TodayCourseCard(
                                         course = laneCourse,
-                                        timeJson = state.effectiveCurrentTable?.timeJson,
+                                        timeJson = renderTj,
                                         onClick = { selectedCourse = laneCourse },
                                         groupRows = todayCourses.filter { it.groupId == laneCourse.groupId }
                                     )
@@ -300,7 +300,7 @@ fun CompactTodayPane(
         course = selectedCourse,
         timeString = selectedCourse?.let { it.nodeString(LocalContext.current) },
         allCourses = todayCourses,
-        timeJson = state.effectiveCurrentTable?.timeJson,
+        timeJson = renderTj,
         onDismiss = { selectedCourse = null },
         onEdit = { course ->
             selectedCourse = null
