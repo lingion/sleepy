@@ -19,6 +19,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import com.lingion.sleepy.widget.WeekGridWidePreviewLoader
+import com.lingion.sleepy.widget.WideGridPreviews
+import com.lingion.sleepy.widget.WideGridPreviewStatus
+import com.lingion.sleepy.util.AppPrefs
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -46,14 +59,21 @@ fun WidgetEditScreen(
     val vm = remember(widgetId) { WidgetEditViewModel(widgetId) }
     val state by vm.state.collectAsState()
     val colors = MaterialTheme.colorScheme
+    var showWideGridShapes by rememberSaveable(widgetId) { mutableStateOf(false) }
+    if (showWideGridShapes) {
+        WidgetWideGridShapeRoute(widgetId, state.currentBinding, state.wideGridSettings, state.useAlias,
+            onBack = { showWideGridShapes = false },
+            onModeChange = vm::setWideGridMode, onLabelSideChange = vm::setWideGridLabelSide)
+        return
+    }
 
     // To add a new section later, append here — the screen picks it up
     // automatically. Each section must implement WidgetEditSection.
     val sections: List<WidgetEditSection> = remember {
-        listOf(WidgetEditScheduleSection, WidgetEditAliasSection, WidgetEditScrollSection, WidgetEditCompactWindowSection)
+        listOf(WidgetEditScheduleSection, WidgetEditAliasSection, WidgetEditScrollSection, WidgetEditCompactWindowSection, WidgetEditWideGridSection)
     }
-    val scope = remember(state.currentBinding, state.availableTables, state.useAlias,
-        state.receiverSimpleName, state.scrollEnabled, state.compactTodayFirst) {
+    val scope = remember(widgetId, vm, state.currentBinding, state.availableTables, state.useAlias,
+        state.receiverSimpleName, state.scrollEnabled, state.compactTodayFirst, state.wideGridSettings) {
         WidgetEditScope(
             widgetId = widgetId,
             currentBinding = state.currentBinding,
@@ -65,7 +85,11 @@ fun WidgetEditScreen(
             scrollEnabled = state.scrollEnabled,
             onScrollEnabledChange = { vm.setScrollEnabled(it) },
             compactTodayFirst = state.compactTodayFirst,
-            onCompactTodayFirstChange = { vm.setCompactTodayFirst(it) }
+            onCompactTodayFirstChange = { vm.setCompactTodayFirst(it) },
+            wideGridSettings = state.wideGridSettings,
+            onWideGridModeChange = { vm.setWideGridMode(it) },
+            onWideGridLabelSideChange = { vm.setWideGridLabelSide(it) },
+            onOpenWideGridShapes = { showWideGridShapes = true },
         )
     }
 
@@ -107,4 +131,29 @@ fun WidgetEditScreen(
             }
         }
     }
+}
+
+@Composable
+private fun WidgetWideGridShapeRoute(
+    widgetId: Int, binding: Long?, settings: com.lingion.sleepy.widget.WeekGridWideSettings,
+    useAlias: Boolean, onBack: () -> Unit,
+    onModeChange: (com.lingion.sleepy.widget.WeekGridWideMode) -> Unit,
+    onLabelSideChange: (com.lingion.sleepy.widget.WeekGridWideLabelSide) -> Unit,
+) {
+    val context = LocalContext.current
+    val configuration = LocalConfiguration.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val theme by remember(context) { AppPrefs.themeKeyFlow(context) }
+        .collectAsState(initial = AppPrefs.getThemeKey(context))
+    // Keyed state hides previous widget/binding/mode bitmaps immediately, before effects restart.
+    var previews by remember(widgetId, binding, settings, useAlias, theme, configuration) {
+        mutableStateOf(WideGridPreviews(WideGridPreviewStatus.LOADING))
+    }
+    LaunchedEffect(widgetId, binding, settings, useAlias, theme, configuration, lifecycleOwner) {
+        val renderContext = context.createConfigurationContext(android.content.res.Configuration(configuration))
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            WeekGridWidePreviewLoader.observe(renderContext, widgetId).collect { previews = it }
+        }
+    }
+    WidgetWideGridShapeScreen(settings, previews, onBack, onModeChange, onLabelSideChange)
 }
