@@ -121,15 +121,16 @@ def inspect_apk(path):
         raise ValueError(f"Cannot read APK package identity: {path.name}")
     certificates = subprocess.check_output([
         find_build_tool("apksigner"), "verify", "--print-certs", str(path)], text=True)
-    fingerprint = re.search(r"Signer #1 certificate SHA-256 digest: ([0-9a-fA-F]+)", certificates)
-    if not fingerprint:
+    fingerprints = {value.lower() for value in re.findall(
+        r"certificate SHA-256 digest: ([0-9a-fA-F]{64})(?![0-9a-fA-F])", certificates)}
+    if len(fingerprints) != 1:
         raise ValueError(f"Cannot verify APK signing certificate: {path.name}; public apksigner output: {certificates.strip()!r}")
     with zipfile.ZipFile(path) as apk:
         native_abis = sorted({name.split('/')[1] for name in apk.namelist()
                               if name.startswith('lib/') and name.endswith('.so') and len(name.split('/')) >= 3})
     return {"application_id": package[1], "version_name": package[2],
             "debuggable": "application-debuggable" in badging, "native_abis": native_abis,
-            "certificate_sha256": fingerprint[1].lower()}
+            "certificate_sha256": fingerprints.pop()}
 
 
 def sha256(path):
