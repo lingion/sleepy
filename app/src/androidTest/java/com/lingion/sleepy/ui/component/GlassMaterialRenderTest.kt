@@ -27,6 +27,31 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class GlassMaterialRenderTest {
     @get:Rule val compose = createComposeRule()
+    @Test fun liveOrdinarySourceChangesTheOpticalBackground() {
+        val sourceColor = androidx.compose.runtime.mutableStateOf(Color.Red)
+        compose.setContent {
+            MaterialTheme {
+                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                    GlassHost(modifier = Modifier.size(80.dp), background = Color.White) {
+                        com.lingion.sleepy.ui.component.liquidglass.GlassBackground(depth = 0f, modifier = Modifier.size(80.dp)) {
+                            Box(Modifier.size(80.dp).background(sourceColor.value))
+                        }
+                        Box(Modifier.size(80.dp).glassControl(enabled = false))
+                    }
+                }
+            }
+        }
+        compose.waitForIdle()
+        val before = compose.onRoot().captureToImage().asAndroidBitmap()
+        val first = before.getPixel(before.width / 2, before.height / 2)
+        compose.runOnIdle { sourceColor.value = Color.Green }
+        compose.waitForIdle()
+        val after = compose.onRoot().captureToImage().asAndroidBitmap()
+        val second = after.getPixel(after.width / 2, after.height / 2)
+        assertTrue("red source must actually reach optical material", android.graphics.Color.red(first) > android.graphics.Color.green(first) + 30)
+        assertTrue("source revision must update an existing optical pane", android.graphics.Color.green(second) > android.graphics.Color.red(second) + 30)
+    }
+
     @Test fun selectedSegmentHasDistinctMaterialFromTrack() {
         compose.setContent {
             MaterialTheme {

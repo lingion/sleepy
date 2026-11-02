@@ -93,6 +93,25 @@ class GlassHostCaptureTest {
         assertEquals("glass must not be lifted above later opaque content", android.graphics.Color.RED, display.getPixel(30, 30))
     }
 
+    @Test fun addingAndRemovingAnEqualDepthBackgroundDoesNotDependOnRegistrationOrder() {
+        val visible = mutableStateOf(false)
+        compose.setContent {
+            GlassHost(modifier = Modifier.size(120.dp)) {
+                Box(Modifier.size(40.dp).glassBackdropSource(0f).background(Color.Red))
+                if (visible.value) {
+                    GlassBackground(depth = 0f, modifier = Modifier.offset(60.dp, 0.dp).size(40.dp)) {
+                        Box(Modifier.size(40.dp).background(Color.Green))
+                    }
+                }
+            }
+        }
+        compose.onRoot().captureToImage()
+        compose.runOnIdle { visible.value = true }
+        compose.onRoot().captureToImage()
+        compose.runOnIdle { visible.value = false }
+        compose.onRoot().captureToImage()
+    }
+
     @Test fun retainedPaneContentAndBackdropUpdateWithoutSelfFeedback() {
         lateinit var state: GlassHostState
         val background = mutableStateOf(Color.Red)

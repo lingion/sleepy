@@ -2,13 +2,10 @@ package com.lingion.sleepy.ui.component.liquidglass
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MenuDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -50,12 +47,13 @@ fun GlassAlertDialog(
     properties: DialogProperties = DialogProperties(),
 ) {
     val glass = overlayGlass()
+    val carrierShape = if (glass && shape == AlertDialogDefaults.shape) FlClashGlassShape(34f) else shape
     CompositionLocalProvider(LocalGlassOverlay provides glass) {
         MaterialAlertDialog(
             onDismissRequest = onDismissRequest,
             confirmButton = confirmButton,
-            modifier = modifier.glassControl(shape = shape, enabled = false, registerPane = false, role = GlassMaterialRole.Alert),
-            dismissButton = dismissButton, icon = icon, title = title, text = text, shape = shape,
+            modifier = modifier.glassControl(shape = carrierShape, enabled = false, registerPane = false, role = GlassMaterialRole.Alert),
+            dismissButton = dismissButton, icon = icon, title = title, text = text, shape = carrierShape,
             containerColor = if (glass) Color.Transparent else containerColor,
             iconContentColor = iconContentColor, titleContentColor = titleContentColor,
             textContentColor = textContentColor, tonalElevation = if (glass) 0.dp else tonalElevation,
@@ -80,11 +78,12 @@ fun GlassDropdownMenu(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val glass = overlayGlass()
+    val carrierShape = if (glass && shape == MenuDefaults.shape) FlClashGlassShape(24f) else shape
     CompositionLocalProvider(LocalGlassOverlay provides glass) {
         MaterialDropdownMenu(
             expanded, onDismissRequest,
-            modifier.glassControl(shape = shape, enabled = false, registerPane = false, role = GlassMaterialRole.Menu),
-            offset, scrollState, properties, shape,
+            modifier.glassControl(shape = carrierShape, enabled = false, registerPane = false, role = GlassMaterialRole.Menu),
+            offset, scrollState, properties, carrierShape,
             if (glass) Color.Transparent else containerColor,
             if (glass) 0.dp else tonalElevation,
             shadowElevation, border, content,
