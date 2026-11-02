@@ -17,6 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -506,7 +508,8 @@ private fun MainRoute(
             modifier = Modifier
                 .fillMaxSize()
                 .background(colors.background)
-                .windowInsetsPadding(WindowInsets.statusBars)
+                .windowInsetsPadding(WindowInsets.safeDrawing)
+                .consumeWindowInsets(WindowInsets.safeDrawing)
         ) {
             NavigationRail {
                 // 当前选中的 tab 跟 Schedule 组合成跑道胶囊(强高亮 primaryContainer);
