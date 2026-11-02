@@ -74,11 +74,6 @@ fun TodayScreen(
         DateUtils.semesterStatus(it.startDate, it.maxWeek, courseDate ?: today)
     } ?: DateUtils.SemesterStatus.IN_RANGE
     val isOutOfSemester = semesterStatus != DateUtils.SemesterStatus.IN_RANGE
-    val todayCourses = (state.currentTable?.let { table ->
-        com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(
-            today, table.startDate, table.maxWeek, state.courses, state.transfers
-        )
-    } ?: emptyList()).let { list ->
     val renderTj = state.effectiveRenderTimeJson ?: state.effectiveCurrentTable?.timeJson
     val todayCourses = (state.currentTable?.let { table ->
         com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(

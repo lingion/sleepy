@@ -132,17 +132,17 @@ class PeriodTableValidationTest {
     @Test
     fun sanitizeTimeJsonForDisplayFixesDirtyDataForRendering() {
         // 脏数据 1: 包含 01:00 凌晨回绕
-        val dirtyJson1 = """[{"node":1,"startTime":"01:00","endTime":"01:45"}]"""
+        val dirtyJson1 = """[{"node":1,"start":"01:00","end":"01:45"}]"""
         val cleanJson1 = TimeTableUtils.sanitizeTimeJsonForDisplay(dirtyJson1)
         val cleanRows1 = TimeTableUtils.parseTimeSlotRows(cleanJson1)
-        assertTrue("凌晨回绕时间需被顺移至合法时段", cleanRows1[0].startTime >= "06:00")
-        assertTrue("单节结束必须晚于开始", cleanRows1[0].endTime > cleanRows1[0].startTime)
+        assertTrue("凌晨回绕时间需被顺移至合法时段", cleanRows1[0].start >= "06:00")
+        assertTrue("单节结束必须晚于开始", cleanRows1[0].end > cleanRows1[0].start)
 
         // 脏数据 2: 相邻节次时间重叠
-        val dirtyJson2 = """[{"node":1,"startTime":"08:00","endTime":"09:40"},{"node":2,"startTime":"09:30","endTime":"10:15"}]"""
+        val dirtyJson2 = """[{"node":1,"start":"08:00","end":"09:40"},{"node":2,"start":"09:30","end":"10:15"}]"""
         val cleanJson2 = TimeTableUtils.sanitizeTimeJsonForDisplay(dirtyJson2)
         val cleanRows2 = TimeTableUtils.parseTimeSlotRows(cleanJson2)
         assertEquals(2, cleanRows2.size)
-        assertTrue("清洗后第 2 节开始时间不得早于第 1 节结束时间", cleanRows2[1].startTime >= cleanRows2[0].endTime)
+        assertTrue("清洗后第 2 节开始时间不得早于第 1 节结束时间", cleanRows2[1].start >= cleanRows2[0].end)
     }
 }
