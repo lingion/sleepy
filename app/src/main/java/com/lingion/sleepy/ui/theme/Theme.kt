@@ -19,6 +19,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
@@ -225,7 +226,7 @@ val DarkCoursePalette = CoursePalette(
 val LocalCoursePalette = staticCompositionLocalOf { LightCoursePalette }
 
 /** 应用当前是否处于深色模式，由 [SleepyThemeProvider] 注入并响应会话内主题实时切换。 */
-val LocalDarkTheme = staticCompositionLocalOf { false }
+val LocalDarkTheme = compositionLocalOf { false }
 
 /**
  * Material You 字体系统 — 1:1 官方 M3 baseline type scale

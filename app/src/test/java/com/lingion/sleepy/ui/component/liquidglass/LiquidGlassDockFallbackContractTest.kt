@@ -43,13 +43,19 @@ class LiquidGlassDockFallbackContractTest {
             "LiquidGlassNavigationBar must resolve dark via LocalDarkTheme and ColorScheme luminance",
             navBarSrc.contains("LocalDarkTheme.current") && navBarSrc.contains("luminance()")
         )
+        assertTrue(
+            "LiquidGlassNavigationBar must derive dark via derivedStateOf so theme flips " +
+                "invalidate only the shader/style consumers instead of freezing at init value",
+            Regex("""val\s+dark\s+by\s+remember\([^)]*\)\s*\{[^{}]*derivedStateOf""").containsMatchIn(navBarSrc)
+        )
     }
 
     @Test
     fun provider_supplies_LocalDarkTheme() {
         assertTrue(
-            "Theme.kt must declare LocalDarkTheme CompositionLocal",
-            themeSrc.contains("val LocalDarkTheme = staticCompositionLocalOf")
+            "Theme.kt must declare LocalDarkTheme as a subscribable compositionLocalOf — " +
+                "staticCompositionLocalOf never invalidates readers, so the dock would ignore theme changes.",
+            themeSrc.contains("val LocalDarkTheme = compositionLocalOf")
         )
         assertTrue(
             "SleepyThemeProvider must provide LocalDarkTheme",
