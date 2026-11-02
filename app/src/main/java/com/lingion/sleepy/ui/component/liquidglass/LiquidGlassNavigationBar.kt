@@ -790,10 +790,10 @@ fun LiquidGlassNavigationBar(
                                     sampling = sampling,
                                     glow = LiquidGlassGlow.None,
                                 )
-                                uniforms.forEach { (name, values) ->
-                                    contentShader.setFloatUniform(name, values)
-                                }
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    uniforms.forEach { (name, values) ->
+                                        contentShader.setFloatUniform(name, values)
+                                    }
                                     this.renderEffect = android.graphics.RenderEffect.createRuntimeShaderEffect(
                                         contentShader,
                                         "uTexture",
