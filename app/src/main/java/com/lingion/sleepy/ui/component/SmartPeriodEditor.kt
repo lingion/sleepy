@@ -1,5 +1,7 @@
 package com.lingion.sleepy.ui.component
 
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,10 +19,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material3.FilterChip
+import com.lingion.sleepy.ui.component.liquidglass.GlassFilterChip as FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.material3.Switch
@@ -451,7 +453,8 @@ private fun PositionCard(
     Box(
         modifier = modifier
             .heightIn(min = 36.dp)
-            .background(bg, SleepyTheme.shapes.small)
+            .glassControl(shape = SleepyTheme.shapes.small, tint = if (selected) groupColor else null)
+            .background(controlFill(bg), SleepyTheme.shapes.small)
             .noRippleClickable(onClick)
             .padding(vertical = 8.dp),
         contentAlignment = Alignment.Center

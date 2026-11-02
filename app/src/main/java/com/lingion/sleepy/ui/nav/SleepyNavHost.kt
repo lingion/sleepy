@@ -21,6 +21,10 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.NavigationRailItemDefaults
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
@@ -171,6 +175,13 @@ internal fun SleepyNavHost(
         backStack = nav,
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
+            remember {
+                androidx.navigation3.runtime.NavEntryDecorator<NavKey> { entry ->
+                    com.lingion.sleepy.ui.component.liquidglass.GlassHost(
+                        enabled = com.lingion.sleepy.ui.theme.LocalUiStyle.current == com.lingion.sleepy.ui.theme.UiStyle.LiquidGlass,
+                    ) { entry.Content() }
+                }
+            },
         ),
         onBack = { navigator.pop() },
         transitionSpec = { forwardTransform },
@@ -711,6 +722,8 @@ private fun MainRoute(
                 NavigationBar {
                     Tab.entries.forEach { tab ->
                         NavigationBarItem(
+                            modifier = Modifier.glassControl(selected = currentTab == tab),
+                            colors = NavigationBarItemDefaults.colors(indicatorColor = controlFill(MaterialTheme.colorScheme.secondaryContainer)),
                             selected = currentTab == tab,
                             onClick = { setCurrentTab(tab) },
                             icon = { NavigationTabIcon(tab, showUpdateDot = updateNoticeVisible && tab == Tab.Mine) },
@@ -795,8 +808,9 @@ private fun CombinedRailItem(
         Column(
             modifier = Modifier
                 .width(56.dp)
+                .glassControl(shape = RoundedCornerShape(percent = 50), tint = containerColor)
                 .clip(RoundedCornerShape(percent = 50))
-                .background(containerColor)
+                .background(controlFill(containerColor))
                 .padding(vertical = 4.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -841,6 +855,8 @@ private fun PlainRailItem(
     onClick: () -> Unit,
 ) {
     NavigationRailItem(
+        modifier = Modifier.glassControl(selected = selected),
+        colors = NavigationRailItemDefaults.colors(indicatorColor = controlFill(MaterialTheme.colorScheme.secondaryContainer)),
         selected = selected,
         onClick = onClick,
         icon = { NavigationTabIcon(tab, showUpdateDot = showUpdateDot) },

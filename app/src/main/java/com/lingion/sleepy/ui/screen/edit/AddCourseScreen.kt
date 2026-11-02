@@ -1,5 +1,7 @@
 package com.lingion.sleepy.ui.screen.edit
 
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import com.lingion.sleepy.util.AppPrefs
 
 import com.lingion.sleepy.R
@@ -35,18 +37,18 @@ import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.ExpandMore
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.FilledTonalButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
+import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
+import com.lingion.sleepy.ui.component.liquidglass.GlassTonalButton as FilledTonalButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.LaunchedEffect
@@ -1642,11 +1644,12 @@ private fun EdgeCandidatePickerDialog(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .glassControl(shape = SleepyTheme.shapes.medium, tint = if (c.exists) MaterialTheme.colorScheme.secondaryContainer else null)
                             .clip(SleepyTheme.shapes.medium)
-                            .background(
+                            .background(controlFill(
                                 if (c.exists) MaterialTheme.colorScheme.secondaryContainer
                                 else MaterialTheme.colorScheme.surfaceContainerHighest
-                            )
+                            ))
                             .noRippleClickable {
                                 if (c.exists) onPickExisting(c.node) else onPickNew(c)
                             }
@@ -1972,8 +1975,9 @@ private fun MultiDayPicker(
                         modifier = Modifier
                             .weight(1f)
                             .height(40.dp)
+                            .glassControl(shape = SleepyTheme.shapes.medium, selected = selected)
                             .clip(SleepyTheme.shapes.medium)
-                            .background(if (selected) colors.primary else colors.surfaceContainerHighest)
+                            .background(controlFill(if (selected) colors.primary else colors.surfaceContainerHighest))
                             .noRippleClickable { onToggleDay(day) },
                         contentAlignment = Alignment.Center
                     ) {
