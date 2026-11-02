@@ -76,10 +76,19 @@ class JwMockRuleUnitTest {
         val ok = resolveBodyFile(filesDir, "mock_kbcx.html")
         assertNotNull(ok)
         assertTrue(ok!!.canonicalPath.startsWith(filesDir.canonicalPath))
+        assertNotNull(resolveBodyFile(filesDir, "sub/mock_kbcx.html"))
         listOf(
             "/etc/passwd",
+            "\\etc\\passwd",
+            "C:/Windows/win.ini",
+            "C:\\Windows\\win.ini",
+            "C:outside.html",
+            "\\\\server\\share\\outside.html",
             "../../../etc/passwd",
             "sub/../../outside.html",
+            "..\\outside.html",
+            "sub\\..\\..\\outside.html",
+            "sub/..\\outside.html",
             "",
             " ",
         ).forEach { bad ->
