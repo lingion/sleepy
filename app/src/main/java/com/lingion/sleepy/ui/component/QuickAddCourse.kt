@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
 import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.foundation.background
@@ -74,7 +75,7 @@ internal fun QuickAddCourseCapsule(
         .background(controlFill(colors.primaryContainer), shape)
         .border(1.dp, colors.primary, shape)
         .semantics { contentDescription = label }
-        .noRippleClickable(onClick = onConfirm)) {
+        .noRippleGlassClickable(onClick = onConfirm)) {
         Text("+", modifier = Modifier.align(Alignment.Center), color = colors.onPrimaryContainer, fontSize = 24.sp)
         for (top in listOf(true, false)) {
             val start by rememberUpdatedState(onResizeStart)

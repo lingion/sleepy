@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
 import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.foundation.background
@@ -455,7 +456,7 @@ private fun PositionCard(
             .heightIn(min = 36.dp)
             .glassControl(shape = SleepyTheme.shapes.small, tint = if (selected) groupColor else null)
             .background(controlFill(bg), SleepyTheme.shapes.small)
-            .noRippleClickable(onClick)
+            .noRippleGlassClickable(onClick)
             .padding(vertical = 8.dp),
         contentAlignment = Alignment.Center
     ) {

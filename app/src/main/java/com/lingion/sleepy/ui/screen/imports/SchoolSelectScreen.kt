@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.screen.imports
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
 import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import android.Manifest
@@ -545,7 +546,7 @@ private fun CustomUrlEntryRow(onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .glassControl(shape = SleepyTheme.shapes.medium)
-            .noRippleClickable(onClick)
+            .noRippleGlassClickable(onClick)
             .dbgTag("school_custom_url_entry", text = stringResource(R.string.custom_url_entry), role = "button")
             .padding(vertical = 14.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -675,7 +676,7 @@ private fun SchoolRow(school: JwSchoolInfo, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .glassControl(shape = SleepyTheme.shapes.medium)
-            .noRippleClickable(onClick)
+            .noRippleGlassClickable(onClick)
             .dbgTag("school_item", text = school.name, role = "button")
             .padding(vertical = 14.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -781,7 +782,7 @@ private fun UrlDirectRow(url: String, protocolType: String?, matchedSchool: JwSc
         modifier = Modifier
             .fillMaxWidth()
             .glassControl(shape = SleepyTheme.shapes.medium)
-            .noRippleClickable(onClick)
+            .noRippleGlassClickable(onClick)
             .dbgTag("school_url_direct", text = url, role = "button")
             .padding(vertical = 14.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
