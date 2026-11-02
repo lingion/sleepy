@@ -5,8 +5,8 @@
 <h1 align="center">Sleepy · 轻课表</h1>
 
 <p align="center">
-  A clean, Material You Android schedule/timetable app built with Kotlin + Jetpack Compose.<br>
-  Material You 设计的纯净 Android 课程表 App — 多视图 · 教务导入 · 桌面小组件 · HSV 自定义配色
+  A clean Android timetable app built with Kotlin + Jetpack Compose, Material 3 Expressive motion, and optional Liquid Glass.<br>
+  Material You / Material 3 Expressive 设计的纯净 Android 课程表 App — 多视图 · 教务导入 · 单次调课 · 桌面小组件 · 液态玻璃
 </p>
 
 <p align="center">
@@ -57,7 +57,7 @@
 
 **学校教务系统在维护？** **WakeUp / 课程格子要登录云端？** **想看下一节课却要点开 App？**
 
-Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务导入会访问学校站点，节假日数据和版本更新检查也需要联网；项目未集成 Firebase / Crashlytics / Sentry / Bugsnag 等第三方分析 SDK。[学校目录](docs/schools-list.md)按已有导入配置、待验证可尝试和待适配区分，收录不等于支持导入；[来源说明](docs/catalog/README.md)与生成清单记录当前范围。另支持 iCalendar（ICS）、WakeUp 课程包、CSV、HTML 和原生文本导入；导出的 ICS 文件可导入 Apple Calendar、Google Calendar、Outlook 等日历应用。
+Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务导入会访问学校站点，WakeUp 分享口令导入会访问 WakeUp 服务，节假日数据和版本更新检查也需要联网；项目未集成 Firebase / Crashlytics / Sentry / Bugsnag 等第三方分析 SDK。[学校目录](docs/schools-list.md)按已有导入配置、待验证可尝试和待适配区分，收录不等于支持导入；[来源说明](docs/catalog/README.md)与生成清单记录当前范围。另支持 iCalendar（ICS）、WakeUp 课程包、CSV、HTML 和原生文本导入；导出的 ICS 文件可导入 Apple Calendar、Google Calendar、Outlook 等日历应用。
 
 桌面提供 5 种小组件、13 个固定尺寸变体（Today / TwoDay / WeekList / WeekView / WeekGrid），跨厂商兼容，放在首屏不用点开 App。GPL-3.0 开源，谁都能审计，谁都能 fork。
 
@@ -84,7 +84,7 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 - 左/右滑周切换器，实时算周次
 - 周视图与网格视图均支持手指左右滑动切换周次
 - 今日页区分无课、学期未开始和学期已结束状态
-- 平板等宽屏使用侧边导航和双栏布局，左侧保留课表，右侧切换今日、课表管理与我的
+- 平板等宽屏在横向布局下使用侧边导航和双栏布局，左侧保留课表，右侧切换今日、课表管理与我的；竖屏回退为单栏
 - 课程按「起止周 + 单双周 + 起止节」自动过滤当前周
 - 点击课程卡片弹出详情底部弹窗
 
@@ -168,6 +168,8 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 | `zf` / `zf_1` / `zf_new` | 正方教务（3 变体） |
 | `urp` / `urp_new` | URP 教务（2 变体） |
 | `cf` | 青果教务 |
+| `kingo_new` | 新青果教务（含佳木斯大学等学校的课表页面） |
+| `sg_asset` | 使用内置厂商脚本的拾光兼容导入通路；可用性以学校条目状态为准 |
 | `classic_eams` | 经典金智 EAMS（电子科大/上财/湖南师大/南航 等） |
 | `eams5` | supwisdom EAMS5（合工大/安徽大学/矿大北京） |
 | `whut` | 武汉理工大学（金智变体） |
@@ -207,6 +209,7 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 | 格式 | 识别特征 |
 |---|---|
 | **WakeUp 分享文本** | 以 `【来自WakeUp课程表】` 开头 |
+| **WakeUp 分享口令** | 识别分享口令后联网从 WakeUp 服务获取课表，再生成导入预览 |
 | **WakeUp JSON** | Sleepy / WakeUp 导出的 `.json` |
 | **ICS 日历** | 标准 iCalendar，可从学校教务处导出 |
 | **CSV 文件** | 含表头的 `.csv`，逗号分隔 |
@@ -250,6 +253,8 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 同一课程可添加多个上课时段，每个时段分别设置教师、教室、备注、星期、起止节、周次和单双周类型；可把周次设置应用到所有时段。
 
 课程支持原名与可选别名、整组配色及每时段配色。别名仅用于显示，不改变课程身份；周视图、网格和每个小组件可分别决定是否使用别名。保存前会校验输入并提示冲突。
+
+也可只调整或删除某一天的**单次课程**，保留其他周次的安排。网格空白处可呼出预填星期与节次的快速加课胶囊；长按课程可浮起拖动、拉伸起止节次，拖至左右边缘还能连续切换周次，确认后保存本次调整。时间与节次范围滑杆会保留原始区间的幽灵标记，方便比较修改前后的位置。
 
 ---
 
@@ -349,7 +354,7 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 - **v1.0.55：部分变体提供实验性滚动**（内容超出卡片高度时可滚动查看）
 - **v1.0.55：上课/下课边界触发刷新**，跨过节次边界时卡片内容自动更新
 - 配色与 app 主题实时同步（深色模式 + 5 主题预设）
-- **三条渲染路径（主 app / WeekGrid / 截图渲染器）配色完全统一**：课程色按黄金角（137.508°）HSL 分布，以课程所属分组哈希映射色相，按课程分组稳定分配色相；不同课程仍可能使用相同颜色
+- **三条渲染路径（主 app / WeekGrid / 截图渲染器）共享课程配色逻辑**：支持经典黄金角配色、跟随主题和自定义主色，也可为课程单独指定颜色
 - 刷新机制：对全部 receiver 广播 `APPWIDGET_UPDATE`（系统级）+ WorkManager 定时刷新 + 上课/下课边界刷新
 
 ---
@@ -360,7 +365,7 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 
 手动添加或编辑课程遇到冲突时，提示会列出星期、节次、实际重叠周次和冲突课程。确认后才保存，返回修改则不写入。
 
-顶栏提供撤回与重做，用于回退最近一次课表数据修改、恢复刚撤回的修改；无可用操作时隐藏对应入口。切换当前课表不会被当作数据修改记录。
+顶栏提供多步撤回与重做，用于逐步回退课表数据修改、恢复刚撤回的修改；无可用操作时隐藏对应入口。「通用设置 → 实验功能」可设置保留步数（默认 5 步，`0` 关闭，`-1` 不限步数）。历史仅保存在内存中，进程结束后清空；切换当前课表不会被当作数据修改记录。
 
 「我的 → 外观与主题 → 课表显示」可切换叠层、折角、侧栏三种冲突样式，并调整对应的偏移或折角大小。
 
@@ -453,6 +458,10 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 
 主题色与深浅模式独立设置：可跟随系统，也可强制浅色或深色。点击新建主题可随机生成、从主色派生整套配色，或逐一设置主交互色、次级强调、第三强调和表面中性色；编辑器提供颜色选择和实时预览，支持保存、重命名及删除。主题变更同步刷新桌面小组件。
 
+外观页可在经典与实验性**液态玻璃**底栏之间切换。液态玻璃提供背景折射、模糊和拖动透镜效果；运行时着色器效果需要 Android 13+，不支持时使用兼容渲染。页面切换、弹层和课表交互使用 Material 3 Expressive 动效。
+
+课程配色可选经典黄金角、跟随主题或自定义主色，支持预览与重新配色，也可开启无色模式。
+
 <p align="left">
   <img src="docs/screenshots/30-custom-theme.png" width="280" alt="新建自定义主题与实时预览">
 </p>
@@ -524,22 +533,26 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 | 类别 | 技术与版本 |
 |---|---|
 | 语言 | Kotlin 2.4.21；Java / Kotlin JVM 目标版本为 17 |
-| 界面 | Jetpack Compose（BOM 2026.09.00）+ Material 3 1.5.0-alpha28 |
-| 导航 | Navigation 3 1.1.7 + NavigationEvent 1.1.2；Lifecycle ViewModel Navigation 3 2.11.0 |
-| 数据存储 | Room 2.7.0；通过 KSP 2.3.12 生成代码 |
-| 偏好设置 | SharedPreferences（`AppPrefs`）；DataStore Preferences 1.1.1 已声明，尚未使用 |
+| 界面 | Jetpack Compose（BOM 2026.09.00）+ Material 3 1.5.0-beta02，使用 Expressive 组件与动效 |
+| 液态玻璃与配色 | 本地 `:kyant-backdrop` 模块（基于 AndroidLiquidGlass 2.0.0 并含本地修改）；Kyant Shapes 1.2.1；Material Color Utilities 1.7.0 |
+| 导航 | Navigation 3 1.1.7 + NavigationEvent 1.2.0；Lifecycle ViewModel Navigation 3 2.11.0 |
+| 数据存储 | Room 2.8.5；通过 KSP 2.3.12 生成代码 |
+| 偏好设置 | SharedPreferences（`AppPrefs`）；DataStore Preferences 1.3.0 已声明，尚未使用 |
 | 协程 | kotlinx-coroutines 1.11.0 |
-| 序列化 | kotlinx-serialization-json 1.11.0 |
+| 序列化 | kotlinx-serialization-json 1.12.0 |
 | HTML 解析 | jsoup 1.23.2 |
 | 桌面小组件 | RemoteViews + Canvas，同步渲染 |
-| 后台任务 | WorkManager 2.9.1 |
+| 后台任务 | WorkManager 2.12.0 |
 | 图片加载 | Coil Compose 2.7.0（已声明，尚未使用） |
-| 启动页 | Core Splash Screen 1.0.1 |
-| Android 基础库 | AndroidX Core 1.17.0；Activity Compose 1.13.0；Lifecycle 2.8.7 |
-| 构建 | AGP 9.3.3 + Gradle 9.8.1，使用 Kotlin DSL |
+| 启动页 | Core Splash Screen 1.2.0 |
+| 本地调试控制台 | NanoHTTPD 2.3.1，监听 `127.0.0.1:3737` |
+| Android 基础库 | AndroidX Core 1.19.1；Activity Compose 1.13.0；Lifecycle 2.8.7 |
+| 构建 | AGP 9.4.1 + Gradle 9.8.2，使用 Kotlin DSL；应用使用 AGP 内置 Kotlin 支持 |
 | Android SDK | `minSdk=26`；`compileSdk=37`；`targetSdk=37` |
 
 版本以[依赖版本目录](gradle/libs.versions.toml)、[根构建配置](build.gradle.kts)、[应用构建配置](app/build.gradle.kts)和 [Gradle Wrapper 配置](gradle/wrapper/gradle-wrapper.properties)为准。
+
+液态玻璃模块的源码基线与本地修改见[模块说明](third-party/kyant-backdrop/README.md)；该模块的[构建配置](third-party/kyant-backdrop/build.gradle.kts)还显式声明 Compose UI / Foundation 1.12.1，不能仅凭应用 BOM 推断最终解析版本。
 
 ---
 
@@ -562,6 +575,7 @@ sleepy/
 │       │   ├── java/com/lingion/sleepy/
 │       │   │   ├── MainActivity.kt                            # 主界面入口
 │       │   │   ├── SleepyApp.kt                               # Application 初始化
+│       │   │   ├── console/                                   # 本地 HTTP 调试控制台、认证与语义操作
 │       │   │   ├── data/
 │       │   │   │   ├── AppDatabase.kt                         # Room 数据库
 │       │   │   │   ├── Migrations.kt                          # 数据库版本迁移
@@ -577,6 +591,7 @@ sleepy/
 │       │   │   │   └── undo/                                  # 撤回与重做
 │       │   │   ├── ui/
 │       │   │   │   ├── component/                             # 课表、节次编辑器等共享 Compose 组件
+│       │   │   │   │   └── liquidglass/                        # 液态玻璃底栏、着色器、几何与手势
 │       │   │   │   ├── nav/                                   # 路由、导航栈与页面转场
 │       │   │   │   ├── screen/
 │       │   │   │   │   ├── edit/                              # 课程编辑
@@ -608,16 +623,17 @@ sleepy/
 │   ├── sop/                                                   # 操作流程索引
 │   └── logo.png                                               # README 顶部标志
 ├── assets/                                                    # 原始标志图片
-├── gh-pages/                                                  # 在线课表页面
 ├── oppo-fluid-cloud-upk/                                      # Pantanal/Seedling UPK 骨架（专用通道未接入）
 ├── artifacts/                                                 # 已归档构建产物
 ├── scripts/                                                   # 学校目录生成、校验与版本维护脚本
+├── third-party/
+│   └── kyant-backdrop/                                         # AndroidLiquidGlass 本地源码依赖与补丁
 ├── tools/                                                     # 小组件预览、设备验证与教务采集工具
 │   └── sleepy-collector/                                      # Go 教务适配采集器
 ├── tasks/                                                     # 计划与待办记录
 ├── gradle/
 │   ├── libs.versions.toml                                     # 依赖版本目录
-│   └── wrapper/                                               # Gradle 9.8.1 Wrapper 配置与 JAR
+│   └── wrapper/                                               # Gradle Wrapper 配置与 JAR
 ├── build.gradle.kts                                           # 根构建插件配置
 ├── settings.gradle.kts                                        # 仓库与模块配置
 ├── gradle.properties                                          # Gradle 与 Kotlin 构建选项
@@ -632,7 +648,7 @@ sleepy/
 
 ### 前置
 
-构建使用仓库自带的 **Gradle 9.8.1 Wrapper + Android Gradle Plugin（AGP） 9.3.3**。Android Studio 需支持 AGP 9.3，版本兼容要求见 [AGP 9.3 官方说明](https://developer.android.com/build/releases/agp-9-3-0-release-notes)。
+构建使用仓库自带的 **Gradle 9.8.2 Wrapper + Android Gradle Plugin（AGP） 9.4.1**。Android Studio 需支持 AGP 9.4，版本兼容要求见 [AGP 9.4 官方说明](https://developer.android.com/build/releases/agp-9-4-0-release-notes)。CI 使用 JDK 17，Java / Kotlin 编译目标同为 17。
 
 ```bash
 java -version           # JDK 17+
@@ -640,7 +656,7 @@ java -version           # JDK 17+
 sdkmanager "platforms;android-37.0" "build-tools;36.0.0"
 ```
 
-当前 Gradle 配置解析为 `compileSdk=37`、`buildToolsVersion=36.0.0`；平台安装包标识为 `platforms;android-37.0`。
+项目配置 `compileSdk=37`、`targetSdk=37`；平台安装包标识为 `platforms;android-37.0`。项目未显式固定 `buildToolsVersion`，AGP 9.4 默认使用 Build Tools 36.0.0。
 
 若遇到 `SDK XML versions up to 3` / `SDK XML file of version 4` 警告，先确认通过本仓库的 `gradlew` / `gradlew.bat` 构建，再在 Android Studio 的 SDK Manager → SDK Tools 中更新 **Android SDK Command-line Tools (latest)**。IDE、`ANDROID_HOME` 和 `local.properties` 中的 `sdk.dir` 应指向同一个 SDK；命令行使用该 SDK 的 `cmdline-tools/latest/bin/sdkmanager`（Windows 为 `sdkmanager.bat`），避免 `PATH` 命中旧的 `tools/bin/sdkmanager`。参见 [sdkmanager 官方文档](https://developer.android.com/tools/sdkmanager)。
 
@@ -673,7 +689,7 @@ java -version
 
 Wrapper 会按 `gradle/wrapper/gradle-wrapper.properties` 下载指定版本的 Gradle，无需另行安装 Gradle；首次构建需要联网下载 Gradle 和依赖。Debug APK 输出到 `app/build/outputs/apk/debug/`。
 
-> **不想本地编译？** 仓库配有参数化的 GitHub Actions 工作流，一条命令即可在云端打任意架构 debug APK、跑 KVM 模拟器测试、依赖自动升级——public 仓库免费算力。详见 [docs/ci-automation.md](docs/ci-automation.md)。
+> **不想本地编译？** 可手动触发 [Debug APK Build](.github/workflows/debug-apk.yml)，指定分支或标签并选择 APK 架构；[Nightly Main Check](.github/workflows/nightly.yml) 提供 main 的定时检查与手动检查。命令示例见 [docs/ci-automation.md](docs/ci-automation.md)，当前可用工作流以 [`.github/workflows/`](.github/workflows/) 为准。
 
 ### 安装
 
@@ -689,7 +705,7 @@ adb install app/build/outputs/apk/debug/app-x86_64-debug.apk
 
 调试构建使用 `com.lingion.sleepy.debug`，与正式包分开保存数据；发布页还提供 universal APK 和校验和。
 
-CI 在面向 `main` 的 PR 上运行提交格式检查、采集工具检查、Android 单元测试、Android lint 和 APK 构建；推送 `v*.*.*` 标签触发发布。CI 与 Release 当前都不支持手动 dispatch。配置见 [CI](.github/workflows/ci.yml) 和 [Release](.github/workflows/release.yml)。
+CI 在面向 `main` 的 PR 上运行提交格式检查、学校目录校验、Go 采集工具检查、WebView 抓取脚本契约检查、Android 单元测试与 Room schema 检查、Android lint 和 Release APK 构建；推送 `v*.*.*` 标签触发发布。CI 与 Release 当前都不支持手动 dispatch，手动构建使用独立的 Debug APK Build 工作流。配置见 [CI](.github/workflows/ci.yml) 和 [Release](.github/workflows/release.yml)。
 
 ## 社区
 
