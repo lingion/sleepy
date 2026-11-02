@@ -8,13 +8,6 @@
 
 重建：python3 scripts/generate_school_catalog.py；人读列表：python3 scripts/generate_schools_list.py。
 
-## *
-
-| 学校 | 状态 | 别名 / 检索词 | 教务入口 | 协议候选 | 来源 / 目录 ID |
-|---|---|---|---|---|---|
-| 北京邮电大学新教务（VPN） | 已实现配置 | bupt / beijingyoudiandaxuexinjiaowu | https://vpn.bupt.edu.cn/ | qz_with_node | existing-baseline; *_北京邮电大学新教务（VPN） |
-| 北京邮电大学新教务（WebVPN） | 已实现配置 | bupt / beijingyoudiandaxuexinjiaowu | https://webvpn.bupt.edu.cn/ | qz_with_node | existing-baseline; *_北京邮电大学新教务（WebVPN） |
-
 ## A
 
 | 学校 | 状态 | 别名 / 检索词 | 教务入口 | 协议候选 | 来源 / 目录 ID |
@@ -276,6 +269,8 @@
 | 北京医药职工大学 | 待适配 | beijingyiyaozhigongdaxue |  |  | moe-2026-adult; moe:4211050018 |
 | 北京邮电大学 | 待验证·可尝试 | beijingyoudiandaxue | https://webvpn.bupt.edu.cn/login | qz_with_node | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4111010013 |
 | 北京邮电大学世纪学院 | 待适配 | beijingyoudiandaxueshijixueyuan |  |  | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4111013901 |
+| 北京邮电大学新教务（VPN） | 已实现配置 | bupt / beijingyoudiandaxuexinjiaowu | https://vpn.bupt.edu.cn/ | qz_with_node | existing-baseline; *_北京邮电大学新教务（VPN） |
+| 北京邮电大学新教务（WebVPN） | 已实现配置 | bupt / beijingyoudiandaxuexinjiaowu | https://webvpn.bupt.edu.cn/ | qz_with_node | existing-baseline; *_北京邮电大学新教务（WebVPN） |
 | 北京邮电大学 - 研究生 | 研究生·待适配 | beijingyoudiandaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:261e634be5b2d52e81c5 |
 | 北京有色金属研究院 - 研究生 | 研究生·待适配 | beijingyousejinshuyanjiuyuanyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:e43eff6fe63fd56f204a |
 | 北京语言大学 | 待验证·可尝试 | beijingyuyandaxue | https://webvpn.blcu.edu.cn/users/sign_in | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4111010032 |
