@@ -101,9 +101,14 @@ fun LiquidGlassNavigationBar(
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
     val colorScheme = MaterialTheme.colorScheme
+    // 主题实时订阅: LocalDarkTheme 用 compositionLocalOf 提供(见 Theme.kt),
+    // 组合期直读即注册依赖; derivedStateOf 把 dark 收敛成单一快照状态,
+    // 供着色器 uniform / 底盘色 / 阴影强度等价消费,
+    // 会话内切深浅色时立即刷新, 不再定格在初始化值直到重启。
     val isAppDark = LocalDarkTheme.current
-    val isSchemeDark = colorScheme.surface.luminance() < 0.5f
-    val dark = isAppDark || isSchemeDark
+    val dark by remember(isAppDark, colorScheme) {
+        derivedStateOf { isAppDark || colorScheme.surface.luminance() < 0.5f }
+    }
 
     val count = items.size
     val lastIndex = max(0, count - 1)
