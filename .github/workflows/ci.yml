@@ -37,6 +37,8 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
+      - name: Debug APK workflow contracts
+        run: python3 -m unittest discover -s scripts -p 'test_debug_*.py'
       - name: Verify source coverage and reproducible school catalog
         run: |
           python3 scripts/test_catalog_url_safety.py
