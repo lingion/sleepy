@@ -43,7 +43,7 @@
 发布页提供 `sha256sums.txt`，可核对下载文件。不要把 PR CI 的测试产物当成正式更新。
 
 ### 有 iOS、Windows 或网页版本吗？
-iOS 在独立仓库 [lingion/sleepy-ios](https://github.com/lingion/sleepy-ios) 维护，安装方式、最低系统和可用功能以该仓库的公开说明与 [Releases](https://github.com/lingion/sleepy-ios/releases) 为准，不能据 Android v1.0.63 推断功能完全相同。另有[官网](https://sleepy.is-my.app)和[在线体验](https://sleepy.is-my.app/preview)；网页预览不等于原生应用全部能力。Windows 原生版暂无。
+iOS 版在独立仓库 [lingion/sleepy-ios](https://github.com/lingion/sleepy-ios) 维护，基于 SwiftUI + WidgetKit 原生实现。当前官方入口是 [Apple TestFlight 公测](https://testflight.apple.com/join/SxymmDzf)，安装和更新按 TestFlight 流程完成。iOS 的最低系统和实际可用功能以其独立发布说明为准，不能据 Android v1.0.63 推断两端功能完全相同。另有[官网](https://sleepy.is-my.app)和[在线体验](https://sleepy.is-my.app/preview)；网页预览不等于原生应用全部能力。Windows 原生版暂无。
 
 ### 支持哪些界面语言？
 Android v1.0.63 包含简体中文、繁体中文、英文、日文和西班牙文。网页官网目前提供中文、英文两种语言，不能将两者的语言范围混为一谈。

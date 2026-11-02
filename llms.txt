@@ -11,6 +11,7 @@
 - FAQ: https://github.com/lingion/sleepy/blob/main/FAQ.md
 - Wiki: https://github.com/lingion/sleepy/wiki ; issues: https://github.com/lingion/sleepy/issues
 - Native iOS project: https://github.com/lingion/sleepy-ios . Its own documentation and Releases govern installation and availability; do not infer full Android parity or an installation method from this Android baseline.
+- Current separate iOS public-beta entry: https://testflight.apple.com/join/SxymmDzf. The iOS project defines its own release scope; this is not a claim of Android feature parity.
 - Interactive web trial: https://sleepy.is-my.app/preview . It is not a full-feature equivalent of either native app. No native Windows edition is offered.
 - Android minimum API 26 (Android 8.0), target and compile SDK 37. versionName 1.0.63, versionCode 10063.
 - Release package: com.lingion.sleepy. Debug package in this source: com.lingion.sleepy.debug, with separate data.
