@@ -689,7 +689,7 @@ java -version
 
 Wrapper 会按 `gradle/wrapper/gradle-wrapper.properties` 下载指定版本的 Gradle，无需另行安装 Gradle；首次构建需要联网下载 Gradle 和依赖。Debug APK 输出到 `app/build/outputs/apk/debug/`。
 
-> **不想本地编译？** 可手动触发 [Debug APK Build](.github/workflows/debug-apk.yml)，指定分支或标签并选择 APK 架构；[Nightly Main Check](.github/workflows/nightly.yml) 提供 main 的定时检查与手动检查。命令示例见 [docs/ci-automation.md](docs/ci-automation.md)，当前可用工作流以 [`.github/workflows/`](.github/workflows/) 为准。
+> 不想本地编译，可以使用 [Debug APK Build](.github/workflows/debug-apk.yml)。向 `main` 提交非草稿 PR 后会自动生成 debug 包；fork 启用 Actions 后，分支推送也会自动构建。手动运行支持指定分支、标签或完整 SHA，以及单独的 `armeabi-v7a`（V7A）等架构。进入对应 Actions 运行页面，在构建摘要中选择架构下载，需登录 GitHub，产物保留 7 天。外部 PR、fork 和显式指定源码的手动构建使用临时签名，跨次构建不保证覆盖安装。完整操作见 [docs/ci-automation.md](docs/ci-automation.md)。[Nightly Main Check](.github/workflows/nightly.yml) 仍提供 main 的定时检查与手动检查。
 
 ### 安装
 
