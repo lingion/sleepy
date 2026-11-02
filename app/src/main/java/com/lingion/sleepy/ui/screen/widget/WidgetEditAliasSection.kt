@@ -1,5 +1,7 @@
 package com.lingion.sleepy.ui.screen.widget
 
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -72,10 +74,11 @@ object WidgetEditAliasSection : WidgetEditSection {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .glassControl(shape = MaterialTheme.shapes.medium, tint = if (selected) MaterialTheme.colorScheme.primaryContainer else null)
                 .clickable(onClick = onClick)
                 .background(
-                    if (selected) MaterialTheme.colorScheme.primaryContainer
-                    else MaterialTheme.colorScheme.surfaceContainer
+                    controlFill(if (selected) MaterialTheme.colorScheme.primaryContainer
+                    else MaterialTheme.colorScheme.surfaceContainer)
                 )
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically

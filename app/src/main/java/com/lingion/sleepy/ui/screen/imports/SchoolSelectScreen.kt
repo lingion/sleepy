@@ -1,5 +1,7 @@
 package com.lingion.sleepy.ui.screen.imports
 
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -34,10 +36,10 @@ import androidx.compose.material.icons.outlined.School
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.TextButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.material3.Scaffold
@@ -542,6 +544,7 @@ private fun CustomUrlEntryRow(onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .glassControl(shape = SleepyTheme.shapes.medium)
             .noRippleClickable(onClick)
             .dbgTag("school_custom_url_entry", text = stringResource(R.string.custom_url_entry), role = "button")
             .padding(vertical = 14.dp, horizontal = 4.dp),
@@ -651,10 +654,11 @@ private fun AlphabetIndexBar(
                     else MaterialTheme.typography.labelSmall,
                     color = if (isActive) colors.primary else colors.onSurfaceVariant,
                     modifier = Modifier
+                        .glassControl(shape = SleepyTheme.shapes.extraSmall, selected = isActive)
                         .clip(SleepyTheme.shapes.extraSmall)
-                        .background(
+                        .background(controlFill(
                             if (isActive) colors.primaryContainer.copy(alpha = SleepyTheme.Alpha.inactive) else Color.Transparent
-                        )
+                        ))
                         .padding(horizontal = 4.dp, vertical = 1.dp)
                 )
             }
@@ -670,6 +674,7 @@ private fun SchoolRow(school: JwSchoolInfo, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .glassControl(shape = SleepyTheme.shapes.medium)
             .noRippleClickable(onClick)
             .dbgTag("school_item", text = school.name, role = "button")
             .padding(vertical = 14.dp, horizontal = 4.dp),
@@ -775,6 +780,7 @@ private fun UrlDirectRow(url: String, protocolType: String?, matchedSchool: JwSc
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .glassControl(shape = SleepyTheme.shapes.medium)
             .noRippleClickable(onClick)
             .dbgTag("school_url_direct", text = url, role = "button")
             .padding(vertical = 14.dp, horizontal = 4.dp),

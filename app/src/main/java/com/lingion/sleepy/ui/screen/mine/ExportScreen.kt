@@ -1,5 +1,7 @@
 package com.lingion.sleepy.ui.screen.mine
 
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import android.Manifest
 import android.content.Intent
 import android.widget.Toast
@@ -28,7 +30,7 @@ import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material3.AlertDialog
+import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
@@ -40,7 +42,7 @@ import com.lingion.sleepy.data.calendar.SystemCalendarManager
 import com.lingion.sleepy.SleepyApp
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -497,8 +499,9 @@ private fun PickerRow(title: String, subtitle: String?, isSelected: Boolean, onC
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .glassControl(shape = SleepyTheme.shapes.small, tint = if (isSelected) colors.primaryContainer else null)
             .clip(SleepyTheme.shapes.small)
-            .background(if (isSelected) colors.primaryContainer else colors.surfaceContainer)
+            .background(controlFill(if (isSelected) colors.primaryContainer else colors.surfaceContainer))
             .noRippleClickable(onClick)
             .padding(vertical = 10.dp, horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -541,6 +544,7 @@ internal fun ExportItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .glassControl(shape = SleepyTheme.shapes.medium)
             .noRippleClickable(onClick)
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically

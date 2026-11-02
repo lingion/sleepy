@@ -1,5 +1,7 @@
 package com.lingion.sleepy.ui.screen.mine
 
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,7 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -299,9 +301,10 @@ private fun HeaderStylePreviews(
                 Surface(
                     modifier = Modifier
                         .widthIn(min = 76.dp)
+                        .glassControl(shape = SleepyTheme.shapes.medium, tint = if (value == selectedStyle) colors.primaryContainer else null)
                         .clip(SleepyTheme.shapes.medium)
                         .noRippleClickable { onStyleSelected(value) },
-                    color = if (value == selectedStyle) colors.primaryContainer else colors.surfaceContainer,
+                    color = controlFill(if (value == selectedStyle) colors.primaryContainer else colors.surfaceContainer),
                     shape = SleepyTheme.shapes.medium,
                 ) {
                     Column(

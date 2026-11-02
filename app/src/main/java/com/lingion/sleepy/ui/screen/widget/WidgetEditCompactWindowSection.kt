@@ -1,5 +1,7 @@
 package com.lingion.sleepy.ui.screen.widget
 
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -72,6 +74,7 @@ object WidgetEditCompactWindowSection : WidgetEditSection {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .glassControl(shape = MaterialTheme.shapes.medium, selected = selected)
                 .clickable(onClick = onSelect)
                 .padding(horizontal = 16.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically
