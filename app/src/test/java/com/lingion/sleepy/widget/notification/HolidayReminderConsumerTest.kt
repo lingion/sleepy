@@ -99,12 +99,11 @@ class HolidayReminderConsumerTest {
 
         assertTrue(reconcile.contains("if (!ensureActiveFluidCloud())"))
         assertTrue(reconcile.contains("FluidCloudService.requestStop(app, reconciliation = true)"))
-        // 2026-10 每表独立提醒: 流体云改为扫描全部开启提醒的课表, 取窗口内最早的一节
-        assertTrue(ensure.contains("val (hit, table) = best ?: return false"))
-        assertTrue(normalized(ensure).contains(".allowReminder ) return@forEach"))
+        // 流体云只能显示一门课，且必须严格遵循当前页面选中的课表（首页呈现的课表）
+        assertTrue(ensure.contains("val table = resolveCurrentTable() ?: return false"))
+        assertTrue(normalized(ensure).contains(".allowReminder ) return false"))
         // The shared occurrence resolver checks the source semester, including transfers beyond its end.
         assertTrue(ensure.contains("getCoursesForDate(table, today)"))
-        assertTrue(ensure.contains("best ?: return false"))
         val normalizedEnsure = normalized(ensure)
         assertTrue(normalizedEnsure.contains("startForegroundService(app, svc)"))
         assertTrue(normalizedEnsure.contains("true } catch (t: Throwable)"))
