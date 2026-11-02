@@ -41,8 +41,9 @@ internal fun BackdropEffectScope.liquidGlass(
     veil: Color = Color.Transparent,
 ) {
     if (!isRuntimeShaderSupported()) {
-        if (style.blur > 0.0) {
-            blur(style.blur.toFloat() * density)
+        val effectiveStyle = LiquidGlassStyle.standard(style)
+        if (effectiveStyle.blur > 0.0) {
+            blur(effectiveStyle.blur.toFloat() * density)
         }
         vibrancy()
         return
@@ -95,8 +96,9 @@ internal fun BackdropEffectScope.liquidGlass(
         }
     } catch (e: Throwable) {
         android.util.Log.w("LiquidGlassEffect", "RuntimeShader fallback to blur+vibrancy", e)
-        if (style.blur > 0.0) {
-            blur(style.blur.toFloat() * density)
+        val effectiveStyle = LiquidGlassStyle.standard(style)
+        if (effectiveStyle.blur > 0.0) {
+            blur(effectiveStyle.blur.toFloat() * density)
         }
         vibrancy()
     }

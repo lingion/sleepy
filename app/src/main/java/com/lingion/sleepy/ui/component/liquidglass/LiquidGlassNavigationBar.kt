@@ -3,7 +3,7 @@ package com.lingion.sleepy.ui.component.liquidglass
 import android.os.Build
 import android.os.SystemClock
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -50,6 +50,7 @@ import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -69,10 +70,12 @@ import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.shapes.Capsule
 import com.lingion.sleepy.ui.component.PillNavItemSpec
+import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import material.Hct
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
+import kotlin.math.sign
 
 /**
  * 100% 逐字对齐 FLClash (FLASH) 的液态玻璃悬浮导航底栏。
@@ -98,7 +101,9 @@ fun LiquidGlassNavigationBar(
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
     val colorScheme = MaterialTheme.colorScheme
-    val dark = isSystemInDarkTheme()
+    val isAppDark = LocalDarkTheme.current
+    val isSchemeDark = colorScheme.surface.luminance() < 0.5f
+    val dark = isAppDark || isSchemeDark
 
     val count = items.size
     val lastIndex = max(0, count - 1)
@@ -265,6 +270,45 @@ fun LiquidGlassNavigationBar(
         } else null
     }
 
+    fun computeInsideTransform(index: Int): DestinationTransform {
+        val lift = liftSpring.value
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && contentShader != null) {
+            val mag = 1f + FlClashDockPhysics.LENS_MAGNIFY * lift
+            return DestinationTransform(scaleX = mag, scaleY = mag)
+        }
+
+        val currentPos = lensSpring.value
+        val delta = index.toFloat() - currentPos
+        val absDelta = abs(delta)
+
+        val halfLensTabs = if (currentLayout.pitch > 0.001f) (currentLayout.lens / currentLayout.pitch) * 0.5f else 0.6f
+        if (absDelta > halfLensTabs * 1.35f) {
+            return DestinationTransform.Identity
+        }
+
+        val centerMag = 1.14f + 0.12f * lift
+        val peakDist = 0.68f * halfLensTabs
+        val edgeBandWidth = 0.40f * halfLensTabs
+        val distFromPeak = abs(absDelta - peakDist)
+        val edgeFactor = (1f - distFromPeak / edgeBandWidth).coerceIn(0f, 1f)
+        val edgeStretch = edgeFactor * edgeFactor
+
+        val jellyStretch = abs(jellySpring.value) * 0.2f
+        val scaleX = centerMag + 0.34f * edgeStretch + jellyStretch
+        val scaleY = centerMag + 0.18f * edgeStretch
+
+        val pullDirection = if (absDelta > 0.001f) sign(delta) else 0f
+        val pullPx = pullDirection * edgeStretch * 8.5f * currentDensity
+        val jellyPx = jellySpring.value * 10f * currentDensity
+
+        return DestinationTransform(
+            scaleX = scaleX,
+            scaleY = scaleY,
+            translationX = pullPx + jellyPx,
+            translationY = 0f,
+        )
+    }
+
     val shadowRoomDp = 12.dp
 
     Box(
@@ -422,8 +466,17 @@ fun LiquidGlassNavigationBar(
                         ambientColor = colorScheme.scrim.copy(alpha = 0.08f * shadowStrength),
                         spotColor = colorScheme.scrim.copy(alpha = 0.04f * shadowStrength),
                     )
+                    .background(
+                        color = colorScheme.surfaceContainer.copy(alpha = if (dark) 0.72f else 0.88f),
+                        shape = Capsule(),
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = Color.White.copy(alpha = if (dark) 0.12f else 0.25f),
+                        shape = Capsule(),
+                    )
                     .then(
-                        if (backdrop != null) {
+                        if (backdrop != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                             Modifier.drawPlainBackdrop(
                                 backdrop = backdrop,
                                 shape = { Capsule() },
@@ -436,10 +489,7 @@ fun LiquidGlassNavigationBar(
                                 },
                             )
                         } else {
-                            Modifier.background(
-                                colorScheme.surfaceContainer.copy(alpha = if (dark) 0.72f else 0.88f),
-                                shape = Capsule(),
-                            )
+                            Modifier
                         }
                     )
                     .padding(barPaddingDp),
@@ -707,6 +757,31 @@ fun LiquidGlassNavigationBar(
                                     cornerRadius = CornerRadius(radiusPx, radiusPx),
                                 )
                             }
+                            // 4. 老设备 (API < 33) 透镜立体边框与高光
+                            if (lensShader == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                                val lensRect = FlClashDockPhysics.lensRect(
+                                    position = lensSpring.value,
+                                    stretch = jellySpring.value,
+                                    pitch = layout.pitch,
+                                    width = layout.lens,
+                                    height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
+                                    lift = lift,
+                                )
+                                val dockContentTopPx = (shadowRoomDp + FlClashDockPhysics.BAR_PADDING.dp).toPx()
+                                val dockContentLeftPx = FlClashDockPhysics.BAR_PADDING.dp.toPx()
+                                val leftPx = dockContentLeftPx + (layout.inset + lensRect.left) * density.density
+                                val topPx = dockContentTopPx + lensRect.top * density.density
+                                val widthPx = lensRect.width * density.density
+                                val heightPx = lensRect.height * density.density
+                                val radiusPx = heightPx / 2f
+                                drawRoundRect(
+                                    color = Color.White.copy(alpha = (if (dark) 0.32f else 0.45f) * lift.coerceIn(0f, 1f)),
+                                    topLeft = Offset(leftPx, topPx),
+                                    size = Size(widthPx, heightPx),
+                                    cornerRadius = CornerRadius(radiusPx, radiusPx),
+                                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.5.dp.toPx()),
+                                )
+                            }
                         }
                     },
             )
@@ -815,7 +890,7 @@ fun LiquidGlassNavigationBar(
                             items = items,
                             layout = layout,
                             tint = colorScheme.primary,
-                            magnification = { 1f + FlClashDockPhysics.LENS_MAGNIFY * liftSpring.value },
+                            itemTransform = { computeInsideTransform(it) },
                         )
                     }
                 }
@@ -824,12 +899,26 @@ fun LiquidGlassNavigationBar(
     }
 }
 
+/**
+ * 针对每个导航项的几何变换 (在老设备 API < 33 上承载非线性光学放大拉伸与边缘凸透镜拉扯)。
+ */
+private data class DestinationTransform(
+    val scaleX: Float = 1f,
+    val scaleY: Float = 1f,
+    val translationX: Float = 0f,
+    val translationY: Float = 0f,
+) {
+    companion object {
+        val Identity = DestinationTransform()
+    }
+}
+
 @Composable
 private fun DestinationsRow(
     items: List<PillNavItemSpec>,
     layout: FlClashDockPhysics.DockLayout,
     tint: Color,
-    magnification: () -> Float = { 1f },
+    itemTransform: (index: Int) -> DestinationTransform = { DestinationTransform.Identity },
 ) {
     Row(
         modifier = Modifier
@@ -837,7 +926,7 @@ private fun DestinationsRow(
             .padding(horizontal = layout.inset.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        items.forEachIndexed { _, item ->
+        items.forEachIndexed { index, item ->
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -847,9 +936,11 @@ private fun DestinationsRow(
                 Column(
                     modifier = Modifier
                         .graphicsLayer {
-                            val mag = magnification()
-                            scaleX = mag
-                            scaleY = mag
+                            val transform = itemTransform(index)
+                            scaleX = transform.scaleX
+                            scaleY = transform.scaleY
+                            translationX = transform.translationX
+                            translationY = transform.translationY
                         },
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
