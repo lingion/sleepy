@@ -28,7 +28,7 @@ fun Modifier.noRippleClickable(onClick: () -> Unit): Modifier = composed {
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
     val pressScale by animateFloatAsState(
-        targetValue = if (pressed) SleepyPressScale else 1f,
+        targetValue = if (pressed && LocalUiStyle.current != UiStyle.LiquidGlass) SleepyPressScale else 1f,
         animationSpec = MaterialTheme.motionScheme.fastEffectsSpec<Float>(),
         label = "noRipplePressScale",
     )
@@ -59,7 +59,7 @@ fun Modifier.noRippleClickable(
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
     val pressScale by animateFloatAsState(
-        targetValue = if (pressed) SleepyPressScale else 1f,
+        targetValue = if (pressed && LocalUiStyle.current != UiStyle.LiquidGlass) SleepyPressScale else 1f,
         animationSpec = MaterialTheme.motionScheme.fastEffectsSpec<Float>(),
         label = "noRipplePressScale",
     )

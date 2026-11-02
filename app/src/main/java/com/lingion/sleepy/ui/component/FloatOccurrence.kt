@@ -1,5 +1,7 @@
 package com.lingion.sleepy.ui.component
 
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import android.annotation.SuppressLint
 import android.os.Build
 import androidx.compose.animation.core.Animatable
@@ -492,8 +494,9 @@ internal fun FloatActionPopup(
     Row(
         modifier = modifier
             .shadow((4 * scale).dp, shape, clip = false)
+            .glassControl(shape = shape, grouped = true)
             .clip(shape)
-            .background(colors.surfaceContainerHigh)
+            .background(controlFill(colors.surfaceContainerHigh))
             .border(1.dp, colors.outlineVariant, shape)
             .onGloballyPositioned { state.popupBounds = it.boundsInRoot() }
             .testTag("float-popup"),

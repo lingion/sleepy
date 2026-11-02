@@ -1,5 +1,7 @@
 package com.lingion.sleepy.ui.component
 
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -37,6 +39,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.component.liquidglass.glassSurfaceBackground
 import com.lingion.sleepy.ui.theme.noRippleClickable
 
 /**
@@ -79,7 +82,7 @@ fun SettingsCard(
         label = "settings-arrow"
     )
     Column(
-        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).noRippleClickable(onToggle)
+        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).glassSurfaceBackground(colors.surfaceContainer, SleepyTheme.shapes.large).noRippleClickable(onToggle)
             .then(dbg?.let { Modifier.dbgTag(it, text = title, role = "button") } ?: Modifier)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -131,7 +134,7 @@ fun SettingsFlatCard(
 ) {
     val colors = MaterialTheme.colorScheme
     Column(
-        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).padding(horizontal = 16.dp, vertical = 14.dp),
+        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).glassSurfaceBackground(colors.surfaceContainer, SleepyTheme.shapes.large).padding(horizontal = 16.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Row(
@@ -192,7 +195,7 @@ fun DisplayModeOption(
         animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
         label = "displayModeOptionLabel",
     )
-    Row(modifier = Modifier.fillMaxWidth().noRippleClickable(onClick)
+    Row(modifier = Modifier.fillMaxWidth().glassControl(shape = SleepyTheme.shapes.medium, tint = if (selected) colors.primaryContainer else null).noRippleClickable(onClick)
         .then(dbg?.let { Modifier.dbgTag(it, text = label, role = "radio") } ?: Modifier)
         .padding(vertical = 10.dp, horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {

@@ -44,6 +44,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import kotlin.math.roundToInt
 
 /**
@@ -136,8 +138,9 @@ fun <T> SegmentedSwitcher(
     Box(
         modifier = modifier
             .height(42.dp)
+            .glassControl(shape = RoundedCornerShape(14.dp), grouped = true)
             .clip(RoundedCornerShape(14.dp))
-            .background(containerColor ?: colors.surfaceContainer)
+            .background(controlFill(containerColor ?: colors.surfaceContainer))
             .onGloballyPositioned { coords ->
                 // coords 是含 padding 的外区; 轨道宽 = 外区宽 - 左右 4dp padding
                 trackWidthPx = (coords.size.width - with(density) { 8.dp.toPx() }).toInt().coerceAtLeast(0)
@@ -161,8 +164,9 @@ fun <T> SegmentedSwitcher(
                             val exact = thumbX.value * segWpx
                             translationX = exact - exact.toInt()
                         }
+                        .glassControl(shape = RoundedCornerShape(12.dp), tint = colors.secondaryContainer, enabled = false, selected = true, registerPane = false)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(colors.secondaryContainer)
+                        .background(controlFill(colors.secondaryContainer))
                 )
                 // 层1..n: 点击段 — 透明, 只负责点击与无障碍
                 options.forEachIndexed { index, option ->

@@ -585,6 +585,8 @@ fun SleepyThemeProvider(
         LocalCoursePalette provides palette,
         LocalDarkTheme provides darkTheme,
         LocalUiStyle provides uiStyle,
+        androidx.compose.material3.LocalRippleConfiguration provides
+            if (uiStyle == UiStyle.LiquidGlass) null else androidx.compose.material3.RippleConfiguration(),
     ) {
         // 系统栏外观随应用主题联动(官方 edge-to-edge 指南): enableEdgeToEdge 是一次性
         // API, onCreate 只调一次时 isAppearanceLightStatusBars 停在启动时的系统深浅判定,
