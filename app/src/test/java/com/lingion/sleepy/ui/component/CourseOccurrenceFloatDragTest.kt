@@ -874,4 +874,58 @@ class CourseOccurrenceFloatDragTest {
         }
         compose.onNodeWithTag("float-card").performTouchInput { up() }
     }
+
+    @Test fun issue274_draggingWithoutEdgeZoneDoesNotShowEdgePeekEvenAtSemesterTail() {
+        val state = CourseFloatState()
+        grid(state, currentWeek = 16, floatMaxWeek = 16)
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        // 拖动但未到达边缘触发区 (微移 20dp, 中心仍在网格内)
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(20.dp.toPx(), 0f), 50)
+        }
+        flushEdgePolling()
+        compose.runOnIdle {
+            assertTrue("处于拖拽中", state.dragging)
+            assertEquals("未进入边缘区", 0, state.edgeDir)
+            assertEquals("未被边缘拦截", 0, state.edgeBlocked)
+            assertEquals("进度为0", 0f, state.peekProgress)
+        }
+        compose.onNodeWithTag("float-card").performTouchInput { up() }
+    }
+
+    @Test fun issue276_dropNearEdgeImmediatelyStopsEdgePaging() {
+        val state = CourseFloatState()
+        var pendingCallback: ((Boolean) -> Unit)? = null
+        val customMove: (CourseEntity, Int, Int, Int, Boolean, (Boolean) -> Unit) -> Unit = { _, _, _, _, _, cb ->
+            pendingCallback = cb // 挂起回调，模拟弹窗展示等待用户确认
+        }
+        grid(state, floatMaxWeek = 16, onMove = customMove)
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(330.dp.toPx(), 40f), 100) // 拖至右边缘
+        }
+        flushEdgePolling()
+        // 松手触发 commitFloatDrop
+        compose.onNodeWithTag("float-card").performTouchInput { up() }
+        compose.runOnIdle {
+            assertNotNull("松手必须触发移动落点判定", pendingCallback)
+            assertFalse("松手后 dragging 必须立即置为 false", state.dragging)
+            assertEquals(0, state.edgeDir)
+            assertEquals(0, state.edgeBlocked)
+            assertEquals(0f, state.peekProgress)
+        }
+        val edgeCallsBefore = edgeCalls.size
+        // 推进时间，确保等待弹窗期间绝不继续触发翻页
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS * 3)
+        compose.runOnIdle {
+            assertEquals("等待弹窗期间绝不再触发边缘翻页", edgeCallsBefore, edgeCalls.size)
+        }
+        // 用户最终确认
+        pendingCallback?.invoke(true)
+        compose.runOnIdle {
+            assertFalse("确认后浮层关闭", state.active)
+        }
+    }
 }

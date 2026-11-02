@@ -80,6 +80,7 @@ internal fun FloatEdgePeek(
     val colors = MaterialTheme.colorScheme
     val onLeft = dir < 0
     val alpha = when {
+        progress <= 0f -> 0f
         blocked -> 0.35f
         progress < FLOAT_PEEK_FADE_START -> 0f
         else -> ((progress - FLOAT_PEEK_FADE_START) / (1f - FLOAT_PEEK_FADE_START)).coerceIn(0f, 1f)

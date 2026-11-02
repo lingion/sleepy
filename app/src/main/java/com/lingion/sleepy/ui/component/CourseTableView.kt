@@ -10,6 +10,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -94,6 +95,7 @@ import com.lingion.sleepy.util.MealBreakDetector
 import com.lingion.sleepy.util.GridSeparatorGeometry
 import com.lingion.sleepy.util.TimetableViewportPolicy
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.filter
 import java.time.LocalTime
 import kotlin.math.abs
@@ -561,7 +563,7 @@ fun CardsGridView(
             // 沿用最后一次浮起值 — 否则 overlayY 的 scrollDp 归零, 淡出中的浮框瞬移。
             var floatScrollDp by remember { mutableStateOf(0.dp) }
             if (floatState.active) {
-                val live = if (floatState.dragging) floatState.anchorScrollDp else with(headerDensity) { scrollState.value.toDp() }
+                val live = with(headerDensity) { scrollState.value.toDp() }
                 if (live != floatScrollDp) floatScrollDp = live
             }
             // 排他宿主接管时新页滚动对齐拖拽锚: 各页 rememberScrollState 独立(新页=0),
@@ -736,6 +738,13 @@ fun CardsGridView(
                         return
                     }
                 }
+                // 松手即退出拖拽与边缘指示，卡片停在吸附位等待落库弹窗，防弹窗期间连翻页 (#276)
+                floatState.dragging = false
+                floatState.edgeDir = 0
+                floatState.edgeBlocked = 0
+                floatState.peekProgress = 0f
+                floatState.x = floatState.snapX
+                floatState.y = floatState.snapY
                 onOccurrenceMove?.invoke(course, sortedDays[drop.dayIndex], drop.startNode, drop.step, false) { saved ->
                     // C 契约: 落库成功才收层; 否决/过期 → 弹回原位浮着(拉伸 pending 随卡保留,
                     // 由空白点击/返回键走「是否调整持续节次」确认)。
@@ -808,6 +817,46 @@ fun CardsGridView(
                         held = 0
                         floatState.peekProgress = 0f
                         onEdgeDrag.invoke(dir)
+                    }
+                }
+            }
+
+            // ---- 纵向自动滚动 (Issue #275: 课表过长/放大时, 拖拽卡片靠近或超出视口上下边缘自动滚动) ----
+            LaunchedEffect(floatState.dragging, floatState.week) {
+                if (currentWeek != floatState.week || !floatState.dragging) return@LaunchedEffect
+                val edgeZone = 48.dp
+                while (isActive && floatState.dragging) {
+                    delay(16L)
+                    if (currentWeek != floatState.week || !floatState.dragging) return@LaunchedEffect
+                    val curScroll = with(headerDensity) { scrollState.value.toDp() }
+                    val cardTop = floatState.y + headH + gapH - curScroll
+                    val cardBottom = cardTop + floatState.height
+                    val topThreshold = headH + gapH + edgeZone
+                    val bottomThreshold = maxHeight - edgeZone
+                    if (cardTop < topThreshold && scrollState.value > 0) {
+                        val overflow = (topThreshold - cardTop).value.coerceAtLeast(0f)
+                        val ratio = (overflow / edgeZone.value).coerceIn(0f, 1f)
+                        val stepDp = (3f + 11f * ratio).dp
+                        val stepPx = with(headerDensity) { stepDp.toPx() }
+                        val consumed = scrollState.scrollBy(-stepPx)
+                        if (consumed != 0f) {
+                            val deltaDp = with(headerDensity) { consumed.toDp() }
+                            floatState.y += deltaDp
+                            floatState.anchorScrollDp = with(headerDensity) { scrollState.value.toDp() }
+                            applyFloatSnap()
+                        }
+                    } else if (cardBottom > bottomThreshold && scrollState.value < scrollState.maxValue) {
+                        val overflow = (cardBottom - bottomThreshold).value.coerceAtLeast(0f)
+                        val ratio = (overflow / edgeZone.value).coerceIn(0f, 1f)
+                        val stepDp = (3f + 11f * ratio).dp
+                        val stepPx = with(headerDensity) { stepDp.toPx() }
+                        val consumed = scrollState.scrollBy(stepPx)
+                        if (consumed != 0f) {
+                            val deltaDp = with(headerDensity) { consumed.toDp() }
+                            floatState.y += deltaDp
+                            floatState.anchorScrollDp = with(headerDensity) { scrollState.value.toDp() }
+                            applyFloatSnap()
+                        }
                     }
                 }
             }
