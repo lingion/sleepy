@@ -240,12 +240,14 @@ fun LiquidGlassNavigationBar(
     // 阴影强度 (Dark: 3x, Light: 1x)
     val shadowStrength = if (dark) 3.0f else 1.0f
 
-    // 沉底底盘 HCT 调色 (Dark: tone=4.0, Light: tone=90.0)
-    val platterTone = if (dark) 4.0 else 90.0
-    val platterHct = remember(colorScheme.secondary, dark) {
-        Hct.fromInt(colorScheme.secondary.toArgb()).apply { tone = platterTone }
+    // 沉底底盘调色 (Dark: surfaceContainerHighest, Light: surfaceContainer / 优雅柔和不刺眼)
+    val restingPlatterColor = remember(colorScheme, dark) {
+        if (dark) {
+            colorScheme.surfaceContainerHighest.copy(alpha = 0.85f)
+        } else {
+            colorScheme.surfaceContainer.copy(alpha = 0.92f)
+        }
     }
-    val platterColor = remember(platterHct) { Color(platterHct.toInt()) }
 
     val lensBaseWidthDp = layout.lens.dp
     val lensBaseHeightDp = (FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f).dp
@@ -287,30 +289,36 @@ fun LiquidGlassNavigationBar(
         val absDelta = abs(delta)
 
         val halfLensTabs = if (currentLayout.pitch > 0.001f) (currentLayout.lens / currentLayout.pitch) * 0.5f else 0.6f
-        if (absDelta > halfLensTabs * 1.35f) {
+        if (absDelta > halfLensTabs * 1.45f) {
             return DestinationTransform.Identity
         }
 
-        val centerMag = 1.14f + 0.12f * lift
-        val peakDist = 0.68f * halfLensTabs
-        val edgeBandWidth = 0.40f * halfLensTabs
+        // 基础中心光学放大 (对齐 FLClash 1 + 0.16 * lift)
+        val centerMag = 1f + FlClashDockPhysics.LENS_MAGNIFY * lift
+        // 透镜边缘非线性光学拉伸 (1:1 对齐 FLClash liquid_glass.frag refraction: 14, bevel: 11.2)
+        // 当图标处于凸透镜边缘弧角过渡区时，产生剧烈凸透镜畸变，将图标边缘向外扯大
+        val peakDist = 0.65f * halfLensTabs
+        val edgeBandWidth = 0.42f * halfLensTabs
         val distFromPeak = abs(absDelta - peakDist)
         val edgeFactor = (1f - distFromPeak / edgeBandWidth).coerceIn(0f, 1f)
         val edgeStretch = edgeFactor * edgeFactor
 
-        val jellyStretch = abs(jellySpring.value) * 0.2f
-        val scaleX = centerMag + 0.34f * edgeStretch + jellyStretch
-        val scaleY = centerMag + 0.18f * edgeStretch
+        val jellyStretch = abs(jellySpring.value) * 0.25f
+        // 图标横向剧烈拉扯放大 (scaleX 最高可达 1.95x, 彻底实现 FLClash "边缘把图标直接扯大" 的视觉效果)
+        val scaleX = centerMag + 0.68f * edgeStretch + jellyStretch
+        val scaleY = centerMag + 0.25f * edgeStretch
 
+        // 横向折射拉扯位移 (14dp 真实折射位移，与 FLClash refraction=14 严格对齐)
         val pullDirection = if (absDelta > 0.001f) sign(delta) else 0f
-        val pullPx = pullDirection * edgeStretch * 8.5f * currentDensity
-        val jellyPx = jellySpring.value * 10f * currentDensity
+        val pullPx = pullDirection * edgeStretch * 14f * currentDensity
+        val jellyPx = jellySpring.value * 12f * currentDensity
 
         return DestinationTransform(
             scaleX = scaleX,
             scaleY = scaleY,
             translationX = pullPx + jellyPx,
             translationY = 0f,
+            chromaticFringe = edgeStretch * lift,
         )
     }
 
@@ -382,14 +390,9 @@ fun LiquidGlassNavigationBar(
                                         stretchSpring.springTo(targetStretch, FlClashSprings.TrackSpring)
 
                                         val pos = positionAt(change.position.x)
-                                        // 100% 绝对线性位移：拖拽过程中镜头与手指位置 1:1 绝对线性同步，彻底消除时钟饥饿与顿挫卡顿
-                                        lensSpring.jumpTo(pos)
-
-                                        // 果冻外形根据瞬时滑动速度进行连续自然的弹性拉伸与挤压
-                                        val velocityXDp = velocityTracker.calculateVelocity().x / currentDensity
-                                        val velocity = velocityXDp / currentLayout.pitch
-                                        val wobbleTarget = FlClashDockPhysics.wobbleTarget(velocity, 0f)
-                                        jellySpring.springTo(wobbleTarget, FlClashSprings.JellySpring)
+                                        // 1:1 FLClash 跟手追踪 (FollowSpring, mass=1, k=1024, ratio=0.9):
+                                        // 保留微秒级连续速度与加速度微积分，驱动果冻弹簧根据拖拽快慢自适应剧烈拉长/扁平形变
+                                        lensSpring.springTo(pos, FlClashSprings.FollowSpring)
 
                                         val idx = indexAt(pos)
                                         if (idx != pressedIndex) {
@@ -465,11 +468,11 @@ fun LiquidGlassNavigationBar(
                     .fillMaxWidth()
                     .height(barHeightDp)
                     .shadow(
-                        elevation = (8 * shadowStrength).dp,
+                        elevation = (12 * shadowStrength).dp,
                         shape = Capsule(),
                         clip = false,
-                        ambientColor = colorScheme.scrim.copy(alpha = 0.08f * shadowStrength),
-                        spotColor = colorScheme.scrim.copy(alpha = 0.04f * shadowStrength),
+                        ambientColor = colorScheme.scrim.copy(alpha = (if (dark) 0.25f else 0.16f) * shadowStrength),
+                        spotColor = colorScheme.scrim.copy(alpha = (if (dark) 0.35f else 0.22f) * shadowStrength),
                     )
                     .background(
                         color = colorScheme.surfaceContainer.copy(alpha = if (dark) 0.72f else 0.88f),
@@ -477,7 +480,7 @@ fun LiquidGlassNavigationBar(
                     )
                     .border(
                         width = 1.dp,
-                        color = Color.White.copy(alpha = if (dark) 0.12f else 0.25f),
+                        color = if (dark) Color.White.copy(alpha = 0.12f) else Color(0x1F000000),
                         shape = Capsule(),
                     )
                     .then(
@@ -520,7 +523,7 @@ fun LiquidGlassNavigationBar(
                                 val heightPx = lensRect.height * density.density
                                 val radiusPx = heightPx / 2f
                                 drawRoundRect(
-                                    color = platterColor.copy(alpha = 0.85f * (1f - lift.coerceIn(0f, 1f))),
+                                    color = restingPlatterColor.copy(alpha = restingPlatterColor.alpha * (1f - lift.coerceIn(0f, 1f))),
                                     topLeft = Offset(leftPx, topPx),
                                     size = Size(widthPx, heightPx),
                                     cornerRadius = CornerRadius(radiusPx, radiusPx),
@@ -756,13 +759,13 @@ fun LiquidGlassNavigationBar(
                                 val heightPx = lensRect.height * density.density
                                 val radiusPx = heightPx / 2f
                                 drawRoundRect(
-                                    color = platterColor.copy(alpha = 0.85f * (1f - lift.coerceIn(0f, 1f))),
+                                    color = restingPlatterColor.copy(alpha = restingPlatterColor.alpha * (1f - lift.coerceIn(0f, 1f))),
                                     topLeft = Offset(leftPx, topPx),
                                     size = Size(widthPx, heightPx),
                                     cornerRadius = CornerRadius(radiusPx, radiusPx),
                                 )
                             }
-                            // 4. 老设备 (API < 33) 透镜立体边框与高光
+                            // 4. 老设备 (API < 33) 1:1 FLClash 悬浮凸透镜微晶质感与彩虹色散波纹边框 (uEdge.y = 6.5)
                             if (lensShader == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                                 val lensRect = FlClashDockPhysics.lensRect(
                                     position = lensSpring.value,
@@ -779,12 +782,76 @@ fun LiquidGlassNavigationBar(
                                 val widthPx = lensRect.width * density.density
                                 val heightPx = lensRect.height * density.density
                                 val radiusPx = heightPx / 2f
+                                val centerOffset = Offset(leftPx + widthPx / 2f, topPx + heightPx / 2f)
+
+                                // A. 镜身微晶质感半透膜 (Frosted glass sheen fill)
+                                val fillAlpha = (if (dark) 0.16f else 0.28f) * lift
                                 drawRoundRect(
-                                    color = Color.White.copy(alpha = (if (dark) 0.32f else 0.45f) * lift.coerceIn(0f, 1f)),
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color.White.copy(alpha = fillAlpha),
+                                            Color.White.copy(alpha = fillAlpha * 0.35f),
+                                        ),
+                                        startY = topPx,
+                                        endY = topPx + heightPx,
+                                    ),
                                     topLeft = Offset(leftPx, topPx),
                                     size = Size(widthPx, heightPx),
                                     cornerRadius = CornerRadius(radiusPx, radiusPx),
-                                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.5.dp.toPx()),
+                                )
+
+                                // B. 彩虹色散波纹环 (1:1 FLClash uEdge.y = 6.5 色散光谱环)
+                                val rainbowColors = listOf(
+                                    Color(0xFF00E5FF), // 青蓝 (Cyan)
+                                    Color(0xFF2979FF), // 宝蓝 (Electric Blue)
+                                    Color(0xFF7C4DFF), // 靛紫 (Purple)
+                                    Color(0xFFFF4081), // 玫红 (Pink Magenta)
+                                    Color(0xFFFF5252), // 珊瑚红 (Coral Red)
+                                    Color(0xFFFF9100), // 琥珀橙 (Amber)
+                                    Color(0xFFFFEA00), // 暖黄 (Yellow)
+                                    Color(0xFF00E676), // 亮绿 (Green)
+                                    Color(0xFF00E5FF), // 循环闭合青蓝
+                                )
+                                val dispersionBrush = Brush.sweepGradient(
+                                    colors = rainbowColors,
+                                    center = centerOffset,
+                                )
+
+                                // 1. 外层色散晕染 (Halo Blur / 对应 FLClash rimBlur: 1.5)
+                                drawRoundRect(
+                                    brush = dispersionBrush,
+                                    topLeft = Offset(leftPx, topPx),
+                                    size = Size(widthPx, heightPx),
+                                    cornerRadius = CornerRadius(radiusPx, radiusPx),
+                                    alpha = (if (dark) 0.55f else 0.42f) * lift,
+                                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 3.6.dp.toPx()),
+                                )
+
+                                // 2. 核心棱镜色散高亮环 (Sharp Chromatic Core Stroke)
+                                drawRoundRect(
+                                    brush = dispersionBrush,
+                                    topLeft = Offset(leftPx, topPx),
+                                    size = Size(widthPx, heightPx),
+                                    cornerRadius = CornerRadius(radiusPx, radiusPx),
+                                    alpha = (if (dark) 0.88f else 0.75f) * lift,
+                                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.8.dp.toPx()),
+                                )
+
+                                // 3. 顶底发丝高光 (FLClash hairline = 0.42 & rim = 0.60 镜面反光)
+                                drawRoundRect(
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color.White.copy(alpha = (if (dark) 0.70f else 0.85f) * lift),
+                                            Color.White.copy(alpha = (if (dark) 0.15f else 0.25f) * lift),
+                                            Color.White.copy(alpha = (if (dark) 0.50f else 0.65f) * lift),
+                                        ),
+                                        startY = topPx,
+                                        endY = topPx + heightPx,
+                                    ),
+                                    topLeft = Offset(leftPx, topPx),
+                                    size = Size(widthPx, heightPx),
+                                    cornerRadius = CornerRadius(radiusPx, radiusPx),
+                                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.0.dp.toPx()),
                                 )
                             }
                         }
@@ -912,6 +979,7 @@ private data class DestinationTransform(
     val scaleY: Float = 1f,
     val translationX: Float = 0f,
     val translationY: Float = 0f,
+    val chromaticFringe: Float = 0f,
 ) {
     companion object {
         val Identity = DestinationTransform()
@@ -925,6 +993,9 @@ private fun DestinationsRow(
     tint: Color,
     itemTransform: (index: Int) -> DestinationTransform = { DestinationTransform.Identity },
 ) {
+    val density = LocalDensity.current
+    val fringeBasePx = with(density) { 2.dp.toPx() }
+
     Row(
         modifier = Modifier
             .fillMaxSize()
@@ -932,6 +1003,7 @@ private fun DestinationsRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         items.forEachIndexed { index, item ->
+            val transform = itemTransform(index)
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -941,7 +1013,6 @@ private fun DestinationsRow(
                 Column(
                     modifier = Modifier
                         .graphicsLayer {
-                            val transform = itemTransform(index)
                             scaleX = transform.scaleX
                             scaleY = transform.scaleY
                             translationX = transform.translationX
@@ -950,6 +1021,26 @@ private fun DestinationsRow(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Box(modifier = Modifier.size(24.dp)) {
+                        val fringe = transform.chromaticFringe
+                        if (fringe > 0.05f) {
+                            val fringeOffsetPx = fringeBasePx * fringe
+                            Icon(
+                                imageVector = item.icon,
+                                contentDescription = null,
+                                tint = Color(0xFF00E5FF).copy(alpha = 0.55f * fringe),
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .graphicsLayer { translationX = -fringeOffsetPx },
+                            )
+                            Icon(
+                                imageVector = item.icon,
+                                contentDescription = null,
+                                tint = Color(0xFFFF4081).copy(alpha = 0.55f * fringe),
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .graphicsLayer { translationX = fringeOffsetPx },
+                            )
+                        }
                         Icon(
                             imageVector = item.icon,
                             contentDescription = item.label,
