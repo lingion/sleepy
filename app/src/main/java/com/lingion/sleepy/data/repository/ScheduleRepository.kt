@@ -215,6 +215,7 @@ class ScheduleRepository(private val db: AppDatabase) {
             }
             override suspend fun insertCourses(courses: List<CourseEntity>) { courseDao.insertAll(courses) }
             override suspend fun setDefault(id: Long) = tableDao.setDefault(id)
+            override suspend fun tableCount(): Int = tableDao.count()
             // 认亲（spec §2.4）: 事务内读导入前全库名册; 新课 hue 同事务落库。
             override suspend fun knownNameRoster() = knownNameToGroupId(courseDao.getAll())
             override suspend fun persistNewGroupColors(courses: List<CourseEntity>) {

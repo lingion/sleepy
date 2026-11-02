@@ -12,6 +12,7 @@ internal interface NewTableImportStore {
     suspend fun insertTable(table: TimeTableEntity): Long
     suspend fun insertCourses(courses: List<CourseEntity>)
     suspend fun setDefault(id: Long)
+    suspend fun tableCount(): Int = 0
 
     /** 认亲名册（spec §2.4）— 默认空 = v1.0.61 行为; Room 适配覆盖为全库查询。 */
     suspend fun knownNameRoster(): Map<String, String> = emptyMap()
@@ -26,13 +27,16 @@ internal suspend fun importNewTableAtomically(
 ): Long = store.atomic {
     require(bindingId == null || store.periodExists(bindingId)) { "Selected period table no longer exists" }
     store.captureUndo()
+    val isFirst = store.tableCount() == 0
     val periodId = bindingId ?: period?.let { store.insertPeriod(it.copy(id = 0)) }
-    val tableId = store.insertTable(table.copy(id = 0, periodTableId = periodId, isDefault = false))
+    val tableId = store.insertTable(table.copy(id = 0, periodTableId = periodId, isDefault = isFirst))
     val rows = courses.map { it.copy(id = 0, tableId = tableId) }
     val grouped = if (keepGroups) rows else normalizedImportGroups(rows, store.knownNameRoster())
     store.insertCourses(grouped)
     store.persistNewGroupColors(grouped)
-    store.setDefault(tableId)
+    if (isFirst) {
+        store.setDefault(tableId)
+    }
     tableId
 }
 

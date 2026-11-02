@@ -726,13 +726,14 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                 ?.let { DateUtils.normalizeStartDate(it) }
                 ?: computeCurrentSemesterStart()
             val maxNode = if (nodesPerDay > 0) nodesPerDay else courses.maxOf { maxOf(it.startNode, it.endNode) }
+            val isFirstTable = tableDao.count() == 0
             val newTable = TimeTableEntity(
                 id = 0,
                 name = tableName.ifBlank { "导入的课表" },
                 startDate = resolvedStartDate,
                 timeJson = timeJson.ifBlank { TimeTableUtils.DEFAULT_TIME_JSON },
                 nodesPerDay = maxNode,
-                isDefault = true,  // 导入的课表设为默认，widget 直接展示
+                isDefault = isFirstTable,
                 smartConfigJson = smartConfigJson
             )
             // v1.0.56 T10: 自动作息表先落库拿 id — 建表时同名, 但全局唯一名墙:
@@ -749,8 +750,10 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                 )
             }
             val generatedId = tableDao.insert(newTable.copy(periodTableId = autoPeriodTableId))
-            // 把其他表设为非 default，确保只有当前表是 default
-            tableDao.setDefault(generatedId)
+            if (isFirstTable) {
+                // 把其他表设为非 default，确保只有当前表是 default
+                tableDao.setDefault(generatedId)
+            }
 
             // 落库课程
             val defaultColor = "#FF6750A4"

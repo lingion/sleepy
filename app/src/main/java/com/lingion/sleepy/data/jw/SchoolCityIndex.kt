@@ -24,7 +24,6 @@ object SchoolCityIndex {
         if (normalized.isBlank()) return emptyList()
         return schools.filter { school -> school.cities.any { normalizeCity(it) == normalized } }
             .distinctBy { it.stableKey }
-            .sortedWith(compareBy<JwSchoolInfo> { !it.isSupported }
-                .thenBy { it.sortKeyFull.ifBlank { it.name } })
+            .sortedWith(compareBy<JwSchoolInfo> { it.sortOrderKey }.thenBy { it.name })
     }
 }

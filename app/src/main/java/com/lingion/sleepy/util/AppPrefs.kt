@@ -134,6 +134,9 @@ object AppPrefs {
     const val THEME_MODE_DARK = "dark"
     const val THEME_MODE_SYSTEM = "system"
 
+    // ===== 当前选中课表 (首页呈现与流体云通知对齐) =====
+    const val KEY_CURRENT_TABLE_ID = "current_selected_table_id" // long, default -1L (未指定)
+
     // ===== 节假日灰显开关 =====
     const val KEY_HOLIDAY_GREY_HOLIDAY = "holiday_grey_holiday"   // bool default true
     const val KEY_HOLIDAY_GREY_WEEKEND = "holiday_grey_weekend"   // bool default true
@@ -1050,5 +1053,20 @@ object AppPrefs {
 
     fun setUpdateCheckEnabled(ctx: Context, v: Boolean) {
         sp(ctx).edit().putBoolean(KEY_UPDATE_CHECK_ENABLED, v).apply()
+    }
+
+    // ===== 当前选中课表 (首页呈现与通知对齐) =====
+
+    fun getCurrentTableId(ctx: Context): Long? {
+        val id = sp(ctx).getLong(KEY_CURRENT_TABLE_ID, -1L)
+        return if (id > 0L) id else null
+    }
+
+    fun setCurrentTableId(ctx: Context, tableId: Long) {
+        sp(ctx).edit().putLong(KEY_CURRENT_TABLE_ID, tableId).apply()
+    }
+
+    fun clearCurrentTableId(ctx: Context) {
+        sp(ctx).edit().remove(KEY_CURRENT_TABLE_ID).apply()
     }
 }
