@@ -1,0 +1,157 @@
+package com.lingion.sleepy.ui.component.liquidglass
+
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import com.kyant.backdrop.drawPlainBackdrop
+import com.lingion.sleepy.ui.theme.LocalDarkTheme
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlin.math.abs
+import kotlin.math.min
+
+/** Separate scope for a single optical pane shared by multiple actions. */
+internal val LocalGlassGrouped = androidx.compose.runtime.compositionLocalOf { false }
+
+enum class GlassMaterialRole { Regular, Menu, Alert }
+
+/** Popup windows paint locally while sampling the parent window's glass-free scene. */
+internal val LocalGlassOverlay = androidx.compose.runtime.compositionLocalOf { false }
+
+/** Adds optical material without owning clicks or introducing a second semantic node. */
+@Composable
+fun Modifier.glassControl(
+    shape: Shape = CircleShape,
+    tint: Color? = null,
+    enabled: Boolean = true,
+    selected: Boolean = false,
+    grouped: Boolean = false,
+    registerPane: Boolean = true,
+    role: GlassMaterialRole = GlassMaterialRole.Regular,
+): Modifier {
+    check(!LocalGlassSourceContent.current) { "An optical consumer cannot be recorded as an ordinary source" }
+    val host = LocalGlassHost.current
+    val consumerDepth = LocalGlassDepth.current
+    if (LocalUiStyle.current != UiStyle.LiquidGlass || host == null || LocalGlassGrouped.current) return this
+    val context = LocalContext.current
+    val dark = LocalDarkTheme.current
+    val colors = MaterialTheme.colorScheme
+    val material = if ((enabled || selected) && (tint != null || selected)) LiquidGlassStyle.tinted(colors, tint ?: colors.primary, dark)
+        else when (role) {
+            GlassMaterialRole.Regular -> LiquidGlassStyle.regular(colors, dark)
+            GlassMaterialRole.Menu -> LiquidGlassStyle.menu(colors, dark)
+            GlassMaterialRole.Alert -> LiquidGlassStyle.alert(colors, dark)
+        }
+    val rim = when (role) {
+        GlassMaterialRole.Regular -> null
+        GlassMaterialRole.Menu -> LiquidGlassRim.menu(dark)
+        GlassMaterialRole.Alert -> LiquidGlassRim.alert(dark)
+    }
+    val scope = rememberCoroutineScope()
+    val lift = remember { Animatable(0f) }
+    var origin by remember { mutableStateOf(Offset.Zero) }
+    var pull by remember { mutableStateOf(Offset.Zero) }
+    var down by remember { mutableStateOf(false) }
+    var motion by remember { mutableStateOf<Job?>(null) }
+    val density = LocalDensity.current.density
+    androidx.compose.runtime.LaunchedEffect(enabled) {
+        if (!enabled) {
+            motion?.cancel()
+            down = false
+            pull = Offset.Zero
+            lift.snapTo(0f)
+        }
+    }
+    val pressSpring = spring<Float>(dampingRatio = 0.593f, stiffness = 311f)
+    return this
+        .graphicsLayer {
+            val growth = min(0.25f, 16f * density / size.maxDimension.coerceAtLeast(1f))
+            val swell = 1f + lift.value * growth
+            scaleX = swell * (1f + abs(pull.x) / size.width.coerceAtLeast(1f) * 0.5f)
+            scaleY = swell * (1f + abs(pull.y) / size.height.coerceAtLeast(1f) * 0.5f)
+            translationX = pull.x
+            translationY = pull.y
+        }
+        .pointerInput(enabled, grouped) {
+            if (!enabled) return@pointerInput
+            awaitPointerEventScope {
+                while (true) {
+                    val event = awaitPointerEvent(PointerEventPass.Initial)
+                    val pointer = event.changes.firstOrNull() ?: continue
+                    if (pointer.pressed && !down) {
+                        down = true
+                        origin = pointer.position
+                        pull = Offset.Zero
+                        motion?.cancel()
+                        motion = scope.launch { lift.animateTo(1f, pressSpring) }
+                    } else if (pointer.pressed && down) {
+                        val limit = min(size.width, size.height) * (7f / 32f)
+                        fun rubber(v: Float): Float = if (limit > 0f) v * limit / (limit + abs(v)) else 0f
+                        val delta = pointer.position - origin
+                        pull = Offset(rubber(delta.x), rubber(delta.y))
+                    } else if (!pointer.pressed && down) {
+                        down = false
+                        pull = Offset.Zero
+                        val swelling = motion
+                        motion = scope.launch {
+                            // A short tap still reaches the reference's full swell before settling.
+                            swelling?.join()
+                            lift.animateTo(0f, pressSpring)
+                        }
+                    }
+                }
+            }
+        }
+        .drawPlainBackdrop(
+            backdrop = host.backdropAt(consumerDepth),
+            shape = { shape },
+            effects = {
+                liquidGlass(
+                    context = context,
+                    style = material,
+                    rim = rim,
+                    glow = LiquidGlassGlow(
+                        center = origin / density,
+                        reach = (28f + 3f * lift.value).toDouble(),
+                        strength = (0.06f * lift.value).toDouble(),
+                        wash = (0.7f * lift.value).toDouble(),
+                    ),
+                )
+            },
+            onDrawSurface = {
+                // API33 shader includes the tint; lower APIs must remain legible without
+                // pretending their blur/vibrancy path provides equivalent refraction.
+                if (android.os.Build.VERSION.SDK_INT < 33) drawRect(material.tint)
+            },
+        )
+}
+
+/** Original backgrounds disappear only when an actual glass host is available. */
+@Composable
+fun controlFill(classic: Color): Color =
+    if (LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null) Color.Transparent else classic
+
+/** Register pre-existing optical controls, such as the Dock, without applying a second material. */
+@Composable
+fun Modifier.captureGlassPane(): Modifier {
+    check(!LocalGlassSourceContent.current) { "Dock cannot be captured as an ordinary source" }
+    return this
+}
