@@ -1,5 +1,7 @@
 package com.lingion.sleepy.ui.screen.mine
 
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -26,9 +28,9 @@ import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassTonalButton as FilledTonalButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -481,7 +483,9 @@ private fun NewThemeCard(onClick: () -> Unit) {
             .dbgTag("settings_theme_new", role = "button"),
         contentAlignment = Alignment.Center
     ) {
-        DashedCircleWithPlus(size = 40.dp, strokeColor = colors.onSurface, tint = colors.onSurface)
+        Box(Modifier.size(40.dp).glassControl()) {
+            DashedCircleWithPlus(size = 40.dp, strokeColor = colors.onSurface, tint = colors.onSurface)
+        }
     }
 }
 
@@ -546,8 +550,9 @@ private fun CustomThemeCard(
                 Box(
                     modifier = Modifier
                         .size(28.dp)
+                        .glassControl(shape = SleepyTheme.shapes.small)
                         .clip(SleepyTheme.shapes.small)
-                        .background(colors.surfaceContainerHighest)
+                        .background(controlFill(colors.surfaceContainerHighest))
                         .noRippleClickable(onEdit)
                         .dbgTag("settings_theme_edit", text = theme.name, role = "button"),
                     contentAlignment = Alignment.Center
