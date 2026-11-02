@@ -104,7 +104,7 @@ fun Modifier.glassControl(
                         motion = scope.launch { lift.animateTo(1f, pressSpring) }
                     } else if (pointer.pressed && down) {
                         val limit = min(size.width, size.height) * (7f / 32f)
-                        fun rubber(v: Float): Float = if (limit > 0f) v * limit / (limit + abs(v)) else 0f
+                        fun rubber(v: Float): Float = if (limit > 0f) FlClashDockPhysics.rubberBand(v, limit) else 0f
                         val delta = pointer.position - origin
                         pull = Offset(rubber(delta.x), rubber(delta.y))
                     } else if (!pointer.pressed && down) {
@@ -127,6 +127,8 @@ fun Modifier.glassControl(
                 liquidGlass(
                     context = context,
                     style = material,
+                    outline = if (size.width > 0f && size.height > 0f && size.width.isFinite() && size.height.isFinite())
+                        (shape.createOutline(size, layoutDirection, this) as? androidx.compose.ui.graphics.Outline.Generic)?.path else null,
                     rim = rim,
                     glow = LiquidGlassGlow(
                         center = origin / density,
@@ -135,6 +137,29 @@ fun Modifier.glassControl(
                         wash = (0.7f * lift.value).toDouble(),
                     ),
                 )
+            },
+            onDrawFront = {
+                if (rim != null && size.width > 0f && size.height > 0f) {
+                    // liquid_glass.dart LiquidGlassRim.paintLine: exterior black hairline.
+                    val radius = when (shape) {
+                        is FlClashGlassShape -> shape.radiusDp * density
+                        else -> size.minDimension / 2f
+                    }.coerceAtMost(size.minDimension / 2f)
+                    val across = (radius / size.width).coerceAtMost(0.4f)
+                    val gradient = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                        0f to Color.Black.copy(alpha = rim.side.toFloat()),
+                        across / 4f to Color.Black.copy(alpha = rim.corner.toFloat()),
+                        across to Color.Black.copy(alpha = rim.flat.toFloat()),
+                        (1f - across) to Color.Black.copy(alpha = rim.flat.toFloat()),
+                        (1f - across / 4f) to Color.Black.copy(alpha = rim.corner.toFloat()),
+                        1f to Color.Black.copy(alpha = rim.side.toFloat()),
+                    )
+                    when (val outline = shape.createOutline(size, layoutDirection, this)) {
+                        is androidx.compose.ui.graphics.Outline.Generic -> drawPath(outline.path, gradient, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 0.5f * density))
+                        is androidx.compose.ui.graphics.Outline.Rounded -> drawRoundRect(gradient, cornerRadius = androidx.compose.ui.geometry.CornerRadius(radius), style = androidx.compose.ui.graphics.drawscope.Stroke(width = 0.5f * density))
+                        else -> drawRect(gradient, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 0.5f * density))
+                    }
+                }
             },
             onDrawSurface = {
                 // API33 shader includes the tint; lower APIs must remain legible without
@@ -148,10 +173,3 @@ fun Modifier.glassControl(
 @Composable
 fun controlFill(classic: Color): Color =
     if (LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null) Color.Transparent else classic
-
-/** Register pre-existing optical controls, such as the Dock, without applying a second material. */
-@Composable
-fun Modifier.captureGlassPane(): Modifier {
-    check(!LocalGlassSourceContent.current) { "Dock cannot be captured as an ordinary source" }
-    return this
-}

@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.InspectorInfo
  */
 @Composable
 fun Modifier.glassBackdropSource(depth: Float): Modifier {
+    require(depth.isFinite()) { "Source depth must be finite" }
     val host = LocalGlassHost.current ?: return this
     return then(GlassSourceElement(host, depth))
 }

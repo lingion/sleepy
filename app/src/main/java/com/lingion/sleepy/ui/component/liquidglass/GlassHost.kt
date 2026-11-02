@@ -117,13 +117,15 @@ fun GlassBackground(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit,
 ) {
+    require(depth.isFinite()) { "Source depth must be finite" }
     check(!LocalGlassSourceContent.current) { "Nested glass sources would record content twice" }
     val host = LocalGlassHost.current
     val layer = rememberGraphicsLayer()
     val segment = remember(host, depth, layer) { GlassSourceSegment(depth, layer) }
     DisposableEffect(host, segment) {
         if (host != null) {
-            require(host.sources.none { it.depth == depth }) { "Source depths must be unique in one host" }
+            // Disjoint leaves may share a depth. Overlapping sources must declare distinct
+            // depths matching their owning container's paint order, never registration order.
             host.sources.add(segment)
             host.changed()
         }
