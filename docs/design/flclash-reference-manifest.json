@@ -1,0 +1,18 @@
+{
+  "application": "FLClash",
+  "versionFromPubspec": "0.9.1+2026101702",
+  "flutterVersionFromBuildWorkflow": "3.47.6",
+  "license": "GPL-3.0",
+  "applicationCommit": null,
+  "notes": "Local source archive has no Git metadata. File hashes identify the inspected reference, not an inferred app commit. Historical screenshots have not been proven to come from this exact source build.",
+  "sha256": {
+    "pubspec.yaml": "f7abefc9c106beab9012aab34526c1b25dc731973651bb67cde84e83d5ce771a",
+    "lib/ui/button.dart": "6167dae3b2cb8e7a1b86c01256a727b9d3601b6a73d4ef9060f225db6048a3d3",
+    "lib/ui/liquid_glass.dart": "e48bb72c34f98fcfae80de67e9f3f01b12f94a6c0537fed20f8c7f5b185de881",
+    "lib/ui/liquid_glass_capture.dart": "1feaf1862f46f521d975205c75f8bd5a930ef2180fab2f656cf247b3a9e3b5a8",
+    "lib/ui/segmented_control.dart": "af9c29935c22765190ee1135631e58f06ef970f51606dd74402eade9af5bbd5b",
+    "lib/ui/popup.dart": "036a38f79d9ced892538bdf67996855499cc23f5592e9b2240ed05a9933e7519",
+    "lib/ui/dialog.dart": "3eec46647c6bbf0f4d84b047a14eee9a4295785b4d6b4c61075fd6462ea9ee36",
+    "shaders/liquid_glass.frag": "aa5b87a5beb9e10e1d4282833e9f91f762a3e5b8374b409c52a9f3093cb193b0"
+  }
+}
