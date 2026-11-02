@@ -1161,8 +1161,9 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="period_validation_empty">Period list cannot be empty</string>
     <string name="period_validation_invalid_format">Period %1$d time format is invalid, must be HH:mm</string>
     <string name="period_validation_end_before_start">Period %1$d end time must be after start time (currently %2$s–%3$s)</string>
-    <string name="period_validation_out_of_hours">Period %1$d time (%2$s–%3$s) is outside regular teaching hours (06:00–23:59)</string>
+    <string name="period_validation_invalid_data">The bell schedule is incomplete or unreadable. Check period IDs and start/end times.</string>
+    <string name="period_validation_duplicate_node">Period ID %1$d is duplicated. Correct the bell schedule first.</string>
     <string name="period_validation_overlap">Period %1$d conflicts with period %3$d: period %1$d ends at %2$s, later than period %3$d start time %4$s</string>
-    <string name="period_conflict_detected_banner">Bell schedule conflict detected (%1$s). Tap to fix.</string>
+    <string name="period_conflict_detected_banner">Check the bell schedule: %1$s. Correct it in the schedule editor; original times have not been changed automatically.</string>
     <string name="period_conflict_detected_title">Bell schedule conflict</string>
 </resources>

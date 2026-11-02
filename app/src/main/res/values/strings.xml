@@ -1188,8 +1188,9 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="period_validation_empty">节次列表不能为空</string>
     <string name="period_validation_invalid_format">第 %1$d 节时间格式不正确，需为 HH:mm</string>
     <string name="period_validation_end_before_start">第 %1$d 节结束时间需晚于开始时间（当前为 %2$s–%3$s）</string>
-    <string name="period_validation_out_of_hours">第 %1$d 节时间（%2$s–%3$s）不在合法授课时段（06:00–23:59）内</string>
+    <string name="period_validation_invalid_data">作息表数据不完整或无法解析，请检查节次编号和起止时间</string>
+    <string name="period_validation_duplicate_node">节次编号 %1$d 重复，请先修正作息表</string>
     <string name="period_validation_overlap">第 %1$d 节与第 %3$d 节时间冲突：第 %1$d 节于 %2$s 结束，晚于第 %3$d 节开始时间 %4$s</string>
-    <string name="period_conflict_detected_banner">作息表存在时间冲突（%1$s），请前往修正</string>
+    <string name="period_conflict_detected_banner">作息表需要检查：%1$s。请到作息表编辑页修正，原始时间未被自动更改。</string>
     <string name="period_conflict_detected_title">作息时间冲突提示</string>
 </resources>

@@ -1159,8 +1159,9 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="period_validation_empty">La lista de períodos no puede estar vacía</string>
     <string name="period_validation_invalid_format">Formato de hora incorrecto en el período %1$d, debe ser HH:mm</string>
     <string name="period_validation_end_before_start">La hora de fin del período %1$d debe ser posterior a la de inicio (%2$s–%3$s)</string>
-    <string name="period_validation_out_of_hours">El horario del período %1$d (%2$s–%3$s) está fuera del rango permitido (06:00–23:59)</string>
+    <string name="period_validation_invalid_data">El horario está incompleto o no se puede leer. Comprueba los identificadores y las horas de inicio y fin.</string>
+    <string name="period_validation_duplicate_node">El identificador %1$d está duplicado. Corrige el horario primero.</string>
     <string name="period_validation_overlap">Conflicto entre el período %1$d y el %3$d: el período %1$d termina a las %2$s, después del inicio del período %3$d a las %4$s</string>
-    <string name="period_conflict_detected_banner">Se detectó un conflicto en el horario de períodos (%1$s). Toca para corregir.</string>
+    <string name="period_conflict_detected_banner">Revisa el horario: %1$s. Corrígelo en el editor; las horas originales no se han cambiado automáticamente.</string>
     <string name="period_conflict_detected_title">Aviso de conflicto de horarios</string>
 </resources>

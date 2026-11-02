@@ -9,8 +9,8 @@ import org.junit.Test
 /**
  * 节次作息防呆校验契约测试 (issue #29)
  * 1. 相邻节次区间不重叠 (下一节开始不得早于上一节结束)
- * 2. 时间落在合法授课时段内 (06:00–23:59)
- * 3. 拦截 13:00→01:00 这类小时回绕/上下午丢失
+ * 2. 钟点为有效的分钟级 HH:mm，凌晨课程不被擅自改为下午
+ * 3. 节次时间有序，异常明确提示，不自动推迟课程
  * 4. 拒绝保存 + 明确提示冲突
  */
 class PeriodTableValidationTest {
@@ -44,30 +44,22 @@ class PeriodTableValidationTest {
     }
 
     @Test
-    fun hourWrapAroundEarlyMorningIsRejected() {
-        // 用户把下午 13 点的课改成了凌晨 1 点 (13:00 → 01:00)
-        val rows = listOf(
-            TimeSlotRow(1, "01:00", "01:45"),
-            TimeSlotRow(2, "08:00", "08:45")
-        )
-        val result = TimeTableUtils.validatePeriodRows(rows)
-        assertTrue("01:00 凌晨授课必须被拒绝（不在 06:00–23:59 授课时段内）",
-            result is TimeTableUtils.PeriodValidationResult.OutOfTeachingHours)
-        val outOfHours = result as TimeTableUtils.PeriodValidationResult.OutOfTeachingHours
-        assertEquals(1, outOfHours.node)
-        assertEquals("01:00", outOfHours.start)
-        assertTrue(outOfHours.errorMessage(null).contains("不在合法授课时段"))
+    fun orderedEarlyMorningPeriodsAreNotGuessedToBeAfternoon() {
+        val rows = listOf(TimeSlotRow(1, "01:00", "01:45"), TimeSlotRow(2, "08:00", "08:45"))
+        assertTrue(TimeTableUtils.validatePeriodRows(rows) is TimeTableUtils.PeriodValidationResult.Valid)
+        assertTrue(TimeTableUtils.isTimeSlotOrderValid(rows))
+        assertEquals(null, TimeTableUtils.findConflictForSlot(rows, 1))
     }
 
     @Test
-    fun middleNodeHourWrapCausesOverlapOrOutOfHours() {
+    fun middleNodeClockRegressionIsRejectedAsOverlap() {
         // 第 4 节上午 11:40 结束，第 5 节误改成了 01:00–01:45
         val rows = listOf(
             TimeSlotRow(4, "10:55", "11:40"),
             TimeSlotRow(5, "01:00", "01:45")
         )
         val result = TimeTableUtils.validatePeriodRows(rows)
-        // 既属于 01:00 超出授课时段，也属于下一节开始早于上一节结束
+        // Reject the actual chronological overlap, not the early-morning clock by itself.
         assertFalse("中间节次小时回绕必须被拒绝", result is TimeTableUtils.PeriodValidationResult.Valid)
     }
 
@@ -130,19 +122,11 @@ class PeriodTableValidationTest {
     }
 
     @Test
-    fun sanitizeTimeJsonForDisplayFixesDirtyDataForRendering() {
-        // 脏数据 1: 包含 01:00 凌晨回绕
-        val dirtyJson1 = """[{"node":1,"start":"01:00","end":"01:45"}]"""
-        val cleanJson1 = TimeTableUtils.sanitizeTimeJsonForDisplay(dirtyJson1)
-        val cleanRows1 = TimeTableUtils.parseTimeSlotRows(cleanJson1)
-        assertTrue("凌晨回绕时间需被顺移至合法时段", cleanRows1[0].start >= "06:00")
-        assertTrue("单节结束必须晚于开始", cleanRows1[0].end > cleanRows1[0].start)
-
-        // 脏数据 2: 相邻节次时间重叠
-        val dirtyJson2 = """[{"node":1,"start":"08:00","end":"09:40"},{"node":2,"start":"09:30","end":"10:15"}]"""
-        val cleanJson2 = TimeTableUtils.sanitizeTimeJsonForDisplay(dirtyJson2)
-        val cleanRows2 = TimeTableUtils.parseTimeSlotRows(cleanJson2)
-        assertEquals(2, cleanRows2.size)
-        assertTrue("清洗后第 2 节开始时间不得早于第 1 节结束时间", cleanRows2[1].start >= cleanRows2[0].end)
+    fun displayFormattingPreservesRealClocksAndReportsOverlap() {
+        val early = """[{"node":1,"start":"01:00","end":"01:45"}]"""
+        assertEquals(early, TimeTableUtils.sanitizeTimeJsonForDisplay(early))
+        val overlapping = """[{"node":1,"start":"08:00","end":"09:40"},{"node":2,"start":"09:30","end":"10:15"}]"""
+        assertEquals(overlapping, TimeTableUtils.sanitizeTimeJsonForDisplay(overlapping))
+        assertTrue(TimeTableUtils.validateTimeJson(overlapping) is TimeTableUtils.PeriodValidationResult.Overlap)
     }
 }
