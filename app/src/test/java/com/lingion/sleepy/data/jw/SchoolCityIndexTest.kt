@@ -14,8 +14,13 @@ class SchoolCityIndexTest {
 
     private fun bundledCities() = SchoolCityIndex.parse(File(assets(), "school_cities.json").readText())
 
-    private fun school(name: String, city: String, key: String = name, status: String = JwSchoolInfo.STATUS_SUPPORTED) =
-        JwSchoolInfo("A", name, status = status, sortKeyFull = key, cities = listOf(city))
+    private fun school(
+        name: String,
+        city: String,
+        key: String = name,
+        status: String = JwSchoolInfo.STATUS_SUPPORTED,
+        sortKey: String = "A"
+    ) = JwSchoolInfo(sortKey, name, status = status, sortKeyFull = key, cities = listOf(city))
 
     @Test fun `city suffix and whitespace are normalized without substring matching`() {
         val schools = listOf(school("合肥学校", "合肥市"), school("肥城学校", "肥城市"))
@@ -25,13 +30,13 @@ class SchoolCityIndexTest {
         assertTrue(SchoolCityIndex.schoolsInCity(schools, " ").isEmpty())
     }
 
-    @Test fun `recommendations prefer supported entries then use pinyin without changing input order`() {
-        val pending = school("待适配学校", "合肥市", "a", JwSchoolInfo.STATUS_PENDING)
-        val beta = school("乙校", "合肥市", "b")
-        val alpha = school("甲校", "合肥市", "a")
-        val input = listOf(pending, beta, alpha)
-        assertEquals(listOf(alpha, beta, pending), SchoolCityIndex.schoolsInCity(input, "合肥市"))
-        assertEquals(listOf(pending, beta, alpha), input)
+    @Test fun `recommendations sort by initial letter and pinyin dictionary order without changing input order`() {
+        val pending = school("安庆学校", "合肥市", "anqingxuexiao", status = JwSchoolInfo.STATUS_PENDING, sortKey = "A")
+        val hefei = school("合肥大学", "合肥市", "hefeidaxue", sortKey = "H")
+        val anhui = school("安徽大学", "合肥市", "anhuidaxue", sortKey = "A")
+        val input = listOf(hefei, pending, anhui)
+        assertEquals(listOf(anhui, pending, hefei), SchoolCityIndex.schoolsInCity(input, "合肥市"))
+        assertEquals(listOf(hefei, pending, anhui), input)
     }
 
     @Test fun `multi city schools appear once and unknown metadata is not guessed from name`() {

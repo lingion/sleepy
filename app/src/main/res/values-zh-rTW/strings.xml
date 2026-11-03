@@ -1122,16 +1122,23 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="jw_import_report_copy">複製報告</string>
     <string name="jw_import_report_join_qq">加入 QQ 群</string>
     <string name="jw_import_report_done">完成</string>
-
-    <string name="widget_week_grid_wide_label">本週課表（網格）· 4×2</string>
-    <string name="widget_wide_grid_layout">4×2 網格配置</string>
-    <string name="widget_wide_grid_vertical">直向七天，逐節推進</string>
+    <string name="period_conflict_detected_banner">請檢查作息表：%1$s。請至作息表編輯頁修正，原始時間未被自動更改。</string>
+    <string name="period_conflict_detected_title">作息時間衝突提示</string>
+    <string name="period_validation_duplicate_node">節次編號 %1$d 重複，請先修正作息表</string>
+<string name="period_validation_empty">節次列表不能為空</string>
+    <string name="period_validation_end_before_start">第 %1$d 節結束時間需晚於開始時間（當前為 %2$s–%3$s）</string>
+    <string name="period_validation_invalid_data">作息表資料不完整或無法解析，請檢查節次編號與起止時間</string>
+    <string name="period_validation_invalid_format">第 %1$d 節時間格式不正確，需為 HH:mm</string>
+    <string name="period_validation_overlap">第 %1$d 節與第 %3$d 節時間衝突：第 %1$d 節於 %2$s 結束，晚於第 %3$d 節開始時間 %4$s</string>
+<string name="widget_week_grid_wide_label">本週課表（網格）· 4×2</string>
+    <string name="widget_wide_grid_empty">目前預覽日期內沒有課程</string>
     <string name="widget_wide_grid_horizontal">橫向三天，逐日推進</string>
+    <string name="widget_wide_grid_layout">4×2 網格配置</string>
     <string name="widget_wide_grid_left">星期標籤放左側</string>
+    <string name="widget_wide_grid_original">原有完整網格</string>
+    <string name="widget_wide_grid_preview_error">預覽載入失敗，請返回後重試</string>
     <string name="widget_wide_grid_right">星期標籤放右側</string>
     <string name="widget_wide_grid_shapes">切換形態</string>
-    <string name="widget_wide_grid_original">原有完整網格</string>
-    <string name="widget_wide_grid_empty">目前預覽日期內沒有課程</string>
     <string name="widget_wide_grid_unavailable">此小工具已刪除或無法使用</string>
-    <string name="widget_wide_grid_preview_error">預覽載入失敗，請返回後重試</string>
+    <string name="widget_wide_grid_vertical">直向七天，逐節推進</string>
 </resources>
