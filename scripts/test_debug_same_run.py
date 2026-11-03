@@ -20,7 +20,7 @@ class SameRunTest(unittest.TestCase):
         self.event["pull_request"] = {"number": 310, "head": {
             "sha": "c" * 40, "ref": "feature/test", "repo": {"full_name": "contributor/sleepy"}}}
         self.run = {"id": 100, "run_number": 20, "run_attempt": 1, "event": "pull_request_target",
-                    "head_sha": CONTEXT["sha"], "path": ".github/workflows/debug-apk.yml",
+                    "head_sha": "c" * 40, "path": ".github/workflows/debug-apk.yml",
                     "status": "in_progress", "conclusion": None,
                     "repository": {"full_name": "lingion/sleepy"}}
 
@@ -48,6 +48,35 @@ class SameRunTest(unittest.TestCase):
                     debug_sign.subprocess, "check_output", return_value=json.dumps(jobs)):
                 with self.assertRaises(ValueError):
                     debug_sign.current_build(self.event, self.context)
+
+    def test_target_run_head_is_pr_head_not_base_sha(self):
+        jobs = [{"jobs": [{"name": "assemble-debug", "conclusion": "success"}]}]
+        with patch.object(debug_sign, "api", return_value=self.run), patch.object(
+                debug_sign.subprocess, "check_output", return_value=json.dumps(jobs)):
+            run = debug_sign.current_build(self.event, self.context)
+            self.assertEqual(run["head_sha"], self.event["pull_request"]["head"]["sha"])
+            self.assertNotEqual(run["head_sha"], self.context["sha"])
+            self.assertEqual(run["expected_plan"]["workflow_sha"], self.context["workflow_sha"])
+        with patch.object(debug_sign, "api", return_value=dict(self.run, head_sha=self.context["sha"])):
+            with self.assertRaisesRegex(ValueError, "identity differs"):
+                debug_sign.current_build(self.event, self.context)
+
+    def test_push_and_manual_run_head_still_match_context_sha(self):
+        jobs = [{"jobs": [{"name": "assemble-debug", "conclusion": "success"}]}]
+        for kind in ("push", "workflow_dispatch"):
+            context = dict(self.context, event_name=kind)
+            payload = event()
+            payload["inputs"] = {"ref": "feature/requested", "abi": "universal"}
+            for sha in (context["sha"], "c" * 40):
+                run = dict(self.run, event=kind, head_sha=sha, head_branch="main")
+                with self.subTest(event=kind, sha=sha), patch.object(
+                        debug_sign, "api", return_value=run), patch.object(
+                        debug_sign.subprocess, "check_output", return_value=json.dumps(jobs)):
+                    if sha == context["sha"]:
+                        self.assertEqual(debug_sign.current_build(payload, context)["head_sha"], sha)
+                    else:
+                        with self.assertRaisesRegex(ValueError, "identity differs"):
+                            debug_sign.current_build(payload, context)
 
     def test_same_page_signer_is_a_dependent_job_not_another_run(self):
         build = (ROOT / ".github/workflows/debug-apk.yml").read_text()
