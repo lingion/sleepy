@@ -399,8 +399,9 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
         ): FixedWindowCore.WindowResult {
             // 底部导航条恒扣 (2026-09-15 定稿): 条内元素恒放得下, 内容区 = 顶栏下沿 ~ 条上沿
             val availH = hDp - TodayRowGeometry.contentTopDp(false) - TodayRowGeometry.NAV_BAR_H_DP
-            val rows = ConflictLayoutEngine.weekLaneRows(data.courses, data.timeJson)
-            val entries = FixedWindowCore.entriesOf(rows, data.timeJson) {
+            val displayTimeJson = TimeTableUtils.sanitizeTimeJsonForDisplay(data.timeJson)
+            val rows = ConflictLayoutEngine.weekLaneRows(data.courses, displayTimeJson)
+            val entries = FixedWindowCore.entriesOf(rows, displayTimeJson) {
                 TodayRowGeometry.rowHeightDp(it)
             }
             return FixedWindowCore.window(

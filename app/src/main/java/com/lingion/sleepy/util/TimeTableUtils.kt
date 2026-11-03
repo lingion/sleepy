@@ -45,6 +45,15 @@ object TimeTableUtils {
 
     internal data class NodeTime(val node: Int, val start: LocalTime, val end: LocalTime)
 
+    private val minuteClock = Regex("(?:[01]\\d|2[0-3]):[0-5]\\d")
+
+    /** Shared minute-only clock contract for validation and persisted schedule readers. */
+    private fun parsePeriodClock(raw: String): LocalTime? {
+        val value = raw.trim()
+        if (!minuteClock.matches(value)) return null
+        return runCatching { LocalTime.parse(value) }.getOrNull()
+    }
+
     /** 解析 timeJson -> 按 node 排序的 list。
      *  兼容无 "node" 键的旧格式([{start,end},...]) — 节点号按数组序号补(1 起)。
      *  issue#40 预览读旧格式 timeJson(如迁移生成的 period_tables 行)时不再整体解析失败。 */
@@ -53,11 +62,11 @@ object TimeTableUtils {
         (0 until arr.length()).map { i ->
             val o = arr.getJSONObject(i)
             NodeTime(
-                node = o.optInt("node", i + 1),
-                start = LocalTime.parse(o.getString("start")),
-                end = LocalTime.parse(o.getString("end"))
+                node = if (!o.has("node")) i + 1 else o.opt("node")?.toString()?.toIntOrNull() ?: error("Invalid period identity"),
+                start = parsePeriodClock(o.getString("start")) ?: error("Invalid period start"),
+                end = parsePeriodClock(o.getString("end")) ?: error("Invalid period end")
             )
-        }.sortedBy { it.node }
+        }.sortedBy { it.node }.takeIf { nodes -> nodes.map { it.node }.distinct().size == nodes.size } ?: emptyList()
     } catch (e: Exception) {
         emptyList()
     }
@@ -107,7 +116,7 @@ object TimeTableUtils {
     }
 
     private fun formatTime(t: LocalTime): String =
-        String.format("%02d:%02d", t.hour, t.minute)
+        String.format(java.util.Locale.ROOT, "%02d:%02d", t.hour, t.minute)
 
     /**
      * 根据课程的 startTime/endTime 反算等效的 (startNode, step)。
@@ -420,8 +429,8 @@ object TimeTableUtils {
         rows.forEach { row ->
             val obj = JSONObject()
             obj.put("node", row.node)
-            obj.put("start", row.start)
-            obj.put("end", row.end)
+            obj.put("start", row.start.trim())
+            obj.put("end", row.end.trim())
             if (row.edgeClass != null) {
                 obj.put("edge", row.edgeClass.name.lowercase())
             }
@@ -542,14 +551,141 @@ object TimeTableUtils {
         return moved.mapIndexed { i, row -> row.copy(node = i + 1) }
     }
 
+    sealed class PeriodValidationResult {
+        object Valid : PeriodValidationResult()
+        data class Empty(val message: String = "节次列表不能为空") : PeriodValidationResult()
+        data class InvalidFormat(val node: Int, val rawStart: String, val rawEnd: String) : PeriodValidationResult()
+        data class EndBeforeStart(val node: Int, val start: String, val end: String) : PeriodValidationResult()
+        object InvalidData : PeriodValidationResult()
+        data class DuplicateNode(val node: Int) : PeriodValidationResult()
+        data class Overlap(val prevNode: Int, val prevEnd: String, val nextNode: Int, val nextStart: String) : PeriodValidationResult()
+
+        fun errorMessage(context: android.content.Context? = null): String {
+            return when (this) {
+                is Valid -> ""
+                is Empty -> if (context != null) context.getString(com.lingion.sleepy.R.string.period_validation_empty) else message
+                is InvalidFormat -> if (context != null) context.getString(com.lingion.sleepy.R.string.period_validation_invalid_format, node)
+                    else "第 ${node} 节时间格式不正确，需为 HH:mm"
+                is EndBeforeStart -> if (context != null) context.getString(com.lingion.sleepy.R.string.period_validation_end_before_start, node, start, end)
+                    else "第 ${node} 节结束时间需晚于开始时间（当前为 $start–$end）"
+                is InvalidData -> if (context != null) context.getString(com.lingion.sleepy.R.string.period_validation_invalid_data)
+                    else "作息表数据不完整或无法解析，请检查节次编号和起止时间"
+                is DuplicateNode -> if (context != null) context.getString(com.lingion.sleepy.R.string.period_validation_duplicate_node, node)
+                    else "节次编号 $node 重复，请先修正作息表"
+                is Overlap -> if (context != null) context.getString(com.lingion.sleepy.R.string.period_validation_overlap, prevNode, prevEnd, nextNode, nextStart)
+                    else "第 ${prevNode} 节与第 ${nextNode} 节时间冲突：第 ${prevNode} 节于 $prevEnd 结束，晚于第 ${nextNode} 节开始时间 $nextStart"
+            }
+        }
+    }
+
+    /** Validate identity, minute clocks and chronological order without guessing teaching hours. */
+    fun validatePeriodRows(rows: List<TimeSlotRow>): PeriodValidationResult {
+        if (rows.isEmpty()) return PeriodValidationResult.Empty()
+        val seenNodes = HashSet<Int>()
+        val parsedRows = ArrayList<Triple<TimeSlotRow, LocalTime, LocalTime>>(rows.size)
+        for (row in rows) {
+            if (!seenNodes.add(row.node)) return PeriodValidationResult.DuplicateNode(row.node)
+            val start = parsePeriodClock(row.start)
+            val end = parsePeriodClock(row.end)
+            if (start == null || end == null) {
+                return PeriodValidationResult.InvalidFormat(row.node, row.start, row.end)
+            }
+            if (end <= start) return PeriodValidationResult.EndBeforeStart(row.node, row.start, row.end)
+            parsedRows.add(Triple(row, start, end))
+        }
+        val sorted = parsedRows.sortedBy { it.first.node }
+        for (i in 0 until sorted.size - 1) {
+            val previous = sorted[i]
+            val next = sorted[i + 1]
+            if (next.second < previous.third) {
+                return PeriodValidationResult.Overlap(previous.first.node, previous.first.end, next.first.node, next.first.start)
+            }
+        }
+        return PeriodValidationResult.Valid
+    }
+
+    /** Persisted data is validated without the editor parser's invented missing-field defaults. */
+    fun validateTimeJson(timeJson: String): PeriodValidationResult {
+        if (timeJson.isBlank()) return PeriodValidationResult.Empty()
+        val array = runCatching { JSONArray(timeJson) }.getOrNull() ?: return PeriodValidationResult.InvalidData
+        val rows = ArrayList<TimeSlotRow>(array.length())
+        for (index in 0 until array.length()) {
+            val item = array.optJSONObject(index) ?: return PeriodValidationResult.InvalidData
+            val node = if (!item.has("node")) index + 1
+                else item.opt("node")?.toString()?.toIntOrNull() ?: return PeriodValidationResult.InvalidData
+            val start = item.opt("start") as? String ?: return PeriodValidationResult.InvalidData
+            val end = item.opt("end") as? String ?: return PeriodValidationResult.InvalidData
+            rows.add(TimeSlotRow(node, start, end))
+        }
+        return validatePeriodRows(rows)
+    }
+
+    fun isPeriodTableValid(timeJson: String): Boolean =
+        validateTimeJson(timeJson) is PeriodValidationResult.Valid
+
+    /**
+     * Format-only display normalization. Real clocks, identities and metadata never change.
+     * Invalid values remain diagnosable; callers retain courses and omit unavailable clock labels.
+     * This function never repairs overlaps, guesses AM/PM, invents durations or writes storage.
+     */
+    fun sanitizeTimeJsonForDisplay(timeJson: String): String {
+        val array = runCatching { JSONArray(timeJson) }.getOrNull() ?: return timeJson
+        var changed = false
+        for (index in 0 until array.length()) {
+            val item = array.optJSONObject(index) ?: continue
+            for (key in listOf("start", "end")) {
+                val raw = item.opt(key) as? String ?: continue
+                if (parsePeriodClock(raw) != null && raw != raw.trim()) {
+                    item.put(key, raw.trim())
+                    changed = true
+                }
+            }
+        }
+        return if (changed) array.toString() else timeJson
+    }
+
+    /**
+     * 检测指定行的节次时间是否与已有其它行发生冲突（供单个节次编辑时实时标红/警告）
+     */
+    fun findConflictForSlot(rows: List<TimeSlotRow>, targetNode: Int): PeriodValidationResult? {
+        val target = rows.find { it.node == targetNode } ?: return null
+        if (target.start.isBlank() && target.end.isBlank()) return null
+        if (rows.count { it.node == targetNode } > 1) return PeriodValidationResult.DuplicateNode(targetNode)
+        val start = parsePeriodClock(target.start)
+        val end = parsePeriodClock(target.end)
+        if (start == null || end == null) {
+            return PeriodValidationResult.InvalidFormat(target.node, target.start, target.end)
+        }
+        if (end <= start) {
+            return PeriodValidationResult.EndBeforeStart(target.node, target.start, target.end)
+        }
+        val others = rows.filter { it.node != targetNode && it.start.isNotBlank() && it.end.isNotBlank() }
+        val prev = others.filter { it.node < targetNode }.maxByOrNull { it.node }
+        if (prev != null) {
+            val pEnd = parsePeriodClock(prev.end)
+            if (pEnd != null && start < pEnd) {
+                return PeriodValidationResult.Overlap(prev.node, prev.end, target.node, target.start)
+            }
+        }
+        val next = others.filter { it.node > targetNode }.minByOrNull { it.node }
+        if (next != null) {
+            val nStart = parsePeriodClock(next.start)
+            if (nStart != null && nStart < end) {
+                return PeriodValidationResult.Overlap(target.node, target.end, next.node, next.start)
+            }
+        }
+        return null
+    }
+
     fun isTimeSlotOrderValid(rows: List<TimeSlotRow>): Boolean {
-        var previous: LocalTime? = null
+        if (rows.map { it.node }.distinct().size != rows.size) return false
+        var previousEnd: LocalTime? = null
         rows.forEach { row ->
             if (row.start.isBlank() && row.end.isBlank()) return@forEach
-            val start = runCatching { LocalTime.parse(row.start) }.getOrNull() ?: return false
-            val end = runCatching { LocalTime.parse(row.end) }.getOrNull() ?: return false
-            if (start >= end || (previous != null && start < previous)) return false
-            previous = start
+            val start = parsePeriodClock(row.start) ?: return false
+            val end = parsePeriodClock(row.end) ?: return false
+            if (start >= end || (previousEnd != null && start < previousEnd)) return false
+            previousEnd = end
         }
         return true
     }
@@ -728,10 +864,13 @@ object TimeTableUtils {
             val e = runCatching { LocalTime.parse(endTime.trim()) }.getOrNull() ?: return null
             return s.toString() to e.toString()
         }
-        val rows = parseTimeSlotRows(timeJson)
-        val first = rows.firstOrNull { it.node == startNode } ?: return null
-        val last = rows.firstOrNull { it.node == startNode + step - 1 } ?: return null
-        return first.start to last.end
+        if (step <= 0) return null
+        val endNode = startNode.toLong() + step.toLong() - 1L
+        if (endNode !in Int.MIN_VALUE.toLong()..Int.MAX_VALUE.toLong()) return null
+        val nodes = parseNodes(timeJson)
+        val first = nodes.firstOrNull { it.node == startNode } ?: return null
+        val last = nodes.firstOrNull { it.node == endNode.toInt() } ?: return null
+        return formatTime(first.start) to formatTime(last.end)
     }
 
     /** 标准 1..N 连续节次上界 (edge 行不参与) — 逐卡重构后标准卡片只允许 1..maxStd */
