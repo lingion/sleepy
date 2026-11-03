@@ -1,5 +1,7 @@
 package com.lingion.sleepy.ui.screen.mine
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -554,7 +556,7 @@ fun GeneralSettingsScreen(
                 ) {
                     // 折叠头: 当前语言值 + 展开箭头(2026-09-21: 组标题已示「语言」, 卡标题禁两遍, 改显当前值)
                     Row(
-                        modifier = Modifier.fillMaxWidth().noRippleClickable { languageExpanded = !languageExpanded }
+                        modifier = Modifier.fillMaxWidth().glassControl(shape = SleepyTheme.shapes.large).noRippleGlassClickable { languageExpanded = !languageExpanded }
                             .dbgTag("general_language_card", text = currentLabel, role = "button")
                             .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -594,7 +596,7 @@ fun GeneralSettingsScreen(
                             languages.forEach { (code, label) ->
                                 val selected = language == code
                                 Row(
-                                    modifier = Modifier.fillMaxWidth().noRippleClickable {
+                                    modifier = Modifier.fillMaxWidth().glassControl(shape = SleepyTheme.shapes.medium, tint = if (selected) colors.primaryContainer else null).noRippleGlassClickable {
                                         language = code
                                         AppPrefs.setLanguage(context, code)
                                         (context as? android.app.Activity)?.recreate()
@@ -797,7 +799,8 @@ fun GeneralSettingsScreen(
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth()
-                            .noRippleClickable { onMigrationExportClick() }
+                            .glassControl(shape = SleepyTheme.shapes.large, enabled = !migrationBusy)
+                            .noRippleGlassClickable { onMigrationExportClick() }
                             .dbgTag("general_migration_export", text = stringResource(R.string.settings_migration_export), role = "button")
                             .alpha(if (migrationBusy) 0.5f else 1f)
                             .padding(16.dp),
@@ -824,7 +827,8 @@ fun GeneralSettingsScreen(
                     HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     Row(
                         modifier = Modifier.fillMaxWidth()
-                            .noRippleClickable {
+                            .glassControl(shape = SleepyTheme.shapes.large, enabled = !migrationBusy)
+                            .noRippleGlassClickable {
                                 if (!migrationBusy) importLauncher.launch(arrayOf("application/zip", "application/octet-stream"))
                             }
                             .dbgTag("general_migration_import", text = stringResource(R.string.settings_migration_import), role = "button")
