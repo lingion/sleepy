@@ -1,0 +1,23 @@
+{
+  "application": "FlClash",
+  "versionFromPubspec": "0.9.2+2026102401",
+  "applicationCommit": null,
+  "notes": "2026-11-03 回归修订参考。本地源码目录较原 PR 的 0.9.1 已更新，独立记录，保留旧 manifest 的历史证据。",
+  "sha256": {
+    "pubspec.yaml": "cdbf5825efbd40a8d9f36f3ba5f65a367c1f4bfc4cf7f7824049cd2c2c9a985c",
+    "lib/ui/popup.dart": "ace6e76e2383b044711f851650778716478d1fd6960ec521e3a7396088f62e05",
+    "lib/ui/switch.dart": "668100f5728b9bf8a98787503cf26d76a385c2e5a057564a9c9e27385238dab7"
+  },
+  "languageCallChain": [
+    "lib/views/tools.dart:_LocaleItem",
+    "lib/ui/list.dart:ListItem.options",
+    "lib/ui/popup.dart:CommonPopupBox",
+    "lib/ui/popup.dart:CommonPopupMenu"
+  ],
+  "scope": {
+    "largeActions": "恢复普通 Material/扁平表面；不依据宽度阈值在运行时猜测材质。",
+    "language": "从语言值锚点展开，菜单共用玻璃面，选项行不独立玻璃化。",
+    "toggle": "实心轨道和静态滑块；按住升镜、横向拖动，释放阈值 0.5。",
+    "segmentedDragging": "Sleepy 延伸交互，参考现有底部 Dock；FlClash segmented_control.dart 仍只有点击。"
+  }
+}

@@ -1,6 +1,39 @@
 # 全应用玻璃实现与验证记录
 
-## 当前状态
+## PR #299 修订状态（2026-11-04 验证完成）
+
+本次修订基线为 `4822a58796deb81568ef4eb41738236a84c26220`，工作区为 `pr299-liquid-glass-fixes`。下方初版的 3601 项及 GPU 结果是历史证据，不代表本次改动已通过同样验证。
+
+- 半屏弹窗：Material 在外部 modifier 之后应用拖动位移，原玻璃裁切层停在原点，短内容会被裁掉。现在在录制/玻璃层两侧补偿相反 offset，保持 Material 测量、手柄、关闭及 inset 处理。
+- 宽大操作：创建课表、迁移、导入导出、保存、删除和宽列表入口恢复 Material/扁平表面。迁移操作同时尊重 `migrationBusy` 禁用状态。
+- 语言：当前值锚定独立 Popup，整块玻璃承载普通选项行；采用展开弹簧 `400/.754`、延迟 70ms 的圆角弹簧 `324/.75`，退出后再提交选择。
+- Toggle：52×32 实心轨道、24 静态滑块、40 按压镜片，镜片组合采样父场景与本地轨道；支持横拖、取消、受控回弹、禁用、键盘和 RTL。
+- 分段 Tab：高亮位置为连续 Float，从高亮块起拖，释放最近吸附并提交一次选择。FlClash 原分段只有点击，此处拖动是 Sleepy 的明确扩展。
+- 本次参考为 FlClash `0.9.2+2026102401`，调用链和指纹见 `flclash-pr299-revision-reference.json`；初版 manifest 保留原始来源。
+
+### 本次验证记录
+
+首轮定向命令覆盖 `GlassBottomSheetTest`、`GlassNestedPopupTest`、`GlassLanguageMenuTest`、`GlassSwitchTest`、`SegmentedSwitcherDragTest`。结果为 30 项中 29 项通过：弹窗 4/4、嵌套 1/1、Toggle 13/13、Tab 5/5、语言 6/7。语言失败发生在 Popup 加入语义树前冻结时钟；已增加打开后可见性等待，保留退出等待及重复提交断言，等待复跑结果。
+
+全量日志 `.superpowers/sdd/2026-11-03-pr299-controls/full-verification.log` 记录 3630 项、2 failures、3 skipped；语言行为测试 7/7 通过。失败的两项是 `ExpandChevronMotionContractTest` 强制旧语言内联折叠卡/180°箭头的源码契约。用户已明确批准将语言断言迁移到新浮框契约；其他折叠站点断言保留，迁移后待复跑。该轮没有完整 BUILD SUCCESSFUL，不能据 packageDebug 输出宣称构建及 Lint 全部通过。
+
+用户追加返回按钮拖拽遮挡问题：对照实际 Material3 1.5.0-beta02 源码，`TopAppBarLayout` 被 `clipToBounds()` 包围；Scaffold 已将顶部栏放在正文之上。最终 `GlassTopAppBar` 由 Material 提供槽位尺寸/位置，实际导航与操作按钮只组合一次，放在标题裁切层之外；27 个页面入口已接入。保留 Material 的颜色、inset、RTL 与原按钮语义，未提升普通玻璃控件的全局层级。
+
+像素验证的中间失败也保留：最初取样在栏底+2px，而诊断显示夹具纯红前景延伸到栏底+1px，导致两种修正方案均被该取样点判失败。用户明确批准将取样点校正到栏底外第一行，精确颜色及其他断言不变。随后用原 Material 转发重新运行，三项越界断言仍失败（`topbar-corrected-red.log`）；恢复最终布局方案后，导航/RTL/右侧操作、前景更新、取消回弹和单次回调四项全部通过。第一版图层重放方案未用校正后的取样点复测，不据旧失败推断它的裁切行为。
+
+### 最终全量结果
+
+- 定向验证 35 项全部通过（`topbar-final-focused.log`），含顶部栏、原有玻璃层遮挡、语言交互/迁移契约及 Tab 两项选择/反向拖动/空选项边界。
+- 普通全量命令曾被本机 OpenJDK `21+35-2513` 的 ARM64 C1 编译器中止，`assembler_aarch64.hpp:264: Field too big for insn`，编译任务指向 `Recomposer$runRecomposeAndApplyChanges$2::invokeSuspend$lambda$2`。这次为 JVM 崩溃，不是断言失败；证据见 `final-verification.log` 与 `app/hs_err_pid79421.log`。
+- 仅为验证进程设置 `JAVA_TOOL_OPTIONS='-XX:CompileCommand=exclude,androidx/compose/runtime/Recomposer$runRecomposeAndApplyChanges$2.invokeSuspend$lambda$2'` 后，原全量任务 `:app:testDebugUnitTest :app:assembleDebug :app:lintDebug` 返回 **BUILD SUCCESSFUL**，耗时 17m32s。未改项目 JVM 配置，也未跳过测试任务。
+- XML 汇总 **3638 项：3635 通过、0 failures、0 errors、3 skipped**。三个跳过项为已有的两项 WakeUp 活体/握手验证和一项本地时光资产覆盖检查，新增回归测试均执行。
+- Debug APK 构建成功；Lint **0 Fatal / 0 Error / 556 Warning / 38 Hint**，不能称为零警告。其中 `GlassSwitch.kt` 有状态驱动非 lambda offset 的性能建议。
+- 全量日志：`.superpowers/sdd/2026-11-03-pr299-controls/final-verification-jit-workaround.log`。
+- ARM64 APK：`app/build/outputs/apk/debug/app-arm64-v8a-debug.apk`；通用 APK：`app/build/outputs/apk/debug/app-universal-debug.apk`。
+
+本次本地验证没有可用设备：模拟器安装失败（`Error on ZipFile unknown archive`）。Robolectric Native 像素与几何测试不能替代 GPU 折射或真实 `OccurrenceEditor`、输入法、逐页入口的验收。本节为提交前验证记录；后续远端状态见 PR #299。
+
+## 初版历史状态
 
 本地分支 `feat/app-liquid-glass` 已保存共享材质、全局风格、公共按钮、选择器、弹层与页面接线，并同步已合入 main 的并行修订。没有推送、创建 PR、合并或发布。
 
@@ -16,7 +49,7 @@
 - 弹窗读取已完成的直接父场景，嵌套菜单读取父弹窗而非继续读取最底页面；同一来源和模糊半径共享过滤资源，首次需求会驱动宿主绘制。
 - 日期弹窗光学轮廓和 Material 载体使用同一个超椭圆形状；普通课程大卡保留原按压反馈，只有显式玻璃操作使用对应弹性反馈。
 
-## 最新实际验证
+## 初版历史验证
 
 主线同步基准：`035589c4`；PR 289 查询时仍为 OPEN，未将其未合入分支夹带进本任务。
 
