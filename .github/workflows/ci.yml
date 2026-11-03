@@ -41,6 +41,8 @@ jobs:
         run: python3 -m unittest discover -s scripts -p 'test_debug_*.py'
       - name: Released public documentation contracts
         run: python3 -m unittest discover -s scripts -p test_public_docs.py
+      - name: Attribution inventory and bundled notices
+        run: python3 scripts/test_attributions.py
       - name: Verify source coverage and reproducible school catalog
         run: |
           python3 scripts/test_catalog_url_safety.py
