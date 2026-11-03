@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="debug_unlock_title">开启调试模式</string>
+    <string name="debug_unlock_description">输入密钥以开启本次运行的调试模式，重启应用后自动关闭。</string>
+    <string name="debug_unlock_key">密钥</string>
+    <string name="debug_unlock_action">开启</string>
+    <string name="debug_unlock_wrong_key">密钥错误，请重试。</string>
+    <string name="debug_unlock_backoff">尝试次数过多，请稍后重试。</string>
+    <string name="debug_unlock_expired">解锁窗口已过期，请取消后重新点击版本号 7 次。</string>
+    <string name="debug_unlock_service_failed">调试服务启动失败，请稍后重试。</string>
+    <string name="debug_unlock_active">调试模式已开启</string>
+    <string name="debug_unlock_stop">关闭调试模式</string>
+</resources>

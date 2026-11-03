@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="debug_unlock_title">Activar modo de depuración</string>
+    <string name="debug_unlock_description">Introduce la clave para activar la depuración durante esta sesión. Se desactiva al reiniciar la aplicación.</string>
+    <string name="debug_unlock_key">Clave</string>
+    <string name="debug_unlock_action">Activar</string>
+    <string name="debug_unlock_wrong_key">Clave incorrecta. Inténtalo de nuevo.</string>
+    <string name="debug_unlock_backoff">Demasiados intentos. Inténtalo más tarde.</string>
+    <string name="debug_unlock_expired">El plazo ha caducado. Cancela y toca la versión 7 veces de nuevo.</string>
+    <string name="debug_unlock_service_failed">No se pudo iniciar el servicio de depuración. Inténtalo más tarde.</string>
+    <string name="debug_unlock_active">Modo de depuración activado</string>
+    <string name="debug_unlock_stop">Desactivar depuración</string>
+</resources>
