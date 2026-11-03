@@ -120,6 +120,43 @@ fun LicenseScreen(onBack: () -> Unit) {
                 )
             }
 
+            item {
+                SectionHeader(stringResource(R.string.license_recent_section))
+            }
+            item {
+                LicenseCard {
+                    Text(
+                        text = stringResource(R.string.license_recent_source_notice),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = colors.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(R.string.license_recent_intro),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.onSurfaceVariant
+                    )
+                }
+            }
+            items(recentAttributionGroups, key = { it.first }) { (titleRes, bodyRes) ->
+                val key = "recent_$titleRes"
+                val body = stringResource(bodyRes)
+                AttributionCard(
+                    title = stringResource(titleRes),
+                    subtitle = null,
+                    description = null,
+                    expanded = expanded[key] == true,
+                    onToggle = { expanded[key] = expanded[key] != true },
+                    expandedContent = {
+                        Text(
+                            text = body,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.onSurfaceVariant
+                        )
+                    }
+                )
+            }
+
             // ---- 致谢导语区块 (可折叠: 默认收起, 点击展开看 about_license_body 全文) ----
             item {
                 val bodyExpanded = expanded["__body__"] == true
@@ -318,6 +355,19 @@ private data class AttributionEntry(
     val title: String,
     val meta: String,
     val usage: String
+)
+
+// Resource bodies are generated from assets/ATTRIBUTIONS.json in every released locale.
+// Keep source ports first, then dependencies, data, design and research references.
+private val recentAttributionGroups = listOf(
+    R.string.license_recent_sources_title to R.string.license_recent_sources_body,
+    R.string.license_recent_libraries_title to R.string.license_recent_libraries_body,
+    R.string.license_recent_data_title to R.string.license_recent_data_body,
+    R.string.license_recent_design_title to R.string.license_recent_design_body,
+    R.string.license_recent_glass_research_title to R.string.license_recent_glass_research_body,
+    R.string.license_recent_vendor_title to R.string.license_recent_vendor_body,
+    R.string.license_recent_background_title to R.string.license_recent_background_body,
+    R.string.license_recent_protocol_research_title to R.string.license_recent_protocol_research_body
 )
 
 /** 跨校普适项目 (单卡, 不可展开)。 */

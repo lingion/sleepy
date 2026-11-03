@@ -635,7 +635,7 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="about_license_detail">ライセンスと謝辞</string>
     <string name="license_page_title">ライセンスと謝辞</string>
     <string name="license_gpl_section">ライセンス</string>
-    <string name="license_gpl_body">Sleepy はオープンソースのスマート時間割アプリです。ソースコードは GNU General Public License v3.0 の下で公開されています。誰でも自由に使用、改変、配布できます。GitHub での貢献を歓迎します。</string>
+    <string name="license_gpl_body">Sleepy 独自のコードは GNU General Public License v3.0 で公開されています。第三者のコード、素材、データにはそれぞれのライセンスと著作者表示が維持されます。対象範囲は以下の出典表示をご覧ください。GitHub での貢献を歓迎します。</string>
     <string name="license_attribution_section">教务システムアダプタの謝辞</string>
     <string name="license_attribution_note">一部の教务システム取り込みアダプタは、以下のオープンソースプロジェクトの公開実装を参考にしています。皆様に感謝申し上げます。</string>
     <string name="license_foundational_section">複数大学共通の基盤プロジェクト</string>
