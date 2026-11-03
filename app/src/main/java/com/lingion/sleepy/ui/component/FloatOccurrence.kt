@@ -28,10 +28,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -114,6 +110,12 @@ class CourseFloatState {
     var anchorRootLeftPx by mutableStateOf(0f)
     /** 进入拖拽瞬间的卡片中心 x (网格坐标) — 边缘判据的防误触锚 (需位移超 slop)。 */
     var dragOriginCx: Dp by mutableStateOf(0.dp)
+    /** 真实手指 root X；只由输入事件写、边缘判定读，不参与重组。 */
+    internal var dragPointerRootX: Float? = null
+    /** 二次抓取浮卡时保留输入节点；翻页只改变落点宿主。 */
+    internal var overlayDragOwner: Any? by mutableStateOf(null)
+    internal var dragHostWeek: Int by mutableStateOf(1)
+    internal var outsideDismissUptime: Long? = null
     /** 进入拖拽瞬间起拖页的纵向滚动 (dp) — 翻页换宿主后各页几何同构, 新宿主据此
      *  对齐滚动量, 卡悬停行 = 视觉行; 落点判定本就在内容坐标系, 双保险。 */
     var anchorScrollDp: Dp by mutableStateOf(0.dp)
@@ -221,16 +223,11 @@ class CourseFloatState {
         height: Dp,
         isGrey: Boolean,
     ) {
-        // Issue #300: 连续长按时先立即停止前一个卡片的归位动画, 防止从旧位置飞到新位置
-        // 使用 launch 在后台协程中停止动画，不阻塞主线程
-        GlobalScope.launch(Dispatchers.Main.immediate) {
-            xAnimatable.stop()
-            yAnimatable.stop()
-            xAnimatable.snapTo(x)
-            yAnimatable.snapTo(y)
-        }
+        // 取消宿主的归位任务；新浮卡的位置直接初始化，不派发无生命周期的后台任务。
+        returnTick = 0
         
         this.course = course
+        outsideDismissUptime = null
         this.day = day
         this.week = week
         this.startNode = startNode
@@ -240,7 +237,9 @@ class CourseFloatState {
         originX = x; originY = y
         originStartNode = startNode; originEndNode = endNode; originHeight = height
         originWeek = week
+        dragHostWeek = week
         dragging = false
+        overlayDragOwner = null
         edgeDir = 0
         edgeBlocked = 0
         peekProgress = 0f
@@ -253,6 +252,8 @@ class CourseFloatState {
     fun dismiss() {
         course = null
         dragging = false
+        overlayDragOwner = null
+        edgeDir = 0
         edgeBlocked = 0
         peekProgress = 0f
         dropTarget = null
@@ -305,7 +306,10 @@ fun Modifier.dismissFloatOnOutsidePress(
             if (onLifted) return@awaitEachGesture
             down.consume()
             val pending = blankPress
-            if (pending != null && state.spanChanged) pending() else state.dismiss()
+            if (pending != null && state.spanChanged) pending() else {
+                state.outsideDismissUptime = down.uptimeMillis
+                state.dismiss()
+            }
         }
     }
 }
@@ -336,6 +340,7 @@ fun Modifier.continuousFloatLift(
     onDragStart: () -> Unit,
     onDrag: (Offset) -> Unit,
     onDrop: () -> Unit,
+    allowConsumedLongPress: (Long) -> Boolean = { false },
 ): Modifier = composed {
     val isLifted by rememberUpdatedState(lifted)
     val tap by rememberUpdatedState(onTap)
@@ -343,6 +348,7 @@ fun Modifier.continuousFloatLift(
     val dragStart by rememberUpdatedState(onDragStart)
     val drag by rememberUpdatedState(onDrag)
     val drop by rememberUpdatedState(onDrop)
+    val consumedLongPress by rememberUpdatedState(allowConsumedLongPress)
     // 场景C 换算基准: 本节点坐标 → root 坐标。与 dismissFloatOnOutsidePress 同捕获
     // 模式; 节点换页平移时 localToRoot 随之更新, delta 守恒。null 帧(尚未布局)退化为
     // 本地坐标 — 与修复前同行为, 不崩不丢事件。
@@ -350,7 +356,8 @@ fun Modifier.continuousFloatLift(
     onGloballyPositioned { coordinates = it }.pointerInput(Unit) {
         awaitEachGesture {
             val down = awaitFirstDown(requireUnconsumed = false)
-            if (down.isConsumed || isLifted()) return@awaitEachGesture
+            val suppressTap = down.isConsumed
+            if ((suppressTap && !consumedLongPress(down.uptimeMillis)) || isLifted()) return@awaitEachGesture
             val id = down.id
             var previous = down.position
             var releasedEarly = false
@@ -377,7 +384,7 @@ fun Modifier.continuousFloatLift(
             }
             if (stolen) return@awaitEachGesture
             if (releasedEarly) {
-                if ((previous - down.position).getDistance() <= viewConfiguration.touchSlop) tap()
+                if (!suppressTap && (previous - down.position).getDistance() <= viewConfiguration.touchSlop) tap()
                 return@awaitEachGesture
             }
             lift()
@@ -456,7 +463,12 @@ internal fun FloatingOccurrenceCard(
                 .testTag("float-card")
                 .pointerInput(lifted.id) {
                     detectDragGestures(
-                        onDragStart = { start() },
+                        orientationLock = null,
+                        onDragStart = { down, change, overSlop ->
+                            start()
+                            // 阈值只负责识别手势；认领后补齐这段位移，保持最初抓取点。
+                            drag(change.position - down.position - overSlop)
+                        },
                         onDrag = { change, amount -> change.consume(); drag(amount) },
                         onDragEnd = { drop() },
                         onDragCancel = { drop() },

@@ -6,7 +6,6 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
@@ -50,6 +49,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
@@ -59,6 +59,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalConfiguration
@@ -362,6 +363,9 @@ fun CardsGridView(
     Box(
         modifier = modifier
             .fillMaxSize()
+            // 二次抓浮卡时输入节点留在来源页，其跨页浮层必须绘制在目标页遮罩之上。
+            .zIndex(if (floatState.dragging && floatState.overlayDragOwner != null &&
+                currentWeek == floatState.dragHostWeek) 1f else 0f)
             .dismissQuickAddOnOutsidePress(quickAddState)
             .dismissFloatOnOutsidePress(floatState, ::confirmPendingResizeOrDismiss)
             .background(colors.surfaceContainerHigh, gridBgShape)
@@ -555,19 +559,12 @@ fun CardsGridView(
             // renderEffect 自包含(整层进模糊纹理), 浮层若做 Column 子节点会被一起糊掉,
             // 故 overlay y = floatState.y + headH + gapH − scrollState (抵消表头与滚动)。
             var floatDragPx by remember { mutableFloatStateOf(0f) }
+            val floatOverlayOwner = remember { Any() }
             // 边缘翻页锚点: 本页网格左缘实时值(root 坐标 px); 起拖页快照存 floatState.anchorRootLeftPx。
             val expectedInitialLeft = if (floatState.active) {
                 floatState.anchorRootLeftPx + (currentWeek - floatState.originWeek) * with(headerDensity) { maxWidth.toPx() }
             } else 0f
             var floatRootLeftPx by remember { mutableFloatStateOf(expectedInitialLeft) }
-            // 滚动偏移只在浮起态读取 — 平时不在 body 读 scrollState.value,
-            // 避免每帧滚动重组整个 BoxWithConstraints 子树。浮框退场期 (active 已 false)
-            // 沿用最后一次浮起值 — 否则 overlayY 的 scrollDp 归零, 淡出中的浮框瞬移。
-            var floatScrollDp by remember { mutableStateOf(0.dp) }
-            if (floatState.active) {
-                val live = with(headerDensity) { scrollState.value.toDp() }
-                if (live != floatScrollDp) floatScrollDp = live
-            }
             // 排他宿主接管时新页滚动对齐拖拽锚: 各页 rememberScrollState 独立(新页=0),
             // 不同步则卡悬停行与视觉行错位一行以上。同步后宿主页几何与起拖页逐 dp 相同。
             LaunchedEffect(floatState.active, floatState.dragging, floatState.week, currentWeek) {
@@ -582,7 +579,7 @@ fun CardsGridView(
             // 弹簧归位宿主: springFloatBack 置 returnTick → 唤醒这里, x/y 经 defaultSpatial
             // 落回 originX/originY — springFloatBack 名实相符 (Task 4)。
             LaunchedEffect(floatState.returnTick) {
-                if (floatState.returnTick > 0) {
+                if (floatState.returnTick > 0 && currentWeek == floatState.week) {
                     floatState.animateReturnToOrigin(returnSpec, returnSpec)
                 }
             }
@@ -608,6 +605,7 @@ fun CardsGridView(
                 if (nodeIdx < 0 || dayIdx < 0) return
                 val steps = course.step.coerceAtLeast(1).coerceAtMost(renderSlots.size - nodeIdx)
                 quickAddState.dismiss()
+                floatState.anchorRootLeftPx = floatRootLeftPx
                 floatState.lift(
                     course = course,
                     day = course.day,
@@ -635,13 +633,21 @@ fun CardsGridView(
             // 非法投影 → snap 退回跟手位(卡留指下), 松手弹回 — 弹回语义不变。
             // (声明顺序: 必须在 seedFloatResize/applyFloatResize 之前 —
             //  Kotlin 局部函数须先声明后使用, 626 行拉伸处调用它。)
+            fun currentFloatEdgeDirection(): Int {
+                val pointerX = floatState.dragPointerRootX?.let {
+                    with(headerDensity) { (it - floatState.anchorRootLeftPx).toDp().value }
+                }
+                return floatEdgeDirection(
+                    (floatState.x + floatState.width / 2f).value,
+                    pointerX, floatState.dragOriginCx.value, maxWidth.value,
+                )
+            }
             fun projectFloatDrop(): OccurrenceDropTarget? {
-                val cx = (floatState.x + floatState.width / 2f).value
                 val centerRatio =
                     (floatState.x + floatState.width / 2f - timeW - gapW).value / (colW + gapW).value
                 // 边缘翻页带与表格外界不作吸附投影 (退回跟手位, 不吸附到周日/周一):
                 // 仅在真实列带内吸附各列, 保持边缘跟手位干净, 翻页时不锁死在末列
-                val inEdgeZone = cx < FLOAT_EDGE_ZONE_DP || cx > maxWidth.value - FLOAT_EDGE_ZONE_DP ||
+                val inEdgeZone = currentFloatEdgeDirection() != 0 ||
                     centerRatio < 0f || centerRatio >= sortedDays.size.toFloat()
                 if (inEdgeZone) return null
                 val dayIndex = floor(centerRatio).toInt().coerceIn(0, sortedDays.lastIndex)
@@ -778,28 +784,9 @@ fun CardsGridView(
                     // 每步重验宿主: 本页刚被 bump 走 (currentWeek 是本实例捕获的旧页号) →
                     // 即刻静默退出。只在 effect 开头查一次的写法会让旧实例活到重组取消为止,
                     // 与新宿主实例双写计时/双翻 (2026-10-30 诊断: 换页 +300ms 即多翻一页)。
-                    if (currentWeek != floatState.week) return@LaunchedEffect
-                    val cx = (floatState.x + floatState.width / 2f).value
-                    // Launcher3 同构: 左边缘用 min(手指x, 中心x), 右边缘用 max(手指x, 中心x) —
-                    // 确保卡片任意部分到达边缘都能触发, 不被卡片宽度限制。
-                    // floatState.x 是跟手位置(拖拽点), cx 是卡片中心, 取更极端值覆盖整个卡片范围。
-                    val leftEdgeX = min(floatState.x.value, cx)
-                    val rightEdgeX = max((floatState.x + floatState.width).value, cx)
-                    // 防误触: 拖拽起点起水平位移未超 slop 不判边缘 (FullCalendar everMoved 同构)。
-                    // 触发域 (2026-10-30 用户裁决, 替换「列带外缘 10dp」): 判据锚**可视表格
-                    // 外壳缘**, 左右各内缩同一 FLOAT_EDGE_ZONE_DP — 镜像对称。旧判据锚列带缘:
-                    // 右线 bandRight≈maxWidth-gapW 几乎贴屏缘, 左线 bandLeft=timeW+gapW 却把
-                    // 整条时间列划进触发区 (≈61dp 内缩 vs 右缘 15dp) — 同屏两个边距, 「往下翻页
-                    // 要这个页边距, 往上翻页就不是」(用户原话)。外壳缘镜像后两侧手感一致,
-                    // 且左缘触发区比旧判据更窄 (时间列回归纯装饰域, 压时间列不再翻页)。
-                    // 落子安全不变: 末列列心距右触发线仍 ≈ 列宽/2 + 5dp, 首列同理 —
-                    // 各列落子全程在区外 (Lawnchair verifyInsidePage 语义维持)。
-                    val dir = when {
-                        abs(cx - floatState.dragOriginCx.value) < FLOAT_EDGE_SLOP_DP -> 0
-                        leftEdgeX < FLOAT_EDGE_ZONE_DP -> -1
-                        rightEdgeX > maxWidth.value - FLOAT_EDGE_ZONE_DP -> 1
-                        else -> 0
-                    }
+                    if (currentWeek != floatState.week || !floatState.dragging) return@LaunchedEffect
+                    // 翻页与落子共用同一判据，防止一边吸附周日、一边累计翻页。
+                    val dir = currentFloatEdgeDirection()
                     if (dir != held) { held = dir; elapsed = 0L }
                     floatState.edgeDir = dir
                     if (dir == 0) {
@@ -897,7 +884,8 @@ fun CardsGridView(
                     // 浮层用「起拖页左缘 − 当前宿主左缘」反平移钉在指下; 位移符号由实测
                     // 坐标天然决定, 不依赖 pager 内部 offset 公式。仅浮动态写值 —
                     // 平时回调零写入, 不给滚动加重组。
-                    .onGloballyPositioned { floatRootLeftPx = it.boundsInRoot().left }
+                    .onGloballyPositioned { floatRootLeftPx = it.positionInRoot().x }
+                    .trackFloatDragPointer(floatState)
                     .then(
                         // v1.0.56 T3: 实验室开关默认关 — 手势不挂即捏不动; 开=原行为
                         if (pinchZoomEnabled) Modifier.verticalResizeGesture(
@@ -1169,6 +1157,7 @@ fun CardsGridView(
                             // 拖拽/落点复用浮卡同款 dragging 标记与 commitFloatDrop 判定。
                             liftGesture = if (floatAware) Modifier.continuousFloatLift(
                                 lifted = { floatState.active },
+                                allowConsumedLongPress = { it == floatState.outsideDismissUptime },
                                 onTap = { onCourseClick(course) },
                                 onLift = { liftCourse(course) },
                                 onDragStart = {
@@ -1306,19 +1295,13 @@ fun CardsGridView(
                 val followShift = Modifier.graphicsLayer {
                     translationX = floatState.anchorRootLeftPx - floatRootLeftPx
                 }
-                val snapSpec = tween<Dp>(FLOAT_SNAP_ANIM_MS.toInt(), easing = FLOAT_PAGE_EASING)
-                val renderX by animateDpAsState(floatState.snapX, animationSpec = snapSpec, label = "float-snap-x")
-                val renderY by animateDpAsState(floatState.snapY, animationSpec = snapSpec, label = "float-snap-y")
-                val renderH by animateDpAsState(floatState.snapHeight, animationSpec = snapSpec, label = "float-snap-h")
-                val overlayY = renderY + headH + gapH - floatScrollDp
                 AnimatedVisibility(
-                    visible = floatState.active && currentWeek == floatState.week,
+                    visible = floatState.active && if (floatState.dragging && floatState.overlayDragOwner != null)
+                        floatState.overlayDragOwner === floatOverlayOwner else currentWeek == floatState.week,
                     enter = if (false) sleepyPopupEnter() else EnterTransition.None,
                     exit = ExitTransition.None,
                     modifier = followShift
-                        .offset(x = renderX, y = overlayY)
-                        .width(floatState.width)
-                        .height(renderH),
+                        .floatOverlayPlacement(floatState, scrollState, headH + gapH),
                 ) {
                     val lifted = retainedLifted ?: return@AnimatedVisibility
                     FloatingOccurrenceCard(
@@ -1327,6 +1310,8 @@ fun CardsGridView(
                         cornerRatio = cornerRatio,
                         groupRows = courses.filter { it.groupId == lifted.groupId },
                         onDragStart = {
+                            floatState.overlayDragOwner = floatOverlayOwner
+                            floatState.dragHostWeek = currentWeek
                             floatState.dragging = true
                             floatState.dragOriginCx = floatState.x + floatState.width / 2f
                             floatState.anchorRootLeftPx = floatRootLeftPx
@@ -1369,11 +1354,7 @@ fun CardsGridView(
                     enter = sleepyPopupEnter(),
                     exit = if (false) sleepyPopupExit() else ExitTransition.None,
                     modifier = followShift
-                        .offset(
-                            x = renderX,
-                            y = (overlayY - d(36f)).coerceAtLeast(0.dp),
-                        )
-                        .width(floatState.width),
+                        .floatOverlayPlacement(floatState, scrollState, headH + gapH, popupOffset = d(36f)),
                 ) {
                     val lifted = retainedLifted ?: return@AnimatedVisibility
                     Box(

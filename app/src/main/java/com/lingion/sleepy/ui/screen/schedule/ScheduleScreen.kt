@@ -378,12 +378,14 @@ fun ScheduleScreen(
 
             HorizontalPager(
                 state = pagerState,
-                // 边缘翻页特性: 相邻页保持 compose — 浮态宿主随 week 换页时新页几何立即可用,
-                // 且拖拽手势流(pointerInput)不因页回收而腰斩。默认 0 会 dispose 邻页。
-                // beyondViewportPageCount = 1 (拖拽中保持全部周不被回收, 避免起拖页被回收腰斩手势)
-                beyondViewportPageCount = if (floatState.dragging) (pagerMaxWeek - 1).coerceAtLeast(1) else 1,
+                // 接收手势的页由 trackFloatDragPointer 固定，毋须为一次拖拽加载整个学期。
+                beyondViewportPageCount = 1,
                 modifier = Modifier.fillMaxSize()
             ) { page ->
+                if (viewMode == ViewMode.Cards &&
+                    !com.lingion.sleepy.ui.component.shouldComposeFloatDragPage(page + 1, pagerState.currentPage + 1, floatState)) {
+                    return@HorizontalPager
+                }
                 // page 是 0-based 周索引，独立于 state.currentWeek 过滤课程
                 val weekCourses = state.courses.filter { it.inWeek(page + 1) }
                     .let { list ->

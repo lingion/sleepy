@@ -936,19 +936,20 @@ class CourseOccurrenceFloatDragTest {
         val secondCourse = CourseEntity(id = 2, tableId = 1, groupId = "phys", courseName = "FloatPhys", 
             day = 4, startNode = 3, step = 1, startWeek = 1, endWeek = 16, color = "#FF00A000")
         grid(state, courses = listOf(firstCourse, secondCourse))
+        val firstBounds = compose.onNodeWithText("FloatMath").fetchSemanticsNode().boundsInRoot
+        val secondBounds = compose.onNodeWithText("FloatPhys").fetchSemanticsNode().boundsInRoot
         
         // 第一次长按 FloatMath (第2列，第1节)
         compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
         compose.waitForIdle()
-        val firstX: Float
-        val firstY: Float
-        compose.runOnIdle {
+        val (firstX, firstY) = compose.runOnIdle {
             assertEquals("FloatMath", state.course?.courseName)
-            firstX = state.x.value
-            firstY = state.y.value
+            val firstX = state.x.value
+            val firstY = state.y.value
             // 记录第一个位置
             assertTrue("第一次浮起的 X 坐标应该是第2列", firstX > 80f)
             assertTrue("第一次浮起的 Y 坐标应该是第1节", firstY < 100f)
+            firstX to firstY
         }
         
         // 第二次长按 FloatPhys (第4列，第3节) — 不同位置
@@ -959,8 +960,13 @@ class CourseOccurrenceFloatDragTest {
             val secondX = state.x.value
             val secondY = state.y.value
             // 验证位置跳变到新位置，而不是从旧位置动画飞过来
-            assertTrue("第二次浮起的 X 坐标应该是第4列", secondX > firstX + 100f)
-            assertTrue("第二次浮起的 Y 坐标应该是第3节", secondY > firstY + 100f)
+            // 列宽由时间列/间隙决定，360dp 屏上两列实际约79dp，不能假设超过100dp。
+            val expectedDelta = with(compose.density) {
+                (secondBounds.left - firstBounds.left).toDp().value to
+                    (secondBounds.top - firstBounds.top).toDp().value
+            }
+            assertEquals("第二次浮起的 X 坐标应该是第4列", firstX + expectedDelta.first, secondX, 0.5f)
+            assertEquals("第二次浮起的 Y 坐标应该是第3节", firstY + expectedDelta.second, secondY, 0.5f)
             // Animatable 应该已经同步到新位置，下次归位不会从旧位置开始
         }
     }
@@ -988,13 +994,12 @@ class CourseOccurrenceFloatDragTest {
         // 创建长课表，确保有足够滚动空间
         val tallCourses = (1..20).map { i ->
             CourseEntity(
-                id = i,
+                id = i.toLong(),
                 tableId = 1,
                 groupId = "c$i",
                 courseName = "Course$i",
                 day = 1,
                 startNode = i,
-                endNode = i,
                 step = 1,
                 startWeek = 1,
                 endWeek = 16,
