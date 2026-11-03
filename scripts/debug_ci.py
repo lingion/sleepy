@@ -1,6 +1,5 @@
 """Small, dependency-free planning and delivery helpers for debug-apk.yml.
 
-Signing authorization deliberately lives in workflow expressions, not this script.
 Tooling is checked out separately from the source revision being built.
 """
 import argparse
@@ -81,6 +80,7 @@ def make_plan(event, context):
         "run_id": str(context["run_id"]), "run_number": str(context["run_number"]),
         "run_attempt": str(context["run_attempt"]),
         "run_url": f"{context['server_url']}/{repo}/actions/runs/{context['run_id']}",
+        "delivery": "signing-input", "official_signing": repo == "lingion/sleepy",
     }
     if kind == "pull_request":
         # pull_request 在目标仓库运行；不能使用 fork 的 origin/main。
@@ -267,13 +267,23 @@ def render_summary(info, uploads, status):
              f"Workflow revision: {markdown(info.get('workflow_sha', 'unavailable'))}",
              f"Application ID: {markdown(info.get('application_id', 'not verified'))}",
              f"Signing: {markdown(info.get('signing', 'not verified'))}", "",
-             "Artifacts expire after 7 days. Sign in to GitHub to download the ZIP, then extract the APK.",
+             ("Signing input expires after 1 day; it is not an official install package."
+              if info.get("delivery") == "signing-input" else
+              "Artifacts expire after 7 days. Sign in to GitHub to download the ZIP, then extract the APK."),
              "APK build success is independent of the PR test and lint results.", ""]
     if info.get("pr_head_sha"):
         lines += [f"PR head SHA: {markdown(info['pr_head_sha'])}",
                   f"Main repository: {markdown(info.get('base_repository', 'unavailable'))}",
                   f"Main SHA (fetched at build time): {markdown(info.get('main_sha', 'unavailable'))}",
                   f"Merge SHA: {markdown(info.get('merge_sha', 'unavailable'))}", ""]
+    if info.get("delivery") == "signing-input":
+        if info.get("official_signing"):
+            lines += ["After this build succeeds, download the fixed-certificate APKs from "
+                      "[Official Debug APK Signing](https://github.com/lingion/sleepy/actions/workflows/debug-sign.yml).",
+                      f"Match build run ID {markdown(info.get('run_id', 'unavailable'))} in the signing run title."]
+        else:
+            lines += ["Fork builds are build-only. Open a PR to lingion/sleepy for official signed APKs."]
+        return "\n".join(lines) + "\n"
     if info.get("signing") == "ephemeral":
         lines += ["Ephemeral signing: packages from different runs may not support replacement installation.", ""]
     if info.get("application_id") and not info["application_id"].endswith(".debug"):
@@ -316,7 +326,8 @@ def main():
         for abi, item in result.items():
             write_outputs({f"artifact_{abi.replace('-', '_')}": item["artifact"]})
         first = args.destination / selected_abis(plan["abi"])[0] / "build-info.json"
-        (args.destination / "summary-info.json").write_text(first.read_text())
+        summary_info = {**json.loads(first.read_text()), "abi": plan["abi"]}
+        (args.destination / "summary-info.json").write_text(json.dumps(summary_info))
     else:
         info = json.loads(args.plan.read_text()) if args.plan.is_file() else {}
         summary_info = args.destination / "summary-info.json"

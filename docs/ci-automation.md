@@ -28,11 +28,11 @@
 
 重新运行旧任务也会重新拉取 main，但仍使用旧任务对应的 PR head。main 更新本身不会自动重建所有 PR。每个 APK 的 `build-info.json` 和构建摘要记录 `pr_head_sha`、`main_sha`、`merge_sha`；`source_sha` 与 APK 文件名中的提交标识对应实际构建的合并结果。
 
-不准备提 PR 时，也可以在自己的 fork 使用：先同步包含此工作流的代码，在 fork 的 Actions 页面启用工作流，再推送分支。fork 的分支 push 自动构建；上游仓库只为 `main` push 和 PR 构建，普通分支 push 不重复打包。tag push 不触发 debug 构建。
+不准备提 PR 时，也可以在自己的 fork 验证构建：先同步包含此工作流的代码，在 fork 的 Actions 页面启用工作流，再推送分支。fork 的分支 push 自动构建，只保留临时签名的中间产物；需要官方签名安装包时，向上游提 PR。上游仓库只为 `main` push 和 PR 构建，普通分支 push 不重复打包。tag push 不触发 debug 构建。
 
 GitHub 可能要求维护者批准外部贡献者的首次工作流运行；这一步不能绕过。fork 推送与上游 PR 的运行属于各自仓库，互不取消。
 
-自动构建一次生成四种包，每种架构分别下载：`arm64-v8a`、`armeabi-v7a`、`x86_64`、`universal`。不知道选哪个时可以用 universal。
+官方构建成功后自动进入 Official Debug APK Signing，在独立 runner 上使用同一个官方 debug 密钥重签。一次生成四种包，每种架构分别下载：`arm64-v8a`、`armeabi-v7a`、`x86_64`、`universal`。不知道选哪个时可以用 universal。
 
 ### 1.2 手动选择源码与架构
 
@@ -61,18 +61,24 @@ gh workflow run "Debug APK Build" --repo lingion/sleepy --ref main -f abi=all
 
 ### 1.3 下载、源码身份与签名
 
-进入 PR 检查对应的 Debug APK Build 运行，或直接在 Actions 中找到该次运行，展开构建摘要。每个架构有独立 artifact 下载入口；也可以从运行页面的 Artifacts 区域下载。需登录 GitHub，ZIP 内含 APK、`build-info.json` 和 `sha256sums.txt`，产物保留 7 天。
+进入 PR 检查对应的 Debug APK Build 运行，记录运行 ID，再打开构建摘要链接的 **Official Debug APK Signing**，按标题中的 build ID 找到对应签名运行。每个架构有独立 artifact 下载入口；也可以从签名运行页面的 Artifacts 区域下载。需登录 GitHub，ZIP 内含 APK、`build-info.json` 和 `sha256sums.txt`，官方包保留 7 天。
 
-APK 和 artifact 名包含 PR 或分支上下文、源码短 SHA、架构、运行编号和尝试编号，例如 `sleepy-debug-pr286-a1b2c3d4e5f6-armeabi-v7a-r20-a1`。完整 SHA、实际包名、版本、签名证书指纹和构建地址记录在元数据中。转发 APK 时不要去掉文件名里的源码身份。
+Debug APK Build 中的 `debug-signing-input-运行ID-尝试编号` 只是传给签名流程的中间产物，保留 1 天，不能当作官方安装包。签名失败时不会发布最终安装包。
+
+官方 APK 和 artifact 名包含 `official`、PR 或分支上下文、源码短 SHA、架构、原构建运行编号和尝试编号，例如 `sleepy-debug-official-pr286-a1b2c3d4e5f6-armeabi-v7a-r20-a1`。完整 SHA、实际包名、版本、签名证书指纹和原构建地址记录在元数据中。转发 APK 时不要去掉文件名里的源码身份。
 
 ```bash
-gh run list --repo lingion/sleepy --workflow "Debug APK Build" --limit 5
-gh run download RUN_ID --repo lingion/sleepy --pattern '*armeabi-v7a*' --dir ./debug-download
+gh run list --repo lingion/sleepy --workflow "Official Debug APK Signing" --limit 5
+gh run download SIGNING_RUN_ID --repo lingion/sleepy --pattern '*official*armeabi-v7a*' --dir ./debug-download
 # 进入下载目录后，对照 sha256sums.txt 校验 APK 与元数据
 shasum -a 256 -c sha256sums.txt
 ```
 
-只有上游 `main` push，或从上游 main 手动运行且 `ref` 留空时，才使用 `DEBUG_KEYSTORE_BASE64` 的固定 debug 签名，密钥缺失会直接失败。外部 PR、fork、非主线工作流以及所有显式 ref 手动构建均使用临时签名，不能保证跨次覆盖安装。不要为了安装测试包而随意卸载有数据的旧包。
+官方 PR、main push 和手动选择 ref 的最终 debug 包统一使用现有 `DEBUG_KEYSTORE_BASE64` 证书，不再按构建更换密钥。重签后会校验证书 SHA-256、包名、debuggable 属性及 ABI；密钥缺失或校验失败直接终止发布。构建 runner 不接触官方密钥；独立签名 runner 仅加载官方 main 的工具，验证来源 run/attempt 和 artifact 摘要后处理 APK，不执行 PR 的 Gradle 或脚本。
+
+同包名、同证书且版本允许升级时，可跨次覆盖安装。过去临时签名的包无法直接迁移为官方签名，安装时仍可能提示签名冲突；不要为测试而直接卸载有数据的旧包。
+
+新签名工作流必须先合并到默认分支 main，`workflow_run` 才会触发；合并后新启动的构建会进入统一签名流程。独立 fork 不持有官方密钥，也不会触发官方仓库的签名流程。
 
 当前源码的 debug 包使用 `com.lingion.sleepy.debug`，与正式版并存；历史分支可能尚未区分包名，以摘要和元数据中核验出的实际包名为准。历史代码是否还能编译也取决于其 Gradle、AGP 和依赖兼容性，工作流不会改写历史源码来修复构建。
 
@@ -115,11 +121,11 @@ gh workflow run "Debug APK Build" -f abi=universal
 gh run watch <run-id>
 gh run view <run-id> --log-failed
 
-# 下载 run 的全部产物
-gh run download <run-id>
+# 下载官方签名 run 的全部安装包
+gh run download <signing-run-id>
 
 # 一次性看最近 run 和产物名
-gh run list --workflow "Debug APK Build" --limit 5
+gh run list --workflow "Official Debug APK Signing" --limit 5
 ```
 
 > 提示:`workflow_dispatch` 只有当工作流文件存在于**默认分支(main)**时才能触发。给其他项目加同类能力时,先合进 main 再点,别在临时分支上试。
@@ -130,7 +136,7 @@ gh run list --workflow "Debug APK Build" --limit 5
 
 - public 仓库:Linux/Windows/macOS runner 全免费,分钟数无限(受 fair-use 约束)。
 - 单个 job 最长 **6 小时**,超时被截断。本仓库最重的模拟器 job 设了 60 分钟。
-- artifact 保留 1–90 天(本仓库统一 7 天);cache 总额 10 GB/仓库,LRU 淘汰。
+- artifact 保留 1–90 天(官方 debug 包 7 天，待签名中间产物 1 天);cache 总额 10 GB/仓库,LRU 淘汰。
 - 并发:free plan 最多 20 个并发 job、5 个并发 macOS。所以 `concurrency` 块里都配了 `cancel-in-progress`,同类任务只保留最新一次。
 - **secret 不进日志**:本仓库的 `RELEASE_KEYSTORE_BASE64` / `DEBUG_KEYSTORE_BASE64` 只从仓库 secrets 注入,fork PR 读不到,不会泄露。
 
