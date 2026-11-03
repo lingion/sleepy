@@ -47,7 +47,7 @@ import com.lingion.sleepy.ui.component.liquidglass.GlassSwitch as Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TimePicker
-import androidx.compose.material3.TopAppBar
+import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenu as DropdownMenu

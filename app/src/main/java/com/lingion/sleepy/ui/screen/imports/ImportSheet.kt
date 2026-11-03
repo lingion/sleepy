@@ -43,7 +43,7 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.QrCode2
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.TopAppBar
+import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
