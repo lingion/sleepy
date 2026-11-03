@@ -36,7 +36,7 @@ class PlanTest(unittest.TestCase):
         self.assertEqual(plan["source_ref"], "v1.0.63")
         self.assertEqual(plan["abi"], "armeabi-v7a")
 
-    def test_pr_builds_head_repo_and_commit_not_merge(self):
+    def test_pr_checkout_pins_head_as_merge_input(self):
         payload = event()
         payload["pull_request"] = {"number": 286, "draft": False, "head": {
             "repo": {"full_name": "contributor/sleepy"}, "sha": "c" * 40, "ref": "fix/test"}}
@@ -262,6 +262,14 @@ class InspectionDiagnosticTest(unittest.TestCase):
 
 
 class SummaryTest(unittest.TestCase):
+    def test_signing_input_points_to_official_signer_without_download_links(self):
+        plan = debug_ci.make_plan(event(), CONTEXT)
+        summary = debug_ci.render_summary(dict(plan, signing="ephemeral"), {}, "success")
+        self.assertIn("not an official install package", summary)
+        self.assertIn("debug-sign.yml", summary)
+        self.assertIn(CONTEXT["run_id"], summary)
+        self.assertNotIn("| ABI |", summary)
+
     def test_partial_upload_failure_and_ephemeral_warning(self):
         summary = debug_ci.render_summary({"source_sha": SHA, "source_repository": "contributor/sleepy",
             "requested_ref": "fix/a", "abi": "all", "signing": "ephemeral", "application_id": "com.lingion.sleepy.debug"},

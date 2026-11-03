@@ -1,5 +1,5 @@
 name: Debug APK Build
-run-name: Debug APK · ${{ github.event_name }} · ${{ github.head_ref || github.ref_name }} · source=${{ inputs.ref || github.event.pull_request.head.sha || github.sha }} · ${{ inputs.abi || 'all' }}
+run-name: Debug APK · ${{ github.event_name }} · ${{ github.head_ref || github.ref_name }} · input=${{ inputs.ref || github.event.pull_request.head.sha || github.sha }} · ${{ inputs.abi || 'all' }}
 
 on:
   pull_request:
@@ -76,22 +76,6 @@ jobs:
           ref: ${{ github.workflow_sha }}
           persist-credentials: false
           path: tooling
-      - name: Authorize stable signing with case-sensitive event checks
-        id: authorize
-        env:
-          SOURCE_REF_INPUT: ${{ inputs.ref }}
-        shell: bash
-        run: |
-          stable=false
-          if [ "$GITHUB_REPOSITORY" = 'lingion/sleepy' ] &&
-             [ "$GITHUB_WORKFLOW_REF" = 'lingion/sleepy/.github/workflows/debug-apk.yml@refs/heads/main' ] &&
-             [ "$GITHUB_REF" = 'refs/heads/main' ]; then
-            if [ "$GITHUB_EVENT_NAME" = 'push' ] ||
-               { [ "$GITHUB_EVENT_NAME" = 'workflow_dispatch' ] && [ -z "$SOURCE_REF_INPUT" ]; }; then
-              stable=true
-            fi
-          fi
-          printf 'stable=%s\n' "$stable" >> "$GITHUB_OUTPUT"
       - name: Resolve immutable source plan
         run: |
           python3 -I tooling/scripts/debug_ci.py plan --plan "$RUNNER_TEMP/debug-plan.json"
@@ -103,17 +87,12 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
           path: source
-      - name: Verify source commit before executing target code
+      - name: Verify source commit and merge PR into latest main
         id: revision
-        env:
-          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || (inputs.ref == '' && github.sha || '') }}
-        run: |
-          actual_sha=$(git -C source rev-parse HEAD)
-          if [ -n "$EXPECTED_SHA" ] && [ "$actual_sha" != "$EXPECTED_SHA" ]; then
-            printf '%s\n' 'Checked-out source differs from the event commit.' >&2
-            exit 1
-          fi
-          printf 'sha=%s\n' "$actual_sha" >> "$GITHUB_OUTPUT"
+        run: >-
+          python3 -I tooling/scripts/debug_ci.py prepare
+          --plan "$RUNNER_TEMP/debug-plan.json"
+          --source "$GITHUB_WORKSPACE/source"
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
@@ -122,24 +101,8 @@ jobs:
         with:
           # Arbitrary manually selected code must never publish caches to main's scope.
           cache-read-only: true
-      - name: Install stable upstream-main debug signing key
-        id: project-signing
-        if: >-
-          steps.authorize.outputs.stable == 'true' &&
-          github.repository == 'lingion/sleepy' &&
-          github.workflow_ref == 'lingion/sleepy/.github/workflows/debug-apk.yml@refs/heads/main' &&
-          github.ref == 'refs/heads/main' &&
-          (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.ref == ''))
-        env:
-          KEYSTORE_B64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
-        shell: bash
-        run: |
-          test -n "$KEYSTORE_B64" || { printf '%s\n' 'Required DEBUG_KEYSTORE_BASE64 is missing; refusing an ephemeral main build.' >&2; exit 1; }
-          umask 077
-          printf '%s' "$KEYSTORE_B64" | base64 --decode > "$SLEEPY_DEBUG_KEYSTORE"
-          keytool -list -keystore "$SLEEPY_DEBUG_KEYSTORE" -storepass android -alias androiddebugkey > /dev/null
-      - name: Create isolated ephemeral debug signing key
-        if: steps.project-signing.outcome == 'skipped'
+      # 构建阶段仅用一次性密钥；官方密钥只存在于独立签名 runner。
+      - name: Create build-only debug signing key
         shell: bash
         run: |
           umask 077
@@ -162,7 +125,7 @@ jobs:
       - name: Verify and stage identified APKs
         id: package
         env:
-          SIGNING_MODE: ${{ steps.project-signing.outcome == 'success' && 'project' || 'ephemeral' }}
+          SIGNING_MODE: ephemeral
           SOURCE_SHA: ${{ steps.revision.outputs.sha }}
           EXPECTED_CERTIFICATE_SHA256: ${{ steps.certificate.outputs.sha256 }}
         run: >-
@@ -170,50 +133,17 @@ jobs:
           --plan "$RUNNER_TEMP/debug-plan.json"
           --source "$GITHUB_WORKSPACE/source"
           --destination "$RUNNER_TEMP/debug-artifacts"
-      - uses: actions/upload-artifact@v7
-        id: arm64
-        if: ${{ !cancelled() && steps.package.outcome == 'success' && (env.ABI == 'all' || env.ABI == 'arm64-v8a') }}
+      - name: Upload signing input (not an official install package)
+        uses: actions/upload-artifact@v7
         with:
-          name: ${{ steps.package.outputs.artifact_arm64_v8a }}
-          path: ${{ runner.temp }}/debug-artifacts/arm64-v8a/
+          name: debug-signing-input-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/debug-artifacts/
           if-no-files-found: error
-          retention-days: 7
-      - uses: actions/upload-artifact@v7
-        id: v7a
-        if: ${{ !cancelled() && steps.package.outcome == 'success' && (env.ABI == 'all' || env.ABI == 'armeabi-v7a') }}
-        with:
-          name: ${{ steps.package.outputs.artifact_armeabi_v7a }}
-          path: ${{ runner.temp }}/debug-artifacts/armeabi-v7a/
-          if-no-files-found: error
-          retention-days: 7
-      - uses: actions/upload-artifact@v7
-        id: x86
-        if: ${{ !cancelled() && steps.package.outcome == 'success' && (env.ABI == 'all' || env.ABI == 'x86_64') }}
-        with:
-          name: ${{ steps.package.outputs.artifact_x86_64 }}
-          path: ${{ runner.temp }}/debug-artifacts/x86_64/
-          if-no-files-found: error
-          retention-days: 7
-      - uses: actions/upload-artifact@v7
-        id: universal
-        if: ${{ !cancelled() && steps.package.outcome == 'success' && (env.ABI == 'all' || env.ABI == 'universal') }}
-        with:
-          name: ${{ steps.package.outputs.artifact_universal }}
-          path: ${{ runner.temp }}/debug-artifacts/universal/
-          if-no-files-found: error
-          retention-days: 7
+          retention-days: 1
       - name: Build identity and download summary
         if: ${{ always() && steps.tooling.outcome == 'success' }}
         env:
           JOB_STATUS: ${{ job.status }}
-          UPLOAD_ARM64_V8A_OUTCOME: ${{ steps.arm64.outcome }}
-          UPLOAD_ARM64_V8A_URL: ${{ steps.arm64.outputs.artifact-url }}
-          UPLOAD_ARMEABI_V7A_OUTCOME: ${{ steps.v7a.outcome }}
-          UPLOAD_ARMEABI_V7A_URL: ${{ steps.v7a.outputs.artifact-url }}
-          UPLOAD_X86_64_OUTCOME: ${{ steps.x86.outcome }}
-          UPLOAD_X86_64_URL: ${{ steps.x86.outputs.artifact-url }}
-          UPLOAD_UNIVERSAL_OUTCOME: ${{ steps.universal.outcome }}
-          UPLOAD_UNIVERSAL_URL: ${{ steps.universal.outputs.artifact-url }}
         run: >-
           python3 -I tooling/scripts/debug_ci.py summary
           --plan "$RUNNER_TEMP/debug-plan.json"
