@@ -14,7 +14,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [35])
+@Config(sdk = [31, 35])
 class UiStylePreferenceTest {
     private val context: Context get() = ApplicationProvider.getApplicationContext()
     private val prefs get() = context.getSharedPreferences("sleepy_prefs", Context.MODE_PRIVATE)

@@ -24,7 +24,7 @@ import org.robolectric.annotation.GraphicsMode
 /** Explicit source declarations preserve the original pixel expectations; no assertion is relaxed. */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(sdk = [35], qualifiers = "w240dp-h240dp-mdpi")
+@Config(sdk = [31, 35], qualifiers = "w240dp-h240dp-mdpi")
 class GlassHostCaptureTest {
     @get:Rule val compose = createComposeRule()
 

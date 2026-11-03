@@ -20,7 +20,7 @@ import org.robolectric.annotation.GraphicsMode
 
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(sdk = [35])
+@Config(sdk = [31, 35])
 class GlassButtonsTest {
     @get:Rule val compose = createComposeRule()
 
