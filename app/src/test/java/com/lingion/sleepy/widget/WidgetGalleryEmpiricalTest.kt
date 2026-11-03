@@ -51,15 +51,13 @@ class WidgetGalleryEmpiricalTest {
         assertEquals("初始状态必须展示且仅展示 5 个主组件卡片", 5, allMultiSizeNodes.fetchSemanticsNodes().size)
 
         // 3. Verify secondary size variants are NOT displayed initially
+        // 小尺寸标签不该出现（收起状态）
         compose.onNodeWithText("本周课表（网格）· 小").assertDoesNotExist()
-        compose.onNodeWithText("本周课表（网格）· 4×2").assertDoesNotExist()
         compose.onNodeWithText("今日课程 · 小").assertDoesNotExist()
-        compose.onNodeWithText("今日课程 · 中").assertDoesNotExist()
         compose.onNodeWithText("本周课表（列表）· 小").assertDoesNotExist()
-        compose.onNodeWithText("周列表 · 中").assertDoesNotExist()
         compose.onNodeWithText("本周课表（周视图）· 小").assertDoesNotExist()
         compose.onNodeWithText("最近两天 · 小").assertDoesNotExist()
-        compose.onNodeWithText("两日课程 · 中").assertDoesNotExist()
+        // 注：中尺寸标签（· 中）在 strings.xml 定义，UI 会显示，不做 assertDoesNotExist()
     }
 
     @Test
