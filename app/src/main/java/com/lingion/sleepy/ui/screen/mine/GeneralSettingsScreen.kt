@@ -95,8 +95,6 @@ import java.util.Locale
 fun GeneralSettingsScreen(
     onBack: () -> Unit,
     onOpenHoliday: () -> Unit = {},
-    navDock: Boolean = false,
-    onNavDockChange: (Boolean) -> Unit = {}
 ) {
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
@@ -516,27 +514,6 @@ fun GeneralSettingsScreen(
                             .dbgTag("general_high_refresh", text = stringResource(R.string.settings_high_refresh), role = "switch")
                     )
                 }
-            }
-
-            // 底栏样式: 贴底 / 悬浮药丸 Dock — 贴右 SegmentedSwitcher 双 tab(用户 2026-09-04: 放「画面」分组)
-            // 状态由 MainActivity(AppRoot) 持有下传: 底栏与设置页同一真值, 切换即生效
-            item {
-                SettingsFlatCard(
-                    title = stringResource(R.string.settings_nav_style),
-                    options = listOf(
-                        stringResource(R.string.settings_nav_style_docked),
-                        stringResource(R.string.settings_nav_style_floating)
-                    ),
-                    selectedKey = if (navDock) 1 else 0,
-                    dbg = "general_nav_style",
-                    onSelect = { idx ->
-                        val on = idx == 1
-                        if (navDock != on) {
-                            AppPrefs.setNavDock(context, on)
-                            onNavDockChange(on)
-                        }
-                    }
-                )
             }
 
             // ── 分隔线 ──

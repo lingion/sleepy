@@ -25,7 +25,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,7 +44,6 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
@@ -121,19 +119,14 @@ fun PillNavigationBar(
     onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
     dock: Boolean = false,
-    dockTheme: String? = null,
+    dockTheme: String = AppPrefs.NAV_STYLE_CLASSIC,
     state: PillBarState = remember { PillBarState() },
     backdrop: Backdrop? = null,
 ) {
-    val context = LocalContext.current
-    val currentDockTheme by AppPrefs.dockThemeFlow(context)
-        .collectAsState(initial = AppPrefs.getDockTheme(context))
-    val effectiveTheme = dockTheme ?: currentDockTheme
-
     // ═══ 形态分流 ═══
     // 贴底 = 通栏 76dp 矩形带(现状不动); Dock = 经典 / FLClash 液态玻璃
     if (dock) {
-        if (effectiveTheme == AppPrefs.DOCK_THEME_LIQUID_GLASS) {
+        if (dockTheme == AppPrefs.NAV_STYLE_LIQUID_GLASS) {
             LiquidGlassNavigationBar(
                 items = items,
                 selectedIndex = selectedIndex,

@@ -129,8 +129,7 @@ internal fun SleepyNavHost(
     navigator: SleepyNavigator,
     currentTab: Tab,
     setCurrentTab: (Tab) -> Unit,
-    navDock: Boolean,
-    onNavDockChange: (Boolean) -> Unit,
+    navStyle: String,
     scheduleViewMode: ViewMode,
     onScheduleViewModeChange: (ViewMode) -> Unit,
     themeMode: String,
@@ -192,8 +191,7 @@ internal fun SleepyNavHost(
                 mainVm = mainVm,
                 currentTableId = currentTableId,
                 mainScope = mainScope,
-                navDock = navDock,
-                onNavDockChange = onNavDockChange,
+                navStyle = navStyle,
                 scheduleViewMode = scheduleViewMode,
                 onScheduleViewModeChange = onScheduleViewModeChange,
                 onCreateNewTable = onCreateNewTable,
@@ -334,8 +332,6 @@ internal fun SleepyNavHost(
             GeneralSettingsScreen(
                 onBack = { navigator.pop() },
                 onOpenHoliday = { navigator.openHoliday() },
-                navDock = navDock,
-                onNavDockChange = onNavDockChange,
             )
         }
 
@@ -455,8 +451,7 @@ private fun MainRoute(
     mainVm: ScheduleViewModel,
     currentTableId: Long?,
     mainScope: CoroutineScope,
-    navDock: Boolean,
-    onNavDockChange: (Boolean) -> Unit,
+    navStyle: String,
     scheduleViewMode: ViewMode,
     onScheduleViewModeChange: (ViewMode) -> Unit,
     onCreateNewTable: () -> Unit,
@@ -481,6 +476,7 @@ private fun MainRoute(
         }
     }
 
+    val navDock = navStyle != AppPrefs.NAV_STYLE_DOCKED
     // issue#45 ③横屏/平板: 自研 PillNavigationBar 无此形态,官方 NavigationRail 有 → 用官方。
     // 官方没有悬浮药丸 Dock → Compact 且 navDock=true 时保留自研 PillNavigationBar(dock=true)。
     val activity = ctxForExit as? android.app.Activity
@@ -657,7 +653,7 @@ private fun MainRoute(
             }
         }
     } else if (navDock) {
-        // Compact + 悬浮 Dock: FLClash 1:1 液态玻璃导航底栏
+        // Compact + 悬浮 Dock: 经典 / 液态玻璃, 由同一底栏样式状态决定。
         val backdrop = rememberLayerBackdrop()
         var dockExtraDp by remember { mutableStateOf(NavDockSpec.capsuleHeight + NavDockSpec.bottomFloat) }
         var dockOverlayPx by remember { mutableStateOf(0) }
@@ -705,6 +701,7 @@ private fun MainRoute(
                     selectedIndex = currentTab.ordinal,
                     onSelect = { setCurrentTab(Tab.entries[it]) },
                     dock = true,
+                    dockTheme = navStyle,
                     state = pillBarState,
                     backdrop = backdrop,
                 )

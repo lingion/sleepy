@@ -93,7 +93,8 @@ fun AppearanceScreen(
     val context = LocalContext.current
     val colors = MaterialTheme.colorScheme
     val currentKey by AppPrefs.themeKeyFlow(context).collectAsState(initial = AppPrefs.getThemeKey(context))
-    val dockTheme by AppPrefs.dockThemeFlow(context).collectAsState(initial = AppPrefs.getDockTheme(context))
+    val navStyle by remember(context) { AppPrefs.navStyleFlow(context) }
+        .collectAsState(initial = AppPrefs.getNavStyle(context))
     val selectedMode = themeMode
     // 自定义主题编辑器 overlay(创建时 editingTheme=null;微调时载入草稿)
     var showEditor by remember { mutableStateOf(false) }
@@ -254,29 +255,32 @@ fun AppearanceScreen(
                 )
             }
 
-            // ── Section②·1 Dock 主题 ──
+            // ── Section②·1 底栏样式 ──
             item {
-                SectionHeader(title = stringResource(R.string.appearance_section_dock_theme))
+                SectionHeader(title = stringResource(R.string.settings_nav_style))
             }
 
             item {
-                val dockOptions = listOf(
+                val navOptions = listOf(
                     SegmentOption(
-                        value = AppPrefs.DOCK_THEME_CLASSIC,
+                        value = AppPrefs.NAV_STYLE_DOCKED,
+                        label = stringResource(R.string.settings_nav_style_docked)
+                    ),
+                    SegmentOption(
+                        value = AppPrefs.NAV_STYLE_CLASSIC,
                         label = stringResource(R.string.dock_theme_classic)
                     ),
                     SegmentOption(
-                        value = AppPrefs.DOCK_THEME_LIQUID_GLASS,
-                        label = stringResource(R.string.dock_theme_liquid_glass),
-                        badge = stringResource(R.string.dock_theme_experimental)
+                        value = AppPrefs.NAV_STYLE_LIQUID_GLASS,
+                        label = stringResource(R.string.dock_theme_liquid_glass)
                     )
                 )
                 SegmentedSwitcher(
-                    options = dockOptions,
-                    selected = dockTheme,
-                    onSelect = { newTheme ->
-                        if (newTheme != dockTheme) {
-                            AppPrefs.setDockTheme(context, newTheme)
+                    options = navOptions,
+                    selected = navStyle,
+                    onSelect = { newStyle ->
+                        if (newStyle != navStyle) {
+                            AppPrefs.setNavStyle(context, newStyle)
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),

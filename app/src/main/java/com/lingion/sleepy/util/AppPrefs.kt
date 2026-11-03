@@ -117,10 +117,12 @@ object AppPrefs {
     const val KEY_UPDATE_CHECK_ENABLED = "update_check_enabled" // bool default true — 启动检查 GitHub releases latest
     const val KEY_UPDATE_NOTICE_DISMISSED_VERSION = "update_notice_dismissed_version" // string — 关闭该版本更新提醒
     const val KEY_HIGH_REFRESH = "high_refresh_rate" // bool default true — 窗口 preferredDisplayModeId 钉屏幕最高刷率(流畅优先); 关=跟随系统省电调度
-    const val KEY_NAV_DOCK = "nav_dock" // bool default false — 底栏形态: false=贴底(通栏), true=悬浮药丸(Dock, 底边留距)
-    const val KEY_DOCK_THEME = "dock_theme" // string: classic / liquid_glass — Dock 主题形态
-    const val DOCK_THEME_CLASSIC = "classic"
-    const val DOCK_THEME_LIQUID_GLASS = "liquid_glass"
+    private const val KEY_NAV_DOCK = "nav_dock" // 旧版底栏形态, 仅用于兼容读取
+    private const val KEY_DOCK_THEME = "dock_theme" // 旧版 Dock 主题, 仅用于兼容读取
+    const val KEY_NAV_STYLE = "nav_style"
+    const val NAV_STYLE_DOCKED = "docked"
+    const val NAV_STYLE_CLASSIC = "classic"
+    const val NAV_STYLE_LIQUID_GLASS = "liquid_glass"
     const val KEY_PERIOD_HEADER_LAYOUT = "period_header_layout" // "legacy" / "three_line", default legacy
     const val KEY_PERIOD_HEADER_STYLE = "period_header_style" // arabic / chinese / financial / circled / roman, default arabic
     const val KEY_PERIOD_HEADER_HANGING = "period_header_hanging" // Float time-width units, -1..1, default 0
@@ -371,47 +373,39 @@ object AppPrefs {
         sp(ctx).edit().putBoolean(KEY_HIGH_REFRESH, value).apply()
     }
 
-    /** 底栏形态: false=贴底(默认), true=悬浮药丸 Dock */
-    fun isNavDock(ctx: Context): Boolean =
-        sp(ctx).getBoolean(KEY_NAV_DOCK, false)
-
-    fun setNavDock(ctx: Context, value: Boolean) {
-        sp(ctx).edit().putBoolean(KEY_NAV_DOCK, value).apply()
-        _changeBus.tryEmit(KEY_NAV_DOCK)
-    }
-
-    fun navDockFlow(ctx: Context): Flow<Boolean> = callbackFlow {
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sp, k ->
-            if (k == KEY_NAV_DOCK) {
-                trySend(sp.getBoolean(KEY_NAV_DOCK, false))
+    /** 底栏统一三态: 贴底(默认) / 经典悬浮 / 液态玻璃。旧版按实际显示的形态兼容。 */
+    fun getNavStyle(ctx: Context): String {
+        val prefs = sp(ctx)
+        return when (val style = prefs.getString(KEY_NAV_STYLE, null)) {
+            NAV_STYLE_DOCKED, NAV_STYLE_CLASSIC, NAV_STYLE_LIQUID_GLASS -> style
+            else -> when {
+                !prefs.getBoolean(KEY_NAV_DOCK, false) -> NAV_STYLE_DOCKED
+                prefs.getString(KEY_DOCK_THEME, null) == NAV_STYLE_LIQUID_GLASS -> NAV_STYLE_LIQUID_GLASS
+                else -> NAV_STYLE_CLASSIC
             }
         }
-        val sp = sp(ctx)
-        sp.registerOnSharedPreferenceChangeListener(listener)
-        trySend(isNavDock(ctx))
-        awaitClose { sp.unregisterOnSharedPreferenceChangeListener(listener) }
-    }.distinctUntilChanged()
-
-    /** Dock 主题形态: classic=经典(默认), liquid_glass=液态玻璃(实验) */
-    fun getDockTheme(ctx: Context): String =
-        sp(ctx).getString(KEY_DOCK_THEME, DOCK_THEME_CLASSIC) ?: DOCK_THEME_CLASSIC
-
-    fun setDockTheme(ctx: Context, theme: String) {
-        require(theme == DOCK_THEME_CLASSIC || theme == DOCK_THEME_LIQUID_GLASS)
-        sp(ctx).edit().putString(KEY_DOCK_THEME, theme).apply()
-        _changeBus.tryEmit(KEY_DOCK_THEME)
     }
 
-    fun dockThemeFlow(ctx: Context): Flow<String> = callbackFlow {
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sp, k ->
-            if (k == KEY_DOCK_THEME) {
-                trySend(sp.getString(KEY_DOCK_THEME, DOCK_THEME_CLASSIC) ?: DOCK_THEME_CLASSIC)
+    fun setNavStyle(ctx: Context, style: String) {
+        require(style == NAV_STYLE_DOCKED || style == NAV_STYLE_CLASSIC || style == NAV_STYLE_LIQUID_GLASS)
+        sp(ctx).edit()
+            .putString(KEY_NAV_STYLE, style)
+            .remove(KEY_NAV_DOCK)
+            .remove(KEY_DOCK_THEME)
+            .apply()
+        _changeBus.tryEmit(KEY_NAV_STYLE)
+    }
+
+    fun navStyleFlow(ctx: Context): Flow<String> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == null || key == KEY_NAV_STYLE || key == KEY_NAV_DOCK || key == KEY_DOCK_THEME) {
+                trySend(getNavStyle(ctx))
             }
         }
-        val sp = sp(ctx)
-        sp.registerOnSharedPreferenceChangeListener(listener)
-        trySend(getDockTheme(ctx))
-        awaitClose { sp.unregisterOnSharedPreferenceChangeListener(listener) }
+        val prefs = sp(ctx)
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getNavStyle(ctx))
+        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }.distinctUntilChanged()
 
     fun getUpdateNoticeDismissedVersion(ctx: Context): String =
