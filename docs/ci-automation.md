@@ -24,7 +24,9 @@
 
 ### 1.1 提交分支后自动构建
 
-向 Sleepy 的 `main` 发起非草稿 PR，或更新已有 PR，Debug APK Build 就会构建 PR 分支的 head SHA。它不构建 GitHub 临时生成的合并预览提交。草稿 PR 转为可评审后开始构建；同一个 PR 的新提交会取消未完成的旧构建，不影响其他 PR。
+向 Sleepy 的 `main` 发起非草稿 PR，或更新已有 PR，Debug APK Build 会固定本次事件的 PR head SHA，拉取 **PR 目标仓库在取源码时最新的 main**，再把 PR head 合并到 main 上构建。合并或拉取失败会直接终止，不会退回只构建 PR 分支。草稿 PR 转为可评审后开始构建；同一个 PR 的新提交会取消未完成的旧构建，不影响其他 PR。
+
+重新运行旧任务也会重新拉取 main，但仍使用旧任务对应的 PR head。main 更新本身不会自动重建所有 PR。每个 APK 的 `build-info.json` 和构建摘要记录 `pr_head_sha`、`main_sha`、`merge_sha`；`source_sha` 与 APK 文件名中的提交标识对应实际构建的合并结果。
 
 不准备提 PR 时，也可以在自己的 fork 使用：先同步包含此工作流的代码，在 fork 的 Actions 页面启用工作流，再推送分支。fork 的分支 push 自动构建；上游仓库只为 `main` push 和 PR 构建，普通分支 push 不重复打包。tag push 不触发 debug 构建。
 

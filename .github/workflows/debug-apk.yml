@@ -1,5 +1,5 @@
 name: Debug APK Build
-run-name: Debug APK · ${{ github.event_name }} · ${{ github.head_ref || github.ref_name }} · source=${{ inputs.ref || github.event.pull_request.head.sha || github.sha }} · ${{ inputs.abi || 'all' }}
+run-name: Debug APK · ${{ github.event_name }} · ${{ github.head_ref || github.ref_name }} · input=${{ inputs.ref || github.event.pull_request.head.sha || github.sha }} · ${{ inputs.abi || 'all' }}
 
 on:
   pull_request:
@@ -103,17 +103,12 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
           path: source
-      - name: Verify source commit before executing target code
+      - name: Verify source commit and merge PR into latest main
         id: revision
-        env:
-          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || (inputs.ref == '' && github.sha || '') }}
-        run: |
-          actual_sha=$(git -C source rev-parse HEAD)
-          if [ -n "$EXPECTED_SHA" ] && [ "$actual_sha" != "$EXPECTED_SHA" ]; then
-            printf '%s\n' 'Checked-out source differs from the event commit.' >&2
-            exit 1
-          fi
-          printf 'sha=%s\n' "$actual_sha" >> "$GITHUB_OUTPUT"
+        run: >-
+          python3 -I tooling/scripts/debug_ci.py prepare
+          --plan "$RUNNER_TEMP/debug-plan.json"
+          --source "$GITHUB_WORKSPACE/source"
       - uses: actions/setup-java@v6
         with:
           distribution: temurin

@@ -82,6 +82,10 @@ def make_plan(event, context):
         "run_attempt": str(context["run_attempt"]),
         "run_url": f"{context['server_url']}/{repo}/actions/runs/{context['run_id']}",
     }
+    if kind == "pull_request":
+        # pull_request 在目标仓库运行；不能使用 fork 的 origin/main。
+        plan.update(pr_head_sha=source_ref, base_repository=repo,
+                    base_url=f"{context['server_url']}/{repo}.git")
     for value in plan.values():
         single_line(value)
     return plan
@@ -147,10 +151,47 @@ def verify_revision(actual, recorded):
     return actual
 
 
+def prepare_source(source, plan):
+    """固定事件 head，并在每次 PR 构建时重新取目标仓库 main。"""
+    def git(*args):
+        try:
+            return subprocess.check_output(["git", "-C", str(source), *args], text=True).strip()
+        except subprocess.CalledProcessError as error:
+            # merge 的冲突文件列表写在 stdout，不能只留下退出码。
+            print(error.output, file=sys.stderr)
+            raise
+
+    revision = git("rev-parse", "HEAD")
+    if plan.get("expected_sha"):
+        verify_revision(revision, plan["expected_sha"])
+    prepared = dict(plan)
+    if plan.get("pr_head_sha"):
+        verify_revision(revision, plan["pr_head_sha"])
+        git("fetch", "--no-tags", "--", plan["base_url"],
+            "+refs/heads/main:refs/remotes/debug-base/main")
+        main_sha = git("rev-parse", "refs/remotes/debug-base/main")
+        git("checkout", "--detach", main_sha)
+        # 仅在 runner 创建临时提交，不推送或修改 PR 分支。
+        git("-c", "user.name=github-actions[bot]",
+            "-c", "user.email=41898282+github-actions[bot]@users.noreply.github.com",
+            "-c", "commit.gpgsign=false", "merge", "--no-ff", "--no-edit",
+            "-m", "Merge PR head into latest main for debug APK", revision)
+        revision = git("rev-parse", "HEAD")
+        prepared.update(main_sha=main_sha, merge_sha=revision)
+    prepared["source_sha"] = revision
+    return prepared
+
+
 def package_apks(source, destination, plan, source_sha, signing, inspector=inspect_apk, *, expected_certificate):
     if not re.fullmatch(r"[0-9a-f]{40}", source_sha):
         raise ValueError("Expected full source commit SHA")
-    if plan.get("expected_sha") and plan["expected_sha"] != source_sha:
+    if plan.get("pr_head_sha"):
+        # PR head 是合并输入，最终 APK 必须对应已记录的合并结果。
+        for field in ("pr_head_sha", "main_sha", "merge_sha"):
+            if not re.fullmatch(r"[0-9a-f]{40}", plan.get(field, "")):
+                raise ValueError(f"Missing or invalid PR merge identity: {field}")
+        verify_revision(source_sha, plan["merge_sha"])
+    elif plan.get("expected_sha") and plan["expected_sha"] != source_sha:
         raise ValueError("Checked-out source does not match the event commit")
     if signing not in ("project", "ephemeral"):
         raise ValueError("Unknown signing mode")
@@ -228,6 +269,11 @@ def render_summary(info, uploads, status):
              f"Signing: {markdown(info.get('signing', 'not verified'))}", "",
              "Artifacts expire after 7 days. Sign in to GitHub to download the ZIP, then extract the APK.",
              "APK build success is independent of the PR test and lint results.", ""]
+    if info.get("pr_head_sha"):
+        lines += [f"PR head SHA: {markdown(info['pr_head_sha'])}",
+                  f"Main repository: {markdown(info.get('base_repository', 'unavailable'))}",
+                  f"Main SHA (fetched at build time): {markdown(info.get('main_sha', 'unavailable'))}",
+                  f"Merge SHA: {markdown(info.get('merge_sha', 'unavailable'))}", ""]
     if info.get("signing") == "ephemeral":
         lines += ["Ephemeral signing: packages from different runs may not support replacement installation.", ""]
     if info.get("application_id") and not info["application_id"].endswith(".debug"):
@@ -244,7 +290,7 @@ def render_summary(info, uploads, status):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("plan", "package", "summary"))
+    parser.add_argument("command", choices=("plan", "prepare", "package", "summary"))
     parser.add_argument("--plan", type=Path, required=True)
     parser.add_argument("--source", type=Path)
     parser.add_argument("--destination", type=Path)
@@ -254,6 +300,12 @@ def main():
         plan = make_plan(event, context_from_env())
         args.plan.write_text(json.dumps(plan, ensure_ascii=False, indent=2))
         write_outputs(plan)
+    elif args.command == "prepare":
+        if args.source is None:
+            raise ValueError("prepare requires --source")
+        plan = prepare_source(args.source, json.loads(args.plan.read_text()))
+        args.plan.write_text(json.dumps(plan, ensure_ascii=False, indent=2))
+        write_outputs({"sha": plan["source_sha"]})
     elif args.command == "package":
         plan = json.loads(args.plan.read_text())
         revision = subprocess.check_output(["git", "-C", str(args.source), "rev-parse", "HEAD"], text=True).strip()

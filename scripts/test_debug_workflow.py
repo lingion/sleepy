@@ -38,6 +38,17 @@ def evaluate_condition(expression, values):
 
 
 class WorkflowContractTest(unittest.TestCase):
+    def test_merge_preparation_gates_build_and_supplies_artifact_revision(self):
+        workflow = (Path(__file__).resolve().parents[1] / ".github/workflows/debug-apk.yml").read_text()
+        revision_step = workflow.split("id: revision\n", 1)[1].split("      - uses:", 1)[0]
+        self.assertIn("python3 -I tooling/scripts/debug_ci.py prepare", revision_step)
+        self.assertIn('--plan "$RUNNER_TEMP/debug-plan.json"', revision_step)
+        self.assertIn('--source "$GITHUB_WORKSPACE/source"', revision_step)
+        self.assertNotIn("if:", revision_step)
+        self.assertNotIn("continue-on-error", workflow)
+        self.assertLess(workflow.index("id: revision"), workflow.index("Assemble selected debug ABI"))
+        self.assertIn("SOURCE_SHA: ${{ steps.revision.outputs.sha }}", workflow)
+
     def test_actual_workflow_stable_key_gate_truth_table(self):
         workflow = (Path(__file__).resolve().parents[1] / ".github/workflows/debug-apk.yml").read_text()
         section = workflow.split("id: project-signing\n", 1)[1].split("        env:", 1)[0]

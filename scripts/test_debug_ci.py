@@ -36,7 +36,7 @@ class PlanTest(unittest.TestCase):
         self.assertEqual(plan["source_ref"], "v1.0.63")
         self.assertEqual(plan["abi"], "armeabi-v7a")
 
-    def test_pr_builds_head_repo_and_commit_not_merge(self):
+    def test_pr_checkout_pins_head_as_merge_input(self):
         payload = event()
         payload["pull_request"] = {"number": 286, "draft": False, "head": {
             "repo": {"full_name": "contributor/sleepy"}, "sha": "c" * 40, "ref": "fix/test"}}
