@@ -290,8 +290,26 @@ fun LiquidGlassNavigationBar(
     }
     fun computeInsideTransform(index: Int): DestinationTransform {
         val lift = liftSpring.value
-        val mag = 1f + FlClashDockPhysics.LENS_MAGNIFY * lift
-        return DestinationTransform(scaleX = mag, scaleY = mag)
+        val centerMag = 1f + FlClashDockPhysics.LENS_MAGNIFY * lift
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && contentShader != null) {
+            return DestinationTransform(scaleX = centerMag, scaleY = centerMag)
+        }
+
+        // 老设备无硬件着色器时: 中心标准 1.16x 纯光学放大，边缘过渡区辅以自然的非线性微曲面拉伸 (edgeStretch)，
+        // 保持图标清晰不走形，同时与 FLClash 凸透镜物理质感对齐
+        val currentPos = lensSpring.value
+        val delta = index.toFloat() - currentPos
+        val absDelta = abs(delta)
+        val halfLensTabs = if (currentLayout.pitch > 0.001f) (currentLayout.lens / currentLayout.pitch) * 0.5f else 0.55f
+        val edgeFactor = if (absDelta <= halfLensTabs) {
+            ((absDelta - 0.25f * halfLensTabs) / (0.75f * halfLensTabs)).coerceIn(0f, 1f)
+        } else 0f
+        val edgeStretch = edgeFactor * edgeFactor * 0.05f * lift
+
+        return DestinationTransform(
+            scaleX = centerMag + edgeStretch,
+            scaleY = centerMag,
+        )
     }
 
     val shadowRoomDp = 12.dp
