@@ -262,12 +262,12 @@ class InspectionDiagnosticTest(unittest.TestCase):
 
 
 class SummaryTest(unittest.TestCase):
-    def test_signing_input_points_to_official_signer_without_download_links(self):
+    def test_signing_input_points_to_same_run_artifacts_while_signing(self):
         plan = debug_ci.make_plan(event(), CONTEXT)
         summary = debug_ci.render_summary(dict(plan, signing="ephemeral"), {}, "success")
         self.assertIn("not an official install package", summary)
-        self.assertIn("debug-sign.yml", summary)
-        self.assertIn(CONTEXT["run_id"], summary)
+        self.assertIn("this run's Artifacts", summary)
+        self.assertNotIn("actions/workflows/debug-sign.yml", summary)
         self.assertNotIn("| ABI |", summary)
 
     def test_partial_upload_failure_and_ephemeral_warning(self):

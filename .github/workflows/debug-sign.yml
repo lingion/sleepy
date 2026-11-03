@@ -1,28 +1,24 @@
 name: Official Debug APK Signing
-run-name: Official Debug APK · build ${{ github.event.workflow_run.id }} · attempt ${{ github.event.workflow_run.run_attempt }}
 
 on:
-  workflow_run:
-    workflows: [Debug APK Build]
-    types: [completed]
+  workflow_call:
+    secrets:
+      DEBUG_KEYSTORE_BASE64:
+        required: true
 
 permissions:
   contents: read
-  actions: read
-
-concurrency:
-  group: debug-sign-${{ github.event.workflow_run.id }}
-  cancel-in-progress: true
+  actions: write
 
 jobs:
   sign-debug:
     if: >-
       github.repository == 'lingion/sleepy' &&
-      github.event.workflow_run.conclusion == 'success'
+      github.workflow_ref == 'lingion/sleepy/.github/workflows/debug-apk.yml@refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      # workflow_run 的工作流及工具来自官方默认分支，绝不 checkout PR head。
+      # 与调用方共享 run；工作流及工具来自官方 main，绝不 checkout PR head。
       - uses: actions/checkout@v7
         with:
           repository: lingion/sleepy
@@ -33,8 +29,8 @@ jobs:
         shell: bash
         run: |
           test "$GITHUB_REPOSITORY" = 'lingion/sleepy'
-          test "$GITHUB_EVENT_NAME" = 'workflow_run'
-          test "$GITHUB_WORKFLOW_REF" = 'lingion/sleepy/.github/workflows/debug-sign.yml@refs/heads/main'
+          case "$GITHUB_EVENT_NAME" in pull_request_target|push|workflow_dispatch) ;; *) exit 1 ;; esac
+          test "$GITHUB_WORKFLOW_REF" = 'lingion/sleepy/.github/workflows/debug-apk.yml@refs/heads/main'
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
@@ -108,6 +104,18 @@ jobs:
           UPLOAD_UNIVERSAL_URL: ${{ steps.universal.outputs.artifact-url }}
         run: >-
           python3 -I tooling/scripts/debug_sign.py summary
+          --destination "$RUNNER_TEMP/official-apks"
+      - name: Remove intermediate and obsolete artifacts after all uploads succeed
+        if: >-
+          success() && steps.sign.outcome == 'success' &&
+          (steps.arm64.outcome == 'success' || steps.arm64.outcome == 'skipped') &&
+          (steps.v7a.outcome == 'success' || steps.v7a.outcome == 'skipped') &&
+          (steps.x86.outcome == 'success' || steps.x86.outcome == 'skipped') &&
+          (steps.universal.outcome == 'success' || steps.universal.outcome == 'skipped')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          python3 -I tooling/scripts/debug_sign.py cleanup
           --destination "$RUNNER_TEMP/official-apks"
       - name: Remove signing key
         if: always()

@@ -47,7 +47,7 @@ def make_plan(event, context):
     source_repo = repo
     source_ref = context["sha"]
     expected_sha = context["sha"]
-    if kind == "pull_request":
+    if kind in ("pull_request", "pull_request_target"):
         pr = event["pull_request"]
         enabled = not pr.get("draft", False)
         source_repo = pr["head"]["repo"]["full_name"]
@@ -82,7 +82,7 @@ def make_plan(event, context):
         "run_url": f"{context['server_url']}/{repo}/actions/runs/{context['run_id']}",
         "delivery": "signing-input", "official_signing": repo == "lingion/sleepy",
     }
-    if kind == "pull_request":
+    if kind in ("pull_request", "pull_request_target"):
         # pull_request 在目标仓库运行；不能使用 fork 的 origin/main。
         plan.update(pr_head_sha=source_ref, base_repository=repo,
                     base_url=f"{context['server_url']}/{repo}.git")
@@ -278,9 +278,9 @@ def render_summary(info, uploads, status):
                   f"Merge SHA: {markdown(info.get('merge_sha', 'unavailable'))}", ""]
     if info.get("delivery") == "signing-input":
         if info.get("official_signing"):
-            lines += ["After this build succeeds, download the fixed-certificate APKs from "
-                      "[Official Debug APK Signing](https://github.com/lingion/sleepy/actions/workflows/debug-sign.yml).",
-                      f"Match build run ID {markdown(info.get('run_id', 'unavailable'))} in the signing run title."]
+            lines += ["The sign-debug job publishes official APKs to this run's Artifacts section. "
+                      "Wait for signing to finish; each ABI has its own download. "
+                      "The signing input is removed after successful publication."]
         else:
             lines += ["Fork builds are build-only. Open a PR to lingion/sleepy for official signed APKs."]
         return "\n".join(lines) + "\n"

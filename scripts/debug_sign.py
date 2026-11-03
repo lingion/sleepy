@@ -25,9 +25,12 @@ IDENTITY_FIELDS = ("run_id", "run_number", "run_attempt", "label", "source_sha",
 
 
 def validate_run(run):
-    if (run["repository"]["full_name"] != REPOSITORY or run["status"] != "completed"
-            or run["conclusion"] != "success" or run["path"] != ".github/workflows/debug-apk.yml"
-            or run["event"] not in ("pull_request", "push", "workflow_dispatch")):
+    active = "expected_plan" in run
+    valid_status = (run["status"] == "in_progress" and run["conclusion"] is None) if active else (
+        run["status"] == "completed" and run["conclusion"] == "success")
+    if (run["repository"]["full_name"] != REPOSITORY or not valid_status
+            or run["path"] != ".github/workflows/debug-apk.yml"
+            or run["event"] not in ("pull_request", "pull_request_target", "push", "workflow_dispatch")):
         raise ValueError("Only successful official Debug APK Build runs can be signed")
     for field in ("id", "run_number", "run_attempt"):
         if type(run[field]) is not int or run[field] <= 0:
@@ -77,16 +80,47 @@ def api(path):
     return json.loads(subprocess.check_output(["gh", "api", path], text=True))
 
 
-def download_bundle(event, destination):
-    expected = validate_run(event["workflow_run"])
-    run = validate_run(api(f"repos/{REPOSITORY}/actions/runs/{expected['id']}"))
-    if any(run[field] != expected[field] for field in ("id", "run_attempt", "head_sha", "event")):
-        raise ValueError("Build run changed since the completion event; refusing stale artifacts")
-    name = f"debug-signing-input-{run['id']}-{run['run_attempt']}"
+def current_build(event, context):
+    """仅从可信 runner 事件恢复本次计划；不使用产物内自报的 PR head。"""
+    if (context["repository"] != REPOSITORY
+            or context["workflow_ref"] != f"{REPOSITORY}/.github/workflows/debug-apk.yml@refs/heads/main"
+            or context["event_name"] not in ("pull_request_target", "push", "workflow_dispatch")):
+        raise ValueError("Official signing requires the main workflow context")
+    run_id, attempt = int(context["run_id"]), int(context["run_attempt"])
+    run = dict(api(f"repos/{REPOSITORY}/actions/runs/{run_id}"))
+    if any(run[field] != value for field, value in (
+            ("id", run_id), ("run_attempt", attempt), ("run_number", int(context["run_number"])),
+            ("head_sha", context["sha"]), ("event", context["event_name"]))):
+        raise ValueError("Current run identity differs from the trusted event")
+    run["expected_plan"] = ci.make_plan(event, context)
+    validate_run(run)
+    jobs = json.loads(subprocess.check_output([
+        "gh", "api", "--paginate", "--slurp",
+        f"repos/{REPOSITORY}/actions/runs/{run_id}/attempts/{attempt}/jobs?per_page=100"], text=True))
+    builds = [job for page in jobs for job in page["jobs"] if job["name"] == "assemble-debug"]
+    if len(builds) != 1 or builds[0]["conclusion"] != "success":
+        raise ValueError("This attempt has no successful assemble-debug job")
+    return run
+
+
+def artifacts(run_id):
     pages = json.loads(subprocess.check_output([
         "gh", "api", "--paginate", "--slurp",
-        f"repos/{REPOSITORY}/actions/runs/{run['id']}/artifacts?per_page=100"], text=True))
-    matches = [item for page in pages for item in page["artifacts"] if item["name"] == name]
+        f"repos/{REPOSITORY}/actions/runs/{run_id}/artifacts?per_page=100"], text=True))
+    return [item for page in pages for item in page["artifacts"]]
+
+
+def download_bundle(event, destination, context=None):
+    if context is not None:
+        run = current_build(event, context)
+    else:
+        # 兼容旧完成事件的离线验签工具；线上入口只走当前运行。
+        expected = validate_run(event["workflow_run"])
+        run = validate_run(api(f"repos/{REPOSITORY}/actions/runs/{expected['id']}"))
+        if any(run[field] != expected[field] for field in ("id", "run_attempt", "head_sha", "event")):
+            raise ValueError("Build run changed since the completion event; refusing stale artifacts")
+    name = f"debug-signing-input-{run['id']}-{run['run_attempt']}"
+    matches = [item for item in artifacts(run["id"]) if item["name"] == name]
     if len(matches) != 1:
         raise ValueError("Expected exactly one signing input for this build attempt")
     artifact = matches[0]
@@ -127,6 +161,11 @@ def sign_bundle(source, destination, run, keystore, certificate, *, inspector=ci
     if any(path.is_symlink() for path in source.rglob("*")):
         raise ValueError("Signing input cannot contain symlinks")
     info = json.loads((source / "summary-info.json").read_text())
+    if "expected_plan" in run:
+        expected = run["expected_plan"]
+        for field in (*IDENTITY_FIELDS, "abi"):
+            if field in expected and info.get(field) != expected[field]:
+                raise ValueError(f"Input differs from trusted event plan: {field}")
     for field in IDENTITY_FIELDS:
         if field in info and (not isinstance(info[field], str) or ci.single_line(info[field]) != info[field]):
             raise ValueError(f"Invalid build identity: {field}")
@@ -136,8 +175,9 @@ def sign_bundle(source, destination, run, keystore, certificate, *, inspector=ci
             raise ValueError(f"Build identity does not match triggering run: {field}")
     if not re.fullmatch(r"[0-9a-f]{40}", info["source_sha"]):
         raise ValueError("Invalid source SHA")
-    if run["event"] == "pull_request":
-        if (info.get("pr_head_sha") != run["head_sha"] or info.get("merge_sha") != info["source_sha"]
+    if run["event"] in ("pull_request", "pull_request_target"):
+        head = run["expected_plan"]["pr_head_sha"] if run["event"] == "pull_request_target" else run["head_sha"]
+        if (info.get("pr_head_sha") != head or info.get("merge_sha") != info["source_sha"]
                 or not re.fullmatch(r"[0-9a-f]{40}", info.get("main_sha", ""))
                 or info.get("base_repository") != REPOSITORY):
             raise ValueError("PR signing requires the event head merged into official main")
@@ -194,15 +234,45 @@ def sign_bundle(source, destination, run, keystore, certificate, *, inspector=ci
     return outputs
 
 
+def cleanup_artifacts(destination, context):
+    """全部最终包已在本次运行可见后，才清除中间包及旧 attempt 包。"""
+    if context["repository"] != REPOSITORY:
+        raise ValueError("Unexpected cleanup repository")
+    info = json.loads((destination / "summary-info.json").read_text())
+    for field in ("run_id", "run_attempt"):
+        if info[field] != context[field]:
+            raise ValueError("Cleanup identity differs from current attempt")
+    expected = set()
+    for abi in ci.selected_abis(info["abi"]):
+        metadata = json.loads((destination / abi / "build-info.json").read_text())
+        expected.add(Path(metadata["apk"]).stem)
+    items = artifacts(int(context["run_id"]))
+    live = [item for item in items if not item["expired"] and item["name"] in expected]
+    if len(live) != len(expected) or {item["name"] for item in live} != expected:
+        raise ValueError("Not all official ABI artifacts were published; retaining signing input")
+    for item in items:
+        if item["workflow_run"]["id"] != int(context["run_id"]):
+            raise ValueError("Artifact belongs to another run")
+    for item in items:
+        if item["name"] not in expected and (
+                item["name"].startswith(f"debug-signing-input-{context['run_id']}-")
+                or item["name"].startswith("sleepy-debug-official-")):
+            artifact_id = item["id"]
+            if type(artifact_id) is not int or artifact_id <= 0:
+                raise ValueError("Invalid cleanup artifact ID")
+            subprocess.run(["gh", "api", "--method", "DELETE",
+                            f"repos/{REPOSITORY}/actions/artifacts/{artifact_id}"], check=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("download", "sign", "summary"))
+    parser.add_argument("command", choices=("download", "sign", "summary", "cleanup"))
     parser.add_argument("--source", type=Path)
     parser.add_argument("--destination", type=Path, required=True)
     args = parser.parse_args()
     if args.command == "download":
         event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
-        run = download_bundle(event, args.destination)
+        run = download_bundle(event, args.destination, ci.context_from_env())
         args.destination.with_suffix(".run.json").write_text(json.dumps(run))
     elif args.command == "sign":
         keystore = Path(os.environ["SLEEPY_DEBUG_KEYSTORE"])
@@ -215,6 +285,8 @@ def main():
             ci.write_outputs({f"artifact_{abi.replace('-', '_')}": item["artifact"]})
         info = json.loads((args.destination / "summary-info.json").read_text())
         ci.write_outputs({"abi": info["abi"], "certificate_sha256": certificate})
+    elif args.command == "cleanup":
+        cleanup_artifacts(args.destination, ci.context_from_env())
     else:
         info_path = args.destination / "summary-info.json"
         info = json.loads(info_path.read_text()) if info_path.is_file() else {}
