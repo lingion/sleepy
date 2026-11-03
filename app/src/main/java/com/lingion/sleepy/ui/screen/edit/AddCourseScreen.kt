@@ -1432,7 +1432,8 @@ private fun IrregularOptionsSection(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .noRippleClickable { block.irregularOptionsExpanded = !block.irregularOptionsExpanded }
+                .glassControl(shape = SleepyTheme.shapes.medium)
+                .noRippleGlassClickable { block.irregularOptionsExpanded = !block.irregularOptionsExpanded }
                 .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp)

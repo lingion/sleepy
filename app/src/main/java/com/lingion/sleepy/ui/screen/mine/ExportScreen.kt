@@ -205,9 +205,10 @@ fun ExportScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .glassControl(shape = SleepyTheme.shapes.large, tint = colors.primaryContainer)
                         .clip(SleepyTheme.shapes.large)
-                        .background(colors.primaryContainer)
-                        .noRippleClickable { showTablePicker = true }
+                        .background(controlFill(colors.primaryContainer))
+                        .noRippleGlassClickable { showTablePicker = true }
                         .padding(20.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {

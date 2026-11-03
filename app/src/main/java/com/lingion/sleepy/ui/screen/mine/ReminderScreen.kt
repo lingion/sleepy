@@ -1399,7 +1399,8 @@ private fun ReminderTimeRow(label: String, time: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .noRippleClickable(onClick = onClick)
+            .glassControl(shape = SleepyTheme.shapes.medium)
+            .noRippleGlassClickable(onClick = onClick)
             .padding(vertical = 12.dp, horizontal = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
