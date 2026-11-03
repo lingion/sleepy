@@ -1155,4 +1155,12 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="jw_import_report_copy">報告をコピー</string>
     <string name="jw_import_report_join_qq">QQ グループに参加</string>
     <string name="jw_import_report_done">完了</string>
+    <string name="period_validation_empty">時限一覧を空にすることはできません</string>
+    <string name="period_validation_invalid_format">第 %1$d 限の時刻形式が正しくありません (HH:mm)</string>
+    <string name="period_validation_end_before_start">第 %1$d 限の終了時刻は開始時刻より後である必要があります (%2$s–%3$s)</string>
+    <string name="period_validation_invalid_data">時限設定が不完全か読み取れません。時限番号と開始・終了時刻を確認してください。</string>
+    <string name="period_validation_duplicate_node">時限番号 %1$d が重複しています。時限設定を修正してください。</string>
+    <string name="period_validation_overlap">第 %1$d 限と第 %3$d 限で重複があります：第 %1$d 限の終了 (%2$s) が第 %3$d 限の開始 (%4$s) より後です</string>
+    <string name="period_conflict_detected_banner">時限設定を確認してください：%1$s。編集画面で修正してください。元の時刻は自動変更されていません。</string>
+    <string name="period_conflict_detected_title">時限の重複警告</string>
 </resources>

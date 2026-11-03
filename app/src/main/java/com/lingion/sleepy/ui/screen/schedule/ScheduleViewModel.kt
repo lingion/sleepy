@@ -11,6 +11,7 @@ import com.lingion.sleepy.data.repository.ScheduleRepository
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.HolidayRangeOps
+import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.util.WeekDisplayContext
 import com.lingion.sleepy.util.WeekDisplayResolver
 import com.lingion.sleepy.util.HolidayTransferEntry
@@ -50,7 +51,7 @@ data class ScheduleState(
     val currentWeekCourses: List<CourseEntity>
         get() = courses.filter { it.inWeek(selectedWeek) }
             .let { list ->
-                val tj = effectiveCurrentTable?.timeJson
+                val tj = effectiveRenderTimeJson
                 if (tj == null) list else list.map { c -> c.normalizeNode(tj) }
             }
 
@@ -68,6 +69,17 @@ data class ScheduleState(
     /** issue#40: 水合后的当前表 — 节次时间域一律从这里读, 不得直接读 currentTable.timeJson */
     val effectiveCurrentTable: TimeTableEntity?
         get() = currentTable?.hydratedWith(effectivePeriodTable)
+
+    /** Format-only display input; real clocks and persisted data remain unchanged. */
+    val effectiveRenderTimeJson: String?
+        get() = effectiveCurrentTable?.timeJson?.let { TimeTableUtils.sanitizeTimeJsonForDisplay(it) }
+
+    /** Diagnose the effective stored schedule without substituting editor defaults. */
+    val periodValidation: TimeTableUtils.PeriodValidationResult?
+        get() = effectiveCurrentTable?.timeJson?.let { TimeTableUtils.validateTimeJson(it) }
+
+    val hasPeriodConflict: Boolean
+        get() = periodValidation?.let { it !is TimeTableUtils.PeriodValidationResult.Valid } ?: false
 
     /** issue#44: 给定日期实际应"按星期几取课"; 补班日=sourceDate 星期, 放假日=无课(null), 未命中=自然星期 */
     fun courseDateFor(date: LocalDate): LocalDate? =
