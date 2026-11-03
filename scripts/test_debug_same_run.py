@@ -20,7 +20,7 @@ class SameRunTest(unittest.TestCase):
         self.event["pull_request"] = {"number": 310, "head": {
             "sha": "c" * 40, "ref": "feature/test", "repo": {"full_name": "contributor/sleepy"}}}
         self.run = {"id": 100, "run_number": 20, "run_attempt": 1, "event": "pull_request_target",
-                    "head_sha": CONTEXT["sha"], "path": ".github/workflows/debug-apk.yml",
+                    "head_sha": self.event["pull_request"]["head"]["sha"], "path": ".github/workflows/debug-apk.yml",
                     "status": "in_progress", "conclusion": None,
                     "repository": {"full_name": "lingion/sleepy"}}
 
@@ -38,7 +38,7 @@ class SameRunTest(unittest.TestCase):
             run = debug_sign.current_build(self.event, self.context)
             self.assertEqual(run["expected_plan"]["pr_head_sha"], "c" * 40)
         for field, value in [("id", 101), ("run_attempt", 2), ("event", "pull_request"),
-                             ("head_sha", "d" * 40), ("status", "completed")]:
+                             ("head_sha", "d" * 40), ("head_sha", self.context["sha"]), ("status", "completed")]:
             with self.subTest(field=field), patch.object(debug_sign, "api", return_value=dict(self.run, **{field: value})):
                 with self.assertRaises(ValueError):
                     debug_sign.current_build(self.event, self.context)
@@ -48,6 +48,19 @@ class SameRunTest(unittest.TestCase):
                     debug_sign.subprocess, "check_output", return_value=json.dumps(jobs)):
                 with self.assertRaises(ValueError):
                     debug_sign.current_build(self.event, self.context)
+
+    def test_push_and_dispatch_still_require_the_workflow_context_sha(self):
+        jobs = [{"jobs": [{"name": "assemble-debug", "conclusion": "success"}]}]
+        for kind in ("push", "workflow_dispatch"):
+            context = dict(self.context, event_name=kind)
+            run = dict(self.run, event=kind, head_sha=context["sha"], head_branch="main")
+            with self.subTest(event=kind), patch.object(debug_sign, "api", return_value=run), patch.object(
+                    debug_sign.subprocess, "check_output", return_value=json.dumps(jobs)):
+                self.assertEqual(debug_sign.current_build(event(), context)["head_sha"], context["sha"])
+            run["head_sha"] = self.event["pull_request"]["head"]["sha"]
+            with self.subTest(event=kind), patch.object(debug_sign, "api", return_value=run):
+                with self.assertRaisesRegex(ValueError, "Current run identity"):
+                    debug_sign.current_build(event(), context)
 
     def test_same_page_signer_is_a_dependent_job_not_another_run(self):
         build = (ROOT / ".github/workflows/debug-apk.yml").read_text()

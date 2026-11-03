@@ -88,11 +88,14 @@ def current_build(event, context):
         raise ValueError("Official signing requires the main workflow context")
     run_id, attempt = int(context["run_id"]), int(context["run_attempt"])
     run = dict(api(f"repos/{REPOSITORY}/actions/runs/{run_id}"))
+    plan = ci.make_plan(event, context)
+    # Target events execute the base workflow, but the run API records the PR head.
+    expected_head = plan["pr_head_sha"] if context["event_name"] == "pull_request_target" else context["sha"]
     if any(run[field] != value for field, value in (
             ("id", run_id), ("run_attempt", attempt), ("run_number", int(context["run_number"])),
-            ("head_sha", context["sha"]), ("event", context["event_name"]))):
+            ("head_sha", expected_head), ("event", context["event_name"]))):
         raise ValueError("Current run identity differs from the trusted event")
-    run["expected_plan"] = ci.make_plan(event, context)
+    run["expected_plan"] = plan
     validate_run(run)
     jobs = json.loads(subprocess.check_output([
         "gh", "api", "--paginate", "--slurp",
