@@ -413,7 +413,7 @@ Entry: "Mine" → "About". A dedicated page showing version, author, and open-so
 | **Author** | Lingion, tap to open the GitHub profile |
 | **Source** | github.com/lingion/sleepy, tappable |
 | **License note** | GPL-3.0 summary; contributions welcome |
-| **Open-source acknowledgements** | 9 cross-school projects plus per-school credit cards, their licenses, and the parts of Sleepy they informed |
+| **Open-source acknowledgements** | Source and dependency notices, research references, and cross-school and per-school credits with licenses and usage scope |
 
 The About page offers manual update checks and a startup-check switch. Startup checks are enabled by default and can be disabled. Checks contact the update service; full release notes are shown before downloading, and downloads can be cancelled.
 
@@ -715,7 +715,9 @@ Prefer to stay on GitHub? [Discussions](https://github.com/lingion/sleepy/discus
 
 [GPL-3.0](LICENSE)
 
-Sleepy is released under GPL-3.0. The JW adapters, protocol research, and timetable formats reference multiple open-source projects. The complete list — 9 cross-school projects plus per-school credit cards, with licenses and reference scope — is available in the app under Mine → About → Open-source acknowledgements.
+The liquid glass source module is modified from [SleepDown Schedule](https://github.com/xiaomanjun233/SleepDown-Schedule), by **xiaomanjun233**. Sleepy is maintained by this project; changes include Android build wiring, Compose version adaptation and FLClash dock integration. SleepDown-owned content uses its source-available non-commercial license 1.1; original Kyant code retains Apache-2.0. FLClash ports retain GPL-3.0 and the Flutter superellipse port retains BSD-3-Clause. [Original notices and usage boundaries](ACKNOWLEDGEMENTS.md) are included in the repository and app.
+
+Sleepy-owned code is released under GPL-3.0; third-party material retains its own notices. See [Sources and acknowledgements](ACKNOWLEDGEMENTS.md) for source ports, dependencies, data, design references, research repositories and contributors. The app includes the same additions under Mine / About / Open-source licenses.
 
 ---
 

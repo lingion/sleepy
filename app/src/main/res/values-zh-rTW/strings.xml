@@ -633,7 +633,7 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="about_license_detail">開源授權與致謝</string>
     <string name="license_page_title">開源授權與致謝</string>
     <string name="license_gpl_section">授權條款</string>
-    <string name="license_gpl_body">Sleepy 是一款開源的智慧課表應用，原始碼基於 GNU General Public License v3.0 協議發布。任何人都可以自由使用、修改和分發本軟體。歡迎透過 GitHub 參與貢獻。</string>
+    <string name="license_gpl_body">Sleepy 自有程式碼依 GNU General Public License v3.0 發布。第三方原始碼、素材與資料保留各自的授權與署名，具體範圍見下方來源聲明。歡迎透過 GitHub 參與貢獻。</string>
     <string name="license_attribution_section">教務適配致謝</string>
     <string name="license_attribution_note">本應用部分教務匯入適配參考了以下開源專案的公開實現，在此一併致謝。</string>
     <string name="license_foundational_section">跨校普適項目</string>

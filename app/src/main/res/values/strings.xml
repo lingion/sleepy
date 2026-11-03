@@ -901,7 +901,7 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="about_license_detail">开源许可与致谢</string>;西北工业大学研究生教务 NWPU Post (51 候选跨仓验证, 0 POSITIVE / 20 INDIRECT / 31 NEGATIVE): Lorcas-Zephyr/aoxiang-assistant、ShiGuangSchedule/shiguang_warehouse (MIT)、QingQiz/AoxiangRobot (LGPL-3.0)、qiqqqqq517/shangkeschedule (Apache-2.0)、qllokirin/nonebot-plugin-npu (MIT)、CR200J1-A/NPU-Course-picker、Jungod1121/nwpu-jwxt、Nikaidou-Shinku/sjw (WTFPL)、stevexyh/AutoAoxiang (WTFPL)、cheanus/SelectCourseEasily、fantian-bilibili/NWPU_COURSE_MONITOR、zengzoxiong/aoxiang-jwxt-enhance、zhanghaoran124/NWPU_AISchedule、Hydrostic/NWPU-EAMS-helper、fantian-bilibili/NCP-NWPU-Course-Parser、top-tree/nwpu-edu-plus、LiYulin-s/nwpu-coursetable、Panoramasx/aoxiang-harmonyos、iiijiashu/guagua-course、xiaozhuang357/NPU-eCampus-ICS-Exporter。\n\nBoundary data ultimate source: Alibaba Cloud DataV.GeoAtlas\nhttps://datav.aliyun.com/portal/school/atlas/area_selector\nChinaGeoJson supplies a collected snapshot and scripts. Its MIT license covers its authors own software;
     <string name="license_page_title">开源许可与致谢</string>
     <string name="license_gpl_section">许可证</string>
-    <string name="license_gpl_body">Sleepy 是一款开源的智能课表应用，源代码基于 GNU General Public License v3.0 协议发布。任何人都可以自由使用、修改和分发本软件。欢迎通过 GitHub 参与贡献。</string>
+    <string name="license_gpl_body">Sleepy 自有代码基于 GNU General Public License v3.0 发布。第三方源码、素材和数据保留各自的许可与署名，具体范围见下方来源声明。欢迎通过 GitHub 参与贡献。</string>
     <string name="license_attribution_section">教务适配致谢</string>
     <string name="license_attribution_note">本应用部分教务导入适配参考了以下开源项目的公开实现，在此一并致谢。</string>
     <string name="license_foundational_section">跨校普适项目</string>
