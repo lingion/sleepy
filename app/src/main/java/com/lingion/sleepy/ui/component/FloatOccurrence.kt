@@ -28,6 +28,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -217,6 +221,15 @@ class CourseFloatState {
         height: Dp,
         isGrey: Boolean,
     ) {
+        // Issue #300: 连续长按时先立即停止前一个卡片的归位动画, 防止从旧位置飞到新位置
+        // 使用 launch 在后台协程中停止动画，不阻塞主线程
+        GlobalScope.launch(Dispatchers.Main.immediate) {
+            xAnimatable.stop()
+            yAnimatable.stop()
+            xAnimatable.snapTo(x)
+            yAnimatable.snapTo(y)
+        }
+        
         this.course = course
         this.day = day
         this.week = week

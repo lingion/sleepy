@@ -928,4 +928,96 @@ class CourseOccurrenceFloatDragTest {
             assertFalse("确认后浮层关闭", state.active)
         }
     }
+
+    @Test fun issue300_consecutiveLongPressOnDifferentCoursesNoAnimation() {
+        val state = CourseFloatState()
+        val firstCourse = CourseEntity(id = 1, tableId = 1, groupId = "math", courseName = "FloatMath", 
+            day = 2, startNode = 1, step = 1, startWeek = 1, endWeek = 16, color = "#FF6750A4")
+        val secondCourse = CourseEntity(id = 2, tableId = 1, groupId = "phys", courseName = "FloatPhys", 
+            day = 4, startNode = 3, step = 1, startWeek = 1, endWeek = 16, color = "#FF00A000")
+        grid(state, courses = listOf(firstCourse, secondCourse))
+        
+        // 第一次长按 FloatMath (第2列，第1节)
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        compose.waitForIdle()
+        val firstX: Float
+        val firstY: Float
+        compose.runOnIdle {
+            assertEquals("FloatMath", state.course?.courseName)
+            firstX = state.x.value
+            firstY = state.y.value
+            // 记录第一个位置
+            assertTrue("第一次浮起的 X 坐标应该是第2列", firstX > 80f)
+            assertTrue("第一次浮起的 Y 坐标应该是第1节", firstY < 100f)
+        }
+        
+        // 第二次长按 FloatPhys (第4列，第3节) — 不同位置
+        compose.onNodeWithText("FloatPhys").performTouchInput { longClick() }
+        compose.waitForIdle()
+        compose.runOnIdle {
+            assertEquals("FloatPhys", state.course?.courseName)
+            val secondX = state.x.value
+            val secondY = state.y.value
+            // 验证位置跳变到新位置，而不是从旧位置动画飞过来
+            assertTrue("第二次浮起的 X 坐标应该是第4列", secondX > firstX + 100f)
+            assertTrue("第二次浮起的 Y 坐标应该是第3节", secondY > firstY + 100f)
+            // Animatable 应该已经同步到新位置，下次归位不会从旧位置开始
+        }
+    }
+
+    @Test fun verticalAutoScrollStopsAtTopBoundary() {
+        val state = CourseFloatState()
+        grid(state)
+        // 长按并拖到顶部边缘触发自动滚动
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(0f, -100.dp.toPx()), 100)
+        }
+        // 等待自动滚动触发并运行
+        compose.mainClock.advanceTimeBy(500L)
+        compose.runOnIdle {
+            // 卡片 Y 坐标应该随滚动变化
+            assertTrue("卡片应该随自动滚动调整位置", state.y.value < 100f)
+        }
+        compose.onNodeWithTag("float-card").performTouchInput { up() }
+    }
+
+    @Test fun verticalAutoScrollAcceleratesWithOverflow() {
+        val state = CourseFloatState()
+        // 创建长课表，确保有足够滚动空间
+        val tallCourses = (1..20).map { i ->
+            CourseEntity(
+                id = i,
+                tableId = 1,
+                groupId = "c$i",
+                courseName = "Course$i",
+                day = 1,
+                startNode = i,
+                endNode = i,
+                step = 1,
+                startWeek = 1,
+                endWeek = 16,
+                color = "#FF6750A4",
+            )
+        }
+        grid(state, courses = tallCourses)
+        
+        compose.onNodeWithText("Course5").performTouchInput { longClick() }
+        val initialY = state.y
+        
+        // 拖到底部边缘外很远（应该触发高速滚动）
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(0f, 200.dp.toPx()), 100)
+        }
+        
+        // 等待多帧自动滚动
+        compose.mainClock.advanceTimeBy(200L)
+        compose.runOnIdle {
+            // 卡片 Y 坐标应该随滚动调整
+            assertTrue("自动滚动应该已调整卡片位置", state.y != initialY)
+        }
+        compose.onNodeWithTag("float-card").performTouchInput { up() }
+    }
 }

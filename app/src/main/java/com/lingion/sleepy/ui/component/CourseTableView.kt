@@ -738,13 +738,16 @@ fun CardsGridView(
                         return
                     }
                 }
-                // 松手即退出拖拽与边缘指示，卡片停在吸附位等待落库弹窗，防弹窗期间连翻页 (#276)
+                // Issue #276: 松手瞬间立即退出拖拽与边缘指示，卡片停在吸附位等待落库弹窗，
+                // 防弹窗期间边缘翻页协程因 dragging==true 继续触发翻页
                 floatState.dragging = false
                 floatState.edgeDir = 0
                 floatState.edgeBlocked = 0
                 floatState.peekProgress = 0f
+                // 固定坐标到吸附槽位，确保卡片停在正确位置
                 floatState.x = floatState.snapX
                 floatState.y = floatState.snapY
+                
                 onOccurrenceMove?.invoke(course, sortedDays[drop.dayIndex], drop.startNode, drop.step, false) { saved ->
                     // C 契约: 落库成功才收层; 否决/过期 → 弹回原位浮着(拉伸 pending 随卡保留,
                     // 由空白点击/返回键走「是否调整持续节次」确认)。
@@ -825,37 +828,56 @@ fun CardsGridView(
             LaunchedEffect(floatState.dragging, floatState.week) {
                 if (currentWeek != floatState.week || !floatState.dragging) return@LaunchedEffect
                 val edgeZone = 48.dp
-                while (isActive && floatState.dragging) {
-                    delay(16L)
-                    if (currentWeek != floatState.week || !floatState.dragging) return@LaunchedEffect
+                val headPlusGap = headH + gapH
+                val topThreshold = headPlusGap + edgeZone
+                val bottomThreshold = maxHeight - edgeZone
+                
+                while (isActive && floatState.dragging && currentWeek == floatState.week) {
+                    delay(32L)  // 30fps, 降低轮询频率提升性能
+                    
+                    // 快照读取，减少 recomposition
+                    val y = floatState.y
+                    val height = floatState.height
                     val curScroll = with(headerDensity) { scrollState.value.toDp() }
-                    val cardTop = floatState.y + headH + gapH - curScroll
-                    val cardBottom = cardTop + floatState.height
-                    val topThreshold = headH + gapH + edgeZone
-                    val bottomThreshold = maxHeight - edgeZone
+                    
+                    val cardTop = y + headPlusGap - curScroll
+                    val cardBottom = cardTop + height
+                    
                     if (cardTop < topThreshold && scrollState.value > 0) {
+                        // 向上滚动
                         val overflow = (topThreshold - cardTop).value.coerceAtLeast(0f)
                         val ratio = (overflow / edgeZone.value).coerceIn(0f, 1f)
                         val stepDp = (3f + 11f * ratio).dp
                         val stepPx = with(headerDensity) { stepDp.toPx() }
-                        val consumed = scrollState.scrollBy(-stepPx)
-                        if (consumed != 0f) {
-                            val deltaDp = with(headerDensity) { consumed.toDp() }
-                            floatState.y += deltaDp
-                            floatState.anchorScrollDp = with(headerDensity) { scrollState.value.toDp() }
-                            applyFloatSnap()
+                        
+                        try {
+                            val consumed = scrollState.scrollBy(-stepPx)
+                            if (consumed != 0f) {
+                                val deltaDp = with(headerDensity) { consumed.toDp() }
+                                floatState.y += deltaDp
+                                floatState.anchorScrollDp = with(headerDensity) { scrollState.value.toDp() }
+                                applyFloatSnap()
+                            }
+                        } catch (e: Exception) {
+                            // scrollBy 可能在动画过程中抛异常，捕获后继续循环
                         }
                     } else if (cardBottom > bottomThreshold && scrollState.value < scrollState.maxValue) {
+                        // 向下滚动
                         val overflow = (cardBottom - bottomThreshold).value.coerceAtLeast(0f)
                         val ratio = (overflow / edgeZone.value).coerceIn(0f, 1f)
                         val stepDp = (3f + 11f * ratio).dp
                         val stepPx = with(headerDensity) { stepDp.toPx() }
-                        val consumed = scrollState.scrollBy(stepPx)
-                        if (consumed != 0f) {
-                            val deltaDp = with(headerDensity) { consumed.toDp() }
-                            floatState.y += deltaDp
-                            floatState.anchorScrollDp = with(headerDensity) { scrollState.value.toDp() }
-                            applyFloatSnap()
+                        
+                        try {
+                            val consumed = scrollState.scrollBy(stepPx)
+                            if (consumed != 0f) {
+                                val deltaDp = with(headerDensity) { consumed.toDp() }
+                                floatState.y += deltaDp
+                                floatState.anchorScrollDp = with(headerDensity) { scrollState.value.toDp() }
+                                applyFloatSnap()
+                            }
+                        } catch (e: Exception) {
+                            // scrollBy 可能在动画过程中抛异常，捕获后继续循环
                         }
                     }
                 }
