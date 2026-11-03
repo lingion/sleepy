@@ -117,17 +117,22 @@ jobs:
         shell: bash
         run: |
           docker build -t sleepy-debug-build -f tooling/.github/ci/debug-build.Dockerfile tooling/.github/ci
+          # runner 的 JDK cacerts 可能链接到挂载目录外；复制公共 CA 库并显式指定。
+          cp -L "$JAVA_HOME/lib/security/cacerts" "$RUNNER_TEMP/java-cacerts"
+          test -s "$RUNNER_TEMP/java-cacerts"
           # 不向 PR 容器传递 runner token、命令文件、主机 HOME 或缓存；SDK/工具只读。
           docker run --rm --cap-drop=ALL --security-opt=no-new-privileges \
             --user "$(id -u):$(id -g)" --workdir /workspace \
             -e HOME=/tmp -e GRADLE_USER_HOME=/tmp/gradle \
             -e JAVA_HOME=/opt/java -e ANDROID_HOME=/opt/android-sdk \
+            -e JAVA_TOOL_OPTIONS=-Djavax.net.ssl.trustStore=/opt/java-cacerts \
             -e ANDROID_SDK_ROOT=/opt/android-sdk -e SLEEPY_DEBUG_KEYSTORE=/opt/debug.keystore \
             -v "$JAVA_HOME:/opt/java:ro" -v "$ANDROID_HOME:/opt/android-sdk:ro" \
             -v "$GITHUB_WORKSPACE/source:/workspace" \
             -v "$GITHUB_WORKSPACE/source/.git:/workspace/.git:ro" \
             -v "$GITHUB_WORKSPACE/tooling/.github/ci:/opt/ci:ro" \
             -v "$SLEEPY_DEBUG_KEYSTORE:/opt/debug.keystore:ro" \
+            -v "$RUNNER_TEMP/java-cacerts:/opt/java-cacerts:ro" \
             sleepy-debug-build /bin/bash -c \
             'export PATH="/opt/java/bin:$PATH"; ./gradlew :app:assembleDebug --no-daemon --no-configuration-cache --stacktrace --init-script /opt/ci/debug-abi.init.gradle "-Psleepy.buildAbi=$1"' -- "$ABI"
       - name: Verify and stage identified APKs
