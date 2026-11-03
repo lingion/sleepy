@@ -27,7 +27,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
+import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
