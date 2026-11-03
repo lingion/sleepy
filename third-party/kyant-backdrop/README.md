@@ -1,11 +1,23 @@
-# SleepDown Kyant Backdrop source dependency
+# Sleepy vendored Kyant Backdrop module
 
-Upstream: https://github.com/Kyant0/AndroidLiquidGlass
+This module was imported through the customized source assets of
+[xiaomanjun233/SleepDown-Schedule](https://github.com/xiaomanjun233/SleepDown-Schedule).
+The original Kyant baseline retains Apache-2.0. SleepDown-owned changes have a
+separate source-available non-commercial notice; they must not be described as
+Kyant originals solely because they share its package name. The imported
+SleepDown revision was not recorded. See the [attribution inventory](../../ACKNOWLEDGEMENTS.md)
+and the retained [SleepDown license](../../app/src/main/assets/third_party/notices/SleepDown-LICENSE.md)
+and [upstream third-party notices](../../app/src/main/assets/third_party/notices/SleepDown-THIRD_PARTY_NOTICES.md).
+
+The historical implementation and verification notes below came with the source
+assets and describe SleepDown. They do not record tests performed on Sleepy.
+Sleepy build wiring and dependency versions are defined by [build.gradle.kts](build.gradle.kts).
+
+Original upstream: https://github.com/Kyant0/AndroidLiquidGlass
 
 Baseline: tag `2.0.0`, commit `bebb11a91bd97bf1dabde479f3b332ad9898731f`.
 
-License: Apache-2.0; see LICENSE. Original `com.kyant.backdrop` packages are retained.
-This Android-only module uses the application's Compose 1.11.2 dependencies.
+Original upstream license: Apache-2.0; see LICENSE. Original `com.kyant.backdrop` packages are retained.
 
 ## Course rendering (2026-10-18)
 
@@ -27,7 +39,7 @@ it does not import Nexio's customized source or label those changes Apache-2.0.
   each card's different clip to the filter. Android's RenderEffect image cache also keys on clip
   bounds, so an Auto wrapper alone cannot guarantee reuse. This is one shared allocation, not an
   extra Offscreen layer per card. No CPU readback is used. Device tracing is still needed to measure
-  actual GPU work. See the [investigation](../../docs/reports/2026-10-18-nexio-glass-parity.md).
+  actual GPU work. See the upstream investigation at `docs/reports/2026-10-18-nexio-glass-parity.md` (not included in this checkout).
 - Consumers use the source's full-resolution coordinate transform for both initial raw wallpaper
   and the published prefix. Once the prefix is ready, the local effect chain contains only Lens,
   followed by SleepDown's tint; it does not append another Blur.
