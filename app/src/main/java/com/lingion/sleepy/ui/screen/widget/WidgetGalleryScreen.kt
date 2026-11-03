@@ -59,6 +59,13 @@ import kotlinx.coroutines.launch
 /** 画廊每排卡片数: 行高基准(该排大卡)按此分排, 与 2 列同源。 */
 private const val GALLERY_COLUMNS = 2
 
+/**
+ * 从完整标签提取基础名称，去除尺寸后缀（如"课程表 · 大" → "课程表"）
+ */
+private fun extractBaseName(fullName: String): String {
+    return fullName.split(" · ").firstOrNull() ?: fullName
+}
+
 /** 画廊行项建模: 折叠状态以 2 列行排布, 展开项独占整行。 */
 private sealed interface GalleryRowItem {
     val key: String
@@ -261,8 +268,10 @@ private fun CollapsedGroupItem(
     onClick: () -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
-    val baseName = stringResource(group.primaryVariant.displayNameRes)
-    val displayName = group.formattedName(baseName)
+    // 收起状态：去掉尺寸后缀，显示"(多尺寸)"
+    val fullName = stringResource(group.primaryVariant.displayNameRes)
+    val baseName = extractBaseName(fullName)
+    val displayName = if (group.isMultiSize) "$baseName（多尺寸）" else baseName
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -298,8 +307,9 @@ private fun ExpandedGroupItem(
     onPin: (WidgetVariantInfo) -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
+    // 展开状态：标题不带"(多尺寸)"后缀，只显示基础名称
     val baseName = stringResource(group.primaryVariant.displayNameRes)
-    val displayName = group.formattedName(baseName)
+    val displayName = extractBaseName(baseName)
     // 展开区域内部各变体也按 2 列排布, 计算行框宽高比
     val variantRatios = remember(group.allVariants) {
         WidgetGalleryData.rowBoxAspectRatios(group.allVariants, GALLERY_COLUMNS)
