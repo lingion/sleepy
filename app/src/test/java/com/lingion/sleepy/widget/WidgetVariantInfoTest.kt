@@ -14,8 +14,8 @@ import org.junit.Test
 class WidgetVariantInfoTest {
 
     @Test
-    fun `ALL_WIDGET_VARIANTS has exactly 10 entries`() {
-        assertEquals(13, ALL_WIDGET_VARIANTS.size)
+    fun `ALL_WIDGET_VARIANTS includes one dedicated wide grid entry`() {
+        assertEquals(1, ALL_WIDGET_VARIANTS.count { it.receiverClass == WeekGridWideWidgetProvider::class.java })
     }
 
     @Test
@@ -63,6 +63,7 @@ class WidgetVariantInfoTest {
             v.receiverClass.simpleName.removeSuffix("SmallWidgetProvider")
                 .removeSuffix("SmallWidgetReceiver")
                 .removeSuffix("WideWidgetReceiver")
+                .removeSuffix("WideWidgetProvider")
                 .removeSuffix("WidgetProvider")
                 .removeSuffix("WidgetReceiver")
         }
@@ -71,7 +72,7 @@ class WidgetVariantInfoTest {
         // WeekView/WeekGrid 不设 M (2)。
         val expected = mapOf(
             "Today" to 3, "TwoDay" to 3, "WeekList" to 3,
-            "WeekView" to 2, "WeekGrid" to 2
+            "WeekView" to 2, "WeekGrid" to 3
         )
         assertEquals(expected.keys, counts.keys)
         counts.forEach { (kind, count) ->
