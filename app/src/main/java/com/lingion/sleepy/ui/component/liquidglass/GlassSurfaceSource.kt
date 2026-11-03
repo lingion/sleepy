@@ -38,7 +38,7 @@ fun Modifier.glassSurfaceBackground(color: Color, shape: Shape, depth: Float = -
             }
         }
         if (host != null) {
-            layer.record { paintBacking() }
+            recordGlassLayer(layer) { paintBacking() }
             drawLayer(layer)
             host.changed()
         } else {

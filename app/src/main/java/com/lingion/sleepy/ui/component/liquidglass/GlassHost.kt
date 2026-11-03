@@ -98,6 +98,7 @@ class GlassHostState internal constructor(internal val sourceLayer: GraphicsLaye
 }
 
 internal class GlassSourceSegment(val depth: Float, val layer: GraphicsLayer) {
+    var nativeGeneration by mutableIntStateOf(0)
     var coordinates: LayoutCoordinates? = null
 }
 
@@ -129,7 +130,7 @@ fun GlassHost(
         Box(modifier.onGloballyPositioned { state.coordinates = it }.drawWithContent {
             state.filterDemand
             if (enabled) {
-                state.sceneLayer.record { this@drawWithContent.drawContent() }
+                recordGlassLayer(state.sceneLayer) { this@drawWithContent.drawContent() }
                 drawLayer(state.sceneLayer)
                 Snapshot.withoutReadObservation { state.sceneVersion++ }
             } else {
@@ -138,7 +139,7 @@ fun GlassHost(
             val root = state.coordinates
             if (enabled && root?.isAttached == true) {
                 // Diagnostic export only. Consumers read their own strict prefix directly.
-                state.sourceLayer.record {
+                recordGlassLayer(state.sourceLayer) {
                     Snapshot.withoutReadObservation { with(state) { drawPrefix(1f, root) } }
                 }
                 Snapshot.withoutReadObservation { state.filterBands.forEach { it.update(this@drawWithContent, state) } }
@@ -173,7 +174,8 @@ fun GlassBackground(
     }
     CompositionLocalProvider(LocalGlassSourceContent provides (host != null)) {
         Box(modifier.onGloballyPositioned { segment.coordinates = it }.drawWithContent {
-            layer.record { this@drawWithContent.drawContent() }
+            segment.nativeGeneration
+            recordGlassLayer(layer) { this@drawWithContent.drawContent() }
             drawLayer(layer)
             host?.changed()
         }, content = content)
@@ -211,7 +213,7 @@ internal val LocalGlassOverlaySamplingHost = compositionLocalOf<GlassHostState?>
 internal fun Modifier.recordGlassPopupScene(state: GlassHostState): Modifier =
     onGloballyPositioned { state.coordinates = it }.drawWithContent {
         state.filterDemand
-        state.sceneLayer.record { this@drawWithContent.drawContent() }
+        recordGlassLayer(state.sceneLayer) { this@drawWithContent.drawContent() }
         drawLayer(state.sceneLayer)
         Snapshot.withoutReadObservation { state.sceneVersion++ }
         Snapshot.withoutReadObservation {
