@@ -99,6 +99,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.filter
 import java.time.LocalTime
 import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.floor
 import kotlin.math.roundToInt
 
@@ -778,6 +780,11 @@ fun CardsGridView(
                     // 与新宿主实例双写计时/双翻 (2026-10-30 诊断: 换页 +300ms 即多翻一页)。
                     if (currentWeek != floatState.week) return@LaunchedEffect
                     val cx = (floatState.x + floatState.width / 2f).value
+                    // Launcher3 同构: 左边缘用 min(手指x, 中心x), 右边缘用 max(手指x, 中心x) —
+                    // 确保卡片任意部分到达边缘都能触发, 不被卡片宽度限制。
+                    // floatState.x 是跟手位置(拖拽点), cx 是卡片中心, 取更极端值覆盖整个卡片范围。
+                    val leftEdgeX = min(floatState.x.value, cx)
+                    val rightEdgeX = max((floatState.x + floatState.width).value, cx)
                     // 防误触: 拖拽起点起水平位移未超 slop 不判边缘 (FullCalendar everMoved 同构)。
                     // 触发域 (2026-10-30 用户裁决, 替换「列带外缘 10dp」): 判据锚**可视表格
                     // 外壳缘**, 左右各内缩同一 FLOAT_EDGE_ZONE_DP — 镜像对称。旧判据锚列带缘:
@@ -789,8 +796,8 @@ fun CardsGridView(
                     // 各列落子全程在区外 (Lawnchair verifyInsidePage 语义维持)。
                     val dir = when {
                         abs(cx - floatState.dragOriginCx.value) < FLOAT_EDGE_SLOP_DP -> 0
-                        cx < FLOAT_EDGE_ZONE_DP -> -1
-                        cx > maxWidth.value - FLOAT_EDGE_ZONE_DP -> 1
+                        leftEdgeX < FLOAT_EDGE_ZONE_DP -> -1
+                        rightEdgeX > maxWidth.value - FLOAT_EDGE_ZONE_DP -> 1
                         else -> 0
                     }
                     if (dir != held) { held = dir; elapsed = 0L }
