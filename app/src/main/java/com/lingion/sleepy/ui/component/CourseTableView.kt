@@ -840,7 +840,7 @@ fun CardsGridView(
                 val bottomThreshold = maxHeight - edgeZone
                 
                 while (isActive && floatState.dragging && currentWeek == floatState.week) {
-                    delay(100L)  // 提高到 100ms 大幅降低性能开销
+                    delay(50L)  // 50ms 平衡性能与响应性
                     
                     // 快照读取，减少 recomposition
                     val y = floatState.y
