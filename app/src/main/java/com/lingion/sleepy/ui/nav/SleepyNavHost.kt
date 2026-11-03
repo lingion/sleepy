@@ -169,6 +169,10 @@ internal fun SleepyNavHost(
     val popTransform = sleepyPopTransform()
     val predictivePopTransform = sleepyPredictivePopTransform()
 
+    // 转场底衬: content 家族缩放动画(0.92↔1)期间页面四周会露出底层,
+    // 无底衬时露的是窗口默认白底(Theme.Material.Light.NoActionBar),
+    // 进出子页动画即现白边。铺一层 background 色兜住缩放边缘, 随主题即时切换。
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
     NavDisplay(
         backStack = nav,
         entryDecorators = listOf(
@@ -433,6 +437,7 @@ internal fun SleepyNavHost(
         }
         }
     )
+    }
 }
 
 /**

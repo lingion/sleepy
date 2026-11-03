@@ -7,7 +7,7 @@ import org.junit.Test
 /**
  * 主页面 tab 切换过渡契约 (MD3E motion 全量补齐 Task 3, 2026-10-29):
  *   1. MainTabs 的 when(currentTab) 组合必须包在 AnimatedContent(targetState = currentTab) 里 —
- *      tab 内容切换从"瞬移"变为 MD3E content 家族过渡 (scaleIn 0.92 + fadeIn / scaleOut →0.92 + fadeOut);
+ *      tab 内容切换从"瞬移"变为 MD3E content 家族过渡 (scaleIn 0.92 / scaleOut →0.92 + fadeOut);
  *   2. 规格只准来自 SleepyMotion 工厂 sleepyContentEnter()/sleepyContentExit() —
  *      且必须在可组合体内先算好再捕获进 transitionSpec lambda (该 lambda 非可组合,
  *      直接在里面调 @Composable 工厂编不过, NavHost 迁移时已踩过);
