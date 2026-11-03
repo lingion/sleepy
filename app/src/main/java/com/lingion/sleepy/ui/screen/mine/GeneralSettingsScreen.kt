@@ -9,6 +9,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -799,8 +800,7 @@ fun GeneralSettingsScreen(
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth()
-                            .glassControl(shape = SleepyTheme.shapes.large, enabled = !migrationBusy)
-                            .noRippleGlassClickable { onMigrationExportClick() }
+                            .clickable(enabled = !migrationBusy) { onMigrationExportClick() }
                             .dbgTag("general_migration_export", text = stringResource(R.string.settings_migration_export), role = "button")
                             .alpha(if (migrationBusy) 0.5f else 1f)
                             .padding(16.dp),
@@ -827,8 +827,7 @@ fun GeneralSettingsScreen(
                     HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     Row(
                         modifier = Modifier.fillMaxWidth()
-                            .glassControl(shape = SleepyTheme.shapes.large, enabled = !migrationBusy)
-                            .noRippleGlassClickable {
+                            .clickable(enabled = !migrationBusy) {
                                 if (!migrationBusy) importLauncher.launch(arrayOf("application/zip", "application/octet-stream"))
                             }
                             .dbgTag("general_migration_import", text = stringResource(R.string.settings_migration_import), role = "button")

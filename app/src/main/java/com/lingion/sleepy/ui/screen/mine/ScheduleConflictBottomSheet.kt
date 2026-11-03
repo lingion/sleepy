@@ -1,7 +1,5 @@
 package com.lingion.sleepy.ui.screen.mine
 
-import com.lingion.sleepy.ui.component.liquidglass.glassControl
-import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -113,9 +111,8 @@ fun ScheduleConflictBottomSheet(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .glassControl(shape = SleepyTheme.shapes.large, tint = colors.secondaryContainer)
                     .clip(SleepyTheme.shapes.large)
-                    .background(controlFill(colors.secondaryContainer))
+                    .background(colors.secondaryContainer)
                     .clickable(onClick = onCancel)
                     .padding(vertical = 14.dp),
                 horizontalArrangement = Arrangement.Center,
@@ -142,9 +139,8 @@ private fun ConflictOption(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .glassControl(shape = SleepyTheme.shapes.large)
             .clip(SleepyTheme.shapes.large)
-            .background(controlFill(colors.surfaceContainer))
+            .background(colors.surfaceContainer)
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 14.dp)
     ) {

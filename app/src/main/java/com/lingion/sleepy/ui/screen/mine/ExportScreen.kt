@@ -1,8 +1,6 @@
 package com.lingion.sleepy.ui.screen.mine
 
 import com.lingion.sleepy.ui.theme.noRippleGlassClickable
-import com.lingion.sleepy.ui.component.liquidglass.glassControl
-import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import android.Manifest
 import android.content.Intent
 import android.widget.Toast
@@ -205,9 +203,8 @@ fun ExportScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .glassControl(shape = SleepyTheme.shapes.large, tint = colors.primaryContainer)
                         .clip(SleepyTheme.shapes.large)
-                        .background(controlFill(colors.primaryContainer))
+                        .background(colors.primaryContainer)
                         .noRippleGlassClickable { showTablePicker = true }
                         .padding(20.dp)
                 ) {
@@ -501,9 +498,8 @@ private fun PickerRow(title: String, subtitle: String?, isSelected: Boolean, onC
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .glassControl(shape = SleepyTheme.shapes.small, tint = if (isSelected) colors.primaryContainer else null)
             .clip(SleepyTheme.shapes.small)
-            .background(controlFill(if (isSelected) colors.primaryContainer else colors.surfaceContainer))
+            .background(if (isSelected) colors.primaryContainer else colors.surfaceContainer)
             .noRippleGlassClickable(onClick)
             .padding(vertical = 10.dp, horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -546,7 +542,6 @@ internal fun ExportItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .glassControl(shape = SleepyTheme.shapes.medium)
             .noRippleGlassClickable(onClick)
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically

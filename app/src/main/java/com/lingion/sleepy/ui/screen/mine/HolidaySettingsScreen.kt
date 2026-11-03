@@ -31,7 +31,7 @@ import androidx.compose.material3.ExposedDropdownMenu
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import com.lingion.sleepy.ui.component.liquidglass.GlassTonalButton as FilledTonalButton
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
@@ -931,7 +931,7 @@ private fun HolidayRangeEditDialog(
                     // 删除走 errorContainer 色块 — 纯色块禁描边规则。
                     // 弹窗不设"恢复": 已保存段删除=移除覆盖(可从已删除区恢复), 网络段删除=REMOVED 覆盖(同入口恢复);
                     // 弹窗内两个按钮会做同一件事, 恢复入口统一收敛到"已删除"区块。
-                    Button(
+                    androidx.compose.material3.Button(
                         onClick = { onDelete(target) },
                         modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
                         shape = SleepyTheme.Buttons.shape,

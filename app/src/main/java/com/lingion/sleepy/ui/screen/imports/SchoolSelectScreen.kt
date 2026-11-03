@@ -536,7 +536,6 @@ private fun CustomUrlEntryRow(onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .glassControl(shape = SleepyTheme.shapes.medium)
             .noRippleGlassClickable(onClick)
             .dbgTag("school_custom_url_entry", text = stringResource(R.string.custom_url_entry), role = "button")
             .padding(vertical = 14.dp, horizontal = 4.dp),
@@ -666,7 +665,6 @@ private fun SchoolRow(school: JwSchoolInfo, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .glassControl(shape = SleepyTheme.shapes.medium)
             .noRippleGlassClickable(onClick)
             .dbgTag("school_item", text = school.name, role = "button")
             .padding(vertical = 14.dp, horizontal = 4.dp),
@@ -772,7 +770,6 @@ private fun UrlDirectRow(url: String, protocolType: String?, matchedSchool: JwSc
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .glassControl(shape = SleepyTheme.shapes.medium)
             .noRippleGlassClickable(onClick)
             .dbgTag("school_url_direct", text = url, role = "button")
             .padding(vertical = 14.dp, horizontal = 4.dp),
