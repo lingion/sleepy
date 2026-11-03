@@ -2,7 +2,7 @@ package com.lingion.sleepy.ui.screen.imports
 
 import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
-import com.lingion.sleepy.ui.component.liquidglass.controlFill
+import androidx.compose.foundation.clickable
 import android.content.Context
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -46,7 +46,7 @@ import androidx.compose.material3.Scaffold
 import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
-import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -728,9 +728,8 @@ private fun ImportMethodRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .glassControl(shape = SleepyTheme.shapes.medium, enabled = enabled)
             .clip(SleepyTheme.shapes.medium)
-            .noRippleGlassClickable(enabled = enabled, onClick = onClick)
+            .clickable(enabled = enabled, onClick = onClick)
             .then(dbgTag?.let { Modifier.dbgTag(it, text = label, role = "button") } ?: Modifier)
             .padding(vertical = 14.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically

@@ -19,7 +19,7 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Edit
 import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
-import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme

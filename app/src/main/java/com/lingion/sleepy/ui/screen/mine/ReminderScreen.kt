@@ -2,7 +2,6 @@ package com.lingion.sleepy.ui.screen.mine
 
 import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
-import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
@@ -708,7 +707,7 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                     ReminderRescheduler.request()
                                 }
                             )
-                            FilledTonalButton(
+                            androidx.compose.material3.FilledTonalButton(
                                 onClick = onOpenHoliday,
                                 modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
                             ) {
@@ -1064,7 +1063,7 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                             }
                                         }
                                     } else {
-                                        FilledTonalButton(
+                                        androidx.compose.material3.FilledTonalButton(
                                             onClick = {
                                                 // 三查闸门 (用户 2026-10-10 二轮): 通知权限 + promoted
                                                 // 实时更新授权 + 厂商能力, 任一缺失弹窗列明 + 给设置入口,
@@ -1399,7 +1398,6 @@ private fun ReminderTimeRow(label: String, time: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .glassControl(shape = SleepyTheme.shapes.medium)
             .noRippleGlassClickable(onClick = onClick)
             .padding(vertical = 12.dp, horizontal = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,

@@ -29,7 +29,7 @@ import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
-import com.lingion.sleepy.ui.component.liquidglass.GlassTonalButton as FilledTonalButton
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
