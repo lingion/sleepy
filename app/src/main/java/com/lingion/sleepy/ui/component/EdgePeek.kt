@@ -44,7 +44,8 @@ import com.lingion.sleepy.R
  */
 internal const val FLOAT_EDGE_ZONE_DP = 10f
 internal const val FLOAT_EDGE_DWELL_MS = 500L
-internal const val FLOAT_EDGE_DWELL_STEP_MS = 50L
+/** 边缘翻页轮询间隔 (ms): 提高到 100ms 大幅降低性能开销 */
+internal const val FLOAT_EDGE_DWELL_STEP_MS = 100L
 internal const val FLOAT_PAGE_ANIM_MS = 300L
 // 吸附跳格动画时长 — Lawnchair CellLayout.REORDER_ANIMATION_DURATION(HEAD 实测)。
 // 曲线口径 (2026-10-29 逐行核实源库, 修正早前「quint=吸附曲线」的误记):
