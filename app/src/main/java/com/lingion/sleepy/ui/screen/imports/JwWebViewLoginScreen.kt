@@ -65,6 +65,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.lingion.sleepy.ui.component.liquidglass.BindGlassAndroidViewSource
+import com.lingion.sleepy.ui.component.liquidglass.glassBackdropSource
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.jw.EAMS5_PREFIX_PLACEHOLDER
 import com.lingion.sleepy.data.jw.JwImportViewModel
@@ -135,6 +137,7 @@ fun JwWebViewLoginScreen(
     val snackbar = remember { SnackbarHostState() }
     var progress by remember { mutableStateOf(0) }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
+    BindGlassAndroidViewSource(webViewRef)
     var currentUrl by remember { mutableStateOf(school.url) }
     // state 版输入框 (TextFieldState) — 旧 TextFieldValue 重载走 legacy 路径,
     // 其拖拽手柄 (TextFieldSelectionState) 字节码全量零 scroll 调用, 拖光标到
@@ -714,7 +717,7 @@ private fun JwWebView(
     var lastUrl by remember { mutableStateOf(url) }
     key(recreateKey) {
         AndroidView(
-        modifier = Modifier.fillMaxSize().dbgTag("jw_webview", text = lastUrl, role = "webview", clickable = false),
+        modifier = Modifier.fillMaxSize().glassBackdropSource(0f).dbgTag("jw_webview", text = lastUrl, role = "webview", clickable = false),
         factory = { context ->
             val schoolHost = lastUrl.toUri().host.orEmpty()
             WebView(context).apply {

@@ -42,10 +42,10 @@ internal class GlassFilterBand(
                 radiusX = radiusDp * density, radiusY = radiusDp * density,
                 edgeTreatment = TileMode.Clamp,
             )
-            filtered.record { drawLayer(source) }
+            recordGlassLayer(filtered) { drawLayer(source) }
             // A retained raster boundary shares the Gaussian result across consumer clips.
             published.compositingStrategy = CompositingStrategy.Offscreen
-            published.record { drawLayer(filtered) }
+            recordGlassLayer(published) { drawLayer(filtered) }
         }
         key = nextKey
         ready = true

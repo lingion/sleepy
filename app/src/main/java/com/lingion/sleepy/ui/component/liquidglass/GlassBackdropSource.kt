@@ -49,7 +49,8 @@ private class GlassSourceNode(private var host: GlassHostState, private var dept
             it.coordinates = coordinates
             segment = it; host.sources.add(it)
         }
-        current.layer.record { this@draw.drawContent() }
+        current.nativeGeneration
+        recordGlassLayer(current.layer) { this@draw.drawContent() }
         drawLayer(current.layer)
         host.changed()
     }
