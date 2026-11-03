@@ -22,9 +22,14 @@
 
 命令：`./gradlew :app:testDebugUnitTest :app:assembleDebug :app:lintDebug --console=plain`。
 
-结果：3587 项测试，0 failures，0 errors，2 skipped；debug 构建成功；lint 为 0 Fatal、0 Error、554 Warning。
+结果：3601 项测试（增加多 SDK 与导航契约），0 failures，0 errors，2 skipped；debug 构建成功；lint 为 0 Fatal、0 Error。
 
 一次较早全量运行曾出现已有 ClockHandlerTest 的回包时间相差 1 毫秒失败。未修改时钟生产逻辑；该类单独复查及后续完整验证通过。不能把这次中间失败从验证记录抹去。
+
+收尾波次补充：
+- 抽取 `recordGlassLayer` 隔离 `LayoutNodeDrawScope` 的 density delegate，防止嵌套弹窗采样递归。
+- 接入 `BindGlassAndroidViewSource` 提供原生 AndroidView（如 WebView）的重绘代际失效通知。
+- 补齐主导航 Tab 贴底栏的胶囊指示器玻璃化及二级页（浮动卡片、提醒、设置导出导入、添加课程）的玻璃控件接入。
 
 Android 14 模拟器 `emulator-5560` 的三项真实 GPU 测试在最终主线同步 APK 上实际执行通过：
 
