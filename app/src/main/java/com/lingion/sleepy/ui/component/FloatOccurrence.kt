@@ -262,16 +262,13 @@ class CourseFloatState {
 }
 
 /**
- * 遮罩不透明度分档 (用户实测定值, EMUI/Android 11 压暗被系统压缩 → 兜底加深):
- * API 26-30 无 RenderEffect → 0.35 压暗兜底; API 31+ 模糊已让位浮卡 → 0.10 轻罩。
- * 纯函数便于测试锁值; AnimatedVisibility 只负责 opacity 0→该档值的淡入淡出。
+ * 遮罩不透明度 (Issue #274: 禁用模糊后统一使用遮罩)
+ * 所有API版本统一使用 0.35 压暗，避免模糊导致的边缘白边和性能问题
  */
-internal fun scrimAlphaFor(sdkInt: Int): Float =
-    if (sdkInt < Build.VERSION_CODES.S) 0.35f else 0.10f
+internal fun scrimAlphaFor(sdkInt: Int): Float = 0.35f
 
-/** 网格模糊目标半径 (dp): 浮起且静止才糊, 拖拽中/收层复原 0 — 缓动交给宿主。 */
-internal fun floatBlurRadiusDp(active: Boolean, dragging: Boolean): Dp =
-    if (active && !dragging) 20.dp else 0.dp
+/** 网格模糊目标半径 (dp): Issue #274 禁用模糊避免边缘白边和性能问题，统一使用遮罩。 */
+internal fun floatBlurRadiusDp(active: Boolean, dragging: Boolean): Dp = 0.dp
 
 /** 浮起时模糊整个网格内容层 — API 31+ 高斯模糊; 26-30 无 RenderEffect, 由遮罩压暗兜底。
  *  半径经 lambda 在 graphicsLayer 的 draw 相位读取 (终审 I-2): 动画 State 的每帧
