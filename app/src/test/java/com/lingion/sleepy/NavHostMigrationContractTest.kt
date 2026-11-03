@@ -29,6 +29,9 @@ class NavHostMigrationContractTest {
     private val routesSrc by lazy {
         File("src/main/java/com/lingion/sleepy/ui/nav/SleepyMaterialTransition.kt").readText()
     }
+    private val motionSrc by lazy {
+        File("src/main/java/com/lingion/sleepy/ui/component/SleepyMotion.kt").readText()
+    }
     private val mainSrc by lazy {
         File("src/main/java/com/lingion/sleepy/MainActivity.kt").readText()
     }
@@ -169,7 +172,8 @@ class NavHostMigrationContractTest {
     fun nav_transforms_delegate_to_shared_content_factories() {
         // M3 Expressive 全量过闸: forward/pop/predictive 三个 transform 不再自带 tween/spring
         // 常量, 统一由 SleepyMotion 的 sleepyContentEnter/sleepyContentExit 工厂产出
-        // (scaleIn/Out 0.92 defaultSpatial + alpha defaultEffects)。单一调参点 = SleepyMotion.kt。
+        // (enter scaleIn 0.92 defaultSpatial 不叠 alpha / exit scaleOut→0.92 + fadeOut)。
+        // 单一调参点 = SleepyMotion.kt。
         // 三个工厂都是 @Composable(motionScheme 要读主题), NavDisplay 非 composable 槽位在
         // 调用点先算好 ContentTransform 再捕获 — 捕获模式本身也要锁。
         listOf(
@@ -216,6 +220,39 @@ class NavHostMigrationContractTest {
         assertFalse(
             "转场文件不允许出现 slideInHorizontally (Material 方案已禁返回滑入)",
             routesSrc.contains("slideInHorizontally")
+        )
+    }
+
+    @Test
+    fun content_enter_is_opaque_scale_only_to_prevent_ghosting() {
+        // 用户报障(2026-11): 进出子页转场中途父子页文字双影 — 根因是入页叠了 fadeIn,
+        // 目标页半透明把下层出页内容透出来。目标页(targetContentZIndex=1)不透明底
+        // 直接压住出页, 入场只保留缩放位移, 不得再叠 alpha。
+        val start = motionSrc.indexOf("fun sleepyContentEnter")
+        assertTrue("SleepyMotion.kt 必须定义 sleepyContentEnter", start >= 0)
+        val end = motionSrc.indexOf("fun sleepyContentExit")
+        assertTrue("sleepyContentEnter 之后必须还有 sleepyContentExit", end > start)
+        val body = motionSrc.substring(start, end)
+        assertFalse(
+            "sleepyContentEnter 不得叠 fadeIn(半透明入场=父子页双影回归)",
+            body.contains("fadeIn")
+        )
+        assertTrue(
+            "sleepyContentEnter 必须保留 scaleIn + SleepyContentScaleStart 单点缩放",
+            body.contains("scaleIn") && body.contains("SleepyContentScaleStart")
+        )
+    }
+
+    @Test
+    fun nav_display_sits_on_opaque_backdrop_for_scale_transitions() {
+        // 用户报障(2026-11): 子页返回动画四周露白边 — 页面缩放到 0.92 时露出的是
+        // 窗口默认白底(Theme.Material.Light.NoActionBar)。NavDisplay 外层必须垫
+        // 一层 background 色底衬兜住缩放边缘, 且随主题即时切换。
+        assertTrue(
+            "NavDisplay 外层必须有 fillMaxSize + background(MaterialTheme.colorScheme.background) 转场底衬",
+            Regex(
+                """background\(MaterialTheme\.colorScheme\.background\)\)\s*\{\s*NavDisplay\("""
+            ).containsMatchIn(navHostSrc)
         )
     }
 
