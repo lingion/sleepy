@@ -12,10 +12,10 @@
 
 ## 解锁流程（仅 release 包）
 
-1. 关于页连点版本号 7 次（60s 窗口内）→ 设备绑端口（只开 hello/enable）
-2. `POST /v1/enable` `{"passphrase":"sleepy.is-my.app"}` → `{"result":"OK","token":"...","expiresAt":...}`
+1. 关于页顶部版本号或版本信息卡片连点 7 次（60s 窗口内）→ 弹出密钥框，设备绑端口（只开 hello/enable）。
+2. 在弹窗输入密钥即可本地开启；HTTP 客户端仍使用 `POST /v1/enable` `{"passphrase":"sleepy.is-my.app"}` → `{"result":"OK","token":"...","expiresAt":...}`。两种入口共用密钥校验与退避；HTTP 成功后弹窗同步关闭。本地开启不展示 HTTP token，需要 HTTP 操作时请关闭后重新连点，并通过 HTTP 解锁获取 token。
 3. 解锁态 = 进程存活期；红条常驻可一键 DEACTIVATE；能力降级：catalog 写 403 / trigger 404（类物理不存在）/ jw-mock 403
-4. debug 包：端口随进程无条件在, `/v1/enable` 短路 `ALREADY_ACTIVE`
+4. debug 包：进程启动时自动开启；关于页可关闭，重新连点版本号可恢复全部 debug 路由，旧 token 失效。`/v1/enable` 短路 `ALREADY_ACTIVE`。
 
 ## 端点表
 

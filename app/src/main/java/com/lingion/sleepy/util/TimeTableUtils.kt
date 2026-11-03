@@ -10,6 +10,21 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
+import java.util.Collections
+
+/** 作息字符串就是版本键；编辑后自然失效。限制条数和键长度，避免导入数据撑大常驻内存。 */
+private class ParsedTimetableCache<T> {
+    private val entries = object : LinkedHashMap<String, List<T>>(16, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, List<T>>): Boolean = size > 16
+    }
+
+    fun getOrParse(json: String, parse: (String) -> List<T>): List<T> {
+        synchronized(entries) { entries[json]?.let { return it } }
+        val parsed = Collections.unmodifiableList(parse(json))
+        if (json.length > 32_768) return parsed
+        return synchronized(entries) { entries.getOrPut(json) { parsed } }
+    }
+}
 
 /**
  * 时间表 (timeJson) 解析与查询工具。
@@ -21,6 +36,9 @@ import java.time.temporal.ChronoUnit
  * 与 WakeUp 默认 12 节制对应，若用户改 nodesPerDay，会按节点列表拆段。
  */
 object TimeTableUtils {
+
+    private val nodeCache = ParsedTimetableCache<NodeTime>()
+    private val rowCache = ParsedTimetableCache<TimeSlotRow>()
 
     /**
      * 默认节次时间表（12 节 / 45-50 分钟）。
@@ -57,7 +75,10 @@ object TimeTableUtils {
     /** 解析 timeJson -> 按 node 排序的 list。
      *  兼容无 "node" 键的旧格式([{start,end},...]) — 节点号按数组序号补(1 起)。
      *  issue#40 预览读旧格式 timeJson(如迁移生成的 period_tables 行)时不再整体解析失败。 */
-    internal fun parseNodes(timeJson: String): List<NodeTime> = try {
+    internal fun parseNodes(timeJson: String): List<NodeTime> =
+        nodeCache.getOrParse(timeJson, ::parseNodesUncached)
+
+    private fun parseNodesUncached(timeJson: String): List<NodeTime> = try {
         val arr = JSONArray(timeJson)
         (0 until arr.length()).map { i ->
             val o = arr.getJSONObject(i)
@@ -408,7 +429,10 @@ object TimeTableUtils {
     }
 
     /** timeJson -> 编辑 rows (按数组顺序) */
-    fun parseTimeSlotRows(timeJson: String): List<TimeSlotRow> = try {
+    fun parseTimeSlotRows(timeJson: String): List<TimeSlotRow> =
+        rowCache.getOrParse(timeJson, ::parseTimeSlotRowsUncached)
+
+    private fun parseTimeSlotRowsUncached(timeJson: String): List<TimeSlotRow> = try {
         val arr = JSONArray(timeJson)
         (0 until arr.length()).map { i ->
             val o = arr.getJSONObject(i)
