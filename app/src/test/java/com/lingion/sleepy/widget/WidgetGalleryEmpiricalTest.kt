@@ -26,12 +26,23 @@ class WidgetGalleryEmpiricalTest {
     val compose = createComposeRule()
 
     private val expectedGroups = listOf(
-        "本周课表（网格）(多尺寸)",
-        "今日课程(多尺寸)",
-        "本周课表（列表）(多尺寸)",
-        "本周课表（周视图）(多尺寸)",
-        "最近两天(多尺寸)"
+        "本周课表（网格）（多尺寸）",
+        "今日课程（多尺寸）",
+        "本周课表（列表）（多尺寸）",
+        "本周课表（周视图）（多尺寸）",
+        "最近两天（多尺寸）"
     )
+
+    // 展开标题与主尺寸卡片可能同名；预览图的无障碍描述只属于可添加的卡片。
+    private fun variantNode(name: String) =
+        compose.onNode(hasText(name) and hasContentDescription(name))
+
+    private fun groupHeader(collapsedName: String): SemanticsNodeInteraction {
+        val baseName = collapsedName.removeSuffix("（多尺寸）")
+        return compose.onNode(
+            hasText(collapsedName) or (hasText(baseName) and hasContentDescription(baseName).not())
+        )
+    }
 
     @Test
     fun `entering WidgetGalleryScreen shows exactly 5 primary cards initially with multi-size label`() {
@@ -47,7 +58,7 @@ class WidgetGalleryEmpiricalTest {
         }
 
         // 2. Count total primary cards with "(多尺寸)"
-        val allMultiSizeNodes = compose.onAllNodesWithText("(多尺寸)", substring = true)
+        val allMultiSizeNodes = compose.onAllNodesWithText("（多尺寸）", substring = true)
         assertEquals("初始状态必须展示且仅展示 5 个主组件卡片", 5, allMultiSizeNodes.fetchSemanticsNodes().size)
 
         // 3. Verify secondary size variants are NOT displayed initially
@@ -99,10 +110,10 @@ class WidgetGalleryEmpiricalTest {
         }
 
         // Step 1: Tapping card A (WeekGrid) expands card A
-        compose.onNodeWithText("本周课表（网格）(多尺寸)").performScrollTo().performClick()
+        groupHeader(expectedGroups[0]).performScrollTo().performClick()
 
         // WeekGrid variants appear
-        compose.onNodeWithText("本周课表（网格）").performScrollTo().assertExists().assertIsDisplayed()
+        variantNode("本周课表（网格）").performScrollTo().assertExists().assertIsDisplayed()
         compose.onNodeWithText("本周课表（网格）· 小").performScrollTo().assertExists().assertIsDisplayed()
         compose.onNodeWithText("本周课表（网格）· 4×2").performScrollTo().assertExists().assertIsDisplayed()
 
@@ -111,20 +122,20 @@ class WidgetGalleryEmpiricalTest {
         compose.onNodeWithText("今日课程 · 中").assertDoesNotExist()
 
         // Step 2: Tapping card B (Today) expands card B and collapses card A
-        compose.onNodeWithText("今日课程(多尺寸)").performScrollTo().performClick()
+        groupHeader(expectedGroups[1]).performScrollTo().performClick()
 
         // Card A variants must now be collapsed (gone)
         compose.onNodeWithText("本周课表（网格）· 小").assertDoesNotExist()
         compose.onNodeWithText("本周课表（网格）· 4×2").assertDoesNotExist()
 
         // Card B variants must now appear
-        compose.onNodeWithText("今日课程").performScrollTo().assertExists().assertIsDisplayed()
+        variantNode("今日课程").performScrollTo().assertExists().assertIsDisplayed()
         compose.onNodeWithText("今日课程 · 小").performScrollTo().assertExists().assertIsDisplayed()
         compose.onNodeWithText("今日课程 · 中").performScrollTo().assertExists().assertIsDisplayed()
 
         // Step 3: Tapping expanded card B collapses card B
-        // The header row has "今日课程(多尺寸)" with noRippleClickable(onCollapse)
-        compose.onNodeWithText("今日课程(多尺寸)").performScrollTo().performClick()
+        // 展开后的标题去掉多尺寸后缀，点击标题收起。
+        groupHeader(expectedGroups[1]).performScrollTo().performClick()
 
         // Card B variants must now be collapsed (gone)
         compose.onNodeWithText("今日课程 · 小").assertDoesNotExist()
@@ -147,26 +158,24 @@ class WidgetGalleryEmpiricalTest {
         val groups = WidgetGalleryData.buildGroups()
         assertEquals(5, groups.size)
 
-        for (group in groups) {
-            val primaryLabel = group.formattedName(
-                ApplicationProvider.getApplicationContext<SleepyApp>().getString(group.primaryVariant.displayNameRes)
-            )
+        for ((index, group) in groups.withIndex()) {
+            val primaryLabel = expectedGroups[index]
             println(">>> EXPANDING group: ${group.key}, label: $primaryLabel")
 
             // Scroll to primary card and click to expand
-            compose.onNodeWithText(primaryLabel).performScrollTo().performClick()
+            groupHeader(primaryLabel).performScrollTo().performClick()
 
             // Verify each variant in group is present and has click action
             for (variant in group.allVariants) {
                 val variantName = ApplicationProvider.getApplicationContext<SleepyApp>().getString(variant.displayNameRes)
-                val node = compose.onNodeWithText(variantName).performScrollTo()
+                val node = variantNode(variantName).performScrollTo()
                 node.assertExists()
                 node.assertIsDisplayed()
                 node.assertHasClickAction()
             }
 
             // Collapse back by clicking the expanded header
-            compose.onNodeWithText(primaryLabel).performScrollTo().performClick()
+            groupHeader(primaryLabel).performScrollTo().performClick()
         }
     }
 
@@ -184,7 +193,7 @@ class WidgetGalleryEmpiricalTest {
         }
 
         // Expand WeekGrid
-        compose.onNodeWithText("本周课表（网格）(多尺寸)").performScrollTo().performClick()
+        groupHeader(expectedGroups[0]).performScrollTo().performClick()
 
         val smallNode = compose.onNodeWithText("本周课表（网格）· 小").performScrollTo()
         smallNode.assertHasClickAction()
@@ -209,7 +218,7 @@ class WidgetGalleryEmpiricalTest {
         }
 
         // Expand WeekGrid
-        compose.onNodeWithText("本周课表（网格）(多尺寸)").performScrollTo().performClick()
+        groupHeader(expectedGroups[0]).performScrollTo().performClick()
 
         val smallNode = compose.onNodeWithText("本周课表（网格）· 小").performScrollTo()
         smallNode.assertHasClickAction()
@@ -222,7 +231,7 @@ class WidgetGalleryEmpiricalTest {
 
         // Other variants in the same family should NOT be disabled!
         compose.onNodeWithText("本周课表（网格）· 4×2").performScrollTo().assertHasClickAction()
-        compose.onNodeWithText("本周课表（网格）").performScrollTo().assertHasClickAction()
+        variantNode("本周课表（网格）").performScrollTo().assertHasClickAction()
 
         // Advance Compose main clock by 2100ms
         compose.mainClock.advanceTimeBy(2100)
@@ -243,13 +252,13 @@ class WidgetGalleryEmpiricalTest {
         for (i in 0 until 6) {
             val labelA = expectedGroups[i % expectedGroups.size]
             val labelB = expectedGroups[(i + 1) % expectedGroups.size]
-            compose.onNodeWithText(labelA).performScrollTo().performClick()
-            compose.onNodeWithText(labelB).performScrollTo().performClick()
+            groupHeader(labelA).performScrollTo().performClick()
+            groupHeader(labelB).performScrollTo().performClick()
         }
 
         // Finally collapse
         val lastLabel = expectedGroups[6 % expectedGroups.size]
-        compose.onNodeWithText(lastLabel).performScrollTo().performClick()
+        groupHeader(lastLabel).performScrollTo().performClick()
 
         // Verify all 5 cards still intact
         for (label in expectedGroups) {
