@@ -2,6 +2,7 @@ package com.lingion.sleepy.ui.component.liquidglass
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BottomSheetDefaults
@@ -15,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.PopupProperties
@@ -24,6 +26,7 @@ import androidx.compose.material3.ModalBottomSheet as MaterialBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
+import kotlin.math.roundToInt
 
 @Composable
 private fun overlayGlass() = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
@@ -181,7 +184,14 @@ fun GlassModalBottomSheet(
     ) {
         MaterialBottomSheet(
             onDismissRequest = onDismissRequest,
-            modifier = modifier.recordGlassPopupScene(popupScene).glassControl(shape = shape, enabled = false, registerPane = false, role = GlassMaterialRole.Menu),
+            // Material 在传入的 modifier 之后放置 draggableAnchors；将录制和玻璃裁切
+            // 移至 sheet 的实际位置，再抵消内部位移，避免半高 sheet 被原点处的 clip 裁掉。
+            // 两次 offset 不改变测量尺寸，Material 仍拥有高度、手柄、拖动与输入法 insets。
+            modifier = modifier
+                .offset { IntOffset(0, sheetState.requireOffset().roundToInt()) }
+                .recordGlassPopupScene(popupScene)
+                .glassControl(shape = shape, enabled = false, registerPane = false, role = GlassMaterialRole.Menu)
+                .offset { IntOffset(0, -sheetState.requireOffset().roundToInt()) },
             sheetState = sheetState, sheetMaxWidth = sheetMaxWidth, shape = shape,
             containerColor = if (glass) Color.Transparent else containerColor,
             contentColor = contentColor, tonalElevation = if (glass) 0.dp else tonalElevation,
