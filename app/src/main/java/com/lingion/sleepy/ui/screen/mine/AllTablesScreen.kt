@@ -80,7 +80,7 @@ fun AllTablesScreen(
         ) {
             item { Spacer(modifier = Modifier.height(4.dp)) }
 
-            itemsIndexed(state.tables) { _, table ->
+            itemsIndexed(state.tables, key = { _, table -> table.id }) { _, table ->
                 val isCurrent = table.id == state.selectedTableId
                 Row(
                     modifier = Modifier
