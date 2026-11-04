@@ -155,7 +155,7 @@ fun UpdateChangelogDialog(
                             }
                         }
                         is UpdateUiState.Downloading -> {
-                            androidx.compose.material3.Button(
+                            Button(
                                 onClick = { onCancelDownload() },
                                 modifier = Modifier.fillMaxWidth().dbgTag("about_update_cancel_download", role = "button"),
                                 shape = SleepyTheme.Buttons.shape,

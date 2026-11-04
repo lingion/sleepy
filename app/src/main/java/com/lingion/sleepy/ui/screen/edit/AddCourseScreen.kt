@@ -40,7 +40,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.ExpandMore
 import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
-import androidx.compose.material3.FilledTonalButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassTonalButton as FilledTonalButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
@@ -743,7 +743,7 @@ fun AddCourseScreen(
             }
 
             item {
-                androidx.compose.material3.Button(
+                Button(
                     onClick = { performSave() },
                     enabled = canSave && !saving,
                     modifier = Modifier
@@ -763,7 +763,7 @@ fun AddCourseScreen(
 
                     // [intentional custom] 官方 Button 无 error 语义变体(MD3 规范删除动作用
                     // TextButton+error 文字色); 此处沿用 errorContainer 色块 = Sleepy 视觉语言。
-                    androidx.compose.material3.Button(
+                    Button(
                         onClick = { showDeleteConfirm = true },
                         modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
                         shape = SleepyTheme.Buttons.shape,

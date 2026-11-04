@@ -46,7 +46,7 @@ import androidx.compose.material3.Scaffold
 import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
-import androidx.compose.material3.Button
+import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
