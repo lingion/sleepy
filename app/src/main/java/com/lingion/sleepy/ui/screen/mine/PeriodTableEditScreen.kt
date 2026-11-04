@@ -293,11 +293,9 @@ fun PeriodTableEditScreen(
             item {
                 Button(
                     onClick = {
-                        val valid = slotRows.isNotEmpty() &&
-                            slotRows.all { it.start.matches(Regex("\\d{2}:\\d{2}")) && it.end.matches(Regex("\\d{2}:\\d{2}")) } &&
-                            slotRows.all { it.start < it.end }
-                        if (!valid) {
-                            error = validationErrorMessage
+                        val validation = TimeTableUtils.validatePeriodRows(slotRows.toList())
+                        if (validation !is TimeTableUtils.PeriodValidationResult.Valid) {
+                            error = validation.errorMessage(context)
                             return@Button
                         }
                         error = null

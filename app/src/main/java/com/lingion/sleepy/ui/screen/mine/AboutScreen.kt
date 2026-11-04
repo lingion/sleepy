@@ -65,6 +65,8 @@ import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.BuildConfig
 import com.lingion.sleepy.R
 import com.lingion.sleepy.console.ConsoleBootstrap
+import com.lingion.sleepy.console.DebugGate
+import com.lingion.sleepy.console.DebugUnlockDialog
 import com.lingion.sleepy.console.handlers.UnlockTapCounter
 import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -103,6 +105,17 @@ fun AboutScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val updateAvailable by UpdateNotifier.updateAvailable.collectAsState()
     var updateCheckEnabled by remember { mutableStateOf(AppPrefs.isUpdateCheckEnabled(context)) }
+    var showDebugUnlock by remember { mutableStateOf(false) }
+    val debugStatus by DebugGate.status.collectAsState()
+    fun tapVersion() {
+        if (UnlockTapCounter.registerTap(System.currentTimeMillis())) showDebugUnlock = true
+    }
+    if (showDebugUnlock) {
+        DebugUnlockDialog(
+            onDismiss = { showDebugUnlock = false; DebugGate.clearArm(); UnlockTapCounter.reset() },
+            onUnlocked = { showDebugUnlock = false },
+        )
+    }
 
     fun diagnostic() = FeedbackComposer.Diagnostic(
         versionName = BuildConfig.VERSION_NAME,
@@ -287,20 +300,13 @@ fun AboutScreen(
                     color = colors.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                // release 隐藏开关（Task 7, SPEC §5.2）: 连点版本号 7 次(60s 窗口)
-                // → armForUnlock 绑端口等待 /v1/enable; debug 构建无副作用短路。
-                val appContext = LocalContext.current.applicationContext
-                    as android.app.Application
+                // 两处版本号共享七次点击计数，本地输入密钥与 HTTP 共用解锁链。
                 Text(
                     text = "v${BuildConfig.VERSION_NAME}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = colors.onSurfaceVariant,
                     modifier = Modifier
-                        .noRippleClickable {
-                            if (UnlockTapCounter.registerTap(System.currentTimeMillis())) {
-                                ConsoleBootstrap.armForUnlock(appContext)
-                            }
-                        }
+                        .noRippleClickable { tapVersion() }
                         .dbgTag("about_version", text = "v${BuildConfig.VERSION_NAME}", role = "button")
                 )
                 Spacer(modifier = Modifier.height(24.dp))
@@ -308,7 +314,11 @@ fun AboutScreen(
 
             // Version info card
             InfoCard {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().noRippleClickable { tapVersion() }
+                        .dbgTag("about_version_card", role = "button"),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Icon(
                         imageVector = Icons.Outlined.NewReleases,
                         contentDescription = null,
@@ -332,6 +342,13 @@ fun AboutScreen(
             }
 
             Spacer(modifier = Modifier.height(12.dp))
+
+            if (debugStatus.active) {
+                Text(stringResource(R.string.debug_unlock_active))
+                androidx.compose.material3.TextButton(onClick = { ConsoleBootstrap.stop() }) {
+                    Text(stringResource(R.string.debug_unlock_stop))
+                }
+            }
 
             // One-click update
             InfoCard {

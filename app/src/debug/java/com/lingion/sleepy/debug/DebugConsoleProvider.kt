@@ -23,8 +23,7 @@ class DebugConsoleProvider : ContentProvider() {
     override fun onCreate(): Boolean {
         (context?.applicationContext as? Application)?.let { app ->
             // debug-only 端点必须在服务器 start 之前注册（既定扩展时序位, Task 5）
-            TriggerHandler.registerAll(app)
-            ConsoleBootstrap.onCreate(app)
+            ConsoleBootstrap.onCreate(app, TriggerHandler::registerAll)
         }
         return true
     }

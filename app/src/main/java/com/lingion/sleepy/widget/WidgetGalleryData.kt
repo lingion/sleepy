@@ -13,6 +13,28 @@ data class WidgetGalleryCard(
     val receiverName: String = variant.receiverClass.name
 }
 
+/**
+ * 画廊组件家族分组结构 (Milestone 1, PR 295)。
+ *
+ * 将 ALL_WIDGET_VARIANTS 按 5 个主家族 (WeekGrid, Today, WeekList, WeekView, TwoDay) 聚类。
+ * [primaryVariant] 恒为该组面积最大档位 (4×4, 300×250),
+ * [isMultiSize] 标识组内是否有多种尺寸变体,
+ * [remainingVariants] 为展开时露出的次级尺寸变体列表。
+ */
+data class WidgetGalleryGroup(
+    val key: String,
+    val primaryVariant: WidgetVariantInfo,
+    val allVariants: List<WidgetVariantInfo>,
+    val isMultiSize: Boolean = allVariants.size > 1,
+    val remainingVariants: List<WidgetVariantInfo> = allVariants.filter { it != primaryVariant },
+) {
+    /**
+     * 格式化展示名称: 若为多尺寸组件则追加 "(多尺寸)", 单尺寸只显示原名。
+     */
+    fun formattedName(baseName: String): String =
+        if (isMultiSize) "$baseName(多尺寸)" else baseName
+}
+
 object WidgetGalleryData {
     /**
      * 每排卡片的统一框宽高比: 行高由本排「大卡」(声明面积最大档)决定 ——
@@ -34,6 +56,36 @@ object WidgetGalleryData {
         }
     }
 
+    /**
+     * 派生组件家族分组: 将 ALL_WIDGET_VARIANTS 聚类为 5 组,
+     * 每组选取面积最大变体为 primaryVariant, 其余变体按尺寸有序排布。
+     */
+    fun buildGroups(): List<WidgetGalleryGroup> {
+        val grouped = LinkedHashMap<String, MutableList<WidgetVariantInfo>>()
+        for (variant in ALL_WIDGET_VARIANTS) {
+            val key = widgetFamilyKey(variant)
+            grouped.getOrPut(key) { mutableListOf() }.add(variant)
+        }
+        return grouped.map { (key, variants) ->
+            val sortedVariants = variants.sortedByDescending { it.widthDp.toLong() * it.heightDp }
+            val primary = sortedVariants.first()
+            WidgetGalleryGroup(
+                key = key,
+                primaryVariant = primary,
+                allVariants = sortedVariants,
+            )
+        }
+    }
+
     fun buildCards(): List<WidgetGalleryCard> =
         ALL_WIDGET_VARIANTS.map { WidgetGalleryCard(it) }
+
+    private fun widgetFamilyKey(variant: WidgetVariantInfo): String =
+        variant.receiverClass.simpleName
+            .removeSuffix("SmallWidgetProvider")
+            .removeSuffix("SmallWidgetReceiver")
+            .removeSuffix("WideWidgetReceiver")
+            .removeSuffix("WideWidgetProvider")
+            .removeSuffix("WidgetProvider")
+            .removeSuffix("WidgetReceiver")
 }

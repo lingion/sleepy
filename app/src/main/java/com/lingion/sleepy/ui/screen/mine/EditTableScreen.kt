@@ -373,11 +373,13 @@ fun EditTableScreen(
                 Button(
                     onClick = {
                         val maxWeek = maxWeekText.toIntOrNull() ?: 20
-                        val valid = startDate.matches(Regex("\\d{4}-\\d{2}-\\d{2}")) &&
-                            slotRows.all { it.start.matches(Regex("\\d{2}:\\d{2}")) && it.end.matches(Regex("\\d{2}:\\d{2}")) } &&
-                            slotRows.all { it.start < it.end }
-                        if (!valid) {
+                        if (!startDate.matches(Regex("\\d{4}-\\d{2}-\\d{2}"))) {
                             error = validationErrorMessage
+                            return@Button
+                        }
+                        val validation = TimeTableUtils.validatePeriodRows(slotRows.toList())
+                        if (validation !is TimeTableUtils.PeriodValidationResult.Valid) {
+                            error = validation.errorMessage(context)
                             return@Button
                         }
                         // 绑定保持不变时, 有效作息数据尚未加载 = 流还在初始化, 禁止把过期

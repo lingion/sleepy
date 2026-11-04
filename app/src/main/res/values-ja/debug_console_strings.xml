@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="debug_unlock_title">デバッグモードを有効にする</string>
+    <string name="debug_unlock_description">キーを入力すると今回の起動中のみ有効になります。アプリを再起動すると無効になります。</string>
+    <string name="debug_unlock_key">キー</string>
+    <string name="debug_unlock_action">有効にする</string>
+    <string name="debug_unlock_wrong_key">キーが正しくありません。再試行してください。</string>
+    <string name="debug_unlock_backoff">試行回数が多すぎます。しばらくしてから再試行してください。</string>
+    <string name="debug_unlock_expired">解錠期限が切れました。キャンセルしてバージョンを再び7回タップしてください。</string>
+    <string name="debug_unlock_service_failed">デバッグサービスを起動できません。後でもう一度お試しください。</string>
+    <string name="debug_unlock_active">デバッグモードが有効です</string>
+    <string name="debug_unlock_stop">デバッグモードを無効にする</string>
+</resources>

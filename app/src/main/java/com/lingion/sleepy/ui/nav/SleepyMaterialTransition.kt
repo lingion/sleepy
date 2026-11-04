@@ -12,7 +12,7 @@ import com.lingion.sleepy.ui.component.sleepyContentExit
  * M3 Expressive 全量过闸(Task 2, ledger 反转裁决): InstallerX Revived Classic 的
  * 手搓物理(220ms/110ms 不对称淡入 + 200ms 贝塞尔回弹曲线)全部退场, 推进/程序化返回/
  * 预测性返回三路统一走 SleepyMotion 的 content 家族工厂:
- *  - 入页: sleepyContentEnter() — scaleIn 0.92→1 defaultSpatial + fadeIn defaultEffects
+ *  - 入页: sleepyContentEnter() — scaleIn 0.92→1 defaultSpatial (不叠 fadeIn, 防父子页双影)
  *  - 出页: sleepyContentExit()  — scaleOut 1→0.92 defaultSpatial + fadeOut defaultEffects
  * 旧的「返回时目标页原地不动画」(EnterTransition.None)设计按用户裁决反转: 返回时
  * 目标页同样缩放淡入, 与 MD3E 页面族的对称 content 转场一致。取消手势的回弹旧常量

@@ -1,5 +1,8 @@
 package com.lingion.sleepy.console
 
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+
 /**
  * 调试门进程态 — 全 console 的唯一开关真源。
  *
@@ -9,6 +12,14 @@ package com.lingion.sleepy.console
  * 时钟走可注入 [forTestNow]，单测用假时钟锁 60s 解锁等待窗口。
  */
 object DebugGate {
+
+    data class Status(val active: Boolean, val debugBuild: Boolean, val releaseUnlocked: Boolean)
+    private val _status = MutableStateFlow(Status(false, false, false))
+    val status = _status.asStateFlow()
+
+    private fun publishStatus() {
+        _status.value = Status(isActive, debugBuild, isReleaseUnlocked)
+    }
 
     /** UI 连点版本号 7 次后，“等待解锁”态的内存窗口（60s 过期，SPEC §3 /v1/enable）。 */
     const val UNLOCK_ARM_WINDOW_MS = 60_000L
@@ -43,11 +54,13 @@ object DebugGate {
         this.debugBuild = debugBuild
         this.isReleaseUnlocked = releaseUnlocked
         isActive = true
+        publishStatus()
         onActivationChanged?.invoke()
     }
 
     fun deactivate() {
         isActive = false
+        publishStatus()
     }
 
     /** UI 侧连点版本号 7 次时调用（Task 7 接线；Task 1 只提供原语）。 */
@@ -65,6 +78,7 @@ object DebugGate {
         isActive = false
         isReleaseUnlocked = false
         unlockArmedAt = null
+        publishStatus()
     }
 
     /** 仅测试/装配复位：注入假时钟并清空全部状态。 */
@@ -75,5 +89,6 @@ object DebugGate {
         isReleaseUnlocked = false
         unlockArmedAt = null
         onActivationChanged = null
+        publishStatus()
     }
 }
