@@ -1,5 +1,7 @@
 package com.lingion.sleepy.ui.screen.mine
 
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -73,6 +75,7 @@ fun PendingPolicyBanner(
             style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
             color = colors.primary,
             modifier = Modifier
+                .glassControl(shape = SleepyTheme.shapes.medium)
                 .clip(SleepyTheme.shapes.medium)
                 .clickable(onClick = onModify)
                 .padding(horizontal = 8.dp, vertical = 4.dp)

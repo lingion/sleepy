@@ -1,5 +1,9 @@
 package com.lingion.sleepy.ui.screen.schedule
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import com.lingion.sleepy.ui.component.liquidglass.glassSurfaceBackground
+import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -35,19 +39,19 @@ import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.IosShare
 import kotlinx.coroutines.launch
-import androidx.compose.material3.AlertDialog
+import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.material3.DropdownMenu
+import com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenu as DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.Button
-import androidx.compose.material3.FilledTonalButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
+import com.lingion.sleepy.ui.component.liquidglass.GlassTonalButton as FilledTonalButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -616,9 +620,10 @@ private fun TableSwitcherDialog(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .glassControl(shape = SleepyTheme.shapes.small, tint = if (isCurrent) colors.primaryContainer else null)
                             .clip(SleepyTheme.shapes.small)
-                            .background(if (isCurrent) colors.primaryContainer else colors.surfaceContainer)
-                            .noRippleClickable { onSelect(table.id) }
+                            .background(controlFill(if (isCurrent) colors.primaryContainer else colors.surfaceContainer))
+                            .noRippleGlassClickable { onSelect(table.id) }
                             .dbgTag("schedule_table_item", text = table.name, role = "button")
                             .padding(vertical = 10.dp, horizontal = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -683,7 +688,7 @@ private fun TopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(colors.surface)
+            .glassSurfaceBackground(colors.surface, androidx.compose.ui.graphics.RectangleShape)
             .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -767,9 +772,10 @@ private fun TopBar(
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                     color = if (isOnActual) colors.onPrimaryContainer else colors.primary,
                     modifier = Modifier
+                        .glassControl(shape = SleepyTheme.shapes.medium)
                         .clip(SleepyTheme.shapes.medium)
-                        .background(if (isOnActual) colors.primaryContainer else colors.primaryContainer.copy(alpha = SleepyTheme.Alpha.inactive))
-                        .noRippleClickable {
+                        .background(controlFill(if (isOnActual) colors.primaryContainer else colors.primaryContainer.copy(alpha = SleepyTheme.Alpha.inactive)))
+                        .noRippleGlassClickable {
                             if (isOnActual) {
                                 // 在当前实际周 → 弹下拉菜单
                                 menuOpen = true
@@ -808,12 +814,13 @@ private fun TopBar(
                                 Box(
                                     modifier = Modifier
                                         .size(40.dp)
+                                        .glassControl(shape = CircleShape, selected = isCurrent)
                                         .clip(CircleShape)
                                         .background(
-                                            if (isCurrent) colors.primary
-                                            else colors.surfaceContainerHigh
+                                            controlFill(if (isCurrent) colors.primary
+                                            else colors.surfaceContainerHigh)
                                         )
-                                        .noRippleClickable {
+                                        .noRippleGlassClickable {
                                             onSelectWeek(w)
                                             menuOpen = false
                                         }
@@ -873,9 +880,10 @@ private fun WeekNavButton(
     Box(
         modifier = Modifier
             .size(32.dp)
+            .glassControl()
             .clip(CircleShape)
-            .background(colors.surfaceContainerHigh)
-            .noRippleClickable(onClick)
+            .background(controlFill(colors.surfaceContainerHigh))
+            .noRippleGlassClickable(onClick)
             .dbgTag(tag, role = "button")
             .padding(6.dp),
         contentAlignment = Alignment.Center
@@ -907,8 +915,9 @@ private fun UndoRedoCapsule(
     Row(
         modifier = Modifier
             .height(halfSize)
+            .glassControl(grouped = true)
             .clip(CircleShape)
-            .background(colors.surfaceContainerHigh),
+            .background(controlFill(colors.surfaceContainerHigh)),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // 左半: 撤回 — 无可撤回时半透明禁用(占位保形, 双侧共存才像一体胶囊)
@@ -918,7 +927,7 @@ private fun UndoRedoCapsule(
                     if (scale == 1f) Modifier.size(width = 32.dp, height = 32.dp)
                     else Modifier.size(width = halfSize, height = halfSize)
                 )
-                .noRippleClickable(enabled = showUndo, onClick = onUndo)
+                .noRippleGlassClickable(enabled = showUndo, onClick = onUndo)
                 .dbgTag("schedule_undo", text = stringResource(R.string.schedule_undo), role = "button"),
             contentAlignment = Alignment.Center
         ) {
@@ -942,7 +951,7 @@ private fun UndoRedoCapsule(
                     if (scale == 1f) Modifier.size(width = 32.dp, height = 32.dp)
                     else Modifier.size(width = halfSize, height = halfSize)
                 )
-                .noRippleClickable(enabled = showRedo, onClick = onRedo)
+                .noRippleGlassClickable(enabled = showRedo, onClick = onRedo)
                 .dbgTag("schedule_redo", text = stringResource(R.string.schedule_redo), role = "button"),
             contentAlignment = Alignment.Center
         ) {

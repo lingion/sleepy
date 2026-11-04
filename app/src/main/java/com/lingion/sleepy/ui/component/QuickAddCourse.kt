@@ -1,5 +1,8 @@
 package com.lingion.sleepy.ui.component
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -68,10 +71,11 @@ internal fun QuickAddCourseCapsule(
     val label = stringResource(R.string.occurrence_quick_add, selection.startNode, selection.endNode)
     Box(modifier.onGloballyPositioned { state.capsuleBounds = it.boundsInRoot() }
         .testTag("quick-add-capsule")
-        .background(colors.primaryContainer, shape)
+        .glassControl(shape = shape, tint = colors.primaryContainer)
+        .background(controlFill(colors.primaryContainer), shape)
         .border(1.dp, colors.primary, shape)
         .semantics { contentDescription = label }
-        .noRippleClickable(onClick = onConfirm)) {
+        .noRippleGlassClickable(onClick = onConfirm)) {
         Text("+", modifier = Modifier.align(Alignment.Center), color = colors.onPrimaryContainer, fontSize = 24.sp)
         for (top in listOf(true, false)) {
             val start by rememberUpdatedState(onResizeStart)

@@ -1,5 +1,7 @@
 package com.lingion.sleepy.ui.screen.mine
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
@@ -31,23 +33,23 @@ import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.School
-import androidx.compose.material3.Button
+import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassTonalButton as FilledTonalButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
+import com.lingion.sleepy.ui.component.liquidglass.GlassSwitch as Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TimePicker
-import androidx.compose.material3.TopAppBar
+import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.DropdownMenu
+import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
+import com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenu as DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.rememberTimePickerState
@@ -705,7 +707,8 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                     ReminderRescheduler.request()
                                 }
                             )
-                            FilledTonalButton(
+                            // 假期规则 = 二级设置页跳转入口(用户 2026-11-04: 大导航入口保持扁平)
+                            androidx.compose.material3.FilledTonalButton(
                                 onClick = onOpenHoliday,
                                 modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
                             ) {
@@ -1116,7 +1119,7 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                                 ),
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = if (snapshot.notificationPermissionGranted) colors.onSurfaceVariant else colors.primary,
-                                                modifier = if (snapshot.notificationPermissionGranted) Modifier else Modifier.noRippleClickable {
+                                                modifier = if (snapshot.notificationPermissionGranted) Modifier else Modifier.glassControl(shape = SleepyTheme.shapes.medium).noRippleGlassClickable {
                                                     requestNotificationPermission()
                                                 }
                                             )
@@ -1135,7 +1138,7 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                                 ),
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = if (snapshot.exactAlarmAllowed) colors.onSurfaceVariant else colors.primary,
-                                                modifier = if (snapshot.exactAlarmAllowed) Modifier else Modifier.noRippleClickable {
+                                                modifier = if (snapshot.exactAlarmAllowed) Modifier else Modifier.glassControl(shape = SleepyTheme.shapes.medium).noRippleGlassClickable {
                                                     openExactAlarmSettings()
                                                 }
                                             )
@@ -1150,7 +1153,7 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                                 ),
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = if (snapshot.batteryOptimizationIgnored) colors.onSurfaceVariant else colors.primary,
-                                                modifier = if (snapshot.batteryOptimizationIgnored) Modifier else Modifier.noRippleClickable {
+                                                modifier = if (snapshot.batteryOptimizationIgnored) Modifier else Modifier.glassControl(shape = SleepyTheme.shapes.medium).noRippleGlassClickable {
                                                     openBatteryOptimizationSettings()
                                                 }
                                             )
@@ -1214,7 +1217,8 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                             color = colors.primary,
                                             modifier = Modifier
                                                 .padding(top = 6.dp)
-                                                .noRippleClickable {
+                                                .glassControl(shape = SleepyTheme.shapes.medium)
+                                                .noRippleGlassClickable {
                                                     val launched = cap.settingsIntents.any { spec ->
                                                         try {
                                                             val intent = Intent(spec.action).apply {
@@ -1395,7 +1399,7 @@ private fun ReminderTimeRow(label: String, time: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .noRippleClickable(onClick = onClick)
+            .noRippleGlassClickable(onClick = onClick)
             .padding(vertical = 12.dp, horizontal = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically

@@ -82,6 +82,7 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.SleepyTextStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.component.liquidglass.glassBackdropSource
 import com.lingion.sleepy.ui.theme.noRippleCombinedClickable
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppClock
@@ -1656,6 +1657,7 @@ internal fun CourseOverlayCard(
 
     Box(
         modifier = modifier
+            .glassBackdropSource(depth = 0f)
             .padding(sd(2f))
             // 拖拽置灰 (边缘翻页特性): 原占位卡整卡纯降透明度, 浮卡跟手恒全亮。
             .then(if (dragDimmed) Modifier.graphicsLayer { alpha = SleepyTheme.Alpha.dragDim }.testTag("float-dim") else Modifier)
@@ -1730,6 +1732,7 @@ private fun DayHeadCell(day: Int, isToday: Boolean, isGrey: Boolean = false, cou
 
     Box(
         modifier = modifier
+            .glassBackdropSource(depth = 0f)
             .height(if (dateStr != null) sd(56f) else sd(52f))
             .clip(RoundedCornerShape((10 * scale * cornerRatio.coerceAtMost(1f)).dp))
             .background(bg)
@@ -2381,6 +2384,7 @@ private fun LessonRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .glassBackdropSource(depth = 0f)
             .clip(RoundedCornerShape(sd(12f * cornerRatio)))
             .background(effectiveBg)
             .noRippleCombinedClickable(onClick, onLongClick)

@@ -20,6 +20,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.lingion.sleepy.util.AppPrefs
+import com.lingion.sleepy.ui.component.liquidglass.GlassHost
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
@@ -530,6 +534,7 @@ fun SleepyThemeProvider(
     @Suppress("UNUSED_VARIABLE")
     val customThemeInvalidation = customThemeVersion
     val context = LocalContext.current
+    val uiStyle by AppPrefs.uiStyleFlow(context).collectAsState(initial = AppPrefs.getUiStyle(context))
 
     // "跟随系统" 走 Material You 动态取色（API 31+）；低版本降级到默认。
     // 其他 5 套用预设的 light/dark scheme。
@@ -579,6 +584,9 @@ fun SleepyThemeProvider(
     CompositionLocalProvider(
         LocalCoursePalette provides palette,
         LocalDarkTheme provides darkTheme,
+        LocalUiStyle provides uiStyle,
+        androidx.compose.material3.LocalRippleConfiguration provides
+            if (uiStyle == UiStyle.LiquidGlass) null else androidx.compose.material3.RippleConfiguration(),
     ) {
         // 系统栏外观随应用主题联动(官方 edge-to-edge 指南): enableEdgeToEdge 是一次性
         // API, onCreate 只调一次时 isAppearanceLightStatusBars 停在启动时的系统深浅判定,
@@ -605,7 +613,7 @@ fun SleepyThemeProvider(
             motionScheme = MotionScheme.expressive(),
             shapes = SleepyShapes,
             typography = SleepyTypography,
-            content = content,
+            content = { GlassHost(enabled = uiStyle == UiStyle.LiquidGlass) { content() } },
         )
     }
 }

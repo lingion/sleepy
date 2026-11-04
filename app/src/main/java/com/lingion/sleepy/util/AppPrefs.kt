@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 
 /**
  * App 级别轻量设置 — 避免引入 DataStore 依赖。
@@ -118,7 +119,8 @@ object AppPrefs {
     const val KEY_UPDATE_NOTICE_DISMISSED_VERSION = "update_notice_dismissed_version" // string — 关闭该版本更新提醒
     const val KEY_HIGH_REFRESH = "high_refresh_rate" // bool default true — 窗口 preferredDisplayModeId 钉屏幕最高刷率(流畅优先); 关=跟随系统省电调度
     const val KEY_NAV_DOCK = "nav_dock" // bool default false — 底栏形态: false=贴底(通栏), true=悬浮药丸(Dock, 底边留距)
-    const val KEY_DOCK_THEME = "dock_theme" // string: classic / liquid_glass — Dock 主题形态
+    const val KEY_UI_STYLE = "ui_style" // classic / liquid_glass — independent application material
+    const val KEY_DOCK_THEME = "dock_theme" // Legacy read-only migration source
     const val DOCK_THEME_CLASSIC = "classic"
     const val DOCK_THEME_LIQUID_GLASS = "liquid_glass"
     const val KEY_PERIOD_HEADER_LAYOUT = "period_header_layout" // "legacy" / "three_line", default legacy
@@ -392,27 +394,37 @@ object AppPrefs {
         awaitClose { sp.unregisterOnSharedPreferenceChangeListener(listener) }
     }.distinctUntilChanged()
 
-    /** Dock 主题形态: classic=经典(默认), liquid_glass=液态玻璃(实验) */
-    fun getDockTheme(ctx: Context): String =
-        sp(ctx).getString(KEY_DOCK_THEME, DOCK_THEME_CLASSIC) ?: DOCK_THEME_CLASSIC
+    fun getUiStyle(ctx: Context): com.lingion.sleepy.ui.theme.UiStyle {
+        val prefs = sp(ctx)
+        val key = if (prefs.contains(KEY_UI_STYLE)) KEY_UI_STYLE else KEY_DOCK_THEME
+        return com.lingion.sleepy.ui.theme.UiStyle.fromKey(prefs.getString(key, null))
+    }
+
+    fun setUiStyle(ctx: Context, style: com.lingion.sleepy.ui.theme.UiStyle) {
+        sp(ctx).edit().putString(KEY_UI_STYLE, style.key).apply()
+        _changeBus.tryEmit(KEY_UI_STYLE)
+    }
+
+    fun uiStyleFlow(ctx: Context): Flow<com.lingion.sleepy.ui.theme.UiStyle> = callbackFlow {
+        val prefs = sp(ctx)
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_UI_STYLE || key == KEY_DOCK_THEME) trySend(getUiStyle(ctx))
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getUiStyle(ctx))
+        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }.distinctUntilChanged()
+
+    /** Compatibility API: old callers read and write the same application material choice. */
+    fun getDockTheme(ctx: Context): String = getUiStyle(ctx).key
 
     fun setDockTheme(ctx: Context, theme: String) {
         require(theme == DOCK_THEME_CLASSIC || theme == DOCK_THEME_LIQUID_GLASS)
-        sp(ctx).edit().putString(KEY_DOCK_THEME, theme).apply()
-        _changeBus.tryEmit(KEY_DOCK_THEME)
+        setUiStyle(ctx, com.lingion.sleepy.ui.theme.UiStyle.fromKey(theme))
     }
 
-    fun dockThemeFlow(ctx: Context): Flow<String> = callbackFlow {
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sp, k ->
-            if (k == KEY_DOCK_THEME) {
-                trySend(sp.getString(KEY_DOCK_THEME, DOCK_THEME_CLASSIC) ?: DOCK_THEME_CLASSIC)
-            }
-        }
-        val sp = sp(ctx)
-        sp.registerOnSharedPreferenceChangeListener(listener)
-        trySend(getDockTheme(ctx))
-        awaitClose { sp.unregisterOnSharedPreferenceChangeListener(listener) }
-    }.distinctUntilChanged()
+    fun dockThemeFlow(ctx: Context): Flow<String> =
+        uiStyleFlow(ctx).map { it.key }
 
     fun getUpdateNoticeDismissedVersion(ctx: Context): String =
         sp(ctx).getString(KEY_UPDATE_NOTICE_DISMISSED_VERSION, "").orEmpty()

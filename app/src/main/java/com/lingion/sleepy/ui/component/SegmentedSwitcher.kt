@@ -2,9 +2,16 @@ package com.lingion.sleepy.ui.component
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitHorizontalTouchSlopOrCancellation
+import androidx.compose.foundation.gestures.horizontalDrag
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,8 +28,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,19 +40,26 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import kotlin.math.roundToInt
 
 /**
@@ -111,21 +127,33 @@ fun <T> SegmentedSwitcher(
     val colors = MaterialTheme.colorScheme
     val selectedIndex = options.indexOfFirst { it.value == selected }.coerceAtLeast(0)
     val count = options.size
+    if (count == 0) return
 
     // thumb 位移: Animatable 值 = 逻辑段坐标(0..count-1), spring 驱动
     // 高硬度+无阻尼: 用户反馈 MediumLow 拖沓不跟手, 提到 High 段切换 ≈150ms 收束
     val thumbX = remember { Animatable(selectedIndex.toFloat()) }
-    // 逐帧快照: animateTo 期间把当前值同步到 state, 供文字层逐帧重组着色
-    var thumbXState by remember { mutableIntStateOf(selectedIndex) }
-    LaunchedEffect(selectedIndex) {
-        thumbX.animateTo(
-            targetValue = selectedIndex.toFloat(),
-            animationSpec = SleepyThumbSpring,
-            block = { thumbXState = value.roundToInt() }
-        )
+    // 动画与手势共用连续位置，文字着色不再取整跳段。
+    var thumbPosition by remember { mutableFloatStateOf(selectedIndex.toFloat()) }
+    var dragging by remember { mutableStateOf(false) }
+    var gestureEnd by remember { mutableIntStateOf(0) }
+    // 拖动中滑块浮起成镜片(用户 2026-11-04: 像 Toggle/Dock 那样浮着拖):
+    // 高度 42dp 轨道下允许放大 1.155 仍不出屏; 松手弹簧回落, 投影随之消散。
+    val thumbLift by animateFloatAsState(if (dragging) 1f else 0f, tween(240), label = "segment-thumb-lift")
+    val currentOnSelect by rememberUpdatedState(onSelect)
+    val currentSelectedIndex by rememberUpdatedState(selectedIndex)
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    LaunchedEffect(selectedIndex, dragging, gestureEnd, count) {
+        if (!dragging) {
+            thumbX.snapTo(thumbPosition)
+            thumbX.animateTo(
+                targetValue = selectedIndex.toFloat(),
+                animationSpec = SleepyThumbSpring,
+                block = { thumbPosition = value },
+            )
+        }
     }
 
-    // 每段文字的字符矩形缓存(非 state: 字色由 thumbXState 逐帧驱动, 缓存只是普通字典,
+    // 每段文字的字符矩形缓存(非 state: 字色由 thumbPosition 逐帧驱动, 缓存只是普通字典,
     // 避免 onTextLayout 每次重组都重新分配列表 — 上一版每次着色都 charRects() 全量重算 = "卡卡的")
     val charRectsCache = remember { mutableMapOf<Int, List<Rect>>() }
 
@@ -136,16 +164,57 @@ fun <T> SegmentedSwitcher(
     Box(
         modifier = modifier
             .height(42.dp)
-            .clip(RoundedCornerShape(14.dp))
-            .background(containerColor ?: colors.surfaceContainer)
+            .glassControl(shape = RoundedCornerShape(14.dp), grouped = true, enabled = false)
+            // 不再外层 clip: 浮起滑块需要越出轨道边缘(同 GlassSwitch requiredSize 溢出模式)。
+            // 静止安全: 轨道底色自带 14dp 圆角, 滑块 12dp 圆角四角弧经几何核对全在底色
+            // 圆角内侧(对角余量 ~3px), 文字/点击段均界内 — clip 移除不改变静止像素。
+            .background(controlFill(containerColor ?: colors.surfaceContainer), RoundedCornerShape(14.dp))
             .onGloballyPositioned { coords ->
                 // coords 是含 padding 的外区; 轨道宽 = 外区宽 - 左右 4dp padding
                 trackWidthPx = (coords.size.width - with(density) { 8.dp.toPx() }).toInt().coerceAtLeast(0)
             }
             .padding(4.dp)
+            .selectableGroup()
+            .pointerInput(options, selectedIndex, isRtl, trackWidthPx) {
+                if (count < 2 || trackWidthPx <= 0) return@pointerInput
+                val segmentWidth = trackWidthPx.toFloat() / count
+                val direction = if (isRtl) -1f else 1f
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false)
+                    val logicalX = if (isRtl) size.width - down.position.x else down.position.x
+                    val start = thumbPosition
+                    // 只有从高亮块开始的横拖接管手势；普通段仍由 selectable 点击。
+                    if (logicalX < start * segmentWidth || logicalX > (start + 1f) * segmentWidth) {
+                        return@awaitEachGesture
+                    }
+                    try {
+                        val drag = awaitHorizontalTouchSlopOrCancellation(down.id) { change, _ ->
+                            change.consume()
+                            dragging = true
+                            thumbPosition = (start + (change.position.x - down.position.x) * direction / segmentWidth)
+                                .coerceIn(0f, (count - 1).toFloat())
+                        }
+                        if (drag != null) {
+                            val released = horizontalDrag(drag.id) { change ->
+                                thumbPosition = (thumbPosition + change.positionChange().x * direction / segmentWidth)
+                                    .coerceIn(0f, (count - 1).toFloat())
+                                change.consume()
+                            }
+                            if (released) {
+                                val target = thumbPosition.roundToInt().coerceIn(0, count - 1)
+                                if (target != currentSelectedIndex) currentOnSelect(options[target].value)
+                            }
+                        }
+                    } finally {
+                        dragging = false
+                        // 即使调用方拒绝更新，仍从当前手势位置吸附回受控 selected。
+                        gestureEnd++
+                    }
+                }
+            }
     ) {
         val segW = if (count == 0) 0f else trackWidthPx.toFloat() / count
-        val thumbStart = thumbXState * segW
+        val thumbStart = thumbPosition * segW
         val thumbEnd = thumbStart + segW
 
         Layout(
@@ -155,25 +224,38 @@ fun <T> SegmentedSwitcher(
                 // 由 draw 层浮点补回, 120Hz 下连续非线性曲线, 不再有"一格一格"的整数跳变
                 Box(
                     Modifier
+                        .testTag("segment-thumb")
                         .fillMaxHeight()
                         .graphicsLayer {
                             val segWpx = trackWidthPx.toFloat() / count
-                            val exact = thumbX.value * segWpx
-                            translationX = exact - exact.toInt()
+                            val exact = thumbPosition * segWpx
+                            translationX = (exact - exact.toInt()) * if (isRtl) -1f else 1f
+                            // 浮起: 拖动中滑块放大 1.155 + 8dp 托影, 缩放围绕中心, 像从轨道里浮出来
+                            // (对齐 Dock/GlassSwitch 按压升镜; 1.155*34dp=39.3dp 仍在 42dp 组件高度内,
+                            //  轨道外层已不 clip, 越出轨道边界的投影可完整绘制)
+                            val l = thumbLift
+                            scaleX = 1f + 0.155f * l
+                            scaleY = 1f + 0.155f * l
+                            shape = RoundedCornerShape(12.dp)
+                            clip = false
+                            shadowElevation = if (l > 0f) 8.dp.toPx() * l else 0f
                         }
+                        .glassControl(shape = RoundedCornerShape(12.dp), tint = colors.secondaryContainer, enabled = false, selected = true, registerPane = false)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(colors.secondaryContainer)
+                        .background(controlFill(colors.secondaryContainer))
                 )
                 // 层1..n: 点击段 — 透明, 只负责点击与无障碍
                 options.forEachIndexed { index, option ->
                     Box(
                         Modifier
                             .fillMaxHeight()
-                            .clickable(
+                            .selectable(
+                                selected = index == selectedIndex,
+                                role = Role.Tab,
                                 interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) { onSelect(option.value) }
-                            .semantics { role = Role.Button }
+                                indication = null,
+                                onClick = { if (index != selectedIndex) onSelect(option.value) },
+                            )
                             .then(
                                 dbgTagPrefix?.let {
                                     Modifier.dbgTag("$it#$index", text = option.label, role = "button")
@@ -253,7 +335,7 @@ fun <T> SegmentedSwitcher(
                     val layoutSegW = constraints.maxWidth.toFloat() / count
                     // place 层是整数像素, 取整不可避免 — 亚像素平滑改由外层 graphicsLayer 承担:
                     // thumb Box 自带 Modifier.graphicsLayer{ translationX = 弹簧余数 }, 见 thumb Box。
-                    thumbPlaceable.placeRelative(x = (thumbX.value * layoutSegW).toInt(), y = 0)
+                    thumbPlaceable.placeRelative(x = (thumbPosition * layoutSegW).toInt(), y = 0)
                     clickPlaceables.forEachIndexed { i, p -> p.placeRelative(x = i * segmentWidth, y = 0) }
                     // 文字水平: placeable 自身已在段宽约束下测出, 需在段内水平居中; 垂直: 段内居中
                     labelPlaceables.forEachIndexed { i, p ->

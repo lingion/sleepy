@@ -89,10 +89,14 @@ class CustomThemeCardVisualParityTest {
             "Edit icon wrapper must clip to the theme shape (color block, not hard rectangle)",
             Regex("""\.clip\(""").containsMatchIn(entryBody)
         )
-        // 可点性: 色块必须接 noRippleClickable(onEdit)
+        // The dedicated glass feedback helper preserves classic feedback outside glass mode.
         assertTrue(
-            "Edit color block must be clickable via noRippleClickable(onEdit)",
-            swatchRow.contains("noRippleClickable(onEdit)")
+            "Edit color block must keep its original onEdit callback through the optical feedback helper",
+            swatchRow.contains("noRippleGlassClickable(onEdit)")
+        )
+        assertTrue(
+            "Only the edit block, not the entire theme card, owns the glass feedback surface",
+            entryBody.contains(".glassControl(")
         )
     }
 

@@ -4,9 +4,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,22 +19,20 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.ChevronRight
-import androidx.compose.material.icons.outlined.ExpandMore
-import androidx.compose.material3.AlertDialog
+import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
+import com.lingion.sleepy.ui.component.liquidglass.GlassSwitch as Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,7 +47,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -70,7 +66,6 @@ import com.lingion.sleepy.ui.component.SettingsFlatCard
 import com.lingion.sleepy.ui.component.SettingsCard
 import com.lingion.sleepy.ui.component.SettingToggleRow
 import com.lingion.sleepy.ui.component.TimePickerField
-import com.lingion.sleepy.ui.component.sleepyExpandSpecs
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
@@ -129,7 +124,6 @@ fun GeneralSettingsScreen(
     // v1.0.56 T3: 双指捏放行高(实验室, 默认关)
     var gridPinchZoom by remember { mutableStateOf(AppPrefs.isGridPinchZoom(context)) }
     // v1.0.56 T4: 语言折叠卡展开态 — 默认收起; 选择语言即 recreate 重建, 会话态足够
-    var languageExpanded by remember { mutableStateOf(false) }
     var eveningStart by remember { mutableStateOf(AppPrefs.getGridEveningStart(context)) }
     var weekTwoColumn by remember { mutableStateOf(AppPrefs.isWeekTwoColumn(context)) }
     var weekTwoColumnMode by remember { mutableStateOf(AppPrefs.getWeekTwoColumnMode(context)) }
@@ -542,76 +536,24 @@ fun GeneralSettingsScreen(
             // ── 分隔线 ──
             item { HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline)) }
 
-            // ── 分组④ 语言 (v1.0.56 T4: 折叠卡 — 收起只显当前语言, 点开展开 5 项) ──
+            // ── 分组④ 语言：从当前值锚点展开浮框 ──
             item {
                 SectionHeader(title = stringResource(R.string.settings_language))
             }
 
             item {
-                val currentLabel = languages.firstOrNull { it.first == language }?.second ?: language
-                Column(
-                    modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer)
-                ) {
-                    // 折叠头: 当前语言值 + 展开箭头(2026-09-21: 组标题已示「语言」, 卡标题禁两遍, 改显当前值)
-                    Row(
-                        modifier = Modifier.fillMaxWidth().noRippleClickable { languageExpanded = !languageExpanded }
-                            .dbgTag("general_language_card", text = currentLabel, role = "button")
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = currentLabel,
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                                color = colors.onSurface
-                            )
+                com.lingion.sleepy.ui.component.liquidglass.GlassLanguageMenu(
+                    title = stringResource(R.string.settings_language),
+                    selectedCode = language,
+                    languages = languages,
+                    onSelect = { code ->
+                        if (language != code) {
+                            language = code
+                            AppPrefs.setLanguage(context, code)
+                            (context as? android.app.Activity)?.recreate()
                         }
-                        // MD3E (Task 7a): chevron 旋转走 defaultSpatial (收稳不弹, 与展开家族同拍)
-                        val langArrowRotation by animateFloatAsState(
-                            targetValue = if (languageExpanded) 180f else 0f,
-                            animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>(),
-                            label = "language-arrow"
-                        )
-                        Icon(
-                            Icons.Outlined.ExpandMore,
-                            contentDescription = null,
-                            tint = colors.onSurfaceVariant,
-                            modifier = Modifier.rotate(langArrowRotation)
-                        )
-                    }
-                    // MD3E (Task 7a): 旧全限定名一并转正; 展开家族 = 尺寸 fastSpatial
-                    // + 淡入淡出 motionScheme
-                    val expandSpecs = sleepyExpandSpecs()
-                    AnimatedVisibility(
-                        visible = languageExpanded,
-                        enter = expandSpecs.enter,
-                        exit = expandSpecs.exit,
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            languages.forEach { (code, label) ->
-                                val selected = language == code
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().noRippleClickable {
-                                        language = code
-                                        AppPrefs.setLanguage(context, code)
-                                        (context as? android.app.Activity)?.recreate()
-                                    }
-                                        .dbgTag("general_language#$code", text = label, role = "radio")
-                                        .padding(vertical = 10.dp, horizontal = 4.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(text = label, style = MaterialTheme.typography.bodyLarge, color = if (selected) colors.primary else colors.onSurface)
-                                    if (selected) Icon(Icons.Outlined.Check, null, tint = colors.primary, modifier = Modifier.size(20.dp))
-                                }
-                                if (code != languages.last().first) HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                            }
-                        }
-                    }
-                }
+                    },
+                )
             }
 
             // ── 分隔线 ──
@@ -797,7 +739,7 @@ fun GeneralSettingsScreen(
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth()
-                            .noRippleClickable { onMigrationExportClick() }
+                            .clickable(enabled = !migrationBusy) { onMigrationExportClick() }
                             .dbgTag("general_migration_export", text = stringResource(R.string.settings_migration_export), role = "button")
                             .alpha(if (migrationBusy) 0.5f else 1f)
                             .padding(16.dp),
@@ -824,7 +766,7 @@ fun GeneralSettingsScreen(
                     HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     Row(
                         modifier = Modifier.fillMaxWidth()
-                            .noRippleClickable {
+                            .clickable(enabled = !migrationBusy) {
                                 if (!migrationBusy) importLauncher.launch(arrayOf("application/zip", "application/octet-stream"))
                             }
                             .dbgTag("general_migration_import", text = stringResource(R.string.settings_migration_import), role = "button")

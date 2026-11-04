@@ -73,3 +73,17 @@ fun Modifier.noRippleClickable(
         onClick = onClick
     )
 }
+
+/** Only a control with an optical press surface suppresses classic shrink feedback. */
+fun Modifier.noRippleGlassClickable(onClick: () -> Unit): Modifier = noRippleGlassClickable(true, onClick)
+
+fun Modifier.noRippleGlassClickable(enabled: Boolean, onClick: () -> Unit): Modifier = composed {
+    if (LocalUiStyle.current == UiStyle.LiquidGlass) {
+        this.clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null, enabled = enabled, onClick = onClick,
+        )
+    } else {
+        this.noRippleClickable(enabled, onClick)
+    }
+}

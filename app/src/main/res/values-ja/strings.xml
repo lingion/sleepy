@@ -581,7 +581,7 @@
     <string name="theme_editor_delete_confirm">このカスタムテーマを削除しますか?</string>
     <string name="theme_editor_delete_confirm_body">使用中のページとウィジェットは既定の「ライラック」に戻ります。</string>
 <string name="appearance_section_theme">テーマカラー</string>
-    <string name="appearance_section_dock_theme">Dock テーマ</string>
+    <string name="appearance_section_dock_theme">インターフェーススタイル</string>
     <string name="dock_theme_classic">クラシック</string>
     <string name="dock_theme_liquid_glass">リキッドガラス</string>
     <string name="dock_theme_experimental">実験</string>
