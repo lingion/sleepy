@@ -39,7 +39,7 @@ internal class FloatOccurrenceHandler(
      * 整段拖拽像没发生)。默认等于 week = 同周拖拽, 行为与旧契约逐字一致。
      * [intent] 区分用户动作: 网格落点 = [FloatEditIntent.MOVE](换列或换节次都按「挪动」
      * 确认); 把手拉伸后经空白点击提交 = [FloatEditIntent.SPAN_RESIZE](按「调整持续节次」
-     * 确认)。几何完全未变 → 不弹窗直存(前端本不该调到这里, 兜底放行)。
+     * 确认)。几何完全未变时直接完成，不弹窗、不写库，也不修改撤销或重做记录。
      * 口径与 OccurrenceEditor.save 一致: 本次按起拖页日期 resolve; 换列或跨周(目标日期
      * ≠显示日期)走 destinations 调休审批, 同格只换节次则保留 sourceDate 直接改栅格。
      */
@@ -63,34 +63,32 @@ internal class FloatOccurrenceHandler(
             val rows = TimeTableUtils.parseTimeSlotRows(table.timeJson)
             if (node < 1 || step < 1 || (node until node + step).any { n -> rows.none { it.node == n } })
                 return Outcome.NOT_FOUND
-            // 首确认(浮起管线 UX 契约): 几何与当前格完全一致 → 直存不弹窗(兜底);
-            // 拉伸意图 → 「调整持续节次」; 挪动意图换列或换节次 → 「是否挪动这次课程」;
-            // 挪动意图只改跨度(拖回本格但拉过伸) → 按「调整持续节次」。文案一条:
-            // 课名 + 原格位 → 新格位。调休/冲突链仍在确认后串行。
-            // 跨周 (2026-10-28 用户反馈): 翻页松手即使格位相同也绝不是「没变」—
-            // 这一次要从起拖周整条拆出来挪到新周, 必须弹窗; 格位标签带周号。
+            // 按显示位置判断原位松手。自定义时间的显示节次可能与存储节次不同，
+            // 调休课的显示星期也可能不同于原始星期。跨周同格仍是实际移动。
+            val displayed = original.normalizeNode(table.timeJson)
             val crossWeek = week != sourceWeek
             val geometryChanged = crossWeek || day != projected.day ||
-                node != original.startNode || step != original.step
-            if (geometryChanged) {
-                val spanConfirm = !crossWeek && (intent == FloatEditIntent.SPAN_RESIZE ||
-                    (day == projected.day && node == original.startNode))
-                val titleRes = if (spanConfirm) R.string.occurrence_span_confirm_title
-                else R.string.occurrence_move_confirm_title
-                if (dialogs.ask(
-                        context.getString(titleRes),
-                        context.getString(
-                            R.string.occurrence_change_confirm_message,
-                            original.courseName,
-                            if (crossWeek) weekSpanLabel(context, sourceWeek, projected.day, original.startNode, original.step)
-                            else spanLabel(context, projected.day, original.startNode, original.step),
-                            if (crossWeek) weekSpanLabel(context, week, day, node, step)
-                            else spanLabel(context, day, node, step),
-                        ),
-                        context.getString(R.string.ok),
-                    ) == null
-                ) return Outcome.CANCELED
-            }
+                node != displayed.startNode || step != displayed.step
+            // 成功结束浮层交互，但不拆分课程、不覆盖自定义时间、不捕获撤销快照。
+            if (!geometryChanged) return Outcome.SAVED
+
+            val spanConfirm = !crossWeek && (intent == FloatEditIntent.SPAN_RESIZE ||
+                (day == projected.day && node == displayed.startNode))
+            val titleRes = if (spanConfirm) R.string.occurrence_span_confirm_title
+            else R.string.occurrence_move_confirm_title
+            if (dialogs.ask(
+                    context.getString(titleRes),
+                    context.getString(
+                        R.string.occurrence_change_confirm_message,
+                        original.courseName,
+                        if (crossWeek) weekSpanLabel(context, sourceWeek, projected.day, displayed.startNode, displayed.step)
+                        else spanLabel(context, projected.day, displayed.startNode, displayed.step),
+                        if (crossWeek) weekSpanLabel(context, week, day, node, step)
+                        else spanLabel(context, day, node, step),
+                    ),
+                    context.getString(R.string.ok),
+                ) == null
+            ) return Outcome.CANCELED
             // 时间模式沿用原课(ownTime/不规则时段课换格即换成目标节次栅格时间),
             // 与 OccurrenceEditor 的 custom 种子同口径 (ownTime || isIrregularTime)。
             val custom = original.ownTime || original.isIrregularTime
