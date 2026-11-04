@@ -274,7 +274,8 @@ fun CardsGridView(
     }
     val renderSlots = renderPlan.slots
     val maxNode = renderSlots.maxOfOrNull { it.nodeEnd } ?: 12
-    val sortedDays = visibleDays.sorted()
+    val sortedDays = remember(visibleDays) { visibleDays.sorted() }
+    val groups = remember(courses) { courses.groupBy { it.groupId } }
     val dayCount = sortedDays.size
 
     // 用户反馈 2026-09-16: 占位行"文字放不下 → 灰块 + 点击展开/再点折叠"。
@@ -1230,7 +1231,7 @@ fun CardsGridView(
                                 floatState.course?.id == course.id &&
                                 course.day == floatState.day && course.startNode == floatState.originStartNode &&
                                 course.startNode + course.step.coerceAtLeast(1) - 1 == floatState.originEndNode,
-                            groupRows = courses.filter { it.groupId == course.groupId }
+                            groupRows = groups[course.groupId].orEmpty()
                         )
                     }
                     // 加课胶囊 = popup 家族第四处过渡 (Task 4): 弹入同款 scale+fade,
@@ -1349,7 +1350,7 @@ fun CardsGridView(
                         state = floatState,
                         scale = scale,
                         cornerRatio = cornerRatio,
-                        groupRows = courses.filter { it.groupId == lifted.groupId },
+                        groupRows = groups[lifted.groupId].orEmpty(),
                         onDragStart = {
                             floatState.overlayDragOwner = floatOverlayOwner
                             floatState.dragHostWeek = currentWeek
@@ -1817,7 +1818,7 @@ fun FullWeekView(
     val hideEmptyDays = AppPrefs.isWeekHideEmptyDays(context)
     // issue#26: 周视图场景别名 — 周视图设置开才用别名; 传给所有子渲染单元
     val useAlias = AppPrefs.isWeekUseAlias(context)
-    val byDay = courses.groupBy { it.day }
+    val byDay = remember(courses) { courses.groupBy { it.day } }
     val navExtra = com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding.current
 
     /** 每天的 M月d日 日期字符串 — showDate 开且 startDate 合法时显示 (用户要求: 周一·10月13日) */
@@ -2175,7 +2176,7 @@ private fun DayColumn(
         verticalArrangement = Arrangement.spacedBy(sd(10f))
     ) {
         for (day in days) {
-            val dayCourses = byDay[day].orEmpty().sortedBy { it.startNode }
+            val dayCourses = remember(byDay, day) { byDay[day].orEmpty().sortedBy { it.startNode } }
             DetailDayCard(
                 day = day,
                 courses = dayCourses,
@@ -2247,6 +2248,7 @@ private fun DetailDayCard(
             val rows = remember(courses, timeJson) {
                 ConflictLayoutEngine.weekLaneRows(courses, timeJson.ifBlank { null })
             }
+            val groups = remember(courses) { courses.groupBy { it.groupId } }
 
             Column(verticalArrangement = Arrangement.spacedBy(sd(7f))) {
                 rows.forEach { row ->
@@ -2256,7 +2258,7 @@ private fun DetailDayCard(
                             onClick = { onCourseClick(row.courses[0]) },
                             onLongClick = onCourseLongClick?.let { callback -> { callback(row.courses[0]) } }, isGrey = isGrey,
                             scale = scale, cornerRatio = cornerRatio,
-                            groupRows = courses.filter { it.groupId == row.courses[0].groupId }
+                            groupRows = groups[row.courses[0].groupId].orEmpty()
                         )
                     } else {
                         // 冲突行: 按 lane 并排,每列 weight 均分,同栏课程纵向堆叠
@@ -2298,7 +2300,7 @@ private fun DetailDayCard(
                             onLongClick = onCourseLongClick?.let { callback -> { callback(laneCourse) } },
                                                     isGrey = isGrey, scale = scale, cornerRatio = cornerRatio,
                                                     laneScale = laneScale, hideSideLabel = hideSide,
-                                                    groupRows = courses.filter { it.groupId == laneCourse.groupId }
+                                                    groupRows = groups[laneCourse.groupId].orEmpty()
                                                 )
                                             }
                                         }

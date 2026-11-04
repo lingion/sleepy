@@ -659,12 +659,11 @@ private fun MainRoute(
     } else if (navDock) {
         // Compact + 悬浮 Dock: FLClash 1:1 液态玻璃导航底栏
         val backdrop = rememberLayerBackdrop()
-        var dockExtraDp by remember { mutableStateOf(NavDockSpec.capsuleHeight + NavDockSpec.bottomFloat) }
         var dockOverlayPx by remember { mutableStateOf(0) }
         val densityForDock = LocalDensity.current
-        if (dockOverlayPx > 0) {
-            dockExtraDp = with(densityForDock) { dockOverlayPx.toDp() }
-        }
+        val dockExtraDp = if (dockOverlayPx > 0) {
+            with(densityForDock) { dockOverlayPx.toDp() }
+        } else NavDockSpec.capsuleHeight + NavDockSpec.bottomFloat
         Box(
             modifier = Modifier
                 .fillMaxSize()
