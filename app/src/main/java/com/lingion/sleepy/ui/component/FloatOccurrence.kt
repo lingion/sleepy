@@ -37,6 +37,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.BlurEffect
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationException
@@ -267,25 +269,24 @@ class CourseFloatState {
     }
 }
 
-/**
- * 遮罩不透明度 (Issue #274: 禁用模糊后统一使用遮罩)
- * 所有API版本统一使用 0.35 压暗，避免模糊导致的边缘白边和性能问题
- */
-internal fun scrimAlphaFor(sdkInt: Int): Float = 0.35f
+internal fun scrimAlphaFor(sdkInt: Int): Float =
+    if (sdkInt >= Build.VERSION_CODES.S) 0.12f else 0.35f
 
-/** 网格模糊目标半径 (dp): Issue #274 禁用模糊避免边缘白边和性能问题，统一使用遮罩。 */
-internal fun floatBlurRadiusDp(active: Boolean, dragging: Boolean): Dp = 0.dp
+internal fun floatBlurRadiusDp(active: Boolean, dragging: Boolean): Dp =
+    if (active && !dragging) 20.dp else 0.dp
 
 /** 浮起时模糊整个网格内容层 — API 31+ 高斯模糊; 26-30 无 RenderEffect, 由遮罩压暗兜底。
  *  半径经 lambda 在 graphicsLayer 的 draw 相位读取 (终审 I-2): 动画 State 的每帧
  *  变化只触发重绘, 不再重组挂载它的整棵子树; graphicsLayer 恒挂, 零半径不设
  *  renderEffect (与旧"0 半径不挂层"的可见行为等价)。 */
 @SuppressLint("NewApi")
-internal fun Modifier.gridFloatBlur(radiusPx: () -> Float): Modifier = graphicsLayer {
-    val r = radiusPx()
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && r > 0f) {
-        renderEffect = BlurEffect(r, r)
-    }
+internal fun Modifier.gridFloatBlur(shape: Shape, radiusPx: () -> Float): Modifier = graphicsLayer {
+    val radius = radiusPx()
+    renderEffect = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && radius > 0f) {
+        BlurEffect(radius, radius, TileMode.Clamp)
+    } else null
+    this.shape = shape
+    clip = true
 }
 
 /**
