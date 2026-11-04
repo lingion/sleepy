@@ -707,6 +707,7 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                     ReminderRescheduler.request()
                                 }
                             )
+                            // 假期规则 = 二级设置页跳转入口(用户 2026-11-04: 大导航入口保持扁平)
                             androidx.compose.material3.FilledTonalButton(
                                 onClick = onOpenHoliday,
                                 modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
@@ -1063,7 +1064,7 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                             }
                                         }
                                     } else {
-                                        androidx.compose.material3.FilledTonalButton(
+                                        FilledTonalButton(
                                             onClick = {
                                                 // 三查闸门 (用户 2026-10-10 二轮): 通知权限 + promoted
                                                 // 实时更新授权 + 厂商能力, 任一缺失弹窗列明 + 给设置入口,
