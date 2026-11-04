@@ -1,8 +1,6 @@
 package com.lingion.sleepy.ui.screen.imports
 
 import com.lingion.sleepy.ui.theme.noRippleGlassClickable
-import com.lingion.sleepy.ui.component.liquidglass.glassControl
-import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -645,11 +643,10 @@ private fun AlphabetIndexBar(
                     else MaterialTheme.typography.labelSmall,
                     color = if (isActive) colors.primary else colors.onSurfaceVariant,
                     modifier = Modifier
-                        .glassControl(shape = SleepyTheme.shapes.extraSmall, selected = isActive)
                         .clip(SleepyTheme.shapes.extraSmall)
-                        .background(controlFill(
+                        .background(
                             if (isActive) colors.primaryContainer.copy(alpha = SleepyTheme.Alpha.inactive) else Color.Transparent
-                        ))
+                        )
                         .padding(horizontal = 4.dp, vertical = 1.dp)
                 )
             }
