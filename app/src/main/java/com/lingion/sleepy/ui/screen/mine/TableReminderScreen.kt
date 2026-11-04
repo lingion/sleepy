@@ -80,7 +80,7 @@ fun TableReminderScreen(onBack: () -> Unit, vm: TableReminderViewModel = viewMod
         containerColor = colors.background,
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.table_reminder_title)) },
+                title = { Text(stringResource(R.string.settings_table_reminder_scope)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back))

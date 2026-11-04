@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_table_reminder_scope">通知する時間割</string>
+    <string name="settings_reminder_test_compatibility">テストと互換性</string>
+    <string name="settings_reminder_permissions_attention">通知の権限を確認</string>
+    <string name="settings_reminder_permissions">権限とバックグラウンド動作</string>
+    <string name="settings_reminder_widget_optional">ウィジェットは診断の参考情報です。通知を受け取るために設置する必要はありません。</string>
+    <string name="settings_holiday_title_rules">祝日と振替授業</string>
+    <string name="settings_holiday_dates">日付の管理</string>
+    <string name="settings_holiday_dates_scope">日付の範囲はすべての時間割で共有されます。振替の設定は上で選択した時間割にのみ適用されます。</string>
+    <string name="settings_holiday_maintenance">メンテナンス</string>
+</resources>

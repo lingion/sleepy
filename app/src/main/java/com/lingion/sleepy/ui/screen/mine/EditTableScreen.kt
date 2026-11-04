@@ -78,6 +78,7 @@ fun EditTableScreen(
     onDiscardPending: () -> Unit = onBack,
     onSaved: () -> Unit,
     onDeleted: () -> Unit,
+    onOpenHoliday: (Long) -> Unit = {},
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -343,6 +344,14 @@ fun EditTableScreen(
                         }
                     }
                 }
+            }
+
+            item {
+                AppearanceNavigationRow(
+                    title = stringResource(R.string.settings_holiday_title_rules),
+                    tag = "edit_table_holiday",
+                    onClick = { onOpenHoliday(table.id) },
+                )
             }
 
             error?.let { msg ->

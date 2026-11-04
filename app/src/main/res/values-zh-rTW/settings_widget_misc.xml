@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_widget_global_appearance">全域外觀</string>
+    <string name="settings_widget_shared_display">共用課表顯示</string>
+    <string name="settings_widget_shared_display_sub">設定顯示星期，以及沒課時是否顯示最近有課的一天。這些設定同時影響 App 和適用的小工具。</string>
+    <string name="settings_widget_advanced">進階選項</string>
+    <string name="settings_widget_vert_punct_experimental">小工具直排標點最佳化（實驗）</string>
+    <string name="settings_export_sharing">分享</string>
+    <string name="settings_export_calendar_assistants">日曆與助理</string>
+    <string name="settings_export_native_file_title">課表原生檔案</string>
+    <string name="settings_export_native_file_sub">分享這張課表及其作息；如需全部課表、偏好與小工具設定，請使用備份與還原。</string>
+</resources>

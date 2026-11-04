@@ -37,7 +37,7 @@ import com.lingion.sleepy.ui.theme.SleepyTheme
  * 其 S 档复用 Today 管线, 开关经 pushTodayData 默认参数仍生效)。
  */
 object WidgetEditScrollSection : WidgetEditSection {
-    override val titleRes: Int = R.string.widget_edit_section_scroll
+    override val titleRes: Int = R.string.settings_widget_advanced
 
     @Composable
     override fun Content(scope: WidgetEditScope) {

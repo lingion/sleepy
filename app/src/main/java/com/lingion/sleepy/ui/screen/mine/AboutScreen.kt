@@ -391,6 +391,133 @@ fun AboutScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // 自动检查更新 Toggle(issue#无编号): 关闭后冷启动不拉远端, 高亮也立即消失
+            InfoCard {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.about_update_check),
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                            color = colors.onSurface
+                        )
+                        Text(
+                            text = stringResource(R.string.about_update_check_detail),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = updateCheckEnabled,
+                        onCheckedChange = { v ->
+                            updateCheckEnabled = v
+                            AppPrefs.setUpdateCheckEnabled(context, v)
+                            if (!v) UpdateNotifier.clearCache()
+                        },
+                        modifier = Modifier.dbgTag("about_update_switch", text = stringResource(R.string.about_update_check), role = "switch"),
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = colors.onPrimary,
+                            checkedTrackColor = colors.primary,
+                            uncheckedThumbColor = colors.outline,
+                            uncheckedTrackColor = colors.surfaceVariant
+                        )
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Feedback card
+            InfoCard {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Outlined.BugReport,
+                        contentDescription = null,
+                        tint = colors.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.about_feedback),
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                            color = colors.onSurface
+                        )
+                        Text(
+                            text = stringResource(R.string.about_feedback_detail),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.onSurfaceVariant
+                        )
+                    }
+                    IconButton(
+                        modifier = Modifier.dbgTag("about_feedback_github", role = "button"),
+                        onClick = { openGitHubFeedback() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
+                            contentDescription = stringResource(R.string.about_feedback_github),
+                            tint = colors.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    IconButton(
+                        modifier = Modifier.dbgTag("about_feedback_email", role = "button"),
+                        onClick = { openEmailFeedback() }) {
+                        Icon(
+                            imageVector = Icons.Outlined.Email,
+                            contentDescription = stringResource(R.string.about_feedback_email),
+                            tint = colors.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // QQ 群入口: 点卡复制群号并拉起 QQ(加群页 → 首页 → 仅提示 三级降级)
+            InfoCard {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .noRippleClickable { joinQqGroup() }
+                        .dbgTag("about_qq_group", role = "button")
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Groups,
+                        contentDescription = null,
+                        tint = colors.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.about_qq_title),
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                            color = colors.onSurface
+                        )
+                        Text(
+                            text = stringResource(R.string.about_qq_detail, stringResource(R.string.about_qq_group_number)),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.onSurfaceVariant
+                        )
+                    }
+                    IconButton(
+                        modifier = Modifier.dbgTag("about_qq_copy", role = "button"),
+                        onClick = { joinQqGroup() }) {
+                        Icon(
+                            imageVector = Icons.Outlined.ContentCopy,
+                            contentDescription = stringResource(R.string.about_qq_copy_action),
+                            tint = colors.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             // Author card
             InfoCard {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -505,96 +632,6 @@ fun AboutScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Feedback card
-            InfoCard {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Outlined.BugReport,
-                        contentDescription = null,
-                        tint = colors.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = stringResource(R.string.about_feedback),
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                            color = colors.onSurface
-                        )
-                        Text(
-                            text = stringResource(R.string.about_feedback_detail),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = colors.onSurfaceVariant
-                        )
-                    }
-                    IconButton(
-                        modifier = Modifier.dbgTag("about_feedback_github", role = "button"),
-                        onClick = { openGitHubFeedback() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
-                            contentDescription = stringResource(R.string.about_feedback_github),
-                            tint = colors.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                    IconButton(
-                        modifier = Modifier.dbgTag("about_feedback_email", role = "button"),
-                        onClick = { openEmailFeedback() }) {
-                        Icon(
-                            imageVector = Icons.Outlined.Email,
-                            contentDescription = stringResource(R.string.about_feedback_email),
-                            tint = colors.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // QQ 群入口: 点卡复制群号并拉起 QQ(加群页 → 首页 → 仅提示 三级降级)
-            InfoCard {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .noRippleClickable { joinQqGroup() }
-                        .dbgTag("about_qq_group", role = "button")
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Groups,
-                        contentDescription = null,
-                        tint = colors.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = stringResource(R.string.about_qq_title),
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                            color = colors.onSurface
-                        )
-                        Text(
-                            text = stringResource(R.string.about_qq_detail, stringResource(R.string.about_qq_group_number)),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = colors.onSurfaceVariant
-                        )
-                    }
-                    IconButton(
-                        modifier = Modifier.dbgTag("about_qq_copy", role = "button"),
-                        onClick = { joinQqGroup() }) {
-                        Icon(
-                            imageVector = Icons.Outlined.ContentCopy,
-                            contentDescription = stringResource(R.string.about_qq_copy_action),
-                            tint = colors.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
             // License 入口行(v1.0.46 用户令): 长卡拆独立二级页, 这里只留入口
             InfoCard {
                 Row(
@@ -625,43 +662,6 @@ fun AboutScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // 自动检查更新 Toggle(issue#无编号): 关闭后冷启动不拉远端, 高亮也立即消失
-            InfoCard {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = stringResource(R.string.about_update_check),
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                            color = colors.onSurface
-                        )
-                        Text(
-                            text = stringResource(R.string.about_update_check_detail),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = colors.onSurfaceVariant
-                        )
-                    }
-                    Switch(
-                        checked = updateCheckEnabled,
-                        onCheckedChange = { v ->
-                            updateCheckEnabled = v
-                            AppPrefs.setUpdateCheckEnabled(context, v)
-                            if (!v) UpdateNotifier.clearCache()
-                        },
-                        modifier = Modifier.dbgTag("about_update_switch", text = stringResource(R.string.about_update_check), role = "switch"),
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = colors.onPrimary,
-                            checkedTrackColor = colors.primary,
-                            uncheckedThumbColor = colors.outline,
-                            uncheckedTrackColor = colors.surfaceVariant
-                        )
-                    )
-                }
-            }
 
             Spacer(modifier = Modifier.height(32.dp))
         }

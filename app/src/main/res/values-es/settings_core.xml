@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_schedule_management">Gestión de horarios</string>
+    <string name="settings_application">Ajustes de la aplicación</string>
+    <string name="settings_data">Datos</string>
+    <string name="settings_holidays">Festivos y clases de recuperación</string>
+    <string name="settings_backup">Copia de seguridad y restauración</string>
+    <string name="settings_backup_create">Crear copia completa</string>
+    <string name="settings_backup_restore">Restaurar copia de seguridad</string>
+    <string name="settings_performance">Rendimiento</string>
+    <string name="settings_editing">Edición</string>
+    <string name="settings_undo_experiment">Función experimental. El historial se guarda en memoria y se borra al finalizar el proceso de la aplicación.</string>
+    <string name="settings_undo_mode">Límite del historial</string>
+    <string name="settings_undo_off">Desactivado</string>
+    <string name="settings_undo_limited">Limitado</string>
+    <string name="settings_undo_unlimited">Ilimitado</string>
+    <string name="settings_undo_count_hint">Introduce un número positivo de pasos.</string>
+</resources>

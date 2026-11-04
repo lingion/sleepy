@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_table_reminder_scope">需要提醒的课表</string>
+    <string name="settings_reminder_test_compatibility">测试与兼容性</string>
+    <string name="settings_reminder_permissions_attention">提醒权限需要处理</string>
+    <string name="settings_reminder_permissions">权限与后台运行</string>
+    <string name="settings_reminder_widget_optional">小组件仅作为诊断参考，不是接收提醒的必要条件。</string>
+    <string name="settings_holiday_title_rules">节假日与调休</string>
+    <string name="settings_holiday_dates">日期管理</string>
+    <string name="settings_holiday_dates_scope">日期范围由所有课表共用；调休映射仅影响上方选择的课表。</string>
+    <string name="settings_holiday_maintenance">维护</string>
+</resources>

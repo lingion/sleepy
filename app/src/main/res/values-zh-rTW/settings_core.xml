@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_schedule_management">課表管理</string>
+    <string name="settings_application">應用程式設定</string>
+    <string name="settings_data">資料</string>
+    <string name="settings_holidays">假日與補課</string>
+    <string name="settings_backup">備份與還原</string>
+    <string name="settings_backup_create">建立完整備份</string>
+    <string name="settings_backup_restore">從備份還原</string>
+    <string name="settings_performance">效能</string>
+    <string name="settings_editing">編輯操作</string>
+    <string name="settings_undo_experiment">實驗功能。歷史僅保存在記憶體中，應用程式程序結束後清空。</string>
+    <string name="settings_undo_mode">保留方式</string>
+    <string name="settings_undo_off">關閉</string>
+    <string name="settings_undo_limited">指定步數</string>
+    <string name="settings_undo_unlimited">無限</string>
+    <string name="settings_undo_count_hint">請輸入大於零的保留步數。</string>
+</resources>

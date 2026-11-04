@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_schedule_management">Timetable management</string>
+    <string name="settings_application">App settings</string>
+    <string name="settings_data">Data</string>
+    <string name="settings_holidays">Holidays and makeup classes</string>
+    <string name="settings_backup">Backup and restore</string>
+    <string name="settings_backup_create">Create complete backup</string>
+    <string name="settings_backup_restore">Restore from backup</string>
+    <string name="settings_performance">Performance</string>
+    <string name="settings_editing">Editing</string>
+    <string name="settings_undo_experiment">Experimental. History is stored in memory and is cleared when the app process stops.</string>
+    <string name="settings_undo_mode">History limit</string>
+    <string name="settings_undo_off">Off</string>
+    <string name="settings_undo_limited">Limited</string>
+    <string name="settings_undo_unlimited">Unlimited</string>
+    <string name="settings_undo_count_hint">Enter a positive number of steps.</string>
+</resources>
