@@ -11,6 +11,7 @@ import androidx.room.withTransaction
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.ConflictLayoutEngine
 import com.lingion.sleepy.widget.WidgetUpdater
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import com.lingion.sleepy.util.AppClock
@@ -106,6 +107,14 @@ class ScheduleRepository(private val db: AppDatabase) {
 
     fun observeAllTables(): Flow<List<TimeTableEntity>> = tableDao.observeAll()
 
+    /** All tables with effective switch values, shared by settings and notification consumers. */
+    fun observeReminderTables(): Flow<List<TimeTableEntity>> = tableDao.observeAll().map(::resolveReminderTables)
+
+    suspend fun getReminderTables(): List<TimeTableEntity> = resolveReminderTables(tableDao.getAll())
+
+    private fun resolveReminderTables(tables: List<TimeTableEntity>): List<TimeTableEntity> =
+        resolveReminderTableScope(tables, AppPrefs.getCurrentTableId(SleepyApp.get()))
+
     fun observeTable(id: Long): Flow<TimeTableEntity?> = tableDao.observeById(id)
 
     suspend fun getAllTables(): List<TimeTableEntity> = tableDao.getAll()
@@ -144,7 +153,7 @@ class ScheduleRepository(private val db: AppDatabase) {
                 // Freeze the effective bell schedule so a later shared-schedule update cannot change the backup.
                 val backupId = tableDao.insert(effective.copy(
                     id = 0, name = name, isDefault = false, periodTableId = null,
-                    preBindSnapshotJson = "", createdAt = AppClock.millis(), reminderEnabled = false
+                    preBindSnapshotJson = "", createdAt = AppClock.millis(), reminderEnabled = false, reminderOverride = null
                 ))
                 courseDao.insertAll(existing.map { it.copy(id = 0, tableId = backupId) })
             }
@@ -231,9 +240,16 @@ class ScheduleRepository(private val db: AppDatabase) {
     /** Reminder settings own this field; never overwrite timetable metadata. */
     suspend fun setTableReminderEnabled(id: Long, enabled: Boolean) {
         val changed = db.withTransaction {
-            val current = tableDao.getById(id) ?: return@withTransaction false
+            val tables = tableDao.getAll()
+            val effective = resolveReminderTables(tables)
+            val current = effective.firstOrNull { it.id == id } ?: return@withTransaction false
             if (current.reminderEnabled == enabled) return@withTransaction false
             captureForUndo()
+            // Freeze the entire visible selection before the first manual change.
+            // This also preserves an explicitly empty selection across table switches.
+            if (tables.none { it.reminderOverride != null }) {
+                effective.forEach { tableDao.setReminderEnabled(it.id, it.reminderEnabled) }
+            }
             tableDao.setReminderEnabled(id, enabled) > 0
         }
         if (changed) onDataChanged()

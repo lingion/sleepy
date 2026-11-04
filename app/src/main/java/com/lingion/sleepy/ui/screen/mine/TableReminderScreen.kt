@@ -47,7 +47,7 @@ import kotlinx.coroutines.launch
 /** Database state remains authoritative; one in-flight write per timetable. */
 class TableReminderViewModel : ViewModel() {
     private val repository = SleepyApp.get().repository
-    val tables = repository.observeAllTables()
+    val tables = repository.observeReminderTables()
     var pending by mutableStateOf(emptySet<Long>())
         private set
 
