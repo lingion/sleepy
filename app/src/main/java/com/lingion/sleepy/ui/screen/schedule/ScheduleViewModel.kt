@@ -67,8 +67,9 @@ data class ScheduleState(
         } ?: 20
 
     /** issue#40: 水合后的当前表 — 节次时间域一律从这里读, 不得直接读 currentTable.timeJson */
-    val effectiveCurrentTable: TimeTableEntity?
-        get() = currentTable?.hydratedWith(effectivePeriodTable)
+    val effectiveCurrentTable: TimeTableEntity? by lazy {
+        currentTable?.hydratedWith(effectivePeriodTable)
+    }
 
     /** Format-only display input; real clocks and persisted data remain unchanged. */
     val effectiveRenderTimeJson: String?
@@ -94,6 +95,8 @@ data class ScheduleState(
 }
 
 class ScheduleViewModel : ViewModel() {
+
+    internal val presentationCache = SchedulePresentationCache()
 
     private val repo: ScheduleRepository = SleepyApp.get().repository
 

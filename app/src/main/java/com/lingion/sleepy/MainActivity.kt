@@ -85,6 +85,8 @@ import com.lingion.sleepy.util.AppPrefs
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -264,7 +266,9 @@ private fun AppRoot(
     val mainVm: ScheduleViewModel = viewModel()
     // composition 内读 StateFlow.value 会被 lint(StateFlowValueCalledInComposition)拦:
     // 快照值不随 flow 更新重组。改订阅, holiday 设置页拿到的 tableId 恒为当前值。
-    val mainState by mainVm.state.collectAsState()
+    val currentTableId by remember(mainVm) {
+        mainVm.state.map { it.currentTable?.id }.distinctUntilChanged()
+    }.collectAsState(initial = null)
     val navigator = rememberSleepyNavigator()
     val nav = navigator.backStack
     // 底栏 thumb 状态提升到 NavDisplay 之外: entry<Main> 在 push 子页时会被销毁,
@@ -294,7 +298,7 @@ private fun AppRoot(
         deepLinkCourse = deepLinkCourse,
         onDeepLinkConsumed = onDeepLinkConsumed,
         mainVm = mainVm,
-        currentTableId = mainState.currentTable?.id,
+        currentTableId = currentTableId,
         mainScope = mainScope,
         onCreateNewTable = {
             mainScope.launch {
@@ -342,6 +346,7 @@ internal fun MainTabs(
         when (currentTab) {
             Tab.Schedule -> holder.SaveableStateProvider(currentTab.name) {
                 ScheduleScreen(
+                    viewModel = mainVm,
                     viewMode = viewMode,
                     onViewModeChange = onViewModeChange,
                     onGoImport = { setCurrentTab(Tab.Manage); navigator.openAddTable() },
@@ -351,7 +356,7 @@ internal fun MainTabs(
                     onEditCourse = { course -> session.beginEditCourse(course); navigator.openAddCourse(course.id, editing = true) })
             }
             Tab.Today -> holder.SaveableStateProvider(currentTab.name) {
-                TodayScreen(onEditCourse = { course -> session.beginEditCourse(course); navigator.openAddCourse(course.id, editing = true) })
+                TodayScreen(viewModel = mainVm, onEditCourse = { course -> session.beginEditCourse(course); navigator.openAddCourse(course.id, editing = true) })
             }
             Tab.Manage -> holder.SaveableStateProvider(currentTab.name) {
                 ManagementPage(
@@ -366,6 +371,7 @@ internal fun MainTabs(
             }
             Tab.Mine -> holder.SaveableStateProvider(currentTab.name) {
                 MineScreen(
+                    viewModel = mainVm,
                     onOpenAllTables = { navigator.openAllTables() },
                     onOpenCourseList = { navigator.openCourseList() },
                     onOpenPeriodTables = { navigator.openPeriodTables() },
