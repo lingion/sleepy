@@ -154,18 +154,17 @@ class HolidaySettingsContractTest {
     fun main_activity_passes_current_table_id() {
         // Navigation 3 迁移后: MainActivity 把当前课表 ID 作为 SleepyNavHost 参数下发,
         // NavHost 里 HolidaySettingsScreen(tableId = currentTableId) — 语义等价。
-        // StateFlowValueCalledInComposition lint 后 MainActivity 用 collectAsState 订阅,
-        // 传 `currentTableId = mainState.currentTable?.id`(mainState = state.collectAsState)。
         assertTrue(
             Regex(
-                """currentTableId\s*=\s*mainState\.currentTable\?\.id"""
+                """currentTableId\s*=\s*currentTableId"""
             ).containsMatchIn(main)
         )
         assertTrue(
             Regex(
-                """val mainState by mainVm\.state\.collectAsState"""
+                """mainVm\.state\.map\s*\{\s*it\.currentTable\?\.id\s*\}\.distinctUntilChanged\(\)"""
             ).containsMatchIn(main)
         )
+        assertTrue(main.contains("collectAsState(initial = null)"))
         assertTrue(
             Regex(
                 """HolidaySettingsScreen\([\s\S]{0,160}?tableId\s*=\s*currentTableId"""

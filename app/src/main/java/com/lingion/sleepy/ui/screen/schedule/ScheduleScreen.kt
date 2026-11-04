@@ -386,27 +386,8 @@ fun ScheduleScreen(
                     !com.lingion.sleepy.ui.component.shouldComposeFloatDragPage(page + 1, pagerState.currentPage + 1, floatState)) {
                     return@HorizontalPager
                 }
-                val table = state.currentTable
-                val timeJson = state.effectiveCurrentTable?.timeJson
                 // 拖拽坐标、缩放和弹窗变化不改变课程投影，只有数据/周次/调休/作息变化才重算。
-                val renderCourses = remember(page, state.courses, table?.startDate, table?.maxWeek, state.transfers, timeJson) {
-                    if (table == null) {
-                        state.courses.filter { it.inWeek(page + 1) }
-                            .map { course -> timeJson?.let { course.normalizeNode(it) } ?: course }
-                    } else {
-                        // issue#44 调休改写: 调休日替换整列；固定日期课程仍由 coursesForDate 处理。
-                        // issue#145: 同时屏蔽补班日那列原本属于它的课(否则与调过去的课叠加显示)。
-                        (1..7).flatMap { day ->
-                            val date = DateUtils.dateOfWeek(table.startDate, page + 1, day)
-                            com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(
-                                date, table.startDate, table.maxWeek, state.courses, state.transfers
-                            ).map { course ->
-                                val projected = course.copy(day = day)
-                                timeJson?.let { projected.normalizeNode(it) } ?: projected
-                            }
-                        }
-                    }
-                }
+                val renderCourses = viewModel.presentationCache.weekCourses(state, page + 1)
                 // 计算本周哪些天是节假日/周末(灰显用); 传入表 ID 使命中调休映射的放假日不灰
                 val greyDays by produceState<Set<Int>>(
                     emptySet(), page, state.currentTable?.startDate, state.transfers
