@@ -2,7 +2,9 @@ package com.lingion.sleepy.ui.component
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -44,6 +46,7 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
@@ -133,6 +136,9 @@ fun <T> SegmentedSwitcher(
     var thumbPosition by remember { mutableFloatStateOf(selectedIndex.toFloat()) }
     var dragging by remember { mutableStateOf(false) }
     var gestureEnd by remember { mutableIntStateOf(0) }
+    // 拖动中滑块浮起成镜片(用户 2026-11-04: 像 Toggle/Dock 那样浮着拖):
+    // 高度 42dp 轨道下允许放大 1.155 仍不出屏; 松手弹簧回落, 投影随之消散。
+    val thumbLift by animateFloatAsState(if (dragging) 1f else 0f, tween(240), label = "segment-thumb-lift")
     val currentOnSelect by rememberUpdatedState(onSelect)
     val currentSelectedIndex by rememberUpdatedState(selectedIndex)
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
@@ -159,8 +165,10 @@ fun <T> SegmentedSwitcher(
         modifier = modifier
             .height(42.dp)
             .glassControl(shape = RoundedCornerShape(14.dp), grouped = true, enabled = false)
-            .clip(RoundedCornerShape(14.dp))
-            .background(controlFill(containerColor ?: colors.surfaceContainer))
+            // 不再外层 clip: 浮起滑块需要越出轨道边缘(同 GlassSwitch requiredSize 溢出模式)。
+            // 静止安全: 轨道底色自带 14dp 圆角, 滑块 12dp 圆角四角弧经几何核对全在底色
+            // 圆角内侧(对角余量 ~3px), 文字/点击段均界内 — clip 移除不改变静止像素。
+            .background(controlFill(containerColor ?: colors.surfaceContainer), RoundedCornerShape(14.dp))
             .onGloballyPositioned { coords ->
                 // coords 是含 padding 的外区; 轨道宽 = 外区宽 - 左右 4dp padding
                 trackWidthPx = (coords.size.width - with(density) { 8.dp.toPx() }).toInt().coerceAtLeast(0)
@@ -216,11 +224,21 @@ fun <T> SegmentedSwitcher(
                 // 由 draw 层浮点补回, 120Hz 下连续非线性曲线, 不再有"一格一格"的整数跳变
                 Box(
                     Modifier
+                        .testTag("segment-thumb")
                         .fillMaxHeight()
                         .graphicsLayer {
                             val segWpx = trackWidthPx.toFloat() / count
                             val exact = thumbPosition * segWpx
                             translationX = (exact - exact.toInt()) * if (isRtl) -1f else 1f
+                            // 浮起: 拖动中滑块放大 1.155 + 8dp 托影, 缩放围绕中心, 像从轨道里浮出来
+                            // (对齐 Dock/GlassSwitch 按压升镜; 1.155*34dp=39.3dp 仍在 42dp 组件高度内,
+                            //  轨道外层已不 clip, 越出轨道边界的投影可完整绘制)
+                            val l = thumbLift
+                            scaleX = 1f + 0.155f * l
+                            scaleY = 1f + 0.155f * l
+                            shape = RoundedCornerShape(12.dp)
+                            clip = false
+                            shadowElevation = if (l > 0f) 8.dp.toPx() * l else 0f
                         }
                         .glassControl(shape = RoundedCornerShape(12.dp), tint = colors.secondaryContainer, enabled = false, selected = true, registerPane = false)
                         .clip(RoundedCornerShape(12.dp))
