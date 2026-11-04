@@ -38,6 +38,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -104,15 +105,15 @@ fun EditTableScreen(
         return
     }
 
-    var name by remember(table.id) { mutableStateOf(table.name) }
-    var startDate by remember(table.id) { mutableStateOf(table.startDate) }
-    var maxWeekText by remember(table.id) { mutableStateOf(table.maxWeek.toString()) }
-    var timeSlotsExpanded by remember { mutableStateOf(false) }
+    var name by rememberSaveable(table.id) { mutableStateOf(table.name) }
+    var startDate by rememberSaveable(table.id) { mutableStateOf(table.startDate) }
+    var maxWeekText by rememberSaveable(table.id) { mutableStateOf(table.maxWeek.toString()) }
+    var timeSlotsExpanded by rememberSaveable { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
     // issue#40: 换绑选择(§5.3) — null 起始 = 未动过; 确认时才写 periodTableId。
     // pendingBind != table.periodTableId 时保存流程走换绑分支。
-    var pendingBind by remember(table.id, table.periodTableId) { mutableStateOf<Long?>(table.periodTableId) }
+    var pendingBind by rememberSaveable(table.id, table.periodTableId) { mutableStateOf<Long?>(table.periodTableId) }
     // v1.0.56 T6: bindExpanded 已随独立换绑卡拆除 — 绑定入口唯一化(第三 Tab)
     // issue#40 §5.3: 换绑确认弹窗 — 非 null 时弹「确认换绑」, 确认才真正写 periodTableId
     var pendingRebind by remember { mutableStateOf<Long?>(null) }
@@ -128,12 +129,17 @@ fun EditTableScreen(
     var showConflictSheet by remember { mutableStateOf(false) }
     var boundCount by remember { mutableStateOf(0) }
     // 取消撤销作息改动后自增 → slotRows/smartConfig 的 remember 键变化 → 用库中真值重建
-    var scheduleEpoch by remember { mutableStateOf(0) }
+    var scheduleEpoch by rememberSaveable { mutableStateOf(0) }
+    // A child-page round trip belongs to the same editing session.
+    var editSessionStarted by rememberSaveable(table.id) { mutableStateOf(false) }
     val editState = remember(table.id) {
-        viewModel.startEditSession(
-            table.id,
-            state.effectivePeriodTable?.takeIf { table.periodTableId != null }
-        )
+        val original = state.effectivePeriodTable?.takeIf { table.periodTableId != null }
+        if (editSessionStarted) {
+            viewModel.editStateFor(table.id, original)
+        } else {
+            editSessionStarted = true
+            viewModel.startEditSession(table.id, original)
+        }
     }
     val pendingPolicy by editState.pendingSchedulePolicy.collectAsState()
 
@@ -155,7 +161,7 @@ fun EditTableScreen(
         smartConfigJson = table.smartConfigJson,
     )
     val timeJson = effectivePeriodTable?.timeJson ?: table.timeJson
-    val slotRows = remember(table.id, effectivePeriodTable?.id, timeJson, scheduleEpoch) {
+    val slotRows = rememberSaveable(table.id, effectivePeriodTable?.id, timeJson, scheduleEpoch, saver = TimeSlotRowsSaver) {
         mutableStateListOf<TimeTableUtils.TimeSlotRow>().apply {
             addAll(TimeTableUtils.parseTimeSlotRows(timeJson))
         }
@@ -163,7 +169,7 @@ fun EditTableScreen(
     // v1.0.16 自动模式配置（编辑当前课表时使用）
     // issue#23 Task 4: 已存配置仍能 derive 出当前行 → 原样保留; 否则从当前行重推断;
     // 行不可推断 → 最简默认兜底(旧行为)。
-    val smartConfig = remember(table.id, effectivePeriodTable?.id, timeJson, scheduleEpoch) {
+    val smartConfig = rememberSaveable(table.id, effectivePeriodTable?.id, timeJson, scheduleEpoch, stateSaver = SmartPeriodConfigSaver) {
         val stored = com.lingion.sleepy.ui.component.decodeSmartPeriodConfig(
             effectivePeriodTable?.smartConfigJson ?: table.smartConfigJson
         )
@@ -174,6 +180,12 @@ fun EditTableScreen(
                     startTime = slotRows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
                 )
         )
+    }
+    val editorBaselineTimeJson = rememberSaveable(table.id, effectivePeriodTable?.id, timeJson, scheduleEpoch) {
+        TimeTableUtils.buildTimeJsonFromRows(slotRows.toList())
+    }
+    val editorBaselineConfigJson = rememberSaveable(table.id, effectivePeriodTable?.id, timeJson, scheduleEpoch) {
+        Json.encodeToString(smartConfig.value)
     }
 
     val fieldColors = SleepyTheme.fieldColors()
@@ -430,7 +442,20 @@ fun EditTableScreen(
                         //   updateDraft 自动作废, 自然落回此分支 = invariant ⑤ 重弹)
                         // ②有策略(=选择后未再动作息) → 执行策略(invariant ④)
                         if (!bindChanged && effectivePeriodTable != null) {
-                            if (editState.hasScheduleChanged() && pendingPolicy == SchedulePolicy.NONE) {
+                            // Restored text fields can outlive the ViewModel's policy state.
+                            // Reconcile actual input before deciding whether shared data may be saved.
+                            val inputDraft = effectivePeriodTable.copy(
+                                timeJson = newTimeJson,
+                                smartConfigJson = smartConfigJson,
+                                nodesPerDay = slotRows.size.coerceAtLeast(1),
+                            )
+                            val inputChanged = newTimeJson != editorBaselineTimeJson ||
+                                smartConfigJson != editorBaselineConfigJson
+                            if (inputChanged && inputDraft != editState.draftEffectiveSchedule.value) {
+                                editState.updateDraft(inputDraft)
+                            }
+                            val policyForSave = editState.pendingSchedulePolicy.value
+                            if (editState.hasScheduleChanged() && policyForSave == SchedulePolicy.NONE) {
                                 scope.launch {
                                     boundCount = viewModel.repoTablesBoundToCount(
                                         effectivePeriodTable.id
@@ -439,7 +464,7 @@ fun EditTableScreen(
                                 showConflictSheet = true
                                 return@Button
                             }
-                            if (pendingPolicy != SchedulePolicy.NONE) {
+                            if (policyForSave != SchedulePolicy.NONE) {
                                 viewModel.executePolicyAndSave(
                                     tableId = table.id,
                                     editedTable = updated,
