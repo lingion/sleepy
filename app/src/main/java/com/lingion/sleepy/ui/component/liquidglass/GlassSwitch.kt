@@ -130,8 +130,12 @@ fun GlassSwitch(
     val thumbColor = if (enabled) lerp(colors.uncheckedThumbColor, colors.checkedThumbColor, on)
         else lerp(colors.disabledUncheckedThumbColor, colors.disabledCheckedThumbColor, on)
     val stretch = sin(PI * on).toFloat()
-    val thumbWidth = (24f + 10f * stretch) * (1f - lift) + (40f + 10f * stretch) * lift
-    val thumbHeight = (24f - 2f * stretch) * (1f - lift) + (40f - 2f * stretch) * lift
+    // iOS 26 定标: 静止近圆, 按住/拖动加宽成胶囊(宽 > 高 + 50% 圆角), 松手回弹。
+    // 高度恒定 ~24(不随 lift 长高), 只让宽度随 lift 拉大 — 老代码同时把高度抬到 38 才
+    // 让 CircleShape 渲染成方块气泡而非胶囊。用户 2026-11-04: 宽度变宽、圆形泡成胶囊。
+    val thumbWidth = (24f + 13f * stretch) + 16f * lift
+    val thumbHeight = 24f - 2f * stretch
+    val thumbShape = androidx.compose.foundation.shape.RoundedCornerShape(50)
     val track = rememberLayerBackdrop()
     val samplingHost = LocalGlassOverlaySamplingHost.current ?: host
     val scene = if (LocalGlassOverlay.current) samplingHost.overlayBackdrop else host.backdropAt(LocalGlassDepth.current)
@@ -148,12 +152,12 @@ fun GlassSwitch(
         Box(
             Modifier.offset(x = ((if (rtl) .5f - position else position - .5f) * 20f).dp)
                 .requiredSize(thumbWidth.dp, thumbHeight.dp)
-                .shadow((6f * lift).dp, CircleShape, clip = false)
+                .shadow((6f * lift).dp, thumbShape, clip = false)
                 .then(if (lift > 0f) Modifier.drawPlainBackdrop(
-                    backdrop = backdrop, shape = { CircleShape },
+                    backdrop = backdrop, shape = { thumbShape },
                     effects = { liquidGlass(context = context, style = lensStyle) },
                 ) else Modifier)
-                .background(thumbColor.copy(alpha = thumbColor.alpha * (1f - lift)), CircleShape),
+                .background(thumbColor.copy(alpha = thumbColor.alpha * (1f - lift)), thumbShape),
             contentAlignment = Alignment.Center,
         ) {
             val iconColor = if (enabled) {

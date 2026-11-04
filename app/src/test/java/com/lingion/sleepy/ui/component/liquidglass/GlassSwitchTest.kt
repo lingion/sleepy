@@ -1,6 +1,8 @@
 package com.lingion.sleepy.ui.component.liquidglass
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -21,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -58,13 +61,39 @@ class GlassSwitchTest {
                                 onCheckedChange = if (parentOwnsClick) null else update,
                                 enabled = enabled.value,
                                 modifier = Modifier.testTag("switch"),
-                                thumbContent = { Text("thumb") },
+                                thumbContent = {
+                                    Box(Modifier.testTag("thumb").fillMaxSize()) { Text("thumb") }
+                                },
                             )
                         }
                     }
                 }
             }
         }
+    }
+
+    @Test fun pressStretchesThumbIntoCapsuleWiderThanTall() {
+        // iOS 26 定标(用户 2026-11-04: 按住变宽 + 圆形泡成胶囊): 按住(或拖动)时 thumb 宽显著
+        // 大于高, 松手(tapLift 200ms + lift 弹簧落定)后回弹近方。thumb 载体 = thumbContent 根
+        // Box(fillMaxSize 贴合滑块 requiredSize 溢出尺寸); 尺寸取 SemanticsNode.boundsInRoot(px)。
+        show()
+        val thumb = compose.onNodeWithTag("thumb", useUnmergedTree = true)
+        fun thumbBox() = thumb.fetchSemanticsNode().boundsInRoot
+        val rest = thumbBox()
+        assertTrue("rest thumb must be near-square (circle): $rest",
+            kotlin.math.abs(rest.width - rest.height) < rest.width * 0.35f)
+        val switch = compose.onNodeWithTag("switch")
+        switch.performTouchInput { down(Offset(centerX, centerY)) }
+        compose.waitForIdle()
+        val pressed = thumbBox()
+        assertTrue("pressed thumb must grow wider than tall (capsule): $pressed",
+            pressed.width > pressed.height * 1.25f)
+        switch.performTouchInput { up() }
+        compose.waitForIdle()
+        val settled = thumbBox()
+        assertTrue("released thumb settles back near its rest size: $settled",
+            kotlin.math.abs(settled.width - rest.width) < 3f &&
+                kotlin.math.abs(settled.height - rest.height) < 3f)
     }
 
     @Test fun tapCommitsOnceAndExposesSwitchStateAndMinimumTarget() {
