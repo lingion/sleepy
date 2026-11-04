@@ -378,12 +378,14 @@ fun ScheduleScreen(
 
             HorizontalPager(
                 state = pagerState,
-                // 边缘翻页特性: 相邻页保持 compose — 浮态宿主随 week 换页时新页几何立即可用,
-                // 且拖拽手势流(pointerInput)不因页回收而腰斩。默认 0 会 dispose 邻页。
-                // beyondViewportPageCount = 1 (拖拽中保持全部周不被回收, 避免起拖页被回收腰斩手势)
-                beyondViewportPageCount = if (floatState.dragging) (pagerMaxWeek - 1).coerceAtLeast(1) else 1,
+                // 接收手势的页由 trackFloatDragPointer 固定，毋须为一次拖拽加载整个学期。
+                beyondViewportPageCount = 1,
                 modifier = Modifier.fillMaxSize()
             ) { page ->
+                if (viewMode == ViewMode.Cards &&
+                    !com.lingion.sleepy.ui.component.shouldComposeFloatDragPage(page + 1, pagerState.currentPage + 1, floatState)) {
+                    return@HorizontalPager
+                }
                 val table = state.currentTable
                 val timeJson = state.effectiveCurrentTable?.timeJson
                 // 拖拽坐标、缩放和弹窗变化不改变课程投影，只有数据/周次/调休/作息变化才重算。
@@ -393,6 +395,7 @@ fun ScheduleScreen(
                             .map { course -> timeJson?.let { course.normalizeNode(it) } ?: course }
                     } else {
                         // issue#44 调休改写: 调休日替换整列；固定日期课程仍由 coursesForDate 处理。
+                        // issue#145: 同时屏蔽补班日那列原本属于它的课(否则与调过去的课叠加显示)。
                         (1..7).flatMap { day ->
                             val date = DateUtils.dateOfWeek(table.startDate, page + 1, day)
                             com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(

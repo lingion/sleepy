@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -110,9 +111,17 @@ class CourseFloatState {
     var anchorRootLeftPx by mutableStateOf(0f)
     /** 进入拖拽瞬间的卡片中心 x (网格坐标) — 边缘判据的防误触锚 (需位移超 slop)。 */
     var dragOriginCx: Dp by mutableStateOf(0.dp)
+    /** 真实手指 root X；只由输入事件写、边缘判定读，不参与重组。 */
+    internal var dragPointerRootX: Float? = null
+    /** 二次抓取浮卡时保留输入节点；翻页只改变落点宿主。 */
+    internal var overlayDragOwner: Any? by mutableStateOf(null)
+    internal var dragHostWeek: Int by mutableStateOf(1)
+    internal var outsideDismissUptime: Long? = null
     /** 进入拖拽瞬间起拖页的纵向滚动 (dp) — 翻页换宿主后各页几何同构, 新宿主据此
      *  对齐滚动量, 卡悬停行 = 视觉行; 落点判定本就在内容坐标系, 双保险。 */
     var anchorScrollDp: Dp by mutableStateOf(0.dp)
+    /** 最近一次纵向手势拖拽倾向 (+1 向下, -1 向上, 0 未判定) — 超高卡片同时触达上下边缘区时决定自动滚动仲裁方向。 */
+    var lastDragDirY: Int by mutableIntStateOf(0)
     /** 顶栏周 chip 待回写 (2026-10-28 真机实证): 合法落点松手走 dismiss — active 与
      *  dragging 同帧落 false, settledPage effect 的「active && !dragging」窗口在这条
      *  路上从未打开, chip 永远停在起拖周。边缘翻页翻过即置位, 屏根 effect 在
@@ -217,7 +226,11 @@ class CourseFloatState {
         height: Dp,
         isGrey: Boolean,
     ) {
+        // 取消宿主的归位任务；新浮卡的位置直接初始化，不派发无生命周期的后台任务。
+        returnTick = 0
+        
         this.course = course
+        outsideDismissUptime = null
         this.day = day
         this.week = week
         this.startNode = startNode
@@ -227,10 +240,13 @@ class CourseFloatState {
         originX = x; originY = y
         originStartNode = startNode; originEndNode = endNode; originHeight = height
         originWeek = week
+        dragHostWeek = week
         dragging = false
+        overlayDragOwner = null
         edgeDir = 0
         edgeBlocked = 0
         peekProgress = 0f
+        lastDragDirY = 0
         dropTarget = null
         snapX = x; snapY = y; snapHeight = height // 未拖拽 = 原位渲染
         cardBounds = null
@@ -240,8 +256,11 @@ class CourseFloatState {
     fun dismiss() {
         course = null
         dragging = false
+        overlayDragOwner = null
+        edgeDir = 0
         edgeBlocked = 0
         peekProgress = 0f
+        lastDragDirY = 0
         dropTarget = null
         cardBounds = null
         popupBounds = null
@@ -249,16 +268,13 @@ class CourseFloatState {
 }
 
 /**
- * 遮罩不透明度分档 (用户实测定值, EMUI/Android 11 压暗被系统压缩 → 兜底加深):
- * API 26-30 无 RenderEffect → 0.35 压暗兜底; API 31+ 模糊已让位浮卡 → 0.10 轻罩。
- * 纯函数便于测试锁值; AnimatedVisibility 只负责 opacity 0→该档值的淡入淡出。
+ * 遮罩不透明度 (Issue #274: 禁用模糊后统一使用遮罩)
+ * 所有API版本统一使用 0.35 压暗，避免模糊导致的边缘白边和性能问题
  */
-internal fun scrimAlphaFor(sdkInt: Int): Float =
-    if (sdkInt < Build.VERSION_CODES.S) 0.35f else 0.10f
+internal fun scrimAlphaFor(sdkInt: Int): Float = 0.35f
 
-/** 网格模糊目标半径 (dp): 浮起且静止才糊, 拖拽中/收层复原 0 — 缓动交给宿主。 */
-internal fun floatBlurRadiusDp(active: Boolean, dragging: Boolean): Dp =
-    if (active && !dragging) 20.dp else 0.dp
+/** 网格模糊目标半径 (dp): Issue #274 禁用模糊避免边缘白边和性能问题，统一使用遮罩。 */
+internal fun floatBlurRadiusDp(active: Boolean, dragging: Boolean): Dp = 0.dp
 
 /** 浮起时模糊整个网格内容层 — API 31+ 高斯模糊; 26-30 无 RenderEffect, 由遮罩压暗兜底。
  *  半径经 lambda 在 graphicsLayer 的 draw 相位读取 (终审 I-2): 动画 State 的每帧
@@ -295,7 +311,10 @@ fun Modifier.dismissFloatOnOutsidePress(
             if (onLifted) return@awaitEachGesture
             down.consume()
             val pending = blankPress
-            if (pending != null && state.spanChanged) pending() else state.dismiss()
+            if (pending != null && state.spanChanged) pending() else {
+                state.outsideDismissUptime = down.uptimeMillis
+                state.dismiss()
+            }
         }
     }
 }
@@ -326,6 +345,7 @@ fun Modifier.continuousFloatLift(
     onDragStart: () -> Unit,
     onDrag: (Offset) -> Unit,
     onDrop: () -> Unit,
+    allowConsumedLongPress: (Long) -> Boolean = { false },
 ): Modifier = composed {
     val isLifted by rememberUpdatedState(lifted)
     val tap by rememberUpdatedState(onTap)
@@ -333,6 +353,7 @@ fun Modifier.continuousFloatLift(
     val dragStart by rememberUpdatedState(onDragStart)
     val drag by rememberUpdatedState(onDrag)
     val drop by rememberUpdatedState(onDrop)
+    val consumedLongPress by rememberUpdatedState(allowConsumedLongPress)
     // 场景C 换算基准: 本节点坐标 → root 坐标。与 dismissFloatOnOutsidePress 同捕获
     // 模式; 节点换页平移时 localToRoot 随之更新, delta 守恒。null 帧(尚未布局)退化为
     // 本地坐标 — 与修复前同行为, 不崩不丢事件。
@@ -340,7 +361,8 @@ fun Modifier.continuousFloatLift(
     onGloballyPositioned { coordinates = it }.pointerInput(Unit) {
         awaitEachGesture {
             val down = awaitFirstDown(requireUnconsumed = false)
-            if (down.isConsumed || isLifted()) return@awaitEachGesture
+            val suppressTap = down.isConsumed
+            if ((suppressTap && !consumedLongPress(down.uptimeMillis)) || isLifted()) return@awaitEachGesture
             val id = down.id
             var previous = down.position
             var releasedEarly = false
@@ -367,7 +389,7 @@ fun Modifier.continuousFloatLift(
             }
             if (stolen) return@awaitEachGesture
             if (releasedEarly) {
-                if ((previous - down.position).getDistance() <= viewConfiguration.touchSlop) tap()
+                if (!suppressTap && (previous - down.position).getDistance() <= viewConfiguration.touchSlop) tap()
                 return@awaitEachGesture
             }
             lift()
@@ -446,7 +468,12 @@ internal fun FloatingOccurrenceCard(
                 .testTag("float-card")
                 .pointerInput(lifted.id) {
                     detectDragGestures(
-                        onDragStart = { start() },
+                        orientationLock = null,
+                        onDragStart = { down, change, overSlop ->
+                            start()
+                            // 阈值只负责识别手势；认领后补齐这段位移，保持最初抓取点。
+                            drag(change.position - down.position - overSlop)
+                        },
                         onDrag = { change, amount -> change.consume(); drag(amount) },
                         onDragEnd = { drop() },
                         onDragCancel = { drop() },

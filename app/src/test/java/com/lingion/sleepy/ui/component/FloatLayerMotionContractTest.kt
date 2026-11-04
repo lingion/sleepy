@@ -12,9 +12,8 @@ import org.junit.Test
  *      LaunchedEffect 驱动的 animateReturnToOrigin(defaultSpatialSpec) 弹簧落回原点
  *      (函数名终与行为一致); 瞬时写回 originX/originY 禁止复活 — D 契约测试的
  *      精确相等断言在 runOnIdle 排空后由「动画收敛到目标值」保证, 不靠同帧写死。
- *   2. 遮罩 fadeIn/fadeOut 走 motionScheme fastEffects — 且 API 分档兜底值
- *      (26-30 = 0.35, 31+ = 0.10) 是用户实测定值, 抽成纯函数 scrimAlphaFor 锁死。
- *   3. 网格模糊半径 0→20dp 经 animateFloatAsState(defaultSpatialSpec) 缓动,
+ *   2. #274 白边修复后全 API 禁用模糊，统一以 0.35 遮罩压暗。
+ *   3. 保留网格半径的 draw 阶段读取接线，但目标半径始终为 0，
  *      gridFloatBlur 收半径读取 lambda(终审 I-2: 半径在 graphicsLayer 的 draw
  *      相位求值, 组合相不再读动画 State), 判据抽成 floatBlurRadiusDp 纯函数。
  *   4. 浮框/卡片入场 = sleepyPopup 家族 (scale 0.8 + fast 对); 浮框退场 scale+fade,
@@ -45,18 +44,18 @@ class FloatLayerMotionContractTest {
     // ---- 契约 2: 遮罩兜底不透明度纯决策 ----
 
     @Test
-    fun scrim_alpha_keeps_api_gated_fallback_values() {
+    fun scrim_alpha_is_uniform_with_blur_disabled() {
         assertEquals("API 26-30 无 RenderEffect, 压暗兜底 0.35", 0.35f, scrimAlphaFor(26), 0f)
         assertEquals(0.35f, scrimAlphaFor(30), 0f)
-        assertEquals("API 31+ 有模糊, 遮罩让位 0.10", 0.10f, scrimAlphaFor(31), 0f)
-        assertEquals(0.10f, scrimAlphaFor(35), 0f)
+        assertEquals("API 31+ 同样禁用模糊，使用遮罩", 0.35f, scrimAlphaFor(31), 0f)
+        assertEquals(0.35f, scrimAlphaFor(35), 0f)
     }
 
     // ---- 契约 3: 模糊半径纯决策 ----
 
     @Test
-    fun blur_radius_target_only_when_lifted_and_resting() {
-        assertEquals(20.dp, floatBlurRadiusDp(active = true, dragging = false))
+    fun blur_radius_stays_zero_to_preserve_the_white_edge_fix() {
+        assertEquals("静止浮起也不能恢复白边", 0.dp, floatBlurRadiusDp(active = true, dragging = false))
         assertEquals("拖拽中网格复原不糊", 0.dp, floatBlurRadiusDp(active = true, dragging = true))
         assertEquals(0.dp, floatBlurRadiusDp(active = false, dragging = false))
         assertEquals(0.dp, floatBlurRadiusDp(active = false, dragging = true))
