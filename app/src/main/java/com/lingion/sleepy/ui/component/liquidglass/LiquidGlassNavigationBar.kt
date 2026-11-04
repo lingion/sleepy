@@ -137,52 +137,47 @@ fun LiquidGlassNavigationBar(
         }
     }
 
-    // ── 连续物理仿真帧循环 (withFrameNanos) ──
     LaunchedEffect(Unit) {
-        var lastFrameNanos = 0L
-        while (true) {
-            withFrameNanos { frameTimeNanos ->
-                val dt = if (lastFrameNanos == 0L) {
-                    0.016
-                } else {
-                    ((frameTimeNanos - lastFrameNanos) / 1_000_000_000.0).coerceIn(0.001, 0.05)
-                }
-                lastFrameNanos = frameTimeNanos
+        runActiveFrameLoop(
+            needsFrame = {
+                dragging || dropping || lensSpring.isRunning || liftSpring.isRunning ||
+                    swellSpring.isRunning || stretchSpring.isRunning || jellySpring.isRunning ||
+                    glowSpring.isRunning || glowSpreadSpring.isRunning
+            },
+        ) { dt ->
+            lensSpring.tickDelta(dt)
+            liftSpring.tickDelta(dt)
+            swellSpring.tickDelta(dt)
+            stretchSpring.tickDelta(dt)
+            jellySpring.tickDelta(dt)
+            glowSpring.tickDelta(dt)
+            glowSpreadSpring.tickDelta(dt)
 
-                lensSpring.tickDelta(dt)
-                liftSpring.tickDelta(dt)
-                swellSpring.tickDelta(dt)
-                stretchSpring.tickDelta(dt)
-                jellySpring.tickDelta(dt)
-                glowSpring.tickDelta(dt)
-                glowSpreadSpring.tickDelta(dt)
+            // 果冻弹性 (wobble):
+            // 1. 手指拖拽中 (dragging): 受拖拽速度连续平滑驱动纯拉伸，彻底杜绝阻尼高频振颤引起的假性刹车相互抵消
+            // 2. 释放飞行/回弹阶段 (lensSpring.isRunning): 包含精准刹车拍扁 (braking squash) 与果冻回弹
+            val wobbleTarget = if (dragging) {
+                val vel = abs(lensSpring.velocity)
+                FlClashDockPhysics.JELLY_STRETCH * FlClashDockPhysics.saturate(vel / FlClashDockPhysics.JELLY_SPEED)
+            } else if (lensSpring.isRunning) {
+                FlClashDockPhysics.wobbleTarget(lensSpring.velocity, lensSpring.acceleration)
+            } else {
+                0f
+            }
+            if (abs(wobbleTarget - jellySpring.target) > 1e-3f) {
+                jellySpring.springTo(wobbleTarget, FlClashSprings.JellySpring)
+            }
 
-                // 果冻弹性 (wobble):
-                // 1. 手指拖拽中 (dragging): 受拖拽速度连续平滑驱动纯拉伸，彻底杜绝阻尼高频振颤引起的假性刹车相互抵消
-                // 2. 释放飞行/回弹阶段 (lensSpring.isRunning): 包含精准刹车拍扁 (braking squash) 与果冻回弹
-                val wobbleTarget = if (dragging) {
-                    val vel = abs(lensSpring.velocity)
-                    FlClashDockPhysics.JELLY_STRETCH * FlClashDockPhysics.saturate(vel / FlClashDockPhysics.JELLY_SPEED)
-                } else if (lensSpring.isRunning) {
-                    FlClashDockPhysics.wobbleTarget(lensSpring.velocity, lensSpring.acceleration)
-                } else {
-                    0f
-                }
-                if (abs(wobbleTarget - jellySpring.target) > 1e-3f) {
-                    jellySpring.springTo(wobbleTarget, FlClashSprings.JellySpring)
-                }
-
-                // 稳妥落锁收镜 (dropLift): 当手指已松开且镜片升满时, 落回沉底底盘
-                if (dropping && pointerId == null) {
-                    val nearTarget = abs(lensSpring.target - lensSpring.value) <= FlClashDockPhysics.LIFT_RELEASE
-                    if (liftSpring.value >= FlClashDockPhysics.LIFT_SNAP && nearTarget) {
-                        dropping = false
-                        liftSpring.springTo(0f, FlClashSprings.LiftSpring)
-                    } else if (!liftSpring.isRunning && liftSpring.value > 0f && nearTarget) {
-                        // 容错兜底: 若升镜已达峰停止且对准目标, 立即触发回弹落底
-                        dropping = false
-                        liftSpring.springTo(0f, FlClashSprings.LiftSpring)
-                    }
+            // 稳妥落锁收镜 (dropLift): 当手指已松开且镜片升满时, 落回沉底底盘
+            if (dropping && pointerId == null) {
+                val nearTarget = abs(lensSpring.target - lensSpring.value) <= FlClashDockPhysics.LIFT_RELEASE
+                if (liftSpring.value >= FlClashDockPhysics.LIFT_SNAP && nearTarget) {
+                    dropping = false
+                    liftSpring.springTo(0f, FlClashSprings.LiftSpring)
+                } else if (!liftSpring.isRunning && liftSpring.value > 0f && nearTarget) {
+                    // 容错兜底: 若升镜已达峰停止且对准目标, 立即触发回弹落底
+                    dropping = false
+                    liftSpring.springTo(0f, FlClashSprings.LiftSpring)
                 }
             }
         }
