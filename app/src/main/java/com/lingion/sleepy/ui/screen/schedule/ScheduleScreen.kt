@@ -390,20 +390,22 @@ fun ScheduleScreen(
                 val renderCourses = viewModel.presentationCache.weekCourses(state, page + 1)
                 // 计算本周哪些天是节假日/周末(灰显用); 传入表 ID 使命中调休映射的放假日不灰
                 val greyDays by produceState<Set<Int>>(
-                    emptySet(), page, state.currentTable?.startDate, state.transfers
+                    emptySet(), page, state.selectedTableId, state.currentTable?.startDate, state.transfers
                 ) {
                     val start = state.currentTable?.startDate
                     if (start.isNullOrBlank()) {
                         value = emptySet()
                     } else {
-                        val greySet = mutableSetOf<Int>()
-                        for (day in 1..7) {
-                            val date = DateUtils.dateOfWeek(start, page + 1, day)
-                            if (HolidayManager.shouldGrey(context, date, state.effectiveCurrentTable?.id)) {
-                                greySet.add(day)
+                        value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                            val greySet = mutableSetOf<Int>()
+                            for (day in 1..7) {
+                                val date = DateUtils.dateOfWeek(start, page + 1, day)
+                                if (HolidayManager.shouldGrey(context, date, state.effectiveCurrentTable?.id)) {
+                                    greySet.add(day)
+                                }
                             }
+                            greySet
                         }
-                        value = greySet
                     }
                 }
                 when (viewMode) {

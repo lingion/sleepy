@@ -39,9 +39,9 @@ object HolidayManager {
     private const val READ_TIMEOUT_MS = 5000
     private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
-    private val entriesCache = mutableMapOf<Int, List<HolidayEntry>>()
+    private val entriesCache = java.util.concurrent.ConcurrentHashMap<Int, List<HolidayEntry>>()
     /** 各年数据是否拉取成功过(空结果+成功=false => 网络失败) */
-    private val yearFetchFailed = mutableMapOf<Int, Boolean>()
+    private val yearFetchFailed = java.util.concurrent.ConcurrentHashMap<Int, Boolean>()
 
     /**
      * 磁盘缓存 — 拉成功一次即落盘, 进程重启后仍有效。
