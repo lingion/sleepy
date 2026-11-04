@@ -1,6 +1,8 @@
-// Copyright 2026 The Sleepy Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// Copyright 2013 The Flutter Authors. All rights reserved.
+// Kotlin adaptation Copyright 2026 The Sleepy Authors.
+// Derived from Flutter rounded-superellipse geometry. The original BSD-3-Clause
+// notice is retained in assets/third_party/notices/Flutter-BSD-3-Clause.txt.
+// Source revision: adc901062556672b4138e18a4dc62a4be8f4b3c2.
 
 package com.lingion.sleepy.ui.component.liquidglass
 

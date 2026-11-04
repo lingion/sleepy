@@ -4,9 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Text
 import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -23,11 +26,13 @@ import com.lingion.sleepy.console.ui.dbgTag
  */
 @Composable
 fun DebugModeBanner() {
-    if (!DebugGate.isReleaseUnlocked || DebugGate.debugBuild) return
+    val status by DebugGate.status.collectAsState()
+    if (!status.active || !status.releaseUnlocked || status.debugBuild) return
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(androidx.compose.material3.MaterialTheme.colorScheme.errorContainer)
+            .statusBarsPadding()
             .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

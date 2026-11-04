@@ -1,0 +1,122 @@
+name: Official Debug APK Signing
+
+on:
+  workflow_call:
+    secrets:
+      DEBUG_KEYSTORE_BASE64:
+        required: true
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  sign-debug:
+    if: >-
+      github.repository == 'lingion/sleepy' &&
+      github.workflow_ref == 'lingion/sleepy/.github/workflows/debug-apk.yml@refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # 与调用方共享 run；工作流及工具来自官方 main，绝不 checkout PR head。
+      - uses: actions/checkout@v7
+        with:
+          repository: lingion/sleepy
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+          path: tooling
+      - name: Verify official signing context
+        shell: bash
+        run: |
+          test "$GITHUB_REPOSITORY" = 'lingion/sleepy'
+          case "$GITHUB_EVENT_NAME" in pull_request_target|push|workflow_dispatch) ;; *) exit 1 ;; esac
+          test "$GITHUB_WORKFLOW_REF" = 'lingion/sleepy/.github/workflows/debug-apk.yml@refs/heads/main'
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Download and validate exact build attempt
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          python3 -I tooling/scripts/debug_sign.py download
+          --destination "$RUNNER_TEMP/signing-input"
+      - name: Install official debug signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
+        shell: bash
+        run: |
+          test -n "$KEYSTORE_B64" || { echo 'Required official debug key is missing; refusing publication.' >&2; exit 1; }
+          umask 077
+          printf '%s' "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/official-debug.keystore"
+          keytool -list -keystore "$RUNNER_TEMP/official-debug.keystore" -storepass android -alias androiddebugkey > /dev/null
+      - name: Sign and verify all selected APKs
+        id: sign
+        env:
+          SLEEPY_DEBUG_KEYSTORE: ${{ runner.temp }}/official-debug.keystore
+        run: >-
+          python3 -I tooling/scripts/debug_sign.py sign
+          --source "$RUNNER_TEMP/signing-input"
+          --destination "$RUNNER_TEMP/official-apks"
+      - uses: actions/upload-artifact@v7
+        id: arm64
+        if: ${{ !cancelled() && steps.sign.outcome == 'success' && (steps.sign.outputs.abi == 'all' || steps.sign.outputs.abi == 'arm64-v8a') }}
+        with:
+          name: ${{ steps.sign.outputs.artifact_arm64_v8a }}
+          path: ${{ runner.temp }}/official-apks/arm64-v8a/
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/upload-artifact@v7
+        id: v7a
+        if: ${{ !cancelled() && steps.sign.outcome == 'success' && (steps.sign.outputs.abi == 'all' || steps.sign.outputs.abi == 'armeabi-v7a') }}
+        with:
+          name: ${{ steps.sign.outputs.artifact_armeabi_v7a }}
+          path: ${{ runner.temp }}/official-apks/armeabi-v7a/
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/upload-artifact@v7
+        id: x86
+        if: ${{ !cancelled() && steps.sign.outcome == 'success' && (steps.sign.outputs.abi == 'all' || steps.sign.outputs.abi == 'x86_64') }}
+        with:
+          name: ${{ steps.sign.outputs.artifact_x86_64 }}
+          path: ${{ runner.temp }}/official-apks/x86_64/
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/upload-artifact@v7
+        id: universal
+        if: ${{ !cancelled() && steps.sign.outcome == 'success' && (steps.sign.outputs.abi == 'all' || steps.sign.outputs.abi == 'universal') }}
+        with:
+          name: ${{ steps.sign.outputs.artifact_universal }}
+          path: ${{ runner.temp }}/official-apks/universal/
+          if-no-files-found: error
+          retention-days: 7
+      - name: Official download summary
+        if: ${{ always() && steps.sign.outcome == 'success' }}
+        env:
+          JOB_STATUS: ${{ job.status }}
+          UPLOAD_ARM64_V8A_OUTCOME: ${{ steps.arm64.outcome }}
+          UPLOAD_ARM64_V8A_URL: ${{ steps.arm64.outputs.artifact-url }}
+          UPLOAD_ARMEABI_V7A_OUTCOME: ${{ steps.v7a.outcome }}
+          UPLOAD_ARMEABI_V7A_URL: ${{ steps.v7a.outputs.artifact-url }}
+          UPLOAD_X86_64_OUTCOME: ${{ steps.x86.outcome }}
+          UPLOAD_X86_64_URL: ${{ steps.x86.outputs.artifact-url }}
+          UPLOAD_UNIVERSAL_OUTCOME: ${{ steps.universal.outcome }}
+          UPLOAD_UNIVERSAL_URL: ${{ steps.universal.outputs.artifact-url }}
+        run: >-
+          python3 -I tooling/scripts/debug_sign.py summary
+          --destination "$RUNNER_TEMP/official-apks"
+      - name: Remove intermediate and obsolete artifacts after all uploads succeed
+        if: >-
+          success() && steps.sign.outcome == 'success' &&
+          (steps.arm64.outcome == 'success' || steps.arm64.outcome == 'skipped') &&
+          (steps.v7a.outcome == 'success' || steps.v7a.outcome == 'skipped') &&
+          (steps.x86.outcome == 'success' || steps.x86.outcome == 'skipped') &&
+          (steps.universal.outcome == 'success' || steps.universal.outcome == 'skipped')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          python3 -I tooling/scripts/debug_sign.py cleanup
+          --destination "$RUNNER_TEMP/official-apks"
+      - name: Remove signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/official-debug.keystore"

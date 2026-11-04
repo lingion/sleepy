@@ -995,8 +995,12 @@ fun CardsGridView(
                     // (override 不改变首课——findClusters 输出固定,键稳定)
                     // 用户反馈 2026-09-09: 带 timeJson 按真实时间区间(分钟级)聚簇 —
                     // 跨空隙反算的节点范围不再制造假冲突(12:30 结束被吸进 14:00 节)。
-                    val clusters = ConflictLayoutEngine.findClusters(courses, timeJson)
-                    val clusteredIds = clusters.flatMap { c -> c.courses.map { it.id } }.toSet()
+                    val clusters = remember(courses, timeJson) {
+                        ConflictLayoutEngine.findClusters(courses, timeJson)
+                    }
+                    val clusteredIds = remember(clusters) {
+                        clusters.flatMap { c -> c.courses.map { it.id } }.toSet()
+                    }
 
                     for (cluster in clusters) {
                         // 簇内课若因 visibleDays 过滤或节点不在 timeJson 则整簇跳过

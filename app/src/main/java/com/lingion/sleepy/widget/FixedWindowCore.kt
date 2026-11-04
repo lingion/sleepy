@@ -49,7 +49,7 @@ object FixedWindowCore {
         val eff = TimeTableUtils.effectiveCourseTime(
             c.isIrregularTime || c.ownTime,
             c.startTime, c.endTime,
-            c.startNode, c.step, timeJson ?: ""
+            c.startNode, c.step, timeJson.orEmpty()
         ) ?: return null
         val s = runCatching { LocalTime.parse(eff.first) }.getOrNull() ?: return null
         val e = runCatching { LocalTime.parse(eff.second) }.getOrNull() ?: return null

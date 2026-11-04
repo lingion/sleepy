@@ -75,6 +75,7 @@ fun TodayScreen(
         DateUtils.semesterStatus(it.startDate, it.maxWeek, courseDate ?: today)
     } ?: DateUtils.SemesterStatus.IN_RANGE
     val isOutOfSemester = semesterStatus != DateUtils.SemesterStatus.IN_RANGE
+    val renderTj = state.effectiveRenderTimeJson ?: state.effectiveCurrentTable?.timeJson
     val todayCourses = (state.currentTable?.let { table ->
         com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(
             today, table.startDate, table.maxWeek, state.courses, state.transfers
@@ -82,8 +83,7 @@ fun TodayScreen(
     } ?: emptyList()).let { list ->
         // 用户报障 2026-09-10: ownTime 课渲染前按真实时间归一化节点(与网格同一预处理),
         // 落库的表单占位节点不再影响今日页分组与显示。
-        val tj = state.effectiveCurrentTable?.timeJson
-        if (tj == null) list else list.map { c -> c.normalizeNode(tj) }
+        if (renderTj == null) list else list.map { c -> c.normalizeNode(renderTj) }
     }.sortedBy { it.startNode }
 
     // v7.10.10 今日页冲突分栏 — 与周视图同一引擎同一分组(weekLaneRows):
@@ -91,9 +91,9 @@ fun TodayScreen(
     // 分组在 LazyColumn 外 remember(LazyListScope 非 composable 上下文)。
     // 用户报障 2026-09-10: 分组走时间域(带 timeJson), 时间零交集的 ownTime 课对
     // 不再因节点占位值相同被并成假冲突行。
-    val laneRows = remember(todayCourses, state.effectiveCurrentTable?.timeJson) {
+    val laneRows = remember(todayCourses, renderTj) {
         com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(
-            todayCourses, state.effectiveCurrentTable?.timeJson
+            todayCourses, renderTj
         )
     }
 
@@ -112,6 +112,14 @@ fun TodayScreen(
     ) {
         item { TodayHeader(date = today, week = actualWeek, count = todayCourses.size, semesterStatus = semesterStatus) }
 
+        if (state.hasPeriodConflict) {
+            item {
+                val context = LocalContext.current
+                val msg = state.periodValidation?.errorMessage(context).orEmpty()
+                PeriodConflictBanner(message = msg)
+            }
+        }
+
         if (todayCourses.isEmpty()) {
             item { EmptyToday(semesterStatus = semesterStatus) }
         } else {
@@ -121,13 +129,15 @@ fun TodayScreen(
             // v7.10.10 今日页冲突分栏 — 分组已提至 LazyColumn 外
             laneRows.forEach { row ->
                 if (row.laneCount == 1) {
-                    item(key = row.courses[0].id) {
-                        TodayCourseCard(
-                            course = row.courses[0],
-                            timeJson = state.effectiveCurrentTable?.timeJson,
-                            onClick = { selectedCourse = row.courses[0] },
-                            groupRows = todayCourses.filter { it.groupId == row.courses[0].groupId }
-                        )
+                    row.courses.forEach { course ->
+                        item(key = course.id) {
+                            TodayCourseCard(
+                                course = course,
+                                timeJson = renderTj,
+                                onClick = { selectedCourse = course },
+                                groupRows = todayCourses.filter { it.groupId == course.groupId }
+                            )
+                        }
                     }
                 } else {
                     item(key = "conflict-${row.courses.first().id}") {
@@ -156,7 +166,7 @@ fun TodayScreen(
                                     laneCourses.forEach { laneCourse ->
                                         TodayCourseCard(
                                             course = laneCourse,
-                                            timeJson = state.effectiveCurrentTable?.timeJson,
+                                            timeJson = renderTj,
                                             onClick = { selectedCourse = laneCourse },
                                             groupRows = todayCourses.filter { it.groupId == laneCourse.groupId }
                                         )
@@ -175,7 +185,7 @@ fun TodayScreen(
         course = selectedCourse,
         timeString = selectedCourse?.let { it.nodeString(LocalContext.current) },
         allCourses = todayCourses,
-        timeJson = state.effectiveCurrentTable?.timeJson,
+        timeJson = renderTj,
         onDismiss = { selectedCourse = null },
         onEdit = { course ->
             selectedCourse = null
@@ -204,17 +214,17 @@ fun CompactTodayPane(
         DateUtils.semesterStatus(it.startDate, it.maxWeek, courseDate ?: today)
     } ?: DateUtils.SemesterStatus.IN_RANGE
     val isOutOfSemester = semesterStatus != DateUtils.SemesterStatus.IN_RANGE
+    val renderTj = state.effectiveRenderTimeJson ?: state.effectiveCurrentTable?.timeJson
     val todayCourses = (state.currentTable?.let { table ->
         com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(
             today, table.startDate, table.maxWeek, state.courses, state.transfers
         )
     } ?: emptyList()).let { list ->
-        val tj = state.effectiveCurrentTable?.timeJson
-        if (tj == null) list else list.map { c -> c.normalizeNode(tj) }
+        if (renderTj == null) list else list.map { c -> c.normalizeNode(renderTj) }
     }.sortedBy { it.startNode }
-    val laneRows = remember(todayCourses, state.effectiveCurrentTable?.timeJson) {
+    val laneRows = remember(todayCourses, renderTj) {
         com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(
-            todayCourses, state.effectiveCurrentTable?.timeJson
+            todayCourses, renderTj
         )
     }
 
@@ -229,18 +239,26 @@ fun CompactTodayPane(
     ) {
         TodayHeader(date = today, week = actualWeek, count = todayCourses.size, semesterStatus = semesterStatus)
 
+        if (state.hasPeriodConflict) {
+            val context = LocalContext.current
+            val msg = state.periodValidation?.errorMessage(context).orEmpty()
+            PeriodConflictBanner(message = msg)
+        }
+
         if (todayCourses.isEmpty()) {
             EmptyToday(semesterStatus = semesterStatus)
         } else {
             SectionHead(title = stringResource(R.string.widget_today_label), action = stringResource(R.string.n_periods, todayCourses.size))
             laneRows.forEach { row ->
                 if (row.laneCount == 1) {
-                    TodayCourseCard(
-                        course = row.courses[0],
-                        timeJson = state.effectiveCurrentTable?.timeJson,
-                        onClick = { selectedCourse = row.courses[0] },
-                        groupRows = todayCourses.filter { it.groupId == row.courses[0].groupId }
-                    )
+                    row.courses.forEach { course ->
+                        TodayCourseCard(
+                            course = course,
+                            timeJson = renderTj,
+                            onClick = { selectedCourse = course },
+                            groupRows = todayCourses.filter { it.groupId == course.groupId }
+                        )
+                    }
                 } else {
                     val laneGap = 6.dp
                     Row(
@@ -266,7 +284,7 @@ fun CompactTodayPane(
                                 laneCourses.forEach { laneCourse ->
                                     TodayCourseCard(
                                         course = laneCourse,
-                                        timeJson = state.effectiveCurrentTable?.timeJson,
+                                        timeJson = renderTj,
                                         onClick = { selectedCourse = laneCourse },
                                         groupRows = todayCourses.filter { it.groupId == laneCourse.groupId }
                                     )
@@ -283,7 +301,7 @@ fun CompactTodayPane(
         course = selectedCourse,
         timeString = selectedCourse?.let { it.nodeString(LocalContext.current) },
         allCourses = todayCourses,
-        timeJson = state.effectiveCurrentTable?.timeJson,
+        timeJson = renderTj,
         onDismiss = { selectedCourse = null },
         onEdit = { course ->
             selectedCourse = null
@@ -501,6 +519,32 @@ private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null, onCl
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun PeriodConflictBanner(message: String) {
+    val colors = MaterialTheme.colorScheme
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(SleepyTheme.shapes.large)
+            .background(colors.errorContainer)
+            .padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Notifications,
+            contentDescription = null,
+            tint = colors.onErrorContainer,
+            modifier = Modifier.size(20.dp)
+        )
+        Text(
+            text = stringResource(R.string.period_conflict_detected_banner, message),
+            style = MaterialTheme.typography.bodySmall,
+            color = colors.onErrorContainer
+        )
     }
 }
 

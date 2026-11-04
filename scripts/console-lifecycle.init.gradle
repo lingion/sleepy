@@ -1,0 +1,11 @@
+// AGP 默认不创建 release 单测；仅本次验证显式启用，发布构建不受影响。
+// ./gradlew -I scripts/console-lifecycle.init.gradle :app:testReleaseUnitTest --tests '*ReleaseConsoleLifecycleTest'
+allprojects { project ->
+    project.plugins.withId('com.android.application') {
+        project.androidComponents.beforeVariants(
+            project.androidComponents.selector().withBuildType('release')
+        ) { variant ->
+            variant.enableUnitTest = true
+        }
+    }
+}

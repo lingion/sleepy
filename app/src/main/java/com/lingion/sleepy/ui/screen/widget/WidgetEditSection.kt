@@ -26,7 +26,10 @@ data class WidgetEditScope(
     val onScrollEnabledChange: (Boolean) -> Unit = {},
     /** 最小档三天窗口 — 本实例一档 (仅「· 小」变体显示); true=今日居第一位 */
     val compactTodayFirst: Boolean = true,
-    val onCompactTodayFirstChange: (Boolean) -> Unit = {}
+    val onCompactTodayFirstChange: (Boolean) -> Unit = {},
+    val wideGridSettings: com.lingion.sleepy.widget.WeekGridWideSettings = com.lingion.sleepy.widget.WeekGridWideSettings(),
+    val onWideGridModeChange: (com.lingion.sleepy.widget.WeekGridWideMode) -> Unit = {},
+    val onWideGridLabelSideChange: (com.lingion.sleepy.widget.WeekGridWideLabelSide) -> Unit = {},
 )
 
 /**

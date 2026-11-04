@@ -224,17 +224,17 @@ class SpringState(
 
     private var simulation: SpringSimulation? = null
     private var spring: SpringDescription? = null
-    private var startSec: Double = System.nanoTime() / 1_000_000_000.0
-    private var currentSec: Double = startSec
+    private var startSec: Double = 0.0
+    private var nowSec: Double = 0.0
 
     val acceleration: Float
         get() {
             val sp = spring ?: return 0f
-            if (simulation == null) return 0f
+            val sim = simulation ?: return 0f
             return ((sp.stiffness * (target - value) - sp.damping * velocity) / sp.mass).toFloat()
         }
 
-    fun springTo(newTarget: Float, newSpring: SpringDescription, currentSec: Double = System.nanoTime() / 1_000_000_000.0) {
+    fun springTo(newTarget: Float, newSpring: SpringDescription) {
         if (target == newTarget && spring == newSpring && isRunning) return
         val currentVel = velocity.toDouble()
         val tol = SpringTolerance(
@@ -250,8 +250,14 @@ class SpringState(
         )
         spring = newSpring
         target = newTarget
-        this.currentSec = currentSec
-        startSec = currentSec
+        if (isRunning) {
+            // 关键对齐 FLClash: 动画运行中重设目标时，仅将物理基准起点设为上一帧 nowSec
+            // 绝不在触摸事件中用 System.nanoTime() 冲刷时间轴，避免 time 被持续清零卡顿
+            startSec = nowSec
+            return
+        }
+        nowSec = 0.0
+        startSec = 0.0
         isRunning = true
     }
 
@@ -263,14 +269,15 @@ class SpringState(
         isRunning = false
     }
 
-    /** 每帧推进物理模拟。返回是否有数值变动。 */
-    fun tick(currentSec: Double): Boolean {
-        this.currentSec = currentSec
+    /** 每帧推进物理模拟。dt 为该帧与上一帧的实际物理时间增量 (秒)。 */
+    fun tickDelta(dt: Double): Boolean {
+        if (!isRunning) return false
         val sim = simulation ?: run {
-            if (isRunning) isRunning = false
+            isRunning = false
             return false
         }
-        val time = max(0.0, currentSec - startSec)
+        nowSec += dt
+        val time = max(0.0, nowSec - startSec)
         if (sim.isDone(time)) {
             val changed = value != target || velocity != 0f
             value = target
@@ -283,6 +290,11 @@ class SpringState(
         value = sim.x(time).toFloat()
         velocity = sim.dx(time).toFloat()
         return prev != value
+    }
+
+    /** 兼容单参数连续调用接口 */
+    fun tick(currentSec: Double): Boolean {
+        return tickDelta(0.016)
     }
 }
 
@@ -379,11 +391,11 @@ object FlClashDockPhysics {
     const val LENS_MAGNIFY = 0.16f
     const val LIFT_SNAP = 0.975f
     const val LIFT_RELEASE = 0.04f
-    const val JELLY_SPEED = 3f
-    const val JELLY_STRETCH = 0.2f
+    const val JELLY_SPEED = 2.4f
+    const val JELLY_STRETCH = 0.24f
     const val JELLY_BRAKE = 25f
-    const val JELLY_SQUASH = 0.15f
-    const val JELLY_ASPECT = 1.4f
+    const val JELLY_SQUASH = 0.16f
+    const val JELLY_ASPECT = 1.35f
     const val JELLY_REST = 3e-3
     const val GLOW_REACH = 28f
     const val GLOW_GROWTH = 3f

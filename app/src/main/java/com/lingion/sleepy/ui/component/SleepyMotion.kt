@@ -62,13 +62,18 @@ fun sleepyPopupExit(): ExitTransition =
         targetScale = SleepyPopupScaleStart,
     ) + fadeOut(animationSpec = MaterialTheme.motionScheme.fastEffectsSpec<Float>())
 
-/** 页面/大块内容入场: scaleIn 0.92→1 defaultSpatial + fadeIn defaultEffects。 */
+/**
+ * 页面/大块内容入场: scaleIn 0.92→1 defaultSpatial。
+ * 刻意不叠 fadeIn: 入页半透明会把下层出页的文字透出来(双影), 目标页
+ * (targetContentZIndex=1)带不透明底直接压住出页, 只保留缩放位移;
+ * 缩放期间四周露边由 SleepyNavHost 的转场底衬兜住, 不会露窗口白底。
+ */
 @Composable
 fun sleepyContentEnter(): EnterTransition =
     scaleIn(
         animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>(),
         initialScale = SleepyContentScaleStart,
-    ) + fadeIn(animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>())
+    )
 
 /** 页面/大块内容退场: scaleOut →0.92 defaultSpatial + fadeOut defaultEffects。 */
 @Composable
