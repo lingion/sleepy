@@ -1,5 +1,7 @@
 package com.lingion.sleepy.ui.component
 
+import android.graphics.Bitmap
+import android.content.Context
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
@@ -8,14 +10,19 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.dp
+import androidx.test.core.app.ApplicationProvider
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.SleepyThemeProvider
 import com.lingion.sleepy.util.TimeTableUtils
+import com.lingion.sleepy.util.AppPrefs
 import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
@@ -25,6 +32,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.io.File
 
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -36,12 +44,13 @@ class FloatDragRegressionTest {
     private val course = CourseEntity(id = 7, tableId = 1, groupId = "math", courseName = "Drag",
         day = 3, startNode = 3, step = 2, startWeek = 1, endWeek = 16, color = "#FF6750A4")
 
-    private fun grid() {
+    private fun grid(darkTheme: Boolean = false) {
         val hostWeek = mutableIntStateOf(1)
         compose.setContent {
-            SleepyThemeProvider(darkTheme = false, themeKey = "default") {
+            SleepyThemeProvider(darkTheme = darkTheme, themeKey = "default") {
                 Box(Modifier.size(360.dp, 640.dp)) {
                     CardsGridView(courses = listOf(course),
+                        modifier = Modifier.testTag("grid-surface"),
                         timeSlots = TimeTableUtils.timeSlotsFor(TimeTableUtils.DEFAULT_TIME_JSON),
                         floatState = state, currentWeek = hostWeek.intValue, onCourseClick = {},
                         onOccurrenceMove = { _, _, _, _, _, _ -> },
@@ -49,6 +58,78 @@ class FloatDragRegressionTest {
                 }
             }
         }
+    }
+
+    @Test fun backdropCoversTheSurfaceAndPreservesAllFourRoundedCorners() {
+        verifyBackdrop(darkTheme = false)
+    }
+
+    @Test fun darkBackdropPreservesAllFourRoundedCorners() {
+        verifyBackdrop(darkTheme = true)
+    }
+
+    @Test fun scaledBackdropKeepsTheSameBoundsDespiteFractionalPadding() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val originalScale = AppPrefs.getGridScale(context)
+        try {
+            AppPrefs.setGridScale(context, 1.1f)
+            verifyBackdrop(darkTheme = false)
+        } finally {
+            AppPrefs.setGridScale(context, originalScale)
+        }
+    }
+
+    private fun verifyBackdrop(darkTheme: Boolean) {
+        grid(darkTheme)
+        val name = if (darkTheme) "dark" else "light"
+        val before = captureSurface("$name-idle").toPixelMap()
+        compose.onNodeWithText("Drag").performTouchInput { longClick() }
+        val lifted = captureSurface("$name-lifted").toPixelMap()
+        val surface = compose.onNodeWithTag("grid-surface").fetchSemanticsNode().boundsInRoot
+        val backdrop = compose.onNodeWithTag("float-backdrop").fetchSemanticsNode().boundsInRoot
+        assertEquals("遮罩覆盖整张面板，包含内边距", surface, backdrop)
+        for (horizontal in listOf(1, before.width - 2)) {
+            for (vertical in listOf(1, before.height - 2)) {
+                assertEquals("圆角外不应出现遮罩或模糊溢出",
+                    before[horizontal, vertical], lifted[horizontal, vertical])
+            }
+        }
+        assertNotEquals("内边距也必须被遮罩覆盖",
+            before[before.width / 2, 2], lifted[lifted.width / 2, 2])
+        compose.runOnIdle { state.dismiss() }
+        compose.onNodeWithTag("float-backdrop").assertDoesNotExist()
+        val dismissed = captureSurface("$name-dismissed").toPixelMap()
+        for (horizontal in 0 until before.width step 13) {
+            for (vertical in 0 until before.height step 13) {
+                assertEquals("收起后必须清除模糊和遮罩",
+                    before[horizontal, vertical], dismissed[horizontal, vertical])
+            }
+        }
+    }
+
+    private fun captureSurface(name: String): ImageBitmap {
+        val captured = compose.onNodeWithTag("grid-surface").captureToImage()
+        val directory = File("build/reports/float-backdrop").apply { mkdirs() }
+        File(directory, "$name.png").outputStream().use { output ->
+            assertTrue(captured.asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, 100, output))
+        }
+        return captured
+    }
+
+    @Test fun draggingClearsTheBackdropAndReleasingRestoresIt() {
+        grid()
+        compose.onNodeWithText("Drag").performTouchInput { longClick() }
+        compose.onNodeWithTag("float-backdrop").assertExists()
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(40f, 0f), 100)
+        }
+        compose.runOnIdle { assertTrue(state.dragging) }
+        captureSurface("dragging")
+        compose.onNodeWithTag("float-backdrop").assertDoesNotExist()
+        compose.runOnIdle { state.dragging = false }
+        compose.onNodeWithTag("float-backdrop").assertExists()
+        compose.onNodeWithTag("float-card").performTouchInput { cancel() }
     }
 
     @Test fun sundayPlacementDoesNotArmPagingEvenAfterLongHorizontalDrag() {

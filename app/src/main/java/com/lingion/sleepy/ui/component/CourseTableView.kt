@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -360,6 +361,7 @@ fun CardsGridView(
         }
 
     val gridBgShape = SleepyTheme.shapes.large
+    val gridPadding = with(headerDensity) { d(8f).roundToPx().toDp() }
 
     Box(
         modifier = modifier
@@ -370,9 +372,11 @@ fun CardsGridView(
             .dismissQuickAddOnOutsidePress(quickAddState)
             .dismissFloatOnOutsidePress(floatState, ::confirmPendingResizeOrDismiss)
             .background(colors.surfaceContainerHigh, gridBgShape)
-            .padding(d(8f))
+            .padding(gridPadding)
     ) {
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val gridSurfaceWidth = maxWidth + gridPadding * 2
+            val gridSurfaceHeight = maxHeight + gridPadding * 2
             // 自动适配只改变纵向行高；横向宽度、字号和卡片内容仍由原 gridScale 控制。
             val navExtra = com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding.current
             // 餐段带在网格外额外占高，拟合行高只按课程行权重计算 (刚性, 带宽不摊进 rowH)。
@@ -584,11 +588,11 @@ fun CardsGridView(
                     floatState.animateReturnToOrigin(returnSpec, returnSpec)
                 }
             }
-            // 网格模糊半径缓动: 0↔20dp 经 animateFloatAsState(defaultSpatial), 不再同帧硬开合。
-            // 终审 I-2: 此处不 `by` 委托 — 保持 State 句柄, 读取推迟到挂载处的 draw 相位
             val floatBlurRadiusPx = animateFloatAsState(
-                targetValue = with(headerDensity) { floatBlurRadiusDp(floatState.active, floatState.dragging).toPx() },
-                animationSpec = snap(),
+                targetValue = with(headerDensity) {
+                    floatBlurRadiusDp(floatState.active && currentWeek == floatState.week, floatState.dragging).toPx()
+                },
+                animationSpec = if (floatState.dragging) snap() else floatFade,
                 label = "floatGridBlur",
             )
             val floatGridNodes = renderSlots.filter { !it.isPlaceholder }.map { it.nodeStart }
@@ -928,13 +932,11 @@ fun CardsGridView(
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .requiredSize(gridSurfaceWidth, gridSurfaceHeight)
+                        .gridFloatBlur(gridBgShape) { floatBlurRadiusPx.value }
+                        .background(colors.surfaceContainerHigh)
+                        .padding(gridPadding)
                         .verticalScroll(scrollState)
-                        // 浮起=整层网格进高斯模糊纹理; 半径经 animateFloatAsState 缓动,
-                        // 移动中缓向 0 (模糊与浮框消失同帧起步, 不再硬切)。终审 I-2:
-                        // 半径在 draw 相位读取 (lambda 体跑在 graphicsLayer 里), 动画
-                        // 每帧只触发重绘不重组本列; 零半径不设 renderEffect。
-                        .gridFloatBlur { floatBlurRadiusPx.value }
                 ) {
                 // ---- 表头：自然 Compose Row ----
                 Row(
@@ -1316,14 +1318,16 @@ fun CardsGridView(
                 var retainedLifted by remember { mutableStateOf<CourseEntity?>(null) }
                 floatState.course?.let { retainedLifted = it }
                 AnimatedVisibility(
-                    visible = floatState.active && currentWeek == floatState.week,
-                    enter = if (false) fadeIn(floatFade) else EnterTransition.None,
-                    exit = if (false) fadeOut(floatFade) else ExitTransition.None,
+                    visible = floatState.active && !floatState.dragging && currentWeek == floatState.week,
+                    enter = fadeIn(floatFade),
+                    exit = if (floatState.dragging) ExitTransition.None else fadeOut(floatFade),
+                    modifier = Modifier.requiredSize(gridSurfaceWidth, gridSurfaceHeight),
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .testTag("float-backdrop")
+                            .clip(gridBgShape)
                             .background(colors.scrim.copy(alpha = scrimAlpha))
                     )
                 }
