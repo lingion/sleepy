@@ -717,6 +717,7 @@ fun CardsGridView(
             // defaultSpatial 把 x/y 弹回原点, 函数名终与行为一致。
             fun springFloatBack() {
                 floatState.dragging = false
+                floatState.lastDragDirY = 0
                 floatState.dropTarget = null
                 floatState.requestReturnToOrigin()
             }
@@ -752,6 +753,7 @@ fun CardsGridView(
                 floatState.edgeDir = 0
                 floatState.edgeBlocked = 0
                 floatState.peekProgress = 0f
+                floatState.lastDragDirY = 0
                 // 固定坐标到吸附槽位，确保卡片停在正确位置
                 floatState.x = floatState.snapX
                 floatState.y = floatState.snapY
@@ -821,26 +823,47 @@ fun CardsGridView(
             // ---- 纵向自动滚动 (Issue #275: 课表过长/放大时, 拖拽卡片靠近或超出视口上下边缘自动滚动) ----
             LaunchedEffect(floatState.dragging, floatState.week) {
                 if (currentWeek != floatState.week || !floatState.dragging) return@LaunchedEffect
-                val edgeZone = 48.dp
+                // edgeZone 按可用视口高度上限截断 (至多 1/3), 防极端矮视口下上下边缘区重叠 (Issue #275)
+                val availableHeight = (maxHeight - headH - gapH).value.coerceAtLeast(0f)
+                val edgeZone = minOf(48.dp, (availableHeight / 3f).dp)
                 val headPlusGap = headH + gapH
                 val topThreshold = headPlusGap + edgeZone
                 val bottomThreshold = maxHeight - edgeZone
-                
+
                 while (isActive && floatState.dragging && currentWeek == floatState.week) {
                     delay(50L)  // 50ms 平衡性能与响应性
-                    
+
                     // 快照读取，减少 recomposition
                     val y = floatState.y
                     val height = floatState.height
                     val curScroll = with(headerDensity) { scrollState.value.toDp() }
-                    
+
                     val cardTop = y + headPlusGap - curScroll
                     val cardBottom = cardTop + height
-                    
-                    if (cardTop < topThreshold && scrollState.value > 0) {
+                    val topOverflow = (topThreshold - cardTop).value.coerceAtLeast(0f)
+                    val bottomOverflow = (cardBottom - bottomThreshold).value.coerceAtLeast(0f)
+
+                    // 边缘方向仲裁 (Issue #275): 超长卡片/小视口可能同时触达上下两边缘区,
+                    // 优先按手势纵向拖拽倾向仲裁, 手势静止时取溢出更深一侧, 消除上下震荡死锁
+                    val scrollDir = when {
+                        topOverflow > 0f && bottomOverflow > 0f -> {
+                            when {
+                                floatState.lastDragDirY > 0 -> 1
+                                floatState.lastDragDirY < 0 -> -1
+                                bottomOverflow > topOverflow -> 1
+                                topOverflow > bottomOverflow -> -1
+                                else -> 0
+                            }
+                        }
+                        topOverflow > 0f -> -1
+                        bottomOverflow > 0f -> 1
+                        else -> 0
+                    }
+
+                    val zoneVal = edgeZone.value.coerceAtLeast(1f)
+                    if (scrollDir < 0 && scrollState.value > 0) {
                         // 向上滚动
-                        val overflow = (topThreshold - cardTop).value.coerceAtLeast(0f)
-                        val ratio = (overflow / edgeZone.value).coerceIn(0f, 1f)
+                        val ratio = (topOverflow / zoneVal).coerceIn(0f, 1f)
                         val stepDp = (3f + 11f * ratio).dp
                         val stepPx = with(headerDensity) { stepDp.toPx() }
                         
@@ -855,10 +878,9 @@ fun CardsGridView(
                         } catch (e: Exception) {
                             // scrollBy 可能在动画过程中抛异常，捕获后继续循环
                         }
-                    } else if (cardBottom > bottomThreshold && scrollState.value < scrollState.maxValue) {
+                    } else if (scrollDir > 0 && scrollState.value < scrollState.maxValue) {
                         // 向下滚动
-                        val overflow = (cardBottom - bottomThreshold).value.coerceAtLeast(0f)
-                        val ratio = (overflow / edgeZone.value).coerceIn(0f, 1f)
+                        val ratio = (bottomOverflow / zoneVal).coerceIn(0f, 1f)
                         val stepDp = (3f + 11f * ratio).dp
                         val stepPx = with(headerDensity) { stepDp.toPx() }
                         
@@ -1162,12 +1184,15 @@ fun CardsGridView(
                                 onLift = { liftCourse(course) },
                                 onDragStart = {
                                     floatState.dragging = true
+                                    floatState.lastDragDirY = 0
                                     // 边缘判据锚: 拖拽起点中心 + 主体左缘/滚动量快照(翻页换宿主对齐用)。
                                     floatState.dragOriginCx = floatState.x + floatState.width / 2f
                                     floatState.anchorRootLeftPx = floatRootLeftPx
                                     floatState.anchorScrollDp = with(headerDensity) { scrollState.value.toDp() }
                                 },
                                 onDrag = { amount ->
+                                    if (amount.y > 0.5f) floatState.lastDragDirY = 1
+                                    else if (amount.y < -0.5f) floatState.lastDragDirY = -1
                                     with(headerDensity) {
                                         floatState.x += amount.x.toDp()
                                         floatState.y += amount.y.toDp()
@@ -1313,11 +1338,14 @@ fun CardsGridView(
                             floatState.overlayDragOwner = floatOverlayOwner
                             floatState.dragHostWeek = currentWeek
                             floatState.dragging = true
+                            floatState.lastDragDirY = 0
                             floatState.dragOriginCx = floatState.x + floatState.width / 2f
                             floatState.anchorRootLeftPx = floatRootLeftPx
                             floatState.anchorScrollDp = with(headerDensity) { scrollState.value.toDp() }
                         },
                         onDrag = { amount ->
+                            if (amount.y > 0.5f) floatState.lastDragDirY = 1
+                            else if (amount.y < -0.5f) floatState.lastDragDirY = -1
                             with(headerDensity) {
                                 floatState.x += amount.x.toDp()
                                 floatState.y += amount.y.toDp()

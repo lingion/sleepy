@@ -66,11 +66,12 @@ class CourseOccurrenceFloatDragTest {
         onOccurrenceEdit: ((CourseEntity) -> Unit)? = null,
         onQuickAdd: ((Int, Int, Int) -> Unit)? = { _, _, _ -> },
         floatMaxWeek: Int = 0,
+        heightDp: androidx.compose.ui.unit.Dp = 640.dp,
     ) {
         val week = currentWeek
         compose.setContent {
             SleepyThemeProvider(darkTheme = false, themeKey = "default") {
-                Box(Modifier.size(360.dp, 640.dp)) {
+                Box(Modifier.size(360.dp, heightDp)) {
                     CardsGridView(courses = courses, timeSlots = slots,
                         floatState = state,
                         // 读在组合内: hostWeek 变更 → 重组换 currentWeek, 模拟 pager 换宿主。
@@ -1022,6 +1023,55 @@ class CourseOccurrenceFloatDragTest {
         compose.runOnIdle {
             // 卡片 Y 坐标应该随滚动调整
             assertTrue("自动滚动应该已调整卡片位置", state.y != initialY)
+        }
+        compose.onNodeWithTag("float-card").performTouchInput { up() }
+    }
+
+
+    @Test fun issue275_autoScrollDownWhenDraggingNearBottomEdge() {
+        val state = CourseFloatState()
+        // 设置 400dp 紧凑视口，使 12 节课表 (约 624dp) 具备充足的纵向可滚动裕量 (~224dp)
+        grid(state, heightDp = 400.dp)
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        // 浮起后向下微拖 220dp 进入底部边缘区 (视口 400dp, bottomThreshold 352dp, 卡底 220+36+100 = 356dp > 352dp)
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(0f, 220.dp.toPx()), 10)
+        }
+        // 50ms 轮询节奏 (#288 perf 裁决): scrollBy 为挂起调用, 单次大跨度推进只被泵送数拍,
+        // 逐拍推进 + waitForIdle 让每次滚动都走完帧管线, 滚动至饱和。
+        repeat(30) { compose.mainClock.advanceTimeBy(50L); compose.waitForIdle() }
+        compose.runOnIdle {
+            assertTrue("处于拖拽中", state.dragging)
+            assertEquals("手势向下倾向", 1, state.lastDragDirY)
+            // 自动滚动生效：卡片 y 位移显著大于单纯手势位移 220dp (自动向下滚动将网格滚到底部，带动 floatState.y 累加至 ~520dp)
+            assertTrue("纵向自动向下滚动生效驱动 floatState.y 累加: current=${state.y}", state.y > 300.dp)
+            assertTrue("纵向自动向下滚动更新 anchorScrollDp: current=${state.anchorScrollDp}", state.anchorScrollDp > 100.dp)
+        }
+        compose.onNodeWithTag("float-card").performTouchInput { up() }
+    }
+
+    @Test fun issue275_tallCardBothEdgesSimultaneousActivationScrollsInIntendedDirection() {
+        val state = CourseFloatState()
+        // 紧凑视口 400dp 下 (触发阈值跨度 352-84 = 268dp)，6 节课长卡 (高约 300dp) 同时覆盖上下两边缘区
+        val tallCourse = CourseEntity(id = 9, tableId = 1, groupId = "tall", courseName = "TallCourse",
+            day = 1, startNode = 1, step = 6, startWeek = 1, endWeek = 16, color = "#FF6750A4")
+        grid(state, courses = listOf(tallCourse), heightDp = 400.dp)
+        compose.onNodeWithText("TallCourse").performTouchInput { longClick() }
+        // 手势微向下拖拽 40dp 产生正向位移，建立 lastDragDirY = 1 倾向
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(0f, 40.dp.toPx()), 10)
+        }
+        // 50ms 轮询节奏 (#288 perf 裁决): scrollBy 为挂起调用, 单次大跨度推进只被泵送数拍,
+        // 逐拍推进 + waitForIdle 让每次滚动都走完帧管线, 滚动至饱和。
+        repeat(30) { compose.mainClock.advanceTimeBy(50L); compose.waitForIdle() }
+        compose.runOnIdle {
+            assertTrue(state.dragging)
+            assertEquals(1, state.lastDragDirY)
+            // 仲裁消除上下死锁震荡：若有震荡死锁卡片将停留在 40dp 附近；手势向下倾向使得自动滚动一路向下展开，卡片 y 超过 200dp
+            assertTrue("超高卡片依手势向下倾向单调向下自动滚动: current=${state.y}", state.y > 200.dp)
+            assertTrue("超高卡片向下滚动使得 anchorScrollDp 增大: current=${state.anchorScrollDp}", state.anchorScrollDp > 100.dp)
         }
         compose.onNodeWithTag("float-card").performTouchInput { up() }
     }

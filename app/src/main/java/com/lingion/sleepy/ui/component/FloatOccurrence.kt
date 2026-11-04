@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -119,6 +120,8 @@ class CourseFloatState {
     /** 进入拖拽瞬间起拖页的纵向滚动 (dp) — 翻页换宿主后各页几何同构, 新宿主据此
      *  对齐滚动量, 卡悬停行 = 视觉行; 落点判定本就在内容坐标系, 双保险。 */
     var anchorScrollDp: Dp by mutableStateOf(0.dp)
+    /** 最近一次纵向手势拖拽倾向 (+1 向下, -1 向上, 0 未判定) — 超高卡片同时触达上下边缘区时决定自动滚动仲裁方向。 */
+    var lastDragDirY: Int by mutableIntStateOf(0)
     /** 顶栏周 chip 待回写 (2026-10-28 真机实证): 合法落点松手走 dismiss — active 与
      *  dragging 同帧落 false, settledPage effect 的「active && !dragging」窗口在这条
      *  路上从未打开, chip 永远停在起拖周。边缘翻页翻过即置位, 屏根 effect 在
@@ -243,6 +246,7 @@ class CourseFloatState {
         edgeDir = 0
         edgeBlocked = 0
         peekProgress = 0f
+        lastDragDirY = 0
         dropTarget = null
         snapX = x; snapY = y; snapHeight = height // 未拖拽 = 原位渲染
         cardBounds = null
@@ -256,6 +260,7 @@ class CourseFloatState {
         edgeDir = 0
         edgeBlocked = 0
         peekProgress = 0f
+        lastDragDirY = 0
         dropTarget = null
         cardBounds = null
         popupBounds = null
