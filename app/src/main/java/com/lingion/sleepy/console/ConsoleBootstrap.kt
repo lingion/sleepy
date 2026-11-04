@@ -37,13 +37,19 @@ object ConsoleBootstrap {
 
     private val started = AtomicBoolean(false)
     private var server: DebugConsoleServer? = null
+    // 保留装配函数而非路由；关闭时仍清空能力，重开时由 debug 源集重新注册。
+    private var debugCapabilities: ((Application) -> Unit)? = null
 
     @Volatile
     private var appRef: Application? = null
 
     /** debug 源集 StartupProvider 入口；release 连点 armed 后才经 [armForUnlock] 绑端口。 */
-    fun onCreate(app: Application) {
-        if (BuildConfig.DEBUG) start(app) else rememberApp(app)
+    @Synchronized
+    fun onCreate(app: Application, registerDebugCapabilities: ((Application) -> Unit)? = null) {
+        if (BuildConfig.DEBUG) {
+            if (registerDebugCapabilities != null) debugCapabilities = registerDebugCapabilities
+            start(app)
+        } else rememberApp(app)
     }
 
     /** release: SleepyApp.onCreate 直调, 只存 Application 引用(不碰端口/不激活任何门位)。 */
@@ -52,10 +58,12 @@ object ConsoleBootstrap {
     }
 
     /** 幂等启动（debug 全能力路径）：注册全部端点 → 装配运行时 → 起服务器 → 激活。 */
+    @Synchronized
     fun start(app: Application) {
         if (!started.compareAndSet(false, true)) return
         try {
             appRef = app
+            if (BuildConfig.DEBUG) debugCapabilities?.invoke(app)
             bindAwaitingServer(app)
             registerAllCapabilities(app)
             DebugGate.onActivationChanged = { TagRegistry.requestRefresh() }
@@ -73,17 +81,40 @@ object ConsoleBootstrap {
      * 其他路径此刻物理 401（AuthGate 真值表），"等待解锁"不扩大攻击面。
      * 幂等；重复 arm 不重绑。
      */
-    fun armForUnlock(app: Application) {
+    @Synchronized
+    fun armForUnlock(app: Application): Boolean {
         if (appRef == null) appRef = app
-        if (started.get()) return
-        if (!started.compareAndSet(false, true)) return
+        if (started.get()) return server != null
+        if (BuildConfig.DEBUG) {
+            start(app)
+            return server != null
+        }
+        if (!started.compareAndSet(false, true)) return server != null
         try {
             bindAwaitingServer(app)
+            return true
         } catch (t: Throwable) {
             started.set(false)
             server = null
             Log.e(TAG, "release unlock-await bind failed :${DebugConsoleServer.PORT}", t)
+            return false
         }
+    }
+
+    /** 本地弹窗与 HTTP 解锁共用同一校验和能力注册路径。 */
+    @Synchronized
+    fun unlock(passphrase: String): EnableFlow.Result {
+        val result = EnableFlow.attempt(passphrase)
+        if (result == EnableFlow.Result.OK) {
+            try {
+                finishReleaseUnlock()
+                UnlockTapCounter.reset()
+            } catch (e: Exception) {
+                stop()
+                throw e
+            }
+        }
+        return result
     }
 
     /**
@@ -131,6 +162,7 @@ object ConsoleBootstrap {
     }
 
     /** 失活（红条一键 / 测试复位）：停服 + 清 token + 门位归零，红线 3。 */
+    @Synchronized
     fun stop() {
         if (!started.compareAndSet(true, false)) return
         runCatching { server?.stop() }
@@ -186,11 +218,9 @@ object ConsoleBootstrap {
             } catch (_: Exception) {
                 return@addHandler Envelope.err(400, "body requires {\"passphrase\":...}")
             }
-            when (EnableFlow.attempt(passphrase)) {
+            when (unlock(passphrase)) {
                 EnableFlow.Result.ALREADY_ACTIVE -> Envelope.ok("{\"result\":\"ALREADY_ACTIVE\"}")
                 EnableFlow.Result.OK -> {
-                    finishReleaseUnlock()
-                    UnlockTapCounter.reset()
                     val token = TokenStore.issue()
                     val expires = TokenStore.expiresAtMs()
                     Envelope.ok(

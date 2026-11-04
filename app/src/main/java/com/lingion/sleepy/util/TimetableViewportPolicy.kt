@@ -170,6 +170,86 @@ object TimetableViewportPolicy {
         return (startRowHeightDp * ratio).coerceIn(minRowHeightDp, maxRowHeightDp)
     }
 
+    // ---- 双指捏合锚点 (2026-11-02 用户令) ----
+    // 旧口径: 捏合缩放只改行高, 滚动不补偿 → 全部内容以"顶端第一节课"为基准向下生长,
+    // 捏在中部时指下内容被拖走。新口径: 基准线 = 两指中间, 缩放同时按锚点滚动补偿,
+    // 让锚点内容钉在捏合中心下。几何与 CourseTableView yOfRows 同口径 (px 版)。
+
+    /** 捏合锚点快照: 手势起点捕获, 之后每帧按它算滚动目标。 */
+    data class PinchAnchor(
+        /** 手势起点滚动偏移 (px, scrollState.value) */
+        val startScrollPx: Float,
+        /** 锚点上方的加权行数 (yOfRows 的 acc 口径, 含长休折权) */
+        val weightedRowsAbove: Float
+    )
+
+    /** yOfRows 的 acc 口径: 行坐标 r(0=网格顶) 上方的加权行数。 */
+    fun weightedRowsAbove(r: Float, weights: List<Float>): Float {
+        if (r <= 0f || weights.isEmpty()) return 0f
+        var acc = 0f
+        val full = r.toInt().coerceAtMost(weights.size)
+        for (i in 0 until full) acc += weights[i]
+        if (full < weights.size && r > full) acc += weights[full] * (r - full)
+        return acc
+    }
+
+    /** yOfRows 的 crossedBreaks 口径: 行坐标 r 之前跨过的长休带数。 */
+    fun crossedMealBreaks(r: Float, breakRows: List<Int>): Int {
+        val full = r.toInt().coerceAtLeast(0)
+        return breakRows.count { it < full }
+    }
+
+    /**
+     * 网格体坐标 (bodyY, 不含表头) → 行坐标 r: yOfRows 的逆。
+     * bodyYOf 单调不减但有长休带跳变 (在带内无精确解, 返回带边界即可, 带不占行权重),
+     * 故用二分而非牛顿 — 饱和度上界处牛顿会震荡 (单测 r=11.99 实测)。
+     */
+    fun rowCoordinateFromBodyY(
+        bodyY: Float,
+        rowPx: Float,
+        mealGapExtraPx: Float,
+        breakRows: List<Int>,
+        weights: List<Float>
+    ): Float {
+        if (rowPx <= 0f || bodyY <= 0f || weights.isEmpty()) return 0f
+        fun bodyYOf(r: Float): Float =
+            rowPx * weightedRowsAbove(r, weights) + mealGapExtraPx * crossedMealBreaks(r, breakRows)
+        val maxR = weights.size.toFloat()
+        if (bodyY >= bodyYOf(maxR)) return maxR
+        var lo = 0f
+        var hi = maxR
+        repeat(30) {
+            val mid = (lo + hi) / 2f
+            if (bodyYOf(mid) < bodyY) lo = mid else hi = mid
+        }
+        return (lo + hi) / 2f
+    }
+
+    /**
+     * 手势起点捕获锚点: 捏合中心 (视口 px) + 当前滚动 → 钉住该内容点所需的几何。
+     * 中心落在表头区内 (bodyY<0) 时 acc=0 → 退化为"顶端固定"旧行为 (捏表头不平移内容)。
+     */
+    fun capturePinchAnchor(
+        scrollPx: Float,
+        centerYPx: Float,
+        headerPx: Float,
+        rowPx: Float,
+        mealGapExtraPx: Float,
+        breakRows: List<Int>,
+        weights: List<Float>
+    ): PinchAnchor {
+        val bodyY = (scrollPx + centerYPx - headerPx).coerceAtLeast(0f)
+        val r = rowCoordinateFromBodyY(bodyY, rowPx, mealGapExtraPx, breakRows, weights)
+        return PinchAnchor(startScrollPx = scrollPx, weightedRowsAbove = weightedRowsAbove(r, weights))
+    }
+
+    /**
+     * 行高 rowPx0→rowPx1 时锚点内容钉在指下所需的滚动目标 (px)。
+     * 表头与长休带厚不随行高缩放, 只有锚点上方的加权行高增长 acc×(row1−row0)。
+     */
+    fun pinchTargetScrollPx(anchor: PinchAnchor, rowPx0: Float, rowPx1: Float): Float =
+        (anchor.startScrollPx + anchor.weightedRowsAbove * (rowPx1 - rowPx0)).coerceAtLeast(0f)
+
     private fun courseInterval(
         course: CourseEntity,
         timeSlots: List<TimeSlot>,

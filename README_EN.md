@@ -413,7 +413,7 @@ Entry: "Mine" → "About". A dedicated page showing version, author, and open-so
 | **Author** | Lingion, tap to open the GitHub profile |
 | **Source** | github.com/lingion/sleepy, tappable |
 | **License note** | GPL-3.0 summary; contributions welcome |
-| **Open-source acknowledgements** | 9 cross-school projects plus per-school credit cards, their licenses, and the parts of Sleepy they informed |
+| **Open-source acknowledgements** | Source and dependency notices, research references, and cross-school and per-school credits with licenses and usage scope |
 
 The About page offers manual update checks and a startup-check switch. Startup checks are enabled by default and can be disabled. Checks contact the update service; full release notes are shown before downloading, and downloads can be cancelled.
 
@@ -670,7 +670,7 @@ java -version
 
 The wrapper downloads the Gradle version specified in `gradle/wrapper/gradle-wrapper.properties`, so a separate Gradle installation is unnecessary. The first build requires internet access to download Gradle and dependencies. Debug APKs are written to `app/build/outputs/apk/debug/`.
 
-> **Prefer a cloud build?** Manually run [Debug APK Build](.github/workflows/debug-apk.yml) with a branch or tag and an APK architecture. [Nightly Main Check](.github/workflows/nightly.yml) checks main on a schedule or on demand. Command examples are in [docs/ci-automation.md](docs/ci-automation.md); [`.github/workflows/`](.github/workflows/) defines the workflows currently available.
+> [Debug APK Build](.github/workflows/debug-apk.yml) runs automatically for non-draft PRs targeting `main`, and for branch pushes in forks once Actions is enabled. Manual runs accept a branch, tag or full commit SHA and a single architecture, including `armeabi-v7a` (V7A). Open the Actions run and select an architecture in the build summary; GitHub sign-in is required and artifacts expire after 7 days. PRs, forks and manual runs with an explicit source ref use ephemeral signing, so replacement installation across runs is not guaranteed. See [docs/ci-automation.md](docs/ci-automation.md) for commands and signing details. [Nightly Main Check](.github/workflows/nightly.yml) still checks main on a schedule or on demand.
 
 ### Install
 
@@ -715,7 +715,9 @@ Prefer to stay on GitHub? [Discussions](https://github.com/lingion/sleepy/discus
 
 [GPL-3.0](LICENSE)
 
-Sleepy is released under GPL-3.0. The JW adapters, protocol research, and timetable formats reference multiple open-source projects. The complete list — 9 cross-school projects plus per-school credit cards, with licenses and reference scope — is available in the app under Mine → About → Open-source acknowledgements.
+The liquid glass source module is modified from [SleepDown Schedule](https://github.com/xiaomanjun233/SleepDown-Schedule), by **xiaomanjun233**. Sleepy is maintained by this project; changes include Android build wiring, Compose version adaptation and FLClash dock integration. SleepDown-owned content uses its source-available non-commercial license 1.1; original Kyant code retains Apache-2.0. FLClash ports retain GPL-3.0 and the Flutter superellipse port retains BSD-3-Clause. [Original notices and usage boundaries](ACKNOWLEDGEMENTS.md) are included in the repository and app.
+
+Sleepy-owned code is released under GPL-3.0; third-party material retains its own notices. See [Sources and acknowledgements](ACKNOWLEDGEMENTS.md) for source ports, dependencies, data, design references, research repositories and contributors. The app includes the same additions under Mine / About / Open-source licenses.
 
 ---
 

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="debug_unlock_title">開啟偵錯模式</string>
+    <string name="debug_unlock_description">輸入金鑰以開啟本次執行的偵錯模式，重新啟動應用程式後自動關閉。</string>
+    <string name="debug_unlock_key">金鑰</string>
+    <string name="debug_unlock_action">開啟</string>
+    <string name="debug_unlock_wrong_key">金鑰錯誤，請重試。</string>
+    <string name="debug_unlock_backoff">嘗試次數過多，請稍後重試。</string>
+    <string name="debug_unlock_expired">解鎖時限已過，請取消後重新點擊版本號 7 次。</string>
+    <string name="debug_unlock_service_failed">偵錯服務啟動失敗，請稍後重試。</string>
+    <string name="debug_unlock_active">偵錯模式已開啟</string>
+    <string name="debug_unlock_stop">關閉偵錯模式</string>
+</resources>

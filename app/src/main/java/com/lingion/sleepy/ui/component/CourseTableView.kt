@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.ScrollState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -914,6 +915,13 @@ fun CardsGridView(
                             baseRowHeightDp = baseRowHeight,
                             currentRowHeightDp = rowHeightDp,
                             contentScale = scale,
+                            // 捏合锚点几何 (2026-11-02 用户令): 基准线=两指中间。
+                            // 与 yOfRows 同口径 — header/行高/长休带厚/折权行表。
+                            headerDp = headH.value,
+                            mealGapExtraDp = mealGapExtra.value,
+                            mealBreakRows = mealBreakAfterRows.toList(),
+                            rowWeights = boundaryWeights,
+                            scrollState = scrollState,
                             onRowHeightScaleChange = onRowHeightScaleChange
                         ) else Modifier
                     )
@@ -1074,8 +1082,12 @@ fun CardsGridView(
                     // (override 不改变首课——findClusters 输出固定,键稳定)
                     // 用户反馈 2026-09-09: 带 timeJson 按真实时间区间(分钟级)聚簇 —
                     // 跨空隙反算的节点范围不再制造假冲突(12:30 结束被吸进 14:00 节)。
-                    val clusters = ConflictLayoutEngine.findClusters(courses, timeJson)
-                    val clusteredIds = clusters.flatMap { c -> c.courses.map { it.id } }.toSet()
+                    val clusters = remember(courses, timeJson) {
+                        ConflictLayoutEngine.findClusters(courses, timeJson)
+                    }
+                    val clusteredIds = remember(clusters) {
+                        clusters.flatMap { c -> c.courses.map { it.id } }.toSet()
+                    }
 
                     for (cluster in clusters) {
                         // 簇内课若因 visibleDays 过滤或节点不在 timeJson 则整簇跳过
@@ -1415,6 +1427,11 @@ private fun Modifier.verticalResizeGesture(
     baseRowHeightDp: Float,
     currentRowHeightDp: Float,
     contentScale: Float,
+    headerDp: Float,
+    mealGapExtraDp: Float,
+    mealBreakRows: List<Int>,
+    rowWeights: List<Float>,
+    scrollState: ScrollState,
     onRowHeightScaleChange: (Float) -> Unit
 ): Modifier {
     return composed {
@@ -1422,12 +1439,20 @@ private fun Modifier.verticalResizeGesture(
         val latestRowHeight by rememberUpdatedState(currentRowHeightDp)
         val latestScale by rememberUpdatedState(contentScale)
         val latestOnChange by rememberUpdatedState(onRowHeightScaleChange)
+        val latestHeaderDp by rememberUpdatedState(headerDp)
+        val latestMealGapExtraDp by rememberUpdatedState(mealGapExtraDp)
+        val latestMealBreakRows by rememberUpdatedState(mealBreakRows)
+        val latestRowWeights by rememberUpdatedState(rowWeights)
 
         pointerInput(Unit) {
             awaitPointerEventScope {
                 var startVerticalSpan: Float? = null
                 var startHorizontalSpan = 0f
                 var startRowHeightDp = latestRowHeight
+                var startRowPx = 0f
+                // 捏合锚点 (2026-11-02 用户令): 基准线 = 两指中间。起点把中心钉住,
+                // 之后每帧按绝对目标滚动补偿 — 中途帧被 maxScroll 旧上限截断也能自愈。
+                var anchor: TimetableViewportPolicy.PinchAnchor? = null
                 var locked = false
 
                 while (true) {
@@ -1442,6 +1467,16 @@ private fun Modifier.verticalResizeGesture(
                             startVerticalSpan = verticalSpan.coerceAtLeast(1f)
                             startHorizontalSpan = horizontalSpan
                             startRowHeightDp = latestRowHeight
+                            startRowPx = with(density) { latestRowHeight.dp.toPx() }
+                            anchor = TimetableViewportPolicy.capturePinchAnchor(
+                                scrollPx = scrollState.value.toFloat(),
+                                centerYPx = (first.y + second.y) / 2f,
+                                headerPx = with(density) { latestHeaderDp.dp.toPx() },
+                                rowPx = startRowPx,
+                                mealGapExtraPx = with(density) { latestMealGapExtraDp.dp.toPx() },
+                                breakRows = latestMealBreakRows,
+                                weights = latestRowWeights
+                            )
                         }
 
                         if (!locked && TimetableViewportPolicy.locksVerticalResize(
@@ -1467,6 +1502,18 @@ private fun Modifier.verticalResizeGesture(
                             latestOnChange(
                                 nextRowHeight / latestBaseRowHeight.coerceAtLeast(1f)
                             )
+                            // 滚动补偿: 预测新行高 (与布局 manualRowHeightDp 同公式, 确定值),
+                            // 把锚点内容钉在捏合中心下。旧口径无此步 → 内容以网格顶为基准
+                            // 向下生长, 捏在中部时指下内容被拖走。
+                            val a = anchor
+                            if (a != null) {
+                                val rowPx1 = with(density) { nextRowHeight.dp.toPx() }
+                                val target = TimetableViewportPolicy.pinchTargetScrollPx(a, startRowPx, rowPx1)
+                                val delta = target - scrollState.value
+                                // dispatchRawDelta = 非挂起同步滚动 (受限挂起作用域内不可用 scrollBy),
+                                // 顺带打断进行中的 fling — 捏合中不应再有惯性漂移。
+                                if (abs(delta) >= 0.5f) scrollState.dispatchRawDelta(delta)
+                            }
                             event.changes.forEach { it.consume() }
                         } else {
                             val verticalDelta = abs(verticalSpan - startVerticalSpan!!)
@@ -1480,6 +1527,7 @@ private fun Modifier.verticalResizeGesture(
                         }
                     } else {
                         startVerticalSpan = null
+                        anchor = null
                         locked = false
                     }
                 }

@@ -432,7 +432,7 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 | **版本信息** | 版本号 + 构建号（`BuildConfig.VERSION_NAME` / `BuildConfig.VERSION_CODE`） |
 | **作者** | Lingion，点击跳 GitHub 主页 |
 | **开源地址** | github.com/lingion/sleepy，点击可跳转 |
-| **开源声明** | GPL-3.0 协议说明、9 个跨校普适项目 + 单校致谢卡的许可证和参考范围 |
+| **开源声明** | GPL-3.0 协议说明、源码与依赖声明、调研引用及跨校与单校致谢 |
 
 关于页提供手动更新检查及启动自动检查开关；自动检查默认开启，可关闭。检查会访问更新服务。检查到新版本时先展示完整更新说明，确认后才下载；下载过程可取消。
 
@@ -689,7 +689,7 @@ java -version
 
 Wrapper 会按 `gradle/wrapper/gradle-wrapper.properties` 下载指定版本的 Gradle，无需另行安装 Gradle；首次构建需要联网下载 Gradle 和依赖。Debug APK 输出到 `app/build/outputs/apk/debug/`。
 
-> **不想本地编译？** 可手动触发 [Debug APK Build](.github/workflows/debug-apk.yml)，指定分支或标签并选择 APK 架构；[Nightly Main Check](.github/workflows/nightly.yml) 提供 main 的定时检查与手动检查。命令示例见 [docs/ci-automation.md](docs/ci-automation.md)，当前可用工作流以 [`.github/workflows/`](.github/workflows/) 为准。
+> 不想本地编译，可以使用 [Debug APK Build](.github/workflows/debug-apk.yml)。向 `main` 提交非草稿 PR 后会自动生成 debug 包；fork 启用 Actions 后，分支推送也会自动构建。手动运行支持指定分支、标签或完整 SHA，以及单独的 `armeabi-v7a`（V7A）等架构。进入对应 Actions 运行页面，在构建摘要中选择架构下载，需登录 GitHub，产物保留 7 天。外部 PR、fork 和显式指定源码的手动构建使用临时签名，跨次构建不保证覆盖安装。完整操作见 [docs/ci-automation.md](docs/ci-automation.md)。[Nightly Main Check](.github/workflows/nightly.yml) 仍提供 main 的定时检查与手动检查。
 
 ### 安装
 
@@ -730,7 +730,9 @@ Bug 反馈和新学校适配请提交到 [Issues](https://github.com/lingion/sle
 
 [GPL-3.0](LICENSE)
 
-Sleepy 使用 GPL-3.0 发布。教务导入适配、协议研究和课表格式工作参考了多个开源项目；9 个跨校普适项目与单校致谢卡的项目名称、许可证和参考范围见应用内「我的 → 关于 → 开源声明」。
+Sleepy 自有代码使用 GPL-3.0 发布；第三方内容保留各自的许可与署名。完整的源码移植、依赖、数据、设计资料、参考仓库和贡献者见 [引用来源与致谢](ACKNOWLEDGEMENTS.md)，应用内「我的 → 关于 → 开源声明」同步提供这些条目。
+
+本项目的液态玻璃源码模块基于 [SleepDown课程表](https://github.com/xiaomanjun233/SleepDown-Schedule) 修改，原作者为 **xiaomanjun233**。Sleepy 由本项目维护，修改包括 Android 构建接线、Compose 版本适配及 FLClash 底栏集成。SleepDown 自有内容采用非商业、源码可见许可 1.1，Kyant 原始代码保留 Apache-2.0；FLClash 移植保留 GPL-3.0，Flutter 超椭圆移植保留 BSD-3-Clause。[许可原文与来源范围](ACKNOWLEDGEMENTS.md#源码来源声明)随仓库和应用保留。
 
 ---
 

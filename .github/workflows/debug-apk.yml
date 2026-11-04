@@ -1,16 +1,23 @@
 name: Debug APK Build
+run-name: Debug APK · ${{ github.event_name }} · ${{ github.head_ref || github.ref_name }} · input=${{ inputs.ref || github.event.pull_request.head.sha || github.sha }} · ${{ inputs.abi || 'all' }}
 
 on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: ['**']
   workflow_dispatch:
     inputs:
       ref:
-        description: "要构建的分支/标签/commit (默认 main)"
+        description: '源码分支/标签/完整 SHA；留空跟随上方所选工作流分支，不默认覆盖为 main'
         required: false
-        default: "main"
+        default: ''
+        type: string
       abi:
-        description: "打包架构"
+        description: 'APK 架构；V7A 选择 armeabi-v7a，all 分别提供四种下载'
         required: false
-        default: "all"
+        default: all
         type: choice
         options:
           - all
@@ -19,54 +26,150 @@ on:
           - x86_64
           - universal
 
-concurrency:
-  group: debug-apk-${{ github.ref }}
-  cancel-in-progress: true
-
 permissions:
   contents: read
 
+# Cancel obsolete PR runs before a delayed prepare job can overtake a newer run.
+# Other entries use per-target, case-sensitive hashed concurrency in the build job.
+concurrency:
+  group: debug-event-${{ github.event_name == 'pull_request_target' && format('pr-{0}-{1}', github.repository, github.event.pull_request.number) || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request_target' }}
+
 jobs:
-  assemble-debug:
+  prepare:
+    if: >-
+      (github.event_name != 'pull_request_target' || !github.event.pull_request.draft) &&
+      (github.event_name != 'push' || github.event.repository.fork || github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 5
+    outputs:
+      enabled: ${{ steps.plan.outputs.enabled }}
+      source_repository: ${{ steps.plan.outputs.source_repository }}
+      source_ref: ${{ steps.plan.outputs.source_ref }}
+      abi: ${{ steps.plan.outputs.abi }}
+      concurrency_key: ${{ steps.plan.outputs.concurrency_key }}
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ inputs.ref }}
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+          path: tooling
+      - name: Resolve event, source and build identity
+        id: plan
+        run: python3 -I tooling/scripts/debug_ci.py plan --plan "$RUNNER_TEMP/debug-plan.json"
+
+  assemble-debug:
+    needs: prepare
+    if: needs.prepare.outputs.enabled == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    concurrency:
+      group: debug-apk-${{ needs.prepare.outputs.concurrency_key }}
+      cancel-in-progress: true
+    env:
+      ABI: ${{ needs.prepare.outputs.abi }}
+    steps:
+      # Tooling follows this workflow revision, not an arbitrary old target's scripts.
+      - uses: actions/checkout@v7
+        id: tooling
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+          path: tooling
+      - name: Resolve immutable source plan
+        run: |
+          python3 -I tooling/scripts/debug_ci.py plan --plan "$RUNNER_TEMP/debug-plan.json"
+          printf 'SLEEPY_DEBUG_KEYSTORE=%s/debug.keystore\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+      - uses: actions/checkout@v7
+        with:
+          repository: ${{ needs.prepare.outputs.source_repository }}
+          ref: ${{ needs.prepare.outputs.source_ref }}
+          # PR 源码只在无凭证容器内执行，不能在 runner 主机上运行。
+          allow-unsafe-pr-checkout: true
+          fetch-depth: 0
+          persist-credentials: false
+          path: source
+      - name: Verify source commit and merge PR into latest main
+        id: revision
+        run: >-
+          python3 -I tooling/scripts/debug_ci.py prepare
+          --plan "$RUNNER_TEMP/debug-plan.json"
+          --source "$GITHUB_WORKSPACE/source"
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
-          check-latest: true
-      - uses: gradle/actions/setup-gradle@v6
-      - name: Install project debug keystore
+      # 构建阶段仅用一次性密钥；官方密钥只存在于独立签名 runner。
+      - name: Create build-only debug signing key
+        shell: bash
+        run: |
+          umask 077
+          keytool -genkeypair -keystore "$SLEEPY_DEBUG_KEYSTORE" -storepass android -keypass android \
+            -alias androiddebugkey -dname 'CN=Android Debug,O=Android,C=US' \
+            -keyalg RSA -keysize 2048 -validity 10000
+      - name: Record intended signing certificate before target execution
+        id: certificate
+        shell: bash
+        run: |
+          certificate_sha256=$(keytool -exportcert -keystore "$SLEEPY_DEBUG_KEYSTORE" -storepass android -alias androiddebugkey | sha256sum | cut -d ' ' -f 1)
+          printf 'sha256=%s\n' "$certificate_sha256" >> "$GITHUB_OUTPUT"
+      - name: Assemble selected debug ABI
+        shell: bash
+        run: |
+          docker build -t sleepy-debug-build -f tooling/.github/ci/debug-build.Dockerfile tooling/.github/ci
+          # runner 的 JDK cacerts 可能链接到挂载目录外；复制公共 CA 库并显式指定。
+          cp -L "$JAVA_HOME/lib/security/cacerts" "$RUNNER_TEMP/java-cacerts"
+          test -s "$RUNNER_TEMP/java-cacerts"
+          # 不向 PR 容器传递 runner token、命令文件、主机 HOME 或缓存；SDK/工具只读。
+          docker run --rm --cap-drop=ALL --security-opt=no-new-privileges \
+            --user "$(id -u):$(id -g)" --workdir /workspace \
+            -e HOME=/tmp -e GRADLE_USER_HOME=/tmp/gradle \
+            -e JAVA_HOME=/opt/java -e ANDROID_HOME=/opt/android-sdk \
+            -e JAVA_TOOL_OPTIONS=-Djavax.net.ssl.trustStore=/opt/java-cacerts \
+            -e ANDROID_SDK_ROOT=/opt/android-sdk -e SLEEPY_DEBUG_KEYSTORE=/opt/debug.keystore \
+            -v "$JAVA_HOME:/opt/java:ro" -v "$ANDROID_HOME:/opt/android-sdk:ro" \
+            -v "$GITHUB_WORKSPACE/source:/workspace" \
+            -v "$GITHUB_WORKSPACE/source/.git:/workspace/.git:ro" \
+            -v "$GITHUB_WORKSPACE/tooling/.github/ci:/opt/ci:ro" \
+            -v "$SLEEPY_DEBUG_KEYSTORE:/opt/debug.keystore:ro" \
+            -v "$RUNNER_TEMP/java-cacerts:/opt/java-cacerts:ro" \
+            sleepy-debug-build /bin/bash -c \
+            'export PATH="/opt/java/bin:$PATH"; ./gradlew :app:assembleDebug --no-daemon --no-configuration-cache --stacktrace --init-script /opt/ci/debug-abi.init.gradle "-Psleepy.buildAbi=$1"' -- "$ABI"
+      - name: Verify and stage identified APKs
+        id: package
         env:
-          KEYSTORE_B64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
-        run: |
-          if [ -n "$KEYSTORE_B64" ]; then
-            mkdir -p ~/.android
-            printf '%s' "$KEYSTORE_B64" | base64 -d > ~/.android/debug.keystore
-            echo "使用项目 debug 密钥签名 (与本机一致)"
-          else
-            echo "未配置 DEBUG_KEYSTORE_BASE64, 回退 runner 一次性密钥 (跨构建不可覆盖安装)"
-          fi
-      - name: Assemble debug APK
-        run: ./gradlew :app:assembleDebug --stacktrace
-      - name: List APK outputs
-        run: ls -la app/build/outputs/apk/debug/
-      - name: Select artifact ABI
-        id: pick
-        run: |
-          abi="${{ inputs.abi }}"
-          case "$abi" in
-            all) pattern="*" ;;
-            *)   pattern="app-${abi}-debug.apk" ;;
-          esac
-          echo "pattern=$pattern" >> "$GITHUB_OUTPUT"
-      - uses: actions/upload-artifact@v7
+          SIGNING_MODE: ephemeral
+          SOURCE_SHA: ${{ steps.revision.outputs.sha }}
+          EXPECTED_CERTIFICATE_SHA256: ${{ steps.certificate.outputs.sha256 }}
+        run: >-
+          python3 -I tooling/scripts/debug_ci.py package
+          --plan "$RUNNER_TEMP/debug-plan.json"
+          --source "$GITHUB_WORKSPACE/source"
+          --destination "$RUNNER_TEMP/debug-artifacts"
+      - name: Upload signing input (not an official install package)
+        uses: actions/upload-artifact@v7
         with:
-          name: sleepy-debug-apk-${{ inputs.abi }}-${{ github.run_number }}
-          path: app/build/outputs/apk/debug/${{ steps.pick.outputs.pattern }}
+          name: debug-signing-input-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/debug-artifacts/
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 1
+      - name: Build identity and download summary
+        if: ${{ always() && steps.tooling.outcome == 'success' }}
+        env:
+          JOB_STATUS: ${{ job.status }}
+        run: >-
+          python3 -I tooling/scripts/debug_ci.py summary
+          --plan "$RUNNER_TEMP/debug-plan.json"
+          --destination "$RUNNER_TEMP/debug-artifacts"
+
+  sign-debug:
+    needs: [prepare, assemble-debug]
+    if: >-
+      github.repository == 'lingion/sleepy' &&
+      github.workflow_ref == 'lingion/sleepy/.github/workflows/debug-apk.yml@refs/heads/main'
+    permissions:
+      contents: read
+      actions: write
+    uses: ./.github/workflows/debug-sign.yml
+    secrets:
+      DEBUG_KEYSTORE_BASE64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}

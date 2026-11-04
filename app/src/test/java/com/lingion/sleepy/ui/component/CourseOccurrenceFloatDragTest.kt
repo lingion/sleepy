@@ -1038,9 +1038,6 @@ class CourseOccurrenceFloatDragTest {
             down(center)
             moveBy(Offset(0f, 220.dp.toPx()), 10)
         }
-        // 50ms 轮询节奏 (#288 perf 裁决): scrollBy 为挂起调用, 单次大跨度推进只被泵送数拍,
-        // 逐拍推进 + waitForIdle 让每次滚动都走完帧管线, 滚动至饱和。
-        repeat(30) { compose.mainClock.advanceTimeBy(50L); compose.waitForIdle() }
         compose.runOnIdle {
             assertTrue("处于拖拽中", state.dragging)
             assertEquals("手势向下倾向", 1, state.lastDragDirY)
@@ -1063,9 +1060,6 @@ class CourseOccurrenceFloatDragTest {
             down(center)
             moveBy(Offset(0f, 40.dp.toPx()), 10)
         }
-        // 50ms 轮询节奏 (#288 perf 裁决): scrollBy 为挂起调用, 单次大跨度推进只被泵送数拍,
-        // 逐拍推进 + waitForIdle 让每次滚动都走完帧管线, 滚动至饱和。
-        repeat(30) { compose.mainClock.advanceTimeBy(50L); compose.waitForIdle() }
         compose.runOnIdle {
             assertTrue(state.dragging)
             assertEquals(1, state.lastDragDirY)

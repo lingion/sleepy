@@ -57,7 +57,7 @@ object WidgetUpdater {
      * 排一个到下个午夜的刷新单次任务 (幂等): 唯一名 + REPLACE → 任意刷新路径重复
      * 调用只保留最新对齐结果, 链不重复不分叉。
      */
-    private fun armMidnightRefresh(context: Context) {
+    internal fun armMidnightRefresh(context: Context) {
         val delay = nextMidnightDelayMillis(LocalDateTime.now(AppClock))
         val request = OneTimeWorkRequestBuilder<WidgetUpdateWorker>()
             .setConstraints(Constraints.Builder().build())

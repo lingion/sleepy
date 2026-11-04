@@ -62,8 +62,8 @@ class WidgetPreviewFacesContractTest {
     }
 
     @Test
-    fun `there are exactly 13 widget info xmls`() {
-        assertEquals(13, entries.size)
+    fun `widget info xmls match the registered receiver count`() {
+        assertEquals(ALL_WIDGET_VARIANTS.size, entries.size)
     }
 
     /** ① previewLayout 指向带静态 src 的专属预览布局, src 与 previewImage 同源。 */
@@ -147,7 +147,7 @@ class WidgetPreviewFacesContractTest {
         val registry = Regex("""R\.drawable\.widget_preview_(\w+)""")
             .findAll(registrySource()).map { it.groupValues[1] }.toSet()
         val xmlKeys = entries.map { it.drawableKey }.toSet()
-        assertEquals("info XML previewImage 名必须 13 个互异", 13, xmlKeys.size)
+        assertEquals("每个注册变体必须有独立的预览", ALL_WIDGET_VARIANTS.size, xmlKeys.size)
         assertEquals(
             "画廊 previewImageRes 与启动器 previewImage 必须一一对应(同一组脸)",
             xmlKeys, registry

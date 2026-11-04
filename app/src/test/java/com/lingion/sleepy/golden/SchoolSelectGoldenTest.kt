@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.onAllNodesWithTag
 import com.lingion.sleepy.ui.screen.imports.SchoolSelectScreen
 import com.lingion.sleepy.ui.theme.SleepyThemeProvider
 import org.junit.Rule
@@ -41,6 +42,10 @@ class SchoolSelectGoldenTest {
                     )
                 }
             }
+        }
+        // IO 目录加载不属于 Compose 的 idle 判据；必须等真实学校行出现再截图。
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            composeRule.onAllNodesWithTag("school_item").fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.waitForIdle()
         val bitmap = composeRule.onRoot().captureToImage().asAndroidBitmap()

@@ -17,6 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -167,6 +169,10 @@ internal fun SleepyNavHost(
     val popTransform = sleepyPopTransform()
     val predictivePopTransform = sleepyPredictivePopTransform()
 
+    // 转场底衬: content 家族缩放动画(0.92↔1)期间页面四周会露出底层,
+    // 无底衬时露的是窗口默认白底(Theme.Material.Light.NoActionBar),
+    // 进出子页动画即现白边。铺一层 background 色兜住缩放边缘, 随主题即时切换。
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
     NavDisplay(
         backStack = nav,
         entryDecorators = listOf(
@@ -431,6 +437,7 @@ internal fun SleepyNavHost(
         }
         }
     )
+    }
 }
 
 /**
@@ -506,7 +513,8 @@ private fun MainRoute(
             modifier = Modifier
                 .fillMaxSize()
                 .background(colors.background)
-                .windowInsetsPadding(WindowInsets.statusBars)
+                .windowInsetsPadding(WindowInsets.safeDrawing)
+                .consumeWindowInsets(WindowInsets.safeDrawing)
         ) {
             NavigationRail {
                 // 当前选中的 tab 跟 Schedule 组合成跑道胶囊(强高亮 primaryContainer);

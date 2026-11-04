@@ -19,6 +19,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
@@ -223,6 +224,9 @@ val DarkCoursePalette = CoursePalette(
 )
 
 val LocalCoursePalette = staticCompositionLocalOf { LightCoursePalette }
+
+/** 应用当前是否处于深色模式，由 [SleepyThemeProvider] 注入并响应会话内主题实时切换。 */
+val LocalDarkTheme = compositionLocalOf { false }
 
 /**
  * Material You 字体系统 — 1:1 官方 M3 baseline type scale
@@ -572,7 +576,10 @@ fun SleepyThemeProvider(
     // MD3E (Task 8): 主题切档时 48 色彩槽逐槽缓动到新值, 消费者零改动全局渐变。
     val m3Scheme = wakeToM3Scheme(wc, darkTheme).transitioning()
 
-    CompositionLocalProvider(LocalCoursePalette provides palette) {
+    CompositionLocalProvider(
+        LocalCoursePalette provides palette,
+        LocalDarkTheme provides darkTheme,
+    ) {
         // 系统栏外观随应用主题联动(官方 edge-to-edge 指南): enableEdgeToEdge 是一次性
         // API, onCreate 只调一次时 isAppearanceLightStatusBars 停在启动时的系统深浅判定,
         // 应用内手动切主题后状态栏图标不跟着变(浅色页面+白图标 = 不可见)。
