@@ -26,7 +26,7 @@ androidxTestJunit = "1.2.1"
 androidxTestCore = "1.7.0"
 espresso = "3.6.1"
 robolectric = "4.17"
-materialColorUtilities = "1.10.0"
+materialColorUtilities = "1.7.0"
 
 [libraries]
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
