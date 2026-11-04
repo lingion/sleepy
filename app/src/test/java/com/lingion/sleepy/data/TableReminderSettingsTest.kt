@@ -17,15 +17,16 @@ class TableReminderSettingsTest {
     private fun database(test: (Connection) -> Unit) {
         DriverManager.getConnection("jdbc:sqlite::memory:").use { db ->
             db.createStatement().use { st ->
-                st.execute("CREATE TABLE time_tables(id INTEGER PRIMARY KEY, name TEXT NOT NULL, startDate TEXT NOT NULL, periodTableId INTEGER, reminderEnabled INTEGER NOT NULL DEFAULT 1)")
-                st.execute("INSERT INTO time_tables VALUES(1, 'A', '2026-09-01', 7, 1), (2, 'B', '2026-08-01', NULL, 0)")
+                st.execute("CREATE TABLE time_tables(id INTEGER PRIMARY KEY, name TEXT NOT NULL, startDate TEXT NOT NULL, periodTableId INTEGER, reminderEnabled INTEGER NOT NULL DEFAULT 1, reminderOverride INTEGER DEFAULT NULL)")
+                st.execute("INSERT INTO time_tables VALUES(1, 'A', '2026-09-01', 7, 1, NULL), (2, 'B', '2026-08-01', NULL, 0, NULL)")
             }
             test(db)
         }
     }
     private fun Connection.toggle(id: Long, enabled: Boolean): Int = prepareStatement(updateSql).use { st ->
         st.setInt(1, if (enabled) 1 else 0)
-        st.setLong(2, id)
+        st.setInt(2, if (enabled) 1 else 0)
+        st.setLong(3, id)
         st.executeUpdate()
     }
     private fun Connection.states(): List<Int> = createStatement().use { st ->
@@ -81,7 +82,7 @@ class TableReminderSettingsTest {
         assertFalse(editor.contains("reminderEnabled"))
         assertFalse(editor.contains("edit_table_reminder_enable"))
         val list = source("ui/screen/mine/TableReminderScreen.kt")
-        assertTrue(list.contains("observeAllTables()"))
+        assertTrue(list.contains("observeReminderTables()"))
         assertTrue(list.contains("key = { it.id }"))
         assertTrue(list.contains("onCheckedChange = null"))
         assertTrue(source("ui/nav/SleepyNavHost.kt").contains("entry<SleepyRoute.TableReminder>"))

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_table_reminder_scope">Horarios con recordatorios</string>
+    <string name="settings_reminder_test_compatibility">Pruebas y compatibilidad</string>
+    <string name="settings_reminder_permissions_attention">Revisar permisos de recordatorios</string>
+    <string name="settings_reminder_permissions">Permisos y actividad en segundo plano</string>
+    <string name="settings_reminder_widget_optional">Los widgets son opcionales y no son necesarios para recibir recordatorios.</string>
+    <string name="settings_holiday_title_rules">Festivos y clases de recuperación</string>
+    <string name="settings_holiday_dates">Gestionar fechas</string>
+    <string name="settings_holiday_dates_scope">Los intervalos de fechas se comparten entre todos los horarios. Las asignaciones de recuperación solo se aplican al horario seleccionado arriba.</string>
+    <string name="settings_holiday_maintenance">Mantenimiento</string>
+</resources>

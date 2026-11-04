@@ -64,6 +64,7 @@ import androidx.core.net.toUri
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.lingion.sleepy.ui.component.SectionHeader
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.parser.ScheduleExporter
 import com.lingion.sleepy.data.parser.SleepyNativeExporter
@@ -235,8 +236,7 @@ fun ExportScreen(
                 }
             }
 
-            // 格式选项 — 选中作息表 → 只剩 JSON + 原生两项(用户 2026-09-16);
-            // 选中课表 → 完整四项
+            // 作息表保留原生与 JSON；课表按分享、日历与助手分组。
             if (selectedPeriodTable != null) {
                 item {
                     Column(
@@ -283,141 +283,149 @@ fun ExportScreen(
                     }
                 }
             } else if (table != null) {
-            item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(SleepyTheme.shapes.large)
-                        .background(colors.surfaceContainer)
-                ) {
-                    ExportItem(
-                        icon = Icons.Outlined.Code,
-                        title = stringResource(R.string.export_json_title),
-                        subtitle = stringResource(R.string.export_json_subtitle),
-                        onClick = {
-                            scope.launch {
-                                exportAndShare(
-                                    ctx = ctx,
-                                    fileName = "sleepy_${table.name}_${stamp()}.json",
-                                    mime = "application/json",
-                                    content = ScheduleExporter.exportWakeUpJson(table, courses),
-                                    displayName = table.name,
-                                    onResult = { msg -> snackbarHostState.showSnackbar(msg) }
-                                )
-                            }
-                        }
-                    )
-                    Divider(colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    ExportItem(
-                        icon = Icons.Outlined.Share,
-                        title = stringResource(R.string.export_share_title),
-                        subtitle = stringResource(R.string.export_share_subtitle),
-                        onClick = {
-                            scope.launch {
-                                shareText(
-                                    ctx = ctx,
-                                    content = SleepyNativeExporter.exportShareText(
-                                        table.name, table.startDate, table.maxWeek, table.nodesPerDay,
-                                        table.timeJson, courses
-                                    ),
-                                    subject = table.name,
-                                    onResult = { msg -> snackbarHostState.showSnackbar(msg) }
-                                )
-                            }
-                        }
-                    )
-                    Divider(colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    ExportItem(
-                        icon = Icons.Outlined.SmartToy,
-                        title = stringResource(R.string.export_xiaoai_title),
-                        subtitle = stringResource(R.string.export_xiaoai_subtitle),
-                        onClick = {
-                            scope.launch {
-                                launchXiaoaiImport(
-                                    table = table,
-                                    courses = courses,
-                                    boundPeriodTable = table.periodTableId
-                                        ?.let { boundId -> allPeriodTables.find { it.id == boundId } },
-                                    onResult = { msg -> snackbarHostState.showSnackbar(msg) }
-                                )
-                            }
-                        }
-                    )
-                    Divider(colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    ExportItem(
-                        icon = Icons.Outlined.CalendarMonth,
-                        title = stringResource(R.string.export_ics_title),
-                        subtitle = stringResource(R.string.export_ics_subtitle),
-                        onClick = {
-                            scope.launch {
-                                exportAndShare(
-                                    ctx = ctx,
-                                    fileName = "sleepy_${table.name}_${stamp()}.ics",
-                                    mime = "text/calendar",
-                                    content = ScheduleExporter.exportIcs(table, courses, com.lingion.sleepy.util.AppPrefs.getHolidayTransfers(ctx, table.id)),
-                                    displayName = table.name,
-                                    onResult = { msg -> snackbarHostState.showSnackbar(msg) }
-                                )
-                            }
-                        }
-                    )
-                    Divider(colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    ExportItem(
-                        icon = Icons.Outlined.CalendarMonth,
-                        title = stringResource(R.string.calendar_import_title),
-                        subtitle = if (effectiveId != state.selectedTableId && loadedCourses == null)
-                            stringResource(R.string.calendar_import_loading)
-                        else stringResource(R.string.calendar_import_subtitle),
-                        onClick = {
-                            scope.launch {
-                                if (SystemCalendarManager.hasCalendarPermissions(ctx)) {
-                                    openCalendarImportForCurrentTarget()
-                                } else {
-                                    calendarPermissionLauncher.launch(
-                                        arrayOf(
-                                            Manifest.permission.READ_CALENDAR,
-                                            Manifest.permission.WRITE_CALENDAR
-                                        )
+                item { SectionHeader(title = stringResource(R.string.settings_export_sharing)) }
+                item {
+                    Column(
+                        modifier = Modifier.fillMaxWidth()
+                            .clip(SleepyTheme.shapes.large)
+                            .background(colors.surfaceContainer)
+                    ) {
+                        ExportItem(
+                            icon = Icons.Outlined.Star,
+                            title = stringResource(R.string.settings_export_native_file_title),
+                            subtitle = stringResource(R.string.settings_export_native_file_sub),
+                            onClick = {
+                                scope.launch {
+                                    exportAndShare(
+                                        ctx = ctx,
+                                        fileName = "sleepy_${table.name}_${stamp()}.sleepy",
+                                        mime = "text/plain",
+                                        // MIME 用 text/plain 规避 ImportReceiverActivity MIME 收窄问题(调查报告 P3)
+                                        content = SleepyNativeExporter.exportFile(
+                                            table.name, table.startDate, table.maxWeek, table.nodesPerDay,
+                                            table.timeJson, courses,
+                                            // issue#40 §6: 绑定了独立时间节次表时携带 P 区块(共享关系可往返)
+                                            periodTable = state.tables
+                                                .firstOrNull { it.id == table.id }
+                                                ?.periodTableId
+                                                ?.let { boundId -> allPeriodTables.find { it.id == boundId } }
+                                                ?.let {
+                                                    SleepyNativeExporter.PeriodTableExport(
+                                                        id = it.id, name = it.name,
+                                                        nodesPerDay = it.nodesPerDay, timeJson = it.timeJson
+                                                    )
+                                                }
+                                        ),
+                                        displayName = table.name,
+                                        onResult = { msg -> snackbarHostState.showSnackbar(msg) }
                                     )
                                 }
                             }
-                        }
-                    )
-                    Divider(colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    ExportItem(
-                        icon = Icons.Outlined.Star,
-                        title = stringResource(R.string.export_native_title),
-                        subtitle = stringResource(R.string.export_native_subtitle),
-                        onClick = {
-                            scope.launch {
-                                exportAndShare(
-                                    ctx = ctx,
-                                    fileName = "sleepy_${table.name}_${stamp()}.sleepy",
-                                    mime = "text/plain",
-                                    // MIME 用 text/plain 规避 ImportReceiverActivity MIME 收窄问题(调查报告 P3)
-                                    content = SleepyNativeExporter.exportFile(
-                                        table.name, table.startDate, table.maxWeek, table.nodesPerDay,
-                                        table.timeJson, courses,
-                                        // issue#40 §6: 绑定了独立时间节次表时携带 P 区块(共享关系可往返)
-                                        periodTable = state.tables
-                                            .firstOrNull { it.id == table.id }
-                                            ?.periodTableId
-                                            ?.let { boundId -> allPeriodTables.find { it.id == boundId } }
-                                            ?.let {
-                                                SleepyNativeExporter.PeriodTableExport(
-                                                    id = it.id, name = it.name,
-                                                    nodesPerDay = it.nodesPerDay, timeJson = it.timeJson
-                                                )
-                                            }
-                                    ),
-                                    displayName = table.name,
-                                    onResult = { msg -> snackbarHostState.showSnackbar(msg) }
-                                )
+                        )
+                        Divider(colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                        ExportItem(
+                            icon = Icons.Outlined.Share,
+                            title = stringResource(R.string.export_share_title),
+                            subtitle = stringResource(R.string.export_share_subtitle),
+                            onClick = {
+                                scope.launch {
+                                    shareText(
+                                        ctx = ctx,
+                                        content = SleepyNativeExporter.exportShareText(
+                                            table.name, table.startDate, table.maxWeek, table.nodesPerDay,
+                                            table.timeJson, courses
+                                        ),
+                                        subject = table.name,
+                                        onResult = { msg -> snackbarHostState.showSnackbar(msg) }
+                                    )
+                                }
                             }
-                        }
-                    )
+                        )
+                        Divider(colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                        ExportItem(
+                            icon = Icons.Outlined.Code,
+                            title = stringResource(R.string.export_json_title),
+                            subtitle = stringResource(R.string.export_json_subtitle),
+                            onClick = {
+                                scope.launch {
+                                    exportAndShare(
+                                        ctx = ctx,
+                                        fileName = "sleepy_${table.name}_${stamp()}.json",
+                                        mime = "application/json",
+                                        content = ScheduleExporter.exportWakeUpJson(table, courses),
+                                        displayName = table.name,
+                                        onResult = { msg -> snackbarHostState.showSnackbar(msg) }
+                                    )
+                                }
+                            }
+                        )
+                    }
                 }
-            }
+                item { SectionHeader(title = stringResource(R.string.settings_export_calendar_assistants)) }
+                item {
+                    Column(
+                        modifier = Modifier.fillMaxWidth()
+                            .clip(SleepyTheme.shapes.large)
+                            .background(colors.surfaceContainer)
+                    ) {
+                        ExportItem(
+                            icon = Icons.Outlined.CalendarMonth,
+                            title = stringResource(R.string.calendar_import_title),
+                            subtitle = if (effectiveId != state.selectedTableId && loadedCourses == null)
+                                stringResource(R.string.calendar_import_loading)
+                            else stringResource(R.string.calendar_import_subtitle),
+                            onClick = {
+                                scope.launch {
+                                    if (SystemCalendarManager.hasCalendarPermissions(ctx)) {
+                                        openCalendarImportForCurrentTarget()
+                                    } else {
+                                        calendarPermissionLauncher.launch(
+                                            arrayOf(
+                                                Manifest.permission.READ_CALENDAR,
+                                                Manifest.permission.WRITE_CALENDAR
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        )
+                        Divider(colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                        ExportItem(
+                            icon = Icons.Outlined.CalendarMonth,
+                            title = stringResource(R.string.export_ics_title),
+                            subtitle = stringResource(R.string.export_ics_subtitle),
+                            onClick = {
+                                scope.launch {
+                                    exportAndShare(
+                                        ctx = ctx,
+                                        fileName = "sleepy_${table.name}_${stamp()}.ics",
+                                        mime = "text/calendar",
+                                        content = ScheduleExporter.exportIcs(table, courses, com.lingion.sleepy.util.AppPrefs.getHolidayTransfers(ctx, table.id)),
+                                        displayName = table.name,
+                                        onResult = { msg -> snackbarHostState.showSnackbar(msg) }
+                                    )
+                                }
+                            }
+                        )
+                        Divider(colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                        ExportItem(
+                            icon = Icons.Outlined.SmartToy,
+                            title = stringResource(R.string.export_xiaoai_title),
+                            subtitle = stringResource(R.string.export_xiaoai_subtitle),
+                            onClick = {
+                                scope.launch {
+                                    launchXiaoaiImport(
+                                        table = table,
+                                        courses = courses,
+                                        boundPeriodTable = table.periodTableId
+                                            ?.let { boundId -> allPeriodTables.find { it.id == boundId } },
+                                        onResult = { msg -> snackbarHostState.showSnackbar(msg) }
+                                    )
+                                }
+                            }
+                        )
+                    }
+                }
             }
         }
     }

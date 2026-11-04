@@ -61,6 +61,8 @@ object MigrationDatabaseCodec {
         val createdAt: Long,
         val periodTableId: Long? = null,
         val preBindSnapshotJson: String = "",
+        val reminderEnabled: Boolean = true,
+        val reminderOverride: Boolean? = null,
     )
 
     @Serializable
@@ -117,6 +119,7 @@ object MigrationDatabaseCodec {
         isDefault = isDefault, smartConfigJson = smartConfigJson,
         createdAt = createdAt, periodTableId = periodTableId,
         preBindSnapshotJson = preBindSnapshotJson,
+        reminderEnabled = reminderEnabled, reminderOverride = reminderOverride,
     )
 
     fun PeriodTableEntity.toRow() = PeriodTableRow(
@@ -144,6 +147,7 @@ object MigrationDatabaseCodec {
         isDefault = isDefault, smartConfigJson = smartConfigJson,
         createdAt = createdAt, periodTableId = periodTableId,
         preBindSnapshotJson = preBindSnapshotJson,
+        reminderEnabled = reminderEnabled, reminderOverride = reminderOverride,
     )
 
     fun PeriodTableRow.toEntity() = PeriodTableEntity(
@@ -203,6 +207,7 @@ object MigrationDatabaseCodec {
         periodTableDao: PeriodTableDao,
         importDraftDao: ImportDraftDao,
     ) {
+        val hasLocalTables = timeTableDao.getAll().isNotEmpty()
         val periodIdMap = HashMap<Long, Long>()
         for (row in snapshot.periodTables) {
             val newId = periodTableDao.insert(row.toEntity().copy(id = 0))
@@ -213,6 +218,10 @@ object MigrationDatabaseCodec {
             val newId = timeTableDao.insert(
                 row.toEntity().copy(
                     id = 0,
+                    // Appending a backup must not change the local reminder selection.
+                    isDefault = if (hasLocalTables) false else row.isDefault,
+                    reminderEnabled = if (hasLocalTables) false else row.reminderEnabled,
+                    reminderOverride = if (hasLocalTables) null else row.reminderOverride,
                     periodTableId = row.periodTableId?.let { periodIdMap[it] },
                 )
             )

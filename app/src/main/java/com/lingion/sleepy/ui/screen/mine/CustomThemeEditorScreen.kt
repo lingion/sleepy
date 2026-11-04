@@ -157,16 +157,16 @@ fun CustomThemeEditorScreen(
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     ActionEntry(
-                        icon = { Icon(Icons.Outlined.AutoAwesome, null, tint = colors.primary, modifier = Modifier.size(24.dp)) },
-                        title = stringResource(R.string.theme_editor_random),
-                        desc = stringResource(R.string.theme_editor_random_desc),
-                        onClick = { draft = randomDraft(draft) }
-                    )
-                    ActionEntry(
                         icon = { Icon(Icons.Outlined.Palette, null, tint = colors.primary, modifier = Modifier.size(24.dp)) },
                         title = stringResource(R.string.theme_editor_from_seed),
                         desc = stringResource(R.string.theme_editor_from_seed_desc),
                         onClick = { pickingRole = ROLE_SEED_PRIMARY }
+                    )
+                    ActionEntry(
+                        icon = { Icon(Icons.Outlined.AutoAwesome, null, tint = colors.primary, modifier = Modifier.size(24.dp)) },
+                        title = stringResource(R.string.theme_editor_random),
+                        desc = stringResource(R.string.theme_editor_random_desc),
+                        onClick = { draft = randomDraft(draft) }
                     )
                     ActionEntry(
                         icon = { Icon(Icons.Outlined.Tune, null, tint = colors.primary, modifier = Modifier.size(24.dp)) },

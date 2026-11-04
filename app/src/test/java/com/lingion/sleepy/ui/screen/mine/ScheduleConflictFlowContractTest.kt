@@ -10,7 +10,7 @@ import java.io.File
  * EditTableScreen 在绑定共享作息表时改作息 → 三选项 BottomSheet +
  * 待执行提醒 Banner + 三策略执行路径 + 取消草稿恢复。
  *
- * 仓库无 Robolectric / 无 coroutines-test, 按既有契约测试风格锁源码触发。
+ * 此处锁定保存分支契约，草稿恢复后的实际交互由 EditTableDraftRestoreTest 覆盖。
  */
 class ScheduleConflictFlowContractTest {
 
@@ -67,16 +67,27 @@ class ScheduleConflictFlowContractTest {
 
     @Test
     fun save_button_branches_through_three_invariants() {
+        val saveGate = editTableScreen.substringAfter("val inputDraft =")
+            .substringBefore("onClick = { showDeleteConfirm = true }")
+        val reconcileIndex = saveGate.indexOf("editState.updateDraft(inputDraft)")
+        val policyReadIndex = saveGate.indexOf("val policyForSave = editState.pendingSchedulePolicy.value")
+        val confirmationIndex = saveGate.indexOf("editState.hasScheduleChanged() && policyForSave == SchedulePolicy.NONE")
+        assertTrue(
+            "恢复输入必须先同步到草稿，再读取最新策略并检查共享作息确认",
+            reconcileIndex >= 0 && policyReadIndex > reconcileIndex && confirmationIndex > policyReadIndex
+        )
         // invariant ②: 改了作息 + 无策略 → 弹窗
         assertTrue(
-            "save-button 必须先判 hasScheduleChanged() && pendingPolicy==NONE 才弹窗",
-            editTableScreen.contains("editState.hasScheduleChanged() && pendingPolicy == SchedulePolicy.NONE")
+            "save-button 必须在作息变化且最新策略为 NONE 时弹窗",
+            saveGate.substringAfter("if (editState.hasScheduleChanged() && policyForSave == SchedulePolicy.NONE)")
+                .substringBefore("if (policyForSave != SchedulePolicy.NONE)")
+                .let { it.contains("showConflictSheet = true") && it.contains("return@Button") }
         )
         // invariant ④: 有策略 → 执行策略
         assertTrue(
-            "save-button 必须把 pendingPolicy!=NONE 路径分给 executePolicyAndSave",
-            editTableScreen.contains("pendingPolicy != SchedulePolicy.NONE") &&
-                editTableScreen.contains("viewModel.executePolicyAndSave(")
+            "save-button 必须把最新策略非 NONE 的路径分给 executePolicyAndSave",
+            saveGate.contains("policyForSave != SchedulePolicy.NONE") &&
+                saveGate.contains("viewModel.executePolicyAndSave(")
         )
         // invariant ①: 普通保存只在非甲案路径(未绑定/未改作息/换绑)走
         assertTrue(

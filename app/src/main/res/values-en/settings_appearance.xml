@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_appearance_navigation">Bottom navigation</string>
+    <string name="settings_appearance_common">Shared settings</string>
+    <string name="settings_appearance_holidays">Holiday display</string>
+    <string name="settings_appearance_default_view">Default schedule view</string>
+    <string name="settings_appearance_default_view_sub">The initial view used on a cold start and when returning to the schedule from another page.</string>
+    <string name="settings_appearance_header_date">Show dates in headers</string>
+    <string name="settings_appearance_header_date_sub">Applies to the app grid and supported widgets.</string>
+    <string name="settings_appearance_time_scope">Applies to the schedule and widgets that support course time display.</string>
+    <string name="settings_appearance_advanced_experimental">Advanced options (experimental)</string>
+    <string name="settings_appearance_separator_scope">Show grid row and column separators in the app and supported grid widgets.</string>
+    <string name="settings_appearance_break_scope">Add spacing for long midday and evening breaks in the app and supported grid widgets.</string>
+    <string name="settings_appearance_workday_visible">Do not dim make-up workdays</string>
+</resources>

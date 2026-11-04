@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_appearance_navigation">Navegación inferior</string>
+    <string name="settings_appearance_common">Ajustes comunes</string>
+    <string name="settings_appearance_holidays">Visualización de festivos</string>
+    <string name="settings_appearance_default_view">Vista predeterminada del horario</string>
+    <string name="settings_appearance_default_view_sub">Vista inicial al iniciar la aplicación desde cero y al volver al horario desde otra página.</string>
+    <string name="settings_appearance_header_date">Mostrar fechas en las cabeceras</string>
+    <string name="settings_appearance_header_date_sub">Se aplica a la cuadrícula de la aplicación y a los widgets compatibles.</string>
+    <string name="settings_appearance_time_scope">Se aplica al horario y a los widgets compatibles con la visualización de horas de clase.</string>
+    <string name="settings_appearance_advanced_experimental">Opciones avanzadas (experimentales)</string>
+    <string name="settings_appearance_separator_scope">Muestra separadores de filas y columnas en la cuadrícula de la aplicación y los widgets de cuadrícula compatibles.</string>
+    <string name="settings_appearance_break_scope">Añade espacio para los descansos largos del mediodía y la tarde en la aplicación y los widgets de cuadrícula compatibles.</string>
+    <string name="settings_appearance_workday_visible">No atenuar los días laborables compensatorios</string>
+</resources>

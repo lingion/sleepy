@@ -378,6 +378,8 @@ internal fun MainTabs(
                     onOpenCourseList = { navigator.openCourseList() },
                     onOpenPeriodTables = { navigator.openPeriodTables() },
                     onOpenAppearance = { navigator.openAppearance() },
+                    onOpenHoliday = { navigator.openHoliday() },
+                    onOpenBackup = { navigator.openBackup() },
                     onOpenGeneral = { navigator.openGeneral() },
                     onOpenWidgetSettings = { navigator.openWidgetSettings() },
                     onOpenReminder = { navigator.openReminder() },

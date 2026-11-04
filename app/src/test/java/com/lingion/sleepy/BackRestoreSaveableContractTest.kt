@@ -158,20 +158,16 @@ class BackRestoreSaveableContractTest {
         }
     }
 
-    /** 契约 3: GeneralSettingsScreen 的折叠展开态必须 rememberSaveable */
+    /** Language remains the only expandable group in General after display migration. */
     @Test
-    fun generalSettingsScreen_expandedSections_uses_rememberSaveable() {
+    fun generalSettingsScreen_languageExpansion_uses_rememberSaveable() {
         assertTrue(
-            "GeneralSettingsScreen must import androidx.compose.runtime.saveable.rememberSaveable",
-            generalSource.contains("androidx.compose.runtime.saveable.rememberSaveable")
+            "Language expansion must survive navigation round trips",
+            Regex("""var\s+languageExpanded\s+by\s+rememberSaveable""").containsMatchIn(generalSource)
         )
         assertFalse(
-            "expandedSections must not be plain remember — collapse state must survive overlay round-trip",
-            Regex("""var\s+expandedSections\s+by\s+remember\s*\{""").containsMatchIn(generalSource)
-        )
-        assertTrue(
-            "expandedSections must be declared via rememberSaveable",
-            Regex("""var\s+expandedSections\s+by\s+rememberSaveable""").containsMatchIn(generalSource)
+            "Language expansion must not be transient",
+            Regex("""var\s+languageExpanded\s+by\s+remember\s*\{""").containsMatchIn(generalSource)
         )
     }
 

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_table_reminder_scope">需要提醒的課表</string>
+    <string name="settings_reminder_test_compatibility">測試與相容性</string>
+    <string name="settings_reminder_permissions_attention">提醒權限需要處理</string>
+    <string name="settings_reminder_permissions">權限與背景執行</string>
+    <string name="settings_reminder_widget_optional">小工具僅作為診斷參考，不是接收提醒的必要條件。</string>
+    <string name="settings_holiday_title_rules">節假日與調休</string>
+    <string name="settings_holiday_dates">日期管理</string>
+    <string name="settings_holiday_dates_scope">日期範圍由所有課表共用；調休對應僅影響上方選擇的課表。</string>
+    <string name="settings_holiday_maintenance">維護</string>
+</resources>

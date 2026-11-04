@@ -369,7 +369,7 @@ class CourseNotificationScheduler private constructor(
         val now = AppClock.millis()
         // 流体云只能显示一门课，必须严格跟随当前页面选中的课表（首页呈现的课表）
         val table = resolveCurrentTable() ?: return false
-        if (!table.reminderEnabled) return false
+        if (SleepyApp.get().repository.getReminderTables().none { it.id == table.id && it.reminderEnabled }) return false
         // Current-date policy must also prevent stale/recovery launches after settings change.
         if (!com.lingion.sleepy.util.HolidayReminderPolicyAdapter
                 .decide(app, today, table.id)
@@ -514,7 +514,7 @@ internal class AndroidBeforeClassDataSource(private val ctx: Context) : BeforeCl
 
     override suspend fun resolveReminderTables(): List<TimeTableEntity> {
         val repo = SleepyApp.get().repository
-        return repo.getAllTables().filter { it.reminderEnabled }.map { t ->
+        return repo.getReminderTables().filter { it.reminderEnabled }.map { t ->
             t.hydratedWith(t.periodTableId?.let { id -> runCatching { repo.getPeriodTable(id) }.getOrNull() })
         }
     }
@@ -729,7 +729,7 @@ class BeforeClassNotifyReceiver : BroadcastReceiver() {
                 val resolvedTableId = tableId
                     ?: com.lingion.sleepy.widget.WidgetTableResolver.resolveCurrentTable()?.id
                     ?: return@launch
-                val tables = SleepyApp.get().repository.getAllTables()
+                val tables = SleepyApp.get().repository.getReminderTables()
                 val owner = tables.firstOrNull { it.id == resolvedTableId } ?: return@launch
                 if (!owner.reminderEnabled) return@launch
                 if (!com.lingion.sleepy.util.HolidayReminderPolicyAdapter

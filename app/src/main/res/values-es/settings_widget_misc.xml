@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_widget_global_appearance">Apariencia global</string>
+    <string name="settings_widget_shared_display">Visualización compartida del horario</string>
+    <string name="settings_widget_shared_display_sub">Elige los días visibles y si se muestra el próximo día con clases. Afecta a la aplicación y a los widgets compatibles.</string>
+    <string name="settings_widget_advanced">Opciones avanzadas</string>
+    <string name="settings_widget_vert_punct_experimental">Puntuación vertical en widgets (experimental)</string>
+    <string name="settings_export_sharing">Compartir</string>
+    <string name="settings_export_calendar_assistants">Calendario y asistentes</string>
+    <string name="settings_export_native_file_title">Archivo de horario de Sleepy</string>
+    <string name="settings_export_native_file_sub">Comparte este horario y sus períodos. Para todos los horarios, preferencias y widgets, usa Copia de seguridad y restauración.</string>
+</resources>

@@ -80,6 +80,8 @@ import com.lingion.sleepy.ui.screen.mine.CourseListScreen
 import com.lingion.sleepy.ui.screen.mine.AppearanceScreen
 import com.lingion.sleepy.ui.screen.mine.PeriodHeaderSettingsScreen
 import com.lingion.sleepy.ui.screen.mine.EditTableScreen
+import com.lingion.sleepy.ui.screen.mine.BackupScreen
+import com.lingion.sleepy.ui.screen.mine.ScheduleDisplayScreen
 import com.lingion.sleepy.ui.screen.mine.GeneralSettingsScreen
 import com.lingion.sleepy.ui.screen.mine.HolidaySettingsScreen
 import com.lingion.sleepy.ui.screen.mine.ExportScreen
@@ -296,6 +298,7 @@ internal fun SleepyNavHost(
 
             EditTableScreen(
                 tableId = routeTableId,
+                onOpenHoliday = { tableId -> navigator.openTableHoliday(tableId) },
                 pendingNewTableId = pending,
                 onBack = { navigator.pop() },
                 onDiscardPending = {
@@ -321,7 +324,9 @@ internal fun SleepyNavHost(
                 onBack = { navigator.pop() },
                 themeMode = themeMode,
                 onThemeModeChange = onThemeModeChange,
-                onOpenPeriodHeaderSettings = { navigator.openPeriodHeaderSettings() },
+                onOpenScheduleDisplay = { navigator.openScheduleDisplay() },
+                navDock = navDock,
+                onNavDockChange = onNavDockChange,
             )
         }
 
@@ -331,11 +336,23 @@ internal fun SleepyNavHost(
 
         // ----------------------------------------------------------------
         entry<SleepyRoute.General> {
-            GeneralSettingsScreen(
+            GeneralSettingsScreen(onBack = { navigator.pop() })
+        }
+        entry<SleepyRoute.ScheduleDisplay> {
+            ScheduleDisplayScreen(
                 onBack = { navigator.pop() },
-                onOpenHoliday = { navigator.openHoliday() },
-                navDock = navDock,
-                onNavDockChange = onNavDockChange,
+                onOpenPeriodHeaderSettings = { navigator.openPeriodHeaderSettings() },
+            )
+        }
+        entry<SleepyRoute.Backup> {
+            BackupScreen(onBack = { navigator.pop() })
+        }
+        entry<SleepyRoute.TableHoliday> { key ->
+            HolidaySettingsScreen(
+                onBack = { navigator.pop() },
+                tableId = currentTableId,
+                initialTableId = key.tableId,
+                viewModel = mainVm,
             )
         }
 
@@ -388,6 +405,7 @@ internal fun SleepyNavHost(
             WidgetSettingsScreen(
                 onBack = { navigator.pop() },
                 onOpenWidgetManagement = { navigator.openWidgetManagement() },
+                onOpenScheduleDisplay = { navigator.openScheduleDisplay() },
             )
         }
 
@@ -897,6 +915,8 @@ private fun RightHalfContent(
                 onOpenCourseList = { navigator.openCourseList() },
                 onOpenPeriodTables = { navigator.openPeriodTables() },
                 onOpenAppearance = { navigator.openAppearance() },
+                onOpenHoliday = { navigator.openHoliday() },
+                onOpenBackup = { navigator.openBackup() },
                 onOpenGeneral = { navigator.openGeneral() },
                 onOpenWidgetSettings = { navigator.openWidgetSettings() },
                 onOpenReminder = { navigator.openReminder() },
