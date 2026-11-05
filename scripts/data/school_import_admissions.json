@@ -78681,22 +78681,23 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "qz",
+    "mappedType": "sg_asset",
     "probe": {
-      "url": "http://xjw.qdu.edu.cn",
-      "checkedAt": "2026-10-16",
+      "url": "https://xjw.qdu.edu.cn/",
+      "checkedAt": "2026-11-05",
       "status": "unverified",
       "fingerprints": [
         "qz"
       ],
       "http": 200,
-      "finalUrl": "http://xjw.qdu.edu.cn",
+      "finalUrl": "https://xjw.qdu.edu.cn/",
       "bytes": 23491,
       "title": "登录",
       "urlHints": []
     },
-    "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "status": "supported",
+    "authenticatedImportTested": true,
+    "verification": "User confirmed successful authenticated timetable import using the QDU-specific ShiGuang adapter on 2026-11-05."
   },
   {
     "sourceId": "wakeup-6.1.06-asset",

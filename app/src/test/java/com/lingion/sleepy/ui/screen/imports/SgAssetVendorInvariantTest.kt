@@ -1,5 +1,7 @@
 package com.lingion.sleepy.ui.screen.imports
 
+import com.lingion.sleepy.data.jw.JwProtocol
+import com.lingion.sleepy.data.jw.JwSchoolInfo
 import com.lingion.sleepy.testutil.projectSourceFile
 import com.lingion.sleepy.testutil.readProjectSource
 import java.security.MessageDigest
@@ -177,6 +179,27 @@ class SgAssetVendorInvariantTest {
             .map { it.getString("name").trim() }
             .filter { JwSgAssetNfk(it) !in matchKeys }
         assertEquals("目录 sg_asset 条目缺 manifest 适配器: $orphans", 0, orphans.size)
+    }
+
+    @Test
+    fun qingdao_university_uses_its_vendored_adapter_and_https_entry() {
+        val schoolsJson = JSONArray(
+            projectSourceFile("app/src/main/assets/schools.json").readText()
+        )
+        val qdu = (0 until schoolsJson.length())
+            .map { schoolsJson.getJSONObject(it) }
+            .single { it.optString("name") == "青岛大学" }
+
+        assertEquals(JwProtocol.TYPE_SG_ASSET, qdu.optString("type"))
+        assertEquals(JwSchoolInfo.STATUS_SUPPORTED, qdu.optString("status"))
+        assertTrue(qdu.optString("url").startsWith("https://xjw.qdu.edu.cn/"))
+
+        val manifestSchools = manifestJson.getJSONArray("schools")
+        val adapter = (0 until manifestSchools.length())
+            .map { manifestSchools.getJSONObject(it) }
+            .single { it.optString("sgName") == "青岛大学" }
+            .getJSONArray("adapters").getJSONObject(0)
+        assertTrue(adapter.optString("jsPath").endsWith("/QDU/qdu_01.js"))
     }
 
     @Test

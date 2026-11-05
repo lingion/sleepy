@@ -3,9 +3,9 @@
   "baselineCount": 352,
   "catalogCount": 4140,
   "statusCounts": {
-    "supported": 350,
+    "supported": 351,
     "grad_supported": 2,
-    "unverified": 2480,
+    "unverified": 2479,
     "grad_pending": 253,
     "pending": 1007,
     "grad_unverified": 48
@@ -38,7 +38,7 @@
     },
     {
       "path": "scripts/data/school_import_admissions.json",
-      "sha256": "6ebc4ff3ac44b03ab0a5d7bb5c8d1719220b1d5016062b1bf488f601f4b40f4f"
+      "sha256": "0b87911a64403dc0a3f842e23ab625ab2d5695bcc62d09f322d460fdbfd9892a"
     },
     {
       "path": "scripts/data/school_catalog_renames.json",
@@ -46,7 +46,7 @@
     },
     {
       "path": "scripts/data/school_url_evidence.json",
-      "sha256": "fe3ac0c6efc4528b622347745d642e35d947c7b9f0e1c6c3594422bf4bbb1271"
+      "sha256": "c2708d87da2882e4ef4e31c438f28fe2266a10f2764d0d199c8509a6a4aa155d"
     },
     {
       "path": "scripts/data/school_catalog_domain_reference.json",
@@ -63,9 +63,9 @@
     "actions": {
       "retained-existing-config-ownership-unresolved": 139,
       "ownership-confirmed": 748,
-      "retained-wakeup-declared-owner": 590,
+      "retained-wakeup-declared-owner": 589,
       "retained-wakeup-662-declared-owner": 1305,
-      "retained-shiguang-adapters-owner": 55,
+      "retained-shiguang-adapters-owner": 56,
       "retained-shiguang-declared-owner": 42,
       "withheld-new-unproven-owner": 53,
       "withheld-domain-collision": 88,
@@ -11492,9 +11492,9 @@
         "catalogId": "moe:4137011065",
         "name": "青岛大学",
         "ownershipStatus": "unknown",
-        "action": "retained-wakeup-declared-owner",
-        "operationalUrl": "http://xjw.qdu.edu.cn",
-        "authenticatedImportTested": false
+        "action": "retained-shiguang-adapters-owner",
+        "operationalUrl": "https://xjw.qdu.edu.cn/",
+        "authenticatedImportTested": true
       },
       {
         "catalogId": "moe:4137011066",

@@ -28244,9 +28244,9 @@
   {
     "sortKey": "Q",
     "name": "青岛大学",
-    "url": "http://xjw.qdu.edu.cn",
-    "type": "qz",
-    "status": "unverified",
+    "url": "https://xjw.qdu.edu.cn/",
+    "type": "sg_asset",
+    "status": "supported",
     "aliases": [],
     "sortKeyFull": "qingdaodaxue",
     "enableFetch": false,
