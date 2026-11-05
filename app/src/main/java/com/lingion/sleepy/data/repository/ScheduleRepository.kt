@@ -186,6 +186,42 @@ class ScheduleRepository(private val db: AppDatabase) {
         return added
     }
 
+    /** Replace a timetable's course rows atomically while preserving its timetable settings. */
+    suspend fun updateImportedCourses(tableId: Long, courses: List<CourseEntity>) {
+        db.withTransaction {
+            val table = tableDao.getById(tableId) ?: error("Target timetable no longer exists")
+            captureForUndo()
+            val existing = courseDao.getByTable(tableId)
+            val generatedGroups = mutableMapOf<String, String>()
+            val rows = courses.map { course ->
+                val group = course.groupId.ifBlank {
+                    generatedGroups.getOrPut(course.courseName.trim().lowercase()) { java.util.UUID.randomUUID().toString() }
+                }
+                course.copy(id = 0, tableId = tableId, groupId = group)
+            }
+            val retainedIds = courses.mapNotNull { it.id.takeIf { id -> id > 0 } }.toSet()
+            val deletedIds = existing.map { it.id }.filterNot(retainedIds::contains)
+            if (deletedIds.isNotEmpty()) courseDao.deleteByIds(deletedIds)
+            val updates = courses.filter { it.id > 0 }.map { course ->
+                val group = course.groupId.ifBlank {
+                    generatedGroups.getOrPut(course.courseName.trim().lowercase()) { java.util.UUID.randomUUID().toString() }
+                }
+                course.copy(tableId = tableId, groupId = group)
+            }
+            if (updates.isNotEmpty()) courseDao.updateAll(updates)
+            val inserts = rows.filterIndexed { index, _ -> courses[index].id <= 0 }
+            if (inserts.isNotEmpty()) courseDao.insertAll(inserts)
+            com.lingion.sleepy.util.CourseColorWriteGlue.persistNewGroupHues(
+                SleepyApp.get(), db.courseColorDao(), inserts
+            )
+            tableDao.update(table.copy(
+                maxWeek = maxOf(table.maxWeek, rows.maxOfOrNull { it.endWeek } ?: table.maxWeek),
+                nodesPerDay = maxOf(table.nodesPerDay, rows.maxOfOrNull { it.startNode + it.step - 1 } ?: table.nodesPerDay)
+            ))
+        }
+        onDataChanged()
+    }
+
     suspend fun getDefaultTable(): TimeTableEntity? = tableDao.getDefault()
 
     suspend fun insertTable(table: TimeTableEntity): Long {

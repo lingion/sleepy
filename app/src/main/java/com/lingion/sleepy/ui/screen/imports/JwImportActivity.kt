@@ -60,6 +60,8 @@ import com.lingion.sleepy.data.jw.JwParseDiagnostics
 import com.lingion.sleepy.data.jw.JwProtocol
 import com.lingion.sleepy.data.jw.JwSchoolInfo
 import com.lingion.sleepy.data.jw.UcasDetailFetch
+import com.lingion.sleepy.data.diff.CourseUpdateDiff
+import com.lingion.sleepy.data.diff.diffImportedCourses
 import com.lingion.sleepy.data.parser.ScheduleParser
 import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.DialogActionButtons
@@ -95,6 +97,7 @@ class JwImportActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_TARGET_TABLE_ID = "extra_target_table_id"
+        const val EXTRA_UPDATE_TABLE = "extra_update_table"
         const val EXTRA_DRAFT_ID = "extra_import_draft_id"
     }
 
@@ -130,6 +133,7 @@ class JwImportActivity : ComponentActivity() {
                 val draftRepository = SleepyApp.get().importDraftRepository
                 val incomingDraftId = intent.getStringExtra(EXTRA_DRAFT_ID)
                 val targetTableId = intent.getLongExtra(EXTRA_TARGET_TABLE_ID, 0L)
+                val updateMode = intent.getBooleanExtra(EXTRA_UPDATE_TABLE, false)
                 // 组合树, 滚动位置/搜索词全部销毁。各 stage 分支内容包独立 key 的
                 // SaveableStateProvider(key = stage 类名), WebView 登录返回学校列表时
                 // 列表滚动位置与 rememberSaveable 态原样恢复。
@@ -153,6 +157,7 @@ class JwImportActivity : ComponentActivity() {
                 var importFinished by remember { mutableStateOf(false) }
                 var isApplying by remember { mutableStateOf(false) }
                 var importPreview by remember { mutableStateOf<ImportPreview?>(null) }
+                var updateDiff by remember { mutableStateOf<CourseUpdateDiff?>(null) }
                 // 2026-10-26 用户定令: 加课路(Stage.Preview 仅在 targetTableId>0 时到达)
                 // 解析后先逐组勾选, 确认后才进 ImportPreviewDialog。
                 var courseSelectionDone by remember { mutableStateOf(false) }
@@ -279,6 +284,12 @@ class JwImportActivity : ComponentActivity() {
                     )
                     // A rejected append must keep the preview and its recoverable draft.
                     if (imported) finishOrReport(selectedSchool ?: parsedSchool)
+                }
+
+                suspend fun applyTableUpdate(preview: ImportPreview) {
+                    val diff = updateDiff ?: return
+                    SleepyApp.get().repository.updateImportedCourses(targetTableId, diff.merged)
+                    finishOrReport(selectedSchool ?: parsedSchool)
                 }
                 // 错误弹窗「导出排查全量包」— DOM 可点元素清单点按钮时现抓(页面还在,
                 // 弹窗不关页), zip 组装落 IO 线程, 成功即拉系统分享面板(2A 动线)。
@@ -532,7 +543,7 @@ class JwImportActivity : ComponentActivity() {
                                 configTimeJson = TimeTableUtils.buildTimeJsonFromRows(
                                     effectiveRows.filter { it.start.isNotBlank() && it.end.isNotBlank() }
                                 )
-                                importPreview = buildImportPreview(
+                                val builtPreview = buildImportPreview(
                                     parseResult = ScheduleParser.ParseResult(
                                         tableName = configTableName,
                                         startDate = configStartDate,
@@ -544,13 +555,45 @@ class JwImportActivity : ComponentActivity() {
                                     tableId = targetId,
                                     context = this@JwImportActivity
                                 )
+                                importPreview = builtPreview
+                                if (updateMode) {
+                                    updateDiff = diffImportedCourses(
+                                        builtPreview.existingCourses,
+                                        builtPreview.parseResult.courses
+                                    )
+                                }
                             } catch (e: Exception) {
                                 errorMsg = getString(R.string.jw_parse_failed, e.message ?: "")
                             }
                         }
                         BackHandler { requestExit() }
                         importPreview?.let { preview ->
-                            if (!courseSelectionDone) {
+                            if (updateMode) {
+                                val diff = updateDiff
+                                if (diff != null) {
+                                    AlertDialog(
+                                        onDismissRequest = { requestExit() },
+                                        title = { Text(stringResource(R.string.update_from_jw_title)) },
+                                        text = {
+                                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                Text(stringResource(R.string.update_from_jw_summary, diff.added.size, diff.changed.size, diff.removed.size))
+                                                if (diff.added.isEmpty() && diff.changed.isEmpty() && diff.removed.isEmpty()) {
+                                                    Text(stringResource(R.string.update_from_jw_no_changes))
+                                                }
+                                            }
+                                        },
+                                        confirmButton = {
+                                            TextButton(enabled = !isApplying && (diff.added.isNotEmpty() || diff.changed.isNotEmpty() || diff.removed.isNotEmpty()), onClick = {
+                                                if (!isApplying) scope.launch {
+                                                    isApplying = true
+                                                    try { applyTableUpdate(preview) } catch (e: Exception) { errorMsg = getString(R.string.jw_parse_failed, e.message ?: "") } finally { isApplying = false }
+                                                }
+                                            }) { Text(stringResource(R.string.update_from_jw_confirm)) }
+                                        },
+                                        dismissButton = { TextButton(onClick = { requestExit() }) { Text(stringResource(R.string.cancel)) } }
+                                    )
+                                }
+                            } else if (!courseSelectionDone) {
                                 // 加课路第一步: 逐组勾选要添加的课程; 确认前不进冲突决策框。
                                 CourseSelectionSheet(
                                     parseResult = preview.parseResult,

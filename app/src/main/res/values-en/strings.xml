@@ -1,4 +1,9 @@
 <resources>
+    <string name="update_from_jw">Update from school</string>
+    <string name="update_from_jw_title">Confirm timetable update</string>
+    <string name="update_from_jw_summary">Added %1$d, changed %2$d, removed %3$d</string>
+    <string name="update_from_jw_no_changes">No timetable changes found</string>
+    <string name="update_from_jw_confirm">Update</string>
     <string name="app_name">Sleepy Schedule</string>
     <string name="widget_today_label">Today\'s Classes</string>
     <string name="widget_today_wide_label">Today · Medium</string>

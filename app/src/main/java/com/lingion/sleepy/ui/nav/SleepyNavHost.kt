@@ -265,10 +265,16 @@ internal fun SleepyNavHost(
         }
 
         entry<SleepyRoute.AllTables> {
+            val context = LocalContext.current
             AllTablesScreen(
                 onBack = { navigator.pop() },
                 onCreateNewTable = onCreateNewTable,
                 onOpenEditTable = { tableId -> navigator.openEditTable(tableId = tableId) },
+                onUpdateFromJw = { tableId ->
+                    context.startActivity(android.content.Intent(context, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java)
+                        .putExtra(com.lingion.sleepy.ui.screen.imports.JwImportActivity.EXTRA_TARGET_TABLE_ID, tableId)
+                        .putExtra(com.lingion.sleepy.ui.screen.imports.JwImportActivity.EXTRA_UPDATE_TABLE, true))
+                },
             )
         }
 
