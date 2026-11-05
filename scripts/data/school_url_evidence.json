@@ -57047,22 +57047,20 @@
     {
       "catalogId": "moe:4137011065",
       "name": "青岛大学",
-      "url": "http://xjw.qdu.edu.cn",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
+      "url": "https://xjw.qdu.edu.cn/",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-11-05",
       "http": 200,
-      "finalUrl": "http://xjw.qdu.edu.cn",
+      "finalUrl": "https://xjw.qdu.edu.cn/",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
       "title": "登录",
       "probeError": null,
-      "availability": "public-page",
-      "authenticatedImportTested": false,
-      "defects": [
-        "Entry page identity does not name this school; ownership unproven."
-      ]
+      "availability": "authenticated-import-tested",
+      "authenticatedImportTested": true,
+      "defects": []
     },
     {
       "catalogId": "moe:4137014666",

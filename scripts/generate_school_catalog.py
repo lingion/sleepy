@@ -15,6 +15,9 @@ def read(name):
  if findings:raise ValueError('Unsanitized URL parameters in '+name+': '+str(findings))
  return value
 def encoded(data):return json.dumps(data,ensure_ascii=False,indent=2)+chr(10)
+def source_digest(path):
+ raw=path.read_bytes().replace(b'\r\n',b'\n').replace(b'\r',b'\n')
+ return hashlib.sha256(raw).hexdigest()
 def norm(name):return name.strip()
 def is_grad(name):return '研究生' in name
 
@@ -38,7 +41,7 @@ def generate():
   name=canonical(src['name']);row=by_name.get(name)
   if row is None: row=make(name,'wakeup:'+hashlib.sha256(('wakeup-school-v1'+chr(0)+name).encode()).hexdigest()[:20],src.get('sortKey'))
   source_links[key(row)].append({'sourceId':src['sourceId'],'sourceRow':src['sourceRow'],'match':'explicit-rename' if name!=norm(src['name']) else 'trimmed-exact-name','sourceName':src['sourceName']})
- # Admissions are explicit, reviewed current public-page evidence. Never supported/verified.
+  # Public-page evidence stays unverified; explicit authenticated-import reports may promote it.
  baseline_names={norm(x['name']) for x in baseline}; accepted=[]
  for decision in admissions:
   name=canonical(decision['name']);row=by_name.get(name)
@@ -46,8 +49,9 @@ def generate():
   url=decision['probe']['finalUrl']
   mapped=decision['mappedType']
   if not url or mapped not in ROUTABLE_PROTOCOL_TYPES:continue  # no declared parser: stays pending, never operational
-  row.update(url=url,type=mapped,status='grad_unverified' if is_grad(name) else 'unverified',enableFetch=False)
-  accepted.append({'catalogId':key(row),'name':name,'url':url,'type':row['type'],'sourceId':decision['sourceId'],'sourceRow':decision['sourceRow'],'checkedAt':decision['probe']['checkedAt'],'http':decision['probe']['http'],'title':decision['probe'].get('title'),'fingerprints':decision['probe'].get('fingerprints',[]),'limitation':decision['verification']})
+  verified=decision.get('authenticatedImportTested') is True and decision.get('status')=='supported' and bool(decision.get('verification'))
+  row.update(url=url,type=mapped,status=('grad_supported' if is_grad(name) else 'supported') if verified else ('grad_unverified' if is_grad(name) else 'unverified'),enableFetch=False)
+  accepted.append({'catalogId':key(row),'name':name,'url':url,'type':row['type'],'sourceId':decision['sourceId'],'sourceRow':decision['sourceRow'],'checkedAt':decision['probe']['checkedAt'],'http':decision['probe']['http'],'title':decision['probe'].get('title'),'fingerprints':decision['probe'].get('fingerprints',[]),**({'authenticatedImportTested':True} if verified else {}),'limitation':decision['verification']})
  assert rows[:len(baseline)]==baseline,'Existing school fields changed before ownership review'
  ownership=apply_ownership(rows,read('school_url_evidence.json'),baseline_names,renames,head_rows=domain_reference)
  decisions={x['catalogId']:x for x in ownership}
@@ -58,11 +62,12 @@ def generate():
  assert all(x['name'] in by_name for x in official)
  assert all(canonical(x['name']) in by_name for x in wakeup['records'])
  assert all(not x['url'] and x['type'] is None for x in rows if x.get('status') in ('pending','grad_pending'))
- assert all(x.get('status') not in ('supported','grad_supported') for x in rows[len(baseline):])
+ verified_ids={key(by_name[canonical(x['name'])]) for x in admissions if x.get('authenticatedImportTested') is True and x.get('status')=='supported' and x.get('verification')}
+ assert all(x.get('status') not in ('supported','grad_supported') or key(x) in verified_ids for x in rows[len(baseline):])
  sources=[]
  for source_file in ('school_catalog_baseline.json','official_schools.json','wakeup_school_sources.json','school_catalog_pinyin.json','school_import_admissions.json','school_catalog_renames.json','school_url_evidence.json','school_catalog_domain_reference.json'):
   path=DATA/source_file
-  sources.append({'path':str(path.relative_to(ROOT)),'sha256':hashlib.sha256(path.read_bytes()).hexdigest()})
+  sources.append({'path':path.relative_to(ROOT).as_posix(),'sha256':source_digest(path)})
  manifest={'generatedAsOf':'2026-10-14','baselineCount':len(baseline),'catalogCount':len(rows),'statusCounts':dict(Counter(x.get('status','supported') for x in rows)),'sourceCounts':{'official':len(official),'wakeupSchoolSourceRows':len(wakeup['records']),'wakeupExcludedTemplateRows':len(wakeup['excludedTemplates'])},'coverage':{'officialMissing':[],'wakeupMissing':[]},'sources':sources,'matchingPolicy':'Exact trimmed full names plus reviewed school_catalog_renames.json; no fuzzy aliases or graduate/campus suffix removal. Historical source rows remain independently traceable.','sourceLinks':{k:official_links[k]+source_links[k] for k in ids if official_links[k] or source_links[k]}}
  manifest['ownershipAudit']={'evidenceCounts':dict(Counter(x['ownershipStatus'] for x in ownership)), 'actions':dict(Counter(x['action'] for x in ownership)), 'decisions':ownership}
  links=manifest.pop('sourceLinks');return rows,manifest,accepted,links

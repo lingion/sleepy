@@ -34197,18 +34197,19 @@
   {
     "catalogId": "moe:4137011065",
     "name": "青岛大学",
-    "url": "http://xjw.qdu.edu.cn",
-    "type": "qz",
+    "url": "https://xjw.qdu.edu.cn/",
+    "type": "sg_asset",
     "sourceId": "wakeup-52.36-user-attachment",
     "sourceRow": 789,
-    "checkedAt": "2026-10-16",
+    "checkedAt": "2026-11-05",
     "http": 200,
     "title": "登录",
     "fingerprints": [
       "qz"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "ownershipAction": "retained-wakeup-declared-owner"
+    "authenticatedImportTested": true,
+    "limitation": "User confirmed successful authenticated timetable import using the QDU-specific ShiGuang adapter on 2026-11-05.",
+    "ownershipAction": "retained-shiguang-adapters-owner"
   },
   {
     "catalogId": "moe:4237051858",
