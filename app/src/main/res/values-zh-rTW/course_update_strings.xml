@@ -1,0 +1,7 @@
+<resources>
+    <string name="update_from_jw">從教務更新</string>
+    <string name="update_from_jw_title">確認更新課表</string>
+    <string name="update_from_jw_summary">新增 %1$d 門，變更 %2$d 門，取消 %3$d 門</string>
+    <string name="update_from_jw_no_changes">教務課表沒有變化</string>
+    <string name="update_from_jw_confirm">確認更新</string>
+</resources>

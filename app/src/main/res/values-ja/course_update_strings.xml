@@ -1,0 +1,7 @@
+<resources>
+    <string name="update_from_jw">教務システムから更新</string>
+    <string name="update_from_jw_title">時間割の更新を確認</string>
+    <string name="update_from_jw_summary">追加 %1$d 件、変更 %2$d 件、削除 %3$d 件</string>
+    <string name="update_from_jw_no_changes">時間割に変更はありません</string>
+    <string name="update_from_jw_confirm">更新</string>
+</resources>

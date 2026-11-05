@@ -21,6 +21,7 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,6 +51,7 @@ fun AllTablesScreen(
     onBack: () -> Unit,
     onCreateNewTable: () -> Unit,
     onOpenEditTable: (Long) -> Unit,
+    onUpdateFromJw: (Long) -> Unit,
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -154,6 +156,9 @@ fun AllTablesScreen(
                             tint = colors.onSurfaceVariant,
                             modifier = Modifier.size(20.dp)
                         )
+                    }
+                    IconButton(onClick = { onUpdateFromJw(table.id) }) {
+                        Icon(Icons.Outlined.Refresh, contentDescription = stringResource(R.string.update_from_jw), tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
                     }
                     IconButton(onClick = { onOpenEditTable(table.id) }) {
                         Icon(
