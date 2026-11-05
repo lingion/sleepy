@@ -288,7 +288,9 @@ class JwImportActivity : ComponentActivity() {
 
                 suspend fun applyTableUpdate(preview: ImportPreview) {
                     val diff = updateDiff ?: return
-                    SleepyApp.get().repository.updateImportedCourses(targetTableId, diff.merged)
+                    SleepyApp.get().repository.updateImportedCourses(
+                        targetTableId, diff.merged, preview.parseResult.timeJson
+                    )
                     finishOrReport(selectedSchool ?: parsedSchool)
                 }
                 // 错误弹窗「导出排查全量包」— DOM 可点元素清单点按钮时现抓(页面还在,

@@ -187,7 +187,11 @@ class ScheduleRepository(private val db: AppDatabase) {
     }
 
     /** Replace a timetable's course rows atomically while preserving its timetable settings. */
-    suspend fun updateImportedCourses(tableId: Long, courses: List<CourseEntity>) {
+    suspend fun updateImportedCourses(
+        tableId: Long,
+        courses: List<CourseEntity>,
+        incomingTimeJson: String = "",
+    ) {
         db.withTransaction {
             val table = tableDao.getById(tableId) ?: error("Target timetable no longer exists")
             val existing = courseDao.getByTable(tableId)
@@ -196,6 +200,12 @@ class ScheduleRepository(private val db: AppDatabase) {
             require(retained.size == retained.toSet().size && retained.all(existingIds::contains)) {
                 "Updated course IDs must be unique and belong to the target timetable"
             }
+            val bound = table.periodTableId?.let { periodTableDao.getById(it) }
+            val effective = table.hydratedWith(bound)
+            val extended = com.lingion.sleepy.util.CourseImportPolicy.mergeTimeJson(
+                effective.timeJson, incomingTimeJson,
+                maxOf(effective.nodesPerDay, courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0)
+            )
             captureForUndo()
             val generatedGroups = mutableMapOf<String, String>()
             val rows = courses.map { course ->
@@ -214,9 +224,17 @@ class ScheduleRepository(private val db: AppDatabase) {
             com.lingion.sleepy.util.CourseColorWriteGlue.persistNewGroupHues(
                 SleepyApp.get(), db.courseColorDao(), inserts
             )
+            val maxNode = com.lingion.sleepy.util.TimeTableUtils.parseTimeSlotRows(extended)
+                .maxOfOrNull { it.node } ?: effective.nodesPerDay
+            if (bound != null && (extended != bound.timeJson || maxNode != bound.nodesPerDay)) {
+                periodTableDao.update(bound.copy(
+                    timeJson = extended, nodesPerDay = maxNode, updatedAt = AppClock.millis()
+                ))
+            }
             tableDao.update(table.copy(
                 maxWeek = maxOf(table.maxWeek, rows.maxOfOrNull { it.endWeek } ?: table.maxWeek),
-                nodesPerDay = maxOf(table.nodesPerDay, rows.maxOfOrNull { it.startNode + it.step - 1 } ?: table.nodesPerDay)
+                timeJson = if (bound == null) extended else table.timeJson,
+                nodesPerDay = if (bound == null) maxNode else table.nodesPerDay,
             ))
         }
         onDataChanged()
