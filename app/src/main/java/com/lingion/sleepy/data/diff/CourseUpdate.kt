@@ -1,6 +1,7 @@
 package com.lingion.sleepy.data.diff
 
 import com.lingion.sleepy.data.entity.CourseEntity
+import com.lingion.sleepy.data.entity.CourseColorMode
 
 data class CourseUpdateDiff(
     val added: List<CourseEntity>,
@@ -12,25 +13,48 @@ data class CourseUpdateDiff(
 private fun CourseEntity.identityKey(): String =
     listOf(courseName.trim().lowercase(), day, startNode, step, startWeek, endWeek, type).joinToString("|")
 
-/** Matches stable rows first, then a unique name/day candidate; ambiguous rows stay add/remove. */
+/** 全量精确匹配优先；仅双向唯一的名称/星期候选允许回退，避免输入顺序串换本地字段。 */
 fun diffImportedCourses(existing: List<CourseEntity>, incoming: List<CourseEntity>): CourseUpdateDiff {
     val remaining = existing.toMutableList()
+    val matches = mutableMapOf<Int, CourseEntity>()
+    incoming.forEachIndexed { index, fresh ->
+        remaining.firstOrNull { it.identityKey() == fresh.identityKey() }?.let {
+            matches[index] = it
+            remaining.remove(it)
+        }
+    }
+    val unmatched = incoming.indices.filterNot(matches::containsKey)
+        .groupBy { incoming[it].courseName.trim().lowercase() to incoming[it].day }
+    unmatched.forEach { (key, indices) ->
+        if (indices.size == 1) {
+            remaining.filter { (it.courseName.trim().lowercase() to it.day) == key }
+                .singleOrNull()?.let {
+                    matches[indices.single()] = it
+                    remaining.remove(it)
+                }
+        }
+    }
+    // 新增节次继承唯一已有课程组；组别名/组色可继承，逐行备注和自定义时间不能复制。
+    val groupsByName = existing.groupBy { it.courseName.trim().lowercase() }
+        .mapValues { (_, rows) ->
+            rows.takeIf { it.map { row -> row.groupId }.distinct().size == 1 && it.first().groupId.isNotBlank() }
+        }
     val added = mutableListOf<CourseEntity>()
     val changed = mutableListOf<Pair<CourseEntity, CourseEntity>>()
     val merged = mutableListOf<CourseEntity>()
-    incoming.forEach { fresh ->
-        val exact = remaining.firstOrNull { it.identityKey() == fresh.identityKey() }
-        val candidate = exact ?: run {
-            val matches = remaining.filter {
-                it.courseName.trim().equals(fresh.courseName.trim(), true) && it.day == fresh.day
-            }
-            matches.singleOrNull()
-        }
+    incoming.forEachIndexed { index, fresh ->
+        val candidate = matches[index]
         if (candidate == null) {
-            added += fresh
-            merged += fresh
+            val group = groupsByName[fresh.courseName.trim().lowercase()]
+            val newRow = fresh.copy(
+                id = 0,
+                groupId = group?.first()?.groupId ?: fresh.groupId,
+                alias = group?.first()?.alias ?: fresh.alias,
+                color = group?.firstOrNull { it.colorMode == CourseColorMode.GROUP }?.color ?: fresh.color,
+            )
+            added += newRow
+            merged += newRow
         } else {
-            remaining.remove(candidate)
             val preserved = fresh.copy(
                 id = candidate.id, groupId = candidate.groupId,
                 alias = candidate.alias, note = candidate.note,

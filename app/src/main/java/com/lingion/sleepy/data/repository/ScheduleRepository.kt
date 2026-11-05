@@ -190,26 +190,26 @@ class ScheduleRepository(private val db: AppDatabase) {
     suspend fun updateImportedCourses(tableId: Long, courses: List<CourseEntity>) {
         db.withTransaction {
             val table = tableDao.getById(tableId) ?: error("Target timetable no longer exists")
-            captureForUndo()
             val existing = courseDao.getByTable(tableId)
+            val existingIds = existing.map { it.id }.toSet()
+            val retained = courses.filter { it.id > 0 }.map { it.id }
+            require(retained.size == retained.toSet().size && retained.all(existingIds::contains)) {
+                "Updated course IDs must be unique and belong to the target timetable"
+            }
+            captureForUndo()
             val generatedGroups = mutableMapOf<String, String>()
             val rows = courses.map { course ->
                 val group = course.groupId.ifBlank {
                     generatedGroups.getOrPut(course.courseName.trim().lowercase()) { java.util.UUID.randomUUID().toString() }
                 }
-                course.copy(id = 0, tableId = tableId, groupId = group)
+                course.copy(id = course.id.coerceAtLeast(0), tableId = tableId, groupId = group)
             }
             val retainedIds = courses.mapNotNull { it.id.takeIf { id -> id > 0 } }.toSet()
             val deletedIds = existing.map { it.id }.filterNot(retainedIds::contains)
             if (deletedIds.isNotEmpty()) courseDao.deleteByIds(deletedIds)
-            val updates = courses.filter { it.id > 0 }.map { course ->
-                val group = course.groupId.ifBlank {
-                    generatedGroups.getOrPut(course.courseName.trim().lowercase()) { java.util.UUID.randomUUID().toString() }
-                }
-                course.copy(tableId = tableId, groupId = group)
-            }
+            val updates = rows.filter { it.id > 0 }
             if (updates.isNotEmpty()) courseDao.updateAll(updates)
-            val inserts = rows.filterIndexed { index, _ -> courses[index].id <= 0 }
+            val inserts = rows.filter { it.id == 0L }
             if (inserts.isNotEmpty()) courseDao.insertAll(inserts)
             com.lingion.sleepy.util.CourseColorWriteGlue.persistNewGroupHues(
                 SleepyApp.get(), db.courseColorDao(), inserts
