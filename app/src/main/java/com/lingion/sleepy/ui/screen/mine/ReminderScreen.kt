@@ -1511,8 +1511,7 @@ private fun ReminderReliabilityCard(
                 stringResource(R.string.reminder_reliability_notification,
                     stringResource(if (snapshot.notificationPermissionGranted) R.string.reminder_reliability_ready else R.string.reminder_reliability_missing)),
                 modifier = Modifier.fillMaxWidth()
-                    .then(if (snapshot.notificationPermissionGranted) Modifier else Modifier.noRippleClickable(onNotificationPermission))
-                    .padding(vertical = 12.dp),
+                    .then(if (snapshot.notificationPermissionGranted) Modifier else Modifier.noRippleClickable(onNotificationPermission)),
                 style = MaterialTheme.typography.bodySmall,
                 color = if (snapshot.notificationPermissionGranted) colors.onSurfaceVariant else colors.primary,
             )
@@ -1523,8 +1522,7 @@ private fun ReminderReliabilityCard(
                         else -> if (snapshot.exactAlarmAllowed) R.string.reminder_reliability_ready else R.string.reminder_reliability_missing
                     })),
                 modifier = Modifier.fillMaxWidth()
-                    .then(if (snapshot.exactAlarmAllowed) Modifier else Modifier.noRippleClickable(onExactAlarmSettings))
-                    .padding(vertical = 12.dp),
+                    .then(if (snapshot.exactAlarmAllowed) Modifier else Modifier.noRippleClickable(onExactAlarmSettings)),
                 style = MaterialTheme.typography.bodySmall,
                 color = if (snapshot.exactAlarmAllowed) colors.onSurfaceVariant else colors.primary,
             )
@@ -1532,8 +1530,7 @@ private fun ReminderReliabilityCard(
                 stringResource(R.string.reminder_reliability_battery,
                     stringResource(if (snapshot.batteryOptimizationIgnored) R.string.reminder_reliability_ready else R.string.reminder_reliability_missing)),
                 modifier = Modifier.fillMaxWidth()
-                    .then(if (snapshot.batteryOptimizationIgnored) Modifier else Modifier.noRippleClickable(onBatterySettings))
-                    .padding(vertical = 12.dp),
+                    .then(if (snapshot.batteryOptimizationIgnored) Modifier else Modifier.noRippleClickable(onBatterySettings)),
                 style = MaterialTheme.typography.bodySmall,
                 color = if (snapshot.batteryOptimizationIgnored) colors.onSurfaceVariant else colors.primary,
             )
