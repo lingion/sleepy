@@ -41,7 +41,7 @@ def generate():
   name=canonical(src['name']);row=by_name.get(name)
   if row is None: row=make(name,'wakeup:'+hashlib.sha256(('wakeup-school-v1'+chr(0)+name).encode()).hexdigest()[:20],src.get('sortKey'))
   source_links[key(row)].append({'sourceId':src['sourceId'],'sourceRow':src['sourceRow'],'match':'explicit-rename' if name!=norm(src['name']) else 'trimmed-exact-name','sourceName':src['sourceName']})
- # Admissions are explicit, reviewed current public-page evidence. Never supported/verified.
+  # Public-page evidence stays unverified; explicit authenticated-import reports may promote it.
  baseline_names={norm(x['name']) for x in baseline}; accepted=[]
  for decision in admissions:
   name=canonical(decision['name']);row=by_name.get(name)
