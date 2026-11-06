@@ -46,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.SleepyApp
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.SmartPeriodConfig
 import com.lingion.sleepy.data.jw.JwCourse
@@ -59,6 +60,8 @@ import com.lingion.sleepy.data.jw.JwParseDiagnostics
 import com.lingion.sleepy.data.jw.JwProtocol
 import com.lingion.sleepy.data.jw.JwSchoolInfo
 import com.lingion.sleepy.data.jw.UcasDetailFetch
+import com.lingion.sleepy.data.diff.CourseUpdateDiff
+import com.lingion.sleepy.data.diff.diffImportedCourses
 import com.lingion.sleepy.data.parser.ScheduleParser
 import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.DialogActionButtons
@@ -94,6 +97,7 @@ class JwImportActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_TARGET_TABLE_ID = "extra_target_table_id"
+        const val EXTRA_UPDATE_TABLE = "extra_update_table"
         const val EXTRA_DRAFT_ID = "extra_import_draft_id"
     }
 
@@ -129,6 +133,7 @@ class JwImportActivity : ComponentActivity() {
                 val draftRepository = SleepyApp.get().importDraftRepository
                 val incomingDraftId = intent.getStringExtra(EXTRA_DRAFT_ID)
                 val targetTableId = intent.getLongExtra(EXTRA_TARGET_TABLE_ID, 0L)
+                val updateMode = intent.getBooleanExtra(EXTRA_UPDATE_TABLE, false)
                 // 组合树, 滚动位置/搜索词全部销毁。各 stage 分支内容包独立 key 的
                 // SaveableStateProvider(key = stage 类名), WebView 登录返回学校列表时
                 // 列表滚动位置与 rememberSaveable 态原样恢复。
@@ -152,6 +157,7 @@ class JwImportActivity : ComponentActivity() {
                 var importFinished by remember { mutableStateOf(false) }
                 var isApplying by remember { mutableStateOf(false) }
                 var importPreview by remember { mutableStateOf<ImportPreview?>(null) }
+                var updateDiff by remember { mutableStateOf<CourseUpdateDiff?>(null) }
                 // 2026-10-26 用户定令: 加课路(Stage.Preview 仅在 targetTableId>0 时到达)
                 // 解析后先逐组勾选, 确认后才进 ImportPreviewDialog。
                 var courseSelectionDone by remember { mutableStateOf(false) }
@@ -278,6 +284,14 @@ class JwImportActivity : ComponentActivity() {
                     )
                     // A rejected append must keep the preview and its recoverable draft.
                     if (imported) finishOrReport(selectedSchool ?: parsedSchool)
+                }
+
+                suspend fun applyTableUpdate(preview: ImportPreview) {
+                    val diff = updateDiff ?: return
+                    SleepyApp.get().repository.updateImportedCourses(
+                        targetTableId, diff.merged, preview.parseResult.timeJson
+                    )
+                    finishOrReport(selectedSchool ?: parsedSchool)
                 }
                 // 错误弹窗「导出排查全量包」— DOM 可点元素清单点按钮时现抓(页面还在,
                 // 弹窗不关页), zip 组装落 IO 线程, 成功即拉系统分享面板(2A 动线)。
@@ -531,7 +545,7 @@ class JwImportActivity : ComponentActivity() {
                                 configTimeJson = TimeTableUtils.buildTimeJsonFromRows(
                                     effectiveRows.filter { it.start.isNotBlank() && it.end.isNotBlank() }
                                 )
-                                importPreview = buildImportPreview(
+                                val builtPreview = buildImportPreview(
                                     parseResult = ScheduleParser.ParseResult(
                                         tableName = configTableName,
                                         startDate = configStartDate,
@@ -543,13 +557,45 @@ class JwImportActivity : ComponentActivity() {
                                     tableId = targetId,
                                     context = this@JwImportActivity
                                 )
+                                importPreview = builtPreview
+                                if (updateMode) {
+                                    updateDiff = diffImportedCourses(
+                                        builtPreview.existingCourses,
+                                        builtPreview.parseResult.courses
+                                    )
+                                }
                             } catch (e: Exception) {
                                 errorMsg = getString(R.string.jw_parse_failed, e.message ?: "")
                             }
                         }
                         BackHandler { requestExit() }
                         importPreview?.let { preview ->
-                            if (!courseSelectionDone) {
+                            if (updateMode) {
+                                val diff = updateDiff
+                                if (diff != null) {
+                                    AlertDialog(
+                                        onDismissRequest = { requestExit() },
+                                        title = { Text(stringResource(R.string.update_from_jw_title)) },
+                                        text = {
+                                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                Text(stringResource(R.string.update_from_jw_summary, diff.added.size, diff.changed.size, diff.removed.size))
+                                                if (diff.added.isEmpty() && diff.changed.isEmpty() && diff.removed.isEmpty()) {
+                                                    Text(stringResource(R.string.update_from_jw_no_changes))
+                                                }
+                                            }
+                                        },
+                                        confirmButton = {
+                                            TextButton(enabled = !isApplying && (diff.added.isNotEmpty() || diff.changed.isNotEmpty() || diff.removed.isNotEmpty()), onClick = {
+                                                if (!isApplying) scope.launch {
+                                                    isApplying = true
+                                                    try { applyTableUpdate(preview) } catch (e: Exception) { errorMsg = getString(R.string.jw_parse_failed, e.message ?: "") } finally { isApplying = false }
+                                                }
+                                            }) { Text(stringResource(R.string.update_from_jw_confirm)) }
+                                        },
+                                        dismissButton = { TextButton(onClick = { requestExit() }) { Text(stringResource(R.string.cancel)) } }
+                                    )
+                                }
+                            } else if (!courseSelectionDone) {
                                 // 加课路第一步: 逐组勾选要添加的课程; 确认前不进冲突决策框。
                                 CourseSelectionSheet(
                                     parseResult = preview.parseResult,
@@ -587,6 +633,7 @@ class JwImportActivity : ComponentActivity() {
                                     getString(R.string.jw_thu_skipped_courses, thuSkippedCount) else null,
                                 onDismiss = { requestExit() },
                                 isApplying = isApplying,
+                                dbgTagPrefix = "jw_preview",
                                 onApply = { decision ->
                                     if (!isApplying) {
                                         isApplying = true
@@ -647,6 +694,7 @@ class JwImportActivity : ComponentActivity() {
                                         onValueChange = { configStartDate = it; checkpointDraft() },
                                         label = getString(R.string.import_week_start),
                                         modifier = Modifier.fillMaxWidth(),
+                                        dbgTag = "jw_date_field",
                                         // 只在日期错误时标红; 节次错误标到节次区(2026-09-20 反馈: 节次错也标日期框误导)
                                         isError = confirmError != null && (configStartDate.isBlank() ||
                                             !Regex("""^\d{4}-\d{2}-\d{2}$""").matches(configStartDate))
@@ -660,6 +708,7 @@ class JwImportActivity : ComponentActivity() {
                                         label = { Text(getString(R.string.jw_table_name_label)) },
                                         singleLine = true,
                                         modifier = Modifier.fillMaxWidth()
+                                            .dbgTag("jw_name_field", text = getString(R.string.jw_table_name_label), role = "textbox")
                                     )
                                     if (confirmError != null) {
                                         Text(text = confirmError!!, color = colors.error, style = MaterialTheme.typography.bodySmall)
@@ -690,12 +739,15 @@ class JwImportActivity : ComponentActivity() {
                                             })
                                         },
                                         selectedPeriodTableId = configBindPeriodTableId,
-                                        onSelectPeriodTable = { configBindPeriodTableId = it }
+                                        onSelectPeriodTable = { configBindPeriodTableId = it },
+                                        dbgTagPrefix = "jw_confirm_slot"
                                     )
                                 }
                             },
                             confirmButton = {
-                                TextButton(enabled = !isApplying, onClick = {
+                                TextButton(enabled = !isApplying,
+                                    modifier = Modifier.dbgTag("jw_config_confirm", text = getString(R.string.import_confirm), role = "button"),
+                                    onClick = {
                                     if (isApplying) return@TextButton
                                     if (runCatching { java.time.LocalDate.parse(configStartDate) }.isFailure) {
                                         confirmError = getString(R.string.start_date_format)
@@ -770,7 +822,7 @@ class JwImportActivity : ComponentActivity() {
                             dismissButton = {
                                 TextButton(enabled = !isApplying, onClick = {
                                     requestExit()
-                                }) {
+                                }, modifier = Modifier.dbgTag("jw_config_cancel", text = getString(R.string.cancel), role = "button")) {
                                     Text(getString(R.string.cancel))
                                 }
                             }
@@ -996,6 +1048,7 @@ class JwImportActivity : ComponentActivity() {
                                     onThird = { launchQqGroupJoin(qqGroup) },
                                     dismissText = getString(R.string.jw_import_report_copy),
                                     onDismiss = { copyTextToClipboard(reportText, "jw_import_report") },
+                                    dbgTagPrefix = "jw_report",
                                 )
                             }
                         },
@@ -1029,6 +1082,7 @@ class JwImportActivity : ComponentActivity() {
                                     onConfirm = { errorMsg = null },
                                     thirdText = getString(R.string.jw_diag_export_btn),
                                     onThird = { exportDiagnosticDump(dumpSchool) },
+                                    dbgTagPrefix = "jw_err",
                                 )
                                 // 点击导出后在同一个错误弹窗内向下展开进度区 — 用户不离开
                                 // 当前问题上下文即可看到步骤、阶段文案和百分比。

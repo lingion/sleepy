@@ -84,6 +84,7 @@ import com.lingion.sleepy.data.jw.SchoolDomainMatch
 import com.lingion.sleepy.data.jw.SchoolCityIndex
 import com.lingion.sleepy.data.jw.SchoolSearchIndex
 import com.lingion.sleepy.data.jw.SchoolLocationState
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import kotlinx.coroutines.launch
@@ -112,16 +113,7 @@ private data class SchoolSection(
  * 使用 schools.json 中的 sortKeyFull 字段（完整拼音，如 "haerbingongchengdaxue"），
  * 保证同首字母内严格按拼音字典序排列（ha < hai < hang < he ... < hua < huanan）。
  */
-private fun schoolSortKey(s: JwSchoolInfo): String {
-    val firstLetter = if (s.sortKey.isNotEmpty() && s.sortKey[0].isLetter()) {
-        s.sortKey[0].uppercase()
-    } else {
-        "★"
-    }
-    // sortKeyFull 由 pypinyin 预生成，如 "haerbingongchengdaxue"
-    // 缺失时 fallback 到 name（自定义 URL 场景）
-    return "$firstLetter|${s.sortKeyFull.ifBlank { s.name }}"
-}
+private fun schoolSortKey(s: JwSchoolInfo): String = s.sortOrderKey
 
 /** 把扁平学校列表按完整拼音排序后，按首字母分组 */
 private fun groupByLetter(schools: List<JwSchoolInfo>): List<SchoolSection> {
@@ -269,7 +261,9 @@ fun SchoolSelectScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.select_school)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(
+                        modifier = Modifier.dbgTag("school_back", role = "button"),
+                        onClick = onBack) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
@@ -292,6 +286,7 @@ fun SchoolSelectScreen(
                 onValueChange = { query = it },
                 modifier = Modifier
                     .fillMaxWidth()
+                    .dbgTag("school_search", role = "textbox")
                     .focusRequester(searchFocusRequester)
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 placeholder = { Text(stringResource(R.string.search_school_url), color = colors.onSurfaceVariant) },
@@ -470,7 +465,9 @@ private fun PossibleSchoolsCard(
                 if (state == SchoolLocationState.Locating) {
                     CircularProgressIndicator(modifier = Modifier.padding(8.dp).size(20.dp), strokeWidth = 2.dp)
                 } else {
-                    TextButton(onClick = onLocate) {
+                    TextButton(
+                        modifier = Modifier.dbgTag("school_locate", role = "button"),
+                        onClick = onLocate) {
                         Text(stringResource(when (state) {
                             SchoolLocationState.Idle -> R.string.school_location_locate
                             SchoolLocationState.PermissionDenied -> R.string.school_location_enable
@@ -507,11 +504,15 @@ private fun PossibleSchoolsCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     if (state is SchoolLocationState.Ready && schools.size > 5) {
-                        TextButton(onClick = { expanded = !expanded }) {
+                        TextButton(
+                            modifier = Modifier.dbgTag("school_recommended_expand", role = "button"),
+                            onClick = { expanded = !expanded }) {
                             Text(stringResource(if (expanded) R.string.school_location_collapse else R.string.school_location_show_all))
                         }
                     }
-                    TextButton(onClick = onPermissionSettings) {
+                    TextButton(
+                        modifier = Modifier.dbgTag("school_permission_settings", role = "button"),
+                        onClick = onPermissionSettings) {
                         Text(stringResource(R.string.school_location_permission_settings))
                     }
                 }
@@ -533,6 +534,7 @@ private fun CustomUrlEntryRow(onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .noRippleClickable(onClick)
+            .dbgTag("school_custom_url_entry", text = stringResource(R.string.custom_url_entry), role = "button")
             .padding(vertical = 14.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -601,6 +603,7 @@ private fun AlphabetIndexBar(
 
     Box(
         modifier = modifier
+            .dbgTag("school_index_bar", role = "slider", clickable = false)
             .onGloballyPositioned { barCoords = it }
             .pointerInput(letters) {
                 awaitPointerEventScope {
@@ -659,6 +662,7 @@ private fun SchoolRow(school: JwSchoolInfo, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .noRippleClickable(onClick)
+            .dbgTag("school_item", text = school.name, role = "button")
             .padding(vertical = 14.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -763,6 +767,7 @@ private fun UrlDirectRow(url: String, protocolType: String?, matchedSchool: JwSc
         modifier = Modifier
             .fillMaxWidth()
             .noRippleClickable(onClick)
+            .dbgTag("school_url_direct", text = url, role = "button")
             .padding(vertical = 14.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

@@ -1,0 +1,3495 @@
+{
+  "schema_version": 1,
+  "audited_at": "2026-11-03",
+  "baseline": "3751fddb",
+  "scope": "Supplement to the existing school/protocol attribution cards. Includes current source imports and dependencies plus documented research references. Historical references are not assertions of code reuse.",
+  "groups": [
+    "sources",
+    "libraries",
+    "data",
+    "design",
+    "glass-research",
+    "vendor",
+    "background",
+    "protocol-research"
+  ],
+  "entries": [
+    {
+      "project": "appsfolder/livebridge",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/_cross-vendor/community-design-notes.md",
+        "docs/vendors/live-cards/_cross-vendor/opensource-replicas.md"
+      ],
+      "url": "https://github.com/appsfolder/livebridge",
+      "author": "appsfolder",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "appsfolder/livebridge"
+      },
+      "license": "GPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "1812z/HyperIsland",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/_cross-vendor/community-design-notes.md",
+        "docs/vendors/live-cards/_cross-vendor/opensource-replicas.md",
+        "docs/vendors/live-cards/xiaomi/REUSE.md",
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/1812z/HyperIsland",
+      "author": "1812z",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "1812z/HyperIsland"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "HMS-Core/hms-push-clientdemo-android",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/_cross-vendor/official-sample-repos.md",
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/HMS-Core/hms-push-clientdemo-android",
+      "author": "HMS-Core",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "HMS-Core/hms-push-clientdemo-android"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "HMS-Core/hms-pushkit-ohos-demo",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/_cross-vendor/official-sample-repos.md"
+      ],
+      "url": "https://github.com/HMS-Core/hms-pushkit-ohos-demo",
+      "author": "HMS-Core",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "HMS-Core/hms-pushkit-ohos-demo"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "D4vidDf/HyperBridge",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/_cross-vendor/opensource-replicas.md",
+        "docs/vendors/live-cards/xiaomi/REUSE.md",
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/D4vidDf/HyperBridge",
+      "author": "D4vidDf",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "D4vidDf/HyperBridge"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "abh80/smart-edge",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/_cross-vendor/opensource-replicas.md"
+      ],
+      "url": "https://github.com/abh80/smart-edge",
+      "author": "abh80",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "abh80/smart-edge"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "cengiztoru/JetIsland_Dynamic-Island-Jetpack-Compose",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations. The archived review used the inaccurate shorthand cengiztoru/JetIsland; the project link was corrected after repository search and metadata verification.",
+      "evidence": [
+        "docs/vendors/live-cards/_cross-vendor/opensource-replicas.md"
+      ],
+      "url": "https://github.com/cengiztoru/JetIsland_Dynamic-Island-Jetpack-Compose",
+      "author": "cengiztoru",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "Repository-name search and GitHub repository metadata; historical spelling retained",
+        "canonical": "cengiztoru/JetIsland_Dynamic-Island-Jetpack-Compose"
+      },
+      "license": "Not verified",
+      "kind": "research",
+      "historical_name": "cengiztoru/JetIsland"
+    },
+    {
+      "project": "Angel-Studio/MaterialYou-Dynamic-Island",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/_cross-vendor/opensource-replicas.md"
+      ],
+      "url": "https://github.com/Angel-Studio/MaterialYou-Dynamic-Island",
+      "author": "Angel-Studio",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "Angel-Studio/MaterialYou-Dynamic-Island"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "agupta07505/SmartIsland",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/_cross-vendor/opensource-replicas.md"
+      ],
+      "url": "https://github.com/agupta07505/SmartIsland",
+      "author": "agupta07505",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "agupta07505/SmartIsland"
+      },
+      "license": "GPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "EvanKoe/expressive-cutout",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/_cross-vendor/opensource-replicas.md"
+      ],
+      "url": "https://github.com/EvanKoe/expressive-cutout",
+      "author": "EvanKoe",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "EvanKoe/expressive-cutout"
+      },
+      "license": "GPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "TheSerphh/NothingLand",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/_cross-vendor/opensource-replicas.md"
+      ],
+      "url": "https://github.com/sginit/NothingLand",
+      "author": "TheSerphh",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "sginit/NothingLand"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "clearw5/Dynamic-Island.js",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/_cross-vendor/opensource-replicas.md"
+      ],
+      "url": "https://github.com/clearw5/Dynamic-Island.js",
+      "author": "clearw5",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "clearw5/Dynamic-Island.js"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "NoobDigital/react-native-dynamic-island",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/_cross-vendor/opensource-replicas.md"
+      ],
+      "url": "https://github.com/NoobDigital/react-native-dynamic-island",
+      "author": "NoobDigital",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "NoobDigital/react-native-dynamic-island"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "MarcoZorn/lost-island",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/_cross-vendor/opensource-replicas.md"
+      ],
+      "url": "https://github.com/MarcoZorn/lost-island",
+      "author": "MarcoZorn",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "MarcoZorn/lost-island"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "HONORDevelopers/suggestionskit-demo",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/honor/REUSE.md"
+      ],
+      "url": "https://github.com/HONORDevelopers/suggestionskit-demo",
+      "author": "HONORDevelopers",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "HONORDevelopers/suggestionskit-demo"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "liasica/harmonyos-skills",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/huawei/REUSE.md"
+      ],
+      "url": "https://github.com/liasica/harmonyos-skills",
+      "author": "liasica",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "liasica/harmonyos-skills"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "HMS-Core/hms-push-serverdemo-java",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/huawei/REUSE.md",
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/HMS-Core/hms-push-serverdemo-java",
+      "author": "HMS-Core",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "HMS-Core/hms-push-serverdemo-java"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "yonglunyao/harmonyos-docs-fetcher",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/huawei/REUSE.md"
+      ],
+      "url": "https://github.com/yonglunyao/harmonyos-docs-fetcher",
+      "author": "yonglunyao",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "yonglunyao/harmonyos-docs-fetcher"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "Ruyue-Kinsenka/Flyme-Live-Notification-Demo",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/meizu/REUSE.md",
+        "docs/vendors/live-cards/meizu/community-notes.md",
+        "docs/vendors/live-cards/meizu/live-notification-api.md"
+      ],
+      "url": "https://github.com/Ruyue-Kinsenka/Flyme-Live-Notification-Demo",
+      "author": "Ruyue-Kinsenka",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "Ruyue-Kinsenka/Flyme-Live-Notification-Demo"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "BryceWG/Pinme",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/meizu/REUSE.md"
+      ],
+      "url": "https://github.com/BryceWG/Pinme",
+      "author": "BryceWG",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "BryceWG/Pinme"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "SoilZhu/ChillEast",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/meizu/REUSE.md"
+      ],
+      "url": "https://github.com/SoilZhu/ChillEast",
+      "author": "SoilZhu",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "SoilZhu/ChillEast"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "photometro/guanji-app",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/meizu/REUSE.md"
+      ],
+      "url": "https://github.com/photometro/guanji-app",
+      "author": "photometro",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "photometro/guanji-app"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "AIXINJUELUOAI/Will-do",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/meizu/REUSE.md"
+      ],
+      "url": "https://github.com/AIXINJUELUOAI/Will-do",
+      "author": "AIXINJUELUOAI",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "AIXINJUELUOAI/Will-do"
+      },
+      "license": "GPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "YXMAX/OrderAgents",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/meizu/REUSE.md"
+      ],
+      "url": "https://github.com/YXMAX/OrderAgents",
+      "author": "YXMAX",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "YXMAX/OrderAgents"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "Relianttt/lightxin",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/meizu/REUSE.md"
+      ],
+      "url": "https://github.com/Relianttt/lightxin",
+      "author": "Relianttt",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "Relianttt/lightxin"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "lightStarrr/starSchedule",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/meizu/REUSE.md"
+      ],
+      "url": "https://github.com/lightStarrr/starSchedule",
+      "author": "lightStarrr",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "lightStarrr/starSchedule"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "chuk-development/Besser-Bahn",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/samsung/REUSE.md"
+      ],
+      "url": "https://github.com/chuk-development/Besser-Bahn",
+      "author": "chuk-development",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "chuk-development/Besser-Bahn"
+      },
+      "license": "WTFPL",
+      "kind": "research"
+    },
+    {
+      "project": "MukulBolt9/NowBrief",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/samsung/REUSE.md"
+      ],
+      "url": "https://github.com/MukulBolt9/NowBrief",
+      "author": "MukulBolt9",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "MukulBolt9/NowBrief"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "YetAnotherBusDeveloper/yetanotherbusapp",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/samsung/REUSE.md"
+      ],
+      "url": "https://github.com/YetAnotherBusDeveloper/yetanotherbusapp",
+      "author": "YetAnotherBusDeveloper",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "YetAnotherBusDeveloper/yetanotherbusapp"
+      },
+      "license": "AGPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "JoshAtticus/CompressorEdge",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/samsung/REUSE.md"
+      ],
+      "url": "https://github.com/JoshAtticus/CompressorEdge",
+      "author": "JoshAtticus",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "JoshAtticus/CompressorEdge"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "Myxoz/SamsungNowbarProxy",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/samsung/REUSE.md"
+      ],
+      "url": "https://github.com/Myxoz/SamsungNowbarProxy",
+      "author": "Myxoz",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "Myxoz/SamsungNowbarProxy"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "488315/samsung_framework",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/samsung/REUSE.md"
+      ],
+      "url": "https://github.com/488315/samsung_framework",
+      "author": "488315",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "488315/samsung_framework"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "488315/android_samsung_frameworks_base",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/samsung/REUSE.md"
+      ],
+      "url": "https://github.com/488315/android_samsung_frameworks_base",
+      "author": "488315",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "488315/android_samsung_frameworks_base"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "cameleonnbss/originos-toolkit",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/vivo/REUSE.md"
+      ],
+      "url": "https://github.com/cameleonnbss/originos-toolkit",
+      "author": "cameleonnbss",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "cameleonnbss/originos-toolkit"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "lladlam/MeloX-Android",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/vivo/REUSE.md"
+      ],
+      "url": "https://github.com/lladlam/MeloX-Android",
+      "author": "lladlam",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "lladlam/MeloX-Android"
+      },
+      "license": "GPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "imwangwang/vivo-service",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/vivo/REUSE.md",
+        "docs/vendors/live-cards/vivo/community-notes.md",
+        "docs/vendors/live-cards/vivo/realtime-capsule-api.md"
+      ],
+      "url": "https://github.com/imwangwang/vivo-service",
+      "author": "imwangwang",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "imwangwang/vivo-service"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "imwangwang/vivo-apps",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/vivo/REUSE.md"
+      ],
+      "url": "https://github.com/imwangwang/vivo-apps",
+      "author": "imwangwang",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "imwangwang/vivo-apps"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "fvhde/origin-isle",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/vivo/REUSE.md"
+      ],
+      "url": "https://github.com/fvhde/origin-isle",
+      "author": "fvhde",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "fvhde/origin-isle"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "death34018-hue/AionsHome",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/vivo/REUSE.md"
+      ],
+      "url": "https://github.com/death34018-hue/AionsHome",
+      "author": "death34018-hue",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "death34018-hue/AionsHome"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "STAR-10086/ShuiKeBang",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/vivo/REUSE.md"
+      ],
+      "url": "https://github.com/STAR-10086/ShuiKeBang",
+      "author": "STAR-10086",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "STAR-10086/ShuiKeBang"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "2756826865/android-sms-forwarder",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/vivo/REUSE.md"
+      ],
+      "url": "https://github.com/2756826865/android-sms-forwarder",
+      "author": "2756826865",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "2756826865/android-sms-forwarder"
+      },
+      "license": "GPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "D4vidDf/HyperIsland-ToolKit",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/xiaomi/REUSE.md"
+      ],
+      "url": "https://github.com/D4vidDf/HyperIsland-ToolKit",
+      "author": "D4vidDf",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "D4vidDf/HyperIsland-ToolKit"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "Mercury000/xiaoaiisland",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/xiaomi/REUSE.md"
+      ],
+      "url": "https://github.com/Mercury000/xiaoaiisland",
+      "author": "Mercury000",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "Mercury000/xiaoaiisland"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "kmod-midori/WearFocus",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/xiaomi/REUSE.md"
+      ],
+      "url": "https://github.com/kmod-midori/WearFocus",
+      "author": "kmod-midori",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "kmod-midori/WearFocus"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "wxxsfxyzm/IslandRecorder",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/xiaomi/REUSE.md"
+      ],
+      "url": "https://github.com/wxxsfxyzm/IslandRecorder",
+      "author": "wxxsfxyzm",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "wxxsfxyzm/IslandRecorder"
+      },
+      "license": "GPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "FrancoGiudans/Capsulyric",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/xiaomi/REUSE.md"
+      ],
+      "url": "https://github.com/FrancoGiudans/Capsulyric",
+      "author": "FrancoGiudans",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "FrancoGiudans/Capsulyric"
+      },
+      "license": "GPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "C4RL-DANIEL/HyperNotify-Lab",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/live-cards/xiaomi/REUSE.md"
+      ],
+      "url": "https://github.com/C4RL-DANIEL/HyperNotify-Lab",
+      "author": "C4RL-DANIEL",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "C4RL-DANIEL/HyperNotify-Lab"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "cxxsheng/TiktokSource",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/oem-open-source/oppo.md"
+      ],
+      "url": "https://github.com/cxxsheng/TiktokSource",
+      "author": "cxxsheng",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "cxxsheng/TiktokSource"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "meltingscales/com.snapchat.android",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/oem-open-source/oppo.md"
+      ],
+      "url": "https://github.com/meltingscales/com.snapchat.android",
+      "author": "meltingscales",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "meltingscales/com.snapchat.android"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "DroidDumps/oplus_ossi_dump",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/oem-open-source/oppo.md"
+      ],
+      "url": "https://github.com/DroidDumps/oplus_ossi_dump",
+      "author": "DroidDumps",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "DroidDumps/oplus_ossi_dump"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "OPPO-OpenPlatform/physray_mp_sdk",
+      "group": "vendor",
+      "usage": "Research reference; see the cited review for scope and limitations.",
+      "evidence": [
+        "docs/vendors/widget-vendor-specs/oppo/coloros-theme-component-dev.md"
+      ],
+      "url": "https://github.com/OPPO-OpenPlatform/physray_mp_sdk",
+      "author": "OPPO-OpenPlatform",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "OPPO-OpenPlatform/physray_mp_sdk"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "xzakota/HyperNotification",
+      "group": "background",
+      "usage": "Reviewed for `FocusUtils.kt`，protocol/property/provider. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/xzakota/HyperNotification",
+      "author": "xzakota",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "xzakota/HyperNotification"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "wxxsfxyzm/InstallerX-Revived",
+      "group": "background",
+      "usage": "Reviewed for `MiIslandNotificationBuilder.kt`，V3 DSL. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/wxxsfxyzm/InstallerX-Revived",
+      "author": "wxxsfxyzm",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "wxxsfxyzm/InstallerX-Revived"
+      },
+      "license": "GPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "Aliothmoon/MAA-Meow",
+      "group": "background",
+      "usage": "Reviewed for `HyperOsFocusPublisher.kt`，V3 progress/result. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/Aliothmoon/MAA-Meow",
+      "author": "Aliothmoon",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "Aliothmoon/MAA-Meow"
+      },
+      "license": "AGPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "yusufyorunc/IslandKit",
+      "group": "background",
+      "usage": "Reviewed for root/KernelSU/Termux + focus extras. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/yusufyorunc/islandkit",
+      "author": "yusufyorunc",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "yusufyorunc/islandkit"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "1812z/HyperCopy",
+      "group": "background",
+      "usage": "Reviewed for `MiuiSuperIslandNotification.kt`，V3 extras/actions. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/1812z/HyperCopy",
+      "author": "1812z",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "1812z/HyperCopy"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "FoedusProgramme/Gramophone",
+      "group": "background",
+      "usage": "Reviewed for `IsLandHelp.kt`，media-only Island. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/FoedusProgramme/Gramophone",
+      "author": "FoedusProgramme",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "FoedusProgramme/Gramophone"
+      },
+      "license": "GPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "cwuom/NeriPlayer",
+      "group": "background",
+      "usage": "Reviewed for `IsLandHelp.kt`，media-only focus. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/cwuom/NeriPlayer",
+      "author": "cwuom",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "cwuom/NeriPlayer"
+      },
+      "license": "GPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "xfqwdsj/Knowmad",
+      "group": "background",
+      "usage": "Reviewed for `ClassProgress.kt`，课程状态/地点/进度. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/xfqwdsj/Knowmad",
+      "author": "xfqwdsj",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "xfqwdsj/Knowmad"
+      },
+      "license": "GPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "ybhgl/Reminder",
+      "group": "background",
+      "usage": "Reviewed for standard/live/island fallback. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/ybhgl/Reminder",
+      "author": "ybhgl",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "ybhgl/Reminder"
+      },
+      "license": "GPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "XomaDev/MIUI-Autostart",
+      "group": "background",
+      "usage": "Reviewed for 旧 MIUI 属性检测. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/XomaDev/MIUI-Autostart",
+      "author": "XomaDev",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "XomaDev/MIUI-Autostart"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "judemanutd/AutoStarter",
+      "group": "background",
+      "usage": "Reviewed for 自启动设置页 fallback. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/judemanutd/AutoStarter",
+      "author": "judemanutd",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "judemanutd/AutoStarter"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "ankidroid/Anki-Android",
+      "group": "background",
+      "usage": "Reviewed for 多 MIUI Intent fallback. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/ankidroid/Anki-Android",
+      "author": "ankidroid",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "ankidroid/Anki-Android"
+      },
+      "license": "GPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "ywwynm/EverythingDone",
+      "group": "background",
+      "usage": "Reviewed for 通知/channel/Alarm/电池/自启动诊断. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/ywwynm/EverythingDone",
+      "author": "ywwynm",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "ywwynm/EverythingDone"
+      },
+      "license": "GPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "cdz-hy/LiteTask",
+      "group": "background",
+      "usage": "Reviewed for exact alarm、通知、MIUI AppOps 线索. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/cdz-hy/LiteTask",
+      "author": "cdz-hy",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "cdz-hy/LiteTask"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "easychen/PushDeer",
+      "group": "background",
+      "usage": "Reviewed for MiPush 注册/RegID. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/easychen/pushdeer",
+      "author": "easychen",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "easychen/pushdeer"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "GetStream/stream-android-push",
+      "group": "background",
+      "usage": "Reviewed for Xiaomi token/register/delegate. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/GetStream/stream-android-push",
+      "author": "GetStream",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "GetStream/stream-android-push"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "aliyun/alicloud-android-demo",
+      "group": "background",
+      "usage": "Reviewed for MiPush RegID demo. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/aliyun/alicloud-android-demo",
+      "author": "aliyun",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "aliyun/alicloud-android-demo"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "michaelbel/LiveUpdateNotifications",
+      "group": "background",
+      "usage": "Reviewed for Live Update API 示例. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/michaelbel/LiveUpdateNotifications",
+      "author": "michaelbel",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "michaelbel/LiveUpdateNotifications"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "iVamsi/Live-Notifications-Demo",
+      "group": "background",
+      "usage": "Reviewed for live notification 示例. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/iVamsi/Live-Notifications-Demo",
+      "author": "iVamsi",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "iVamsi/Live-Notifications-Demo"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "NicosNicolaou16/Live_Update_Notifcation_Android",
+      "group": "background",
+      "usage": "Reviewed for live update 示例. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/NicosNicolaou16/Live_Update_Notifcation_Android",
+      "author": "NicosNicolaou16",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "NicosNicolaou16/Live_Update_Notifcation_Android"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "gkhnakbs/GALiveNotification",
+      "group": "background",
+      "usage": "Reviewed for live notification 示例. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/gkhnakbs/GALiveNotification",
+      "author": "gkhnakbs",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "gkhnakbs/GALiveNotification"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "KaushalVasava/LiveUpdateNotification",
+      "group": "background",
+      "usage": "Reviewed for progress/live 示例. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/KaushalVasava/LiveUpdateNotification",
+      "author": "KaushalVasava",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "KaushalVasava/LiveUpdateNotification"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "LawnchairLauncher/lawnchair",
+      "group": "background",
+      "usage": "Reviewed for launcher/通知生命周期. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/LawnchairLauncher/lawnchair",
+      "author": "LawnchairLauncher",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "LawnchairLauncher/lawnchair"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "tiann/KernelSU",
+      "group": "background",
+      "usage": "Reviewed for root/service 边界. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/tiann/KernelSU",
+      "author": "tiann",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "tiann/KernelSU"
+      },
+      "license": "GPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "oasisfeng/island",
+      "group": "background",
+      "usage": "Reviewed for profile/background 管理. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/oasisfeng/island",
+      "author": "oasisfeng",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "oasisfeng/island"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "guolindev/giffun",
+      "group": "background",
+      "usage": "Reviewed for Android 生命周期/通知. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/guolindev/giffun",
+      "author": "guolindev",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "guolindev/giffun"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "nekomangaorg/Neko",
+      "group": "background",
+      "usage": "Reviewed for 后台通知路径. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/nekomangaorg/Neko",
+      "author": "nekomangaorg",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "nekomangaorg/Neko"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "SuperMonster003/AutoJs6",
+      "group": "background",
+      "usage": "Reviewed for 自动化/后台路径. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/SuperMonster003/AutoJs6",
+      "author": "SuperMonster003",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "SuperMonster003/AutoJs6"
+      },
+      "license": "MPL-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "SagerNet/sing-box-for-android",
+      "group": "background",
+      "usage": "Reviewed for FGS/通知生命周期. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/SagerNet/sing-box-for-android",
+      "author": "SagerNet",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "SagerNet/sing-box-for-android"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "princekin-f/EasyFloat",
+      "group": "background",
+      "usage": "Reviewed for overlay/服务边界. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/princekin-f/EasyFloat",
+      "author": "princekin-f",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "princekin-f/EasyFloat"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "Zackratos/UltimateBarX",
+      "group": "background",
+      "usage": "Reviewed for System UI 集成参考. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/Zackratos/UltimateBarX",
+      "author": "Zackratos",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "Zackratos/UltimateBarX"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "caiyonglong/MusicLake",
+      "group": "background",
+      "usage": "Reviewed for media progress 通知. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/caiyonglong/MusicLake",
+      "author": "caiyonglong",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "caiyonglong/MusicLake"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "DSAppTeam/PanelSwitchHelper",
+      "group": "background",
+      "usage": "Reviewed for Android UI/lifecycle. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/DSAppTeam/PanelSwitchHelper",
+      "author": "DSAppTeam",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "DSAppTeam/PanelSwitchHelper"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "jd1378/otphelper",
+      "group": "background",
+      "usage": "Reviewed for 低频提醒实践. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/jd1378/otphelper",
+      "author": "jd1378",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "jd1378/otphelper"
+      },
+      "license": "AGPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "AndroidCSOfficial/android-code-studio",
+      "group": "background",
+      "usage": "Reviewed for Android service/notification. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/AndroidCSOfficial/android-code-studio",
+      "author": "AndroidCSOfficial",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "AndroidCSOfficial/android-code-studio"
+      },
+      "license": "GPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "IReaderorg/IReader",
+      "group": "background",
+      "usage": "Reviewed for 后台/通知. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/IReaderorg/IReader",
+      "author": "IReaderorg",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "IReaderorg/IReader"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "DimensionDev/Flare",
+      "group": "background",
+      "usage": "Reviewed for service/notification. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/DimensionDev/Flare",
+      "author": "DimensionDev",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "DimensionDev/Flare"
+      },
+      "license": "AGPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "appdevforall/CodeOnTheGo",
+      "group": "background",
+      "usage": "Reviewed for Android background path. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/appdevforall/CodeOnTheGo",
+      "author": "appdevforall",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "appdevforall/CodeOnTheGo"
+      },
+      "license": "GPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "Pool-Of-Tears/Myne",
+      "group": "background",
+      "usage": "Reviewed for notification/background. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/Pool-Of-Tears/Myne",
+      "author": "Pool-Of-Tears",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "Pool-Of-Tears/Myne"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "easybangumiorg/EasyBangumi",
+      "group": "background",
+      "usage": "Reviewed for notification scheduling. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/easybangumiorg/EasyBangumi",
+      "author": "easybangumiorg",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "easybangumiorg/EasyBangumi"
+      },
+      "license": "GPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "xiaowine/Lyric-Getter",
+      "group": "background",
+      "usage": "Reviewed for Xiaomi/live 字段线索. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/xiaowine/Lyric-Getter",
+      "author": "xiaowine",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "xiaowine/Lyric-Getter"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "xfqwdsj/IAmNotADeveloper",
+      "group": "background",
+      "usage": "Reviewed for vendor notification 字段线索. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/xfqwdsj/IAmNotADeveloper",
+      "author": "xfqwdsj",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "xfqwdsj/IAmNotADeveloper"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "syncthing/syncthing-android",
+      "group": "background",
+      "usage": "Reviewed for persistent/service 行为. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/syncthing/syncthing-android",
+      "author": "syncthing",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "syncthing/syncthing-android"
+      },
+      "license": "MPL-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "videolan/vlc-android",
+      "group": "background",
+      "usage": "Reviewed for media FGS 生命周期. This is a research reference; no integration is asserted. The archived review used the inaccurate shorthand vodafone/vlc-android; the project link was corrected after repository search and metadata verification.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/videolan/vlc-android",
+      "author": "videolan",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "Repository-name search and GitHub repository metadata; historical spelling retained",
+        "canonical": "videolan/vlc-android"
+      },
+      "license": "GPL-2.0",
+      "kind": "research",
+      "historical_name": "vodafone/vlc-android"
+    },
+    {
+      "project": "bitfireAT/davx5-ose",
+      "group": "background",
+      "usage": "Reviewed for background sync. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/bitfireAT/davx5-ose",
+      "author": "bitfireAT",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "bitfireAT/davx5-ose"
+      },
+      "license": "GPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "signalapp/Signal-Android",
+      "group": "background",
+      "usage": "Reviewed for notification/channel/隐私日志. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/signalapp/Signal-Android",
+      "author": "signalapp",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "signalapp/Signal-Android"
+      },
+      "license": "AGPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "signalapp/Signal-Chat-Backup",
+      "group": "background",
+      "usage": "Reviewed for service/notification. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/signalapp/Signal-Chat-Backup",
+      "author": "signalapp",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "unverified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "signalapp/Signal-Chat-Backup"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "openMF/mifos-mobile",
+      "group": "background",
+      "usage": "Reviewed for 标准通知. This is a research reference; no integration is asserted. The archived review used the inaccurate shorthand mifosio/mifos-mobile; the project link was corrected after repository search and metadata verification.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/openMF/mifos-mobile",
+      "author": "openMF",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "Repository-name search and GitHub repository metadata; historical spelling retained",
+        "canonical": "openMF/mifos-mobile"
+      },
+      "license": "MPL-2.0",
+      "kind": "research",
+      "historical_name": "mifosio/mifos-mobile"
+    },
+    {
+      "project": "HMS-Core/hms-push-serverdemo-go",
+      "group": "background",
+      "usage": "Reviewed for Push server credentials. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/HMS-Core/hms-push-serverdemo-go",
+      "author": "HMS-Core",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "HMS-Core/hms-push-serverdemo-go"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "HMS-Core/hms-push-serverdemo-php",
+      "group": "background",
+      "usage": "Reviewed for Push server credentials. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/HMS-Core/hms-push-serverdemo-php",
+      "author": "HMS-Core",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "HMS-Core/hms-push-serverdemo-php"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "HMS-Core/hms-push-serverdemo-python",
+      "group": "background",
+      "usage": "Reviewed for Push server credentials. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/HMS-Core/hms-push-serverdemo-python",
+      "author": "HMS-Core",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "HMS-Core/hms-push-serverdemo-python"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "MEIZUPUSH/PushDemo",
+      "group": "background",
+      "usage": "Reviewed for Meizu Push SDK. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/MEIZUPUSH/PushDemo",
+      "author": "MEIZUPUSH",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "MEIZUPUSH/PushDemo"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "Luomingbear/Push",
+      "group": "background",
+      "usage": "Reviewed for vendor push demo. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/Luomingbear/Push",
+      "author": "Luomingbear",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "Luomingbear/Push"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "Marafon228/Push",
+      "group": "background",
+      "usage": "Reviewed for vendor push demo. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/Marafon228/Push",
+      "author": "Marafon228",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "Marafon228/Push"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "ahmedelfateh/huawei_pushkit",
+      "group": "background",
+      "usage": "Reviewed for Huawei PushKit. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/ahmedelfateh/huawei_pushkit",
+      "author": "ahmedelfateh",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "ahmedelfateh/huawei_pushkit"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "miosegit/MiPushSDK",
+      "group": "background",
+      "usage": "Reviewed for MiPush SDK. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/miosegit/MiPushSDK",
+      "author": "miosegit",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "unverified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "miosegit/MiPushSDK"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "nextcloud/talk-android",
+      "group": "background",
+      "usage": "Reviewed for push/background. This is a research reference; no integration is asserted.",
+      "evidence": [
+        "docs/architecture/migration-cource-reminder-reliability.md"
+      ],
+      "url": "https://github.com/nextcloud/talk-android",
+      "author": "nextcloud",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "nextcloud/talk-android"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "Kyant0/AndroidLiquidGlass",
+      "group": "sources",
+      "usage": "Backdrop source module based on 2.0.0, bebb11a91bd97bf1dabde479f3b332ad9898731f, with local changes.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md",
+        "third-party/kyant-backdrop/UPSTREAM.json"
+      ],
+      "license": "Apache-2.0",
+      "kind": "vendored",
+      "url": "https://github.com/Kyant0/AndroidLiquidGlass",
+      "author": "Kyant0",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "Kyant0/AndroidLiquidGlass"
+      },
+      "license_file": "third_party/notices/Kyant-Backdrop-Apache-2.0.txt"
+    },
+    {
+      "project": "QWEA0/Liquid-Glass-Android",
+      "group": "glass-research",
+      "usage": "Liquid glass implementation survey; not a claim of code reuse.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "url": "https://github.com/QWEA0/Liquid-Glass-Android",
+      "author": "QWEA0",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "QWEA0/Liquid-Glass-Android"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "QmDeve/AndroidLiquidGlassView",
+      "group": "glass-research",
+      "usage": "Liquid glass implementation survey; not a claim of code reuse.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "url": "https://github.com/QmDeve/AndroidLiquidGlassView",
+      "author": "QmDeve",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "QmDeve/AndroidLiquidGlassView"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "skydoves/Cloudy",
+      "group": "glass-research",
+      "usage": "Liquid glass implementation survey; not a claim of code reuse.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "url": "https://github.com/skydoves/Cloudy",
+      "author": "skydoves",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "skydoves/Cloudy"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "FletchMcKee/liquid",
+      "group": "glass-research",
+      "usage": "Liquid glass implementation survey; not a claim of code reuse.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "url": "https://github.com/FletchMcKee/liquid",
+      "author": "FletchMcKee",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "FletchMcKee/liquid"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "Kashif-E/KMPLiquidGlass",
+      "group": "glass-research",
+      "usage": "Liquid glass implementation survey; not a claim of code reuse.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "url": "https://github.com/Kashif-E/KMPLiquidGlass",
+      "author": "Kashif-E",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "Kashif-E/KMPLiquidGlass"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "Mortd3kay/liquid-glass-android",
+      "group": "glass-research",
+      "usage": "Liquid glass implementation survey; not a claim of code reuse.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "url": "https://github.com/Mortd3kay/liquid-glass-android",
+      "author": "Mortd3kay",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "Mortd3kay/liquid-glass-android"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "styropyr0/Prismal",
+      "group": "glass-research",
+      "usage": "Liquid glass implementation survey; not a claim of code reuse.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "url": "https://github.com/styropyr0/Prismal",
+      "author": "styropyr0",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "styropyr0/Prismal"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "anixitea/GlassDock",
+      "group": "glass-research",
+      "usage": "Liquid glass implementation survey; not a claim of code reuse.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "url": "https://github.com/anixitea/GlassDock",
+      "author": "anixitea",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "anixitea/GlassDock"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "lesnolie/Tigris",
+      "group": "glass-research",
+      "usage": "Liquid glass implementation survey; not a claim of code reuse.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "url": "https://github.com/lesnolie/Tigris",
+      "author": "lesnolie",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "lesnolie/Tigris"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "sjtt2/HeyBox-LiquidGlass",
+      "group": "glass-research",
+      "usage": "Liquid glass implementation survey; not a claim of code reuse.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "url": "https://github.com/sjtt2/HeyBox-LiquidGlass",
+      "author": "sjtt2",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "sjtt2/HeyBox-LiquidGlass"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "suqi8/OShin",
+      "group": "glass-research",
+      "usage": "Liquid glass implementation survey; not a claim of code reuse.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "url": "https://github.com/suqi8/OShin",
+      "author": "suqi8",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "suqi8/OShin"
+      },
+      "license": "AGPL-3.0",
+      "kind": "research"
+    },
+    {
+      "project": "tranquilitysmile/pixel_launcher_glass_dock",
+      "group": "glass-research",
+      "usage": "Liquid glass implementation survey; not a claim of code reuse.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "url": "https://github.com/tranquilitysmile/pixel_launcher_glass_dock",
+      "author": "tranquilitysmile",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "tranquilitysmile/pixel_launcher_glass_dock"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "callstack/liquid-glass",
+      "group": "glass-research",
+      "usage": "Excluded or alternate-platform candidate in the liquid glass survey; not shipped.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "url": "https://github.com/callstack/liquid-glass",
+      "author": "callstack",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "callstack/liquid-glass"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "himanshu-lal4/react-native-liquid-glassmorphism",
+      "group": "glass-research",
+      "usage": "Excluded or alternate-platform candidate in the liquid glass survey; not shipped.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "url": "https://github.com/himanshu-lal4/react-native-liquid-glassmorphism",
+      "author": "himanshu-lal4",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "himanshu-lal4/react-native-liquid-glassmorphism"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "sssajjad007/react-native-liquid-glass-android",
+      "group": "glass-research",
+      "usage": "Excluded or alternate-platform candidate in the liquid glass survey; not shipped.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "url": "https://github.com/sssajjad007/react-native-liquid-glass-android",
+      "author": "sssajjad007",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "sssajjad007/react-native-liquid-glass-android"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "ryohsuke1231/liquid-glass",
+      "group": "glass-research",
+      "usage": "Excluded or alternate-platform candidate in the liquid glass survey; not shipped.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "url": "https://github.com/ryohsuke1231/liquid-glass",
+      "author": "ryohsuke1231",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "ryohsuke1231/liquid-glass"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "vladmdgolam/dock-ui",
+      "group": "glass-research",
+      "usage": "Excluded or alternate-platform candidate in the liquid glass survey; not shipped.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "url": "https://github.com/vladmdgolam/dock-ui",
+      "author": "vladmdgolam",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "vladmdgolam/dock-ui"
+      },
+      "license": "Not verified",
+      "kind": "research"
+    },
+    {
+      "project": "sdegenaar/liquid_glass_widgets",
+      "group": "glass-research",
+      "usage": "Excluded or alternate-platform candidate in the liquid glass survey; not shipped.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "url": "https://github.com/sdegenaar/liquid_glass_widgets",
+      "author": "sdegenaar",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "sdegenaar/liquid_glass_widgets"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "GuoMie-OvO/liquid-glass-tapper",
+      "group": "glass-research",
+      "usage": "Excluded or alternate-platform candidate in the liquid glass survey; not shipped.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "url": "https://github.com/GuoMie-OvO/liquid-glass-tapper",
+      "author": "GuoMie-OvO",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "GuoMie-OvO/liquid-glass-tapper"
+      },
+      "license": "Apache-2.0",
+      "kind": "research"
+    },
+    {
+      "project": "admin0330/liquid-music-android",
+      "group": "glass-research",
+      "usage": "Excluded or alternate-platform candidate in the liquid glass survey; not shipped.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "url": "https://github.com/admin0330/liquid-music-android",
+      "author": "admin0330",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "admin0330/liquid-music-android"
+      },
+      "license": "MIT",
+      "kind": "research"
+    },
+    {
+      "project": "chen08209/FlClash",
+      "group": "sources",
+      "usage": "Liquid glass shader, optics, geometry, style parameters and navigation dock behavior ported to Kotlin/AGSL.",
+      "evidence": [
+        "app/src/main/assets/shaders/liquid_glass.agsl"
+      ],
+      "license": "GPL-3.0",
+      "kind": "port",
+      "url": "https://github.com/chen08209/FlClash",
+      "author": "chen08209",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "chen08209/FlClash"
+      },
+      "license_file": "third_party/notices/FLClash-GPL-3.0.txt"
+    },
+    {
+      "project": "flutter/flutter",
+      "group": "sources",
+      "usage": "Rounded superellipse geometry and Dart interpolation semantics ported to Kotlin; engine revision adc901062556672b4138e18a4dc62a4be8f4b3c2.",
+      "evidence": [
+        "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse.kt"
+      ],
+      "license": "BSD-3-Clause",
+      "kind": "port",
+      "url": "https://github.com/flutter/flutter",
+      "author": "flutter",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "flutter/flutter"
+      },
+      "license_file": "third_party/notices/Flutter-BSD-3-Clause.txt"
+    },
+    {
+      "project": "xiaomanjun233/SleepDown-Schedule",
+      "group": "sources",
+      "usage": "Source of the customized Kyant module imported into Sleepy. Third-party Kyant code retains Apache-2.0; SleepDown-owned changes are separately attributed under its source-available notice. The imported customization revision is not recorded; this entry does not certify redistribution compatibility.",
+      "evidence": [
+        "third-party/kyant-backdrop/README.md"
+      ],
+      "license": "SleepDown source-available non-commercial 1.1",
+      "kind": "source-assets",
+      "url": "https://github.com/xiaomanjun233/SleepDown-Schedule",
+      "author": "xiaomanjun233",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "xiaomanjun233/SleepDown-Schedule"
+      },
+      "license_file": "third_party/notices/SleepDown-LICENSE.md"
+    },
+    {
+      "project": "HaoZai000/NexioSchedule",
+      "group": "sources",
+      "usage": "Behavioral reference recorded by the imported module, revision 99f14cbcadd6d2e6cbfba4e73c2d001f83673264; not a claim of importing Nexio customized source.",
+      "evidence": [
+        "third-party/kyant-backdrop/README.md"
+      ],
+      "license": "AGPL-3.0",
+      "kind": "behavior",
+      "url": "https://github.com/HaoZai000/NexioSchedule",
+      "author": "HaoZai000",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "HaoZai000/NexioSchedule"
+      },
+      "license_file": "third_party/notices/NexioSchedule-AGPL-3.0.txt"
+    },
+    {
+      "project": "Kyant0/Shapes",
+      "group": "libraries",
+      "usage": "Shape primitives, io.github.kyant0:shapes:1.2.1.",
+      "evidence": [
+        "app/build.gradle.kts"
+      ],
+      "license": "Apache-2.0",
+      "kind": "dependency",
+      "url": "https://github.com/Kyant0/Shapes",
+      "author": "Kyant0",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "Kyant0/Shapes"
+      }
+    },
+    {
+      "project": "LunabeeStudio/Lunabee_Compose_Android",
+      "group": "libraries",
+      "usage": "Kotlin Material Color Utilities distribution, studio.lunabee.compose:material-color-utilities:1.7.0.",
+      "evidence": [
+        "gradle/libs.versions.toml"
+      ],
+      "license": "Apache-2.0",
+      "kind": "dependency",
+      "url": "https://github.com/LunabeeStudio/LBAndroid",
+      "author": "LunabeeStudio",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "LunabeeStudio/LBAndroid"
+      }
+    },
+    {
+      "project": "material-foundation/material-color-utilities",
+      "group": "libraries",
+      "usage": "Original HCT color algorithms behind the Material Color Utilities distribution.",
+      "evidence": [
+        "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassStyle.kt"
+      ],
+      "license": "Apache-2.0",
+      "kind": "dependency",
+      "url": "https://github.com/material-foundation/material-color-utilities",
+      "author": "material-foundation",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "material-foundation/material-color-utilities"
+      }
+    },
+    {
+      "project": "JetBrains/kotlin",
+      "group": "libraries",
+      "usage": "Kotlin language and build plugins.",
+      "evidence": [
+        "gradle/libs.versions.toml"
+      ],
+      "license": "Apache-2.0",
+      "kind": "dependency",
+      "url": "https://github.com/JetBrains/kotlin",
+      "author": "JetBrains",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "JetBrains/kotlin"
+      }
+    },
+    {
+      "project": "Kotlin/kotlinx.coroutines",
+      "group": "libraries",
+      "usage": "Coroutine runtime.",
+      "evidence": [
+        "gradle/libs.versions.toml"
+      ],
+      "license": "Apache-2.0",
+      "kind": "dependency",
+      "url": "https://github.com/Kotlin/kotlinx.coroutines",
+      "author": "Kotlin",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "Kotlin/kotlinx.coroutines"
+      }
+    },
+    {
+      "project": "Kotlin/kotlinx.serialization",
+      "group": "libraries",
+      "usage": "JSON serialization.",
+      "evidence": [
+        "gradle/libs.versions.toml"
+      ],
+      "license": "Apache-2.0",
+      "kind": "dependency",
+      "url": "https://github.com/Kotlin/kotlinx.serialization",
+      "author": "Kotlin",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "Kotlin/kotlinx.serialization"
+      }
+    },
+    {
+      "project": "androidx/androidx",
+      "group": "libraries",
+      "usage": "Compose, Material 3, Activity, Lifecycle, Navigation, Room, DataStore, WorkManager, Core and SplashScreen.",
+      "evidence": [
+        "gradle/libs.versions.toml"
+      ],
+      "license": "Apache-2.0",
+      "kind": "dependency",
+      "url": "https://github.com/androidx/androidx",
+      "author": "androidx",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "androidx/androidx"
+      }
+    },
+    {
+      "project": "google/ksp",
+      "group": "libraries",
+      "usage": "Kotlin Symbol Processing for Room.",
+      "evidence": [
+        "gradle/libs.versions.toml"
+      ],
+      "license": "Apache-2.0",
+      "kind": "build",
+      "url": "https://github.com/google/ksp",
+      "author": "google",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "google/ksp"
+      }
+    },
+    {
+      "project": "jhy/jsoup",
+      "group": "libraries",
+      "usage": "HTML parsing for timetable import.",
+      "evidence": [
+        "gradle/libs.versions.toml"
+      ],
+      "license": "MIT",
+      "kind": "dependency",
+      "url": "https://github.com/jhy/jsoup",
+      "author": "jhy",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "jhy/jsoup"
+      }
+    },
+    {
+      "project": "coil-kt/coil",
+      "group": "libraries",
+      "usage": "Image loading and Compose integration.",
+      "evidence": [
+        "gradle/libs.versions.toml"
+      ],
+      "license": "Apache-2.0",
+      "kind": "dependency",
+      "url": "https://github.com/coil-kt/coil",
+      "author": "coil-kt",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "coil-kt/coil"
+      }
+    },
+    {
+      "project": "NanoHttpd/nanohttpd",
+      "group": "libraries",
+      "usage": "Local agent debug console HTTP server, 2.3.1.",
+      "evidence": [
+        "app/build.gradle.kts"
+      ],
+      "license": "BSD-3-Clause",
+      "kind": "dependency",
+      "url": "https://github.com/NanoHttpd/nanohttpd",
+      "author": "NanoHttpd",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "NanoHttpd/nanohttpd"
+      }
+    },
+    {
+      "project": "junit-team/junit4",
+      "group": "libraries",
+      "usage": "JUnit 4 test framework.",
+      "evidence": [
+        "gradle/libs.versions.toml"
+      ],
+      "license": "EPL-1.0",
+      "kind": "test",
+      "url": "https://github.com/junit-team/junit4",
+      "author": "junit-team",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "junit-team/junit4"
+      }
+    },
+    {
+      "project": "junit-team/junit5",
+      "group": "libraries",
+      "usage": "JUnit Jupiter parameterized test support.",
+      "evidence": [
+        "gradle/libs.versions.toml"
+      ],
+      "license": "EPL-2.0",
+      "kind": "test",
+      "url": "https://github.com/junit-team/junit-framework",
+      "author": "junit-team",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "junit-team/junit-framework"
+      }
+    },
+    {
+      "project": "stleary/JSON-java",
+      "group": "libraries",
+      "usage": "JVM JSON implementation for tests.",
+      "evidence": [
+        "gradle/libs.versions.toml"
+      ],
+      "license": "Public Domain",
+      "kind": "test",
+      "url": "https://github.com/stleary/JSON-java",
+      "author": "stleary",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "stleary/JSON-java"
+      }
+    },
+    {
+      "project": "xerial/sqlite-jdbc",
+      "group": "libraries",
+      "usage": "SQLite JDBC for database tests.",
+      "evidence": [
+        "gradle/libs.versions.toml"
+      ],
+      "license": "Apache-2.0",
+      "kind": "test",
+      "url": "https://github.com/xerial/sqlite-jdbc",
+      "author": "xerial",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "xerial/sqlite-jdbc"
+      }
+    },
+    {
+      "project": "robolectric/robolectric",
+      "group": "libraries",
+      "usage": "Android JVM and rendering tests.",
+      "evidence": [
+        "gradle/libs.versions.toml"
+      ],
+      "license": "MIT",
+      "kind": "test",
+      "url": "https://github.com/robolectric/robolectric",
+      "author": "robolectric",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "robolectric/robolectric"
+      }
+    },
+    {
+      "project": "chromedp/chromedp",
+      "group": "libraries",
+      "usage": "Browser-driven collector tool.",
+      "evidence": [
+        "tools/sleepy-collector/go.mod"
+      ],
+      "license": "MIT",
+      "kind": "tool",
+      "url": "https://github.com/chromedp/chromedp",
+      "author": "chromedp",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "chromedp/chromedp"
+      }
+    },
+    {
+      "project": "chromedp/cdproto",
+      "group": "libraries",
+      "usage": "Chrome DevTools Protocol bindings.",
+      "evidence": [
+        "tools/sleepy-collector/go.mod"
+      ],
+      "license": "MIT",
+      "kind": "tool",
+      "url": "https://github.com/chromedp/cdproto",
+      "author": "chromedp",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "chromedp/cdproto"
+      }
+    },
+    {
+      "project": "go-json-experiment/json",
+      "group": "libraries",
+      "usage": "Indirect JSON dependency of the collector.",
+      "evidence": [
+        "tools/sleepy-collector/go.mod"
+      ],
+      "license": "BSD-3-Clause",
+      "kind": "tool",
+      "url": "https://github.com/go-json-experiment/json",
+      "author": "go-json-experiment",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "go-json-experiment/json"
+      }
+    },
+    {
+      "project": "zhChuXiao/ChinaGeoJson",
+      "group": "data",
+      "usage": "City boundary preprocessing source. Repository code license does not establish a license for the upstream DataV data.",
+      "evidence": [
+        "scripts/generate-school-city-boundaries.py"
+      ],
+      "license": "MIT",
+      "kind": "data",
+      "url": "https://github.com/zhChuXiao/ChinaGeoJson",
+      "author": "zhChuXiao",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "zhChuXiao/ChinaGeoJson"
+      }
+    },
+    {
+      "project": "chrisbanes/haze",
+      "group": "glass-research",
+      "usage": "Earlier glass prototype dependency; removed from current app dependencies.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "license": "Apache-2.0",
+      "kind": "historical",
+      "url": "https://github.com/chrisbanes/haze",
+      "author": "chrisbanes",
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and cited local evidence",
+        "canonical": "chrisbanes/haze"
+      }
+    },
+    {
+      "project": "publicHoliday / holiday-calendar",
+      "author": "zy-mayong",
+      "url": "https://gitcode.com/zy-mayong/publicHoliday",
+      "license": "MIT (source comment; not independently reverified)",
+      "group": "data",
+      "kind": "data",
+      "usage": "Calendar data served through holiday-calendar on unpkg; holiday and adjusted workday handling.",
+      "evidence": [
+        "app/src/main/java/com/lingion/sleepy/util/HolidayManager.kt"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "archived-evidence",
+        "method": "Existing source annotation and archived research; live availability not asserted"
+      }
+    },
+    {
+      "project": "DataV administrative boundaries",
+      "author": "Alibaba DataV",
+      "url": "https://datav.aliyun.com/portal/school/atlas/area_selector",
+      "license": "Data redistribution authorization not confirmed",
+      "group": "data",
+      "kind": "data",
+      "usage": "Ultimate source of the ChinaGeoJson boundary snapshot; retain the existing source metadata and its data-license limitation.",
+      "evidence": [
+        "app/src/main/assets/school_city_boundaries.source.json"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "archived-evidence",
+        "method": "Existing source annotation and archived research; live availability not asserted"
+      }
+    },
+    {
+      "project": "Taiwan county boundaries 1140318",
+      "author": "內政部國土測繪中心",
+      "url": "https://data.gov.tw/dataset/7442",
+      "license": "Open Government Data License 1.0",
+      "group": "data",
+      "kind": "data",
+      "usage": "2025 county boundaries. Credit also covers the Maderaojen WGS84 mirror recorded in the bundled notice.",
+      "evidence": [
+        "app/src/main/assets/third_party/NLSC-NOTICE.txt"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "archived-evidence",
+        "method": "Existing source annotation and archived research; live availability not asserted"
+      }
+    },
+    {
+      "project": "Apple Liquid Glass design guidance",
+      "author": "Apple",
+      "url": "https://developer.apple.com/videos/play/wwdc2025/219/",
+      "license": "Official documentation; no code license claimed",
+      "group": "design",
+      "kind": "documentation",
+      "usage": "Meet Liquid Glass, Human Interface Guidelines Materials and Color, SwiftUI Glass and Adopting Liquid Glass informed the visual survey.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "archived-evidence",
+        "method": "Existing source annotation and archived research; live availability not asserted"
+      }
+    },
+    {
+      "project": "Android window blur guidance",
+      "author": "Android Open Source Project",
+      "url": "https://source.android.google.cn/docs/core/display/window-blurs",
+      "license": "Official documentation; no code license claimed",
+      "group": "design",
+      "kind": "documentation",
+      "usage": "Window blur API and cross-window versus in-app rendering boundaries.",
+      "evidence": [
+        "docs/attribution-audit/glass-research-sources.md"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "archived-evidence",
+        "method": "Existing source annotation and archived research; live availability not asserted"
+      }
+    },
+    {
+      "project": "Material Design 3 and Compose animation",
+      "author": "Google / AndroidX",
+      "url": "https://developer.android.com/develop/ui/compose/animation",
+      "license": "Official documentation; no code license claimed",
+      "group": "design",
+      "kind": "documentation",
+      "usage": "Motion and animation API guidance used by SleepyMotion and material navigation transitions.",
+      "evidence": [
+        "app/src/main/java/com/lingion/sleepy/ui/component/SleepyMotion.kt"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "archived-evidence",
+        "method": "Existing source annotation and archived research; live availability not asserted"
+      }
+    },
+    {
+      "project": "sunjingquan/jianghaidai-release",
+      "author": "sunjingquan",
+      "url": "https://github.com/sunjingquan/jianghaidai-release",
+      "license": "Not verified",
+      "group": "protocol-research",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/history/jou-cross-verify-2026-09-09/attribution-candidates.json"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "yv1ing/AHU-QQbot",
+      "author": "yv1ing",
+      "url": "https://github.com/yv1ing/AHU-QQbot",
+      "license": "Not verified",
+      "group": "protocol-research",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/history/ahu-cross-verify-2026-09-06/attribution-candidates.json"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "Tonyseth/AHU-IC-Design-personal-Repository",
+      "author": "Tonyseth",
+      "url": "https://github.com/Tonyseth/AHU-IC-Design-personal-Repository",
+      "license": "Not verified",
+      "group": "protocol-research",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/history/ahu-cross-verify-2026-09-06/attribution-candidates.json"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "yoki-Clark/AHU_card_records",
+      "author": "yoki-Clark",
+      "url": "https://github.com/yoki-Clark/AHU_card_records",
+      "license": "Not verified",
+      "group": "protocol-research",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/history/ahu-cross-verify-2026-09-06/attribution-candidates.json"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "Fangnan700/AHU-QQbot",
+      "author": "Fangnan700",
+      "url": "https://github.com/Fangnan700/AHU-QQbot",
+      "license": "Not verified",
+      "group": "protocol-research",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/history/ahu-cross-verify-2026-09-06/attribution-candidates.json"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "xiangwentao666/ECSA-Thu",
+      "author": "xiangwentao666",
+      "url": "https://github.com/xiangwentao666/ECSA-Thu",
+      "license": "Not verified",
+      "group": "protocol-research",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/history/wakeup-parity-thu-2026-10-06/attribution-candidates.json"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "unverified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "q1123421666/jxutcm",
+      "author": "q1123421666",
+      "url": "https://github.com/q1123421666/jxutcm",
+      "license": "Not verified",
+      "group": "protocol-research",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/history/jxutcm-cross-verify-2026-09-19/attribution-candidates.json"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "Wenswell/jxutcm-net-auto-click",
+      "author": "Wenswell",
+      "url": "https://github.com/Wenswell/jxutcm-net-auto-click",
+      "license": "Not verified",
+      "group": "protocol-research",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/history/jxutcm-cross-verify-2026-09-19/attribution-candidates.json"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "iihcy/JXUTCM_DAS",
+      "author": "iihcy",
+      "url": "https://github.com/iihcy/JXUTCM_DAS",
+      "license": "Not verified",
+      "group": "protocol-research",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/history/jxutcm-cross-verify-2026-09-19/attribution-candidates.json"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "iihcy/JXUTCM_BestFeature",
+      "author": "iihcy",
+      "url": "https://github.com/iihcy/JXUTCM_BestFeature",
+      "license": "Not verified",
+      "group": "protocol-research",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/history/jxutcm-cross-verify-2026-09-19/attribution-candidates.json"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "yinwoods/Fuck-BUAA-JiaoWu-Anyway",
+      "author": "yinwoods",
+      "url": "https://github.com/yinwoods/Fuck-BUAA-JiaoWu-Anyway",
+      "license": "GPL-3.0",
+      "group": "protocol-research",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/history/buaa-cross-verify-2026-09-06/attribution-candidates.json"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "xunux/WeixinScoreGetter",
+      "author": "xunux",
+      "url": "https://github.com/xunux/WeixinScoreGetter",
+      "license": "Not verified",
+      "group": "protocol-research",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/history/buaa-cross-verify-2026-09-06/attribution-candidates.json"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "SE2020-TopUnderstanding/BUAA-Campus-Tools-Frontend",
+      "author": "SE2020-TopUnderstanding",
+      "url": "https://github.com/SE2020-TopUnderstanding/BUAA-Campus-Tools-Frontend",
+      "license": "Not verified",
+      "group": "protocol-research",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/history/buaa-cross-verify-2026-09-06/attribution-candidates.json"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "LabiKyo/buaa-jwgl-evaluator",
+      "author": "LabiKyo",
+      "url": "https://github.com/LabiKyo/buaa-jwgl-evaluator",
+      "license": "Not verified",
+      "group": "protocol-research",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/history/buaa-cross-verify-2026-09-06/attribution-candidates.json"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "wyx-1236/BUAA-Java-ACP",
+      "author": "wyx-1236",
+      "url": "https://github.com/wyx-1236/BUAA-Java-ACP",
+      "license": "Not verified",
+      "group": "protocol-research",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/history/buaa-cross-verify-2026-09-06/attribution-candidates.json"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "FlymeOS/flyme-release",
+      "author": "FlymeOS",
+      "url": "https://github.com/FlymeOS/flyme-release",
+      "license": "Not verified",
+      "group": "vendor",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/vendors/oem-open-source/meizu.md"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "Live-Block/Flyme-FreeForm",
+      "author": "Live-Block",
+      "url": "https://github.com/Live-Block/Flyme-FreeForm",
+      "license": "GPL-3.0",
+      "group": "vendor",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/vendors/oem-open-source/meizu.md"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "Mangi-11/FlymeFreeform",
+      "author": "Mangi-11",
+      "url": "https://github.com/Mangi-11/FlymeFreeform",
+      "license": "GPL-3.0",
+      "group": "vendor",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/vendors/oem-open-source/meizu.md"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "DtHnAme/Mi-FreeForm",
+      "author": "DtHnAme",
+      "url": "https://github.com/DtHnAme/Mi-FreeForm",
+      "license": "Not verified",
+      "group": "vendor",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/vendors/oem-open-source/meizu.md"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "coderstory/FlymeHelper",
+      "author": "coderstory",
+      "url": "https://github.com/coderstory/FlymeHelper",
+      "license": "Not verified",
+      "group": "vendor",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/vendors/oem-open-source/meizu.md"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "ReChronoRain/HyperCeiler",
+      "author": "ReChronoRain",
+      "url": "https://github.com/ReChronoRain/HyperCeiler",
+      "license": "AGPL-3.0",
+      "group": "vendor",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/vendors/oem-open-source/xiaomi.md"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "qqlittleice/MiuiHome",
+      "author": "qqlittleice",
+      "url": "https://github.com/qqlittleice/MiuiHome",
+      "license": "GPL-3.0",
+      "group": "vendor",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/vendors/oem-open-source/xiaomi.md"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "Mods-Center/Miui_Launcher_Mod",
+      "author": "Mods-Center",
+      "url": "https://github.com/Mods-Center/Miui_Launcher_Mod",
+      "license": "GPL-3.0",
+      "group": "vendor",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/vendors/oem-open-source/xiaomi.md"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "xzakota/HyperOShape",
+      "author": "xzakota",
+      "url": "https://github.com/xzakota/HyperOShape",
+      "license": "Not verified",
+      "group": "vendor",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/vendors/oem-open-source/xiaomi.md"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "wuyou-123/FocusNotifLyric",
+      "author": "wuyou-123",
+      "url": "https://github.com/wuyou-123/FocusNotifLyric",
+      "license": "Apache-2.0",
+      "group": "vendor",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/vendors/oem-open-source/xiaomi.md"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "leowalk0613/LyricFocus",
+      "author": "leowalk0613",
+      "url": "https://github.com/leowalk0613/LyricFocus",
+      "license": "MIT",
+      "group": "vendor",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/vendors/oem-open-source/xiaomi.md"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "ghhccghk/HyperFocusNotifDemo",
+      "author": "ghhccghk",
+      "url": "https://github.com/ghhccghk/HyperFocusNotifDemo",
+      "license": "Not verified",
+      "group": "vendor",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/vendors/oem-open-source/xiaomi.md"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "L-aros/HyperFocus",
+      "author": "L-aros",
+      "url": "https://github.com/L-aros/HyperFocus",
+      "license": "MIT",
+      "group": "vendor",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/vendors/oem-open-source/xiaomi.md"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "ImKani/HyperOS3FocusRestore",
+      "author": "ImKani",
+      "url": "https://github.com/ImKani/FocusRestore",
+      "license": "GPL-3.0",
+      "group": "vendor",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/vendors/oem-open-source/xiaomi.md"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "AppGalleryConnect/agc-template-market-harmonyos-demos",
+      "author": "AppGalleryConnect",
+      "url": "https://github.com/AppGalleryConnect/agc-template-market-harmonyos-demos",
+      "license": "Apache-2.0",
+      "group": "vendor",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/vendors/oem-open-source/huawei.md"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "minkiapps/HarmonyOS-Widget-Demo",
+      "author": "minkiapps",
+      "url": "https://github.com/minkiapps/HarmonyOS-Widget-Demo",
+      "license": "Not verified",
+      "group": "vendor",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/vendors/oem-open-source/huawei.md"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    },
+    {
+      "project": "openharmony/applications_app_samples",
+      "author": "openharmony",
+      "url": "https://github.com/openharmony/applications_app_samples",
+      "license": "Not verified",
+      "group": "vendor",
+      "kind": "research",
+      "usage": "Historical research candidate; retained for attribution, including negative and indirect findings. See the cited review for the actual evidence; no code reuse is asserted.",
+      "evidence": [
+        "docs/vendors/oem-open-source/huawei.md"
+      ],
+      "verification": {
+        "checked": "2026-11-03",
+        "status": "verified",
+        "method": "GitHub repository API and archived attribution candidates"
+      }
+    }
+  ],
+  "notices": [
+    {
+      "path": "third_party/notices/FLClash-GPL-3.0.txt",
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    {
+      "path": "third_party/notices/Flutter-BSD-3-Clause.txt",
+      "sha256": "89519eca6f7b9529b35bdddd623a58c3af06a88c458dbd6531ddb4675acf75a9"
+    },
+    {
+      "path": "third_party/notices/Kyant-Backdrop-Apache-2.0.txt",
+      "sha256": "cf96a8b6ffc27b4d1e184d80afec475b09fe921c1dcc491ad74c0e8478a77d31"
+    },
+    {
+      "path": "third_party/notices/NexioSchedule-AGPL-3.0.txt",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "third_party/notices/SleepDown-LICENSE.md",
+      "sha256": "f4c89976e3986b7105d7a6d2d509fe4baa845f3a033f58bb8021629d34731023"
+    },
+    {
+      "path": "third_party/notices/SleepDown-THIRD_PARTY_NOTICES.md",
+      "sha256": "a24cd028cbc6677d941b59891809cf13e4d9f1f9b604cf7350e7dbd2d007ae68"
+    }
+  ],
+  "unresolved_names": [
+    "LinkSheet",
+    "Fankes",
+    "NewPipe",
+    "tusky",
+    "kdeconnect",
+    "osmand",
+    "organicmaps",
+    "libretorrent",
+    "droid-ify",
+    "MiPushFramework"
+  ]
+}

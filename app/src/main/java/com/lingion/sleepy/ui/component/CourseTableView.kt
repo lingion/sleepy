@@ -1,6 +1,15 @@
 package com.lingion.sleepy.ui.component
 
 import android.os.Build
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,10 +26,12 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.ScrollState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -40,12 +51,17 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalConfiguration
@@ -69,6 +85,7 @@ import com.lingion.sleepy.ui.theme.SleepyTextStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleCombinedClickable
 import com.lingion.sleepy.ui.theme.noRippleClickable
+import com.lingion.sleepy.util.AppClock
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.ConflictLayoutEngine
 import com.lingion.sleepy.util.CourseColorUtil
@@ -80,9 +97,13 @@ import com.lingion.sleepy.util.PeriodHeaderFormatter
 import com.lingion.sleepy.util.MealBreakDetector
 import com.lingion.sleepy.util.GridSeparatorGeometry
 import com.lingion.sleepy.util.TimetableViewportPolicy
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.filter
 import java.time.LocalTime
 import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.floor
 import kotlin.math.roundToInt
 
@@ -137,7 +158,7 @@ fun CardsGridView(
     startDate: String = "",
     currentWeek: Int = 1,
     today: Int = DateUtils.todayDayOfWeek(),
-    todayDate: java.time.LocalDate = java.time.LocalDate.now(),
+    todayDate: java.time.LocalDate = java.time.LocalDate.now(AppClock),
     onCourseClick: (CourseEntity) -> Unit,
     onCourseLongClick: ((CourseEntity) -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -167,6 +188,12 @@ fun CardsGridView(
     // 浮窗「调整本次」直达回调: 用户已在浮窗点过调整, 调用方应直接展开编辑表单。
     // null = 退回长按通道(存量调用方契约不变)。
     onOccurrenceEdit: ((CourseEntity) -> Unit)? = null,
+    // 边缘翻页拖拽 (2026-10-27 用户裁决): 卡片压住左/右缘驻留满 FLOAT_EDGE_DWELL_MS
+    // 时触发, dir=-1 上一周 / +1 下一周; 学期边界由网格挡回(edgeBlocked), 不会走到这里。
+    // null(默认) = 特性关闭, 存量调用方(Widget 预览)行为逐字节不变。
+    onEdgeDrag: ((Int) -> Unit)? = null,
+    // 学期末周(= pagerMaxWeek) — 边缘驻留到界判断用。0(默认)= 无翻页宿主, 特性关闭。
+    floatMaxWeek: Int = 0,
 ) {
     val colors = MaterialTheme.colorScheme
     val floatAware = onOccurrenceMove != null
@@ -182,8 +209,10 @@ fun CardsGridView(
     LaunchedEffect(currentWeek, startDate, courses, timeSlots, visibleDays, quickAddEnabled) {
         quickAddState.dismiss()
     }
+    // 拖拽进行中不早杀: 边缘翻页落库会重发射 courses — 此时 dismiss 会腰斩手势流
+    // (2026-10-27 边缘翻页特性: 落库发生在 commitFloatDrop 之后, 收层由管线自己走)。
     LaunchedEffect(currentWeek, startDate, courses, timeSlots, visibleDays, quickAddEnabled) {
-        floatState.dismiss()
+        if (!floatState.dragging) floatState.dismiss()
     }
     androidx.activity.compose.BackHandler(enabled = quickAddEnabled && quickAddState.selection != null) { quickAddState.dismiss() }
     // D 契约: 拉伸未确认时返回键 = 空白点击 — 先走确认, 无 pending 才直接关浮层。
@@ -245,7 +274,8 @@ fun CardsGridView(
     }
     val renderSlots = renderPlan.slots
     val maxNode = renderSlots.maxOfOrNull { it.nodeEnd } ?: 12
-    val sortedDays = visibleDays.sorted()
+    val sortedDays = remember(visibleDays) { visibleDays.sorted() }
+    val groups = remember(courses) { courses.groupBy { it.groupId } }
     val dayCount = sortedDays.size
 
     // 用户反馈 2026-09-16: 占位行"文字放不下 → 灰块 + 点击展开/再点折叠"。
@@ -332,16 +362,22 @@ fun CardsGridView(
         }
 
     val gridBgShape = SleepyTheme.shapes.large
+    val gridPadding = with(headerDensity) { d(8f).roundToPx().toDp() }
 
     Box(
         modifier = modifier
             .fillMaxSize()
+            // 二次抓浮卡时输入节点留在来源页，其跨页浮层必须绘制在目标页遮罩之上。
+            .zIndex(if (floatState.dragging && floatState.overlayDragOwner != null &&
+                currentWeek == floatState.dragHostWeek) 1f else 0f)
             .dismissQuickAddOnOutsidePress(quickAddState)
             .dismissFloatOnOutsidePress(floatState, ::confirmPendingResizeOrDismiss)
             .background(colors.surfaceContainerHigh, gridBgShape)
-            .padding(d(8f))
+            .padding(gridPadding)
     ) {
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val gridSurfaceWidth = maxWidth + gridPadding * 2
+            val gridSurfaceHeight = maxHeight + gridPadding * 2
             // 自动适配只改变纵向行高；横向宽度、字号和卡片内容仍由原 gridScale 控制。
             val navExtra = com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding.current
             // 餐段带在网格外额外占高，拟合行高只按课程行权重计算 (刚性, 带宽不摊进 rowH)。
@@ -529,10 +565,37 @@ fun CardsGridView(
             // renderEffect 自包含(整层进模糊纹理), 浮层若做 Column 子节点会被一起糊掉,
             // 故 overlay y = floatState.y + headH + gapH − scrollState (抵消表头与滚动)。
             var floatDragPx by remember { mutableFloatStateOf(0f) }
-            // 滚动偏移只在浮起态读取 — 平时不在 body 读 scrollState.value,
-            // 避免每帧滚动重组整个 BoxWithConstraints 子树。
-            val floatScrollDp =
-                if (floatState.active) with(headerDensity) { scrollState.value.toDp() } else 0.dp
+            val floatOverlayOwner = remember { Any() }
+            // 边缘翻页锚点: 本页网格左缘实时值(root 坐标 px); 起拖页快照存 floatState.anchorRootLeftPx。
+            val expectedInitialLeft = if (floatState.active) {
+                floatState.anchorRootLeftPx + (currentWeek - floatState.originWeek) * with(headerDensity) { maxWidth.toPx() }
+            } else 0f
+            var floatRootLeftPx by remember { mutableFloatStateOf(expectedInitialLeft) }
+            // 排他宿主接管时新页滚动对齐拖拽锚: 各页 rememberScrollState 独立(新页=0),
+            // 不同步则卡悬停行与视觉行错位一行以上。同步后宿主页几何与起拖页逐 dp 相同。
+            LaunchedEffect(floatState.active, floatState.dragging, floatState.week, currentWeek) {
+                if (floatState.active && floatState.dragging && currentWeek == floatState.week) {
+                    scrollState.scrollTo(with(headerDensity) { floatState.anchorScrollDp.toPx().roundToInt() })
+                }
+            }
+            // ---- Task 4 动效规格 (组合体内算好; transitionSpec lambda 非可组合的教训同款) ----
+            val motion = MaterialTheme.motionScheme
+            val returnSpec = motion.defaultSpatialSpec<Dp>()
+            val floatFade = motion.fastEffectsSpec<Float>()
+            // 弹簧归位宿主: springFloatBack 置 returnTick → 唤醒这里, x/y 经 defaultSpatial
+            // 落回 originX/originY — springFloatBack 名实相符 (Task 4)。
+            LaunchedEffect(floatState.returnTick) {
+                if (floatState.returnTick > 0 && currentWeek == floatState.week) {
+                    floatState.animateReturnToOrigin(returnSpec, returnSpec)
+                }
+            }
+            val floatBlurRadiusPx = animateFloatAsState(
+                targetValue = with(headerDensity) {
+                    floatBlurRadiusDp(floatState.active && currentWeek == floatState.week, floatState.dragging).toPx()
+                },
+                animationSpec = if (floatState.dragging) snap() else floatFade,
+                label = "floatGridBlur",
+            )
             val floatGridNodes = renderSlots.filter { !it.isPlaceholder }.map { it.nodeStart }
             // 卡片顶/底边在网格坐标系的 dp 边界 (bottom=true 取底边, 与胶囊同口径)。
             fun floatBoundary(node: Int, bottom: Boolean): Dp? {
@@ -548,6 +611,7 @@ fun CardsGridView(
                 if (nodeIdx < 0 || dayIdx < 0) return
                 val steps = course.step.coerceAtLeast(1).coerceAtMost(renderSlots.size - nodeIdx)
                 quickAddState.dismiss()
+                floatState.anchorRootLeftPx = floatRootLeftPx
                 floatState.lift(
                     course = course,
                     day = course.day,
@@ -565,6 +629,62 @@ fun CardsGridView(
                     ).dp,
                     isGrey = course.day in greyDays,
                 )
+            }
+            // ---- 吸附投影 (2026-10-28 移植 Lawnchair: Workspace.onDragOver →
+            // CellLayout.findNearestAreaIgnoreOccupied → 150ms 跳格动画) ----
+            // 每 MOVE 帧把卡片按「视觉中心 → 最近格」投影到吸附落点:
+            // 列 = 中心比例 floor + 钳首/末列 (水平出界永不丢拖拽);
+            // 行 = 顶边最近节次, 跨度按节次号连续校验不越末节 (与旧落点判据逐条同口径);
+            // 合法投影 → 卡随投影走(磁吸跳格, 跨行「跳」一下), 松手即所见;
+            // 非法投影 → snap 退回跟手位(卡留指下), 松手弹回 — 弹回语义不变。
+            // (声明顺序: 必须在 seedFloatResize/applyFloatResize 之前 —
+            //  Kotlin 局部函数须先声明后使用, 626 行拉伸处调用它。)
+            fun currentFloatEdgeDirection(): Int {
+                val pointerX = floatState.dragPointerRootX?.let {
+                    with(headerDensity) { (it - floatState.anchorRootLeftPx).toDp().value }
+                }
+                return floatEdgeDirection(
+                    (floatState.x + floatState.width / 2f).value,
+                    pointerX, floatState.dragOriginCx.value, maxWidth.value,
+                )
+            }
+            fun projectFloatDrop(): OccurrenceDropTarget? {
+                val centerRatio =
+                    (floatState.x + floatState.width / 2f - timeW - gapW).value / (colW + gapW).value
+                // 边缘翻页带与表格外界不作吸附投影 (退回跟手位, 不吸附到周日/周一):
+                // 仅在真实列带内吸附各列, 保持边缘跟手位干净, 翻页时不锁死在末列
+                val inEdgeZone = currentFloatEdgeDirection() != 0 ||
+                    centerRatio < 0f || centerRatio >= sortedDays.size.toFloat()
+                if (inEdgeZone) return null
+                val dayIndex = floor(centerRatio).toInt().coerceIn(0, sortedDays.lastIndex)
+                val cardTopPx = with(headerDensity) { floatState.y.toPx() }
+                val startNode = floatGridNodes.minByOrNull { node ->
+                    val b = floatBoundary(node, false) ?: return@minByOrNull Float.MAX_VALUE
+                    abs(with(headerDensity) { b.toPx() } - cardTopPx)
+                }
+                val maxNode = floatGridNodes.maxOrNull()
+                val endNode = startNode?.let { it + floatState.step - 1 }
+                if (startNode == null || endNode == null || maxNode == null || endNode > maxNode) return null
+                return OccurrenceDropTarget(dayIndex, startNode, floatState.step)
+            }
+            fun applyFloatSnap() {
+                val drop = projectFloatDrop()
+                floatState.dropTarget = drop
+                if (drop == null) {
+                    // 未吸附: 渲染位退回跟手位 — 卡永远在指下, 跳只发生在合法吸附之间。
+                    floatState.snapX = floatState.x
+                    floatState.snapY = floatState.y
+                    floatState.snapHeight = floatState.height
+                    return
+                }
+                val nodeIdx = slotIndexOf(drop.startNode)
+                floatState.snapX = timeW + gapW + (colW + gapW) * drop.dayIndex
+                floatState.snapY = yOfRows(nodeIdx.toFloat())
+                floatState.snapHeight = TimetableViewportPolicy.longBreakCardHeightDp(
+                    naturalSpanDp = (naturalSpan((nodeIdx + drop.step).toFloat()) -
+                        naturalSpan(nodeIdx.toFloat())).value,
+                    gapDp = gapH.value,
+                ).dp
             }
             fun seedFloatResize(top: Boolean) {
                 val boundary = floatBoundary(if (top) floatState.startNode else floatState.endNode, !top)
@@ -596,63 +716,228 @@ fun CardsGridView(
                 val endIdx = slotIndexOf(floatState.endNode)
                 floatState.height =
                     yOfRows(endIdx.toFloat()) + rowHeightAt(endIdx) - gapH - floatState.y
+                applyFloatSnap() // 跨度变了 → 吸附投影同步(step 随 endNode-startNode+1)
             }
-            // 非法落点/拖拽撤销共用的弹回: 位置复位 + dragging=false → 模糊与浮框同帧回归。
+            // 非法落点/拖拽撤销共用的弹回: dragging 收 + 请求弹簧归位 (Task 4)。
+            // 位置不再瞬时写回 — returnTick 唤醒宿主 LaunchedEffect, 用 motionScheme
+            // defaultSpatial 把 x/y 弹回原点, 函数名终与行为一致。
             fun springFloatBack() {
                 floatState.dragging = false
-                floatState.x = floatState.originX
-                floatState.y = floatState.originY
+                floatState.lastDragDirY = 0
+                floatState.dropTarget = null
+                floatState.requestReturnToOrigin()
             }
             fun commitFloatDrop() {
                 val course = floatState.course ?: return
                 if (!floatState.dragging) return // 浮卡上的轻点: 不提交也不弹回(原位仍浮起)。
-                // 落点 = 卡片中心列 + 顶边最近节次; 任一环越界 = 非法落点, 弹回原位。
-                val centerRatio =
-                    (floatState.x + floatState.width / 2f - timeW - gapW).value / (colW + gapW).value
-                val dayIdx = floor(centerRatio).toInt()
-                val cardTopPx = with(headerDensity) { floatState.y.toPx() }
-                val snapped = floatGridNodes.minByOrNull { node ->
-                    val b = floatBoundary(node, false) ?: return@minByOrNull Float.MAX_VALUE
-                    abs(with(headerDensity) { b.toPx() } - cardTopPx)
+                // 落点 = 本帧重算的吸附投影 — 与拖拽期每帧同一个 projectFloatDrop,
+                // 所见即所得 (Lawnchair: dropLocation 即最后 onDragOver 的吸附位)。
+                // 列向钳位 (2026-10-28 用户反馈: 压右缘松手曾整段静默弹回): 水平出界
+                // 一律吸附首/末列; 纵向出格/跨度越末节 = 非法 → 弹回。
+                applyFloatSnap()
+                val drop = floatState.dropTarget ?: run {
+                    val centerRatio =
+                        (floatState.x + floatState.width / 2f - timeW - gapW).value / (colW + gapW).value
+                    val clampedDay = floor(centerRatio).toInt().coerceIn(0, sortedDays.lastIndex)
+                    val cardTopPx = with(headerDensity) { floatState.y.toPx() }
+                    val startNode = floatGridNodes.minByOrNull { node ->
+                        val b = floatBoundary(node, false) ?: return@minByOrNull Float.MAX_VALUE
+                        abs(with(headerDensity) { b.toPx() } - cardTopPx)
+                    }
+                    val maxNode = floatGridNodes.maxOrNull()
+                    val endNode = startNode?.let { it + floatState.step - 1 }
+                    if (startNode != null && endNode != null && maxNode != null && endNode <= maxNode) {
+                        OccurrenceDropTarget(clampedDay, startNode, floatState.step)
+                    } else {
+                        springFloatBack()
+                        return
+                    }
                 }
-                val maxNode = floatGridNodes.maxOrNull()
-                // 跨度按"节次号连续"校验(午餐空隙不打断合法性), 只要求落点不越出末节。
-                val endNode = snapped?.let { it + floatState.step - 1 }
-                if (dayIdx !in sortedDays.indices || snapped == null || endNode == null ||
-                    maxNode == null || endNode > maxNode
-                ) {
-                    springFloatBack()
-                    return
-                }
-                onOccurrenceMove?.invoke(course, sortedDays[dayIdx], snapped, floatState.step, false) { saved ->
+                // Issue #276: 松手瞬间立即退出拖拽与边缘指示，卡片停在吸附位等待落库弹窗，
+                // 防弹窗期间边缘翻页协程因 dragging==true 继续触发翻页
+                floatState.dragging = false
+                floatState.edgeDir = 0
+                floatState.edgeBlocked = 0
+                floatState.peekProgress = 0f
+                floatState.lastDragDirY = 0
+                // 固定坐标到吸附槽位，确保卡片停在正确位置
+                floatState.x = floatState.snapX
+                floatState.y = floatState.snapY
+                
+                onOccurrenceMove?.invoke(course, sortedDays[drop.dayIndex], drop.startNode, drop.step, false) { saved ->
                     // C 契约: 落库成功才收层; 否决/过期 → 弹回原位浮着(拉伸 pending 随卡保留,
                     // 由空白点击/返回键走「是否调整持续节次」确认)。
                     if (saved) floatState.dismiss() else springFloatBack()
                 }
             }
 
+            // ---- 边缘翻页 (2026-10-27 裁决 · 2026-10-30 通性修正: 压住即每满 500ms 翻一页,
+            // 左右缘镜像同一 10dp 容差, 方向不限、周数不限) ----
+            // 单一写入者: 拖拽期间 50ms 轮询自当前卡位推导方向并累计驻留 —
+            // 手指静止压边同样计时; week 入键 → 换页即整效重启, 邻页实例与旧页实例
+            // 即刻退出(不空转), 新宿主 elapsed/held 天然归零(逐页满 500ms, 无加速)。
+            LaunchedEffect(floatState.dragging, floatState.week) {
+                // 非宿主页静默退出: 不写共享态 — 清场由宿主页负责, 免得邻页抢先抹掉进度。
+                if (currentWeek != floatState.week) return@LaunchedEffect
+                if (!floatState.dragging || onEdgeDrag == null || floatMaxWeek <= 0) {
+                    floatState.edgeDir = 0
+                    floatState.edgeBlocked = 0
+                    floatState.peekProgress = 0f
+                    return@LaunchedEffect
+                }
+                var held = 0
+                var elapsed = 0L
+                while (true) {
+                    delay(FLOAT_EDGE_DWELL_STEP_MS)
+                    // 每步重验宿主: 本页刚被 bump 走 (currentWeek 是本实例捕获的旧页号) →
+                    // 即刻静默退出。只在 effect 开头查一次的写法会让旧实例活到重组取消为止,
+                    // 与新宿主实例双写计时/双翻 (2026-10-30 诊断: 换页 +300ms 即多翻一页)。
+                    if (currentWeek != floatState.week || !floatState.dragging) return@LaunchedEffect
+                    // 翻页与落子共用同一判据，防止一边吸附周日、一边累计翻页。
+                    val dir = currentFloatEdgeDirection()
+                    if (dir != held) { held = dir; elapsed = 0L }
+                    floatState.edgeDir = dir
+                    if (dir == 0) {
+                        // 收回格内 = 停表清形; 再压缘重新计满一个整驻留 (节奏即「停」的手段,
+                        // 2026-10-30 起取代旧「消耗锁」— 停不再靠翻过即死, 靠的是 500ms/页)。
+                        floatState.edgeBlocked = 0; floatState.peekProgress = 0f; continue
+                    }
+                    val atBoundary = (dir < 0 && floatState.week <= 1) || (dir > 0 && floatState.week >= floatMaxWeek)
+                    floatState.edgeBlocked = if (atBoundary) dir else 0
+                    if (atBoundary) {
+                        // 学期边界: 无计时, peek 静止示形, 放手弹回。连翻模式同样在此自然挡停。
+                        floatState.peekProgress = 1f
+                        continue
+                    }
+                    elapsed += FLOAT_EDGE_DWELL_STEP_MS
+                    floatState.peekProgress = (elapsed.toFloat() / FLOAT_EDGE_DWELL_MS).coerceIn(0f, 1f)
+                    if (elapsed >= FLOAT_EDGE_DWELL_MS) {
+                        // 驻留满: 周号先行 — 浮层/计时/落点几何同帧整体换宿主(排他 currentWeek==week),
+                        // 补偿平移把卡钉在指下, 300ms 页滑期间不飘。week bump → 本 effect 重启,
+                        // elapsed/held 天然归零 → 压住不放就是每满一个整驻留再翻一页 (通性:
+                        // 一周与一百周同一机制, 2026-10-30 用户裁决取代「一次驻留一页」旧模)。
+                        floatState.week += dir
+                        floatState.chipPending = true // 翻过页 → 顶栏 chip 待回写 (松手/落位时消费)
+                        elapsed = 0L
+                        held = 0
+                        floatState.peekProgress = 0f
+                        onEdgeDrag.invoke(dir)
+                    }
+                }
+            }
+
+            // ---- 纵向自动滚动 (Issue #275: 课表过长/放大时, 拖拽卡片靠近或超出视口上下边缘自动滚动) ----
+            LaunchedEffect(floatState.dragging, floatState.week) {
+                if (currentWeek != floatState.week || !floatState.dragging) return@LaunchedEffect
+                // edgeZone 按可用视口高度上限截断 (至多 1/3), 防极端矮视口下上下边缘区重叠 (Issue #275)
+                val availableHeight = (maxHeight - headH - gapH).value.coerceAtLeast(0f)
+                val edgeZone = minOf(48.dp, (availableHeight / 3f).dp)
+                val headPlusGap = headH + gapH
+                val topThreshold = headPlusGap + edgeZone
+                val bottomThreshold = maxHeight - edgeZone
+
+                while (isActive && floatState.dragging && currentWeek == floatState.week) {
+                    delay(50L)  // 50ms 平衡性能与响应性
+
+                    // 快照读取，减少 recomposition
+                    val y = floatState.y
+                    val height = floatState.height
+                    val curScroll = with(headerDensity) { scrollState.value.toDp() }
+
+                    val cardTop = y + headPlusGap - curScroll
+                    val cardBottom = cardTop + height
+                    val topOverflow = (topThreshold - cardTop).value.coerceAtLeast(0f)
+                    val bottomOverflow = (cardBottom - bottomThreshold).value.coerceAtLeast(0f)
+
+                    // 边缘方向仲裁 (Issue #275): 超长卡片/小视口可能同时触达上下两边缘区,
+                    // 优先按手势纵向拖拽倾向仲裁, 手势静止时取溢出更深一侧, 消除上下震荡死锁
+                    val scrollDir = when {
+                        topOverflow > 0f && bottomOverflow > 0f -> {
+                            when {
+                                floatState.lastDragDirY > 0 -> 1
+                                floatState.lastDragDirY < 0 -> -1
+                                bottomOverflow > topOverflow -> 1
+                                topOverflow > bottomOverflow -> -1
+                                else -> 0
+                            }
+                        }
+                        topOverflow > 0f -> -1
+                        bottomOverflow > 0f -> 1
+                        else -> 0
+                    }
+
+                    val zoneVal = edgeZone.value.coerceAtLeast(1f)
+                    if (scrollDir < 0 && scrollState.value > 0) {
+                        // 向上滚动
+                        val ratio = (topOverflow / zoneVal).coerceIn(0f, 1f)
+                        val stepDp = (3f + 11f * ratio).dp
+                        val stepPx = with(headerDensity) { stepDp.toPx() }
+                        
+                        try {
+                            val consumed = scrollState.scrollBy(-stepPx)
+                            if (consumed != 0f) {
+                                val deltaDp = with(headerDensity) { consumed.toDp() }
+                                floatState.y += deltaDp
+                                floatState.anchorScrollDp = with(headerDensity) { scrollState.value.toDp() }
+                                applyFloatSnap()
+                            }
+                        } catch (e: Exception) {
+                            // scrollBy 可能在动画过程中抛异常，捕获后继续循环
+                        }
+                    } else if (scrollDir > 0 && scrollState.value < scrollState.maxValue) {
+                        // 向下滚动
+                        val ratio = (bottomOverflow / zoneVal).coerceIn(0f, 1f)
+                        val stepDp = (3f + 11f * ratio).dp
+                        val stepPx = with(headerDensity) { stepDp.toPx() }
+                        
+                        try {
+                            val consumed = scrollState.scrollBy(stepPx)
+                            if (consumed != 0f) {
+                                val deltaDp = with(headerDensity) { consumed.toDp() }
+                                floatState.y += deltaDp
+                                floatState.anchorScrollDp = with(headerDensity) { scrollState.value.toDp() }
+                                applyFloatSnap()
+                            }
+                        } catch (e: Exception) {
+                            // scrollBy 可能在动画过程中抛异常，捕获后继续循环
+                        }
+                    }
+                }
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    // 边缘翻页锚点: 本页网格主体在 root 坐标系的左缘。翻页动画 300ms 内
+                    // 浮层用「起拖页左缘 − 当前宿主左缘」反平移钉在指下; 位移符号由实测
+                    // 坐标天然决定, 不依赖 pager 内部 offset 公式。仅浮动态写值 —
+                    // 平时回调零写入, 不给滚动加重组。
+                    .onGloballyPositioned { floatRootLeftPx = it.positionInRoot().x }
+                    .trackFloatDragPointer(floatState)
                     .then(
                         // v1.0.56 T3: 实验室开关默认关 — 手势不挂即捏不动; 开=原行为
                         if (pinchZoomEnabled) Modifier.verticalResizeGesture(
                             baseRowHeightDp = baseRowHeight,
                             currentRowHeightDp = rowHeightDp,
                             contentScale = scale,
+                            // 捏合锚点几何 (2026-11-02 用户令): 基准线=两指中间。
+                            // 与 yOfRows 同口径 — header/行高/长休带厚/折权行表。
+                            headerDp = headH.value,
+                            mealGapExtraDp = mealGapExtra.value,
+                            mealBreakRows = mealBreakAfterRows.toList(),
+                            rowWeights = boundaryWeights,
+                            scrollState = scrollState,
                             onRowHeightScaleChange = onRowHeightScaleChange
                         ) else Modifier
                     )
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .requiredSize(gridSurfaceWidth, gridSurfaceHeight)
+                        .gridFloatBlur(gridBgShape) { floatBlurRadiusPx.value }
+                        .background(colors.surfaceContainerHigh)
+                        .padding(gridPadding)
                         .verticalScroll(scrollState)
-                        .then(
-                            // 浮起=整层网格进高斯模糊纹理; 移动中/dragging=false 复原。
-                            if (floatState.active && !floatState.dragging) Modifier.gridFloatBlur()
-                            else Modifier
-                        )
                 ) {
                 // ---- 表头：自然 Compose Row ----
                 Row(
@@ -800,8 +1085,12 @@ fun CardsGridView(
                     // (override 不改变首课——findClusters 输出固定,键稳定)
                     // 用户反馈 2026-09-09: 带 timeJson 按真实时间区间(分钟级)聚簇 —
                     // 跨空隙反算的节点范围不再制造假冲突(12:30 结束被吸进 14:00 节)。
-                    val clusters = ConflictLayoutEngine.findClusters(courses, timeJson)
-                    val clusteredIds = clusters.flatMap { c -> c.courses.map { it.id } }.toSet()
+                    val clusters = remember(courses, timeJson) {
+                        ConflictLayoutEngine.findClusters(courses, timeJson)
+                    }
+                    val clusteredIds = remember(clusters) {
+                        clusters.flatMap { c -> c.courses.map { it.id } }.toSet()
+                    }
 
                     for (cluster in clusters) {
                         // 簇内课若因 visibleDays 过滤或节点不在 timeJson 则整簇跳过
@@ -905,14 +1194,25 @@ fun CardsGridView(
                             // 拖拽/落点复用浮卡同款 dragging 标记与 commitFloatDrop 判定。
                             liftGesture = if (floatAware) Modifier.continuousFloatLift(
                                 lifted = { floatState.active },
+                                allowConsumedLongPress = { it == floatState.outsideDismissUptime },
                                 onTap = { onCourseClick(course) },
                                 onLift = { liftCourse(course) },
-                                onDragStart = { floatState.dragging = true },
+                                onDragStart = {
+                                    floatState.dragging = true
+                                    floatState.lastDragDirY = 0
+                                    // 边缘判据锚: 拖拽起点中心 + 主体左缘/滚动量快照(翻页换宿主对齐用)。
+                                    floatState.dragOriginCx = floatState.x + floatState.width / 2f
+                                    floatState.anchorRootLeftPx = floatRootLeftPx
+                                    floatState.anchorScrollDp = with(headerDensity) { scrollState.value.toDp() }
+                                },
                                 onDrag = { amount ->
+                                    if (amount.y > 0.5f) floatState.lastDragDirY = 1
+                                    else if (amount.y < -0.5f) floatState.lastDragDirY = -1
                                     with(headerDensity) {
                                         floatState.x += amount.x.toDp()
                                         floatState.y += amount.y.toDp()
                                     }
+                                    applyFloatSnap() // 吸附投影 (Lawnchair): 每帧算落点, 卡随投影走
                                 },
                                 onDrop = { commitFloatDrop() },
                             ) else null,
@@ -923,126 +1223,204 @@ fun CardsGridView(
                             isGrey = course.day in greyDays,
                             scale = scale,
                             cornerRatio = cornerRatio,
-                            groupRows = courses.filter { it.groupId == course.groupId }
+                            // 置灰范围 (用户裁决 2026-10-27): 仅拖拽期间、仅被拖起那一格的原占位卡 —
+                            // 同星期且同起止节次的身份判等 + 只在原起拖页(currentWeek==originWeek)置灰。
+                            // 跨周翻页后原页仍组合(排他宿主换到目标页渲染浮层), 原占位格继续置灰;
+                            // 目标页那张「同 id/同日/同节次」的周复真实课卡绝不置灰 — 它正是落点, 压暗会误导。
+                            dragDimmed = floatState.dragging && currentWeek == floatState.originWeek &&
+                                floatState.course?.id == course.id &&
+                                course.day == floatState.day && course.startNode == floatState.originStartNode &&
+                                course.startNode + course.step.coerceAtLeast(1) - 1 == floatState.originEndNode,
+                            groupRows = groups[course.groupId].orEmpty()
                         )
                     }
-                    quickAddState.selection?.takeIf { quickAddEnabled }?.let { selected ->
+                    // 加课胶囊 = popup 家族第四处过渡 (Task 4): 弹入同款 scale+fade,
+                    // 收层瞬时移除 (与浮卡同口径 — 胶囊消失总是伴随落库/取消动作,
+                    // 退场动画只会挡手)。几何锚点提到 AV modifier 上: scaleIn 变换
+                    // 原点取 AV 边界中心, 挂内容里会弹成斜飞。判据与旧 takeIf+let 同口径。
+                    val qaSelected = quickAddState.selection?.takeIf { quickAddEnabled }
+                    val qaStart = qaSelected?.let { slotIndexOf(it.startNode) } ?: -1
+                    val qaEnd = qaSelected?.let { slotIndexOf(it.endNode) } ?: -1
+                    val qaDay = qaSelected?.let { sortedDays.indexOf(it.day) } ?: -1
+                    val qaVisible = qaSelected != null && qaStart >= 0 && qaEnd >= qaStart && qaDay >= 0
+                    // 胶囊在滚动 Column 的词法作用域内(嵌于网格 Box), @LayoutScopeMarker
+                    // 屏蔽隐式 ColumnScope 接收者 — 按编译器提示用显式接收者点列级重载,
+                    // 组合树位置不变(仍是网格 Box 的子节点), 只有解析路径变。
+                    this@Column.AnimatedVisibility(
+                        visible = qaVisible,
+                        enter = sleepyPopupEnter(),
+                        exit = ExitTransition.None,
+                        modifier = if (qaVisible) {
+                            Modifier
+                                .offset(
+                                    x = timeW + gapW + (colW + gapW) * qaDay,
+                                    y = yOfRows(qaStart.toFloat()),
+                                )
+                                .width(colW)
+                                .height(
+                                    yOfRows(qaEnd.toFloat()) + rowHeightAt(qaEnd) - gapH -
+                                        yOfRows(qaStart.toFloat())
+                                )
+                        } else Modifier,
+                    ) {
+                        val selected = qaSelected ?: return@AnimatedVisibility
                         val startIndex = slotIndexOf(selected.startNode)
                         val endIndex = slotIndexOf(selected.endNode)
-                        val dayIndex = sortedDays.indexOf(selected.day)
-                        if (startIndex >= 0 && endIndex >= startIndex && dayIndex >= 0) {
-                            val density = LocalDensity.current
-                            val maxStandard = timeJson?.let { json ->
-                                TimeTableUtils.parseTimeSlotRows(json).filter { it.edgeClass == null }.maxOfOrNull { it.node }
-                            } ?: timeSlots.maxOfOrNull { it.nodeEnd } ?: 12
-                            val nodes = renderSlots.filter { !it.isPlaceholder }.map { it.nodeStart }.toSet()
-                            // Edge periods are single-slot entries in the add form; standard periods may span adjacent nodes.
-                            var firstNode = selected.startNode
-                            var lastNode = selected.endNode
-                            if (selected.startNode in 1..maxStandard) {
-                                while (firstNode > 1 && firstNode - 1 in nodes) firstNode--
-                                while (lastNode < maxStandard && lastNode + 1 in nodes) lastNode++
-                            }
-                            var dragPosition by remember { mutableStateOf(0f) }
-                            QuickAddCourseCapsule(
-                                selection = selected,
-                                state = quickAddState,
-                                onConfirm = {
-                                    quickAddState.dismiss()
-                                    onQuickAdd?.invoke(selected.day, selected.startNode, selected.step)
-                                },
-                                onResizeStart = { top ->
-                                    dragPosition = with(density) {
-                                        (if (top) yOfRows(startIndex.toFloat())
-                                        else yOfRows(endIndex.toFloat()) + rowHeightAt(endIndex) - gapH).toPx()
-                                    }
-                                },
-                                onResize = { top, delta ->
-                                    dragPosition += delta
-                                    val candidates = if (top) firstNode..selected.endNode else selected.startNode..lastNode
-                                    val nearest = candidates.minByOrNull { node ->
-                                        val index = slotIndexOf(node)
-                                        val boundary = if (top) yOfRows(index.toFloat())
-                                            else yOfRows(index.toFloat()) + rowHeightAt(index) - gapH
-                                        abs(with(density) { boundary.toPx() } - dragPosition)
-                                    }
-                                    if (nearest != null) quickAddState.selection = if (top) selected.copy(startNode = nearest)
-                                        else selected.copy(endNode = nearest)
-                                },
-                                modifier = Modifier
-                                    .offset(x = timeW + gapW + (colW + gapW) * dayIndex, y = yOfRows(startIndex.toFloat()))
-                                    .width(colW)
-                                    .height(yOfRows(endIndex.toFloat()) + rowHeightAt(endIndex) - gapH - yOfRows(startIndex.toFloat()))
-                            )
+                        val density = LocalDensity.current
+                        val maxStandard = timeJson?.let { json ->
+                            TimeTableUtils.parseTimeSlotRows(json).filter { it.edgeClass == null }.maxOfOrNull { it.node }
+                        } ?: timeSlots.maxOfOrNull { it.nodeEnd } ?: 12
+                        val nodes = renderSlots.filter { !it.isPlaceholder }.map { it.nodeStart }.toSet()
+                        // Edge periods are single-slot entries in the add form; standard periods may span adjacent nodes.
+                        var firstNode = selected.startNode
+                        var lastNode = selected.endNode
+                        if (selected.startNode in 1..maxStandard) {
+                            while (firstNode > 1 && firstNode - 1 in nodes) firstNode--
+                            while (lastNode < maxStandard && lastNode + 1 in nodes) lastNode++
                         }
+                        var dragPosition by remember { mutableStateOf(0f) }
+                        QuickAddCourseCapsule(
+                            selection = selected,
+                            state = quickAddState,
+                            onConfirm = {
+                                quickAddState.dismiss()
+                                onQuickAdd?.invoke(selected.day, selected.startNode, selected.step)
+                            },
+                            onResizeStart = { top ->
+                                dragPosition = with(density) {
+                                    (if (top) yOfRows(startIndex.toFloat())
+                                    else yOfRows(endIndex.toFloat()) + rowHeightAt(endIndex) - gapH).toPx()
+                                }
+                            },
+                            onResize = { top, delta ->
+                                dragPosition += delta
+                                val candidates = if (top) firstNode..selected.endNode else selected.startNode..lastNode
+                                val nearest = candidates.minByOrNull { node ->
+                                    val index = slotIndexOf(node)
+                                    val boundary = if (top) yOfRows(index.toFloat())
+                                        else yOfRows(index.toFloat()) + rowHeightAt(index) - gapH
+                                    abs(with(density) { boundary.toPx() } - dragPosition)
+                                }
+                                if (nearest != null) quickAddState.selection = if (top) selected.copy(startNode = nearest)
+                                    else selected.copy(endNode = nearest)
+                            },
+                            modifier = Modifier.fillMaxSize(),
+                        )
                     }
                 }
                     if (navExtra > 0.dp) Spacer(modifier = Modifier.height(navExtra))
                 }
 
                 // ---- 浮起的课程卡 + 遮罩 + 小浮框 (滚动 Column 的兄弟节点, 不进模糊纹理) ----
-                if (floatState.active) {
-                    val lifted = floatState.course
-                    // API 26-30 无 RenderEffect — 压暗兜底把视觉焦点让给浮卡。
-                    val scrimAlpha = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) 0.35f else 0.10f
+                // 排他宿主: 浮层只渲染在 currentWeek == floatState.week 的那一页 —
+                // 边缘翻页把 week bump 到新页的同一帧, 浮层/驻留计时/落点几何整体换宿主,
+                // 动画中的旧页不再重复渲染, 也不会双份计时。
+                val scrimAlpha = scrimAlphaFor(Build.VERSION.SDK_INT)
+                var retainedLifted by remember { mutableStateOf<CourseEntity?>(null) }
+                floatState.course?.let { retainedLifted = it }
+                AnimatedVisibility(
+                    visible = floatState.active && !floatState.dragging && currentWeek == floatState.week,
+                    enter = fadeIn(floatFade),
+                    exit = if (floatState.dragging) ExitTransition.None else fadeOut(floatFade),
+                    modifier = Modifier.requiredSize(gridSurfaceWidth, gridSurfaceHeight),
+                ) {
                     Box(
                         modifier = Modifier
-                            .matchParentSize()
+                            .fillMaxSize()
                             .testTag("float-backdrop")
+                            .clip(gridBgShape)
                             .background(colors.scrim.copy(alpha = scrimAlpha))
                     )
-                    if (lifted != null) {
-                        val overlayY = floatState.y + headH + gapH - floatScrollDp
-                        FloatingOccurrenceCard(
+                }
+                // 翻页动画期跟手补偿: 「起拖页左缘 − 本宿主左缘」的实测位移反平移 —
+                // pager 滑 300ms 内卡钉在指下不随页飘; 静止两周差为 0, 无副作用。
+                val followShift = Modifier.graphicsLayer {
+                    translationX = floatState.anchorRootLeftPx - floatRootLeftPx
+                }
+                AnimatedVisibility(
+                    visible = floatState.active && if (floatState.dragging && floatState.overlayDragOwner != null)
+                        floatState.overlayDragOwner === floatOverlayOwner else currentWeek == floatState.week,
+                    enter = if (false) sleepyPopupEnter() else EnterTransition.None,
+                    exit = ExitTransition.None,
+                    modifier = followShift
+                        .floatOverlayPlacement(floatState, scrollState, headH + gapH),
+                ) {
+                    val lifted = retainedLifted ?: return@AnimatedVisibility
+                    FloatingOccurrenceCard(
+                        state = floatState,
+                        scale = scale,
+                        cornerRatio = cornerRatio,
+                        groupRows = groups[lifted.groupId].orEmpty(),
+                        onDragStart = {
+                            floatState.overlayDragOwner = floatOverlayOwner
+                            floatState.dragHostWeek = currentWeek
+                            floatState.dragging = true
+                            floatState.lastDragDirY = 0
+                            floatState.dragOriginCx = floatState.x + floatState.width / 2f
+                            floatState.anchorRootLeftPx = floatRootLeftPx
+                            floatState.anchorScrollDp = with(headerDensity) { scrollState.value.toDp() }
+                        },
+                        onDrag = { amount ->
+                            if (amount.y > 0.5f) floatState.lastDragDirY = 1
+                            else if (amount.y < -0.5f) floatState.lastDragDirY = -1
+                            with(headerDensity) {
+                                floatState.x += amount.x.toDp()
+                                floatState.y += amount.y.toDp()
+                            }
+                            applyFloatSnap() // 吸附投影 (Lawnchair): 每帧算落点, 卡随投影走
+                        },
+                        onDrop = { commitFloatDrop() },
+                        onResizeStart = { top -> seedFloatResize(top) },
+                        onResize = { top, delta -> applyFloatResize(top, delta) },
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+                // 边缘预览条: 拖拽压边期间左右各挂一个候选(显隐由 edgeDir/peekProgress 决定)。
+                if (onEdgeDrag != null && floatMaxWeek > 0 && floatState.dragging && currentWeek == floatState.week) {
+                    FloatEdgePeek(
+                        dir = -1,
+                        progress = if (floatState.edgeDir < 0 || floatState.edgeBlocked < 0) floatState.peekProgress else 0f,
+                        targetWeek = (floatState.week - 1).coerceAtLeast(1),
+                        blocked = floatState.week <= 1,
+                        scale = scale,
+                        modifier = Modifier.align(Alignment.CenterStart),
+                    )
+                    FloatEdgePeek(
+                        dir = 1,
+                        progress = if (floatState.edgeDir > 0 || floatState.edgeBlocked > 0) floatState.peekProgress else 0f,
+                        targetWeek = (floatState.week + 1).coerceAtMost(floatMaxWeek),
+                        blocked = floatState.week >= floatMaxWeek,
+                        scale = scale,
+                        modifier = Modifier.align(Alignment.CenterEnd),
+                    )
+                }
+                AnimatedVisibility(
+                    visible = floatState.active && !floatState.dragging && currentWeek == floatState.week,
+                    enter = sleepyPopupEnter(),
+                    exit = if (false) sleepyPopupExit() else ExitTransition.None,
+                    modifier = followShift
+                        .floatOverlayPlacement(floatState, scrollState, headH + gapH, popupOffset = d(36f)),
+                ) {
+                    val lifted = retainedLifted ?: return@AnimatedVisibility
+                    Box(
+                        modifier = Modifier.width(floatState.width),
+                        contentAlignment = Alignment.TopCenter,
+                    ) {
+                        FloatActionPopup(
                             state = floatState,
                             scale = scale,
-                            cornerRatio = cornerRatio,
-                            groupRows = courses.filter { it.groupId == lifted.groupId },
-                            onDragStart = { floatState.dragging = true },
-                            onDrag = { amount ->
-                                with(headerDensity) {
-                                    floatState.x += amount.x.toDp()
-                                    floatState.y += amount.y.toDp()
-                                }
+                            onEdit = {
+                                floatState.dismiss()
+                                // 浮窗已点「调整本次」→ 优先直达回调; 无则退回长按通道。
+                                if (onOccurrenceEdit != null) onOccurrenceEdit(lifted)
+                                else onCourseLongClick?.invoke(lifted)
                             },
-                            onDrop = { commitFloatDrop() },
-                            onResizeStart = { top -> seedFloatResize(top) },
-                            onResize = { top, delta -> applyFloatResize(top, delta) },
-                            modifier = Modifier
-                                .offset(x = floatState.x, y = overlayY)
-                                .width(floatState.width)
-                                .height(floatState.height),
+                            onDelete = {
+                                floatState.dismiss()
+                                onOccurrenceDelete?.invoke(lifted)
+                            },
+                            modifier = Modifier.wrapContentWidth(unbounded = true),
                         )
-                        if (!floatState.dragging) {
-                            // 浮框宽于列宽(文案"调整本次|删除本次" ≈ 2×列宽): 容器收列宽,
-                            // 内容 wrapContentWidth(unbounded) 量自然宽并居中溢出绘制 —
-                            // 否则 Row 被压到列宽, 右半段(删除)宽度塌缩为 0 不可点。
-                            Box(
-                                modifier = Modifier
-                                    .offset(
-                                        x = floatState.x,
-                                        y = (overlayY - d(36f)).coerceAtLeast(0.dp),
-                                    )
-                                    .width(floatState.width),
-                                contentAlignment = Alignment.TopCenter,
-                            ) {
-                                FloatActionPopup(
-                                    state = floatState,
-                                    scale = scale,
-                                    onEdit = {
-                                        floatState.dismiss()
-                                        // 浮窗已点「调整本次」→ 优先直达回调; 无则退回长按通道。
-                                        if (onOccurrenceEdit != null) onOccurrenceEdit(lifted)
-                                        else onCourseLongClick?.invoke(lifted)
-                                    },
-                                    onDelete = {
-                                        floatState.dismiss()
-                                        onOccurrenceDelete?.invoke(lifted)
-                                    },
-                                    modifier = Modifier.wrapContentWidth(unbounded = true),
-                                )
-                            }
-                        }
                     }
                 }
             }
@@ -1054,6 +1432,11 @@ private fun Modifier.verticalResizeGesture(
     baseRowHeightDp: Float,
     currentRowHeightDp: Float,
     contentScale: Float,
+    headerDp: Float,
+    mealGapExtraDp: Float,
+    mealBreakRows: List<Int>,
+    rowWeights: List<Float>,
+    scrollState: ScrollState,
     onRowHeightScaleChange: (Float) -> Unit
 ): Modifier {
     return composed {
@@ -1061,12 +1444,20 @@ private fun Modifier.verticalResizeGesture(
         val latestRowHeight by rememberUpdatedState(currentRowHeightDp)
         val latestScale by rememberUpdatedState(contentScale)
         val latestOnChange by rememberUpdatedState(onRowHeightScaleChange)
+        val latestHeaderDp by rememberUpdatedState(headerDp)
+        val latestMealGapExtraDp by rememberUpdatedState(mealGapExtraDp)
+        val latestMealBreakRows by rememberUpdatedState(mealBreakRows)
+        val latestRowWeights by rememberUpdatedState(rowWeights)
 
         pointerInput(Unit) {
             awaitPointerEventScope {
                 var startVerticalSpan: Float? = null
                 var startHorizontalSpan = 0f
                 var startRowHeightDp = latestRowHeight
+                var startRowPx = 0f
+                // 捏合锚点 (2026-11-02 用户令): 基准线 = 两指中间。起点把中心钉住,
+                // 之后每帧按绝对目标滚动补偿 — 中途帧被 maxScroll 旧上限截断也能自愈。
+                var anchor: TimetableViewportPolicy.PinchAnchor? = null
                 var locked = false
 
                 while (true) {
@@ -1081,6 +1472,16 @@ private fun Modifier.verticalResizeGesture(
                             startVerticalSpan = verticalSpan.coerceAtLeast(1f)
                             startHorizontalSpan = horizontalSpan
                             startRowHeightDp = latestRowHeight
+                            startRowPx = with(density) { latestRowHeight.dp.toPx() }
+                            anchor = TimetableViewportPolicy.capturePinchAnchor(
+                                scrollPx = scrollState.value.toFloat(),
+                                centerYPx = (first.y + second.y) / 2f,
+                                headerPx = with(density) { latestHeaderDp.dp.toPx() },
+                                rowPx = startRowPx,
+                                mealGapExtraPx = with(density) { latestMealGapExtraDp.dp.toPx() },
+                                breakRows = latestMealBreakRows,
+                                weights = latestRowWeights
+                            )
                         }
 
                         if (!locked && TimetableViewportPolicy.locksVerticalResize(
@@ -1106,6 +1507,18 @@ private fun Modifier.verticalResizeGesture(
                             latestOnChange(
                                 nextRowHeight / latestBaseRowHeight.coerceAtLeast(1f)
                             )
+                            // 滚动补偿: 预测新行高 (与布局 manualRowHeightDp 同公式, 确定值),
+                            // 把锚点内容钉在捏合中心下。旧口径无此步 → 内容以网格顶为基准
+                            // 向下生长, 捏在中部时指下内容被拖走。
+                            val a = anchor
+                            if (a != null) {
+                                val rowPx1 = with(density) { nextRowHeight.dp.toPx() }
+                                val target = TimetableViewportPolicy.pinchTargetScrollPx(a, startRowPx, rowPx1)
+                                val delta = target - scrollState.value
+                                // dispatchRawDelta = 非挂起同步滚动 (受限挂起作用域内不可用 scrollBy),
+                                // 顺带打断进行中的 fling — 捏合中不应再有惯性漂移。
+                                if (abs(delta) >= 0.5f) scrollState.dispatchRawDelta(delta)
+                            }
                             event.changes.forEach { it.consume() }
                         } else {
                             val verticalDelta = abs(verticalSpan - startVerticalSpan!!)
@@ -1119,6 +1532,7 @@ private fun Modifier.verticalResizeGesture(
                         }
                     } else {
                         startVerticalSpan = null
+                        anchor = null
                         locked = false
                     }
                 }
@@ -1203,6 +1617,9 @@ internal fun CourseOverlayCard(
     // 浮动态连续手势(A 契约): 非 null 即整卡交互改走该修饰符(长按浮起→不松手即拖),
     // onClick/onLongClick 不再挂载 — 与 onClick 可空模式同款, 调用方只传一个语义开关。
     liftGesture: Modifier? = null,
+    // 边缘翻页特性 (2026-10-27 用户裁决): 被拖起课程的原占位卡在拖拽期间纯降透明度置灰
+    // (Material 3 disabled-content 档, SleepyTheme.Alpha.dragDim)。跟手浮卡不传, 恒全亮。
+    dragDimmed: Boolean = false,
 ) {
     val palette = SleepyTheme.palette
     val colors = MaterialTheme.colorScheme
@@ -1245,6 +1662,8 @@ internal fun CourseOverlayCard(
     Box(
         modifier = modifier
             .padding(sd(2f))
+            // 拖拽置灰 (边缘翻页特性): 原占位卡整卡纯降透明度, 浮卡跟手恒全亮。
+            .then(if (dragDimmed) Modifier.graphicsLayer { alpha = SleepyTheme.Alpha.dragDim }.testTag("float-dim") else Modifier)
             .clip(shape)
             .background(effectiveBg)
             .then(liftGesture ?: if (onClick != null) Modifier.noRippleCombinedClickable(onClick, onLongClick) else Modifier)
@@ -1373,7 +1792,7 @@ fun FullWeekView(
     displayMode: String = "node",
     timeJson: String = "",
     today: Int = DateUtils.todayDayOfWeek(),
-    todayDate: java.time.LocalDate = java.time.LocalDate.now(),
+    todayDate: java.time.LocalDate = java.time.LocalDate.now(AppClock),
     startDate: String = "",
     currentWeek: Int = 1,
     onCourseClick: (CourseEntity) -> Unit,
@@ -1399,7 +1818,7 @@ fun FullWeekView(
     val hideEmptyDays = AppPrefs.isWeekHideEmptyDays(context)
     // issue#26: 周视图场景别名 — 周视图设置开才用别名; 传给所有子渲染单元
     val useAlias = AppPrefs.isWeekUseAlias(context)
-    val byDay = courses.groupBy { it.day }
+    val byDay = remember(courses) { courses.groupBy { it.day } }
     val navExtra = com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding.current
 
     /** 每天的 M月d日 日期字符串 — showDate 开且 startDate 合法时显示 (用户要求: 周一·10月13日) */
@@ -1757,7 +2176,7 @@ private fun DayColumn(
         verticalArrangement = Arrangement.spacedBy(sd(10f))
     ) {
         for (day in days) {
-            val dayCourses = byDay[day].orEmpty().sortedBy { it.startNode }
+            val dayCourses = remember(byDay, day) { byDay[day].orEmpty().sortedBy { it.startNode } }
             DetailDayCard(
                 day = day,
                 courses = dayCourses,
@@ -1829,6 +2248,7 @@ private fun DetailDayCard(
             val rows = remember(courses, timeJson) {
                 ConflictLayoutEngine.weekLaneRows(courses, timeJson.ifBlank { null })
             }
+            val groups = remember(courses) { courses.groupBy { it.groupId } }
 
             Column(verticalArrangement = Arrangement.spacedBy(sd(7f))) {
                 rows.forEach { row ->
@@ -1838,7 +2258,7 @@ private fun DetailDayCard(
                             onClick = { onCourseClick(row.courses[0]) },
                             onLongClick = onCourseLongClick?.let { callback -> { callback(row.courses[0]) } }, isGrey = isGrey,
                             scale = scale, cornerRatio = cornerRatio,
-                            groupRows = courses.filter { it.groupId == row.courses[0].groupId }
+                            groupRows = groups[row.courses[0].groupId].orEmpty()
                         )
                     } else {
                         // 冲突行: 按 lane 并排,每列 weight 均分,同栏课程纵向堆叠
@@ -1880,7 +2300,7 @@ private fun DetailDayCard(
                             onLongClick = onCourseLongClick?.let { callback -> { callback(laneCourse) } },
                                                     isGrey = isGrey, scale = scale, cornerRatio = cornerRatio,
                                                     laneScale = laneScale, hideSideLabel = hideSide,
-                                                    groupRows = courses.filter { it.groupId == laneCourse.groupId }
+                                                    groupRows = groups[laneCourse.groupId].orEmpty()
                                                 )
                                             }
                                         }

@@ -19,6 +19,7 @@ import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.util.WeekDisplayStatus
 import java.time.LocalDate
 import kotlin.math.roundToInt
+import com.lingion.sleepy.util.AppClock
 
 /**
  * Canvas bitmap 渲染器 — 各 Receiver.loadDataSync 拉数据后由本对象渲染，
@@ -425,20 +426,26 @@ object WidgetBitmapRenderers {
         val rowGap = 4f * density  // 2026-09-14d 密度二调 — 与 TodayRowGeometry 同源
         val rowW = w - pad * 2
 
-        val laneRows = com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(data.courses, data.timeJson)
+        val cleanTimeJson = com.lingion.sleepy.util.TimeTableUtils.sanitizeTimeJsonForDisplay(data.timeJson)
+        val laneRows = com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(data.courses, cleanTimeJson)
         val sepColor = (s.onSurface and 0x00FFFFFF) or 0x4D000000  // 30% 黑(浅色主题下=浅灰细线)
         val stackGap = 3f * density
         // FIXED 窗口: 只画窗内课程 (聚类按重叠链分簇, 连续簇子集重聚类 = 原簇序列,
         // 与推送侧窗口同一 weekLaneRows 口径 → 行几何逐像素一致)
-        val spans = TodayRowGeometry.rowSpans(visibleCourses ?: data.courses, headerSpace, data.timeJson)
+        val spans = TodayRowGeometry.rowSpans(visibleCourses ?: data.courses, headerSpace, cleanTimeJson)
         spans.forEach { span ->
             val row = span.row
             val y = span.topDp * density
             if (row.laneCount == 1) {
-                drawCourse(canvas, p, row.courses[0], data.timeJson, pad, y, rowW, rowH, s, density,
-                    fontSizeSp = 11f, colorless = colorless, displayMode = displayMode,
-                    groupRows = data.courses.filter { it.groupId == row.courses[0].groupId },
-                    useAlias = useAlias, isGrey = data.isGrey)
+                var singleY = y
+                row.courses.forEachIndexed { ci, course ->
+                    drawCourse(canvas, p, course, cleanTimeJson, pad, singleY, rowW, rowH, s, density,
+                        fontSizeSp = 11f, colorless = colorless, displayMode = displayMode,
+                        groupRows = data.courses.filter { it.groupId == course.groupId },
+                        useAlias = useAlias, isGrey = data.isGrey)
+                    singleY += rowH
+                    if (ci < row.courses.size - 1) singleY += stackGap
+                }
             } else {
                 val laneGap = 5f * density
                 val laneW = (rowW - laneGap * (row.laneCount - 1)) / row.laneCount
@@ -457,7 +464,7 @@ object WidgetBitmapRenderers {
                     val laneCourses = row.courses.filter { row.laneOf[it.id] == li }
                     var ly = y
                     laneCourses.forEachIndexed { ci, laneCourse ->
-                        drawCourse(canvas, p, laneCourse, data.timeJson, laneX, ly, laneW, rowH, s, density,
+                        drawCourse(canvas, p, laneCourse, cleanTimeJson, laneX, ly, laneW, rowH, s, density,
                             fontSizeSp = 10f, colorless = colorless, displayMode = displayMode,
                             groupRows = data.courses.filter { it.groupId == laneCourse.groupId },
                             useAlias = useAlias, isGrey = data.isGrey)
@@ -766,7 +773,7 @@ object WidgetBitmapRenderers {
         visibleByCol: List<List<com.lingion.sleepy.data.entity.CourseEntity>?>?,
         footerByCol: List<String?>?
     ): Bitmap {
-        val todayDow = LocalDate.now().dayOfWeek.value
+        val todayDow = LocalDate.now(AppClock).dayOfWeek.value
         val visibleDays = AppPrefs.getVisibleDays(context)
         // compact 脸日列 = compactShownDays 单一口径 (compactWindow 优先, 可跨上下周)
         val compactData = data.copy(days = compactShownDays(data, visibleDays, todayDow))
@@ -837,7 +844,7 @@ object WidgetBitmapRenderers {
             return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
         }
 
-        val todayDow = LocalDate.now().dayOfWeek.value
+        val todayDow = LocalDate.now(AppClock).dayOfWeek.value
         val colGap = 4f * density
         val dayCount = shownDays.size
         val colW = (innerW - colGap * (dayCount - 1)) / dayCount
@@ -1108,7 +1115,7 @@ object WidgetBitmapRenderers {
         context: Context, data: WeekData, wDp: Float, hDp: Float,
         maxCoursesPerDay: Int = 5
     ): Bitmap {
-        val todayDow = LocalDate.now().dayOfWeek.value
+        val todayDow = LocalDate.now(AppClock).dayOfWeek.value
         // visibleDays 同 Regular 档读法(决策 D5-12): 空集回退全周防御; 日列走 compactShownDays 单一口径
         val visibleDays = AppPrefs.getVisibleDays(context)
         val compactData = data.copy(days = compactShownDays(data, visibleDays, todayDow))
@@ -1161,7 +1168,7 @@ object WidgetBitmapRenderers {
             return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
         }
 
-        val todayDow = LocalDate.now().dayOfWeek.value
+        val todayDow = LocalDate.now(AppClock).dayOfWeek.value
         val colGap = 4f * density
         val dayCount = shownDays.size
         val colW = (innerW - colGap * (dayCount - 1)) / dayCount

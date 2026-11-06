@@ -24,11 +24,9 @@ class LabUndoDepthContractTest {
             "app/src/main/java/com/lingion/sleepy/ui/screen/mine/GeneralSettingsScreen.kt",
             "src/main/java/com/lingion/sleepy/ui/screen/mine/GeneralSettingsScreen.kt"
         )
-        val start = source.indexOf("R.string.settings_lab")
-            .takeIf { it >= 0 } ?: error("GeneralSettingsScreen 缺少实验室分组 — 契约锚点需同步")
-        val end = source.indexOf("R.string.settings_migration", start)
-            .takeIf { it >= 0 } ?: error("GeneralSettingsScreen 缺少数据迁移分组 — 契约锚点需同步")
-        source.substring(start, end)
+        assertTrue("Editing group must exist", source.contains("R.string.settings_editing"))
+        assertTrue("Experimental status must remain visible", source.contains("R.string.settings_undo_experiment"))
+        source
     }
 
     private val sleepyAppSource: String by lazy {
@@ -50,23 +48,18 @@ class LabUndoDepthContractTest {
     }
 
     @Test
-    fun `lab input filter requires the full digit pattern outside comments`() {
-        // -1 是法定输入, 过滤正则必须留在代码里; 注释含 -? 字样不算数:
-        // 先剥每行行内注释, 再要求源码 Regex 字面量的完整模式, 防"删正则留注释"的空过。
-        val codeOnly = labSegment.lines().joinToString("\n") { it.substringBefore("//") }
-        assertTrue(
-            "输入过滤必须含完整模式 -?\\\\d{0,6}(源码 Regex 字面量形态) — 删正则只留注释即变红",
-            """-?\\d{0,6}""" in codeOnly
-        )
+    fun `undo mode exposes off limited and unlimited without magic number entry`() {
+        listOf("settings_undo_off", "settings_undo_limited", "settings_undo_unlimited").forEach {
+            assertTrue("Explicit undo mode missing: $it", labSegment.contains(it))
+        }
+        assertTrue(labSegment.contains("0 -> 0; 2 -> -1"))
     }
 
     @Test
-    fun `lab row rejects blank and unparsable input without persisting`() {
-        // 空白/非法输入不落库: isBlank 早退 + toIntOrNull ?: return 双守卫
-        assertTrue(
-            "空白与非法输入必须早退不落库",
-            "isBlank" in labSegment && "toIntOrNull() ?: return" in labSegment
-        )
+    fun `limited undo depth rejects empty zero and malformed input`() {
+        assertTrue(labSegment.contains("value.length <= 6 && value.all { it.isDigit() }"))
+        assertTrue(labSegment.contains("value.toIntOrNull()?.takeIf { it > 0 }?.let { setUndoDepth(it) }"))
+        assertTrue(labSegment.contains("isError = customDepth.toIntOrNull()?.let { it > 0 } != true"))
     }
 
     @Test

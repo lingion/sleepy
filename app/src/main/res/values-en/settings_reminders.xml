@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_table_reminder_scope">Timetables to remind</string>
+    <string name="settings_reminder_test_compatibility">Testing and compatibility</string>
+    <string name="settings_reminder_permissions_attention">Review reminder permissions</string>
+    <string name="settings_reminder_permissions">Permissions and background activity</string>
+    <string name="settings_reminder_widget_optional">Widgets are optional and are not required to receive reminders.</string>
+    <string name="settings_holiday_title_rules">Holidays and make-up classes</string>
+    <string name="settings_holiday_dates">Manage dates</string>
+    <string name="settings_holiday_dates_scope">Date ranges are shared by all timetables. Make-up mappings apply only to the timetable selected above.</string>
+    <string name="settings_holiday_maintenance">Maintenance</string>
+</resources>

@@ -1,7 +1,11 @@
 package com.lingion.sleepy.ui.component
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -50,15 +54,18 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.lingion.sleepy.R
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.data.entity.SmartPeriodConfig
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
@@ -152,7 +159,11 @@ fun TimeSlotEditor(
     periodTableOptions: List<PeriodTableOption> = emptyList(),
     selectedPeriodTableId: Long? = null,
     onSelectPeriodTable: (Long?) -> Unit = {},
-    excludePeriodTableId: Long? = null
+    excludePeriodTableId: Long? = null,
+    // 调试台语义身份前缀: 传 prefix → Tab=<prefix>_mode#i、加行=<prefix>_add、
+    // 行=<prefix>_row#i、删行=<prefix>_row#i_delete、起止=<prefix>_row#i_start/_end、
+    // 作息绑定=<prefix>_bind_none/_bind#<id>; null = 不打标, 既有调用点零影响
+    dbgTagPrefix: String? = null
 ) {
     var mode by remember { mutableStateOf(Mode.Manual) }
 
@@ -177,7 +188,8 @@ fun TimeSlotEditor(
         ModeTabSwitch(
             current = mode,
             onChange = { next -> if (next == Mode.Auto) switchToAuto() else mode = next },
-            hasPeriodTableTab = periodTableOptions.isNotEmpty() || selectedPeriodTableId != null
+            hasPeriodTableTab = periodTableOptions.isNotEmpty() || selectedPeriodTableId != null,
+            dbgTagPrefix = dbgTagPrefix
         )
         Spacer(Modifier.height(8.dp))
 
@@ -186,16 +198,19 @@ fun TimeSlotEditor(
                 rows = rows,
                 onRowsChange = onRowsChange,
                 reorderEnabled = reorderEnabled,
-                courses = courses
+                courses = courses,
+                dbgTagPrefix = dbgTagPrefix
             )
             Mode.Auto -> SmartPeriodEditor(
                 config = smartConfig,
-                onConfigChange = onSmartConfigChange
+                onConfigChange = onSmartConfigChange,
+                dbgTagPrefix = dbgTagPrefix?.let { "${it}_auto" }
             )
             Mode.PeriodTable -> PeriodTableBindTab(
                 options = periodTableOptions.filterNot { it.id == excludePeriodTableId },
                 selectedId = selectedPeriodTableId,
-                onSelect = onSelectPeriodTable
+                onSelect = onSelectPeriodTable,
+                dbgTagPrefix = dbgTagPrefix
             )
         }
     }
@@ -209,7 +224,12 @@ enum class Mode { Manual, Auto, PeriodTable }
 data class PeriodTableOption(val id: Long, val name: String, val nodesPerDay: Int)
 
 @Composable
-private fun ModeTabSwitch(current: Mode, onChange: (Mode) -> Unit, hasPeriodTableTab: Boolean) {
+private fun ModeTabSwitch(
+    current: Mode,
+    onChange: (Mode) -> Unit,
+    hasPeriodTableTab: Boolean,
+    dbgTagPrefix: String? = null
+) {
     // 2026-08-25 用户指令: 全 app 统一色块禁描线 — M3 SegmentedButton 是描边风格,
     // 换项目统一的 SegmentedSwitcher (主页周视图/网格同款)
     val modes = if (hasPeriodTableTab) Mode.entries else listOf(Mode.Manual, Mode.Auto)
@@ -225,6 +245,7 @@ private fun ModeTabSwitch(current: Mode, onChange: (Mode) -> Unit, hasPeriodTabl
         },
         selected = current,
         onSelect = onChange,
+        dbgTagPrefix = dbgTagPrefix?.let { "${it}_mode" },
         modifier = Modifier.fillMaxWidth()
     )
 }
@@ -238,7 +259,8 @@ private fun ModeTabSwitch(current: Mode, onChange: (Mode) -> Unit, hasPeriodTabl
 private fun PeriodTableBindTab(
     options: List<PeriodTableOption>,
     selectedId: Long?,
-    onSelect: (Long?) -> Unit
+    onSelect: (Long?) -> Unit,
+    dbgTagPrefix: String? = null
 ) {
     val colors = MaterialTheme.colorScheme
     Column(
@@ -252,14 +274,16 @@ private fun PeriodTableBindTab(
         BindChoiceRow(
             title = stringResource(R.string.period_table_unbound),
             selected = selectedId == null,
-            onClick = { onSelect(null) }
+            onClick = { onSelect(null) },
+            tag = dbgTagPrefix?.let { "${it}_bind_none" }
         )
         options.forEach { opt ->
             BindChoiceRow(
                 title = opt.name,
                 subtitle = stringResource(R.string.period_table_nodes_count, opt.nodesPerDay),
                 selected = selectedId == opt.id,
-                onClick = { onSelect(opt.id) }
+                onClick = { onSelect(opt.id) },
+                tag = dbgTagPrefix?.let { "${it}_bind#${opt.id}" }
             )
         }
     }
@@ -267,7 +291,7 @@ private fun PeriodTableBindTab(
 
 /** 选中态=primaryContainer 色块+对勾(UI 纯色块禁描边规则, 与换绑卡 BindOptionRow 同构) */
 @Composable
-private fun BindChoiceRow(title: String, selected: Boolean, onClick: () -> Unit, subtitle: String? = null) {
+private fun BindChoiceRow(title: String, selected: Boolean, onClick: () -> Unit, subtitle: String? = null, tag: String? = null) {
     val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
@@ -275,6 +299,7 @@ private fun BindChoiceRow(title: String, selected: Boolean, onClick: () -> Unit,
             .clip(SleepyTheme.shapes.medium)
             .background(if (selected) colors.primaryContainer else colors.surface)
             .noRippleClickable(onClick)
+            .then(tag?.let { Modifier.dbgTag(it, text = title, role = "radio") } ?: Modifier)
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -310,6 +335,7 @@ private fun ManualTimeSlotEditor(
     onRowsChange: (List<TimeSlotRow>) -> Unit,
     reorderEnabled: Boolean,
     courses: List<com.lingion.sleepy.data.entity.CourseEntity>,
+    dbgTagPrefix: String? = null,
     modifier: Modifier = Modifier
 ) {
     var displayRows by remember { mutableStateOf(rows) }
@@ -318,8 +344,15 @@ private fun ManualTimeSlotEditor(
     var targetIndex by remember { mutableStateOf<Int?>(null) }
     val density = LocalDensity.current
     val rowGapPx = with(density) { ROW_GAP_DP.toPx() }
-    // Animatable: spring 驱动 dragOffset, 修 P1 rubber-banding + P3 瞬移无回弹
+    // Animatable: 弹簧驱动 dragOffset, 修 P1 rubber-banding + P3 瞬移无回弹
     val dragOffsetY = remember { Animatable(0f) }
+    // MD3E 规格 (Task 5): settle/取消 = fastSpatial (回弹落定性格),
+    // 非法弹回/边界冻结 = defaultSpatial (收稳不弹)。pointerInput 启动时捕获。
+    val motion = MaterialTheme.motionScheme
+    val settleSpec = motion.fastSpatialSpec<Float>()
+    val returnSpec = motion.defaultSpatialSpec<Float>()
+    val rowHostSpec = motion.defaultSpatialSpec<IntSize>()
+    val rowExpand = sleepyExpandSpecs()
     val rowHeightPx = remember { mutableStateOf(1f) }
     val coroutineScope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
@@ -344,11 +377,13 @@ private fun ManualTimeSlotEditor(
                 // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 小号色块按钮
                 Button(
                     onClick = { onRowsChange(TimeTableUtils.appendEmptyRow(rows)) },
+                    modifier = dbgTagPrefix?.let { Modifier.dbgTag("${it}_add", role = "button") }
+                        ?: Modifier.testTag("timeslot-add-row"),
                     shape = SleepyTheme.shapes.medium,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colors.secondaryContainer,
                         contentColor = colors.onSecondaryContainer
-                    )
+                    ),
                 ) {
                     Icon(
                         Icons.Outlined.Add,
@@ -368,10 +403,12 @@ private fun ManualTimeSlotEditor(
                 )
             }
 
-            // Rows
+            // Rows — animateContentSize: 增删行时面板高度平滑过渡
+            // (行在普通 Column, 无 lazy 列表 → animateItem() 不适用, 计划宣告的 fallback)。
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .animateContentSize(rowHostSpec)
                     .background(colors.surfaceContainerLow, SleepyTheme.shapes.large)
                     .padding(10.dp),
                 verticalArrangement = Arrangement.spacedBy(ROW_GAP_DP)
@@ -391,6 +428,22 @@ private fun ManualTimeSlotEditor(
                     }
                     val longPressLabel = stringResource(R.string.timeslot_longpress_to_reorder)
                     val courseNodeLabel = stringResource(R.string.course_node_format, index + 1)
+                    // 入场配方 (官方 "普通列表里新项的动画" 模式): remember 槽位按组合位置
+                    // 记忆 — 末尾增行只有新槽位首播展开入场; 中间删行时后续行落在既有
+                    // 槽位 (state 已是 true) → 不重播, 高度收拢交给宿主 animateContentSize。
+                    val rowVisible = remember { MutableTransitionState(false).apply { targetState = true } }
+                    this@Column.AnimatedVisibility(
+                        visibleState = rowVisible,
+                        enter = rowExpand.enter,
+                        exit = rowExpand.exit,
+                        // zIndex 随拖拽态上浮: 行现在是 AV 的子节点, 兄弟行的绘制次序由
+                        // AV (宿主 Column 的直接子节点) 决定 — 层级必须挂在 AV 上,
+                        // 挂进行内部 (TimeSlotRowItem) 只在单子树内生效, 拖起卡片会被后续行盖住。
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .zIndex(if (isDragging) 1f else 0f)
+                            .testTag("timeslot-row"),
+                    ) {
                     val rowLongPress = Modifier.pointerInput(index, reorderEnabled) {
                         if (!reorderEnabled) return@pointerInput
                         detectDragGesturesAfterLongPress(
@@ -403,7 +456,7 @@ private fun ManualTimeSlotEditor(
                             },
                             onDragCancel = {
                                 coroutineScope.launch {
-                                    dragOffsetY.animateTo(0f, spring())
+                                    dragOffsetY.animateTo(0f, settleSpec)
                                     draggingIndex = null
                                     targetIndex = null
                                     invalidTarget = false
@@ -427,7 +480,7 @@ private fun ManualTimeSlotEditor(
                                     displayRows = reordered
                                     onRowsChange(reordered)
                                     coroutineScope.launch {
-                                        dragOffsetY.animateTo(0f, spring())
+                                        dragOffsetY.animateTo(0f, settleSpec)
                                         snackbarHostState.showSnackbar(
                                             message = invalidMsg,
                                             duration = androidx.compose.material3.SnackbarDuration.Short
@@ -439,7 +492,7 @@ private fun ManualTimeSlotEditor(
                                     invalidTarget = false
                                     displayRows = rows
                                     coroutineScope.launch {
-                                        dragOffsetY.animateTo(0f, spring())
+                                        dragOffsetY.animateTo(0f, returnSpec)
                                     }
                                 }
                             },
@@ -462,11 +515,11 @@ private fun ManualTimeSlotEditor(
                                 val nowInvalid = !TimeTableUtils.canReorderTimeSlot(displayRows, from, to, courses)
                                 if (nowInvalid && !invalidTarget) {
                                     haptic.performHapticFeedback(HapticFeedbackType.Reject)
-                                    // 冻结: snap 到 (to - from) 行偏 — 边界位停止跟随手指
+                                    // 冻结: 弹簧 snap 到 (to - from) 行偏 — 边界位停止跟随手指
                                     coroutineScope.launch {
                                         dragOffsetY.animateTo(
                                             (to - from) * rowPitch,
-                                            spring()
+                                            returnSpec
                                         )
                                     }
                                 }
@@ -474,19 +527,25 @@ private fun ManualTimeSlotEditor(
                             }
                         )
                     }
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    val conflictMsg = TimeTableUtils.findConflictForSlot(displayRows, row.node)?.errorMessage(context)
                     TimeSlotRowItem(
                         row = row.copy(node = index + 1),
                         canDelete = displayRows.size > 1,
                         isBlank = row.start.isBlank() && row.end.isBlank(),
+                        conflictMsg = conflictMsg,
                         reorderEnabled = reorderEnabled,
                         isDragging = isDragging,
                         isDropTarget = isDropTarget,
                         dropInvalid = dropInvalid,
                         longPressModifier = rowLongPress,
                         offsetY = dragOffsetY.value,
+                        rowTag = dbgTagPrefix?.let { "${it}_row#$index" },
+                        startTag = dbgTagPrefix?.let { "${it}_row#${index}_start" },
+                        endTag = dbgTagPrefix?.let { "${it}_row#${index}_end" },
+                        deleteTag = dbgTagPrefix?.let { "${it}_row#${index}_delete" },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .zIndex(if (isDragging) 1f else 0f)
                             .offset { IntOffset(0, dragOffsetY.value.toInt()) }
                             .onSizeChanged { size -> if (size.height > 0) rowHeightPx.value = size.height.toFloat() }
                             .semantics(mergeDescendants = true) {
@@ -500,6 +559,7 @@ private fun ManualTimeSlotEditor(
                         onEndChange = { newEnd -> onRowsChange(displayRows.map { if (it.node == row.node) it.copy(end = newEnd) else it }) },
                         onDelete = { onRowsChange(TimeTableUtils.removeAndRenumber(displayRows, row.node)) }
                     )
+                    }
                 }
             }
         }
@@ -515,26 +575,41 @@ private fun TimeSlotRowItem(
     row: TimeSlotRow,
     canDelete: Boolean,
     isBlank: Boolean,
+    conflictMsg: String? = null,
     reorderEnabled: Boolean,
     isDragging: Boolean,
     isDropTarget: Boolean,
     dropInvalid: Boolean,
     longPressModifier: Modifier,
     offsetY: Float,
+    startTag: String? = null,
+    endTag: String? = null,
+    deleteTag: String? = null,
+    rowTag: String? = null,
     modifier: Modifier = Modifier,
     onStartChange: (String) -> Unit,
     onEndChange: (String) -> Unit,
     onDelete: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
-    val containerColor = when {
-        dropInvalid -> colors.errorContainer
-        isDragging -> colors.primaryContainer
-        isBlank -> colors.secondaryContainer  // 空白行特权视觉: 整卡浅色
-        else -> colors.surface
-    }
+    val motion = MaterialTheme.motionScheme
+    // MD3E (Task 5): 色彩族互换 (错误容器/主容器/空白/面) 走 defaultEffects 缓动,
+    // 高度 0↔6dp 走 defaultSpatial — 拖起/落下不再硬切。
+    val containerColor by animateColorAsState(
+        targetValue = when {
+            dropInvalid -> colors.errorContainer
+            conflictMsg != null -> colors.errorContainer.copy(alpha = 0.4f)
+            isDragging -> colors.primaryContainer
+            isBlank -> colors.secondaryContainer  // 空白行特权视觉: 整卡浅色
+            else -> colors.surface
+        },
+        animationSpec = motion.defaultEffectsSpec(),
+    )
     val rowShape = SleepyTheme.shapes.medium
-    val dragElevation = if (isDragging) 6.dp else 0.dp
+    val dragElevation by animateDpAsState(
+        targetValue = if (isDragging) 6.dp else 0.dp,
+        animationSpec = motion.defaultSpatialSpec(),
+    )
     val dropBorderModifier = if (isDropTarget) Modifier.border(
         width = 2.dp,
         color = colors.primary,
@@ -561,6 +636,15 @@ private fun TimeSlotRowItem(
                 .background(containerColor)
                 .then(dropBorderModifier)
                 .then(if (reorderEnabled) longPressModifier else Modifier)
+                .then(
+                    rowTag?.let {
+                        Modifier.dbgTag(
+                            it,
+                            text = stringResource(R.string.course_node_format, row.node),
+                            clickable = false
+                        )
+                    } ?: Modifier
+                )
                 .padding(horizontal = 10.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -575,18 +659,23 @@ private fun TimeSlotRowItem(
                 value = row.start,
                 onValueChange = onStartChange,
                 label = stringResource(R.string.start_label),
+                dbgTag = startTag,
                 modifier = Modifier.weight(1f)
             )
             TimePickerField(
                 value = row.end,
                 onValueChange = onEndChange,
                 label = stringResource(R.string.end_label),
+                dbgTag = endTag,
                 modifier = Modifier.weight(1f)
             )
             if (canDelete) {
                 IconButton(
                     onClick = onDelete,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier
+                        .size(32.dp)
+                        .then(deleteTag?.let { Modifier.dbgTag(it, role = "button") }
+                            ?: Modifier.testTag("timeslot-delete"))
                 ) {
                     Icon(
                         Icons.Outlined.RemoveCircleOutline,
@@ -605,6 +694,14 @@ private fun TimeSlotRowItem(
                 text = blankHint,
                 style = MaterialTheme.typography.bodySmall,
                 color = colors.onSurfaceVariant,
+                modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 4.dp)
+            )
+        }
+        if (conflictMsg != null) {
+            Text(
+                text = conflictMsg,
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.error,
                 modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 4.dp)
             )
         }

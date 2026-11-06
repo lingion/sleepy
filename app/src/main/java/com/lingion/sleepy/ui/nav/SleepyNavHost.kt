@@ -10,12 +10,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -40,10 +43,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.togetherWith
-import androidx.compose.animation.core.tween
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -58,26 +59,29 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import android.widget.Toast
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.ContentTransform
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.NavBackStack
-import androidx.navigation3.scene.Scene
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.NavDockSpec
 import com.lingion.sleepy.ui.component.PillNavigationBar
 import com.lingion.sleepy.ui.component.PillNavItemSpec
 import com.lingion.sleepy.ui.component.PillBarState
 import com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding
+import com.lingion.sleepy.ui.component.sleepyContentEnter
+import com.lingion.sleepy.ui.component.sleepyContentExit
 import com.lingion.sleepy.ui.screen.edit.AddCourseScreen
 import com.lingion.sleepy.ui.screen.mine.AllTablesScreen
 import com.lingion.sleepy.ui.screen.mine.CourseListScreen
 import com.lingion.sleepy.ui.screen.mine.AppearanceScreen
 import com.lingion.sleepy.ui.screen.mine.PeriodHeaderSettingsScreen
 import com.lingion.sleepy.ui.screen.mine.EditTableScreen
+import com.lingion.sleepy.ui.screen.mine.BackupScreen
+import com.lingion.sleepy.ui.screen.mine.ScheduleDisplayScreen
 import com.lingion.sleepy.ui.screen.mine.GeneralSettingsScreen
 import com.lingion.sleepy.ui.screen.mine.HolidaySettingsScreen
 import com.lingion.sleepy.ui.screen.mine.ExportScreen
@@ -163,18 +167,23 @@ internal fun SleepyNavHost(
         onDeepLinkConsumed()
     }
 
-    val predictiveSpec: (AnimatedContentTransitionScope<Scene<NavKey>>, Int) -> ContentTransform =
-        { _, _ -> sleepyPredictivePopTransform }
+    val forwardTransform = sleepyForwardTransform()
+    val popTransform = sleepyPopTransform()
+    val predictivePopTransform = sleepyPredictivePopTransform()
 
+    // 转场底衬: content 家族缩放动画(0.92↔1)期间页面四周会露出底层,
+    // 无底衬时露的是窗口默认白底(Theme.Material.Light.NoActionBar),
+    // 进出子页动画即现白边。铺一层 background 色兜住缩放边缘, 随主题即时切换。
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
     NavDisplay(
         backStack = nav,
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
         ),
         onBack = { navigator.pop() },
-        transitionSpec = { sleepyForwardTransform },
-        popTransitionSpec = { sleepyPopTransform },
-        predictivePopTransitionSpec = predictiveSpec,
+        transitionSpec = { forwardTransform },
+        popTransitionSpec = { popTransform },
+        predictivePopTransitionSpec = { _ -> predictivePopTransform },
         entryProvider = entryProvider {
         entry<SleepyRoute.Main> {
 
@@ -201,7 +210,6 @@ internal fun SleepyNavHost(
                 onBack = { navigator.pop() },
                 onCreateNewTable = onCreateNewTable,
                 onJwImportRequested = {
-                    navigator.pop()
                     context.startActivity(android.content.Intent(
                         context, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java
                     ))
@@ -257,10 +265,16 @@ internal fun SleepyNavHost(
         }
 
         entry<SleepyRoute.AllTables> {
+            val context = LocalContext.current
             AllTablesScreen(
                 onBack = { navigator.pop() },
                 onCreateNewTable = onCreateNewTable,
                 onOpenEditTable = { tableId -> navigator.openEditTable(tableId = tableId) },
+                onUpdateFromJw = { tableId ->
+                    context.startActivity(android.content.Intent(context, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java)
+                        .putExtra(com.lingion.sleepy.ui.screen.imports.JwImportActivity.EXTRA_TARGET_TABLE_ID, tableId)
+                        .putExtra(com.lingion.sleepy.ui.screen.imports.JwImportActivity.EXTRA_UPDATE_TABLE, true))
+                },
             )
         }
 
@@ -290,6 +304,7 @@ internal fun SleepyNavHost(
 
             EditTableScreen(
                 tableId = routeTableId,
+                onOpenHoliday = { tableId -> navigator.openTableHoliday(tableId) },
                 pendingNewTableId = pending,
                 onBack = { navigator.pop() },
                 onDiscardPending = {
@@ -315,7 +330,9 @@ internal fun SleepyNavHost(
                 onBack = { navigator.pop() },
                 themeMode = themeMode,
                 onThemeModeChange = onThemeModeChange,
-                onOpenPeriodHeaderSettings = { navigator.openPeriodHeaderSettings() },
+                onOpenScheduleDisplay = { navigator.openScheduleDisplay() },
+                navDock = navDock,
+                onNavDockChange = onNavDockChange,
             )
         }
 
@@ -325,11 +342,23 @@ internal fun SleepyNavHost(
 
         // ----------------------------------------------------------------
         entry<SleepyRoute.General> {
-            GeneralSettingsScreen(
+            GeneralSettingsScreen(onBack = { navigator.pop() })
+        }
+        entry<SleepyRoute.ScheduleDisplay> {
+            ScheduleDisplayScreen(
                 onBack = { navigator.pop() },
-                onOpenHoliday = { navigator.openHoliday() },
-                navDock = navDock,
-                onNavDockChange = onNavDockChange,
+                onOpenPeriodHeaderSettings = { navigator.openPeriodHeaderSettings() },
+            )
+        }
+        entry<SleepyRoute.Backup> {
+            BackupScreen(onBack = { navigator.pop() })
+        }
+        entry<SleepyRoute.TableHoliday> { key ->
+            HolidaySettingsScreen(
+                onBack = { navigator.pop() },
+                tableId = currentTableId,
+                initialTableId = key.tableId,
+                viewModel = mainVm,
             )
         }
 
@@ -382,6 +411,7 @@ internal fun SleepyNavHost(
             WidgetSettingsScreen(
                 onBack = { navigator.pop() },
                 onOpenWidgetManagement = { navigator.openWidgetManagement() },
+                onOpenScheduleDisplay = { navigator.openScheduleDisplay() },
             )
         }
 
@@ -431,6 +461,7 @@ internal fun SleepyNavHost(
         }
         }
     )
+    }
 }
 
 /**
@@ -506,7 +537,8 @@ private fun MainRoute(
             modifier = Modifier
                 .fillMaxSize()
                 .background(colors.background)
-                .windowInsetsPadding(WindowInsets.statusBars)
+                .windowInsetsPadding(WindowInsets.safeDrawing)
+                .consumeWindowInsets(WindowInsets.safeDrawing)
         ) {
             NavigationRail {
                 // 当前选中的 tab 跟 Schedule 组合成跑道胶囊(强高亮 primaryContainer);
@@ -649,13 +681,13 @@ private fun MainRoute(
             }
         }
     } else if (navDock) {
-        // Compact + 悬浮 Dock: 官方无此形态 → 保留自研 PillNavigationBar(dock=true)
-        var dockExtraDp by remember { mutableStateOf(NavDockSpec.capsuleHeight + NavDockSpec.bottomFloat) }
+        // Compact + 悬浮 Dock: FLClash 1:1 液态玻璃导航底栏
+        val backdrop = rememberLayerBackdrop()
         var dockOverlayPx by remember { mutableStateOf(0) }
         val densityForDock = LocalDensity.current
-        if (dockOverlayPx > 0) {
-            dockExtraDp = with(densityForDock) { dockOverlayPx.toDp() }
-        }
+        val dockExtraDp = if (dockOverlayPx > 0) {
+            with(densityForDock) { dockOverlayPx.toDp() }
+        } else NavDockSpec.capsuleHeight + NavDockSpec.bottomFloat
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -665,7 +697,11 @@ private fun MainRoute(
             androidx.compose.runtime.CompositionLocalProvider(
                 LocalNavExtraBottomPadding provides dockExtraDp
             ) {
-                Box(modifier = Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .layerBackdrop(backdrop)
+                ) {
                     MainTabs(
                         currentTab = currentTab,
                         setCurrentTab = setCurrentTab,
@@ -683,6 +719,8 @@ private fun MainRoute(
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
+                    .windowInsetsPadding(WindowInsets.navigationBars)
+                    .padding(bottom = 12.dp)
                     .onGloballyPositioned { c -> dockOverlayPx = c.size.height }
             ) {
                 PillNavigationBar(
@@ -691,6 +729,7 @@ private fun MainRoute(
                     onSelect = { setCurrentTab(Tab.entries[it]) },
                     dock = true,
                     state = pillBarState,
+                    backdrop = backdrop,
                 )
             }
         }
@@ -767,8 +806,17 @@ private fun CombinedRailItem(
     onClick: () -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
-    val containerColor = if (selected) colors.primaryContainer else androidx.compose.ui.graphics.Color.Transparent
-    val iconColor = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant
+    // MD3E (Task 7b): 跑道胶囊选中进/出色走 fastEffects 缓动, 禁瞬时硬切。
+    val containerColor by animateColorAsState(
+        targetValue = if (selected) colors.primaryContainer else androidx.compose.ui.graphics.Color.Transparent,
+        animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
+        label = "combinedRailContainer",
+    )
+    val iconColor by animateColorAsState(
+        targetValue = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant,
+        animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
+        label = "combinedRailIcon",
+    )
     Column(
         modifier = Modifier
             .padding(horizontal = 8.dp, vertical = 4.dp)
@@ -833,7 +881,8 @@ private fun PlainRailItem(
 
 /**
  * 右半边内容 — AnimatedContent 包 3 个子页 (Today / Manage / Mine)。
- * 200ms 渐隐渐显。子页面跳转回调全部接到 navigator (避免空 lambda 让按钮"点不动")。
+ * MD3E content 家族缩放淡入淡出 (sleepyContent* 工厂, 与页面转场同族)。
+ * 子页面跳转回调全部接到 navigator (避免空 lambda 让按钮"点不动")。
  */
 @Composable
 private fun RightHalfContent(
@@ -843,10 +892,12 @@ private fun RightHalfContent(
     onTabletEditCourse: (CourseEntity) -> Unit,
     onTabletManualAdd: () -> Unit,
 ) {
+    val contentEnter = sleepyContentEnter()
+    val contentExit = sleepyContentExit()
     AnimatedContent(
         targetState = currentTab,
         transitionSpec = {
-            fadeIn(animationSpec = tween(200)) togetherWith fadeOut(animationSpec = tween(200))
+            contentEnter togetherWith contentExit
         },
         label = "right-half-tab-switch",
     ) { tab ->
@@ -870,6 +921,8 @@ private fun RightHalfContent(
                 onOpenCourseList = { navigator.openCourseList() },
                 onOpenPeriodTables = { navigator.openPeriodTables() },
                 onOpenAppearance = { navigator.openAppearance() },
+                onOpenHoliday = { navigator.openHoliday() },
+                onOpenBackup = { navigator.openBackup() },
                 onOpenGeneral = { navigator.openGeneral() },
                 onOpenWidgetSettings = { navigator.openWidgetSettings() },
                 onOpenReminder = { navigator.openReminder() },

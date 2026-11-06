@@ -1,10 +1,6 @@
 package com.lingion.sleepy.ui.screen.mine
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -42,6 +38,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
+import com.lingion.sleepy.ui.component.sleepyExpandSpecs
 import com.lingion.sleepy.ui.theme.SleepyTheme
 
 /**
@@ -123,6 +120,43 @@ fun LicenseScreen(onBack: () -> Unit) {
                 )
             }
 
+            item {
+                SectionHeader(stringResource(R.string.license_recent_section))
+            }
+            item {
+                LicenseCard {
+                    Text(
+                        text = stringResource(R.string.license_recent_source_notice),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = colors.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(R.string.license_recent_intro),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.onSurfaceVariant
+                    )
+                }
+            }
+            items(recentAttributionGroups, key = { it.first }) { (titleRes, bodyRes) ->
+                val key = "recent_$titleRes"
+                val body = stringResource(bodyRes)
+                AttributionCard(
+                    title = stringResource(titleRes),
+                    subtitle = null,
+                    description = null,
+                    expanded = expanded[key] == true,
+                    onToggle = { expanded[key] = expanded[key] != true },
+                    expandedContent = {
+                        Text(
+                            text = body,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.onSurfaceVariant
+                        )
+                    }
+                )
+            }
+
             // ---- 致谢导语区块 (可折叠: 默认收起, 点击展开看 about_license_body 全文) ----
             item {
                 val bodyExpanded = expanded["__body__"] == true
@@ -154,10 +188,12 @@ fun LicenseScreen(onBack: () -> Unit) {
                             )
                         }
                     }
+                    // MD3E (Task 7a): 展开家族 — 尺寸 fastSpatial + 淡入淡出 motionScheme
+                    val expandSpecs = sleepyExpandSpecs()
                     AnimatedVisibility(
                         visible = bodyExpanded,
-                        enter = expandVertically() + fadeIn(),
-                        exit = shrinkVertically() + fadeOut()
+                        enter = expandSpecs.enter,
+                        exit = expandSpecs.exit,
                     ) {
                         Column(modifier = Modifier.padding(top = 8.dp)) {
                             Text(
@@ -270,10 +306,12 @@ private fun AttributionCard(
                 color = colors.onSurfaceVariant
             )
         }
+        // MD3E (Task 7a): 展开家族 — 尺寸 fastSpatial + 淡入淡出 motionScheme
+        val expandSpecs = sleepyExpandSpecs()
         AnimatedVisibility(
             visible = expanded && expandedContent != null,
-            enter = expandVertically() + fadeIn(),
-            exit = shrinkVertically() + fadeOut()
+            enter = expandSpecs.enter,
+            exit = expandSpecs.exit,
         ) {
             Spacer(modifier = Modifier.height(6.dp))
             expandedContent?.invoke()
@@ -319,6 +357,19 @@ private data class AttributionEntry(
     val usage: String
 )
 
+// Resource bodies are generated from assets/ATTRIBUTIONS.json in every released locale.
+// Keep source ports first, then dependencies, data, design and research references.
+private val recentAttributionGroups = listOf(
+    R.string.license_recent_sources_title to R.string.license_recent_sources_body,
+    R.string.license_recent_libraries_title to R.string.license_recent_libraries_body,
+    R.string.license_recent_data_title to R.string.license_recent_data_body,
+    R.string.license_recent_design_title to R.string.license_recent_design_body,
+    R.string.license_recent_glass_research_title to R.string.license_recent_glass_research_body,
+    R.string.license_recent_vendor_title to R.string.license_recent_vendor_body,
+    R.string.license_recent_background_title to R.string.license_recent_background_body,
+    R.string.license_recent_protocol_research_title to R.string.license_recent_protocol_research_body
+)
+
 /** 跨校普适项目 (单卡, 不可展开)。 */
 private val attributionEntries: List<AttributionEntry> = listOf(
     AttributionEntry("old-qz-audit", "Old-QZ 协议核对", "历史协议参考", "Old-QZ protocol verification: Crazy-ChenMiLin/TableAPK (Apache-2.0; protocol reference); LonelyMarch/OpenWakeUp (AGPL-3.0; protocol reference); ThaiCao/WakeupSchedule_Kotlin (Apache-2.0; protocol reference); YuZhangWang/Java-Demo (GPL-3.0; protocol reference); dIT8Zv/WakeupSchedule_BUPT (Apache-2.0; protocol reference); ershiyidian/WakeUp_SHU (NOASSERTION; protocol reference); historical WakeUp APK (YZune; closed-source protocol reference, no code reused)."),
@@ -341,6 +392,10 @@ private val attributionEntries: List<AttributionEntry> = listOf(
     AttributionEntry(
         "foundational-shiguang", "shiguang_warehouse (XingHeYuZhuan)", "MIT",
         "武汉理工大学 kcbcxby 协议、经典金智 EAMS (hunnu/uestc/hpu) 与新正方网格视图 (zhengfang_01) 的协议形态参考；264 校适配清单与 starlink.js、wake_up.js 在线协议链形态调研；282 个教务适配脚本以 MIT 原文随包分发于 assets/third_party/shiguang/"
+    ),
+    AttributionEntry(
+        "foundational-lumaschedule", "LumaSchedule (Junyxor)", "Apache-2.0",
+        "WakeUP 官方教务目录 6.6.2 吸收战役的边界交叉验证: 其 convert-wakeup-school-info.mjs / compat.md 证明 WakeUp 兼容层只做 profile 与登录元数据迁移、不复制服务端解析器;未复用代码"
     ),
     AttributionEntry(
         "foundational-zfn", "zfn_api (openschoolcn)", "MPL-2.0",
@@ -749,30 +804,30 @@ private data class ContributorEntry(val id: String, val title: String, val meta:
 private val contributorEntries: List<ContributorEntry> = listOf(
     ContributorEntry(
         "contributor-jim139129", "jim139129", "GitHub @jim139129",
-        "已合并多项 PR 并持续反馈 issue — 全部提交与讨论记录见 github.com/jim139129"
+        "感谢代码贡献与持续反馈。全部提交与讨论记录见 github.com/jim139129"
     ),
     ContributorEntry(
         "contributor-YYiChen", "YYiChen", "GitHub @YYiChen",
-        "已合并 PR #43 课表自适应高度、PR #48 前一晚明日预告 — 全部提交与讨论记录见 github.com/YYiChen"
+        "感谢代码贡献与持续反馈。全部提交与讨论记录见 github.com/YYiChen"
     ),
     ContributorEntry(
         "contributor-LzBsA", "LzBsA", "GitHub @LzBsA",
-        "已合并 PR #30 燕山大学研究生平台 boya_pp 协议适配 (贡献者保留式 merge) — 全部提交与讨论记录见 github.com/LzBsA"
+        "感谢代码贡献与持续反馈。全部提交与讨论记录见 github.com/LzBsA"
     ),
     ContributorEntry(
         "contributor-Cold577", "冷冷冷 Cold577", "GitHub @Cold577",
-        "已合并 PR #79 小组件选择器预览图修复 (运行时位图容器 previewLayout 摘除) — 全部提交与讨论记录见 github.com/Cold577"
+        "感谢代码贡献与持续反馈。全部提交与讨论记录见 github.com/Cold577"
     ),
     ContributorEntry(
         "contributor-X-art-hash", "X-art-hash", "GitHub @X-art-hash",
-        "已合并的代码贡献 — 全部提交与讨论记录见 github.com/X-art-hash"
+        "感谢代码贡献与持续反馈。全部提交与讨论记录见 github.com/X-art-hash"
     ),
     ContributorEntry(
         "contributor-echo0731", "echo0731", "GitHub @echo0731",
-        "已合并的代码贡献 — 全部提交与讨论记录见 github.com/echo0731"
+        "感谢代码贡献与持续反馈。全部提交与讨论记录见 github.com/echo0731"
     ),
     ContributorEntry(
         "contributor-Kerry1020", "Kerry1020", "GitHub @Kerry1020",
-        "已合并 PR #115 Room schema 导出与迁移门禁 (本仓库 v10 schema 真值 + v9→v10 instrumented 迁移测试 + schema 漂移契约测试) — 全部提交与讨论记录见 github.com/Kerry1020"
+        "感谢代码贡献与持续反馈。全部提交与讨论记录见 github.com/Kerry1020"
     )
 )

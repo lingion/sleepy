@@ -71,16 +71,14 @@ class WidgetRefreshRelocationContractTest {
     // ---- ③ 顺序锁: 按钮永远紧跟「添加或管理桌面小组件」条目之后 ----
 
     @Test
-    fun `refresh button sits below manage entry with nothing in between`() {
+    fun `refresh button follows management and all preferences`() {
         val e = widgetSettings.indexOf("stringResource(R.string.widget_manage_entry)")
         // 匹配带括号的调用点,排除 import 行(首个出现必须是布局代码里的按钮)
         val b = widgetSettings.indexOf("FilledTonalButton(")
         assertTrue("管理条目与刷新按钮必须都在场", e >= 0 && b >= 0 && e < b)
-        // 条目与按钮之间禁止插入其他内容块(SectionHeader/SettingsCard/开关行)
-        val between = widgetSettings.substring(e, b)
-        listOf("SectionHeader(", "SettingsCard(", "SettingToggleRow(").forEach { token ->
-            assertFalse("「添加或管理」与刷新按钮之间不得出现 $token(按钮必须紧随条目)", between.contains(token))
-        }
+        // Management is now the first group; refresh remains the final action.
+        assertTrue("Refresh must follow all widget preferences", b > widgetSettings.lastIndexOf("SettingToggleRow("))
+
     }
 
     // ---- ④ 页尾余量对齐底部悬浮栏 ----

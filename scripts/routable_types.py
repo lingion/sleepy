@@ -17,8 +17,8 @@ JW = Path(__file__).resolve().parents[1] / 'app/src/main/java/com/lingion/sleepy
 @lru_cache(maxsize=1)
 def routable_types():
     consts = dict(re.findall(r'const val (TYPE_\w+) = "([^"]+)"',
-                             (JW / 'JwProtocol.kt').read_text()))
-    body = (JW / 'JwParserRegistry.kt').read_text()
+                             (JW / 'JwProtocol.kt').read_text(encoding='utf-8')))
+    body = (JW / 'JwParserRegistry.kt').read_text(encoding='utf-8')
     match = re.search(r'FACTORIES: Map<String, \(String\) -> JwParser> = linkedMapOf\((.*?)\n    \)',
                       body, re.S)
     if not match:

@@ -7,6 +7,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 import java.time.LocalDate
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 步骤 2 契约测试: FIXED 窗口 push 层接线 (设计 §4.1/§4.2)。
@@ -48,7 +49,7 @@ class FixedWindowWiringTest {
     }
 
     private fun dataOf(courses: List<CourseEntity>) = WidgetData(
-        date = LocalDate.now(), courses = courses, timeJson = "", hasTable = true
+        date = LocalDate.now(AppClock), courses = courses, timeJson = "", hasTable = true
     )
 
     // ---- Today 系容量口径 (availH = hDp − 30 − 底部条28 = hDp − 58, 行 30 距 4) ----
@@ -120,8 +121,8 @@ class FixedWindowWiringTest {
 
     private fun twoDayData(todayN: Int, tomorrowN: Int) = TwoDayData(
         days = listOf(
-            DayData(LocalDate.now(), 1, dayCourses(todayN), ""),
-            DayData(LocalDate.now().plusDays(1), 2, dayCourses(tomorrowN), "")
+            DayData(LocalDate.now(AppClock), 1, dayCourses(todayN), ""),
+            DayData(LocalDate.now(AppClock).plusDays(1), 2, dayCourses(tomorrowN), "")
         ),
         hasTable = true
     )

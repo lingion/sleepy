@@ -2,6 +2,8 @@
 
 # OPPO 流体云 — API 字段全量
 
+> 2026-10-29 实现复核：本页为 Pantanal / Seedling SDK + UPK 专用通道的 API 资料快照，示例不代表 Sleepy 已集成这些 API。Sleepy 当前已实现 Android 16 Live Updates 通道；两条链路的代码依据和未完成项见 [接入状态](../../oppo-coloros-fluid-cloud.md)。
+
 > 流体云不是单一 API, 是四件套:
 > ① UPK 工程描述文件 `config.json` (服务维度)
 > ② UPK 工程描述文件 `card-config.json` (卡片维度)

@@ -11,8 +11,10 @@ import androidx.room.withTransaction
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.ConflictLayoutEngine
 import com.lingion.sleepy.widget.WidgetUpdater
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 课表仓库 — 业务数据访问的唯一入口。
@@ -105,6 +107,14 @@ class ScheduleRepository(private val db: AppDatabase) {
 
     fun observeAllTables(): Flow<List<TimeTableEntity>> = tableDao.observeAll()
 
+    /** All tables with effective switch values, shared by settings and notification consumers. */
+    fun observeReminderTables(): Flow<List<TimeTableEntity>> = tableDao.observeAll().map(::resolveReminderTables)
+
+    suspend fun getReminderTables(): List<TimeTableEntity> = resolveReminderTables(tableDao.getAll())
+
+    private fun resolveReminderTables(tables: List<TimeTableEntity>): List<TimeTableEntity> =
+        resolveReminderTableScope(tables, AppPrefs.getCurrentTableId(SleepyApp.get()))
+
     fun observeTable(id: Long): Flow<TimeTableEntity?> = tableDao.observeById(id)
 
     suspend fun getAllTables(): List<TimeTableEntity> = tableDao.getAll()
@@ -143,7 +153,7 @@ class ScheduleRepository(private val db: AppDatabase) {
                 // Freeze the effective bell schedule so a later shared-schedule update cannot change the backup.
                 val backupId = tableDao.insert(effective.copy(
                     id = 0, name = name, isDefault = false, periodTableId = null,
-                    preBindSnapshotJson = "", createdAt = System.currentTimeMillis(), reminderEnabled = false
+                    preBindSnapshotJson = "", createdAt = AppClock.millis(), reminderEnabled = false, reminderOverride = null
                 ))
                 courseDao.insertAll(existing.map { it.copy(id = 0, tableId = backupId) })
             }
@@ -161,7 +171,7 @@ class ScheduleRepository(private val db: AppDatabase) {
             val maxNode = com.lingion.sleepy.util.TimeTableUtils.parseTimeSlotRows(extended)
                 .maxOfOrNull { it.node } ?: effective.nodesPerDay
             if (bound != null && extended != bound.timeJson) {
-                periodTableDao.update(bound.copy(timeJson = extended, nodesPerDay = maxNode, updatedAt = System.currentTimeMillis()))
+                periodTableDao.update(bound.copy(timeJson = extended, nodesPerDay = maxNode, updatedAt = AppClock.millis()))
             }
             tableDao.update(table.copy(
                 maxWeek = maxOf(table.maxWeek, accepted.maxOf { it.endWeek }),
@@ -174,6 +184,60 @@ class ScheduleRepository(private val db: AppDatabase) {
         }
         if (added > 0) onDataChanged()
         return added
+    }
+
+    /** Replace a timetable's course rows atomically while preserving its timetable settings. */
+    suspend fun updateImportedCourses(
+        tableId: Long,
+        courses: List<CourseEntity>,
+        incomingTimeJson: String = "",
+    ) {
+        db.withTransaction {
+            val table = tableDao.getById(tableId) ?: error("Target timetable no longer exists")
+            val existing = courseDao.getByTable(tableId)
+            val existingIds = existing.map { it.id }.toSet()
+            val retained = courses.filter { it.id > 0 }.map { it.id }
+            require(retained.size == retained.toSet().size && retained.all(existingIds::contains)) {
+                "Updated course IDs must be unique and belong to the target timetable"
+            }
+            val bound = table.periodTableId?.let { periodTableDao.getById(it) }
+            val effective = table.hydratedWith(bound)
+            val extended = com.lingion.sleepy.util.CourseImportPolicy.mergeTimeJson(
+                effective.timeJson, incomingTimeJson,
+                maxOf(effective.nodesPerDay, courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0)
+            )
+            captureForUndo()
+            val generatedGroups = mutableMapOf<String, String>()
+            val rows = courses.map { course ->
+                val group = course.groupId.ifBlank {
+                    generatedGroups.getOrPut(course.courseName.trim().lowercase()) { java.util.UUID.randomUUID().toString() }
+                }
+                course.copy(id = course.id.coerceAtLeast(0), tableId = tableId, groupId = group)
+            }
+            val retainedIds = courses.mapNotNull { it.id.takeIf { id -> id > 0 } }.toSet()
+            val deletedIds = existing.map { it.id }.filterNot(retainedIds::contains)
+            if (deletedIds.isNotEmpty()) courseDao.deleteByIds(deletedIds)
+            val updates = rows.filter { it.id > 0 }
+            if (updates.isNotEmpty()) courseDao.updateAll(updates)
+            val inserts = rows.filter { it.id == 0L }
+            if (inserts.isNotEmpty()) courseDao.insertAll(inserts)
+            com.lingion.sleepy.util.CourseColorWriteGlue.persistNewGroupHues(
+                SleepyApp.get(), db.courseColorDao(), inserts
+            )
+            val maxNode = com.lingion.sleepy.util.TimeTableUtils.parseTimeSlotRows(extended)
+                .maxOfOrNull { it.node } ?: effective.nodesPerDay
+            if (bound != null && (extended != bound.timeJson || maxNode != bound.nodesPerDay)) {
+                periodTableDao.update(bound.copy(
+                    timeJson = extended, nodesPerDay = maxNode, updatedAt = AppClock.millis()
+                ))
+            }
+            tableDao.update(table.copy(
+                maxWeek = maxOf(table.maxWeek, rows.maxOfOrNull { it.endWeek } ?: table.maxWeek),
+                timeJson = if (bound == null) extended else table.timeJson,
+                nodesPerDay = if (bound == null) maxNode else table.nodesPerDay,
+            ))
+        }
+        onDataChanged()
     }
 
     suspend fun getDefaultTable(): TimeTableEntity? = tableDao.getDefault()
@@ -214,6 +278,7 @@ class ScheduleRepository(private val db: AppDatabase) {
             }
             override suspend fun insertCourses(courses: List<CourseEntity>) { courseDao.insertAll(courses) }
             override suspend fun setDefault(id: Long) = tableDao.setDefault(id)
+            override suspend fun tableCount(): Int = tableDao.count()
             // 认亲（spec §2.4）: 事务内读导入前全库名册; 新课 hue 同事务落库。
             override suspend fun knownNameRoster() = knownNameToGroupId(courseDao.getAll())
             override suspend fun persistNewGroupColors(courses: List<CourseEntity>) {
@@ -229,9 +294,16 @@ class ScheduleRepository(private val db: AppDatabase) {
     /** Reminder settings own this field; never overwrite timetable metadata. */
     suspend fun setTableReminderEnabled(id: Long, enabled: Boolean) {
         val changed = db.withTransaction {
-            val current = tableDao.getById(id) ?: return@withTransaction false
+            val tables = tableDao.getAll()
+            val effective = resolveReminderTables(tables)
+            val current = effective.firstOrNull { it.id == id } ?: return@withTransaction false
             if (current.reminderEnabled == enabled) return@withTransaction false
             captureForUndo()
+            // Freeze the entire visible selection before the first manual change.
+            // This also preserves an explicitly empty selection across table switches.
+            if (tables.none { it.reminderOverride != null }) {
+                effective.forEach { tableDao.setReminderEnabled(it.id, it.reminderEnabled) }
+            }
             tableDao.setReminderEnabled(id, enabled) > 0
         }
         if (changed) onDataChanged()
@@ -296,7 +368,7 @@ class ScheduleRepository(private val db: AppDatabase) {
                 )
             )
             periodTableDao.update(
-                periodTable.copy(updatedAt = System.currentTimeMillis())
+                periodTable.copy(updatedAt = AppClock.millis())
             )
         }
         onDataChanged()
@@ -346,7 +418,7 @@ class ScheduleRepository(private val db: AppDatabase) {
                 )
             )
             periodContent?.let {
-                periodTableDao.update(it.copy(updatedAt = System.currentTimeMillis()))
+                periodTableDao.update(it.copy(updatedAt = AppClock.millis()))
             }
         }
         onDataChanged()
@@ -458,7 +530,7 @@ class ScheduleRepository(private val db: AppDatabase) {
     /** 新建时间节次表, 返回新 id。独立写动作 = 独立撤回单元。 */
     suspend fun insertPeriodTable(table: com.lingion.sleepy.data.entity.PeriodTableEntity): Long {
         captureForUndo()
-        val now = System.currentTimeMillis()
+        val now = AppClock.millis()
         val withStamp = if (table.createdAt == 0L) table.copy(createdAt = now, updatedAt = now) else table
         return periodTableDao.insert(withStamp)
     }
@@ -472,8 +544,8 @@ class ScheduleRepository(private val db: AppDatabase) {
         val copy = src.copy(
             id = 0,
             name = src.name,   // 名称原样保留, UI 层决定是否加"副本"后缀
-            createdAt = System.currentTimeMillis(),
-            updatedAt = System.currentTimeMillis()
+            createdAt = AppClock.millis(),
+            updatedAt = AppClock.millis()
         )
         return periodTableDao.insert(copy)
     }
@@ -488,8 +560,8 @@ class ScheduleRepository(private val db: AppDatabase) {
         val copy = src.copy(
             id = 0,
             name = newName,
-            createdAt = System.currentTimeMillis(),
-            updatedAt = System.currentTimeMillis()
+            createdAt = AppClock.millis(),
+            updatedAt = AppClock.millis()
         )
         return periodTableDao.insert(copy)
     }
@@ -526,7 +598,7 @@ class ScheduleRepository(private val db: AppDatabase) {
      */
     suspend fun updatePeriodTable(table: com.lingion.sleepy.data.entity.PeriodTableEntity) {
         captureForUndo()
-        periodTableDao.update(table.copy(updatedAt = System.currentTimeMillis()))
+        periodTableDao.update(table.copy(updatedAt = AppClock.millis()))
         onDataChanged()
     }
 
@@ -541,7 +613,7 @@ class ScheduleRepository(private val db: AppDatabase) {
         if (periodTableDao.getById(table.id) == null) return 0
         captureForUndo()
         val boundCount = periodTableDao.boundTableCount(table.id)
-        periodTableDao.update(table.copy(updatedAt = System.currentTimeMillis()))
+        periodTableDao.update(table.copy(updatedAt = AppClock.millis()))
         onDataChanged()
         return boundCount
     }

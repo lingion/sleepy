@@ -63,7 +63,7 @@ internal class FakeCourseDao : CourseDao {
 internal class FakeTimeTableDao : TimeTableDao {
     override suspend fun setReminderEnabled(id: Long, enabled: Boolean): Int {
         val current = rows[id] ?: return 0
-        rows[id] = current.copy(reminderEnabled = enabled)
+        rows[id] = current.copy(reminderEnabled = enabled, reminderOverride = enabled)
         return 1
     }
 
@@ -283,5 +283,18 @@ class MigrationDatabaseCodecTest {
 
         assertEquals(0, courseDao.rows.size)
         assertNull(timeTableDao.getDefault())
+    }
+
+    @Test
+    fun `merge keeps local automatic selection and does not import enabled overrides`() = runBlocking {
+        val tables = FakeTimeTableDao()
+        val localId = tables.insert(TimeTableEntity(name = "Local", startDate = "", isDefault = true))
+        val snapshot = sampleSnapshot().let { it.copy(timeTables = it.timeTables.map { row ->
+            row.copy(reminderEnabled = true, reminderOverride = true, isDefault = true)
+        }) }
+        MigrationDatabaseCodec.applyMerge(snapshot, FakeCourseDao(), tables, FakePeriodTableDao(), FakeImportDraftDao())
+        val resolved = com.lingion.sleepy.data.repository.resolveReminderTableScope(tables.getAll(), localId)
+        assertEquals(listOf(localId), resolved.filter { it.reminderEnabled }.map { it.id })
+        assertEquals(listOf(localId), tables.getAll().filter { it.isDefault }.map { it.id })
     }
 }

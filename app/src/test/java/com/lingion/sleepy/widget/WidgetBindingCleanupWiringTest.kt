@@ -26,6 +26,7 @@ class WidgetBindingCleanupWiringTest {
     /** Known base classes whose onDeleted calls WidgetBindingStore.remove. */
     private val cleanupBases: Set<Class<out AppWidgetProvider>> = setOf(
         WeekGridWidgetProvider::class.java,
+        WeekGridWideWidgetProvider::class.java,
         TodayWidgetReceiver::class.java,
         WeekListWidgetReceiver::class.java,
         WeekViewWidgetReceiver::class.java,
@@ -76,10 +77,9 @@ class WidgetBindingCleanupWiringTest {
     }
 
     @Test
-    fun `all thirteen variants are covered by the five cleanup bases`() {
-        // 13 receivers ÷ 5 bases: Today/TwoDay/WeekList 各 base+small+wide=3,
-        // WeekView/WeekGrid 各 base+small=2;wide shell 与 small 一样继承 base 的 onDeleted
-        assertEquals(5, cleanupBases.size)
-        assertEquals(13, ALL_WIDGET_VARIANTS.size)
+    fun `all variants are covered by their cleanup owners`() {
+        val owners = ALL_WIDGET_VARIANTS.mapNotNull { onDeletedOwner(it.receiverClass) }.toSet()
+        assertEquals(cleanupBases, owners)
+        assertEquals(WeekGridWideWidgetProvider::class.java, onDeletedOwner(WeekGridWideWidgetProvider::class.java))
     }
 }

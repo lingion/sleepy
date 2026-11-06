@@ -16,19 +16,24 @@ import com.lingion.sleepy.data.entity.TimeTableEntity
  */
 object WidgetTableResolver {
     suspend fun resolveCurrentTable(): TimeTableEntity? {
-        val repo = SleepyApp.get().repository
+        val app = SleepyApp.get()
+        val repo = app.repository
         val all = repo.getAllTables()
-        // 单遍解析: 每张表的课程列表只物化一次 (课程数与「是否有课」同源),
-        // 不再默认表检查 + maxByOrNull + takeIf 各读一遍 = 每表 2-3x 列表物化。
-        // 选择语义与旧三步逐位一致:
-        //   1. 第一个「默认表且有课」直接用 (defaultHit, firstOrNull 口径);
-        //   2. 否则课程数最多的表 (并列取先出现者, maxByOrNull 口径), 全空 → null。
+        val currentSelectedId = com.lingion.sleepy.util.AppPrefs.getCurrentTableId(app)
+
+        var selectedHit: TimeTableEntity? = null
+        var defaultHit: TimeTableEntity? = null
         var best: TimeTableEntity? = null
         var bestCount = -1
-        var defaultHit: TimeTableEntity? = null
+
         for (table in all) {
             val count = runCatching { repo.getCourses(table.id).size }.getOrDefault(0)
-            if (table.isDefault && count > 0 && defaultHit == null) defaultHit = table
+            if (currentSelectedId != null && table.id == currentSelectedId) {
+                selectedHit = table
+            }
+            if (table.isDefault && count > 0 && defaultHit == null) {
+                defaultHit = table
+            }
             if (count > bestCount) {
                 best = table
                 bestCount = count
@@ -36,7 +41,7 @@ object WidgetTableResolver {
         }
         // issue#40: 选出的表若绑定了独立时间节次表, 出口水合 —
         // 节次时间/智慧节次/节次数按绑定表解释, 兼容列兜底。悬空引用静默回退旧列。
-        val chosen = defaultHit ?: best.takeIf { bestCount > 0 } ?: return null
+        val chosen = selectedHit ?: defaultHit ?: best.takeIf { bestCount > 0 } ?: return null
         return chosen.hydratedWith(repo.getPeriodTableOrNull(chosen.periodTableId))
     }
 

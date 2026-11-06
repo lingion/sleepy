@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.lingion.sleepy.util.TimeTableUtils
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 课表实体 (TimeTable) — 一个课表包含多个课程
@@ -40,7 +41,7 @@ data class TimeTableEntity(
      */
     @ColumnInfo(name = "smartConfigJson") val smartConfigJson: String = "",
 
-    @ColumnInfo(name = "createdAt") val createdAt: Long = System.currentTimeMillis(),
+    @ColumnInfo(name = "createdAt") val createdAt: Long = AppClock.millis(),
 
     /**
      * issue#40 绑定的独立时间节次表 (period_tables.id)。null = 未绑定(用旧 timeJson 兼容列)。
@@ -59,10 +60,13 @@ data class TimeTableEntity(
     @ColumnInfo(name = "preBindSnapshotJson", defaultValue = "") val preBindSnapshotJson: String = "",
 
     /**
-     * 2026-10-08 用户诉求: 每表独立提醒开关。开=本表参与课前提醒/每日摘要/流体云调度
-     * (后台未选中课表同样生效); 关=整表跳过。默认开 = 升级行为不变。
+     * Legacy eligibility flag. Existing disabled tables remain disabled in automatic mode.
+     * Consumers must resolve the effective reminder scope through the repository.
      */
-    @ColumnInfo(name = "reminderEnabled", defaultValue = "1") val reminderEnabled: Boolean = true
+    @ColumnInfo(name = "reminderEnabled", defaultValue = "1") val reminderEnabled: Boolean = true,
+
+    /** Null means no manual choice; the resolver follows selection only when all overrides are null. */
+    @ColumnInfo(name = "reminderOverride", defaultValue = "NULL") val reminderOverride: Boolean? = null
 ) {
     /**
      * issue#40 有效时间表水合(设计 §5.1): 绑定存在 → 节次时间/智慧节次/节次数

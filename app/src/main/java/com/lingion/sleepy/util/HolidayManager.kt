@@ -8,6 +8,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 节假日管理器 - 从网络获取法定节假日，App 内判断是否显示灰显。
@@ -38,9 +39,9 @@ object HolidayManager {
     private const val READ_TIMEOUT_MS = 5000
     private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
-    private val entriesCache = mutableMapOf<Int, List<HolidayEntry>>()
+    private val entriesCache = java.util.concurrent.ConcurrentHashMap<Int, List<HolidayEntry>>()
     /** 各年数据是否拉取成功过(空结果+成功=false => 网络失败) */
-    private val yearFetchFailed = mutableMapOf<Int, Boolean>()
+    private val yearFetchFailed = java.util.concurrent.ConcurrentHashMap<Int, Boolean>()
 
     /**
      * 磁盘缓存 — 拉成功一次即落盘, 进程重启后仍有效。
@@ -265,7 +266,7 @@ object HolidayManager {
 
     /** 预加载当前年和明年的节假日数据 */
     suspend fun preload(ctx: Context) {
-        val year = LocalDate.now().year
+        val year = LocalDate.now(AppClock).year
         getYearEntries(ctx, year); getYearEntries(ctx, year + 1)
     }
 

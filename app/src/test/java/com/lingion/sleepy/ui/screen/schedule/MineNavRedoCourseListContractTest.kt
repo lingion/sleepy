@@ -147,12 +147,14 @@ class MineNavRedoCourseListContractTest {
     @Test
     fun `schedule screen TopBar mounts capsule only when undo or redo exists`() {
         // 挂载条件:hasUndo = UndoManager.hasSnapshot;hasRedo = UndoManager.hasRedoSnapshot
-        // 单一 if 块内挂胶囊(同一显隐)
+        // 同一显隐源 (2026-10-29 Task 6 lockstep: 直挂 if 改 AnimatedVisibility
+        // popup 家族 — 一体显隐语义不变, 锚点从 if(...) 随接线改写为
+        // visible = hasUndo || hasRedo, 断言强度等价)
         val pattern = Regex(
-            """val\s+hasUndo\s*=\s*[\w.]*UndoManager\.hasSnapshot\s*[\s\S]{0,200}?val\s+hasRedo\s*=\s*[\w.]*UndoManager\.hasRedoSnapshot\s*[\s\S]{0,200}?if\s*\(hasUndo\s*\|\|\s*hasRedo\)"""
+            """val\s+hasUndo\s*=\s*[\w.]*UndoManager\.hasSnapshot\s*[\s\S]{0,200}?val\s+hasRedo\s*=\s*[\w.]*UndoManager\.hasRedoSnapshot\s*[\s\S]{0,200}?AnimatedVisibility\(\s*visible = hasUndo \|\| hasRedo"""
         )
         assertTrue(
-            "ScheduleScreen TopBar 必须先取 hasUndo/hasRedo 再 if(hasUndo||hasRedo) 挂胶囊(配对显隐)",
+            "ScheduleScreen TopBar 必须先取 hasUndo/hasRedo 再以此为唯一显隐源挂胶囊(配对显隐)",
             pattern.containsMatchIn(scheduleScreen)
         )
     }

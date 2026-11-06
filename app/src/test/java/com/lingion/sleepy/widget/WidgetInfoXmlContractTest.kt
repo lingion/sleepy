@@ -352,6 +352,7 @@ class WidgetInfoXmlContractTest {
         "TodayWideWidgetReceiver" to Triple("300dp", "160dp", "4x2"),
         "TwoDayWideWidgetReceiver" to Triple("300dp", "160dp", "4x2"),
         "WeekListWideWidgetReceiver" to Triple("300dp", "160dp", "4x2"),
+        "WeekGridWideWidgetProvider" to Triple("300dp", "160dp", "4x2"),
         // L 档 300×250 targetCell 4×4
         "TodayWidgetReceiver" to Triple("300dp", "250dp", "4x4"),
         "TwoDayWidgetReceiver" to Triple("300dp", "250dp", "4x4"),
@@ -379,11 +380,11 @@ class WidgetInfoXmlContractTest {
     }
 
     @Test
-    fun `all 13 variants unlock resize both ends with minResize 40x40`() {
-        // 用户 2026-09-14 硬要求: 拖拽两端全开放 — minResize 统一 40×40, 不锁纵向
+    fun `legacy variants retain free resize and wide grid retains four complete rows`() {
         infoXmls.forEach { (name, root) ->
-            assertEquals("$name minResizeWidth", "40dp", root.getAttribute("android:minResizeWidth"))
-            assertEquals("$name minResizeHeight", "40dp", root.getAttribute("android:minResizeHeight"))
+            val wideGrid = name == "week_grid_wide_widget_info"
+            assertEquals("$name minResizeWidth", if (wideGrid) "300dp" else "40dp", root.getAttribute("android:minResizeWidth"))
+            assertEquals("$name minResizeHeight", if (wideGrid) "160dp" else "40dp", root.getAttribute("android:minResizeHeight"))
             assertEquals("$name resizeMode", "horizontal|vertical", root.getAttribute("android:resizeMode"))
         }
     }

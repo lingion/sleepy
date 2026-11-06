@@ -2,11 +2,13 @@
 
 # OPPO · oneplus-realme-live-cards.md
 
+> 2026-10-29 实现复核：以下保留 2026-09 的品牌与平台资料快照。Sleepy 当前已实现 OPPO / 一加 / realme 共用的 Android 16 Live Updates 渲染分支，契约测试注释记录了 RMX6688 / ColorOS 16 行为；这不代表所有子品牌机型均已验证。Pantanal / Seedling 通道仍未接入，详见 [接入状态](../../oppo-coloros-fluid-cloud.md)。
+
 > 证据等级说明: A=官方落盘原文 / B=官方域名搜索快照或主流媒体报道 / C=社区博客需二次确认。本文件一加/realme 侧**无 A 级开发者文档**——两家子品牌均未提供独立的实时卡片接入文档,实时卡片能力随系统整体继承。
 
 ## 一、结论先行
 
-一加(中国)与 realme 的实时卡片 = **同一个 ColorOS 流体云内核**。一加 2021 年后中国区放弃氢OS 回归 ColorOS;realme UI 是 ColorOS 的子品牌换皮。流体云**不是按品牌裁剪的能力包,而是按系统大版本走**——ColorOS 15 ↔ realme UI 6.0,ColorOS 16 ↔ realme UI 7.0。开发者侧**没有任何子品牌专属接入通道**,三方接入统一走 OPPO 开放平台潘塔纳尔体系(见 [fluid-cloud-access-gate.md](./fluid-cloud-access-gate.md))。
+一加(中国)与 realme 的实时卡片 = **同一个 ColorOS 流体云内核**。一加 2021 年后中国区放弃氢OS 回归 ColorOS;realme UI 是 ColorOS 的子品牌换皮。流体云**不是按品牌裁剪的能力包,而是按系统大版本走**——ColorOS 15 ↔ realme UI 6.0,ColorOS 16 ↔ realme UI 7.0。原调研未发现子品牌专属接入通道；Pantanal / Seedling 专用通道统一走 OPPO 开放平台(见 [fluid-cloud-access-gate.md](./fluid-cloud-access-gate.md))，Android Live Updates 则需另外核对系统支持与授权。
 
 ## 二、系统版本沿革
 

@@ -61,21 +61,16 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 /**
- * 小组件设置页(设计 §3): 原通用页「小组件」板块整体平移至此,与「通用」并列。
- *
- * 内容 = 外观开关组(去色/分隔线/最近忙日) + 「添加或管理桌面小组件」条目 +
- * 页尾「刷新所有小组件」按钮(2026-10-18 用户定版: 自「我的」页迁来,
- * 仅当桌面已有已放置实例时出现 — 数据源与「添加或管理」列表同一条
- * WidgetManagementViewModel.state, 零新通路)。页尾留 LocalNavExtraBottomPadding
- * 余量,与底部悬浮栏约定对齐。
- *
- * 偏好存储键零迁移 — 与 GeneralSettingsScreen 时代完全一致。
+ * 小组件设置：管理入口、全局外观、共享课表显示入口、高级选项、刷新动作。
+ * 全局课表行为只在课表显示页设置，本页保留按作用范围说明的导航入口。
+ * 偏好键、按实例配置与已放置组件的刷新条件保持不变。
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WidgetSettingsScreen(
     onBack: () -> Unit = {},
-    onOpenWidgetManagement: () -> Unit = {}
+    onOpenWidgetManagement: () -> Unit = {},
+    onOpenScheduleDisplay: () -> Unit = {}
 ) {
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
@@ -83,7 +78,7 @@ fun WidgetSettingsScreen(
     var expanded by rememberSaveable { mutableStateOf(true) }
     var widgetColorless by remember { mutableStateOf(AppPrefs.isWidgetColorless(context)) }
     var widgetSeparator by remember { mutableStateOf(AppPrefs.isWidgetSeparator(context)) }
-    var nearestBusyDay by remember { mutableStateOf(AppPrefs.isNearestBusyDay(context)) }
+    var vertPunct by remember { mutableStateOf(AppPrefs.isVertPunctReplace(context)) }
 
     // 显示项变更后立即刷小组件(管线随板块自 GeneralSettingsScreen 平移)
     val widgetScope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
@@ -142,50 +137,6 @@ fun WidgetSettingsScreen(
             ),
             verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)
         ) {
-            item {
-                SectionHeader(title = stringResource(R.string.appearance_section_widget))
-            }
-            item {
-                SettingsCard(
-                    title = stringResource(R.string.settings_widget),
-                    expanded = expanded,
-                    onToggle = { expanded = !expanded }
-                ) {
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_widget_colorless),
-                        subtitle = stringResource(R.string.settings_widget_colorless_sub),
-                        checked = widgetColorless,
-                        onCheckedChange = {
-                            widgetColorless = it
-                            AppPrefs.setWidgetColorless(context, it)
-                            refreshWidgets()
-                        }
-                    )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_widget_separator),
-                        subtitle = stringResource(R.string.settings_widget_separator_sub),
-                        checked = widgetSeparator,
-                        onCheckedChange = {
-                            widgetSeparator = it
-                            AppPrefs.setWidgetSeparator(context, it)
-                            refreshWidgets()
-                        }
-                    )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_nearest_busy_day),
-                        subtitle = stringResource(R.string.settings_nearest_busy_day_sub),
-                        checked = nearestBusyDay,
-                        onCheckedChange = {
-                            nearestBusyDay = it
-                            AppPrefs.setNearestBusyDay(context, it)
-                            refreshWidgets()
-                        }
-                    )
-                }
-            }
-
             // 添加或管理桌面小组件: 跳「添加或管理」页(右上 ＋ 进画廊)
             item {
                 Row(
@@ -210,6 +161,74 @@ fun WidgetSettingsScreen(
                         contentDescription = null,
                         tint = colors.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+            item {
+                SettingsCard(
+                    title = stringResource(R.string.settings_widget_global_appearance),
+                    expanded = expanded,
+                    onToggle = { expanded = !expanded }
+                ) {
+                    SettingToggleRow(
+                        label = stringResource(R.string.settings_widget_colorless),
+                        subtitle = stringResource(R.string.settings_widget_colorless_sub),
+                        checked = widgetColorless,
+                        onCheckedChange = {
+                            widgetColorless = it
+                            AppPrefs.setWidgetColorless(context, it)
+                            refreshWidgets()
+                        }
+                    )
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    SettingToggleRow(
+                        label = stringResource(R.string.settings_widget_separator),
+                        subtitle = stringResource(R.string.settings_widget_separator_sub),
+                        checked = widgetSeparator,
+                        onCheckedChange = {
+                            widgetSeparator = it
+                            AppPrefs.setWidgetSeparator(context, it)
+                            refreshWidgets()
+                        }
+                    )
+                }
+            }
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                        .clip(SleepyTheme.shapes.large)
+                        .background(colors.surfaceContainer)
+                        .noRippleClickable(onOpenScheduleDisplay)
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(stringResource(R.string.settings_widget_shared_display),
+                            style = MaterialTheme.typography.titleSmall)
+                        Text(stringResource(R.string.settings_widget_shared_display_sub),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.onSurfaceVariant)
+                    }
+                    Icon(Icons.Outlined.ChevronRight, contentDescription = null,
+                        tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                }
+            }
+            item { SectionHeader(title = stringResource(R.string.settings_widget_advanced)) }
+            item {
+                Column(
+                    modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large)
+                        .background(colors.surfaceContainer).padding(horizontal = 16.dp)
+                ) {
+                    SettingToggleRow(
+                        label = stringResource(R.string.settings_widget_vert_punct_experimental),
+                        subtitle = stringResource(R.string.settings_vert_punct_sub),
+                        checked = vertPunct,
+                        onCheckedChange = {
+                            vertPunct = it
+                            AppPrefs.setVertPunctReplace(context, it)
+                            refreshWidgets()
+                        }
                     )
                 }
             }

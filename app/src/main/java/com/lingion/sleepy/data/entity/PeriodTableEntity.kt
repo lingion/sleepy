@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.lingion.sleepy.util.TimeTableUtils
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 独立时间节次表 (issue#40) — "第 N 节是几点到几点"的真源, 与课程表(TimeTable)平行的层级。
@@ -34,7 +35,7 @@ data class PeriodTableEntity(
     /** 智慧节次配置 JSON。空串表示手动模式（timeJson）。 */
     @ColumnInfo(name = "smartConfigJson") val smartConfigJson: String = "",
 
-    @ColumnInfo(name = "createdAt") val createdAt: Long = System.currentTimeMillis(),
+    @ColumnInfo(name = "createdAt") val createdAt: Long = AppClock.millis(),
 
-    @ColumnInfo(name = "updatedAt") val updatedAt: Long = System.currentTimeMillis()
+    @ColumnInfo(name = "updatedAt") val updatedAt: Long = AppClock.millis()
 )

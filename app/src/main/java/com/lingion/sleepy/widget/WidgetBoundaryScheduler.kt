@@ -18,6 +18,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 课程边界刷新调度器 (设计文稿 widget-redesign-2026-09 §5)。
@@ -49,6 +50,17 @@ object WidgetBoundaryScheduler {
     internal fun nextBoundaryMin(endMins: List<Int>, nowMin: Int): Int? =
         endMins.asSequence().map { it + 1 }.filter { it > nowMin }.minOrNull()
 
+    internal fun nextWidePeriodBoundary(periods: List<WidePeriod>, now: LocalDateTime, capacity: Int): LocalDateTime? {
+        val minute = now.hour * 60 + now.minute
+        val current = WeekGridWideWindowCore.visiblePeriods(periods, minute, capacity)
+        return periods.mapNotNull { it.endMinute }.filter { it in 0..1439 && it > minute }.sorted()
+            .firstOrNull { WeekGridWideWindowCore.visiblePeriods(periods, it, capacity) != current }
+            ?.let { now.toLocalDate().atStartOfDay().plusMinutes(it.toLong()) }
+    }
+
+    internal fun wideBoundaryEpoch(time: LocalDateTime): Long =
+        time.atZone(AppClock.zone).toInstant().toEpochMilli()
+
     /** 行 end 分钟 — 与 FIXED 锚点同一契约 (effectiveCourseTime 真实分钟, 行取 max)。 */
     internal fun rowEndMins(courses: List<CourseEntity>, timeJson: String?): List<Int> =
         FixedWindowCore
@@ -59,10 +71,11 @@ object WidgetBoundaryScheduler {
      * 重排下一边界闹钟 (幂等: 同 RC cancel+重排)。阻塞读库 (loadDataSync 内
      * runBlocking + Once 缓存) — 只允许在 IO 线程调用。
      */
+    @Synchronized
     fun armNext(context: Context) {
         try {
             val awm = AppWidgetManager.getInstance(context)
-            val now = LocalDateTime.now()
+            val now = LocalDateTime.now(AppClock)
             val nowMin = now.hour * 60 + now.minute
             val endMins = ArrayList<Int>()
             for (cls in BOUNDARY_FAMILIES) {
@@ -77,27 +90,36 @@ object WidgetBoundaryScheduler {
                 }
             }
             val nextMin = nextBoundaryMin(endMins, nowMin)
+            val legacyTrigger = nextMin?.let { LocalDate.now(AppClock).atStartOfDay(java.time.ZoneId.systemDefault())
+                .plusMinutes(it.toLong()).toInstant().toEpochMilli() }
+            val candidates = mutableListOf<Long>()
+            legacyTrigger?.let(candidates::add)
+            // New receiver only: individual periods, not multi-period course-row ends.
+            for (id in awm.getAppWidgetIds(ComponentName(context, WeekGridWideWidgetProvider::class.java))) {
+                val settings = WeekGridWideSettingsStore.read(context, id)
+                if (settings.mode != WeekGridWideMode.VERTICAL) continue
+                val source = kotlinx.coroutines.runBlocking { WidgetWeekDataLoader.resolve(id, now) } ?: continue
+                val periods = WeekGridWideRenderer.periods(source.table.timeJson)
+                val (_, height) = RemoteViewsWidgetHelper.computeSizeDp(awm.getAppWidgetOptions(id))
+                val capacity = WeekGridWideRenderer.capacity(context, (height * context.resources.displayMetrics.density).toInt())
+                nextWidePeriodBoundary(periods, now, capacity)?.let { candidates += wideBoundaryEpoch(it) }
+            }
             val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             val pending = buildPendingIntent(context)
             am.cancel(pending)
-            if (nextMin == null) {
-                Log.d(TAG, "no future boundary today (endMins=${endMins.size}) — alarm cleared")
-                return
-            }
-            val triggerAt = LocalDate.now().atStartOfDay(java.time.ZoneId.systemDefault())
-                .plusMinutes(nextMin.toLong()).toInstant().toEpochMilli()
-            if (triggerAt <= System.currentTimeMillis()) return
+            val triggerAt = candidates.filter { it > AppClock.millis() }.minOrNull() ?: return
+            if (triggerAt <= AppClock.millis()) return
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !am.canScheduleExactAlarms()) {
                 // 无精确权限 → 不精确 + 15-min 周期兜底, 静默降级 (评审 #12)
                 am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pending)
-                Log.d(TAG, "inexact arm at +${nextMin - nowMin}min (no exact-alarm permission)")
+                Log.d(TAG, "inexact arm at +${(triggerAt - AppClock.millis()) / 60000}min (no exact-alarm permission)")
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pending)
-                Log.d(TAG, "exact arm at +${nextMin - nowMin}min (endMins=${endMins.size})")
+                Log.d(TAG, "exact arm at +${(triggerAt - AppClock.millis()) / 60000}min (endMins=${endMins.size})")
             } else {
                 // API 21/22 (Android 5): 无 Doze, setExact 即可; setExactAndAllowWhileIdle 是 API 23+
                 am.setExact(AlarmManager.RTC_WAKEUP, triggerAt, pending)
-                Log.d(TAG, "exact arm at +${nextMin - nowMin}min (endMins=${endMins.size})")
+                Log.d(TAG, "exact arm at +${(triggerAt - AppClock.millis()) / 60000}min (endMins=${endMins.size})")
             }
         } catch (t: Throwable) {
             Log.e(TAG, "armNext failed", t)

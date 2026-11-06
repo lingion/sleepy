@@ -1,0 +1,7 @@
+<resources>
+    <string name="update_from_jw">Actualizar desde la universidad</string>
+    <string name="update_from_jw_title">Confirmar actualización del horario</string>
+    <string name="update_from_jw_summary">Añadidos: %1$d, modificados: %2$d, eliminados: %3$d</string>
+    <string name="update_from_jw_no_changes">No hay cambios en el horario</string>
+    <string name="update_from_jw_confirm">Actualizar</string>
+</resources>

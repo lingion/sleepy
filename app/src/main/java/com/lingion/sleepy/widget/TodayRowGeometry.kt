@@ -77,14 +77,16 @@ object TodayRowGeometry {
         return spans
     }
 
-    /** 单行高 — 无冲突 38dp; 冲突行按最高栏堆叠数。 */
-    fun rowHeightDp(row: ConflictLayoutEngine.WeekLaneRow): Float =
-        if (row.laneCount == 1) ROW_H_DP
-        else {
-            val maxStack = row.courses.groupBy { row.laneOf[it.id] }.values
-                .maxOf { it.size }.coerceAtLeast(1)
-            maxStack * ROW_H_DP + (maxStack - 1) * STACK_GAP_DP
+    /** 单行高 — 无冲突 30dp; 冲突行按最高栏堆叠数 (含单栏多课堆叠)。 */
+    fun rowHeightDp(row: ConflictLayoutEngine.WeekLaneRow): Float {
+        val maxStack = if (row.laneCount == 1) {
+            row.courses.size.coerceAtLeast(1)
+        } else {
+            row.courses.groupBy { row.laneOf[it.id] }.values
+                .maxOfOrNull { it.size }?.coerceAtLeast(1) ?: row.courses.size.coerceAtLeast(1)
         }
+        return maxStack * ROW_H_DP + (maxStack - 1) * STACK_GAP_DP
+    }
 
     /**
      * 内容全展开高度 (dp) — 末行底 + 底 pad。

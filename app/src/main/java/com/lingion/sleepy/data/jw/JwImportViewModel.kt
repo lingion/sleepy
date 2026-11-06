@@ -22,6 +22,7 @@ import com.lingion.sleepy.util.TimeTableUtils
 import java.time.LocalDate
 import java.time.DayOfWeek
 import java.time.temporal.TemporalAdjusters
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 教务直连导入 ViewModel
@@ -81,6 +82,8 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                     throw e
                 } catch (_: Exception) { emptyMap() }
                 val list = parseSchoolsJson(text)
+                    // console data-ops 覆盖层（无覆盖时原样透传；main 侧唯一接入点）
+                    .let(com.lingion.sleepy.console.CatalogOverrideStore::applyTo)
                     .map { it.copy(cities = cityIndex[it.name].orEmpty()) }
                     .filter { it.url.isNotBlank() }  // 只显示有URL的学校，避免用户看到大量不可用选项
                 _schools.value = list
@@ -105,7 +108,9 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
      * 保留原签名 suspend fun parseHtml(html, protocolType): List<JwCourse> 不变（T9 依赖）。
      */
     suspend fun parseHtml(html: String, protocolType: String): List<JwCourse> = withContext(Dispatchers.IO) {
-        if (protocolType.isBlank()) {
+        // jw_home = 登记型（URL 可信、无服务端协议指纹）: 与空白协议同处理,
+        // 登录后按实际页面自动检测已收录协议（selectBest run-all）。
+        if (isAutoDetectProtocol(protocolType)) {
             val (result, attempts) = JwParserRegistry.selectBest(html, declaredType = null)
             lastAttempts = attempts
             lastDiagAttempts = attempts.map {
@@ -255,6 +260,13 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
         }
 
         /**
+         * 空白协议与 jw_home 登记型走同一条自动检测通路（run-all selectBest）。
+         * 纯函数便于 JVM 测试直接锁行为，parseHtml 与测试共用此谓词。
+         */
+        internal fun isAutoDetectProtocol(protocolType: String): Boolean =
+            protocolType.isBlank() || protocolType == JwProtocol.TYPE_JW_HOME
+
+        /**
          * T8 核心：显式分发的纯函数形式（不依赖 Android Context / Room）。
          */
         internal fun parseHtmlStatic(
@@ -376,6 +388,10 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                         || u.matches(Regex(""".*/jxd(/|$).*"""))
                         || u.contains("logon.do")
                         || u.contains("verifycode.servlet") -> JwProtocol.TYPE_QZ
+                    // 超星泛雅按校租户域: /http/<hex>/ 重写后原 host 以明文留在 path,
+                    // 子串锚仍可靠(2026-10-28 WakeUP 6.6.2 调查, GitHub 交叉验证)
+                    u.contains(".jw.chaoxing.com")
+                        || u.contains(".fanya.chaoxing.com") -> JwProtocol.TYPE_CHAOXING
                     u.contains("xkaction.do")
                         || u.contains("actiontype=6") -> JwProtocol.TYPE_URP
                     u.contains("thissemestercurriculum")
@@ -475,11 +491,18 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
             // ⑦a CF_NEW — 新青果 NTSS (FullCalendar 形态): /new/student/xsgrkb 唯一路径锚点
             u.contains("/new/student/xsgrkb") -> JwProtocol.TYPE_CF_NEW
 
-            // ⑦b CHAOXING — 超星综合教务 (xsd=学生端 path, queryKbForGrdb 个人课表接口)
+            // ⑦b CHAOXING — 超星综合教务 (xsd=学生端 path, queryKbForGrdb 个人课表接口;
+            //     *.jw.chaoxing.com / *.fanya.chaoxing.com = 泛雅按校租户生产入口,
+            //     2026-10-28 WakeUP 6.6.2 调查 GitHub 交叉验证: hbut.jw.chaoxing.com 等
+            //     9+ 学生仓库同端点; dump 实测 125 行 jw 租户 + 1 行 fanya 租户全带学校前缀子域。
+            //     带前导点防裸域与反向拼接: "jw.chaoxing.com".contains(".jw.chaoxing.com")=false,
+            //     "notjw.chaoxing.com"/"mirrorjw.chaoxing.com.net" 同理不误命中)
             u.matches(Regex(".*/xsd(/|$).*"))
                 || u.contains("/xsd/pkgl/")
                 || u.contains("querykbforgrdb")
-                || u.contains("sdpkkblist") -> JwProtocol.TYPE_CHAOXING
+                || u.contains("sdpkkblist")
+                || u.contains(".jw.chaoxing.com")
+                || u.contains(".fanya.chaoxing.com") -> JwProtocol.TYPE_CHAOXING
 
             // ⑧ PKU — 北大 IAAA / elective
             u.contains("elective.pku")
@@ -703,13 +726,14 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                 ?.let { DateUtils.normalizeStartDate(it) }
                 ?: computeCurrentSemesterStart()
             val maxNode = if (nodesPerDay > 0) nodesPerDay else courses.maxOf { maxOf(it.startNode, it.endNode) }
+            val isFirstTable = tableDao.count() == 0
             val newTable = TimeTableEntity(
                 id = 0,
                 name = tableName.ifBlank { "导入的课表" },
                 startDate = resolvedStartDate,
                 timeJson = timeJson.ifBlank { TimeTableUtils.DEFAULT_TIME_JSON },
                 nodesPerDay = maxNode,
-                isDefault = true,  // 导入的课表设为默认，widget 直接展示
+                isDefault = isFirstTable,
                 smartConfigJson = smartConfigJson
             )
             // v1.0.56 T10: 自动作息表先落库拿 id — 建表时同名, 但全局唯一名墙:
@@ -726,8 +750,10 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                 )
             }
             val generatedId = tableDao.insert(newTable.copy(periodTableId = autoPeriodTableId))
-            // 把其他表设为非 default，确保只有当前表是 default
-            tableDao.setDefault(generatedId)
+            if (isFirstTable) {
+                // 把其他表设为非 default，确保只有当前表是 default
+                tableDao.setDefault(generatedId)
+            }
 
             // 落库课程
             val defaultColor = "#FF6750A4"
@@ -757,7 +783,7 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
      * 如果当前是寒暑假（2月/8月），回退到上一学期。
      */
     private fun computeCurrentSemesterStart(): String {
-        val today = LocalDate.now()
+        val today = LocalDate.now(AppClock)
         val month = today.monthValue
         val semesterStartYear = if (month in 8..12) today.year else today.year - 1
         val semesterStartMonth = if (month in 8..12) 9 else 2

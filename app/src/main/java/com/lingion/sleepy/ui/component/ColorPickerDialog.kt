@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import com.lingion.sleepy.R
 import androidx.compose.ui.unit.dp
@@ -61,6 +62,8 @@ fun ColorPickerDialog(
     }
 
     var hue by remember { mutableStateOf(initialHSV[0]) }
+    // 幽灵基线 = 打开弹窗时刻的色相 (initialHSV 已 remember, 弹窗重建即重算)。
+    val hueBaseline = initialHSV[0]
     var saturation by remember { mutableStateOf(initialHSV[1]) }
     var value by remember { mutableStateOf(initialHSV[2]) }
 
@@ -96,6 +99,7 @@ fun ColorPickerDialog(
                 HueSlider(
                     hue = hue,
                     onHueChange = { hue = it },
+                    initialHue = hueBaseline,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(36.dp)
@@ -200,13 +204,22 @@ fun SVPanel(
 /** 色相滑条：360°彩虹水平条。
  *  onHueChange 逐帧回调(拖动跟手), onHueCommit 松手/点按各回调一次 —
  *  供「拖动只动本地值, 松手才落库重算」的调用方(外观页课程配色种子)节流;
- *  默认空实现, ColorPickerDialog 等既有调用零改动。 */
+ *  默认空实现, ColorPickerDialog 等既有调用零改动。
+ *
+ *  initialHue 幽灵 (需求 2026-10-29 用户定义原话语义, spec §3.1 色相变体):
+ *  拖离基线 (调用点传打开弹窗/进编辑区时刻的色相, null = 不接) → 基线刻度出现
+ *  一条细双描条 (白芯+深描 — 单头共享件 primary 色在彩虹底衬上辨不清, 此处
+ *  专用几何; 判据仍复用 singleSliderGhostVisible, epsilon = 色相 1 度步进取半档);
+ *  拖回基线 → 消失。纯装饰: 零 pointerInput 零语义, testTag 仅供 Robolectric
+ *  管线定位。真机目验待办: 双描配方 (白 2dp 芯 + 深色 1dp 描边) 在任意色相底衬
+ *  的可辨性需最终在设备上过目 (spec §3.1 挂账)。 */
 @Composable
 fun HueSlider(
     hue: Float,
     onHueChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
     onHueCommit: (Float) -> Unit = {},
+    initialHue: Float? = null,
 ) {
     // pointerInput(Unit) 只在首组成形, 闭包捕获的 hue 会过期; dragged 在 onDrag 逐帧
     // 更新, onDragEnd 松手提交 = 最后一帧视觉值(同 coroutine, 零竞态; cancel 复位不提交)。
@@ -257,6 +270,26 @@ fun HueSlider(
                 radius = 8f,
                 center = androidx.compose.ui.geometry.Offset(cx, cy)
             )
+        }
+        if (singleSliderGhostVisible(hue, initialHue, 0.5f)) {
+            // 双描细条: 白芯 (2dp) + 深色描边 (1dp), 任意色相底衬可辨;
+            // 几何 = 基线 hue 的满宽线性 x (无 thumb 内缩 — 与拖动换算同式)。
+            val baseline = initialHue!!.coerceIn(0f, 360f)
+            Canvas(modifier = Modifier.fillMaxSize().testTag("hue-ghost")) {
+                val x = (baseline / 360f) * size.width
+                val coreW = 2.dp.toPx()
+                val strokeW = 1.dp.toPx()
+                drawRect(
+                    color = Color.Black.copy(alpha = 0.85f),
+                    topLeft = androidx.compose.ui.geometry.Offset(x - coreW / 2f - strokeW, 0f),
+                    size = androidx.compose.ui.geometry.Size(coreW + 2f * strokeW, size.height),
+                )
+                drawRect(
+                    color = Color.White.copy(alpha = 0.95f),
+                    topLeft = androidx.compose.ui.geometry.Offset(x - coreW / 2f, 0f),
+                    size = androidx.compose.ui.geometry.Size(coreW, size.height),
+                )
+            }
         }
     }
 }

@@ -5,8 +5,8 @@
 <h1 align="center">Sleepy · Lightweight Timetable</h1>
 
 <p align="center">
-  A clean, Material You Android schedule/timetable app built with Kotlin + Jetpack Compose.<br>
-  Multi-view · Direct JW system import · Home-screen widgets · HSV custom colors
+  A clean Android timetable app built with Kotlin + Jetpack Compose, Material 3 Expressive motion, and optional Liquid Glass.<br>
+  Multi-view · Direct JW system import · Single-session adjustments · Home-screen widgets · Liquid Glass
 </p>
 
 <p align="center">
@@ -55,7 +55,7 @@ The school selector requests foreground location only after tapping Locate, for 
 | ABIs | arm64-v8a / armeabi-v7a / x86_64 |
 | Languages | zh-CN · zh-TW · en · ja · es |
 
-Sleepy is an Android timetable app built around three principles: **light, fast, accurate**. Its [school catalogue](docs/schools-list.md) distinguishes existing import configurations, unverified entries that require confirmation, and schools awaiting adaptation; catalogue inclusion is not an import guarantee. Features include JW import, multi-format parsing, five home-screen widget types in 13 fixed-size variants, daily course notifications, dark mode, and multiple theme presets. The version and supported-school catalogue are maintained in the app's About page and on GitHub Releases. Timetables are stored locally. Network operations include JW synchronization, holiday-data refresh from `unpkg.com/holiday-calendar`, and update checks via GitHub (with the project mirror as fallback); these are not analytics services.
+Sleepy is an Android timetable app built around three principles: **light, fast, accurate**. Its [school catalogue](docs/schools-list.md) distinguishes existing import configurations, unverified entries that require confirmation, and schools awaiting adaptation; catalogue inclusion is not an import guarantee. Features include JW import, multi-format parsing, single-session adjustments, five home-screen widget types in 13 fixed-size variants, daily course notifications, dark mode, and optional Liquid Glass. The version and supported-school catalogue are maintained in the app's About page and on GitHub Releases. Timetables are stored locally. Network operations include JW import, WakeUp share-code retrieval through WakeUp services, holiday-data refresh from `unpkg.com/holiday-calendar`, and update checks via GitHub (with the project mirror as fallback); these are not analytics services.
 
 ---
 
@@ -78,7 +78,7 @@ Features:
 - Courses filtered to the current week by week-range + odd/even + period-range
 - Tap a course card for the detail bottom sheet
 - Today distinguishes no classes, term not started, and term ended
-- Wide screens use side navigation and a two-pane layout: the timetable stays on the left while Today, management, and Mine open on the right
+- Wide screens in landscape use side navigation and a two-pane layout: the timetable stays on the left while Today, management, and Mine open on the right; portrait uses a single pane
 
 ---
 
@@ -158,6 +158,8 @@ The protocol catalogue grows with school integrations. The table below shows pro
 | `zf` / `zf_1` / `zf_new` | Zhengfang JW (3 variants) |
 | `urp` / `urp_new` | URP JW (2 variants) |
 | `cf` | Qingguo JW |
+| `kingo_new` | New Kingo JW, including Jiamusi University timetable pages |
+| `sg_asset` | Shiguang-compatible import using bundled vendor scripts; availability follows each school's catalogue status |
 | `classic_eams` | Classic Wisedu EAMS (UESTC, SUFE, Hunan Normal, NUAA, etc.) |
 | `eams5` | supwisdom EAMS5 (HFUT, Anhui Univ., CUMT-Beijing) |
 | `whut` | Wuhan University of Technology (Wisedu variant) |
@@ -192,6 +194,7 @@ If URL detection or parsing does not work, file an adaptation request with the J
 | Format | Recognition |
 |---|---|
 | **WakeUp share text** | Starts with `【来自WakeUp课程表】` |
+| **WakeUp share code** | Recognizes the code, retrieves the timetable from WakeUp services over the network, then opens an import preview |
 | **WakeUp JSON** | `.json` exported from Sleepy / WakeUp |
 | **ICS calendar** | Standard iCalendar, often exportable from university systems |
 | **CSV file** | `.csv` with header row, comma-separated |
@@ -234,6 +237,8 @@ The import sheet includes format instructions and examples. The plain-text guide
 
 A course may contain several teaching slots, each with its own teacher, room, note, weekday, periods, weeks, and odd/even selection. Apply week settings to all slots when needed. Optional aliases, group colors, and per-slot colors are supported; week/grid views and widgets independently choose whether to display aliases. Saving validates input and reports conflicts.
 
+Adjust or delete a **single session** on a specific date while keeping the other weeks unchanged. Tap an empty grid slot to open a quick-add capsule with its weekday and periods prefilled. Long-press a course to drag it or resize its period range; holding it at either screen edge pages through weeks. Changes are saved after confirmation. Time and period sliders retain a ghost marker of the original range to make adjustments easier to compare.
+
 ---
 
 ## Export Timetable / Period Table
@@ -275,15 +280,42 @@ Export can write courses to a writable calendar on the device. Choose a calendar
 
 Five widget types across 13 fixed-size variants: Today / TwoDay / WeekList each in regular / small / wide; WeekView / WeekGrid each in regular / small. Layouts adapt to launcher sizing.
 
-| Widget | Variants | Shows | Screenshot |
-|---|---|---|---|
-| **Today** | regular / small / wide | Today's course list | <p align="left"><img src="docs/screenshots/widget-today.png" width="240"></p> |
-| **TwoDay** | regular / small / wide | Today + tomorrow, two columns | <p align="left"><img src="docs/screenshots/widget-twoday.png" width="240"></p> |
-| **WeekList** | regular / small / wide | 7-day course summary + names | <p align="left"><img src="docs/screenshots/widget-weeklist.png" width="240"></p> |
-| **WeekView** | regular / small | Week-view thumbnail (theme-colored, no capsules) | <img src="docs/screenshots/widget-weekview.png" width="240" alt="WeekView on Android launcher"> |
-| **WeekGrid** | regular / small | Time grid + course blocks | <p align="left"><img src="docs/screenshots/widget-weekgrid.png" width="200"></p> |
+<table>
+  <tr>
+    <td width="36%" valign="top" align="center">
+      <img src="docs/screenshots/widget-weekgrid.png" alt="Week-grid widget (WeekGrid)">
+      <br>
+      <sub><b>Week-grid widget (WeekGrid)</b></sub>
+    </td>
+    <td width="64%" valign="top" align="center">
+      <img src="docs/screenshots/widget-today.png" alt="Today widget (Today)">
+      <br>
+      <sub><b>Today widget (Today)</b></sub>
+      <br><br>
+      <img src="docs/screenshots/widget-twoday.png" alt="Next-two-days widget (TwoDay)">
+      <br>
+      <sub><b>Next-two-days widget (TwoDay)</b></sub>
+      <br><br>
+      <img src="docs/screenshots/widget-weekview.png" alt="Week-view widget (WeekView)">
+      <br>
+      <sub><b>Week-view widget (WeekView)</b></sub>
+      <br><br>
+      <img src="docs/screenshots/widget-weeklist.png" alt="Week-list widget (WeekList)">
+      <br>
+      <sub><b>Week-list widget (WeekList)</b></sub>
+    </td>
+  </tr>
+</table>
 
-Image sources: Today, TwoDay, and WeekList are emulator previews produced by the current production renderer through `WidgetRenderActivity`, cropped to component bounds without stretching. WeekView and WeekGrid are actual launcher widget captures. This WeekGrid image shows visible periods 1–6, not every period or the entire term. Launcher size and widget variant determine the final layout and text truncation.
+| Widget | Variants | Purpose & Notes |
+|---|---|---|
+| **WeekGrid** | regular / small | Time grid + course blocks with period labels and locations, supports snapping to nearest busy day |
+| **Today** | regular / small / wide | Today's course list with class times and room numbers |
+| **TwoDay** | regular / small / wide | Today + tomorrow in side-by-side columns, ideal for previewing tomorrow's classes |
+| **WeekView** | regular / small | Minimalist theme-colored week grid thumbnail, supports 3-day compact window |
+| **WeekList** | regular / small / wide | 7-day course counts and course name summaries, supports 3-day compact window |
+
+Image sources: Directly exported from the production widget renderer with transparent rounded corners, using the unified demo schedule from the official website. Actual desktop sizing and font truncation depend on your launcher and the chosen variant.
 
 <p align="left">
   <img src="docs/screenshots/32-widget-settings.png" width="280" alt="Per-widget timetable binding and course-name display">
@@ -305,7 +337,7 @@ Implementation notes:
 - **v1.0.55: experimental scrolling on some variants** (today / twoday / weeklist / weekview) when content exceeds the card height
 - **v1.0.55: refresh at class start/end boundaries** — cards update as period boundaries are crossed
 - Colors sync with the app theme in real time (dark mode + 5 presets)
-- **Three render paths (main app / WeekGrid / screenshot renderer) share identical color logic**: course colors are distributed by golden-angle (137.508°) HSL hue from a hash of the course group — evenly spread and stable per course
+- **Three render paths (main app / WeekGrid / screenshot renderer) share course color logic**: classic golden-angle colors, theme-based colors, a custom seed hue, and individual course color overrides
 - Refresh: `APPWIDGET_UPDATE` broadcast to all receivers (system-level) + WorkManager periodic refresh + class-boundary refresh
 
 ---
@@ -316,7 +348,7 @@ When courses overlap, the grid keeps two layers visible and tapping the covered 
 
 When a manually added or edited course overlaps an existing course, the confirmation dialog lists the weekday, periods, actual overlapping weeks, and the conflicting course before saving.
 
-The top bar includes Undo and Redo for timetable data changes. Switching the active timetable is navigation and does not create an undo entry.
+The top bar supports multiple steps of Undo and Redo for timetable data changes. General Settings → Experimental features configures the history depth: 5 steps by default, `0` to disable, or `-1` for unlimited steps. History is kept in memory and cleared when the process ends. Switching the active timetable is navigation and does not create an undo entry.
 
 Appearance → Schedule display offers stacked, folded-corner, and side-bar conflict styles with corresponding size controls.
 
@@ -328,11 +360,12 @@ Appearance → Schedule display offers stacked, folded-corner, and side-bar conf
 
 ## OPPO Fluid Cloud
 
-Since v1.0.37 the before-class reminder supports a Fluid Cloud style: `FluidCloudService` (foreground service) renders course name, time, and room via `NotificationCompat.ProgressStyle`, with a progress bar that advances toward class time, persistently visible in the status bar (off by default). OPPO/OnePlus Seedling card integration materials are ready but **not yet wired into the build**.
+**The Android 16 Live Updates path is integrated**: the foreground `FluidCloudService` uses `VendorLiveCardRenderer` to build a `NotificationCompat.ProgressStyle` notification and request promoted ongoing presentation. OPPO / OnePlus / realme share a ColorOS rendering branch. The repository records device behavior on RMX6688 / ColorOS 16; capsule and card presentation still depends on the device, OS, and permissions, so the feature remains experimental.
 
-- OPPO `SeedlingSupportSDK-lite 3.0.7` AAR sits in `app/libs/` (minSdk 26); gradle does not yet declare the dependency; `SeedlingCardWidgetProvider` is unimplemented
-- UPK source project in [`oppo-fluid-cloud-upk/`](oppo-fluid-cloud-upk/) (API 2.0, `immediate` trigger, `notification/statusbar` entry)
-- OPPO-assigned values (`identifier`, `intent`, etc.) remain as `REPLACE_WITH_OPPO_*` placeholders — see that directory's README
+- Select Fluid Cloud under Mine → Reminders → Before-class reminder (banner is the default; the two modes are exclusive). The capsule can show course name, time, room, or countdown; progress updates every 15 seconds and stops when class starts
+- The reminder page offers a two-minute test and a stop action, checking notification permission, Live Updates authorization, and vendor capability state. OPPO-family devices on API 36+ prioritize the Live Updates authorization page. Permission alone does not prove a card is visible; older systems or unpromoted notifications use a normal progress notification, while denied notification permission still affects visibility
+- **The dedicated Pantanal / Seedling SDK + UPK path remains unintegrated**: the `SeedlingSupportSDK-lite 3.0.7` AAR in `app/libs/` is not a Gradle dependency, and `SeedlingCardWidgetProvider` is neither implemented nor registered. [`oppo-fluid-cloud-upk/`](oppo-fluid-cloud-upk/) is a source skeleton with `REPLACE_WITH_OPPO_*` placeholders, not release or acceptance evidence
+- See [OPPO / ColorOS integration status](docs/vendors/oppo-coloros-fluid-cloud.md) (Chinese) for code references, the two paths, and verification limits
 
 ---
 
@@ -359,7 +392,7 @@ Entry: "Mine" → "Reminders". The master toggle is off by default; turning it o
 - **Per-timetable reminders**: open Mine → Reminders → Timetable reminders to see every timetable and toggle each one. Changes save immediately and retain existing choices. You can configure them while the master switch is off; they take effect when it is enabled. The timetable editor no longer contains this switch.
 - Today, tomorrow, and before-class reminders provide live schedule previews
 - Date rules distinguish public holidays, transferred days, make-up workdays, and ordinary weekends
-- Before-class reminders can use a notification banner and experimental live notifications; the page includes main-field selection, a test action, and notification/alarm/battery reliability diagnostics
+- Before-class reminders use either a notification banner or experimental live notifications; switching to banner stops the live notification service. The page includes main-field selection, test and stop actions, and notification/alarm/battery reliability diagnostics
 - Optional automatic Do Not Disturb during class; it restores the previous state at the class boundary and remains vendor/permission dependent
 
 ---
@@ -380,7 +413,7 @@ Entry: "Mine" → "About". A dedicated page showing version, author, and open-so
 | **Author** | Lingion, tap to open the GitHub profile |
 | **Source** | github.com/lingion/sleepy, tappable |
 | **License note** | GPL-3.0 summary; contributions welcome |
-| **Open-source acknowledgements** | 9 cross-school projects plus per-school credit cards, their licenses, and the parts of Sleepy they informed |
+| **Open-source acknowledgements** | Source and dependency notices, research references, and cross-school and per-school credits with licenses and usage scope |
 
 The About page offers manual update checks and a startup-check switch. Startup checks are enabled by default and can be disabled. Checks contact the update service; full release notes are shown before downloading, and downloads can be cancelled.
 
@@ -405,6 +438,10 @@ Multiple presets + follow-system, each with Light/Dark schemes. Switch in "Mine"
 | Follow system | Use system theme colors |
 
 Theme colors and light/dark mode are independent: follow the system or force light or dark. Create a custom theme randomly, derive it from a main color, or edit primary, secondary, tertiary, and neutral surface colors with live preview. Custom themes can be saved, renamed, and deleted; theme changes refresh widgets.
+
+Appearance offers classic and experimental **Liquid Glass** navigation bars. Liquid Glass adds background refraction, blur, and a draggable lens effect. Runtime shader effects require Android 13+; unsupported devices use compatible rendering. Screen transitions, sheets, and timetable interactions use Material 3 Expressive motion.
+
+Course colors support classic golden-angle colors, theme-based colors, or a custom seed hue, with previews and a recolor action. A colorless mode is also available.
 
 <p align="left">
   <img src="docs/screenshots/30-custom-theme.png" width="280" alt="Custom theme creation and live preview">
@@ -477,22 +514,26 @@ General Settings → Data migration exports timetable and period-table data, pre
 | Category | Technology and version |
 |---|---|
 | Language | Kotlin 2.4.21; Java / Kotlin JVM target 17 |
-| UI | Jetpack Compose (BOM 2026.09.00) + Material 3 1.5.0-alpha28 |
-| Navigation | Navigation 3 1.1.7 + NavigationEvent 1.1.2; Lifecycle ViewModel Navigation 3 2.11.0 |
-| Storage | Room 2.7.0; code generation via KSP 2.3.12 |
-| Preferences | SharedPreferences (`AppPrefs`); DataStore Preferences 1.1.1 declared, unused |
+| UI | Jetpack Compose (BOM 2026.09.00) + Material 3 1.5.0-beta02, with Expressive components and motion |
+| Liquid Glass and colors | Local `:kyant-backdrop` module (AndroidLiquidGlass 2.0.0 baseline with local changes); Kyant Shapes 1.2.1; Material Color Utilities 1.7.0 |
+| Navigation | Navigation 3 1.1.7 + NavigationEvent 1.2.0; Lifecycle ViewModel Navigation 3 2.11.0 |
+| Storage | Room 2.8.5; code generation via KSP 2.3.12 |
+| Preferences | SharedPreferences (`AppPrefs`); DataStore Preferences 1.3.0 declared, unused |
 | Coroutines | kotlinx-coroutines 1.11.0 |
-| Serialization | kotlinx-serialization-json 1.11.0 |
+| Serialization | kotlinx-serialization-json 1.12.0 |
 | HTML parsing | jsoup 1.23.2 |
 | Home screen widgets | RemoteViews + Canvas, synchronous rendering |
-| Background tasks | WorkManager 2.9.1 |
+| Background tasks | WorkManager 2.12.0 |
 | Image loading | Coil Compose 2.7.0 (declared, unused) |
-| Splash screen | Core Splash Screen 1.0.1 |
-| Android libraries | AndroidX Core 1.17.0; Activity Compose 1.13.0; Lifecycle 2.8.7 |
-| Build | AGP 9.3.3 + Gradle 9.8.1, using Kotlin DSL |
+| Splash screen | Core Splash Screen 1.2.0 |
+| Local debug console | NanoHTTPD 2.3.1, listening on `127.0.0.1:3737` |
+| Android libraries | AndroidX Core 1.19.1; Activity Compose 1.13.0; Lifecycle 2.8.7 |
+| Build | AGP 9.4.1 + Gradle 9.8.2, using Kotlin DSL and AGP's built-in Kotlin support for the app |
 | Android SDK | `minSdk=26`; `compileSdk=37`; `targetSdk=37` |
 
 Versions are defined in the [version catalog](gradle/libs.versions.toml), [root build configuration](build.gradle.kts), [app build configuration](app/build.gradle.kts), and [Gradle Wrapper configuration](gradle/wrapper/gradle-wrapper.properties).
+
+The Liquid Glass module's [README](third-party/kyant-backdrop/README.md) documents its source baseline and local changes. Its [build configuration](third-party/kyant-backdrop/build.gradle.kts) also explicitly declares Compose UI / Foundation 1.12.1, so the app BOM alone does not determine the final resolved versions.
 
 ---
 
@@ -515,6 +556,7 @@ sleepy/
 │       │   ├── java/com/lingion/sleepy/
 │       │   │   ├── MainActivity.kt                            # Main UI entry
 │       │   │   ├── SleepyApp.kt                               # Application initialization
+│       │   │   ├── console/                                   # Local HTTP debug console, authentication, and semantic operations
 │       │   │   ├── data/
 │       │   │   │   ├── AppDatabase.kt                         # Room database
 │       │   │   │   ├── Migrations.kt                          # Database version migrations
@@ -530,6 +572,7 @@ sleepy/
 │       │   │   │   └── undo/                                  # Undo and redo
 │       │   │   ├── ui/
 │       │   │   │   ├── component/                             # Shared Compose components for timetables and period editing
+│       │   │   │   │   └── liquidglass/                        # Liquid Glass navigation, shaders, geometry, and gestures
 │       │   │   │   ├── nav/                                   # Routes, navigation stack, and transitions
 │       │   │   │   ├── screen/
 │       │   │   │   │   ├── edit/                              # Course editing
@@ -561,16 +604,17 @@ sleepy/
 │   ├── sop/                                                   # Operating procedure index
 │   └── logo.png                                               # README logo
 ├── assets/                                                    # Original logo asset
-├── gh-pages/                                                  # Online timetable site
-├── oppo-fluid-cloud-upk/                                      # OPPO Fluid Cloud UPK source (not wired into the build)
+├── oppo-fluid-cloud-upk/                                      # Pantanal/Seedling UPK skeleton (dedicated path not integrated)
 ├── artifacts/                                                 # Archived build outputs
 ├── scripts/                                                   # School catalog generation, validation, and version maintenance
+├── third-party/
+│   └── kyant-backdrop/                                         # AndroidLiquidGlass source dependency and local patches
 ├── tools/                                                     # Widget previews, device verification, and academic capture tools
 │   └── sleepy-collector/                                      # Go academic adaptation collector
 ├── tasks/                                                     # Plans and task records
 ├── gradle/
 │   ├── libs.versions.toml                                     # Dependency version catalog
-│   └── wrapper/                                               # Gradle 9.8.1 Wrapper configuration and JAR
+│   └── wrapper/                                               # Gradle Wrapper configuration and JAR
 ├── build.gradle.kts                                           # Root build plugin configuration
 ├── settings.gradle.kts                                        # Repositories and module configuration
 ├── gradle.properties                                          # Gradle and Kotlin build options
@@ -585,7 +629,7 @@ sleepy/
 
 ### Prerequisites
 
-Build with the bundled **Gradle 9.8.1 Wrapper + Android Gradle Plugin (AGP) 9.3.3**. Android Studio must support AGP 9.3; see the [official AGP 9.3 compatibility requirements](https://developer.android.com/build/releases/agp-9-3-0-release-notes).
+Build with the bundled **Gradle 9.8.2 Wrapper + Android Gradle Plugin (AGP) 9.4.1**. Android Studio must support AGP 9.4; see the [official AGP 9.4 compatibility requirements](https://developer.android.com/build/releases/agp-9-4-0-release-notes). CI uses JDK 17, and both Java and Kotlin compile to JVM target 17.
 
 ```bash
 java -version           # JDK 17+
@@ -593,7 +637,7 @@ java -version           # JDK 17+
 sdkmanager "platforms;android-37.0" "build-tools;36.0.0"
 ```
 
-The current Gradle configuration resolves to `compileSdk=37` and `buildToolsVersion=36.0.0`; the platform package identifier is `platforms;android-37.0`.
+The project sets `compileSdk=37` and `targetSdk=37`; the platform package identifier is `platforms;android-37.0`. It does not explicitly pin `buildToolsVersion`; AGP 9.4 defaults to Build Tools 36.0.0.
 
 If you see `SDK XML versions up to 3` / `SDK XML file of version 4`, build through this repository's `gradlew` / `gradlew.bat` and update **Android SDK Command-line Tools (latest)** under Android Studio's SDK Manager → SDK Tools. The IDE, `ANDROID_HOME`, and `sdk.dir` in `local.properties` should use the same SDK. Run its `cmdline-tools/latest/bin/sdkmanager` (`sdkmanager.bat` on Windows), and check that `PATH` does not select an older `tools/bin/sdkmanager`. See the [official sdkmanager documentation](https://developer.android.com/tools/sdkmanager).
 
@@ -626,6 +670,8 @@ java -version
 
 The wrapper downloads the Gradle version specified in `gradle/wrapper/gradle-wrapper.properties`, so a separate Gradle installation is unnecessary. The first build requires internet access to download Gradle and dependencies. Debug APKs are written to `app/build/outputs/apk/debug/`.
 
+> [Debug APK Build](.github/workflows/debug-apk.yml) runs automatically for non-draft PRs targeting `main`, and for branch pushes in forks once Actions is enabled. Manual runs accept a branch, tag or full commit SHA and a single architecture, including `armeabi-v7a` (V7A). Open the Actions run and select an architecture in the build summary; GitHub sign-in is required and artifacts expire after 7 days. PRs, forks and manual runs with an explicit source ref use ephemeral signing, so replacement installation across runs is not guaranteed. See [docs/ci-automation.md](docs/ci-automation.md) for commands and signing details. [Nightly Main Check](.github/workflows/nightly.yml) still checks main on a schedule or on demand.
+
 ### Install
 
 ```bash
@@ -640,11 +686,11 @@ adb install app/build/outputs/apk/debug/app-x86_64-debug.apk
 
 Debug builds use `com.lingion.sleepy.debug` and a separate data sandbox from the release app. Releases also provide a universal APK. See [GitHub Releases](https://github.com/lingion/sleepy/releases/latest) for installable release files and checksums.
 
-CI runs on pull requests to `main` (commit lint, collector checks, Android tests, Android lint, and APK assembly). Tagged `v*.*.*` pushes trigger the release workflow; neither CI nor Release currently supports manual dispatch. Source: [CI](.github/workflows/ci.yml) and [Release](.github/workflows/release.yml).
+CI runs on pull requests to `main`: commit lint, school catalogue validation, Go collector checks, WebView fetch-script contracts, Android unit tests and Room schema checks, Android lint, and Release APK assembly. Tagged `v*.*.*` pushes trigger the release workflow. Neither CI nor Release supports manual dispatch; use the separate Debug APK Build workflow for manual builds. Source: [CI](.github/workflows/ci.yml) and [Release](.github/workflows/release.yml).
 
 ## Permissions and Network Access
 
-Timetable viewing and editing work offline. JW import contacts the selected school, holiday refresh downloads public calendar data, and update checks/downloads contact GitHub or the project mirror. Notification permission is requested when reminders are enabled; optional class-time DND needs system notification-policy access. Location is requested after Locate in school selection. Adding courses to the system calendar requests calendar read/write access; installing an in-app update requires permission to install unknown apps. Exact-alarm and battery settings affect reminder reliability and are surfaced on the reminder page.
+Timetable viewing and editing work offline. JW import contacts the selected school, share-code import contacts WakeUp services, holiday refresh downloads public calendar data, and update checks/downloads contact GitHub or the project mirror. Notification permission is requested when reminders are enabled; optional class-time DND needs system notification-policy access. Location is requested after Locate in school selection. Adding courses to the system calendar requests calendar read/write access; installing an in-app update requires permission to install unknown apps. Exact-alarm and battery settings affect reminder reliability and are surfaced on the reminder page.
 
 ## Community
 
@@ -669,7 +715,9 @@ Prefer to stay on GitHub? [Discussions](https://github.com/lingion/sleepy/discus
 
 [GPL-3.0](LICENSE)
 
-Sleepy is released under GPL-3.0. The JW adapters, protocol research, and timetable formats reference multiple open-source projects. The complete list — 9 cross-school projects plus per-school credit cards, with licenses and reference scope — is available in the app under Mine → About → Open-source acknowledgements.
+The liquid glass source module is modified from [SleepDown Schedule](https://github.com/xiaomanjun233/SleepDown-Schedule), by **xiaomanjun233**. Sleepy is maintained by this project; changes include Android build wiring, Compose version adaptation and FLClash dock integration. SleepDown-owned content uses its source-available non-commercial license 1.1; original Kyant code retains Apache-2.0. FLClash ports retain GPL-3.0 and the Flutter superellipse port retains BSD-3-Clause. [Original notices and usage boundaries](ACKNOWLEDGEMENTS.md) are included in the repository and app.
+
+Sleepy-owned code is released under GPL-3.0; third-party material retains its own notices. See [Sources and acknowledgements](ACKNOWLEDGEMENTS.md) for source ports, dependencies, data, design references, research repositories and contributors. The app includes the same additions under Mine / About / Open-source licenses.
 
 ---
 

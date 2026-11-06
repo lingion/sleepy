@@ -13,12 +13,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 
 @Composable
 internal fun AppearanceNavigationRow(
     title: String,
+    tag: String,
     onClick: () -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
@@ -27,6 +29,7 @@ internal fun AppearanceNavigationRow(
             .fillMaxWidth()
             .background(colors.surfaceContainer, SleepyTheme.shapes.medium)
             .noRippleClickable(onClick)
+            .dbgTag(tag, text = title, role = "button")
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

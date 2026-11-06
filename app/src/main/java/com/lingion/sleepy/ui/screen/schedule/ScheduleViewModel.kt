@@ -11,6 +11,7 @@ import com.lingion.sleepy.data.repository.ScheduleRepository
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.HolidayRangeOps
+import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.util.WeekDisplayContext
 import com.lingion.sleepy.util.WeekDisplayResolver
 import com.lingion.sleepy.util.HolidayTransferEntry
@@ -25,6 +26,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
+import com.lingion.sleepy.util.AppClock
 
 data class ScheduleState(
     val tables: List<TimeTableEntity> = emptyList(),
@@ -49,7 +51,7 @@ data class ScheduleState(
     val currentWeekCourses: List<CourseEntity>
         get() = courses.filter { it.inWeek(selectedWeek) }
             .let { list ->
-                val tj = effectiveCurrentTable?.timeJson
+                val tj = effectiveRenderTimeJson
                 if (tj == null) list else list.map { c -> c.normalizeNode(tj) }
             }
 
@@ -65,8 +67,20 @@ data class ScheduleState(
         } ?: 20
 
     /** issue#40: 水合后的当前表 — 节次时间域一律从这里读, 不得直接读 currentTable.timeJson */
-    val effectiveCurrentTable: TimeTableEntity?
-        get() = currentTable?.hydratedWith(effectivePeriodTable)
+    val effectiveCurrentTable: TimeTableEntity? by lazy {
+        currentTable?.hydratedWith(effectivePeriodTable)
+    }
+
+    /** Format-only display input; real clocks and persisted data remain unchanged. */
+    val effectiveRenderTimeJson: String?
+        get() = effectiveCurrentTable?.timeJson?.let { TimeTableUtils.sanitizeTimeJsonForDisplay(it) }
+
+    /** Diagnose the effective stored schedule without substituting editor defaults. */
+    val periodValidation: TimeTableUtils.PeriodValidationResult?
+        get() = effectiveCurrentTable?.timeJson?.let { TimeTableUtils.validateTimeJson(it) }
+
+    val hasPeriodConflict: Boolean
+        get() = periodValidation?.let { it !is TimeTableUtils.PeriodValidationResult.Valid } ?: false
 
     /** issue#44: 给定日期实际应"按星期几取课"; 补班日=sourceDate 星期, 放假日=无课(null), 未命中=自然星期 */
     fun courseDateFor(date: LocalDate): LocalDate? =
@@ -81,6 +95,8 @@ data class ScheduleState(
 }
 
 class ScheduleViewModel : ViewModel() {
+
+    internal val presentationCache = SchedulePresentationCache()
 
     private val repo: ScheduleRepository = SleepyApp.get().repository
 
@@ -234,12 +250,13 @@ class ScheduleViewModel : ViewModel() {
         viewModelScope.launch {
             combine(
                 repo.observeAllTables(),
-                kotlinx.coroutines.flow.flowOf(LocalDate.now())
+                kotlinx.coroutines.flow.flowOf(LocalDate.now(AppClock))
             ) { tables, _ -> tables }
                 .collect { tables ->
                     if (tables.isEmpty()) {
                         // 没有课表就老实空着，不强行造占位表。
                         // selectedTableId = null，UI 走空态。
+                        AppPrefs.clearCurrentTableId(SleepyApp.get())
                         _state.update {
                             it.copy(
                                 tables = emptyList(),
@@ -251,12 +268,17 @@ class ScheduleViewModel : ViewModel() {
                         return@collect
                     }
                     val previous = _state.value
-                    val targetId = resolveSelectedTableId(
-                        tables = tables,
-                        selectedTableId = previous.selectedTableId,
-                        previousDefaultTableId = previous.tables.find { it.isDefault }?.id,
-                        preserveSelection = manualSelectDone,
-                    ) ?: return@collect
+                    val prefTableId = AppPrefs.getCurrentTableId(SleepyApp.get())
+                    val targetId = if (!manualSelectDone && prefTableId != null && tables.any { it.id == prefTableId }) {
+                        prefTableId
+                    } else {
+                        resolveSelectedTableId(
+                            tables = tables,
+                            selectedTableId = previous.selectedTableId,
+                            previousDefaultTableId = previous.tables.find { it.isDefault }?.id,
+                            preserveSelection = manualSelectDone,
+                        )
+                    } ?: return@collect
                     _state.update {
                         val changed = it.selectedTableId != targetId
                         it.copy(
@@ -293,7 +315,7 @@ class ScheduleViewModel : ViewModel() {
                             WeekDisplayResolver.resolve(
                                 startDate = it.startDate,
                                 maxWeek = it.maxWeek,
-                                now = LocalDateTime.now(),
+                                now = LocalDateTime.now(AppClock),
                                 courses = courses,
                                 timeJson = it.timeJson,
                                 enabled = AppPrefs.isNearestBusyDay(SleepyApp.get()),
@@ -330,6 +352,8 @@ class ScheduleViewModel : ViewModel() {
 
     fun selectTable(id: Long) {
         manualSelectDone = true
+        val app = SleepyApp.get()
+        AppPrefs.setCurrentTableId(app, id)
         // 切表 = 新学期语境, 周选择回到该表真实周(initialWeekSettled 复位, loadCourses 重新落周)
         _state.update {
             it.copy(
@@ -340,13 +364,12 @@ class ScheduleViewModel : ViewModel() {
             )
         }
         loadCourses(id)
-        // 切表后同步数据库 isDefault，使小组件严格跟随 App 当前选中表（widget 按默认表解析）
+        // 切表后同步数据库 isDefault，使小组件与流体云严格跟随 App 当前选中表
         viewModelScope.launch {
             try {
                 repo.setDefault(id)
-                com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(
-                    com.lingion.sleepy.SleepyApp.get()
-                )
+                app.notificationScheduler.reconcileActiveFluidCloud()
+                com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(app)
             } catch (_: Exception) {}
         }
     }
@@ -368,7 +391,7 @@ class ScheduleViewModel : ViewModel() {
             com.lingion.sleepy.data.undo.UndoManager.beginBatch()
             try {
                 val newId = repo.insertTable(
-                    source.copy(id = 0, name = name, isDefault = false, createdAt = System.currentTimeMillis())
+                    source.copy(id = 0, name = name, isDefault = false, createdAt = System.currentTimeMillis(), reminderOverride = null)
                 )
                 if (courses.isNotEmpty()) {
                     // groupId 整组映射到新 UUID — 同一门课的节次共享新组 ID, 副本内仍可整组编辑
@@ -392,7 +415,7 @@ class ScheduleViewModel : ViewModel() {
         var index = _state.value.tables.size + 1
         var name = com.lingion.sleepy.SleepyApp.get().getString(R.string.default_table_with_num, index)
         while (name in existingNames) { index++; name = com.lingion.sleepy.SleepyApp.get().getString(R.string.default_table_with_num, index) }
-        val now = LocalDate.now()
+        val now = LocalDate.now(AppClock)
         val lastWeekMonday = now.with(java.time.DayOfWeek.MONDAY).minusWeeks(1)
         // 没有任何表时，新表自动 isDefault = true，避免出现"无默认表"
         val isFirstTable = _state.value.tables.isEmpty()
@@ -411,6 +434,7 @@ class ScheduleViewModel : ViewModel() {
             // 否则 loadTables 协程 observeAllTables emit 会因为 manualSelectDone=true + selectedTableId!=null
             // 继续保留旧表选择，导致 UI 显示"默认课表"而非用户新建的课表。
             manualSelectDone = true
+            AppPrefs.setCurrentTableId(SleepyApp.get(), id)
             _state.update { it.copy(selectedTableId = id) }
             loadCourses(id)
         } else {
@@ -590,7 +614,7 @@ class ScheduleViewModel : ViewModel() {
         val context = WeekDisplayResolver.resolve(
             startDate = table.startDate,
             maxWeek = table.maxWeek,
-            now = LocalDateTime.now(),
+            now = LocalDateTime.now(AppClock),
             courses = current.courses,
             timeJson = table.timeJson,
             enabled = AppPrefs.isNearestBusyDay(SleepyApp.get()),

@@ -1458,6 +1458,15 @@
   },
   {
     "sortKey": "J",
+    "name": "佳木斯大学",
+    "url": "https://jwxt.jmsu.edu.cn:456/jmsujw/cas/login.action",
+    "type": "kingo_new",
+    "aliases": [],
+    "sortKeyFull": "jiamusidaxue",
+    "catalogId": "moe:4123010222"
+  },
+  {
+    "sortKey": "J",
     "name": "嘉兴大学",
     "url": "http://jwzx.zjxu.edu.cn/jwglxt/xtgl/login_slogin.html",
     "type": "zf_new",
@@ -3294,7 +3303,7 @@
     "catalogId": "Z_遵义医学院医学与科技学院"
   },
   {
-    "sortKey": "*",
+    "sortKey": "B",
     "name": "北京邮电大学新教务（VPN）",
     "url": "https://vpn.bupt.edu.cn/",
     "type": "qz_with_node",
@@ -3305,7 +3314,7 @@
     "catalogId": "*_北京邮电大学新教务（VPN）"
   },
   {
-    "sortKey": "*",
+    "sortKey": "B",
     "name": "北京邮电大学新教务（WebVPN）",
     "url": "https://webvpn.bupt.edu.cn/",
     "type": "qz_with_node",

@@ -10,6 +10,9 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.SizeTransform
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -58,6 +61,8 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.ui.platform.LocalDensity
 import com.lingion.sleepy.ui.component.PillNavItemSpec
+import com.lingion.sleepy.ui.component.sleepyContentEnter
+import com.lingion.sleepy.ui.component.sleepyContentExit
 import com.lingion.sleepy.ui.screen.manage.ManagementPage
 import com.lingion.sleepy.ui.screen.widget.WidgetManagementScreen
 import com.lingion.sleepy.ui.screen.widget.WidgetEditScreen
@@ -80,6 +85,8 @@ import com.lingion.sleepy.util.AppPrefs
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -138,14 +145,16 @@ class MainActivity : ComponentActivity() {
         // uiNightModeState 初始值: attachBaseContext 已完成, resources 可安全访问
         uiNightModeState.value =
             resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-        com.lingion.sleepy.util.UpdateManager.cleanOldApk(this)
         enableEdgeToEdge()
         // 高刷新率(流畅优先): 按开关把窗口钉到屏幕最高刷率, 不表态会被省电逻辑限 60Hz
         com.lingion.sleepy.util.HighRefreshRate.apply(this, com.lingion.sleepy.util.AppPrefs.isHighRefresh(this))
         handleDeepLinkIntent(intent)
         // 启动时检查更新: 用户可在「关于」最底 Toggle 关闭
         com.lingion.sleepy.util.UpdateNotifier.loadDismissedVersion(this)
-        com.lingion.sleepy.util.UpdateNotifier.maybeCheckOnStart(this, lifecycleScope)
+        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            com.lingion.sleepy.util.UpdateManager.cleanOldApk(applicationContext)
+            com.lingion.sleepy.util.UpdateNotifier.maybeCheckOnStart(applicationContext, lifecycleScope)
+        }
         if (BuildConfig.DEBUG && intent.getBooleanExtra("mock_update", false)) {
             com.lingion.sleepy.util.UpdateNotifier.showMockUpdate()
         }
@@ -168,6 +177,9 @@ class MainActivity : ComponentActivity() {
                 themeKey = themeKey,
                 customThemeVersion = customThemesJson
             ) {
+                // release 解锁红条（Task 7）: Box 顶层覆盖, 只在解锁态占最上沿,
+                // 零命中不排布局 — debug 常态与未解锁 release 完全无感。
+                androidx.compose.foundation.layout.Box(Modifier.fillMaxSize()) {
                 AppRoot(
                     themeMode = themeMode,
                     onThemeModeChange = { mode ->
@@ -184,6 +196,8 @@ class MainActivity : ComponentActivity() {
                     pendingImportText = pendingImportText,
                     consumePendingImportText = { MainActivity.pendingImportText = null }
                 )
+                    com.lingion.sleepy.console.DebugModeBanner()
+                }
             }
         }
     }
@@ -245,12 +259,18 @@ private fun AppRoot(
             if (AppPrefs.getStartView(context) == "cards") ViewMode.Cards else ViewMode.Full
         )
     }
+    val navDockFlowVal by AppPrefs.navDockFlow(context).collectAsState(initial = AppPrefs.isNavDock(context))
     var navDock by remember { mutableStateOf(AppPrefs.isNavDock(context)) }
+    LaunchedEffect(navDockFlowVal) {
+        navDock = navDockFlowVal
+    }
     val mainScope = rememberCoroutineScope()
     val mainVm: ScheduleViewModel = viewModel()
     // composition 内读 StateFlow.value 会被 lint(StateFlowValueCalledInComposition)拦:
     // 快照值不随 flow 更新重组。改订阅, holiday 设置页拿到的 tableId 恒为当前值。
-    val mainState by mainVm.state.collectAsState()
+    val currentTableId by remember(mainVm) {
+        mainVm.state.map { it.currentTable?.id }.distinctUntilChanged()
+    }.collectAsState(initial = null)
     val navigator = rememberSleepyNavigator()
     val nav = navigator.backStack
     // 底栏 thumb 状态提升到 NavDisplay 之外: entry<Main> 在 push 子页时会被销毁,
@@ -280,7 +300,7 @@ private fun AppRoot(
         deepLinkCourse = deepLinkCourse,
         onDeepLinkConsumed = onDeepLinkConsumed,
         mainVm = mainVm,
-        currentTableId = mainState.currentTable?.id,
+        currentTableId = currentTableId,
         mainScope = mainScope,
         onCreateNewTable = {
             mainScope.launch {
@@ -306,46 +326,66 @@ internal fun MainTabs(
     holder: SaveableStateHolder,
     updateNoticeVisible: Boolean = false
 ) {
-    // tab 往返滚动位置保真: when 条件组合同样整页移除被切走的 tab, 各 tab 内容包
+    // tab 往返滚动位置保真: AnimatedContent 过渡期同时组合新旧两页, 各页内容包
     // SaveableStateProvider(currentTab.name) — key 稳定(tab 枚举名), 返回时恢复。
     // 注意: scheduleViewMode 会话态仍由 AppRoot 持有(§1.4 契约), 此处只管组合作用域。
+    // MD3E content 家族过渡 (Task 3): scale 0.92↔1 + fade, 规格来自 SleepyMotion 工厂;
+    // transitionSpec lambda 非可组合, 工厂结果须在组合体内先算好再捕获 (Task 2 教训)。
     val session = navigator.session
-    when (currentTab) {
-        Tab.Schedule -> holder.SaveableStateProvider(currentTab.name) {
-            ScheduleScreen(
-                viewMode = viewMode,
-                onViewModeChange = onViewModeChange,
-                onGoImport = { setCurrentTab(Tab.Manage); navigator.openAddTable() },
-                onManualAdd = { navigator.openAddCourse() },
-                onAddAt = navigator::openAddCourseAt,
-                onCreateTable = onCreateNewTable,
-                onEditCourse = { course -> session.beginEditCourse(course); navigator.openAddCourse(course.id, editing = true) })
-        }
-        Tab.Today -> holder.SaveableStateProvider(currentTab.name) {
-            TodayScreen(onEditCourse = { course -> session.beginEditCourse(course); navigator.openAddCourse(course.id, editing = true) })
-        }
-        Tab.Manage -> holder.SaveableStateProvider(currentTab.name) {
-            ManagementPage(
-                onAddTable = { navigator.openAddTable() },
-                onManualAdd = { navigator.openAddCourseEntry(mainVm.state.value.selectedTableId ?: 0L) },
-                onEditCurrentTable = { navigator.openEditTable() },
-                onOpenPeriodTables = { navigator.openPeriodTables() },
-                onExportRequested = { navigator.openExport() },
-                onOpenAllTables = { navigator.openAllTables() },
-                viewModel = mainVm,
+    val tabEnter = sleepyContentEnter()
+    val tabExit = sleepyContentExit()
+    AnimatedContent(
+        targetState = currentTab,
+        transitionSpec = {
+            ContentTransform(
+                targetContentEnter = tabEnter,
+                initialContentExit = tabExit,
+                // 四页尺寸差异大, togetherWith 默认 clip=true 会裁切过渡内容
+                sizeTransform = SizeTransform(clip = false),
             )
-        }
-        Tab.Mine -> holder.SaveableStateProvider(currentTab.name) {
-            MineScreen(
-                onOpenAllTables = { navigator.openAllTables() },
-                onOpenCourseList = { navigator.openCourseList() },
-                onOpenPeriodTables = { navigator.openPeriodTables() },
-                onOpenAppearance = { navigator.openAppearance() },
-                onOpenGeneral = { navigator.openGeneral() },
-                onOpenWidgetSettings = { navigator.openWidgetSettings() },
-                onOpenReminder = { navigator.openReminder() },
-                onOpenAbout = { navigator.openAbout() },
-                updateNoticeVisible = updateNoticeVisible)
+        },
+    ) { currentTab ->
+        when (currentTab) {
+            Tab.Schedule -> holder.SaveableStateProvider(currentTab.name) {
+                ScheduleScreen(
+                    viewModel = mainVm,
+                    viewMode = viewMode,
+                    onViewModeChange = onViewModeChange,
+                    onGoImport = { setCurrentTab(Tab.Manage); navigator.openAddTable() },
+                    onManualAdd = { navigator.openAddCourse() },
+                    onAddAt = navigator::openAddCourseAt,
+                    onCreateTable = onCreateNewTable,
+                    onEditCourse = { course -> session.beginEditCourse(course); navigator.openAddCourse(course.id, editing = true) })
+            }
+            Tab.Today -> holder.SaveableStateProvider(currentTab.name) {
+                TodayScreen(viewModel = mainVm, onEditCourse = { course -> session.beginEditCourse(course); navigator.openAddCourse(course.id, editing = true) })
+            }
+            Tab.Manage -> holder.SaveableStateProvider(currentTab.name) {
+                ManagementPage(
+                    onAddTable = { navigator.openAddTable() },
+                    onManualAdd = { navigator.openAddCourseEntry(mainVm.state.value.selectedTableId ?: 0L) },
+                    onEditCurrentTable = { navigator.openEditTable() },
+                    onOpenPeriodTables = { navigator.openPeriodTables() },
+                    onExportRequested = { navigator.openExport() },
+                    onOpenAllTables = { navigator.openAllTables() },
+                    viewModel = mainVm,
+                )
+            }
+            Tab.Mine -> holder.SaveableStateProvider(currentTab.name) {
+                MineScreen(
+                    viewModel = mainVm,
+                    onOpenAllTables = { navigator.openAllTables() },
+                    onOpenCourseList = { navigator.openCourseList() },
+                    onOpenPeriodTables = { navigator.openPeriodTables() },
+                    onOpenAppearance = { navigator.openAppearance() },
+                    onOpenHoliday = { navigator.openHoliday() },
+                    onOpenBackup = { navigator.openBackup() },
+                    onOpenGeneral = { navigator.openGeneral() },
+                    onOpenWidgetSettings = { navigator.openWidgetSettings() },
+                    onOpenReminder = { navigator.openReminder() },
+                    onOpenAbout = { navigator.openAbout() },
+                    updateNoticeVisible = updateNoticeVisible)
+            }
         }
     }
 }

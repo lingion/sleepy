@@ -6,7 +6,7 @@ import org.junit.Test
 
 /**
  * issue#44 调休映射设置页契约锁(源码扫描):
- * 设置页必须按课表读写映射、每个放假日卡 = 行 + 最右编辑按钮、
+ * 设置页必须按课表读写映射、日期编辑位于映射之后的日期管理区、
  * 右格用 Material3 ExposedDropdownMenuBox(原地长高 + 浮层)、候选三项固定顺序、
  * 默认空无预填、无表时禁写哨兵 ID、MainActivity 必须把当前课表 ID 传进来。
  */
@@ -97,14 +97,17 @@ class HolidaySettingsContractTest {
     }
 
     @Test
-    fun each_segment_row_has_edit_button() {
-        // 用户 2026-09-18 四次定稿: 每个放假日行(每个段)最右加一个编辑按钮
-        // (编辑段本身起止/名称); 自定义补班日去最下面单独添加按钮
-        assertTrue(
-            "HolidayTransferCard must expose an edit affordance on the segment row",
-            screen.contains("HolidayTransferCard") &&
-                screen.contains("onEditSegment")
-        )
+    fun segment_editing_follows_mapping_in_date_management() {
+        val mapping = screen.indexOf("HolidayTransferCard(")
+        val management = screen.indexOf("settings_holiday_dates)")
+        val editRows = screen.indexOf("HolidayDateManagementRow(")
+        val add = screen.indexOf("holiday_add_entry")
+        assertTrue("date editing belongs after mapping and before adding dates",
+            mapping >= 0 && management > mapping && editRows > management && add > editRows)
+        val transferCard = screen.substringAfter("private fun HolidayTransferCard(")
+            .substringBefore("private fun HolidayOrphanCard(")
+        assertFalse("mapping card must not edit shared dates", transferCard.contains("onEditSegment"))
+        assertTrue("all active segments remain editable", screen.contains("merged.active.forEach"))
     }
 
     @Test
@@ -130,8 +133,8 @@ class HolidaySettingsContractTest {
 
     @Test
     fun table_switcher_bound_to_activeTableId_not_selectTable() {
-        val switcher = screen.substringAfter("if (tableId != null && vmState.tables.size > 1)")
-            .substringBefore("// 标题行右贴 SegmentedSwitcher")
+        val switcher = screen.substringAfter("if (activeTableId != null && vmState.tables.size > 1)")
+            .substringBefore("// Loaded holiday data")
         assertTrue(
             switcher.contains("ExposedDropdownMenuBox(") &&
                 switcher.contains("DropdownMenuItem(") &&
@@ -154,18 +157,17 @@ class HolidaySettingsContractTest {
     fun main_activity_passes_current_table_id() {
         // Navigation 3 迁移后: MainActivity 把当前课表 ID 作为 SleepyNavHost 参数下发,
         // NavHost 里 HolidaySettingsScreen(tableId = currentTableId) — 语义等价。
-        // StateFlowValueCalledInComposition lint 后 MainActivity 用 collectAsState 订阅,
-        // 传 `currentTableId = mainState.currentTable?.id`(mainState = state.collectAsState)。
         assertTrue(
             Regex(
-                """currentTableId\s*=\s*mainState\.currentTable\?\.id"""
+                """currentTableId\s*=\s*currentTableId"""
             ).containsMatchIn(main)
         )
         assertTrue(
             Regex(
-                """val mainState by mainVm\.state\.collectAsState"""
+                """mainVm\.state\.map\s*\{\s*it\.currentTable\?\.id\s*\}\.distinctUntilChanged\(\)"""
             ).containsMatchIn(main)
         )
+        assertTrue(main.contains("collectAsState(initial = null)"))
         assertTrue(
             Regex(
                 """HolidaySettingsScreen\([\s\S]{0,160}?tableId\s*=\s*currentTableId"""

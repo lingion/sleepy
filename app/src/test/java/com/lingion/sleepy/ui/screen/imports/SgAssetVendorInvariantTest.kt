@@ -1,5 +1,7 @@
 package com.lingion.sleepy.ui.screen.imports
 
+import com.lingion.sleepy.data.jw.JwProtocol
+import com.lingion.sleepy.data.jw.JwSchoolInfo
 import com.lingion.sleepy.testutil.projectSourceFile
 import com.lingion.sleepy.testutil.readProjectSource
 import java.security.MessageDigest
@@ -7,6 +9,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
 import org.junit.Test
@@ -20,7 +23,7 @@ import org.junit.Test
  *     deprecated 别名) 全部就位。
  *  2. shim 只做传输与无头自动应答, 禁解码课程字段 — 课程 JSON 唯一解码落点
  *     = JwSgAssetParser (Kotlin 侧)。
- *  3. manifest 内部自洽: 每条 jsPath 落盘存在且 sha256 相符、schema/来源钉死;
+ *  3. manifest 内部自洽: 每条 jsPath 落盘存在且按 LF 统一换行后的 sha256 相符、schema/来源钉死;
  *     目录里所有 type=sg_asset 的校必须有 manifest 条目 (运行前置判定 hasAsset);
  *     本地 gap-rows 264 校全集 100% 被 manifest 覆盖 (仅本地断言, CI 无该文件时跳过)。
  */
@@ -136,13 +139,28 @@ class SgAssetVendorInvariantTest {
                 assertTrue("jsPath 必须在 scripts 清单: ${a.getString("jsPath")}", scriptPaths.containsKey(rel))
                 val file = projectSourceFile("app/src/main/assets/third_party/shiguang/$rel")
                 assertEquals(
-                    "asset 字节漂移: $rel",
+                    "asset 内容漂移 (按 LF 校验): $rel",
                     scriptPaths.getValue(rel).getString("sha256"),
-                    MessageDigest.getInstance("SHA-256").digest(file.readBytes())
-                        .joinToString("") { "%02x".format(it) }
+                    lfSha256(file.readText(Charsets.UTF_8))
                 )
                 assertTrue("适配器必须声明 importUrl", a.getString("importUrl").isNotBlank())
             }
+        }
+    }
+
+    private fun lfSha256(text: String): String =
+        MessageDigest.getInstance("SHA-256")
+            .digest(text.replace("\r\n", "\n").replace('\r', '\n').toByteArray(Charsets.UTF_8))
+            .joinToString("") { "%02x".format(it) }
+
+    @Test
+    fun script_hash_ignores_line_endings_but_detects_content_changes() {
+        val lf = "// 中文\nconst value = 1;\n"
+        val expected = MessageDigest.getInstance("SHA-256").digest(lf.toByteArray(Charsets.UTF_8))
+            .joinToString("") { "%02x".format(it) }
+        for (newline in listOf("\n", "\r\n", "\r")) {
+            assertEquals(expected, lfSha256(lf.replace("\n", newline)))
+            assertNotEquals(expected, lfSha256(lf.replace("1", "2").replace("\n", newline)))
         }
     }
 
@@ -161,6 +179,27 @@ class SgAssetVendorInvariantTest {
             .map { it.getString("name").trim() }
             .filter { JwSgAssetNfk(it) !in matchKeys }
         assertEquals("目录 sg_asset 条目缺 manifest 适配器: $orphans", 0, orphans.size)
+    }
+
+    @Test
+    fun qingdao_university_uses_its_vendored_adapter_and_https_entry() {
+        val schoolsJson = JSONArray(
+            projectSourceFile("app/src/main/assets/schools.json").readText()
+        )
+        val qdu = (0 until schoolsJson.length())
+            .map { schoolsJson.getJSONObject(it) }
+            .single { it.optString("name") == "青岛大学" }
+
+        assertEquals(JwProtocol.TYPE_SG_ASSET, qdu.optString("type"))
+        assertEquals(JwSchoolInfo.STATUS_SUPPORTED, qdu.optString("status"))
+        assertTrue(qdu.optString("url").startsWith("https://xjw.qdu.edu.cn/"))
+
+        val manifestSchools = manifestJson.getJSONArray("schools")
+        val adapter = (0 until manifestSchools.length())
+            .map { manifestSchools.getJSONObject(it) }
+            .single { it.optString("sgName") == "青岛大学" }
+            .getJSONArray("adapters").getJSONObject(0)
+        assertTrue(adapter.optString("jsPath").endsWith("/QDU/qdu_01.js"))
     }
 
     @Test

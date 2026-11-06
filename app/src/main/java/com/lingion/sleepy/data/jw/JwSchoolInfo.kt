@@ -42,6 +42,21 @@ data class JwSchoolInfo(
         uri.scheme?.lowercase() in setOf("http", "https") && !uri.host.isNullOrBlank() && uri.rawUserInfo == null
     }.getOrDefault(false)
 
+    /**
+     * 完整拼音排序键。
+     * 使用 sortKey 的首字母与 sortKeyFull（完整拼音，缺失时回退到 name），
+     * 保证跨分组按首字母、分组内严格按拼音字典序排列。
+     */
+    val sortOrderKey: String
+        get() {
+            val firstLetter = if (sortKey.isNotEmpty() && sortKey[0].isLetter()) {
+                sortKey[0].uppercase()
+            } else {
+                "★"
+            }
+            return "$firstLetter|${sortKeyFull.ifBlank { name }}"
+        }
+
     companion object {
         /** Missing status keeps old assets compatible; unknown values never enable import. */
         fun normalizeStatus(raw: String?): String = when (raw) {

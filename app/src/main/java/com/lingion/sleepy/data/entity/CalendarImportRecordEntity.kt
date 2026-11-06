@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.lingion.sleepy.util.AppClock
 
 /** Tracks only calendar events created by Sleepy so a later sync can avoid duplicates. */
 @Entity(
@@ -24,5 +25,5 @@ data class CalendarImportRecordEntity(
     @ColumnInfo(name = "batchId") val batchId: String,
     @ColumnInfo(name = "fingerprint") val fingerprint: String,
     @ColumnInfo(name = "alarmRequested") val alarmRequested: Boolean,
-    @ColumnInfo(name = "createdAt") val createdAt: Long = System.currentTimeMillis()
+    @ColumnInfo(name = "createdAt") val createdAt: Long = AppClock.millis()
 )

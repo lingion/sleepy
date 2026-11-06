@@ -45,6 +45,7 @@ import com.lingion.sleepy.data.entity.DurationOption
 import com.lingion.sleepy.data.entity.SmartPeriodConfig
 import com.lingion.sleepy.data.entity.remapDurationAssignmentsAfterDeletion
 import com.lingion.sleepy.R
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 /**
@@ -61,7 +62,12 @@ import com.lingion.sleepy.ui.theme.noRippleClickable
 fun SmartPeriodEditor(
     config: SmartPeriodConfig,
     onConfigChange: (SmartPeriodConfig) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    // 调试台语义身份前缀: 派生 <prefix>_duration/_total/_start、
+    // <prefix>_dur_short/_dur_long/_break_short/_break_long、
+    // 组卡 <prefix>_dur#<组号>_min/_del/_pos#<位号>、<prefix>_break#<组号>_…;
+    // null = 不打标, 既有调用点零影响
+    dbgTagPrefix: String? = null
 ) {
     val colors = MaterialTheme.colorScheme
     val breakAssigns = config.effectiveAssignments()
@@ -87,21 +93,25 @@ fun SmartPeriodEditor(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
         ) {
+            val durationLabel = stringResource(R.string.edit_period_duration_label)
+            val totalLabel = stringResource(R.string.edit_period_total_label)
             NumberField(
-                label = stringResource(R.string.edit_period_duration_label),
+                label = durationLabel,
                 unit = stringResource(R.string.unit_minutes),
                 value = config.periodMinutes,
                 onValueChange = { onConfigChange(config.copy(periodMinutes = it.coerceAtLeast(1))) },
                 modifier = Modifier.weight(1f)
+                    .then(dbgTagPrefix?.let { Modifier.dbgTag("${it}_duration", text = durationLabel, role = "textbox") } ?: Modifier)
             )
             NumberField(
-                label = stringResource(R.string.edit_period_total_label),
+                label = totalLabel,
                 unit = stringResource(R.string.unit_periods),
                 value = config.totalPeriods,
                 onValueChange = { newN ->
                     onConfigChange(config.copy(totalPeriods = newN.coerceAtLeast(1)))
                 },
                 modifier = Modifier.weight(1f)
+                    .then(dbgTagPrefix?.let { Modifier.dbgTag("${it}_total", text = totalLabel, role = "textbox") } ?: Modifier)
             )
         }
 
@@ -110,7 +120,8 @@ fun SmartPeriodEditor(
             value = config.startTime,
             onValueChange = { onConfigChange(config.copy(startTime = it)) },
             label = stringResource(R.string.edit_period_first_start),
-            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
+            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+            dbgTag = dbgTagPrefix?.let { "${it}_start" }
         )
 
         // 添加 duration
@@ -122,13 +133,15 @@ fun SmartPeriodEditor(
                 label = stringResource(R.string.short_duration),
                 color = colors.tertiary,
                 onAdd = { onConfigChange(config.copy(durations = config.durations + DurationOption(30, false))) },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                dbgTag = dbgTagPrefix?.let { "${it}_dur_short" }
             )
             AddBreakChip(
                 label = stringResource(R.string.long_duration),
                 color = colors.primary,
                 onAdd = { onConfigChange(config.copy(durations = config.durations + DurationOption(60, true))) },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                dbgTag = dbgTagPrefix?.let { "${it}_dur_long" }
             )
         }
 
@@ -169,7 +182,8 @@ fun SmartPeriodEditor(
                             durations = config.durations.toMutableList().also { it.removeAt(groupIdx) },
                             periodAssignments = newAssigns
                         ))
-                    }
+                    },
+                    tagPrefix = dbgTagPrefix?.let { "${it}_dur#$groupIdx" }
                 )
             }
         }
@@ -183,13 +197,15 @@ fun SmartPeriodEditor(
                 label = stringResource(R.string.short_break),
                 color = colors.tertiary,
                 onAdd = { onConfigChange(config.copy(breaks = config.breaks + BreakOption(10, false))) },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                dbgTag = dbgTagPrefix?.let { "${it}_break_short" }
             )
             AddBreakChip(
                 label = stringResource(R.string.long_break),
                 color = colors.primary,
                 onAdd = { onConfigChange(config.copy(breaks = config.breaks + BreakOption(30, true))) },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                dbgTag = dbgTagPrefix?.let { "${it}_break_long" }
             )
         }
 
@@ -240,7 +256,8 @@ fun SmartPeriodEditor(
                             breaks = config.breaks.toMutableList().also { it.removeAt(groupIdx) },
                             transitionAssignments = newAssigns
                         ))
-                    }
+                    },
+                    tagPrefix = dbgTagPrefix?.let { "${it}_break#$groupIdx" }
                 )
             }
         }
@@ -266,7 +283,8 @@ private fun BreakGroupSection(
     assigns: List<Int?>,
     onMinuteChange: (Int) -> Unit,
     onToggle: (Int) -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    tagPrefix: String? = null
 ) {
     val groupColor = if (breakOption.isLong) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
     AssignmentGroupSection(
@@ -280,7 +298,8 @@ private fun BreakGroupSection(
         onMinuteChange = onMinuteChange,
         minuteValue = breakOption.minutes,
         onToggle = onToggle,
-        onDelete = onDelete
+        onDelete = onDelete,
+        tagPrefix = tagPrefix
     )
 }
 
@@ -292,7 +311,8 @@ private fun DurationGroupSection(
     assigns: List<Int?>,
     onMinuteChange: (Int) -> Unit,
     onToggle: (Int) -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    tagPrefix: String? = null
 ) {
     val groupColor = if (durationOption.isLong) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
     AssignmentGroupSection(
@@ -306,7 +326,8 @@ private fun DurationGroupSection(
         onMinuteChange = onMinuteChange,
         minuteValue = durationOption.minutes,
         onToggle = onToggle,
-        onDelete = onDelete
+        onDelete = onDelete,
+        tagPrefix = tagPrefix
     )
 }
 
@@ -326,7 +347,8 @@ private fun AssignmentGroupSection(
     onMinuteChange: (Int) -> Unit,
     minuteValue: Int,
     onToggle: (Int) -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    tagPrefix: String? = null
 ) {
     val colors = MaterialTheme.colorScheme
 
@@ -362,8 +384,11 @@ private fun AssignmentGroupSection(
                 value = minuteValue,
                 onValueChange = onMinuteChange,
                 modifier = Modifier.width(110.dp)
+                    .then(tagPrefix?.let { Modifier.dbgTag("${it}_min", role = "textbox") } ?: Modifier)
             )
-            IconButton(onClick = onDelete, modifier = Modifier.size(28.dp)) {
+            IconButton(onClick = onDelete,
+                modifier = Modifier.size(28.dp)
+                    .then(tagPrefix?.let { Modifier.dbgTag("${it}_del", text = stringResource(R.string.delete), role = "button") } ?: Modifier)) {
                 Icon(
                     Icons.Outlined.Close,
                     contentDescription = stringResource(R.string.delete),
@@ -391,6 +416,7 @@ private fun AssignmentGroupSection(
                                 groupColor = groupColor,
                                 onClick = { onToggle(posIdx) },
                                 modifier = Modifier.weight(1f)
+                                    .then(tagPrefix?.let { Modifier.dbgTag("${it}_pos#$posIdx", text = labelFor(posIdx), role = "button") } ?: Modifier)
                             )
                         }
                         // 填满空位
@@ -541,11 +567,15 @@ private fun AddBreakChip(
     label: String,
     color: Color,
     onAdd: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    dbgTag: String? = null
 ) {
+    val chipLabel = stringResource(R.string.add_label, label)
     FilterChip(
         selected = false,
         onClick = onAdd,
+        modifier = modifier
+            .then(dbgTag?.let { Modifier.dbgTag(it, text = chipLabel, role = "button") } ?: Modifier),
         label = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
@@ -555,7 +585,7 @@ private fun AddBreakChip(
                     tint = color
                 )
                 Spacer(Modifier.width(4.dp))
-                Text(stringResource(R.string.add_label, label))
+                Text(chipLabel)
             }
         },
         colors = FilterChipDefaults.filterChipColors(
@@ -569,8 +599,7 @@ private fun AddBreakChip(
             selectedBorderColor = Color.Transparent,
             disabledBorderColor = Color.Transparent,
             disabledSelectedBorderColor = Color.Transparent
-        ),
-        modifier = modifier
+        )
     )
 }
 

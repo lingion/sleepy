@@ -21,6 +21,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
+import java.time.LocalTime
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 桌面 Today 小组件 — 同步 RemoteViews + Canvas (v1.0.29 起, 从 Glance 移植)。
@@ -112,8 +114,8 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
         ioScope.launch {
             try {
                 when (navDelta(action)) {
-                    -1L -> TodayDateNavStore.shift(context, widgetId, LocalDate.now(), -1L)
-                    1L -> TodayDateNavStore.shift(context, widgetId, LocalDate.now(), 1L)
+                    -1L -> TodayDateNavStore.shift(context, widgetId, LocalDate.now(AppClock), -1L)
+                    1L -> TodayDateNavStore.shift(context, widgetId, LocalDate.now(AppClock), 1L)
                     else -> {
                         if (action == ACTION_RESET_DAY) TodayDateNavStore.remove(context, widgetId)
                     }
@@ -382,7 +384,7 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
 
         /** 当前时刻 (当日分钟);时钟读取独立成函数便于契约测试注入 */
         internal fun currentNowMin(): Int =
-            java.time.LocalTime.now().let { it.hour * 60 + it.minute }
+            LocalTime.now(AppClock).let { it.hour * 60 + it.minute }
 
         /**
          * Today 系 FIXED 窗口计算 (设计 §4.1):
@@ -397,8 +399,9 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
         ): FixedWindowCore.WindowResult {
             // 底部导航条恒扣 (2026-09-15 定稿): 条内元素恒放得下, 内容区 = 顶栏下沿 ~ 条上沿
             val availH = hDp - TodayRowGeometry.contentTopDp(false) - TodayRowGeometry.NAV_BAR_H_DP
-            val rows = ConflictLayoutEngine.weekLaneRows(data.courses, data.timeJson)
-            val entries = FixedWindowCore.entriesOf(rows, data.timeJson) {
+            val displayTimeJson = TimeTableUtils.sanitizeTimeJsonForDisplay(data.timeJson)
+            val rows = ConflictLayoutEngine.weekLaneRows(data.courses, displayTimeJson)
+            val entries = FixedWindowCore.entriesOf(rows, displayTimeJson) {
                 TodayRowGeometry.rowHeightDp(it)
             }
             return FixedWindowCore.window(
@@ -441,7 +444,7 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
          * 在跨午夜渲染时会把 nav target 算在昨天、isToday 判在今天 = 单次渲染口径分裂。
          */
         fun loadDataSync(context: Context, appWidgetId: Int): WidgetData {
-            val now = LocalDate.now()
+            val now = LocalDate.now(AppClock)
             val manualNavigation = TodayDateNavStore.hasNavigation(context, appWidgetId)
             return loadDataForDate(
                 context, appWidgetId,

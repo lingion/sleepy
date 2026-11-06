@@ -6,10 +6,14 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,6 +24,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
@@ -36,6 +41,8 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import kotlin.math.roundToInt
 
@@ -60,16 +67,49 @@ import kotlin.math.roundToInt
  * 嵌进 surfaceContainer 卡片时同色会隐形, 调用方传 surfaceContainerHighest 降一级保持对比。
  * 宽度: 组件不自撑满, 由调用方 modifier 决定(全宽传 fillMaxWidth; 嵌标题行由外层精确测宽)。
  */
+/**
+ * 选项定义，支持可选徽标（如「实验」胶囊标签）
+ */
+data class SegmentOption<T>(
+    val value: T,
+    val label: String,
+    val badge: String? = null
+)
+
+@JvmName("SegmentedSwitcherPairs")
 @Composable
 fun <T> SegmentedSwitcher(
     options: List<Pair<T, String>>,
     selected: T,
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
-    containerColor: Color? = null
+    containerColor: Color? = null,
+    // ui-ops 语义定位前缀：非空时每个可点击段注册 dbgTag("<prefix>#<index>")，
+    // find/action 可按段号或 label 文本命中；默认 null 不打标，行为与旧版一致。
+    dbgTagPrefix: String? = null,
+) {
+    SegmentedSwitcher(
+        options = options.map { SegmentOption(it.first, it.second) },
+        selected = selected,
+        onSelect = onSelect,
+        modifier = modifier,
+        containerColor = containerColor,
+        dbgTagPrefix = dbgTagPrefix,
+    )
+}
+
+@JvmName("SegmentedSwitcherWithOptions")
+@Composable
+fun <T> SegmentedSwitcher(
+    options: List<SegmentOption<T>>,
+    selected: T,
+    onSelect: (T) -> Unit,
+    modifier: Modifier = Modifier,
+    containerColor: Color? = null,
+    dbgTagPrefix: String? = null,
 ) {
     val colors = MaterialTheme.colorScheme
-    val selectedIndex = options.indexOfFirst { it.first == selected }.coerceAtLeast(0)
+    val selectedIndex = options.indexOfFirst { it.value == selected }.coerceAtLeast(0)
     val count = options.size
 
     // thumb 位移: Animatable 值 = 逻辑段坐标(0..count-1), spring 驱动
@@ -125,39 +165,69 @@ fun <T> SegmentedSwitcher(
                         .background(colors.secondaryContainer)
                 )
                 // 层1..n: 点击段 — 透明, 只负责点击与无障碍
-                options.forEachIndexed { index, _ ->
+                options.forEachIndexed { index, option ->
                     Box(
                         Modifier
                             .fillMaxHeight()
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null
-                            ) { onSelect(options[index].first) }
+                            ) { onSelect(option.value) }
                             .semantics { role = Role.Button }
+                            .then(
+                                dbgTagPrefix?.let {
+                                    Modifier.dbgTag("$it#$index", text = option.label, role = "button")
+                                } ?: Modifier
+                            )
                     )
                 }
-                // 层n+1..2n: 文字层 — 每个字符按覆盖率 lerp 上色, 与 thumb 同帧
-                options.forEachIndexed { index, (_, label) ->
-                    Text(
-                        text = label,
-                        onTextLayout = { result ->
-                            // 字形只在文本/字重变化时重排, 缓存结果避免每帧重算字符矩形
-                            charRectsCache[index] = result.charRects()
-                        },
-                        style = MaterialTheme.typography.labelLarge.copy(
-                            fontWeight = if (index == selectedIndex) FontWeight.SemiBold else FontWeight.Medium
-                        ),
-                        color = segmentLabelColor(
-                            index = index,
-                            charRects = charRectsCache[index],
-                            thumbStartPx = thumbStart,
-                            thumbEndPx = thumbEnd,
-                            segmentWidthPx = segW,
-                            selected = index == selectedIndex,
-                            selectedColor = colors.onSecondaryContainer,
-                            unselectedColor = colors.onSurfaceVariant
+                // 层n+1..2n: 内容层(文字+可选徽标) — 每个字符按覆盖率 lerp 上色, 与 thumb 同帧
+                options.forEachIndexed { index, option ->
+                    val isSelected = index == selectedIndex
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = option.label,
+                            onTextLayout = { result ->
+                                // 字形只在文本/字重变化时重排, 缓存结果避免每帧重算字符矩形
+                                charRectsCache[index] = result.charRects()
+                            },
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
+                            ),
+                            color = segmentLabelColor(
+                                index = index,
+                                charRects = charRectsCache[index],
+                                thumbStartPx = thumbStart,
+                                thumbEndPx = thumbEnd,
+                                segmentWidthPx = segW,
+                                selected = isSelected,
+                                selectedColor = colors.onSecondaryContainer,
+                                unselectedColor = colors.onSurfaceVariant
+                            )
                         )
-                    )
+                        if (option.badge != null) {
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                text = option.badge,
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontSize = 9.sp,
+                                    lineHeight = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = if (isSelected) colors.primary else colors.onSurfaceVariant,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(
+                                        if (isSelected) colors.primary.copy(alpha = 0.14f)
+                                        else colors.onSurfaceVariant.copy(alpha = 0.08f)
+                                    )
+                                    .padding(horizontal = 4.dp, vertical = 1.dp)
+                            )
+                        }
+                    }
                 }
             },
             measurePolicy = { measurables, constraints ->

@@ -8,6 +8,7 @@ import com.lingion.sleepy.ui.theme.WakeUpColorScheme
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.WeekDisplayStatus
 import java.time.LocalDate
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 小组件数据模型 + 配色派生 — 生产 RemoteViews 渲染链路
@@ -162,8 +163,8 @@ data class DayData(
 ) {
     val dayLabel: String get() = DateUtils.shortDate(date)
     val dayName: String get() = DateUtils.localizedDay(dayOfWeek, com.lingion.sleepy.SleepyApp.get())
-    val isToday: Boolean get() = date == LocalDate.now()
-    val isTomorrow: Boolean get() = date == LocalDate.now().plusDays(1)
+    val isToday: Boolean get() = date == LocalDate.now(AppClock)
+    val isTomorrow: Boolean get() = date == LocalDate.now(AppClock).plusDays(1)
 }
 
 /** 周视图数据 */

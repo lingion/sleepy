@@ -1,8 +1,10 @@
 package com.lingion.sleepy.ui.theme
 
 import android.os.Build
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
@@ -17,6 +19,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
@@ -222,6 +225,9 @@ val DarkCoursePalette = CoursePalette(
 
 val LocalCoursePalette = staticCompositionLocalOf { LightCoursePalette }
 
+/** 应用当前是否处于深色模式，由 [SleepyThemeProvider] 注入并响应会话内主题实时切换。 */
+val LocalDarkTheme = compositionLocalOf { false }
+
 /**
  * Material You 字体系统 — 1:1 官方 M3 baseline type scale
  * (m3.material.io/styles/typography/type-scale-tokens;
@@ -383,6 +389,11 @@ object SleepyTheme {
 
         /** 未选中态强调减弱(按钮/文字提示) */
         const val inactive = 0.6f
+
+        /** 拖拽置灰 — 被拖起课程的原占位卡在拖拽期间的纯不透明度。
+         *  取 Material 3 disabled-content 档(androidx compose/material3
+         *  tokens/CheckboxTokens.kt SelectedDisabledContainerOpacity = 0.38f)。 */
+        const val dragDim = 0.38f
     }
 
     /** 统一输入框形状 — 全 app 输入框唯一档位(此前 large/medium 混用) */
@@ -429,6 +440,82 @@ object SleepyTheme {
         )
     }
 }
+
+/**
+ * MD3E (Task 8): 主题切换色彩缓动 — 官方 AnimatedTheme/AnimatedMaterialTheme
+ * 已从 material3 移除 (1.5.0-beta02 classes.jar 零命中), 等价语义在此单点
+ * 重建: ColorScheme 48 个色彩槽逐槽 animateColorAsState, 规格取
+ * MotionScheme.expressive().defaultEffectsSpec (色彩族走 effects 档)。
+ * 选型裁决: 否决整树 Crossfade (瞬态双组合重挂载会威胁 NavDisplay /
+ * rememberSaveable / DisposableEffect 状态存活 — 本文件历史注释记录的
+ * preset early-return 丢状态事故即同类风险); 否决 per-surface 逐点改造
+ * (一次性整树切仍硬切)。re-provide transitioning scheme = 树形状不变,
+ * 全部消费者零改动即全局渐变。
+ */
+@Composable
+private fun animateColorSlot(target: Color, label: String): Color =
+    animateColorAsState(
+        targetValue = target,
+        // 这里不能读 MaterialTheme.motionScheme — transitioning() 正在构造将要
+        // 安装的 scheme, 读外层 CompositionLocal 拿到的是默认档; 故直取
+        // expressive() 单例 (与 :590 provider 安装同档)。
+        animationSpec = MotionScheme.expressive().defaultEffectsSpec<Color>(),
+        label = label,
+    ).value
+
+@Composable
+private fun ColorScheme.transitioning(): ColorScheme =
+    // 48 槽全量显式传 (copy 的默认参数是基线 preset 值, 漏一槽即硬切)
+    copy(
+        primary = animateColorSlot(primary, "themePrimary"),
+        onPrimary = animateColorSlot(onPrimary, "themeOnPrimary"),
+        primaryContainer = animateColorSlot(primaryContainer, "themePrimaryContainer"),
+        onPrimaryContainer = animateColorSlot(onPrimaryContainer, "themeOnPrimaryContainer"),
+        inversePrimary = animateColorSlot(inversePrimary, "themeInversePrimary"),
+        secondary = animateColorSlot(secondary, "themeSecondary"),
+        onSecondary = animateColorSlot(onSecondary, "themeOnSecondary"),
+        secondaryContainer = animateColorSlot(secondaryContainer, "themeSecondaryContainer"),
+        onSecondaryContainer = animateColorSlot(onSecondaryContainer, "themeOnSecondaryContainer"),
+        tertiary = animateColorSlot(tertiary, "themeTertiary"),
+        onTertiary = animateColorSlot(onTertiary, "themeOnTertiary"),
+        tertiaryContainer = animateColorSlot(tertiaryContainer, "themeTertiaryContainer"),
+        onTertiaryContainer = animateColorSlot(onTertiaryContainer, "themeOnTertiaryContainer"),
+        background = animateColorSlot(background, "themeBackground"),
+        onBackground = animateColorSlot(onBackground, "themeOnBackground"),
+        surface = animateColorSlot(surface, "themeSurface"),
+        onSurface = animateColorSlot(onSurface, "themeOnSurface"),
+        surfaceVariant = animateColorSlot(surfaceVariant, "themeSurfaceVariant"),
+        onSurfaceVariant = animateColorSlot(onSurfaceVariant, "themeOnSurfaceVariant"),
+        surfaceTint = animateColorSlot(surfaceTint, "themeSurfaceTint"),
+        inverseSurface = animateColorSlot(inverseSurface, "themeInverseSurface"),
+        inverseOnSurface = animateColorSlot(inverseOnSurface, "themeInverseOnSurface"),
+        error = animateColorSlot(error, "themeError"),
+        onError = animateColorSlot(onError, "themeOnError"),
+        errorContainer = animateColorSlot(errorContainer, "themeErrorContainer"),
+        onErrorContainer = animateColorSlot(onErrorContainer, "themeOnErrorContainer"),
+        outline = animateColorSlot(outline, "themeOutline"),
+        outlineVariant = animateColorSlot(outlineVariant, "themeOutlineVariant"),
+        scrim = animateColorSlot(scrim, "themeScrim"),
+        surfaceBright = animateColorSlot(surfaceBright, "themeSurfaceBright"),
+        surfaceDim = animateColorSlot(surfaceDim, "themeSurfaceDim"),
+        surfaceContainer = animateColorSlot(surfaceContainer, "themeSurfaceContainer"),
+        surfaceContainerHigh = animateColorSlot(surfaceContainerHigh, "themeSurfaceContainerHigh"),
+        surfaceContainerHighest = animateColorSlot(surfaceContainerHighest, "themeSurfaceContainerHighest"),
+        surfaceContainerLow = animateColorSlot(surfaceContainerLow, "themeSurfaceContainerLow"),
+        surfaceContainerLowest = animateColorSlot(surfaceContainerLowest, "themeSurfaceContainerLowest"),
+        primaryFixed = animateColorSlot(primaryFixed, "themePrimaryFixed"),
+        primaryFixedDim = animateColorSlot(primaryFixedDim, "themePrimaryFixedDim"),
+        onPrimaryFixed = animateColorSlot(onPrimaryFixed, "themeOnPrimaryFixed"),
+        onPrimaryFixedVariant = animateColorSlot(onPrimaryFixedVariant, "themeOnPrimaryFixedVariant"),
+        secondaryFixed = animateColorSlot(secondaryFixed, "themeSecondaryFixed"),
+        secondaryFixedDim = animateColorSlot(secondaryFixedDim, "themeSecondaryFixedDim"),
+        onSecondaryFixed = animateColorSlot(onSecondaryFixed, "themeOnSecondaryFixed"),
+        onSecondaryFixedVariant = animateColorSlot(onSecondaryFixedVariant, "themeOnSecondaryFixedVariant"),
+        tertiaryFixed = animateColorSlot(tertiaryFixed, "themeTertiaryFixed"),
+        tertiaryFixedDim = animateColorSlot(tertiaryFixedDim, "themeTertiaryFixedDim"),
+        onTertiaryFixed = animateColorSlot(onTertiaryFixed, "themeOnTertiaryFixed"),
+        onTertiaryFixedVariant = animateColorSlot(onTertiaryFixedVariant, "themeOnTertiaryFixedVariant"),
+    )
 
 @Composable
 fun SleepyThemeProvider(
@@ -486,9 +573,13 @@ fun SleepyThemeProvider(
         else -> if (darkTheme) preset.dark else preset.light
     }
     val palette = if (darkTheme) DarkCoursePalette else LightCoursePalette
-    val m3Scheme = wakeToM3Scheme(wc, darkTheme)
+    // MD3E (Task 8): 主题切档时 48 色彩槽逐槽缓动到新值, 消费者零改动全局渐变。
+    val m3Scheme = wakeToM3Scheme(wc, darkTheme).transitioning()
 
-    CompositionLocalProvider(LocalCoursePalette provides palette) {
+    CompositionLocalProvider(
+        LocalCoursePalette provides palette,
+        LocalDarkTheme provides darkTheme,
+    ) {
         // 系统栏外观随应用主题联动(官方 edge-to-edge 指南): enableEdgeToEdge 是一次性
         // API, onCreate 只调一次时 isAppearanceLightStatusBars 停在启动时的系统深浅判定,
         // 应用内手动切主题后状态栏图标不跟着变(浅色页面+白图标 = 不可见)。

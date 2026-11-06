@@ -6,12 +6,11 @@ import android.content.ClipboardManager
 import android.content.Context.CLIPBOARD_SERVICE
 import android.net.Uri
 import com.lingion.sleepy.BuildConfig
+import com.lingion.sleepy.console.ui.dbgTag
 import org.json.JSONArray
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -90,10 +89,12 @@ import com.lingion.sleepy.data.parser.ScheduleParser
 import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.TimeSlotEditor
 import com.lingion.sleepy.ui.component.resolveAutoPeriodConfig
+import com.lingion.sleepy.ui.component.sleepyExpandSpecs
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import kotlinx.coroutines.launch
+import com.lingion.sleepy.util.AppClock
 
 /** 全屏导入入口：新建课表或向指定课表添加课程。 */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -137,8 +138,22 @@ fun AddTableScreen(
     var pendingSelection by remember { mutableStateOf<ImportPreview?>(null) }
     val canImport = !isLoading && (!addingCourses || state.tables.any { it.id == targetTableId })
 
+    // 从 JwImportActivity 外部导入返回时: 若成功新建课表/加课则自动关闭当前添加页; 若中途返回则停留在当前添加页
+    var jwImportLaunched by rememberSaveable { mutableStateOf(false) }
+    val initialTableCount = rememberSaveable { state.tables.size }
+    val initialCourseCount = rememberSaveable { state.courses.size }
+    LaunchedEffect(state.tables.size, state.courses.size) {
+        if (jwImportLaunched) {
+            if (!addingCourses && state.tables.size > initialTableCount) {
+                onImported()
+            } else if (addingCourses && state.courses.size > initialCourseCount) {
+                onImported()
+            }
+        }
+    }
+
     fun commitPreview(value: ImportPreview) {
-        confirmedStartDate = value.parseResult.startDate.ifBlank { java.time.LocalDate.now().toString() }
+        confirmedStartDate = value.parseResult.startDate.ifBlank { java.time.LocalDate.now(AppClock).toString() }
         confirmedTableName = value.parseResult.tableName.ifBlank { defaultTableName }
         confirmedTimeJson = TimeTableUtils.mergeMostComplete(
             currentJson = "",
@@ -216,8 +231,10 @@ fun AddTableScreen(
             scope.launch {
                 isLoading = true
                 try {
-                    val text = context.contentResolver.openInputStream(it)?.bufferedReader()?.use { r -> r.readText() }
-                        ?: throw Exception(cannotReadFileMessage)
+                    val text = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                        context.contentResolver.openInputStream(it)?.bufferedReader()?.use { reader -> reader.readText() }
+                            ?: throw Exception(cannotReadFileMessage)
+                    }
                     acceptPreview(buildImportPreview(text, targetTableId, context) { msg -> errorMsg = msg })
                     // 保持页面，预览对话框依赖这里的 preview 状态。
                 } catch (e: Exception) {
@@ -245,7 +262,10 @@ fun AddTableScreen(
                 )
             },
             confirmButton = {
-                TextButton(onClick = { errorMsg = null }) {
+                TextButton(
+                    onClick = { errorMsg = null },
+                    modifier = Modifier.dbgTag("import_err_dismiss", role = "button")
+                ) {
                     Text(stringResource(R.string.jw_err_dismiss))
                 }
             }
@@ -259,7 +279,10 @@ fun AddTableScreen(
             TopAppBar(
                 title = { Text(stringResource(if (addingCourses) R.string.add_course_title else R.string.create_table_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(
+                        onClick = onBack,
+                        modifier = Modifier.dbgTag("import_back", role = "button")
+                    ) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
@@ -280,6 +303,7 @@ fun AddTableScreen(
                     icon = Icons.Outlined.ContentCopy,
                     label = stringResource(R.string.add_course_from_existing),
                     enabled = canImport,
+                    dbgTag = "import_existing",
                     onClick = { showExistingTables = true }
                 )
                 if (!state.tables.any { it.id == targetTableId }) {
@@ -294,7 +318,11 @@ fun AddTableScreen(
                 icon = Icons.Outlined.QrCode2,
                 label = stringResource(R.string.import_jw),
                 enabled = canImport,
-                onClick = onJwImportRequested
+                dbgTag = "import_jw",
+                onClick = {
+                    jwImportLaunched = true
+                    onJwImportRequested()
+                }
             )
 
             // 行 2：从文本导入（可折叠）
@@ -303,12 +331,16 @@ fun AddTableScreen(
                 label = stringResource(R.string.import_paste),
                 trailing = if (textExpanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
                 enabled = canImport,
+                dbgTag = "import_paste",
                 onClick = { textExpanded = !textExpanded }
             )
+            // MD3E (Task 7a): 走展开家族 (尺寸 fastSpatial + 淡入淡出 motionScheme);
+            // 旧版无 fadeIn, 工厂补齐 — 与全应用折叠一致性优先
+            val expandSpecs = sleepyExpandSpecs()
             AnimatedVisibility(
                 visible = textExpanded,
-                enter = expandVertically(),
-                exit = shrinkVertically()
+                enter = expandSpecs.enter,
+                exit = expandSpecs.exit,
             ) {
                 Column(
                     modifier = Modifier
@@ -321,7 +353,8 @@ fun AddTableScreen(
                         onValueChange = { inputText = it },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(160.dp),
+                            .height(160.dp)
+                            .dbgTag("import_paste_field", role = "textbox"),
                         placeholder = { Text(stringResource(R.string.import_paste_hint), color = colors.onSurfaceVariant) },
                         enabled = !isLoading,
                         shape = SleepyTheme.fieldShape,
@@ -344,7 +377,8 @@ fun AddTableScreen(
                                 }
                             }
                         },
-                        modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
+                        modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight)
+                            .dbgTag("import_parse", role = "button"),
                         enabled = canImport && inputText.isNotBlank(),
                         shape = SleepyTheme.Buttons.shape,
                     ) {
@@ -364,6 +398,7 @@ fun AddTableScreen(
                 icon = Icons.Outlined.Add,
                 label = stringResource(if (addingCourses) R.string.add_course_manual else R.string.manage_create_blank_table),
                 enabled = canImport,
+                dbgTag = "import_manual",
                 onClick = onCreateNewTable
             )
 
@@ -372,6 +407,7 @@ fun AddTableScreen(
                 icon = Icons.Outlined.FileUpload,
                 label = stringResource(R.string.import_file),
                 enabled = canImport,
+                dbgTag = "import_file",
                 onClick = {
                     // OpenDocument() 接受 MIME 数组, 让 picker 只显示 json / 文本文件
                     filePicker.launch(arrayOf("application/json", "text/plain", "text/csv", "text/html", "*/*"))
@@ -397,31 +433,37 @@ fun AddTableScreen(
                 FormatRow(
                     name = stringResource(R.string.format_wakeup_share),
                     desc = stringResource(R.string.format_wakeup_desc),
+                    dbgTag = "import_format#WAKEUP_SHARE",
                     onDetail = { detailFormat = ImportFormat.WAKEUP_SHARE }
                 )
                 FormatRow(
                     name = stringResource(R.string.format_wakeup_json),
                     desc = stringResource(R.string.format_json_desc),
+                    dbgTag = "import_format#WAKEUP_JSON",
                     onDetail = { detailFormat = ImportFormat.WAKEUP_JSON }
                 )
                 FormatRow(
                     name = stringResource(R.string.format_ics),
                     desc = stringResource(R.string.format_ics_desc),
+                    dbgTag = "import_format#ICS",
                     onDetail = { detailFormat = ImportFormat.ICS }
                 )
                 FormatRow(
                     name = stringResource(R.string.format_csv),
                     desc = stringResource(R.string.format_csv_desc),
+                    dbgTag = "import_format#CSV",
                     onDetail = { detailFormat = ImportFormat.CSV }
                 )
                 FormatRow(
                     name = stringResource(R.string.format_html),
                     desc = stringResource(R.string.format_html_desc),
+                    dbgTag = "import_format#HTML",
                     onDetail = { detailFormat = ImportFormat.HTML }
                 )
                 FormatRow(
                     name = stringResource(R.string.format_plain),
                     desc = stringResource(R.string.format_plain_desc),
+                    dbgTag = "import_format#PLAIN",
                     onDetail = { detailFormat = ImportFormat.PLAIN }
                 )
             }
@@ -483,7 +525,8 @@ fun AddTableScreen(
                             supportingText = if (nameTaken) {
                                 { Text(stringResource(R.string.period_table_name_taken)) }
                             } else null,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth()
+                                .dbgTag("import_pure_period_field", role = "textbox"),
                             shape = SleepyTheme.fieldShape,
                             colors = SleepyTheme.fieldColors()
                         )
@@ -509,6 +552,7 @@ fun AddTableScreen(
                             },
                             dismissText = stringResource(R.string.cancel),
                             onDismiss = { if (!isLoading) preview = null },
+                            dbgTagPrefix = "import_pure_period",
                             confirmEnabled = !isLoading && candidate.isNotBlank() && !nameTaken
                         )
                     }
@@ -564,6 +608,7 @@ fun AddTableScreen(
                 preview = currentPreview,
                 onDismiss = { if (!isLoading) preview = null },
                 isApplying = isLoading,
+                dbgTagPrefix = "import_preview",
                 onApply = { decision ->
                     if (!isLoading) {
                         isLoading = true
@@ -652,13 +697,17 @@ fun AddTableScreen(
                                 }
                             },
                             modifier = Modifier.fillMaxWidth()
+                                .dbgTag("import_source", text = source.name, role = "button")
                         ) { Text(source.name) }
                     }
                 }
             },
             confirmButton = {},
             dismissButton = {
-                TextButton(onClick = { showExistingTables = false }) { Text(stringResource(R.string.cancel)) }
+                TextButton(
+                    onClick = { showExistingTables = false },
+                    modifier = Modifier.dbgTag("import_source_cancel", role = "button")
+                ) { Text(stringResource(R.string.cancel)) }
             }
         )
     }
@@ -671,6 +720,7 @@ private fun ImportMethodRow(
     label: String,
     trailing: ImageVector? = null,
     enabled: Boolean = true,
+    dbgTag: String? = null,
     onClick: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
@@ -679,6 +729,7 @@ private fun ImportMethodRow(
             .fillMaxWidth()
             .clip(SleepyTheme.shapes.medium)
             .noRippleClickable(enabled = enabled, onClick = onClick)
+            .then(dbgTag?.let { Modifier.dbgTag(it, text = label, role = "button") } ?: Modifier)
             .padding(vertical = 14.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -715,7 +766,7 @@ private fun ImportMethodRow(
 }
 
 @Composable
-private fun FormatRow(name: String, desc: String, onDetail: () -> Unit) {
+private fun FormatRow(name: String, desc: String, dbgTag: String? = null, onDetail: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
@@ -750,6 +801,7 @@ private fun FormatRow(name: String, desc: String, onDetail: () -> Unit) {
                 .size(16.dp)
                 .clip(SleepyTheme.shapes.small)
                 .noRippleClickable(onClick = onDetail)
+                .then(dbgTag?.let { Modifier.dbgTag(it, text = name, role = "button") } ?: Modifier)
         )
     }
 }
@@ -910,7 +962,8 @@ private fun FormatDetailDialog(format: ImportFormat, onDismiss: () -> Unit) {
                                     )
                                 )
                             },
-                            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
+                            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight)
+                                .dbgTag("import_copy_prompt", role = "button"),
                             shape = SleepyTheme.Buttons.shape,
                             colors = ButtonDefaults.buttonColors(
                                 // 纯文字伪按钮不可接受：用 primaryContainer 色块和背景拉开层级，仍不加描边
@@ -932,7 +985,10 @@ private fun FormatDetailDialog(format: ImportFormat, onDismiss: () -> Unit) {
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.dbgTag("import_format_close", role = "button")
+            ) {
                 Text(stringResource(R.string.format_help_close))
             }
         },
@@ -973,7 +1029,9 @@ internal fun ImportPreviewDialog(
     parserWarning: String? = null,
     onDismiss: () -> Unit,
     onApply: (ImportDecision) -> Unit,
-    isApplying: Boolean = false
+    isApplying: Boolean = false,
+    // 调试台语义身份前缀: <prefix>_backup/_append/_dismiss/_apply; null = 不打标
+    dbgTagPrefix: String? = null
 ) {
     // Prevent repeated submissions while the selected import is being saved.
     var backupOriginal by rememberSaveable(preview.targetTableId) { mutableStateOf(true) }
@@ -1206,6 +1264,7 @@ internal fun ImportPreviewDialog(
                         subtitle = stringResource(R.string.import_backup_original_sub),
                         checked = backupOriginal,
                         enabled = !isApplying,
+                        dbgTag = dbgTagPrefix?.let { "${it}_backup" },
                         onCheckedChange = { backupOriginal = it },
                     )
                     ImportOptionSwitch(
@@ -1213,15 +1272,28 @@ internal fun ImportPreviewDialog(
                         subtitle = stringResource(R.string.import_append_conflicts_option_sub),
                         checked = appendConflicts,
                         enabled = !isApplying,
+                        dbgTag = dbgTagPrefix?.let { "${it}_append" },
                         onCheckedChange = { appendConflicts = it },
                     )
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextButton(enabled = !isApplying, onClick = onDismiss, modifier = Modifier.weight(1f)) {
-                        Text(stringResource(R.string.cancel), color = colors.onSurfaceVariant)
+                    val cancelLabel = stringResource(R.string.cancel)
+                    val applyLabel = stringResource(R.string.import_confirm)
+                    TextButton(
+                        enabled = !isApplying,
+                        onClick = onDismiss,
+                        modifier = Modifier.weight(1f)
+                            .then(dbgTagPrefix?.let { Modifier.dbgTag("${it}_dismiss", text = cancelLabel, role = "button") } ?: Modifier)
+                    ) {
+                        Text(cancelLabel, color = colors.onSurfaceVariant)
                     }
-                    Button(enabled = !isApplying, onClick = apply, modifier = Modifier.weight(1f)) {
-                        Text(stringResource(R.string.import_confirm))
+                    Button(
+                        enabled = !isApplying,
+                        onClick = apply,
+                        modifier = Modifier.weight(1f)
+                            .then(dbgTagPrefix?.let { Modifier.dbgTag("${it}_apply", text = applyLabel, role = "button") } ?: Modifier)
+                    ) {
+                        Text(applyLabel)
                     }
                 }
             }
@@ -1236,6 +1308,7 @@ private fun ImportOptionSwitch(
     subtitle: String,
     checked: Boolean,
     enabled: Boolean,
+    dbgTag: String? = null,
     onCheckedChange: (Boolean) -> Unit,
 ) {
     Row(
@@ -1247,7 +1320,12 @@ private fun ImportOptionSwitch(
             Text(title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
             Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            enabled = enabled,
+            modifier = dbgTag?.let { Modifier.dbgTag(it, text = title, role = "switch") } ?: Modifier
+        )
     }
 }
 
@@ -1347,7 +1425,8 @@ private fun ImportConfirmDialog(
                         onValueChange = onTableNameChange,
                         label = { Text(stringResource(R.string.import_table_name)) },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth()
+                            .dbgTag("import_name_field", role = "textbox"),
                         shape = SleepyTheme.fieldShape,
                         colors = fieldColors
                     )
@@ -1357,6 +1436,7 @@ private fun ImportConfirmDialog(
                     onValueChange = onStartDateChange,
                     label = stringResource(R.string.import_week_start),
                     modifier = Modifier.fillMaxWidth(),
+                    dbgTag = "import_date_field",
                     // 只在日期错误时标红; 节次错误标到节次区(2026-09-20 反馈: 节次错也标日期框误导)
                     isError = errorMsg != null && (startDate.isBlank() ||
                         !Regex("""^\d{4}-\d{2}-\d{2}$""").matches(startDate))
@@ -1386,7 +1466,8 @@ private fun ImportConfirmDialog(
                         // v1.0.56 T6: 第三 Tab「作息表」
                         periodTableOptions = periodTableOptions,
                         selectedPeriodTableId = selectedPeriodTableId,
-                        onSelectPeriodTable = onSelectPeriodTable
+                        onSelectPeriodTable = onSelectPeriodTable,
+                        dbgTagPrefix = "import_confirm_slot"
                     )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
@@ -1431,7 +1512,8 @@ private fun ImportConfirmDialog(
                         onConfirm()
                     },
                     dismissText = stringResource(R.string.cancel),
-                    onDismiss = { if (!isApplying) onDismiss() }
+                    onDismiss = { if (!isApplying) onDismiss() },
+                    dbgTagPrefix = "import_confirm_dialog"
                 )
             }
         },
@@ -1463,7 +1545,9 @@ private suspend fun buildImportPreview(
         text
     }
     // 新建入口使用 0L；加课入口始终携带用户进入页面时的目标 ID。
-    val result = ScheduleParser.parse(payload, tableId)
+    val result = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+        ScheduleParser.parse(payload, tableId)
+    }
     return result.fold(
         onSuccess = { parseResult ->
             buildImportPreview(parseResult, tableId, context)

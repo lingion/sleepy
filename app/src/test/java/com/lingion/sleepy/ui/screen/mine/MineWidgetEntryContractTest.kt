@@ -93,11 +93,11 @@ class MineWidgetEntryContractTest {
     fun `widget settings screen hosts the migrated section`() {
         val file = findUpward("app/src/main/java/com/lingion/sleepy/ui/screen/mine/WidgetSettingsScreen.kt")
         val src = file.readText()
-        // 三个开关 + 管理条目原样平移(偏好键零迁移)
+        // Widget-only preferences remain here; the shared date policy is reached through navigation.
         listOf(
-            "settings_widget_colorless", "settings_widget_separator", "settings_nearest_busy_day",
-            "widget_manage_entry", "onOpenWidgetManagement",
-            "AppPrefs.setWidgetColorless", "AppPrefs.setWidgetSeparator", "AppPrefs.setNearestBusyDay"
+            "settings_widget_colorless", "settings_widget_separator",
+            "widget_manage_entry", "onOpenWidgetManagement", "onOpenScheduleDisplay",
+            "AppPrefs.setWidgetColorless", "AppPrefs.setWidgetSeparator", "AppPrefs.setVertPunctReplace"
         ).forEach { token ->
             assertTrue("WidgetSettingsScreen 必须含 $token", src.contains(token))
         }

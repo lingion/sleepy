@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="debug_unlock_title">Enable debug mode</string>
+    <string name="debug_unlock_description">Enter the key to enable debug mode for this session. Restarting the app disables it.</string>
+    <string name="debug_unlock_key">Key</string>
+    <string name="debug_unlock_action">Enable</string>
+    <string name="debug_unlock_wrong_key">Incorrect key. Please try again.</string>
+    <string name="debug_unlock_backoff">Too many attempts. Please try again later.</string>
+    <string name="debug_unlock_expired">Unlock window expired. Cancel and tap the version 7 times again.</string>
+    <string name="debug_unlock_service_failed">Could not start the debug service. Please try again later.</string>
+    <string name="debug_unlock_active">Debug mode enabled</string>
+    <string name="debug_unlock_stop">Disable debug mode</string>
+</resources>

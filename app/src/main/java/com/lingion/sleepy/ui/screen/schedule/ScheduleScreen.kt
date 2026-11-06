@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.screen.schedule
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -65,6 +67,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.ui.component.CardsGridView
@@ -75,6 +78,8 @@ import com.lingion.sleepy.ui.component.CourseDetailSheet
 import com.lingion.sleepy.ui.component.FullWeekView
 import com.lingion.sleepy.ui.component.SectionHead
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
+import com.lingion.sleepy.ui.component.sleepyPopupEnter
+import com.lingion.sleepy.ui.component.sleepyPopupExit
 import com.lingion.sleepy.ui.component.ShareScheduleSheet
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
@@ -139,9 +144,17 @@ fun ScheduleScreen(
     val quickAddState = remember(state.selectedTableId, state.selectedWeek) { com.lingion.sleepy.ui.component.QuickAddCourseState() }
     LaunchedEffect(viewMode) { quickAddState.dismiss() }
     // 浮起卡态与 quickAddState 同级上提 — HorizontalPager 翻页重组不丢浮动态;
-    // 切表/切周由 remember 键重建自动清空(旧表浮卡随新表渲染失效)。
-    val floatState = remember(state.selectedTableId, state.selectedWeek) { com.lingion.sleepy.ui.component.CourseFloatState() }
+    // 边缘翻页特性 (2026-10-27): remember 键不再含 selectedWeek — 拖拽中途自动翻周
+    // 会引起 changeWeek → 重建浮态腰斩手势。切表仍重建; 拖拽外切周由下方 effect 收层,
+    // LaunchedEffect(viewMode) 只管视图切换。
+    val floatState = remember(state.selectedTableId) { com.lingion.sleepy.ui.component.CourseFloatState() }
     LaunchedEffect(viewMode) { floatState.dismiss() }
+    LaunchedEffect(state.selectedWeek, floatState.dragging) {
+        // 用户手动换周(非拖拽自动翻) → 浮层不属于当前周, 收层; 自动翻周已 bump week, 不触发。
+        if (!floatState.dragging && floatState.active && floatState.week != state.selectedWeek) {
+            floatState.dismiss()
+        }
+    }
     // 浮框/编辑弹窗的审批问题宿主(与 OccurrenceEditor 同一 OccurrenceSaveDialogs 形态)。
     val floatDialogs = remember(context) { com.lingion.sleepy.ui.screen.edit.OccurrenceSaveDialogs(context) }
     com.lingion.sleepy.ui.screen.edit.OccurrenceSaveDialogHost(floatDialogs)
@@ -178,13 +191,18 @@ fun ScheduleScreen(
 
     Column(
         modifier = Modifier.fillMaxSize().dismissQuickAddOnOutsidePress(quickAddState)
-            // D 契约: 屏根空档按下也要先走「是否调整持续节次」确认 — 时间域用
-            // floatState.week(浮起时快照, 屏根看不到网格 currentWeek); 无 pending 时
-            // confirmPendingResizeBeforeDismiss 自会直接收层。
+            // D 契约: 屏根空档按下也要先走「是否调整持续节次」确认 — 被拖的一次课
+            // 住在起拖页 (floatState.originWeek, 浮起时快照), 时间域取它而不是翻页后的
+            // floatState.week; 无 pending 时 confirmPendingResizeBeforeDismiss 自会直接收层。
             .dismissFloatOnOutsidePress(floatState) {
                 floatState.confirmPendingResizeBeforeDismiss { lifted, day, node, step, onResult ->
                     runFloatOccurrence(
-                        { it.move(lifted, floatState.week, day, node, step, FloatEditIntent.SPAN_RESIZE) },
+                        {
+                            it.move(
+                                lifted, floatState.week, day, node, step, FloatEditIntent.SPAN_RESIZE,
+                                sourceWeek = floatState.originWeek,
+                            )
+                        },
                         onResult,
                     )
                 }
@@ -291,6 +309,7 @@ fun ScheduleScreen(
                     options = ViewMode.entries.map { it to stringResource(it.labelRes) },
                     selected = viewMode,
                     onSelect = onViewModeChange,
+                    dbgTagPrefix = "schedule_view_segment",
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -309,6 +328,28 @@ fun ScheduleScreen(
             var syncingFromState by remember { mutableStateOf(false) }
             var pagerReady by remember { mutableStateOf(false) }
 
+            // 边缘翻页落位: 每次驻留满换页, week 即逻辑真相 (网格 bump),
+            // pager 静止后回写 ViewModel — VM 与 week 双通道一致, 拖拽期间不回写(防腰斩)。
+            // changeWeek 半句 2026-10-28 真机补: 程序化 animateScrollToPage 被下方
+            // currentPage effect 的手势守卫(isScrollInProgress)有意拦截(09-13 防闪烁环),
+            // 漏写则顶栏 chip 停在起拖周 — 网格第 3 周、chip 第 2 周、左箭头跳回第 1 周。
+            // chipPending 半句同日二补: 原守卫「active && !dragging」在合法落点路上
+            // 从未打开 — 松手即 dismiss(), active 与 dragging 同帧落 false, effect 再也
+            // 等不到「浮着但不拖」的瞬间, chip 仍停起拖周。翻过页置位, 这里在
+            // 「非拖拽 且 (浮着 或 待回写)」时统一消费(弹回路/审批弹窗路同样命中)。
+            LaunchedEffect(
+                pagerState.settledPage,
+                floatState.active,
+                floatState.dragging,
+                floatState.chipPending,
+            ) {
+                if (!floatState.dragging && (floatState.active || floatState.chipPending)) {
+                    floatState.week = pagerState.settledPage + 1
+                    viewModel.changeWeek(pagerState.settledPage + 1)
+                    floatState.chipPending = false
+                }
+            }
+
             // 先用业务状态校准恢复的 pager, 再开放用户手势回写。
             // Pager 滑动（用户手势）→ 更新 ViewModel。
             // 恢复帧和程序化滚动都必须被 pagerReady/syncingFromState 双重拦截。
@@ -319,12 +360,15 @@ fun ScheduleScreen(
             }
 
             // ViewModel 变化（TopBar 箭头/下拉菜单点击 / 切表）→ 同步 Pager。
+            // MD3E (Task 6): 程序化跳页一律缓动 — scrollToPage → animateScrollToPage
+            // (计划裁决无瞬时例外); syncingFromState 守卫与 try/finally 结构不变,
+            // 由两份 race 契约测试锁新字面量 (lockstep 改写 2026-10-29)。
             LaunchedEffect(state.selectedWeek) {
                 val targetPage = (state.selectedWeek - 1).coerceIn(0, pagerMaxWeek - 1)
                 if (pagerState.currentPage != targetPage) {
                     syncingFromState = true
                     try {
-                        pagerState.scrollToPage(targetPage)
+                        pagerState.animateScrollToPage(targetPage)
                     } finally {
                         syncingFromState = false
                     }
@@ -334,44 +378,34 @@ fun ScheduleScreen(
 
             HorizontalPager(
                 state = pagerState,
+                // 接收手势的页由 trackFloatDragPointer 固定，毋须为一次拖拽加载整个学期。
+                beyondViewportPageCount = 1,
                 modifier = Modifier.fillMaxSize()
             ) { page ->
-                // page 是 0-based 周索引，独立于 state.currentWeek 过滤课程
-                val weekCourses = state.courses.filter { it.inWeek(page + 1) }
-                    .let { list ->
-                        val tj = state.effectiveCurrentTable?.timeJson
-                        if (tj == null) list else list.map { c -> c.normalizeNode(tj) }
-                    }
-                // issue#44 调休改写: 本页各天日期若命中调休映射, 该天在网格里改按映射目标星期渲染 —
-                // 周日(补周四)列显示周四的课。渲染期替身, 不写库; 未映射日期原样。
-                // issue#145: 同时屏蔽补班日那列原本属于它的课(否则与调过去的课叠加显示)。
-                val renderCourses = state.currentTable?.let { table ->
-                    (1..7).flatMap { day ->
-                        val date = DateUtils.dateOfWeek(table.startDate, page + 1, day)
-                        com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(
-                            date, table.startDate, table.maxWeek, state.courses, state.transfers
-                        ).map { course ->
-                            val projected = course.copy(day = day)
-                            state.effectiveCurrentTable?.timeJson?.let { projected.normalizeNode(it) } ?: projected
-                        }
-                    }
-                } ?: weekCourses
+                if (viewMode == ViewMode.Cards &&
+                    !com.lingion.sleepy.ui.component.shouldComposeFloatDragPage(page + 1, pagerState.currentPage + 1, floatState)) {
+                    return@HorizontalPager
+                }
+                // 拖拽坐标、缩放和弹窗变化不改变课程投影，只有数据/周次/调休/作息变化才重算。
+                val renderCourses = viewModel.presentationCache.weekCourses(state, page + 1)
                 // 计算本周哪些天是节假日/周末(灰显用); 传入表 ID 使命中调休映射的放假日不灰
                 val greyDays by produceState<Set<Int>>(
-                    emptySet(), page, state.currentTable?.startDate, state.transfers
+                    emptySet(), page, state.selectedTableId, state.currentTable?.startDate, state.transfers
                 ) {
                     val start = state.currentTable?.startDate
                     if (start.isNullOrBlank()) {
                         value = emptySet()
                     } else {
-                        val greySet = mutableSetOf<Int>()
-                        for (day in 1..7) {
-                            val date = DateUtils.dateOfWeek(start, page + 1, day)
-                            if (HolidayManager.shouldGrey(context, date, state.effectiveCurrentTable?.id)) {
-                                greySet.add(day)
+                        value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                            val greySet = mutableSetOf<Int>()
+                            for (day in 1..7) {
+                                val date = DateUtils.dateOfWeek(start, page + 1, day)
+                                if (HolidayManager.shouldGrey(context, date, state.effectiveCurrentTable?.id)) {
+                                    greySet.add(day)
+                                }
                             }
+                            greySet
                         }
-                        value = greySet
                     }
                 }
                 when (viewMode) {
@@ -434,22 +468,43 @@ fun ScheduleScreen(
                         // v1.0.56 T3: 实验室开关 — 默认关=手势不挂(顶栏 tick 按钮也随 scaleUncommitted 恒 false 不亮)
                         pinchZoomEnabled = AppPrefs.isGridPinchZoom(context),
                         // 长按浮起换格: 移动/删除走 FloatOccurrenceHandler 单格落库管线
-                        // (与 OccurrenceEditor.save 同口径); week = 页 + 1, 与渲染同一时间域。
+                        // (与 OccurrenceEditor.save 同口径); 落点周 = floatState.week(时间域真值 —
+                        // 起拖快照, 边缘翻页时由网格 bump; page+1 是闭包旧页, 翻页后不可信)。
                         // resizeOnly=true = 把手拉伸后经网格空档确认 → 「调整持续节次」弹窗分型。
                         floatState = floatState,
+                        onEdgeDrag = { dir ->
+                            // 驻留满 → 平滑翻页(300ms, PagerState 默认 spring 时长不符 →
+                            // tween 按用户裁决 300ms 与预测返回规格)。目标页与网格 bump 的 week 一致。
+                            floatScope.launch {
+                                pagerState.animateScrollToPage(
+                                    (floatState.week - 1).coerceIn(0, pagerMaxWeek - 1),
+                                    animationSpec = tween(
+                                        durationMillis = com.lingion.sleepy.ui.component.FLOAT_PAGE_ANIM_MS.toInt(),
+                                        easing = com.lingion.sleepy.ui.component.FLOAT_PAGE_EASING,
+                                    ),
+                                )
+                            }
+                        },
+                        floatMaxWeek = pagerMaxWeek,
                         onOccurrenceMove = { projected, day, node, step, resizeOnly, onResult ->
                             runFloatOccurrence(
                                 {
+                                    // 跨周拖拽: 被拖的一次课在 originWeek 页上(浮起快照),
+                                    // week = 松手页 — 从起拖周拆出、落到松手周的目标格。
+                                    // 同周时两值相等, 行为不变。
                                     it.move(
-                                        projected, page + 1, day, node, step,
+                                        projected, floatState.week, day, node, step,
                                         if (resizeOnly) FloatEditIntent.SPAN_RESIZE else FloatEditIntent.MOVE,
+                                        sourceWeek = floatState.originWeek,
                                     )
                                 },
                                 onResult,
                             )
                         },
+                        // 浮框只在「仍浮起未落库」时可见 — 所操作的就是起拖那一格
+                        // (originWeek), 不是翻页后的宿主页。
                         onOccurrenceDelete = { projected ->
-                            runFloatOccurrence(work = { it.delete(projected, page + 1) })
+                            runFloatOccurrence(work = { it.delete(projected, floatState.originWeek) })
                         },
                         // 浮窗「调整本次」→ 解析当次 occurrence 并直达编辑表单(不再二次点击)。
                         onOccurrenceEdit = { projected ->
@@ -458,7 +513,7 @@ fun ScheduleScreen(
                             val original = state.courses.firstOrNull { it.id == projected.id }
                             if (table != null && original != null) {
                                 selectedOccurrence = com.lingion.sleepy.util.CourseOccurrences.resolve(
-                                    original, DateUtils.dateOfWeek(table.startDate, page + 1, projected.day), state.transfers
+                                    original, DateUtils.dateOfWeek(table.startDate, floatState.originWeek, projected.day), state.transfers
                                 )
                             }
                         },
@@ -547,6 +602,7 @@ private fun TableSwitcherDialog(
                             .clip(SleepyTheme.shapes.small)
                             .background(if (isCurrent) colors.primaryContainer else colors.surfaceContainer)
                             .noRippleClickable { onSelect(table.id) }
+                            .dbgTag("schedule_table_item", text = table.name, role = "button")
                             .padding(vertical = 10.dp, horizontal = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -625,23 +681,32 @@ private fun TopBar(
             ) {
                 WeekNavButton(
                     icon = Icons.Outlined.CalendarMonth,
+                    tag = "schedule_switch_table",
                     contentDescriptionRes = R.string.schedule_switch_table,
                     onClick = onSwitchTable
                 )
                 // 2026-09-21 用户令: 撤回/取消撤回合成一个体育场形状(两半圆+中间矩形)胶囊,
                 // 一起出现一起消失, 中间一条淡淡竖线 — TopBar 空间紧张, 单胶囊比两个分立按钮省位。
                 // 无 undo 也无 redo 时整个胶囊隐藏; scale tick 仍独立圆形按钮(语义不同, 不入胶囊)。
+                // MD3E (Task 6): 显隐走 AnimatedVisibility popup 家族 — 一体显隐语义不变,
+                // 出入场补上 popup 签名性格 (0.8 尺度弹入弹出)。
                 val hasUndo = com.lingion.sleepy.data.undo.UndoManager.hasSnapshot
                 val hasRedo = com.lingion.sleepy.data.undo.UndoManager.hasRedoSnapshot
-                if (hasUndo || hasRedo) {
-                    Spacer(modifier = Modifier.width(6.dp))
-                    UndoRedoCapsule(
-                        showUndo = hasUndo,
-                        showRedo = hasRedo,
-                        scale = capsuleScale,
-                        onUndo = onUndo,
-                        onRedo = onRedo
-                    )
+                AnimatedVisibility(
+                    visible = hasUndo || hasRedo,
+                    enter = sleepyPopupEnter(),
+                    exit = sleepyPopupExit(),
+                ) {
+                    Row {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        UndoRedoCapsule(
+                            showUndo = hasUndo,
+                            showRedo = hasRedo,
+                            scale = capsuleScale,
+                            onUndo = onUndo,
+                            onRedo = onRedo
+                        )
+                    }
                 }
                 // 2026-09-16 用户令: 捏合未确认时 tick 单列,与数据撤回胶囊互不干涉;
                 // tick=落盘长期生效, 撤回=回到上次确认值(语义不同, 不并入胶囊)。
@@ -649,6 +714,7 @@ private fun TopBar(
                     Spacer(modifier = Modifier.width(6.dp))
                     WeekNavButton(
                         icon = Icons.Outlined.Check,
+                        tag = "schedule_scale_keep",
                         contentDescriptionRes = R.string.schedule_scale_keep,
                         onClick = onScaleCommit
                     )
@@ -662,7 +728,7 @@ private fun TopBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-            WeekNavButton(icon = Icons.Outlined.ChevronLeft, onClick = onPrevWeek)
+            WeekNavButton(icon = Icons.Outlined.ChevronLeft, tag = "schedule_prev_week", onClick = onPrevWeek)
 
             Spacer(modifier = Modifier.width(8.dp))
 
@@ -674,12 +740,13 @@ private fun TopBar(
                     DateUtils.SemesterStatus.AFTER_END -> R.string.semester_ended
                     else -> 0
                 }
+                val weekLabel = if (statusRes == 0)
+                    stringResource(R.string.schedule_current_week, currentWeek)
+                else "${stringResource(statusRes)} · ${stringResource(R.string.schedule_week_prefix, currentWeek)}"
                 Text(
                     // 表头语义永远=第 N 周(学期外带状态前缀但仍保留周数)。
                     // 最近有课日只能影响自动选中的周, 不能改写表头文案或点击行为。
-                    text = if (statusRes == 0)
-                        stringResource(R.string.schedule_current_week, currentWeek)
-                    else "${stringResource(statusRes)} · ${stringResource(R.string.schedule_week_prefix, currentWeek)}",
+                    text = weekLabel,
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                     color = if (isOnActual) colors.onPrimaryContainer else colors.primary,
                     modifier = Modifier
@@ -694,6 +761,7 @@ private fun TopBar(
                                 onJumpToActual()
                             }
                         }
+                        .dbgTag("schedule_week_label", text = weekLabel, role = "button")
                         .padding(horizontal = 14.dp, vertical = 4.dp)
                 )
 
@@ -731,7 +799,8 @@ private fun TopBar(
                                         .noRippleClickable {
                                             onSelectWeek(w)
                                             menuOpen = false
-                                        },
+                                        }
+                                        .dbgTag("schedule_week#$w", text = w.toString(), role = "button"),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
@@ -750,7 +819,7 @@ private fun TopBar(
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            WeekNavButton(icon = Icons.Outlined.ChevronRight, onClick = onNextWeek)
+            WeekNavButton(icon = Icons.Outlined.ChevronRight, tag = "schedule_next_week", onClick = onNextWeek)
         }
 
             // 右侧操作区: 加课 + 分享 — 与翻页箭头同款圆形底, Box 右缘绝对定位
@@ -760,12 +829,14 @@ private fun TopBar(
             ) {
                 WeekNavButton(
                     icon = Icons.Outlined.Add,
+                    tag = "schedule_add_course",
                     contentDescriptionRes = R.string.schedule_add_course,
                     onClick = onAddCourse
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 WeekNavButton(
                     icon = Icons.Outlined.IosShare,
+                    tag = "schedule_share",
                     contentDescriptionRes = R.string.schedule_share_table,
                     onClick = onShare
                 )
@@ -777,6 +848,7 @@ private fun TopBar(
 @Composable
 private fun WeekNavButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
+    tag: String,
     onClick: () -> Unit,
     contentDescriptionRes: Int? = null
 ) {
@@ -787,6 +859,7 @@ private fun WeekNavButton(
             .clip(CircleShape)
             .background(colors.surfaceContainerHigh)
             .noRippleClickable(onClick)
+            .dbgTag(tag, role = "button")
             .padding(6.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -828,7 +901,8 @@ private fun UndoRedoCapsule(
                     if (scale == 1f) Modifier.size(width = 32.dp, height = 32.dp)
                     else Modifier.size(width = halfSize, height = halfSize)
                 )
-                .noRippleClickable(enabled = showUndo, onClick = onUndo),
+                .noRippleClickable(enabled = showUndo, onClick = onUndo)
+                .dbgTag("schedule_undo", text = stringResource(R.string.schedule_undo), role = "button"),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -851,7 +925,8 @@ private fun UndoRedoCapsule(
                     if (scale == 1f) Modifier.size(width = 32.dp, height = 32.dp)
                     else Modifier.size(width = halfSize, height = halfSize)
                 )
-                .noRippleClickable(enabled = showRedo, onClick = onRedo),
+                .noRippleClickable(enabled = showRedo, onClick = onRedo)
+                .dbgTag("schedule_redo", text = stringResource(R.string.schedule_redo), role = "button"),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -892,7 +967,7 @@ private fun NoCourseState(
         )
         Button(
             onClick = onAddCourse,
-            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
+            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight).dbgTag("schedule_add", role = "button"),
             shape = SleepyTheme.Buttons.shape,
         ) {
             Text(stringResource(R.string.schedule_manual_first))
@@ -901,7 +976,7 @@ private fun NoCourseState(
         // 仅保留 Sleepy 的 56dp CTA 高度档位(官方无此 token)。
         FilledTonalButton(
             onClick = onImport,
-            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
+            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight).dbgTag("schedule_import", role = "button"),
             shape = SleepyTheme.Buttons.shape,
         ) {
             Text(stringResource(R.string.schedule_go_manage))
@@ -938,7 +1013,7 @@ private fun EmptyState(
         // 主按钮 = 导入第一张课表 (用户反馈: "前往课表管理"引导性不足)
         Button(
             onClick = onGoImport,
-            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
+            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight).dbgTag("schedule_go_import", role = "button"),
             shape = SleepyTheme.Buttons.shape,
         ) {
             Text(stringResource(R.string.schedule_empty_import))
@@ -947,7 +1022,7 @@ private fun EmptyState(
         // [intentional custom] FilledTonalButton + ctaHeight: 同上, 仅保留 56dp CTA 档位。
         FilledTonalButton(
             onClick = onCreateTable,
-            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
+            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight).dbgTag("schedule_create_table", role = "button"),
             shape = SleepyTheme.Buttons.shape,
         ) {
             Text(stringResource(R.string.schedule_empty_create_table))

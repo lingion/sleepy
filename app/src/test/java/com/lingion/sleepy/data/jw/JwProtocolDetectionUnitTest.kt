@@ -128,6 +128,31 @@ class JwProtocolDetectionUnitTest {
         assertNull(JwImportViewModel.detectProtocolFromUrlForTest("https://jwc.lyu.edu.cn/"))
     }
 
+    @Test
+    fun `超星按校租户域名判 chaoxing`() {
+        // 2026-10-28 WakeUP 6.6.2 目录调查: *.jw.chaoxing.com = 超星泛雅教务按校租户生产入口
+        // (GitHub 交叉验证: hbut.jw.chaoxing.com 等 9+ 学生仓库同端点; dump 实测 125 行 jw 租户
+        //  + 1 行 fanya 租户, 全部带学校前缀子域, 无裸域聚合形态)
+        assertEquals(JwProtocol.TYPE_CHAOXING,
+            JwImportViewModel.detectProtocolFromUrlForTest("https://hbut.jw.chaoxing.com/admin"))
+        assertEquals(JwProtocol.TYPE_CHAOXING,
+            JwImportViewModel.detectProtocolFromUrlForTest("http://ynzi.fanya.chaoxing.com/portal/index!utp"))
+        // webvpn /http/<hex>/ 重写把原 URL 原样留在 path 里 → 内层同锚
+        assertEquals(JwProtocol.TYPE_CHAOXING,
+            JwImportViewModel.detectProtocolFromUrlForTest(
+                "https://tju.webvpn.tju.edu.cn/http/68747470732f2f/hbut.jw.chaoxing.com/admin"))
+    }
+
+    @Test
+    fun `学习通聚合域与非租户拼接不误判 chaoxing`() {
+        // 裸 chaoxing.com 是学习通聚合域(mooc/考试/继教), 不是教务判型依据;
+        // 反向拼接(notjw/mirrorjw 无点前导、.com.cn/.example.org 换尾)不得命中
+        assertNull(JwImportViewModel.detectProtocolFromUrlForTest("https://chaoxing.com/mooc-enc/video"))
+        assertNull(JwImportViewModel.detectProtocolFromUrlForTest("https://jw.chaoxing.example.org/login"))
+        assertNull(JwImportViewModel.detectProtocolFromUrlForTest("https://notjw.chaoxing.com.cn/x"))
+        assertNull(JwImportViewModel.detectProtocolFromUrlForTest("https://mirrorjw.chaoxing.com.net/portal"))
+    }
+
     // ============ HTML 层边界 ============
 
     @Test

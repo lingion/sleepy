@@ -2,6 +2,8 @@
 
 # OPPO · community-notes.md
 
+> 2026-10-29 实现复核：以下为 2026-09 的社区与时间线快照，文中的“预研/建议”不是当前开发进度。Sleepy 已实现 Android 16 Live Updates 通道；Pantanal / Seedling 专用通道仍未接入。代码依据和已有真机记录见 [接入状态](../../oppo-coloros-fluid-cloud.md)。
+
 > 证据等级说明: B=官方域名搜索快照+主流媒体(IT之家/百科)二次核实 / C=社区博客需二次确认。官方 A 级开发者文档已在 [fluid-cloud-overview.md](./fluid-cloud-overview.md) 等四文件落盘,本文件只收社区与时间线情报。
 
 ## 一、时间线: 流体云生态扩张 (2024-2026)

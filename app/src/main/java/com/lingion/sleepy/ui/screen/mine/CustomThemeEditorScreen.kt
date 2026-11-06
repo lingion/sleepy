@@ -57,6 +57,7 @@ import com.lingion.sleepy.ui.theme.CustomSchemeDeriver
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import kotlin.random.Random
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 自定义主题创建/微调编辑器 — 外观页弹出(overlay 全屏页,样式仿现有 Screen)。
@@ -95,7 +96,7 @@ fun CustomThemeEditorScreen(
                 tertiary = "#EF6C00",
                 surfaceHue = 265.0,
                 surfaceChroma = 8.0,
-                createdAt = System.currentTimeMillis() / 1000
+                createdAt = AppClock.millis() / 1000
             )
         )
     }
@@ -156,16 +157,16 @@ fun CustomThemeEditorScreen(
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     ActionEntry(
-                        icon = { Icon(Icons.Outlined.AutoAwesome, null, tint = colors.primary, modifier = Modifier.size(24.dp)) },
-                        title = stringResource(R.string.theme_editor_random),
-                        desc = stringResource(R.string.theme_editor_random_desc),
-                        onClick = { draft = randomDraft(draft) }
-                    )
-                    ActionEntry(
                         icon = { Icon(Icons.Outlined.Palette, null, tint = colors.primary, modifier = Modifier.size(24.dp)) },
                         title = stringResource(R.string.theme_editor_from_seed),
                         desc = stringResource(R.string.theme_editor_from_seed_desc),
                         onClick = { pickingRole = ROLE_SEED_PRIMARY }
+                    )
+                    ActionEntry(
+                        icon = { Icon(Icons.Outlined.AutoAwesome, null, tint = colors.primary, modifier = Modifier.size(24.dp)) },
+                        title = stringResource(R.string.theme_editor_random),
+                        desc = stringResource(R.string.theme_editor_random_desc),
+                        onClick = { draft = randomDraft(draft) }
                     )
                     ActionEntry(
                         icon = { Icon(Icons.Outlined.Tune, null, tint = colors.primary, modifier = Modifier.size(24.dp)) },

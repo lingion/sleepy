@@ -41,6 +41,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 import kotlin.math.roundToInt
+import com.lingion.sleepy.util.AppClock
 
 /**
  * v19: WeekGrid widget — RemoteViews + Bitmap + Canvas
@@ -132,7 +133,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
         // REGULAR 或容器被拖大 ≥150dp → 全量网格排版(行为与改动前逐字节一致)。
         val variant = variantHint
         if (variant == WidgetVariant.SMALL && wDp < 150f) {
-            val todayData = WidgetBitmapRenderers.weekGridMinimumTodayData(data, LocalDate.now())
+            val todayData = WidgetBitmapRenderers.weekGridMinimumTodayData(data, LocalDate.now(AppClock))
             Log.d(TAG, "vSmall minimum → today face: courses=${todayData.courses.size}")
             TodayWidgetReceiver.pushTodayData(context, awm, widgetId, WidgetVariant.SMALL, todayData)
             return
@@ -482,6 +483,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             val widgetHeaderStyle = AppPrefs.getPeriodHeaderStyle(context)
             val widgetHeaderHanging = AppPrefs.getPeriodHeaderHanging(context).coerceIn(-1f, 1f)
             val widgetHeaderShowX = AppPrefs.isPeriodHeaderShowX(context)
+            val widgetHeaderTimeAlignment = AppPrefs.getPeriodHeaderTimeAlignment(context)
 
             // §4.4 颜色池 — 显式补 surfaceContainerLow,旧链漏导 → 卡片底色硬用 surfaceContainer,时间列卡片与预览色不一致。
             val bgSurfaceLow = scheme.surfaceContainerLow.toIntArgb()
@@ -645,7 +647,18 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                         p.color = fgOnSurfaceVar
                         p.textSize = (rowH * 0.20f).coerceAtMost(dp(7f).toFloat()).coerceAtLeast(dp(4f).toFloat())
                         p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-                        c.drawText(slot.timeString, centerX, cy + p.textSize * 1.6f, p)
+                        val timeY = cy + p.textSize * 1.6f
+                        if (widgetHeaderTimeAlignment == "dash") {
+                            val dashW = p.measureText("-")
+                            val startW = p.measureText(slot.displayStart)
+                            p.textAlign = Paint.Align.LEFT
+                            c.drawText(slot.displayStart, centerX - startW - dashW / 2f, timeY, p)
+                            c.drawText("-", centerX - dashW / 2f, timeY, p)
+                            c.drawText(slot.displayEnd, centerX + dashW / 2f, timeY, p)
+                            p.textAlign = Paint.Align.CENTER
+                        } else {
+                            c.drawText(slot.timeString, centerX, timeY, p)
+                        }
                     }
                 }
             }
@@ -1011,7 +1024,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
         }
 
         fun loadWeekData(context: Context, appWidgetId: Int): WeekData {
-            val today = LocalDate.now()
+            val today = LocalDate.now(AppClock)
             val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
             val isDark = AppPrefs.isDarkMode(context, isSystemDark)
             val themeKey = AppPrefs.getThemeKey(context)

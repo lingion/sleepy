@@ -30,7 +30,8 @@ data class WidgetEditUiState(
     /** 强制滚动(实验) — 本实例一档 (2026-09-14: per-widget, 不再全局共享) */
     val scrollEnabled: Boolean = false,
     /** 最小档三天窗口 — 本实例一档 (2026-09-15: per-widget; true=今日居第一位) */
-    val compactTodayFirst: Boolean = true
+    val compactTodayFirst: Boolean = true,
+    val wideGridSettings: WeekGridWideSettings = WeekGridWideSettings(),
 )
 
 /**
@@ -76,7 +77,8 @@ class WidgetEditViewModel(
                 useAlias = AppPrefs.isWidgetUseAlias(ctx),
                 receiverSimpleName = resolveReceiverSimpleName(),
                 scrollEnabled = WidgetScrollStore.isScrollEnabled(ctx, widgetId),
-                compactTodayFirst = WidgetCompactWindowStore.isTodayFirst(ctx, widgetId)
+                compactTodayFirst = WidgetCompactWindowStore.isTodayFirst(ctx, widgetId),
+                wideGridSettings = WeekGridWideSettingsStore.read(ctx, widgetId),
             )
         }
     }
@@ -99,6 +101,20 @@ class WidgetEditViewModel(
      * 设计 §6: 切换强制滚动(实验)。本实例一档 (per-widget, 写 WidgetScrollStore),
      * 写后 reload + 全量重推 (评审 #25: 否则「看着没生效」) — 与 setUseAlias 同管线。
      */
+    fun setWideGridMode(mode: WeekGridWideMode) {
+        setWideGridSettings(WeekGridWideSettingsStore.read(ctx, widgetId).copy(mode = mode))
+    }
+
+    fun setWideGridLabelSide(side: WeekGridWideLabelSide) {
+        setWideGridSettings(WeekGridWideSettingsStore.read(ctx, widgetId).copy(labelSide = side))
+    }
+
+    private fun setWideGridSettings(settings: WeekGridWideSettings) {
+        WeekGridWideSettingsStore.write(ctx, widgetId, settings)
+        _state.value = _state.value.copy(wideGridSettings = settings)
+        viewModelScope.launch { runCatching { WidgetUpdater.notifyDataChanged(ctx) } }
+    }
+
     fun setScrollEnabled(v: Boolean) {
         WidgetScrollStore.setScrollEnabled(ctx, widgetId, v)
         reload()

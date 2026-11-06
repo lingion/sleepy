@@ -31,6 +31,7 @@ import kotlinx.coroutines.sync.withLock
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 课程通知调度器 — 支持每日提醒 + 每节课前提醒。
@@ -217,8 +218,8 @@ class CourseNotificationScheduler private constructor(
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         val target = LocalTime.of(hour, minute)
-        var next = LocalDate.now().atTime(target)
-        if (!LocalTime.now().isBefore(target)) next = next.plusDays(1)
+        var next = LocalDate.now(AppClock).atTime(target)
+        if (!LocalTime.now(AppClock).isBefore(target)) next = next.plusDays(1)
         val epoch = next.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
         setRepeatingAlarm(alarmManager, epoch, AlarmManager.INTERVAL_DAY, pending)
@@ -232,8 +233,8 @@ class CourseNotificationScheduler private constructor(
 
         // Schedule at 00:05 every day — 每日全窗口重同步(幂等)
         val target = LocalTime.of(0, 5)
-        var next = LocalDate.now().atTime(target)
-        if (LocalTime.now().isAfter(target)) next = next.plusDays(1)
+        var next = LocalDate.now(AppClock).atTime(target)
+        if (LocalTime.now(AppClock).isAfter(target)) next = next.plusDays(1)
         val epoch = next.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
         setRepeatingAlarm(alarmManager, epoch, AlarmManager.INTERVAL_DAY, pending)
@@ -364,63 +365,56 @@ class CourseNotificationScheduler private constructor(
         if (!AppPrefs.isReminderEnabled(app) || !AppPrefs.isBeforeClassEnabled(app)) return false
         if (!AppPrefs.isBeforeClassFluidEnabled(app)) return false
         val minutes = AppPrefs.getBeforeClassMinutes(app)
-        val today = LocalDate.now()
-        val now = System.currentTimeMillis()
-        // 每表独立提醒: 扫描所有开启提醒的课表, 取课前窗口内最早开始的一节
+        val today = LocalDate.now(AppClock)
+        val now = AppClock.millis()
+        // 流体云只能显示一门课，必须严格跟随当前页面选中的课表（首页呈现的课表）
+        val table = resolveCurrentTable() ?: return false
+        if (SleepyApp.get().repository.getReminderTables().none { it.id == table.id && it.reminderEnabled }) return false
+        // Current-date policy must also prevent stale/recovery launches after settings change.
+        if (!com.lingion.sleepy.util.HolidayReminderPolicyAdapter
+                .decide(app, today, table.id)
+                .allowReminder
+        ) return false
         val repo = SleepyApp.get().repository
-        val tables = repo.getAllTables().filter { it.reminderEnabled }.map { t ->
-            t.hydratedWith(t.periodTableId?.let { id -> runCatching { repo.getPeriodTable(id) }.getOrNull() })
-        }
-        var best: Pair<CourseEntity, TimeTableEntity>? = null
-        var bestStart = Long.MAX_VALUE
-        tables.forEach { table ->
-            // Current-date policy must also prevent stale/recovery launches after settings change.
-            if (!com.lingion.sleepy.util.HolidayReminderPolicyAdapter
-                    .decide(app, today, table.id)
-                    .allowReminder
-            ) return@forEach
-            val nodes = TimeTableUtils.parseNodes(table.timeJson)
-            repo.getCoursesForDate(table, today)
-                .forEach { c ->
-                    val st = if (c.ownTime && c.startTime.isNotBlank()) c.startTime
-                        else nodes.find { it.node == c.startNode }?.let { String.format("%02d:%02d", it.start.hour, it.start.minute) }
-                    val p = st?.split(":")
-                    val h = p?.getOrNull(0)?.toIntOrNull(); val m = p?.getOrNull(1)?.toIntOrNull()
-                    if (h == null || m == null || h !in 0..23 || m !in 0..59) return@forEach
-                    val classStart = today.atTime(h, m).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                    val notifyEpoch = classStart - minutes * 60_000L
-                    if (now in notifyEpoch..classStart && classStart < bestStart) { // 现在在窗口内
-                        best = c to table
-                        bestStart = classStart
-                    }
-                }
-        }
-        val (hit, table) = best ?: return false
         val nodes = TimeTableUtils.parseNodes(table.timeJson)
+        val hit = repo.getCoursesForDate(table, today)
+            .mapNotNull { c ->
+                val st = if (c.ownTime && c.startTime.isNotBlank()) c.startTime
+                    else nodes.find { it.node == c.startNode }?.let { String.format("%02d:%02d", it.start.hour, it.start.minute) }
+                val p = st?.split(":")
+                val h = p?.getOrNull(0)?.toIntOrNull(); val m = p?.getOrNull(1)?.toIntOrNull()
+                if (h == null || m == null || h !in 0..23 || m !in 0..59) return@mapNotNull null
+                val classStart = today.atTime(h, m).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                val notifyEpoch = classStart - minutes * 60_000L
+                if (now in notifyEpoch..classStart) {
+                    c to (classStart to notifyEpoch)
+                } else null
+            }
+            .minByOrNull { it.second.first } ?: return false
+
+        val (course, times) = hit
+        val (classStart, notifyEpoch) = times
 
         // 计算这节课的精确窗口，启动 FluidCloudService
-        val st = if (hit.ownTime && hit.startTime.isNotBlank()) hit.startTime
-            else nodes.find { it.node == hit.startNode }!!.let { String.format("%02d:%02d", it.start.hour, it.start.minute) }
-        val p = st.split(":")
-        val classStart = today.atTime(p[0].toInt(), p[1].toInt()).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-        val notifyEpoch = classStart - minutes * 60_000L
-        val endTimeStr = if (hit.ownTime && hit.endTime.isNotBlank()) hit.endTime
-            else nodes.find { it.node == hit.startNode + hit.step - 1 }
+        val st = if (course.ownTime && course.startTime.isNotBlank()) course.startTime
+            else nodes.find { it.node == course.startNode }!!.let { String.format("%02d:%02d", it.start.hour, it.start.minute) }
+        val endTimeStr = if (course.ownTime && course.endTime.isNotBlank()) course.endTime
+            else nodes.find { it.node == course.startNode + course.step - 1 }
                 ?.let { String.format("%02d:%02d", it.end.hour, it.end.minute) }.orEmpty()
         val svc = Intent(app, FluidCloudService::class.java).apply {
             putExtra(FluidCloudService.EXTRA_RECONCILE, true)
-            putExtra("courseName", hit.courseName)
-            putExtra("room", hit.room.ifBlank { app.getString(R.string.default_room) })
-            putExtra("teacher", hit.teacher)
+            putExtra("courseName", course.courseName)
+            putExtra("room", course.room.ifBlank { app.getString(R.string.default_room) })
+            putExtra("teacher", course.teacher)
             putExtra("startTime", st)
             putExtra("endTime", endTimeStr)
-            putExtra("startNode", hit.startNode)
+            putExtra("startNode", course.startNode)
             putExtra("notifyEpoch", notifyEpoch)
             putExtra("classEpoch", classStart)
         }
         return try {
             androidx.core.content.ContextCompat.startForegroundService(app, svc)
-            android.util.Log.d("CourseScheduler", "ensureActiveFluidCloud: started for ${hit.courseName} notify=$notifyEpoch class=$classStart now=$now")
+            android.util.Log.d("CourseScheduler", "ensureActiveFluidCloud: started for ${course.courseName} notify=$notifyEpoch class=$classStart now=$now")
             true
         } catch (t: Throwable) {
             android.util.Log.w("CourseScheduler", "ensureActiveFluidCloud start failed", t)
@@ -495,8 +489,8 @@ internal interface BeforeClassAlarmPort {
 internal class AndroidBeforeClassEnv(private val ctx: Context) : BeforeClassEnv {
     override fun isBeforeClassEnabled(): Boolean = AppPrefs.isBeforeClassEnabled(ctx)
     override fun beforeClassMinutes(): Int = AppPrefs.getBeforeClassMinutes(ctx)
-    override fun nowEpochMs(): Long = System.currentTimeMillis()
-    override fun todayDate(): LocalDate = LocalDate.now()
+    override fun nowEpochMs(): Long = AppClock.millis()
+    override fun todayDate(): LocalDate = LocalDate.now(AppClock)
 
     // 独立文件: 闹钟是本机状态, 不能跟 sleepy_prefs.xml 一起被云备份/换机迁移带走
     private val ledger get() = ctx.getSharedPreferences(LEDGER_FILE, Context.MODE_PRIVATE)
@@ -520,7 +514,7 @@ internal class AndroidBeforeClassDataSource(private val ctx: Context) : BeforeCl
 
     override suspend fun resolveReminderTables(): List<TimeTableEntity> {
         val repo = SleepyApp.get().repository
-        return repo.getAllTables().filter { it.reminderEnabled }.map { t ->
+        return repo.getReminderTables().filter { it.reminderEnabled }.map { t ->
             t.hydratedWith(t.periodTableId?.let { id -> runCatching { repo.getPeriodTable(id) }.getOrNull() })
         }
     }
@@ -595,7 +589,7 @@ class DailyNotifyReceiver : BroadcastReceiver() {
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             sendScheduleSummary(
                 context = context,
-                targetDate = LocalDate.now(),
+                targetDate = LocalDate.now(AppClock),
                 isTomorrowPreview = false
             )
         }
@@ -614,7 +608,7 @@ class TomorrowNotifyReceiver : BroadcastReceiver() {
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             sendScheduleSummary(
                 context = context,
-                targetDate = LocalDate.now().plusDays(1),
+                targetDate = LocalDate.now(AppClock).plusDays(1),
                 isTomorrowPreview = true
             )
         }
@@ -730,18 +724,25 @@ class BeforeClassNotifyReceiver : BroadcastReceiver() {
                     .takeUnless { it == Long.MIN_VALUE }
                 val date = intent.getStringExtra("reminderDate")
                     ?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
-                    ?: LocalDate.now()
+                    ?: LocalDate.now(AppClock)
                 // 每表独立提醒: 闹钟所属课表不再要求是当前课表, 只要该表仍存在且开启提醒即可弹
                 val resolvedTableId = tableId
                     ?: com.lingion.sleepy.widget.WidgetTableResolver.resolveCurrentTable()?.id
                     ?: return@launch
-                val tables = SleepyApp.get().repository.getAllTables()
+                val tables = SleepyApp.get().repository.getReminderTables()
                 val owner = tables.firstOrNull { it.id == resolvedTableId } ?: return@launch
                 if (!owner.reminderEnabled) return@launch
                 if (!com.lingion.sleepy.util.HolidayReminderPolicyAdapter
                         .decide(context.applicationContext, date, resolvedTableId)
                         .allowReminder
                 ) return@launch
+                val currentTableId = com.lingion.sleepy.widget.WidgetTableResolver.resolveCurrentTable()?.id
+                val isFluid = intent.getBooleanExtra("debug_force_fluid", false) || AppPrefs.isBeforeClassFluidEnabled(context)
+                // 流体云只能显示一门课，且必须严格遵循当前页面选中的课表（首页呈现的课表）
+                if (isFluid && currentTableId != null && resolvedTableId != currentTableId) {
+                    android.util.Log.d("BeforeClassNotify", "skip fluid cloud: alarm table $resolvedTableId != current $currentTableId")
+                    return@launch
+                }
                 val sources = notificationSourceLabels(tables.filter { it.reminderEnabled }, context.getString(R.string.agenda_table_unknown))
                 handle(context, intent, sources[resolvedTableId])
             } finally {
@@ -798,8 +799,8 @@ class BeforeClassNotifyReceiver : BroadcastReceiver() {
                 putExtra("startTime", startTime)
                 putExtra("endTime", intent.getStringExtra("endTime").orEmpty())
                 putExtra("startNode", intent.getIntExtra("startNode", 0))
-                putExtra("notifyEpoch", intent.getLongExtra("notifyEpoch", System.currentTimeMillis()))
-                putExtra("classEpoch", intent.getLongExtra("classEpoch", System.currentTimeMillis()))
+                putExtra("notifyEpoch", intent.getLongExtra("notifyEpoch", AppClock.millis()))
+                putExtra("classEpoch", intent.getLongExtra("classEpoch", AppClock.millis()))
             }
             ContextCompat.startForegroundService(context, serviceIntent)
             return

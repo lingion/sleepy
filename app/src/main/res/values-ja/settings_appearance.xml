@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_appearance_navigation">下部ナビゲーション</string>
+    <string name="settings_appearance_common">共通設定</string>
+    <string name="settings_appearance_holidays">祝日の表示</string>
+    <string name="settings_appearance_default_view">既定の時間割表示</string>
+    <string name="settings_appearance_default_view_sub">アプリの新規起動時と別のページから時間割に戻るときの初期表示です。</string>
+    <string name="settings_appearance_header_date">見出しに日付を表示</string>
+    <string name="settings_appearance_header_date_sub">アプリのグリッド時間割と対応するウィジェットに適用されます。</string>
+    <string name="settings_appearance_time_scope">時間割と授業時刻の表示に対応するウィジェットに適用されます。</string>
+    <string name="settings_appearance_advanced_experimental">詳細設定（試験的）</string>
+    <string name="settings_appearance_separator_scope">アプリのグリッド時間割と対応するグリッドウィジェットに行と列の区切り線を表示します。</string>
+    <string name="settings_appearance_break_scope">アプリのグリッド時間割と対応するグリッドウィジェットで、昼と夕方の長い休憩に余白を追加します。</string>
+    <string name="settings_appearance_workday_visible">振替出勤日は薄く表示しない</string>
+</resources>

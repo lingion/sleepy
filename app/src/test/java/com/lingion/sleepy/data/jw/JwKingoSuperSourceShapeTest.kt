@@ -70,6 +70,13 @@ class JwKingoSuperSourceShapeTest {
         assertEquals(15, c.endWeek)
     }
 
+    @Test fun mytableSupportsFullWidthParenthesesParity() {
+        val html = """<table id="mytable"><tr><td><div>全角单周课程<br>教师<br>1-15周（单）[5-6节]<br>A101</div></td></tr></table>"""
+        val c = JwKingoParser(html).generateCourseList().single()
+        assertEquals(1, c.type)
+        assertEquals(15, c.endWeek)
+    }
+
     @Test fun genericRegistryPrefersNewLayoutButExplicitZxStillWorks() {
         val html = """<table id="mytable"><tr><td><div>新课<br>教师<br>1-8周[1-2节]<br>A101</div></td></tr></table>"""
         val (courses, attempts) = JwParserRegistry.selectBest(html)
@@ -114,5 +121,101 @@ class JwKingoSuperSourceShapeTest {
         assertTrue(ex?.message.orEmpty().contains("chain1"))
         assertTrue(ex?.message.orEmpty().contains("chain2"))
         assertTrue(ex?.message.orEmpty().contains("chain3"))
+    }
+
+    @Test fun mytableSevenDayGridWithGutterAndRowspan() {
+        val html = """<table id="mytable">
+            <tr class="H">
+                <th>时段</th><th>节次</th>
+                <th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th>
+            </tr>
+            <tr>
+                <td rowspan="2">上午</td><td>第1-2节</td>
+                <td><div>复变函数与积分变换<br>李秋缘<br>1-2周[1-2节]<br>1A18-523</div></td>
+                <td></td><td></td><td></td><td></td><td></td>
+                <td><div>中华民族共同体概论<br>卢悦<br>1-4周[1-2节]</div></td>
+            </tr>
+            <tr>
+                <td>第3-4节</td>
+                <td><div>大学英语卓越3<br>麻艳梅<br>2-4周(双)[3-4节]<br>语音实验室（4）</div></td>
+                <td><div>公共体育3<br>刘阳<br>1-5周[3-4节]</div></td>
+                <td></td><td></td><td></td><td></td><td></td>
+            </tr>
+            <tr>
+                <td rowspan="2">下午</td><td>第5-6节</td>
+                <td></td><td></td><td></td><td></td>
+                <td><div>大学物理实验（下）<br>刘景林<br>2-5周[5-6节]</div></td>
+                <td><div>理论力学<br>赵月明<br>8-8周[5-6节]<br>1A01-308（北侧）</div></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>第7-8节</td>
+                <td></td>
+                <td><div>电工与电子技术A实验（上）<br>张良(信息)<br>3-4周[7-8节]<br>实训楼A303</div></td>
+                <td><div>三维建模技术<br>颜兵兵<br>11-11周[7-8节]</div></td>
+                <td></td><td></td><td></td>
+                <td><div>形势与政策<br>张宏伟<br>8-8周[7-8节]</div></td>
+            </tr>
+            <tr>
+                <td>晚上</td><td>第9-10节</td>
+                <td></td>
+                <td><div>电工与电子技术A（上）<br>李丽敏<br>3-6周[9-10节]<br>1A18-601</div></td>
+                <td></td><td></td><td></td><td></td><td></td>
+            </tr>
+        </table>"""
+        val courses = JwKingoParser(html).generateCourseList()
+        assertEquals(10, courses.size)
+
+        val fb = courses.first { it.name == "复变函数与积分变换" }
+        assertEquals(1, fb.day)
+        assertEquals(1, fb.startNode)
+        assertEquals(2, fb.endNode)
+        assertEquals("李秋缘", fb.teacher)
+        assertEquals("1A18-523", fb.room)
+
+        val zh = courses.first { it.name == "中华民族共同体概论" }
+        assertEquals(7, zh.day)
+        assertEquals(1, zh.startNode)
+        assertEquals(2, zh.endNode)
+        assertEquals("卢悦", zh.teacher)
+        assertEquals("", zh.room)
+
+        val yy = courses.first { it.name == "大学英语卓越3" }
+        assertEquals(1, yy.day)
+        assertEquals(3, yy.startNode)
+        assertEquals(4, yy.endNode)
+        assertEquals(2, yy.type)
+        assertEquals("语音实验室（4）", yy.room)
+
+        val ty = courses.first { it.name == "公共体育3" }
+        assertEquals(2, ty.day)
+        assertEquals(3, ty.startNode)
+        assertEquals(4, ty.endNode)
+        assertEquals("刘阳", ty.teacher)
+        assertEquals("", ty.room)
+
+        val wl = courses.first { it.name == "大学物理实验（下）" }
+        assertEquals(5, wl.day)
+        assertEquals(5, wl.startNode)
+        assertEquals(6, wl.endNode)
+        assertEquals("", wl.room)
+
+        val ll = courses.first { it.name == "理论力学" }
+        assertEquals(6, ll.day)
+        assertEquals(5, ll.startNode)
+        assertEquals(6, ll.endNode)
+        assertEquals("1A01-308（北侧）", ll.room)
+
+        val dg = courses.first { it.name == "电工与电子技术A（上）" }
+        assertEquals(2, dg.day)
+        assertEquals(9, dg.startNode)
+        assertEquals(10, dg.endNode)
+        assertEquals("1A18-601", dg.room)
+
+        val xs = courses.first { it.name == "形势与政策" }
+        assertEquals(7, xs.day)
+        assertEquals(7, xs.startNode)
+        assertEquals(8, xs.endNode)
+        assertEquals("", xs.room)
     }
 }

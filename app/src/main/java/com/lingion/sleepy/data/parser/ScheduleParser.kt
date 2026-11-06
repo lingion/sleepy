@@ -11,6 +11,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
 import java.time.LocalTime
 import java.util.TreeMap
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 课程表文本解析器 — 支持：
@@ -246,7 +247,7 @@ object ScheduleParser {
         val name = root["name"]?.jsonPrimitive?.content ?: "导入的课表"
         val startDate = root["startDate"]?.jsonPrimitive?.content
             ?: root["tableInfo"]?.jsonObject?.get("startDate")?.jsonPrimitive?.content
-            ?: java.time.LocalDate.now().toString()
+            ?: java.time.LocalDate.now(AppClock).toString()
 
         val courseDetailJsonStr = root["courseDetailJson"]?.jsonPrimitive?.content
         val courses: List<CourseEntity> = if (courseDetailJsonStr != null) {
@@ -362,7 +363,7 @@ object ScheduleParser {
         val root = json.parseToJsonElement(text).jsonObject
         val name = root["name"]?.jsonPrimitive?.content ?: "导入的课表"
         val startDate = root["startDate"]?.jsonPrimitive?.content
-            ?: java.time.LocalDate.now().toString()
+            ?: java.time.LocalDate.now(AppClock).toString()
         // v1.0.56 T11: 纯作息 JSON(只有 tableInfo.timeList, 无 courses)是合法形态 —
         // 空课程 + periodTable 非空 → 导入端 T9 纯作息路径只建作息表
         val arr = root["courses"]?.jsonArray
@@ -544,7 +545,7 @@ object ScheduleParser {
         }
 
         if (events.isEmpty()) {
-            return ParseResult("导入的 ICS 课表", java.time.LocalDate.now().toString(), emptyList())
+            return ParseResult("导入的 ICS 课表", java.time.LocalDate.now(AppClock).toString(), emptyList())
         }
 
         // 锚点: 最早 DTSTART 所在周的周一 → 周数编号基准
@@ -983,7 +984,7 @@ object ScheduleParser {
         // v7.10.16k: 无损收尾走统一 lossless() — 节次数 = max(作息声明, 课程到达)
         val result = lossless(
             "导入的课表",
-            java.time.LocalDate.now().toString(),
+            java.time.LocalDate.now(AppClock).toString(),
             courses,
             buildTimeJson(TreeMap(nodeTimes)),
             if (nodeTimes.isEmpty()) 0 else nodeTimes.lastKey()
@@ -1157,7 +1158,7 @@ object ScheduleParser {
 
         return lossless(
             "导入的 CSV 课表",
-            java.time.LocalDate.now().toString(),
+            java.time.LocalDate.now(AppClock).toString(),
             courses,
             buildTimeJson(nodeTimes),
             if (nodeTimes.isEmpty()) 0 else nodeTimes.lastKey()
@@ -1286,7 +1287,7 @@ object ScheduleParser {
 
         if (courses.isEmpty()) throw IllegalArgumentException("HTML 中未能解析出任何课程")
 
-        return lossless("导入的 HTML 课表", java.time.LocalDate.now().toString(), courses, "", 0)
+        return lossless("导入的 HTML 课表", java.time.LocalDate.now(AppClock).toString(), courses, "", 0)
     }
 
     /** 抽取所有 <table>...</table> 转为 List<List<String>> (按 <td>/<th>) */

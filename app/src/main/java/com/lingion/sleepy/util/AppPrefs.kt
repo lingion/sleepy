@@ -118,15 +118,22 @@ object AppPrefs {
     const val KEY_UPDATE_NOTICE_DISMISSED_VERSION = "update_notice_dismissed_version" // string — 关闭该版本更新提醒
     const val KEY_HIGH_REFRESH = "high_refresh_rate" // bool default true — 窗口 preferredDisplayModeId 钉屏幕最高刷率(流畅优先); 关=跟随系统省电调度
     const val KEY_NAV_DOCK = "nav_dock" // bool default false — 底栏形态: false=贴底(通栏), true=悬浮药丸(Dock, 底边留距)
+    const val KEY_DOCK_THEME = "dock_theme" // string: classic / liquid_glass — Dock 主题形态
+    const val DOCK_THEME_CLASSIC = "classic"
+    const val DOCK_THEME_LIQUID_GLASS = "liquid_glass"
     const val KEY_PERIOD_HEADER_LAYOUT = "period_header_layout" // "legacy" / "three_line", default legacy
     const val KEY_PERIOD_HEADER_STYLE = "period_header_style" // arabic / chinese / financial / circled / roman, default arabic
     const val KEY_PERIOD_HEADER_HANGING = "period_header_hanging" // Float time-width units, -1..1, default 0
     const val KEY_PERIOD_HEADER_SHOW_X = "period_header_show_x" // boolean, default false
     const val KEY_PERIOD_HEADER_HIDE_TIME = "period_header_hide_time" // boolean, default false (legacy header only)
+    const val KEY_PERIOD_HEADER_TIME_ALIGNMENT = "period_header_time_alignment" // "dash" / "center", default dash
     const val KEY_THEME_MODE = "theme_mode"  // light/dark/system
     const val THEME_MODE_LIGHT = "light"
     const val THEME_MODE_DARK = "dark"
     const val THEME_MODE_SYSTEM = "system"
+
+    // ===== 当前选中课表 (首页呈现与流体云通知对齐) =====
+    const val KEY_CURRENT_TABLE_ID = "current_selected_table_id" // long, default -1L (未指定)
 
     // ===== 节假日灰显开关 =====
     const val KEY_HOLIDAY_GREY_HOLIDAY = "holiday_grey_holiday"   // bool default true
@@ -370,7 +377,42 @@ object AppPrefs {
 
     fun setNavDock(ctx: Context, value: Boolean) {
         sp(ctx).edit().putBoolean(KEY_NAV_DOCK, value).apply()
+        _changeBus.tryEmit(KEY_NAV_DOCK)
     }
+
+    fun navDockFlow(ctx: Context): Flow<Boolean> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sp, k ->
+            if (k == KEY_NAV_DOCK) {
+                trySend(sp.getBoolean(KEY_NAV_DOCK, false))
+            }
+        }
+        val sp = sp(ctx)
+        sp.registerOnSharedPreferenceChangeListener(listener)
+        trySend(isNavDock(ctx))
+        awaitClose { sp.unregisterOnSharedPreferenceChangeListener(listener) }
+    }.distinctUntilChanged()
+
+    /** Dock 主题形态: classic=经典(默认), liquid_glass=液态玻璃(实验) */
+    fun getDockTheme(ctx: Context): String =
+        sp(ctx).getString(KEY_DOCK_THEME, DOCK_THEME_CLASSIC) ?: DOCK_THEME_CLASSIC
+
+    fun setDockTheme(ctx: Context, theme: String) {
+        require(theme == DOCK_THEME_CLASSIC || theme == DOCK_THEME_LIQUID_GLASS)
+        sp(ctx).edit().putString(KEY_DOCK_THEME, theme).apply()
+        _changeBus.tryEmit(KEY_DOCK_THEME)
+    }
+
+    fun dockThemeFlow(ctx: Context): Flow<String> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sp, k ->
+            if (k == KEY_DOCK_THEME) {
+                trySend(sp.getString(KEY_DOCK_THEME, DOCK_THEME_CLASSIC) ?: DOCK_THEME_CLASSIC)
+            }
+        }
+        val sp = sp(ctx)
+        sp.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getDockTheme(ctx))
+        awaitClose { sp.unregisterOnSharedPreferenceChangeListener(listener) }
+    }.distinctUntilChanged()
 
     fun getUpdateNoticeDismissedVersion(ctx: Context): String =
         sp(ctx).getString(KEY_UPDATE_NOTICE_DISMISSED_VERSION, "").orEmpty()
@@ -784,6 +826,18 @@ object AppPrefs {
         _changeBus.tryEmit(KEY_PERIOD_HEADER_HIDE_TIME)
     }
 
+    fun getPeriodHeaderTimeAlignment(ctx: Context): String =
+        when (sp(ctx).getString(KEY_PERIOD_HEADER_TIME_ALIGNMENT, "dash")) {
+            "center" -> "center"
+            else -> "dash"
+        }
+
+    fun setPeriodHeaderTimeAlignment(ctx: Context, value: String) {
+        require(value == "dash" || value == "center")
+        sp(ctx).edit().putString(KEY_PERIOD_HEADER_TIME_ALIGNMENT, value).apply()
+        _changeBus.tryEmit(KEY_PERIOD_HEADER_TIME_ALIGNMENT)
+    }
+
     // ===== 周视图两栏(issue#8) — 默认关 =====
     // 开启后周视图课程列表拆左右两栏, 省纵向滚动; 分栏标准二选一:
     //   days    = 按天对半分(前半周左/后半周右, 天数固定)
@@ -987,5 +1041,20 @@ object AppPrefs {
 
     fun setUpdateCheckEnabled(ctx: Context, v: Boolean) {
         sp(ctx).edit().putBoolean(KEY_UPDATE_CHECK_ENABLED, v).apply()
+    }
+
+    // ===== 当前选中课表 (首页呈现与通知对齐) =====
+
+    fun getCurrentTableId(ctx: Context): Long? {
+        val id = sp(ctx).getLong(KEY_CURRENT_TABLE_ID, -1L)
+        return if (id > 0L) id else null
+    }
+
+    fun setCurrentTableId(ctx: Context, tableId: Long) {
+        sp(ctx).edit().putLong(KEY_CURRENT_TABLE_ID, tableId).apply()
+    }
+
+    fun clearCurrentTableId(ctx: Context) {
+        sp(ctx).edit().remove(KEY_CURRENT_TABLE_ID).apply()
     }
 }

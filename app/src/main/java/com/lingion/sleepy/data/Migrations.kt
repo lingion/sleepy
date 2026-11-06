@@ -196,8 +196,15 @@ val ALL_MIGRATIONS: Array<Migration> = arrayOf(
         override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
             db.execSQL(MIGRATION_12_13_SQL)
         }
+    },
+    object : Migration(13, 14) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(MIGRATION_13_14_SQL)
+        }
     }
 )
+
+internal const val MIGRATION_13_14_SQL = "ALTER TABLE time_tables ADD COLUMN reminderOverride INTEGER DEFAULT NULL"
 
 internal const val MIGRATION_12_13_SQL = "ALTER TABLE courses ADD COLUMN fixedDate TEXT DEFAULT NULL"
 

@@ -93,7 +93,8 @@ fun ExitDraftConfirmationDialog(
                     thirdText = stringResource(R.string.jw_import_exit_keep_draft),
                     onThird = onKeepDraft,
                     thirdDestructive = false,
-                    destructive = true
+                    destructive = true,
+                    dbgTagPrefix = "exit_draft"
                 )
             }
         },

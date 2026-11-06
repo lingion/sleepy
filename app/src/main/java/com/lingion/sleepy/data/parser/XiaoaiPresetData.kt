@@ -13,6 +13,7 @@ import kotlinx.serialization.json.put
 import java.net.URLEncoder
 import java.time.LocalDate
 import java.time.ZoneOffset
+import com.lingion.sleepy.util.AppClock
 
 /**
  * 小爱课程表 presetData 导出 — 2026-10-10。
@@ -62,7 +63,7 @@ object XiaoaiPresetData {
         table: TimeTableEntity,
         courses: List<CourseEntity>,
         periodTable: PeriodTableEntity? = null,
-        nowMillis: Long = System.currentTimeMillis(),
+        nowMillis: Long = AppClock.millis(),
     ): String {
         val timeJson = periodTable?.timeJson ?: table.timeJson
         val timerSections = parseTimerSections(timeJson)

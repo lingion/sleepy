@@ -17,6 +17,7 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.ui.component.DialogActionButtons
+import com.lingion.sleepy.ui.component.IntRangeSlider
 import com.lingion.sleepy.util.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -47,6 +48,16 @@ internal fun OccurrenceEditor(occurrence: CourseOccurrence, table: TimeTableEnti
     val range = TimeTableUtils.effectiveCourseTime(custom, course.startTime, course.endTime, course.startNode, course.step, table.timeJson)
     var start by remember { mutableStateOf(range?.first ?: "08:00") }
     var end by remember { mutableStateOf(range?.second ?: "09:40") }
+    // 节次行双头滑杆 (需求 2026-10-29 用户裁决「跟编辑节次完全对齐」「连续节数当然
+    // 删掉」, spec §3.2 第八站点): 标准区间卡 = 起始节次在 1..maxStd 连续标准域内
+    // 且非非常规节次卡; 非常规/越界落回文本框 (用户原话: 一旦使用非常规截词了,
+    // 就不归这个滑块管)。
+    val maxStd = remember(table) { TimeTableUtils.maxStandardNode(table.timeJson) }
+    val standardRange = course.startNode in 1..maxStd && !course.isIrregularNode
+    // 幽灵基线 = 打开弹窗时刻的原始 (startNode, step); raw 值直存, 显示口径的
+    // 夹取由 IntRangeSlider 内部与 displayStart/displayEnd 同构完成 (脏数据不会
+    // 画出与摘要矛盾的幽灵)。key=course → 重开弹窗随实体重算, 保存落库后无幽灵。
+    val ghostBaseline = remember(course) { course.startNode to course.step }
 
     fun save(delete: Boolean) {
         if (busy) return
@@ -124,9 +135,41 @@ internal fun OccurrenceEditor(occurrence: CourseOccurrence, table: TimeTableEnti
                             tint = MaterialTheme.colorScheme.primary)
                     }
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedTextField(node, { node = it }, label = { Text(context.getString(R.string.occurrence_node)) }, enabled = !busy, singleLine = true, modifier = Modifier.weight(1f))
-                    OutlinedTextField(step, { step = it }, label = { Text(context.getString(R.string.occurrence_step)) }, enabled = !busy, singleLine = true, modifier = Modifier.weight(1f))
+                if (standardRange) {
+                    // 现值 = node/step 字符串态 (拖动逐帧写回, 解析失败落回打开时刻原值);
+                    // 显示口径统一夹进 1..maxStd 后驱动摘要与滑块, 与 AddCourseScreen:1185
+                    // 标准卡 (draft 现值 → 夹取 → 摘要/滑块) 逐层同构。落库仍走 save() 里
+                    // node/step 原字符串校验, 一克不动。
+                    val rawStart = node.toIntOrNull() ?: course.startNode
+                    val rawCount = step.toIntOrNull() ?: course.step
+                    val nodeStart = rawStart.coerceIn(1, maxStd)
+                    val nodeEnd = (rawStart + rawCount - 1).coerceIn(nodeStart, maxStd)
+                    val nodeCount = nodeEnd - nodeStart + 1
+                    // nodeEnd 夹取下界=nodeStart ⇒ nodeCount ≥ 1 恒成立 (<1 不可达, <=1 即 ==1), 与 AddCourseScreen 逐字同
+                    val nodeSummary = if (nodeCount <= 1) {
+                        context.getString(R.string.slot_summary_period_single, nodeStart)
+                    } else {
+                        context.getString(R.string.slot_summary_period_range, nodeStart, nodeEnd, nodeCount)
+                    }
+                    IntRangeSlider(
+                        summary = nodeSummary,
+                        minValue = 1,
+                        maxValue = maxStd,
+                        startValue = nodeStart,
+                        endValue = nodeEnd,
+                        onValueChange = { s, e ->
+                            node = s.toString()
+                            step = (e - s + 1).toString()
+                        },
+                        initialStart = ghostBaseline.first,
+                        initialEnd = ghostBaseline.first + ghostBaseline.second - 1,
+                        modifier = Modifier.testTag("occurrence-node-slider"),
+                    )
+                } else {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        OutlinedTextField(node, { node = it }, label = { Text(context.getString(R.string.occurrence_node)) }, enabled = !busy, singleLine = true, modifier = Modifier.weight(1f))
+                        OutlinedTextField(step, { step = it }, label = { Text(context.getString(R.string.occurrence_step)) }, enabled = !busy, singleLine = true, modifier = Modifier.weight(1f))
+                    }
                 }
                 Row {
                     Checkbox(custom, { enabled ->

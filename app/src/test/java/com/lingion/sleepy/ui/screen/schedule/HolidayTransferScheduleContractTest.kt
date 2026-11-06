@@ -68,8 +68,10 @@ class HolidayTransferScheduleContractTest {
     @Test
     fun schedule_screen_rewrites_render_day_from_mapping() {
         // 网格渲染层必须存在"调休改写 day"逻辑(渲染期替身, 不写库)
-        assertTrue(scheduleScreen.contains("issue#44 调休改写"))
         assertTrue(scheduleScreen.contains("renderCourses"))
-        assertTrue(scheduleScreen.contains("HolidayTransferOps.coursesForDate"))
+        assertTrue(scheduleScreen.contains("presentationCache.weekCourses"))
+        val presentation = src("src/main/java/com/lingion/sleepy/ui/screen/schedule/SchedulePresentationCache.kt")
+        assertTrue(presentation.contains("HolidayTransferOps.coursesForDate"))
+        assertTrue(presentation.contains("course.copy(day = day)"))
     }
 }

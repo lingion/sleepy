@@ -55,8 +55,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.component.HueSlider
+import com.lingion.sleepy.ui.component.SettingsFlatCard
 import com.lingion.sleepy.ui.component.SectionHeader
+import com.lingion.sleepy.ui.component.SegmentOption
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
 import com.lingion.sleepy.ui.theme.CustomSchemeDeriver
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -77,7 +80,7 @@ import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
 /**
- * 外观页(决策 D2 合并页): 仅主题色彩组。课程显示/小组件组已迁至 GeneralSettingsScreen(2026-08-24)。
+ * 外观按模式、主题色彩、底部导航、课程配色和课表显示入口排序。
  * 保留 refreshWidgets() 管线, 主题变更后即时刷新小组件。
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -86,11 +89,14 @@ fun AppearanceScreen(
     onBack: () -> Unit,
     themeMode: String = AppPrefs.THEME_MODE_SYSTEM,
     onThemeModeChange: (String) -> Unit = {},
-    onOpenPeriodHeaderSettings: () -> Unit = {},
+    navDock: Boolean = false,
+    onNavDockChange: (Boolean) -> Unit = {},
+    onOpenScheduleDisplay: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val colors = MaterialTheme.colorScheme
     val currentKey by AppPrefs.themeKeyFlow(context).collectAsState(initial = AppPrefs.getThemeKey(context))
+    val dockTheme by AppPrefs.dockThemeFlow(context).collectAsState(initial = AppPrefs.getDockTheme(context))
     val selectedMode = themeMode
     // 自定义主题编辑器 overlay(创建时 editingTheme=null;微调时载入草稿)
     var showEditor by remember { mutableStateOf(false) }
@@ -151,7 +157,7 @@ fun AppearanceScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.mine_appearance)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = onBack, modifier = Modifier.dbgTag("settings_back", role = "button")) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back))
                     }
                 },
@@ -164,6 +170,36 @@ fun AppearanceScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // ── Section② 外观深浅 ──
+            item {
+                SectionHeader(title = stringResource(R.string.theme_appearance))
+            }
+
+            item {
+                val modes = listOf(
+                    AppPrefs.THEME_MODE_SYSTEM to stringResource(R.string.theme_mode_system),
+                    AppPrefs.THEME_MODE_LIGHT to stringResource(R.string.theme_mode_light),
+                    AppPrefs.THEME_MODE_DARK to stringResource(R.string.theme_mode_dark)
+                )
+                // 轨道式分段(2026-10-20 用户裁定): 与课表页/假期页同款 SegmentedSwitcher,
+                // 替换旧手搓 if(sel) 选中盒 Row — thumb 弹簧滑动+逐字擦色, 全 app 一致。
+                SegmentedSwitcher(
+                    options = modes,
+                    selected = selectedMode,
+                    onSelect = { mode ->
+                        if (mode != selectedMode) {
+                            AppPrefs.setThemeMode(context, mode); onThemeModeChange(mode); refreshWidgets()
+                            // 深浅切换在 FOLLOW_THEME 下可能移动 anchor(系统动态取色深浅 primary
+                            // 色相不同/预设深浅 primary 不同)→ 按 spec §2.3 时机2 重算保表与
+                            // 新课补色同 anchor。CUSTOM 档 anchor=种子(与深浅无关),不重算。
+                            if (courseColorMode == AppPrefs.COURSE_COLOR_MODE_FOLLOW_THEME) recalcAllCourses()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    dbgTagPrefix = "settings_mode_segment",
+                )
+            }
+
             // ── Section① 主题色彩 ──
             item {
                 SectionHeader(title = stringResource(R.string.appearance_section_theme))
@@ -221,29 +257,54 @@ fun AppearanceScreen(
                 }
             }
 
-            // ── Section② 外观深浅 ──
+            // 底栏形态与主题相邻，两个选项分别控制位置和视觉效果。
             item {
-                SectionHeader(title = stringResource(R.string.theme_appearance))
+                SectionHeader(title = stringResource(R.string.settings_appearance_navigation))
+            }
+            item {
+                SettingsFlatCard(
+                    title = stringResource(R.string.settings_nav_style),
+                    options = listOf(
+                        stringResource(R.string.settings_nav_style_docked),
+                        stringResource(R.string.settings_nav_style_floating),
+                    ),
+                    selectedKey = if (navDock) 1 else 0,
+                    dbg = "appearance_nav_style",
+                    onSelect = { index ->
+                        val on = index == 1
+                        if (navDock != on) {
+                            AppPrefs.setNavDock(context, on)
+                            onNavDockChange(on)
+                        }
+                    },
+                )
+            }
+            item {
+                Text(
+                    text = stringResource(R.string.appearance_section_dock_theme),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = colors.onSurfaceVariant,
+                )
             }
 
             item {
-                val modes = listOf(
-                    AppPrefs.THEME_MODE_SYSTEM to stringResource(R.string.theme_mode_system),
-                    AppPrefs.THEME_MODE_LIGHT to stringResource(R.string.theme_mode_light),
-                    AppPrefs.THEME_MODE_DARK to stringResource(R.string.theme_mode_dark)
+                val dockOptions = listOf(
+                    SegmentOption(
+                        value = AppPrefs.DOCK_THEME_CLASSIC,
+                        label = stringResource(R.string.dock_theme_classic)
+                    ),
+                    SegmentOption(
+                        value = AppPrefs.DOCK_THEME_LIQUID_GLASS,
+                        label = stringResource(R.string.dock_theme_liquid_glass),
+                        badge = stringResource(R.string.dock_theme_experimental)
+                    )
                 )
-                // 轨道式分段(2026-10-20 用户裁定): 与课表页/假期页同款 SegmentedSwitcher,
-                // 替换旧手搓 if(sel) 选中盒 Row — thumb 弹簧滑动+逐字擦色, 全 app 一致。
                 SegmentedSwitcher(
-                    options = modes,
-                    selected = selectedMode,
-                    onSelect = { mode ->
-                        if (mode != selectedMode) {
-                            AppPrefs.setThemeMode(context, mode); onThemeModeChange(mode); refreshWidgets()
-                            // 深浅切换在 FOLLOW_THEME 下可能移动 anchor(系统动态取色深浅 primary
-                            // 色相不同/预设深浅 primary 不同)→ 按 spec §2.3 时机2 重算保表与
-                            // 新课补色同 anchor。CUSTOM 档 anchor=种子(与深浅无关),不重算。
-                            if (courseColorMode == AppPrefs.COURSE_COLOR_MODE_FOLLOW_THEME) recalcAllCourses()
+                    options = dockOptions,
+                    selected = dockTheme,
+                    onSelect = { newTheme ->
+                        if (newTheme != dockTheme) {
+                            AppPrefs.setDockTheme(context, newTheme)
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -304,30 +365,14 @@ fun AppearanceScreen(
                 )
             }
 
-            // ── Section③ 课表显示：冲突样式及参数仍属于本组 ──
-            item {
-                SectionHeader(title = stringResource(R.string.appearance_section_schedule_display))
-            }
-            item {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = SleepyTheme.shapes.large,
-                    color = colors.surfaceContainer,
-                ) {
-                    ScheduleDisplayContent(modifier = Modifier.padding(16.dp))
-                }
-            }
-
-            // ── Section④ 节次表头 ──
-            item {
-                SectionHeader(title = stringResource(R.string.appearance_period_header))
-            }
             item {
                 AppearanceNavigationRow(
-                    title = stringResource(R.string.appearance_period_header),
-                    onClick = onOpenPeriodHeaderSettings,
+                    title = stringResource(R.string.appearance_section_schedule_display),
+                    tag = "appearance_schedule_display",
+                    onClick = onOpenScheduleDisplay,
                 )
             }
+
         }
     }
 
@@ -379,7 +424,8 @@ private fun SystemThemeCard(selected: Boolean, onClick: () -> Unit) {
     // 2026-08-25 用户指令: 全 app 纯色块禁描线 — 选中态只用色块层级+对勾表达
     val bgColor = if (selected) colors.primaryContainer else colors.surfaceContainer
     Surface(
-        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).noRippleClickable(onClick),
+        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).noRippleClickable(onClick)
+            .dbgTag("settings_theme", text = "system", role = "button"),
         color = bgColor, shape = SleepyTheme.shapes.large
     ) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -404,7 +450,8 @@ private fun PresetThemeCard(preset: ThemePreset, selected: Boolean, onClick: () 
     // 2026-08-25 用户指令: 全 app 纯色块禁描线 — 选中态只用色块层级+对勾表达
     val bgColor = if (selected) colors.primaryContainer else colors.surfaceContainer
     Surface(
-        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).noRippleClickable(onClick),
+        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).noRippleClickable(onClick)
+            .dbgTag("settings_theme", text = stringResource(preset.nameRes), role = "button"),
         color = bgColor, shape = SleepyTheme.shapes.large
     ) {
         Column(Modifier.padding(16.dp)) {
@@ -441,7 +488,8 @@ private fun NewThemeCard(onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .height(96.dp)
-            .noRippleClickable(onClick),
+            .noRippleClickable(onClick)
+            .dbgTag("settings_theme_new", role = "button"),
         contentAlignment = Alignment.Center
     ) {
         DashedCircleWithPlus(size = 40.dp, strokeColor = colors.onSurface, tint = colors.onSurface)
@@ -495,7 +543,8 @@ private fun CustomThemeCard(
     val scheme = remember(theme, isDark) { CustomSchemeDeriver.derive(theme, isDark) }
     val bgColor = if (selected) colors.primaryContainer else colors.surfaceContainer
     Surface(
-        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).noRippleClickable(onClick),
+        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).noRippleClickable(onClick)
+            .dbgTag("settings_theme", text = theme.name, role = "button"),
         color = bgColor, shape = SleepyTheme.shapes.large
     ) {
         Column(Modifier.padding(16.dp)) {
@@ -510,7 +559,8 @@ private fun CustomThemeCard(
                         .size(28.dp)
                         .clip(SleepyTheme.shapes.small)
                         .background(colors.surfaceContainerHighest)
-                        .noRippleClickable(onEdit),
+                        .noRippleClickable(onEdit)
+                        .dbgTag("settings_theme_edit", text = theme.name, role = "button"),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -610,8 +660,12 @@ private fun CourseColorSection(
                 },
                 modifier = Modifier.fillMaxWidth(),
                 containerColor = colors.surfaceContainerHighest,
+                dbgTagPrefix = "course_color_segment",
             )
             if (!colorless && mode == AppPrefs.COURSE_COLOR_MODE_CUSTOM) {
+                // 幽灵基线 (spec §3.1 色相变体): remember 落在 if 块内 = CUSTOM 编辑区
+                // 首次进组合时刻的 seed; 离开再进 (块销毁重建) 基线重算 — 同"进页时刻"语义。
+                val hueBaseline = remember { seed.coerceAtLeast(0f) }
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -634,11 +688,13 @@ private fun CourseColorSection(
                     hue = sliderHue,
                     onHueChange = { sliderHue = it.roundToInt().toFloat() },
                     onHueCommit = { onSeedCommit(it.roundToInt().toFloat()) },
+                    initialHue = hueBaseline,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp)
                         .height(36.dp)
-                        .clip(SleepyTheme.shapes.large),
+                        .clip(SleepyTheme.shapes.large)
+                        .dbgTag("settings_color_seed", role = "slider", clickable = false),
                 )
             }
             Spacer(Modifier.height(4.dp))
@@ -674,7 +730,8 @@ private fun CourseColorSection(
                 Spacer(Modifier.height(8.dp))
                 FilledTonalButton(
                     onClick = onRecalc,
-                    modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
+                    modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight)
+                        .dbgTag("settings_recalc_button", role = "button"),
                     shape = SleepyTheme.Buttons.shape,
                 ) {
                     Text(stringResource(R.string.course_color_recalc))

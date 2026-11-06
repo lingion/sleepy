@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -56,6 +57,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.DisposableEffect
@@ -97,6 +99,7 @@ import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import com.lingion.sleepy.util.AppClock
 
 private enum class DailyReminderTimeTarget { Today, Tomorrow }
 
@@ -125,7 +128,7 @@ private suspend fun loadReminderSchedulePreview(): ReminderSchedulePreview? = wi
         SleepyApp.get().repository.getCourses(table.id)
     }.getOrNull()?.takeIf { it.isNotEmpty() } ?: return@withContext null
     val nodes = TimeTableUtils.parseNodes(table.timeJson)
-    val today = LocalDate.now()
+    val today = LocalDate.now(AppClock)
 
     fun coursesOn(date: LocalDate): List<CourseEntity> {
         return com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(
@@ -154,7 +157,7 @@ private suspend fun loadReminderSchedulePreview(): ReminderSchedulePreview? = wi
         val candidate = coursesOn(date)
             .mapNotNull { course ->
                 val start = courseStartTime(course, nodes) ?: return@mapNotNull null
-                if (offset == 0 && !start.isAfter(LocalTime.now())) return@mapNotNull null
+                if (offset == 0 && !start.isAfter(LocalTime.now(AppClock))) return@mapNotNull null
                 ReminderCoursePreview(date, course, start.format(PREVIEW_TIME_FORMAT))
             }
             .minByOrNull { it.startTime }
@@ -244,6 +247,8 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val coroutineScope = rememberCoroutineScope()
+    val listState = rememberLazyListState()
+    var pendingMasterEnable by rememberSaveable { mutableStateOf(false) }
 
     var masterEnabled by remember { mutableStateOf(AppPrefs.isReminderEnabled(context)) }
     var dateRulesEnabled by remember { mutableStateOf(AppPrefs.isHolidayReminderRulesEnabled(context)) }
@@ -360,15 +365,13 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
-        if (granted) {
-            masterEnabled = true
-            AppPrefs.setReminderEnabled(context, true)
-            ReminderRescheduler.request()
-        } else {
-            // Permission denied → revert to off
-            masterEnabled = false
-            AppPrefs.setReminderEnabled(context, false)
+        if (pendingMasterEnable) {
+            masterEnabled = granted
+            AppPrefs.setReminderEnabled(context, granted)
+            if (granted) ReminderRescheduler.request()
+            pendingMasterEnable = false
         }
+        coroutineScope.launch { refreshReliabilitySnapshot() }
     }
 
     // 三查闸门: 通知权限 → promoted 实时更新授权 → 厂商能力。全绿返回 null (放行),
@@ -443,14 +446,37 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
         }
     }
 
-    fun requestNotificationPermission() {
+    fun openAppNotificationSettings() {
+        try {
+            context.startActivity(
+                Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                    putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName)
+                }
+            )
+        } catch (_: ActivityNotFoundException) {
+            try {
+                context.startActivity(
+                    Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                        .setData("package:${context.packageName}".toUri())
+                )
+            } catch (_: Exception) {}
+        } catch (_: SecurityException) {}
+    }
+
+    fun requestNotificationPermission(enableReminders: Boolean = false) {
+        pendingMasterEnable = enableReminders
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else {
-            // Pre-Android 13: permission auto-granted at install
-            masterEnabled = true
-            AppPrefs.setReminderEnabled(context, true)
-            ReminderRescheduler.request()
+            if (enableReminders) {
+                masterEnabled = true
+                AppPrefs.setReminderEnabled(context, true)
+                ReminderRescheduler.request()
+            } else {
+                openAppNotificationSettings()
+            }
+            pendingMasterEnable = false
+            coroutineScope.launch { refreshReliabilitySnapshot() }
         }
     }
 
@@ -521,7 +547,7 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                 AppPrefs.setReminderEnabled(context, true)
                 ReminderRescheduler.request()
             } else {
-                requestNotificationPermission()
+                requestNotificationPermission(enableReminders = true)
             }
         } else {
             // 关闭 master 只设 reminder_master=false + cancelAll(); scheduleAll 与各 Receiver 均双重检查
@@ -555,11 +581,11 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
         }
     ) { padding ->
         LazyColumn(
+            state = listState,
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Master toggle card
             item {
                 ReminderCard {
                     Row(
@@ -598,6 +624,19 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                 }
             }
 
+            if (reliabilitySnapshot?.let { !it.notificationPermissionGranted || !it.exactAlarmAllowed } == true) {
+                item {
+                    FilledTonalButton(
+                        onClick = {
+                            coroutineScope.launch {
+                                listState.animateScrollToItem((listState.layoutInfo.totalItemsCount - 1).coerceAtLeast(0))
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) { Text(stringResource(R.string.settings_reminder_permissions_attention)) }
+                }
+            }
+
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth()
@@ -608,7 +647,7 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(Modifier.weight(1f)) {
-                        Text(stringResource(R.string.table_reminder_title), style = MaterialTheme.typography.titleSmall)
+                        Text(stringResource(R.string.settings_table_reminder_scope), style = MaterialTheme.typography.titleSmall)
                         Text(stringResource(R.string.table_reminder_subtitle), style = MaterialTheme.typography.bodySmall,
                             color = colors.onSurfaceVariant)
                     }
@@ -617,191 +656,7 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                 }
             }
 
-            // Date-based reminder rules remain independent from the general reminder master.
-            item {
-                ReminderCard {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(4.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = stringResource(R.string.reminder_date_rules_title),
-                                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                                    color = colors.onSurface
-                                )
-                                Text(
-                                    text = stringResource(R.string.reminder_date_rules_subtitle),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = colors.onSurfaceVariant
-                                )
-                            }
-                            Switch(
-                                checked = dateRulesEnabled,
-                                onCheckedChange = {
-                                    dateRulesEnabled = it
-                                    AppPrefs.setHolidayReminderRulesEnabled(context, it)
-                                    ReminderRescheduler.request()
-                                },
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = colors.onPrimary,
-                                    checkedTrackColor = colors.primary
-                                )
-                            )
-                        }
-                        if (!dateRulesEnabled) {
-                            Text(
-                                text = stringResource(R.string.reminder_date_rules_inactive),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = colors.onSurfaceVariant,
-                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
-                            )
-                        } else {
-                            SubDivider()
-                            ReminderToggleRow(
-                                title = stringResource(R.string.reminder_date_rules_public_holiday),
-                                subtitle = stringResource(R.string.reminder_date_rules_advanced_subtitle),
-                                checked = publicHolidayReminder,
-                                enabled = dateRulesEnabled,
-                                onCheckedChange = {
-                                    publicHolidayReminder = it
-                                    AppPrefs.setHolidayReminderPublicHolidayEnabled(context, it)
-                                    ReminderRescheduler.request()
-                                }
-                            )
-                            ReminderToggleRow(
-                                title = stringResource(R.string.reminder_date_rules_transfer_holiday),
-                                subtitle = stringResource(R.string.reminder_date_rules_advanced_subtitle),
-                                checked = transferHolidayReminder,
-                                enabled = dateRulesEnabled,
-                                onCheckedChange = {
-                                    transferHolidayReminder = it
-                                    AppPrefs.setHolidayReminderTransferHolidayEnabled(context, it)
-                                    ReminderRescheduler.request()
-                                }
-                            )
-                            ReminderToggleRow(
-                                title = stringResource(R.string.reminder_date_rules_makeup_workday),
-                                subtitle = stringResource(R.string.reminder_date_rules_advanced_subtitle),
-                                checked = makeupWorkdayReminder,
-                                enabled = dateRulesEnabled,
-                                onCheckedChange = {
-                                    makeupWorkdayReminder = it
-                                    AppPrefs.setHolidayReminderMakeupWorkdayEnabled(context, it)
-                                    ReminderRescheduler.request()
-                                }
-                            )
-                            ReminderToggleRow(
-                                title = stringResource(R.string.reminder_date_rules_ordinary_weekend),
-                                subtitle = stringResource(R.string.reminder_date_rules_advanced_subtitle),
-                                checked = ordinaryWeekendReminder,
-                                enabled = dateRulesEnabled,
-                                onCheckedChange = {
-                                    ordinaryWeekendReminder = it
-                                    AppPrefs.setHolidayReminderOrdinaryWeekendEnabled(context, it)
-                                    ReminderRescheduler.request()
-                                }
-                            )
-                            FilledTonalButton(
-                                onClick = onOpenHoliday,
-                                modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
-                            ) {
-                                Text(stringResource(R.string.reminder_date_rules_advanced_button))
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Sub-settings — only visible when master is on
             if (masterEnabled) {
-                // Daily reminder — single card with parent switch in header + expandable sub items
-                item {
-                    ReminderCard {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            IconBox(icon = Icons.Outlined.AccessTime, color = colors.primary)
-                            Spacer(modifier = Modifier.size(12.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = stringResource(R.string.reminder_daily_title),
-                                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                                    color = colors.onSurface
-                                )
-                                Text(
-                                    text = stringResource(R.string.reminder_daily_sub),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = colors.onSurfaceVariant
-                                )
-                            }
-                            Switch(
-                                checked = dailyEnabled,
-                                onCheckedChange = { enabled ->
-                                    dailyEnabled = enabled
-                                    AppPrefs.setDailyReminderEnabled(context, enabled)
-                                    ReminderRescheduler.request()
-                                },
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = colors.onPrimary,
-                                    checkedTrackColor = colors.primary
-                                )
-                            )
-                        }
-
-                        if (dailyEnabled) {
-                            SubDivider()
-                            ReminderToggleRow(
-                                title = stringResource(R.string.reminder_daily_today_toggle_title),
-                                subtitle = stringResource(R.string.reminder_daily_today_toggle_sub),
-                                checked = todayEnabled,
-                                onCheckedChange = { enabled ->
-                                    todayEnabled = enabled
-                                    AppPrefs.setTodayReminderEnabled(context, enabled)
-                                    ReminderRescheduler.request()
-                                }
-                            )
-                            ReminderTimeRow(
-                                label = stringResource(R.string.reminder_daily_time_label),
-                                time = dailyTime,
-                                onClick = { timePickerTarget = DailyReminderTimeTarget.Today }
-                            )
-                            Text(
-                                text = todayPreviewText,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = colors.onSurfaceVariant,
-                                modifier = Modifier.padding(start = 4.dp, top = 4.dp, bottom = 8.dp, end = 4.dp)
-                            )
-                            SubDivider()
-                            ReminderToggleRow(
-                                title = stringResource(R.string.reminder_tomorrow_toggle_title),
-                                subtitle = stringResource(R.string.reminder_tomorrow_toggle_sub),
-                                checked = tomorrowEnabled,
-                                onCheckedChange = { enabled ->
-                                    tomorrowEnabled = enabled
-                                    AppPrefs.setTomorrowReminderEnabled(context, enabled)
-                                    ReminderRescheduler.request()
-                                }
-                            )
-                            ReminderTimeRow(
-                                label = stringResource(R.string.reminder_tomorrow_time_label),
-                                time = tomorrowTime,
-                                onClick = { timePickerTarget = DailyReminderTimeTarget.Tomorrow }
-                            )
-                            Text(
-                                text = tomorrowPreviewText,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = colors.onSurfaceVariant,
-                                modifier = Modifier.padding(start = 4.dp, top = 4.dp, bottom = 8.dp, end = 4.dp)
-                            )
-                        }
-                    }
-                }
-
-                // Before-class reminder
                 item {
                     ReminderCard {
                         Row(
@@ -1019,6 +874,11 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                     // 让用户当场验证岛/胶囊是否出现, 不用等课前窗口。
                                     // testing 状态提升到 composable 顶层 fluidTesting —
                                     // 授权 launcher 回调 (composable 作用域) 也要置它。
+                                    Text(
+                                        stringResource(R.string.settings_reminder_test_compatibility),
+                                        style = MaterialTheme.typography.titleSmall,
+                                        modifier = Modifier.padding(top = 12.dp),
+                                    )
                                     if (fluidTesting) {
                                         Row(
                                             modifier = Modifier
@@ -1094,77 +954,7 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                         }
                                     }
                                     reliabilitySnapshot?.let { snapshot ->
-                                        Column(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(top = 10.dp)
-                                        ) {
-                                            Text(
-                                                text = stringResource(R.string.reminder_reliability_title),
-                                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                                                color = colors.onSurface
-                                            )
-                                            Text(
-                                                text = stringResource(
-                                                    R.string.reminder_reliability_notification,
-                                                    if (snapshot.notificationPermissionGranted) {
-                                                        stringResource(R.string.reminder_reliability_ready)
-                                                    } else {
-                                                        stringResource(R.string.reminder_reliability_missing)
-                                                    }
-                                                ),
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = if (snapshot.notificationPermissionGranted) colors.onSurfaceVariant else colors.primary,
-                                                modifier = if (snapshot.notificationPermissionGranted) Modifier else Modifier.noRippleClickable {
-                                                    requestNotificationPermission()
-                                                }
-                                            )
-                                            Text(
-                                                text = stringResource(
-                                                    R.string.reminder_reliability_exact_alarm,
-                                                    when (snapshot.reminderTransportState()) {
-                                                        ReminderTransportState.DEGRADED_INEXACT_ALARM ->
-                                                            stringResource(R.string.reminder_reliability_degraded)
-                                                        else -> if (snapshot.exactAlarmAllowed) {
-                                                            stringResource(R.string.reminder_reliability_ready)
-                                                        } else {
-                                                            stringResource(R.string.reminder_reliability_missing)
-                                                        }
-                                                    }
-                                                ),
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = if (snapshot.exactAlarmAllowed) colors.onSurfaceVariant else colors.primary,
-                                                modifier = if (snapshot.exactAlarmAllowed) Modifier else Modifier.noRippleClickable {
-                                                    openExactAlarmSettings()
-                                                }
-                                            )
-                                            Text(
-                                                text = stringResource(
-                                                    R.string.reminder_reliability_battery,
-                                                    if (snapshot.batteryOptimizationIgnored) {
-                                                        stringResource(R.string.reminder_reliability_ready)
-                                                    } else {
-                                                        stringResource(R.string.reminder_reliability_missing)
-                                                    }
-                                                ),
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = if (snapshot.batteryOptimizationIgnored) colors.onSurfaceVariant else colors.primary,
-                                                modifier = if (snapshot.batteryOptimizationIgnored) Modifier else Modifier.noRippleClickable {
-                                                    openBatteryOptimizationSettings()
-                                                }
-                                            )
-                                            Text(
-                                                text = stringResource(
-                                                    R.string.reminder_reliability_widget,
-                                                    if (snapshot.widgetBound) {
-                                                        stringResource(R.string.reminder_reliability_ready)
-                                                    } else {
-                                                        stringResource(R.string.reminder_reliability_missing)
-                                                    }
-                                                ),
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = colors.onSurfaceVariant
-                                            )
+                                        Column(Modifier.padding(top = 10.dp)) {
                                             Text(
                                                 text = stringResource(
                                                     R.string.reminder_reliability_vendor,
@@ -1255,7 +1045,194 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                     }
                 }
 
-                // Class auto-DND — 上课自动勿扰 (需系统"通知策略访问"权限)
+                item {
+                    ReminderCard {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconBox(icon = Icons.Outlined.AccessTime, color = colors.primary)
+                            Spacer(modifier = Modifier.size(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = stringResource(R.string.reminder_daily_title),
+                                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                                    color = colors.onSurface
+                                )
+                                Text(
+                                    text = stringResource(R.string.reminder_daily_sub),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = colors.onSurfaceVariant
+                                )
+                            }
+                            Switch(
+                                checked = dailyEnabled,
+                                onCheckedChange = { enabled ->
+                                    dailyEnabled = enabled
+                                    AppPrefs.setDailyReminderEnabled(context, enabled)
+                                    ReminderRescheduler.request()
+                                },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = colors.onPrimary,
+                                    checkedTrackColor = colors.primary
+                                )
+                            )
+                        }
+
+                        if (dailyEnabled) {
+                            SubDivider()
+                            ReminderToggleRow(
+                                title = stringResource(R.string.reminder_daily_today_toggle_title),
+                                subtitle = stringResource(R.string.reminder_daily_today_toggle_sub),
+                                checked = todayEnabled,
+                                onCheckedChange = { enabled ->
+                                    todayEnabled = enabled
+                                    AppPrefs.setTodayReminderEnabled(context, enabled)
+                                    ReminderRescheduler.request()
+                                }
+                            )
+                            ReminderTimeRow(
+                                label = stringResource(R.string.reminder_daily_time_label),
+                                time = dailyTime,
+                                onClick = { timePickerTarget = DailyReminderTimeTarget.Today }
+                            )
+                            Text(
+                                text = todayPreviewText,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = colors.onSurfaceVariant,
+                                modifier = Modifier.padding(start = 4.dp, top = 4.dp, bottom = 8.dp, end = 4.dp)
+                            )
+                            SubDivider()
+                            ReminderToggleRow(
+                                title = stringResource(R.string.reminder_tomorrow_toggle_title),
+                                subtitle = stringResource(R.string.reminder_tomorrow_toggle_sub),
+                                checked = tomorrowEnabled,
+                                onCheckedChange = { enabled ->
+                                    tomorrowEnabled = enabled
+                                    AppPrefs.setTomorrowReminderEnabled(context, enabled)
+                                    ReminderRescheduler.request()
+                                }
+                            )
+                            ReminderTimeRow(
+                                label = stringResource(R.string.reminder_tomorrow_time_label),
+                                time = tomorrowTime,
+                                onClick = { timePickerTarget = DailyReminderTimeTarget.Tomorrow }
+                            )
+                            Text(
+                                text = tomorrowPreviewText,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = colors.onSurfaceVariant,
+                                modifier = Modifier.padding(start = 4.dp, top = 4.dp, bottom = 8.dp, end = 4.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            item {
+                ReminderCard {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = stringResource(R.string.reminder_date_rules_title),
+                                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                                    color = colors.onSurface
+                                )
+                                Text(
+                                    text = stringResource(R.string.reminder_date_rules_subtitle),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = colors.onSurfaceVariant
+                                )
+                            }
+                            Switch(
+                                checked = dateRulesEnabled,
+                                onCheckedChange = {
+                                    dateRulesEnabled = it
+                                    AppPrefs.setHolidayReminderRulesEnabled(context, it)
+                                    ReminderRescheduler.request()
+                                },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = colors.onPrimary,
+                                    checkedTrackColor = colors.primary
+                                )
+                            )
+                        }
+                        if (!dateRulesEnabled) {
+                            Text(
+                                text = stringResource(R.string.reminder_date_rules_inactive),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = colors.onSurfaceVariant,
+                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
+                            )
+                        } else {
+                            SubDivider()
+                            Text(
+                                stringResource(R.string.reminder_date_rules_advanced_subtitle),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = colors.onSurfaceVariant,
+                                modifier = Modifier.padding(4.dp),
+                            )
+                            ReminderToggleRow(
+                                title = stringResource(R.string.reminder_date_rules_public_holiday),
+                                subtitle = "",
+                                checked = publicHolidayReminder,
+                                enabled = dateRulesEnabled,
+                                onCheckedChange = {
+                                    publicHolidayReminder = it
+                                    AppPrefs.setHolidayReminderPublicHolidayEnabled(context, it)
+                                    ReminderRescheduler.request()
+                                }
+                            )
+                            ReminderToggleRow(
+                                title = stringResource(R.string.reminder_date_rules_transfer_holiday),
+                                subtitle = "",
+                                checked = transferHolidayReminder,
+                                enabled = dateRulesEnabled,
+                                onCheckedChange = {
+                                    transferHolidayReminder = it
+                                    AppPrefs.setHolidayReminderTransferHolidayEnabled(context, it)
+                                    ReminderRescheduler.request()
+                                }
+                            )
+                            ReminderToggleRow(
+                                title = stringResource(R.string.reminder_date_rules_makeup_workday),
+                                subtitle = "",
+                                checked = makeupWorkdayReminder,
+                                enabled = dateRulesEnabled,
+                                onCheckedChange = {
+                                    makeupWorkdayReminder = it
+                                    AppPrefs.setHolidayReminderMakeupWorkdayEnabled(context, it)
+                                    ReminderRescheduler.request()
+                                }
+                            )
+                            ReminderToggleRow(
+                                title = stringResource(R.string.reminder_date_rules_ordinary_weekend),
+                                subtitle = "",
+                                checked = ordinaryWeekendReminder,
+                                enabled = dateRulesEnabled,
+                                onCheckedChange = {
+                                    ordinaryWeekendReminder = it
+                                    AppPrefs.setHolidayReminderOrdinaryWeekendEnabled(context, it)
+                                    ReminderRescheduler.request()
+                                }
+                            )
+                            FilledTonalButton(
+                                onClick = onOpenHoliday,
+                                modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                            ) {
+                                Text(stringResource(R.string.reminder_date_rules_advanced_button))
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (masterEnabled) {
                 item {
                     ReminderCard {
                         ReminderToggleRow(
@@ -1283,6 +1260,15 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                         )
                     }
                 }
+            }
+
+            item(key = "reminder_permissions") {
+                ReminderReliabilityCard(
+                    snapshot = reliabilitySnapshot,
+                    onNotificationPermission = { requestNotificationPermission() },
+                    onExactAlarmSettings = { openExactAlarmSettings() },
+                    onBatterySettings = { openBatteryOptimizationSettings() },
+                )
             }
         }
     }
@@ -1439,7 +1425,9 @@ private fun ReminderToggleRow(
                     )
                 }
             }
-            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+            if (subtitle.isNotBlank()) {
+                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+            }
         }
         // 补主题色：之前无 colors 参数走默认 Material3 蓝，与同屏三个主开关不一致
         Switch(
@@ -1504,4 +1492,56 @@ private fun SubDivider() {
         modifier = Modifier.padding(start = 52.dp),
         color = colors.outline.copy(alpha = SleepyTheme.Alpha.hairline)
     )
+}
+
+@Composable
+private fun ReminderReliabilityCard(
+    snapshot: BackgroundReliabilitySnapshot?,
+    onNotificationPermission: () -> Unit,
+    onExactAlarmSettings: () -> Unit,
+    onBatterySettings: () -> Unit,
+) {
+    val colors = MaterialTheme.colorScheme
+    ReminderCard {
+        Text(stringResource(R.string.settings_reminder_permissions), style = MaterialTheme.typography.titleSmall)
+        if (snapshot == null) {
+            Text(stringResource(R.string.loading), style = MaterialTheme.typography.bodySmall)
+        } else {
+            Text(
+                stringResource(R.string.reminder_reliability_notification,
+                    stringResource(if (snapshot.notificationPermissionGranted) R.string.reminder_reliability_ready else R.string.reminder_reliability_missing)),
+                modifier = Modifier.fillMaxWidth()
+                    .then(if (snapshot.notificationPermissionGranted) Modifier else Modifier.noRippleClickable(onNotificationPermission)),
+                style = MaterialTheme.typography.bodySmall,
+                color = if (snapshot.notificationPermissionGranted) colors.onSurfaceVariant else colors.primary,
+            )
+            Text(
+                stringResource(R.string.reminder_reliability_exact_alarm,
+                    stringResource(when (snapshot.reminderTransportState()) {
+                        ReminderTransportState.DEGRADED_INEXACT_ALARM -> R.string.reminder_reliability_degraded
+                        else -> if (snapshot.exactAlarmAllowed) R.string.reminder_reliability_ready else R.string.reminder_reliability_missing
+                    })),
+                modifier = Modifier.fillMaxWidth()
+                    .then(if (snapshot.exactAlarmAllowed) Modifier else Modifier.noRippleClickable(onExactAlarmSettings)),
+                style = MaterialTheme.typography.bodySmall,
+                color = if (snapshot.exactAlarmAllowed) colors.onSurfaceVariant else colors.primary,
+            )
+            Text(
+                stringResource(R.string.reminder_reliability_battery,
+                    stringResource(if (snapshot.batteryOptimizationIgnored) R.string.reminder_reliability_ready else R.string.reminder_reliability_missing)),
+                modifier = Modifier.fillMaxWidth()
+                    .then(if (snapshot.batteryOptimizationIgnored) Modifier else Modifier.noRippleClickable(onBatterySettings)),
+                style = MaterialTheme.typography.bodySmall,
+                color = if (snapshot.batteryOptimizationIgnored) colors.onSurfaceVariant else colors.primary,
+            )
+            Text(
+                stringResource(R.string.reminder_reliability_widget,
+                    stringResource(if (snapshot.widgetBound) R.string.reminder_reliability_ready else R.string.reminder_reliability_missing)),
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.onSurfaceVariant,
+            )
+            Text(stringResource(R.string.settings_reminder_widget_optional),
+                style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+        }
+    }
 }

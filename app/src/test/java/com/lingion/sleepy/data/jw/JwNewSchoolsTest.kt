@@ -261,7 +261,10 @@ class JwNewSchoolsTest {
             JwProtocol.TYPE_KUST, JwProtocol.TYPE_NUIT, JwProtocol.TYPE_THU,
             // 8e3524cc 批量晋升后 hniu 进入目录, JwParserRegistry:126 运行时路由已就位
             JwProtocol.TYPE_HNIU,
-            JwProtocol.TYPE_SG_ASSET
+            JwProtocol.TYPE_SG_ASSET,
+            // 登记型 (2026-10-28 WakeUP 6.6.2 目录吸收): FACTORIES-only 注册, supports()=真可过
+            // canImport 门进 WebView, 不进 TYPE_PRIORITY/run-all 候选, 登录后自动检测已收录协议
+            JwProtocol.TYPE_JW_HOME
         )
         val pendingTypes = listOf(
             "com.lingion.sleepy.data.jw.JwChengFangParser" to "cf",
