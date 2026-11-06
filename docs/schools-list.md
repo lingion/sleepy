@@ -1,6 +1,6 @@
 # 学校目录
 
-> 共 4140 个目录条目：已实现配置 353；待验证、需确认后尝试 2527；待适配 1260。数据基准：2026-10-14。
+> 共 4140 个目录条目：已实现配置 354；待验证、需确认后尝试 2526；待适配 1260。数据基准：2026-10-14。
 
 目录收录不等于教务导入支持。已实现配置沿用历史状态，也不保证每校当前登录均已实机验证；待验证条目仅有公开入口和候选协议证据，未登录测试；待适配条目没有可启用的导入配置。
 
@@ -2415,7 +2415,7 @@
 | 南通航运职业技术学院 | 待适配 | nantonghangyunzhiyejishuxueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:e712823a35a2e6efba62 |
 | 南通科技职业学院 | 待验证·可尝试 | nantongkejizhiyexueyuan | http://210.29.176.186/jwglxt | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132012684 |
 | 南通理工学院 | 待验证·可尝试 | nantongligongxueyuan | https://zfjw.ntit.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132012056 |
-| 南通理工学院（2023届及之后） | 待验证·可尝试 | nantongligongxueyuanjiejizhihou | https://zfjw.ntit.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:2ed7b2bf334e49518042 |
+| 南通理工学院（2023届及之后） | 已实现配置 | nantongligongxueyuanjiejizhihou | https://zfjw.ntit.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:2ed7b2bf334e49518042 |
 | 南通师范高等专科学校 | 待验证·可尝试 | nantongshifangaodengzhuankexuexiao | http://jwgl.ntnc.edu.cn/ | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132014493 |
 | 南通市工人业余大学 | 待适配 | nantongshigongrenyeyudaxue |  |  | moe-2026-adult; moe:4232050504 |
 | 南通卫生健康职业学院 | 待适配 | nantongweishengjiankangzhiyexueyuan |  |  | moe-2026-regular; moe:4132014915 |

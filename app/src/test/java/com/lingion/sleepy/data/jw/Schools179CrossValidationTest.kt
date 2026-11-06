@@ -201,10 +201,12 @@ class Schools179CrossValidationTest {
         // 2026-10-26 NBCC verify (classic_eams，学生回传实测 146 门课导入成功，Q1 门户路径) → 351
         // 2026-11-01 佳木斯大学 (kingo_new，学生回传实测 51 门课导入成功) → 352
         // 2026-11-05 青岛大学 (sg_asset，贡献者回报实测导入成功，PR #326) → 353
+        // 2026-11-06 南通理工学院（2023届及之后）(zf_new，学生回传实测 42 门课导入成功) → 354
         val supported = JwImportViewModel.parseSchoolsJson(schoolsJson).filter { it.isSupported }
-        assertEquals(353, supported.size)
-        assertEquals(352, supported.count { it.name != "青岛大学" })
+        assertEquals(354, supported.size)
+        assertEquals(352, supported.count { it.name != "青岛大学" && it.name != "南通理工学院（2023届及之后）" })
         assertEquals(JwProtocol.TYPE_SG_ASSET, supported.single { it.name == "青岛大学" }.type)
+        assertEquals(JwProtocol.TYPE_ZF_NEW, supported.single { it.name == "南通理工学院（2023届及之后）" }.type)
     }
 
     @Test
