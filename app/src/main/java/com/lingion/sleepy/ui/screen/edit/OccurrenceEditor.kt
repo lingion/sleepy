@@ -44,6 +44,8 @@ internal fun OccurrenceEditor(occurrence: CourseOccurrence, table: TimeTableEnti
         .withLocale(LocalConfiguration.current.locales[0])
     var node by remember { mutableStateOf(course.startNode.toString()) }
     var step by remember { mutableStateOf(course.step.toString()) }
+    // 单次调课地点: 只改这一次的教室/地点, 其余周次保持原地点。
+    var room by remember { mutableStateOf(course.room) }
     var custom by remember { mutableStateOf(course.ownTime || course.isIrregularTime) }
     val range = TimeTableUtils.effectiveCourseTime(custom, course.startTime, course.endTime, course.startNode, course.step, table.timeJson)
     var start by remember { mutableStateOf(range?.first ?: "08:00") }
@@ -91,7 +93,8 @@ internal fun OccurrenceEditor(occurrence: CourseOccurrence, table: TimeTableEnti
                     val edited = course.copy(startNode = n, step = count,
                         ownTime = custom, isIrregularTime = custom,
                         isIrregularNode = rows.any { it.node == n && it.edgeClass != null },
-                        startTime = if (custom) start.trim() else "", endTime = if (custom) end.trim() else "").normalizeNode(table.timeJson)
+                        startTime = if (custom) start.trim() else "", endTime = if (custom) end.trim() else "",
+                        room = room.trim()).normalizeNode(table.timeJson)
                     // A time-only edit retains the occurrence's provenance without asking to choose it again.
                     replacement = if (target == occurrence.displayDate) {
                         CourseOccurrences.atDate(edited, occurrence.sourceDate, table, course.fixedDate != null)
@@ -183,6 +186,8 @@ internal fun OccurrenceEditor(occurrence: CourseOccurrence, table: TimeTableEnti
                     OutlinedTextField(start, { start = it }, label = { Text(context.getString(R.string.occurrence_start)) }, enabled = !busy, singleLine = true, modifier = Modifier.weight(1f))
                     OutlinedTextField(end, { end = it }, label = { Text(context.getString(R.string.occurrence_end)) }, enabled = !busy, singleLine = true, modifier = Modifier.weight(1f))
                 }
+                OutlinedTextField(room, { room = it }, label = { Text(context.getString(R.string.course_field_room)) },
+                    enabled = !busy, singleLine = true, modifier = Modifier.fillMaxWidth().testTag("occurrence-room"))
                 Button(onClick = { save(false) }, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(if (busy) context.getString(R.string.occurrence_busy) else context.getString(R.string.occurrence_save)) }
             }
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
