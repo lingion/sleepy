@@ -1875,6 +1875,15 @@
   },
   {
     "sortKey": "N",
+    "name": "南通理工学院（2023届及之后）",
+    "url": "https://zfjw.ntit.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "nantongligongxueyuanjiejizhihou",
+    "catalogId": "wakeup:2ed7b2bf334e49518042"
+  },
+  {
+    "sortKey": "N",
     "name": "内蒙古大学",
     "url": "http://jwxt.imu.edu.cn/login",
     "type": "urp_new",

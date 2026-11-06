@@ -3308,6 +3308,20 @@
       "sourceName": "南通大学"
     }
   ],
+  "wakeup:2ed7b2bf334e49518042": [
+    {
+      "sourceId": "wakeup-6.1.06-asset",
+      "sourceRow": 2080,
+      "match": "trimmed-exact-name",
+      "sourceName": "南通理工学院（2023届及之后）"
+    },
+    {
+      "sourceId": "wakeup-52.36-user-attachment",
+      "sourceRow": 758,
+      "match": "trimmed-exact-name",
+      "sourceName": "南通理工学院（2023届及之后）"
+    }
+  ],
   "N_内蒙古大学": [
     {
       "sourceId": "moe-2026-regular",
@@ -40364,20 +40378,6 @@
       "sourceRow": 759,
       "match": "trimmed-exact-name",
       "sourceName": "南通理工学院"
-    }
-  ],
-  "wakeup:2ed7b2bf334e49518042": [
-    {
-      "sourceId": "wakeup-6.1.06-asset",
-      "sourceRow": 2080,
-      "match": "trimmed-exact-name",
-      "sourceName": "南通理工学院（2023届及之后）"
-    },
-    {
-      "sourceId": "wakeup-52.36-user-attachment",
-      "sourceRow": 758,
-      "match": "trimmed-exact-name",
-      "sourceName": "南通理工学院（2023届及之后）"
     }
   ],
   "moe:4132014493": [

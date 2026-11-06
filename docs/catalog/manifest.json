@@ -1,12 +1,12 @@
 {
   "generatedAsOf": "2026-10-14",
-  "baselineCount": 351,
+  "baselineCount": 352,
   "catalogCount": 4140,
   "statusCounts": {
-    "supported": 349,
+    "supported": 350,
     "grad_supported": 2,
     "unverified": 1224,
-    "pending": 2264,
+    "pending": 2263,
     "grad_pending": 301
   },
   "sourceCounts": {
@@ -21,7 +21,7 @@
   "sources": [
     {
       "path": "scripts/data/school_catalog_baseline.json",
-      "sha256": "1be56b7da845e1a67dd9d80f9c73ebb4fb27b830f3c86e05c0bce054989e9e85"
+      "sha256": "2ca63952e46fcec27ffd984458090df80e7afc9b9519f925b908e9f064b49d2f"
     },
     {
       "path": "scripts/data/official_schools.json",
@@ -60,11 +60,11 @@
       "contradicted": 1
     },
     "actions": {
-      "retained-existing-config-ownership-unresolved": 138,
+      "retained-existing-config-ownership-unresolved": 139,
       "ownership-confirmed": 748,
       "retained-wakeup-declared-owner": 591,
       "retained-shiguang-adapters-owner": 55,
-      "withheld-new-unproven-owner": 537,
+      "withheld-new-unproven-owner": 536,
       "retained-shiguang-declared-owner": 42,
       "withheld-domain-collision": 31,
       "corrected-official-entry": 1
@@ -1660,6 +1660,14 @@
         "ownershipStatus": "verified",
         "action": "ownership-confirmed",
         "operationalUrl": "http://tdjw.ntu.edu.cn/",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:2ed7b2bf334e49518042",
+        "name": "南通理工学院（2023届及之后）",
+        "ownershipStatus": "unknown",
+        "action": "retained-existing-config-ownership-unresolved",
+        "operationalUrl": "https://zfjw.ntit.edu.cn/jwglxt/xtgl/login_slogin.html",
         "authenticatedImportTested": false
       },
       {
@@ -16721,14 +16729,6 @@
       {
         "catalogId": "wakeup:fb85d5f96995416e037d",
         "name": "南京森林警察学院",
-        "ownershipStatus": "unknown",
-        "action": "withheld-new-unproven-owner",
-        "operationalUrl": "",
-        "authenticatedImportTested": false
-      },
-      {
-        "catalogId": "wakeup:2ed7b2bf334e49518042",
-        "name": "南通理工学院（2023届及之后）",
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
