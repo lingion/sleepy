@@ -1,6 +1,7 @@
 package com.lingion.sleepy.ui.screen.edit
 
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -55,6 +56,9 @@ class OccurrenceRoomEditPipelineTest {
     private lateinit var app: SleepyApp
     private lateinit var db: AppDatabase
     private lateinit var repo: ScheduleRepository
+    // 保存成功 (saveOccurrence 返 true → onDismiss) 的唯一终态信号; STALE/require 抛错
+    // 路径都不会置真 → 用它当闸, 断言不再在「保存根本没发生」时假绿。
+    @Volatile private var dismissed = false
     private val table = TimeTableEntity(id = 1, name = "Table", startDate = "2026-09-07", maxWeek = 16, createdAt = 0)
     // 周一 1-2节 1-16周 — 调第 1 周的本次, 其余周次地点必须不动。
     private val course = CourseEntity(id = 7, tableId = 1, groupId = "math", courseName = "Math", room = "A101",
@@ -77,9 +81,10 @@ class OccurrenceRoomEditPipelineTest {
     @After fun cleanup() { ReminderRescheduler.resetForTest(); db.close(); UndoManager.clear() }
 
     private fun show(occurrence: CourseOccurrence) {
+        dismissed = false
         compose.setContent {
             SleepyThemeProvider(darkTheme = false, themeKey = "default") {
-                OccurrenceEditor(occurrence, table, onDismiss = {}, startInEdit = true)
+                OccurrenceEditor(occurrence, table, onDismiss = { dismissed = true }, startInEdit = true)
             }
         }
         compose.waitForIdle()
@@ -100,7 +105,7 @@ class OccurrenceRoomEditPipelineTest {
         compose.onNodeWithTag("occurrence-room").performScrollTo()
         compose.onNodeWithTag("occurrence-room").performTextReplacement("B202")
         compose.onNodeWithText(app.getString(R.string.occurrence_save)).performScrollTo().performClick()
-        waitFor { rowForDate().room == "B202" }
+        waitFor { dismissed }
         // saveOccurrence: without() 抽走第 5 周 → 剩余 = [id7: 1..4 周, 新 id: 6..16 周]
         // (都 A101), replacement = 第 5 周 B202 (新 id); 不同 room 不并 — 3 行正确终态。
         val rows = repo.getCourses(1)
@@ -123,10 +128,38 @@ class OccurrenceRoomEditPipelineTest {
         show(CourseOccurrences.resolve(course, date, emptyList())!!)
         compose.onNodeWithTag("occurrence-room").performScrollTo()
         compose.onNodeWithText(app.getString(R.string.occurrence_save)).performScrollTo().performClick()
-        waitFor { repo.getCourses(1).size == 1 }
+        // 初始库里就有 1 行且并回后与种子同容, size==1 不能当闸 (保存没发生也成立) —
+        // dismissed 是 saveOccurrence 返 true 的终态信号。
+        waitFor { dismissed }
         assertEquals("A101", rowForDate().room)
         // room 未改 → 拆出的剩余与 replacement 完全同容, mergeMatchingRows 并回原行
         assertEquals(listOf(course), repo.getCourses(1))
+    }
+
+    @Test fun dirtyStoredRoomIsLeftByteIdenticalWhenUntouchedSoTheRowStillMergesBack() = runBlocking {
+        // 导入端 (ScheduleParser position 分支) 不 trim — 库里 room 可带首尾空白。
+        // 未改动时 replacement 必须与 without() 拆出的 remaining 逐字相同, 否则分桶键
+        // (含 room) 永不并回 → 「什么都不改直接保存」也会把课程行永久拆碎。
+        val dirty = course.copy(room = "A101 ")
+        db.courseDao().update(dirty)
+        show(CourseOccurrences.resolve(dirty, date, emptyList())!!)
+        compose.onNodeWithTag("occurrence-room").performScrollTo()
+        compose.onNodeWithText(app.getString(R.string.occurrence_save)).performScrollTo().performClick()
+        waitFor { dismissed }
+        val rows = repo.getCourses(1)
+        assertEquals("未改地点必须并回一条, 不得半 trim 拆行", 1, rows.size)
+        assertEquals("A101 ", rows.single().room)
+    }
+
+    @Test fun editingRoomNormalizesLeadingAndTrailingWhitespace() = runBlocking {
+        val dirty = course.copy(room = "A101 ")
+        db.courseDao().update(dirty)
+        show(CourseOccurrences.resolve(dirty, date, emptyList())!!)
+        compose.onNodeWithTag("occurrence-room").performScrollTo()
+        compose.onNodeWithTag("occurrence-room").performTextReplacement(" B202 ")
+        compose.onNodeWithText(app.getString(R.string.occurrence_save)).performScrollTo().performClick()
+        waitFor { dismissed }
+        assertEquals("B202", rowForDate().room)
     }
 
     @Test fun concurrentRoomChangeRejectsTheSaveAsStale() = runBlocking {
@@ -136,9 +169,11 @@ class OccurrenceRoomEditPipelineTest {
         // 打开弹窗后并发改库里的 room (模拟另一端编辑) — 期望快照不等 → STALE
         db.courseDao().update(course.copy(room = "C303"))
         compose.onNodeWithText(app.getString(R.string.occurrence_save)).performScrollTo().performClick()
-        waitFor { repo.getCourses(1).none { it.room == "B202" } }
+        // 保存协程末尾才置 error (OccurrenceEditor.save), 任何 DB 谓词在点击前就为真
+        // 不构成闸 — 等 STALE 文案上屏 (= 拒绝分支跑完) 再断言库里地点。
+        val stale = app.getString(R.string.occurrence_stale)
+        waitFor { compose.onAllNodesWithText(stale).fetchSemanticsNodes().isNotEmpty() }
         assertEquals("C303", repo.getCourses(1).single().room)
-        compose.onNodeWithText(app.getString(R.string.occurrence_stale)).assertExists()
-        Unit
+        assertFalse("STALE 拒绝不得走 onDismiss", dismissed)
     }
 }

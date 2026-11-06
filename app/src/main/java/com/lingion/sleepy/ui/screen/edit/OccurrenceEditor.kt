@@ -90,11 +90,15 @@ internal fun OccurrenceEditor(occurrence: CourseOccurrence, table: TimeTableEnti
                         val e = runCatching { LocalTime.parse(end.trim()) }.getOrNull()
                         require(s != null && e != null && e > s) { context.getString(R.string.occurrence_invalid_time) }
                     }
+                    // 库里 room 可能带首尾空白 (导入端 ScheduleParser 取 position 不 trim)。
+                    // 未改动时必须与 without() 拆出的 remaining 行逐字相同: 分桶键含 room,
+                    // 半 trim 会让「一个字段都没改」的保存也永久拆碎课程行。
+                    val savedRoom = if (room == course.room) course.room else room.trim()
                     val edited = course.copy(startNode = n, step = count,
                         ownTime = custom, isIrregularTime = custom,
                         isIrregularNode = rows.any { it.node == n && it.edgeClass != null },
                         startTime = if (custom) start.trim() else "", endTime = if (custom) end.trim() else "",
-                        room = room.trim()).normalizeNode(table.timeJson)
+                        room = savedRoom).normalizeNode(table.timeJson)
                     // A time-only edit retains the occurrence's provenance without asking to choose it again.
                     replacement = if (target == occurrence.displayDate) {
                         CourseOccurrences.atDate(edited, occurrence.sourceDate, table, course.fixedDate != null)
@@ -186,7 +190,8 @@ internal fun OccurrenceEditor(occurrence: CourseOccurrence, table: TimeTableEnti
                     OutlinedTextField(start, { start = it }, label = { Text(context.getString(R.string.occurrence_start)) }, enabled = !busy, singleLine = true, modifier = Modifier.weight(1f))
                     OutlinedTextField(end, { end = it }, label = { Text(context.getString(R.string.occurrence_end)) }, enabled = !busy, singleLine = true, modifier = Modifier.weight(1f))
                 }
-                OutlinedTextField(room, { room = it }, label = { Text(context.getString(R.string.course_field_room)) },
+                // 标签复用整组编辑器/添加单次课同一字段键 (course_room), 同功能同措辞。
+                OutlinedTextField(room, { room = it }, label = { Text(context.getString(R.string.course_room)) },
                     enabled = !busy, singleLine = true, modifier = Modifier.fillMaxWidth().testTag("occurrence-room"))
                 Button(onClick = { save(false) }, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(if (busy) context.getString(R.string.occurrence_busy) else context.getString(R.string.occurrence_save)) }
             }
