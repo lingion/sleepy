@@ -7830,22 +7830,6 @@
     "ownershipAction": "retained-wakeup-662-declared-owner"
   },
   {
-    "catalogId": "wakeup:2ed7b2bf334e49518042",
-    "name": "南通理工学院（2023届及之后）",
-    "url": "https://zfjw.ntit.edu.cn/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-52.36-user-attachment",
-    "sourceRow": 758,
-    "checkedAt": "2026-10-16",
-    "http": 412,
-    "title": "",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "ownershipAction": "retained-wakeup-662-declared-owner"
-  },
-  {
     "catalogId": "moe:4136012795",
     "name": "南昌理工学院",
     "url": "https://my.nut.edu.cn/cas/login",

@@ -1,11 +1,11 @@
 {
   "generatedAsOf": "2026-10-14",
-  "baselineCount": 352,
+  "baselineCount": 353,
   "catalogCount": 4140,
   "statusCounts": {
-    "supported": 351,
+    "supported": 352,
     "grad_supported": 2,
-    "unverified": 2479,
+    "unverified": 2478,
     "grad_pending": 253,
     "pending": 1007,
     "grad_unverified": 48
@@ -22,7 +22,7 @@
   "sources": [
     {
       "path": "scripts/data/school_catalog_baseline.json",
-      "sha256": "61b7e9e7a3facf34a8803da342be8d44c075eded41f4345c4868602460646962"
+      "sha256": "f3fbe134623726ebf8c50c4b335d12aed9b94edb2e70fe02294dcd2b21741d8f"
     },
     {
       "path": "scripts/data/official_schools.json",
@@ -61,10 +61,10 @@
       "contradicted": 1
     },
     "actions": {
-      "retained-existing-config-ownership-unresolved": 139,
+      "retained-existing-config-ownership-unresolved": 140,
       "ownership-confirmed": 748,
       "retained-wakeup-declared-owner": 589,
-      "retained-wakeup-662-declared-owner": 1305,
+      "retained-wakeup-662-declared-owner": 1304,
       "retained-shiguang-adapters-owner": 56,
       "retained-shiguang-declared-owner": 42,
       "withheld-new-unproven-owner": 53,
@@ -1670,6 +1670,14 @@
         "ownershipStatus": "verified",
         "action": "ownership-confirmed",
         "operationalUrl": "http://tdjw.ntu.edu.cn/",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:2ed7b2bf334e49518042",
+        "name": "南通理工学院（2023届及之后）",
+        "ownershipStatus": "unknown",
+        "action": "retained-existing-config-ownership-unresolved",
+        "operationalUrl": "https://zfjw.ntit.edu.cn/jwglxt/xtgl/login_slogin.html",
         "authenticatedImportTested": false
       },
       {
@@ -23190,14 +23198,6 @@
         "ownershipStatus": "unknown",
         "action": "retained-wakeup-662-declared-owner",
         "operationalUrl": "http://210.43.114.81:8099/home/stulogin",
-        "authenticatedImportTested": false
-      },
-      {
-        "catalogId": "wakeup:2ed7b2bf334e49518042",
-        "name": "南通理工学院（2023届及之后）",
-        "ownershipStatus": "unknown",
-        "action": "retained-wakeup-662-declared-owner",
-        "operationalUrl": "https://zfjw.ntit.edu.cn/jwglxt/xtgl/login_slogin.html",
         "authenticatedImportTested": false
       },
       {
