@@ -135,7 +135,7 @@ internal object WakeUpCompat {
     }
 
     /** WakeUp 6.6.2 CourseFormTable: gutters do not consume days; rowspan reserves them. */
-    private fun parseJzHtml(source: String): List<JwCourse> {
+    internal fun parseJzHtml(source: String): List<JwCourse> {
         val doc = Jsoup.parse(source)
         val table = doc.getElementById("1") ?: doc.selectFirst(".CourseFormTable, #CourseFormTable")
             ?: return emptyList()
@@ -180,7 +180,7 @@ internal object WakeUpCompat {
     }
 
     /** WakeUp 6.6.2 jz.OooOO0: data-week is the weekday, not the teaching week. */
-    private fun parseJzX(source: String): List<JwCourse> {
+    internal fun parseJzX(source: String): List<JwCourse> {
         val table = Jsoup.parse(source).selectFirst(".wut_tablex") ?: return emptyList()
         return buildList {
             for (cell in table.select("td[data-role][data-week]")) {
@@ -206,7 +206,7 @@ internal object WakeUpCompat {
     }
 
     /** WakeUp 6.6.2 jz.OooOO0O: repeated name, teacher, explicit arrangement lines. */
-    private fun parseJzXTable(source: String): List<JwCourse> {
+    internal fun parseJzXTable(source: String): List<JwCourse> {
         val table = Jsoup.parse(source).selectFirst(".x-table") ?: return emptyList()
         return buildList {
             for (block in table.select("div")) {
@@ -247,7 +247,7 @@ internal object WakeUpCompat {
     }
 
     /** WakeUp 6.6.2 JZ standard, HQU and XJTU layouts use the same item classes. */
-    private fun parseJzMtt(source: String): List<JwCourse> {
+    internal fun parseJzMtt(source: String): List<JwCourse> {
         val table = Jsoup.parse(source.replace("divclass=", "div class=")).selectFirst(".wut_table")
             ?: return emptyList()
         return buildList {
@@ -338,7 +338,7 @@ internal object WakeUpCompat {
     }
 
     /** WIST uses explicit item coordinates and has two named noon periods. */
-    private fun parseJzWist(source: String): List<JwCourse> = mergeAdjacentJzNodes(buildList {
+    internal fun parseJzWist(source: String): List<JwCourse> = mergeAdjacentJzNodes(buildList {
         val numericNodes = Regex("""^(中?[1-9]\d?)(-(中?[1-9]\d?))?$""")
         fun node(value: String): Int? = when (value) {
             "中1" -> 5
@@ -393,7 +393,7 @@ internal object WakeUpCompat {
         }
 
     /** XMU embeds an ordinary JSON array; SKZC has no leading week-zero sentinel. */
-    private fun parseJzXmu(source: String): List<JwCourse> {
+    internal fun parseJzXmu(source: String): List<JwCourse> {
         val start = Regex("""var\s+scheduleList\s*=""").find(source)?.range?.last?.plus(1)
             ?: return emptyList()
         val remainder = source.substring(start)

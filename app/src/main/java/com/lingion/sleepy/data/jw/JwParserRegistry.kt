@@ -73,6 +73,12 @@ object JwParserRegistry {
     )
 
     private val FACTORIES: Map<String, (String) -> JwParser> = linkedMapOf(
+        JwProtocol.TYPE_JZ_1 to { html -> JwDeclaredJinZhiParser(html, JwProtocol.TYPE_JZ_1) },
+        JwProtocol.TYPE_JZ_X to { html -> JwDeclaredJinZhiParser(html, JwProtocol.TYPE_JZ_X) },
+        JwProtocol.TYPE_WIST to { html -> JwDeclaredJinZhiParser(html, JwProtocol.TYPE_WIST) },
+        JwProtocol.TYPE_XMU to { html -> JwDeclaredJinZhiParser(html, JwProtocol.TYPE_XMU) },
+        JwProtocol.TYPE_SWJTU_POST to { html -> JwDeclaredJinZhiParser(html, JwProtocol.TYPE_SWJTU_POST) },
+        JwProtocol.TYPE_KG_ZX to ::JwKingoZxParser,
         JwProtocol.TYPE_HBUT to { html -> JwSchoolTableParser(html, JwProtocol.TYPE_HBUT) },
         JwProtocol.TYPE_HNJM to { html -> JwSchoolTableParser(html, JwProtocol.TYPE_HNJM) },
         JwProtocol.TYPE_LZ to { html -> JwSchoolTableParser(html, JwProtocol.TYPE_LZ) },
@@ -298,6 +304,7 @@ object JwParserRegistry {
     )
 
     private val DECLARED_ONLY_TYPES = setOf(
+        JwProtocol.TYPE_JZ_1, JwProtocol.TYPE_JZ_X, JwProtocol.TYPE_WIST, JwProtocol.TYPE_XMU, JwProtocol.TYPE_SWJTU_POST, JwProtocol.TYPE_KG_ZX,
         JwProtocol.TYPE_HBUT, JwProtocol.TYPE_HNJM, JwProtocol.TYPE_LZ, JwProtocol.TYPE_NAU, JwProtocol.TYPE_NJU, JwProtocol.TYPE_CQUPT,
         JwProtocol.TYPE_XHTD, JwProtocol.TYPE_XYTC, JwProtocol.TYPE_CIDP, JwProtocol.TYPE_SDPEI, JwProtocol.TYPE_SHU, JwProtocol.TYPE_JMPT, JwProtocol.TYPE_LNGD, JwProtocol.TYPE_VATUU, JwProtocol.TYPE_YZZY, JwProtocol.TYPE_CQU,
         JwProtocol.TYPE_HIT, JwProtocol.TYPE_BUAA,
