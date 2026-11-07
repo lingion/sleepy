@@ -44,7 +44,7 @@ class UndergradRoundThreeSchoolGridTest {
         for (credit in listOf("NaN", "Infinity", "-2")) assertEquals(
             listOf(JwCourse("数学", "A", "王老师", 1, 1, 2, 1, 8)),
             parse(gxnuTable("第1-8周 星期一 1-2节【A】", credit), "gxnu"))
-        for (timing in listOf("第8-1周 星期一 1-2节【A】", "第1-8周 星期八 1-2节【A】", "第1-8周 星期一 31节【A】", "第1-8周 星期一 1-2节", "第1-8周 星期一 未知节【A】"))
+        for (timing in listOf("第8-1周 星期一 1-2节【A】", "第1-8周 星期八 1-2节【A】", "第1-8周 星期一 0节【A】", "第1-8周 星期一 1-2节", "第1-8周 星期一 未知节【A】"))
             assertEquals(emptyList<JwCourse>(), parse(gxnuTable(timing), "gxnu"))
     }
 

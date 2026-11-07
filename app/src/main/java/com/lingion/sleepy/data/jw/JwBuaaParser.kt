@@ -13,7 +13,7 @@ internal class JwBuaaParser(source: String) : JwParser(source) {
             val day = record.text("dayOfWeek").toIntOrNull() ?: continue
             val first = record.text("beginSection").toIntOrNull() ?: continue
             val last = record.text("endSection").toIntOrNull() ?: continue
-            if (name.isEmpty() || day !in 1..7 || first !in 1..30 || last !in first..30) continue
+            if (name.isEmpty() || day !in 1..7 || first < 1 || last < first) continue
             val startTime = record.text("beginTime")
             val endTime = record.text("endTime")
             if ((startTime.isNotEmpty() || endTime.isNotEmpty()) && !JwCourse.isValidTimeRange(startTime, endTime)) continue

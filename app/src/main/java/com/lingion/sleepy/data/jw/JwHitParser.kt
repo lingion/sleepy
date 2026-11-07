@@ -42,7 +42,7 @@ internal class JwHitParser(source: String) : JwParser(source) {
                     }
                 }
             }
-            val valid = output.filter { it.day in 1..7 && it.startNode in 1..30 && it.endNode in it.startNode..30 &&
+            val valid = output.filter { it.day in 1..7 && it.startNode >= 1 && it.endNode >= it.startNode &&
                 it.startWeek in 1..366 && it.endWeek in it.startWeek..366 }
             if (valid.isNotEmpty()) return valid
         }

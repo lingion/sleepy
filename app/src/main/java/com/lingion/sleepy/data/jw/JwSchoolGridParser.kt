@@ -10,8 +10,8 @@ internal class JwSchoolGridParser(source: String, private val protocol: String) 
         "jxnu" -> jxnu()
         "nnutc" -> nnutc()
         else -> emptyList()
-    }.filter { it.name.isNotBlank() && it.day in 1..7 && it.startNode in 1..30 &&
-        it.endNode in it.startNode..30 && it.startWeek in 1..366 && it.endWeek in it.startWeek..366 &&
+    }.filter { it.name.isNotBlank() && it.day in 1..7 && it.startNode >= 1 &&
+        it.endNode >= it.startNode && it.startWeek in 1..366 && it.endWeek in it.startWeek..366 &&
         (it.startWeek..it.endWeek).any { week -> it.type == 0 || week % 2 == it.type % 2 } }
 
     private fun gxic(): List<JwCourse> {
