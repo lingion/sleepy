@@ -7,17 +7,7 @@ internal class JwDeclaredJinZhiParser(source: String, private val protocol: Stri
         "jz_x" -> WakeUpCompat.parseJzX(source)
         "wist" -> WakeUpCompat.parseJzWist(source)
         "xmu" -> WakeUpCompat.parseJzXmu(source)
-        "swjtu_post" -> nativeChain()
+        "swjtu_post" -> WakeUpCompat.parseJzNativeChain(source)
         else -> emptyList()
-    }
-
-    private fun nativeChain(): List<JwCourse> {
-        for (parse in listOf(WakeUpCompat::parseJzHtml, WakeUpCompat::parseJzMtt,
-            WakeUpCompat::parseJzWist, WakeUpCompat::parseJzX, WakeUpCompat::parseJzPost,
-            WakeUpCompat::parseJzXTable, WakeUpCompat::parseJzXmu)) {
-            val courses = parse(source)
-            if (courses.isNotEmpty()) return courses
-        }
-        return emptyList()
     }
 }

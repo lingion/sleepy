@@ -5,6 +5,7 @@ import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import java.util.Locale
+import java.util.concurrent.CancellationException
 
 /** Compatibility parsers for WakeUp protocol variants. */
 internal object WakeUpCompat {
@@ -14,14 +15,35 @@ internal object WakeUpCompat {
             parseJzJson(root).takeIf { it.isNotEmpty() }?.let { return it }
         }
         parseJzSuper(source).takeIf { it.isNotEmpty() }?.let { return it }
-        parseJzHtml(source).takeIf { it.isNotEmpty() }?.let { return it }
-        parseJzMtt(source).takeIf { it.isNotEmpty() }?.let { return it }
-        parseJzWist(source).takeIf { it.isNotEmpty() }?.let { return it }
-        parseJzX(source).takeIf { it.isNotEmpty() }?.let { return it }
-        parseJzPost(source).takeIf { it.isNotEmpty() }?.let { return it }
-        parseJzXTable(source).takeIf { it.isNotEmpty() }?.let { return it }
-        parseJzXmu(source).takeIf { it.isNotEmpty() }?.let { return it }
+        parseJzNativeChain(source).takeIf { it.isNotEmpty() }?.let { return it }
         parseMarkedTable(source, markers).takeIf { it.isNotEmpty() }?.let { return it }
+        return emptyList()
+    }
+
+    /** Native variants isolate failures and stop at the first nonempty schedule. */
+    internal fun parseJzNativeChain(source: String): List<JwCourse> {
+        val errors = mutableListOf<Pair<String, Exception>>()
+        val parsers = listOf(
+            "JinZhiCourseFormTable" to ::parseJzHtml,
+            "JinZhiMtt" to ::parseJzMtt,
+            "WIST" to ::parseJzWist,
+            "JinZhiX" to ::parseJzX,
+            "JinZhiPost" to ::parseJzPost,
+            "JinZhiXTable" to ::parseJzXTable,
+            "XMU" to ::parseJzXmu,
+        )
+        for ((name, parser) in parsers) {
+            try {
+                parser(source).takeIf { it.isNotEmpty() }?.let { return it }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                errors += name to error
+            }
+        }
+        if (errors.isNotEmpty()) throw IllegalStateException(errors.joinToString("\n") { (name, error) ->
+            "$name: ${error.message.orEmpty()}"
+        }).apply { errors.forEach { (_, error) -> addSuppressed(error) } }
         return emptyList()
     }
 
@@ -383,7 +405,7 @@ internal object WakeUpCompat {
                 val rooms = fields.filter { !it.contains('周') && !numericNodes.matches(it) }
                 val room = rooms.firstOrNull { Regex("实验室|教室|机房").containsMatchIn(it) }
                     ?: rooms.firstOrNull().orEmpty()
-                val weeks = parseWeekTokens(fields.filter { it.contains('周') }.joinToString(","))
+                val weeks = schoolWeekRanges(fields.filter { it.contains('周') }.joinToString(","))
                     .flatMap { (from, to, type) ->
                         if (from < 1 || to < from) emptyList() else
                             (from..to).filter { type == 0 || it % 2 == type % 2 }
