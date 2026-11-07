@@ -77,6 +77,14 @@ jobs:
           node-version: 22
       - name: Execute SEU and WISEDU WebView fetch contracts
         run: node tools/test-seu-fetch.js
+      - name: Execute school timetable fetch contracts
+        run: |
+          node tools/test-cf-new-fetch.js
+          node tools/test-chaoxing-share-fetch.js
+          node tools/test-jlu-fetch.js
+          node tools/test-paged-school-fetch.js
+          node tools/test-school-api-fetch.js
+          node tools/test-whut-fetch.js
 
   android-unit-test:
     runs-on: ubuntu-latest
