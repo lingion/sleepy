@@ -287,6 +287,7 @@ internal object WakeUpCompat {
                         headingWeeks != null -> headingWeeks
                         spaceLayout -> fields.drop(1).dropLast(1).joinToString(",")
                         weekEnd > 0 -> fields.take(weekEnd).joinToString(",")
+                        dayIndex < 0 && nodeIndex < 0 -> fields.dropLast(1).joinToString(",")
                         else -> continue
                     }
                     val room = when {
@@ -294,13 +295,30 @@ internal object WakeUpCompat {
                         dayIndex >= 0 && fields.size - dayIndex > 3 -> fields[fields.lastIndex - 1]
                         else -> fields.last()
                     }
-                    for ((from, to, type) in parseWeekTokens(weeks)) {
+                    for ((from, to, type) in parseMttWeeks(weeks)) {
                         if (from > 0 && to >= from) add(JwCourse(name, room, teacher, day,
                             nodes.first, nodes.second, from, to, type, credit=credit))
                     }
                 }
             }
         }
+    }
+
+    private fun parseMttWeeks(value: String): List<Triple<Int, Int, Int>> {
+        val result = mutableListOf<Triple<Int, Int, Int>>()
+        for (raw in value.split(',', '，')) {
+            val token = raw.trim().replace('（', '(').replace('）', ')')
+            val match = Regex("""第?([0-9]+)(?:-([0-9]+))?([单双])?周?(?:\(([单双])周?\))?""")
+                .matchEntire(token) ?: return emptyList()
+            val first = match.groupValues[1].toIntOrNull() ?: return emptyList()
+            val last = match.groupValues[2].ifEmpty { match.groupValues[1] }.toIntOrNull() ?: return emptyList()
+            if (first < 1 || last < first) return emptyList()
+            val markers = listOf(match.groupValues[3], match.groupValues[4]).filter(String::isNotEmpty).distinct()
+            if (markers.size > 1) return emptyList()
+            val parity = when (markers.firstOrNull()) { "单" -> 1; "双" -> 2; else -> 0 }
+            result += Triple(first, last, parity)
+        }
+        return result
     }
 
     /** jz.OooO0o has two branches reversed in JADX output; field order follows its DEX. */
