@@ -34,6 +34,7 @@ object JwSourceCalendar {
     fun resolveStartDate(source: String, type: String?, capturedDate: String): String {
         val declared = runCatching {
             when (type) {
+                JwProtocol.TYPE_SHSMU -> JwUndergradClockParser.SHSMU_REFERENCE_DATE.toString()
                 JwProtocol.TYPE_CCIBE -> JSONObject(source).optJSONObject("calendar")?.optString("startTime")
                 JwProtocol.TYPE_CPPU -> JSONObject(source).optString("startDate")
                 else -> null

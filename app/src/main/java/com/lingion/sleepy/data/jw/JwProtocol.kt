@@ -134,6 +134,9 @@ object JwProtocol {
     const val TYPE_CSV = "csv"
     const val TYPE_SHUWEI_OLD = "shuwei_old"
 
+    const val TYPE_SHSMU = "shsmu"
+    const val TYPE_YGU = "ygu"
+
     const val TYPE_SUSTECH = "sustech"
     const val TYPE_UIC = "uic"
     const val TYPE_CITYU = "cityu"
@@ -417,6 +420,7 @@ object JwProtocol {
 
     /** WakeUp-derived types routed by the compatibility layer; kept separate from legacy UI ordering. */
     val WAKEUP_COMPAT_TYPES: List<String> = listOf(
+        TYPE_SHSMU, TYPE_YGU,
         TYPE_XJTU_POST, TYPE_UESTC_POST, TYPE_BFA_POST, TYPE_GDBYXY, TYPE_CUPL_POST, TYPE_YSU_POST, TYPE_WHU_POST, TYPE_HRBEU_POST, TYPE_SHTU_POST, TYPE_USTC_POST, TYPE_XAUAT_POST, TYPE_ZJU_POST, TYPE_CSV, TYPE_SHUWEI_OLD,
         TYPE_JNU, TYPE_SWUST,
         TYPE_QZ_2017, TYPE_QZ_2024, TYPE_QZ_FSPT, TYPE_QZ_USTB, TYPE_ZF_CLS,
@@ -439,6 +443,8 @@ object JwProtocol {
     )
 
     fun displayName(type: String?): String = when (type) {
+        TYPE_SHSMU -> "上海交通大学医学院教务"
+        TYPE_YGU -> "阳光学院教务"
         TYPE_XJTU_POST -> "西安交通大学研究生教务"
         TYPE_UESTC_POST -> "电子科技大学研究生教务"
         TYPE_BFA_POST -> "北京电影学院研究生教务"

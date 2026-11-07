@@ -7,6 +7,9 @@ object JwSourcePeriods {
     fun resolve(source: String, type: String?, schoolName: String,
         captured: List<Triple<Int, String, String>>): List<Triple<Int, String, String>> {
         if (captured.isNotEmpty()) return captured
+        if (type == JwProtocol.TYPE_SHSMU) return JwUndergradClockParser.shsmuPeriods.mapIndexed { index, period ->
+            Triple(index + 1, period.first, period.second)
+        }
         val times = when (type) {
             "qz_fspt" -> listOf("08:40-09:20", "09:25-10:05", "10:25-11:05", "11:10-11:50",
                 "14:00-14:40", "14:45-15:25", "15:45-16:25", "16:30-17:10",

@@ -73,6 +73,8 @@ object JwParserRegistry {
     )
 
     private val FACTORIES: Map<String, (String) -> JwParser> = linkedMapOf(
+        JwProtocol.TYPE_SHSMU to { html -> JwUndergradClockParser(html, JwProtocol.TYPE_SHSMU) },
+        JwProtocol.TYPE_YGU to { html -> JwUndergradClockParser(html, JwProtocol.TYPE_YGU) },
         JwProtocol.TYPE_XJTU_POST to { html -> JwPostgradSchoolParser(html, JwProtocol.TYPE_XJTU_POST) },
         JwProtocol.TYPE_UESTC_POST to { html -> JwPostgradSchoolParser(html, JwProtocol.TYPE_UESTC_POST) },
         JwProtocol.TYPE_BFA_POST to { html -> JwPostgradSchoolParser(html, JwProtocol.TYPE_BFA_POST) },
@@ -270,6 +272,7 @@ object JwParserRegistry {
     )
 
     private val DECLARED_ONLY_TYPES = setOf(
+        JwProtocol.TYPE_SHSMU, JwProtocol.TYPE_YGU,
         JwProtocol.TYPE_XJTU_POST, JwProtocol.TYPE_UESTC_POST, JwProtocol.TYPE_BFA_POST, JwProtocol.TYPE_GDBYXY, JwProtocol.TYPE_CUPL_POST, JwProtocol.TYPE_YSU_POST, JwProtocol.TYPE_WHU_POST, JwProtocol.TYPE_HRBEU_POST, JwProtocol.TYPE_SHTU_POST, JwProtocol.TYPE_USTC_POST, JwProtocol.TYPE_XAUAT_POST, JwProtocol.TYPE_ZJU_POST, JwProtocol.TYPE_CSV, JwProtocol.TYPE_SHUWEI_OLD,
         JwProtocol.TYPE_JNU, JwProtocol.TYPE_SWUST,
         JwProtocol.TYPE_QZ_2017, JwProtocol.TYPE_QZ_2024, JwProtocol.TYPE_QZ_FSPT, JwProtocol.TYPE_QZ_USTB, JwProtocol.TYPE_ZF_CLS,
