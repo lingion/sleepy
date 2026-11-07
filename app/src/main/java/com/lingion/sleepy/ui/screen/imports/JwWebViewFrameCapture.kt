@@ -2,6 +2,7 @@ package com.lingion.sleepy.ui.screen.imports
 
 import com.lingion.sleepy.data.jw.JwParseDiagnostics
 import com.lingion.sleepy.data.jw.JwNewUrpSuperParser
+import com.lingion.sleepy.data.jw.JwParserRegistry
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URI
@@ -113,6 +114,8 @@ data class FrameSnapshotList(
 }
 
 object FrameTraversalTree {
+    private val declaredHtmlTypes = setOf("shcc", "hbmzu", "nua", "gdei", "aic", "hust", "gliet", "cnu",
+        "cdut", "gzhuyjs", "dhu", "ecjtu", "zptc", "ctgu", "nyist", "jxau")
     /**
      * 锚点集 — 与 parser 容器选择器对齐
      * (Table1→JwOldZfParser, blacktab→T1 兜底链, kbtable→JwQzParser,
@@ -294,7 +297,7 @@ object FrameTraversalTree {
      *  ④ 全部可达 frame 均无锚点: 登录指纹 > 跨域 > WRONG_PAGE。
      *  ⑤ 全部 frame 不可达(顶层都跨域): blocked 非空 → CROSS_DOMAIN_IFRAME_BLOCKED, 否则 WRONG_PAGE。
      */
-    fun selectBestFrame(snapshots: FrameSnapshotList, maxDepth: Int = 8): FrameCaptureResult {
+    fun selectBestFrame(snapshots: FrameSnapshotList, maxDepth: Int = 8, declaredType: String? = null): FrameCaptureResult {
         val blocked = findBlockedFrames(snapshots)
         val reachable = snapshots.frames.filter { it.outerHTML != null && it.depth <= maxDepth }
         val maxDepthReached = snapshots.frames.maxOfOrNull { it.depth } ?: 0
@@ -315,6 +318,24 @@ object FrameTraversalTree {
                 skippedFrames = emptyList(),
                 diagnosticHint = "检测到登录页/会话过期特征(${logoutFrame.frameName ?: "(top)"} 含 logout.aspx 跳转脚本)，请重新登录后再点「导入此页」",
                 allFrames = allFrames
+            )
+        }
+        // Several declared school layouts have no generic table id. Validate with
+        // that school's parser before choosing a frame; do not widen generic detection.
+        if (declaredType in declaredHtmlTypes && reachable.none { looksLikeLoginPage(it.outerHTML!!) }) {
+            val declared = reachable.sortedByDescending { it.depth }.firstOrNull { frame ->
+                runCatching {
+                    JwParserRegistry.parserFor(declaredType!!, frame.outerHTML!!).generateCourseList().isNotEmpty()
+                }.getOrDefault(false)
+            }
+            if (declared != null) return FrameCaptureResult(
+                selectedFramePath = declared.parentPath + (declared.frameName ?: ""),
+                html = declared.outerHTML!!,
+                matchedAnchors = listOf("declared-$declaredType"),
+                status = FrameCaptureStatus.OK,
+                blockedFrames = blocked,
+                maxDepthReached = maxDepthReached,
+                allFrames = allFrames,
             )
         }
         // ②③ 候选

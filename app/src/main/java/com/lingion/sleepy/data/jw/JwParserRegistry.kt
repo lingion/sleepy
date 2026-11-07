@@ -96,7 +96,7 @@ object JwParserRegistry {
         JwProtocol.TYPE_CHAOXING to ::JwChaoxingParser,
         JwProtocol.TYPE_BOYA_PP to ::JwBoyaPpParser,
         JwProtocol.TYPE_EAMS5 to ::JwEams5Parser,
-        JwProtocol.TYPE_CLASSIC_EAMS to ::JwClassicEamsParser,
+        JwProtocol.TYPE_CLASSIC_EAMS to { html: String -> JwClassicEamsParser(html) },
         JwProtocol.TYPE_NUIT to ::JwNuitParser,
         JwProtocol.TYPE_KUST to ::JwKustParser,
         JwProtocol.TYPE_SEU to ::JwSeuParser,
@@ -107,6 +107,7 @@ object JwParserRegistry {
         JwProtocol.TYPE_BJTU to ::JwBjtuParser,
         JwProtocol.TYPE_YETHAN to ::JwYethanParser,
         JwProtocol.TYPE_URP_NEW to ::JwNewUrpParser,
+        JwProtocol.TYPE_URP_NEW_AJAX to ::JwNewUrpParser,
         JwProtocol.TYPE_ZF_NEW to ::JwNewZfParser,
         JwProtocol.TYPE_ZF to { html -> JwOldZfParser(html, 0) },
         JwProtocol.TYPE_ZF_1 to { html -> JwOldZfParser(html, 1) },
@@ -115,7 +116,52 @@ object JwParserRegistry {
         JwProtocol.TYPE_QZ_CRAZY to ::JwQzCrazyParser,
         JwProtocol.TYPE_QZ_BR to ::JwQzBrParser,
         JwProtocol.TYPE_QZ_WITH_NODE to ::JwQzWithNodeParser,
+        // These HTML layouts are indistinguishable without a declared school type.
+        // Keep their row maps out of automatic candidates.
+        JwProtocol.TYPE_QZ_SINGLE_NODE to { html -> JwQzSchoolParser(html, JwProtocol.TYPE_QZ_SINGLE_NODE) },
+        JwProtocol.TYPE_QZ_NJUST to { html -> JwQzSchoolParser(html, JwProtocol.TYPE_QZ_NJUST) },
+        JwProtocol.TYPE_QZ_WIT to { html -> JwQzSchoolParser(html, JwProtocol.TYPE_QZ_WIT) },
+        JwProtocol.TYPE_QZ_ECUST to { html -> JwQzSchoolParser(html, JwProtocol.TYPE_QZ_ECUST) },
+        JwProtocol.TYPE_QZ_AHUT to { html -> JwQzSchoolParser(html, JwProtocol.TYPE_QZ_AHUT) },
+        JwProtocol.TYPE_QZ_BJFU to { html -> JwQzSchoolParser(html, JwProtocol.TYPE_QZ_BJFU) },
+        JwProtocol.TYPE_SIMC to ::JwSimcParser,
+        JwProtocol.TYPE_SHTU_POST_2024 to ::JwShtu2024Parser,
+        JwProtocol.TYPE_RUC to ::JwRucParser,
+        JwProtocol.TYPE_BFA to ::JwBfaParser,
+        JwProtocol.TYPE_HUST to ::JwHustParser,
+        JwProtocol.TYPE_AIC to ::JwAicParser,
+        JwProtocol.TYPE_HBMZU to ::JwHbmzuParser,
+        JwProtocol.TYPE_NUA to ::JwNuaParser,
+        JwProtocol.TYPE_STUM to ::JwStumParser,
+        JwProtocol.TYPE_AHMU to ::JwAhmuParser,
+        JwProtocol.TYPE_GDEI to ::JwGdeiParser,
+        JwProtocol.TYPE_JLU_POST to ::JwJluPostParser,
+        JwProtocol.TYPE_CCIBE to ::JwCcibeParser,
+        JwProtocol.TYPE_CPPU to ::JwCppuParser,
+        JwProtocol.TYPE_SHCC to ::JwShccParser,
+        JwProtocol.TYPE_FSTVC to ::JwFstvcParser,
+        JwProtocol.TYPE_GDBH to ::JwGdbhParser,
+        JwProtocol.TYPE_GLIET to ::JwGlietParser,
+        JwProtocol.TYPE_CNU to ::JwCnuParser,
+        JwProtocol.TYPE_XBELLSOFT to ::JwXbellsoftParser,
+        JwProtocol.TYPE_CDUT to ::JwCdutParser,
+        JwProtocol.TYPE_GZHUYJS to ::JwGzhuyjsParser,
+        JwProtocol.TYPE_DHU to ::JwDhuParser,
+        JwProtocol.TYPE_ECJTU to ::JwEcjtuParser,
+        JwProtocol.TYPE_ZPTC to ::JwZptcParser,
+        JwProtocol.TYPE_CTGU to ::JwCtguParser,
+        JwProtocol.TYPE_NYIST to ::JwNyistParser,
+        JwProtocol.TYPE_JXAU to ::JwJxauParser,
+        JwProtocol.TYPE_FDU to ::JwFduParser,
+        JwProtocol.TYPE_ZTVTIT to ::JwZtvtitParser,
+        JwProtocol.TYPE_SDU to ::JwSduParser,
+        JwProtocol.TYPE_SEIG to ::JwSeigParser,
+        JwProtocol.TYPE_KINGOSOFT to ::JwKingosoftParser,
+        JwProtocol.TYPE_CHAOXING_SHARE to ::JwChaoxingShareParser,
         JwProtocol.TYPE_QZ_OLD to ::JwOldQzParser,
+        JwProtocol.TYPE_JLICT_QZ_OLD to { html -> JwOldQzSuperParser(html, JwOldQzSuperParser.Form.JLICT) },
+        JwProtocol.TYPE_CCUT_QZ_OLD to { html -> JwOldQzSuperParser(html, JwOldQzSuperParser.Form.CCUT) },
+        JwProtocol.TYPE_CCSU_QZ_OLD to { html -> JwOldQzSuperParser(html, JwOldQzSuperParser.Form.CCSU) },
         JwProtocol.TYPE_QZ_APP to ::JwQzAppParser,
         JwProtocol.TYPE_QZ_IEAS to { html -> JwQzIeasParser(html) },
         JwProtocol.TYPE_UCAS to ::JwUcasParser,
@@ -145,7 +191,11 @@ object JwParserRegistry {
     private data class Row(val type: String?, val attempt: ParserAttempt, val result: List<JwCourse>)
 
     fun selectBest(html: String, declaredType: String? = null): Pair<List<JwCourse>, List<ParserAttempt>> {
-        val rows = allCandidates(html).map { (type, parser) ->
+        val candidates = allCandidates(html).toMutableList()
+        if (declaredType != null && candidates.none { it.first == declaredType }) {
+            FACTORIES[declaredType]?.let { candidates += declaredType to it(html) }
+        }
+        val rows = candidates.map { (type, parser) ->
             val confidence = runCatching { parser.confidence() }.getOrDefault(0)
             val parsed = runCatching { parser.generateCourseList() }
             val features = runCatching { parser.matchedFeatures() }.getOrDefault(emptyList())
@@ -162,10 +212,46 @@ object JwParserRegistry {
             Row(type, ParserAttempt(parser.nameForDiag(), type, result.size, confidence, features, exception), result)
         }
         val attempts = rows.map { it.attempt }
-        val declared = rows.firstOrNull { it.type == declaredType }?.result.orEmpty()
-        val best = if (declared.isNotEmpty()) declared else adjudicate(rows)
+        // These declared variants are semantically different from indistinguishable generic pages.
+        // An empty result cannot fall back to the generic row or week convention.
+        if (declaredType in DECLARED_ONLY_TYPES || declaredType == JwProtocol.TYPE_UMOOC ||
+            declaredType == JwProtocol.TYPE_CF_NEW && html.contains("\"requestedWeeks\"")) {
+            return rows.firstOrNull { it.type == declaredType }?.result.orEmpty() to attempts
+        }
+        // A modern QZ table owns its titled fields. If those fields are incomplete,
+        // a different family's positional fallback must not manufacture a schedule.
+        val modernQz = org.jsoup.Jsoup.parse(html).select(
+            "table#kbtable .kbcontent [title], table#kbtable .kbcontent1 [title], " +
+                "table#timetable .kbcontent [title], table#timetable .kbcontent1 [title]"
+        ).any { it.attr("title") in setOf("老师", "教师", "教室", "上课地点", "周次", "节次", "周次(节次)", "选课人数") }
+        val eligible = if (modernQz) rows.filter { it.type in QZ_HTML_TYPES } else rows
+        val declared = eligible.firstOrNull { it.type == declaredType }?.result.orEmpty()
+        val best = if (declared.isNotEmpty()) declared else adjudicate(eligible)
         return best to attempts
     }
+
+    private val QZ_HTML_TYPES = setOf(
+        JwProtocol.TYPE_QZ, JwProtocol.TYPE_QZ_CRAZY, JwProtocol.TYPE_QZ_BR, JwProtocol.TYPE_QZ_WITH_NODE,
+        JwProtocol.TYPE_QZ_SINGLE_NODE, JwProtocol.TYPE_QZ_NJUST, JwProtocol.TYPE_QZ_WIT,
+        JwProtocol.TYPE_QZ_ECUST, JwProtocol.TYPE_QZ_AHUT, JwProtocol.TYPE_QZ_BJFU,
+    )
+
+    private val DECLARED_ONLY_TYPES = setOf(
+        JwProtocol.TYPE_NYIST, JwProtocol.TYPE_JXAU,
+        JwProtocol.TYPE_FSTVC, JwProtocol.TYPE_GDBH, JwProtocol.TYPE_GLIET, JwProtocol.TYPE_CNU, JwProtocol.TYPE_XBELLSOFT,
+        JwProtocol.TYPE_CDUT, JwProtocol.TYPE_GZHUYJS, JwProtocol.TYPE_DHU, JwProtocol.TYPE_ECJTU, JwProtocol.TYPE_ZPTC, JwProtocol.TYPE_CTGU,
+        JwProtocol.TYPE_CCIBE, JwProtocol.TYPE_CPPU, JwProtocol.TYPE_SHCC,
+        JwProtocol.TYPE_AHMU, JwProtocol.TYPE_GDEI, JwProtocol.TYPE_JLU_POST,
+        JwProtocol.TYPE_HBMZU, JwProtocol.TYPE_NUA, JwProtocol.TYPE_STUM,
+        JwProtocol.TYPE_HUST, JwProtocol.TYPE_AIC,
+        JwProtocol.TYPE_BFA, JwProtocol.TYPE_FDU, JwProtocol.TYPE_ZTVTIT,
+        JwProtocol.TYPE_UCAS,
+        JwProtocol.TYPE_RUC, JwProtocol.TYPE_SDU, JwProtocol.TYPE_SEIG,
+        JwProtocol.TYPE_SHTU_POST_2024, JwProtocol.TYPE_KINGOSOFT,
+        JwProtocol.TYPE_JLICT_QZ_OLD, JwProtocol.TYPE_CCUT_QZ_OLD, JwProtocol.TYPE_CCSU_QZ_OLD, JwProtocol.TYPE_URP_NEW_AJAX,
+        JwProtocol.TYPE_SIMC, JwProtocol.TYPE_CHAOXING_SHARE, JwProtocol.TYPE_QZ_SINGLE_NODE, JwProtocol.TYPE_QZ_NJUST,
+        JwProtocol.TYPE_QZ_WIT, JwProtocol.TYPE_QZ_ECUST, JwProtocol.TYPE_QZ_AHUT, JwProtocol.TYPE_QZ_BJFU,
+    )
 
     private fun adjudicate(rows: List<Row>): List<JwCourse> =
         rows.filter { it.result.isNotEmpty() && it.attempt.confidence >= 80 }
