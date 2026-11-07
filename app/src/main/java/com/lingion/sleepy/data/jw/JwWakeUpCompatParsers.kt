@@ -563,7 +563,7 @@ internal object WakeUpCompat {
             val last = match.groupValues[2].takeIf(String::isNotBlank)?.toIntOrNull() ?: first
             return if (first in 1..30 && last in first..30) first to last else null
         }
-        fun emit(name: String, teacher: String, room: String, day: Int, nodeText: String, weeksText: String): List<JwCourse> {
+        fun emit(name: String, teacher: String, room: String, day: Int, nodeText: String, weeksText: String, credit: Float = 0f): List<JwCourse> {
             val (start, end) = nodes(nodeText) ?: return emptyList()
             if (name.isBlank() || day !in 1..7) return emptyList()
             // Keep this source's week grammar strict; the generic compatibility parser is deliberately permissive.
@@ -595,7 +595,7 @@ internal object WakeUpCompat {
                 }
             }
             return normalized
-                .map { (from, to, type) -> JwCourse(name, room, teacher, day, start, end, from, to, type) }
+                .map { (from, to, type) -> JwCourse(name, room, teacher, day, start, end, from, to, type, credit = credit) }
         }
 
         val myTable = buildList {
@@ -715,6 +715,7 @@ internal object WakeUpCompat {
                 val roomIndex = headers.indexOfFirst { it.contains("地点") }
                 val weeksIndex = headers.indexOfFirst { it.contains("周次") }
                 val parityIndex = headers.indexOfFirst { it.contains("单双周") }
+                val creditIndex = headers.indexOfFirst { it == "学分" }
                 for (row in table.select("tbody tr")) {
                     val cells = row.children()
                     val name = cells.getOrNull(nameIndex)?.text()?.substringAfter(']')?.trim().orEmpty()
@@ -723,12 +724,14 @@ internal object WakeUpCompat {
                     val nodeText = timing.substringAfter('[', "").substringBefore(']')
                     val weeks = if (weeksIndex >= 0) cells.getOrNull(weeksIndex)?.text().orEmpty() else timing.substringAfter('(', "").substringBefore('周')
                     val parity = cells.getOrNull(parityIndex)?.text().orEmpty()
+                    val credit = cells.getOrNull(creditIndex)?.text()?.trim()?.toFloatOrNull()
+                        ?.takeIf { it.isFinite() && it >= 0f } ?: 0f
                     val typedWeeks = weeks.replace('，', ',').split(',').joinToString(",") { part ->
                         val t = part.trim()
                         if (t.contains('单') || t.contains('双') || parity.isBlank()) t else "$t$parity"
                     }
                     addAll(emit(name, cells.getOrNull(teacherIndex)?.text()?.substringAfter(']').orEmpty(),
-                        cells.getOrNull(roomIndex)?.text().orEmpty(), day, nodeText, typedWeeks))
+                        cells.getOrNull(roomIndex)?.text().orEmpty(), day, nodeText, typedWeeks, credit))
                 }
             }
         }
