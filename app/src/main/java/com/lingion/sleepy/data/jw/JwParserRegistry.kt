@@ -73,6 +73,11 @@ object JwParserRegistry {
     )
 
     private val FACTORIES: Map<String, (String) -> JwParser> = linkedMapOf(
+        JwProtocol.TYPE_GXIC to { html -> JwSchoolGridParser(html, JwProtocol.TYPE_GXIC) },
+        JwProtocol.TYPE_GXNU to { html -> JwSchoolGridParser(html, JwProtocol.TYPE_GXNU) },
+        JwProtocol.TYPE_JXNU to { html -> JwSchoolGridParser(html, JwProtocol.TYPE_JXNU) },
+        JwProtocol.TYPE_NNUTC to { html -> JwSchoolGridParser(html, JwProtocol.TYPE_NNUTC) },
+
         JwProtocol.TYPE_SHSMU to { html -> JwUndergradClockParser(html, JwProtocol.TYPE_SHSMU) },
         JwProtocol.TYPE_YGU to { html -> JwUndergradClockParser(html, JwProtocol.TYPE_YGU) },
         JwProtocol.TYPE_XJTU_POST to { html -> JwPostgradSchoolParser(html, JwProtocol.TYPE_XJTU_POST) },
@@ -272,6 +277,7 @@ object JwParserRegistry {
     )
 
     private val DECLARED_ONLY_TYPES = setOf(
+        JwProtocol.TYPE_GXIC, JwProtocol.TYPE_GXNU, JwProtocol.TYPE_JXNU, JwProtocol.TYPE_NNUTC,
         JwProtocol.TYPE_SHSMU, JwProtocol.TYPE_YGU,
         JwProtocol.TYPE_XJTU_POST, JwProtocol.TYPE_UESTC_POST, JwProtocol.TYPE_BFA_POST, JwProtocol.TYPE_GDBYXY, JwProtocol.TYPE_CUPL_POST, JwProtocol.TYPE_YSU_POST, JwProtocol.TYPE_WHU_POST, JwProtocol.TYPE_HRBEU_POST, JwProtocol.TYPE_SHTU_POST, JwProtocol.TYPE_USTC_POST, JwProtocol.TYPE_XAUAT_POST, JwProtocol.TYPE_ZJU_POST, JwProtocol.TYPE_CSV, JwProtocol.TYPE_SHUWEI_OLD,
         JwProtocol.TYPE_JNU, JwProtocol.TYPE_SWUST,
