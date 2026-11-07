@@ -29,19 +29,20 @@ internal fun schoolWeekRanges(raw: String, trailingParityAppliesToAll: Boolean =
 }
 
 internal fun schoolNodeRanges(raw: String): List<Pair<Int, Int>> {
-    val nodes = sortedSetOf<Int>()
+    val ranges = mutableListOf<Pair<Int, Int>>()
     for (token in raw.split(',', '，')) {
         val match = Regex("""([0-9]+)(?:\s*-\s*([0-9]+))?""").matchEntire(token.trim()) ?: return emptyList()
         val first = match.groupValues[1].toIntOrNull() ?: return emptyList()
         val last = match.groupValues[2].ifEmpty { match.groupValues[1] }.toIntOrNull() ?: return emptyList()
-        if (first !in 1..30 || last !in first..30) return emptyList()
-        nodes += first..last
+        if (first < 1 || last < first) return emptyList()
+        ranges += first to last
     }
     val result = mutableListOf<Pair<Int, Int>>()
-    for (node in nodes) {
-        val last = result.lastOrNull()
-        if (last != null && node == last.second + 1) result[result.lastIndex] = last.first to node
-        else result += node to node
+    for ((first, last) in ranges.sortedBy { it.first }) {
+        val previous = result.lastOrNull()
+        if (previous != null && first.toLong() <= previous.second.toLong() + 1)
+            result[result.lastIndex] = previous.first to maxOf(previous.second, last)
+        else result += first to last
     }
     return result
 }
