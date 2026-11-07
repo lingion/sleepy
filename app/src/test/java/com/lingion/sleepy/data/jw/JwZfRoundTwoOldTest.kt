@@ -31,4 +31,15 @@ class JwZfRoundTwoOldTest {
         val html = page("<a href='#'>离散数学<br>{第1周}(1-2节)<br>陈老师<br>理科楼305</a>")
         assertEquals(listOf(course(endWeek = 1)), JwOldZfParser(html).generateCourseList())
     }
+    @Test fun `rowspans reserve weekdays across following rows and expire`() {
+        val html = """<table id="Table1"><tr><td>第1节</td><td rowspan="2"><a>数学<br>{第1-4周}<br>甲<br>A</a></td><td><a>物理<br>{第1-4周}<br>乙<br>B</a></td></tr>
+          <tr><td>第2节</td><td><a>英语<br>{第5周}<br>丙<br>C</a></td></tr>
+          <tr><td>第3节</td><td><a>历史<br>{第6周}<br>丁<br>D</a></td></tr></table>"""
+        assertEquals(listOf(
+            JwCourse("数学", "A", "甲", 1, 1, 2, 1, 4),
+            JwCourse("物理", "B", "乙", 2, 1, 1, 1, 4),
+            JwCourse("英语", "C", "丙", 2, 2, 2, 5, 5),
+            JwCourse("历史", "D", "丁", 1, 3, 3, 6, 6),
+        ), JwOldZfParser(html).generateCourseList())
+    }
 }

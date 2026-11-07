@@ -46,34 +46,38 @@ class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(sourc
             ?: doc.select("table.blacktab").firstOrNull()
             ?: pickTableByMonday(doc)
             ?: return emptyList()
-        val trs = table1.getElementsByTag("tr")
+        val trs = table1.getElementsByTag("tr").filter { it.closest("table") == table1 }
         val importBeanList = ArrayList<ImportBean>()
         var node = -1
-        for (tr in trs) {
-            val tds = tr.getElementsByTag("td")
+        val occupiedThrough = IntArray(8) { -1 }
+        for ((rowIndex, tr) in trs.withIndex()) {
+            val tds = tr.children().filter { it.tagName() == "td" }
             var countFlag = false
             var countDay = 0
             for (td in tds) {
                 val courseSource = td.text().trim()
-                if (courseSource.length <= 1) {
-                    if (countFlag) {
-                        countDay++
-                    }
-                    continue
-                }
                 if (OTHER_HEADER.contains(courseSource)) {
                     // 表头行（"时间" "星期一" "中午" 等组头）
                     continue
                 }
-                val result = parseHeaderNodeString(courseSource)
+                val festival = td.getElementsByClass("festival").firstOrNull()?.text()?.trim()?.toIntOrNull()
+                val result = festival?.takeIf { courseSource == it.toString() } ?: parseHeaderNodeString(courseSource)
                 if (result != -1) {
                     // T1 G6: 合并行头"第N-M节"也在此返回首段 N, 不落入下方 countDay++
                     node = result
                     countFlag = true
                     continue
                 }
-                countDay++
+                if (courseSource.length <= 1 && !countFlag && node <= 0) continue
+                val explicitDay = Regex("([1-7])-[0-9]+").matchEntire(td.id())?.groupValues?.get(1)?.toIntOrNull()
+                if (explicitDay != null) countDay = explicitDay else {
+                    countDay++
+                    while (countDay <= 7 && occupiedThrough[countDay] >= rowIndex) countDay++
+                }
+                if (countDay !in 1..7) continue
                 val span = td.attr("rowspan").toIntOrNull()?.takeIf { it > 0 } ?: 1
+                occupiedThrough[countDay] = rowIndex + span - 1
+                if (courseSource.length <= 1) continue
                 when (type) {
                     0 -> importBeanList.addAll(parseImportBean(countDay, td.html(), node).map { it.copy(span = span) })
                     else -> importBeanList.addAll(parseImportBean1(countDay, courseSource, node).map { it.copy(span = span) })
