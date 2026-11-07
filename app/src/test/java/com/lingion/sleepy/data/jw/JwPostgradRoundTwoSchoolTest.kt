@@ -12,6 +12,7 @@ class JwPostgradRoundTwoSchoolTest {
         assertEquals(direct, JwImportViewModel.parseHtmlStatic(html, type).first)
         val draft = JwImportDraftSnapshot(JwSchoolInfo("T", "协议回归", type = type), direct, emptyList())
         assertEquals(direct, JwImportDraftCodec.fromJson(JwImportDraftCodec.toJson(draft))!!.courses)
+        if (type !in setOf("csv", "zju_post")) assertDeclaredHtmlFrame(type, html, direct)
         return direct
     }
     private fun occurrences(courses: List<JwCourse>): List<String> = courses.flatMap { course ->

@@ -11,6 +11,7 @@ class JwUndergradRoundTwoBatchThreeTest {
         assertEquals(direct, imported)
         val draft = JwImportDraftSnapshot(JwSchoolInfo("T", "协议回归", type = type), imported, emptyList())
         assertEquals(imported, JwImportDraftCodec.fromJson(JwImportDraftCodec.toJson(draft))!!.courses)
+        assertDeclaredHtmlFrame(type, source, imported)
         return imported
     }
 

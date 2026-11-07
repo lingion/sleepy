@@ -10,6 +10,7 @@ class JwUndergradRoundTwoBatchTwoTest {
         if (type in setOf("jnu", "swust")) assertEquals(direct, JwParserRegistry.selectBest(source, type).first)
         val draft = JwImportDraftSnapshot(JwSchoolInfo("T", "协议回归", type = type), direct, emptyList())
         assertEquals(direct, JwImportDraftCodec.fromJson(JwImportDraftCodec.toJson(draft))!!.courses)
+        assertDeclaredHtmlFrame(type, source, direct)
         return direct
     }
 
