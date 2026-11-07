@@ -171,6 +171,11 @@ object JwParserRegistry {
         JwProtocol.TYPE_BNUZ to ::JwBnuzParser,
         JwProtocol.TYPE_HNUST to { html: String -> JwHnustParser(html) },
         JwProtocol.TYPE_HNIU to { html: String -> JwHniuparser(html) },
+        JwProtocol.TYPE_SUSTECH to { html -> JwUndergradSchoolParser(html, JwProtocol.TYPE_SUSTECH) },
+        JwProtocol.TYPE_UIC to { html -> JwUndergradSchoolParser(html, JwProtocol.TYPE_UIC) },
+        JwProtocol.TYPE_CITYU to { html -> JwUndergradSchoolParser(html, JwProtocol.TYPE_CITYU) },
+        JwProtocol.TYPE_STU to { html -> JwUndergradSchoolParser(html, JwProtocol.TYPE_STU) },
+        JwProtocol.TYPE_NFU to { html -> JwUndergradSchoolParser(html, JwProtocol.TYPE_NFU) },
         JwProtocol.TYPE_SCAU to ::JwScauParser,
         // sg_asset: source 不是 HTML 而是拾光脚本 saveImportedCourses 提交的课程 JSON
         JwProtocol.TYPE_SG_ASSET to ::JwSgAssetParser,
@@ -237,6 +242,7 @@ object JwParserRegistry {
     )
 
     private val DECLARED_ONLY_TYPES = setOf(
+        JwProtocol.TYPE_HNIU, JwProtocol.TYPE_SUSTECH, JwProtocol.TYPE_UIC, JwProtocol.TYPE_CITYU, JwProtocol.TYPE_STU, JwProtocol.TYPE_NFU,
         JwProtocol.TYPE_NYIST, JwProtocol.TYPE_JXAU,
         JwProtocol.TYPE_FSTVC, JwProtocol.TYPE_GDBH, JwProtocol.TYPE_GLIET, JwProtocol.TYPE_CNU, JwProtocol.TYPE_XBELLSOFT,
         JwProtocol.TYPE_CDUT, JwProtocol.TYPE_GZHUYJS, JwProtocol.TYPE_DHU, JwProtocol.TYPE_ECJTU, JwProtocol.TYPE_ZPTC, JwProtocol.TYPE_CTGU,

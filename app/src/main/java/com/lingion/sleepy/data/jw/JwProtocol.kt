@@ -103,6 +103,13 @@ object JwProtocol {
     /** WakeUp NewUrpSuperParser 的 flat-array/skzc 位图变体。 */
     const val TYPE_NEW_URP_SUPER = "new_urp_super"
 
+    /** School-specific layouts require an explicit catalog protocol. */
+    const val TYPE_SUSTECH = "sustech"
+    const val TYPE_UIC = "uic"
+    const val TYPE_CITYU = "cityu"
+    const val TYPE_STU = "stu"
+    const val TYPE_NFU = "nfu"
+
     /** Kingosoft ZX: pageRpt reports and mytable grids. */
     const val TYPE_KINGO_ZX = "kingo_zx"
 
@@ -380,6 +387,7 @@ object JwProtocol {
 
     /** WakeUp-derived types routed by the compatibility layer; kept separate from legacy UI ordering. */
     val WAKEUP_COMPAT_TYPES: List<String> = listOf(
+        TYPE_SUSTECH, TYPE_UIC, TYPE_CITYU, TYPE_STU, TYPE_NFU,
         TYPE_FSTVC, TYPE_GDBH, TYPE_GLIET, TYPE_CNU, TYPE_XBELLSOFT,
         TYPE_CDUT, TYPE_GZHUYJS, TYPE_DHU, TYPE_ECJTU, TYPE_ZPTC, TYPE_CTGU, TYPE_NYIST, TYPE_JXAU,
         TYPE_CCIBE, TYPE_CPPU, TYPE_SHCC,
@@ -397,6 +405,11 @@ object JwProtocol {
     )
 
     fun displayName(type: String?): String = when (type) {
+        TYPE_SUSTECH -> "南方科技大学教务"
+        TYPE_UIC -> "UIC 旧版教务"
+        TYPE_CITYU -> "CityU 课表"
+        TYPE_STU -> "汕头大学旧版教务"
+        TYPE_NFU -> "南方学院教务"
         TYPE_BFA -> "北京电影学院教务"
         TYPE_HUST -> "华中科技大学教务"
         TYPE_AIC -> "AIC 智能校园教务"
