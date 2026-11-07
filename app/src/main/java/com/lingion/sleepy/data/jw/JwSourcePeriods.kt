@@ -9,11 +9,18 @@ object JwSourcePeriods {
         if (captured.isNotEmpty()) return captured
         if (type == JwProtocol.TYPE_SUES) return JwSuesParser.periods
         if (type == JwProtocol.TYPE_SHU2024) return JwUndergradBHtmlParser.shuPeriods
+        JwUndergradCSourcePeriods.resolve(type.orEmpty()).takeIf { it.isNotEmpty() }?.let { return it }
         JwPostgradSourcePeriods.resolve(type.orEmpty()).takeIf { it.isNotEmpty() }?.let { return it }
         if (type == JwProtocol.TYPE_SHSMU) return JwUndergradClockParser.shsmuPeriods.mapIndexed { index, period ->
             Triple(index + 1, period.first, period.second)
         }
         val times = when (type) {
+            JwProtocol.TYPE_WIST -> {
+                if (!schoolName.contains("武汉船舶职业技术学院")) return emptyList()
+                listOf("08:10-08:55", "09:05-09:50", "10:10-10:55", "11:05-11:50",
+                    "12:30-13:10", "13:20-14:00", "14:00-14:45", "14:55-15:40", "16:00-16:45",
+                    "16:55-17:40", "19:00-19:45", "19:55-20:40")
+            }
             "qz_fspt" -> listOf("08:40-09:20", "09:25-10:05", "10:25-11:05", "11:10-11:50",
                 "14:00-14:40", "14:45-15:25", "15:45-16:25", "16:30-17:10",
                 "19:00-19:40", "19:45-20:25", "20:35-21:15", "21:20-22:00")

@@ -37,4 +37,14 @@ class JwSourcePeriodsTest {
         }
         assertTrue(JwSourcePeriods.resolve("[]","unknown","",emptyList()).isEmpty())
     }
+    @Test fun `WIST defaults require its school identity and preserve all twelve clocks`() {
+        val expected = listOf("08:10-08:55", "09:05-09:50", "10:10-10:55", "11:05-11:50",
+            "12:30-13:10", "13:20-14:00", "14:00-14:45", "14:55-15:40", "16:00-16:45",
+            "16:55-17:40", "19:00-19:45", "19:55-20:40").mapIndexed { i,t -> Triple(i+1,t.substringBefore('-'),t.substringAfter('-')) }
+        assertEquals(expected,JwSourcePeriods.resolve("","wist","武汉船舶职业技术学院（主校区）",emptyList()))
+        assertTrue(JwSourcePeriods.resolve("","wist","其他学校",emptyList()).isEmpty())
+        val captured = listOf(Triple(1,"07:00","07:45"))
+        assertEquals(captured,JwSourcePeriods.resolve("","wist","武汉船舶职业技术学院",captured))
+    }
+
 }
