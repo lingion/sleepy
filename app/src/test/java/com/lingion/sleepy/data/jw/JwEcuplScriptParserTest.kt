@@ -36,8 +36,8 @@ class JwEcuplScriptParserTest {
     fun `R6 time pair regex finds at least 12 pairs`() {
         val pairs = JwEcuplScriptParser.RE_TIME_PAIR.findAll(scriptSample()).toList()
         assertTrue("≥ 12 时间对, 实际 ${pairs.size}", pairs.size >= 12)
-        assertEquals("480", pairs[0].groupValues[1])
-        assertEquals("525", pairs[0].groupValues[2])
+        assertEquals("800", pairs[0].groupValues[1])
+        assertEquals("845", pairs[0].groupValues[2])
     }
 
     // ---- C. R7: newActivity + addActivityByTime 配对 emit 3 课程 ----
@@ -73,15 +73,15 @@ class JwEcuplScriptParserTest {
 
     @Test
     fun `unmatched minutes and overflowing bitmap emit no invented courses`() {
-        val unmatched = scriptSample().replace("activity,1,480,580", "activity,1,481,580")
+        val unmatched = scriptSample().replace("activity,1,800,940", "activity,1,801,940")
         assertEquals(3, JwEcuplScriptParser(unmatched).generateCourseList().size)
-        val overflow = scriptSample().replace("65535", "18446744073709551616")
+        val overflow = scriptSample().replace("131070", "18446744073709551616")
         assertEquals(0, JwEcuplScriptParser(overflow).generateCourseList().size)
     }
 
     @Test
     fun `sparse decimal bitmap retains gaps and date offset`() {
-        val html = scriptSample().replace("\"2024-02-26\",65535", "\"2024-03-04\",21")
+        val html = scriptSample().replace("\"2024-02-26\",131070", "\"2024-03-04\",42")
         val courses = JwEcuplScriptParser(html).generateCourseList().filter { it.name == "民法(总则)" && it.day == 1 }
         assertEquals(listOf(2, 4, 6), courses.flatMap { course ->
             (course.startWeek..course.endWeek step if (course.type == 0) 1 else 2).toList()
@@ -90,7 +90,7 @@ class JwEcuplScriptParserTest {
 
     @Test
     fun `separate scripts do not cross pair slots`() {
-        val unrelated = "<script language=\"JavaScript\">newActivity(\"bad\",\"bad\",\"x\",\"bad\",\"x\",\"bad\",\"2024-02-26\",65535);addActivityByTime(activity,7,480,525);</script>"
+        val unrelated = "<script language=\"JavaScript\">newActivity(\"bad\",\"bad\",\"x\",\"bad\",\"x\",\"bad\",\"2024-02-26\",131070);addActivityByTime(activity,7,480,525);</script>"
         assertEquals(4, JwEcuplScriptParser(unrelated + scriptSample()).generateCourseList().size)
     }
 

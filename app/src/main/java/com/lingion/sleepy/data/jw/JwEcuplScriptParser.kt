@@ -4,8 +4,8 @@ package com.lingion.sleepy.data.jw
 /**
  * ECUPL script timetable parser. OpenWakeUp EcuplParser.kt @ 9c2d0436
  * corroborates an eight-argument activity with teacher, course, room,
- * start date and decimal week bitmap. addActivityByTime takes day and
- * start/end minutes; CourseTable maps those minutes to lesson indices.
+ * start date and decimal week bitmap. WakeUp 6.6.2 o00000O0 converts the
+ * CourseTable and addActivityByTime values as HHmm, not minutes since midnight.
  * This is an independent implementation of observed protocol facts.
  */
 class JwEcuplScriptParser(source: String) : JwParser(source) {
@@ -22,7 +22,7 @@ class JwEcuplScriptParser(source: String) : JwParser(source) {
             RegexOption.DOT_MATCHES_ALL,
         )
 
-        /** R6 — 时间矩阵 [start_min, end_min] */
+        /** R6 — 时间矩阵 [start_HHmm, end_HHmm] */
         val RE_TIME_PAIR: Regex = Regex("""\[(\d+)\s*,\s*(\d+)]""")
 
         /** Five-argument legacy fixture marker; not a verified schedule source. */
@@ -43,15 +43,15 @@ class JwEcuplScriptParser(source: String) : JwParser(source) {
         val periods = RE_TIME_PAIR.findAll(table.groupValues[2]).map {
             val start = it.groupValues[1].toIntOrNull()
             val end = it.groupValues[2].toIntOrNull()
-            if (start == null || end == null || start >= end || end > 1440) null else start to end
+            if (start == null || end == null || start >= end || hhmm(start) == null || hhmm(end) == null) null else start to end
         }.toList()
         if (periods.isEmpty() || periods.any { it == null }) return out
-        val script = Regex("""<script[^>]*language\s*=\s*"?JavaScript"?[^>]*>([\s\S]*?)</script>""", RegexOption.IGNORE_CASE)
-            .findAll(source).map { it.groupValues[1] }
+        val script = org.jsoup.Jsoup.parse(source).select("script").asSequence().map { it.data() }
             .firstOrNull { it.contains(table.value) } ?: return out
         val activity = RE_NEW_ACTIVITY_8
         val slot = Regex("""addActivityByTime\(\s*activity\s*,\s*(\d)\s*,\s*(\d+)\s*,\s*(\d+)\s*\);""")
         val starts = Regex("""newActivity\s*\(""").findAll(script).map { it.range.first }.toList()
+        val details = ecuplDetails(source)
         for ((i, start) in starts.withIndex()) {
             val end = starts.getOrNull(i + 1) ?: script.length
             val segment = script.substring(start, end)
@@ -59,13 +59,23 @@ class JwEcuplScriptParser(source: String) : JwParser(source) {
             if (m.range.first != 0) continue
             val date = runCatching { java.time.LocalDate.parse(m.groupValues[4]) }.getOrNull() ?: continue
             val bitmap = m.groupValues[5].toLongOrNull() ?: continue
-            val offset = java.time.temporal.ChronoUnit.WEEKS.between(semester, date).toInt()
+            val offset = Math.floorDiv(java.time.temporal.ChronoUnit.DAYS.between(semester, date), 7).toInt()
             val weeks = (0 until 64).filter { bitmap and (1L shl it) != 0L }
-                .map { it + offset + 1 }
+                .map { it + offset }
             if (weeks.isEmpty() || weeks.any { it !in 1..64 }) continue
-            val name = m.groupValues[2].replace(Regex("""\(\d+\)$"""), "").trim()
-            val teacher = m.groupValues[1].trim()
-            val room = m.groupValues[3].trim()
+            val rawName = m.groupValues[2].trim()
+            val code = rawName.substringAfterLast('(', "").removeSuffix(")")
+            val detail = details[code]
+            val name = detail?.name ?: if (rawName.endsWith(')') && code.matches(Regex("""[A-Za-z0-9_.-]*\d[A-Za-z0-9_.-]*""")))
+                rawName.substringBeforeLast('(').trim() else rawName
+            val rawTeacher = m.groupValues[1].trim()
+            val teacher = when {
+                detail == null || detail.teacher.isBlank() || rawTeacher == detail.teacher -> rawTeacher
+                rawTeacher.isBlank() -> detail.teacher
+                else -> "$rawTeacher (${detail.teacher})"
+            }
+            val locationNote = detail?.note?.takeIf { it.contains("地点") }
+            val room = m.groupValues[3].trim() + (locationNote?.let { " ($it)" } ?: "")
             if (name.isBlank()) continue
             for (slotMatch in slot.findAll(segment.substring(m.range.last + 1))) {
                 val day = slotMatch.groupValues[1].toInt()
@@ -77,11 +87,18 @@ class JwEcuplScriptParser(source: String) : JwParser(source) {
                 for (range in compactWeeks(weeks)) {
                     out += JwCourse(name = name, room = room, teacher = teacher, day = day,
                         startNode = startNode, endNode = endNode,
-                        startWeek = range.first, endWeek = range.second, type = range.third)
+                        startWeek = range.first, endWeek = range.second, type = range.third,
+                        startTime = hhmm(startMinute).orEmpty(), endTime = hhmm(endMinute).orEmpty(),
+                        credit = detail?.credit ?: 0f, note = if (locationNote == null) detail?.note.orEmpty() else "")
                 }
             }
         }
         return out
+    }
+
+    private fun hhmm(value: Int): String? {
+        if (value < 0 || value / 100 !in 0..23 || value % 100 !in 0..59) return null
+        return (value / 100).toString().padStart(2, '0') + ":" + (value % 100).toString().padStart(2, '0')
     }
 
     internal fun parseWeekBitmap(bitmap: String): Triple<Int, Int, Int>? {
