@@ -131,6 +131,9 @@ open class JwQzParser(source: String) : JwParser(source) {
     override fun generateCourseList(): List<JwCourse> {
         val courseList = arrayListOf<JwCourse>()
         val doc = Jsoup.parse(source)
+        if (!usesSchoolRowMapping && tableName == "kbcontent") {
+            JwQzModernHtml.parse(doc)?.let { return it }
+        }
         // New QZ layouts (NNNU) use explicit sections and a detailed #timetable view.
         if (!usesSchoolRowMapping && tableName == "kbcontent" && doc.getElementById("kbtable") == null &&
             doc.selectFirst("table#timetable .kbcontent") != null
@@ -187,6 +190,7 @@ open class JwQzParser(source: String) : JwParser(source) {
     override fun confidence(): Int {
         return try {
             val doc = Jsoup.parse(source)
+            if (!usesSchoolRowMapping && tableName == "kbcontent" && JwQzModernHtml.features(doc).isNotEmpty()) return 100
             if (doc.getElementById("kbtable") == null &&
                 doc.selectFirst("table#timetable .kbcontent [title='周次(节次)']") != null
             ) return 100
@@ -209,6 +213,7 @@ open class JwQzParser(source: String) : JwParser(source) {
     override fun matchedFeatures(): List<String> = try {
         val doc = Jsoup.parse(source)
         buildList {
+            if (!usesSchoolRowMapping && tableName == "kbcontent") addAll(JwQzModernHtml.features(doc))
             if (doc.getElementById("kbtable") != null) add("id=kbtable")
             if (doc.selectFirst("table#timetable .$tableName") != null) add("id=timetable")
             if (doc.getElementsByClass(tableName).isNotEmpty()) add("class=$tableName")

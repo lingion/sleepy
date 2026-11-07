@@ -8,6 +8,9 @@ object JwSourcePeriods {
         captured: List<Triple<Int, String, String>>): List<Triple<Int, String, String>> {
         if (captured.isNotEmpty()) return captured
         val times = when (type) {
+            "qz_fspt" -> listOf("08:40-09:20", "09:25-10:05", "10:25-11:05", "11:10-11:50",
+                "14:00-14:40", "14:45-15:25", "15:45-16:25", "16:30-17:10",
+                "19:00-19:40", "19:45-20:25", "20:35-21:15", "21:20-22:00")
             JwProtocol.TYPE_GDBH -> listOf("08:25-09:10", "09:20-10:05", "10:25-11:10", "11:20-12:05",
                 "15:00-15:45", "15:55-16:40", "17:00-17:45", "17:55-18:40", "19:40-20:25", "20:35-21:20")
             JwProtocol.TYPE_FSTVC -> {

@@ -129,7 +129,7 @@ object FrameTraversalTree {
         "Table1", "blacktab", "kbtable", "kbgrid_table_0", "kblist_table", "kbList", "kbxx", "timetable", "_dgdata", "pageRpt", "mytable", "reportArea", "xkinfo", "sample-table-1",
         // 经典 EAMS 课表网格容器 (南开 #236; JwClassicEamsParser 95 分锚, NBCC 同族互证)。
         // 用户手点进课表页时 generic DFS 通路也能兜住; 空壳表页由 parser 置信度分层处理。
-        "manualArrangeCourseTable"
+        "manualArrangeCourseTable", "Table6", "table_tb", "kbgrid_table"
     )
 
     /** THU 网格课程由页面脚本填入 aN_M 单元；需要完整脚本指纹，不能仅凭泛用 id 命中。 */
@@ -156,10 +156,13 @@ object FrameTraversalTree {
         val anchors = ANCHORS.filter { anchor ->
             anchorNeedle(anchor).any { needle -> lower.contains(needle.lowercase()) }
         }
+        val modernQzAnchors = if (lower.contains("qz-tooltipcontent") || lower.contains("el-table__body")) {
+            anchors + com.lingion.sleepy.data.jw.JwQzModernHtml.features(org.jsoup.Jsoup.parse(html))
+        } else anchors
         val oldQzAnchors = if ((lower.contains("id=\"kb\"") || lower.contains("id='kb'") ||
             Regex("""id=["'][1-5]-[1-7]-2["']""").containsMatchIn(lower)) &&
             com.lingion.sleepy.data.jw.JwOldQzSuperParser(html).generateCourseList().isNotEmpty()
-        ) anchors + "old-qz-structural" else anchors
+        ) modernQzAnchors + "old-qz-structural" else modernQzAnchors
         val thuAnchors = if (isThuCoursePage(html)) oldQzAnchors + THU_SCRIPT_ANCHOR else oldQzAnchors
         // Some URP pages embed the timetable as a flat JSON array in a script,
         // without a table id/class. Validate its structure before selecting frame.
@@ -508,7 +511,8 @@ object FrameTraversalTree {
 object RenderReadinessChecker {
     /** 延迟渲染容器 — 新正方 grid/list 视图 + 老正方 Table1Wrap */
     val DELAYED_CONTAINER_ANCHORS: List<String> =
-        listOf("Table1Wrap", "kbgrid_table_0", "kblist_table", "kbcontent", "timetable_con")
+        listOf("Table1Wrap", "kbgrid_table_0", "kblist_table", "kbcontent", "timetable_con",
+            "el-table__body", "kbDataTd")
 
     enum class Readiness { READY, DELAY, GIVE_UP }
 

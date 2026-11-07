@@ -116,8 +116,13 @@ object JwParserRegistry {
         JwProtocol.TYPE_ZF_NEW to ::JwNewZfParser,
         JwProtocol.TYPE_ZF to { html -> JwOldZfParser(html, 0) },
         JwProtocol.TYPE_ZF_1 to { html -> JwOldZfParser(html, 1) },
+        JwProtocol.TYPE_ZF_CLS to ::JwZfClassParser,
         JwProtocol.TYPE_URP to ::JwUrpParser,
         JwProtocol.TYPE_QZ to ::JwQzParser,
+        JwProtocol.TYPE_QZ_2017 to ::JwQzParser,
+        JwProtocol.TYPE_QZ_2024 to ::JwQzParser,
+        JwProtocol.TYPE_QZ_FSPT to ::JwQzFsptParser,
+        JwProtocol.TYPE_QZ_USTB to ::JwQzUstbParser,
         JwProtocol.TYPE_QZ_CRAZY to ::JwQzCrazyParser,
         JwProtocol.TYPE_QZ_BR to ::JwQzBrParser,
         JwProtocol.TYPE_QZ_WITH_NODE to ::JwQzWithNodeParser,
@@ -230,7 +235,8 @@ object JwParserRegistry {
         }
         // A modern QZ table owns its titled fields. If those fields are incomplete,
         // a different family's positional fallback must not manufacture a schedule.
-        val modernQz = org.jsoup.Jsoup.parse(html).select(
+        val qzDocument = org.jsoup.Jsoup.parse(html)
+        val modernQz = JwQzModernHtml.features(qzDocument).isNotEmpty() || qzDocument.select(
             "table#kbtable .kbcontent [title], table#kbtable .kbcontent1 [title], " +
                 "table#timetable .kbcontent [title], table#timetable .kbcontent1 [title]"
         ).any { it.attr("title") in setOf("老师", "教师", "教室", "上课地点", "周次", "节次", "周次(节次)", "选课人数") }
@@ -241,12 +247,14 @@ object JwParserRegistry {
     }
 
     private val QZ_HTML_TYPES = setOf(
+        JwProtocol.TYPE_QZ_2017, JwProtocol.TYPE_QZ_2024, JwProtocol.TYPE_QZ_FSPT, JwProtocol.TYPE_QZ_USTB,
         JwProtocol.TYPE_QZ, JwProtocol.TYPE_QZ_CRAZY, JwProtocol.TYPE_QZ_BR, JwProtocol.TYPE_QZ_WITH_NODE,
         JwProtocol.TYPE_QZ_SINGLE_NODE, JwProtocol.TYPE_QZ_NJUST, JwProtocol.TYPE_QZ_WIT,
         JwProtocol.TYPE_QZ_ECUST, JwProtocol.TYPE_QZ_AHUT, JwProtocol.TYPE_QZ_BJFU,
     )
 
     private val DECLARED_ONLY_TYPES = setOf(
+        JwProtocol.TYPE_QZ_2017, JwProtocol.TYPE_QZ_2024, JwProtocol.TYPE_QZ_FSPT, JwProtocol.TYPE_QZ_USTB, JwProtocol.TYPE_ZF_CLS,
         JwProtocol.TYPE_JMUCY, JwProtocol.TYPE_NUAAJC, JwProtocol.TYPE_QMU, JwProtocol.TYPE_JAVTC, JwProtocol.TYPE_HITSZ,
         JwProtocol.TYPE_HNIU, JwProtocol.TYPE_SUSTECH, JwProtocol.TYPE_UIC, JwProtocol.TYPE_CITYU, JwProtocol.TYPE_STU, JwProtocol.TYPE_NFU,
         JwProtocol.TYPE_NYIST, JwProtocol.TYPE_JXAU,

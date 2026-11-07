@@ -32,6 +32,7 @@ package com.lingion.sleepy.data.jw
 class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(source) {
 
     override fun generateCourseList(): List<JwCourse> {
+        if (type == 0) JwZfVariantHtml.parse(source)?.let { return it }
         val doc = org.jsoup.Jsoup.parse(source)
         // jsoup 1.20.1 起 pretty-printer 重写: Element.html() 把 <br> 从行尾
         // 挪到行首,parseImportBean 按 "<br><br>"/"<br><br><br>" 字符串切分课程
@@ -79,7 +80,8 @@ class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(sourc
                 }
             }
         }
-        return importList2CourseList(importBeanList, source)
+        val courses = importList2CourseList(importBeanList, source)
+        return courses.ifEmpty { if (type == 0) JwOldZfParser(source, 1).generateCourseList() else emptyList() }
     }
 
     /** type=0：标准老正方单元格，<a>课程名<br>周次<br>[老师<br>教室] </a>，多门课 <br><br> 分隔（未改动） */

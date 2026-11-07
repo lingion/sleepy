@@ -110,6 +110,12 @@ object JwProtocol {
     const val TYPE_JAVTC = "javtc"
     const val TYPE_HITSZ = "hitsz"
 
+    const val TYPE_QZ_2017 = "qz_2017"
+    const val TYPE_QZ_2024 = "qz_2024"
+    const val TYPE_QZ_FSPT = "qz_fspt"
+    const val TYPE_QZ_USTB = "qz_ustb"
+    const val TYPE_ZF_CLS = "zf_cls"
+
     const val TYPE_SUSTECH = "sustech"
     const val TYPE_UIC = "uic"
     const val TYPE_CITYU = "cityu"
@@ -393,6 +399,7 @@ object JwProtocol {
 
     /** WakeUp-derived types routed by the compatibility layer; kept separate from legacy UI ordering. */
     val WAKEUP_COMPAT_TYPES: List<String> = listOf(
+        TYPE_QZ_2017, TYPE_QZ_2024, TYPE_QZ_FSPT, TYPE_QZ_USTB, TYPE_ZF_CLS,
         TYPE_JMUCY, TYPE_NUAAJC, TYPE_QMU, TYPE_JAVTC, TYPE_HITSZ,
         TYPE_SUSTECH, TYPE_UIC, TYPE_CITYU, TYPE_STU, TYPE_NFU,
         TYPE_FSTVC, TYPE_GDBH, TYPE_GLIET, TYPE_CNU, TYPE_XBELLSOFT,
@@ -412,6 +419,11 @@ object JwProtocol {
     )
 
     fun displayName(type: String?): String = when (type) {
+        TYPE_QZ_2017 -> "强智 2017 课表"
+        TYPE_QZ_2024 -> "强智 2024 课表"
+        TYPE_QZ_FSPT -> "佛山职业技术学院强智教务"
+        TYPE_QZ_USTB -> "北京科技大学强智教务"
+        TYPE_ZF_CLS -> "正方班级课表"
         TYPE_JMUCY -> "集美大学诚毅学院教务"
         TYPE_NUAAJC -> "南航金城学院教务"
         TYPE_QMU -> "齐齐哈尔医学院教务"
@@ -517,6 +529,8 @@ object JwProtocol {
      * 协议大类，用于 WebViewLogin UI 上的提示文案分类
      */
     fun category(type: String?): String = when (type) {
+        TYPE_QZ_2017, TYPE_QZ_2024, TYPE_QZ_FSPT, TYPE_QZ_USTB -> "qz"
+        TYPE_ZF_CLS -> "zf"
         TYPE_SIMC -> "other"
         TYPE_QZ_SINGLE_NODE, TYPE_QZ_NJUST, TYPE_QZ_WIT, TYPE_QZ_ECUST, TYPE_QZ_AHUT, TYPE_QZ_BJFU -> "qz"
         TYPE_QZ, TYPE_QZ_OLD, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE, TYPE_QZ_APP -> "qz"
