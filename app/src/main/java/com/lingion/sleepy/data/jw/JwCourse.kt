@@ -18,5 +18,19 @@ data class JwCourse(
     val endNode: Int,
     val startWeek: Int,
     val endWeek: Int,
-    val type: Int = 0  // 0=每周 1=单周 2=双周
-)
+    val type: Int = 0,  // 0=每周 1=单周 2=双周
+    /** Actual clock times supplied by the school; empty for period-only schedules. */
+    val startTime: String = "",
+    val endTime: String = "",
+    val credit: Float = 0f,
+    val note: String = "",
+) {
+    val hasActualTime: Boolean get() = startTime.isNotEmpty() && endTime.isNotEmpty()
+
+    companion object {
+        private val clockTime = Regex("(?:[01][0-9]|2[0-3]):[0-5][0-9]")
+
+        fun isValidTimeRange(start: String, end: String): Boolean =
+            clockTime.matches(start) && clockTime.matches(end) && start < end
+    }
+}
