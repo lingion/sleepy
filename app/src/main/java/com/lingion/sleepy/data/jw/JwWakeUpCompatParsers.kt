@@ -615,12 +615,12 @@ internal object WakeUpCompat {
             val (start, end) = nodes(nodeText) ?: return emptyList()
             if (name.isBlank() || day !in 1..7) return emptyList()
             // Keep this source's week grammar strict; the generic compatibility parser is deliberately permissive.
-            val weekPattern = Regex("""^(\d{1,2})(?:[-~至](\d{1,2}))?周?(?:[\(（]([单双])[）\)]|([单双])周?)?$""")
-            val weeks = weeksText.split(',', '，', ';', '；').mapNotNull { raw ->
-                val match = weekPattern.matchEntire(raw.filterNot(Char::isWhitespace)) ?: return@mapNotNull null
-                val first = match.groupValues[1].toIntOrNull() ?: return@mapNotNull null
-                val last = match.groupValues[2].takeIf(String::isNotBlank)?.toIntOrNull() ?: first
-                if (first !in 1..60 || last !in first..60) return@mapNotNull null
+            val weekPattern = Regex("""^([0-9]+)(?:[-~至]([0-9]+))?周?(?:[\(（]([单双])[）\)]|([单双])周?)?$""")
+            val weeks = weeksText.split(',', '，', ';', '；').map { raw ->
+                val match = weekPattern.matchEntire(raw.filterNot(Char::isWhitespace)) ?: return emptyList()
+                val first = match.groupValues[1].toIntOrNull() ?: return emptyList()
+                val last = match.groupValues[2].takeIf(String::isNotBlank)?.let { it.toIntOrNull() ?: return emptyList() } ?: first
+                if (first !in 1..366 || last !in first..366) return emptyList()
                 val parity = match.groupValues[3].ifBlank { match.groupValues[4] }
                 Triple(first, last, when (parity) { "单" -> 1; "双" -> 2; else -> 0 })
             }
