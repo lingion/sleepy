@@ -131,6 +131,10 @@ object JwProtocol {
     const val TYPE_TJU = "tju"
     const val TYPE_HQU = "hqu"
     const val TYPE_CHANGZHOU = "changzhou"
+    const val TYPE_SICNU = "sicnu"
+    const val TYPE_NUIST = "nuist"
+    const val TYPE_SIT = "sit"
+    const val TYPE_SYSU = "sysu"
 
     const val TYPE_HBUT = "hbut"
     const val TYPE_HNJM = "hnjm"
@@ -459,7 +463,7 @@ object JwProtocol {
 
     /** WakeUp-derived types routed by the compatibility layer; kept separate from legacy UI ordering. */
     val WAKEUP_COMPAT_TYPES: List<String> = listOf(
-        TYPE_HUAT, TYPE_SEU_2017, TYPE_SHU2024, TYPE_TJU, TYPE_HQU, TYPE_CHANGZHOU,
+        TYPE_HUAT, TYPE_SEU_2017, TYPE_SHU2024, TYPE_TJU, TYPE_HQU, TYPE_CHANGZHOU, TYPE_SICNU, TYPE_NUIST, TYPE_SIT, TYPE_SYSU,
         TYPE_JZ_1, TYPE_JZ_X, TYPE_WIST, TYPE_XMU, TYPE_SWJTU_POST, TYPE_KG_ZX,
         TYPE_HBUT, TYPE_HNJM, TYPE_LZ, TYPE_NAU, TYPE_NJU, TYPE_CQUPT,
         TYPE_XHTD, TYPE_XYTC, TYPE_CIDP, TYPE_SDPEI, TYPE_SHU, TYPE_JMPT, TYPE_LNGD, TYPE_VATUU, TYPE_YZZY,
@@ -494,6 +498,10 @@ object JwProtocol {
         TYPE_TJU -> "同济大学教务"
         TYPE_HQU -> "华侨大学教务"
         TYPE_CHANGZHOU -> "常州模板教务"
+        TYPE_SICNU -> "四川师范大学教务"
+        TYPE_NUIST -> "NUIST模板教务"
+        TYPE_SIT -> "上海应用技术大学教务"
+        TYPE_SYSU -> "中山大学教务"
         TYPE_JZ_1 -> "金智课程表"
         TYPE_JZ_X -> "金智扩展课程表"
         TYPE_WIST -> "武汉船舶课程表"
