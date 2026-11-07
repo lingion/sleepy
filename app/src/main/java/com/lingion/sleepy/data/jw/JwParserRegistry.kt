@@ -83,6 +83,7 @@ object JwParserRegistry {
         JwProtocol.TYPE_NUIST to { html -> JwUndergradBGridParser(html, JwProtocol.TYPE_NUIST) },
         JwProtocol.TYPE_SIT to { html -> JwUndergradBGridParser(html, JwProtocol.TYPE_SIT) },
         JwProtocol.TYPE_SYSU to { html -> JwUndergradBGridParser(html, JwProtocol.TYPE_SYSU) },
+        JwProtocol.TYPE_SUES to ::JwSuesParser,
         JwProtocol.TYPE_JZ_1 to { html -> JwDeclaredJinZhiParser(html, JwProtocol.TYPE_JZ_1) },
         JwProtocol.TYPE_JZ_X to { html -> JwDeclaredJinZhiParser(html, JwProtocol.TYPE_JZ_X) },
         JwProtocol.TYPE_WIST to { html -> JwDeclaredJinZhiParser(html, JwProtocol.TYPE_WIST) },
@@ -314,8 +315,7 @@ object JwParserRegistry {
     )
 
     private val DECLARED_ONLY_TYPES = setOf(
-        JwProtocol.TYPE_PKU,
-        JwProtocol.TYPE_HUAT, JwProtocol.TYPE_SEU_2017, JwProtocol.TYPE_SHU2024, JwProtocol.TYPE_TJU, JwProtocol.TYPE_HQU, JwProtocol.TYPE_CHANGZHOU, JwProtocol.TYPE_SICNU, JwProtocol.TYPE_NUIST, JwProtocol.TYPE_SIT, JwProtocol.TYPE_SYSU,
+        JwProtocol.TYPE_HUAT, JwProtocol.TYPE_SEU_2017, JwProtocol.TYPE_SHU2024, JwProtocol.TYPE_TJU, JwProtocol.TYPE_HQU, JwProtocol.TYPE_CHANGZHOU, JwProtocol.TYPE_SICNU, JwProtocol.TYPE_NUIST, JwProtocol.TYPE_SIT, JwProtocol.TYPE_SYSU, JwProtocol.TYPE_SUES, JwProtocol.TYPE_PKU,
         JwProtocol.TYPE_JZ_1, JwProtocol.TYPE_JZ_X, JwProtocol.TYPE_WIST, JwProtocol.TYPE_XMU, JwProtocol.TYPE_SWJTU_POST, JwProtocol.TYPE_KG_ZX,
         JwProtocol.TYPE_HBUT, JwProtocol.TYPE_HNJM, JwProtocol.TYPE_LZ, JwProtocol.TYPE_NAU, JwProtocol.TYPE_NJU, JwProtocol.TYPE_CQUPT,
         JwProtocol.TYPE_XHTD, JwProtocol.TYPE_XYTC, JwProtocol.TYPE_CIDP, JwProtocol.TYPE_SDPEI, JwProtocol.TYPE_SHU, JwProtocol.TYPE_JMPT, JwProtocol.TYPE_LNGD, JwProtocol.TYPE_VATUU, JwProtocol.TYPE_YZZY, JwProtocol.TYPE_CQU,

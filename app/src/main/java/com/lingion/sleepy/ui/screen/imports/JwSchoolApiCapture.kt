@@ -5,6 +5,7 @@ import com.lingion.sleepy.data.jw.JwProtocol
 /** Collect complete API responses in the user's logged-in frame; course decoding stays in Kotlin. */
 object JwSchoolApiCapture {
     fun scriptFor(type: String?): String? = when (type) {
+        JwProtocol.TYPE_SUES -> com.lingion.sleepy.data.jw.JwSuesCaptureScript.script
         JwProtocol.TYPE_CCIBE, JwProtocol.TYPE_CPPU, JwProtocol.TYPE_JLU_POST -> SCHOOL_API_FETCH_JS.replace("__SCHOOL_TYPE__", type)
         else -> null
     }
