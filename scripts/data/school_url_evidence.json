@@ -12,11 +12,11 @@
   },
   "summary": {
     "verified": 748,
-    "unknown": 1351,
+    "unknown": 2276,
     "contradicted": 1,
     "highConfidence": 181,
-    "mediumConfidence": 168,
-    "lowConfidence": 170,
+    "mediumConfidence": 568,
+    "lowConfidence": 2276,
     "interpretation": "Verified means recorded school identity proves the exact configured endpoint, directly or through an archived directed HTTP chain; unknown lacks sufficient ownership proof; contradicted identifies a different school.",
     "unknownWithResearchTrace": 170,
     "researchTraceReasonCounts": {
@@ -76595,6 +76595,63 @@
       "authenticatedImportTested": false,
       "defects": [
         "既有 admission 仅提供校园内网地址，未验证学校归属或认证导入。新增解析器注册后仍按现有归属规则保留待确认，不提升该目录入口。"
+      ]
+    },
+    {
+      "catalogId": "moe:4144013711",
+      "name": "江门职业技术学院",
+      "url": "http://10.4.2.11:8181/JmptJwxt/ZzUsrLogin",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "http://10.4.2.11:8181/JmptJwxt/ZzUsrLogin",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "title": "",
+      "availability": "unavailable-or-restricted",
+      "probeError": "non-public-url",
+      "authenticatedImportTested": false,
+      "defects": [
+        "新增解析器注册使历史准入记录进入归属校验。这里只复用已保存的探测结果，没有重新联网，也没有认证导入证明。"
+      ]
+    },
+    {
+      "catalogId": "wakeup:943a145aa0e81bda7c57",
+      "name": "辽宁轨道交通职业学院 1",
+      "url": "https://vpn.lngpi.edu.cn/portal/",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 200,
+      "finalUrl": "https://vpn.lngpi.edu.cn/portal/",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "title": "Loading...",
+      "availability": "public-page",
+      "probeError": null,
+      "authenticatedImportTested": false,
+      "defects": [
+        "新增解析器注册使历史准入记录进入归属校验。这里只复用已保存的探测结果，没有重新联网，也没有认证导入证明。"
+      ]
+    },
+    {
+      "catalogId": "moe:4122013605",
+      "name": "长春建筑学院",
+      "url": "http://10.1.12.202:8080/Login",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "http://10.1.12.202:8080/Login",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "title": "",
+      "availability": "unavailable-or-restricted",
+      "probeError": "non-public-url",
+      "authenticatedImportTested": false,
+      "defects": [
+        "新增解析器注册使历史准入记录进入归属校验。这里只复用已保存的探测结果，没有重新联网，也没有认证导入证明。"
       ]
     }
   ],

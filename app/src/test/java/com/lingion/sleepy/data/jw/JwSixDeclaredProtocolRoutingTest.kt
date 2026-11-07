@@ -76,16 +76,21 @@ class JwSixDeclaredProtocolRoutingTest {
             "<tr><td class='left1'>星期一</td></tr>".repeat(6) + "</table>",
         JwCourse("农业", "B", "李", 3, 1, 2, 3, 4))
 
-    @Test fun `only the matching postgraduate declaration changes school route`() {
+    @Test fun `dedicated declarations preserve independently established school routes`() {
         val schools = JwImportViewModel.parseSchoolsJson(javaClass.getResource("/jw/schools.json")!!.readText())
         val graduate = schools.single { it.name == "广州大学 - 研究生" }
         assertEquals("gzhuyjs", graduate.type)
         assertTrue(graduate.isUnverified)
         assertFalse(graduate.enableFetch)
         for ((name, type) in mapOf("成都理工大学" to "qz", "东华大学" to "wisedu", "三峡大学" to "wisedu",
-            "华东交通大学" to "sg_asset", "浙江邮电职业技术学院" to "jw_home")) {
+            "华东交通大学" to "sg_asset")) {
             assertEquals(name, type, schools.single { it.name == name }.type)
         }
+        val zptc = schools.single { it.name == "浙江邮电职业技术学院" }
+        assertEquals("zptc", zptc.type)
+        assertEquals("https://www.zptc.cn", zptc.url)
+        assertTrue(zptc.isUnverified)
+        assertFalse(zptc.enableFetch)
         val redacted = schools.single { it.name == "三峡电力职业学院" }
         assertTrue(redacted.url.isEmpty())
         assertFalse(redacted.canImport)

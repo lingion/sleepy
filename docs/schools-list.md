@@ -1,6 +1,6 @@
 # 学校目录
 
-> 共 4140 个目录条目：已实现配置 354；待验证、需确认后尝试 2526；待适配 1260。数据基准：2026-10-14。
+> 共 4140 个目录条目：已实现配置 354；待验证、需确认后尝试 2527；待适配 1259。数据基准：2026-10-14。
 
 目录收录不等于教务导入支持。已实现配置沿用历史状态，也不保证每校当前登录均已实机验证；待验证条目仅有公开入口和候选协议证据，未登录测试；待适配条目没有可启用的导入配置。
 
@@ -31,7 +31,7 @@
 | 安徽第二医学院 | 已实现配置 | ahyz / 安徽医科大学 / anhuierdiyiyuan | http://ehall.ahyz.cn/new/index.html | wisedu | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; A_安徽第二医学院 |
 | 安徽公安学院 | 待适配 | anhuigonganxueyuan |  |  | moe-2026-regular; moe:4134014840 |
 | 安徽公安职业学院 | 待验证·可尝试 | anhuigonganzhiyexueyuan | https://jw.ahpc.edu.cn/cas/login.action | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134013847 |
-| 安徽工程大学 | 待验证·可尝试 | anhuigongchengdaxue | http://xjwxt.ahpu.edu.cn/ahpu/localLogin.action | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134010363 |
+| 安徽工程大学 | 待验证·可尝试 | anhuigongchengdaxue | http://xjwxt.ahpu.edu.cn/ahpu/localLogin.action | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134010363 |
 | 安徽工程大学 - 研究生 | 研究生·待适配 | anhuigongchengdaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:df9e949e46548874f543 |
 | 安徽工贸职业技术学院 | 待验证·可尝试 | anhuigongmaozhiyejishuxueyuan | https://jwgl.ahgm.edu.cn/default2.aspx | zf | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134012811 |
 | 安徽工商职业学院 | 待验证·可尝试 | anhuigongshangzhiyexueyuan | https://jwxt.ahbvc.edu.cn/student/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134013340 |
@@ -57,7 +57,7 @@
 | 安徽科技学院（可直接登录） | 待适配 | anhuikejixueyuankezhijiedenglu |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:bc26ea2fbb9fc3e523a0 |
 | 安徽矿业职业技术学院 | 待适配 | anhuikuangyezhiyejishuxueyuan |  |  | moe-2026-regular; moe:4134014229 |
 | 安徽粮食工程职业学院 | 待验证·可尝试 | anhuiliangshigongchengzhiyexueyuan | http://174.174.174.202/jsxsd | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134014418 |
-| 安徽理工大学 | 待验证·可尝试 | anhuiligongdaxue | http://jwgl.aust.edu.cn/ | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134010361 |
+| 安徽理工大学 | 待验证·可尝试 | anhuiligongdaxue | http://jwgl.aust.edu.cn/ | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134010361 |
 | 安徽理工大学 - 研究生 | 研究生·待适配 | anhuiligongdaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:62f8f91f5140c005f6c9 |
 | 安徽林业职业技术学院 | 待验证·可尝试 | anhuilinyezhiyejishuxueyuan | https://sso.ahlyxy.edu.cn/cas/login | wisedu | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134013848 |
 | 安徽绿海商务职业学院 | 待验证·可尝试 | anhuilvhaishangwuzhiyexueyuan | http://jw.lhub.cn:9000/login.aspx | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134014133 |
@@ -66,7 +66,7 @@
 | 安徽农业大学 - 研究生 | 研究生·待适配 | anhuinongyedaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:c79ee86e7ded2ea1f60b |
 | 安徽汽车职业技术学院 | 待验证·可尝试 | anhuiqichezhiyejishuxueyuan | https://webvpn.ahavtc.edu.cn:4443/http/webvpn46b9ed00ca6b7e83b08255ab15bc24adeff83b3c70e970dd3045f7f016e38150/index.html | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134014298 |
 | 安徽三联学院 | 待验证·可尝试 | anhuisanlianxueyuan | http://36.7.148.20:3103/SYS/WebSystemConfig.aspx | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134010959 |
-| 安徽商贸职业技术学院 | 待验证·可尝试 | anhuishangmaozhiyejishuxueyuan | https://jwsys.abc.edu.cn/ahsm/handcourseService/getStudentkb | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:404267e62c5e7c110fe2 |
+| 安徽商贸职业技术学院 | 待验证·可尝试 | anhuishangmaozhiyejishuxueyuan | https://jwsys.abc.edu.cn/ahsm/handcourseService/getStudentkb | login_xbellsoft | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:404267e62c5e7c110fe2 |
 | 安徽审计职业学院 | 待验证·可尝试 | anhuishenjizhiyexueyuan | http://ehall.ahsjxy.cn/new/index.html | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134013849 |
 | 安徽涉外经济职业学院 | 待验证·可尝试 | anhuishewaijingjizhiyexueyuan | http://jw.ahaec-edu.cn/ | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134014132 |
 | 安徽师范大学 | 待验证·可尝试 | anhuishifandaxue | https://jw.ahnu.edu.cn/ | cumtb | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134010370 |
@@ -79,11 +79,11 @@
 | 安徽文达信息工程学院 | 待验证·可尝试 | anhuiwendaxinxigongchengxueyuan | http://218.22.58.76:2346/cas/login.action | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134012810 |
 | 安徽现代信息工程职业学院 | 待适配 | anhuixiandaixinxigongchengzhiyexueyuan |  |  | moe-2026-regular; moe:4134014210 |
 | 安徽新华学院 | 待验证·可尝试 | anhuixinhuaxueyuan | https://sso-443.webvpn.axhu.edu.cn/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134012216 |
-| 安徽新闻出版职业技术学院 | 待验证·可尝试 | anhuixinwenchubanzhiyejishuxueyuan | http://jwgl.ahcbxy.edu.cn:9090/jwgl/handcourseService/getStudentkb | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134013850 |
+| 安徽新闻出版职业技术学院 | 待验证·可尝试 | anhuixinwenchubanzhiyejishuxueyuan | http://jwgl.ahcbxy.edu.cn:9090/jwgl/handcourseService/getStudentkb | login_xbellsoft | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134013850 |
 | 安徽信息工程学院 | 已实现配置 | anhuixinxigongchengxueyuan | http://teach.aiit.edu.cn/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; A_安徽信息工程学院 |
 | 安徽扬子职业技术学院 | 待验证·可尝试 | anhuiyangzizhiyejishuxueyuan | http://jwgl.ahyzxy.cn/login.shtml | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134014342 |
 | 安徽冶金科技职业学院 | 待验证·可尝试 | anhuiyejinkejizhiyexueyuan | https://jwxx.avcmt.edu.cn/ | cf | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134013337 |
-| 安徽医科大学 | 待验证·可尝试 | anhuiyikedaxue | http://jwgl.ahmu.edu.cn/eams/loginExt.action | classic_eams | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134010366 |
+| 安徽医科大学 | 待验证·可尝试 | anhuiyikedaxue | http://jwgl.ahmu.edu.cn/eams/loginExt.action | xsyu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134010366 |
 | 安徽医科大学临床医学院 | 待验证·可尝试 | anhuiyikedaxuelinchuangyixueyuan | http://112.27.127.104:9008/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134013618 |
 | 安徽医科大学 - 研究生 | 研究生·待验证·可尝试 | anhuiyikedaxueyanjiusheng | http://210.45.96.114/pyxx/login.aspx | suda_post | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:3906ef0ca015f317f5be |
 | 安徽应用技术职业大学 | 待适配 | anhuiyingyongjishuzhiyedaxue |  |  | moe-2026-regular; moe:4134012072 |
@@ -101,7 +101,7 @@
 | 安庆师范大学 | 待验证·可尝试 | anqingshifandaxue | https://jwxt.aqnu.edu.cn/ | cumtb | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134010372 |
 | 安庆师范大学（可切换学期） | 待验证·可尝试 | anqingshifandaxuekeqiehuanxueqi | https://jwxt.aqnu.edu.cn/ | cumtb | wakeup-52.36-user-attachment; wakeup:735394e8b1ef58a933db |
 | 安庆师范大学 - 研究生 | 研究生·待验证·可尝试 | anqingshifandaxueyanjiusheng | https://yjsxt.aqnu.edu.cn/allogene/login.html | cumtb | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:7b4329fa8565d3d5886b |
-| 安庆医药高等专科学校 | 待验证·可尝试 | anqingyiyaogaodengzhuankexuexiao | http://jw.aqmc.edu.cn/jwgl/handcourseService/getStudentkb | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134014096 |
+| 安庆医药高等专科学校 | 待验证·可尝试 | anqingyiyaogaodengzhuankexuexiao | http://jw.aqmc.edu.cn/jwgl/handcourseService/getStudentkb | login_xbellsoft | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134014096 |
 | 安庆职业技术学院 | 待验证·可尝试 | anqingzhiyejishuxueyuan | http://jw.aqvtc.edu.cn/aqzyjw/cas/login.action | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134013345 |
 | 鞍山钢铁集团公司职工大学 | 待适配 | anshangangtiejituangongsizhigongdaxue |  |  | moe-2026-adult; moe:4221051845 |
 | 鞍山师范学院 | 待验证·可尝试 | anshanshifanxueyuan | https://assh.jw.chaoxing.com/admin/login | chaoxing | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121010169 |
@@ -127,7 +127,7 @@
 | 学校 | 状态 | 别名 / 检索词 | 教务入口 | 协议候选 | 来源 / 目录 ID |
 |---|---|---|---|---|---|
 | 白城师范学院 | 待验证·可尝试 | baichengshifanxueyuan | http://jwxt.bcsfxy.com/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122010206 |
-| 白城医学高等专科学校 | 待验证·可尝试 | baichengyixuegaodengzhuankexuexiao | https://jw.bcyz.cn/ | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122013743 |
+| 白城医学高等专科学校 | 待验证·可尝试 | baichengyixuegaodengzhuankexuexiao | https://jw.bcyz.cn/ | lz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122013743 |
 | 白城职业技术学院 | 待验证·可尝试 | baichengzhiyejishuxueyuan | http://192.1.100.47:8080/ | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122014107 |
 | 百色学院 | 待验证·可尝试 | baisexueyuan | https://jwgl.bsuc.edu.cn/bsxyjw/cas/login.action | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145010609 |
 | 百色职业学院 | 待验证·可尝试 | baisezhiyexueyuan | https://jw.gxbszy.cn/bszyxyjw/cas/login.action | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145014068 |
@@ -176,7 +176,7 @@
 | 北京大学（医学部） | 待适配 | beijingdaxueyixuebu |  |  | wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:43dcb4416672c686754b |
 | 北京大学医学部 - 研究生 | 研究生·待适配 | beijingdaxueyixuebuyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:a1596ee27f76b301b428 |
 | 北京电影学院 | 待验证·可尝试 | beijingdianyingxueyuan | http://jwstu.bfa.edu.cn/#!/home/common/scheduleQuery | bfa | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4111010050 |
-| 北京电影学院 - 研究生 | 研究生·待验证·可尝试 | beijingdianyingxueyuanyanjiusheng | http://202.205.127.146:8881/ | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:1cb4339331874c3056d2 |
+| 北京电影学院 - 研究生 | 研究生·待验证·可尝试 | beijingdianyingxueyuanyanjiusheng | http://202.205.127.146:8881/ | bfa_post | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:1cb4339331874c3056d2 |
 | 北京电子科技学院 | 待验证·可尝试 | beijingdianzikejixueyuan | https://e.besti.edu.cn/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4111010018 |
 | 北京电子科技职业学院 | 待适配 | beijingdianzikejizhiyexueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:416662e2164ee4564d5f |
 | 北京第二外国语学院 | 待验证·可尝试 | beijingdierwaiguoyuxueyuan | https://gw.bisu.edu.cn/login/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4111010031 |
@@ -201,7 +201,7 @@
 | 北京交通大学 | 已实现配置 | bjtu / 北交大 / beijingjiaotongdaxue | https://aa.bjtu.edu.cn/ | bjtu | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; B_北京交通大学 |
 | 北京交通大学海滨学院 | 待适配 | beijingjiaotongdaxuehaibinxueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:dc55413fdbd1be723a38 |
 | 北京交通运输职业学院 | 待验证·可尝试 | beijingjiaotongyunshuzhiyexueyuan | https://bjjt.jw.chaoxing.com/admin/login | chaoxing | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4111014279 |
-| 北京交通职业技术学院 | 待验证·可尝试 | beijingjiaotongzhiyejishuxueyuan | http://authserver.jtxy.com.cn/authserver/login | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4111011092 |
+| 北京交通职业技术学院 | 待验证·可尝试 | beijingjiaotongzhiyejishuxueyuan | http://authserver.jtxy.com.cn/authserver/login | xytc | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4111011092 |
 | 北京教育学院 | 待验证·可尝试 | beijingjiaoyuxueyuan | https://login.bjie.ac.cn/stafftlogin/gologin.php | jw_home | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4211050061 |
 | 北京吉利学院 | 待适配 | beijingjilixueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:f2e8c7a8676e6f844cf3 |
 | 北京京北职业技术学院 | 待验证·可尝试 | beijingjingbeizhiyejishuxueyuan | https://jw.jbzy.com.cn/ | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4111011090 |
@@ -212,7 +212,7 @@
 | 北京金融科技学院 | 待适配 | beijingjinrongkejixueyuan |  |  | moe-2026-regular; moe:4111013630 |
 | 北京金融科技学院（原北京工商大学嘉华学院） | 待验证·可尝试 | beijingjinrongkejixueyuanyuanbeijinggongshangdaxuejiahuaxueyuan | https://canvardjw.yinghuaonline.com/bjgsdxjhxy/ | jw_home | wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:fbab4d4dcbecafe38b19 |
 | 北京开放大学 | 待验证·可尝试 | beijingkaifangdaxue | https://sso.bjou.edu.cn/login | jw_home | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4211051160 |
-| 北京科技大学 | 待验证·可尝试 | beijingkejidaxue | https://byyt.ustb.edu.cn/ | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4111010008 |
+| 北京科技大学 | 待验证·可尝试 | beijingkejidaxue | https://byyt.ustb.edu.cn/ | qz_ustb | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4111010008 |
 | 北京科技大学天津学院 | 待验证·可尝试 | beijingkejidaxuetianjinxueyuan | http://117.131.241.67:89/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4112013898 |
 | 北京科技大学 - 研究生 | 研究生·待适配 | beijingkejidaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:0ec853b41b21752c933a |
 | 北京科技经营管理学院 | 待适配 | beijingkejijingyingguanlixueyuan |  |  | moe-2026-regular; moe:4111012733 |
@@ -238,7 +238,7 @@
 | 北京市东城区职工业余大学 | 待适配 | beijingshidongchengquzhigongyeyudaxue |  |  | moe-2026-adult; moe:4211050002 |
 | 北京师范大学 | 待验证·可尝试 | beijingshifandaxue | http://zyfw.prsc.bnu.edu.cn/cas/login.action | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4111010027 |
 | 北京师范大学（北京校区） | 待验证·可尝试 | beijingshifandaxuebeijingxiaoqu | https://onevpn.bnu.edu.cn/https/77726476706e69737468656265737421f3f652d2253e7d1e7b0c9ce29b5b/cas/login | kingo_new | wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:ca63e69f87d1e55abe04 |
-| 北京师范大学-香港浸会大学联合国际学院 | 待验证·可尝试 | beijingshifandaxuexianggangjinhuidaxuelianheguojixueyuan | https://mis.uic.edu.hk | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:2366026d7dc81201bc1d |
+| 北京师范大学-香港浸会大学联合国际学院 | 待验证·可尝试 | beijingshifandaxuexianggangjinhuidaxuelianheguojixueyuan | https://mis.uic.edu.hk | uic | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:2366026d7dc81201bc1d |
 | 北京师范大学珠海分校 | 已实现配置 | beijingshifandaxuezhuhaifenxiao | http://es.bnuz.edu.cn/ | bnuz | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; B_北京师范大学珠海分校 |
 | 北京师范大学珠海校区 | 待验证·可尝试 | beijingshifandaxuezhuhaixiaoqu | https://www.bnuzh.edu.cn | kingo_new | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:69ef97267bcf7239c827 |
 | 北京师范大学（珠海校区） | 待验证·可尝试 | beijingshifandaxuezhuhaixiaoqu | https://onevpn.bnu.edu.cn/https/77726476706e69737468656265737421f3f652d2253e7d1e7b0c9ce29b5b/cas/login | kingo_new | wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:7094ba83251db768221f |
@@ -309,7 +309,7 @@
 
 | 学校 | 状态 | 别名 / 检索词 | 教务入口 | 协议候选 | 来源 / 目录 ID |
 |---|---|---|---|---|---|
-| City University of Hong Kong | 待验证·可尝试 |  | https://banweb.cityu.edu.hk/pls/PROD/hwsstmtbl_matrix_cityu.Show | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:7e61ede63ebb2322306c |
+| City University of Hong Kong | 待验证·可尝试 |  | https://banweb.cityu.edu.hk/pls/PROD/hwsstmtbl_matrix_cityu.Show | cityu | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:7e61ede63ebb2322306c |
 | 沧州航空职业学院 | 待适配 | cangzhouhangkongzhiyexueyuan |  |  | moe-2026-regular; moe:4113014786 |
 | 沧州交通学院 | 待验证·可尝试 | cangzhoujiaotongxueyuan | https://vpn.czjtu.edu.cn/users/sign_in | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4113014202 |
 | 沧州交通学院 - 研究生 | 研究生·待适配 | cangzhoujiaotongxueyuanyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:16233e1b34f0637171cc |
@@ -318,23 +318,23 @@
 | 沧州幼儿师范高等专科学校 | 待验证·可尝试 | cangzhouyouershifangaodengzhuankexuexiao | https://oa.czptc.com.cn/backstage/cas/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4113014259 |
 | 沧州职业技术学院 | 待验证·可尝试 | cangzhouzhiyejishuxueyuan | https://czvtc.cn:5443/portal_default/index.html | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4113012415 |
 | 曹妃甸职业技术学院 | 待验证·可尝试 | caofeidianzhiyejishuxueyuan | http://27.191.159.252:1330/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4113014601 |
-| 长安大学 | 待验证·可尝试 | changandaxue | https://ids.chd.edu.cn/authserver/login | classic_eams | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161010710 |
+| 长安大学 | 待验证·可尝试 | changandaxue | https://ids.chd.edu.cn/authserver/login | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161010710 |
 | 长安大学兴华学院 | 待验证·可尝试 | changandaxuexinghuaxueyuan | https://ids.chd.edu.cn/authserver/login | classic_eams | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161014034 |
-| 长安大学 - 研究生 | 研究生·待验证·可尝试 | changandaxueyanjiusheng | https://ids.chd.edu.cn/authserver/login | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:cd521fd0cd5ea8f83d69 |
+| 长安大学 - 研究生 | 研究生·待验证·可尝试 | changandaxueyanjiusheng | https://ids.chd.edu.cn/authserver/login | zju_post | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:cd521fd0cd5ea8f83d69 |
 | 长白山职业技术学院 | 待验证·可尝试 | changbaishanzhiyejishuxueyuan | https://student.hjiuye.com/user/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122014190 |
 | 长城铝业公司职工工学院 | 待适配 | changchenglvyegongsizhigonggongxueyuan |  |  | moe-2026-adult; moe:4241050673 |
-| 长春财经学院 | 待验证·可尝试 | changchuncaijingxueyuan | https://www.ccufe.edu.cn/prompt | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122013603 |
+| 长春财经学院 | 待验证·可尝试 | changchuncaijingxueyuan | https://www.ccufe.edu.cn/prompt | lz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122013603 |
 | 长春大学 | 已实现配置 | changchundaxue | http://jwxt.ccu.edu.cn/jsxsd/ | qz_br | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; C_长春大学 |
 | 长春大学旅游学院 | 已实现配置 | changchundaxuelvyouxueyuan | https://cdly.jw.chaoxing.com/admin/login | chaoxing | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; C_长春大学旅游学院 |
 | 长春大学 - 研究生 | 研究生·待适配 | changchundaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:49c2ad618f82bba8a214 |
-| 长春电子科技学院 | 待验证·可尝试 | changchundianzikejixueyuan | https://stu.changdian2001.com/Login | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122013602 |
+| 长春电子科技学院 | 待验证·可尝试 | changchundianzikejixueyuan | https://stu.changdian2001.com/Login | lz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122013602 |
 | 长春东方职业学院 | 待验证·可尝试 | changchundongfangzhiyexueyuan | https://dfzy.jw.chaoxing.com/admin/login | chaoxing | wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:6d1b269ffddfcc7e5cc8 |
 | 长春工程学院 | 待验证·可尝试 | changchungongchengxueyuan | https://webvpn.ccit.edu.cn/auth/login | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122011437 |
 | 长春工业大学 | 待验证·可尝试 | changchungongyedaxue | http://jwxt.ccut.edu.cn | cf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122010190 |
 | 长春工业大学人文信息学院 | 待验证·可尝试 | changchungongyedaxuerenwenxinxixueyuan | http://jwxt.ccut.edu.cn/ | cf | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122013601 |
 | 长春工业大学 - 研究生 | 研究生·待适配 | changchungongyedaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:002bb90af4bef7aab772 |
 | 长春光华学院 | 待验证·可尝试 | changchunguanghuaxueyuan | https://my.ghu.edu.cn/tpass/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122013600 |
-| 长春健康职业学院 | 待验证·可尝试 | changchunjiankangzhiyexueyuan | http://jkjwc.imwork.net/index.aspx | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122014603 |
+| 长春健康职业学院 | 待验证·可尝试 | changchunjiankangzhiyexueyuan | http://jkjwc.imwork.net/index.aspx | lz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122014603 |
 | 长春建筑学院 | 待适配 | changchunjianzhuxueyuan |  |  | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122013605 |
 | 长春建筑学院高新校区 | 待适配 | changchunjianzhuxueyuangaoxinxiaoqu |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:c7c2a906a7317ae73134 |
 | 长春教育学院 | 待验证·可尝试 | changchunjiaoyuxueyuan | http://ids.ccjyxy.net/authserver/login | jw_home | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4222050253 |
@@ -367,7 +367,7 @@
 | 昌河职工工学院 | 待适配 | changhezhigonggongxueyuan |  |  | moe-2026-adult; moe:4236050603 |
 | 长江大学 | 待验证·可尝试 | changjiangdaxue | https://cas-yangtzeu-edu-cn.atrust.yangtzeu.edu.cn/authserver/login?service=https%3A%2F%2Fatrust.yangtzeu.edu.cn%3A4443%2Fpassport%2Fv1%2Fauth%2Fcas%3FsfDomain%3DCAS | sg_asset | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4142010489 |
 | 长江大学工程技术学院 | 待适配 | changjiangdaxuegongchengjishuxueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:1235efd587ac9afcfd79 |
-| 长江大学文理学院 | 待验证·可尝试 | changjiangdaxuewenlixueyuan | https://jw.wlxy.edu.cn/eams/loginExt.action | classic_eams | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4142013246 |
+| 长江大学文理学院 | 待验证·可尝试 | changjiangdaxuewenlixueyuan | https://jw.wlxy.edu.cn/eams/loginExt.action | shuwei_m | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4142013246 |
 | 长江工程职业技术学院 | 待验证·可尝试 | changjianggongchengzhiyejishuxueyuan | https://jwxt.cjit.edu.cn/admin/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4142013266 |
 | 长江师范学院 | 待验证·可尝试 | changjiangshifanxueyuan | http://authserver.yznu.cn/authserver/login | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4150010647 |
 | 长江艺术工程职业学院 | 待适配 | changjiangyishugongchengzhiyexueyuan |  |  | moe-2026-regular; moe:4142014555 |
@@ -402,7 +402,7 @@
 | 常熟理工学院 | 待适配 | changshuligongxueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:195786f32ffa92309d30 |
 | 常熟理工学院（苏州常熟） | 待适配 | changshuligongxueyuansuzhouchangshu |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:f99b83960e548762cd08 |
 | 常州大学 | 待验证·可尝试 | changzhoudaxue | https://zmvpn.cczu.edu.cn/http/webvpndc2d086cb5b297c15e661687e73c1549/web_jxrw/cx_kb_xsgrkb.aspx | sg_asset | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132010292 |
-| 常州大学怀德学院 | 待验证·可尝试 | changzhoudaxuehuaidexueyuan | https://webvpn.cczu.edu.cn/ | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132013992 |
+| 常州大学怀德学院 | 待验证·可尝试 | changzhoudaxuehuaidexueyuan | https://webvpn.cczu.edu.cn/ | changzhou | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132013992 |
 | 常州大学 - 研究生 | 研究生·待适配 | changzhoudaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:8bdc49147063f1264999 |
 | 常州纺织服装职业技术学院 | 待验证·可尝试 | changzhoufangzhifuzhuangzhiyejishuxueyuan | https://jw.cztgi.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132012807 |
 | 常州工程职业技术学院 | 已实现配置 | changzhougongchengzhiyejishuxueyuan | http://zhjw.czie.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; C_常州工程职业技术学院 |
@@ -414,7 +414,7 @@
 | 常州信息职业技术大学 | 待适配 | changzhouxinxizhiyejishudaxue |  |  | moe-2026-regular; moe:4132012317 |
 | 常州信息职业技术学院 | 待验证·可尝试 | changzhouxinxizhiyejishuxueyuan | https://authserver.ccit.js.cn/authserver/login | zf_new | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:cdc2b51135550c9ed907 |
 | 常州幼儿师范高等专科学校 | 待验证·可尝试 | changzhouyouershifangaodengzhuankexuexiao | https://one.wjtts.net:85/core/login?signin=7ce3a9d26c54a5cd908ac058b8aa35a3 | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132014773 |
-| 巢湖学院 | 待验证·可尝试 | chaohuxueyuan | https://ehall.vpn.chu.edu.cn:4443/ | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134010380 |
+| 巢湖学院 | 待验证·可尝试 | chaohuxueyuan | https://ehall.vpn.chu.edu.cn:4443/ | shuwei_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134010380 |
 | 潮汕职业技术学院 | 待验证·可尝试 | chaoshanzhiyejishuxueyuan | https://mis.cspi.edu.cn/user/login/login.html | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4144010965 |
 | 朝陽科技大學 | 待适配 | chaoyangkejidaxue |  |  | tw-moe-114; tw-moe-114:1018 |
 | 潮州卫生健康职业学院 | 待验证·可尝试 | chaozhouweishengjiankangzhiyexueyuan | http://36.213.23.213:8300/NET5/Login.aspx | qz | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:b3115f85a16825a11fbf |
@@ -428,7 +428,7 @@
 | 成都工贸职业技术学院 | 待验证·可尝试 | chengdugongmaozhiyejishuxueyuan | http://222.209.208.27:89/ | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151014547 |
 | 成都工业学院 | 待验证·可尝试 | chengdugongyexueyuan | https://cdtutms.cdtu.edu.cn/jsxsd | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151011116 |
 | 成都工业职工大学 | 待验证·可尝试 | chengdugongyezhigongdaxue | http://jw.cdivtc.edu.cn/eams/loginExt.action | classic_eams | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4251050913 |
-| 成都工业职业技术学院 | 待验证·可尝试 | chengdugongyezhiyejishuxueyuan | http://jw.cdivtc.edu.cn/eams/loginExt.action | classic_eams | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151014514 |
+| 成都工业职业技术学院 | 待验证·可尝试 | chengdugongyezhiyejishuxueyuan | http://jw.cdivtc.edu.cn/eams/loginExt.action | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151014514 |
 | 成都轨道交通职业学院 | 待验证·可尝试 | chengduguidaojiaotongzhiyexueyuan | https://jw.gdxyedu.com:8060/jiaowu/ggs/view/ggs/homeManager/login.jsp | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151014872 |
 | 成都航空职业技术大学 | 待验证·可尝试 | chengduhangkongzhiyejishudaxue | https://jwxt.cap.edu.cn/jwapp/sys/homeapp/home/index.html?av=&contextPath=/jwapp#/ | sg_asset | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151012064 |
 | 成都航空职业技术学院 | 待验证·可尝试 | chengduhangkongzhiyejishuxueyuan | https://authserver.cap.edu.cn/authserver/login | qz | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:36e55c6fbcf0467b8186 |
@@ -445,7 +445,7 @@
 | 成都外国语学院 | 待适配 | chengduwaiguoyuxueyuan |  |  | moe-2026-regular; moe:4151013673 |
 | 成都外国语学院（原四川外国语大学成都学院） | 待验证·可尝试 | chengduwaiguoyuxueyuanyuansichuanwaiguoyudaxuechengduxueyuan | http://jwxt.cdisu.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:1fb73aac4b2e6f277dc5 |
 | 成都文理学院 | 待验证·可尝试 | chengduwenlixueyuan | https://cdcasjw.yinghuaonline.com/cdwlxy/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151013671 |
-| 成都信息工程大学 | 待验证·可尝试 | chengduxinxigongchengdaxue | https://ywtb.cuit.edu.cn/ | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151010621 |
+| 成都信息工程大学 | 待验证·可尝试 | chengduxinxigongchengdaxue | https://ywtb.cuit.edu.cn/ | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151010621 |
 | 成都信息工程大学银杏酒店管理学院 | 待适配 | chengduxinxigongchengdaxueyinxingjiudianguanlixueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:c2b69085d2ed0a02e12c |
 | 成都学院 | 待适配 | chengduxueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:fb4922622af107a461ed |
 | 成都银杏酒店管理学院 | 待验证·可尝试 | chengduyinxingjiudianguanlixueyuan | http://jwxt.gingkoc.edu.cn/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151013670 |
@@ -464,7 +464,7 @@
 | 赤峰学院 | 待验证·可尝试 | chifengxueyuan | https://ywt.cfu.edu.cn/backstage/cas/login | jw_home | wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:4507a15d0b27c220c603 |
 | 赤峰应用技术职业学院 | 待验证·可尝试 | chifengyingyongjishuzhiyexueyuan | http://1.181.49.170:38080/cfyyjw/cas/login.action | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4115014699 |
 | 赤峰职业技术学院 | 待适配 | chifengzhiyejishuxueyuan |  |  | moe-2026-regular; moe:4115014050 |
-| 池州学院 | 待验证·可尝试 | chizhouxueyuan | https://jwxt.czu.edu.cn/student/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134011306 |
+| 池州学院 | 待验证·可尝试 | chizhouxueyuan | https://jwxt.czu.edu.cn/student/login | shuwei_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134011306 |
 | 池州职业技术学院 | 待验证·可尝试 | chizhouzhiyejishuxueyuan | https://jwgl.czvtc.edu.cn/login.shtml | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134013060 |
 | 重庆安防职业学院 | 待适配 | chongqinganfangzhiyexueyuan |  |  | moe-2026-regular; moe:4150014936 |
 | 重庆安全技术职业学院 | 待验证·可尝试 | chongqinganquanjishuzhiyexueyuan | https://rz.cqvist.net/cas/login | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4150014365 |
@@ -518,8 +518,8 @@
 | 重庆警察学院 | 待验证·可尝试 | chongqingjingchaxueyuan | http://jiaowu.cqpc.edu.cn/jwweb/ | kingo_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4150012757 |
 | 重庆经贸职业学院 | 待验证·可尝试 | chongqingjingmaozhiyexueyuan | http://mhpt.cqvcet.com/ | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4150014370 |
 | 重庆开放大学 | 待验证·可尝试 | chongqingkaifangdaxue | http://szxy.cqtbi.edu.cn/cqdddt/index.html | jw_home | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4250051866 |
-| 重庆科创职业学院 | 待验证·可尝试 | chongqingkechuangzhiyexueyuan | https://cas.cqie.cn/cas/WEB/index.html | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4150014173 |
-| 重庆科技大学 | 待验证·可尝试 | chongqingkejidaxue | https://web.cqust.edu.cn/http/77726476706e69737468656265737421f3f652d224217d436a468ca88d1b203b/authserver/login?service=https%3A%2F%2Fweb.cqust.edu.cn%2Flogin%3Fcas_login%3Dtrue | classic_eams | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4150011551 |
+| 重庆科创职业学院 | 待验证·可尝试 | chongqingkechuangzhiyexueyuan | https://cas.cqie.cn/cas/WEB/index.html | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4150014173 |
+| 重庆科技大学 | 待验证·可尝试 | chongqingkejidaxue | https://web.cqust.edu.cn/http/77726476706e69737468656265737421f3f652d224217d436a468ca88d1b203b/authserver/login?service=https%3A%2F%2Fweb.cqust.edu.cn%2Flogin%3Fcas_login%3Dtrue | uestc_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4150011551 |
 | 重庆科技学院 | 待适配 | chongqingkejixueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:2196810644f6ac4503e4 |
 | 重庆科技职业学院 | 待验证·可尝试 | chongqingkejizhiyexueyuan | https://cxjw.cqkjzyxy.com/admin/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4150014491 |
 | 重庆理工大学 | 待验证·可尝试 | chongqingligongdaxue | https://uis.cqut.edu.cn/unified_identity_logon/ | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4150011660 |
@@ -554,7 +554,7 @@
 | 重庆艺术工程职业学院 | 待验证·可尝试 | chongqingyishugongchengzhiyexueyuan | https://ysjw.cqysxy.com:83/jsxsd/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4150014367 |
 | 重庆移通学院 | 待适配 | chongqingyitongxueyuan |  |  | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4150013627 |
 | 重庆医药高等专科学校 | 已实现配置 | chongqingyiyaogaodengzhuankexuexiao | http://jwxt1.cqyygz.com:8080/jsxsd/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; C_重庆医药高等专科学校 |
-| 重庆邮电大学 | 待验证·可尝试 | chongqingyoudiandaxue | http://jwzx.cqupt.edu.cn/rump_frontend/access_forbidden/ | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4150010617 |
+| 重庆邮电大学 | 待验证·可尝试 | chongqingyoudiandaxue | http://jwzx.cqupt.edu.cn/rump_frontend/access_forbidden/ | cqupt | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4150010617 |
 | 重庆邮电大学移通学院 | 已实现配置 | chongqingyoudiandaxueyitongxueyuan | http://222.179.134.225:81/ | zf_new | existing-baseline; C_重庆邮电大学移通学院 |
 | 重庆幼儿师范高等专科学校 | 待验证·可尝试 | chongqingyouershifangaodengzhuankexuexiao | http://123.146.162.135:81/ | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4150014428 |
 | 重庆智能工程职业学院 | 待验证·可尝试 | chongqingzhinenggongchengzhiyexueyuan | http://183.230.27.247:86/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4150014726 |
@@ -575,7 +575,7 @@
 | 滁州职业技术学院 | 待验证·可尝试 | chuzhouzhiyejishuxueyuan | http://183.167.211.134:8989/czcvcjw/cas/login.action | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134013059 |
 | 慈惠醫護管理專科學校 | 待适配 | cihuiyihuguanlizhuankexuexiao |  |  | tw-moe-114; tw-moe-114:1285 |
 | 慈濟學校財團法人慈濟大學 | 待适配 | cijixuexiaocaituanfarencijidaxue |  |  | tw-moe-114; tw-moe-114:1027 |
-| 朝阳师范高等专科学校 | 待验证·可尝试 | zhaoyangshifangaodengzhuankexuexiao | http://221.203.71.62:8088/fszy/htAction.do | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:bb59242a63409c16b2fb |
+| 朝阳师范高等专科学校 | 待验证·可尝试 | zhaoyangshifangaodengzhuankexuexiao | http://221.203.71.62:8088/fszy/htAction.do | xhtd | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:bb59242a63409c16b2fb |
 | 朝阳师范学院（原朝阳师范高等专科学校） | 待验证·可尝试 | zhaoyangshifanxueyuanyuanzhaoyangshifangaodengzhuankexuexiao | https://jwc.cynu.edu.cn/jxgl/jwxt.htm | jw_home | wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:8ecc18cebc5953fb4e1e |
 
 ## D
@@ -593,7 +593,7 @@
 | 大连工人大学 | 待适配 | daliangongrendaxue |  |  | moe-2026-adult; moe:4221051110 |
 | 大连工业大学 | 待验证·可尝试 | daliangongyedaxue | http://jwgl.dlpu.edu.cn/admin/login | chaoxing | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121010152 |
 | 大连工业大学艺术与信息工程学院 | 已实现配置 | daliangongyedaxueyishuyuxinxigongchengxueyuan | https://jwxt.caie.edu.cn/ | zf_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; D_大连工业大学艺术与信息工程学院 |
-| 大连海事大学 | 待验证·可尝试 | dalianhaishidaxue | https://id.dlmu.edu.cn/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121010151 |
+| 大连海事大学 | 待验证·可尝试 | dalianhaishidaxue | https://id.dlmu.edu.cn/login | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121010151 |
 | 大连海事大学 - 研究生 | 研究生·待适配 | dalianhaishidaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:ee4237cbc3b119aad643 |
 | 大连海洋大学 | 待验证·可尝试 | dalianhaiyangdaxue | https://portal.dlou.edu.cn/auth/cas/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121010158 |
 | 大连海洋大学应用技术学院 | 待适配 | dalianhaiyangdaxueyingyongjishuxueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:c73621a5429c9a9e6d7f |
@@ -712,14 +712,14 @@
 | 法鼓學校財團法人法鼓文理學院 | 待适配 | faguxuexiaocaituanfarenfaguwenlixueyuan |  |  | tw-moe-114; tw-moe-114:1196 |
 | 防城港现代食药品职业学院 | 待适配 | fangchenggangxiandaishiyaopinzhiyexueyuan |  |  | moe-2026-regular; moe:4145014968 |
 | 防城港职业技术学院 | 待验证·可尝试 | fangchenggangzhiyejishuxueyuan | https://zhxy.fcgzy.edu.cn/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145014762 |
-| 防灾科技学院 | 待验证·可尝试 | fangzaikejixueyuan | https://jwc-dd.cidp.edu.cn | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:6b93c14cff1f62821ece |
+| 防灾科技学院 | 待验证·可尝试 | fangzaikejixueyuan | https://jwc-dd.cidp.edu.cn | cidp | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:6b93c14cff1f62821ece |
 | 逢甲大學 | 待适配 | fengjiadaxue |  |  | tw-moe-114; tw-moe-114:1007 |
 | 佛光大學 | 待适配 | foguangdaxue |  |  | tw-moe-114; tw-moe-114:1050 |
 | 佛山大学 | 待验证·可尝试 | foshandaxue | https://100.fosu.edu.cn/ | sg_asset | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4144011847 |
 | 佛山科学技术学院 | 待验证·可尝试 | foshankexuejishuxueyuan | http://100.fosu.edu.cn/ | qz_crazy | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:3d2e75f3e4131a57bb81 |
 | 佛山职业技术学院 | 待验证·可尝试 | foshanzhiyejishuxueyuan | https://jwgl.fspt.edu.cn/jsxsd/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4144012327 |
-| 佛山职业技术学院（推荐） | 待验证·可尝试 | foshanzhiyejishuxueyuantuijian | https://jwgl.fspt.edu.cn/jsxsd/ | qz | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:f9d8722fe37c274340a7 |
-| 复旦大学 | 待验证·可尝试 | fudandaxue | https://ehall.fudan.edu.cn/jxmh/ | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131010246 |
+| 佛山职业技术学院（推荐） | 待验证·可尝试 | foshanzhiyejishuxueyuantuijian | https://jwgl.fspt.edu.cn/jsxsd/ | qz_fspt | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:f9d8722fe37c274340a7 |
+| 复旦大学 | 待验证·可尝试 | fudandaxue | https://ehall.fudan.edu.cn/jxmh/ | shuwei_m | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131010246 |
 | 复旦大学个人数据中心 | 待验证·可尝试 | fudandaxuegerenshujuzhongxin | https://id.fudan.edu.cn/ac/ | fdu | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:e53f4b1f38d5fa002c4a |
 | 复旦大学个人数据中心 - 研究生 | 研究生·待验证·可尝试 | fudandaxuegerenshujuzhongxinyanjiusheng | https://id.fudan.edu.cn/ac/ | fdu | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:9cb853740b305534b2b7 |
 | 复旦大学 - 研究生 | 研究生·待验证·可尝试 | fudandaxueyanjiusheng | https://id.fudan.edu.cn/ac/ | fdu | wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:d21efd3ce040811d54ad |
@@ -754,7 +754,7 @@
 | 阜康职业技术学院 | 待适配 | fukangzhiyejishuxueyuan |  |  | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4165014941 |
 | 輔仁大學學校財團法人輔仁大學 | 待适配 | furendaxuexuexiaocaituanfarenfurendaxue |  |  | tw-moe-114; tw-moe-114:1002 |
 | 抚顺矿务局职工工学院 | 待适配 | fushunkuangwujuzhigonggongxueyuan |  |  | moe-2026-adult; moe:4221051125 |
-| 抚顺师范高等专科学校 | 待验证·可尝试 | fushunshifangaodengzhuankexuexiao | http://www.fvti.com/ | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121010179 |
+| 抚顺师范高等专科学校 | 待验证·可尝试 | fushunshifangaodengzhuankexuexiao | http://www.fvti.com/ | xhtd | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121010179 |
 | 抚顺石油化工公司职工大学 | 待适配 | fushunshiyouhuagonggongsizhigongdaxue |  |  | moe-2026-adult; moe:4221051126 |
 | 抚顺职业技术学院 | 待适配 | fushunzhiyejishuxueyuan |  |  | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121011037 |
 | 阜新高等专科学校 | 待验证·可尝试 | fuxingaodengzhuankexuexiao | https://casone-fxgz-com-cn-s.cas.fxgz.com.cn/lyuapServer/login | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121011250 |
@@ -838,7 +838,7 @@
 | 公安消防部队高等专科学校 | 待适配 | gonganxiaofangbuduigaodengzhuankexuexiao |  |  | moe-2026-regular; moe:4153014534 |
 | 广安理工学院 | 待适配 | guanganligongxueyuan |  |  | moe-2026-regular; moe:4151014984 |
 | 广安职业技术学院 | 待验证·可尝试 | guanganzhiyejishuxueyuan | https://jwxt.gavtc.cn/default2.aspx | zf | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151013814 |
-| 广东白云学院 | 待验证·可尝试 | guangdongbaiyunxueyuan | https://jwgl.baiyunu.edu.cn/cas/login.action | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4144010822 |
+| 广东白云学院 | 待验证·可尝试 | guangdongbaiyunxueyuan | https://jwgl.baiyunu.edu.cn/cas/login.action | gdbyxy | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4144010822 |
 | 广东碧桂园职业学院 | 待验证·可尝试 | guangdongbiguiyuanzhiyexueyuan | https://jwxt.bgypt.edu.cn/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4144014511 |
 | 广东财经大学 | 已实现配置 | guangdongcaijingdaxue | http://jwxt.gdufe.edu.cn/ | qz | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; G_广东财经大学 |
 | 广东财经大学华商学院 | 待适配 | guangdongcaijingdaxuehuashangxueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:ba08fba5c6280f436f69 |
@@ -856,7 +856,7 @@
 | 广东工业大学 - 研究生 | 研究生·待适配 | guangdonggongyedaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:afdc0389a2bcc8c4dbe0 |
 | 广东海洋大学 | 已实现配置 | guangdonghaiyangdaxue | https://jw.gdou.edu.cn/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; G_广东海洋大学 |
 | 广东海洋大学 - 研究生 | 研究生·待适配 | guangdonghaiyangdaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:5b85c20de6e9c0a451e9 |
-| 广东环境保护工程职业学院 | 待验证·可尝试 | guangdonghuanjingbaohugongchengzhiyexueyuan | https://authserver.gdpepe.edu.cn/authserver/login | wisedu | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4144014311 |
+| 广东环境保护工程职业学院 | 待验证·可尝试 | guangdonghuanjingbaohugongchengzhiyexueyuan | https://authserver.gdpepe.edu.cn/authserver/login | buaa | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4144014311 |
 | 广东环境工程职业学院 | 待适配 | guangdonghuanjinggongchengzhiyexueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:e9724a2baacfbcb67de9 |
 | 广东江门南粤学院 | 待适配 | guangdongjiangmennanyuexueyuan |  |  | moe-2026-regular; moe:4144013675 |
 | 广东江门幼儿师范高等专科学校 | 待验证·可尝试 | guangdongjiangmenyouershifangaodengzhuankexuexiao | https://cas.jmpec.edu.cn/lyuapServer/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4144014664 |
@@ -939,10 +939,10 @@
 | 广西工程职业学院 | 待验证·可尝试 | guangxigongchengzhiyexueyuan | http://gxgcedu.com:81/ | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145014127 |
 | 广西工商职业技术学院 | 待验证·可尝试 | guangxigongshangzhiyejishuxueyuan | http://jwmis.gxgsxy.com/cas/login.action | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145013828 |
 | 广西工业学院 | 待适配 | guangxigongyexueyuan |  |  | moe-2026-regular; moe:4145013890 |
-| 广西工业职业技术学院 | 待验证·可尝试 | guangxigongyezhiyejishuxueyuan | http://jw.gxic.net/JWXS/pkgl/XsKB_List.aspx | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145012364 |
+| 广西工业职业技术学院 | 待验证·可尝试 | guangxigongyezhiyejishuxueyuan | http://jw.gxic.net/JWXS/pkgl/XsKB_List.aspx | gxic | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145012364 |
 | 广西国际商务职业技术学院 | 待验证·可尝试 | guangxiguojishangwuzhiyejishuxueyuan | https://cas.gxibvc.net/cas/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145012379 |
 | 广西建设职业技术学院 | 待验证·可尝试 | guangxijianshezhiyejishuxueyuan | https://ids.gxjsxy.cn/authserver/login | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145013138 |
-| 广西交通职业技术学院 | 待验证·可尝试 | guangxijiaotongzhiyejishuxueyuan | https://authserver.gxjzy.com/authserver/login | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145012356 |
+| 广西交通职业技术学院 | 待验证·可尝试 | guangxijiaotongzhiyejishuxueyuan | https://authserver.gxjzy.com/authserver/login | changzhou | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145012356 |
 | 广西教育学院 | 待验证·可尝试 | guangxijiaoyuxueyuan | http://edu.wencaischool.net/gxjyxy/console/ | qz | moe-2026-adult, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4245050870 |
 | 广西教职工大学分院 - 研究生 | 研究生·待适配 | guangxijiaozhigongdaxuefenyuanyanjiusheng |  |  | wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:03739d5cba621bf713f5 |
 | 广西机电职业技术学院 | 待验证·可尝试 | guangxijidianzhiyejishuxueyuan | https://sso.gxcme.edu.cn/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145010867 |
@@ -967,8 +967,8 @@
 | 广西农业职业技术学院 | 待适配 | guangxinongyezhiyejishuxueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:fc0217eb25ffdfb35412 |
 | 广西培贤国际职业学院 | 待验证·可尝试 | guangxipeixianguojizhiyexueyuan | https://course.peixianedu.com/error.html | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145014481 |
 | 广西生态工程职业技术学院 | 待验证·可尝试 | guangxishengtaigongchengzhiyejishuxueyuan | https://cas.gxstzy.cn/lyuapServer/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145012344 |
-| 广西师范大学 | 待验证·可尝试 | guangxishifandaxue | https://sso.gxnu.edu.cn/cas/login | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145010602 |
-| 广西师范大学漓江学院 | 待验证·可尝试 | guangxishifandaxuelijiangxueyuan | http://jiaowu.gxljcollege.cn:800/dean/student/login | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:50a55e4084a899d1f05d |
+| 广西师范大学 | 待验证·可尝试 | guangxishifandaxue | https://sso.gxnu.edu.cn/cas/login | gxnu | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145010602 |
+| 广西师范大学漓江学院 | 待验证·可尝试 | guangxishifandaxuelijiangxueyuan | http://jiaowu.gxljcollege.cn:800/dean/student/login | gxnu | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:50a55e4084a899d1f05d |
 | 广西师范大学 - 研究生 | 研究生·待适配 | guangxishifandaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:4fe18996a5eecb9fdcc6 |
 | 广西师范学院 | 待验证·可尝试 | guangxishifanxueyuan | http://210.36.80.160/jsxsd/ | qz | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:92a79b614541cb49fc0c |
 | 广西师范职业学院 | 待适配 | guangxishifanzhiyexueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:eb24d4ff4c394f820ec0 |
@@ -1012,7 +1012,7 @@
 | 广州大学 - 研究生 | 研究生·待验证·可尝试 | guangzhoudaxueyanjiusheng | http://yjsglxt.gzhu.edu.cn/ | gzhuyjs | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:dd52e1fc561eef8ecb5f |
 | 广州东华职业学院 | 待验证·可尝试 | guangzhoudonghuazhiyexueyuan | http://jwc.gzdhxy.com/ | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4144014362 |
 | 广州工程技术职业学院 | 待验证·可尝试 | guangzhougongchengjishuzhiyexueyuan | https://cas.gzvtc.edu.cn/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4144013709 |
-| 广州工商学院 | 待验证·可尝试 | guangzhougongshangxueyuan | http://jw.gzgs.edu.cn/http://auth.gzgs.org.cn/cas/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4144013714 |
+| 广州工商学院 | 待验证·可尝试 | guangzhougongshangxueyuan | http://jw.gzgs.edu.cn/http://auth.gzgs.org.cn/cas/login | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4144013714 |
 | 广州航海学院 | 待验证·可尝试 | guangzhouhanghaixueyuan | http://jwx.gzmtu.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4144011106 |
 | 广州华立科技职业学院 | 待验证·可尝试 | guangzhouhualikejizhiyexueyuan | https://www.hltz.net/hlzy_jsxsd/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4144013928 |
 | 广州华立学院 | 待验证·可尝试 | guangzhouhualixueyuan | https://www.hltz.net/hlxy_jsxsd/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4144013656 |
@@ -1051,7 +1051,7 @@
 | 广州珠江职业技术学院 | 待验证·可尝试 | guangzhouzhujiangzhiyejishuxueyuan | http://www.gzzjedu.cn/ | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4144014123 |
 | 贵港应用技术职业学院 | 待适配 | guigangyingyongjishuzhiyexueyuan |  |  | moe-2026-regular; moe:4145014969 |
 | 硅湖职业技术学院 | 待验证·可尝试 | guihuzhiyejishuxueyuan | https://jwc.usl.edu.cn/jwglxt/xtgl/login_slogin.html?language=zh_CN | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132012078 |
-| 桂林电子科技大学 | 待验证·可尝试 | guilindianzikejidaxue | https://v.guet.edu.cn/https/77726476706e69737468656265737421f3f652d220256d44300d8db9d6562d/authserver/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145010595 |
+| 桂林电子科技大学 | 待验证·可尝试 | guilindianzikejidaxue | https://v.guet.edu.cn/https/77726476706e69737468656265737421f3f652d220256d44300d8db9d6562d/authserver/login | shuwei_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145010595 |
 | 桂林电子科技大学北海校区 | 待适配 | guilindianzikejidaxuebeihaixiaoqu |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:4e6e8c213c7625d5f0e7 |
 | 桂林电子科技大学 - 研究生 | 研究生·待适配 | guilindianzikejidaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:66415d82cd9121219039 |
 | 桂林航天工业学院 | 待验证·可尝试 | guilinhangtiangongyexueyuan | http://jw.guat.edu.cn/cas/login.action | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145011825 |
@@ -1059,7 +1059,7 @@
 | 桂林理工大学 | 待验证·可尝试 | guilinligongdaxue | https://jw.glut.edu.cn/academic/affairLogin.do | umooc | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145010596 |
 | 桂林理工大学博文管理学院 | 待适配 | guilinligongdaxuebowenguanlixueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:201f5dcf2058f5d34121 |
 | 桂林理工大学南宁分校 | 待验证·可尝试 | guilinligongdaxuenanningfenxiao | http://jw.glutnn.cn/academic/common/security/affairLogin.jsp | umooc | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:4044137d942f633fa462 |
-| 桂林理工大学 - 研究生 | 研究生·待验证·可尝试 | guilinligongdaxueyanjiusheng | http://gsems.glut.edu.cn/ | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:5f302e3a471dd1b303ff |
+| 桂林理工大学 - 研究生 | 研究生·待验证·可尝试 | guilinligongdaxueyanjiusheng | http://gsems.glut.edu.cn/ | hrbeu_post | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:5f302e3a471dd1b303ff |
 | 桂林旅游学院 | 待验证·可尝试 | guilinlvyouxueyuan | https://jwcweb1.gltu.cn/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145011837 |
 | 桂林山水职业学院 | 待适配 | guilinshanshuizhiyexueyuan |  |  | moe-2026-regular; moe:4145013526 |
 | 桂林生命与健康职业技术学院 | 待适配 | guilinshengmingyujiankangzhiyejishuxueyuan |  |  | moe-2026-regular; moe:4145010035 |
@@ -1081,7 +1081,7 @@
 | 贵阳幼儿师范高等专科学校 | 已实现配置 | guiyangyouershifangaodengzhuankexuexiao | http://jwapp.gypec.edu.cn/ | wisedu | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; G_贵阳幼儿师范高等专科学校 |
 | 贵阳职业技术学院 | 待验证·可尝试 | guiyangzhiyejishuxueyuan | https://dcp.gyvtc.edu.cn:81/ywtb-portal/official/index.html | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4152014129 |
 | 贵阳中医学院 | 待适配 | guiyangzhongyixueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:9f5ad427e76735e155d0 |
-| 贵州财经大学 | 待验证·可尝试 | guizhoucaijingdaxue | http://i.gufe.edu.cn/dcp/forward.action | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4152010671 |
+| 贵州财经大学 | 待验证·可尝试 | guizhoucaijingdaxue | http://i.gufe.edu.cn/dcp/forward.action | shuwei_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4152010671 |
 | 贵州财经职业学院 | 待验证·可尝试 | guizhoucaijingzhiyexueyuan | http://authserver.gzcfe.edu.cn/authserver/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4152014734 |
 | 贵州城市职业学院 | 待验证·可尝试 | guizhouchengshizhiyexueyuan | http://58.16.72.146:8092/ | zf | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4152012850 |
 | 贵州传媒职业学院 | 待验证·可尝试 | guizhouchuanmeizhiyexueyuan | https://zhxy.gzgmzyxy.cn/core/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4152014848 |
@@ -1206,9 +1206,9 @@
 | 哈尔滨工程大学 - 研究生 | 研究生·待适配 | haerbingongchengdaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:f298707a3611034dbe67 |
 | 哈尔滨工业大学 | 待验证·可尝试 | haerbingongyedaxue | http://yjsgl-hit-edu-cn.ivpn.hit.edu.cn:1080/xs/index | sg_asset | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4123010213 |
 | 哈尔滨工业大学华德学院 | 待适配 | haerbingongyedaxuehuadexueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:461394fc1101ec5894c1 |
-| 哈尔滨工业大学（深圳） | 待验证·可尝试 | haerbingongyedaxueshenzhen | http://jw.hitsz.edu.cn/ | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:8ba884be75f0ab5963aa |
-| 哈尔滨工业大学（深圳） - 研究生 | 研究生·待验证·可尝试 | haerbingongyedaxueshenzhenyanjiusheng | http://jw.hitsz.edu.cn/ | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:841d52bb947a2aa58ce1 |
-| 哈尔滨工业大学（威海） | 待验证·可尝试 | haerbingongyedaxueweihai | http://jwts.hitwh.edu.cn/ | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:b7148bace3ca8cec2329 |
+| 哈尔滨工业大学（深圳） | 待验证·可尝试 | haerbingongyedaxueshenzhen | http://jw.hitsz.edu.cn/ | hitsz | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:8ba884be75f0ab5963aa |
+| 哈尔滨工业大学（深圳） - 研究生 | 研究生·待验证·可尝试 | haerbingongyedaxueshenzhenyanjiusheng | http://jw.hitsz.edu.cn/ | hitsz | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:841d52bb947a2aa58ce1 |
+| 哈尔滨工业大学（威海） | 待验证·可尝试 | haerbingongyedaxueweihai | http://jwts.hitwh.edu.cn/ | hit | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:b7148bace3ca8cec2329 |
 | 哈尔滨工业大学 - 研究生 | 研究生·待适配 | haerbingongyedaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:febf8df8d1d539ae94bc |
 | 哈尔滨广厦学院 | 待验证·可尝试 | haerbinguangshaxueyuan | https://gsxyjw.yinghuaonline.com/hrbgxxy/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4123013306 |
 | 哈尔滨航空职工大学 | 待适配 | haerbinhangkongzhigongdaxue |  |  | moe-2026-adult; moe:4223050266 |
@@ -1230,7 +1230,7 @@
 | 哈尔滨市职工大学 | 待适配 | haerbinshizhigongdaxue |  |  | moe-2026-adult; moe:4223050269 |
 | 哈尔滨铁道职业技术学院 | 待适配 | haerbintiedaozhiyejishuxueyuan |  |  | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4123012907 |
 | 哈尔滨体育学院 | 待验证·可尝试 | haerbintiyuxueyuan | http://210.46.216.43 | cf | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4123010242 |
-| 哈尔滨体育学院 - 研究生 | 研究生·待验证·可尝试 | haerbintiyuxueyuanyanjiusheng | http://yjsgl.hrbipe.edu.cn/EducationTS/Student/Index | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:b50b97b8f29c168fa1c7 |
+| 哈尔滨体育学院 - 研究生 | 研究生·待验证·可尝试 | haerbintiyuxueyuanyanjiusheng | http://yjsgl.hrbipe.edu.cn/EducationTS/Student/Index | lz | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:b50b97b8f29c168fa1c7 |
 | 哈尔滨信息工程学院 | 待验证·可尝试 | haerbinxinxigongchengxueyuan | https://work.greathiit.com/user/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4123011635 |
 | 哈尔滨学院 | 待验证·可尝试 | haerbinxueyuan | http://jwmis.hrbu.edu.cn/ | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4123010234 |
 | 哈尔滨医科大学 | 已实现配置 | haerbinyikedaxue | https://jwweb.hrbmu.edu.cn/new/welcome.page | cf | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; H_哈尔滨医科大学 |
@@ -1239,8 +1239,8 @@
 | 哈尔滨音乐学院 - 研究生 | 已实现配置 | haerbinyinyuexueyuan - yanjiusheng | https://hrbcmyjs.mh.chaoxing.com/ | chaoxing | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; H_哈尔滨音乐学院 - 研究生 |
 | 哈尔滨幼儿师范高等专科学校 | 待适配 | haerbinyouershifangaodengzhuankexuexiao |  |  | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4123014425 |
 | 哈尔滨远东理工学院 | 待验证·可尝试 | haerbinyuandongligongxueyuan | http://jw.fe-edu.com.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4123013301 |
-| 哈尔滨职业技术大学 | 待验证·可尝试 | haerbinzhiyejishudaxue | http://111.40.18.189:9081/ | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4123012911 |
-| 哈尔滨职业技术学院 | 待验证·可尝试 | haerbinzhiyejishuxueyuan | http://111.40.18.189:9081/ | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:b337e08d81dbdd84940b |
+| 哈尔滨职业技术大学 | 待验证·可尝试 | haerbinzhiyejishudaxue | http://111.40.18.189:9081/ | hitsz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4123012911 |
+| 哈尔滨职业技术学院 | 待验证·可尝试 | haerbinzhiyejishuxueyuan | http://111.40.18.189:9081/ | hitsz | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:b337e08d81dbdd84940b |
 | 海关管理干部学院 | 待适配 | haiguanguanliganbuxueyuan |  |  | moe-2026-adult; moe:4231051332 |
 | 海军职工大学 | 待适配 | haijunzhigongdaxue |  |  | moe-2026-adult; moe:4221051118 |
 | 海口经济学院 | 待验证·可尝试 | haikoujingjixueyuan | https://jw.hkc.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4146012308 |
@@ -1290,7 +1290,7 @@
 | 杭州职业技术学院 | 待适配 | hangzhouzhiyejishuxueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:41b4bba016b5b6b0879e |
 | 汉江师范学院 | 待验证·可尝试 | hanjiangshifanxueyuan | https://webvpn.hjnu.edu.cn/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4142010518 |
 | 汉口学院 | 待验证·可尝试 | hankouxueyuan | http://113.57.132.2:83/sso/ddlogin | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4142011800 |
-| 韩山师范学院 | 待验证·可尝试 | hanshanshifanxueyuan | https://jw.hstc.edu.cn/ | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4144010578 |
+| 韩山师范学院 | 待验证·可尝试 | hanshanshifanxueyuan | https://jw.hstc.edu.cn/ | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4144010578 |
 | 汉阳大学 | 待验证·可尝试 | hanyangdaxue | https://sdjwxt.syu.edu.cn/ | qz | wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:6284e4a199021d7c5c98 |
 | 汉中职业技术学院 | 待验证·可尝试 | hanzhongzhiyejishuxueyuan | http://xjwxt.hzvtc.cn/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161013949 |
 | 河北北方学院 | 待验证·可尝试 | hebeibeifangxueyuan | https://jw.hebeinu.edu.cn/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4113010092 |
@@ -1364,7 +1364,7 @@
 | 河北资源环境职业技术学院 | 已实现配置 | hebeiziyuanhuanjingzhiyejishuxueyuan | https://jwpt.hebzyhj.edu.cn:1233/dist/#/login | qz_app | moe-2026-regular; H_河北资源环境职业技术学院 |
 | 鹤壁能源化工职业学院 | 待验证·可尝试 | hebinengyuanhuagongzhiyexueyuan | https://hbnyhgzyxy.jijiaox.com/mg/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141014529 |
 | 鹤壁汽车工程职业学院 | 待适配 | hebiqichegongchengzhiyexueyuan |  |  | moe-2026-regular; moe:4141014352 |
-| 鹤壁职业技术学院 | 待验证·可尝试 | hebizhiyejishuxueyuan | https://authserver.hbzy.edu.cn/authserver/login | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141012793 |
+| 鹤壁职业技术学院 | 待验证·可尝试 | hebizhiyejishuxueyuan | https://authserver.hbzy.edu.cn/authserver/login | shuwei_m | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141012793 |
 | 河池学院 | 待验证·可尝试 | hechixueyuan | https://auth.hcnu.edu.cn/authserver/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145010605 |
 | 合肥城市学院 | 待验证·可尝试 | hefeichengshixueyuan | http://60.174.215.2:8005/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134013615 |
 | 合肥大学 | 待验证·可尝试 | hefeidaxue | https://ids.hfuu.edu.cn/authserver/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134011059 |
@@ -1380,7 +1380,7 @@
 | 合肥通用职业技术学院 | 待验证·可尝试 | hefeitongyongzhiyejishuxueyuan | http://220.248.224.201/webkbgl/login.aspx | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134012410 |
 | 合肥信息技术职业学院 | 待验证·可尝试 | hefeixinxijishuzhiyexueyuan | https://oajwc.hfitu.cn/ | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134014230 |
 | 合肥学院 | 待适配 | hefeixueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:a589753ae7efcff41881 |
-| 合肥幼儿师范高等专科学校 | 待验证·可尝试 | hefeiyouershifangaodengzhuankexuexiao | https://wvpn.hfpec.edu.cn/http/77726476706e69737468656265737421f9f352d22f3678557d468ca88d1b203b/authserver/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134014330 |
+| 合肥幼儿师范高等专科学校 | 待验证·可尝试 | hefeiyouershifangaodengzhuankexuexiao | https://wvpn.hfpec.edu.cn/http/77726476706e69737468656265737421f9f352d22f3678557d468ca88d1b203b/authserver/login | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134014330 |
 | 合肥职工科技大学 | 待适配 | hefeizhigongkejidaxue |  |  | moe-2026-adult; moe:4234050569 |
 | 合肥职业技术学院 | 待验证·可尝试 | hefeizhiyejishuxueyuan | https://hfzy.vpn.htc.edu.cn:10443/https/webvpn3fcd2ad6ffa12167dd64a6226077d35a/rod_cas_server/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134013058 |
 | 鹤岗矿务局职工大学 | 待适配 | hegangkuangwujuzhigongdaxue |  |  | moe-2026-adult; moe:4223050327 |
@@ -1400,7 +1400,7 @@
 | 黑龙江工商学院 | 待验证·可尝试 | heilongjianggongshangxueyuan | https://jw.hgs-edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4123013300 |
 | 黑龙江工业学院 | 待验证·可尝试 | heilongjianggongyexueyuan | https://webvpn.hljut.edu.cn/users/sign_in | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4123011445 |
 | 黑龙江护理高等专科学校 | 已实现配置 | heilongjianghuligaodengzhuankexuexiao | https://jwc.hljnc.edu.cn:8080/admin/login | chaoxing | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; H_黑龙江护理高等专科学校 |
-| 黑龙江建筑职业技术学院 | 待验证·可尝试 | heilongjiangjianzhuzhiyejishuxueyuan | http://1.189.33.198:7001/bkjw/ | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:8b9bbb9cacd0334ec51f |
+| 黑龙江建筑职业技术学院 | 待验证·可尝试 | heilongjiangjianzhuzhiyejishuxueyuan | http://1.189.33.198:7001/bkjw/ | hit | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:8b9bbb9cacd0334ec51f |
 | 黑龙江交通职业技术学院 | 待验证·可尝试 | heilongjiangjiaotongzhiyejishuxueyuan | https://rz.hljtp.edu.cn/tpass/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4123014053 |
 | 黑龙江开放大学 | 待验证·可尝试 | heilongjiangkaifangdaxue | http://218.7.19.201:19880/wui/index.html/ | jw_home | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4223051244 |
 | 黑龙江科技大学 | 待验证·可尝试 | heilongjiangkejidaxue | http://xsurp.usth.edu.cn/gotoLogin | urp_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4123010219 |
@@ -1433,7 +1433,7 @@
 | 河南财经政法大学 | 已实现配置 | henancaijingzhengfadaxue | http://xk.huel.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; H_河南财经政法大学 |
 | 河南财政金融学院 | 待验证·可尝试 | henancaizhengjinrongxueyuan | https://cas.hafu.edu.cn/lyuapServer/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141011652 |
 | 河南财政金融学院象湖校区 | 待适配 | henancaizhengjinrongxueyuanxianghuxiaoqu |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:6ee0ad3e95a21ac522eb |
-| 河南测绘职业学院 | 待验证·可尝试 | henancehuizhiyexueyuan | http://authserver.hasm.edu.cn/authserver/login | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141014608 |
+| 河南测绘职业学院 | 待验证·可尝试 | henancehuizhiyexueyuan | http://authserver.hasm.edu.cn/authserver/login | shuwei_m | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141014608 |
 | 河南城建学院 | 待验证·可尝试 | henanchengjianxueyuan | https://icas.huuc.edu.cn/cas/login | chaoxing | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141011765 |
 | 河南大学 | 待验证·可尝试 | henandaxue | https://jwc.henu.edu.cn | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141010475 |
 | 河南地矿职业学院 | 待验证·可尝试 | henandikuangzhiyexueyuan | https://jwxt.hagmc.edu.cn/cas/login.action | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141014637 |
@@ -1446,7 +1446,7 @@
 | 河南工业贸易职业学院 | 待验证·可尝试 | henangongyemaoyizhiyexueyuan | https://jw.hngm.edu.cn/hngmjw/cas/login.action | kingo_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141013936 |
 | 河南工业职业技术大学 | 待适配 | henangongyezhiyejishudaxue |  |  | moe-2026-regular; moe:4141012794 |
 | 河南工业职业技术学院 | 待验证·可尝试 | henangongyezhiyejishuxueyuan | https://jwgl.hnpi.edu.cn/ | qz | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:097ba85b166d393d6e9b |
-| 河南广播电视大学 | 待验证·可尝试 | henanguangbodianshidaxue | http://zxjw.open.ha.cn/eams/homeExt.action | classic_eams | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:2df479677a7fc1892a83 |
+| 河南广播电视大学 | 待验证·可尝试 | henanguangbodianshidaxue | http://zxjw.open.ha.cn/eams/homeExt.action | shuwei_m | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:2df479677a7fc1892a83 |
 | 河南国医学院 | 待适配 | henanguoyixueyuan |  |  | moe-2026-regular; moe:4141014981 |
 | 河南护理职业学院 | 待验证·可尝试 | henanhulizhiyexueyuan | https://vpn2.hnnvc.edu.cn/https/webvpn06eb23a9bc82758275e5fab895f02890a23fc80800fb194ed88a5579d97bf03c/authserver/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141014349 |
 | 河南检察职业学院 | 待验证·可尝试 | henanjianchazhiyexueyuan | http://cas.hnjc.edu.cn/cas/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141013499 |
@@ -1456,14 +1456,14 @@
 | 河南警察学院 | 待验证·可尝试 | henanjingchaxueyuan | https://cas.hnp.edu.cn/cas/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141011788 |
 | 河南经贸职业学院 | 待验证·可尝试 | henanjingmaozhiyexueyuan | https://henetc.hnscen.cn/classroom/login | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141013788 |
 | 河南经贸职业学院微信课表 | 待适配 | henanjingmaozhiyexueyuanweixinkebiao |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:bbfddfadb9123a182274 |
-| 河南开放大学 | 待验证·可尝试 | henankaifangdaxue | http://zxjw.open.ha.cn/eams/homeExt.action | classic_eams | moe-2026-adult, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4241051287 |
+| 河南开放大学 | 待验证·可尝试 | henankaifangdaxue | http://zxjw.open.ha.cn/eams/homeExt.action | shuwei_m | moe-2026-adult, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4241051287 |
 | 河南开封科技传媒学院 | 待验证·可尝试 | henankaifengkejichuanmeixueyuan | https://msjw.humc.edu.cn/cas/login.action | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141013501 |
 | 河南科技大学 | 待验证·可尝试 | henankejidaxue | https://vpn.haust.edu.cn/portal/ | classic_eams | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141010464 |
 | 河南科技大学 - 研究生 | 研究生·待适配 | henankejidaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:2137ca018ca895f9b9d3 |
 | 河南科技大学应用工程学院 | 待适配 | henankejidaxueyingyonggongchengxueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:fcb26f351e454ff67172 |
 | 河南科技学院 | 待验证·可尝试 | henankejixueyuan | http://jwgl.hist.edu.cn/cas/login.action | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141010467 |
 | 河南科技职业大学 | 待验证·可尝试 | henankejizhiyedaxue | https://havust.jijiaox.com/mg/login | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141014169 |
-| 河南理工大学 | 待验证·可尝试 | henanligongdaxue | https://uia.hpu.edu.cn/cas/login?service=https%3A%2F%2Fwebvpn.hpu.edu.cn%2Fhuauauth%2Fcaslogin | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141010460 |
+| 河南理工大学 | 待验证·可尝试 | henanligongdaxue | https://uia.hpu.edu.cn/cas/login?service=https%3A%2F%2Fwebvpn.hpu.edu.cn%2Fhuauauth%2Fcaslogin | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141010460 |
 | 河南林业职业学院 | 待验证·可尝试 | henanlinyezhiyexueyuan | http://218.196.161.21/cas/login.action | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141013889 |
 | 河南牧业经济学院 | 待验证·可尝试 | henanmuyejingjixueyuan | http://211.84.213.21/cas/login.action | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141010469 |
 | 河南能源化工学院 | 待适配 | henannengyuanhuagongxueyuan |  |  | moe-2026-regular; moe:4141014980 |
@@ -1645,7 +1645,7 @@
 | 湖北艺术职业学院 | 待验证·可尝试 | hubeiyishuzhiyexueyuan | http://aic.artcollegehb.cn/log/eight/login.html | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4142013263 |
 | 湖北医药学院 | 已实现配置 | hubeiyiyaoxueyuan | https://jw.hbmu.edu.cn | cf | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; H_湖北医药学院 |
 | 湖北医药学院药护学院 | 待验证·可尝试 | hubeiyiyaoxueyuanyaohuxueyuan | http://218.197.54.110/ | cf | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4142013249 |
-| 湖北幼儿师范高等专科学校 | 待验证·可尝试 | hubeiyouershifangaodengzhuankexuexiao | https://hbssyys.aixiaoyuan.cn/portal/login | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4142014467 |
+| 湖北幼儿师范高等专科学校 | 待验证·可尝试 | hubeiyouershifangaodengzhuankexuexiao | https://hbssyys.aixiaoyuan.cn/portal/login | buaa | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4142014467 |
 | 湖北职业技术学院 | 待验证·可尝试 | hubeizhiyejishuxueyuan | http://mcrp.hbvtc.edu.cn/portalUI/login.html | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4142012051 |
 | 湖北中医药大学 | 待验证·可尝试 | hubeizhongyiyaodaxue | https://jwxt.hbucm.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4142010507 |
 | 湖北中医药大学 - 研究生 | 研究生·待验证·可尝试 | hubeizhongyiyaodaxueyanjiusheng | http://218.197.176.171/home/stulogin | south_soft | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:b6f08341a87ce4404131 |
@@ -1663,7 +1663,7 @@
 | 呼伦贝尔学院 - 研究生 | 研究生·待适配 | hulunbeierxueyuanyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:5bb08471cd8461be19b6 |
 | 呼伦贝尔职业技术学院 | 待验证·可尝试 | hulunbeierzhiyejishuxueyuan | https://hlbrzy.bylw.chaoxing.com/admin/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4115014283 |
 | 湖南安全技术职业学院 | 待验证·可尝试 | hunananquanjishuzhiyexueyuan | https://jwxt.hnvist.cn:8090/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4143014025 |
-| 湖南财经工业职业技术学院 | 待验证·可尝试 | hunancaijinggongyezhiyejishuxueyuan | https://hycgy.cjnep.net/sims/web/site/login | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4143013807 |
+| 湖南财经工业职业技术学院 | 待验证·可尝试 | hunancaijinggongyezhiyejishuxueyuan | https://hycgy.cjnep.net/sims/web/site/login | xytc | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4143013807 |
 | 湖南财政经济学院 | 待验证·可尝试 | hunancaizhengjingjixueyuan | http://jiaowu2.hufe.edu.cn/ | qz_crazy | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4143011532 |
 | 湖南城建职业技术学院 | 待验证·可尝试 | hunanchengjianzhiyejishuxueyuan | https://cas.hnucc.com/cas/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4143013044 |
 | 湖南城市学院 | 已实现配置 | hunanchengshixueyuan | https://rzpt.hncu.edu.cn/lyuapServer/login | qz | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; H_湖南城市学院 |
@@ -1791,7 +1791,7 @@
 | 江南影视艺术职业学院 | 待验证·可尝试 | jiangnanyingshiyishuzhiyexueyuan | https://jnys.jw.chaoxing.com/admin/login | chaoxing | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132013017 |
 | 江苏安全技术职业学院 | 待验证·可尝试 | jiangsuanquanjishuzhiyexueyuan | https://cas.jscst.edu.cn/cas/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132014589 |
 | 江苏财经职业技术学院 | 待适配 | jiangsucaijingzhiyejishuxueyuan |  |  | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132013753 |
-| 江苏财会职业学院 | 待验证·可尝试 | jiangsucaikuaizhiyexueyuan | https://www.jscfa.edu.cn/ | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132014542 |
+| 江苏财会职业学院 | 待验证·可尝试 | jiangsucaikuaizhiyexueyuan | https://www.jscfa.edu.cn/ | shuwei_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132014542 |
 | 江苏城市职业学院 | 待验证·可尝试 | jiangsuchengshizhiyexueyuan | http://jw.jscvc.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132014000 |
 | 江苏城乡建设学院 | 待适配 | jiangsuchengxiangjianshexueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:8da657062b22578fd47e |
 | 江苏城乡建设职业 | 待适配 | jiangsuchengxiangjianshezhiye |  |  | wakeup-52.36-user-attachment; wakeup:774157068b0516bf89b2 |
@@ -1813,7 +1813,7 @@
 | 江苏建筑职业技术学院 | 待验证·可尝试 | jiangsujianzhuzhiyejishuxueyuan | http://jxglpt.jsviat.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:6915a4ac05c535b2fe6c |
 | 江苏警官学院 | 待验证·可尝试 | jiangsujingguanxueyuan | http://jwxt.jspi.cn/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132010329 |
 | 江苏经贸职业技术学院 | 待验证·可尝试 | jiangsujingmaozhiyejishuxueyuan | https://client.casb.jvic.edu.cn/https/webvpn7a567cd25d3e02f240fd25d290140c86/cas/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132012047 |
-| 江苏开放大学 | 待验证·可尝试 | jiangsukaifangdaxue | http://jiaowu.jsou.cn/login | jw_home | moe-2026-adult, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4232051255 |
+| 江苏开放大学 | 待验证·可尝试 | jiangsukaifangdaxue | http://jiaowu.jsou.cn/login | nuist | moe-2026-adult, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4232051255 |
 | 江苏科技大学 | 待验证·可尝试 | jiangsukejidaxue | https://www.just.edu.cn | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132010289 |
 | 江苏科技大学苏州理工学院 | 待验证·可尝试 | jiangsukejidaxuesuzhouligongxueyuan | https://client.v.just.edu.cn/http/webvpndfaddd2f321275de563c2a6cf21be58aacc9653cdb86077d69472aa37e64e57c/cas/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132013991 |
 | 江苏科技大学 - 研究生 | 研究生·待适配 | jiangsukejidaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:8d16f1415e6bad5ee00d |
@@ -1866,7 +1866,7 @@
 | 江西科技职业学院 | 待适配 | jiangxikejizhiyexueyuan |  |  | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4136013419 |
 | 江西理工大学 | 待验证·可尝试 | jiangxiligongdaxue | https://authserver.jxust.edu.cn/authserver/login?service=https://jw.jxust.edu.cn/jsxsd/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4136010407 |
 | 江西旅游商贸职业学院 | 待验证·可尝试 | jiangxilvyoushangmaozhiyexueyuan | https://home.jxlsxy.edu.cn/ | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4136012932 |
-| 江西农业大学 | 待验证·可尝试 | jiangxinongyedaxue | http://jwgl.jxau.edu.cn/ | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4136010410 |
+| 江西农业大学 | 待验证·可尝试 | jiangxinongyedaxue | http://jwgl.jxau.edu.cn/ | jxau | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4136010410 |
 | 江西农业大学南昌商学院 | 已实现配置 | jiangxinongyedaxuenanchangshangxueyuan | https://jwxt.ncbcjxau.edu.cn:8443/jsd/ | qz | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; J_江西农业大学南昌商学院 |
 | 江西农业工程职业学院 | 待验证·可尝试 | jiangxinongyegongchengzhiyexueyuan | https://cas.jxaevc.com/cas/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4136013872 |
 | 江西青年职业学院 | 待验证·可尝试 | jiangxiqingnianzhiyexueyuan | https://jwmis.jxqy.edu.cn:8443/admin/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4136013869 |
@@ -1956,7 +1956,7 @@
 | 吉林市职工大学 | 待适配 | jilinshizhigongdaxue |  |  | moe-2026-adult; moe:4222050234 |
 | 吉林水利电力职业学院 | 待验证·可尝试 | jilinshuilidianlizhiyexueyuan | http://oa.jlsy.edu.cn/ | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122014602 |
 | 吉林司法警官职业学院 | 待验证·可尝试 | jilinsifajingguanzhiyexueyuan | http://jwxt.jlsfjy.cn/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122012901 |
-| 吉林铁道职业技术大学 | 待验证·可尝试 | jilintiedaozhiyejishudaxue | http://i.jtpt.cn/PassPortWeb/login.aspx | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122014052 |
+| 吉林铁道职业技术大学 | 待验证·可尝试 | jilintiedaozhiyejishudaxue | http://i.jtpt.cn/PassPortWeb/login.aspx | lz | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122014052 |
 | 吉林铁道职业技术学院 | 待适配 | jilintiedaozhiyejishuxueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:c94a2086210f75379888 |
 | 吉林体育学院 | 待验证·可尝试 | jilintiyuxueyuan | https://webvpn.jlsu.edu.cn:4431/portal/ | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122010208 |
 | 吉林通用航空职业技术学院 | 待验证·可尝试 | jilintongyonghangkongzhiyejishuxueyuan | https://jwc.jlthedu.com/Web_Pro/index.aspx | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122014743 |
@@ -2045,7 +2045,7 @@
 | 凯里学院 | 待验证·可尝试 | kailixueyuan | https://sys.kluniv.edu.cn:8004/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4152010669 |
 | 凯里学院 - 研究生 | 研究生·待适配 | kailixueyuanyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:f5810c832edeb44d9a5b |
 | 開南大學 | 待适配 | kainandaxue |  |  | tw-moe-114; tw-moe-114:1049 |
-| 康复大学 | 待验证·可尝试 | kangfudaxue | https://webvpn.uhrs.edu.cn/https/77726476706e69737468656265737421f3f652d232387a43300d8db9d6562d/tpass/login | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4137014878 |
+| 康复大学 | 待验证·可尝试 | kangfudaxue | https://webvpn.uhrs.edu.cn/https/77726476706e69737468656265737421f3f652d232387a43300d8db9d6562d/tpass/login | hitsz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4137014878 |
 | 康寧學校財團法人康寧大學 | 待适配 | kangningxuexiaocaituanfarenkangningdaxue |  |  | tw-moe-114; tw-moe-114:1079 |
 | 喀什大学 | 已实现配置 | kashidaxue | http://jwc.ksu.edu.cn/ | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; K_喀什大学 |
 | 喀什教育学院 | 待适配 | kashijiaoyuxueyuan |  |  | moe-2026-adult; moe:4265051594 |
@@ -2130,7 +2130,7 @@
 | 聊城大学东昌学院 | 已实现配置 | liaochengdaxuedongchangxueyuan | https://jw.lcudcc.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; L_聊城大学东昌学院 |
 | 聊城科技职业学院 | 待验证·可尝试 | liaochengkejizhiyexueyuan | http://cas-lcvtc-edu-cn-s.vpn.lcvtc.edu.cn:8118/lyuapServer/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4137014923 |
 | 聊城职业技术学院 | 待验证·可尝试 | liaochengzhiyejishuxueyuan | http://61.133.116.247/ | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4137012441 |
-| 辽东学院 | 待验证·可尝试 | liaodongxueyuan | https://sso.ldxy.cn/sso/login | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121011779 |
+| 辽东学院 | 待验证·可尝试 | liaodongxueyuan | https://sso.ldxy.cn/sso/login | buaa | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121011779 |
 | 辽河石油职业技术学院 | 待验证·可尝试 | liaoheshiyouzhiyejishuxueyuan | https://lhsyzyjsxy.30edu.com.cn/ | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121014077 |
 | 辽宁兵器工业职工大学 | 待适配 | liaoningbingqigongyezhigongdaxue |  |  | moe-2026-adult; moe:4221051087 |
 | 辽宁财贸学院 | 待验证·可尝试 | liaoningcaimaoxueyuan | https://oa.lncmxy.com/system/user!toLogin.action | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121013900 |
@@ -2140,14 +2140,14 @@
 | 辽宁地质工程职业学院 | 待验证·可尝试 | liaoningdizhigongchengzhiyexueyuan | https://jw.lngc.edu.cn/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121014106 |
 | 辽宁对外经贸学院 | 待验证·可尝试 | liaoningduiwaijingmaoxueyuan | https://jwpt.luibe.edu.cn/jsxsd/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121010841 |
 | 辽宁公安司法管理干部学院 | 待适配 | liaoninggongansifaguanliganbuxueyuan |  |  | moe-2026-adult; moe:4221051842 |
-| 辽宁工程技术大学 | 待验证·可尝试 | liaoninggongchengjishudaxue | https://authserver.lntu.edu.cn/authserver/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121010147 |
+| 辽宁工程技术大学 | 待验证·可尝试 | liaoninggongchengjishudaxue | https://authserver.lntu.edu.cn/authserver/login | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121010147 |
 | 辽宁工程技术大学 - 研究生 | 研究生·待适配 | liaoninggongchengjishudaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:9e595a052dfc0e6213a6 |
 | 辽宁工程职业学院 | 待验证·可尝试 | liaoninggongchengzhiyexueyuan | http://221.203.162.179:8088/edu/login.html | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121014287 |
 | 辽宁工业大学 | 已实现配置 | liaoninggongyedaxue | http://jwglxt.lnut.edu.cn | zf_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; L_辽宁工业大学 |
 | 辽宁广告职业学院 | 待验证·可尝试 | liaoningguanggaozhiyexueyuan | http://59.46.116.77/tmweb/ | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121012897 |
-| 辽宁轨道交通职业学院 | 待验证·可尝试 | liaoningguidaojiaotongzhiyexueyuan | https://vpn.lngpi.edu.cn/portal/shortcut.html | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121012896 |
-| 辽宁轨道交通职业学院 1 | 待适配 | liaoningguidaojiaotongzhiyexueyuan |  |  | wakeup-52.36-user-attachment; wakeup:943a145aa0e81bda7c57 |
-| 辽宁何氏医学院 | 待验证·可尝试 | liaoningheshiyixueyuan | https://cas.he-edu.com/tpass/login | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121013610 |
+| 辽宁轨道交通职业学院 | 待验证·可尝试 | liaoningguidaojiaotongzhiyexueyuan | https://vpn.lngpi.edu.cn/portal/shortcut.html | buaa | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121012896 |
+| 辽宁轨道交通职业学院 1 | 待验证·可尝试 | liaoningguidaojiaotongzhiyexueyuan | https://vpn.lngpi.edu.cn/portal/ | lngd | wakeup-52.36-user-attachment; wakeup:943a145aa0e81bda7c57 |
+| 辽宁何氏医学院 | 待验证·可尝试 | liaoningheshiyixueyuan | https://cas.he-edu.com/tpass/login | shuwei_m | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121013610 |
 | 辽宁建筑职业学院 | 待验证·可尝试 | liaoningjianzhuzhiyexueyuan | https://cxjw.lnjzxy.edu.cn/admin/login | chaoxing | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121014189 |
 | 辽宁机电职业技术学院 | 待验证·可尝试 | liaoningjidianzhiyejishuxueyuan | http://jwgl.lnjdp.com:88/jwglxt | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121012898 |
 | 辽宁警察学院 | 待验证·可尝试 | liaoningjingchaxueyuan | http://124.93.236.7/jsxsd/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121011432 |
@@ -2155,7 +2155,7 @@
 | 辽宁金融职业学院 | 待验证·可尝试 | liaoningjinrongzhiyexueyuan | https://jw.lnfvc.edu.cn/lnjrjw/cas/login.action | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121012895 |
 | 辽宁开放大学 | 待验证·可尝试 | liaoningkaifangdaxue | https://sso.ltcem.com/login | jw_home | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4221051196 |
 | 辽宁科技大学 | 已实现配置 | liaoningkejidaxue | https://ustl.jw.chaoxing.com/ | chaoxing | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; L_辽宁科技大学 |
-| 辽宁科技学院 | 待验证·可尝试 | liaoningkejixueyuan | https://mea.lnist.edu.cn/eams/loginExt.action | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121011430 |
+| 辽宁科技学院 | 待验证·可尝试 | liaoningkejixueyuan | https://mea.lnist.edu.cn/eams/loginExt.action | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121011430 |
 | 辽宁理工学院 | 待验证·可尝试 | liaoningligongxueyuan | https://jwoa.lise.edu.cn/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121013217 |
 | 辽宁理工职业大学 | 待适配 | liaoningligongzhiyedaxue |  |  | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121012595 |
 | 辽宁民族师范高等专科学校 | 待适配 | liaoningminzushifangaodengzhuankexuexiao |  |  | moe-2026-regular; moe:4121014464 |
@@ -2164,12 +2164,12 @@
 | 辽宁商贸职业学院 | 待适配 | liaoningshangmaozhiyexueyuan |  |  | moe-2026-regular; moe:4121013960 |
 | 辽宁省交通高等专科学校 | 待验证·可尝试 | liaoningshengjiaotonggaodengzhuankexuexiao | https://zhjx.lncc.edu.cn/login | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121011500 |
 | 辽宁生态工程职业学院 | 待验证·可尝试 | liaoningshengtaigongchengzhiyexueyuan | https://zf.lnstzy.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121012593 |
-| 辽宁师范大学 | 待验证·可尝试 | liaoningshifandaxue | https://open.lnnu.edu.cn/auth/cas/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121010165 |
+| 辽宁师范大学 | 待验证·可尝试 | liaoningshifandaxue | https://open.lnnu.edu.cn/auth/cas/login | shuwei_m | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121010165 |
 | 辽宁师范大学海华学院 | 待验证·可尝试 | liaoningshifandaxuehaihuaxueyuan | http://jwxt.lshhxy.edu.cn/jwapp/sys/emapfunauth/pages/funauth-login.do | wisedu | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121013215 |
-| 辽宁师范大学 - 研究生 | 研究生·待验证·可尝试 | liaoningshifandaxueyanjiusheng | https://yjsgl.lnnu.edu.cn/ | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:669995752885d05000ca |
+| 辽宁师范大学 - 研究生 | 研究生·待验证·可尝试 | liaoningshifandaxueyanjiusheng | https://yjsgl.lnnu.edu.cn/ | hrbeu_post | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:669995752885d05000ca |
 | 辽宁师范高等专科学校 | 待验证·可尝试 | liaoningshifangaodengzhuankexuexiao | https://authserver.lnnc.ln.cn/authserver/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121014662 |
 | 辽宁石化职业技术学校 | 待适配 | liaoningshihuazhiyejishuxuexiao |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:84aaffecbaa72f7b6662 |
-| 辽宁石化职业技术学院 | 待验证·可尝试 | liaoningshihuazhiyejishuxueyuan | http://125.222.107.68/ | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121012900 |
+| 辽宁石化职业技术学院 | 待验证·可尝试 | liaoningshihuazhiyejishuxueyuan | http://125.222.107.68/ | lz | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121012900 |
 | 辽宁石油化工大学 | 待验证·可尝试 | liaoningshiyouhuagongdaxue | https://auth.lnpu.edu.cn/sso/login | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121010148 |
 | 辽宁税务高等专科学校 | 待适配 | liaoningshuiwugaodengzhuankexuexiao |  |  | moe-2026-regular; moe:4121011735 |
 | 辽宁特殊教育师范高等专科学校 | 待验证·可尝试 | liaoningteshujiaoyushifangaodengzhuankexuexiao | http://61.189.17.146/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121014526 |
@@ -2182,10 +2182,10 @@
 | 辽宁政法职业学院 | 待适配 | liaoningzhengfazhiyexueyuan |  |  | moe-2026-regular; moe:4121014398 |
 | 辽宁职业学院 | 待验证·可尝试 | liaoningzhiyexueyuan | http://crp.lnvc.cn/xsgl/xs/login/login.aspx | aic | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121012592 |
 | 辽宁中医药大学 | 待适配 | liaoningzhongyiyaodaxue |  |  | moe-2026-regular; moe:4121010162 |
-| 辽宁中医药大学杏林学院 | 待验证·可尝试 | liaoningzhongyiyaodaxuexinglinxueyuan | http://59.46.67.198:60001/tmweb_xl/login.aspx | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121013609 |
+| 辽宁中医药大学杏林学院 | 待验证·可尝试 | liaoningzhongyiyaodaxuexinglinxueyuan | http://59.46.67.198:60001/tmweb_xl/login.aspx | lz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121013609 |
 | 辽宁中医药大学 - 研究生 | 研究生·待验证·可尝试 | liaoningzhongyiyaodaxueyanjiusheng | https://yjszs.lnutcm.edu.cn:7777/Gmis/home/stulogin | south_soft | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:4c728ff95a83c87b1f39 |
 | 辽宁装备制造职业技术学院 | 待验证·可尝试 | liaoningzhuangbeizhizaozhiyejishuxueyuan | https://sso.ltcem.com/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121014076 |
-| 辽阳职业技术学院 | 待验证·可尝试 | liaoyangzhiyejishuxueyuan | https://202.97.179.134/login.aspx | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121011249 |
+| 辽阳职业技术学院 | 待验证·可尝试 | liaoyangzhiyejishuxueyuan | https://202.97.179.134/login.aspx | lz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121011249 |
 | 辽源职业技术学院 | 待验证·可尝试 | liaoyuanzhiyejishuxueyuan | https://lyvtc.jw.chaoxing.com/admin/login | chaoxing | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122010847 |
 | 丽江师范高等专科学校 | 待验证·可尝试 | lijiangshifangaodengzhuankexuexiao | http://newjw.lj-edu.cn/xtgl/login_slogin.html | zf_new | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:f02e098d55d53e4d6766 |
 | 丽江师范学院 | 待验证·可尝试 | lijiangshifanxueyuan | http://newjw.lj-edu.cn/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4153014015 |
@@ -2253,7 +2253,7 @@
 | 学校 | 状态 | 别名 / 检索词 | 教务入口 | 协议候选 | 来源 / 目录 ID |
 |---|---|---|---|---|---|
 | 马鞍山师范高等专科学校 | 待验证·可尝试 | maanshanshifangaodengzhuankexuexiao | https://webvpn.massz.edu.cn/http/webvpnc6518501960a2cb772112dfaf9708770c45184baa5fb4f4bcce74bacd3248a13/cas/login | classic_eams | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134013760 |
-| 马鞍山学院 | 待验证·可尝试 | maanshanxueyuan | https://jwxt.masu.edu.cn/ | classic_eams | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134013614 |
+| 马鞍山学院 | 待验证·可尝试 | maanshanxueyuan | https://jwxt.masu.edu.cn/ | shuwei_m | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134013614 |
 | 马鞍山职业技术学院 | 待验证·可尝试 | maanshanzhiyejishuxueyuan | https://njwgl.mastc.edu.cn:8080/jwgl | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134014192 |
 | 满洲里俄语职业学院 | 待适配 | manzhoulieyuzhiyexueyuan |  |  | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4115014285 |
 | 茂名职业技术学院 | 已实现配置 | maomingzhiyejishuxueyuan | http://jwc.mmvtc.cn/ | zf_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; M_茂名职业技术学院 |
@@ -2286,7 +2286,7 @@
 | 闽江大学 | 待适配 | minjiangdaxue |  |  | moe-2026-regular; moe:4135010395 |
 | 闽江师范高等专科学校 | 已实现配置 | minjiangshifangaodengzhuankexuexiao | https://edums.app.fzmjtc.cn/ | chaoxing | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; M_闽江师范高等专科学校 |
 | 闽江学院 | 待验证·可尝试 | minjiangxueyuan | https://jwgl.mju.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:2b50ce05f560231dec72 |
-| 闽南科技学院 | 待验证·可尝试 | minnankejixueyuan | https://jwgl.mku.edu.cn/jsxsd/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4135012992 |
+| 闽南科技学院 | 待验证·可尝试 | minnankejixueyuan | https://jwgl.mku.edu.cn/jsxsd/ | qz_2024 | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4135012992 |
 | 闽南理工学院 | 待适配 | minnanligongxueyuan |  |  | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4135012710 |
 | 闽南师范大学 | 已实现配置 | minnanshifandaxue | https://jwxt.mnnu.edu.cn/jwglxt | zf_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; M_闽南师范大学 |
 | 闽西职业技术学院 | 已实现配置 | minxizhiyejishuxueyuan | https://mxdx.jw.chaoxing.com/ | chaoxing | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; M_闽西职业技术学院 |
@@ -2337,7 +2337,7 @@
 | 南華大學 | 待适配 | nanhuadaxue |  |  | tw-moe-114; tw-moe-114:1020 |
 | 南华大学船山学院 | 待验证·可尝试 | nanhuadaxuechuanshanxueyuan | https://cas.usc.edu.cn/lyuapServer/login | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4143012650 |
 | 南华大学 - 研究生 | 研究生·待验证·可尝试 | nanhuadaxueyanjiusheng | http://210.43.114.81:8099/home/stulogin | suda_post | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:277aad0eb3e7bd8004f6 |
-| 南京财经大学 | 待验证·可尝试 | nanjingcaijingdaxue | https://jwxt.nufe.edu.cn/student/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132010327 |
+| 南京财经大学 | 待验证·可尝试 | nanjingcaijingdaxue | https://jwxt.nufe.edu.cn/student/login | shuwei_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132010327 |
 | 南京财经大学红山学院 | 待验证·可尝试 | nanjingcaijingdaxuehongshanxueyuan | https://hsjwxt.nufe.edu.cn/ | zf | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132013990 |
 | 南京城市职业学院 | 已实现配置 | nanjingchengshizhiyexueyuan | http://jw.ncc.edu.cn/jwglxt/xtgl/ | zf_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; N_南京城市职业学院 |
 | 南京城市职业学院（南京开放大学） | 待适配 | nanjingchengshizhiyexueyuannanjingkaifangdaxue |  |  | wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:b52696abb7a3dedd293e |
@@ -2370,11 +2370,11 @@
 | 南京农业大学 | 待验证·可尝试 | nanjingnongyedaxue | https://jw3.njau.edu.cn/ | qz_single_node | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132010307 |
 | 南京农业大学 - 研究生 | 研究生·待验证·可尝试 | nanjingnongyedaxueyanjiusheng | http://myportal.njau.edu.cn/new/index.html | qz | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:ed7372c647a6efa16b2f |
 | 南京森林警察学院 | 待验证·可尝试 | nanjingsenlinjingchaxueyuan | http://jw.forestpolice.net/jwglxt/xtgl/login_slogin.html | zf_new | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:fb85d5f96995416e037d |
-| 南京审计大学 | 待验证·可尝试 | nanjingshenjidaxue | https://jwc.nau.edu.cn | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132011287 |
-| 南京审计大学金审学院 | 待验证·可尝试 | nanjingshenjidaxuejinshenxueyuan | http://222.193.112.78/jwc | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132013994 |
+| 南京审计大学 | 待验证·可尝试 | nanjingshenjidaxue | https://jwc.nau.edu.cn | nau | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132011287 |
+| 南京审计大学金审学院 | 待验证·可尝试 | nanjingshenjidaxuejinshenxueyuan | http://222.193.112.78/jwc | nau | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132013994 |
 | 南京审计大学 - 研究生 | 研究生·待适配 | nanjingshenjidaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:a5733c04d8c2a2eaaac4 |
 | 南京师范大学 | 待验证·可尝试 | nanjingshifandaxue | https://authserver.nnu.edu.cn/authserver/login?service=https://hsnnu.nnu.edu.cn/login | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132010319 |
-| 南京师范大学泰州学院 | 待验证·可尝试 | nanjingshifandaxuetaizhouxueyuan | https://cas.nnutc.edu.cn/lyuapServer/login | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132013843 |
+| 南京师范大学泰州学院 | 待验证·可尝试 | nanjingshifandaxuetaizhouxueyuan | https://cas.nnutc.edu.cn/lyuapServer/login | nnutc | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132013843 |
 | 南京师范大学 - 研究生 | 研究生·待适配 | nanjingshifandaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:a2fd1bb6ed40308ff562 |
 | 南京师范大学中北学院 | 已实现配置 | nanjingshifandaxuezhongbeixueyuan | http://zbjw.nnudy.edu.cn/jwglxt | zf_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; N_南京师范大学中北学院 |
 | 南京视觉艺术职业学院 | 待验证·可尝试 | nanjingshijueyishuzhiyexueyuan | http://zf.niva.cn:81/ | zf | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132013964 |
@@ -2416,14 +2416,14 @@
 | 南通科技职业学院 | 待验证·可尝试 | nantongkejizhiyexueyuan | http://210.29.176.186/jwglxt | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132012684 |
 | 南通理工学院 | 待验证·可尝试 | nantongligongxueyuan | https://zfjw.ntit.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132012056 |
 | 南通理工学院（2023届及之后） | 已实现配置 | nantongligongxueyuanjiejizhihou | https://zfjw.ntit.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:2ed7b2bf334e49518042 |
-| 南通师范高等专科学校 | 待验证·可尝试 | nantongshifangaodengzhuankexuexiao | http://jwgl.ntnc.edu.cn/ | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132014493 |
+| 南通师范高等专科学校 | 待验证·可尝试 | nantongshifangaodengzhuankexuexiao | http://jwgl.ntnc.edu.cn/ | nuist | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132014493 |
 | 南通市工人业余大学 | 待适配 | nantongshigongrenyeyudaxue |  |  | moe-2026-adult; moe:4232050504 |
 | 南通卫生健康职业学院 | 待适配 | nantongweishengjiankangzhiyexueyuan |  |  | moe-2026-regular; moe:4132014915 |
 | 南通职业大学 | 待验证·可尝试 | nantongzhiyedaxue | https://authserver.ntvu.edu.cn/authserver/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132011052 |
 | 南亞科技學校財團法人南亞技術學院 | 待适配 | nanyakejixuexiaocaituanfarennanyajishuxueyuan |  |  | tw-moe-114; tw-moe-114:1168 |
 | 南阳工艺美术职业学院 | 待适配 | nanyanggongyimeishuzhiyexueyuan |  |  | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141014789 |
 | 南阳科技职业学院 | 待验证·可尝试 | nanyangkejizhiyexueyuan | https://nykjzy.jw.chaoxing.com/admin/login | chaoxing | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141014714 |
-| 南阳理工学院 | 待验证·可尝试 | nanyangligongxueyuan | https://app3.nyist.edu.cn/ui/ | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141011653 |
+| 南阳理工学院 | 待验证·可尝试 | nanyangligongxueyuan | https://app3.nyist.edu.cn/ui/ | nyist | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141011653 |
 | 南阳农业职业学院 | 待验证·可尝试 | nanyangnongyezhiyexueyuan | http://student.nyca.edu.cn:8088/mtii/src/login1.html | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141014479 |
 | 南阳师范学院 | 待验证·可尝试 | nanyangshifanxueyuan | https://vpn.nynu.edu.cn/https/77726476706e69737468656265737421f1e2559434357a467b1ac7a2815b367bc2c79eb4f6aa/authserver/login?service=https%3A%2F%2Fvpn.nynu.edu.cn%2Flogin%3Fcas_login%3Dtrue | sg_asset | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141010481 |
 | 南阳医学高等专科学校 | 待验证·可尝试 | nanyangyixuegaodengzhuankexuexiao | http://125.219.100.12:8081/nyyzjw/cas/login.action | kingo_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141013781 |
@@ -2433,7 +2433,7 @@
 | 内江职业技术学院 | 待适配 | neijiangzhiyejishuxueyuan |  |  | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151012640 |
 | 内蒙古包头师范学院 | 待适配 | neimenggubaotoushifanxueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:cddce6705261b5ad7191 |
 | 内蒙古北方职业技术学院 | 待适配 | neimenggubeifangzhiyejishuxueyuan |  |  | moe-2026-regular; moe:4115014049 |
-| 内蒙古财经大学 | 待验证·可尝试 | neimenggucaijingdaxue | https://cer-imufe-edu-cn-s.vpn.imufe.edu.cn:8118/authserver/login | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4115010139 |
+| 内蒙古财经大学 | 待验证·可尝试 | neimenggucaijingdaxue | https://cer-imufe-edu-cn-s.vpn.imufe.edu.cn:8118/authserver/login | shuwei_m | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4115010139 |
 | 内蒙古大学 | 已实现配置 | neimenggudaxue | http://jwxt.imu.edu.cn/login | urp_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; N_内蒙古大学 |
 | 内蒙古大学创业学院 | 待验证·可尝试 | neimenggudaxuechuangyexueyuan | http://110.16.109.224:82/login | urp_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4115014199 |
 | 内蒙古大学 - 研究生 | 研究生·待适配 | neimenggudaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:e7db4d0fdab8440e7d1b |
@@ -2588,7 +2588,7 @@
 | 青海警官职业学院 | 待验证·可尝试 | qinghaijingguanzhiyexueyuan | https://cas.qhjyedu.com/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4163012852 |
 | 青海开放大学 | 待验证·可尝试 | qinghaikaifangdaxue | https://jwc.qhou.edu.cn/ | jw_home | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4263051382 |
 | 青海理工学院 | 待适配 | qinghailigongxueyuan |  |  | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4163014881 |
-| 青海民族大学 | 待验证·可尝试 | qinghaiminzudaxue | https://cas.qhmu.edu.cn/cas/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4163010748 |
+| 青海民族大学 | 待验证·可尝试 | qinghaiminzudaxue | https://cas.qhmu.edu.cn/cas/login | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4163010748 |
 | 青海农牧科技职业学院 | 待验证·可尝试 | qinghainongmukejizhiyexueyuan | https://www.qhxmzy.cn/u.php/member-login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4163012972 |
 | 青海省联合职工大学 | 待适配 | qinghaishenglianhezhigongdaxue |  |  | moe-2026-adult; moe:4263051049 |
 | 青海师范大学 | 待验证·可尝试 | qinghaishifandaxue | http://idsnew.qhnu.edu.cn/authserver/login | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4163010746 |
@@ -2610,7 +2610,7 @@
 | 齐齐哈尔理工职业学院 | 待适配 | qiqihaerligongzhiyexueyuan |  |  | moe-2026-regular; moe:4123014400 |
 | 齐齐哈尔市建设职工大学 | 待适配 | qiqihaershijianshezhigongdaxue |  |  | moe-2026-adult; moe:4223050306 |
 | 齐齐哈尔市职工大学 | 待适配 | qiqihaershizhigongdaxue |  |  | moe-2026-adult; moe:4223050311 |
-| 齐齐哈尔医学院 | 待验证·可尝试 | qiqihaeryixueyuan | https://jiaowu.qmu.edu.cn/ | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4123011230 |
+| 齐齐哈尔医学院 | 待验证·可尝试 | qiqihaeryixueyuan | https://jiaowu.qmu.edu.cn/ | qmu | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4123011230 |
 | 七台河职业学院 | 待验证·可尝试 | qitaihezhiyexueyuan | https://195347iif.mh.chaoxing.com/page/312449/show | chaoxing | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4123013918 |
 | 泉州纺织服装学院 | 待适配 | quanzhoufangzhifuzhuangxueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:1f1de0eb0c5f5b90e900 |
 | 泉州纺织服装职业学院 | 待验证·可尝试 | quanzhoufangzhifuzhuangzhiyexueyuan | http://help.qzfzfz.com:8083/dist/ | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4135012711 |
@@ -2725,7 +2725,7 @@
 | 山东青年政治学院 | 已实现配置 | shandongqingnianzhengzhixueyuan | http://jw.sdyu.edu.cn/ | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; S_山东青年政治学院 |
 | 山东商务职业学院 | 待验证·可尝试 | shandongshangwuzhiyexueyuan | https://jwglxt.sdbi.edu.cn/cas/login.action | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4137014078 |
 | 山东商业职业技术大学 | 待适配 | shandongshangyezhiyejishudaxue |  |  | moe-2026-regular; moe:4137010832 |
-| 山东商业职业技术学院 | 待验证·可尝试 | shandongshangyezhiyejishuxueyuan | https://authserver-sict-edu-cn.vpn.sict.edu.cn:8118/authserver/login | shuwei_json | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:7c1d2da03324f4f5ff78 |
+| 山东商业职业技术学院 | 待验证·可尝试 | shandongshangyezhiyejishuxueyuan | https://authserver-sict-edu-cn.vpn.sict.edu.cn:8118/authserver/login | xatu_shuwei | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:7c1d2da03324f4f5ff78 |
 | 山东圣翰财贸职业学院 | 待适配 | shandongshenghancaimaozhiyexueyuan |  |  | moe-2026-regular; moe:4137012945 |
 | 山东省经济管理干部学院 | 待适配 | shandongshengjingjiguanliganbuxueyuan |  |  | wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:7115eed7c809516cd083 |
 | 山东省济宁教育学院 | 待验证·可尝试 | shandongshengjiningjiaoyuxueyuan | https://219.218.160.200/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4237050663 |
@@ -2738,7 +2738,7 @@
 | 山东水利职业学院 | 待验证·可尝试 | shandongshuilizhiyexueyuan | https://jw.sdwcvc.edu.cn/eams/loginExt.action | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4137012946 |
 | 山东司法警官职业学院 | 待验证·可尝试 | shandongsifajingguanzhiyexueyuan | http://223.99.25.206:7071/ | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4137014082 |
 | 山东特殊教育职业学院 | 待验证·可尝试 | shandongteshujiaoyuzhiyexueyuan | http://zhtj.sdse.cn:6107/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4137014545 |
-| 山东体育学院 | 待验证·可尝试 | shandongtiyuxueyuan | https://jw.sdpei.edu.cn/ | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4137010457 |
+| 山东体育学院 | 待验证·可尝试 | shandongtiyuxueyuan | https://jw.sdpei.edu.cn/ | sdpei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4137010457 |
 | 山东外国语职业技术大学 | 已实现配置 | shandongwaiguoyuzhiyejishudaxue | https://swut.jw.chaoxing.com/admin/login | chaoxing | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; S_山东外国语职业技术大学 |
 | 山东外贸职业技术学院 | 待适配 | shandongwaimaozhiyejishuxueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:5329ae3d653f03c4f691 |
 | 山东外贸职业学院 | 已实现配置 | shandongwaimaozhiyexueyuan | http://jwglxt.sdwm.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; S_山东外贸职业学院 |
@@ -2771,7 +2771,7 @@
 | 上海大学（2024新版） | 待适配 | shanghaidaxuexinban |  |  | wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:c736bcc767cc975c196b |
 | 上海大学（2024新版） - 研究生 | 研究生·待适配 | shanghaidaxuexinbanyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:611c37ba5c0b417b6013 |
 | 上海大学 - 研究生 | 研究生·待适配 | shanghaidaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:bdb4e1faef9b7265a976 |
-| 上海电机学院 | 待验证·可尝试 | shanghaidianjixueyuan | https://jwgl.sdju.edu.cn/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131011458 |
+| 上海电机学院 | 待验证·可尝试 | shanghaidianjixueyuan | https://jwgl.sdju.edu.cn/login | shuwei_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131011458 |
 | 上海电力大学 | 待验证·可尝试 | shanghaidianlidaxue | https://jw.shiep.edu.cn/eams/index.action | sg_asset | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131010256 |
 | 上海电力大学 - 研究生 | 研究生·待适配 | shanghaidianlidaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:203bf3c07a443cf47469 |
 | 上海电力学院 | 待适配 | shanghaidianlixueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:b7ceba2e841e770d8640 |
@@ -2779,13 +2779,13 @@
 | 上海电子信息职业技术学院 | 待验证·可尝试 | shanghaidianzixinxizhiyejishuxueyuan | https://os.stiei.edu.cn/auth/login | classic_eams | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131012499 |
 | 上海第二工业大学 | 待验证·可尝试 | shanghaidiergongyedaxue | https://jx.sspu.edu.cn/eams/home!index.action | classic_eams | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131012044 |
 | 上海东海职业技术学院 | 待验证·可尝试 | shanghaidonghaizhiyejishuxueyuan | https://sdvtc.jw.chaoxing.com/admin/login | chaoxing | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131010851 |
-| 上海对外经贸大学 | 待验证·可尝试 | shanghaiduiwaijingmaodaxue | https://nbkjw.suibe.edu.cn/student/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131010273 |
+| 上海对外经贸大学 | 待验证·可尝试 | shanghaiduiwaijingmaodaxue | https://nbkjw.suibe.edu.cn/student/login | shuwei_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131010273 |
 | 上海对外经贸大学 - 研究生 | 研究生·待适配 | shanghaiduiwaijingmaodaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:5398d87ca3adc15c92d1 |
 | 上海纺织工业职工大学 | 待验证·可尝试 | shanghaifangzhigongyezhigongdaxue | https://jw.ae.fzzd.sh.cn/ | jw_home | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4231050393 |
 | 上海公安学院 | 待验证·可尝试 | shanghaigonganxueyuan | https://www.shpc.edu.cn/gaxy/qtxx/20230915/5575.html | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131010283 |
-| 上海工程技术大学 | 待验证·可尝试 | shanghaigongchengjishudaxue | https://webvpn.sues.edu.cn/https/77726476706e69737468656265737421f3f652d234256d43300d8db9d6562d/cas/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131010856 |
+| 上海工程技术大学 | 待验证·可尝试 | shanghaigongchengjishudaxue | https://webvpn.sues.edu.cn/https/77726476706e69737468656265737421f3f652d234256d43300d8db9d6562d/cas/login | shuwei_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131010856 |
 | 上海工程技术大学高等职业技术学院 | 待验证·可尝试 | shanghaigongchengjishudaxuegaodengzhiyejishuxueyuan | http://jxfw.simc.cn/fwpt/login.action | simc | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:2fdbb76e58db430641cc |
-| 上海工程技术大学（自动导入时间） | 待验证·可尝试 | shanghaigongchengjishudaxuezidongdaorushijian | https://webvpn.sues.edu.cn/https/77726476706e69737468656265737421f3f652d234256d43300d8db9d6562d/cas/login | eams5 | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:3b1bbf3bc631d8a4e458 |
+| 上海工程技术大学（自动导入时间） | 待验证·可尝试 | shanghaigongchengjishudaxuezidongdaorushijian | https://webvpn.sues.edu.cn/https/77726476706e69737468656265737421f3f652d234256d43300d8db9d6562d/cas/login | sues | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:3b1bbf3bc631d8a4e458 |
 | 上海工会管理职业学院 | 待验证·可尝试 | shanghaigonghuiguanlizhiyexueyuan | https://app.shghxy.com/GHXY/Index/Default.aspx | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131014023 |
 | 上海工商外国语职业学院 | 待验证·可尝试 | shanghaigongshangwaiguoyuzhiyexueyuan | https://cas.sicfl.edu.cn/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131012800 |
 | 上海工商职业技术学院 | 待验证·可尝试 | shanghaigongshangzhiyejishuxueyuan | https://cas.sicp.edu.cn/lyuapServer/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131010852 |
@@ -2795,18 +2795,18 @@
 | 上海海事职业技术学院 | 待验证·可尝试 | shanghaihaishizhiyejishuxueyuan | http://www1.sma.edu.cn:8300/NewPage/Login.aspx | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131012498 |
 | 上海海洋大学 | 已实现配置 | shanghaihaiyangdaxue | https://urp.shou.edu.cn | urp_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; S_上海海洋大学 |
 | 上海健康医学院 | 已实现配置 | shanghaijiankangyixueyuan | http://jwc-zf.sumhs.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; S_上海健康医学院 |
-| 上海建桥学院 | 待验证·可尝试 | shanghaijianqiaoxueyuan | https://my.gench.edu.cn/FAP5.Portal/pc.html | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131012799 |
+| 上海建桥学院 | 待验证·可尝试 | shanghaijianqiaoxueyuan | https://my.gench.edu.cn/FAP5.Portal/pc.html | shuwei_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131012799 |
 | 上海建设管理职业技术学院 | 待适配 | shanghaijiansheguanlizhiyejishuxueyuan |  |  | moe-2026-regular; moe:4131014781 |
 | 上海交通大学 | 已实现配置 | sjtu / shanghaijiaotongdaxue | https://i.sjtu.edu.cn/jwglxt | zf_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; S_上海交通大学 |
 | 上海交通大学 - 研究生 | 研究生·待适配 | shanghaijiaotongdaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:6fb73268e9d27b50ed26 |
-| 上海交通大学医学院 | 待验证·可尝试 | shanghaijiaotongdaxueyixueyuan | https://webvpn2.shsmu.edu.cn/https/77726476706e69737468656265737421f1e2559469236043731dc7a99c406d3618/ac/ | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:722a8ddd4cfe8e786354 |
+| 上海交通大学医学院 | 待验证·可尝试 | shanghaijiaotongdaxueyixueyuan | https://webvpn2.shsmu.edu.cn/https/77726476706e69737468656265737421f1e2559469236043731dc7a99c406d3618/ac/ | shsmu | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:722a8ddd4cfe8e786354 |
 | 上海交通大学医学院 - 研究生 | 研究生·待适配 | shanghaijiaotongdaxueyixueyuanyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:82406edd21ff960147b3 |
 | 上海交通职业技术学院 | 待验证·可尝试 | shanghaijiaotongzhiyejishuxueyuan | https://www.scp.edu.cn/PantoSchoolZZ/NET5/Login.aspx | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131012497 |
 | 上海济光职业技术学院 | 待验证·可尝试 | shanghaijiguangzhiyejishuxueyuan | https://jwxt.shjgu.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131012798 |
 | 上海开放大学 | 待验证·可尝试 | shanghaikaifangdaxue | https://ids.shou.org.cn/authserver/login | jw_home | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4231051252 |
 | 上海科创职业技术学院 | 待验证·可尝试 | shanghaikechuangzhiyejishuxueyuan | https://kc.jyszhzx.cn/#/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131014778 |
-| 上海科技大学 | 待验证·可尝试 | shanghaikejidaxue | https://ids.shanghaitech.edu.cn/authserver/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131014423 |
-| 上海科技大学（旧） - 研究生 | 研究生·待验证·可尝试 | shanghaikejidaxuejiuyanjiusheng | https://ids.shanghaitech.edu.cn/authserver/login | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:4797740ea862050cc35e |
+| 上海科技大学 | 待验证·可尝试 | shanghaikejidaxue | https://ids.shanghaitech.edu.cn/authserver/login | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131014423 |
+| 上海科技大学（旧） - 研究生 | 研究生·待验证·可尝试 | shanghaikejidaxuejiuyanjiusheng | https://ids.shanghaitech.edu.cn/authserver/login | shtu_post | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:4797740ea862050cc35e |
 | 上海科技大学（新） - 研究生 | 研究生·待验证·可尝试 | shanghaikejidaxuexinyanjiusheng | https://ids.shanghaitech.edu.cn/authserver/login | shtu_post_2024 | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:695ecb7d66a484af1c51 |
 | 上海科技大学 - 研究生 | 研究生·待验证·可尝试 | shanghaikejidaxueyanjiusheng | https://ids.shanghaitech.edu.cn/authserver/login | shtu_post_2024 | wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:90c0802ebefe5546b32e |
 | 上海科技管理干部学院 | 待适配 | shanghaikejiguanliganbuxueyuan |  |  | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4231050033 |
@@ -2825,7 +2825,7 @@
 | 上海欧华职业技术学院 | 待适配 | shanghaiouhuazhiyejishuxueyuan |  |  | moe-2026-regular; moe:4131012585 |
 | 上海浦东职业技术学院 | 待验证·可尝试 | shanghaipudongzhiyejishuxueyuan | https://cas.shspdc.edu.cn/fap5.identityserver/SignIn.html | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131014895 |
 | 上海青年管理干部学院 | 待适配 | shanghaiqingnianguanliganbuxueyuan |  |  | moe-2026-adult; moe:4231051615 |
-| 上海杉达学院 | 待验证·可尝试 | shanghaishandaxueyuan | https://jw.sandau.edu.cn/eams-shuju/login.action | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131011833 |
+| 上海杉达学院 | 待验证·可尝试 | shanghaishandaxueyuan | https://jw.sandau.edu.cn/eams-shuju/login.action | shuwei_m | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131011833 |
 | 上海商学院 | 待验证·可尝试 | shanghaishangxueyuan | http://219.220.243.210/default2.aspx | zf | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131012050 |
 | 上海市宝山区业余大学 | 待适配 | shanghaishibaoshanquyeyudaxue |  |  | moe-2026-adult; moe:4231051852 |
 | 上海师范大学 | 待验证·可尝试 | shanghaishifandaxue | https://course.shnu.edu.cn/ | sg_asset | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131010270 |
@@ -2834,7 +2834,7 @@
 | 上海市高级技工学校 | 待验证·可尝试 | shanghaishigaojijigongxuexiao | http://jxfw.simc.cn/fwpt/login.action | simc | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:7342bc4f9e35a499df5b |
 | 上海市黄浦区业余大学 | 待验证·可尝试 | shanghaishihuangpuquyeyudaxue | https://jwgl.hpcollege.net/login/login.aspx?ReturnUrl=%2f | jw_home | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4231050363 |
 | 上海市静安区业余大学 | 待验证·可尝试 | shanghaishijinganquyeyudaxue | https://sso.sjdc.net.cn/ | jw_home | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4231050368 |
-| 上海视觉艺术学院 | 待验证·可尝试 | shanghaishijueyishuxueyuan | https://jiaowu2023.siva.edu.cn/student/home | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131013632 |
+| 上海视觉艺术学院 | 待验证·可尝试 | shanghaishijueyishuxueyuan | https://jiaowu2023.siva.edu.cn/student/home | shuwei_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131013632 |
 | 上海市普陀区业余大学 | 待验证·可尝试 | shanghaishiputuoquyeyudaxue | https://www.pt.labif.com/login | jw_home | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4231050369 |
 | 上海市徐汇区业余大学 | 待验证·可尝试 | shanghaishixuhuiquyeyudaxue | https://platform.xhedu.sh.cn/platform/app/login.php | jw_home | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4231050366 |
 | 上海市杨浦区业余大学 | 待适配 | shanghaishiyangpuquyeyudaxue |  |  | moe-2026-adult; moe:4231050372 |
@@ -2844,7 +2844,7 @@
 | 上海体育学院 | 待适配 | shanghaitiyuxueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:df916c1142ed751cd9b9 |
 | 上海体育学院 - 研究生 | 研究生·待适配 | shanghaitiyuxueyuanyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:0629adf26e80fbbd8c87 |
 | 上海外国语大学 | 已实现配置 | shisu / shanghaiwaiguoyudaxue | https://jw.shisu.edu.cn/jwapp | wisedu | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; S_上海外国语大学 |
-| 上海外国语大学贤达经济人文学院 | 待验证·可尝试 | shanghaiwaiguoyudaxuexiandajingjirenwenxueyuan | https://sso.xdsisu.edu.cn/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131013636 |
+| 上海外国语大学贤达经济人文学院 | 待验证·可尝试 | shanghaiwaiguoyudaxuexiandajingjirenwenxueyuan | https://sso.xdsisu.edu.cn/login | shuwei_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131013636 |
 | 上海外国语大学 - 研究生 | 研究生·待适配 | shanghaiwaiguoyudaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:fb52fb7cf11a8b03bf1f |
 | 上海现代化工职业学院 | 待验证·可尝试 | shanghaixiandaihuagongzhiyexueyuan | https://sso.spa.jsedu.sh.cn:8079/casServer/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131014780 |
 | 上海戏剧学院 | 待验证·可尝试 | shanghaixijuxueyuan | https://cas.sta.edu.cn/cas/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131010279 |
@@ -2861,7 +2861,7 @@
 | 上海中医药大学 | 待验证·可尝试 | shanghaizhongyiyaodaxue | https://cas.shutcm.edu.cn/cas/login | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131010268 |
 | 商洛学院 | 已实现配置 | shangluoxueyuan | http://www.slxy.edu.cn:1170/jwglxt | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; S_商洛学院 |
 | 商洛职业技术学院 | 待验证·可尝试 | shangluozhiyejishuxueyuan | https://jwgl.slzyjsxy.com/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161013948 |
-| 商丘工学院 | 待验证·可尝试 | shangqiugongxueyuan | https://sqxy.jijiaox.com/mg/login/ | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141013500 |
+| 商丘工学院 | 待验证·可尝试 | shangqiugongxueyuan | https://sqxy.jijiaox.com/mg/login/ | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141013500 |
 | 商丘师范学院 | 待验证·可尝试 | shangqiushifanxueyuan | https://sqnu.jijiaox.com/mg/login | classic_eams | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141010483 |
 | 商丘学院 | 待验证·可尝试 | shangqiuxueyuan | https://cas.sqxy.edu.cn/cas/login | classic_eams | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141014003 |
 | 商丘医学高等专科学校 | 待验证·可尝试 | shangqiuyixuegaodengzhuankexuexiao | https://sqxy.jijiaox.com/mg/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141013782 |
@@ -2921,12 +2921,12 @@
 | 山西晋中理工学院 | 待验证·可尝试 | shanxijinzhongligongxueyuan | http://218.26.72.178:81/default2.aspx | zf | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4114013538 |
 | 山西开放大学 | 待验证·可尝试 | shanxikaifangdaxue | https://iam.pt.ouchn.cn/am/UI/Login | jw_home | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4214051187 |
 | 陕西开放大学 | 待验证·可尝试 | shanxikaifangdaxue | https://authserver.snouedu.cn/authserver/login | jw_home | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4261051370 |
-| 陕西科技大学 | 待验证·可尝试 | shanxikejidaxue | http://my.sust.edu.cn/ | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161010708 |
+| 陕西科技大学 | 待验证·可尝试 | shanxikejidaxue | http://my.sust.edu.cn/ | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161010708 |
 | 陕西科技大学镐京学院 | 待验证·可尝试 | shanxikejidaxuehaojingxueyuan | http://124.89.76.198:8002/hjxyjw/cas/login.action | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161013681 |
 | 陕西科技大学 - 研究生 | 研究生·待适配 | shanxikejidaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:2baac34a80a7feb95252 |
 | 山西科技学院 | 待适配 | shanxikejixueyuan |  |  | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4114013597 |
 | 山西老区职业技术学院 | 待适配 | shanxilaoquzhiyejishuxueyuan |  |  | moe-2026-regular; moe:4114014105 |
-| 陕西理工大学 | 待验证·可尝试 | shanxiligongdaxue | http://jwgl.snut.edu.cn/eams/loginExt.action | classic_eams | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161010720 |
+| 陕西理工大学 | 待验证·可尝试 | shanxiligongdaxue | http://jwgl.snut.edu.cn/eams/loginExt.action | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161010720 |
 | 山西林业职业技术学院 | 待验证·可尝试 | shanxilinyezhiyejishuxueyuan | https://id.sxly.edu.cn/realms/sxly/protocol/openid-connect/auth | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4114012891 |
 | 陕西旅游烹饪职业学院 | 待适配 | shanxilvyoupengrenzhiyexueyuan |  |  | moe-2026-regular; moe:4161014031 |
 | 山西煤炭职工联合大学 | 待验证·可尝试 | shanximeitanzhigonglianhedaxue | http://www.zexiaola.com/member.php | jw_home | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4214050167 |
@@ -2953,7 +2953,7 @@
 | 山西卫生健康职业学院 | 待验证·可尝试 | shanxiweishengjiankangzhiyexueyuan | https://sso.sxhvc.com:59004/auth/ | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4214050166 |
 | 山西文化旅游职业大学 | 待适配 | shanxiwenhualvyouzhiyedaxue |  |  | moe-2026-regular; moe:4114013696 |
 | 山西信息职业技术学院 | 待适配 | shanxixinxizhiyejishuxueyuan |  |  | moe-2026-regular; moe:4114013541 |
-| 陕西学前师范学院 | 待验证·可尝试 | shanxixueqianshifanxueyuan | https://authserver.snsy.edu.cn/authserver/login | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161014390 |
+| 陕西学前师范学院 | 待验证·可尝试 | shanxixueqianshifanxueyuan | https://authserver.snsy.edu.cn/authserver/login | shuwei_m | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161014390 |
 | 山西药科职业学院 | 待验证·可尝试 | shanxiyaokezhiyexueyuan | http://ehall.sxphc.cn/portal/ | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4114012776 |
 | 山西医科大学 | 待验证·可尝试 | shanxiyikedaxue | https://sslvpn.sxmu.edu.cn/portal/shortcut.html | cf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4114010114 |
 | 山西医科大学 - 研究生 | 研究生·待适配 | shanxiyikedaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:851f1407b74071af0bd0 |
@@ -2999,7 +2999,7 @@
 | 沈阳航空航天大学 - 研究生 | 研究生·待适配 | shenyanghangkonghangtiandaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:5ec708eb045a19378861 |
 | 沈阳航空职业技术学院 | 待适配 | shenyanghangkongzhiyejishuxueyuan |  |  | moe-2026-regular; moe:4121012590 |
 | 沈阳化工大学 | 待验证·可尝试 | shenyanghuagongdaxue | https://jws.syuct.edu.cn/(szhjdw554ecffbntgcq515nj)/default2.aspx | zf | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4121010149 |
-| 沈阳化工大学 - 研究生 | 研究生·待验证·可尝试 | shenyanghuagongdaxueyanjiusheng | https://geims.syuct.edu.cn/ | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:5602fca9c578d72c7810 |
+| 沈阳化工大学 - 研究生 | 研究生·待验证·可尝试 | shenyanghuagongdaxueyanjiusheng | https://geims.syuct.edu.cn/ | hrbeu_post | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:5602fca9c578d72c7810 |
 | 沈阳建筑大学 | 已实现配置 | shenyangjianzhudaxue | http://111.117.146.166/eams/loginExt.action | classic_eams | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; S_沈阳建筑大学 |
 | 沈阳建筑大学 - 研究生 | 已实现配置 | shenyangjianzhudaxue - yanjiusheng | http://yjsglxt.sjzu.edu.cn/gsapp/sys/yjsemaphome/portal/index.do | wisedu | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; S_沈阳建筑大学 - 研究生 |
 | 沈阳机械工业职工大学 | 待适配 | shenyangjixiegongyezhigongdaxue |  |  | moe-2026-adult; moe:4221051843 |
@@ -3058,7 +3058,7 @@
 | 石嘴山工贸职业技术学院 | 待验证·可尝试 | shizuishangongmaozhiyejishuxueyuan | http://authserver.nxszsgm.com/authserver/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4164014739 |
 | 首都经济贸易大学 | 待验证·可尝试 | shoudujingjimaoyidaxue | https://jwc.cueb.edu.cn/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4111010038 |
 | 首都联合职工大学 | 待适配 | shoudulianhezhigongdaxue |  |  | moe-2026-adult; moe:4211051837 |
-| 首都师范大学 | 待验证·可尝试 | shoudushifandaxue | https://zt.cnu.edu.cn/users/sign_in | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4111010028 |
+| 首都师范大学 | 待验证·可尝试 | shoudushifandaxue | https://zt.cnu.edu.cn/users/sign_in | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4111010028 |
 | 首都师范大学科德学院 | 待验证·可尝试 | shoudushifandaxuekedexueyuan | https://kdcnujw.yinghuaonline.com/sdsfdxkdxy/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4111013629 |
 | 首都师范大学 - 研究生 | 研究生·待适配 | shoudushifandaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:c044df727a097899fc86 |
 | 首都体育学院 | 待验证·可尝试 | shoudutiyuxueyuan | https://auth.cupes.edu.cn/authserver/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4111010029 |
@@ -3075,7 +3075,7 @@
 | 四川财经职业学院 | 待验证·可尝试 | sichuancaijingzhiyexueyuan | http://cas-scpcfe-cn.vpn.scpcfe.cn:8118/cas/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151014091 |
 | 四川长江职业学院 | 待验证·可尝试 | sichuanchangjiangzhiyexueyuan | https://jwxt.sccvc.com:777/default2.aspx | zf | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151014323 |
 | 四川城市技师学院 | 已实现配置 | sichuanchengshijishixueyuan | https://sccsjs.jw.chaoxing.com/admin/login | chaoxing | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; S_四川城市技师学院 |
-| 四川城市职业学院 | 待验证·可尝试 | sichuanchengshizhiyexueyuan | http://scuvc.tuoqie.com/service/login.html | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151014175 |
+| 四川城市职业学院 | 待验证·可尝试 | sichuanchengshizhiyexueyuan | http://scuvc.tuoqie.com/service/login.html | vatuu | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151014175 |
 | 四川传媒学院 | 待验证·可尝试 | sichuanchuanmeixueyuan | https://renzheng.cdysxy.com/wengine-auth/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151013669 |
 | 四川大学 | 已实现配置 | scu / sichuandaxue | http://zhjw.scu.edu.cn/login | scu | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; S_四川大学 |
 | 四川大学锦城学院 | 已实现配置 | sichuandaxuejinchengxueyuan | https://jwweb.scujcc.cn/ | zf | existing-baseline; S_四川大学锦城学院 |
@@ -3117,7 +3117,7 @@
 | 四川商务职业学院 | 待验证·可尝试 | sichuanshangwuzhiyexueyuan | https://jwc.scsw.edu.cn/page/1089172/show | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151013812 |
 | 四川省化工职工大学 | 待适配 | sichuanshenghuagongzhigongdaxue |  |  | moe-2026-adult; moe:4251050919 |
 | 四川省会理现代职业技术学校 | 待验证·可尝试 | sichuanshenghuilixiandaizhiyejishuxuexiao | https://schlzxjw.yinghuaonline.com/hlxxdzyjsxy/ | qz | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:c119f4e3168aaa882edf |
-| 四川师范大学 | 待验证·可尝试 | sichuanshifandaxue | http://jwcxk.sicnu.edu.cn/student/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151010636 |
+| 四川师范大学 | 待验证·可尝试 | sichuanshifandaxue | http://jwcxk.sicnu.edu.cn/student/login | shuwei_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151010636 |
 | 四川水利职业技术学院 | 待验证·可尝试 | sichuanshuilizhiyejishuxueyuan | https://cas.swcvc.edu.cn/cas/WEB/index.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151012638 |
 | 四川司法警官职业学院 | 待验证·可尝试 | sichuansifajingguanzhiyexueyuan | http://jwc.sjpopc.edu.cn/web/web/web/index | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151013813 |
 | 四川天一学院 | 待适配 | sichuantianyixueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:591e154ce8b6104c5c17 |
@@ -3170,7 +3170,7 @@
 | 苏州城市学院 | 待验证·可尝试 | suzhouchengshixueyuan | https://webvpn.szcu.edu.cn/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132013983 |
 | 苏州大学 | 待验证·可尝试 | suzhoudaxue | http://xk.suda.edu.cn/ | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132010285 |
 | 苏州大学 - 研究生 | 研究生·待验证·可尝试 | suzhoudaxueyanjiusheng | https://yjs.suda.edu.cn/ | south_soft | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:b3d6def48a8b60f9ae40 |
-| 苏州大学应用技术学院 | 待验证·可尝试 | suzhoudaxueyingyongjishuxueyuan | https://sso.tec.suda.edu.cn/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132013984 |
+| 苏州大学应用技术学院 | 待验证·可尝试 | suzhoudaxueyingyongjishuxueyuan | https://sso.tec.suda.edu.cn/login | shuwei_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132013984 |
 | 苏州高博软件技术学院 | 待适配 | suzhougaoboruanjianjishuxueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:9e21f37f72fea41e0229 |
 | 苏州高博软件技术职业学院 | 待适配 | suzhougaoboruanjianjishuzhiyexueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:a9ee62451e358019c5a9 |
 | 苏州高博职业学院 | 待验证·可尝试 | suzhougaobozhiyexueyuan | http://authserver.gist.edu.cn/authserver/login | wisedu | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132014163 |
@@ -3238,7 +3238,7 @@
 | 台州学院 | 已实现配置 | taizhouxueyuan | https://jwc.tzc.edu.cn | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; T_台州学院 |
 | 泰州学院 | 待验证·可尝试 | taizhouxueyuan | https://ems.tzu.edu.cn/cas/login.action | kingo_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132012917 |
 | 台州职业技术学院 | 已实现配置 | taizhouzhiyejishuxueyuan | https://tzvtc.jw.chaoxing.com/ | chaoxing | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; T_台州职业技术学院 |
-| 泰州职业技术学院 | 待验证·可尝试 | taizhouzhiyejishuxueyuan | https://vpn-client.tzpc.edu.cn/https/webvpn87eb7351ff7935be10bed680a4a6d021/lyuapServer/login | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132012106 |
+| 泰州职业技术学院 | 待验证·可尝试 | taizhouzhiyejishuxueyuan | https://vpn-client.tzpc.edu.cn/https/webvpn87eb7351ff7935be10bed680a4a6d021/lyuapServer/login | changzhou | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132012106 |
 | 塔里木大学 | 已实现配置 | talimudaxue | https://jwgl.taru.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; T_塔里木大学 |
 | 塔里木理工学院 | 待验证·可尝试 | talimuligongxueyuan | https://tlmlgxy.jw.chaoxing.com/admin/login | chaoxing | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4165014946 |
 | 塔里木职业技术学院 | 待验证·可尝试 | talimuzhiyejishuxueyuan | https://tlmzyjsxy.jw.chaoxing.com/admin/login | chaoxing | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4165014741 |
@@ -3265,7 +3265,7 @@
 | 天津城市职业学院 | 待验证·可尝试 | tianjinchengshizhiyexueyuan | https://www.tjcsxy.cn/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4112013702 |
 | 天津城市职业学院 - 研究生 | 研究生·待适配 | tianjinchengshizhiyexueyuanyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:2b055a40b8360e04841d |
 | 天津传媒学院 | 待验证·可尝试 | tianjinchuanmeixueyuan | https://jw.tjcma.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4112013659 |
-| 天津大学 | 待验证·可尝试 | tianjindaxue | https://sso.tju.edu.cn/cas/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4112010056 |
+| 天津大学 | 待验证·可尝试 | tianjindaxue | https://sso.tju.edu.cn/cas/login | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4112010056 |
 | 天津大学仁爱学院 | 待适配 | tianjindaxuerenaixueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:676fcc7a1e763c600183 |
 | 天津电子信息职业技术学院 | 待适配 | tianjindianzixinxizhiyejishuxueyuan |  |  | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4112012720 |
 | 天津工程职业技术学院 | 待适配 | tianjingongchengzhiyejishuxueyuan |  |  | moe-2026-regular; moe:4112012487 |
@@ -3285,9 +3285,9 @@
 | 天津科技大学 - 研究生 | 研究生·待适配 | tianjinkejidaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:8461a699addf31694a97 |
 | 天津理工大学 | 待验证·可尝试 | tianjinligongdaxue | https://authserver.tjut.edu.cn/authserver/login | wisedu | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4112010060 |
 | 天津理工大学 - 研究生 | 研究生·待验证·可尝试 | tianjinligongdaxueyanjiusheng | https://authserver.tjut.edu.cn/authserver/login | suda_post | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:749d7231c55fa0faa751 |
-| 天津理工大学中环信息学院 | 待验证·可尝试 | tianjinligongdaxuezhonghuanxinxixueyuan | https://cas.tjzhic.edu.cn/cas/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4112013897 |
+| 天津理工大学中环信息学院 | 待验证·可尝试 | tianjinligongdaxuezhonghuanxinxixueyuan | https://cas.tjzhic.edu.cn/cas/login | shuwei_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4112013897 |
 | 天津美术学院 | 待验证·可尝试 | tianjinmeishuxueyuan | http://202.113.216.122/ | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4112010073 |
-| 天津农学院 | 待验证·可尝试 | tianjinnongxueyuan | http://jwxt.tjau.edu.cn/ | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4112010061 |
+| 天津农学院 | 待验证·可尝试 | tianjinnongxueyuan | http://jwxt.tjau.edu.cn/ | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4112010061 |
 | 天津轻工职业技术学院 | 待验证·可尝试 | tianjinqinggongzhiyejishuxueyuan | https://tjqgxy.jw.chaoxing.com/admin/login | chaoxing | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4112012732 |
 | 天津仁爱学院 | 待验证·可尝试 | tianjinrenaixueyuan | http://jwgl.tjrac.edu.cn/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4112014038 |
 | 天津商务职业学院 | 待验证·可尝试 | tianjinshangwuzhiyexueyuan | https://ac.tcc1955.edu.cn/cas/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4112012788 |
@@ -3327,7 +3327,7 @@
 | 天津职业大学 | 待适配 | tianjinzhiyedaxue |  |  | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4112011032 |
 | 天津职业技术师范大学 | 待验证·可尝试 | tianjinzhiyejishushifandaxue | https://www.tute.edu.cn/xysh/yyxt.htm | urp_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4112010066 |
 | 天津职业技术师范大学 - 研究生 | 研究生·待适配 | tianjinzhiyejishushifandaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:fa19a977db1414b21dce |
-| 天津中德应用技术大学 | 待验证·可尝试 | tianjinzhongdeyingyongjishudaxue | http://sfrz.tsguas.edu.cn/sso/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4112012105 |
+| 天津中德应用技术大学 | 待验证·可尝试 | tianjinzhongdeyingyongjishudaxue | http://sfrz.tsguas.edu.cn/sso/login | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4112012105 |
 | 天津中医药大学 | 已实现配置 | tianjinzhongyiyaodaxue | http://jiaowu.tjutcm.edu.cn/jsxsd/ | qz | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; T_天津中医药大学 |
 | 天门职业学院 | 待验证·可尝试 | tianmenzhiyexueyuan | http://www.tmzyxy.cn:8288/jsxsd/ | qz | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4142014355 |
 | 天水师范大学 | 待适配 | tianshuishifandaxue |  |  | moe-2026-regular; moe:4162010739 |
@@ -3343,7 +3343,7 @@
 | 通化市职工大学 | 待适配 | tonghuashizhigongdaxue |  |  | moe-2026-adult; moe:4222050242 |
 | 通化医药健康职业学院 | 待验证·可尝试 | tonghuayiyaojiankangzhiyexueyuan | https://www.thyyjkzyxy.org.cn/index.php | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122014744 |
 | 同济大学 | 待验证·可尝试 | tongjidaxue | https://1.tongji.edu.cn/ | sg_asset | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131010247 |
-| 同济大学 - 研究生 | 研究生·待验证·可尝试 | tongjidaxueyanjiusheng | https://1.tongji.edu.cn/ | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:fd1f929ef2d8152a969e |
+| 同济大学 - 研究生 | 研究生·待验证·可尝试 | tongjidaxueyanjiusheng | https://1.tongji.edu.cn/ | tju | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:fd1f929ef2d8152a969e |
 | 同济大学浙江学院 | 待适配 | tongjidaxuezhejiangxueyuan |  |  | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4133014206 |
 | 通辽职业学院 | 待验证·可尝试 | tongliaozhiyexueyuan | https://xg.tlzyxy.com/p/index/index.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4115013740 |
 | 铜陵学院 | 待验证·可尝试 | tonglingxueyuan | https://auth.tlu.edu.cn/zhxy/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134010383 |
@@ -3364,7 +3364,7 @@
 | 网络空间安全学院 | 待适配 | wangluokongjiananquanxueyuan |  |  | moe-2026-regular; moe:4142014950 |
 | 皖江工学院 | 待验证·可尝试 | wanjianggongxueyuan | http://jw.wjut.edu.cn/wjgxyjw/cas/login.action | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134014203 |
 | 皖南医科大学 | 待适配 | wannanyikedaxue |  |  | moe-2026-regular; moe:4134010368 |
-| 皖南医学院 | 待验证·可尝试 | wannanyixueyuan | https://jiaowu.wnmc.edu.cn/handcourseService/getStudentkb | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:e7365c99024c286e0452 |
+| 皖南医学院 | 待验证·可尝试 | wannanyixueyuan | https://jiaowu.wnmc.edu.cn/handcourseService/getStudentkb | login_xbellsoft | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:e7365c99024c286e0452 |
 | 萬能學校財團法人萬能科技大學 | 待适配 | wannengxuexiaocaituanfarenwannengkejidaxue |  |  | tw-moe-114; tw-moe-114:1038 |
 | 皖西卫生职业学院 | 待验证·可尝试 | wanxiweishengzhiyexueyuan | https://sfrz.wahvc.edu.cn/sso/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134014299 |
 | 皖西学院 | 待验证·可尝试 | wanxixueyuan | http://jwxt.wxc.edu.cn/jsxsd/sso.jsp | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134010376 |
@@ -3454,9 +3454,9 @@
 | 武汉外语外事职业学院 | 待验证·可尝试 | wuhanwaiyuwaishizhiyexueyuan | https://jw.wifa.edu.cn/cas/login.action | kingo_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4142012988 |
 | 武汉文理学院 | 待验证·可尝试 | wuhanwenlixueyuan | https://jwxt.whwl.edu.cn:8088/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4142013237 |
 | 武汉信息传播职业技术学院 | 待验证·可尝试 | wuhanxinxichuanbozhiyejishuxueyuan | https://cas.whinfo.cn/cas/login | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4142012989 |
-| 武汉学院 | 待验证·可尝试 | wuhanxueyuan | https://whxyjwxt.whxy.edu.cn/eams/login.action | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4142013634 |
+| 武汉学院 | 待验证·可尝试 | wuhanxueyuan | https://whxyjwxt.whxy.edu.cn/eams/login.action | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4142013634 |
 | 武汉冶金管理干部学院 | 待适配 | wuhanyejinguanliganbuxueyuan |  |  | moe-2026-adult; moe:4242051773 |
-| 武汉音乐学院 | 待验证·可尝试 | wuhanyinyuexueyuan | https://cas.whcm.edu.cn:4103/lyuapServer/login | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4142011524 |
+| 武汉音乐学院 | 待验证·可尝试 | wuhanyinyuexueyuan | https://cas.whcm.edu.cn:4103/lyuapServer/login | qz_2024 | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4142011524 |
 | 武汉职业技术大学 | 待适配 | wuhanzhiyejishudaxue |  |  | moe-2026-regular; moe:4142010834 |
 | 武汉职业技术学院 | 待验证·可尝试 | wuhanzhiyejishuxueyuan | http://jwxt.wtc.edu.cn/admin/login | chaoxing | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:e2fe5f20f27911b32561 |
 | 芜湖航空职业学院 | 待验证·可尝试 | wuhuhangkongzhiyexueyuan | https://whhk.jw.chaoxing.com/admin/login | chaoxing | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134014843 |
@@ -3482,7 +3482,7 @@
 | 五邑大学 | 已实现配置 | wuyidaxue | http://jxgl.wyu.edu.cn/ | cf | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; W_五邑大学 |
 | 五邑大学 - 研究生 | 研究生·待适配 | wuyidaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:e158e0a18ed282370aa8 |
 | 武夷山职业学院 | 待验证·可尝试 | wuyishanzhiyexueyuan | https://jwxt.wyszyxy.com/ | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4135014116 |
-| 武夷学院 | 待验证·可尝试 | wuyixueyuan | https://sso.wuyiu.edu.cn/login | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4135010397 |
+| 武夷学院 | 待验证·可尝试 | wuyixueyuan | https://sso.wuyiu.edu.cn/login | qz_2024 | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4135010397 |
 | 梧州学院 | 待验证·可尝试 | wuzhouxueyuan | https://jwxt.gxuwz.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145011354 |
 | 梧州医学高等专科学校 | 待验证·可尝试 | wuzhouyixuegaodengzhuankexuexiao | https://passport2.chaoxing.com/login | chaoxing | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145014694 |
 | 梧州职业学院 | 待验证·可尝试 | wuzhouzhiyexueyuan | http://222.217.195.24:805/wzzyjw/cas/login.action | sg_asset | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145014171 |
@@ -3500,7 +3500,7 @@
 | 厦门东海职业技术学院 | 待验证·可尝试 | xiamendonghaizhiyejishuxueyuan | https://jwxt.xmdh.com/xmdhjw/cas/login.action | kingo_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4135014112 |
 | 厦门工学院 | 待验证·可尝试 | xiamengongxueyuan | http://www.xit.edu.cn/jxc/ShowArticle.asp | qz_br | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4135013115 |
 | 厦门海洋职业技术学院 | 待适配 | xiamenhaiyangzhiyejishuxueyuan |  |  | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4135012629 |
-| 厦门华厦学院 | 待验证·可尝试 | xiamenhuashaxueyuan | https://webvpn.hxxy.edu.cn/users/sign_in | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4135012709 |
+| 厦门华厦学院 | 待验证·可尝试 | xiamenhuashaxueyuan | https://webvpn.hxxy.edu.cn/users/sign_in | qz_2024 | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4135012709 |
 | 厦门华天涉外职业技术学院 | 待验证·可尝试 | xiamenhuatianshewaizhiyejishuxueyuan | http://jw.xmht.com/jsxsd/ | qz | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4135013768 |
 | 厦门开放大学 | 待验证·可尝试 | xiamenkaifangdaxue | https://authserver-443.webvpn.xmcu.edu.cn/authserver/login | jw_home | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4235051833 |
 | 厦门理工学院 | 已实现配置 | xiamenligongxueyuan | http://jw.xmut.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; X_厦门理工学院 |
@@ -3521,8 +3521,8 @@
 | 西安翻译学院 | 待验证·可尝试 | xianfanyixueyuan | http://59.75.8.190:8081/xafyjw/cas/login.action | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161012714 |
 | 西安飞机工业公司职工工学院 | 待适配 | xianfeijigongyegongsizhigonggongxueyuan |  |  | moe-2026-adult; moe:4261050990 |
 | 西安高新科技职业学院 | 待验证·可尝试 | xiangaoxinkejizhiyexueyuan | https://xhtu.com.cn/index.php | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161013122 |
-| 香港城市大学 | 待验证·可尝试 | xianggangchengshidaxue | https://banweb.cityu.edu.hk/pls/PROD/hwsstmtbl_matrix_cityu.Show | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:ea3b6c0613d565f9c0d0 |
-| 香港城市大學 | 待验证·可尝试 | xianggangchengshidaxue | https://banweb.cityu.edu.hk/pls/PROD/hwsstmtbl_matrix_cityu.Show | jw_home | hk-edb-degree, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; hk-edb-degree:80f750744ee76c9d |
+| 香港城市大学 | 待验证·可尝试 | xianggangchengshidaxue | https://banweb.cityu.edu.hk/pls/PROD/hwsstmtbl_matrix_cityu.Show | cityu | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:ea3b6c0613d565f9c0d0 |
+| 香港城市大學 | 待验证·可尝试 | xianggangchengshidaxue | https://banweb.cityu.edu.hk/pls/PROD/hwsstmtbl_matrix_cityu.Show | cityu | hk-edb-degree, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; hk-edb-degree:80f750744ee76c9d |
 | 香港城市大学（东莞） | 待验证·可尝试 | xianggangchengshidaxuedongguan | https://idp.cityu-dg.edu.cn/frontend/login/ | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4144014851 |
 | 香港大學 | 待适配 | xianggangdaxue |  |  | hk-edb-degree; hk-edb-degree:43ca3f778ff7b961 |
 | 香港都會大學 | 待适配 | xianggangdouhuidaxue |  |  | hk-edb-degree; hk-edb-degree:21a3b19509471e00 |
@@ -3542,11 +3542,11 @@
 | 香格里拉职业学院 | 待验证·可尝试 | xianggelilazhiyexueyuan | http://web.xgllzyxy.com/ | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4153014803 |
 | 湘南学院 | 待验证·可尝试 | xiangnanxueyuan | https://ehall.xnu.edu.cn/sso/login | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4143010545 |
 | 湘南幼儿师范高等专科学校 | 待验证·可尝试 | xiangnanyouershifangaodengzhuankexuexiao | https://jwxt.xnyesfgdzkxx.cn/jsxsd/ | qz | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4143014495 |
-| 西安工程大学 | 待验证·可尝试 | xiangongchengdaxue | https://sz.xpu.edu.cn/auth2/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161010709 |
+| 西安工程大学 | 待验证·可尝试 | xiangongchengdaxue | https://sz.xpu.edu.cn/auth2/login | shuwei_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161010709 |
 | 西安工程大学 - 研究生 | 研究生·待适配 | xiangongchengdaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:37cfd1901a14e6a45f34 |
 | 西安工商大学 | 待验证·可尝试 | xiangongshangdaxue | http://yitjw.minghuaetc.com/xxgcxy/ | qz | wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:6bb44a42aa163b204fd6 |
 | 西安工商学院 | 待验证·可尝试 | xiangongshangxueyuan | http://yitjw.minghuaetc.com/xxgcxy/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161013682 |
-| 西安工业大学 | 待验证·可尝试 | xiangongyedaxue | http://jwgl2018.xatu.edu.cn/eams/loginExt.action | classic_eams | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161010702 |
+| 西安工业大学 | 待验证·可尝试 | xiangongyedaxue | http://jwgl2018.xatu.edu.cn/eams/loginExt.action | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161010702 |
 | 湘潭大学 | 已实现配置 | xiangtandaxue | http://jwxt.xtu.edu.cn/jsxsd/ | qz | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; X_湘潭大学 |
 | 湘潭大学兴湘学院 | 待适配 | xiangtandaxuexingxiangxueyuan |  |  | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4143012599 |
 | 湘潭大学 - 研究生 | 研究生·待适配 | xiangtandaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:ce896ebe0b71d08f97df |
@@ -3562,7 +3562,7 @@
 | 襄阳职业技术学院 | 已实现配置 | xiangyangzhiyejishuxueyuan | http://jwxt.hbxytc.cn/ | wisedu | existing-baseline; X_襄阳职业技术学院 |
 | 湘中幼儿师范高等专科学校 | 待验证·可尝试 | xiangzhongyouershifangaodengzhuankexuexiao | https://cas.xzyesf.cn/lyuapServer/login | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:3643000496 |
 | 西安海棠职业学院 | 待验证·可尝试 | xianhaitangzhiyexueyuan | https://www.xahtxy.cn/yzsxssq.htm | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161013737 |
-| 西安航空学院 | 待验证·可尝试 | xianhangkongxueyuan | https://cas.xaau.edu.cn/lyuapServer/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161011736 |
+| 西安航空学院 | 待验证·可尝试 | xianhangkongxueyuan | https://cas.xaau.edu.cn/lyuapServer/login | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161011736 |
 | 西安航空职工大学 | 待适配 | xianhangkongzhigongdaxue |  |  | moe-2026-adult; moe:4261050989 |
 | 西安航空职业技术学院 | 待验证·可尝试 | xianhangkongzhiyejishuxueyuan | https://jwgl.xihang.com.cn/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161012828 |
 | 西安健康工程职业学院 | 待适配 | xianjiankanggongchengzhiyexueyuan |  |  | moe-2026-regular; moe:4161013739 |
@@ -3572,7 +3572,7 @@
 | 西安建筑科技大学 - 研究生 | 研究生·待适配 | xianjianzhukejidaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:91d184ab3346b7226bc4 |
 | 西安交通大学 | 待验证·可尝试 | xianjiaotongdaxue | https://ehall.xjtu.edu.cn/new/index.html | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161010698 |
 | 西安交通大学城市学院 | 待验证·可尝试 | xianjiaotongdaxuechengshixueyuan | http://jxgl.xjtucc.cn/(j4tjvg45dpbvsr45jxkyuonl)/default2.aspx | zf | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161013677 |
-| 西安交通大学 - 研究生 | 研究生·待验证·可尝试 | xianjiaotongdaxueyanjiusheng | https://login.xjtu.edu.cn/cas/login | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:cba21661c61755667334 |
+| 西安交通大学 - 研究生 | 研究生·待验证·可尝试 | xianjiaotongdaxueyanjiusheng | https://login.xjtu.edu.cn/cas/login | xjtu_post | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:cba21661c61755667334 |
 | 西安交通工程学院 | 待适配 | xianjiaotonggongchengxueyuan |  |  | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161013569 |
 | 西安开放大学 | 待适配 | xiankaifangdaxue |  |  | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4261051871 |
 | 西安科技大学 | 已实现配置 | xiankejidaxue | https://jwc.xust.edu.cn/ | zf_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; X_西安科技大学 |
@@ -3590,11 +3590,11 @@
 | 西安石油大学 - 研究生 | 研究生·待适配 | xianshiyoudaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:3c40956b078498bd4588 |
 | 西安市职工大学 | 待适配 | xianshizhigongdaxue |  |  | moe-2026-adult; moe:4261051017 |
 | 西安思源学院 | 待验证·可尝试 | xiansiyuanxueyuan | https://ehall.xasyu.cn/new/index.html | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161013121 |
-| 仙桃职业学院 | 待验证·可尝试 | xiantaozhiyexueyuan | https://qingguo.hbxtzy.edu.cn/cas/login.action | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4142012740 |
+| 仙桃职业学院 | 待验证·可尝试 | xiantaozhiyexueyuan | https://qingguo.hbxtzy.edu.cn/cas/login.action | aic | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4142012740 |
 | 西安铁路工程职工大学 | 待验证·可尝试 | xiantielugongchengzhigongdaxue | https://site.wencaischool.net/xatlgc/console/index.html | jw_home | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4261051006 |
 | 西安铁路职业技术学院 | 待验证·可尝试 | xiantieluzhiyejishuxueyuan | http://61.185.246.133/cas/login.action | kingo_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161013945 |
 | 西安体育学院 | 待验证·可尝试 | xiantiyuxueyuan | http://219.244.16.107/jwweb/ | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161010727 |
-| 西安外国语大学 | 待验证·可尝试 | xianwaiguoyudaxue | https://jwxt.xisu.edu.cn/eams/login.action | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161010724 |
+| 西安外国语大学 | 待验证·可尝试 | xianwaiguoyudaxue | https://jwxt.xisu.edu.cn/eams/login.action | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161010724 |
 | 西安外国语大学 - 研究生 | 研究生·待适配 | xianwaiguoyudaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:e93b98abb6d9f7c64931 |
 | 西安外事学院 | 已实现配置 | xianwaishixueyuan | https://jwxt.xaiu.edu.cn/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; X_西安外事学院 |
 | 西安文理学院 | 待验证·可尝试 | xianwenlixueyuan | http://jwgl.xawl.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161011080 |
@@ -3613,9 +3613,9 @@
 | 西北大学现代学院 | 待验证·可尝试 | xibeidaxuexiandaixueyuan | http://jwgl.xdxd.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161013678 |
 | 西北大学 - 研究生 | 研究生·待适配 | xibeidaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:e72186165984d35bdb48 |
 | 西北电业职工大学 | 待适配 | xibeidianyezhigongdaxue |  |  | moe-2026-adult; moe:4261051002 |
-| 西北工业大学 | 待验证·可尝试 | xibeigongyedaxue | https://uis.nwpu.edu.cn/cas/login | shuwei_json | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161010699 |
+| 西北工业大学 | 待验证·可尝试 | xibeigongyedaxue | https://uis.nwpu.edu.cn/cas/login | shuwei_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161010699 |
 | 西北工业大学（备用） | 待验证·可尝试 | xibeigongyedaxuebeiyong | https://uis.nwpu.edu.cn/cas/login | cumtb | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:8906399eb8f2f30459a9 |
-| 西北工业大学（浏览器登录） | 待验证·可尝试 | xibeigongyedaxueliulanqidenglu | https://uis.nwpu.edu.cn/cas/login | shuwei_json | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:722e4826027db1ae44fb |
+| 西北工业大学（浏览器登录） | 待验证·可尝试 | xibeigongyedaxueliulanqidenglu | https://uis.nwpu.edu.cn/cas/login | shuwei_new | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:722e4826027db1ae44fb |
 | 西北工业大学 - 研究生 | 研究生·待验证·可尝试 | xibeigongyedaxueyanjiusheng | https://ecampus.nwpu.edu.cn/main.html | nwpu_post | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:875af9326a601a689c36 |
 | 西北民族大学 | 待验证·可尝试 | xibeiminzudaxue | https://cas.xbmu.edu.cn/cas/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4162010742 |
 | 西北农林科技大学 | 待验证·可尝试 | xibeinonglinkejidaxue | https://newehall.nwafu.edu.cn/ywtb-portal/Lite/index.html?browser=no#/cusHall | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4161010712 |
@@ -3640,11 +3640,11 @@
 | 西南财经大学 - 研究生 | 研究生·待适配 | xinancaijingdaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:71b7d0f4bce266386330 |
 | 西南大学 | 待验证·可尝试 | xinandaxue | https://v4study.eduwest.com/login.shtml | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4150010635 |
 | 西南大学荣昌校区 | 待适配 | xinandaxuerongchangxiaoqu |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:e913253310a0882ed84b |
-| 西南大学 - 研究生 | 研究生·待验证·可尝试 | xinandaxueyanjiusheng | http://yjsinfo.swu.edu.cn | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:bb8fd67c28b1152b01ad |
+| 西南大学 - 研究生 | 研究生·待验证·可尝试 | xinandaxueyanjiusheng | http://yjsinfo.swu.edu.cn | zju_post | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:bb8fd67c28b1152b01ad |
 | 西南交通大学 | 已实现配置 | swjtu / yethan / xinanjiaotongdaxue | https://yhxt.swjtu.edu.cn/ | yethan | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; X_西南交通大学 |
 | 西南交通大学希望学院 | 已实现配置 | xinanjiaotongdaxuexiwangxueyuan | http://119.6.110.75:9007 | urp | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; X_西南交通大学希望学院 |
 | 西南交通大学 - 研究生 | 研究生·待适配 | xinanjiaotongdaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:65c5dcc6e59a19fae5bc |
-| 西南科技大学 | 待验证·可尝试 | xinankejidaxue | http://www.dean.swust.edu.cn | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151010619 |
+| 西南科技大学 | 待验证·可尝试 | xinankejidaxue | http://www.dean.swust.edu.cn | swust | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4151010619 |
 | 西南科技大学 - 研究生 | 研究生·待适配 | xinankejidaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:b53c7c77c13e7285c0db |
 | 西南林业大学 | 待验证·可尝试 | xinanlinyedaxue | https://jw.swfu.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4153010677 |
 | 西南民族大学 | 已实现配置 | xinanminzudaxue | https://jwxt.swun.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; X_西南民族大学 |
@@ -3711,7 +3711,7 @@
 | 新疆铁道职业技术学院 | 待验证·可尝试 | xinjiangtiedaozhiyejishuxueyuan | https://jwxt.xjtzy.net:1000/ | jw_home | wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:72738e4f6d01607ee6de |
 | 新疆体育职业技术学院 | 待适配 | xinjiangtiyuzhiyejishuxueyuan |  |  | moe-2026-regular; moe:4165014416 |
 | 新疆现代职业技术学院 | 待适配 | xinjiangxiandaizhiyejishuxueyuan |  |  | moe-2026-regular; moe:4165013726 |
-| 新疆医科大学 | 待验证·可尝试 | xinjiangyikedaxue | https://mycas.xjmu.edu.cn/cas/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4165010760 |
+| 新疆医科大学 | 待验证·可尝试 | xinjiangyikedaxue | https://mycas.xjmu.edu.cn/cas/login | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4165010760 |
 | 新疆医科大学厚博学院 | 待适配 | xinjiangyikedaxuehouboxueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:61429ef257c33ac0a574 |
 | 新疆医科大学 - 研究生 | 研究生·待适配 | xinjiangyikedaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:2fb20e48b6c397a59202 |
 | 新疆应用职业技术学院 | 待验证·可尝试 | xinjiangyingyongzhiyejishuxueyuan | http://xsc.xjyyedu.cn/gaut/html/loginsso.html | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4165014417 |
@@ -3734,7 +3734,7 @@
 | 信阳涉外职业技术学院 | 待适配 | xinyangshewaizhiyejishuxueyuan |  |  | moe-2026-regular; moe:4141014351 |
 | 信阳师范大学 | 已实现配置 | 信阳师院 / xinyangshifandaxue | http://210.43.24.137/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; X_信阳师范大学 |
 | 信阳师范学院华锐学院 | 待适配 | xinyangshifanxueyuanhuaruixueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:92631cdf4a82c168ed28 |
-| 信阳学院 | 待验证·可尝试 | xinyangxueyuan | https://cas1.xyu.edu.cn/cas/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141013503 |
+| 信阳学院 | 待验证·可尝试 | xinyangxueyuan | https://cas1.xyu.edu.cn/cas/login | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141013503 |
 | 信阳艺术职业学院 | 待验证·可尝试 | xinyangyishuzhiyexueyuan | http://40.2.0.105/cas/login.action | kingo_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141014752 |
 | 信阳职业技术学院 | 待验证·可尝试 | xinyangzhiyejishuxueyuan | https://cas.xyvtc.edu.cn/cas/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141013784 |
 | 新余学院 | 待验证·可尝试 | xinyuxueyuan | http://ehall.xyc.edu.cn/ | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4136011508 |
@@ -3787,7 +3787,7 @@
 | 盐城师范学院 | 待验证·可尝试 | yanchengshifanxueyuan | http://ehall.yctu.edu.cn/ | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4132010324 |
 | 盐城幼儿师范高等专科学校 | 待验证·可尝试 | yanchengyouershifangaodengzhuankexuexiao | http://authserver-yyz-edu-cn.webvpn.yyz.edu.cn:8118/authserver/login?service=https%3A%2F%2Fwebvpn.yyz.edu.cn%3A4443%2Fauth%2Fcas_validate%3Fentry_id%3D1 | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:3632000466 |
 | 仰恩大学 | 待验证·可尝试 | yangendaxue | https://jwgl.yeu.edu.cn/yedxjw/cas/login.action | kingo_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4135011784 |
-| 阳光学院 | 待验证·可尝试 | yangguangxueyuan | https://ygu.edu.cn/user/login | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4135013468 |
+| 阳光学院 | 待验证·可尝试 | yangguangxueyuan | https://ygu.edu.cn/user/login | ygu | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4135013468 |
 | 阳江职业技术学院 | 待验证·可尝试 | yangjiangzhiyejishuxueyuan | https://www.yjpt.edu.cn/User/login | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4144012771 |
 | 杨凌职业技术学院 | 待验证·可尝试 | yanglingzhiyejishuxueyuan | https://jwxt.ylvtc.com/jwglxt/xtgl/login_slogin.html | zf_new | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:06aa768f38c367d88c30 |
 | 阳泉师范高等专科学校 | 待验证·可尝试 | yangquanshifangaodengzhuankexuexiao | https://yqsf.jijiaool.com/School/Home/Login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4114014271 |
@@ -3853,7 +3853,7 @@
 | 益阳职业技术学院 | 待验证·可尝试 | yiyangzhiyejishuxueyuan | https://cas.yyvtc.cn/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4143013808 |
 | 永城职业学院 | 待验证·可尝试 | yongchengzhiyexueyuan | http://125.219.132.9/jwweb/cas/login.action | kingo_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141013787 |
 | 永州师范高等专科学校 | 已实现配置 | yongzhoushifangaodengzhuankexuexiao | https://hndxsf.jw.chaoxing.com/admin/login | chaoxing | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; Y_永州师范高等专科学校 |
-| 永州职业技术学院 | 待验证·可尝试 | yongzhouzhiyejishuxueyuan | https://cas.yongzhouzhiyuan.cn/lyuapServer/login | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4143012301 |
+| 永州职业技术学院 | 待验证·可尝试 | yongzhouzhiyejishuxueyuan | https://cas.yongzhouzhiyuan.cn/lyuapServer/login | yzzy | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4143012301 |
 | 右江民族医学院 | 已实现配置 | youjiangminzuyixueyuan | http://emis.ymun.edu.cn | cf | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; Y_右江民族医学院 |
 | 右江民族医学院 - 研究生 | 研究生·待适配 | youjiangminzuyixueyuanyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:9b5aad3137079fbda5c0 |
 | 元智大學 | 待适配 | yuanzhidaxue |  |  | tw-moe-114; tw-moe-114:1010 |
@@ -3894,7 +3894,7 @@
 | 云南交通运输职业学院 | 待验证·可尝试 | yunnanjiaotongyunshuzhiyexueyuan | https://cas.ynvct.com/lyuapServer/login | jw_home | wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:7e08466c195e02f5e6ac |
 | 云南交通职业技术大学 | 待适配 | yunnanjiaotongzhiyejishudaxue |  |  | moe-2026-regular; moe:4153012357 |
 | 云南交通职业技术学院 | 待验证·可尝试 | yunnanjiaotongzhiyejishuxueyuan | https://cas.ynjtc.edu.cn/lyuapServer/login | kingo_new | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:6356383dabbe2afb6908 |
-| 云南机电职业技术学院 | 待验证·可尝试 | yunnanjidianzhiyejishuxueyuan | https://portal.ynmec.edu.cn/ | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4153013757 |
+| 云南机电职业技术学院 | 待验证·可尝试 | yunnanjidianzhiyejishuxueyuan | https://portal.ynmec.edu.cn/ | buaa | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4153013757 |
 | 云南警官学院 | 待验证·可尝试 | yunnanjingguanxueyuan | https://authserver.ynpc.edu.cn/authserver/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4153011392 |
 | 云南经济管理学院 | 待验证·可尝试 | yunnanjingjiguanlixueyuan | https://xjwxt.ynjgy.com/ynjjglxy_jsxsd/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4153012560 |
 | 云南经济职业技术学院 | 待验证·可尝试 | yunnanjingjizhiyejishuxueyuan | https://xjwxt.ynjgy.com/ynjjglxy_jsxsd/ | qz | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:5634e9b6f41d941722d4 |
@@ -4055,7 +4055,7 @@
 | 浙江音乐学院 | 待验证·可尝试 | zhejiangyinyuexueyuan | https://cas.zjcm.edu.cn/cas/login | classic_eams | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4133014535 |
 | 浙江艺术职业学院 | 待验证·可尝试 | zhejiangyishuzhiyexueyuan | https://authserver.zjvaa.edu.cn/authserver/login | wisedu | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4133012863 |
 | 浙江医药高等专科学校 | 待适配 | zhejiangyiyaogaodengzhuankexuexiao |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:2d9118bac3981fd86b81 |
-| 浙江邮电职业技术学院 | 待验证·可尝试 | zhejiangyoudianzhiyejishuxueyuan | https://www.zptc.cn | jw_home | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4133013688 |
+| 浙江邮电职业技术学院 | 待验证·可尝试 | zhejiangyoudianzhiyejishuxueyuan | https://www.zptc.cn | zptc | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4133013688 |
 | 浙江越秀外国语学院 | 待验证·可尝试 | zhejiangyuexiuwaiguoyuxueyuan | https://my.zyufl.edu.cn/_s2/anonymous_sy/main.psp | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4133012792 |
 | 浙江宇翔职业技术学院 | 已实现配置 | zhejiangyuxiangzhiyejishuxueyuan | https://yxwy.jw.chaoxing.com/ | chaoxing | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; Z_浙江宇翔职业技术学院 |
 | 浙江育英职业技术学院 | 待验证·可尝试 | zhejiangyuyingzhiyejishuxueyuan | http://202.101.184.60:81/ | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4133012868 |
@@ -4070,7 +4070,7 @@
 | 郑州财税金融职业学院 | 待验证·可尝试 | zhengzhoucaishuijinrongzhiyexueyuan | http://jwxt.zzcsjr.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141014478 |
 | 郑州城建职业学院 | 待验证·可尝试 | zhengzhouchengjianzhiyexueyuan | https://cas.zzucvc.edu.cn/cas/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141014753 |
 | 郑州城市职业学院 | 待验证·可尝试 | zhengzhouchengshizhiyexueyuan | https://zf.zcu.edu.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141014235 |
-| 郑州大学 | 待验证·可尝试 | zhengzhoudaxue | https://cas.s.zzu.edu.cn/cas/a/login?service=https%3A%2F%2Fjwxt.zzu.edu.cn%2Fstudent%2Fsso%2Flogin | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141010459 |
+| 郑州大学 | 待验证·可尝试 | zhengzhoudaxue | https://cas.s.zzu.edu.cn/cas/a/login?service=https%3A%2F%2Fjwxt.zzu.edu.cn%2Fstudent%2Fsso%2Flogin | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141010459 |
 | 郑州大学旅游管理学院 | 待适配 | zhengzhoudaxuelvyouguanlixueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:d071de403be56880d263 |
 | 郑州大学西亚斯国际学院 | 已实现配置 | zhengzhoudaxuexiyasiguojixueyuan | https://jwxt.sias.edu.cn/ | classic_eams | existing-baseline; Z_郑州大学西亚斯国际学院 |
 | 郑州大学 - 研究生 | 研究生·待验证·可尝试 | zhengzhoudaxueyanjiusheng | http://gs2.zzu.edu.cn/ | jw_home | wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:6bb05c6151aed3963887 |
@@ -4108,7 +4108,7 @@
 | 郑州体育职业学院 | 待验证·可尝试 | zhengzhoutiyuzhiyexueyuan | https://jiaowu.zhengzhoutiyuan.cn/eams/loginExt.action | classic_eams | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141014720 |
 | 郑州卫生健康职业学院 | 待适配 | zhengzhouweishengjiankangzhiyexueyuan |  |  | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141014635 |
 | 郑州信息工程职业学院 | 待验证·可尝试 | zhengzhouxinxigongchengzhiyexueyuan | https://cas.zxxyedu.com/cas/login | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141014303 |
-| 郑州信息科技职业学院 | 待验证·可尝试 | zhengzhouxinxikejizhiyexueyuan | http://zxjw.open.ha.cn/eams/homeExt.action | classic_eams | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141013565 |
+| 郑州信息科技职业学院 | 待验证·可尝试 | zhengzhouxinxikejizhiyexueyuan | http://zxjw.open.ha.cn/eams/homeExt.action | shuwei_m | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141013565 |
 | 郑州西亚斯学院 | 待适配 | zhengzhouxiyasixueyuan |  |  | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141014654 |
 | 郑州亚欧交通职业学院 | 待验证·可尝试 | zhengzhouyaoujiaotongzhiyexueyuan | https://jwxt.zzyaou.edu.cn/cas/login.action | kingo_new | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141014685 |
 | 郑州医药健康职业学院 | 待验证·可尝试 | zhengzhouyiyaojiankangzhiyexueyuan | https://www.zzyyzy.edu.cn/ | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4141014754 |
@@ -4188,8 +4188,8 @@
 | 中国医科大学 - 研究生 | 研究生·待适配 | zhongguoyikedaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:715a70d8ab26511e36bc |
 | 中国音乐学院 | 待验证·可尝试 | zhongguoyinyuexueyuan | https://www.ccmusic.edu.cn/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4111010046 |
 | 中國醫藥大學 | 待适配 | zhongguoyiyaodaxue |  |  | tw-moe-114; tw-moe-114:1035 |
-| 中国政法大学 | 待验证·可尝试 | zhongguozhengfadaxue | https://ca.cupl.edu.cn/tpass/login | shuwei_json | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4111010053 |
-| 中国政法大学 - 研究生 | 研究生·待验证·可尝试 | zhongguozhengfadaxueyanjiusheng | http://ca.cupl.edu.cn/tpass/login | jw_home | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:14e0060624195d27951a |
+| 中国政法大学 | 待验证·可尝试 | zhongguozhengfadaxue | https://ca.cupl.edu.cn/tpass/login | xatu_shuwei | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4111010053 |
+| 中国政法大学 - 研究生 | 研究生·待验证·可尝试 | zhongguozhengfadaxueyanjiusheng | http://ca.cupl.edu.cn/tpass/login | cupl_post | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:14e0060624195d27951a |
 | 中華大學學校財團法人中華大學 | 待适配 | zhonghuadaxuexuexiaocaituanfarenzhonghuadaxue |  |  | tw-moe-114; tw-moe-114:1011 |
 | 中华女子学院 | 待验证·可尝试 | zhonghuanvzixueyuan | http://jw.cwu.edu.cn/academic/common/security/login.jsp | umooc | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4111011149 |
 | 中華學校財團法人中華科技大學 | 待适配 | zhonghuaxuexiaocaituanfarenzhonghuakejidaxue |  |  | tw-moe-114; tw-moe-114:1061 |
@@ -4265,75 +4265,120 @@
 | 协议 | 已配置条目数 |
 |---|---|
 | zf_new | 783 |
-| jw_home | 773 |
-| qz | 418 |
-| kingo_new | 213 |
+| jw_home | 700 |
+| qz | 413 |
+| kingo_new | 211 |
 | chaoxing | 146 |
-| classic_eams | 73 |
-| wisedu | 59 |
-| shuwei_json | 48 |
+| classic_eams | 62 |
+| wisedu | 58 |
 | zf | 47 |
 | sg_asset | 43 |
 | urp_new | 43 |
 | cf | 40 |
+| xatu_shuwei | 31 |
+| shuwei_new | 18 |
 | cf_new | 16 |
 | urp | 15 |
 | umooc | 14 |
+| shuwei_m | 13 |
 | cumtb | 12 |
 | qz_with_node | 12 |
 | yl | 11 |
 | scau | 10 |
-| aic | 8 |
+| aic | 9 |
+| lz | 9 |
 | xju_post | 8 |
 | south_soft | 7 |
+| buaa | 5 |
 | gdei | 5 |
+| hitsz | 5 |
 | suda_post | 5 |
-| eams5 | 4 |
+| login_xbellsoft | 4 |
+| qz_2024 | 4 |
+| changzhou | 3 |
+| cityu | 3 |
 | cqu | 3 |
+| eams5 | 3 |
 | ecupl | 3 |
 | fdu | 3 |
 | fstvc | 3 |
 | hnust | 3 |
+| hrbeu_post | 3 |
 | qz_br | 3 |
 | qz_crazy | 3 |
+| gxnu | 2 |
+| hit | 2 |
+| nau | 2 |
 | neu | 2 |
+| nuist | 2 |
 | qz_bjfu | 2 |
 | qz_old | 2 |
 | qz_single_node | 2 |
 | seig | 2 |
 | shtu_post_2024 | 2 |
+| shuwei_json | 2 |
 | simc | 2 |
+| xhtd | 2 |
+| xytc | 2 |
+| zju_post | 2 |
 | bfa | 1 |
+| bfa_post | 1 |
 | bjtu | 1 |
 | bnuz | 1 |
 | boya_pp | 1 |
 | ccibe | 1 |
+| cidp | 1 |
 | cnu | 1 |
 | cppu | 1 |
+| cqupt | 1 |
+| cupl_post | 1 |
+| gdbyxy | 1 |
+| gxic | 1 |
 | gzhuyjs | 1 |
 | hbmzu | 1 |
 | hniu | 1 |
 | jlict_qz_old | 1 |
 | jlu_post | 1 |
+| jxau | 1 |
 | kust | 1 |
+| lngd | 1 |
+| nnutc | 1 |
 | nua | 1 |
 | nuit | 1 |
 | nwpu_post | 1 |
+| nyist | 1 |
 | pku | 1 |
+| qmu | 1 |
 | qz_ahut | 1 |
 | qz_app | 1 |
 | qz_ecust | 1 |
+| qz_fspt | 1 |
 | qz_njust | 1 |
+| qz_ustb | 1 |
 | scu | 1 |
+| sdpei | 1 |
 | seu | 1 |
 | shcc | 1 |
+| shsmu | 1 |
+| shtu_post | 1 |
+| sues | 1 |
+| swust | 1 |
 | thu | 1 |
+| tju | 1 |
 | ucas | 1 |
+| uestc_shuwei | 1 |
+| uic | 1 |
 | ustc | 1 |
+| vatuu | 1 |
 | whut | 1 |
+| xjtu_post | 1 |
+| xsyu_shuwei | 1 |
 | yethan | 1 |
+| ygu | 1 |
+| yzzy | 1 |
 | zf_1 | 1 |
 | zju | 1 |
+| zptc | 1 |
 | ztvtit | 1 |
 
 ## 申请适配

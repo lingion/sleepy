@@ -5980,7 +5980,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "cityu",
     "probe": {
       "url": "https://banweb.cityu.edu.hk/pls/PROD/hwsstmtbl_matrix_cityu.Show",
       "checkedAt": "2026-10-16",
@@ -5993,9 +5993,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "cityu",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        397
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -6288,7 +6297,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "shuwei_new",
     "probe": {
       "url": "https://sso.xdsisu.edu.cn/login?service=https:%2F%2Ffd.xdsisu.edu.cn%2Fwengine-auth%2Flogin%3Fcas_login%3Dtrue",
       "checkedAt": "2026-10-16",
@@ -6301,7 +6310,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "shuwei_new",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2497
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -6382,7 +6401,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "shsmu",
     "probe": {
       "url": "https://jwstu.shsmu.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -6395,9 +6414,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "shsmu",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2454
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -6445,7 +6473,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "shu2024",
     "probe": {
       "url": "https://jwxk.shu.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -6459,9 +6487,18 @@
       "error": "curl-28"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "shu2024",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2611
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -6539,7 +6576,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "shuwei_new",
     "probe": {
       "url": "https://nbkjw.suibe.edu.cn/student/home",
       "checkedAt": "2026-10-16",
@@ -6552,7 +6589,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "shuwei_new",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2613
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -6568,7 +6615,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "shuwei_new",
     "probe": {
       "url": "https://webvpn.sues.edu.cn/https/77726476706e69737468656265737421f3f652d234256d43300d8db9d6562d/cas/login",
       "checkedAt": "2026-10-28",
@@ -6581,8 +6628,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
-    "sourceType662": "shuwei_new"
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "shuwei_new",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2457
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -6598,7 +6654,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "eams5",
+    "mappedType": "sues",
     "probe": {
       "url": "https://webvpn.sues.edu.cn/https/77726476706e69737468656265737421f3f652d234256d43300d8db9d6562d/cas/login",
       "checkedAt": "2026-10-28",
@@ -6611,8 +6667,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
-    "sourceType662": "sues"
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "sues",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2458
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "eams5",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -7004,7 +7069,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "shuwei_new",
     "probe": {
       "url": "https://my.gench.edu.cn/FAP5.Portal/pc.html?rnd=465464148",
       "checkedAt": "2026-10-16",
@@ -7017,7 +7082,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "shuwei_new",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2641
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -7033,7 +7108,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "shuwei_m",
     "probe": {
       "url": "https://jw.sandau.edu.cn/eams-shuju/login.action",
       "checkedAt": "2026-10-16",
@@ -7047,9 +7122,18 @@
       "error": "non-public-url"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "shuwei_m",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2444
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -7563,7 +7647,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "shuwei_new",
     "probe": {
       "url": "https://jwgl.sdju.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -7576,7 +7660,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "shuwei_new",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2620
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -7592,7 +7686,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "https://ids.shanghaitech.edu.cn/authserver/login?service=https%3A%2F%2Feams.shanghaitech.edu.cn%2Feams%2Fhome.action",
       "checkedAt": "2026-10-16",
@@ -7605,7 +7699,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2621
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -7742,7 +7846,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "shuwei_new",
     "probe": {
       "url": "https://jiaowu2023.siva.edu.cn/student/home",
       "checkedAt": "2026-10-16",
@@ -7756,8 +7860,18 @@
       "error": "curl-28"
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "shuwei_new",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2453
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -8137,7 +8251,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "seu_2017",
     "probe": {
       "url": "http://xk.urp.seu.edu.cn/jw_service/service/lookCurriculum.action",
       "checkedAt": "2026-10-16",
@@ -8151,9 +8265,18 @@
       "error": "non-public-url"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "seu_2017",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        521
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -8862,7 +8985,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "https://ca.cupl.edu.cn/tpass/login",
       "checkedAt": "2026-10-16",
@@ -8875,7 +8998,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3482
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -9521,7 +9654,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "nfu",
     "probe": {
       "url": "http://ecampus.nfu.edu.cn/door/login",
       "checkedAt": "2026-10-16",
@@ -9535,9 +9668,18 @@
       "error": "curl-28"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "nfu",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3459
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -10923,7 +11065,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "buaa",
     "probe": {
       "url": "https://portal.ynmec.edu.cn/#/student",
       "checkedAt": "2026-10-16",
@@ -10936,9 +11078,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "buaa",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3200
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -11623,7 +11774,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "kingo_new",
+    "mappedType": "aic",
     "probe": {
       "url": "https://qingguo.hbxtzy.edu.cn/cas/login.action",
       "checkedAt": "2026-10-16",
@@ -11636,7 +11787,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "aic",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2930
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "kingo_new",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -11926,7 +12087,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "qz",
+    "mappedType": "qz_fspt",
     "probe": {
       "url": "https://jwgl.fspt.edu.cn/jsxsd/",
       "checkedAt": "2026-10-28",
@@ -11943,8 +12104,17 @@
       ]
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry replaces the previously probed URL; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
-    "sourceType662": "qz_fspt"
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "qz_fspt",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        599
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "qz",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -12080,7 +12250,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "https://cas1.xyu.edu.cn/cas/login?service=https%3A%2F%2Fjw.xyu.edu.cn%2Feams%2Fsso%2Flogin.action%3FtargetUrl%3Dbase64aHR0cHM6Ly9qdy54eXUuZWR1LmNuL2VhbXMvaG9tZUV4dC5hY3Rpb24%3D",
       "checkedAt": "2026-10-16",
@@ -12093,7 +12263,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2931
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -13531,7 +13711,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "shuwei_m",
     "probe": {
       "url": "https://cer-imufe-edu-cn-s.vpn.imufe.edu.cn:8118/authserver/login",
       "checkedAt": "2026-10-16",
@@ -13545,9 +13725,18 @@
       "error": "curl-28"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "shuwei_m",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2101
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -13749,7 +13938,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "xytc",
     "probe": {
       "url": "http://jw.jtxy.com.cn",
       "checkedAt": "2026-10-16",
@@ -13762,9 +13951,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "xytc",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        196
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -14539,7 +14737,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "uic",
     "probe": {
       "url": "https://mis.uic.edu.hk",
       "checkedAt": "2026-10-16",
@@ -14553,9 +14751,18 @@
       "error": "non-public-url"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "uic",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        208
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -14995,7 +15202,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "qz_ustb",
     "probe": {
       "url": "https://byyt.ustb.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -15008,9 +15215,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "qz_ustb",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        197
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -16437,7 +16653,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "nau",
     "probe": {
       "url": "https://jwc.nau.edu.cn",
       "checkedAt": "2026-10-16",
@@ -16450,9 +16666,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "nau",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2042
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -16622,7 +16847,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "nnutc",
     "probe": {
       "url": "https://cas.nnutc.edu.cn/lyuapServer/login?service=https%3A%2F%2Fjw.nnutc.edu.cn%2F",
       "checkedAt": "2026-10-16",
@@ -16635,9 +16860,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "nnutc",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1964
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -16836,7 +17070,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "nuaajc",
     "probe": {
       "url": "http://jcjx.nuaa.edu.cn/EaWeb/Manager/Module/NetEa/Schedule/Query/Default.aspx",
       "checkedAt": "2026-10-16",
@@ -16849,9 +17083,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "nuaajc",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1982
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -17023,7 +17266,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "shuwei_new",
     "probe": {
       "url": "https://jwxt.nufe.edu.cn/student/login?refer=https://jwxt.nufe.edu.cn/student/home",
       "checkedAt": "2026-10-16",
@@ -17036,7 +17279,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "shuwei_new",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2057
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -17874,7 +18127,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "nyist",
     "probe": {
       "url": "https://app3.nyist.edu.cn/ui/#/courseTable",
       "checkedAt": "2026-10-16",
@@ -17887,9 +18140,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "nyist",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2085
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -17970,7 +18232,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "nuist",
     "probe": {
       "url": "http://jwgl.ntnc.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -17984,9 +18246,18 @@
       "error": "curl-28"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "nuist",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1970
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -18181,7 +18452,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "qz",
+    "mappedType": "qz_2024",
     "probe": {
       "url": "https://webvpn.hxxy.edu.cn/users/sign_in",
       "checkedAt": "2026-10-16",
@@ -18194,7 +18465,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "qz_2024",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3152
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "qz",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -18669,7 +18950,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "https://wvpn.hfpec.edu.cn/http/77726476706e69737468656265737421f9f352d22f3678557d468ca88d1b203b/authserver/login?service=https%3A%2F%2Fwvpn.hfpec.edu.cn%2Flogin%3Fcas_login%3Dtrue",
       "checkedAt": "2026-10-16",
@@ -18682,7 +18963,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1335
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -19833,7 +20124,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "lz",
     "probe": {
       "url": "http://i.jtpt.cn/PassPortWeb/login.aspx",
       "checkedAt": "2026-10-16",
@@ -19846,9 +20137,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "lz",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1527
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -20593,7 +20893,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "hitsz",
     "probe": {
       "url": "http://jw.hitsz.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -20607,9 +20907,18 @@
       "error": "non-public-url"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "hitsz",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1326
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -20625,7 +20934,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "hit",
     "probe": {
       "url": "http://jwts.hitwh.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -20639,9 +20948,18 @@
       "error": "non-public-url"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "hit",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1327
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -21046,7 +21364,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "hitsz",
     "probe": {
       "url": "http://111.40.18.189:9081/",
       "checkedAt": "2026-10-16",
@@ -21060,9 +21378,18 @@
       "error": "curl-28"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "hitsz",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1239
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -21078,7 +21405,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "hitsz",
     "probe": {
       "url": "http://111.40.18.189:9081/",
       "checkedAt": "2026-10-16",
@@ -21092,9 +21419,18 @@
       "error": "curl-28"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "hitsz",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1238
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -21239,7 +21575,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "https://sqxy.jijiaox.com/mg/login/",
       "checkedAt": "2026-10-16",
@@ -21252,7 +21588,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2628,
+        2629
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -22030,7 +22377,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "vatuu",
     "probe": {
       "url": "http://scuvc.tuoqie.com/service/login.html",
       "checkedAt": "2026-10-16",
@@ -22044,9 +22391,18 @@
       "error": "curl-28"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "vatuu",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2227
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -22062,7 +22418,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "shuwei_new",
     "probe": {
       "url": "http://jwcxk.sicnu.edu.cn/student/login",
       "checkedAt": "2026-10-16",
@@ -22075,7 +22431,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "shuwei_new",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2239
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -23543,7 +23909,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "shuwei_m",
     "probe": {
       "url": "http://jwfw.fudan.edu.cn",
       "checkedAt": "2026-10-16",
@@ -23556,9 +23922,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "shuwei_m",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        600
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -23999,7 +24374,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "https://id.dlmu.edu.cn/login?service=https:%2F%2Fid.dlmu.edu.cn%2Foauth2.0%2FcallbackAuthorize%3Fclient_id%3DEVvlF08Y4ujiPiuGuTYj%26redirect_uri%3Dhttps%253A%252F%252Fhall.dlmu.edu.cn%252Fportal%252Fsso%252Fcallback%26response_type%3Dcode%26client_name%3DCasOAuthClient",
       "checkedAt": "2026-10-16",
@@ -24012,7 +24387,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        537
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -24446,7 +24831,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "http://jwxt.tjau.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -24459,7 +24844,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2759
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -24658,7 +25053,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "http://sfrz.tsguas.edu.cn/sso/login?service=http://xxmh.tsguas.edu.cn/user/simpleSSOLogin",
       "checkedAt": "2026-10-16",
@@ -24672,8 +25067,18 @@
       "error": "curl-28"
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2762
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -24780,7 +25185,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "https://sso.tju.edu.cn/cas/login",
       "checkedAt": "2026-10-16",
@@ -24793,7 +25198,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2751
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -25234,7 +25649,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "shuwei_new",
     "probe": {
       "url": "https://cas.tjzhic.edu.cn/cas/login",
       "checkedAt": "2026-10-16",
@@ -25247,7 +25662,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "shuwei_new",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2716
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -26676,7 +27101,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "login_xbellsoft",
     "probe": {
       "url": "http://jw.aqmc.edu.cn/jwgl/handcourseService/getStudentkb",
       "checkedAt": "2026-10-16",
@@ -26689,9 +27114,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "login_xbellsoft",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        64
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -27131,7 +27565,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "classic_eams",
+    "mappedType": "xsyu_shuwei",
     "probe": {
       "url": "http://jwgl.ahmu.edu.cn/eams/loginExt.action",
       "checkedAt": "2026-10-16",
@@ -27145,8 +27579,18 @@
       "error": "curl-7"
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "xsyu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        30
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "classic_eams",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -27279,7 +27723,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "login_xbellsoft",
     "probe": {
       "url": "http://jwsys.abc.edu.cn:80/ahsm/handcourseService/getStudentkb",
       "checkedAt": "2026-10-16",
@@ -27292,9 +27736,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "login_xbellsoft",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        63
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -27650,7 +28103,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "login_xbellsoft",
     "probe": {
       "url": "http://jwgl.ahcbxy.edu.cn:9090/jwgl/handcourseService/getStudentkb",
       "checkedAt": "2026-10-16",
@@ -27663,9 +28116,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "login_xbellsoft",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        62
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -27710,7 +28172,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "http://xjwxt.ahpu.edu.cn/ahpu/localLogin.action",
       "checkedAt": "2026-10-16",
@@ -27724,8 +28186,18 @@
       "error": "curl-28"
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        39
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -27866,7 +28338,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "http://jwgl.aust.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -27880,8 +28352,18 @@
       "error": "non-public-url"
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        46
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -29115,7 +29597,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "sdpei",
     "probe": {
       "url": "https://jw.sdpei.edu.cn/#",
       "checkedAt": "2026-10-16",
@@ -29128,9 +29610,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "sdpei",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2496
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -29453,7 +29944,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "https://authserver-sict-edu-cn.vpn.sict.edu.cn:8118/authserver/login?service=https%3A%2F%2Fvpn.sict.edu.cn%2Fauth%2Fcas_validate%3Fentry_id%3D1",
       "checkedAt": "2026-10-16",
@@ -29466,7 +29957,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2518
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -32418,7 +32919,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "shuwei_new",
     "probe": {
       "url": "https://ehall.vpn.chu.edu.cn:4443/",
       "checkedAt": "2026-10-16",
@@ -32432,8 +32933,18 @@
       "error": "curl-28"
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "shuwei_new",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        267
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -33894,7 +34405,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "wisedu",
+    "mappedType": "buaa",
     "probe": {
       "url": "https://jwxt.gdpepe.edu.cn/jwapp/sys/kbapp/*default/index.do",
       "checkedAt": "2026-10-16",
@@ -33909,7 +34420,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "buaa",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        794
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "wisedu",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -33956,7 +34477,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "kingo_new",
+    "mappedType": "gdbyxy",
     "probe": {
       "url": "http://jwgl.baiyunu.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -33969,7 +34490,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "gdbyxy",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        667
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "kingo_new",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -35224,7 +35755,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "http://jw.gzgs.edu.cn/http://auth.gzgs.org.cn/cas/login?service=http%3A%2F%2Fis.gzgs.org.cn%2Fc%2Fportal%2Flogin%3Fredirect%3D%252Fweb%252Fguest%252Findex%26p_l_id%3D10213",
       "checkedAt": "2026-10-16",
@@ -35237,8 +35768,18 @@
       "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        697
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -35984,7 +36525,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "changzhou",
     "probe": {
       "url": "https://authserver.gxjzy.com/authserver/login?service=https%3A%2F%2Fi.gxjzy.com%3A443%2Flogin%3Fservice%3Dhttps%3A%2F%2Fi.gxjzy.com%2Fnew%2Findex.html",
       "checkedAt": "2026-10-16",
@@ -35997,9 +36538,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "changzhou",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        836
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -36073,7 +36623,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "gxic",
     "probe": {
       "url": "http://jw.gxic.net/JWXS/pkgl/XsKB_List.aspx",
       "checkedAt": "2026-10-16",
@@ -36087,9 +36637,18 @@
       "error": "non-public-url"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "gxic",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        865
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -36192,7 +36751,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "gxnu",
     "probe": {
       "url": "http://jiaowu.gxljcollege.cn:800/dean/student/login",
       "checkedAt": "2026-10-16",
@@ -36206,9 +36765,18 @@
       "error": "curl-7"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "gxnu",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        803
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -36257,7 +36825,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "gxnu",
     "probe": {
       "url": "https://jwjx.gxnu.edu.cn/wfw/manage",
       "checkedAt": "2026-10-16",
@@ -36270,9 +36838,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "gxnu",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        802
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -37442,7 +38019,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "hitsz",
     "probe": {
       "url": "https://webvpn.uhrs.edu.cn/https/77726476706e69737468656265737421f3f652d232387a43300d8db9d6562d/tpass/login?service=https%3A%2F%2Fwebvpn.uhrs.edu.cn%2Flogin%3Fcas_login%3Dtrue",
       "checkedAt": "2026-10-16",
@@ -37455,9 +38032,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "hitsz",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1721
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -38457,7 +39043,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "https://ywtb.cuit.edu.cn/#/login",
       "checkedAt": "2026-10-16",
@@ -38470,7 +39056,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        280
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -38578,7 +39174,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "classic_eams",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "http://jw.cdivtc.edu.cn/eams/loginExt.action?local=1",
       "checkedAt": "2026-10-16",
@@ -38593,8 +39189,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        286
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "classic_eams",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -39528,7 +40134,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "xhtd",
     "probe": {
       "url": "http://www.fvti.com/",
       "checkedAt": "2026-10-16",
@@ -39541,9 +40147,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "xhtd",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        624
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -40392,7 +41007,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "https://mycas.xjmu.edu.cn/cas/login?service=https://portal.xjmu.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -40405,7 +41020,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3033
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -42440,7 +43065,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "xhtd",
     "probe": {
       "url": "http://221.203.71.62:8088/fszy/htAction.do?method=todatacenter",
       "checkedAt": "2026-10-16",
@@ -42454,9 +43079,18 @@
       "error": "curl-28"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "xhtd",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        395
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -43206,7 +43840,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "shuwei_new",
     "probe": {
       "url": "https://v.guet.edu.cn/https/77726476706e69737468656265737421f3f652d220256d44300d8db9d6562d/authserver/login?service=https%3A%2F%2Fv.guet.edu.cn%2Flogin%3Fcas_login%3Dtrue",
       "checkedAt": "2026-10-16",
@@ -43219,7 +43853,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "shuwei_new",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        800
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -43503,7 +44147,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "qz",
+    "mappedType": "qz_2024",
     "probe": {
       "url": "https://sso.wuyiu.edu.cn/login?service=https:%2F%2Fjwxt.wuyiu.edu.cn%2Fjsxsd%2F",
       "checkedAt": "2026-10-16",
@@ -43520,7 +44164,17 @@
       ]
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "qz_2024",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2859
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "qz",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -44062,7 +44716,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "https://whxyjwxt.whxy.edu.cn/eams/login.action",
       "checkedAt": "2026-10-16",
@@ -44075,7 +44729,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2873
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -44543,7 +45207,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "qz",
+    "mappedType": "qz_2024",
     "probe": {
       "url": "https://cas.whcm.edu.cn:4103/lyuapServer/login?service=https%3A%2F%2Fportal.whcm.edu.cn%2Fc%2Fportal%2Flogin%3Fredirect%3D%252F%26p_l_id%3D70131",
       "checkedAt": "2026-10-16",
@@ -44556,7 +45220,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "qz_2024",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2901
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "qz",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -45062,7 +45736,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "yzzy",
     "probe": {
       "url": "https://cas.yongzhouzhiyuan.cn/lyuapServer/login",
       "checkedAt": "2026-10-16",
@@ -45075,9 +45749,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "yzzy",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3236
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -45940,7 +46623,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "nuist",
     "probe": {
       "url": "http://jiaowu.jsou.cn/login#/manage/point/toPointManage.do",
       "checkedAt": "2026-10-16",
@@ -45953,9 +46636,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "nuist",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1605
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -46332,7 +47024,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "shuwei_new",
     "probe": {
       "url": "http://www.jscfa.edu.cn",
       "checkedAt": "2026-10-16",
@@ -46345,7 +47037,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "shuwei_new",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1553
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -46451,7 +47153,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "jxau",
     "probe": {
       "url": "http://jwgl.jxau.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -46464,9 +47166,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "jxau",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1558
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -48125,7 +48836,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "shuwei_new",
     "probe": {
       "url": "https://jwxt.czu.edu.cn/student/login",
       "checkedAt": "2026-10-16",
@@ -48138,7 +48849,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "shuwei_new",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        302
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -50624,7 +51345,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "classic_eams",
+    "mappedType": "shuwei_m",
     "probe": {
       "url": "http://zxjw.open.ha.cn/eams/homeExt.action",
       "checkedAt": "2026-10-16",
@@ -50637,8 +51358,18 @@
       "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "shuwei_m",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1268
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "classic_eams",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -50685,7 +51416,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "classic_eams",
+    "mappedType": "shuwei_m",
     "probe": {
       "url": "http://zxjw.open.ha.cn/eams/homeExt.action",
       "checkedAt": "2026-10-16",
@@ -50698,8 +51429,18 @@
       "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "shuwei_m",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1269
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "classic_eams",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -50924,7 +51665,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "shuwei_m",
     "probe": {
       "url": "http://authserver.hasm.edu.cn/authserver/login?service=http%3A%2F%2Foaxt.hasm.edu.cn%3A80%2Fseeyon%2Fcaslogin%2Fsso%2F",
       "checkedAt": "2026-10-16",
@@ -50937,9 +51678,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "shuwei_m",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1151
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -51048,7 +51798,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "https://uia.hpu.edu.cn/cas/login?service=https%3A%2F%2Fwebvpn.hpu.edu.cn%2Fhuauauth%2Fcaslogin",
       "checkedAt": "2026-10-27",
@@ -51061,7 +51811,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1267
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -52520,7 +53280,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "changzhou",
     "probe": {
       "url": "https://vpn-client.tzpc.edu.cn/https/webvpn87eb7351ff7935be10bed680a4a6d021/lyuapServer/login?service=https%3A%2F%2Fvpn-client.tzpc.edu.cn%2Fenlink%2Fapi%2Fclient%2Fcallback%2Fcas",
       "checkedAt": "2026-10-16",
@@ -52534,9 +53294,18 @@
       "error": "redirect-limit"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "changzhou",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2707
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -53768,7 +54537,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "zptc",
     "probe": {
       "url": "https://www.zptc.cn",
       "checkedAt": "2026-10-16",
@@ -53781,9 +54550,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "zptc",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3415
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -55437,7 +56215,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "buaa",
     "probe": {
       "url": "https://hbssyys.aixiaoyuan.cn/portal/login",
       "checkedAt": "2026-10-16",
@@ -55451,10 +56229,19 @@
       "error": "non-public-url"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceUrlBeforeRepair": "https://hbssyys.aixiaoyuan.cn/portal/ - /login",
     "sourceType662": "buaa",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1234
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -57017,7 +57804,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "qz",
+    "mappedType": "qz_2024",
     "probe": {
       "url": "http://jwxt.hut.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -57032,8 +57819,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "qz_2024",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1035
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "qz",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -57900,7 +58697,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "xytc",
     "probe": {
       "url": "https://hycgy.cjnep.net/sims/web/site/login",
       "checkedAt": "2026-10-16",
@@ -57913,9 +58710,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "xytc",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1156
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -60753,7 +61559,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "lz",
     "probe": {
       "url": "https://jw.bcyz.cn/",
       "checkedAt": "2026-10-16",
@@ -60767,9 +61573,18 @@
       "error": "non-public-url"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "lz",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        170
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -60913,7 +61728,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "login_xbellsoft",
     "probe": {
       "url": "https://jiaowu.wnmc.edu.cn:443/handcourseService/getStudentkb",
       "checkedAt": "2026-10-16",
@@ -60926,9 +61741,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "login_xbellsoft",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2899
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -63971,7 +64795,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "shuwei_new",
     "probe": {
       "url": "https://sso.tec.suda.edu.cn/login?service=http%3A%2F%2Flb.tec.suda.edu.cn%2Flogin",
       "checkedAt": "2026-10-16",
@@ -63984,8 +64808,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "shuwei_new",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2680
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -65172,7 +66006,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "shuwei_new",
     "probe": {
       "url": "https://uis.nwpu.edu.cn/cas/login?service=https%3A%2F%2Fecampus.nwpu.edu.cn%2Fc%2Fportal%2Flogin",
       "checkedAt": "2026-10-16",
@@ -65185,7 +66019,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "shuwei_new",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3037
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -65201,7 +66045,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "shuwei_new",
     "probe": {
       "url": "https://uis.nwpu.edu.cn/cas/login?service=https%3A%2F%2Fecampus.nwpu.edu.cn%2Fc%2Fportal%2Flogin",
       "checkedAt": "2026-10-16",
@@ -65214,7 +66058,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "shuwei_new",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3051
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -65409,7 +66263,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "swust",
     "probe": {
       "url": "http://www.dean.swust.edu.cn",
       "checkedAt": "2026-10-16",
@@ -65423,9 +66277,18 @@
       "error": "non-public-url"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "swust",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3120
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -65441,7 +66304,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "wisedu",
+    "mappedType": "buaa",
     "probe": {
       "url": "http://jwxt.hbxytc.cn/",
       "checkedAt": "2026-10-16",
@@ -65456,8 +66319,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "buaa",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3046
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "wisedu",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -65771,7 +66644,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "classic_eams",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "http://jwgl2018.xatu.edu.cn/eams/loginExt.action",
       "checkedAt": "2026-10-16",
@@ -65786,7 +66659,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3075
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "classic_eams",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -65802,7 +66685,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "https://jwxt.xisu.edu.cn/eams/login.action",
       "checkedAt": "2026-10-16",
@@ -65815,7 +66698,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3074
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -65895,7 +66788,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "shuwei_new",
     "probe": {
       "url": "https://sz.xpu.edu.cn/auth2/login",
       "checkedAt": "2026-10-16",
@@ -65908,7 +66801,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "shuwei_new",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3076
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -66501,7 +67404,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "https://cas.xaau.edu.cn/lyuapServer/login?service=https%3A%2F%2Fscore.xaau.edu.cn%2Feams%2Fhome.action",
       "checkedAt": "2026-10-16",
@@ -66514,7 +67417,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3087
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -68339,7 +69252,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "shuwei_new",
     "probe": {
       "url": "http://i.gufe.edu.cn/dcp/forward.action?path=dcp/apps/sso/jsp/ssoDcpSelf&appid=4095",
       "checkedAt": "2026-10-16",
@@ -68352,8 +69265,18 @@
       "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "shuwei_new",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        756
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -69069,7 +69992,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "lz",
     "probe": {
       "url": "http://59.46.67.198:60001/tmweb_xl/login.aspx",
       "checkedAt": "2026-10-16",
@@ -69082,9 +70005,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "lz",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1816
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -69100,7 +70032,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "buaa",
     "probe": {
       "url": "https://sso.ldxy.cn/sso/login",
       "checkedAt": "2026-10-16",
@@ -69113,9 +70045,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "buaa",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1797
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -69131,7 +70072,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "shuwei_m",
     "probe": {
       "url": "https://cas.he-edu.com/tpass/login?service=https%3A%2F%2Fservice.he-edu.com%2Ftp_fp%2Fview%3Fm%3Dfp#act=fp/formHome",
       "checkedAt": "2026-10-16",
@@ -69144,9 +70085,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "shuwei_m",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1808
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -69379,7 +70329,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "https://authserver.lntu.edu.cn/authserver/login?service=https%3A%2F%2Fehall.lntu.edu.cn%2Flogin",
       "checkedAt": "2026-10-16",
@@ -69392,7 +70342,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1822
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -69439,7 +70399,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "shuwei_m",
     "probe": {
       "url": "https://open.lnnu.edu.cn/auth/cas/login?service=https%3A%2F%2Frproxy.lnnu.edu.cn%2Fwengine-auth%2flogin%3Fcas_login%3Dtrue",
       "checkedAt": "2026-10-16",
@@ -69452,7 +70412,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "shuwei_m",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1795
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -69867,7 +70837,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "https://mea.lnist.edu.cn/eams/loginExt.action",
       "checkedAt": "2026-10-16",
@@ -69880,7 +70850,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1781
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -69987,7 +70967,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "buaa",
     "probe": {
       "url": "https://open-lngpi-edu-cn-s.vpn.lngpi.edu.cn:8118/auth/oauth/login",
       "checkedAt": "2026-10-16",
@@ -70000,9 +70980,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "buaa",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1886
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -70018,7 +71007,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "lz",
     "probe": {
       "url": "http://125.222.107.68/",
       "checkedAt": "2026-10-16",
@@ -70032,9 +71021,18 @@
       "error": "curl-28"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "lz",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1892
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -70297,7 +71295,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "lz",
     "probe": {
       "url": "https://202.97.179.134/login.aspx",
       "checkedAt": "2026-10-16",
@@ -70310,9 +71308,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "lz",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1785
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -71122,7 +72129,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "classic_eams",
+    "mappedType": "shuwei_m",
     "probe": {
       "url": "http://zxjw.open.ha.cn/eams/homeExt.action",
       "checkedAt": "2026-10-16",
@@ -71135,8 +72142,18 @@
       "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "shuwei_m",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3350
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "classic_eams",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -71640,7 +72657,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "https://cas.s.zzu.edu.cn/cas/a/login?service=https%3A%2F%2Fjwxt.zzu.edu.cn%2Fstudent%2Fsso%2Flogin",
       "checkedAt": "2026-10-27",
@@ -71653,7 +72670,17 @@
       "urlHints": []
     },
     "status": "pending",
-    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3354
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -72310,7 +73337,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "sias_shuwei",
     "probe": {
       "url": "https://jwxt.sias.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -72324,9 +73351,19 @@
       "error": "curl-28"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "sias_shuwei",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3356,
+        3367
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -74208,7 +75245,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "classic_eams",
+    "mappedType": "uestc_shuwei",
     "probe": {
       "url": "https://web.cqust.edu.cn/http/77726476706e69737468656265737421f3f652d224217d436a468ca88d1b203b/authserver/login?service=https%3A%2F%2Fweb.cqust.edu.cn%2Flogin%3Fcas_login%3Dtrue",
       "checkedAt": "2026-10-27",
@@ -74221,7 +75258,17 @@
       "urlHints": []
     },
     "status": "pending",
-    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "uestc_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        425
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "classic_eams",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -74237,7 +75284,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "https://cas.cqie.cn/cas/WEB/index.html#/index",
       "checkedAt": "2026-10-16",
@@ -74250,7 +75297,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        336
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -74574,7 +75631,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "cqupt",
     "probe": {
       "url": "http://jwzx.cqupt.edu.cn/rump_frontend/access_forbidden/",
       "checkedAt": "2026-10-16",
@@ -74587,9 +75644,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "cqupt",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        381
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -75388,7 +76454,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "classic_eams",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "https://ids.chd.edu.cn/authserver/login?service=http%3A%2F%2Fbkjw.chd.edu.cn%2Feams%2Fhome.action",
       "checkedAt": "2026-10-16",
@@ -75403,7 +76469,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        343
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "classic_eams",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -75869,7 +76945,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "lz",
     "probe": {
       "url": "http://jkjwc.imwork.net/index.aspx",
       "checkedAt": "2026-10-16",
@@ -75883,9 +76959,18 @@
       "error": "curl-28"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "lz",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        346
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -76022,7 +77107,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "lz",
     "probe": {
       "url": "https://stu.changdian2001.com/Login",
       "checkedAt": "2026-10-16",
@@ -76035,9 +77120,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "lz",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        356
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -76175,7 +77269,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "classic_eams",
+    "mappedType": "shuwei_m",
     "probe": {
       "url": "https://jw.wlxy.edu.cn/eams/loginExt.action",
       "checkedAt": "2026-10-16",
@@ -76188,7 +77282,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "shuwei_m",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        373
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "classic_eams",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -76233,7 +77337,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "lz",
     "probe": {
       "url": "https://www.ccufe.edu.cn/prompt/",
       "checkedAt": "2026-10-16",
@@ -76246,9 +77350,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "lz",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        358
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -77122,7 +78235,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "qz",
+    "mappedType": "qz_2024",
     "probe": {
       "url": "https://jwgl.mku.edu.cn/jsxsd/",
       "checkedAt": "2026-10-16",
@@ -77139,7 +78252,17 @@
       ]
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "qz_2024",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1896
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "qz",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -77303,7 +78426,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "cidp",
     "probe": {
       "url": "https://jwc-dd.cidp.edu.cn",
       "checkedAt": "2026-10-16",
@@ -77316,9 +78439,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "cidp",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        619
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -77334,7 +78466,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "ygu",
     "probe": {
       "url": "https://ygu.edu.cn/user/login",
       "checkedAt": "2026-10-16",
@@ -77347,9 +78479,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "ygu",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3233
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -77884,7 +79025,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "shuwei_m",
     "probe": {
       "url": "https://authserver.snsy.edu.cn/authserver/login?service=https%3A%2F%2Foa.snsy.edu.cn%2Fwui%2Fcas-entrance.jsp%3Fpath%3Dhttps%253A%252F%252Foa.snsy.edu.cn%252Fwui%252Findex.html%2523%252Fmain%26ssoType%3DCAS",
       "checkedAt": "2026-10-16",
@@ -77897,9 +79038,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "shuwei_m",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2639
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -78164,7 +79314,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "http://my.sust.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -78177,7 +79327,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2660
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -78193,7 +79353,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "classic_eams",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "http://jwgl.snut.edu.cn/eams/loginExt.action",
       "checkedAt": "2026-10-16",
@@ -78208,7 +79368,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2661
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "classic_eams",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -79329,7 +80499,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "https://cas.qhmu.edu.cn/cas/login?service=https%3A%2F%2Fportal.qhmu.edu.cn%2F%3Fpath%3Dhttps%3A%2F%2Fportal.qhmu.edu.cn%2Fmain.html%23%2FServiceCenter",
       "checkedAt": "2026-10-16",
@@ -79342,7 +80512,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2183
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -79574,7 +80754,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "http://jw.hstc.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -79587,8 +80767,18 @@
       "urlHints": []
     },
     "status": "pending",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1072
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -79759,7 +80949,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "shuwei_json",
+    "mappedType": "xatu_shuwei",
     "probe": {
       "url": "https://v.cnu.edu.cn/users/sign_in",
       "checkedAt": "2026-10-16",
@@ -79772,8 +80962,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "xatu_shuwei",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2651
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "shuwei_json",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -79881,7 +81081,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "cityu",
     "probe": {
       "url": "https://banweb.cityu.edu.hk/pls/PROD/hwsstmtbl_matrix_cityu.Show",
       "checkedAt": "2026-10-16",
@@ -79894,9 +81094,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "cityu",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3121
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -79912,7 +81121,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "cityu",
     "probe": {
       "url": "https://banweb.cityu.edu.hk/pls/PROD/hwsstmtbl_matrix_cityu.Show",
       "checkedAt": "2026-10-16",
@@ -79925,9 +81134,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "cityu",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3122
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-52.36-user-attachment",
@@ -80218,7 +81436,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "classic_eams",
+    "mappedType": "shuwei_m",
     "probe": {
       "url": "https://jwxt.masu.edu.cn/",
       "checkedAt": "2026-10-27",
@@ -80231,7 +81449,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Third-party ShiGuang entry with live HTTP 200 page check on 2026-10-27; current public page establishes entry and parser-family evidence only, no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "shuwei_m",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1907
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "classic_eams",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -80278,7 +81506,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "shuwei_m",
     "probe": {
       "url": "https://authserver.hbzy.edu.cn/authserver/login?service=http%3A%2F%2Fjwx.hbzy.edu.cn%2Feams%2Fhome.action",
       "checkedAt": "2026-10-16",
@@ -80291,9 +81519,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "shuwei_m",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1178
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -81352,7 +82589,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "hit",
     "probe": {
       "url": "http://1.189.33.198:7001/bkjw/",
       "checkedAt": "2026-10-16",
@@ -81366,9 +82603,18 @@
       "error": "curl-28"
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "hit",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1088
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -81777,7 +83023,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "qmu",
     "probe": {
       "url": "https://jiaowu.qmu.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -81790,9 +83036,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog entry; the previously registered URL is kept, current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
     "sourceType662": "qmu",
-    "declaredBy662": true
+    "declaredBy662": true,
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2193
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -83333,7 +84588,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "bfa_post",
     "probe": {
       "url": "http://202.205.127.146:8881/",
       "checkedAt": "2026-10-28",
@@ -83346,7 +84601,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "bfa_post",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        215
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
@@ -83362,7 +84627,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "changzhou",
     "probe": {
       "url": "https://webvpn.cczu.edu.cn/",
       "checkedAt": "2026-10-28",
@@ -83375,7 +84640,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "changzhou",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        271
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
@@ -83391,7 +84666,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "zju_post",
     "probe": {
       "url": "https://ids.chd.edu.cn/authserver/login",
       "checkedAt": "2026-10-28",
@@ -83406,7 +84681,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "zju_post",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        415
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
@@ -83539,7 +84824,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "hrbeu_post",
     "probe": {
       "url": "http://gsems.glut.edu.cn/",
       "checkedAt": "2026-10-28",
@@ -83552,7 +84837,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "hrbeu_post",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        734
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
@@ -83568,7 +84863,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "lz",
     "probe": {
       "url": "http://yjsgl.hrbipe.edu.cn/EducationTS/Student/Index",
       "checkedAt": "2026-10-28",
@@ -83581,7 +84876,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "lz",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1174
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
@@ -83597,7 +84902,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "hrbeu_post",
     "probe": {
       "url": "http://yjsjy.hrbnu.edu.cn/",
       "checkedAt": "2026-10-28",
@@ -83610,8 +84915,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "hrbeu_post",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1321
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
@@ -83627,7 +84942,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "hrbeu_post",
     "probe": {
       "url": "http://yjs.hrbeu.edu.cn/",
       "checkedAt": "2026-10-28",
@@ -83640,8 +84955,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "hrbeu_post",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1323
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
@@ -83657,7 +84982,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "hitsz",
     "probe": {
       "url": "http://jw.hitsz.edu.cn/",
       "checkedAt": "2026-10-28",
@@ -83670,7 +84995,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "hitsz",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1325
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
@@ -83806,7 +85141,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "hrbeu_post",
     "probe": {
       "url": "https://yjsgl.lnnu.edu.cn/",
       "checkedAt": "2026-10-28",
@@ -83819,7 +85154,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "hrbeu_post",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        1823
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
@@ -83835,7 +85180,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "nau",
     "probe": {
       "url": "http://222.193.112.78/jwc",
       "checkedAt": "2026-10-28",
@@ -83848,7 +85193,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "nau",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2043
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
@@ -83922,7 +85277,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "shtu_post",
     "probe": {
       "url": "https://ids.shanghaitech.edu.cn/authserver/login",
       "checkedAt": "2026-10-28",
@@ -83935,7 +85290,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "shtu_post",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2451
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
@@ -83980,7 +85345,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "hrbeu_post",
     "probe": {
       "url": "https://geims.syuct.edu.cn/",
       "checkedAt": "2026-10-28",
@@ -83993,7 +85358,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "hrbeu_post",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2568
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
@@ -84009,7 +85384,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "hrbeu_post",
     "probe": {
       "url": "http://yjsglpt.sut.edu.cn/",
       "checkedAt": "2026-10-28",
@@ -84022,8 +85397,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "hrbeu_post",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2574
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
@@ -84039,7 +85424,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "shu",
     "probe": {
       "url": "https://www.xk.shu.edu.cn",
       "checkedAt": "2026-10-28",
@@ -84052,8 +85437,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "shu",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2610
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
@@ -84069,7 +85464,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "tju",
     "probe": {
       "url": "https://1.tongji.edu.cn/",
       "checkedAt": "2026-10-28",
@@ -84082,7 +85477,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "tju",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2770
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
@@ -84098,7 +85503,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "whu_post",
     "probe": {
       "url": "https://cas.whu.edu.cn/authserver/login",
       "checkedAt": "2026-10-28",
@@ -84111,8 +85516,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "whu_post",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2872
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
@@ -84128,7 +85543,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "hrbeu_post",
     "probe": {
       "url": "https://yjsgl.whut.edu.cn",
       "checkedAt": "2026-10-28",
@@ -84141,8 +85556,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "hrbeu_post",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        2881
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
@@ -84187,7 +85612,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "xjtu_post",
     "probe": {
       "url": "https://login.xjtu.edu.cn/cas/login",
       "checkedAt": "2026-10-28",
@@ -84200,7 +85625,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "xjtu_post",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3125
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
@@ -84216,7 +85651,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "zju_post",
     "probe": {
       "url": "http://yjsxt.nwu.edu.cn",
       "checkedAt": "2026-10-28",
@@ -84229,8 +85664,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "zju_post",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3136
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
@@ -84246,7 +85691,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "zju_post",
     "probe": {
       "url": "http://yjsinfo.swu.edu.cn",
       "checkedAt": "2026-10-28",
@@ -84259,7 +85704,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "zju_post",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3140
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
@@ -84275,7 +85730,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "xauat_post",
     "probe": {
       "url": "http://authserver.xauat.edu.cn/authserver/login",
       "checkedAt": "2026-10-28",
@@ -84288,8 +85743,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "xauat_post",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3144
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
@@ -84305,7 +85770,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "ysu_post",
     "probe": {
       "url": "http://gsglxt.ysu.edu.cn/pyxx/login.aspx",
       "checkedAt": "2026-10-28",
@@ -84318,8 +85783,18 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed.",
-    "declaredBy662": true
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "declaredBy662": true,
+    "sourceType662": "ysu_post",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3218
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
@@ -84364,7 +85839,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "cupl_post",
     "probe": {
       "url": "http://ca.cupl.edu.cn/tpass/login",
       "checkedAt": "2026-10-28",
@@ -84377,7 +85852,17 @@
       "urlHints": []
     },
     "status": "unverified",
-    "verification": "Official WakeUP 6.6.2 shipped-catalog declaration; current evidence establishes entry and parser-family assignment only, no authenticated timetable import performed."
+    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "sourceType662": "cupl_post",
+    "protocolRouteReview": {
+      "sourceId": "wakeup-6.6.2-official-asset",
+      "sourceRows": [
+        3409
+      ],
+      "reviewedAt": "2026-11-08",
+      "previousMappedType": "jw_home",
+      "authenticatedImportTested": false
+    }
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",
