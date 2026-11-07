@@ -511,6 +511,10 @@ fun JwWebViewLoginScreen(
                         evaluateFetchWithTimeout(wv, script, 65_000L)
                         return@CaptureBar
                     }
+                    JwJsonSchoolCapture.scriptFor(school.type)?.let { script ->
+                        evaluateFetchWithTimeout(wv, script, 65_000L)
+                        return@CaptureBar
+                    }
                     JwBuaaCapture.scriptFor(school.type)?.let { script ->
                         evaluateFetchWithTimeout(wv, script)
                         return@CaptureBar

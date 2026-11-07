@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="jw_dated_calendar_required">页面提供了实际授课日期，但没有可确认的开学日期。请填写第一周的日期，应用会按该周的周一计算周次。所选课表范围不会被当作第一周。</string>
+    <string name="jw_dated_calendar_rebase_hint">修改第一周日期会重新计算这些课程的周次，实际授课日期保持不变。</string>
+</resources>

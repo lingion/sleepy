@@ -20,6 +20,8 @@ data class JwImportDraftSnapshot(
     val phase: JwImportDraftPhase = JwImportDraftPhase.CONFIGURE_CONFIRM,
     /** Explicit semester length, including weeks without courses; zero means unknown. */
     val termWeekCount: Int = 0,
+    /** Original calendar used to turn single-date SHSMU lessons into course weeks. */
+    val datedCourseOrigin: String = "",
 ) {
     /** Reopening a login draft never skips the school admission confirmation. */
     val requiresSchoolConfirmation: Boolean get() = phase == JwImportDraftPhase.WEBVIEW_LOGIN &&
@@ -53,6 +55,7 @@ object JwImportDraftCodec {
         })
         put("termStartDate", snapshot.termStartDate)
         put("termWeekCount", snapshot.termWeekCount)
+        put("datedCourseOrigin", snapshot.datedCourseOrigin)
         put("tableName", snapshot.tableName)
         put("smartConfigJson", snapshot.smartConfigJson)
     }.toString()
@@ -93,6 +96,9 @@ object JwImportDraftCodec {
             smartConfigJson = root.optString("smartConfigJson", ""),
             phase = phase,
             termWeekCount = termWeekCount,
+            datedCourseOrigin = root.optString("datedCourseOrigin", "").also { origin ->
+                if (origin.isNotEmpty() && JwShsmuCaptureCalendar.monday(origin)?.toString() != origin) return null
+            },
         )
     }.getOrNull()
 

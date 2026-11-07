@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="jw_dated_calendar_required">頁面提供了實際授課日期，但沒有可確認的開學日期。請填寫第一週的日期，應用程式會按該週的週一計算週次。所選課表範圍不會被當作第一週。</string>
+    <string name="jw_dated_calendar_rebase_hint">修改第一週日期會重新計算這些課程的週次，實際授課日期保持不變。</string>
+</resources>

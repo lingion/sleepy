@@ -18,6 +18,7 @@ internal class JwUndergradClockParser(source: String, private val protocol: Stri
     }
 
     private fun parseShsmu(root: JSONObject): List<JwCourse> {
+        val referenceDate = JwShsmuCaptureCalendar.resolve(root) ?: return emptyList()
         val list = root.optJSONArray("list") ?: return emptyList()
         val output = mutableListOf<JwCourse>()
         for (index in 0 until list.length()) {
@@ -27,8 +28,8 @@ internal class JwUndergradClockParser(source: String, private val protocol: Stri
             val start = dateTime(item.text("Start")) ?: continue
             val end = dateTime(item.text("End")) ?: continue
             if (start.toLocalDate() != end.toLocalDate() || !end.isAfter(start)) continue
-            // This is the date baseline explicitly declared by the pinned parser.
-            val days = ChronoUnit.DAYS.between(SHSMU_REFERENCE_DATE, start.toLocalDate())
+            // New dated captures require a confirmed calendar; raw historical payloads keep their pinned baseline.
+            val days = ChronoUnit.DAYS.between(referenceDate, start.toLocalDate())
             if (days < 0 || days >= 366L * 7) continue
             val week = (days / 7).toInt() + 1
             val startTime = start.format(clockFormat)
