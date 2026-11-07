@@ -255,8 +255,8 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
                 val teacher = fields[offset + 1]
                 val room = fields[offset + 2]
                 val label = fields[offset]
-                val name = Regex("^(.*?)[0-9]+班.*$").matchEntire(label)?.groupValues?.get(1)
-                    ?: "班级:$label,教师:$teacher"
+                val name = Regex("^(.+?)(?:\\s+[0-9]+班|[（(][0-9]+班[）)])$").matchEntire(label)?.groupValues?.get(1)
+                    ?: label
                 val rawWeeks = fields[offset + 3].replace('（', '(').replace('）', ')')
                 val included = rawWeeks.substringBefore("(除")
                 val excluded = if ("(除" in rawWeeks) {

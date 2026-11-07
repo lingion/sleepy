@@ -112,10 +112,10 @@ class JwPostgradRoundTwoSchoolTest {
     @Test fun `old shtu singleton exclusions and adjacent node differences remain exact`() {
         val html = """<table id="div-table"><tr><td>节次</td><td>周一</td></tr><tr><td>1</td><td>统计2班<br>王<br>A<br>第1-5周(除第2,4周)</td></tr><tr><td>2</td><td>统计2班<br>王<br>A<br>第1-5周(除第3周)</td></tr><tr><td>3</td><td>代数1班<br>李<br>B<br>第5周</td></tr></table>"""
         val actual = parse("shtu_post",html)
-        assertEquals(listOf(1,3,5).map { JwCourse("统计","A","王",1,1,1,it,it) } +
-            listOf(1,2,4,5).map { JwCourse("统计","A","王",1,2,2,it,it) } + JwCourse("代数","B","李",1,3,3,5,5),actual)
-        assertEquals(listOf("统计|王|A|1|1|1","统计|王|A|1|1|3","统计|王|A|1|1|5","统计|王|A|1|2|1",
-            "统计|王|A|1|2|2","统计|王|A|1|2|4","统计|王|A|1|2|5","代数|李|B|1|3|5").sorted(),occurrences(actual))
+        assertEquals(listOf(1,3,5).map { JwCourse("统计2班","A","王",1,1,1,it,it) } +
+            listOf(1,2,4,5).map { JwCourse("统计2班","A","王",1,2,2,it,it) } + JwCourse("代数1班","B","李",1,3,3,5,5),actual)
+        assertEquals(listOf("统计2班|王|A|1|1|1","统计2班|王|A|1|1|3","统计2班|王|A|1|1|5","统计2班|王|A|1|2|1",
+            "统计2班|王|A|1|2|2","统计2班|王|A|1|2|4","统计2班|王|A|1|2|5","代数1班|李|B|1|3|5").sorted(),occurrences(actual))
     }
 
     @Test fun `ustc semicolon appointments retain note sparse periods parity and explicit clocks`() {

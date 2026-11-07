@@ -34,7 +34,7 @@ class JwPostgradRoundTwoRoutingTest(private val type: String, private val source
                 arrayOf("ysu_post","<table id='DataGrid1'><tr align='center'><th>节</th><th>星期一</th></tr><tr><td align='center'>1</td><td>课程2<br>[第5周](教师：王)(教室:A)</td></tr></table>",course()),
                 arrayOf("whu_post","<table class='table_con'><tr><td>上午</td><td>节</td><td>课程2 5周1节 A 王</td></tr></table>",course()),
                 arrayOf("hrbeu_post","<div id='StuCul_TimetableQry_TimeTable'><table class='WtbodyZlistS'><tr><td>节</td><td field='monday'>课程:课程2<br>教师:王<br>节次:1<br>周次:5周<br>教室:A</td></tr></table></div>",course()),
-                arrayOf("shtu_post","<table id='div-table'><tr><td>节</td><td>周一</td></tr><tr><td>1</td><td>课程21班<br>王<br>A<br>第5周</td></tr></table>",course("课程")),
+                arrayOf("shtu_post","<table id='div-table'><tr><td>节</td><td>周一</td></tr><tr><td>1</td><td>课程21班<br>王<br>A<br>第5周</td></tr></table>",course("课程21班")),
                 arrayOf("ustc_post","<table id='tablexskbcx-index-table'><tr>$ustc</tr></table>",course(note="限选")),
                 arrayOf("xauat_post","<script>var td=document.getElementById('td_1_41');td.innerHTML += \"课程:课程2<br>代码:A<br>教师：王<br>地点-A(第5周 每周)\";</script>",course()),
                 arrayOf("zju_post",JSONArray().put(zju).toString(),course()),
