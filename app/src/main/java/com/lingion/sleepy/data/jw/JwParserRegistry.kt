@@ -73,6 +73,18 @@ object JwParserRegistry {
     )
 
     private val FACTORIES: Map<String, (String) -> JwParser> = linkedMapOf(
+        JwProtocol.TYPE_SHUWEI_M to ::JwShuweiParser,
+        JwProtocol.TYPE_XATU_SHUWEI to ::JwShuweiParser,
+        JwProtocol.TYPE_SIAS_SHUWEI to ::JwShuweiParser,
+        JwProtocol.TYPE_SNUT_SHUWEI to ::JwShuweiParser,
+        JwProtocol.TYPE_UESTC_SHUWEI to ::JwShuweiParser,
+        JwProtocol.TYPE_HUNNU_SHUWEI to ::JwShuweiParser,
+        JwProtocol.TYPE_XSYU_SHUWEI to ::JwShuweiParser,
+        JwProtocol.TYPE_NWPU to ::JwEams5Parser,
+        JwProtocol.TYPE_JMU to ::JwEams5Parser,
+        JwProtocol.TYPE_SHUWEI_NEW to ::JwEams5Parser,
+        JwProtocol.TYPE_AHNU to ::JwCumtbParser,
+        JwProtocol.TYPE_HFU to ::JwCumtbParser,
         JwProtocol.TYPE_HUAT to { html -> JwUndergradBHtmlParser(html, JwProtocol.TYPE_HUAT) },
         JwProtocol.TYPE_SEU_2017 to { html -> JwUndergradBHtmlParser(html, JwProtocol.TYPE_SEU_2017) },
         JwProtocol.TYPE_SHU2024 to { html -> JwUndergradBHtmlParser(html, JwProtocol.TYPE_SHU2024) },
@@ -315,6 +327,7 @@ object JwParserRegistry {
     )
 
     private val DECLARED_ONLY_TYPES = setOf(
+        JwProtocol.TYPE_SHUWEI_M, JwProtocol.TYPE_XATU_SHUWEI, JwProtocol.TYPE_SIAS_SHUWEI, JwProtocol.TYPE_SNUT_SHUWEI, JwProtocol.TYPE_UESTC_SHUWEI, JwProtocol.TYPE_HUNNU_SHUWEI, JwProtocol.TYPE_XSYU_SHUWEI, JwProtocol.TYPE_NWPU, JwProtocol.TYPE_JMU, JwProtocol.TYPE_SHUWEI_NEW, JwProtocol.TYPE_AHNU, JwProtocol.TYPE_HFU,
         JwProtocol.TYPE_HUAT, JwProtocol.TYPE_SEU_2017, JwProtocol.TYPE_SHU2024, JwProtocol.TYPE_TJU, JwProtocol.TYPE_HQU, JwProtocol.TYPE_CHANGZHOU, JwProtocol.TYPE_SICNU, JwProtocol.TYPE_NUIST, JwProtocol.TYPE_SIT, JwProtocol.TYPE_SYSU, JwProtocol.TYPE_SUES, JwProtocol.TYPE_PKU,
         JwProtocol.TYPE_JZ_1, JwProtocol.TYPE_JZ_X, JwProtocol.TYPE_WIST, JwProtocol.TYPE_XMU, JwProtocol.TYPE_SWJTU_POST, JwProtocol.TYPE_KG_ZX,
         JwProtocol.TYPE_HBUT, JwProtocol.TYPE_HNJM, JwProtocol.TYPE_LZ, JwProtocol.TYPE_NAU, JwProtocol.TYPE_NJU, JwProtocol.TYPE_CQUPT,

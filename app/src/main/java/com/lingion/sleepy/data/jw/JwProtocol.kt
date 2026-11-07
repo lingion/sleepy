@@ -15,6 +15,19 @@ package com.lingion.sleepy.data.jw
  * 中 `app/src/main/java/com/suda/yzune/wakeupschedule/schedule_import/Common.kt`。
  */
 object JwProtocol {
+    const val TYPE_SHUWEI_M = "shuwei_m"
+    const val TYPE_XATU_SHUWEI = "xatu_shuwei"
+    const val TYPE_SIAS_SHUWEI = "sias_shuwei"
+    const val TYPE_SNUT_SHUWEI = "snut_shuwei"
+    const val TYPE_UESTC_SHUWEI = "uestc_shuwei"
+    const val TYPE_HUNNU_SHUWEI = "hunnu_shuwei"
+    const val TYPE_XSYU_SHUWEI = "xsyu_shuwei"
+    const val TYPE_NWPU = "nwpu"
+    const val TYPE_JMU = "jmu"
+    const val TYPE_SHUWEI_NEW = "shuwei_new"
+    const val TYPE_AHNU = "ahnu"
+    const val TYPE_HFU = "hfu"
+
 
     const val TYPE_HELP = "help"
     const val TYPE_ZF = "zf"
@@ -464,6 +477,7 @@ object JwProtocol {
 
     /** WakeUp-derived types routed by the compatibility layer; kept separate from legacy UI ordering. */
     val WAKEUP_COMPAT_TYPES: List<String> = listOf(
+        TYPE_SHUWEI_M, TYPE_XATU_SHUWEI, TYPE_SIAS_SHUWEI, TYPE_SNUT_SHUWEI, TYPE_UESTC_SHUWEI, TYPE_HUNNU_SHUWEI, TYPE_XSYU_SHUWEI, TYPE_NWPU, TYPE_JMU, TYPE_SHUWEI_NEW, TYPE_AHNU, TYPE_HFU,
         TYPE_HUAT, TYPE_SEU_2017, TYPE_SHU2024, TYPE_TJU, TYPE_HQU, TYPE_CHANGZHOU, TYPE_SICNU, TYPE_NUIST, TYPE_SIT, TYPE_SYSU, TYPE_SUES,
         TYPE_JZ_1, TYPE_JZ_X, TYPE_WIST, TYPE_XMU, TYPE_SWJTU_POST, TYPE_KG_ZX,
         TYPE_HBUT, TYPE_HNJM, TYPE_LZ, TYPE_NAU, TYPE_NJU, TYPE_CQUPT,
@@ -493,6 +507,19 @@ object JwProtocol {
     )
 
     fun displayName(type: String?): String = when (type) {
+        TYPE_SHUWEI_M -> "树维教务（shuwei_m）"
+        TYPE_XATU_SHUWEI -> "树维教务（xatu_shuwei）"
+        TYPE_SIAS_SHUWEI -> "树维教务（sias_shuwei）"
+        TYPE_SNUT_SHUWEI -> "树维教务（snut_shuwei）"
+        TYPE_UESTC_SHUWEI -> "树维教务（uestc_shuwei）"
+        TYPE_HUNNU_SHUWEI -> "树维教务（hunnu_shuwei）"
+        TYPE_XSYU_SHUWEI -> "树维教务（xsyu_shuwei）"
+        TYPE_NWPU -> "西北工业大学教务"
+        TYPE_JMU -> "集美大学教务"
+        TYPE_SHUWEI_NEW -> "树维新版教务"
+        TYPE_AHNU -> "安徽师范大学教务"
+        TYPE_HFU -> "HFU教务"
+
         TYPE_HUAT -> "湖北汽车工业学院教务"
         TYPE_SEU_2017 -> "东南大学2017教务"
         TYPE_SHU2024 -> "上海大学2024教务"

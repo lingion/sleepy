@@ -267,8 +267,9 @@ class JwEams5Parser(source: String) : JwParser(source) {
             // 同一活动可在多周出现 → emit 多行 JwCourse (同 SEU parseWeekRanges 形态)
             val weekValue = o["weekIndexes"]
             val weekRanges = if (weekValue is JsonArray) {
-                weekValue.mapNotNull { runCatching { it.jsonPrimitive.contentOrNull?.toIntOrNull() }.getOrNull() }
-                    .filter { it > 0 }.distinct().sorted().map { Triple(it, it, 0) }
+                val values = weekValue.map { runCatching { it.jsonPrimitive.contentOrNull?.toIntOrNull() }.getOrNull() }
+                if (values.any { it == null || it < 1 }) emptyList()
+                else values.filterNotNull().distinct().sorted().map { Triple(it, it, 0) }
             } else {
                 parseWeekRanges(runCatching { weekValue?.jsonPrimitive?.contentOrNull }.getOrNull().orEmpty())
             }
@@ -284,7 +285,7 @@ class JwEams5Parser(source: String) : JwParser(source) {
                     endWeek = endWeek,
                     type = weekType,
                     credit = runCatching { o["credits"]?.jsonPrimitive?.contentOrNull?.toFloatOrNull() }
-                        .getOrNull()?.takeIf { it.isFinite() } ?: 0f,
+                        .getOrNull()?.takeIf { it.isFinite() && it >= 0f } ?: 0f,
                     note = listOf("lessonCode", "lessonRemark").joinToString("") { key ->
                         runCatching { o[key]?.jsonPrimitive?.contentOrNull }.getOrNull().orEmpty()
                     },
@@ -295,76 +296,27 @@ class JwEams5Parser(source: String) : JwParser(source) {
     }
 
     /**
-     * AHU weekIndexes 周次 完整 RLE 解析 — emit 多 JwCourse
-     *
-     * 真实形态 (5 仓 cross-validated 2026-09-06):
-     *   "1-16"        → [(1,16,0)]         (全周)
-     *   "1-16单"      → [(1,15,1)]         (单周; JwParity 端点修正)
-     *   "1-16双"      → [(2,16,2)]         (双周)
-     *   "1-8,10-16"   → [(1,8,0), (10,16,0)]   (区间组合)
-     *   "8,10,12,14"  → [(8,8,0), (10,10,0), (12,12,0), (14,14,0)]  (离散)
-     *   "5周" / "5"   → [(5,5,0)]          (单值)
-     *   ""            → [(1,1,0)]          (兜底)
-     *
-     * 算法 (借 JwSeuParser.parseWeekRanges 同型, 复用 JwParity.adjustedRange):
-     *   1. 剥 "周" / "周(单)" / "周(双)" 等修饰
-     *   2. 按 "," / "，" 拆段 (混合 "1-8周(单),9-16周(双)" 每段独立判定)
-     *   3. 段内 "-" 拆 (范围) 或单值
-     *   4. 段内检测 "单"/"双"/"odd"/"even" 设 parity=1/2
-     *   5. parity ∈ {1,2} 时调 JwParity.adjustedRange 端点修正
-     *      (单周起点抬到首个奇数; 双周抬到首个偶数; 端点相等时 end 抬到 start)
-     *   6. emit Triple(startWeek, endWeek, parity)
-     *
-     * Sleepy type 语义 (JwParity.kt 共识): 0=每周 1=单周 2=双周
-     *
-     * 与 SEU JwSeuParser.parseWeekRanges 区别:
-     *   - AHU 字符不同 (数字无空格 "1-16" vs SEU "1-16周")
-     *   - AHU 用 "单" / "双" (单字); SEU 用 "(单)" / "(双)" (括号)
-     *   - 复用 JwParity.adjustedRange 算法
+     * Parse the existing textual week extension strictly, including odd/even markers.
+     * Empty or malformed tokens never manufacture a fallback week. The first matching
+     * parity week must remain inside the declared range; the original end is retained.
      */
     internal fun parseWeekRanges(weekIndexes: String): List<Triple<Int, Int, Int>> {
-        if (weekIndexes.isBlank()) return emptyList()
-        // 剥 "周" / 括号形态; 处理 "1-16周" / "1-16(单)" / "1-16 odd" 等
-        val clean = weekIndexes
-            .replace("周", "")
-            .replace("（", "(")
-            .replace("）", ")")
-            .replace("(", "(")
-            .replace(")", ")")
-        val segments = clean.split(",", "，").map { it.trim() }.filter { it.isNotEmpty() }
-        if (segments.isEmpty()) return emptyList()
-
+        val text = weekIndexes.trim().replace('（', '(').replace('）', ')')
+        if (text.isEmpty()) return emptyList()
+        val token = Regex("""第?([0-9]+)(?:\s*-\s*([0-9]+))?\s*(?:([单双]|odd|even)周?|周(?:\(([单双]|odd|even)周?\))?|\(([单双]|odd|even)周?\))?""", RegexOption.IGNORE_CASE)
         val out = mutableListOf<Triple<Int, Int, Int>>()
-        for (seg in segments) {
-            // 段内 parity 检测: "单" / "双" / "odd" / "even" (不区分大小写)
-            val parity = when {
-                seg.contains('单') || Regex("""\bodd\b""", RegexOption.IGNORE_CASE).containsMatchIn(seg) -> 1
-                seg.contains('双') || Regex("""\beven\b""", RegexOption.IGNORE_CASE).containsMatchIn(seg) -> 2
-                else -> 0
-            }
-            val bare = seg
-                .replace("(单)", "").replace("(双)", "")
-                .replace("(单", "").replace("(双", "")
-                .replace("单", "").replace("双", "")
-                .replace("odd", "", ignoreCase = true)
-                .replace("even", "", ignoreCase = true)
-                .trim()
-            if (bare.isBlank()) continue
-            if (bare.contains('-')) {
-                // 范围: "1-16" 或 "1- 16"
-                val parts = bare.split("-", limit = 2).map { it.trim() }
-                val a = parts.getOrNull(0)?.toIntOrNull() ?: continue
-                val b = parts.getOrNull(1)?.toIntOrNull() ?: a
-                val (sw, ew) = JwParity.adjustedRange(a, b, parity)
-                out += Triple(sw, ew, parity)
-            } else {
-                // 单值: "5" 或 "5周"
-                val v = bare.toIntOrNull() ?: continue
-                val (sw, ew) = JwParity.adjustedRange(v, v, parity)
-                out += Triple(sw, ew, parity)
-            }
+        for (part in text.split(',', '，')) {
+            val match = token.matchEntire(part.trim()) ?: return emptyList()
+            val first = match.groupValues[1].toIntOrNull() ?: return emptyList()
+            val last = match.groupValues[2].ifEmpty { match.groupValues[1] }.toIntOrNull() ?: return emptyList()
+            if (first < 1 || last < first) return emptyList()
+            val marker = match.groupValues.drop(3).firstOrNull { it.isNotEmpty() }.orEmpty().lowercase()
+            val parity = when (marker) { "单", "odd" -> 1; "双", "even" -> 2; else -> 0 }
+            val start = first.toLong() + if (parity != 0 && first % 2 != parity % 2) 1 else 0
+            if (start > last) continue
+            out += Triple(start.toInt(), last, parity)
         }
-        return out.filter { (from, to, _) -> from > 0 && to >= from }
+        return out.distinct()
     }
 
     private fun clockTime(value: Int): String =

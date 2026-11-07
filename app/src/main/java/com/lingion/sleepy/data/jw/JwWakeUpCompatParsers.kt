@@ -486,17 +486,23 @@ internal object WakeUpCompat {
         val payload = (parseJson(source) as? JSONObject)?.optJSONObject("result") ?: return emptyList()
         val names = mutableMapOf<Int, String>()
         val lessons = payload.optJSONArray("lessonList") ?: JSONArray()
-        for (i in 0 until lessons.length()) lessons.optJSONObject(i)?.let { names[it.optInt("id", -1)] = it.optString("courseName") }
+        for (i in 0 until lessons.length()) lessons.optJSONObject(i)?.let { lesson ->
+            lesson.opt("id")?.toString()?.toIntOrNull()?.let { id ->
+                names[id] = if (lesson.isNull("courseName")) "" else lesson.optString("courseName")
+            }
+        }
         val schedules = payload.optJSONArray("scheduleList") ?: return emptyList()
         return buildList {
             for (i in 0 until schedules.length()) {
                 val row = schedules.optJSONObject(i) ?: continue
                 // WakeUp 6.6.2 o000O0: unknown lessons keep their occurrence and clock times.
-                val name = names[row.optInt("lessonId", -1)].orEmpty().ifBlank { "未知" }
-                val day = row.optInt("weekday", 0)
-                val week = row.optInt("weekIndex", 0)
-                val startTime = row.optInt("startTime", 0)
-                val endTime = row.optInt("endTime", 0)
+                fun integer(key: String): Int? = row.opt(key)?.toString()?.toIntOrNull()
+                val lessonId = integer("lessonId") ?: continue
+                val name = names[lessonId].orEmpty().ifBlank { "未知" }
+                val day = integer("weekday") ?: continue
+                val week = integer("weekIndex") ?: continue
+                val startTime = integer("startTime") ?: continue
+                val endTime = integer("endTime") ?: continue
                 fun clock(value: Int) = value.toString().padStart(4, '0').let {
                     it.take(2) + ":" + it.drop(2)
                 }
@@ -506,7 +512,9 @@ internal object WakeUpCompat {
                 val start = timeToNode(startTime)
                 if (day !in 1..7 || week < 1 || start < 1) continue
                 val count = durationToNodes(startTime, endTime)
-                add(JwCourse(name, row.optJSONObject("room")?.optString("nameZh").orEmpty(), row.optString("personName"), day, start, start + count - 1, week, week,
+                val room = row.optJSONObject("room")?.let { if (it.isNull("nameZh")) "" else it.optString("nameZh") }.orEmpty()
+                val teacher = if (row.isNull("personName")) "" else row.optString("personName")
+                add(JwCourse(name, room, teacher, day, start, start + count - 1, week, week,
                     startTime = actualStart, endTime = actualEnd))
             }
         }
@@ -1268,7 +1276,7 @@ internal object WakeUpCompat {
     private fun extractDay(text: String): Int? = Regex("(?:星期|周)\\s*([一二三四五六日天1-7])").find(text)?.groupValues?.get(1)?.let { when (it) { "一" -> 1; "二" -> 2; "三" -> 3; "四" -> 4; "五" -> 5; "六" -> 6; "日", "天" -> 7; else -> it.toIntOrNull() } }
     private fun extractNode(text: String): Int? = Regex("(?:第\\s*)?(\\d{1,2})\\s*(?:[-~至](\\d{1,2}))?\\s*节").find(text)?.groupValues?.get(1)?.toIntOrNull()
     private fun timeToNode(time: Int): Int = when { time < 1230 -> ((time - 800) / 100) + 1; time < 1800 -> ((time - 1400) / 100) + 5; else -> ((time - 1900) / 100) + 9 }
-    private fun durationToNodes(start: Int, end: Int): Int = when (end - start) { in 50..99 -> 1; in 100..200 -> 2; in 210..340 -> 3; else -> 4 }
+    private fun durationToNodes(start: Int, end: Int): Int = when (end - start) { in 50..99 -> 1; in Int.MIN_VALUE..200 -> 2; in 210..340 -> 3; else -> 4 }
 }
 
 abstract class WakeUpMarkerParser(source: String, private val markers: Set<String>) : JwParser(source) {
