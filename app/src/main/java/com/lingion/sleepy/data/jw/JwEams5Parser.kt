@@ -9,74 +9,18 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 /**
- * 合工大教务 (金智 EAMS5, eams5-student 系列) 课表 JSON 解析器。
+ * 金智 EAMS5 与新版数维课表 JSON。
  *
- * 适配学校：合肥工业大学 (jxglstu.hfut.edu.cn) + 安徽大学 (jw.ahu.edu.cn, 金智 EAMS 新版)。
- * 与 [JwCquParser] 同类：source 不是 HTML，而是课表 API 的 JSON 响应。
+ * HFUT 使用 result.lessonList 与 result.scheduleList，AHU 兼容 data.lessons。
+ * studentTableVms 和 studentTableVm 的 activities 全部读取，周次可以是数字数组
+ * 或带单双周的范围字符串。每个实际周次都保留，缺少周次不生成默认安排。
  *
- * 数据来源 (WebView 内 fetch):
+ * 学校提供的实际起止时间随课程传递；courseUnitList 可提供节次映射。
+ * 没有映射时的节次推断只作为占位，显示与导入仍以实际时间为准。
+ * activities 的 credits、lessonCode 和 lessonRemark 一并保留。
  *
- *   **HFUT 形态** (JwWebViewLoginScreen.EAMS5_FETCH_JS 三段):
- *     1) GET /eams5-student/for-std/course-table                → studentId
- *     2) GET /eams5-student/for-std/lessons?studentId=…        → lessonIds[]
- *     3) POST /eams5-student/ws/schedule-table/datum            → 完整课表
- *        body: {"lessonIds":[…], "studentId":…, "weekIndex":""}
- *        resp: {"result":{"lessonList":[…],"scheduleList":[…],"scheduleGroupList":[…]}}
- *
- *   **AHU 形态** (JwWebViewLoginScreen.EAMS5_AHU_FETCH_JS, 2026-09-06 加):
- *     1) GET /student/for-std/course-table                       → HTML 含 allSemesters
- *     2) 从 HTML 提取 allSemesters, 取首个 semesterId
- *     3) GET /student/for-std/course-table/semester/<semesterId>/print-data
- *        ?semesterId=<id>&hasExperiment=false
- *        resp: {"studentTableVms":[{"activities":[…],"scheduleGroupVms":[…]}]}
- *        字段 (Landon-3314 + MoeclubM + abydym 共识):
- *          activity.lessonId (Long)         — 课程ID
- *          activity.courseName (String)     — 课程名
- *          activity.teacherNames (List)     — 教师姓名列表
- *          activity.campus (String)         — 校区
- *          activity.building (String)       — 教学楼
- *          activity.room (String)           — 教室
- *          activity.weekday (Int 1-7)       — 周几
- *          activity.weekIndexes (String)    — 周次位图, 形如 "1-16"/"1-16单"/"5,7,9-12"
- *          activity.startUnit (Int)         — 起始节次节点 (1-based)
- *          activity.endUnit (Int)           — 结束节次节点
- *
- *     (旧实现) GET /student/for-std/course-table/get-data?bizTypeId=2&semesterId=<id>&dataId=
- *        resp: {"data":{"lessons":[…]}}  — metadata-only (id/courseCode/courseName/examMode),
- *        不含 weekday/节次, 不可作为课表主数据源; 仅作为课程代码补充 (TODO v2 join by lessonId)。
- *
- * 字段映射（教务 → JwCourse）：
- *   HFUT scheduleList[].lessonId / AHU activities[].lessonId
- *     → 查 lessonList[].id → courseName; 找不到回退 lessonId.toString()
- *   room:
- *     HFUT: scheduleList[].room.nameZh
- *     AHU: campus + " " + building + " " + room (三段独立)
- *   weekday → day (1=周一..7=周日)
- *   teacher:
- *     HFUT: scheduleList[].personName
- *     AHU: activities[].teacherNames.joinToString("/")
- *   week:
- *     HFUT: scheduleList[].weekIndex (单值)
- *     AHU: activities[].weekIndexes (bitmap 字符串, v1 emit 起始周单值, type=0
- *           — 暂不解析 "1-16单" 等格式; v2 可加 RLE 推断)
- *   节次:
- *     HFUT: scheduleList[].startTime/endTime → 推断 startNode/endNode (标准 985 节次表)
- *     AHU: activities[].startUnit/endUnit (直接给定, 无需推断)
- *
- * v1 限制（同 [JwCquParser]）:
- *   1. **HFUT 节次推断**: HFUT 接口直接给绝对时间 (HHmm),不返回节次节点;
- *      推断表按典型上午 5 节次布局 (08:00 10:10 14:00 16:10 19:00 各为节次段起点)。
- *      AHU 直接给 startUnit/endUnit, 无需推断, 更精确。
- *   2. **每行一周**: HFUT 每行一周, type=0。AHU weekIndexes 是 bitmap,
- *      v1 简单取起始周 (左取 [0] 段第 1 个数字), type=0; 不解析 "1-16单" 等单双周标记。
- *   3. **periods 兜底**: HFUT startTime/endTime 推断不出时用 periods 兜底。
- *      AHU 不需要 (startUnit/endUnit 权威)。
- *
- * 外部佐证 (5 仓):
- *   HFUT: Chiu-xaH/HFUT-Schedule, BoynChan/HfutOpenApi, elonzh/django-hfut-auth, Aoi-cn/hfut_schedule_hacker
- *   AHU: MoeclubM/AHU-AIO (Dart, GPL-3.0), qiqqqqq517/shangkeschschedule (Apache-2.0),
- *        abydym/Ahu_Plus (GPL-3.0, Kotlin 同栈), Landon-3314/AHU-TimeTable (Flutter),
- *        Zeraora-807/Anhui-Univ-DSH-Tool (TypeScript)
+ * 历史交叉验证参考保留在 docs/hfut-cross-verify-2026-09-06，
+ * 本轮新增依据为用户指定的本地 WakeUp 6.6.2 o00O0O00 的 Java 与 DEX。
  */
 class JwEams5Parser(source: String) : JwParser(source) {
 
@@ -88,15 +32,15 @@ class JwEams5Parser(source: String) : JwParser(source) {
         }.getOrNull() ?: return emptyList()
 
         // AHU 形态优先匹配 (5 仓 cross-verified 共识):
-        //   1) studentTableVms[0].activities[] (print-data) — 真正课表数据 (weekday/startUnit/...)
+        //   1) studentTableVms[].activities[] (print-data) — 真正课表数据 (weekday/startUnit/...)
         //   2) data.lessons[] (get-data) — metadata-only, 含 courseCode/examMode 但缺节次
-        val stVms = root["studentTableVms"] as? JsonArray
-        if (stVms != null && stVms.isNotEmpty()) {
-            val firstTable = stVms.firstOrNull()?.let { runCatching { it.jsonObject }.getOrNull() }
-            val activities = firstTable?.get("activities") as? JsonArray
-            if (activities != null && activities.isNotEmpty()) {
-                return parseAhuPrintDataActivities(activities)
-            }
+        if (root["studentTableVms"] is JsonArray || root["studentTableVm"] is JsonObject) {
+            val tables = (root["studentTableVms"] as? JsonArray).orEmpty() +
+                listOfNotNull(root["studentTableVm"] as? JsonObject)
+            return tables.flatMap { table ->
+                val activities = (table as? JsonObject)?.get("activities") as? JsonArray
+                activities?.let(::parseAhuPrintDataActivities).orEmpty()
+            }.distinct()
         }
         val ahuLessons = root["data"]?.jsonObject?.get("lessons") as? JsonArray
         if (ahuLessons != null && ahuLessons.isNotEmpty()) {
@@ -160,9 +104,11 @@ class JwEams5Parser(source: String) : JwParser(source) {
                 ?: continue
             val weekIndex = o["weekIndex"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.toIntOrNull()
                 ?: continue
+            if (day !in 1..7 || weekIndex < 1) continue
             val startTime = o["startTime"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.toIntOrNull() ?: 0
             val endTime = o["endTime"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.toIntOrNull() ?: 0
             val periods = o["periods"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.toIntOrNull() ?: 1
+            if (!JwCourse.isValidTimeRange(clockTime(startTime), clockTime(endTime))) continue
 
             // issue #46: 布局查表优先 — schedule.startTime 精确等于 unit.startTime (采集包 122/122);
             // endUnit = endTime >= unit.endTime 的最大 indexNo (11 仓实测零失败)。
@@ -184,6 +130,8 @@ class JwEams5Parser(source: String) : JwParser(source) {
                 startWeek = weekIndex,
                 endWeek = weekIndex,
                 type = 0,
+                startTime = clockTime(startTime),
+                endTime = clockTime(endTime),
             )
         }
         return out
@@ -227,9 +175,11 @@ class JwEams5Parser(source: String) : JwParser(source) {
                 ?: continue
             val weekIndex = o["weekIndex"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.toIntOrNull()
                 ?: continue
+            if (day !in 1..7 || weekIndex < 1) continue
             val startTime = o["startTime"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.toIntOrNull() ?: 0
             val endTime = o["endTime"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.toIntOrNull() ?: 0
             val periods = o["periods"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.toIntOrNull() ?: 1
+            if (!JwCourse.isValidTimeRange(clockTime(startTime), clockTime(endTime))) continue
 
             val inferred = inferNodes(startTime, endTime, periods)
             if (inferred == null) continue
@@ -244,13 +194,15 @@ class JwEams5Parser(source: String) : JwParser(source) {
                 startWeek = weekIndex,
                 endWeek = weekIndex,
                 type = 0,
+                startTime = clockTime(startTime),
+                endTime = clockTime(endTime),
             )
         }
         return out
     }
 
     /**
-     * AHU print-data 形态解析: `studentTableVms[0].activities[]`
+     * AHU print-data 形态解析: `studentTableVms[].activities[]`
      * (5 仓 cross-verified 共识: MoeclubM + abydym + Landon-3314 + Zeraora-807 + qiqqqqq517)
      *
      * 字段映射 (Landon-3314 academic_course_api_parser.dart + MoeclubM + abydym 共识):
@@ -259,13 +211,13 @@ class JwEams5Parser(source: String) : JwParser(source) {
      *   activity.teacherNames (JsonArray)→ teacher (join "/")
      *   activity.campus+building+room    → room (三段拼接)
      *   activity.weekday (Int 1-7)       → day
-     *   activity.weekIndexes (String)    → 起始周 (左取首个数字, v1 单周 emit)
+     *   activity.weekIndexes (String/Array) → 完整周次范围或显式周次集合
      *   activity.startUnit (Int)         → startNode (直接, 无需推断)
      *   activity.endUnit (Int)           → endNode (直接, 无需推断)
      *
      * 与 HFUT scheduleList 形态区别:
      *   - 节次直接给 startUnit/endUnit (1-based 节点), HFUT 给 HHmm 需推断
-     *   - weekIndexes 是 bitmap (e.g. "1-16" / "1-16单" / "5,7,9-12"), HFUT 单值
+     *   - weekIndexes 是周次范围或数字数组 (e.g. "1-16" / "1-16单" / "5,7,9-12"), HFUT 单值
      *   - teacher 是 List<String>, HFUT 单字符串
      *   - room 三段独立 (campus/building/room), HFUT 单字符串 room.nameZh
      */
@@ -308,14 +260,18 @@ class JwEams5Parser(source: String) : JwParser(source) {
                 ?: continue
             val endNode = o["endUnit"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.toIntOrNull()
                 ?: continue
+            if (name.isBlank() || day !in 1..7 || startNode < 1 || endNode < startNode) continue
 
-            // weekIndexes bitmap 完整 RLE 解析 — emit 多 JwCourse (单/双周/区间/离散)
+            // weekIndexes 周次 完整 RLE 解析 — emit 多 JwCourse (单/双周/区间/离散)
             // 5 仓 cross-validated 2026-09-06: parseWeekRanges 复用 JwParity 端点修正
             // 同一活动可在多周出现 → emit 多行 JwCourse (同 SEU parseWeekRanges 形态)
-            val weekIndexesStr = o["weekIndexes"]?.let {
-                runCatching { it.jsonPrimitive.contentOrNull }.getOrNull()
-            }.orEmpty()
-            val weekRanges = parseWeekRanges(weekIndexesStr)
+            val weekValue = o["weekIndexes"]
+            val weekRanges = if (weekValue is JsonArray) {
+                weekValue.mapNotNull { runCatching { it.jsonPrimitive.contentOrNull?.toIntOrNull() }.getOrNull() }
+                    .filter { it > 0 }.distinct().sorted().map { Triple(it, it, 0) }
+            } else {
+                parseWeekRanges(runCatching { weekValue?.jsonPrimitive?.contentOrNull }.getOrNull().orEmpty())
+            }
             for ((startWeek, endWeek, weekType) in weekRanges) {
                 out += JwCourse(
                     name = name.trim(),
@@ -327,6 +283,11 @@ class JwEams5Parser(source: String) : JwParser(source) {
                     startWeek = startWeek,
                     endWeek = endWeek,
                     type = weekType,
+                    credit = runCatching { o["credits"]?.jsonPrimitive?.contentOrNull?.toFloatOrNull() }
+                        .getOrNull()?.takeIf { it.isFinite() } ?: 0f,
+                    note = listOf("lessonCode", "lessonRemark").joinToString("") { key ->
+                        runCatching { o[key]?.jsonPrimitive?.contentOrNull }.getOrNull().orEmpty()
+                    },
                 )
             }
         }
@@ -334,7 +295,7 @@ class JwEams5Parser(source: String) : JwParser(source) {
     }
 
     /**
-     * AHU weekIndexes bitmap 完整 RLE 解析 — emit 多 JwCourse
+     * AHU weekIndexes 周次 完整 RLE 解析 — emit 多 JwCourse
      *
      * 真实形态 (5 仓 cross-validated 2026-09-06):
      *   "1-16"        → [(1,16,0)]         (全周)
@@ -362,7 +323,7 @@ class JwEams5Parser(source: String) : JwParser(source) {
      *   - 复用 JwParity.adjustedRange 算法
      */
     internal fun parseWeekRanges(weekIndexes: String): List<Triple<Int, Int, Int>> {
-        if (weekIndexes.isBlank()) return listOf(Triple(1, 1, 0))
+        if (weekIndexes.isBlank()) return emptyList()
         // 剥 "周" / 括号形态; 处理 "1-16周" / "1-16(单)" / "1-16 odd" 等
         val clean = weekIndexes
             .replace("周", "")
@@ -371,7 +332,7 @@ class JwEams5Parser(source: String) : JwParser(source) {
             .replace("(", "(")
             .replace(")", ")")
         val segments = clean.split(",", "，").map { it.trim() }.filter { it.isNotEmpty() }
-        if (segments.isEmpty()) return listOf(Triple(1, 1, 0))
+        if (segments.isEmpty()) return emptyList()
 
         val out = mutableListOf<Triple<Int, Int, Int>>()
         for (seg in segments) {
@@ -403,8 +364,11 @@ class JwEams5Parser(source: String) : JwParser(source) {
                 out += Triple(sw, ew, parity)
             }
         }
-        return out.ifEmpty { listOf(Triple(1, 1, 0)) }
+        return out.filter { (from, to, _) -> from > 0 && to >= from }
     }
+
+    private fun clockTime(value: Int): String =
+        if (value == 0) "" else value.toString().padStart(4, '0').let { it.take(2) + ":" + it.drop(2) }
 
     /**
      * 由 startTime/endTime (HHmm) 推断 (startNode, endNode)。
@@ -461,7 +425,7 @@ class JwEams5Parser(source: String) : JwParser(source) {
         return null
     }
 
-    /** AHU print-data studentTableVms[0].activities[] = 100 (含 weekday+节次权威);
+    /** AHU print-data studentTableVms[].activities[] = 100 (含 weekday+节次权威);
      *  AHU get-data data.lessons[] = 85 (metadata-only);
      *  HFUT 双层 = 95; schedule-table/datum = 80
      */
@@ -474,7 +438,7 @@ class JwEams5Parser(source: String) : JwParser(source) {
     }
 
     override fun matchedFeatures(): List<String> = buildList {
-        if (source.contains("studentTableVms")) add("studentTableVms[0].activities (AHU print-data)")
+        if (source.contains("studentTableVms")) add("studentTableVms[].activities (AHU print-data)")
         if (source.contains("data") && source.contains("\"lessons\"")) add("data.lessons (AHU get-data metadata)")
         if (source.contains("scheduleList")) add("result.scheduleList")
         if (source.contains("lessonList")) add("result.lessonList")

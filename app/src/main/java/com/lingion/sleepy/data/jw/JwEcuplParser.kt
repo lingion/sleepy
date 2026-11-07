@@ -2,13 +2,10 @@
 package com.lingion.sleepy.data.jw
 
 /**
- * 华东政法大学 (ECUPL) 主解析器：从 TaskActivity/index 读取排课坐标。
- *
- * 元数据表只作为 ECUPL 页面识别信号，不能推导星期与节次；
- * 真正排课来自 TaskActivity 后的 index 赋值，由 classic EAMS 解析器处理。
- *
- * OpenWakeUp 的 ECUPL 适配器和历史 WakeUp APK 仅用于核实协议形态；
- * APK 反编译来源是 lingion/wakeup-mod，原作者许可未确认。
+ * ECUPL annual TaskActivity timetable. marshalTable supplies the academic week
+ * origin; the detail table supplies course names, teachers, credits and notes.
+ * A time-script page is handled by the separate HHmm/decimal-bitmap branch.
+ * Source semantics were verified against the user's local WakeUp 6.6.2 APK.
  */
 class JwEcuplParser(source: String) : JwParser(source) {
 
@@ -40,16 +37,39 @@ class JwEcuplParser(source: String) : JwParser(source) {
      * 返回课程列表。
      */
     override fun generateCourseList(): List<JwCourse> {
-        // WakeUp ECUPLParser calls its classic EAMS parent for TaskActivity/index
-        // coordinates, then uses the listTable for metadata. A bare metadata table
-        // has no coordinates and must not create courses.
+        // Coordinates still come from TaskActivity/index; metadata never creates a slot.
         if (!source.contains("new TaskActivity(") ||
             !source.contains("table0.marshalTable") ||
-            !RE_LIST_TABLE.containsMatchIn(source)) return emptyList()
-        return JwClassicEamsParser(source).generateCourseList()
+            !RE_LIST_TABLE.containsMatchIn(source)) return JwEcuplScriptParser(source).generateCourseList()
+        val marshal = Regex("""table0\.marshalTable\s*\(\s*(\d+)\s*,\s*\d+\s*,\s*(\d+)\s*\)""").find(source)
+            ?: return emptyList()
+        val origin = marshal.groupValues[1].toIntOrNull()?.takeIf { it in 2..54 } ?: return emptyList()
+        val weekCount = marshal.groupValues[2].toIntOrNull()?.takeIf { it in 1..64 } ?: return emptyList()
+        val year = Regex("""new CourseTable\(\s*(\d{4})\s*,\s*\d+\s*\)""").find(source)
+            ?.groupValues?.get(1)?.toIntOrNull() ?: return emptyList()
+        // 6.6.2 ECUPLParser.OooOOo0 has a distinct year-wrap branch. The helper
+        // returns ISO weekday numbers, so the extra week condition is Saturday (6).
+        val yearOffset = if (java.time.LocalDate.of(year, 12, 31).dayOfWeek == java.time.DayOfWeek.SATURDAY) 55 else 54
+        val courses = JwClassicEamsParser(source) { bitmap ->
+            when {
+                bitmap.any { it != '0' && it != '1' } || bitmap.length < origin - 1 -> ""
+                '1' !in bitmap.take(origin - 1) -> bitmap.drop(origin - 2).take(weekCount + 1)
+                else -> ("0".repeat(yearOffset - origin) + bitmap).take(weekCount + 1)
+            }
+        }.generateCourseList()
+        val details = ecuplDetails(source)
+        return courses.map { course ->
+            val code = course.name.substringAfterLast('(', "").removeSuffix(")")
+            val detail = details[code]
+            if (detail == null) course else course.copy(
+                name=detail.name, teacher=detail.teacher, credit=detail.credit, note=detail.note)
+        }
     }
 
     override fun confidence(): Int {
+        if (RE_LIST_TABLE.containsMatchIn(source) && source.contains("table0.marshalTable") &&
+            source.contains("new TaskActivity(") &&
+            Regex("""new CourseTable\(\s*\d{4}\s*,\s*\d+\s*\)""").containsMatchIn(source)) return 100
         var hits = 0
         // R1: 主表锚点
         if (RE_LIST_TABLE.containsMatchIn(source)) hits += 3
@@ -69,6 +89,7 @@ class JwEcuplParser(source: String) : JwParser(source) {
     }
 
     override fun matchedFeatures(): List<String> = buildList {
+        if (source.contains("table0.marshalTable") && source.contains("new TaskActivity(")) add("ecupl:annual-week-origin")
         if (RE_LIST_TABLE.containsMatchIn(source)) add("ecupl:r1-listTable")
         if (RE_COURSE_NAME.containsMatchIn(source)) add("ecupl:r3-courseName")
         if (RE_TEACHER.containsMatchIn(source)) add("ecupl:r4-teacher")

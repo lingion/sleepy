@@ -14,8 +14,7 @@ import java.io.File
  *
  * 与吉林工商学院 queryKbForGrdb 形态差异 (本测试锁死的关键行为):
  *  1. 同一节因按周次换教室返回多行、各带不同周次串 (安全与急救处理:
- *     5..15 周 A 室 + 17,19 周 B 室) — 解析器必须做周次并集合并, 否则会渲染
- *     成两张重叠课程卡。
+ *     5..15 周仓-3-703 + 17,19 周急危重症实训室) — 必须保留周次与教室的对应关系。
  *  2. 每行带 djc 节号 (xjc), 与 rqxl 后两位一致。
  */
 class JwChaoxingFzmjtcParserTest {
@@ -30,8 +29,8 @@ class JwChaoxingFzmjtcParserTest {
     @Test
     fun `parses rows without duplicate overlapping cards`() {
         val courses = parse()
-        // 同(课名,星期,教师)分组: 连堂拉通 + 周次并集; 换教室多行合并后 40 条
-        assertEquals(40, courses.size)
+        // 原始42行逐周核对；换教室的两个周次段分别保留。
+        assertEquals(41, courses.size)
         // 关键回归: 同一(课名,星期,节次段,周次段)只允许一条 (重叠课程卡 bug)
         val keys = courses.map {
             listOf(it.name, it.day, it.startNode, it.endNode, it.startWeek, it.endWeek)
@@ -55,17 +54,18 @@ class JwChaoxingFzmjtcParserTest {
     }
 
     @Test
-    fun `room swap course unions weeks into single card with both rooms`() {
-        // 安全与急救处理 周一 3-4 节: 5-15 奇数周 A 室 + 17,19 周 B 室 → 合并到同一节块
+    fun `room swap keeps the classroom attached to its original weeks`() {
         val cs = parse().filter { it.name == "安全与急救处理" && it.day == 1 && it.startNode == 3 }
-        // 周次并集 5,7,9,11,13,15,17,19 全奇数 → 单周 type=1, 一段 [5,19]
-        assertEquals(1, cs.size)
-        val c = cs.single()
-        assertEquals(4, c.endNode)
-        assertEquals(1, c.type)
-        assertEquals(5, c.startWeek)
-        assertEquals(19, c.endWeek)
-        assertTrue("合并卡应同时含两间教室", c.room.contains("仓-1-703-急危重症实训室") && c.room.contains("仓-3-703"))
+        assertEquals(2, cs.size)
+        val early = cs.single { it.room == "仓-3-703" }
+        val late = cs.single { it.room == "仓-1-703-急危重症实训室" }
+        assertEquals(5 to 15, early.startWeek to early.endWeek)
+        assertEquals(17 to 19, late.startWeek to late.endWeek)
+        for (c in cs) {
+            assertEquals(4, c.endNode)
+            assertEquals(1, c.type)
+            assertEquals("叶珊", c.teacher)
+        }
     }
 
     @Test

@@ -20,7 +20,10 @@ class JwKingoZxParser(source: String) : JwParser(source) {
                 parseReport(table).takeIf { it.isNotEmpty() }?.let { return it }
             }
         }
-        val grid = doc.selectFirst("table#mytable") ?: doc.selectFirst("#xkinfo table")
+        if (doc.selectFirst("table#mytable") != null) {
+            return WakeUpCompat.parseKingoSuperHtml(source)
+        }
+        val grid = doc.selectFirst("#xkinfo table")
             ?: doc.selectFirst("#reportArea table")
         return grid?.let(::parseGrid).orEmpty()
     }

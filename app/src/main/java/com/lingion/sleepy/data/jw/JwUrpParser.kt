@@ -15,146 +15,92 @@ import org.jsoup.Jsoup
 class JwUrpParser(source: String) : JwParser(source) {
 
     override fun generateCourseList(): List<JwCourse> {
-        val result = arrayListOf<JwCourse>()
-        val doc = Jsoup.parse(source)
-        // T10: URP 网格变体 (td[id='day_node'] + div.class_div) — 真实结构来自 urp_01.js
-        val grid = parseUrpGrid(doc)
+        val document = Jsoup.parse(source)
+        val grid = parseUrpGrid(document)
         if (grid.isNotEmpty()) return grid
+        return document.select("table.displayTag, table.table.table-striped.table-bordered, table#tb")
+            .flatMap(::parseTable)
+    }
 
-        var tables = doc.getElementsByAttributeValue("class", "displayTag")
-        if (tables.isEmpty()) {
-            tables = doc.getElementsByAttributeValue("class", "table table-striped table-bordered")
-        }
-        if (tables.isEmpty()) return result
-
-        for (table in tables) {
-            // 跳过非课表（第一行含"星期一"的是顶部信息行）
-            if (table.text().contains("星期一")) continue
-
-            val thead = table.getElementsByTag("thead").firstOrNull() ?: continue
-            val ths = thead.getElementsByTag("th")
-            val headSize = ths.size
-
-            var nameIdx = -1
-            var teacherIdx = -1
-            var weekIdx = -1
-            var dayIdx = -1
-            var nodeIdx = -1
-            var stepIdx = -1
-            var buildingIdx = -1
-            var roomIdx = -1
-
-            ths.eachText().forEachIndexed { i, s ->
-                when (s.trim()) {
-                    "课程名" -> nameIdx = i
-                    "教师" -> teacherIdx = i
-                    "周次" -> weekIdx = i
-                    "星期" -> dayIdx = i
-                    "节次" -> nodeIdx = i
-                    "节数" -> stepIdx = i
-                    "教学楼" -> buildingIdx = i
-                    "教室" -> roomIdx = i
-                }
+    private fun parseTable(table: org.jsoup.nodes.Element): List<JwCourse> {
+        val headers = table.select("thead th").map { it.text().trim() }
+        fun column(label: String): Int = headers.indexOfFirst { it.contains(label) }
+        val nameIndex = column("课程名")
+        val teacherIndex = column("教师")
+        val weekIndex = column("周次")
+        val dayIndex = column("星期")
+        val nodeIndex = column("节次")
+        val stepIndex = column("节数")
+        val buildingIndex = column("教学楼")
+        val roomIndex = column("教室")
+        if (listOf(nameIndex, weekIndex, dayIndex, nodeIndex).any { it < 0 }) return emptyList()
+        val rows = table.select("tbody > tr").filter { it.closest("table") == table }
+        val carried = mutableMapOf<Int, Pair<org.jsoup.nodes.Element, Int>>()
+        val courses = mutableListOf<JwCourse>()
+        for ((rowIndex, row) in rows.withIndex()) {
+            val cells = arrayOfNulls<org.jsoup.nodes.Element>(headers.size)
+            for ((index, entry) in carried) if (entry.second >= rowIndex) cells[index] = entry.first
+            var cursor = 0
+            for (cell in row.children()) {
+                if (cell.tagName() != "td") return emptyList()
+                val span = if (cell.hasAttr("rowspan")) cell.attr("rowspan").toIntOrNull() else 1
+                val width = if (cell.hasAttr("colspan")) cell.attr("colspan").toIntOrNull() else 1
+                if (span == null || span !in 1..rows.size - rowIndex || width != 1) return emptyList()
+                while (cursor < cells.size && cells[cursor] != null) cursor++
+                if (cursor >= cells.size) return emptyList()
+                cells[cursor] = cell
+                if (span > 1) carried[cursor] = cell to rowIndex + span - 1
+                cursor++
             }
-            // 周/节数列索引缺失时无法安全对齐列，跳过此表（避免 IndexOutOfBounds 崩溃）
-            if (weekIdx == -1 || nodeIdx == -1 || nameIdx == -1) continue
-
-            val tbody = table.getElementsByTag("tbody").firstOrNull() ?: continue
-            var courseName = ""
-            var teacher = ""
-
-            for (tr in tbody.getElementsByTag("tr")) {
-                val tds = tr.getElementsByTag("td")
-                val wholeFlag = tds.size > headSize - weekIdx
-                val acDayIdx = if (wholeFlag) dayIdx else dayIdx - weekIdx
-                if (tds[acDayIdx].text().trim().isBlank()) continue
-
-                if (wholeFlag) {
-                    courseName = tds[nameIdx].text()
-                    teacher = tds[teacherIdx].text().trim()
-                }
-
-                val room = try {
-                    val bIdx = if (wholeFlag) buildingIdx else buildingIdx - weekIdx
-                    val rIdx = if (wholeFlag) roomIdx else roomIdx - weekIdx
-                    tds[bIdx].text().trim() + tds[rIdx].text().trim()
-                } catch (e: Exception) { "" }
-
-                val nodeE = tds[if (wholeFlag) nodeIdx else nodeIdx - weekIdx]
-                val startNode = getStartNode(nodeE.text())
-                val step = if (stepIdx != -1) {
-                    val sIdx = if (wholeFlag) stepIdx else stepIdx - weekIdx
-                    getStep(tds[sIdx].text().trim())
-                } else {
-                    val end = nodeE.text().trim().substringAfter('-').substringBefore('节').trim().toIntOrNull() ?: startNode
-                    end - startNode + 1
-                }
-                val day = getDay(tds[acDayIdx].text())
-                val acWeekIdx = if (wholeFlag) weekIdx else 0
-                val weekStr = tds[acWeekIdx].text().trim()
-
-                val ranges = weekStrToRanges(weekStr)
-                for (r in ranges) {
-                    result += JwCourse(
-                        name = courseName, room = room, teacher = teacher, day = day,
-                        startNode = startNode, endNode = startNode + step - 1,
-                        startWeek = r.first, endWeek = r.second, type = r.third
-                    )
+            if (cells.any { it == null }) continue
+            fun text(index: Int): String = cells.getOrNull(index)?.text()?.trim().orEmpty()
+            val name = text(nameIndex)
+            if (name.isEmpty()) continue
+            val day = dayNumber(text(dayIndex)) ?: continue
+            val ranges = nodeRanges(text(nodeIndex))
+            if (ranges.isEmpty()) continue
+            val step = if (stepIndex < 0) null else smallNumber(text(stepIndex)) ?: continue
+            if (step != null && step !in 1..30) continue
+            val weekText = text(weekIndex)
+            val parsedWeeks = schoolWeekRanges(weekText, trailingParityAppliesToAll = true)
+            val weeks = if (weekText.contains(',') || weekText.contains('，')) {
+                JwChengFangParser.weekIntList2WeekBeanList(parsedWeeks.flatMap { (first, last, parity) ->
+                    (first..last).filter { parity == 0 || it % 2 == parity % 2 }
+                }.distinct().sorted())
+            } else parsedWeeks
+            for ((start, end) in ranges) {
+                val last = if (step == null) end else start + step - 1
+                if (last !in start..30) continue
+                for ((firstWeek, lastWeek, parity) in weeks) {
+                    courses += JwCourse(name, text(buildingIndex) + text(roomIndex), text(teacherIndex), day,
+                        start, last, firstWeek, lastWeek, parity)
                 }
             }
         }
-        return result
+        return courses
     }
 
-    private fun getDay(str: String): Int = try {
-        str.trim().toInt()
-    } catch (e: Exception) {
-        when (str.trim()) {
-            "星期一" -> 1; "星期二" -> 2; "星期三" -> 3; "星期四" -> 4
-            "星期五" -> 5; "星期六" -> 6; "星期日", "星期天" -> 7
-            else -> 1
+    private fun dayNumber(raw: String): Int? = raw.toIntOrNull()?.takeIf { it in 1..7 }
+        ?: when (raw.removePrefix("星期").removePrefix("周")) {
+            "一" -> 1; "二" -> 2; "三" -> 3; "四" -> 4; "五" -> 5; "六" -> 6; "日", "天" -> 7
+            else -> null
         }
+
+    private fun smallNumber(raw: String): Int? = raw.toIntOrNull() ?: when (raw) {
+        "一" -> 1; "二" -> 2; "三" -> 3; "四" -> 4; "五" -> 5; "六" -> 6; "七" -> 7; "八" -> 8; "九" -> 9
+        "十" -> 10; "十一" -> 11; "十二" -> 12; "十三" -> 13; "十四" -> 14; "十五" -> 15
+        else -> null
     }
 
-    private fun getStartNode(s: String): Int {
-        val t = s.trim()
-        return if (t.contains('-')) {
-            t.substringBefore('-').toIntOrNull() ?: 1
-        } else {
-            t.substringAfter('第').substringBefore('大').substringBefore('小').toIntOrNull() ?: 1
+    private fun nodeRanges(raw: String): List<Pair<Int, Int>> {
+        val cleaned = raw.removePrefix("第").removeSuffix("节")
+        if (cleaned.endsWith("大")) {
+            val number = smallNumber(cleaned.removeSuffix("大")) ?: return emptyList()
+            val start = number * 2 - 1
+            return if (start in 1..30) listOf(start to start) else emptyList()
         }
-    }
-
-    private fun getStep(s: String): Int = s.toIntOrNull() ?: 1
-
-    private fun weekStrToRanges(weekStr: String): List<Triple<Int, Int, Int>> {
-        val result = mutableListOf<Triple<Int, Int, Int>>()
-        if (weekStr.isBlank()) {
-            result += Triple(1, 20, 0)
-            return result
-        }
-        // 支持 "1-16周", "1-16周(单)", "2,4,6,8,10周"(逗号列表按上游 weekIntList2WeekBeanList 归并)
-        val type = when {
-            weekStr.contains('单') -> 1
-            weekStr.contains('双') -> 2
-            else -> 0
-        }
-        val cleaned = weekStr.replace("周", "").replace("(", "").replace(")", "")
-            .replace("单", "").replace("双", "").trim()
-        if (cleaned.contains('-')) {
-            val parts = cleaned.split('-')
-            val s = parts[0].trim().toIntOrNull() ?: 1
-            val e = parts.getOrNull(1)?.trim()?.toIntOrNull() ?: s
-            result += Triple(s, e, type)
-        } else if (cleaned.contains(',')) {
-            // 逗号列表: 归并成连续/单双周段 (T10 契约: "2,4,6,8,10周" → (2,10,type=2))
-            val weeks = cleaned.split(',').mapNotNull { it.trim().toIntOrNull() }
-            result += JwChengFangParser.weekIntList2WeekBeanList(weeks)
-        } else {
-            val v = cleaned.toIntOrNull() ?: 1
-            result += Triple(v, v, type)
-        }
-        return result
+        val number = smallNumber(cleaned.removeSuffix("小"))
+        return if (number != null && number in 1..30) listOf(number to number) else schoolNodeRanges(cleaned)
     }
 
     /**
@@ -163,7 +109,7 @@ class JwUrpParser(source: String) : JwParser(source) {
      */
     private fun parseUrpGrid(doc: org.jsoup.nodes.Document): List<JwCourse> {
         val result = mutableListOf<JwCourse>()
-        val gridTds = doc.select("td[id]") ?: return result
+        val gridTds = doc.select("td[id]")
         for (td in gridTds) {
             val id = td.attr("id")
             val parts = id.split("_")

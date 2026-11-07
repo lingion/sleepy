@@ -8,7 +8,8 @@ import org.jsoup.Jsoup
  * WakeUp `NewUrpSuperParser` 第二变体 (smali 类名 `o0O0o`).
  *
  * 协议特征：
- *  1. 顶层是 JSON **数组** (与第一变体 `o0` 的 `dateList[].selectCourseList[].timeAndPlaceList[]` 嵌套结构互斥),
+ *  1. WakeUp 6.6.2 输入是二维 JSON 数组，兼容已有一维采集信封。
+ *     与第一变体 `o0` 的 `dateList[].selectCourseList[].timeAndPlaceList[]` 嵌套结构互斥。
  *  2. 每项 `NewUrpClassListItem` 含:
  *     - `kcm`: 课名
  *     - `jsm`: 教师
@@ -47,8 +48,7 @@ class JwNewUrpSuperParser(source: String) : JwParser(source) {
         }
         if (arr.length() == 0) return result
 
-        for (i in 0 until arr.length()) {
-            val item = arr.optJSONObject(i) ?: continue
+        for (item in courseRows(arr)) {
             val name = item.optString("kcm", "").trim()
             if (name.isBlank()) continue
 
@@ -58,13 +58,13 @@ class JwNewUrpSuperParser(source: String) : JwParser(source) {
             val fullRoom = (building + room).trim()
 
             val id = item.optJSONObject("id") ?: continue
-            val day = id.optInt("skxq", 0)
+            val day = id.optString("skxq", "").toIntOrNull() ?: continue
             if (day !in 1..7) continue
 
-            val startNode = id.optInt("skjc", 0)
+            val startNode = id.optString("skjc", "").toIntOrNull() ?: continue
             if (startNode !in 1..30) continue
 
-            val continuing = item.optInt("cxjc", 1)
+            val continuing = item.optString("cxjc", "").toIntOrNull() ?: continue
             if (continuing !in 1..30 || startNode > 30 - continuing + 1) continue
             val realEndNode = startNode + continuing - 1
 
@@ -91,6 +91,15 @@ class JwNewUrpSuperParser(source: String) : JwParser(source) {
             }
         }
         return result
+    }
+
+    private fun courseRows(arr: JSONArray): List<JSONObject> = buildList {
+        for (i in 0 until arr.length()) {
+            when (val item = arr.opt(i)) {
+                is JSONObject -> add(item)
+                is JSONArray -> for (j in 0 until item.length()) item.optJSONObject(j)?.let { add(it) }
+            }
+        }
     }
 
     /**
@@ -128,6 +137,7 @@ class JwNewUrpSuperParser(source: String) : JwParser(source) {
             id[i + 1] = id[i] + if (source.startsWith("id", i)) 1 else 0
         }
         val starts = ArrayDeque<Int>()
+        var maxDepth = 0
         var parsedChars = 0L
         var inString = false
         var escaped = false
@@ -142,11 +152,15 @@ class JwNewUrpSuperParser(source: String) : JwParser(source) {
             when (ch) {
                 '"' -> inString = true
                 '[' -> {
-                    if (starts.isEmpty()) parsedChars = 0L
+                    if (starts.isEmpty()) { parsedChars = 0L; maxDepth = 0 }
                     starts.addLast(end)
+                    maxDepth = maxOf(maxDepth, starts.size)
                 }
                 ']' -> if (starts.isNotEmpty()) {
                     val start = starts.removeLast()
+                    // Wait for the outer array; returning an inner array silently loses later groups.
+                    // Skip hostile nesting before invoking the JSON library recursively.
+                    if (starts.isNotEmpty() || maxDepth > 64) continue
                     if (kcm[end + 1] == kcm[start] || skzc[end + 1] == skzc[start] ||
                         id[end + 1] == id[start]) continue
                     val length = end - start + 1
@@ -156,9 +170,8 @@ class JwNewUrpSuperParser(source: String) : JwParser(source) {
                     parsedChars += length
                     val candidate = source.substring(start, end + 1)
                     val array = runCatching { JSONArray(candidate) }.getOrNull()
-                    if (array != null && (0 until array.length()).any { index ->
-                            val item = array.optJSONObject(index)
-                            item?.has("kcm") == true && item.optJSONObject("id")?.has("skzc") == true
+                    if (array != null && courseRows(array).any { item ->
+                            item.has("kcm") && item.optJSONObject("id")?.has("skzc") == true
                         }) return candidate
                 }
             }

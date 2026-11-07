@@ -4,7 +4,8 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
 /** Structural old-QZ variants; source facts and licensing are recorded in the cross-verification ledger. */
-class JwOldQzSuperParser(source: String) : JwParser(source) {
+class JwOldQzSuperParser(source: String, private val declaredForm: Form? = null) : JwParser(source) {
+    enum class Form { JLICT, CCUT, CCSU, BASE }
     private val doc = Jsoup.parse(source)
     private val weekNode = Regex("""^(.+?)周\[(\d{1,4}(?:[-~]\d{1,2})?)节]$""")
     private val range = Regex("""^(\d{1,2})(?:[-~](\d{1,2}))?$""")
@@ -42,10 +43,21 @@ class JwOldQzSuperParser(source: String) : JwParser(source) {
     }
 
     override fun generateCourseList(): List<JwCourse> {
+        declaredForm?.let { return parseForm(it) }
+        // DEX order: JLICT, CCUT, CCSU, then explicit week-and-section records.
+        // Alternate representations are fallback choices, never additive tables.
+        for (form in Form.entries) {
+            val courses = parseForm(form)
+            if (courses.isNotEmpty()) return courses
+        }
+        return emptyList()
+    }
+
+    private fun parseForm(form: Form): List<JwCourse> {
         val result = mutableListOf<JwCourse>()
         // Fixed cell ids explicitly encode section group and weekday (CCSU shape).
         val fixedCells = doc.select("[id]").filter { fixedId.matches(it.id()) }
-        for (cell in fixedCells.takeIf { cells -> cells.map { it.id() }.toSet().size == 35 }.orEmpty()) {
+        for (cell in fixedCells.takeIf { cells -> form == Form.CCSU && cells.map { it.id() }.toSet().size == 35 }.orEmpty()) {
             val id = fixedId.matchEntire(cell.id()) ?: continue
             if (hidden(cell)) continue
             val f = fields(cell)
@@ -56,7 +68,7 @@ class JwOldQzSuperParser(source: String) : JwParser(source) {
             }
         }
         // JLICT: link title's seven fields, row index is a documented two-section group.
-        doc.getElementById("kb")?.selectFirst("table")?.let { table ->
+        doc.getElementById("kb")?.selectFirst("table")?.takeIf { form == Form.JLICT }?.let { table ->
             val rows = table.select("tr").filter { it.parents().firstOrNull { p -> p.tagName() == "table" } === table }
             for ((index, row) in rows.drop(1).withIndex()) {
                 val cells = row.children().filter { it.tagName() in setOf("td", "th") }
@@ -64,11 +76,11 @@ class JwOldQzSuperParser(source: String) : JwParser(source) {
                 for (day in 1..7) for (link in cells[day].select("a[title]")) {
                     if (hidden(link)) continue
                     val f = link.attr("title").split(Regex("\\r?\\n")).map { it.substringAfter('：').trim() }
-                    if (f.size >= 7) add(result, f[2], f[3], f[6], day, index * 2 + 1..index * 2 + 2, f[5])
+                    if (f.size >= 7) add(result, f[2], f[3], f[6], day, index * 2 + 1..index * 2 + 2, jlictWeeks(f[5]))
                 }
             }
         }
-        doc.getElementById("kbtable")?.let { table ->
+        doc.getElementById("kbtable")?.takeIf { form == Form.CCUT || form == Form.BASE }?.let { table ->
             val rows = table.select("tr").filter { it.parents().firstOrNull { p -> p.tagName() == "table" } === table }
             val header = rows.firstOrNull { row -> row.children().any { weekday.matches(it.text()) } }
             val days = header?.children()?.map { weekday.matchEntire(it.text())?.groupValues?.get(1)?.let { d -> "一二三四五六日天".indexOf(d).let { if (it >= 6) 7 else it + 1 } } }
@@ -88,14 +100,14 @@ class JwOldQzSuperParser(source: String) : JwParser(source) {
                         var previousName = ""
                         for (i in f.indices) {
                             val m = weekNode.matchEntire(f[i])
-                            if (m != null && i >= 2 && i + 1 < f.size) {
+                            if (form == Form.BASE && m != null && i >= 2 && i + 1 < f.size) {
                                 val raw = m.groupValues[2]
                                 val nodes = if (raw.length == 4 && raw.all(Char::isDigit)) bounds(raw.take(2) + "-" + raw.takeLast(2), 30) else bounds(raw, 30)
                                 val name = if (i - recordStart >= 2) f[recordStart] else previousName
                                 if (nodes != null) add(result, name, f[i - 1], f[i + 1], day, nodes, m.groupValues[1])
                                 previousName = name
                                 recordStart = i + 2
-                            } else if (m == null && f[i].endsWith("周") && i >= 3 && i + 1 < f.size) {
+                            } else if (form == Form.CCUT && m == null && f[i].endsWith("周") && i >= 3 && i + 1 < f.size) {
                                 // CCUT: group-day id establishes nodes; never infer them from text order.
                                 val id = Regex("""^([1-9]|1[0-5])-([1-7])(?:-\d+)?$""").matchEntire(block.id()) ?: continue
                                 if (id.groupValues[2].toInt() != day) continue
@@ -109,6 +121,13 @@ class JwOldQzSuperParser(source: String) : JwParser(source) {
             }
         }
         return result.distinct()
+    }
+
+    private fun jlictWeeks(text: String): String {
+        val clean = text.replace("周", "").replace(" ", "")
+        // A single trailing marker qualifies the entire title field in this form.
+        val global = Regex("""^([0-9,，~\-]+)(单|双)$""").matchEntire(clean) ?: return text
+        return global.groupValues[1].split(',', '，').joinToString(",") { it + global.groupValues[2] }
     }
 
     override fun confidence(): Int = if (generateCourseList().isNotEmpty()) 100 else if (doc.getElementById("kbtable") != null) 50 else 0

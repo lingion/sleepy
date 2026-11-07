@@ -58,20 +58,25 @@ class JwNewUrpParser(source: String) : JwParser(source) {
             ?: return JwNewUrpSuperParser(source).generateCourseList()
         if (dateList.length() == 0) return result
 
-        val firstDate = dateList.getJSONObject(0)
-        val courseList = firstDate.optJSONArray("selectCourseList") ?: return result
+        val courseList = JSONArray()
+        for (dateIndex in 0 until dateList.length()) {
+            val group = dateList.optJSONObject(dateIndex)?.optJSONArray("selectCourseList") ?: continue
+            for (index in 0 until group.length()) group.optJSONObject(index)?.let(courseList::put)
+        }
 
         for (i in 0 until courseList.length()) {
-            val course = courseList.getJSONObject(i)
+            val course = courseList.optJSONObject(i) ?: continue
             val name = course.optString("courseName", "").trim()
+            if (name.isEmpty()) continue
             val teacher = course.optString("attendClassTeacher", "").trim()
             val timeAndPlaceList = course.optJSONArray("timeAndPlaceList") ?: continue
 
             for (j in 0 until timeAndPlaceList.length()) {
-                val tp = timeAndPlaceList.getJSONObject(j)
-                val day = tp.optInt("classDay", 1)
-                val startNode = tp.optInt("classSessions", 1)
-                val continuing = tp.optInt("continuingSession", 1)
+                val tp = timeAndPlaceList.optJSONObject(j) ?: continue
+                val day = tp.optString("classDay", "").toIntOrNull() ?: continue
+                val startNode = tp.optString("classSessions", "").toIntOrNull() ?: continue
+                val continuing = tp.optString("continuingSession", "").toIntOrNull() ?: continue
+                if (day !in 1..7 || startNode !in 1..30 || continuing !in 1..30 || startNode > 30 - continuing + 1) continue
                 val endNode = startNode + continuing - 1
                 val classWeek = tp.optString("classWeek", "")
                 val campus = tp.optString("campusName", "")
@@ -114,8 +119,20 @@ class JwNewUrpParser(source: String) : JwParser(source) {
     fun extractJsonForTest(html: String): String? = extractJsonFromHtml(html)
 
     private fun extractJsonFromHtml(html: String): String? {
+        if (html.trimStart().startsWith("{")) {
+            runCatching { JSONObject(html) }.getOrNull()?.takeIf { it.optJSONArray("dateList") != null }?.let { return html.trim() }
+        }
+        if (html.contains("<script", ignoreCase = true)) {
+            for (script in org.jsoup.Jsoup.parse(html).select("script")) {
+                extractScriptJson(script.data())?.let { return it }
+            }
+        }
+        return extractScriptJson(html)
+    }
+
+    private fun extractScriptJson(html: String): String? {
         // 找包含 "dateList" 那一段
-        val marker = "dateList"
+        val marker = "\"dateList\""
         val idx = html.indexOf(marker)
         if (idx < 0) return null
 

@@ -76576,6 +76576,26 @@
       "defects": [
         "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page last confirmed live with HTTP 200 on 2026-10-16; no authenticated import performed."
       ]
+    },
+    {
+      "catalogId": "wakeup:4e6e8c213c7625d5f0e7",
+      "name": "桂林电子科技大学北海校区",
+      "url": "http://192.168.5.88",
+      "source": "wakeup-batch-probe",
+      "checkedAt": "2026-10-16",
+      "http": 0,
+      "finalUrl": "http://192.168.5.88",
+      "status": "unknown",
+      "confidence": "low",
+      "sources": [],
+      "proposedCorrection": null,
+      "title": "",
+      "probeError": "non-public-url",
+      "availability": "unavailable-or-restricted",
+      "authenticatedImportTested": false,
+      "defects": [
+        "既有 admission 仅提供校园内网地址，未验证学校归属或认证导入。新增解析器注册后仍按现有归属规则保留待确认，不提升该目录入口。"
+      ]
     }
   ],
   "methodology": [

@@ -3,11 +3,12 @@ package com.lingion.sleepy.ui.screen.imports
 /**
  * 新青果 NTSS (新版青果/乘方, 江西中医药大学 jiaowu.jxutcm.edu.cn) WebView 内 fetch 课表 JSON。
  *
- * 页面形态: /new/student/xsgrkb/week.page, FullCalendar agendaWeek 渲染 (2026-09 采集包实锤)。
+ * 现有适配约定: /new/student/xsgrkb/week.page, FullCalendar agendaWeek 渲染。
+ * 原注释引用的采集包未在仓库找到；当前验证为离线合成响应，真实部署仍待复核。
  * 页面 DOM 无任何课表数据 — 课程行由页面脚本 $.post('/new/student/xsgrkb/getCalendarWeekDatas')
  * 异步注入, 禁走 outerHTML 抓取。
  *
- * 帧结构 (2026-09-15 用户 DOM 树实锤): 课表页深嵌同源 iframe —
+ * 现有适配覆盖的帧结构: 课表页深嵌同源 iframe —
  *   top(/new/welcome.page?ui=new) → iframe4(main.page) → frame(/new/student/xsgrkb/week.page?xnxqdm=202601)。
  * evaluateJavascript 只注入主 frame, 顶层 location.pathname 不含课表路径、
  * 顶层 document 无 #xnxqdm/businessHours — 本 JS 必须先下钻同源 frame 找到
@@ -21,33 +22,57 @@ package com.lingion.sleepy.ui.screen.imports
  *      (第一周周一) → startDate 回传确认页预填 + 逐周 d1/d2 推算
  *   4) 节次时间: 页面 businessHours = $.parseJSON('[…]') → periods [{node,start,end}]
  *      (除回传确认页外, 同时内嵌进 envelope 供 parser 在 ps/pe 空串时按时间反推节点)
- *   5) 单请求全量: POST getCalendarWeekDatas zc='' (不带周次) → 服务端返回整学期,
- *      行 zc 为各行所属周 (2026-09-16 用户实测); 防御性检查响应含多个不同 zc 才采纳,
- *      否则回退逐周 POST zc=1..22 (行 zc == 请求周) — 兼容按周过滤的部署
- *      (传输层透传, 与 wisedu/CQU/BJTU 同级; 解码仍归 Kotlin parser)
+ *   5) 读取当前课表 frame 的 #zc options，按明确周次逐周请求 getCalendarWeekDatas。
+ *      返回多个周次不能证明覆盖整学期；不使用固定 22 周或空 zc 作为完整性依据。
+ *      缺少或含非法周次时返回错误，等待页面准备好明确的周次列表。
  *   6) 合并 {"weeks":[{week,rows},…], periods:[…]} 组合源 + sleepyCfNtss 标记回传,
  *      Kotlin 路由 JwImportViewModel.parseHtml(..., "cf_new") → JwCfNewParser
  *
- * 失败兜底: 路径不对 → NOT_ON_TIMETABLE; 全部周请求失败 (登录页 HTML 解析不出 JSON)
- * → SESSION_EXPIRED; 其余异常 → FORMAT_ERROR。
+ * 优先透传当前页面或同源框架中的 lay-tips 课表；仅 NTSS 页面走接口采集。
+ * 任一逐周请求失败时整体失败，不能把剩余周作为完整课表返回。
  * 跨语言 invariant: JS 只做 fetch + 传输层透传, 禁止解码协议字段 (解码唯一落点 = JwCfNewParser)。
  */
 const val CF_NEW_FETCH_JS = """(function(){
+  var finished = false;
+  var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  var deadline = setTimeout(function(){ fail('TIMEOUT', '课表读取超时，请重试'); }, 20000);
+  function finish(payload){
+    if (finished) return;
+    finished = true;
+    clearTimeout(deadline);
+    if (controller) controller.abort();
+    window.__sleepyBridge.onWiseduResult(JSON.stringify(payload));
+  }
   function fail(kind, err){
-    window.__sleepyBridge.onWiseduResult(JSON.stringify({
+    finish({
       ok:false, kind:kind, err:err||'', format:'cf_new'
-    }));
+    });
   }
   function ok(data, startDate, periods){
-    window.__sleepyBridge.onWiseduResult(JSON.stringify({
+    finish({
       ok:true, data:data, startDate:startDate||'', periods:periods||[], format:'cf_new'
-    }));
+    });
+  }
+  function fetchText(url, options){
+    if (finished) return Promise.reject(new Error('采集已结束'));
+    if (controller) options.signal = controller.signal;
+    return W.fetch(url, options).then(function(r){
+      if (!r.ok) throw new Error('课表请求失败 HTTP ' + r.status);
+      return r.text();
+    });
+  }
+  function courseRows(text){
+    var res = JSON.parse(text);
+    if (!res || typeof res.code !== 'number' || res.code < 0 || !Array.isArray(res.data)) {
+      throw new Error('课表接口未返回有效课程数组');
+    }
+    return res.data;
   }
   function postForm(url, params){
     var body = Object.keys(params).map(function(k){
       return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
     }).join('&');
-    return W.fetch(url, {
+    return fetchText(url, {
       method:'POST',
       credentials:'include',
       headers:{
@@ -55,7 +80,7 @@ const val CF_NEW_FETCH_JS = """(function(){
         'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'
       },
       body: body
-    }).then(function(r){ return r.text(); });
+    });
   }
   function addDays(iso, n){
     var p = iso.split('-');
@@ -76,7 +101,25 @@ const val CF_NEW_FETCH_JS = """(function(){
     }
     return null;
   }
+  function findHtmlTable(win, depth){
+    if (!win || depth > 8) return null;
+    try {
+      var tips = win.document.querySelectorAll('[lay-tips]');
+      for (var ti = 0; ti < tips.length; ti++) {
+        if ((tips[ti].getAttribute('lay-tips') || '').indexOf('上课任务[') >= 0) {
+          return win.document.documentElement.outerHTML;
+        }
+      }
+      for (var fi = 0; fi < win.frames.length; fi++) {
+        var html = findHtmlTable(win.frames[fi], depth + 1);
+        if (html) return html;
+      }
+    } catch(e) {}
+    return null;
+  }
   try {
+    var html = findHtmlTable(window, 0);
+    if (html) { ok(html, '', []); return; }
     // 课表页嵌在 main.page 的同源 iframe 里 — 下钻找课表 window, 顶层不在课表页属正常
     var W = findTargetWin(window, 0);
     if (!W) {
@@ -109,8 +152,7 @@ const val CF_NEW_FETCH_JS = """(function(){
       if (qm) { resolve(decodeURIComponent(qm[1])); return; }
       var sel = W.document.querySelector('#xnxqdm');
       if (sel && sel.value) { resolve(String(sel.value).trim()); return; }
-      W.fetch('/new/student/xsgrkb/week.page', {credentials:'include'})
-        .then(function(r){ return r.text(); })
+      fetchText('/new/student/xsgrkb/week.page', {credentials:'include'})
         .then(function(html){
           var block = (html.match(/<select[^>]*id=["']xnxqdm["'][^>]*>([\s\S]*?)<\/select>/i) || [])[1] || '';
           var optRe = /<option[^>]*value=["']([^"']*)["'][^>]*>/gi;
@@ -139,55 +181,38 @@ const val CF_NEW_FETCH_JS = """(function(){
         })
         .catch(function(){ return ''; })
         .then(function(base){
-          // 3a. 单请求全量: zc 空时服务端返回整学期, 行 zc 为各行所属周 (2026-09-16 用户实测)
-          var params = {xnxqdm: xnxqdm, zc: ''};
-          if (base) {
-            params.d1 = base + ' 00:00:00';
-            params.d2 = addDays(base, 7) + ' 00:00:00';
+          // 3. Use the timetable's explicit week options; absence is not a 22-week semester.
+          var weekSelect = W.document.querySelector('#zc');
+          if (!weekSelect || !weekSelect.options) {
+            fail('WEEK_RANGE_UNAVAILABLE', '未取得本学期周次列表，请等待个人课表页加载完成后重试');
+            return;
           }
-          return postForm('/new/student/xsgrkb/getCalendarWeekDatas', params)
-            .then(function(text){
-              var res = JSON.parse(text);
-              var rows = (res && res.code >= 0 && res.data) ? res.data : [];
-              var distinct = {};
-              for (var ri = 0; ri < rows.length; ri++) {
-                var z = String((rows[ri] && rows[ri].zc) || '');
-                if (z) distinct[z] = 1;
-              }
-              // 全学期形态: 行 zc 覆盖多个周 — 单 bucket (week:0) 交 parser 按行 zc 归属;
-              // 否则 (空/单周形态) 回退逐周兜底
-              if (Object.keys(distinct).length > 1) return [{week: 0, rows: rows}];
-              return null;
-            })
-            .catch(function(){ return null; })
-            .then(function(full){
-              if (full) return full;
-              // 3b. 兜底: 逐周并行 POST 1..22 周 (页面 #zc 上限 22; 行 zc == 请求周,
-              //     跨周重复行由 parser 按 key 合并)
-              var weekNums = [];
-              for (var w = 1; w <= 22; w++) { weekNums.push(w); }
-              var jobs = weekNums.map(function(w){
-                var p = {xnxqdm: xnxqdm, zc: String(w)};
-                if (base) {
-                  p.d1 = addDays(base, 7 * (w - 1)) + ' 00:00:00';
-                  p.d2 = addDays(base, 7 * w) + ' 00:00:00';
-                }
-                return postForm('/new/student/xsgrkb/getCalendarWeekDatas', p)
-                  .then(function(text){
-                    var res = JSON.parse(text);
-                    if (res && res.code >= 0 && res.data) return {week: w, rows: res.data};
-                    return {week: w, rows: []};
-                  })
-                  .catch(function(){ return {week: w, rows: [], failed: true}; });
-              });
-              return Promise.all(jobs).then(function(results){
-                var good = [];
-                for (var gi = 0; gi < results.length; gi++) {
-                  if (!results[gi].failed) good.push(results[gi]);
-                }
-                return good;
-              });
-            })
+          var weekNums = [];
+          for (var wi = 0; wi < weekSelect.options.length; wi++) {
+            var rawWeek = String(weekSelect.options[wi].value).trim();
+            if (rawWeek === '' || rawWeek === '0') continue;
+            if (!/^[0-9]+$/.test(rawWeek) || Number(rawWeek) < 1 || Number(rawWeek) > 366) {
+              fail('WEEK_RANGE_UNAVAILABLE', '课表周次列表包含无法识别的值，请重新打开个人课表页');
+              return;
+            }
+            var week = Number(rawWeek);
+            if (weekNums.indexOf(week) < 0) weekNums.push(week);
+          }
+          if (weekNums.length === 0) {
+            fail('WEEK_RANGE_UNAVAILABLE', '个人课表页尚未提供本学期周次列表');
+            return;
+          }
+          weekNums.sort(function(a,b){ return a-b; });
+          var jobs = weekNums.map(function(w){
+            var p = {xnxqdm: xnxqdm, zc: String(w)};
+            if (base) {
+              p.d1 = addDays(base, 7 * (w - 1)) + ' 00:00:00';
+              p.d2 = addDays(base, 7 * w) + ' 00:00:00';
+            }
+            return postForm('/new/student/xsgrkb/getCalendarWeekDatas', p)
+              .then(function(text){ return {week: w, rows: courseRows(text)}; });
+          });
+          return Promise.all(jobs)
             .then(function(good){
               if (good.length === 0) {
                 fail('SESSION_EXPIRED', '课表接口无有效响应, 请确认已登录教务并进入个人课表页后再点导入');
@@ -196,6 +221,7 @@ const val CF_NEW_FETCH_JS = """(function(){
               ok(JSON.stringify({
                 sleepyCfNtss: true,
                 xnxqdm: xnxqdm,
+                requestedWeeks: weekNums,
                 weeks: good,
                 periods: periods
               }), base, periods);

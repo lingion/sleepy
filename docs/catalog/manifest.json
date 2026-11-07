@@ -22,7 +22,7 @@
   "sources": [
     {
       "path": "scripts/data/school_catalog_baseline.json",
-      "sha256": "f3fbe134623726ebf8c50c4b335d12aed9b94edb2e70fe02294dcd2b21741d8f"
+      "sha256": "d8aeabba6e97e56e96a81e10eddd3a5c6d616a5c4ac7c939ef7b443c8a7fef77"
     },
     {
       "path": "scripts/data/official_schools.json",
@@ -38,7 +38,7 @@
     },
     {
       "path": "scripts/data/school_import_admissions.json",
-      "sha256": "0b87911a64403dc0a3f842e23ab625ab2d5695bcc62d09f322d460fdbfd9892a"
+      "sha256": "2cb4ed43db3ad7da403123da7494422a21f8b43a00da9fe4b6b00f862502e6c3"
     },
     {
       "path": "scripts/data/school_catalog_renames.json",
@@ -46,7 +46,7 @@
     },
     {
       "path": "scripts/data/school_url_evidence.json",
-      "sha256": "c2708d87da2882e4ef4e31c438f28fe2266a10f2764d0d199c8509a6a4aa155d"
+      "sha256": "62a71378ce30c9af5ea6fd52540c72e3c8ddac9025276400ac87297a75b2ecb4"
     },
     {
       "path": "scripts/data/school_catalog_domain_reference.json",
@@ -56,7 +56,7 @@
   "matchingPolicy": "Exact trimmed full names plus reviewed school_catalog_renames.json; no fuzzy aliases or graduate/campus suffix removal. Historical source rows remain independently traceable.",
   "ownershipAudit": {
     "evidenceCounts": {
-      "unknown": 2272,
+      "unknown": 2273,
       "verified": 748,
       "contradicted": 1
     },
@@ -67,7 +67,7 @@
       "retained-wakeup-662-declared-owner": 1304,
       "retained-shiguang-adapters-owner": 56,
       "retained-shiguang-declared-owner": 42,
-      "withheld-new-unproven-owner": 53,
+      "withheld-new-unproven-owner": 54,
       "withheld-domain-collision": 88,
       "corrected-official-entry": 1
     },
@@ -22566,6 +22566,14 @@
         "ownershipStatus": "unknown",
         "action": "retained-wakeup-662-declared-owner",
         "operationalUrl": "http://jw.gzgszy.com/jwglxt/xtgl/login_slogin.html",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:4e6e8c213c7625d5f0e7",
+        "name": "桂林电子科技大学北海校区",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
         "authenticatedImportTested": false
       },
       {

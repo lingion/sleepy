@@ -2,6 +2,7 @@
 <html>
 <head><meta charset="utf-8"><title>华东政法大学 - 通知公告 (ECUPL Script)</title></head>
 <!--
+  Synthetic fixture corrected against 6.6.2: HHmm times and bits 1 through 16.
   ECUPL script fixture — wakeup-parity-ecupl-super-2026-10-06 SOP v1.11
   3 regex_invariants: R5 (CourseTable) + R6 (time pairs) + R7 (newActivity)
 -->
@@ -9,18 +10,18 @@
 <p>本页为新版教务页面，需走 o00000O0 script 协议。</p>
 <script language="JavaScript">
 new CourseTable('2024-02-26',[
-[480,525],[535,580],[600,645],[655,700],[710,755],
-[810,855],[865,910],[920,965],[975,1020],[1030,1075],
-[1110,1155],[1165,1210]
+[800,845],[855,940],[1000,1045],[1055,1140],[1150,1235],
+[1330,1415],[1425,1510],[1520,1605],[1615,1700],[1710,1755],
+[1830,1915],[1925,2010]
 ]);
 var activity;
-newActivity("C001","张教授","x","民法(总则)","x","明法楼A101","2024-02-26",65535);
-addActivityByTime(activity,1,480,580);
-addActivityByTime(activity,4,600,700);
-newActivity("C002","李教授","x","刑法(01)","x","明法楼A102","2024-02-26",65535);
-addActivityByTime(activity,2,600,700);
-newActivity("C003","王老师","x","法理学(01)","x","明法楼A103","2024-02-26",65535);
-addActivityByTime(activity,3,710,755);
+newActivity("C001","张教授","x","民法(总则)","x","明法楼A101","2024-02-26",131070);
+addActivityByTime(activity,1,800,940);
+addActivityByTime(activity,4,1000,1140);
+newActivity("C002","李教授","x","刑法(01)","x","明法楼A102","2024-02-26",131070);
+addActivityByTime(activity,2,1000,1140);
+newActivity("C003","王老师","x","法理学(01)","x","明法楼A103","2024-02-26",131070);
+addActivityByTime(activity,3,1150,1235);
 </script>
 </body>
 </html>

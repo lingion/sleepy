@@ -391,7 +391,10 @@ class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(sourc
 
         /** T1 G5: 兜底 — 遍历所有 table 取文本含"星期一"的第一个（Speas-y/ClassScheduleApp 同策略） */
         private fun pickTableByMonday(doc: org.jsoup.nodes.Document): org.jsoup.nodes.Element? {
-            return doc.select("table").firstOrNull { it.text().contains("星期一") }
+            return doc.select("table").firstOrNull {
+                it.text().contains("星期一") && it.id() !in setOf("kbtable", "timetable") &&
+                    it.select(".kbcontent, .kbcontent1").isEmpty()
+            }
         }
 
         private fun getNodeStr(node: Int): String = when (node) {
