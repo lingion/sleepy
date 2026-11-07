@@ -114,7 +114,7 @@ data class FrameSnapshotList(
 }
 
 object FrameTraversalTree {
-    private val declaredHtmlTypes = setOf("xhtd", "xytc", "cidp", "sdpei", "shu", "jmpt", "lngd", "vatuu", "yzzy", "cqu", "hit", "jz", "gxic", "gxnu", "jxnu", "nnutc", "shcc", "hbmzu", "nua", "gdei", "aic", "hust", "gliet", "cnu",
+    private val declaredHtmlTypes = setOf("hbut", "hnjm", "lz", "nau", "nju", "cqupt", "xhtd", "xytc", "cidp", "sdpei", "shu", "jmpt", "lngd", "vatuu", "yzzy", "cqu", "hit", "jz", "gxic", "gxnu", "jxnu", "nnutc", "shcc", "hbmzu", "nua", "gdei", "aic", "hust", "gliet", "cnu",
         "cdut", "gzhuyjs", "dhu", "ecjtu", "zptc", "ctgu", "nyist", "jxau",
         "hniu", "uic", "cityu", "stu", "nfu", "jmucy", "nuaajc", "qmu", "javtc", "hitsz",
         "bjtu", "scau", "jnu", "swust", "xjtu_post", "uestc_post", "bfa_post", "gdbyxy",
