@@ -97,7 +97,7 @@ class JwWakeUpCompatParserTest {
     fun `jz html CourseFormTable br split cells`() {
         val source = """
             <html><body><table id="CourseFormTable">
-            <tr><td>&nbsp;</td><td style="text-align:center">星期一</td></tr>
+            <tr><td class="firstHiddenTd">&nbsp;</td><td style="text-align:center">星期一</td></tr>
             <tr><td style="text-align:center">第5节</td>
             <td>数据结构<br>1-16单,18<br>钱老师<br>第5-6节<br>教2-301</td></tr>
             </table></body></html>
@@ -107,7 +107,7 @@ class JwWakeUpCompatParserTest {
 
         assertTrue(courses.isNotEmpty())
         assertEquals("数据结构", courses[0].name)
-        assertEquals(2, courses[0].day)
+        assertEquals(1, courses[0].day)
         assertEquals(1, courses[0].type)
         assertEquals("教2-301", courses[0].room)
         assertEquals("钱老师", courses[0].teacher)
@@ -116,53 +116,21 @@ class JwWakeUpCompatParserTest {
     // New Kingosoft source-shaped HTML layouts are tested in JwKingoSuperSourceShapeTest.
 
     @Test
-    fun `kingo super TaskActivity chain still works regression`() {
-        // 阶段 2 回归: 3 链失败时仍走老 kingo TaskActivity 路径
-        val source = """
-            <html><body><script>
-            var activity = null;
-            activity = new TaskActivity('线性代数','钱老师','教2-301','11111111111111111111');
-            index = 4 * unitCount + 3;
-            activity.index = index;
-            table0.marshalTable();
-            </script></body></html>
-        """.trimIndent()
-
-        val courses = JwKingoParser(source).generateCourseList()
-
-        assertEquals(1, courses.size)
-        assertEquals("线性代数", courses.single().name)
-        assertEquals("钱老师", courses.single().teacher)
-        assertEquals(5, courses.single().day)
+    fun `legacy declared route accepts real seven argument EAMS activities`() {
+        val source = """<script>var unitCount=12; var activity=null;
+            activity=new TaskActivity('T1','钱老师','C1','线性代数','R1','教2-301','0111');
+            index=4*unitCount+3; table0.marshalTable(1,1,3);</script>"""
+        assertEquals((1..3).map { JwCourse("线性代数", "教2-301", "钱老师", 5, 4, 4, it, it) },
+            JwKingoParser(source).generateCourseList())
     }
 
     @Test
-    fun `kingo TaskActivity js grid uses index times unitCount`() {
-        val source = """
-            <html><body><script>
-            var activity = null;
-            var courseName = '高等代数';
-            var actTeachers = new Array();
-            actTeachers.push({'name':'孙老师'});
-            activity = new TaskActivity('高等代数','孙老师','博学楼A-302','101010000000000000000000000000000000000000000000');
-            index = 3 * unitCount + 2;
-            activity.index = index;
-            table0.marshalTable();
-            </script></body></html>
-        """.trimIndent()
-
-        val courses = JwKingoParser(source).generateCourseList()
-
-        assertTrue(courses.isNotEmpty())
-        assertEquals("高等代数", courses[0].name)
-        // 跨仓 4 源一致 (WakeUp o0000OO0/CourseHelper Swift/shiguang HUNNU+UESTC): index 首因子 0-based, day=D+1
-        assertEquals(4, courses[0].day)
-        assertEquals(3, courses[0].startNode)
-        assertEquals("博学楼A-302", courses[0].room)
-        assertEquals("孙老师", courses[0].teacher)
-        assertEquals(1, courses[0].startWeek)
-        assertEquals(5, courses[0].endWeek)
-        assertEquals(1, courses[0].type)
+    fun `legacy declared route keeps sparse EAMS weeks and literal parentheses`() {
+        val source = """<script>var unitCount=12; var activity=null;
+            activity=new TaskActivity('T1','孙老师','C1','高等代数(上)','R1','博学楼A-302','010101');
+            index=3*unitCount+2; table0.marshalTable(1,1,5);</script>"""
+        assertEquals(listOf(1,3,5).map { JwCourse("高等代数(上)", "博学楼A-302", "孙老师", 4, 3, 3, it, it) },
+            JwKingoParser(source).generateCourseList())
     }
 
     @Test
@@ -195,8 +163,8 @@ class JwWakeUpCompatParserTest {
         val source = """
             <html><body><table id="MainWork_DataGrid1">
             <tr align="center"><td>星期一</td><td>星期二</td></tr>
-            <tr><td>高等数学<br>课程:高等数学<br>(张老师)<br>第1-16周<br>博远楼-101</td><td>&nbsp;</td></tr>
-            <tr><td>&nbsp;</td><td>大学英语<br>课程:大学英语<br>(刘老师)<br>第1-16周双<br>博远楼-202</td></tr>
+            <tr><td>高等数学<br>课程:高等数学<br>(博远楼-101)<br>第1-16周<br>主讲教师:张老师</td><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td><td>大学英语<br>课程:大学英语<br>(博远楼-202)<br>第1-16周双<br>主讲教师:刘老师</td></tr>
             </table></body></html>
         """.trimIndent()
 
@@ -219,7 +187,7 @@ class JwWakeUpCompatParserTest {
         val source = """
             <html><body><table id="MainWork_DataGrid1">
             <tr align="center"><td>星期一</td><td>星期二</td></tr>
-            <tr><td>高等数学<br>课程:高等数学<br>(张老师)<br>第1-16周<br>博远楼-101</td><td rowspan="2">数据结构<br>课程:数据结构<br>(钱老师)<br>第1-16周<br>教2-301</td></tr>
+            <tr><td>高等数学<br>课程:高等数学<br>(博远楼-101)<br>第1-16周<br>主讲教师:张老师</td><td rowspan="2">数据结构<br>课程:数据结构<br>(教2-301)<br>第1-16周<br>主讲教师:钱老师</td></tr>
             <tr><td>&nbsp;</td></tr>
             </table></body></html>
         """.trimIndent()
