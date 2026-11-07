@@ -51,14 +51,17 @@ class JwSgAssetParserTest {
     }
 
     @Test
-    fun `custom-time entries without sections are skipped not crashed`() {
+    fun `custom-time entries without sections retain their actual times`() {
         val json = """[
           {"name":"讲座","day":6,"isCustomTime":true,"customStartTime":"19:00","customEndTime":"20:30","weeks":[1,2]},
           {"name":"正常课","day":1,"startSection":3,"endSection":4,"weeks":[1,2,3]}
         ]"""
         val c = courses(json)
-        assertEquals(1, c.size)
-        assertEquals("正常课", c[0].name)
+        assertEquals(2, c.size)
+        assertEquals("讲座", c[0].name)
+        assertEquals("19:00", c[0].startTime)
+        assertEquals("20:30", c[0].endTime)
+        assertEquals("正常课", c[1].name)
     }
 
     @Test
