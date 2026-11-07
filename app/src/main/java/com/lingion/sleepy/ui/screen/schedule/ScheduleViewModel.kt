@@ -376,33 +376,37 @@ class ScheduleViewModel : ViewModel() {
 
     /**
      * v7.10.15 创建课表副本 — 全量复制表配置+课程, 新副本不接管默认表也不切选中,
-     * 命名沿用导入路径的去重规则(原名+"2"/"3"...)。
+     * 使用命名弹窗确认的名称，写入前再次校验空白和全局重名。
      * v7.10.16w: 建表+插课是一个撤回动作 — beginBatch 保首快照, 撤回一次整步回退
      * (此前两步写两次覆盖快照, 撤回只删掉课程行留下空表壳)。
      */
-    fun duplicateTable(id: Long) {
-        viewModelScope.launch {
-            val source = repo.getTable(id) ?: return@launch
-            val courses = repo.getCourses(id)
-            val existingNames = repo.getAllTables().map { it.name }
-            var index = 2
-            var name = "${source.name}2"
-            while (name in existingNames) { index++; name = "${source.name}$index" }
-            com.lingion.sleepy.data.undo.UndoManager.beginBatch()
-            try {
-                val newId = repo.insertTable(
-                    source.copy(id = 0, name = name, isDefault = false, createdAt = System.currentTimeMillis(), reminderOverride = null)
-                )
-                if (courses.isNotEmpty()) {
-                    // groupId 整组映射到新 UUID — 同一门课的节次共享新组 ID, 副本内仍可整组编辑
-                    val groupMap = courses.associate { it.groupId to java.util.UUID.randomUUID().toString() }
-                    repo.insertCourses(courses.map { it.copy(id = 0, groupId = groupMap[it.groupId] ?: it.groupId, tableId = newId) })
-                }
-            } finally {
-                com.lingion.sleepy.data.undo.UndoManager.endBatch()
+    suspend fun duplicateTable(id: Long, newName: String): Long {
+        val name = newName.trim()
+        if (name.isBlank()) return -2L
+        val source = repo.getTable(id) ?: return -1L
+        if (com.lingion.sleepy.util.TimeTableUtils.isTableNameTaken(
+                name,
+                repo.getAllTables().map { it.name },
+                repo.getAllPeriodTables().map { it.name }
+            )
+        ) return -2L
+        val courses = repo.getCourses(id)
+        com.lingion.sleepy.data.undo.UndoManager.beginBatch()
+        val newId = try {
+            val newId = repo.insertTable(
+                source.copy(id = 0, name = name, isDefault = false, createdAt = System.currentTimeMillis(), reminderOverride = null)
+            )
+            if (courses.isNotEmpty()) {
+                // groupId 整组映射到新 UUID — 同一门课的节次共享新组 ID, 副本内仍可整组编辑
+                val groupMap = courses.associate { it.groupId to java.util.UUID.randomUUID().toString() }
+                repo.insertCourses(courses.map { it.copy(id = 0, groupId = groupMap[it.groupId] ?: it.groupId, tableId = newId) })
             }
-            com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(com.lingion.sleepy.SleepyApp.get())
+            newId
+        } finally {
+            com.lingion.sleepy.data.undo.UndoManager.endBatch()
         }
+        com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(com.lingion.sleepy.SleepyApp.get())
+        return newId
     }
 
     /** Create a new empty table with auto-generated name.
