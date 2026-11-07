@@ -47,6 +47,7 @@ jobs:
         run: |
           python3 scripts/test_catalog_url_safety.py
           python3 scripts/test_catalog_ownership.py
+          python3 scripts/test_declared_protocol_routes.py
           python3 -m unittest discover -s scripts -p test_school_locations.py
           python3 scripts/generate_school_catalog.py --check
           python3 scripts/enrich_school_cities.py
@@ -86,6 +87,10 @@ jobs:
           node tools/test-paged-school-fetch.js
           node tools/test-school-api-fetch.js
           node tools/test-whut-fetch.js
+          node scripts/test_sues_capture.cjs
+          node scripts/test_thu_capture.cjs
+          node scripts/test_buaa_capture.cjs
+          node scripts/test_json_school_capture.cjs
 
   android-unit-test:
     runs-on: ubuntu-latest
