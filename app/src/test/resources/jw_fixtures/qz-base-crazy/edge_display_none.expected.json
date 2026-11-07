@@ -1,12 +1,11 @@
 {
-  "_doc": "fixture=qz-base-crazy/edge_display_none.html 适用 parser=JwQzCrazyParser。边界样本：td 内同格并排两个 kbcontent1 div, 其中一个 style='display:none;'(强智后台真实存在的调课/历史课隐藏数据, GZST adapter 佐证: 'div[class*=kbcontent][style*=display: none]' 选择器专为此设计)。upstream QzParser/JwQzParser 不过滤 display:none — 两个 div 都会被解析产出课程。本 fixture 的 expected 锁定'未过滤'基线；若 W2 阶段决定过滤 hidden div, 需同步把'隐藏的旧课程'从 expected.courses 中移除并在 JwQzParser.convert 入口加 attr('style') 检查。",
-  "_note": "两个 kbcontent1 是 <td> 的并列子节点(非嵌套) — 这是强智真实 DOM 形态；若改成嵌套 wrapper div, upstream QzParser 的 getElementsByClass 会把 wrapper 也命中, 导致 2 份课程重复+教师/教室串串(field concatenation)。",
+  "_doc": "依据同名 HTML 的七个星期列和数据行逐项核对。左侧说明列不计入星期，星期表头不计入课程行。原始 HTML 保持不变。",
   "courses": [
     {
       "name": "隐藏的旧课程",
-      "day": 2,
-      "startNode": 3,
-      "endNode": 4,
+      "day": 1,
+      "startNode": 1,
+      "endNode": 2,
       "startWeek": 1,
       "endWeek": 4,
       "type": 0,
@@ -15,9 +14,9 @@
     },
     {
       "name": "正常课程",
-      "day": 2,
-      "startNode": 3,
-      "endNode": 4,
+      "day": 1,
+      "startNode": 1,
+      "endNode": 2,
       "startWeek": 1,
       "endWeek": 16,
       "type": 0,
@@ -26,14 +25,15 @@
     },
     {
       "name": "大学英语",
-      "day": 3,
-      "startNode": 3,
-      "endNode": 4,
+      "day": 2,
+      "startNode": 1,
+      "endNode": 2,
       "startWeek": 1,
       "endWeek": 8,
       "type": 1,
       "teacher": "李老师",
       "room": "B202"
     }
-  ]
+  ],
+  "_audit": "2026-11-03 纠正旧期望中固化的星期和节次偏移。周次、教师、教室及原有隐藏视图语义保持原页面证据。"
 }
