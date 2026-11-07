@@ -104,6 +104,12 @@ object JwProtocol {
     const val TYPE_NEW_URP_SUPER = "new_urp_super"
 
     /** School-specific layouts require an explicit catalog protocol. */
+    const val TYPE_JMUCY = "jmucy"
+    const val TYPE_NUAAJC = "nuaajc"
+    const val TYPE_QMU = "qmu"
+    const val TYPE_JAVTC = "javtc"
+    const val TYPE_HITSZ = "hitsz"
+
     const val TYPE_SUSTECH = "sustech"
     const val TYPE_UIC = "uic"
     const val TYPE_CITYU = "cityu"
@@ -387,6 +393,7 @@ object JwProtocol {
 
     /** WakeUp-derived types routed by the compatibility layer; kept separate from legacy UI ordering. */
     val WAKEUP_COMPAT_TYPES: List<String> = listOf(
+        TYPE_JMUCY, TYPE_NUAAJC, TYPE_QMU, TYPE_JAVTC, TYPE_HITSZ,
         TYPE_SUSTECH, TYPE_UIC, TYPE_CITYU, TYPE_STU, TYPE_NFU,
         TYPE_FSTVC, TYPE_GDBH, TYPE_GLIET, TYPE_CNU, TYPE_XBELLSOFT,
         TYPE_CDUT, TYPE_GZHUYJS, TYPE_DHU, TYPE_ECJTU, TYPE_ZPTC, TYPE_CTGU, TYPE_NYIST, TYPE_JXAU,
@@ -405,6 +412,11 @@ object JwProtocol {
     )
 
     fun displayName(type: String?): String = when (type) {
+        TYPE_JMUCY -> "集美大学诚毅学院教务"
+        TYPE_NUAAJC -> "南航金城学院教务"
+        TYPE_QMU -> "齐齐哈尔医学院教务"
+        TYPE_JAVTC -> "江西航空职业技术学院教务"
+        TYPE_HITSZ -> "哈工大深圳教务"
         TYPE_SUSTECH -> "南方科技大学教务"
         TYPE_UIC -> "UIC 旧版教务"
         TYPE_CITYU -> "CityU 课表"

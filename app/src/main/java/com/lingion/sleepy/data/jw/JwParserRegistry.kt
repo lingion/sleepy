@@ -73,6 +73,11 @@ object JwParserRegistry {
     )
 
     private val FACTORIES: Map<String, (String) -> JwParser> = linkedMapOf(
+        JwProtocol.TYPE_JMUCY to { html -> JwUndergradHtmlParser(html, JwProtocol.TYPE_JMUCY) },
+        JwProtocol.TYPE_NUAAJC to { html -> JwUndergradHtmlParser(html, JwProtocol.TYPE_NUAAJC) },
+        JwProtocol.TYPE_QMU to { html -> JwUndergradHtmlParser(html, JwProtocol.TYPE_QMU) },
+        JwProtocol.TYPE_JAVTC to { html -> JwUndergradHtmlParser(html, JwProtocol.TYPE_JAVTC) },
+        JwProtocol.TYPE_HITSZ to { html -> JwUndergradHtmlParser(html, JwProtocol.TYPE_HITSZ) },
         JwProtocol.TYPE_KINGO_NEW to ::JwKingoParser,
         JwProtocol.TYPE_KINGO_ZX to ::JwKingoZxParser,
         JwProtocol.TYPE_JZ to ::JwJzParser,
@@ -242,6 +247,7 @@ object JwParserRegistry {
     )
 
     private val DECLARED_ONLY_TYPES = setOf(
+        JwProtocol.TYPE_JMUCY, JwProtocol.TYPE_NUAAJC, JwProtocol.TYPE_QMU, JwProtocol.TYPE_JAVTC, JwProtocol.TYPE_HITSZ,
         JwProtocol.TYPE_HNIU, JwProtocol.TYPE_SUSTECH, JwProtocol.TYPE_UIC, JwProtocol.TYPE_CITYU, JwProtocol.TYPE_STU, JwProtocol.TYPE_NFU,
         JwProtocol.TYPE_NYIST, JwProtocol.TYPE_JXAU,
         JwProtocol.TYPE_FSTVC, JwProtocol.TYPE_GDBH, JwProtocol.TYPE_GLIET, JwProtocol.TYPE_CNU, JwProtocol.TYPE_XBELLSOFT,
