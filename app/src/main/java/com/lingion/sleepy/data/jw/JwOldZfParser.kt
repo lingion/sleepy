@@ -40,6 +40,8 @@ class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(sourc
         doc.outputSettings().prettyPrint(false)
         // T1 G5: #Table1 → table.blacktab → 文本含"星期一"的第一个 table
         val table1 = doc.getElementById("Table1")
+            ?: doc.getElementById("kbgrid_table")
+            ?: doc.getElementById("table1")
             ?: doc.select("table.blacktab").firstOrNull()
             ?: pickTableByMonday(doc)
             ?: return emptyList()
@@ -70,9 +72,10 @@ class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(sourc
                     continue
                 }
                 countDay++
+                val span = td.attr("rowspan").toIntOrNull()?.takeIf { it > 0 } ?: 1
                 when (type) {
-                    0 -> importBeanList.addAll(parseImportBean(countDay, td.html(), node))
-                    else -> importBeanList.addAll(parseImportBean1(countDay, courseSource, node))
+                    0 -> importBeanList.addAll(parseImportBean(countDay, td.html(), node).map { it.copy(span = span) })
+                    else -> importBeanList.addAll(parseImportBean1(countDay, courseSource, node).map { it.copy(span = span) })
                 }
             }
         }
@@ -94,7 +97,7 @@ class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(sourc
             val split = courseStr.substringAfter("\">").substringBeforeLast("</a>").split("<br>")
                 .map { stripAnchorTag(it.trim()) }
             if (split.isEmpty() || split.size < 3) continue
-            val temp: ImportBean = if (split[1] in COURSE_PROPERTY) {
+            val temp: ImportBean = if (isCourseProperty(split[1])) {
                 if (split.size == 4) {
                     ImportBean(startNode = node, name = split[0],
                         timeInfo = split[2],
@@ -143,7 +146,7 @@ class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(sourc
                         preIndex = i
                         continue
                     }
-                    if (split[preIndex - 1] in COURSE_PROPERTY) {
+                    if (isCourseProperty(split[preIndex - 1])) {
                         hasTypeFlag = true
                     }
                     val temp = ImportBean(startNode = node,
@@ -167,7 +170,7 @@ class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(sourc
             }
             if (i == split.size - 1) {
                 if (preIndex < 1) continue
-                if (split[preIndex - 1] in COURSE_PROPERTY) {
+                if (isCourseProperty(split[preIndex - 1])) {
                     hasTypeFlag = true
                 }
                 val temp = ImportBean(startNode = node,
@@ -275,7 +278,7 @@ class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(sourc
                 }
             }
         }
-        if (step == 0) step = 1
+        if (step == 0) step = bean.span
         // T1 G12: 补移植漏行(上游 L214 result[1] = step) — 缺此行 endNode 恒 = startNode-1
         result[1] = step
 
@@ -290,6 +293,7 @@ class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(sourc
                 weeks[0].toIntOrNull()?.let {
                     startWeek = it
                     result[2] = it
+                    result[3] = it
                 }
             }
             if (weeks.size > 1) {
@@ -320,10 +324,14 @@ class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(sourc
         var teacher: String?,
         var room: String?,
         var startNode: Int,
-        val cDay: Int
+        val cDay: Int,
+        val span: Int = 1,
     )
 
     companion object {
+        private fun isCourseProperty(value: String): Boolean = value in COURSE_PROPERTY ||
+            value.length in 1..2 && value.all { it in 'A'..'Z' || it in 'a'..'z' }
+
         // 正则与上游 Common.kt 逐字符一致, 勿改
         private val NODE_PATTERN = Regex("""\(\d{1,2}[-]*\d*节""")
         private val WEEK_PATTERN = Regex("""\{第\d{1,2}[-]*\d*周""")
