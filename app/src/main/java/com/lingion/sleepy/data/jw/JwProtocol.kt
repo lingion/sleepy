@@ -125,6 +125,13 @@ object JwProtocol {
     const val TYPE_SWJTU_POST = "swjtu_post"
     const val TYPE_KG_ZX = "kg_zx"
 
+    const val TYPE_HUAT = "huat"
+    const val TYPE_SEU_2017 = "seu_2017"
+    const val TYPE_SHU2024 = "shu2024"
+    const val TYPE_TJU = "tju"
+    const val TYPE_HQU = "hqu"
+    const val TYPE_CHANGZHOU = "changzhou"
+
     const val TYPE_HBUT = "hbut"
     const val TYPE_HNJM = "hnjm"
     const val TYPE_LZ = "lz"
@@ -452,6 +459,7 @@ object JwProtocol {
 
     /** WakeUp-derived types routed by the compatibility layer; kept separate from legacy UI ordering. */
     val WAKEUP_COMPAT_TYPES: List<String> = listOf(
+        TYPE_HUAT, TYPE_SEU_2017, TYPE_SHU2024, TYPE_TJU, TYPE_HQU, TYPE_CHANGZHOU,
         TYPE_JZ_1, TYPE_JZ_X, TYPE_WIST, TYPE_XMU, TYPE_SWJTU_POST, TYPE_KG_ZX,
         TYPE_HBUT, TYPE_HNJM, TYPE_LZ, TYPE_NAU, TYPE_NJU, TYPE_CQUPT,
         TYPE_XHTD, TYPE_XYTC, TYPE_CIDP, TYPE_SDPEI, TYPE_SHU, TYPE_JMPT, TYPE_LNGD, TYPE_VATUU, TYPE_YZZY,
@@ -480,6 +488,12 @@ object JwProtocol {
     )
 
     fun displayName(type: String?): String = when (type) {
+        TYPE_HUAT -> "湖北汽车工业学院教务"
+        TYPE_SEU_2017 -> "东南大学2017教务"
+        TYPE_SHU2024 -> "上海大学2024教务"
+        TYPE_TJU -> "同济大学教务"
+        TYPE_HQU -> "华侨大学教务"
+        TYPE_CHANGZHOU -> "常州模板教务"
         TYPE_JZ_1 -> "金智课程表"
         TYPE_JZ_X -> "金智扩展课程表"
         TYPE_WIST -> "武汉船舶课程表"
