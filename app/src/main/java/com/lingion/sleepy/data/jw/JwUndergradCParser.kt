@@ -5,7 +5,7 @@ import org.jsoup.nodes.Element
 
 /** Explicit layouts from the fixed 6.6.2 baseline. Unknown arrangements produce no course. */
 class JwUndergradCParser(source: String, private val layout: String) : JwParser(source) {
-    private val document by lazy { Jsoup.parse(source) }
+    private val document by lazy { Jsoup.parse(source).also { it.outputSettings().prettyPrint(false) } }
 
     override fun generateCourseList(): List<JwCourse> = when (layout) {
         "xhtd" -> xhtd()
@@ -80,6 +80,7 @@ class JwUndergradCParser(source: String, private val layout: String) : JwParser(
         if ('隔' in text) return emptyList()
         // Parentheses around a whole week expression are formatting, not an extra time field.
         if (text.startsWith('(') && text.endsWith(')') && text.count { it == '(' } == 1) text = text.drop(1).dropLast(1)
+        text = text.replace(Regex("\\(([单双])\\)周$"), "周($1)")
         return schoolWeekRanges(text, trailingParityAppliesToAll = true)
     }
 
@@ -107,7 +108,7 @@ class JwUndergradCParser(source: String, private val layout: String) : JwParser(
         val pieces = html.split(Regex("(?i)<br\\s*/?>"))
         return when(pieces.size) {
             2 -> pieces[0] to pieces[1]
-            3 -> if (text(pieces[0]).length + text(pieces[1]).length < 4)
+            3 -> if (pieces[0].length + pieces[1].length < 4)
                 pieces[0]+pieces[1] to pieces[2] else pieces[0] to pieces[1]+pieces[2]
             else -> null
         }
@@ -178,7 +179,8 @@ class JwUndergradCParser(source: String, private val layout: String) : JwParser(
             for ((index, match) in matches.withIndex()) {
                 val suffix = fields[6].substring(match.range.last+1,matches.getOrNull(index+1)?.range?.first ?: fields[6].length).trim()
                 val week = suffix.replace('（','(').replace('）',')').removePrefix("(").removeSuffix(")")
-                slots(fields[2],fields[7],fields[5],day(match.groupValues[1]),match.groupValues[2],week,credit)
+                val prefix=when(week.firstOrNull()) { '单'->1; '双'->2; else->0 }
+                slots(fields[2],fields[7],fields[5],day(match.groupValues[1]),match.groupValues[2],if(prefix==0) week else week.drop(1),credit,parity=prefix)
             }
         }
     }
@@ -254,10 +256,9 @@ class JwUndergradCParser(source: String, private val layout: String) : JwParser(
                 val weekday=column-start+1
                 if(weekday !in 1..7) continue
                 val fields=lines(cell.html().replace("&nbsp;","<br>"))
-                if(fields.size%4!=0) continue
-                for(group in fields.chunked(4)) {
-                    val nameTeacher=Regex("^(.*)[（(]([^()（）]*)[）)]$").matchEntire(group[0]) ?: continue
-                    slots(nameTeacher.groupValues[1],group[2],nameTeacher.groupValues[2],weekday,rowIndex.toString(),group[1])
+                for(index in 0..fields.size-4) {
+                    val nameTeacher=Regex("^(.*)[（(]([^()（）]*)[）)]$").matchEntire(fields[index]) ?: continue
+                    slots(nameTeacher.groupValues[1],fields[index+2],nameTeacher.groupValues[2],weekday,rowIndex.toString(),fields[index+1])
                 }
             }
         }
