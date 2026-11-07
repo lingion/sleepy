@@ -36,24 +36,30 @@ internal object JwJsonSchoolCapture {
     if (a && b && a !== b) throw Error('页面学期控件值不一致');
     return a || b;
   }
-  function findFrame(w, depth) {
-    if (depth > 8) return null;
+  function candidateFrames(w, depth, candidates) {
+    if (depth > 8) throw Error('课表页面嵌套过深，请直接打开需要导入的课表');
+    var children = [];
     try {
       var host = w.location.hostname.toLowerCase(), path = w.location.pathname;
       var allowed = type === 'sustech' ? host === 'tis.sustech.edu.cn' :
         type === 'shsmu' ? (host === 'jwstu.shsmu.edu.cn' || host === 'webvpn2.shsmu.edu.cn') && /\/Home\//i.test(path) :
         type === 'ygu' ? host === 'ygu.edu.cn' : !!w.document.querySelector('#kcbForm');
-      if (allowed && /^https?:$/.test(w.location.protocol)) return w;
-      for (var i=0; i<w.frames.length; i++) { var child = findFrame(w.frames[i], depth+1); if (child) return child; }
+      if (allowed && /^https?:$/.test(w.location.protocol)) candidates.push(w);
+      for (var i=0; i<w.frames.length; i++) children.push(w.frames[i]);
     } catch (_) {}
-    return null;
+    for (var j=0; j<children.length; j++) candidateFrames(children[j], depth+1, candidates);
+    return candidates;
   }
-  W = findFrame(window, 0);
-  if (!W) { fail('请登录教务系统并打开需要导入的课表页面'); return; }
-  var initialHref = W.location.href;
+  try {
+    var candidates = candidateFrames(window, 0, []);
+    if (candidates.length !== 1) throw Error(candidates.length ? '页面有多个课表，请仅打开需要导入的课表' : '请登录教务系统并打开需要导入的课表页面');
+    W = candidates[0];
+  } catch (selectionError) { fail(String(selectionError)); return; }
+  var initialHref = W.location.href, initialDocument = W.document;
   function samePage() {
     if (finished) throw Error('采集已结束');
-    if (W.location.href !== initialHref) throw Error('采集期间页面已切换，请重新导入');
+    var candidates = candidateFrames(window, 0, []);
+    if (candidates.length !== 1 || candidates[0] !== W || W.document !== initialDocument || W.location.href !== initialHref) throw Error('采集期间课表页面已切换，请重新导入');
   }
   async function request(target, body, json) {
     samePage();
@@ -114,13 +120,17 @@ internal object JwJsonSchoolCapture {
       var checkXn = text(check.XN); if (/^[0-9]{4}$/.test(checkXn)) checkXn += '-' + (Number(checkXn)+1);
       if (checkXn !== xn || text(check.XQ) !== xq) throw Error('采集期间当前学期发生变化');
     }
+    if (eitherName('xn','XN') !== originalXn || eitherName('xq','XQ') !== originalXq) throw Error('采集期间所选学期发生变化');
     finish({ok:true,format:type,data:JSON.stringify(rows),semester:xn+'-'+xq});
   }
   async function shsmu() {
     var current = new URL(initialHref), observed = /\/Home\/GetCurriculumTable$/i.test(current.pathname) ? current : null;
+    var fromPerformance = !observed;
     if (!observed) { var latest = recentRequest(/\/Home\/GetCurriculumTable$/i); observed = latest && latest.url; }
-    var rangeStart = query('Start') || (observed && observed.searchParams.get('Start')) || '';
-    var rangeEnd = query('End') || (observed && observed.searchParams.get('End')) || '';
+    var controlStart = query('Start'), controlEnd = query('End');
+    fromPerformance = fromPerformance && (!controlStart || !controlEnd);
+    var rangeStart = controlStart || (observed && observed.searchParams.get('Start')) || '';
+    var rangeEnd = controlEnd || (observed && observed.searchParams.get('End')) || '';
     rangeStart = date(rangeStart); rangeEnd = date(rangeEnd);
     if (!rangeStart || !rangeEnd || rangeEnd < rangeStart) throw Error('请在课表页面选择待导入的起止日期，等待课表加载后再导入');
     var marker = /\/Home\//i.exec(current.pathname);
@@ -129,7 +139,11 @@ internal object JwJsonSchoolCapture {
     var result = await jsonRequest(target.href);
     if (!object(result) || !Array.isArray(result.list) || !result.list.every(object)) throw Error('课表接口未返回课程列表');
     var checkStart = query('Start'), checkEnd = query('End');
-    if (checkStart && checkStart !== rangeStart || checkEnd && checkEnd !== rangeEnd) throw Error('采集期间日期范围发生变化');
+    if (checkStart !== controlStart || checkEnd !== controlEnd) throw Error('采集期间日期范围发生变化');
+    if (fromPerformance) {
+      var latestAfter = recentRequest(/\/Home\/GetCurriculumTable$/i), observedAfter = latestAfter && latestAfter.url;
+      if (!observedAfter || observedAfter.pathname !== target.pathname || date(observedAfter.searchParams.get('Start')) !== rangeStart || date(observedAfter.searchParams.get('End')) !== rangeEnd) throw Error('采集期间日期范围发生变化');
+    }
     result.sleepyShsmuCapture = true;
     result.rangeStart = rangeStart; result.rangeEnd = rangeEnd;
     // A requested range may be a single displayed week. It does not prove week one.

@@ -32,6 +32,14 @@ async function execute(type, options={}) {
   const initial=options.url || hosts[type], location=new URL(initial);
   const doc=documentStub(fields,weekOptions,!options.noForm);
   let currentCalls=0;
+  let entries=options.entries || (type==='shsmu' && !options.noRange ? [{name:location.origin+'/Home/GetCurriculumTable?Start=2026-09-07&End=2027-01-31',startTime:1}] : []);
+  function mutateCaptureContext() {
+    if(options.detach)root.frames=[];
+    if(options.replaceFrame)root.frames=[{...W,frames:[]}];
+    if(options.duplicateFrame)root.frames.push({...W,frames:[]});
+    if(options.replaceDocument)W.document=documentStub(fields,weekOptions,!options.noForm);
+    if(options.updatedEntries)entries=options.updatedEntries;
+  }
   const fetch=async(url,init)=>{
     calls.push({url,init}); const u=new URL(url); let payload;
     if(u.pathname==='/component/querydangqianxnxq') {
@@ -45,16 +53,18 @@ async function execute(type, options={}) {
     else throw Error('Unexpected request '+url);
     if(options.changeFields && calls.length===options.changeFields.at)Object.assign(fields,options.changeFields.values);
     if(options.navigate)location.href=initial+'#changed';
+    if(!options.mutateOnText)mutateCaptureContext();
     if(options.failure==='network')throw Error('offline');
     const response={ok:options.failure!=='http',status:options.failure==='http'?503:200,
-      url:options.finalUrl || url,text:async()=>options.failure==='login'?'<html>登录</html>':typeof payload==='string'?payload:JSON.stringify(payload)};
+      url:options.finalUrl || url,text:async()=>{if(options.mutateOnText)mutateCaptureContext();return options.failure==='login'?'<html>登录</html>':typeof payload==='string'?payload:JSON.stringify(payload);}};
     if(options.hanging)return new Promise(resolve=>{late=()=>resolve(response);});
     return response;
   };
-  const W={location,document:doc,fetch,frames:[],performance:{getEntriesByType:()=>options.entries || (type==='shsmu' && !options.noRange ? [{name:location.origin+'/Home/GetCurriculumTable?Start=2026-09-07&End=2027-01-31',startTime:1}] : [])},
+  const W={location,document:doc,fetch,frames:[],performance:{getEntriesByType:()=>entries},
     DOMParser:class {parseFromString(raw,mime) {assert.equal(mime,'text/html'); const page=documentStub({},options.responseWeekOptions===undefined?weekOptions:options.responseWeekOptions, !options.responseNoForm && raw.includes('id="kcbForm"')); if(options.responsePassword){const query=page.querySelector;page.querySelector=s=>s==='input[type="password"]'?{}:query(s);} return page;}}};
   if(options.wrongHost)W.location=new URL('https://evil.example'+location.pathname);
   const root=options.nested?{location:new URL('https://portal.example.edu/'),document:documentStub({},null,false),frames:[W]}:W;
+  if(options.duplicateInitial)root.frames.push({...W,frames:[]});
   root.__sleepyBridge={onWiseduResult:json=>callbacks.push(JSON.parse(json))};
   const context={window:root,URL,URLSearchParams,AbortController,Date,Set,console,
     setTimeout:fn=>{timers.set(++timerId,fn);return timerId;},clearTimeout:id=>timers.delete(id)};
@@ -66,8 +76,8 @@ async function execute(type, options={}) {
   return {result:callbacks[0],calls,fields};
 }
 (async()=>{
-  let count=0;
-  async function check(name,body){await body();count++;console.log('PASS '+name);}
+  let count=0, failures=[];
+  async function check(name,body){try { await body();count++;console.log('PASS '+name); } catch(error) { failures.push(name);console.error('FAIL '+name+'\n'+error.stack); }}
   await check('SUSTech selected semester exact form and raw array',async()=>{
     const {result,calls}=await execute('sustech');assert.equal(result.ok,true);assert.equal(result.semester,'2026-2027-1');assert.deepEqual(JSON.parse(result.data),[lesson,{KEY:'bz'}]);
     assert.equal(calls.length,1);assert.equal(calls[0].init.body,'xn=2026-2027&xq=1');
@@ -101,11 +111,20 @@ async function execute(type, options={}) {
   await check('ZJU rejects semester switch without navigation',async()=>{assert.equal((await execute('zju_post',{fields:{xnxq:'2026-2027-1'},changeFields:{at:2,values:{xnxq:'2026-2027-2'}}})).result.ok,false);});
   for(const options of [{weekOptions:[]},{weekOptions:[{value:'0',textContent:'请选择'}]},{weekOptions:[{value:'2',textContent:'2'},{value:'2',textContent:'2'}]},{weekOptions:[{value:'9007199254740992',textContent:'bad'}]},{responseNoForm:true},{responsePassword:true},{responseWeekOptions:[{value:'3',textContent:'3'}]}])await check('ZJU rejects incomplete or changed weeks '+JSON.stringify(options),async()=>{assert.equal((await execute('zju_post',options)).result.ok,false);});
   for(const type of Object.keys(hosts)){
+    await check(type+' rejects two candidate frames before requesting',async()=>{const {result,calls}=await execute(type,{nested:true,duplicateInitial:true});assert.equal(result.ok,false);assert.equal(calls.length,0);});
+    for(const mutation of ['detach','replaceFrame','duplicateFrame','replaceDocument']) for(const mutateOnText of [false,true]) await check(type+' rejects '+mutation+' '+(mutateOnText?'after body':'after headers'),async()=>{const {result}=await execute(type,{nested:true,[mutation]:true,mutateOnText});assert.equal(result.ok,false);assert.equal(result.data,undefined);});
     await check(type+' nested logged-in frame',async()=>{assert.equal((await execute(type,{nested:true})).result.ok,true);});
     for(const failure of ['network','http','login'])await check(type+' '+failure,async()=>{const {result}=await execute(type,{failure});assert.equal(result.ok,false);assert.equal(result.data,undefined);});
     for(const options of [{hanging:true},{navigate:true},{finalUrl:'https://login.example.edu/'},{finalUrl:hosts[type]+'?unexpected=1'}])await check(type+' terminates safely '+JSON.stringify(options),async()=>{const {result}=await execute(type,options);assert.equal(result.ok,false);assert.equal(result.data,undefined);});
     if(type!=='zju_post')await check(type+' wrong host rejected',async()=>{const {result,calls}=await execute(type,{wrongHost:true});assert.equal(result.ok,false);assert.equal(calls.length,0);});
     await check(type+' same-origin credentials and no redirects',async()=>{const {result,calls}=await execute(type);assert.equal(result.ok,true);for(const {url,init} of calls){assert.equal(new URL(url).origin,new URL(hosts[type]).origin);assert.equal(init.credentials,'include');assert.equal(init.mode,'same-origin');assert.equal(init.redirect,'error');}});
   }
+  await check('SHSMU rejects changed latest performance range without controls',async()=>{const {result}=await execute('shsmu',{updatedEntries:[{name:hosts.shsmu.replace('/Home/Curriculum','/Home/GetCurriculumTable?Start=2026-10-12&End=2026-10-18'),startTime:2}]});assert.equal(result.ok,false);assert.equal(result.data,undefined);});
+  await check('SHSMU rechecks latest performance range after body text',async()=>{const {result}=await execute('shsmu',{mutateOnText:true,updatedEntries:[{name:hosts.shsmu.replace('/Home/Curriculum','/Home/GetCurriculumTable?Start=2026-10-12&End=2026-10-18'),startTime:2}]});assert.equal(result.ok,false);});
+  await check('SHSMU allows own completed request with unchanged range',async()=>{const {result}=await execute('shsmu',{updatedEntries:[{name:hosts.shsmu.replace('/Home/Curriculum','/Home/GetCurriculumTable?Start=2026-09-07&End=2027-01-31'),startTime:2}]});assert.equal(result.ok,true);});
+  await check('SHSMU rejects removed range controls even when performance remains old',async()=>{const {result}=await execute('shsmu',{fields:{Start:'2026-09-07',End:'2027-01-31'},changeFields:{at:1,values:{Start:'',End:''}}});assert.equal(result.ok,false);});
+  await check('SHSMU ignores newer cross-origin performance request',async()=>{const {result}=await execute('shsmu',{updatedEntries:[{name:'https://jwstu.shsmu.edu.cn/Home/GetCurriculumTable?Start=2026-09-07&End=2027-01-31',startTime:1},{name:'https://evil.example/Home/GetCurriculumTable?Start=2026-10-12&End=2026-10-18',startTime:5}]});assert.equal(result.ok,true);});
+  await check('SUSTech rejects selection added during current-term recheck',async()=>{const {result}=await execute('sustech',{current:true,changeFields:{at:3,values:{xn:'2026-2027',xq:'2'}}});assert.equal(result.ok,false);assert.equal(result.data,undefined);});
   console.log('Passed '+count+' four-school offline capture scenarios.');
+  if(failures.length)throw Error(failures.length+' failed scenarios: '+failures.join('; '));
 })().catch(error=>{console.error(error);process.exitCode=1;});
