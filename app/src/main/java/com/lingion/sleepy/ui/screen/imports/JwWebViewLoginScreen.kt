@@ -2063,7 +2063,8 @@ private const val CLASSIC_EAMS_FETCH_JS = """
         if (bind < 0) continue;
         var scope = t.substring(bind);
         if (/addInput\(\s*form\s*,\s*["']ids["']\s*,\s*["'](\d+)["']/.test(scope) ||
-            /semesterCalendar\(\{[^}]*value\s*:\s*["'](\d+)["']/.test(scope)) {
+            /semesterCalendar\(\{[^}]*["']?\bvalue["']?\s*:\s*["'](\d+)["']/.test(scope) ||
+            /<input\b(?=[^>]*\sname\s*=\s*["']ids["'])(?=[^>]*\svalue\s*=\s*["'](\d+)["'])[^>]*>/.test(scope) || /<input\b(?=[^>]*\sname\s*=\s*["']semester\.id["'])(?=[^>]*\svalue\s*=\s*["'](\d+)["'])[^>]*>/.test(scope)) {
           pageUrl = texts[j][1];
           return scope;
         }
@@ -2096,12 +2097,12 @@ private const val CLASSIC_EAMS_FETCH_JS = """
     // ② 参数提取 (宽松 regex, §4; ids 取不到 → 不猜, 直接 err)
     function pick(re){ var m = scope.match(re); return m ? m[1] : null; }
     var ids = pick(/addInput\(\s*form\s*,\s*["']ids["']\s*,\s*["'](\d+)["']/)
-           || pick(/<[^>]*\bname\s*=\s*["']ids["'][^>]*>.*?\bvalue\s*=\s*["'](\d+)["']/);
+           || pick(/<input\b(?=[^>]*\sname\s*=\s*["']ids["'])(?=[^>]*\svalue\s*=\s*["'](\d+)["'])[^>]*>/);
     if (!ids) { fail('未能从课表页提取学号参数, 请在课表页停留后重试'); return; }
-    var semCal = pick(/semesterCalendar\(\{[^}]*value\s*:\s*["'](\d+)["']/)
-              || pick(/<[^>]*\bname\s*=\s*["']semester\.id["'][^>]*>.*?\bvalue\s*=\s*["'](\d+)["']/);
-    var semHidden = pick(/<[^>]*\bname\s*=\s*["']semester\.id["'][^>]*>.*?\bvalue\s*=\s*["'](\d+)["']/);
-    var projectId = pick(/<[^>]*\bname\s*=\s*["']project\.id["'][^>]*>.*?\bvalue\s*=\s*["'](\d+)["']/) || '1';
+    var semCal = pick(/semesterCalendar\(\{[^}]*["']?\bvalue["']?\s*:\s*["'](\d+)["']/)
+              || pick(/<input\b(?=[^>]*\sname\s*=\s*["']semester\.id["'])(?=[^>]*\svalue\s*=\s*["'](\d+)["'])[^>]*>/);
+    var semHidden = pick(/<input\b(?=[^>]*\sname\s*=\s*["']semester\.id["'])(?=[^>]*\svalue\s*=\s*["'](\d+)["'])[^>]*>/);
+    var projectId = pick(/<input\b(?=[^>]*\sname\s*=\s*["']project\.id["'])(?=[^>]*\svalue\s*=\s*["'](\d+)["'])[^>]*>/) || '1';
     // ③ 候选 ≤3 组, Dart buildCourseTableParamsCandidates 同序 (§3.1-③), 去重
     var semesters = [];
     if (semCal) semesters.push(semCal);
