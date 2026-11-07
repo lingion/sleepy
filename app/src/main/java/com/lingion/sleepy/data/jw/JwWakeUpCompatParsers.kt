@@ -723,7 +723,12 @@ internal object WakeUpCompat {
                     val day = extractDay(timing.substringBefore('[')) ?: continue
                     val nodeText = timing.substringAfter('[', "").substringBefore(']')
                     val weeks = if (weeksIndex >= 0) cells.getOrNull(weeksIndex)?.text().orEmpty() else timing.substringAfter('(', "").substringBefore('周')
-                    val parity = cells.getOrNull(parityIndex)?.text().orEmpty()
+                    val parityText = cells.getOrNull(parityIndex)?.text().orEmpty()
+                    val parity = when {
+                        parityText.contains('单') -> "单"
+                        parityText.contains('双') -> "双"
+                        else -> ""
+                    }
                     val credit = cells.getOrNull(creditIndex)?.text()?.trim()?.toFloatOrNull()
                         ?.takeIf { it.isFinite() && it >= 0f } ?: 0f
                     val typedWeeks = weeks.replace('，', ',').split(',').joinToString(",") { part ->
