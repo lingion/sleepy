@@ -6226,7 +6226,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "aic",
     "probe": {
       "url": "https://webvpn.sppc.edu.cn/https/77726476706e69737468656265737421e3e44ed234207853300d8db9d6562d/sso/#/passport/login?redirect_uri=aHR0cHM6Ly9zc28uc3BwYy5lZHUuY24vc2lnbi9hdXRoei9jYXMvbG9naW4_c2VydmljZT1odHRwcyUzQSUyRiUyRndlYnZwbi5zcHBjLmVkdS5jbiUyRmxvZ2luJTNGY2FzX2xvZ2luJTNEdHJ1ZQ",
       "checkedAt": "2026-10-16",
@@ -6659,7 +6659,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "simc",
     "probe": {
       "url": "http://jxfw.simc.cn/fwpt/login.action",
       "checkedAt": "2026-10-16",
@@ -6911,7 +6911,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "simc",
     "probe": {
       "url": "http://jxfw.simc.cn/fwpt/login.action",
       "checkedAt": "2026-10-16",
@@ -7379,7 +7379,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "shcc",
     "probe": {
       "url": "https://jwnew.shcc.edu.cn/default.jsp",
       "checkedAt": "2026-10-16",
@@ -8800,7 +8800,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "cppu",
     "probe": {
       "url": "https://jw.cppu.edu.cn/index.html",
       "checkedAt": "2026-10-16",
@@ -14836,7 +14836,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "bfa",
     "probe": {
       "url": "http://jwstu.bfa.edu.cn/?#!/home/common/scheduleQuery",
       "checkedAt": "2026-10-16",
@@ -16377,7 +16377,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "qz_single_node",
     "probe": {
       "url": "http://jw3.njau.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -16867,7 +16867,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "nua",
     "probe": {
       "url": "https://jwzx.nua.edu.cn",
       "checkedAt": "2026-10-16",
@@ -19556,7 +19556,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "jlict_qz_old",
     "probe": {
       "url": "http://jwc.jlict.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -23574,7 +23574,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "fdu",
     "probe": {
       "url": "https://my.fudan.edu.cn/list/bks_xx_kcb",
       "checkedAt": "2026-10-16",
@@ -33220,7 +33220,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "aic",
     "probe": {
       "url": "https://uap.gdfs.edu.cn/lyuapServer/login?service=http://aic.gdfs.edu.cn/log/one/login2.aspx",
       "checkedAt": "2026-10-16",
@@ -34047,7 +34047,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "gdei",
     "probe": {
       "url": "https://cas.gtcfla.edu.cn/lyuapServer/login?service=https://portal.gtcfla.edu.cn/shiro-cas",
       "checkedAt": "2026-10-16",
@@ -34227,7 +34227,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "gdei",
     "probe": {
       "url": "https://www.gdei.edu.cn",
       "checkedAt": "2026-10-16",
@@ -35527,7 +35527,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "seig",
     "probe": {
       "url": "https://my.seig.edu.cn",
       "checkedAt": "2026-10-16",
@@ -35676,7 +35676,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "seig",
     "probe": {
       "url": "https://my.seig.edu.cn",
       "checkedAt": "2026-10-16",
@@ -35893,7 +35893,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "gdei",
     "probe": {
       "url": "https://cas.gxuie.cn/lyuapServer/login",
       "checkedAt": "2026-10-16",
@@ -38274,7 +38274,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "hbmzu",
     "probe": {
       "url": "https://jw.eszy.edu.cn:8099/edu/",
       "checkedAt": "2026-10-16",
@@ -38922,7 +38922,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "aic",
     "probe": {
       "url": "https://cas.cdp.edu.cn/lyuapServer/login?service=https://aic.cdp.edu.cn/xsgl/xs/login_CDSSO.aspxhttps://aic.cdp.edu.cn/xsgl/xs/login/login.aspx",
       "checkedAt": "2026-10-16",
@@ -46936,7 +46936,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "gdei",
     "probe": {
       "url": "https://www.jxuas.com/login.jsp?urltype=tree.TreeTempUrl&wbtreeid=1504",
       "checkedAt": "2026-10-16",
@@ -51944,7 +51944,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "gdei",
     "probe": {
       "url": "https://cas.lzylqx.cn/lyuapServer/login?service=http%3A%2F%2Fydxy.lzylqx.cn%3A1000%2Fapi%2Fcas%2Flogin%3Fpattern%3Dteacher-login",
       "checkedAt": "2026-10-16",
@@ -52585,7 +52585,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "ztvtit",
     "probe": {
       "url": "http://aic.zjvtit.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -55502,7 +55502,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "aic",
     "probe": {
       "url": "https://aic.hbucvc.edu.cn/xsgl/xs/login/login.aspx",
       "checkedAt": "2026-10-16",
@@ -55838,7 +55838,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "aic",
     "probe": {
       "url": "http://aic.hbskzy.cn/log/eight/login.html",
       "checkedAt": "2026-10-16",
@@ -58238,7 +58238,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "aic",
     "probe": {
       "url": "http://pt.xtzy.com/xsgl/xs/login/login.aspx",
       "checkedAt": "2026-10-16",
@@ -62328,7 +62328,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "fstvc",
     "probe": {
       "url": "https://10-1-1-100.webvpn.fvti.cn/",
       "checkedAt": "2026-10-16",
@@ -62360,7 +62360,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "fstvc",
     "probe": {
       "url": "http://112.111.43.241/studentportal.php",
       "checkedAt": "2026-10-16",
@@ -62481,7 +62481,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "fstvc",
     "probe": {
       "url": "https://oa.fjipe.cn/studentportal.php",
       "checkedAt": "2026-10-16",
@@ -65230,7 +65230,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "qz",
+    "mappedType": "qz_single_node",
     "probe": {
       "url": "http://ea.swmu.edu.cn/jsxsd/",
       "checkedAt": "2026-10-16",
@@ -69256,7 +69256,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "aic",
     "probe": {
       "url": "http://aic.ganzhsz.cn/",
       "checkedAt": "2026-10-16",
@@ -69836,7 +69836,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "aic",
     "probe": {
       "url": "http://crp.lnvc.cn/xsgl/xs/login/login.aspx",
       "checkedAt": "2026-10-16",
@@ -73192,7 +73192,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "ccibe",
     "probe": {
       "url": "http://my.ccibe.edu.cn/",
       "checkedAt": "2026-10-16",
@@ -75780,7 +75780,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "cnu",
     "probe": {
       "url": "https://www.ccsfu.edu.cn/ggfw/jwxt.htm",
       "checkedAt": "2026-10-16",
@@ -78562,7 +78562,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "sg_asset",
+    "mappedType": "qz_bjfu",
     "probe": {
       "url": "http://jwglxt.qau.edu.cn/",
       "checkedAt": "2026-10-27",
@@ -83452,7 +83452,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "fdu",
     "probe": {
       "url": "https://id.fudan.edu.cn/ac/",
       "checkedAt": "2026-10-28",
@@ -83481,7 +83481,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "fdu",
     "probe": {
       "url": "https://id.fudan.edu.cn/ac/",
       "checkedAt": "2026-10-28",
@@ -83510,7 +83510,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "gzhuyjs",
     "probe": {
       "url": "http://yjsglxt.gzhu.edu.cn/",
       "checkedAt": "2026-10-28",
@@ -83748,7 +83748,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "jlu_post",
     "probe": {
       "url": "https://vpn.jlu.edu.cn/login",
       "checkedAt": "2026-10-28",
@@ -83893,7 +83893,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "shtu_post_2024",
     "probe": {
       "url": "https://ids.shanghaitech.edu.cn/authserver/login",
       "checkedAt": "2026-10-28",
@@ -83951,7 +83951,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "shtu_post_2024",
     "probe": {
       "url": "https://ids.shanghaitech.edu.cn/authserver/login",
       "checkedAt": "2026-10-28",
@@ -84393,7 +84393,7 @@
     },
     "sourceMode": "",
     "sourceMinVersion": 0,
-    "mappedType": "jw_home",
+    "mappedType": "ruc",
     "probe": {
       "url": "https://v.ruc.edu.cn/account/login",
       "checkedAt": "2026-10-28",
