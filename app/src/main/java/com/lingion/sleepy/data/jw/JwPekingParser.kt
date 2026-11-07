@@ -2,101 +2,52 @@ package com.lingion.sleepy.data.jw
 
 import org.jsoup.Jsoup
 
-/**
- * 北京大学（PKU）解析器 — T3。
- *
- * 协议：JwProtocol.TYPE_PKU = "pku"
- * 上游：dIT8Zv/WakeupSchedule_BUPT (Apache-2.0) PekingParser.kt
- *
- * 页面结构：table[class=datagrid] > tbody > tr > 11 列 td
- *   tds[0]=课名  tds[4]=教师(整行共用)  tds[7]=时段(<br> 分隔多段)
- *   tds[8]=选课状态(含"未"跳过)
- * 时段块按空格切 token：
- *   timeInfo[0]="1~16周"  timeInfo[1]="周一1~2节"或"周一1~2节(单)"
- *   timeInfo[2]=教室（缺失时从 timeInfo[1] 括号内取）
- *
- * 对上游偏离：kbtable/tbody null 时返回空而非 NPE（pku_login.html 登录页）。
- */
+/** PKU datagrid schedules; each br block carries its own week, day and node coordinates. */
 class JwPekingParser(source: String) : JwParser(source) {
-
     override fun generateCourseList(): List<JwCourse> {
-        val result = arrayListOf<JwCourse>()
-        val doc = Jsoup.parse(source)
-        val table = doc.selectFirst("table[class=datagrid]") ?: return result
-        val tbody = table.selectFirst("tbody") ?: return result
-
-        var teacher = ""
-        for (tr in tbody.getElementsByTag("tr")) {
-            val tds = tr.getElementsByTag("td")
-            if (tds.size < 11) continue
-            if (tds[8].text().contains('未')) continue
-
-            val courseName = tds[0].text().trim()
-            teacher = tds[4].text().trim()
-
-            var startWeek = 1; var endWeek = 16
-            var startNode = 1; var endNode = 2
-            var type = 0; var day = 7
-
-            val timeBlocks = tds[7].html().split("<br>")
-            for (block in timeBlocks) {
-                val timeInfo = Jsoup.parse(block).text().trim().split(' ').filter { it.isNotBlank() }
-                if (timeInfo.size < 2) continue
-
-                val token0 = timeInfo[0]
-                if (token0.contains('~')) {
-                    token0.substringBefore('~').filter { it.isDigit() }.toIntOrNull()?.let { startWeek = it }
-                    token0.substringAfter('~').substringBefore('周').filter { it.isDigit() }
-                        .toIntOrNull()?.let { endWeek = it }
+        val result = mutableListOf<JwCourse>()
+        val table = Jsoup.parse(source).selectFirst("table[class=datagrid]") ?: return result
+        for (row in table.selectFirst("tbody")?.getElementsByTag("tr").orEmpty()) {
+            val cells = row.getElementsByTag("td")
+            if (cells.size < 11 || '未' in cells[8].text()) continue
+            for (block in cells[7].html().split(Regex("<br\\s*/?>", RegexOption.IGNORE_CASE))) {
+                val fields = Jsoup.parseBodyFragment(block).text().trim().split(Regex("\\s+"))
+                if (fields.size < 2) continue
+                val rawWeeks = fields[0].removeSuffix("周")
+                val parsedWeeks = rawWeeks.split(',').mapNotNull { part ->
+                    val m = Regex("([0-9]+)(?:~([0-9]+))?").matchEntire(part) ?: return@mapNotNull null
+                    val first = m.groupValues[1].toIntOrNull() ?: return@mapNotNull null
+                    val last = m.groupValues[2].ifBlank { m.groupValues[1] }.toIntOrNull() ?: return@mapNotNull null
+                    (first to last).takeIf { first > 0 && last >= first }
                 }
-                type = when {
-                    timeInfo[1].contains('单') -> 1
-                    timeInfo[1].contains('双') -> 2
-                    else -> 0
+                val timing = fields[1]
+                val m = Regex("周([一二三四五六日天])([0-9]+)(?:~([0-9]+))?节(?:[（(]([^）)]*)[）)])?").matchEntire(timing) ?: continue
+                val day = "一二三四五六日".indexOf(m.groupValues[1].replace('天', '日')) + 1
+                val firstNode = m.groupValues[2].toIntOrNull() ?: continue
+                val lastNode = m.groupValues[3].ifBlank { m.groupValues[2] }.toIntOrNull() ?: continue
+                val bracket = m.groupValues[4]
+                val parity = when { "单" in bracket -> 1; "双" in bracket -> 2; else -> 0 }
+                val room = fields.getOrNull(2) ?: bracket.takeUnless { it in setOf("单", "双", "单周", "双周") }.orEmpty()
+                for ((first, last) in parsedWeeks) {
+                    val c = JwCourse(cells[0].text().trim(), room, cells[4].text().trim(), day,
+                        firstNode, lastNode, first, last, parity)
+                    if (JwUndergradBHtmlParser.valid(c)) result += c
                 }
-                for ((index, s) in CHINESE_WEEK_LIST.withIndex()) {
-                    if (index != 0 && timeInfo[1].contains(s)) { day = index; break }
-                }
-                NODE_PATTERN1.find(timeInfo[1])?.let { m ->
-                    val v = m.value
-                    v.substringBefore('~').filter { ch -> ch.isDigit() }.toIntOrNull()?.let { startNode = it }
-                    v.substringAfter('~').substringBefore('节').filter { ch -> ch.isDigit() }
-                        .toIntOrNull()?.let { endNode = it }
-                }
-                val room = if (timeInfo.size >= 3) timeInfo[2]
-                           else timeInfo[1].substringAfter('(').substringBefore(')')
-
-                result += JwCourse(
-                    name = courseName, day = day,
-                    startNode = startNode.coerceAtLeast(1),
-                    endNode = endNode.coerceAtLeast(startNode),
-                    startWeek = startWeek.coerceAtLeast(1),
-                    endWeek = endWeek.coerceAtLeast(startWeek),
-                    type = type, teacher = teacher, room = room
-                )
             }
         }
         return result
     }
 
-    companion object {
-        /** 上游 Common.nodePattern1 原文，不可改字符 */
-        private val NODE_PATTERN1 = Regex("""\d{1,2}[~]*\d*节""")
-        private val CHINESE_WEEK_LIST = arrayOf("", "周一", "周二", "周三", "周四", "周五", "周六", "周日")
-    }
-
-    /** T8: table[class=datagrid] = 100; elective.pku = 90 */
-    override fun confidence(): Int = try {
-        val doc = org.jsoup.Jsoup.parse(source)
+    override fun confidence(): Int = runCatching {
         when {
-            doc.selectFirst("table[class=datagrid]") != null -> 100
-            source.contains("elective.pku") -> 90
+            Jsoup.parse(source).selectFirst("table[class=datagrid]") != null -> 100
+            "elective.pku" in source -> 90
             else -> 0
         }
-    } catch (e: Exception) { 0 }
+    }.getOrDefault(0)
 
     override fun matchedFeatures(): List<String> = buildList {
-        if (source.contains("datagrid")) add("class=datagrid")
-        if (source.contains("elective.pku")) add("URL=elective.pku")
+        if ("datagrid" in source) add("class=datagrid")
+        if ("elective.pku" in source) add("URL=elective.pku")
     }
 }
