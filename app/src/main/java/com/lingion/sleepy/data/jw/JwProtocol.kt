@@ -119,6 +119,21 @@ object JwProtocol {
     const val TYPE_JNU = "jnu"
     const val TYPE_SWUST = "swust"
 
+    const val TYPE_XJTU_POST = "xjtu_post"
+    const val TYPE_UESTC_POST = "uestc_post"
+    const val TYPE_BFA_POST = "bfa_post"
+    const val TYPE_GDBYXY = "gdbyxy"
+    const val TYPE_CUPL_POST = "cupl_post"
+    const val TYPE_YSU_POST = "ysu_post"
+    const val TYPE_WHU_POST = "whu_post"
+    const val TYPE_HRBEU_POST = "hrbeu_post"
+    const val TYPE_SHTU_POST = "shtu_post"
+    const val TYPE_USTC_POST = "ustc_post"
+    const val TYPE_XAUAT_POST = "xauat_post"
+    const val TYPE_ZJU_POST = "zju_post"
+    const val TYPE_CSV = "csv"
+    const val TYPE_SHUWEI_OLD = "shuwei_old"
+
     const val TYPE_SUSTECH = "sustech"
     const val TYPE_UIC = "uic"
     const val TYPE_CITYU = "cityu"
@@ -402,6 +417,7 @@ object JwProtocol {
 
     /** WakeUp-derived types routed by the compatibility layer; kept separate from legacy UI ordering. */
     val WAKEUP_COMPAT_TYPES: List<String> = listOf(
+        TYPE_XJTU_POST, TYPE_UESTC_POST, TYPE_BFA_POST, TYPE_GDBYXY, TYPE_CUPL_POST, TYPE_YSU_POST, TYPE_WHU_POST, TYPE_HRBEU_POST, TYPE_SHTU_POST, TYPE_USTC_POST, TYPE_XAUAT_POST, TYPE_ZJU_POST, TYPE_CSV, TYPE_SHUWEI_OLD,
         TYPE_JNU, TYPE_SWUST,
         TYPE_QZ_2017, TYPE_QZ_2024, TYPE_QZ_FSPT, TYPE_QZ_USTB, TYPE_ZF_CLS,
         TYPE_JMUCY, TYPE_NUAAJC, TYPE_QMU, TYPE_JAVTC, TYPE_HITSZ,
@@ -423,6 +439,20 @@ object JwProtocol {
     )
 
     fun displayName(type: String?): String = when (type) {
+        TYPE_XJTU_POST -> "西安交通大学研究生教务"
+        TYPE_UESTC_POST -> "电子科技大学研究生教务"
+        TYPE_BFA_POST -> "北京电影学院研究生教务"
+        TYPE_GDBYXY -> "广东白云学院教务"
+        TYPE_CUPL_POST -> "中国政法大学研究生教务"
+        TYPE_YSU_POST -> "燕山大学研究生教务"
+        TYPE_WHU_POST -> "武汉大学研究生教务"
+        TYPE_HRBEU_POST -> "哈尔滨工程大学研究生教务"
+        TYPE_SHTU_POST -> "上海科技大学旧版研究生教务"
+        TYPE_USTC_POST -> "中国科学技术大学研究生教务"
+        TYPE_XAUAT_POST -> "西安建筑科技大学研究生教务"
+        TYPE_ZJU_POST -> "浙江大学研究生教务"
+        TYPE_CSV -> "CSV 课程表"
+        TYPE_SHUWEI_OLD -> "树维旧版教务"
         TYPE_JNU -> "JNU 旧版教务"
         TYPE_SWUST -> "西南科技大学教务"
         TYPE_QZ_2017 -> "强智 2017 课表"
