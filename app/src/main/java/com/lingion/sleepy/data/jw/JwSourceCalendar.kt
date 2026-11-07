@@ -8,8 +8,9 @@ import java.time.format.ResolverStyle
 
 /** Calendar fields read from a declared protocol, before the user confirms the import. */
 object JwSourceCalendar {
-    fun resolveWeekCount(source: String, type: String?): Int = runCatching {
+    fun resolveWeekCount(source: String, type: String?, schoolName: String = ""): Int = runCatching {
         if (type == JwProtocol.TYPE_NWPU_POST) return 22
+        if (type == JwProtocol.TYPE_WIST && schoolName.contains("武汉船舶职业技术学院")) return 20
         val root = JSONObject(source)
         when (type) {
             JwProtocol.TYPE_THU -> JwThuCapturePayload.semesterJson(source)?.let {

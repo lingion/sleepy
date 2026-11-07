@@ -187,12 +187,8 @@ class JwImportActivity : ComponentActivity() {
                 }
                 // v1.0.56 T6: 第三 Tab 绑定选择 — null=未绑定(用教务解析出的节次); 落库时同步 periodTableId
                 var configBindPeriodTableId by remember { mutableStateOf<Long?>(null) }
-                // 用户可改的导入课表名; 初值 = "教务导入 - {学校名}"; 留空 = 沿用初值
-                var configTableName by remember(parsedSchool) {
-                    mutableStateOf(
-                        parsedSchool?.let { getString(R.string.jw_import_title, it.name) } ?: ""
-                    )
-                }
+                // Fresh capture and restored draft explicitly seed this editable value.
+                var configTableName by remember { mutableStateOf("") }
 
                 fun currentDraftSnapshot(): JwImportDraftSnapshot? {
                     val school = selectedSchool ?: parsedSchool ?: return null
@@ -940,6 +936,9 @@ class JwImportActivity : ComponentActivity() {
                                                     ?: error("Dated lessons require a confirmed semester start")
                                             } else ""
                                             parsedSchool = sch
+                                            configTableName = com.lingion.sleepy.data.jw.JwSourceTableName
+                                                .resolve(htmlForParse, effectiveType, sch.name)
+                                                ?: getString(R.string.jw_import_title, sch.name)
                                             exitDraftState = exitDraftState.copy(activeImport = incomingDraftId != null)
                                             // 根据课程实际节次数生成行；
                                             // 如果 WebView 抓到 periods 则预填，否则空行让用户填
@@ -962,7 +961,7 @@ class JwImportActivity : ComponentActivity() {
                                             configStartDate = com.lingion.sleepy.data.jw.JwSourceCalendar
                                                 .resolveStartDate(htmlForParse, effectiveType, termStartDate)
                                             configTermWeekCount = com.lingion.sleepy.data.jw.JwSourceCalendar
-                                                .resolveWeekCount(htmlForParse, effectiveType)
+                                                .resolveWeekCount(htmlForParse, effectiveType, sch.name)
                                             configTimeJson = ""
                                             // issue#23 T5: seed both live confirmation state and draft
                                             // persistence from the same inference result. Incomplete rows
