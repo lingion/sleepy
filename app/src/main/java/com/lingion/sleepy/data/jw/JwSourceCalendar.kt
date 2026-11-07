@@ -12,6 +12,9 @@ object JwSourceCalendar {
         if (type == JwProtocol.TYPE_NWPU_POST) return 22
         val root = JSONObject(source)
         when (type) {
+            JwProtocol.TYPE_THU -> JwThuCapturePayload.semesterJson(source)?.let {
+                JSONObject(it).optInt("weekCount", 16)
+            } ?: 0
             JwProtocol.TYPE_CCIBE -> root.optJSONObject("calendar")?.opt("allWeek")?.toString()?.toIntOrNull()
                 ?.takeIf { it in 1..366 } ?: 0
             JwProtocol.TYPE_CF_NEW -> {

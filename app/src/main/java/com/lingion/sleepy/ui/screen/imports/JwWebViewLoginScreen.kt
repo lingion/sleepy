@@ -70,6 +70,7 @@ import com.lingion.sleepy.data.jw.EAMS5_PREFIX_PLACEHOLDER
 import com.lingion.sleepy.data.jw.JwImportViewModel
 import com.lingion.sleepy.data.jw.JwChaoxingShareCapture
 import com.lingion.sleepy.data.jw.JwProtocol
+import com.lingion.sleepy.data.jw.JwThuCapturePayload
 import com.lingion.sleepy.data.jw.JwSchoolInfo
 import com.lingion.sleepy.data.jw.eams5PathPrefixFor
 import com.lingion.sleepy.data.jw.initialDesktopUa
@@ -164,6 +165,45 @@ fun JwWebViewLoginScreen(
     val fetchNoCoursesMsg = stringResource(R.string.jw_fetch_no_courses)
     val fetchFallbackPeriodsMsg = stringResource(R.string.jw_fetch_fallback_periods)
     val urlInvalidMsg = stringResource(R.string.jw_url_invalid)
+
+    val thuCaptureToken = remember { java.util.concurrent.atomic.AtomicLong(0) }
+    fun deliverPageCapture(html: String) {
+        if (school.type != JwProtocol.TYPE_THU) {
+            onHtmlCaptured(html, school, emptyList(), "")
+            return
+        }
+        val wv = webViewRef ?: return
+        val initialUrl = wv.url
+        val token = thuCaptureToken.incrementAndGet()
+        fun fail(message: String) {
+            onCaptureError(FrameCaptureResult(null, "", emptyList(),
+                status = FrameCaptureStatus.UNKNOWN, diagnosticHint = message), message)
+        }
+        scope.launch {
+            try {
+                val payload = JwThuSemesterCapture.capture(html)
+                if (token != thuCaptureToken.get()) return@launch
+                if (webViewRef !== wv || wv.url != initialUrl) {
+                    fail("采集期间页面已改变，请在所选学期课表重新导入")
+                    return@launch
+                }
+                captureOnce(wv, school.type) { current ->
+                    if (token != thuCaptureToken.get()) return@captureOnce
+                    if (webViewRef !== wv || wv.url != initialUrl ||
+                        current.status !in setOf(FrameCaptureStatus.OK, FrameCaptureStatus.EMPTY_SEMESTER) ||
+                        !JwThuCapturePayload.sameSemester(html, current.html)) {
+                        fail("采集期间学期或页面已改变，请重新导入")
+                    } else {
+                        onHtmlCaptured(payload, school, emptyList(), "")
+                    }
+                }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                if (token == thuCaptureToken.get()) fail(e.message ?: fetchFailedNoResponseMsg)
+            }
+        }
+    }
 
     // wisedu (金智) 协议：WebView 内 fetch 课表 JSON 的回调结果处理
     // 桥回调已切到主线程；result 形如 {ok:true,data:"<xskcb.do JSON>"} 或 {ok:false,err:"..."}
@@ -650,7 +690,7 @@ fun JwWebViewLoginScreen(
                         } else r.diagnosticHint
                         when (r.status) {
                             FrameCaptureStatus.OK, FrameCaptureStatus.EMPTY_SEMESTER ->
-                                onHtmlCaptured(r.html, school, emptyList(), "")   // 0 课交给 Activity 按空学期文案报
+                                deliverPageCapture(r.html)
                             FrameCaptureStatus.SESSION_EXPIRED,
                             FrameCaptureStatus.CROSS_DOMAIN_IFRAME_BLOCKED,
                             FrameCaptureStatus.CONTAINER_EMPTY_AFTER_DELAY,
@@ -680,7 +720,7 @@ fun JwWebViewLoginScreen(
                     if (!editingUrl && !url.isNullOrBlank()) currentUrl = url
                 },
                 onWebViewCreated = { wv -> webViewRef = wv },
-                onHtmlCaptured = { html -> onHtmlCaptured(html, school, emptyList(), "") },
+                onHtmlCaptured = { html -> deliverPageCapture(html) },
                 onWiseduResult = handleWiseduResult,
                 onWebViewReady = onWebViewReady
             )
@@ -2787,7 +2827,9 @@ const val RESOURCE_REPLAY_JS = """
 /** 单次抓取: evaluateJavascript → FrameSnapshot.fromJson → selectBestFrame。回调已在主线程。 */
 private fun captureOnce(wv: WebView, declaredType: String?, onResult: (FrameCaptureResult) -> Unit) {
     wv.evaluateJavascript(
-        CAPTURE_FRAMES_JS_TEMPLATE + "(8);",
+        (if (declaredType == JwProtocol.TYPE_THU) CAPTURE_FRAMES_JS_TEMPLATE.replace(
+            "win.document.documentElement.outerHTML", JwThuSemesterCapture.LIVE_HTML_JS)
+        else CAPTURE_FRAMES_JS_TEMPLATE) + "(8);",
         ValueCallback<String> { raw ->
             if (raw.isNullOrEmpty() || raw == "null") {
                 onResult(FrameCaptureResult(null, "", emptyList(),

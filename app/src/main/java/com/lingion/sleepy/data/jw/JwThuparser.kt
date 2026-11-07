@@ -19,7 +19,8 @@ package com.lingion.sleepy.data.jw
  * 与 Starrah 的课程字段正则保持同形；Sleepy 的 WebView 只抓当前页面 HTML，
  * 不在 JS 中另写协议正则。
  */
-class JwThuparser(source: String) : JwParser(source) {
+class JwThuparser(source: String) : JwParser(JwThuCapturePayload.htmlOrOriginal(source)) {
+    private val semesterDataJson = JwThuCapturePayload.semesterJson(source)
 
     companion object {
         // ---- 节次↔大节映射 (仅反编译 WakeUp v6.1.06 副本可核；未登录实测) ----
@@ -101,7 +102,7 @@ class JwThuparser(source: String) : JwParser(source) {
         private set
 
     override fun generateCourseList(): List<JwCourse> {
-        val parser = JwThuScriptParser(source)
+        val parser = JwThuScriptParser(source, semesterDataJson)
         val courses = parser.generateCourseList()
         skippedCourseCount = parser.skippedCourseCount
         return courses
