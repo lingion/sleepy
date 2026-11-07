@@ -73,6 +73,8 @@ object JwParserRegistry {
     )
 
     private val FACTORIES: Map<String, (String) -> JwParser> = linkedMapOf(
+        JwProtocol.TYPE_JNU to { html -> JwUndergradLegacyParser(html, JwProtocol.TYPE_JNU) },
+        JwProtocol.TYPE_SWUST to { html -> JwUndergradLegacyParser(html, JwProtocol.TYPE_SWUST) },
         JwProtocol.TYPE_JMUCY to { html -> JwUndergradHtmlParser(html, JwProtocol.TYPE_JMUCY) },
         JwProtocol.TYPE_NUAAJC to { html -> JwUndergradHtmlParser(html, JwProtocol.TYPE_NUAAJC) },
         JwProtocol.TYPE_QMU to { html -> JwUndergradHtmlParser(html, JwProtocol.TYPE_QMU) },
@@ -254,6 +256,7 @@ object JwParserRegistry {
     )
 
     private val DECLARED_ONLY_TYPES = setOf(
+        JwProtocol.TYPE_JNU, JwProtocol.TYPE_SWUST,
         JwProtocol.TYPE_QZ_2017, JwProtocol.TYPE_QZ_2024, JwProtocol.TYPE_QZ_FSPT, JwProtocol.TYPE_QZ_USTB, JwProtocol.TYPE_ZF_CLS,
         JwProtocol.TYPE_JMUCY, JwProtocol.TYPE_NUAAJC, JwProtocol.TYPE_QMU, JwProtocol.TYPE_JAVTC, JwProtocol.TYPE_HITSZ,
         JwProtocol.TYPE_HNIU, JwProtocol.TYPE_SUSTECH, JwProtocol.TYPE_UIC, JwProtocol.TYPE_CITYU, JwProtocol.TYPE_STU, JwProtocol.TYPE_NFU,

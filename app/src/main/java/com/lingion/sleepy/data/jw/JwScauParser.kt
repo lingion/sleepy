@@ -32,8 +32,52 @@ class JwScauParser(source: String) : JwParser(source) {
     override fun generateCourseList(): List<JwCourse> {
         val elementUi = parseElementUiStrategy()
         if (elementUi.isNotEmpty()) return elementUi
+        val explicit = parseExplicitSectionStrategy()
+        if (explicit.isNotEmpty()) return explicit
         val primary = parsePrimaryStrategy()
         return if (primary.isNotEmpty()) primary else parseFallbackStrategy()
+    }
+
+    private fun parseExplicitSectionStrategy(): List<JwCourse> {
+        val output = mutableListOf<JwCourse>()
+        val doc = Jsoup.parse(source)
+        doc.outputSettings().prettyPrint(false)
+        for (table in doc.select(SELECTOR_PRIMARY_TABLE)) {
+            for (row in table.select("tr")) {
+                for ((dayIndex, cell) in row.select(SELECTOR_TD_VALIGN_TOP).withIndex()) {
+                    val day = dayIndex + 1
+                    if (day !in 1..7) continue
+                    val lines = cell.html().split("<br>").map { Jsoup.parseBodyFragment(it).text().trim() }
+                    for ((index, line) in lines.withIndex()) {
+                        val section = Regex("\\(([^()]+)节\\)").find(line) ?: continue
+                        val packed = section.groupValues[1].trim()
+                        val sections = if ('-' in packed) {
+                            schoolNodeRanges(packed)
+                        } else {
+                            val split = when (packed.length) {
+                                1 -> packed to packed
+                                2 -> packed.take(1) to packed.takeLast(1)
+                                3 -> packed.take(1) to packed.takeLast(2)
+                                4 -> packed.take(2) to packed.takeLast(2)
+                                else -> continue
+                            }
+                            schoolNodeRanges("${split.first}-${split.second}")
+                        }
+                        val name = lines.getOrNull(index - 1)?.takeIf { it.isNotBlank() } ?: continue
+                        val teacher = lines.getOrNull(index + 1) ?: continue
+                        val room = lines.getOrNull(index + 2) ?: continue
+                        val weeks = lines.getOrNull(index + 3) ?: continue
+                        val parity = when { "(单)" in line || "（单）" in line -> 1; "(双)" in line || "（双）" in line -> 2; else -> 0 }
+                        for ((startWeek, endWeek, type) in parseWeekRuns(weeks, parity)) {
+                            for ((startNode, endNode) in sections) output += JwCourse(
+                                name, room, teacher, day, startNode, endNode, startWeek, endWeek, type,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        return output
     }
 
     /** Pinned greyovo/ScheduleXParser_SCAU sample: Element UI's seven weekday cells follow a section cell. */

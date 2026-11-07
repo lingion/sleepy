@@ -116,6 +116,9 @@ object JwProtocol {
     const val TYPE_QZ_USTB = "qz_ustb"
     const val TYPE_ZF_CLS = "zf_cls"
 
+    const val TYPE_JNU = "jnu"
+    const val TYPE_SWUST = "swust"
+
     const val TYPE_SUSTECH = "sustech"
     const val TYPE_UIC = "uic"
     const val TYPE_CITYU = "cityu"
@@ -399,6 +402,7 @@ object JwProtocol {
 
     /** WakeUp-derived types routed by the compatibility layer; kept separate from legacy UI ordering. */
     val WAKEUP_COMPAT_TYPES: List<String> = listOf(
+        TYPE_JNU, TYPE_SWUST,
         TYPE_QZ_2017, TYPE_QZ_2024, TYPE_QZ_FSPT, TYPE_QZ_USTB, TYPE_ZF_CLS,
         TYPE_JMUCY, TYPE_NUAAJC, TYPE_QMU, TYPE_JAVTC, TYPE_HITSZ,
         TYPE_SUSTECH, TYPE_UIC, TYPE_CITYU, TYPE_STU, TYPE_NFU,
@@ -419,6 +423,8 @@ object JwProtocol {
     )
 
     fun displayName(type: String?): String = when (type) {
+        TYPE_JNU -> "JNU 旧版教务"
+        TYPE_SWUST -> "西南科技大学教务"
         TYPE_QZ_2017 -> "强智 2017 课表"
         TYPE_QZ_2024 -> "强智 2024 课表"
         TYPE_QZ_FSPT -> "佛山职业技术学院强智教务"
