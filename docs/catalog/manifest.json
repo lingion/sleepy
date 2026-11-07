@@ -3,9 +3,9 @@
   "baselineCount": 353,
   "catalogCount": 4140,
   "statusCounts": {
-    "supported": 352,
+    "supported": 353,
     "grad_supported": 2,
-    "unverified": 2478,
+    "unverified": 2477,
     "grad_pending": 253,
     "pending": 1007,
     "grad_unverified": 48
@@ -38,7 +38,7 @@
     },
     {
       "path": "scripts/data/school_import_admissions.json",
-      "sha256": "0b87911a64403dc0a3f842e23ab625ab2d5695bcc62d09f322d460fdbfd9892a"
+      "sha256": "91e6a3bae6125c5b27b5a51ab5170cb3c4faaeb71b8441005d4e660d2a54e589"
     },
     {
       "path": "scripts/data/school_catalog_renames.json",
@@ -46,7 +46,7 @@
     },
     {
       "path": "scripts/data/school_url_evidence.json",
-      "sha256": "c2708d87da2882e4ef4e31c438f28fe2266a10f2764d0d199c8509a6a4aa155d"
+      "sha256": "c14e22afdd585f4efc23e3ff7b93d8dad81e11f7f1733dfa18ab4f91631df375"
     },
     {
       "path": "scripts/data/school_catalog_domain_reference.json",
@@ -10670,7 +10670,7 @@
         "ownershipStatus": "unknown",
         "action": "retained-wakeup-662-declared-owner",
         "operationalUrl": "https://cas-jxstnu-edu-cn-s.atrust.jxstnu.edu.cn/lyuapServer/login",
-        "authenticatedImportTested": false
+        "authenticatedImportTested": true
       },
       {
         "catalogId": "moe:4136011319",
