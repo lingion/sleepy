@@ -437,6 +437,14 @@ private data class PerSchoolEntry(val id: String, val title: String, val usage: 
 
 private val perSchoolEntries: List<PerSchoolEntry> = listOf(
     PerSchoolEntry(
+        "school-bfa-gdbyxy-sources", "北京电影学院与广东白云学院协议参考",
+        "danbaixi/UAAS-API (蛋白熙, MIT)\nshixiang123/XJTU-SE-project (shixiang123；XJTU-API-main 作者蛋白熙, 子目录 MIT；根目录未声明许可)\nwpplane/sheep-reptile (wpplane, 未声明许可)\nDragonBaiMo/baiyunu-school (DragonBaiMo, 未声明许可)\ncursimple/cursimple-app (CurSimple Team, MIT)\nHolyn/BaiYun2 (Holyn, 未声明许可)：用于教务入口和课程字段交叉核对，未复用源码。"
+    ),
+    PerSchoolEntry(
+        "school-swust-source", "西南科技大学 SWUST",
+        "flben233/SWUST-Schedule-Export (ShirakawaTyu, MIT): 课名、教师字段及两节一行布局的协议交叉参考；未复用脚本代码。"
+    ),
+    PerSchoolEntry(
         "school-hfut", "合肥工业大学 HFUT",
         "HFUT-Schedule (Chiu-xaH, Apache-2.0\nHfutOpenApi (BoynChan, MIT)\nhfut_schedule_hacker (Aoi-cn)\ndjango-hfut-auth (elonzh, MIT)\nhfut-api (hfut-soft-ware)\nhfut-api (SnowingFox)\nhfut_api_service (onlineG2)\nHFUTer (BrikerMan)\nHFUTICS (ssyu0808)\nAiSchedule-for-hfut (imnuke, GPL-3.0)\nAISchedule (HualiNox)\nclassduck (luyishui)"
     ),
