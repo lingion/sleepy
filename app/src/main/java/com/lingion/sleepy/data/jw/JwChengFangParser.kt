@@ -32,27 +32,35 @@ class JwChengFangParser(source: String) : JwParser(source) {
             val teacher = o.optString("teaxms", "").trim()
             val room = o.optString("jxcdmcs", "").trim()
             val day = o.optString("xq", "").trim().toIntOrNull() ?: continue
+            if (day !in 1..7) continue
 
             val jcdm2 = o.optString("jcdm2", "").trim()
             if (jcdm2.isBlank()) continue
-            val nodes = jcdm2.split(',').mapNotNull { it.trim().toIntOrNull() }
-            if (nodes.isEmpty()) continue
-            val startNode = nodes.first()
-            val step = nodes.last() - startNode + 1
+            val nodeValues = jcdm2.split(',').map { it.trim().toIntOrNull() }
+            if (nodeValues.any { it == null || it <= 0 }) continue
+            val nodes = nodeValues.filterNotNull().distinct().sorted()
+            val blocks = mutableListOf<Pair<Int, Int>>()
+            for (node in nodes) {
+                val previous = blocks.lastOrNull()
+                if (previous != null && node == previous.second + 1)
+                    blocks[blocks.lastIndex] = previous.first to node
+                else blocks += node to node
+            }
 
             val zcs = o.optString("zcs", "").trim()
             if (zcs.isBlank()) continue
-            val weekList = zcs.split(',').mapNotNull { it.trim().toIntOrNull() }
-            if (weekList.isEmpty()) continue
+            val weekValues = zcs.split(',').map { it.trim().toIntOrNull() }
+            if (weekValues.any { it == null || it <= 0 }) continue
+            val weekList = weekValues.filterNotNull()
 
-            for (wb in weekIntList2WeekBeanList(weekList)) {
+            for ((first, last) in blocks) for (wb in weekIntList2WeekBeanList(weekList)) {
                 result += JwCourse(
                     name = name, room = room, teacher = teacher,
-                    day = day.coerceIn(1, 7),
-                    startNode = startNode.coerceAtLeast(1),
-                    endNode = (startNode + step - 1).coerceAtLeast(startNode),
-                    startWeek = wb.first.coerceAtLeast(1),
-                    endWeek = wb.second.coerceAtLeast(wb.first),
+                    day = day,
+                    startNode = first,
+                    endNode = last,
+                    startWeek = wb.first,
+                    endWeek = wb.second,
                     type = wb.third
                 )
             }
@@ -94,7 +102,7 @@ class JwChengFangParser(source: String) : JwParser(source) {
 
         internal fun weekIntList2WeekBeanList(input: List<Int>): List<Triple<Int, Int, Int>> {
             if (input.isEmpty()) return emptyList()
-            val a = input.sorted()
+            val a = input.distinct().sorted()
             var reset = 0
             var start = 0; var end = 0; var type = -1
             val list = ArrayList<Triple<Int, Int, Int>>()
