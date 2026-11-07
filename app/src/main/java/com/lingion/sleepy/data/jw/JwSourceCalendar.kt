@@ -9,6 +9,7 @@ import java.time.format.ResolverStyle
 /** Calendar fields read from a declared protocol, before the user confirms the import. */
 object JwSourceCalendar {
     fun resolveWeekCount(source: String, type: String?): Int = runCatching {
+        if (type == JwProtocol.TYPE_NWPU_POST) return 22
         val root = JSONObject(source)
         when (type) {
             JwProtocol.TYPE_CCIBE -> root.optJSONObject("calendar")?.opt("allWeek")?.toString()?.toIntOrNull()
