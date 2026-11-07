@@ -4,6 +4,15 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class JwJinZhiWistXmuOccurrenceTest {
+    @Test fun `XMU missing and noninteger sections do not invent first two periods`() {
+        val invalid = listOf("", "\"KSJC\":3", "\"JSJC\":4", "\"KSJC\":1.5,\"JSJC\":2", "\"KSJC\":0,\"JSJC\":2")
+        for (fields in invalid) {
+            val extra = if (fields.isEmpty()) "" else ",$fields"
+            val source = """<script>var scheduleList = [{"KCM":"课程","SKXQ":3,"SKZC":"10001"$extra}]; var notArrangedList=[];</script>"""
+            assertEquals(fields, emptyList<JwCourse>(), JwJzParser(source).generateCourseList())
+        }
+    }
+
     @Test fun `WIST joins adjacent sections but keeps different teachers and gaps`() {
         fun cell(node: Int, teacher: String) = """<td data-role="item" data-week="2" data-begin-unit="$node" data-end-unit="$node">
             <div class="mtt_arrange_item"><div class="mtt_item_kcmc">实验</div>

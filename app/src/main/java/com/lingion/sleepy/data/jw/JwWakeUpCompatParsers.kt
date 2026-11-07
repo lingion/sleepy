@@ -404,9 +404,9 @@ internal object WakeUpCompat {
             for (i in 0 until rows.length()) {
                 val row = rows.optJSONObject(i) ?: continue
                 val name = row.optString("KCM")
-                val day = row.optInt("SKXQ", 0)
-                val fromNode = row.optInt("KSJC", 1)
-                val toNode = row.optInt("JSJC", 2)
+                val day = firstInt(row, "SKXQ") ?: continue
+                val fromNode = firstInt(row, "KSJC") ?: continue
+                val toNode = firstInt(row, "JSJC") ?: continue
                 if (name.isBlank() || day !in 1..7 || fromNode < 1 || toNode < fromNode) continue
                 val room = row.optString("SKDD").ifBlank { row.optString("YPSJDD") }
                 val bitmap = row.optString("SKZC")
