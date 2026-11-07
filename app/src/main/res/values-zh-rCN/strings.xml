@@ -1092,6 +1092,7 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="table_reminder_empty">还没有课表，请先添加或导入课表。</string>
     <string name="table_reminder_save_failed">保存失败，请重试</string>
     <string name="jw_nav_hint_thu">导航到选课系统「整体课表」页，选好学期后点「导入此页」</string>
+    <string name="jw_nav_hint_kingo_new">选择「主控」→「教学安排」或「班级课表」→「格式二」，点检索后导入</string>
     <string name="jw_err_thu_course_page">尚未检测到清华大学「整体课表」的课程脚本。请登录选课系统、打开「整体课表」、选好学期后再点「导入此页」</string>
     <string name="jw_thu_skipped_courses">有 %1$d 条清华课程安排因信息不完整或周次、时段格式不受支持而跳过。请核对教务课表并手动补录。</string>
     <string name="agenda_title">每日议程</string>

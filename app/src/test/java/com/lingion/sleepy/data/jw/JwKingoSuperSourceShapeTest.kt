@@ -218,4 +218,72 @@ class JwKingoSuperSourceShapeTest {
         assertEquals(8, xs.endNode)
         assertEquals("", xs.room)
     }
+
+    @Test fun mytableMultipleFramesSplittedByHead() {
+        val html = """
+            <head><title>Frame 1</title></head><body><div id="nav">menu</div></body>
+            <head><title>Frame 2</title></head><body>
+            <table id="mytable">
+                <tr class="H"><th>一</th><th>二</th></tr>
+                <tr><td><div>高数<br>老师A<br>1-16周[1-2节]<br>A101</div></td>
+                <td><div>线代<br>老师B<br>1-16周[1-2节]<br>A102</div></td></tr>
+            </table></body>
+        """.trimIndent()
+        val courses = JwKingoParser(html).generateCourseList()
+        assertEquals(2, courses.size)
+        assertEquals("高数", courses[0].name)
+        assertEquals(1, courses[0].day)
+        assertEquals("线代", courses[1].name)
+        assertEquals(2, courses[1].day)
+    }
+
+    @Test fun formatTwoWithCourseAndTeacherCodePrefix() {
+        val html = """
+            <table>
+                <thead>
+                    <tr><th>课程</th><th>教师</th><th>地点</th><th>周次</th><th>节次</th><th>单双周</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>[CS101]计算机网络</td>
+                        <td>[T888]张教授</td>
+                        <td>信息楼404</td>
+                        <td>1-16</td>
+                        <td>周四[7-8节]</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        """.trimIndent()
+        val c = JwKingoParser(html).generateCourseList().single()
+        assertEquals("计算机网络", c.name)
+        assertEquals("张教授", c.teacher)
+        assertEquals("信息楼404", c.room)
+        assertEquals(4, c.day)
+        assertEquals(7, c.startNode)
+        assertEquals(8, c.endNode)
+        assertEquals(1, c.startWeek)
+        assertEquals(16, c.endWeek)
+    }
+
+    @Test fun mytableFiveDayGridWithoutWeekends() {
+        val html = """
+            <table id="mytable">
+                <tr class="H">
+                    <th>节次</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th>
+                </tr>
+                <tr>
+                    <td>第1-2节</td>
+                    <td></td><td></td>
+                    <td><div>离散数学<br>王老师<br>1-8周[1-2节]<br>理学楼101</div></td>
+                    <td></td><td></td>
+                </tr>
+            </table>
+        """.trimIndent()
+        val c = JwKingoParser(html).generateCourseList().single()
+        assertEquals("离散数学", c.name)
+        assertEquals(3, c.day)
+        assertEquals(1, c.startNode)
+        assertEquals(2, c.endNode)
+    }
 }

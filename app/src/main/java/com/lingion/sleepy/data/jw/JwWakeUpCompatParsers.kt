@@ -3,6 +3,8 @@ package com.lingion.sleepy.data.jw
 import org.json.JSONArray
 import org.json.JSONObject
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
 import java.util.Locale
 
 /** Compatibility parsers for WakeUp protocol variants. */
@@ -259,17 +261,20 @@ private object WakeUpCompat {
         }
     }
 
-    /** New Kingosoft HTML layouts, in upstream OpenWakeUp order: #mytable, format two, #kbDiv. */
+    /** New Kingosoft HTML layouts, in upstream OpenWakeUp / WakeUp 6.6.2 order: #mytable, format two, #kbDiv. */
     fun parseKingoSuperHtml(source: String, errorList: MutableList<String>? = null): List<JwCourse> {
         val errors = errorList ?: mutableListOf()
-        // Jsoup handles a head-less fragment and tables concatenated from same-origin frames.
-        val documents = listOf(Jsoup.parse(source))
+        // WakeUp 6.6.2 NewKingosoftSuperParser: split by <head> / </head> to handle same-origin frames.
+        val fragments = source.split(Regex("(?i)</?head(?:\\s[^>]*)?>")).filter { it.isNotBlank() }.ifEmpty { listOf(source) }
+        val documents = fragments.map { Jsoup.parse(it) }
+
         fun nodes(text: String): Pair<Int, Int>? {
             val match = Regex("^\\s*(\\d{1,2})(?:\\s*[-~至]\\s*(\\d{1,2}))?\\s*(?:节)?\\s*$").matchEntire(text) ?: return null
             val first = match.groupValues[1].toIntOrNull() ?: return null
             val last = match.groupValues[2].takeIf(String::isNotBlank)?.toIntOrNull() ?: first
             return if (first in 1..30 && last in first..30) first to last else null
         }
+
         fun emit(name: String, teacher: String, room: String, day: Int, nodeText: String, weeksText: String): List<JwCourse> {
             val (start, end) = nodes(nodeText) ?: return emptyList()
             if (name.isBlank() || day !in 1..7) return emptyList()
@@ -287,111 +292,148 @@ private object WakeUpCompat {
                 .map { (from, to, type) -> JwCourse(name, room, teacher, day, start, end, from, to, type) }
         }
 
-        val myTable = buildList {
-            for (doc in documents) for (table in doc.select("#mytable")) {
-                fun isDayHeader(text: String, day: Int): Boolean {
-                    val t = text.trim()
-                    val name = when (day) {
-                        1 -> "一"; 2 -> "二"; 3 -> "三"; 4 -> "四"; 5 -> "五"; 6 -> "六"; 7 -> "日"
-                        else -> return false
-                    }
-                    return t == name || (day == 7 && t == "天") ||
-                        t.contains("星期$name") || (day == 7 && t.contains("星期天")) ||
-                        t.contains("周$name") || (day == 7 && t.contains("周天")) ||
-                        t.contains("星期$day") || t.contains("周$day")
-                }
-
-                var totalDays = 7
+        // Chain 1: o0oOOo (#mytable)
+        fun parseMyTable(doc: Document): List<JwCourse> = buildList {
+            for (table in doc.select("#mytable")) {
+                // Two-dimensional layout reconstruction: track rowspan & colspan to recover true column indexes
+                val grid = mutableMapOf<Int, MutableMap<Int, Element>>()
+                var rowIndex = 0
                 for (tr in table.select("tr")) {
-                    val texts = tr.children().map { it.text().trim() }
-                    val hasMon = texts.any { isDayHeader(it, 1) }
-                    val hasSun = texts.any { isDayHeader(it, 7) }
-                    val hasSat = texts.any { isDayHeader(it, 6) }
-                    val hasFri = texts.any { isDayHeader(it, 5) }
-                    if (hasMon && (hasSun || hasSat)) {
-                        totalDays = 7
-                        break
-                    } else if (hasMon && hasFri) {
-                        totalDays = 5
-                        break
+                    var colIndex = 0
+                    val rowCells = grid.getOrPut(rowIndex) { mutableMapOf() }
+                    for (cell in tr.children()) {
+                        if (cell.tagName() != "td" && cell.tagName() != "th") continue
+                        while (rowCells.containsKey(colIndex)) {
+                            colIndex++
+                        }
+                        val rSpan = cell.attr("rowspan").toIntOrNull()?.coerceAtLeast(1) ?: 1
+                        val cSpan = cell.attr("colspan").toIntOrNull()?.coerceAtLeast(1) ?: 1
+                        for (dr in 0 until rSpan) {
+                            val rMap = grid.getOrPut(rowIndex + dr) { mutableMapOf() }
+                            for (dc in 0 until cSpan) {
+                                rMap[colIndex + dc] = cell
+                            }
+                        }
+                        colIndex += cSpan
+                    }
+                    rowIndex++
+                }
+
+                // Header weekday detection by physical column
+                val colToDay = mutableMapOf<Int, Int>()
+                for (r in 0 until rowIndex) {
+                    val rMap = grid[r] ?: continue
+                    val maxC = rMap.keys.maxOrNull() ?: continue
+                    for (c in 0..maxC) {
+                        val cell = rMap[c] ?: continue
+                        val day = extractDay(cell.text())
+                        if (day != null && day in 1..7 && !colToDay.containsKey(c)) {
+                            colToDay[c] = day
+                        }
+                    }
+                    if (colToDay.isNotEmpty()) break
+                }
+
+                val maxColumns = grid.values.maxOfOrNull { it.keys.maxOrNull() ?: 0 } ?: 0
+                val totalCols = maxColumns + 1
+                val resolvedColToDay: (Int) -> Int? = { c ->
+                    if (colToDay.isNotEmpty()) {
+                        colToDay[c]
+                    } else if (totalCols >= 7) {
+                        val offset = totalCols - 7
+                        if (c >= offset) c - offset + 1 else null
+                    } else {
+                        if (c in 0..6) c + 1 else null
                     }
                 }
 
-                val tableCompact = table.select("div.div1").any { it.html().contains("xkinfo") }
+                val visitedCells = mutableSetOf<Element>()
+                for (r in 0 until rowIndex) {
+                    val rMap = grid[r] ?: continue
+                    val maxC = rMap.keys.maxOrNull() ?: continue
+                    for (c in 0..maxC) {
+                        val cell = rMap[c] ?: continue
+                        if (!visitedCells.add(cell)) continue
+                        if (cell.tagName() == "th" || cell.parent()?.hasClass("H") == true) continue
 
-                for (row in table.select("tr:not(.H)")) {
-                    if (row.select("th").isNotEmpty() || row.children().any { isDayHeader(it.text(), 1) }) continue
-                    val allCells = row.select("td")
-                    if (allCells.isEmpty()) continue
-
-                    for ((column, cell) in allCells.withIndex()) {
-                        val day = if (allCells.size >= totalDays) {
-                            val distanceToLast = allCells.size - 1 - column
-                            if (distanceToLast >= totalDays) continue
-                            totalDays - distanceToLast
-                        } else {
-                            column + 1
-                        }
+                        val day = resolvedColToDay(c) ?: continue
                         if (day !in 1..7) continue
 
-                        var compact = tableCompact
-                        val blocks = cell.children().filter { it.tagName() == "div" }.ifEmpty {
-                            if (Regex("\\[\\s*\\d+").containsMatchIn(cell.text())) listOf(cell) else emptyList()
-                        }
-                        for (block in blocks) {
+                        var isCompact = false
+                        for (block in cell.select("div")) {
                             if (block.hasClass("div1")) {
-                                compact = block.html().contains("xkinfo") && block.html().contains("&nbsp;")
+                                val html = block.html()
+                                isCompact = html.contains("class=\"xkinfo\"") && html.contains("&nbsp;")
                                 continue
                             }
-                            val html = if (compact) block.html().replace(Regex("(?i)(?:&nbsp;)+"), " ") else block.html()
-                            val lines = html.split(Regex("(?i)<br\\s*/?>")).map { Jsoup.parse(it).text().trim() }.filter { it.isNotEmpty() }
-                            val timingIdx = lines.indexOfFirst { line ->
-                                ('[' in line && ']' in line) && Regex("\\[\\s*\\d+").containsMatchIn(line)
-                            }
-                            if (timingIdx < 0) continue
+                            if (block.text().isBlank()) continue
 
-                            val name = lines.firstOrNull().orEmpty()
-                            val detail = lines[timingIdx]
-                            val beforeBracket = detail.substringBefore('[').trim()
-                            val nodeText = detail.substringAfter('[', "").substringBefore(']').trim()
-
-                            val compactMode = compact || (timingIdx == 1 && ' ' in beforeBracket && ',' !in beforeBracket && '，' !in beforeBracket)
-                            val (teacher, weekText) = if (compactMode && ' ' in beforeBracket) {
-                                detail.substringBefore(' ').trim() to detail.substringAfter(' ', "").substringBefore('[').trim()
+                            val html = if (isCompact) {
+                                Regex("(?i)(&nbsp;)+").replace(block.html(), "<br>")
                             } else {
-                                lines.subList(1, timingIdx).joinToString(" ").trim() to beforeBracket
+                                block.html()
                             }
+                            val lines = html.split(Regex("(?i)<br\\s*/?>"))
+                                .map { Jsoup.parse(it).text().trim() }
+                                .filter { it.isNotEmpty() }
+                            if (lines.isEmpty()) continue
 
-                            val room = lines.drop(timingIdx + 1).joinToString(" ").trim()
-                            if (name.isNotEmpty() && weekText.isNotEmpty() && nodeText.isNotEmpty()) {
-                                addAll(emit(name, teacher, room, day, nodeText, weekText))
+                            val name = lines[0]
+                            val timingIdx = lines.indexOfFirst { line ->
+                                '[' in line && ']' in line && Regex("\\[\\s*\\d+").containsMatchIn(line)
+                            }
+                            if (timingIdx >= 1) {
+                                val timingLine = lines[timingIdx]
+                                val beforeBracket = timingLine.substringBefore('[').trim()
+                                val nodeText = timingLine.substringAfter('[', "").substringBefore(']').trim()
+                                val (teacher, weekText) = if (' ' in beforeBracket) {
+                                    val t = beforeBracket.substringBefore(' ').trim()
+                                    val w = beforeBracket.substringAfter(' ', "").trim()
+                                    val prefixTeacher = lines.subList(1, timingIdx).joinToString(" ").trim()
+                                    val fullTeacher = if (prefixTeacher.isNotBlank()) "$prefixTeacher $t" else t
+                                    fullTeacher to w
+                                } else {
+                                    val prefixTeacher = lines.subList(1, timingIdx).joinToString(" ").trim()
+                                    prefixTeacher to beforeBracket
+                                }
+                                val room = lines.drop(timingIdx + 1).joinToString(" ").trim()
+                                if (name.isNotEmpty() && weekText.isNotEmpty() && nodeText.isNotEmpty()) {
+                                    addAll(emit(name, teacher, room, day, nodeText, weekText))
+                                }
                             }
                         }
                     }
                 }
             }
         }
-        if (myTable.isNotEmpty()) return myTable
-        errors += "chain1 #mytable: no valid weekday cell"
 
-        val formatTwo = buildList {
-            for (doc in documents) for (table in doc.select("table")) {
-                val headers = table.selectFirst("thead tr")?.select("th,td")?.map { it.text().trim() } ?: continue
+        // Chain 2: o00O0OO (Format Two)
+        fun parseFormatTwo(doc: Document): List<JwCourse> = buildList {
+            for (table in doc.select("table")) {
+                val thead = table.selectFirst("thead") ?: continue
+                val headerRow = thead.selectFirst("tr") ?: continue
+                val headers = headerRow.select("th,td").map { it.text().trim() }
                 val nameIndex = headers.indexOfFirst { it == "课程" }
                 val nodeIndex = headers.indexOfFirst { it.contains("节次") }
                 if (nameIndex < 0 || nodeIndex < 0) continue
+
                 val teacherIndex = headers.indexOfFirst { it.contains("教师") }
                 val roomIndex = headers.indexOfFirst { it.contains("地点") }
                 val weeksIndex = headers.indexOfFirst { it.contains("周次") }
                 val parityIndex = headers.indexOfFirst { it.contains("单双周") }
+
                 for (row in table.select("tbody tr")) {
                     val cells = row.children()
                     val name = cells.getOrNull(nameIndex)?.text()?.substringAfter(']')?.trim().orEmpty()
                     val timing = cells.getOrNull(nodeIndex)?.text()?.trim().orEmpty()
                     val day = extractDay(timing.substringBefore('[')) ?: continue
-                    val nodeText = timing.substringAfter('[', "").substringBefore(']')
-                    val weeks = if (weeksIndex >= 0) cells.getOrNull(weeksIndex)?.text().orEmpty() else timing.substringAfter('(', "").substringBefore('周')
-                    val parity = cells.getOrNull(parityIndex)?.text().orEmpty()
+                    val nodeText = timing.substringAfter('[', "").substringBefore(']').substringBefore("节").trim()
+                    val weeks = if (weeksIndex >= 0) {
+                        cells.getOrNull(weeksIndex)?.text()?.trim().orEmpty()
+                    } else {
+                        timing.substringAfter('(', "").substringBefore('周').trim()
+                    }
+                    val parity = cells.getOrNull(parityIndex)?.text()?.trim().orEmpty()
                     val typedWeeks = weeks.replace('，', ',').split(',').joinToString(",") { part ->
                         val t = part.trim()
                         if (t.contains('单') || t.contains('双') || parity.isBlank()) t else "$t$parity"
@@ -401,11 +443,10 @@ private object WakeUpCompat {
                 }
             }
         }
-        if (formatTwo.isNotEmpty()) return formatTwo
-        errors += "chain2 thead: no valid course row"
 
-        val kbDiv = buildList {
-            for (doc in documents) for (table in doc.select("#kbDiv")) {
+        // Chain 3: oo0oOO0 (#kbDiv)
+        fun parseKbDiv(doc: Document): List<JwCourse> = buildList {
+            for (table in doc.select("#kbDiv")) {
                 val body = table.select("tbody").lastOrNull() ?: continue
                 for ((rowIndex, row) in body.select("tr").withIndex()) {
                     val allCells = row.select("td")
@@ -413,18 +454,31 @@ private object WakeUpCompat {
                     val cells = allCells.takeLast(7)
                     for ((dayIndex, cell) in cells.withIndex()) {
                         val text = cell.text().trim()
+                        if (text.isEmpty()) continue
                         val name = text.substringBefore('(').trim()
-                        val detail = text.substringAfter('(', "").substringBeforeLast(')', "")
+                        val detail = text.substringAfter('(', "").substringBeforeLast(')', "").trim()
                         val parts = detail.split(Regex("\\s+")).filter(String::isNotBlank)
                         if (name.isBlank() || parts.isEmpty()) continue
-                        addAll(emit(name, "", parts.getOrNull(1).orEmpty(), dayIndex + 1,
-                            (rowIndex + 1).toString(), parts[0]))
+                        val room = if (parts.size > 1) parts.last() else ""
+                        val weekPart = parts[0]
+                        addAll(emit(name, "", room, dayIndex + 1, (rowIndex + 1).toString(), weekPart))
                     }
                 }
             }
         }
+
+        val myTable = documents.flatMap { parseMyTable(it) }
+        if (myTable.isNotEmpty()) return myTable
+        errors += "chain1 #mytable: no valid weekday cell"
+
+        val formatTwo = documents.flatMap { parseFormatTwo(it) }
+        if (formatTwo.isNotEmpty()) return formatTwo
+        errors += "chain2 thead: no valid course row"
+
+        val kbDiv = documents.flatMap { parseKbDiv(it) }
         if (kbDiv.isNotEmpty()) return kbDiv
         errors += "chain3 #kbDiv: no valid timetable cell"
+
         return emptyList()
     }
 
@@ -930,7 +984,30 @@ private object WakeUpCompat {
     private fun first(o: JSONObject, vararg keys: String): String = keys.firstNotNullOfOrNull { o.optString(it).takeIf(String::isNotBlank) }.orEmpty()
     private fun firstInt(o: JSONObject, vararg keys: String): Int? = keys.firstNotNullOfOrNull { o.optString(it).filter(Char::isDigit).toIntOrNull() }
     private fun stripMarkup(value: String): String = Jsoup.parse(value).text().trim()
-    private fun extractDay(text: String): Int? = Regex("(?:星期|周)\\s*([一二三四五六日天1-7])").find(text)?.groupValues?.get(1)?.let { when (it) { "一" -> 1; "二" -> 2; "三" -> 3; "四" -> 4; "五" -> 5; "六" -> 6; "日", "天" -> 7; else -> it.toIntOrNull() } }
+    private fun extractDay(text: String): Int? {
+        val t = text.trim()
+        when (t) {
+            "一", "1" -> return 1
+            "二", "2" -> return 2
+            "三", "3" -> return 3
+            "四", "4" -> return 4
+            "五", "5" -> return 5
+            "六", "6" -> return 6
+            "日", "天", "7" -> return 7
+        }
+        return Regex("(?:星期|周)\\s*([一二三四五六日天1-7])").find(t)?.groupValues?.get(1)?.let {
+            when (it) {
+                "一" -> 1
+                "二" -> 2
+                "三" -> 3
+                "四" -> 4
+                "五" -> 5
+                "六" -> 6
+                "日", "天" -> 7
+                else -> it.toIntOrNull()
+            }
+        }
+    }
     private fun extractNode(text: String): Int? = Regex("(?:第\\s*)?(\\d{1,2})\\s*(?:[-~至](\\d{1,2}))?\\s*节").find(text)?.groupValues?.get(1)?.toIntOrNull()
     private fun timeToNode(time: Int): Int = when { time < 1230 -> ((time - 800) / 100) + 1; time < 1800 -> ((time - 1400) / 100) + 5; else -> ((time - 1900) / 100) + 9 }
     private fun durationToNodes(start: Int, end: Int): Int = when (end - start) { in 50..99 -> 1; in 100..200 -> 2; in 210..340 -> 3; else -> 4 }

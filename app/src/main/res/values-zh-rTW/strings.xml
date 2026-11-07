@@ -1098,6 +1098,7 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="table_reminder_empty">還沒有課表，請先新增或匯入課表。</string>
     <string name="table_reminder_save_failed">儲存失敗，請重試</string>
     <string name="jw_nav_hint_thu">導航到選課系統「整體課表」頁，選好學期後點「匯入此頁」</string>
+    <string name="jw_nav_hint_kingo_new">選擇「主控」→「教學安排」或「班級課表」→「格式二」，點檢索後匯入</string>
     <string name="jw_err_thu_course_page">尚未偵測到清華大學「整體課表」的課程腳本。請登入選課系統、開啟「整體課表」、選好學期後再點「匯入此頁」</string>
     <string name="jw_thu_skipped_courses">有 %1$d 條清華課程安排因資訊不完整或週次、時段格式不支援而略過。請核對教務課表並手動補錄。</string>
     <string name="agenda_title">每日議程</string>

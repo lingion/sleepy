@@ -1131,6 +1131,7 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="table_reminder_empty">時間割がありません。先に追加またはインポートしてください。</string>
     <string name="table_reminder_save_failed">保存できませんでした。もう一度お試しください。</string>
     <string name="jw_nav_hint_thu">履修システムの「全体時間割」を開き、学期を選んでから「このページを取り込む」をタップ</string>
+    <string name="jw_nav_hint_kingo_new">「主控」→「教学安排」または「班级课表」→「格式二」を開き、検索後に取り込む</string>
     <string name="jw_err_thu_course_page">清華大学の「全体時間割」の授業スクリプトが見つかりません。ログインし、全体時間割を開いて学期を選び、再度取り込んでください。</string>
     <string name="jw_thu_skipped_courses">THUの授業予定%1$d件は情報不足、または週・時間帯の形式に対応できず除外されました。教務システムの時間割を確認し、手動で追加してください。</string>
     <string name="agenda_title">一日の予定</string>

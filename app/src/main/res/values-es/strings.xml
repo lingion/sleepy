@@ -1132,6 +1132,7 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="table_reminder_empty">No hay horarios. Añade o importa uno primero.</string>
     <string name="table_reminder_save_failed">No se pudo guardar. Inténtalo de nuevo.</string>
     <string name="jw_nav_hint_thu">Abra el horario general en el sistema de cursos, elija el semestre y toque Importar esta página</string>
+    <string name="jw_nav_hint_kingo_new">Vaya a Control principal -> Horario docente o Horario de clase -> Formato 2, busque e importe</string>
     <string name="jw_err_thu_course_page">No se encontró el script de cursos del horario general de THU. Inicie sesión, abra el horario general, elija el semestre y toque Importar esta página.</string>
     <string name="jw_thu_skipped_courses">Se omitieron %1$d entradas de cursos de THU por datos incompletos o semanas u horarios no compatibles. Compruebe el horario oficial y añádalas manualmente.</string>
     <string name="agenda_title">Agenda diaria</string>

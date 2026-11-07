@@ -1139,6 +1139,7 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="table_reminder_empty">No timetables yet. Add or import a timetable first.</string>
     <string name="table_reminder_save_failed">Could not save. Please try again.</string>
     <string name="jw_nav_hint_thu">Open the course system’s Overall Timetable, select the semester, then tap Import This Page</string>
+    <string name="jw_nav_hint_kingo_new">Go to Master -> Teaching Schedule or Class Timetable -> Format 2, search, then import</string>
     <string name="jw_err_thu_course_page">No THU Overall Timetable course script was found. Sign in, open Overall Timetable, select the semester, then tap Import This Page.</string>
     <string name="jw_thu_skipped_courses">%1$d THU course entries were skipped because details were incomplete or the weeks or times are unsupported. Check the official timetable and add them manually.</string>
     <string name="agenda_title">Daily agenda</string>
