@@ -73,6 +73,16 @@ object JwParserRegistry {
     )
 
     private val FACTORIES: Map<String, (String) -> JwParser> = linkedMapOf(
+        JwProtocol.TYPE_XHTD to { html -> JwUndergradCParser(html, JwProtocol.TYPE_XHTD) },
+        JwProtocol.TYPE_XYTC to { html -> JwUndergradCParser(html, JwProtocol.TYPE_XYTC) },
+        JwProtocol.TYPE_CIDP to { html -> JwUndergradCParser(html, JwProtocol.TYPE_CIDP) },
+        JwProtocol.TYPE_SDPEI to { html -> JwUndergradCParser(html, JwProtocol.TYPE_SDPEI) },
+        JwProtocol.TYPE_SHU to { html -> JwUndergradCParser(html, JwProtocol.TYPE_SHU) },
+        JwProtocol.TYPE_JMPT to { html -> JwUndergradCParser(html, JwProtocol.TYPE_JMPT) },
+        JwProtocol.TYPE_LNGD to { html -> JwUndergradCParser(html, JwProtocol.TYPE_LNGD) },
+        JwProtocol.TYPE_VATUU to { html -> JwUndergradCParser(html, JwProtocol.TYPE_VATUU) },
+        JwProtocol.TYPE_YZZY to { html -> JwUndergradCParser(html, JwProtocol.TYPE_YZZY) },
+
         JwProtocol.TYPE_HIT to ::JwHitParser,
         JwProtocol.TYPE_BUAA to ::JwBuaaParser,
         JwProtocol.TYPE_GXIC to { html -> JwSchoolGridParser(html, JwProtocol.TYPE_GXIC) },
@@ -122,7 +132,10 @@ object JwParserRegistry {
         JwProtocol.TYPE_NWPU_POST to ::JwNwpuPostParser,
         JwProtocol.TYPE_WISEDU to ::JwWiseduParser,
         JwProtocol.TYPE_WHUT to ::JwWhutParser,
-        JwProtocol.TYPE_CQU to ::JwCquParser,
+        JwProtocol.TYPE_CQU to { source ->
+            if (source.trimStart().startsWith("<") && source.contains("print-schedule-table"))
+                JwUndergradCParser(source, JwProtocol.TYPE_CQU) else JwCquParser(source)
+        },
         JwProtocol.TYPE_CHAOXING to ::JwChaoxingParser,
         JwProtocol.TYPE_BOYA_PP to ::JwBoyaPpParser,
         JwProtocol.TYPE_EAMS5 to ::JwEams5Parser,
@@ -279,6 +292,7 @@ object JwParserRegistry {
     )
 
     private val DECLARED_ONLY_TYPES = setOf(
+        JwProtocol.TYPE_XHTD, JwProtocol.TYPE_XYTC, JwProtocol.TYPE_CIDP, JwProtocol.TYPE_SDPEI, JwProtocol.TYPE_SHU, JwProtocol.TYPE_JMPT, JwProtocol.TYPE_LNGD, JwProtocol.TYPE_VATUU, JwProtocol.TYPE_YZZY, JwProtocol.TYPE_CQU,
         JwProtocol.TYPE_HIT, JwProtocol.TYPE_BUAA,
         JwProtocol.TYPE_GXIC, JwProtocol.TYPE_GXNU, JwProtocol.TYPE_JXNU, JwProtocol.TYPE_NNUTC,
         JwProtocol.TYPE_SHSMU, JwProtocol.TYPE_YGU,
