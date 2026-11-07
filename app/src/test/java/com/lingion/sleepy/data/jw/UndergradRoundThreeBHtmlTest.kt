@@ -22,9 +22,9 @@ class UndergradRoundThreeBHtmlTest {
             (if (row == 4) "<td><table><tbody><tr><td>数学 王师 H 1201 1-3周</td></tr></tbody></table></td>" else "<td></td>") +
             "<td><table><tbody><tr><td>英语 王师 H 1301 2-4周</td></tr></tbody></table></td></tr>" }
         val courses = parse("<table id='ctl00_ContentPlaceHolder1_CourseTable'>$rows</table>", "huat")
-        assertEquals(expected("数学", "1201", "王师", listOf(1,2,3), 1, listOf(9,10,11), 1f) +
+        assertEquals(expected("数学", "1201", "王师", listOf(1,2,3), 1, listOf(9,10,11)) +
             (0..4).flatMap { r -> expected("英语", "1301", "王师", listOf(2,3,4), 2,
-                if (r == 4) listOf(9,10,11) else listOf(r*2+1,r*2+2), 1f) }.toSet(), actual(courses))
+                if (r == 4) listOf(9,10,11) else listOf(r*2+1,r*2+2)) }.toSet(), actual(courses))
     }
 
     @Test fun huatDoesNotInventCoursesForMalformedTail() {
@@ -35,7 +35,7 @@ class UndergradRoundThreeBHtmlTest {
 
     @Test fun huatRetainsHyphenInCourseNameWhileSplittingOnlyWeekTail() {
         val html = "<table id='ctl00_ContentPlaceHolder1_CourseTable'><tr valign='middle'><td><table><tr><td>设计-实验 王师 H 1201 1-3周</td></tr></table></td></tr></table>"
-        assertEquals(expected("设计-实验", "1201", "王师", listOf(1,2,3), 1, listOf(1,2), 1f), actual(parse(html, "huat")))
+        assertEquals(expected("设计-实验", "1201", "王师", listOf(1,2,3), 1, listOf(1,2)), actual(parse(html, "huat")))
     }
 
     @Test fun seu2017JoinsTeacherCreditAndRetainsSeparateWeeks() {

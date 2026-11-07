@@ -49,7 +49,7 @@ internal class JwUndergradBHtmlParser(source: String, private val protocol: Stri
                     }
                     val start = (rowIndex.toLong() * 2 + 1).takeIf { it <= Int.MAX_VALUE }?.toInt() ?: continue
                     val end = endNode(start, if (rowIndex == 4) 3 else 2) ?: continue
-                    output += JwCourse(fields[0], room, teacher, day, start, end, startWeek, endWeek, credit = 1f)
+                    output += JwCourse(fields[0], room, teacher, day, start, end, startWeek, endWeek)
                 }
             }
         }
@@ -179,7 +179,9 @@ internal class JwUndergradBHtmlParser(source: String, private val protocol: Stri
                 if (column == 0) continue
                 val parts = cell.select("div").map { it.text().trim() }
                 if (parts.isEmpty()) continue
-                val plan = plans.firstOrNull { parts[0].endsWith(it.name) }
+                val candidates = plans.filter { parts[0].endsWith(it.name) }.distinct()
+                val longestName = candidates.maxOfOrNull { it.name.length }
+                val plan = candidates.filter { it.name.length == longestName }.singleOrNull()
                 val name = plan?.name ?: parts[0]
                 val weekIndex = parts.indexOfLast { Regex("\\d+周").containsMatchIn(it) }
                 if (weekIndex < 1) continue
@@ -234,11 +236,15 @@ internal class JwUndergradBHtmlParser(source: String, private val protocol: Stri
             return (first to last).takeIf { first > 0 && last >= first }
         }
 
-        internal fun weeks(raw: String): List<Triple<Int, Int, Int>> = raw.split(Regex("[,，、\\\\/ ]+")).mapNotNull { piece ->
-            val m = Regex("(?:第)?([0-9]+(?:[-~][0-9]+)?)(?:周)?(?:[（(]?([单双])[)）]?(?:周)?)?").matchEntire(piece.trim()) ?: return@mapNotNull null
-            val r = range(m.groupValues[1]) ?: return@mapNotNull null
-            val parity = when (m.groupValues[2]) { "单" -> 1; "双" -> 2; else -> 0 }
-            Triple(r.first, r.second, parity)
+        internal fun weeks(raw: String): List<Triple<Int, Int, Int>> {
+            val output = mutableListOf<Triple<Int, Int, Int>>()
+            for (piece in raw.trim().split(Regex("[,，、\\\\/ ]+"))) {
+                val m = Regex("(?:第)?([0-9]+(?:[-~][0-9]+)?)(?:周)?(?:[（(]?([单双])[)）]?(?:周)?)?").matchEntire(piece.trim()) ?: return emptyList()
+                val r = range(m.groupValues[1]) ?: return emptyList()
+                val parity = when (m.groupValues[2]) { "单" -> 1; "双" -> 2; else -> 0 }
+                output += Triple(r.first, r.second, parity)
+            }
+            return output
         }
 
         internal fun endNode(start: Int, length: Int): Int? =

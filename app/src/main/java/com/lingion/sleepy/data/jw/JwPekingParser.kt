@@ -14,12 +14,13 @@ class JwPekingParser(source: String) : JwParser(source) {
                 val fields = Jsoup.parseBodyFragment(block).text().trim().split(Regex("\\s+"))
                 if (fields.size < 2) continue
                 val rawWeeks = fields[0].removeSuffix("周")
-                val parsedWeeks = rawWeeks.split(',').mapNotNull { part ->
-                    val m = Regex("([0-9]+)(?:~([0-9]+))?").matchEntire(part) ?: return@mapNotNull null
-                    val first = m.groupValues[1].toIntOrNull() ?: return@mapNotNull null
-                    val last = m.groupValues[2].ifBlank { m.groupValues[1] }.toIntOrNull() ?: return@mapNotNull null
+                val parsedWeeks = rawWeeks.split(',').map { part ->
+                    val m = Regex("([0-9]+)(?:~([0-9]+))?").matchEntire(part) ?: return@map null
+                    val first = m.groupValues[1].toIntOrNull() ?: return@map null
+                    val last = m.groupValues[2].ifBlank { m.groupValues[1] }.toIntOrNull() ?: return@map null
                     (first to last).takeIf { first > 0 && last >= first }
                 }
+                if (parsedWeeks.any { it == null }) continue
                 val timing = fields[1]
                 val m = Regex("周([一二三四五六日天])([0-9]+)(?:~([0-9]+))?节(?:[（(]([^）)]*)[）)])?").matchEntire(timing) ?: continue
                 val day = "一二三四五六日".indexOf(m.groupValues[1].replace('天', '日')) + 1
@@ -28,7 +29,7 @@ class JwPekingParser(source: String) : JwParser(source) {
                 val bracket = m.groupValues[4]
                 val parity = when { "单" in bracket -> 1; "双" in bracket -> 2; else -> 0 }
                 val room = fields.getOrNull(2) ?: bracket.takeUnless { it in setOf("单", "双", "单周", "双周") }.orEmpty()
-                for ((first, last) in parsedWeeks) {
+                for ((first, last) in parsedWeeks.filterNotNull()) {
                     val c = JwCourse(cells[0].text().trim(), room, cells[4].text().trim(), day,
                         firstNode, lastNode, first, last, parity)
                     if (JwUndergradBHtmlParser.valid(c)) result += c

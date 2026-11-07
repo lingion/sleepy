@@ -33,7 +33,7 @@ internal class JwSuesParser(source: String) : JwParser(source) {
                 val firstTime = adjustedTime(room, start, false, item.string("startTime"))
                 val lastTime = adjustedTime(room, end, true, item.string("endTime"))
                 val validTime = JwCourse.isValidTimeRange(firstTime, lastTime)
-                val credit = item.opt("credits")?.toString()?.toFloatOrNull()?.takeIf(Float::isFinite) ?: 0f
+                val credit = item.opt("credits")?.toString()?.toFloatOrNull()?.takeIf { it.isFinite() && it >= 0f } ?: 0f
                 val note = item.string("lessonCode") + item.string("lessonRemark")
                 for (week in actualWeeks.filterNotNull().distinct().sorted()) output += JwCourse(name, room, teacher, day,
                     start, end, week, week, startTime = if (validTime) firstTime else "",

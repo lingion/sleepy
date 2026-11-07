@@ -168,27 +168,37 @@ internal class JwUndergradBGridParser(source: String, private val protocol: Stri
         }
         if (widths.size !in 1..7) return emptyList()
         val boundaries = widths.runningFold(0L) { total, width -> total + width }
+        data class Occupied(val first: Long, val last: Long, val untilNode: Int)
+        val occupied = mutableListOf<Occupied>()
         val output = mutableListOf<JwCourse>()
         val rows = tables[1].select("tbody").firstOrNull()?.select("tr") ?: return emptyList()
         for ((rowIndex, row) in rows.withIndex()) {
+            val node = rowIndex + 1
+            occupied.removeAll { it.untilNode < node }
             var offset = 0L
             for (cell in row.select("td")) {
                 if (cell.className() == "td2-1") continue
+                while (true) {
+                    val previous = occupied.firstOrNull { offset >= it.first && offset < it.last } ?: break
+                    offset = previous.last
+                }
                 val colspan = cell.attr("colspan").ifBlank { "1" }.toIntOrNull()?.takeIf { it > 0 } ?: break
                 val dayIndex = widths.indices.firstOrNull { offset in boundaries[it] until boundaries[it + 1] }
                 val last = offset + colspan
+                if (dayIndex == null || last > boundaries[dayIndex + 1] || occupied.any { offset < it.last && last > it.first }) break
+                val span = cell.attr("rowspan").ifBlank { "1" }.toIntOrNull() ?: break
+                val lastNode = JwUndergradBHtmlParser.endNode(node, span) ?: break
+                occupied += Occupied(offset, last, lastNode)
                 offset = last
-                if (dayIndex == null || last > boundaries[dayIndex + 1] || cell.className() == "11111" || cell.text().isBlank()) continue
+                if (cell.className() == "11111" || cell.text().isBlank()) continue
                 val parts = cell.select("span").map { it.text().trim().replace("/", "") }
                 if (parts.size < 4) continue
-                val span = cell.attr("rowspan").ifBlank { "1" }.toIntOrNull() ?: continue
-                val lastNode = JwUndergradBHtmlParser.endNode(rowIndex + 1, span) ?: continue
                 val name = parts[1].split(Regex("[()]" )).getOrNull(2) ?: continue
                 val day = if (sundayFirst) if (dayIndex == 0) 7 else dayIndex else dayIndex + 1
                 val parity = when { "单周" in parts[0] -> 1; "双周" in parts[0] -> 2; else -> 0 }
                 val rawWeeks = parts[0].replace("每周", "").replace("单周", "").replace("双周", "")
                 for ((first, end, _) in JwUndergradBHtmlParser.weeks(rawWeeks)) output += JwCourse(name, parts[3], parts[2], day,
-                    rowIndex + 1, lastNode, first, end, parity)
+                    node, lastNode, first, end, parity)
             }
         }
         return output
