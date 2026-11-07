@@ -20769,7 +20769,8 @@
     "http": 200,
     "title": "统一身份认证平台",
     "fingerprints": [],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "authenticatedImportTested": true,
+    "limitation": "User supplied a Sleepy import-success report on 2026-11-07: app 1.0.63 (10063), catalogId moe:4136011318, zf_new, 24 courses imported through the unchanged catalog URL. Reported status was unverified; this report confirms authenticated import, not an independent public-page ownership audit.",
     "ownershipAction": "retained-wakeup-662-declared-owner"
   },
   {

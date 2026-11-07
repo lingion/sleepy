@@ -1,6 +1,6 @@
 # 学校目录
 
-> 共 4140 个目录条目：已实现配置 354；待验证、需确认后尝试 2526；待适配 1260。数据基准：2026-10-14。
+> 共 4140 个目录条目：已实现配置 355；待验证、需确认后尝试 2525；待适配 1260。数据基准：2026-10-14。
 
 目录收录不等于教务导入支持。已实现配置沿用历史状态，也不保证每校当前登录均已实机验证；待验证条目仅有公开入口和候选协议证据，未登录测试；待适配条目没有可启用的导入配置。
 
@@ -1861,7 +1861,7 @@
 | 江西经济管理干部学院即江西飞行学院 | 待验证·可尝试 | jiangxijingjiguanliganbuxueyuanjijiangxifeixingxueyuan | https://jwxt.jxfu.edu.cn/ | cf | wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:1ba0b53b7af2c4779dec |
 | 江西经济管理职业学院 | 待适配 | jiangxijingjiguanlizhiyexueyuan |  |  | moe-2026-regular; moe:4136013866 |
 | 江西开放大学 | 待验证·可尝试 | jiangxikaifangdaxue | https://cas.jxrtvu.com/cas/login | jw_home | moe-2026-adult, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4236051281 |
-| 江西科技师范大学 | 待验证·可尝试 | jiangxikejishifandaxue | https://cas-jxstnu-edu-cn-s.atrust.jxstnu.edu.cn/lyuapServer/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4136011318 |
+| 江西科技师范大学 | 已实现配置 | jiangxikejishifandaxue | https://cas-jxstnu-edu-cn-s.atrust.jxstnu.edu.cn/lyuapServer/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4136011318 |
 | 江西科技学院 | 待适配 | jiangxikejixueyuan |  |  | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4136010846 |
 | 江西科技职业学院 | 待适配 | jiangxikejizhiyexueyuan |  |  | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4136013419 |
 | 江西理工大学 | 待验证·可尝试 | jiangxiligongdaxue | https://authserver.jxust.edu.cn/authserver/login?service=https://jw.jxust.edu.cn/jsxsd/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4136010407 |

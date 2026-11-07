@@ -47684,8 +47684,9 @@
       "title": "统一身份认证平台",
       "urlHints": []
     },
-    "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "status": "supported",
+    "authenticatedImportTested": true,
+    "verification": "User supplied a Sleepy import-success report on 2026-11-07: app 1.0.63 (10063), catalogId moe:4136011318, zf_new, 24 courses imported through the unchanged catalog URL. Reported status was unverified; this report confirms authenticated import, not an independent public-page ownership audit.",
     "declaredBy662": true
   },
   {
