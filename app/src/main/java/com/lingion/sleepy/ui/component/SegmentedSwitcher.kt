@@ -18,8 +18,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -40,10 +42,12 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
@@ -56,10 +60,23 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kyant.backdrop.Backdrop
+import com.kyant.backdrop.drawPlainBackdrop
 import com.lingion.sleepy.console.ui.dbgTag
+import com.lingion.sleepy.ui.theme.LocalDarkTheme
+import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.UiStyle
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassDepth
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassOverlay
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassOverlaySamplingHost
+import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassStyle
+import com.lingion.sleepy.ui.component.liquidglass.FlClashDockPhysics
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import com.lingion.sleepy.ui.component.liquidglass.liquidGlass
 import com.lingion.sleepy.ui.component.liquidglass.controlFill
+import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 
 /**
@@ -135,10 +152,23 @@ fun <T> SegmentedSwitcher(
     // 动画与手势共用连续位置，文字着色不再取整跳段。
     var thumbPosition by remember { mutableFloatStateOf(selectedIndex.toFloat()) }
     var dragging by remember { mutableStateOf(false) }
+    // 按压瞬间即浮起 (2026-11-06 用户: "手按压瞬间像Toggle和dock滑块一样浮起有透射效果"):
+    // pressing 在 awaitFirstDown 立刻置位, 不等拖动 slop; tapLift 给点按/落位补一段短升镜
+    // (GlassSwitch tapGeneration 同款语义, 200ms)。
+    var pressing by remember { mutableStateOf(false) }
+    var tapGeneration by remember { mutableIntStateOf(0) }
+    var tapLift by remember { mutableStateOf(false) }
     var gestureEnd by remember { mutableIntStateOf(0) }
     // 拖动中滑块浮起成镜片(用户 2026-11-04: 像 Toggle/Dock 那样浮着拖):
     // 高度 42dp 轨道下允许放大 1.155 仍不出屏; 松手弹簧回落, 投影随之消散。
-    val thumbLift by animateFloatAsState(if (dragging) 1f else 0f, tween(240), label = "segment-thumb-lift")
+    val thumbLift by animateFloatAsState(if (dragging || pressing || tapLift) 1f else 0f, tween(150), label = "segment-thumb-lift")
+    LaunchedEffect(tapGeneration) {
+        if (tapGeneration > 0) {
+            tapLift = true
+            delay(200)
+        }
+        tapLift = false
+    }
     val currentOnSelect by rememberUpdatedState(onSelect)
     val currentSelectedIndex by rememberUpdatedState(selectedIndex)
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
@@ -161,6 +191,37 @@ fun <T> SegmentedSwitcher(
     val density = LocalDensity.current
     var trackWidthPx by remember { mutableIntStateOf(0) }
 
+    // 按压透射镜片 (2026-11-06 用户: 像 Toggle/Dock 那样浮起有透射):
+    // 只采样宿主 scene 记录层 — 与药丸静置 tinted 面板 (glassControl) 同一条无环通路。
+    // 严禁在本组件注册任何本地背板: 轨道 Box 是滑块的祖先, 祖先注册的背板被后代采样
+    // = prepareTreeImpl 无限递归 (2026-11-05 实机 SIGSEGV 根因)。
+    // 按压透射镜片 (2026-11-06 用户: 像 Toggle/Dock 那样浮起有透射):
+    // 只采样宿主 scene 前置层 (backdropAt) — 轨道底色与文字先于 thumb 节点绘制,
+    // 深度 ≥1 的前置层已含滑块正下方的轨道/文字像素, 镜片折射"里面有东西"。
+    // 严禁在本组件注册本地背板给后代采样: 轨道 Box 是滑块的祖先, 祖先注册的
+    // 背板被后代采样 = prepareTreeImpl 无限递归 (2026-11-05 实机 SIGSEGV 根因;
+    // 2026-11-08 Robolectric 全量跑同点复炸, exit 132, 205 个测试类没跑到)。
+    val glassHost = LocalGlassHost.current
+    val glassActive = LocalUiStyle.current == UiStyle.LiquidGlass && glassHost != null
+    val samplingHost = if (LocalGlassOverlay.current) LocalGlassOverlaySamplingHost.current ?: glassHost else glassHost
+    val consumerDepth = LocalGlassDepth.current
+    // 深度夹到 ≥1: 前置层必须包含同 Layout 里先画的轨道底色与文字 — 镜片采到它们
+    // 才折射得出"里面有东西"的玻璃 (2026-11-08 用户: 不得是里面没内容的透明色块)。
+    val lensBackdrop: Backdrop? = if (glassActive) samplingHost?.backdropAt(maxOf(1f, consumerDepth)) else null
+    val context = LocalContext.current
+    val baseLensStyle = LiquidGlassStyle.lens(colors, LocalDarkTheme.current).copy(
+        refraction = -8.5,
+        bevel = 9.0,
+        brightness = if (LocalDarkTheme.current) 1.12 else 1.08,
+        rim = if (LocalDarkTheme.current) 0.48 else 0.72,
+        rimWidth = 1.2,
+        endShade = 0.06,
+        dispersion = 1.8,
+        hairline = 0.28,
+        contrast = 0.0,
+    )
+    val lensStyle = baseLensStyle.scale(thumbLift.toDouble())
+
     Box(
         modifier = modifier
             .height(42.dp)
@@ -175,41 +236,63 @@ fun <T> SegmentedSwitcher(
             }
             .padding(4.dp)
             .selectableGroup()
-            .pointerInput(options, selectedIndex, isRtl, trackWidthPx) {
+            .pointerInput(options, selectedIndex, isRtl, trackWidthPx, glassActive) {
+                // Classic 模式完全走原有 selectable 点击路径，不安装自定义拖动接管器。
+                if (!glassActive) return@pointerInput
                 if (count < 2 || trackWidthPx <= 0) return@pointerInput
                 val segmentWidth = trackWidthPx.toFloat() / count
                 val direction = if (isRtl) -1f else 1f
+                try {
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false)
+                    // 按下瞬间即升镜 (2026-11-06 用户: 手按压瞬间浮起透射, 不等 slop,
+                    // 落点是否在高亮块上也升 — 点其它段后滑块弹簧过去的全程戴镜片, 同 Toggle)。
+                    pressing = true
                     val logicalX = if (isRtl) size.width - down.position.x else down.position.x
                     val start = thumbPosition
-                    // 只有从高亮块开始的横拖接管手势；普通段仍由 selectable 点击。
-                    if (logicalX < start * segmentWidth || logicalX > (start + 1f) * segmentWidth) {
-                        return@awaitEachGesture
-                    }
                     try {
-                        val drag = awaitHorizontalTouchSlopOrCancellation(down.id) { change, _ ->
-                            change.consume()
-                            dragging = true
-                            thumbPosition = (start + (change.position.x - down.position.x) * direction / segmentWidth)
-                                .coerceIn(0f, (count - 1).toFloat())
-                        }
-                        if (drag != null) {
-                            val released = horizontalDrag(drag.id) { change ->
-                                thumbPosition = (thumbPosition + change.positionChange().x * direction / segmentWidth)
-                                    .coerceIn(0f, (count - 1).toFloat())
+                        // 只有从高亮块开始的横拖接管手势；普通段仍由 selectable 点击。
+                        if (logicalX in start * segmentWidth..(start + 1f) * segmentWidth) {
+                            val drag = awaitHorizontalTouchSlopOrCancellation(down.id) { change, _ ->
                                 change.consume()
+                                dragging = true
+                                thumbPosition = (start + (change.position.x - down.position.x) * direction / segmentWidth)
+                                    .coerceIn(0f, (count - 1).toFloat())
                             }
-                            if (released) {
-                                val target = thumbPosition.roundToInt().coerceIn(0, count - 1)
-                                if (target != currentSelectedIndex) currentOnSelect(options[target].value)
+                            if (drag != null) {
+                                val released = horizontalDrag(drag.id) { change ->
+                                    thumbPosition = (thumbPosition + change.positionChange().x * direction / segmentWidth)
+                                        .coerceIn(0f, (count - 1).toFloat())
+                                    change.consume()
+                                }
+                                if (released) {
+                                    val target = thumbPosition.roundToInt().coerceIn(0, count - 1)
+                                    if (target != currentSelectedIndex) currentOnSelect(options[target].value)
+                                }
                             }
+                        } else {
+                            // 非高亮落点 (点按其它段): 不消费事件 (selectable 负责点击), 但要等抬手,
+                            // 让 pressing 跟住整根手指 — 滑块弹簧移向新段的全程都戴着升镜镜片。
+                            do {
+                                val event = awaitPointerEvent(PointerEventPass.Main)
+                                if (event.changes.none { it.pressed }) break
+                            } while (true)
                         }
                     } finally {
-                        dragging = false
                         // 即使调用方拒绝更新，仍从当前手势位置吸附回受控 selected。
                         gestureEnd++
                     }
+                    pressing = false
+                    dragging = false
+                    // 抬手后升镜再保持 200ms (GlassSwitch tapGeneration 同款):
+                    // 纯点按的下-上太短, 不加这段就看不见浮起透射。
+                    tapGeneration++
+                }
+                } finally {
+                    // 手势协程被取消 (pointerInput 重启 / 组合离开) 时不留悬空按压态,
+                    // 否则镜片永远浮着 (GlassSwitch detectHorizontalDragGestures 同款护栏)。
+                    pressing = false
+                    dragging = false
                 }
             }
     ) {
@@ -234,15 +317,31 @@ fun <T> SegmentedSwitcher(
                             // (对齐 Dock/GlassSwitch 按压升镜; 1.155*34dp=39.3dp 仍在 42dp 组件高度内,
                             //  轨道外层已不 clip, 越出轨道边界的投影可完整绘制)
                             val l = thumbLift
-                            scaleX = 1f + 0.155f * l
-                            scaleY = 1f + 0.155f * l
+                            scaleX = 1f + 0.2f * l
+                            scaleY = 1f + 0.2f * l
                             shape = RoundedCornerShape(12.dp)
                             clip = false
                             shadowElevation = if (l > 0f) 8.dp.toPx() * l else 0f
                         }
-                        .glassControl(shape = RoundedCornerShape(12.dp), tint = colors.secondaryContainer, enabled = false, selected = true, registerPane = false)
+                        // 升镜三态 = GlassSwitch 完全同构 (2026-11-06 用户: "摁起来像 toggle 一样
+                        // 变成一大块透明的玻璃, 有透射效果, 就像 Dock 的那一大块悬浮玻璃"):
+                        // 静置实心 secondaryContainer; 按压瞬间固体淡到 0.5 保底 + 透射镜片盖顶
+                        // → 读感是浮起一大块透明玻璃。
+                        // 旧版 "镜片叠加而非替换、底色不淡" 的读感根因: tinted 面板 0.82 alpha
+                        // 实心材质在 lift 时原样保留 → 按下去看到的还是实心药丸 = "没有变化"。
+                        // 白雾教训 (2026-11-05 开关淡到 0 消失) 已由 0.5 保底堵住。
+                        // 淡出只在玻璃风格生效: Classic 无镜片可盖, 淡半透明 = 直接变糊。
                         .clip(RoundedCornerShape(12.dp))
-                        .background(controlFill(colors.secondaryContainer))
+                        .background(
+                            colors.secondaryContainer.copy(
+                                alpha = if (glassActive) 1f - 0.5f * thumbLift else 1f
+                            )
+                        )
+                        .then(if (glassActive && thumbLift > 0f && lensBackdrop != null) Modifier.drawPlainBackdrop(
+                            backdrop = lensBackdrop,
+                            shape = { RoundedCornerShape(12.dp) },
+                            effects = { liquidGlass(context = context, style = lensStyle) },
+                        ) else Modifier)
                 )
                 // 层1..n: 点击段 — 透明, 只负责点击与无障碍
                 options.forEachIndexed { index, option ->
@@ -317,7 +416,12 @@ fun <T> SegmentedSwitcher(
                 val heightPx = constraints.maxHeight
 
                 val thumbPlaceable = measurables[0].measure(
-                    Constraints(minWidth = segmentWidth, maxWidth = segmentWidth, minHeight = heightPx, maxHeight = heightPx)
+                    Constraints(
+                        minWidth = segmentWidth,
+                        maxWidth = segmentWidth,
+                        minHeight = heightPx,
+                        maxHeight = heightPx,
+                    )
                 )
                 val clickPlaceables = measurables.drop(1).take(count).map { m ->
                     m.measure(Constraints(minWidth = segmentWidth, maxWidth = segmentWidth, minHeight = heightPx, maxHeight = heightPx))
@@ -335,7 +439,19 @@ fun <T> SegmentedSwitcher(
                     val layoutSegW = constraints.maxWidth.toFloat() / count
                     // place 层是整数像素, 取整不可避免 — 亚像素平滑改由外层 graphicsLayer 承担:
                     // thumb Box 自带 Modifier.graphicsLayer{ translationX = 弹簧余数 }, 见 thumb Box。
-                    thumbPlaceable.placeRelative(x = (thumbPosition * layoutSegW).toInt(), y = 0)
+                    val lensRect = FlClashDockPhysics.lensRect(
+                        position = thumbPosition,
+                        stretch = 0f,
+                        pitch = layoutSegW / density.density,
+                        width = (layoutSegW / density.density),
+                        height = 34f,
+                        lift = thumbLift,
+                    )
+                    thumbPlaceable.placeRelative(
+                        x = (thumbPosition * layoutSegW - (lensRect.width * density.density - thumbPlaceable.width) / 2f).toInt(),
+                        y = ((heightPx - lensRect.height * density.density) / 2f).toInt(),
+                    )
+
                     clickPlaceables.forEachIndexed { i, p -> p.placeRelative(x = i * segmentWidth, y = 0) }
                     // 文字水平: placeable 自身已在段宽约束下测出, 需在段内水平居中; 垂直: 段内居中
                     labelPlaceables.forEachIndexed { i, p ->

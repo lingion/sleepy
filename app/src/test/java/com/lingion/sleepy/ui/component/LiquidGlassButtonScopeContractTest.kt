@@ -154,20 +154,72 @@ class LiquidGlassButtonScopeContractTest {
         assertTrue("AlphabetIndexBar must keep its pointer-input drag mapping", rail.contains("onLetterTap(letters[idx])"))
     }
 
-    /** 契约 4: 分段滑块拖动浮起 — thumb graphicsLayer 由 dragging 驱动的 lift 放大 + 投影;
-     *  轨道外层去 clip(底色改带形状的 background 自绘圆角), 让浮起的滑块越出轨道边缘。 */
+    /** 契约 4: 分段滑块三态 (2026-11-06 用户: "tab滑块要求手按压瞬间像Toggle和dock滑块一样
+     *  浮起有透射效果"; 同日晚追加: "摁起来像toggle一样, 变成一大块透明的玻璃, 有透射效果,
+     *  跟随的手指移动滑动, 就像Dock的那一大块悬浮出来的那个玻璃效果一样") —
+     *  rest 实心 secondaryContainer 药丸由 spring 连续滑动 + 拖动跟手;
+     *  按压/拖动瞬间 lift 驱动: 放大 1.155 + 8dp 托影 + 固体底色淡到 0.5 保底 +
+     *  采样宿主场景前置层 (backdropAt, depth ≥1 含滑块下方轨道/文字) 的活玻璃镜片。
+     *  禁回归: 药丸底色禁止淡到 0 (2026-11-05 白雾教训); 镜片禁止走 tinted glassControl 面板
+     *  (0.82 alpha 实心材质在升镜时原样保留 → 按下去无"透明玻璃"变化, 用户同日否决);
+     *  本文件禁止出现 layerBackdrop 本地注册 — 背板注册在滑块祖先上再让后代采样是
+     *  prepareTreeImpl 无限递归环 (2026-11-05 SIGSEGV 根因; 2026-11-08 Robolectric
+     *  全量跑同点复炸 exit 132)。 */
     @Test
     fun segmented_switcher_thumb_lifts_while_dragging() {
         val src = loadSource("ui/component/SegmentedSwitcher.kt")
         assertTrue(
-            "lift must be driven by dragging state",
-            src.contains("animateFloatAsState(if (dragging) 1f else 0f")
+            "lift must be driven by press OR drag (2026-11-06: 按压瞬间就要浮起, 不等 slop)",
+            src.contains("animateFloatAsState(if (dragging || pressing || tapLift) 1f else 0f")
         )
         val thumbBlock = src.substringAfter(".testTag(\"segment-thumb\")").substringBefore("// 层1..n: 点击段")
-        assertTrue("thumb lift must scale X", thumbBlock.contains("scaleX = 1f + 0.155f * l"))
-        assertTrue("thumb lift must scale Y", thumbBlock.contains("scaleY = 1f + 0.155f * l"))
+        assertTrue("thumb lift must scale X like the reference glass capsule", thumbBlock.contains("scaleX = 1f + 0.2f * l"))
+        assertTrue("thumb lift must scale Y enough to rise outside the track", thumbBlock.contains("scaleY = 1f + 0.2f * l"))
         assertTrue("thumb lift must cast elevation shadow", thumbBlock.contains("shadowElevation = if (l > 0f) 8.dp.toPx() * l else 0f"))
         assertTrue("thumb lift layer must not clip its own shadow", thumbBlock.contains("clip = false"))
+        // 按压透射镜片: 与 GlassSwitch 同一 lens 材质 + lift 连续生长
+        assertTrue("press must grow a refractive lens over the pill", thumbBlock.contains("drawPlainBackdrop"))
+        assertTrue("lens must use the complete iOS press material before scaling by lift",
+            src.contains("refraction = -8.5") && src.contains("bevel = 9.0") && src.contains("rim = if (LocalDarkTheme.current) 0.48 else 0.72"))
+        assertTrue(
+            "lens must sample the host scene prefix, never an ancestor-registered local backdrop " +
+                "(祖先背板被后代采样 = prepareTreeImpl 无限递归, 2026-11-05 SIGSEGV / 2026-11-08 测试JVM 复炸)",
+            src.contains("backdrop = lensBackdrop") &&
+                Regex("backdropAt\\(maxOf\\(1f, consumerDepth\\)\\)").containsMatchIn(src) &&
+                !src.contains("layerBackdrop(")
+        )
+        assertTrue("lens layer must not paint before lift arrives", thumbBlock.contains("if (glassActive && thumbLift > 0f"))
+        // 升镜三态与 GlassSwitch 同构: 固体淡到 0.5 保底, 镜片盖顶 → "一大块透明的玻璃"
+        assertTrue(
+            "thumb fill must fade to the 0.5 floor exactly like GlassSwitch (一大块透明玻璃; " +
+                "淡到 0 = 白雾 2026-11-05, 不淡 = 实心药丸无变化 2026-11-06 用户两次否决); " +
+                "淡出只在玻璃风格生效 — Classic 无镜片可盖, 淡半透=糊",
+            thumbBlock.contains("alpha = if (glassActive) 1f - 0.5f * thumbLift else 1f")
+        )
+        assertFalse(
+            "thumb pane must not be a tinted glassControl slab — its 0.82-alpha solid material " +
+                "survives lift unchanged, that was the \"没有透明玻璃\" complaint",
+            thumbBlock.contains(".glassControl(")
+        )
+        // 真源行为: 拖动跟手 + 释放吸附
+        assertTrue("thumb must support horizontal drag (FlClash 拖拽切换)", src.contains("horizontalDrag"))
+        // Tab 由同一棵树的前置场景层提供折射 (backdropAt); 本地背板注册已清除 —
+        // 祖先注册 + 后代采样 = prepareTreeImpl 递归 (2026-11-05 SIGSEGV 教训)。
+        assertFalse(
+            "segmented switcher must not register any local layerBackdrop for the thumb to sample",
+            src.contains("rememberLayerBackdrop()")
+        )
+        assertTrue(
+            "floating tab thumb must use Dock lens geometry and center placement",
+            src.contains("FlClashDockPhysics.lensRect") &&
+                src.contains("lensRect.width") &&
+                src.contains("lensRect.height") &&
+                src.contains("heightPx - lensRect.height")
+        )
+        assertTrue(
+            "floating tab lens must reuse Dock's complete lens rect/optics path",
+            src.contains("FlClashDockPhysics.lensRect") && src.contains("LiquidGlassStyle.lens")
+        )
         // 轨道外层不再 clip(14dp): 投影与放大需要越出轨道; 圆角由带形状的 background 自绘。
         assertFalse(
             "track outer modifier must not clip at 14dp anymore (float-out requires overflow)",
@@ -179,25 +231,74 @@ class LiquidGlassButtonScopeContractTest {
         )
     }
 
-    /** 契约 5: 开关按压泡成胶囊 — 宽度随 lift 拉大, 高度不随 lift 抬升(保持近圆基准),
-     *  镜片/投影/底色跟随胶囊形状; CircleShape 只许留在轨道上。 */
+    @Test
+    fun liquid_glass_slider_thumb_and_classic_tab_are_mode_gated() {
+        val segmented = loadSource("ui/component/SegmentedSwitcher.kt")
+        assertTrue("Classic Tab mode must not install the custom drag-stealing pointer handler",
+            segmented.contains("if (glassActive) Modifier.pointerInput") ||
+                segmented.contains("if (!glassActive) return@pointerInput"))
+        assertTrue("glass Tab lens must sample the host scene prefix, never an ancestor-registered local backdrop",
+            segmented.contains("backdrop = lensBackdrop") &&
+                Regex("backdropAt\\(maxOf\\(1f, consumerDepth\\)\\)").containsMatchIn(segmented) &&
+                !segmented.contains("layerBackdrop("))
+
+    }
+
+    @Test
+    fun switch_lens_sampling_is_centered_on_the_resting_track() {
+        val src = loadSource("ui/component/liquidglass/GlassSwitch.kt")
+        assertTrue("sampler must keep the thumb layout centered; sampling must not move the production thumb",
+            !src.contains("Modifier.offset(x = lensOffsetX, y = lensOffsetY)") &&
+                src.contains("val thumbWidth = (37f + 12f * stretch) + 16f * lift") &&
+                src.contains("val thumbHeight = (24f - 2f * stretch) + 6f * lift"))
+        assertTrue("lens must sample the checked track itself to achieve symmetric refraction",
+            src.contains("backdrop = trackBackdrop") && src.contains("shape = { thumbShape }"))
+        val backgroundIndex = src.indexOf(".background(thumbColor.copy")
+        val lensIndex = src.indexOf(".drawPlainBackdrop(", backgroundIndex)
+        assertTrue("Toggle must paint the translucent thumb before the lens so the track is visible inside it", backgroundIndex >= 0 && lensIndex > backgroundIndex)
+    }
+
+    /** 契约 5: Toggle 静置几何保留 37×24dp 横椭圆，交互抬升为越轨道的折射胶囊。
+     *  参考帧锁镜片中心采样、按下状态与轨道同心；应用轨道坐标被采样一次，玻璃只围绕
+     *  thumb 中心产生对称折射。原有 sarunw iOS 26 几何与 22dp travel 继续保留。
+     *  用户额外确认：动态 Toggle 采样时，轨道上方/下方必须同量向中心缩放，不得一侧
+     *  保留空隙而另一侧无空隙。
+     *  静置 37×24dp，轨道 63×28dp，行程 22dp；按压镜片尺寸、折射和 release
+     *  回弹由 GlassSwitchTest 与参考帧视觉测试双重验证。 */
     @Test
     fun glass_switch_stretches_into_capsule_on_press() {
         val src = loadSource("ui/component/liquidglass/GlassSwitch.kt")
+        // 实测几何: 滑块基准 37×24 (2pt 全周留白), 行程 22dp = 63−37−4
         assertTrue(
-            "pressed thumb must widen with lift",
-            Regex("""thumbWidth = \(24f \+ 13f \* stretch\) \+ 16f \* lift""").containsMatchIn(src)
+            "pressed thumb must widen from the measured 37pt ellipse with lift",
+            Regex("""thumbWidth = \(37f \+ 12f \* stretch\) \+ 16f \* lift""").containsMatchIn(src)
         )
-        assertFalse(
-            "thumb height must NOT grow with lift — 40x38 方形气泡是旧 bug, 胶囊要求宽显著大于高",
-            Regex("""thumbHeight = .*lift""").containsMatchIn(src)
+        assertTrue("travel must leave the measured 2dp inset on both ends (22dp)", src.contains("22.dp.toPx()"))
+        assertTrue("offset must use the 22dp travel", src.contains("* 22f).dp"))
+        // 2026-11-06 用户: 升镜玻璃必须越出轨道上下缘 — 高度随 lift 生长是硬要求
+        assertTrue(
+            "lift height must add 6dp before the physical press scale so its rim reaches past both edges " +
+                "(2026-11-06 用户: 浮起的玻璃块高度不够，没有超出上下边缘; measured iOS press lens ~1.18× track)",
+            Regex("""thumbHeight = \(24f - 2f \* stretch\) \+ 6f \* lift""").containsMatchIn(src)
         )
-        assertTrue("thumb shape must be fully-rounded (circle at rest, capsule when wide)",
+        // 但静置态仍须是横椭圆: 生长只许 6dp, 不许旧 40x38 方形气泡借道回归 (全升 53:30=1.77 胶囊比)
+        assertTrue(
+            "lift height growth must stay at 6dp — enough to overflow 28dp track, " +
+                "not enough to square the capsule",
+            Regex("""thumbHeight = \(24f - 2f \* stretch\) \+ 6f \* lift""").containsMatchIn(src)
+        )
+        assertTrue("thumb shape must be fully-rounded (ellipse at rest, capsule when wide)",
             Regex("""RoundedCornerShape\(50\)""").containsMatchIn(src))
+        // 升镜生长沿 lift 连续 (Dock lensGrowth×lift)
+        assertTrue("switch thumb scales into the reference capsule",
+            src.contains("scaleX = 1f + 0.2f * lift") && src.contains("scaleY = 1f + 0.2f * lift"))
+        assertTrue("pressed glass capsule must use restrained dispersion and a bright surface",
+            src.contains("brightness = if (dark) 1.12 else 1.08") && src.contains("dispersion = 1.8"))
         val chain = src.substringAfter(".requiredSize(thumbWidth.dp, thumbHeight.dp)").substringBefore("contentAlignment = Alignment.Center")
-        assertTrue("shadow must follow the capsule shape", chain.contains(".shadow((6f * lift).dp, thumbShape, clip = false)"))
+        assertTrue("shadow must follow the capsule shape", chain.contains(".shadow((8f * lift).dp, thumbShape, clip = false)"))
         assertTrue("lens backdrop must follow the capsule shape", chain.contains("shape = { thumbShape }"))
-        assertTrue("thumb fill must follow the capsule shape", chain.contains("thumbColor.copy(alpha = thumbColor.alpha * (1f - lift)), thumbShape)"))
+        assertTrue("light pressed thumb must reveal the sampled backdrop as an optical lens",
+            chain.contains("thumbColor.alpha * (1f - 0.78f * lift)"))
         assertFalse("thumb chain must not pin a plain CircleShape", chain.contains("CircleShape"))
     }
 }

@@ -3,7 +3,11 @@ package com.lingion.sleepy.ui.component
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
+import com.lingion.sleepy.ui.component.liquidglass.GlassHost
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.testTag
@@ -27,11 +31,15 @@ class SegmentedSwitcherBoundaryTest {
         val changes = mutableListOf<Int>()
         compose.setContent {
             MaterialTheme {
-                SegmentedSwitcher(
-                    options = listOf(0 to "Grid", 1 to "List"), selected = selected.value,
-                    onSelect = { changes += it; selected.value = it },
-                    modifier = Modifier.width(240.dp).testTag("tabs"),
-                )
+                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                    GlassHost {
+                        SegmentedSwitcher(
+                            options = listOf(0 to "Grid", 1 to "List"), selected = selected.value,
+                            onSelect = { changes += it; selected.value = it },
+                            modifier = Modifier.width(240.dp).testTag("tabs"),
+                        )
+                    }
+                }
             }
         }
         compose.onNodeWithTag("tabs").performTouchInput {
@@ -44,10 +52,14 @@ class SegmentedSwitcherBoundaryTest {
         val changes = mutableListOf<Int>()
         compose.setContent {
             MaterialTheme {
-                SegmentedSwitcher(
-                    options = listOf(0 to "Grid", 1 to "Week", 2 to "Day"), selected = 0,
-                    onSelect = { changes += it }, modifier = Modifier.width(300.dp).testTag("tabs"),
-                )
+                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                    GlassHost {
+                        SegmentedSwitcher(
+                            options = listOf(0 to "Grid", 1 to "Week", 2 to "Day"), selected = 0,
+                            onSelect = { changes += it }, modifier = Modifier.width(300.dp).testTag("tabs"),
+                        )
+                    }
+                }
             }
         }
         compose.onNodeWithTag("tabs").performTouchInput {
