@@ -94,11 +94,12 @@ internal object WakeUpCompat {
                 val tds = row.children().filter { it.tagName() == "td" }
                 if (tds.size < 8) continue // 0=节次标签, 1..7=周一..周日
                 val rowLabel = tds[0].text().trim()
-                val rowSections = Regex("""^(\d{1,2})(?:\s*[-~至]\s*(\d{1,2}))?节$""")
+                val rowSections = Regex("""^(\d+)(?:\s*[-~至]\s*(\d+))?节$""")
                     .matchEntire(rowLabel)?.let { match ->
                         val first = match.groupValues[1].toIntOrNull()
-                        val last = match.groupValues[2].takeIf(String::isNotBlank)?.toIntOrNull() ?: first
-                        if (first != null && last != null && first in 1..30 && last in first..30) first to last else null
+                        val last = if (match.groupValues[2].isBlank()) first else match.groupValues[2].toIntOrNull()
+                        if (first != null && last != null && first in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND &&
+                            last in first..EXPLICIT_SCHEDULE_RESOURCE_BOUND) first to last else null
                     } ?: if (rowLabel.isBlank() && rows.size == 6 && rowIdx < defaultStartByRow.size)
                         defaultStartByRow[rowIdx] to defaultEndByRow[rowIdx] else null
                 for (col in 1..7) {
@@ -125,11 +126,13 @@ internal object WakeUpCompat {
                         val startNode: Int
                         val endNode: Int
                         if (weeksText.contains("节")) {
-                            val section = Regex("""^(\d{1,2})(?:\s*[-~至]\s*(\d{1,2}))?节$""")
+                            val section = Regex("""^(\d+)(?:\s*[-~至]\s*(\d+))?节$""")
                                 .matchEntire(weeksText.substringBefore('(').substringBefore('（').trim()) ?: continue
                             startNode = section.groupValues[1].toIntOrNull() ?: continue
-                            endNode = section.groupValues[2].takeIf(String::isNotBlank)?.toIntOrNull() ?: startNode
-                            if (startNode !in 1..30 || endNode !in startNode..30) continue
+                            endNode = if (section.groupValues[2].isBlank()) startNode
+                                else section.groupValues[2].toIntOrNull() ?: continue
+                            if (startNode !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND ||
+                                endNode !in startNode..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
                         } else {
                             val fallback = rowSections ?: continue
                             startNode = fallback.first
