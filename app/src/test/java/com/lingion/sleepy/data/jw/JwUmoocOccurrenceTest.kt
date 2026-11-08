@@ -60,19 +60,21 @@ class JwUmoocOccurrenceTest {
 
     @Test fun `numbered headers override cell period while invalid coordinates are rejected`() {
         assertRoutes(page(block("2周"), header = "第9节"), expected(listOf(2), node = 9))
-        for (id in listOf("0-5", "8-5", "3-0", "3-31", "3-5-7", "3-1.5")) {
+        assertRoutes(page(block("2周"), id = "3-31"), expected(listOf(2), node = 31))
+        assertRoutes(page(block("2周"), header = "第31节"), expected(listOf(2), node = 31))
+        for (id in listOf("0-5", "8-5", "3-0", "3-367", "3-5-7", "3-1.5")) {
             assertRoutes(page(block("2周"), id = id), emptyList())
         }
-        assertRoutes(page(block("2周"), header = "第31节"), emptyList())
+        assertRoutes(page(block("2周"), header = "第367节"), emptyList())
     }
 
     @Test fun `excluded occurrences survive draft and final entity mapping`() {
-        val courses = JwUmoocParser(page(block("1-9周(除3-6周)"))).generateCourseList()
+        val courses = JwUmoocParser(page(block("1-9周(除3-6周)"), id = "3-31")).generateCourseList()
         val draft = JwImportDraftSnapshot(JwSchoolInfo("U", "UMOOC", type = "umooc"), courses, emptyList())
         val restored = JwImportDraftCodec.fromJson(JwImportDraftCodec.toJson(draft))!!
-        assertEquals(expected(listOf(1, 2, 7, 8, 9)), occurrences(restored.courses))
+        assertEquals(expected(listOf(1, 2, 7, 8, 9), node = 31), occurrences(restored.courses))
         val entities = JwImportViewModel(android.app.Application()).toCourseEntities(restored.courses, 1L, "#FF6750A4")
-        assertEquals(expected(listOf(1, 2, 7, 8, 9)), entities.flatMap { c ->
+        assertEquals(expected(listOf(1, 2, 7, 8, 9), node = 31), entities.flatMap { c ->
             (c.startWeek..c.endWeek).filter { c.type == 0 || it % 2 == c.type % 2 }.map {
                 "${c.courseName}|${c.teacher}|${c.room}|${c.day}|${c.startNode}|${c.startNode + c.step - 1}|$it"
             }

@@ -1157,7 +1157,7 @@ internal object WakeUpCompat {
                     if (identity.size != 2) continue
                     val day = identity.firstOrNull()?.trim()?.toIntOrNull() ?: continue
                     val node = headerNode ?: identity.getOrNull(1)?.trim()?.toIntOrNull() ?: continue
-                    if (day !in 1..7 || node !in 1..30) continue
+                    if (day !in 1..7 || node !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
                     for (block in cell.html().split("&lt;&lt;").drop(1)) {
                         val lines = block.split(Regex("(?i)<br\\s*/?>"))
                             .map { Jsoup.parse(it).text().trim() }.dropLastWhile(String::isBlank)
