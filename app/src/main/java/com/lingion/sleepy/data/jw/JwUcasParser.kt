@@ -142,7 +142,7 @@ class JwUcasParser(source: String) : JwParser(source) {
         }
 
         private fun nodeSegments(nodes: List<Int>): List<Pair<Int, Int>> {
-            if (nodes.isEmpty() || nodes.any { it !in 1..30 }) return emptyList()
+            if (nodes.isEmpty() || nodes.any { it !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND }) return emptyList()
             val result = mutableListOf<Pair<Int, Int>>()
             for (node in nodes.distinct().sorted()) {
                 val last = result.lastOrNull()
@@ -413,7 +413,7 @@ class JwUcasParser(source: String) : JwParser(source) {
         val entries = mutableListOf<Entry>()
         table.select("tbody tr").forEach { row ->
             val node = row.selectFirst("th")?.text()?.trim()?.toIntOrNull() ?: return@forEach
-            if (node !in 1..30) return@forEach
+            if (node !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND) return@forEach
             row.select("> td").forEachIndexed { index, cell ->
                 val day = index + 1
                 if (day in 1..7) cell.select("a[href*=/course/coursetime/]").forEach { link ->
