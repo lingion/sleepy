@@ -37,6 +37,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.lingion.sleepy.ui.component.SettingsLayout
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -119,11 +120,11 @@ fun TableReminderScreen(onBack: () -> Unit, vm: TableReminderViewModel = viewMod
                                 }
                             }
                         )
-                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                        .padding(SettingsLayout.cardInset),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(table.name, modifier = Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
+                    Text(table.name, modifier = Modifier.weight(1f), style = SettingsLayout.headingStyle)
                     Switch(checked = table.reminderEnabled, onCheckedChange = null, enabled = enabled)
                 }
             }

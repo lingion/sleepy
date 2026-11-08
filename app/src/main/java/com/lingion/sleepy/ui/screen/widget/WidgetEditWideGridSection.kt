@@ -33,11 +33,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
+import com.lingion.sleepy.ui.component.SettingsLayout
 import com.lingion.sleepy.R
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.widget.WeekGridWideLabelSide
@@ -70,10 +70,10 @@ object WidgetEditWideGridSection : WidgetEditSection {
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = stringResource(titleRes),
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                style = SettingsLayout.headingStyle,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Spacer(modifier = Modifier.padding(top = 8.dp))
+            Spacer(modifier = Modifier.padding(top = SettingsLayout.headerGap))
             WideGridShapeOptions(
                 settings = scope.wideGridSettings,
                 previews = previews,
@@ -169,7 +169,8 @@ internal fun WideGridShapeOptions(
                             .testTag("wide-label-${side.name}")
                             .selectable(settings.labelSide == side, role = Role.RadioButton, onClick = { onLabelSideChange(side) })
                             .padding(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(SettingsLayout.controlGap)
                     ) {
                         RadioButton(settings.labelSide == side, onClick = null)
                         Text(

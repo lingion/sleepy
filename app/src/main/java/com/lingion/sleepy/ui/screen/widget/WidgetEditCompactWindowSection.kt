@@ -16,10 +16,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.ui.component.SettingsLayout
 import com.lingion.sleepy.R
-import com.lingion.sleepy.ui.theme.SleepyTheme
 
 /**
  * 2026-09-15 用户定稿: 三天窗口档位从管理页外卡挪进「· 小」变体的二级编辑页,
@@ -42,10 +41,10 @@ object WidgetEditCompactWindowSection : WidgetEditSection {
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = stringResource(titleRes),
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                style = SettingsLayout.headingStyle,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Spacer(modifier = Modifier.padding(top = 8.dp))
+            Spacer(modifier = Modifier.padding(top = SettingsLayout.headerGap))
             Surface(
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)),
                 color = MaterialTheme.colorScheme.surfaceContainer,
@@ -74,7 +73,8 @@ object WidgetEditCompactWindowSection : WidgetEditSection {
                 .fillMaxWidth()
                 .clickable(onClick = onSelect)
                 .padding(horizontal = 16.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(SettingsLayout.controlGap)
         ) {
             RadioButton(selected = selected, onClick = onSelect)
             Text(

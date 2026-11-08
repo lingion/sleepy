@@ -21,9 +21,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.ui.component.SettingsLayout
+import androidx.compose.foundation.layout.PaddingValues
 import com.lingion.sleepy.R
-import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.widget.WidgetEditViewModel
 
 /**
@@ -49,8 +49,14 @@ fun WidgetEditScreen(
 
     // To add a new section later, append here — the screen picks it up
     // automatically. Each section must implement WidgetEditSection.
-    val sections: List<WidgetEditSection> = remember {
-        listOf(WidgetEditScheduleSection, WidgetEditAliasSection, WidgetEditCompactWindowSection, WidgetEditWideGridSection, WidgetEditScrollSection)
+    val sections: List<WidgetEditSection> = remember(state.receiverSimpleName) {
+        buildList {
+            add(WidgetEditScheduleSection)
+            add(WidgetEditAliasSection)
+            if (WidgetEditCompactWindowSection.appliesTo(state.receiverSimpleName)) add(WidgetEditCompactWindowSection)
+            if (WidgetEditWideGridSection.appliesTo(state.receiverSimpleName)) add(WidgetEditWideGridSection)
+            if (state.receiverSimpleName?.contains("WeekGrid") != true) add(WidgetEditScrollSection)
+        }
     }
     val scope = remember(widgetId, vm, state.currentBinding, state.availableTables, state.useAlias,
         state.receiverSimpleName, state.scrollEnabled, state.compactTodayFirst, state.wideGridSettings) {
@@ -100,9 +106,9 @@ fun WidgetEditScreen(
         ) {
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .fillMaxSize(),
+                contentPadding = PaddingValues(SettingsLayout.pageInset),
+                verticalArrangement = Arrangement.spacedBy(SettingsLayout.sectionGap)
             ) {
                 items(sections.size) { idx ->
                     sections[idx].Content(scope)

@@ -32,7 +32,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding
-import com.lingion.sleepy.ui.component.SectionHeader
+import com.lingion.sleepy.ui.component.SettingsLayout
+import com.lingion.sleepy.ui.component.SettingsSection
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
 import com.lingion.sleepy.ui.component.SingleSliderGhostMark
 import com.lingion.sleepy.ui.component.singleSliderGhostVisible
@@ -177,25 +178,30 @@ fun ScheduleDisplayScreen(
         Column(
             modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())
                 .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 24.dp + navExtra),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(SettingsLayout.cardGap),
         ) {
-            SectionHeader(stringResource(R.string.settings_appearance_common))
-            CommonDisplaySettings()
-            SectionHeader(stringResource(R.string.settings_start_view_full))
-            WeekDisplaySettings()
-            SectionHeader(stringResource(R.string.settings_start_view_cards))
-            GridDisplaySettings()
+            SettingsSection(stringResource(R.string.settings_appearance_common), first = true) {
+                CommonDisplaySettings()
+            }
+            SettingsSection(stringResource(R.string.settings_start_view_full)) {
+                WeekDisplaySettings()
+            }
+            SettingsSection(stringResource(R.string.settings_start_view_cards)) {
+                GridDisplaySettings()
+            }
             AppearanceNavigationRow(
                 title = stringResource(R.string.appearance_period_header),
                 tag = "settings_period_header",
                 onClick = onOpenPeriodHeaderSettings,
             )
-            SectionHeader(stringResource(R.string.settings_conflict_style))
-            DisplaySettingsGroup {
-                ScheduleDisplayContent(section = DisplayStyleSection.CONFLICT)
+            SettingsSection(stringResource(R.string.settings_conflict_style)) {
+                DisplaySettingsGroup {
+                    ScheduleDisplayContent(section = DisplayStyleSection.CONFLICT)
+                }
             }
-            SectionHeader(stringResource(R.string.settings_appearance_holidays))
-            HolidayDisplaySettings()
+            SettingsSection(stringResource(R.string.settings_appearance_holidays)) {
+                HolidayDisplaySettings()
+            }
         }
     }
 }
@@ -219,7 +225,10 @@ private fun DisplaySlider(
     onFinished: () -> Unit,
 ) {
     Column {
-        Text("$label  $valueText", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap)) {
+            Text(label, modifier = Modifier.weight(1f), style = SettingsLayout.itemStyle, color = MaterialTheme.colorScheme.onSurface)
+            Text(valueText, style = SettingsLayout.itemStyle, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
         Box {
             Slider(value = value, onValueChange = onValueChange, onValueChangeFinished = onFinished, valueRange = range)
             if (singleSliderGhostVisible(value, initial, epsilon)) {
