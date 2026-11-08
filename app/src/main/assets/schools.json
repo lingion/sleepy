@@ -1884,6 +1884,15 @@
   },
   {
     "sortKey": "N",
+    "name": "南通理工学院（2023届及之后）",
+    "url": "https://zfjw.ntit.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "nantongligongxueyuanjiejizhihou",
+    "catalogId": "wakeup:2ed7b2bf334e49518042"
+  },
+  {
+    "sortKey": "N",
     "name": "内蒙古大学",
     "url": "http://jwxt.imu.edu.cn/login",
     "type": "urp_new",
@@ -21558,7 +21567,7 @@
     "name": "江西科技师范大学",
     "url": "https://cas-jxstnu-edu-cn-s.atrust.jxstnu.edu.cn/lyuapServer/login",
     "type": "zf_new",
-    "status": "unverified",
+    "status": "supported",
     "aliases": [],
     "sortKeyFull": "jiangxikejishifandaxue",
     "enableFetch": false,
@@ -26901,17 +26910,6 @@
   },
   {
     "sortKey": "N",
-    "name": "南通理工学院（2023届及之后）",
-    "url": "https://zfjw.ntit.edu.cn/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "status": "unverified",
-    "aliases": [],
-    "sortKeyFull": "nantongligongxueyuanjiejizhihou",
-    "enableFetch": false,
-    "catalogId": "wakeup:2ed7b2bf334e49518042"
-  },
-  {
-    "sortKey": "N",
     "name": "南通师范高等专科学校",
     "url": "http://jwgl.ntnc.edu.cn/",
     "type": "jw_home",
@@ -28244,9 +28242,9 @@
   {
     "sortKey": "Q",
     "name": "青岛大学",
-    "url": "http://xjw.qdu.edu.cn",
-    "type": "qz",
-    "status": "unverified",
+    "url": "https://xjw.qdu.edu.cn/",
+    "type": "sg_asset",
+    "status": "supported",
     "aliases": [],
     "sortKeyFull": "qingdaodaxue",
     "enableFetch": false,

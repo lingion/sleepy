@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_widget_global_appearance">Global appearance</string>
+    <string name="settings_widget_shared_display">Shared timetable display</string>
+    <string name="settings_widget_shared_display_sub">Choose which days to show and whether to show the next day with classes. These settings affect the app and supported widgets.</string>
+    <string name="settings_widget_advanced">Advanced options</string>
+    <string name="settings_widget_vert_punct_experimental">Vertical punctuation in widgets (experimental)</string>
+    <string name="settings_export_sharing">Sharing</string>
+    <string name="settings_export_calendar_assistants">Calendar and assistants</string>
+    <string name="settings_export_native_file_title">Sleepy timetable file</string>
+    <string name="settings_export_native_file_sub">Share this timetable and its period times. For all timetables, preferences and widget settings, use Backup and restore.</string>
+</resources>

@@ -35,16 +35,25 @@ class XjuPostgraduateAdmissionTest {
     }
 
     @Test
-    fun `main assets preserves 352 supported entries independently of directory expansion`() {
+    fun `main assets preserves existing supported entries and adds verified schools`() {
         val main = String(javaClass.classLoader!!.getResource("jw/schools.json")!!.readBytes())
         // 计数闸双副本同值（主副本由 JwJouAdaptationTest 锁 1:1, 这里锁总数）
         // 2026-10-04 收录惠州学院(zf_new) → 348
         // 2026-10-10 收录湖北商贸学院(zf_new) → 349
-        val count = JwImportViewModel.parseSchoolsJson(main).count { it.isSupported }
+        val supported = JwImportViewModel.parseSchoolsJson(main).filter { it.isSupported }
         // 2026-10-13 收录清华大学 THU → 350
         // 2026-10-26 NBCC verify（学生回传实测通过）→ 351
         // 2026-11-01 佳木斯大学 (kingo_new，实测导入通过) → 352
-        assertEquals("Existing supported entry count remains 352", 352, count)
+        // PR #326 仅新增青岛大学为已支持；原有 352 校仍须完整保留。
+        // 2026-11-06 南通理工学院（2023届及之后）(zf_new，学生回传实测导入通过) → 354
+        assertEquals("Existing supported entry count remains 352", 352,
+            supported.count {
+                it.name != "青岛大学" && it.name != "南通理工学院（2023届及之后）" && it.name != "江西科技师范大学"
+            })
+        assertEquals(355, supported.size)
+        assertEquals(JwProtocol.TYPE_SG_ASSET, supported.single { it.name == "青岛大学" }.type)
+        assertEquals(JwProtocol.TYPE_ZF_NEW, supported.single { it.name == "南通理工学院（2023届及之后）" }.type)
+        assertEquals(JwProtocol.TYPE_ZF_NEW, supported.single { it.catalogId == "moe:4136011318" }.type)
     }
 
     // ---------- ② URL 判型 ----------

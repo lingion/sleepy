@@ -174,25 +174,27 @@ fun PeriodHeaderSettingsScreen(onBack: () -> Unit) {
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
-                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Text(
-                                stringResource(R.string.appearance_header_time_alignment),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            SegmentedSwitcher(
-                                options = listOf(
-                                    "dash" to stringResource(R.string.appearance_header_alignment_dash),
-                                    "center" to stringResource(R.string.appearance_header_alignment_center),
-                                ).mapIndexed { index, (_, label) -> index to label },
-                                selected = if (timeAlignment == "center") 1 else 0,
-                                onSelect = { index ->
-                                    timeAlignment = if (index == 1) "center" else "dash"
-                                    AppPrefs.setPeriodHeaderTimeAlignment(context, timeAlignment)
-                                },
-                                modifier = Modifier.fillMaxWidth().height(40.dp),
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                            )
+                        if (!hideTime) {
+                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Text(
+                                    stringResource(R.string.appearance_header_time_alignment),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                SegmentedSwitcher(
+                                    options = listOf(
+                                        "dash" to stringResource(R.string.appearance_header_alignment_dash),
+                                        "center" to stringResource(R.string.appearance_header_alignment_center),
+                                    ).mapIndexed { index, (_, label) -> index to label },
+                                    selected = if (timeAlignment == "center") 1 else 0,
+                                    onSelect = { index ->
+                                        timeAlignment = if (index == 1) "center" else "dash"
+                                        AppPrefs.setPeriodHeaderTimeAlignment(context, timeAlignment)
+                                    },
+                                    modifier = Modifier.fillMaxWidth().height(40.dp),
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                                )
+                            }
                         }
                     }
                     if (layout == "three_line") {

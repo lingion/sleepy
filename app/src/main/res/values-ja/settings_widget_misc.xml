@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_widget_global_appearance">全体の外観</string>
+    <string name="settings_widget_shared_display">共通の時間割表示</string>
+    <string name="settings_widget_shared_display_sub">表示する曜日と、授業がないときに次の授業日を表示するかを設定します。アプリと対応ウィジェットに適用されます。</string>
+    <string name="settings_widget_advanced">詳細設定</string>
+    <string name="settings_widget_vert_punct_experimental">ウィジェットの縦書き句読点（試験的）</string>
+    <string name="settings_export_sharing">共有</string>
+    <string name="settings_export_calendar_assistants">カレンダーとアシスタント</string>
+    <string name="settings_export_native_file_title">Sleepy 時間割ファイル</string>
+    <string name="settings_export_native_file_sub">この時間割と時限を共有します。すべての時間割、設定、ウィジェットの保存にはバックアップと復元を使ってください。</string>
+</resources>

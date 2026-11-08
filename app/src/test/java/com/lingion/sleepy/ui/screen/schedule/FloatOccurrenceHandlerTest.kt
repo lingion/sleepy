@@ -10,6 +10,7 @@ import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.data.repository.ScheduleRepository
 import com.lingion.sleepy.data.undo.UndoManager
 import com.lingion.sleepy.ui.screen.edit.OccurrenceSaveDialogs
+import com.lingion.sleepy.util.HolidayTransferEntry
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.widget.notification.ReminderRescheduler
 import kotlinx.coroutines.runBlocking
@@ -76,12 +77,122 @@ class FloatOccurrenceHandlerTest {
         }
     }
 
-    @Test fun sameCellMoveWithoutResizeMergesBackToTheOriginalRow() {
-        // 无实质变化 → 不弹任何确认(前端本不该调到这里,handler 兜底直存)。
+    @Test fun sameCellMoveWithoutResizeLeavesRowsAndUndoHistoryUntouched() {
+        // 原位松手应直接结束，不新增撤销记录。
         runWithDialogAnswers() {
             assertEquals(FloatOccurrenceHandler.Outcome.SAVED, handler().move(course, week = 1, day = 1, node = 1, step = 2))
         }
         runBlocking { assertEquals(listOf(course), repo.getCourses(table.id)) }
+        assertFalse(repo.canUndo)
+        assertFalse(repo.canRedo)
+    }
+
+    @Test fun sameCellDropPreservesRedoOfAnActualMove() {
+        runWithDialogAnswers(0) {
+            assertEquals(FloatOccurrenceHandler.Outcome.SAVED,
+                handler().move(course, week = 1, day = 3, node = 4, step = 2))
+        }
+        val moved = runBlocking { repo.getCourses(table.id) }
+        runBlocking { assertTrue(repo.restoreLastSnapshot()) }
+        assertTrue(repo.canRedo)
+        runWithDialogAnswers() {
+            assertEquals(FloatOccurrenceHandler.Outcome.SAVED,
+                handler().move(course, week = 1, day = 1, node = 1, step = 2))
+        }
+        assertFalse(repo.canUndo)
+        assertTrue(repo.canRedo)
+        runBlocking {
+            assertEquals(listOf(course), repo.getCourses(table.id))
+            assertTrue(repo.redoLastUndo())
+            assertEquals(moved, repo.getCourses(table.id))
+        }
+    }
+
+    @Test fun sameCellDropDoesNotAddAnExtraUndoStepAfterAnActualMove() {
+        runWithDialogAnswers(0) {
+            assertEquals(FloatOccurrenceHandler.Outcome.SAVED,
+                handler().move(course, week = 1, day = 3, node = 4, step = 2))
+        }
+        val moved = runBlocking { repo.getCoursesForDate(table, wednesday).single() }
+        runWithDialogAnswers() {
+            assertEquals(FloatOccurrenceHandler.Outcome.SAVED,
+                handler().move(moved, week = 1, day = 3, node = 4, step = 2))
+        }
+        runBlocking {
+            assertTrue(repo.restoreLastSnapshot())
+            assertEquals(listOf(course), repo.getCourses(table.id))
+            assertFalse(repo.canUndo)
+        }
+    }
+
+    @Test fun sameCellDropPreservesCustomTimes() {
+        val custom = course.copy(ownTime = true, isIrregularTime = true,
+            startTime = "08:07", endTime = "09:43")
+        runBlocking { db.courseDao().update(custom) }
+        runWithDialogAnswers() {
+            assertEquals(FloatOccurrenceHandler.Outcome.SAVED,
+                handler().move(custom, week = 1, day = 1, node = 1, step = 2))
+        }
+        runBlocking { assertEquals(listOf(custom), repo.getCourses(table.id)) }
+        assertFalse(repo.canUndo)
+    }
+
+    @Test fun sameCellDropUsesTheDisplayedCustomTimeNodes() {
+        val custom = course.copy(ownTime = true, isIrregularTime = true,
+            startTime = "10:10", endTime = "11:20")
+        runBlocking { db.courseDao().update(custom) }
+        val projected = custom.normalizeNode(table.timeJson)
+        assertEquals(3, projected.startNode)
+        assertEquals(2, projected.step)
+        runWithDialogAnswers() {
+            assertEquals(FloatOccurrenceHandler.Outcome.SAVED,
+                handler().move(projected, week = 1, day = 1, node = 3, step = 2))
+        }
+        runBlocking { assertEquals(listOf(custom), repo.getCourses(table.id)) }
+        assertFalse(repo.canUndo)
+    }
+
+    @Test fun movingCustomTimeCourseToItsStoredButNotDisplayedNodesIsARealMove() {
+        val custom = course.copy(ownTime = true, isIrregularTime = true,
+            startTime = "10:10", endTime = "11:20")
+        runBlocking { db.courseDao().update(custom) }
+        runWithDialogAnswers(0) {
+            assertEquals(FloatOccurrenceHandler.Outcome.SAVED,
+                handler().move(custom.normalizeNode(table.timeJson), week = 1, day = 1, node = 1, step = 2))
+        }
+        assertEquals(app.getString(R.string.occurrence_move_confirm_title), asked.single().first)
+        assertTrue(asked.single().second.contains("3-4"))
+        assertTrue(asked.single().second.contains("1-2"))
+        runBlocking {
+            val moved = repo.getCoursesForDate(table, monday).single()
+            assertEquals("08:00", moved.startTime)
+            assertEquals("09:40", moved.endTime)
+            assertTrue(repo.restoreLastSnapshot())
+            assertEquals(listOf(custom), repo.getCourses(table.id))
+        }
+    }
+
+    @Test fun sameCellDropOnTransferredDayPreservesTheOriginalCourse() {
+        AppPrefs.setHolidayTransfers(app, table.id,
+            listOf(HolidayTransferEntry(monday, monday.plusDays(6), "holiday")))
+        val projected = course.copy(day = 7)
+        runWithDialogAnswers() {
+            assertEquals(FloatOccurrenceHandler.Outcome.SAVED,
+                handler().move(projected, week = 1, day = 7, node = 1, step = 2))
+        }
+        runBlocking { assertEquals(listOf(course), repo.getCourses(table.id)) }
+        assertFalse(repo.canUndo)
+    }
+
+    @Test fun sameCellDropPreservesFixedDateCourse() {
+        val fixed = course.copy(fixedDate = monday.toString(), startWeek = 1, endWeek = 1)
+        runBlocking { db.courseDao().update(fixed) }
+        runWithDialogAnswers() {
+            assertEquals(FloatOccurrenceHandler.Outcome.SAVED,
+                handler().move(fixed, week = 1, day = 1, node = 1, step = 2))
+        }
+        runBlocking { assertEquals(listOf(fixed), repo.getCourses(table.id)) }
+        assertFalse(repo.canUndo)
     }
 
     @Test fun resizeDuringTheDragRewritesThatOccurrenceSpan() {

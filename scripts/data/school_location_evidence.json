@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "generatedAt": "2026-10-15",
   "catalogCount": 4140,
-  "cityMappedCount": 3821,
-  "unresolvedCount": 319,
+  "cityMappedCount": 3822,
+  "unresolvedCount": 318,
   "coverageCounts": {
     "explicit-official-campus-or-rename-address": 11,
-    "recorded-city-mapping": 3162,
-    "unresolved": 319,
+    "recorded-city-mapping": 3163,
+    "unresolved": 318,
     "verified-campus-address": 2,
     "verified-current-admissions-directory-address": 4,
     "verified-current-campus-or-successor-address": 201,
@@ -28,11 +28,11 @@
   "inputs": [
     {
       "path": "app/src/main/assets/schools.json",
-      "sha256": "f3e53ee4a3445dc4c0a8e0b6c52a6528991e83879bd68f9e42e2e2f854cf64f5"
+      "sha256": "dbfffbe8ee81c4cb4d64f6bd9abf189c43030f13f9bc75ae8cfc2747b80af5eb"
     },
     {
       "path": "app/src/main/assets/school_cities.json",
-      "sha256": "4b49868feb33fad1fc9e6c4309cce798e5c21a42c4fd1e0db8cb57aa19ac1f27"
+      "sha256": "b985cdb80ad53ca7927db4badbdb9627d8855faf8b9fa53e75cf10c665ee25b3"
     },
     {
       "path": "scripts/data/official_schools.json",
@@ -50,9 +50,9 @@
   "statusCounts": {
     "campus_or_import_unverified": 134,
     "graduate_relation_unverified": 37,
-    "historical_or_alias_unverified": 5,
+    "historical_or_alias_unverified": 4,
     "legacy_unresolved": 34,
-    "mapped": 3821,
+    "mapped": 3822,
     "official_no_city": 109
   },
   "records": [
@@ -17452,19 +17452,24 @@
     },
     {
       "name": "南通理工学院（2023届及之后）",
-      "status": "historical_or_alias_unverified",
-      "cities": null,
-      "precision": "none",
+      "status": "mapped",
+      "cities": [
+        "南通市"
+      ],
+      "precision": "city",
       "sourceId": null,
       "sourceUrl": null,
+      "sourceUrls": [],
       "sourceDate": null,
-      "reason": "historical or renamed entry requires dated institutional evidence",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "南通理工学院（2023届及之后）",
-        "searchCount": 3,
-        "probeCount": 1
-      }
+      "canonicalName": "南通理工学院（2023届及之后）",
+      "observedText": null,
+      "relationEvidence": null,
+      "coverage": "recorded-city-mapping",
+      "coverageNote": null,
+      "retrievedDate": null,
+      "bodySha256": null,
+      "evidenceTextSha256": null,
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "南通科技职业学院",

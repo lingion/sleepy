@@ -12,10 +12,15 @@ import android.view.MotionEvent
 import android.view.PixelCopy
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
 import android.widget.EditText
+import androidx.annotation.WorkerThread
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.FutureTask
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import kotlin.math.roundToInt
 
 /**
@@ -256,13 +261,17 @@ object ScreenCapture {
 
     private const val MAX_SIDE = 1568
 
+    private data class CaptureTarget(val window: Window, val decor: View, val width: Int, val height: Int)
+
+    @WorkerThread
     fun capture(activity: Activity): ByteArray? {
-        val decor = activity.window.decorView
-        val w = decor.width
-        val h = decor.height
-        if (w <= 0 || h <= 0) return null
-        val bitmap = runCatching { Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888) }.getOrNull() ?: return null
-        val copied = pixelCopy(activity, bitmap) || drawFallback(decor, bitmap)
+        if (Looper.myLooper() == Looper.getMainLooper()) return null
+        val target = captureTarget(activity) ?: return null
+        if (target.width <= 0 || target.height <= 0) return null
+        val bitmap = runCatching {
+            Bitmap.createBitmap(target.width, target.height, Bitmap.Config.ARGB_8888)
+        }.getOrNull() ?: return null
+        val copied = pixelCopy(target, bitmap) || drawFallback(target.decor, bitmap)
         if (!copied) {
             bitmap.recycle()
             return null
@@ -283,17 +292,43 @@ object ScreenCapture {
         }
     }
 
-    private fun pixelCopy(activity: Activity, bitmap: Bitmap): Boolean {
+    private fun captureTarget(activity: Activity): CaptureTarget? {
+        val main = Handler(Looper.getMainLooper())
+        val task = FutureTask {
+            val window = activity.window
+            val decor = window.decorView
+            CaptureTarget(window, decor, decor.width, decor.height)
+        }
+        if (!main.post(task)) return null
+        return try {
+            task.get(1500, TimeUnit.MILLISECONDS)
+        } catch (_: InterruptedException) {
+            Thread.currentThread().interrupt()
+            null
+        } catch (_: ExecutionException) {
+            null
+        } catch (_: TimeoutException) {
+            null
+        } finally {
+            main.removeCallbacks(task)
+            task.cancel(false)
+        }
+    }
+
+    private fun pixelCopy(target: CaptureTarget, bitmap: Bitmap): Boolean {
         val latch = CountDownLatch(1)
         var success = false
-        val rect = Rect(0, 0, activity.window.decorView.width, activity.window.decorView.height)
-        try {
-            PixelCopy.request(activity.window, rect, bitmap, { result ->
-                success = result == PixelCopy.SUCCESS
+        val main = Handler(Looper.getMainLooper())
+        val rect = Rect(0, 0, target.width, target.height)
+        main.post {
+            try {
+                PixelCopy.request(target.window, rect, bitmap, { result ->
+                    success = result == PixelCopy.SUCCESS
+                    latch.countDown()
+                }, main)
+            } catch (_: Throwable) {
                 latch.countDown()
-            }, Handler(Looper.getMainLooper()))
-        } catch (_: Throwable) {
-            return false
+            }
         }
         return latch.await(2500, TimeUnit.MILLISECONDS) && success
     }

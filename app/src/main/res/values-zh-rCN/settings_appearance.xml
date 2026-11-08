@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_appearance_navigation">底部导航</string>
+    <string name="settings_appearance_common">共同设置</string>
+    <string name="settings_appearance_holidays">节假日显示</string>
+    <string name="settings_appearance_default_view">默认课表视图</string>
+    <string name="settings_appearance_default_view_sub">冷启动和从其他页面返回课表时，使用所选视图作为初始视图。</string>
+    <string name="settings_appearance_header_date">表头显示日期</string>
+    <string name="settings_appearance_header_date_sub">同时影响应用内网格课表和支持此设置的小组件。</string>
+    <string name="settings_appearance_time_scope">同时影响课表和支持课程时间显示的小组件。</string>
+    <string name="settings_appearance_advanced_experimental">高级选项（实验）</string>
+    <string name="settings_appearance_separator_scope">在应用内网格课表和相关网格小组件中显示行列分隔线。</string>
+    <string name="settings_appearance_break_scope">在应用内网格课表和相关网格小组件中，为较长的午间和晚间课间留白。</string>
+    <string name="settings_appearance_workday_visible">补班日不灰显</string>
+</resources>

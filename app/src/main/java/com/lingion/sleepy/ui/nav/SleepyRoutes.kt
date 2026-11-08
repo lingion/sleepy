@@ -19,6 +19,9 @@ sealed interface SleepyRoute : NavKey {
     ) : SleepyRoute
     @Serializable data object Appearance : SleepyRoute
     @Serializable data object PeriodHeaderSettings : SleepyRoute
+    @Serializable data object ScheduleDisplay : SleepyRoute
+    @Serializable data object Backup : SleepyRoute
+    @Serializable data class TableHoliday(val tableId: Long) : SleepyRoute
     @Serializable data object General : SleepyRoute
     @Serializable data object Holiday : SleepyRoute
     @Serializable data object Export : SleepyRoute

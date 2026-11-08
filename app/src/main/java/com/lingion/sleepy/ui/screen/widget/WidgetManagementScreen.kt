@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.Card
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
@@ -114,6 +115,10 @@ fun WidgetManagementScreen(
                             style = MaterialTheme.typography.bodyLarge,
                             color = colors.onSurfaceVariant
                         )
+                        FilledTonalButton(onClick = onOpenWidgetGallery,
+                            modifier = Modifier.padding(top = 16.dp)) {
+                            Text(stringResource(R.string.widget_gallery_title))
+                        }
                     }
                 } else {
                     LazyColumn(

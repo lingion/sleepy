@@ -1,11 +1,11 @@
 {
   "generatedAsOf": "2026-10-14",
-  "baselineCount": 352,
+  "baselineCount": 353,
   "catalogCount": 4140,
   "statusCounts": {
-    "supported": 350,
+    "supported": 353,
     "grad_supported": 2,
-    "unverified": 2480,
+    "unverified": 2477,
     "grad_pending": 253,
     "pending": 1007,
     "grad_unverified": 48
@@ -22,7 +22,7 @@
   "sources": [
     {
       "path": "scripts/data/school_catalog_baseline.json",
-      "sha256": "61b7e9e7a3facf34a8803da342be8d44c075eded41f4345c4868602460646962"
+      "sha256": "f3fbe134623726ebf8c50c4b335d12aed9b94edb2e70fe02294dcd2b21741d8f"
     },
     {
       "path": "scripts/data/official_schools.json",
@@ -38,7 +38,7 @@
     },
     {
       "path": "scripts/data/school_import_admissions.json",
-      "sha256": "6ebc4ff3ac44b03ab0a5d7bb5c8d1719220b1d5016062b1bf488f601f4b40f4f"
+      "sha256": "91e6a3bae6125c5b27b5a51ab5170cb3c4faaeb71b8441005d4e660d2a54e589"
     },
     {
       "path": "scripts/data/school_catalog_renames.json",
@@ -46,7 +46,7 @@
     },
     {
       "path": "scripts/data/school_url_evidence.json",
-      "sha256": "fe3ac0c6efc4528b622347745d642e35d947c7b9f0e1c6c3594422bf4bbb1271"
+      "sha256": "c14e22afdd585f4efc23e3ff7b93d8dad81e11f7f1733dfa18ab4f91631df375"
     },
     {
       "path": "scripts/data/school_catalog_domain_reference.json",
@@ -61,11 +61,11 @@
       "contradicted": 1
     },
     "actions": {
-      "retained-existing-config-ownership-unresolved": 139,
+      "retained-existing-config-ownership-unresolved": 140,
       "ownership-confirmed": 748,
-      "retained-wakeup-declared-owner": 590,
-      "retained-wakeup-662-declared-owner": 1305,
-      "retained-shiguang-adapters-owner": 55,
+      "retained-wakeup-declared-owner": 589,
+      "retained-wakeup-662-declared-owner": 1304,
+      "retained-shiguang-adapters-owner": 56,
       "retained-shiguang-declared-owner": 42,
       "withheld-new-unproven-owner": 53,
       "withheld-domain-collision": 88,
@@ -1670,6 +1670,14 @@
         "ownershipStatus": "verified",
         "action": "ownership-confirmed",
         "operationalUrl": "http://tdjw.ntu.edu.cn/",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:2ed7b2bf334e49518042",
+        "name": "南通理工学院（2023届及之后）",
+        "ownershipStatus": "unknown",
+        "action": "retained-existing-config-ownership-unresolved",
+        "operationalUrl": "https://zfjw.ntit.edu.cn/jwglxt/xtgl/login_slogin.html",
         "authenticatedImportTested": false
       },
       {
@@ -10662,7 +10670,7 @@
         "ownershipStatus": "unknown",
         "action": "retained-wakeup-662-declared-owner",
         "operationalUrl": "https://cas-jxstnu-edu-cn-s.atrust.jxstnu.edu.cn/lyuapServer/login",
-        "authenticatedImportTested": false
+        "authenticatedImportTested": true
       },
       {
         "catalogId": "moe:4136011319",
@@ -11492,9 +11500,9 @@
         "catalogId": "moe:4137011065",
         "name": "青岛大学",
         "ownershipStatus": "unknown",
-        "action": "retained-wakeup-declared-owner",
-        "operationalUrl": "http://xjw.qdu.edu.cn",
-        "authenticatedImportTested": false
+        "action": "retained-shiguang-adapters-owner",
+        "operationalUrl": "https://xjw.qdu.edu.cn/",
+        "authenticatedImportTested": true
       },
       {
         "catalogId": "moe:4137011066",
@@ -23190,14 +23198,6 @@
         "ownershipStatus": "unknown",
         "action": "retained-wakeup-662-declared-owner",
         "operationalUrl": "http://210.43.114.81:8099/home/stulogin",
-        "authenticatedImportTested": false
-      },
-      {
-        "catalogId": "wakeup:2ed7b2bf334e49518042",
-        "name": "南通理工学院（2023届及之后）",
-        "ownershipStatus": "unknown",
-        "action": "retained-wakeup-662-declared-owner",
-        "operationalUrl": "https://zfjw.ntit.edu.cn/jwglxt/xtgl/login_slogin.html",
         "authenticatedImportTested": false
       },
       {

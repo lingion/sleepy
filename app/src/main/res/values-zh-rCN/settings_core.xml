@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_schedule_management">课表管理</string>
+    <string name="settings_application">应用设置</string>
+    <string name="settings_data">数据</string>
+    <string name="settings_holidays">节假日与调休</string>
+    <string name="settings_backup">备份与恢复</string>
+    <string name="settings_backup_create">创建完整备份</string>
+    <string name="settings_backup_restore">从备份恢复</string>
+    <string name="settings_performance">性能</string>
+    <string name="settings_editing">编辑操作</string>
+    <string name="settings_undo_experiment">实验功能。历史仅保存在内存中，应用进程结束后清空。</string>
+    <string name="settings_undo_mode">保留方式</string>
+    <string name="settings_undo_off">关闭</string>
+    <string name="settings_undo_limited">指定步数</string>
+    <string name="settings_undo_unlimited">无限</string>
+    <string name="settings_undo_count_hint">请输入大于零的保留步数。</string>
+</resources>

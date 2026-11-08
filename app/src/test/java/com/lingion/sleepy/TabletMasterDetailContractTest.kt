@@ -132,7 +132,7 @@ class TabletMasterDetailContractTest {
         assertTrue(
             "右半边必须用 sleepyContentEnter()/sleepyContentExit() 捕获后 togetherWith 组转场",
             Regex("""val\s+contentEnter\s*=\s*sleepyContentEnter\(\)""").containsMatchIn(navHostSrc) &&
-                Regex("""val\s+contentExit\s*=\s*sleepyContentExit\(\)""").containsMatchIn(navHostSrc) &&
+                Regex("""val\s+contentExit\s*=\s*sleepyContentExit\(includeFade = false\)""").containsMatchIn(navHostSrc) &&
                 Regex("""contentEnter\s+togetherWith\s+contentExit""").containsMatchIn(navHostSrc),
         )
         assertFalse(

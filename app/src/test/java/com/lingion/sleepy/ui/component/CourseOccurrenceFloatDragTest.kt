@@ -66,11 +66,12 @@ class CourseOccurrenceFloatDragTest {
         onOccurrenceEdit: ((CourseEntity) -> Unit)? = null,
         onQuickAdd: ((Int, Int, Int) -> Unit)? = { _, _, _ -> },
         floatMaxWeek: Int = 0,
+        heightDp: androidx.compose.ui.unit.Dp = 640.dp,
     ) {
         val week = currentWeek
         compose.setContent {
             SleepyThemeProvider(darkTheme = false, themeKey = "default") {
-                Box(Modifier.size(360.dp, 640.dp)) {
+                Box(Modifier.size(360.dp, heightDp)) {
                     CardsGridView(courses = courses, timeSlots = slots,
                         floatState = state,
                         // 读在组合内: hostWeek 变更 → 重组换 currentWeek, 模拟 pager 换宿主。
@@ -337,6 +338,99 @@ class CourseOccurrenceFloatDragTest {
             assertTrue(moves.isEmpty())
         }
         compose.onNodeWithTag("float-popup").assertIsDisplayed()
+    }
+
+    @Test fun draggingBackToOriginDoesNotReopenPopupWhileWaitingForStorage() {
+        verifyOriginDrop(regrab = false)
+    }
+
+    @Test fun regrabbingAndReturningToOriginDoesNotReopenPopup() {
+        verifyOriginDrop(regrab = true)
+    }
+
+    private fun verifyOriginDrop(regrab: Boolean) {
+        val state = CourseFloatState()
+        // A no-op drop must not enter the asynchronous persistence path at all.
+        // With the old implementation this leaves the popup visible until storage replies.
+        grid(state, onMove = { c, d, n, s, resizeOnly, _ ->
+            moves.add(Move(c.id, d, n, s, resizeOnly))
+        })
+        if (regrab) {
+            compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+            compose.onNodeWithTag("float-popup").assertIsDisplayed()
+            compose.onNodeWithTag("float-card").performTouchInput {
+                down(center)
+                moveBy(Offset(160f, 0f), 150)
+                moveBy(Offset(-160f, 0f), 150)
+            }
+        } else {
+            compose.onNodeWithText("FloatMath").performTouchInput {
+                down(center)
+                moveTo(center, delayMillis = 900)
+                moveBy(Offset(160f, 0f), 150)
+                moveBy(Offset(-160f, 0f), 150)
+            }
+        }
+        compose.runOnIdle { assertTrue(state.dragging) }
+        compose.onNodeWithTag("float-popup").assertDoesNotExist()
+        compose.onNodeWithTag("float-backdrop").assertDoesNotExist()
+        compose.mainClock.autoAdvance = false
+        compose.onRoot().performTouchInput { up() }
+        repeat(24) {
+            compose.mainClock.advanceTimeByFrame()
+            compose.waitForIdle()
+            compose.onNodeWithTag("float-popup").assertDoesNotExist()
+            compose.onNodeWithTag("float-backdrop").assertDoesNotExist()
+        }
+        compose.onNodeWithTag("float-card").assertDoesNotExist()
+        compose.runOnIdle {
+            assertFalse(state.active)
+            assertFalse(state.dragging)
+            assertTrue("An unchanged occurrence must not invoke the save callback", moves.isEmpty())
+        }
+    }
+
+    @Test fun sameSlotInAnotherWeekStillSubmitsAMove() {
+        val state = CourseFloatState()
+        var targetWeek = 0
+        grid(state, onMove = { c, d, n, s, resizeOnly, onResult ->
+            targetWeek = state.week
+            moves.add(Move(c.id, d, n, s, resizeOnly))
+            onResult(true)
+        })
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(160f, 0f), 150)
+            moveBy(Offset(-160f, 0f), 150)
+        }
+        compose.runOnIdle {
+            state.week = 2
+            hostWeek.value = 2
+        }
+        compose.onRoot().performTouchInput { up() }
+        compose.runOnIdle {
+            assertEquals(2, targetWeek)
+            assertEquals(listOf(Move(7L, 1, 1, 2, false)), moves)
+            assertFalse(state.active)
+        }
+    }
+
+    @Test fun resizedCourseAtOriginalStartStillSubmitsNewSpan() {
+        val state = CourseFloatState()
+        grid(state)
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        stretchBottomHandle(state)
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(160f, 0f), 150)
+            moveBy(Offset(-160f, 0f), 150)
+            up()
+        }
+        compose.runOnIdle {
+            assertEquals(listOf(Move(7L, 1, 1, 3, false)), moves)
+            assertFalse(state.active)
+        }
     }
 
     /** 2026-10-27 用户反馈: 长按浮起后手指微抖约 0.1cm, 模糊与浮框瞬间消失。
@@ -871,6 +965,206 @@ class CourseOccurrenceFloatDragTest {
         compose.runOnIdle {
             assertEquals(1, state.week) // 满 → 翻回上一周
             assertEquals(listOf(1, -1), edgeCalls)
+        }
+        compose.onNodeWithTag("float-card").performTouchInput { up() }
+    }
+
+    @Test fun issue274_draggingWithoutEdgeZoneDoesNotShowEdgePeekEvenAtSemesterTail() {
+        val state = CourseFloatState()
+        grid(state, currentWeek = 16, floatMaxWeek = 16)
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        // 拖动但未到达边缘触发区 (微移 20dp, 中心仍在网格内)
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(20.dp.toPx(), 0f), 50)
+        }
+        flushEdgePolling()
+        compose.runOnIdle {
+            assertTrue("处于拖拽中", state.dragging)
+            assertEquals("未进入边缘区", 0, state.edgeDir)
+            assertEquals("未被边缘拦截", 0, state.edgeBlocked)
+            assertEquals("进度为0", 0f, state.peekProgress)
+        }
+        compose.onNodeWithTag("float-card").performTouchInput { up() }
+    }
+
+    @Test fun issue276_dropNearEdgeImmediatelyStopsEdgePaging() {
+        val state = CourseFloatState()
+        var pendingCallback: ((Boolean) -> Unit)? = null
+        val customMove: (CourseEntity, Int, Int, Int, Boolean, (Boolean) -> Unit) -> Unit = { _, _, _, _, _, cb ->
+            pendingCallback = cb // 挂起回调，模拟弹窗展示等待用户确认
+        }
+        grid(state, floatMaxWeek = 16, onMove = customMove)
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(330.dp.toPx(), 40f), 100) // 拖至右边缘
+        }
+        flushEdgePolling()
+        // 松手触发 commitFloatDrop
+        compose.onNodeWithTag("float-card").performTouchInput { up() }
+        compose.runOnIdle {
+            assertNotNull("松手必须触发移动落点判定", pendingCallback)
+            assertFalse("松手后 dragging 必须立即置为 false", state.dragging)
+            assertEquals(0, state.edgeDir)
+            assertEquals(0, state.edgeBlocked)
+            assertEquals(0f, state.peekProgress)
+        }
+        val edgeCallsBefore = edgeCalls.size
+        // 推进时间，确保等待弹窗期间绝不继续触发翻页
+        compose.mainClock.advanceTimeBy(FLOAT_EDGE_DWELL_MS * 3)
+        compose.runOnIdle {
+            assertEquals("等待弹窗期间绝不再触发边缘翻页", edgeCallsBefore, edgeCalls.size)
+        }
+        // 用户最终确认
+        pendingCallback?.invoke(true)
+        compose.runOnIdle {
+            assertFalse("确认后浮层关闭", state.active)
+        }
+    }
+
+    @Test fun issue300_consecutiveLongPressOnDifferentCoursesNoAnimation() {
+        val state = CourseFloatState()
+        val firstCourse = CourseEntity(id = 1, tableId = 1, groupId = "math", courseName = "FloatMath", 
+            day = 2, startNode = 1, step = 1, startWeek = 1, endWeek = 16, color = "#FF6750A4")
+        val secondCourse = CourseEntity(id = 2, tableId = 1, groupId = "phys", courseName = "FloatPhys", 
+            day = 4, startNode = 3, step = 1, startWeek = 1, endWeek = 16, color = "#FF00A000")
+        grid(state, courses = listOf(firstCourse, secondCourse))
+        val firstBounds = compose.onNodeWithText("FloatMath").fetchSemanticsNode().boundsInRoot
+        val secondBounds = compose.onNodeWithText("FloatPhys").fetchSemanticsNode().boundsInRoot
+        
+        // 第一次长按 FloatMath (第2列，第1节)
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        compose.waitForIdle()
+        val (firstX, firstY) = compose.runOnIdle {
+            assertEquals("FloatMath", state.course?.courseName)
+            val firstX = state.x.value
+            val firstY = state.y.value
+            // 记录第一个位置
+            assertTrue("第一次浮起的 X 坐标应该是第2列", firstX > 80f)
+            assertTrue("第一次浮起的 Y 坐标应该是第1节", firstY < 100f)
+            firstX to firstY
+        }
+        
+        // 第二次长按 FloatPhys (第4列，第3节) — 不同位置
+        compose.onNodeWithText("FloatPhys").performTouchInput { longClick() }
+        compose.waitForIdle()
+        compose.runOnIdle {
+            assertEquals("FloatPhys", state.course?.courseName)
+            val secondX = state.x.value
+            val secondY = state.y.value
+            // 验证位置跳变到新位置，而不是从旧位置动画飞过来
+            // 列宽由时间列/间隙决定，360dp 屏上两列实际约79dp，不能假设超过100dp。
+            val expectedDelta = with(compose.density) {
+                (secondBounds.left - firstBounds.left).toDp().value to
+                    (secondBounds.top - firstBounds.top).toDp().value
+            }
+            assertEquals("第二次浮起的 X 坐标应该是第4列", firstX + expectedDelta.first, secondX, 0.5f)
+            assertEquals("第二次浮起的 Y 坐标应该是第3节", firstY + expectedDelta.second, secondY, 0.5f)
+            // Animatable 应该已经同步到新位置，下次归位不会从旧位置开始
+        }
+    }
+
+    @Test fun verticalAutoScrollStopsAtTopBoundary() {
+        val state = CourseFloatState()
+        grid(state)
+        // 长按并拖到顶部边缘触发自动滚动
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(0f, -100.dp.toPx()), 100)
+        }
+        // 等待自动滚动触发并运行
+        compose.mainClock.advanceTimeBy(500L)
+        compose.runOnIdle {
+            // 卡片 Y 坐标应该随滚动变化
+            assertTrue("卡片应该随自动滚动调整位置", state.y.value < 100f)
+        }
+        compose.onNodeWithTag("float-card").performTouchInput { up() }
+    }
+
+    @Test fun verticalAutoScrollAcceleratesWithOverflow() {
+        val state = CourseFloatState()
+        // 创建长课表，确保有足够滚动空间
+        val tallCourses = (1..20).map { i ->
+            CourseEntity(
+                id = i.toLong(),
+                tableId = 1,
+                groupId = "c$i",
+                courseName = "Course$i",
+                day = 1,
+                startNode = i,
+                step = 1,
+                startWeek = 1,
+                endWeek = 16,
+                color = "#FF6750A4",
+            )
+        }
+        grid(state, courses = tallCourses)
+        
+        compose.onNodeWithText("Course5").performTouchInput { longClick() }
+        val initialY = state.y
+        
+        // 拖到底部边缘外很远（应该触发高速滚动）
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(0f, 200.dp.toPx()), 100)
+        }
+        
+        // 等待多帧自动滚动
+        compose.mainClock.advanceTimeBy(200L)
+        compose.runOnIdle {
+            // 卡片 Y 坐标应该随滚动调整
+            assertTrue("自动滚动应该已调整卡片位置", state.y != initialY)
+        }
+        compose.onNodeWithTag("float-card").performTouchInput { up() }
+    }
+
+
+    @Test fun issue275_autoScrollDownWhenDraggingNearBottomEdge() {
+        val state = CourseFloatState()
+        // 设置 400dp 紧凑视口，使 12 节课表 (约 624dp) 具备充足的纵向可滚动裕量 (~224dp)
+        grid(state, heightDp = 400.dp)
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        // 浮起后向下微拖 220dp 进入底部边缘区 (视口 400dp, bottomThreshold 352dp, 卡底 220+36+100 = 356dp > 352dp)
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(0f, 220.dp.toPx()), 10)
+        }
+        // 50ms 轮询节奏 (#288 perf 裁决): scrollBy 为挂起调用, 单次大跨度推进只被泵送数拍,
+        // 逐拍推进 + waitForIdle 让每次滚动都走完帧管线, 滚动至饱和。
+        repeat(30) { compose.mainClock.advanceTimeBy(50L); compose.waitForIdle() }
+        compose.runOnIdle {
+            assertTrue("处于拖拽中", state.dragging)
+            assertEquals("手势向下倾向", 1, state.lastDragDirY)
+            // 自动滚动生效：卡片 y 位移显著大于单纯手势位移 220dp (自动向下滚动将网格滚到底部，带动 floatState.y 累加至 ~520dp)
+            assertTrue("纵向自动向下滚动生效驱动 floatState.y 累加: current=${state.y}", state.y > 300.dp)
+            assertTrue("纵向自动向下滚动更新 anchorScrollDp: current=${state.anchorScrollDp}", state.anchorScrollDp > 100.dp)
+        }
+        compose.onNodeWithTag("float-card").performTouchInput { up() }
+    }
+
+    @Test fun issue275_tallCardBothEdgesSimultaneousActivationScrollsInIntendedDirection() {
+        val state = CourseFloatState()
+        // 紧凑视口 400dp 下 (触发阈值跨度 352-84 = 268dp)，6 节课长卡 (高约 300dp) 同时覆盖上下两边缘区
+        val tallCourse = CourseEntity(id = 9, tableId = 1, groupId = "tall", courseName = "TallCourse",
+            day = 1, startNode = 1, step = 6, startWeek = 1, endWeek = 16, color = "#FF6750A4")
+        grid(state, courses = listOf(tallCourse), heightDp = 400.dp)
+        compose.onNodeWithText("TallCourse").performTouchInput { longClick() }
+        // 手势微向下拖拽 40dp 产生正向位移，建立 lastDragDirY = 1 倾向
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(0f, 40.dp.toPx()), 10)
+        }
+        // 50ms 轮询节奏 (#288 perf 裁决): scrollBy 为挂起调用, 单次大跨度推进只被泵送数拍,
+        // 逐拍推进 + waitForIdle 让每次滚动都走完帧管线, 滚动至饱和。
+        repeat(30) { compose.mainClock.advanceTimeBy(50L); compose.waitForIdle() }
+        compose.runOnIdle {
+            assertTrue(state.dragging)
+            assertEquals(1, state.lastDragDirY)
+            // 仲裁消除上下死锁震荡：若有震荡死锁卡片将停留在 40dp 附近；手势向下倾向使得自动滚动一路向下展开，卡片 y 超过 200dp
+            assertTrue("超高卡片依手势向下倾向单调向下自动滚动: current=${state.y}", state.y > 200.dp)
+            assertTrue("超高卡片向下滚动使得 anchorScrollDp 增大: current=${state.anchorScrollDp}", state.anchorScrollDp > 100.dp)
         }
         compose.onNodeWithTag("float-card").performTouchInput { up() }
     }

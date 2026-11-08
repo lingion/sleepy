@@ -13,14 +13,14 @@ import java.time.temporal.ChronoUnit
 import java.util.Collections
 
 /** 作息字符串就是版本键；编辑后自然失效。限制条数和键长度，避免导入数据撑大常驻内存。 */
-private class ParsedTimetableCache<T> {
-    private val entries = object : LinkedHashMap<String, List<T>>(16, 0.75f, true) {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, List<T>>): Boolean = size > 16
+private class ParsedTimetableCache<T : Any> {
+    private val entries = object : LinkedHashMap<String, T>(16, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, T>): Boolean = size > 16
     }
 
-    fun getOrParse(json: String, parse: (String) -> List<T>): List<T> {
+    fun getOrParse(json: String, parse: (String) -> T): T {
         synchronized(entries) { entries[json]?.let { return it } }
-        val parsed = Collections.unmodifiableList(parse(json))
+        val parsed = parse(json)
         if (json.length > 32_768) return parsed
         return synchronized(entries) { entries.getOrPut(json) { parsed } }
     }
@@ -37,8 +37,11 @@ private class ParsedTimetableCache<T> {
  */
 object TimeTableUtils {
 
-    private val nodeCache = ParsedTimetableCache<NodeTime>()
-    private val rowCache = ParsedTimetableCache<TimeSlotRow>()
+    private val nodeCache = ParsedTimetableCache<List<NodeTime>>()
+    private val rowCache = ParsedTimetableCache<List<TimeSlotRow>>()
+    private val slotCache = ParsedTimetableCache<List<TimeSlot>>()
+    private val validationCache = ParsedTimetableCache<PeriodValidationResult>()
+    private val displayCache = ParsedTimetableCache<String>()
 
     /**
      * 默认节次时间表（12 节 / 45-50 分钟）。
@@ -76,7 +79,7 @@ object TimeTableUtils {
      *  兼容无 "node" 键的旧格式([{start,end},...]) — 节点号按数组序号补(1 起)。
      *  issue#40 预览读旧格式 timeJson(如迁移生成的 period_tables 行)时不再整体解析失败。 */
     internal fun parseNodes(timeJson: String): List<NodeTime> =
-        nodeCache.getOrParse(timeJson, ::parseNodesUncached)
+        nodeCache.getOrParse(timeJson) { Collections.unmodifiableList(parseNodesUncached(it)) }
 
     private fun parseNodesUncached(timeJson: String): List<NodeTime> = try {
         val arr = JSONArray(timeJson)
@@ -96,7 +99,10 @@ object TimeTableUtils {
      * 把节点时间表转为每节独立的 TimeSlot。
      * 每个节点变成一行：第1节, 第2节, ...
      */
-    fun timeSlotsFor(timeJson: String): List<TimeSlot> {
+    fun timeSlotsFor(timeJson: String): List<TimeSlot> =
+        slotCache.getOrParse(timeJson) { Collections.unmodifiableList(timeSlotsForUncached(it)) }
+
+    private fun timeSlotsForUncached(timeJson: String): List<TimeSlot> {
         val nodes = parseNodes(timeJson)
         if (nodes.isEmpty()) return emptyList()
 
@@ -137,7 +143,7 @@ object TimeTableUtils {
     }
 
     private fun formatTime(t: LocalTime): String =
-        String.format(java.util.Locale.ROOT, "%02d:%02d", t.hour, t.minute)
+        "${t.hour / 10}${t.hour % 10}:${t.minute / 10}${t.minute % 10}"
 
     /**
      * 根据课程的 startTime/endTime 反算等效的 (startNode, step)。
@@ -430,7 +436,7 @@ object TimeTableUtils {
 
     /** timeJson -> 编辑 rows (按数组顺序) */
     fun parseTimeSlotRows(timeJson: String): List<TimeSlotRow> =
-        rowCache.getOrParse(timeJson, ::parseTimeSlotRowsUncached)
+        rowCache.getOrParse(timeJson) { Collections.unmodifiableList(parseTimeSlotRowsUncached(it)) }
 
     private fun parseTimeSlotRowsUncached(timeJson: String): List<TimeSlotRow> = try {
         val arr = JSONArray(timeJson)
@@ -629,7 +635,10 @@ object TimeTableUtils {
     }
 
     /** Persisted data is validated without the editor parser's invented missing-field defaults. */
-    fun validateTimeJson(timeJson: String): PeriodValidationResult {
+    fun validateTimeJson(timeJson: String): PeriodValidationResult =
+        validationCache.getOrParse(timeJson, ::validateTimeJsonUncached)
+
+    private fun validateTimeJsonUncached(timeJson: String): PeriodValidationResult {
         if (timeJson.isBlank()) return PeriodValidationResult.Empty()
         val array = runCatching { JSONArray(timeJson) }.getOrNull() ?: return PeriodValidationResult.InvalidData
         val rows = ArrayList<TimeSlotRow>(array.length())
@@ -652,7 +661,10 @@ object TimeTableUtils {
      * Invalid values remain diagnosable; callers retain courses and omit unavailable clock labels.
      * This function never repairs overlaps, guesses AM/PM, invents durations or writes storage.
      */
-    fun sanitizeTimeJsonForDisplay(timeJson: String): String {
+    fun sanitizeTimeJsonForDisplay(timeJson: String): String =
+        displayCache.getOrParse(timeJson, ::sanitizeTimeJsonForDisplayUncached)
+
+    private fun sanitizeTimeJsonForDisplayUncached(timeJson: String): String {
         val array = runCatching { JSONArray(timeJson) }.getOrNull() ?: return timeJson
         var changed = false
         for (index in 0 until array.length()) {

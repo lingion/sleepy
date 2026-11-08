@@ -14,6 +14,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material.icons.outlined.SaveAlt
+import com.lingion.sleepy.ui.component.SectionHeader
 import androidx.compose.material.icons.outlined.Widgets
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
@@ -46,6 +49,8 @@ fun MineScreen(
     onOpenAllTables: () -> Unit = {},
     onOpenCourseList: () -> Unit = {},
     onOpenPeriodTables: () -> Unit = {},
+    onOpenHoliday: () -> Unit = {},
+    onOpenBackup: () -> Unit = {},
     onOpenAppearance: () -> Unit = {},
     onOpenGeneral: () -> Unit = {},
     onOpenWidgetSettings: () -> Unit = {},
@@ -101,19 +106,19 @@ fun MineScreen(
                 )
             }
 
-            // 设置项：提醒、外观、通用和关于。
+            item { SectionHeader(stringResource(R.string.settings_schedule_management)) }
             item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(SleepyTheme.shapes.large)
-                        .background(colors.surfaceContainer)
-                ) {
-                    // 2026-10-26 用户定令: 恢复被课程清单整合删掉的两个直达入口。
+                SettingsGroup {
                     SettingsItem(icon = Icons.Outlined.Edit, label = stringResource(R.string.all_tables), onClick = onOpenAllTables)
                     Divider()
                     SettingsItem(icon = Icons.Outlined.Schedule, label = stringResource(R.string.mine_period_tables), onClick = onOpenPeriodTables)
                     Divider()
+                    SettingsItem(icon = Icons.Outlined.DateRange, label = stringResource(R.string.settings_holidays), onClick = onOpenHoliday)
+                }
+            }
+            item { SectionHeader(stringResource(R.string.settings_application)) }
+            item {
+                SettingsGroup {
                     SettingsItem(icon = Icons.Outlined.Notifications, label = stringResource(R.string.reminder_title), onClick = onOpenReminder)
                     Divider()
                     SettingsItem(icon = Icons.Outlined.Palette, label = stringResource(R.string.mine_appearance), onClick = onOpenAppearance)
@@ -121,13 +126,17 @@ fun MineScreen(
                     SettingsItem(icon = Icons.Outlined.Tune, label = stringResource(R.string.mine_general), onClick = onOpenGeneral)
                     Divider()
                     SettingsItem(icon = Icons.Outlined.Widgets, label = stringResource(R.string.mine_widget), onClick = onOpenWidgetSettings)
-                    Divider()
-                    SettingsItem(
-                        icon = Icons.Outlined.Info,
-                        label = stringResource(R.string.about_title),
-                        onClick = onOpenAbout,
-                        highlighted = updateNoticeVisible
-                    )
+                }
+            }
+            item { SectionHeader(stringResource(R.string.settings_data)) }
+            item {
+                SettingsGroup {
+                    SettingsItem(icon = Icons.Outlined.SaveAlt, label = stringResource(R.string.settings_backup), onClick = onOpenBackup)
+                }
+            }
+            item {
+                SettingsGroup {
+                    SettingsItem(icon = Icons.Outlined.Info, label = stringResource(R.string.about_title), onClick = onOpenAbout, highlighted = updateNoticeVisible)
                 }
             }
 
@@ -210,4 +219,12 @@ private fun Divider(vertical: Boolean = false) {
     val colors = MaterialTheme.colorScheme
     if (vertical) androidx.compose.material3.VerticalDivider(Modifier.height(36.dp).width(1.dp), color = colors.outline.copy(alpha = SleepyTheme.Alpha.hairline))
     else androidx.compose.material3.HorizontalDivider(Modifier.padding(start = 72.dp), color = colors.outline.copy(alpha = SleepyTheme.Alpha.hairline))
+}
+
+@Composable
+private fun SettingsGroup(content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(MaterialTheme.colorScheme.surfaceContainer),
+        content = content,
+    )
 }

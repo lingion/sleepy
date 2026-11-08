@@ -22,6 +22,7 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Today
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -63,6 +64,10 @@ import androidx.compose.ui.platform.LocalDensity
 import com.lingion.sleepy.ui.component.PillNavItemSpec
 import com.lingion.sleepy.ui.component.sleepyContentEnter
 import com.lingion.sleepy.ui.component.sleepyContentExit
+import com.lingion.sleepy.ui.component.TabPage
+import com.lingion.sleepy.ui.component.LocalTimetableTextMeasurer
+import com.lingion.sleepy.ui.component.TimetableTextCacheSize
+import androidx.compose.ui.text.rememberTextMeasurer
 import com.lingion.sleepy.ui.screen.manage.ManagementPage
 import com.lingion.sleepy.ui.screen.widget.WidgetManagementScreen
 import com.lingion.sleepy.ui.screen.widget.WidgetEditScreen
@@ -85,6 +90,8 @@ import com.lingion.sleepy.util.AppPrefs
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -143,14 +150,16 @@ class MainActivity : ComponentActivity() {
         // uiNightModeState 初始值: attachBaseContext 已完成, resources 可安全访问
         uiNightModeState.value =
             resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-        com.lingion.sleepy.util.UpdateManager.cleanOldApk(this)
         enableEdgeToEdge()
         // 高刷新率(流畅优先): 按开关把窗口钉到屏幕最高刷率, 不表态会被省电逻辑限 60Hz
         com.lingion.sleepy.util.HighRefreshRate.apply(this, com.lingion.sleepy.util.AppPrefs.isHighRefresh(this))
         handleDeepLinkIntent(intent)
         // 启动时检查更新: 用户可在「关于」最底 Toggle 关闭
         com.lingion.sleepy.util.UpdateNotifier.loadDismissedVersion(this)
-        com.lingion.sleepy.util.UpdateNotifier.maybeCheckOnStart(this, lifecycleScope)
+        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            com.lingion.sleepy.util.UpdateManager.cleanOldApk(applicationContext)
+            com.lingion.sleepy.util.UpdateNotifier.maybeCheckOnStart(applicationContext, lifecycleScope)
+        }
         if (BuildConfig.DEBUG && intent.getBooleanExtra("mock_update", false)) {
             com.lingion.sleepy.util.UpdateNotifier.showMockUpdate()
         }
@@ -264,7 +273,9 @@ private fun AppRoot(
     val mainVm: ScheduleViewModel = viewModel()
     // composition 内读 StateFlow.value 会被 lint(StateFlowValueCalledInComposition)拦:
     // 快照值不随 flow 更新重组。改订阅, holiday 设置页拿到的 tableId 恒为当前值。
-    val mainState by mainVm.state.collectAsState()
+    val currentTableId by remember(mainVm) {
+        mainVm.state.map { it.currentTable?.id }.distinctUntilChanged()
+    }.collectAsState(initial = null)
     val navigator = rememberSleepyNavigator()
     val nav = navigator.backStack
     // 底栏 thumb 状态提升到 NavDisplay 之外: entry<Main> 在 push 子页时会被销毁,
@@ -294,7 +305,7 @@ private fun AppRoot(
         deepLinkCourse = deepLinkCourse,
         onDeepLinkConsumed = onDeepLinkConsumed,
         mainVm = mainVm,
-        currentTableId = mainState.currentTable?.id,
+        currentTableId = currentTableId,
         mainScope = mainScope,
         onCreateNewTable = {
             mainScope.launch {
@@ -323,25 +334,12 @@ internal fun MainTabs(
     // tab 往返滚动位置保真: AnimatedContent 过渡期同时组合新旧两页, 各页内容包
     // SaveableStateProvider(currentTab.name) — key 稳定(tab 枚举名), 返回时恢复。
     // 注意: scheduleViewMode 会话态仍由 AppRoot 持有(§1.4 契约), 此处只管组合作用域。
-    // MD3E content 家族过渡 (Task 3): scale 0.92↔1 + fade, 规格来自 SleepyMotion 工厂;
-    // transitionSpec lambda 非可组合, 工厂结果须在组合体内先算好再捕获 (Task 2 教训)。
     val session = navigator.session
-    val tabEnter = sleepyContentEnter()
-    val tabExit = sleepyContentExit()
-    AnimatedContent(
-        targetState = currentTab,
-        transitionSpec = {
-            ContentTransform(
-                targetContentEnter = tabEnter,
-                initialContentExit = tabExit,
-                // 四页尺寸差异大, togetherWith 默认 clip=true 会裁切过渡内容
-                sizeTransform = SizeTransform(clip = false),
-            )
-        },
-    ) { currentTab ->
+    MainTabContent(currentTab) { currentTab ->
         when (currentTab) {
             Tab.Schedule -> holder.SaveableStateProvider(currentTab.name) {
                 ScheduleScreen(
+                    viewModel = mainVm,
                     viewMode = viewMode,
                     onViewModeChange = onViewModeChange,
                     onGoImport = { setCurrentTab(Tab.Manage); navigator.openAddTable() },
@@ -351,7 +349,7 @@ internal fun MainTabs(
                     onEditCourse = { course -> session.beginEditCourse(course); navigator.openAddCourse(course.id, editing = true) })
             }
             Tab.Today -> holder.SaveableStateProvider(currentTab.name) {
-                TodayScreen(onEditCourse = { course -> session.beginEditCourse(course); navigator.openAddCourse(course.id, editing = true) })
+                TodayScreen(viewModel = mainVm, onEditCourse = { course -> session.beginEditCourse(course); navigator.openAddCourse(course.id, editing = true) })
             }
             Tab.Manage -> holder.SaveableStateProvider(currentTab.name) {
                 ManagementPage(
@@ -366,15 +364,46 @@ internal fun MainTabs(
             }
             Tab.Mine -> holder.SaveableStateProvider(currentTab.name) {
                 MineScreen(
+                    viewModel = mainVm,
                     onOpenAllTables = { navigator.openAllTables() },
                     onOpenCourseList = { navigator.openCourseList() },
                     onOpenPeriodTables = { navigator.openPeriodTables() },
                     onOpenAppearance = { navigator.openAppearance() },
+                    onOpenHoliday = { navigator.openHoliday() },
+                    onOpenBackup = { navigator.openBackup() },
                     onOpenGeneral = { navigator.openGeneral() },
                     onOpenWidgetSettings = { navigator.openWidgetSettings() },
                     onOpenReminder = { navigator.openReminder() },
                     onOpenAbout = { navigator.openAbout() },
                     updateNoticeVisible = updateNoticeVisible)
+            }
+        }
+    }
+}
+
+/** Production tab transition, separated from screen dependencies for frame-level tests. */
+@Composable
+internal fun MainTabContent(currentTab: Tab, content: @Composable (Tab) -> Unit) {
+    val tabEnter = sleepyContentEnter()
+    // TabPage owns the fade so reversing an exit cannot leave the target translucent.
+    val tabExit = sleepyContentExit(includeFade = false)
+    val timetableTextMeasurer = rememberTextMeasurer(cacheSize = TimetableTextCacheSize)
+    CompositionLocalProvider(LocalTimetableTextMeasurer provides timetableTextMeasurer) {
+        AnimatedContent(
+            targetState = currentTab,
+            transitionSpec = {
+                ContentTransform(
+                    targetContentEnter = tabEnter,
+                    initialContentExit = tabExit,
+                    targetContentZIndex = 1f,
+                    // 四页尺寸差异大, togetherWith 默认 clip=true 会裁切过渡内容
+                    sizeTransform = SizeTransform(clip = false),
+                )
+            },
+        ) { tab ->
+            // The background must move with each page, covering its transparent gaps.
+            TabPage {
+                content(tab)
             }
         }
     }

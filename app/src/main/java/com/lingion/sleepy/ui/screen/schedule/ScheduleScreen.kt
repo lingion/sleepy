@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -380,50 +379,35 @@ fun ScheduleScreen(
                 pagerReady = true
             }
 
-            HorizontalPager(
+            ScheduleWeekPager(
                 state = pagerState,
-                // 边缘翻页特性: 相邻页保持 compose — 浮态宿主随 week 换页时新页几何立即可用,
-                // 且拖拽手势流(pointerInput)不因页回收而腰斩。默认 0 会 dispose 邻页。
-                // beyondViewportPageCount = 1 (拖拽中保持全部周不被回收, 避免起拖页被回收腰斩手势)
-                beyondViewportPageCount = if (floatState.dragging) (pagerMaxWeek - 1).coerceAtLeast(1) else 1,
+                draggingCourse = floatState.dragging,
                 modifier = Modifier.fillMaxSize()
             ) { page ->
-                val table = state.currentTable
-                val timeJson = state.effectiveCurrentTable?.timeJson
-                // 拖拽坐标、缩放和弹窗变化不改变课程投影，只有数据/周次/调休/作息变化才重算。
-                val renderCourses = remember(page, state.courses, table?.startDate, table?.maxWeek, state.transfers, timeJson) {
-                    if (table == null) {
-                        state.courses.filter { it.inWeek(page + 1) }
-                            .map { course -> timeJson?.let { course.normalizeNode(it) } ?: course }
-                    } else {
-                        // issue#44 调休改写: 调休日替换整列；固定日期课程仍由 coursesForDate 处理。
-                        (1..7).flatMap { day ->
-                            val date = DateUtils.dateOfWeek(table.startDate, page + 1, day)
-                            com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(
-                                date, table.startDate, table.maxWeek, state.courses, state.transfers
-                            ).map { course ->
-                                val projected = course.copy(day = day)
-                                timeJson?.let { projected.normalizeNode(it) } ?: projected
-                            }
-                        }
-                    }
+                if (viewMode == ViewMode.Cards &&
+                    !com.lingion.sleepy.ui.component.shouldComposeFloatDragPage(page + 1, pagerState.currentPage + 1, floatState)) {
+                    return@ScheduleWeekPager
                 }
+                // 拖拽坐标、缩放和弹窗变化不改变课程投影，只有数据/周次/调休/作息变化才重算。
+                val renderCourses = viewModel.presentationCache.weekCourses(state, page + 1)
                 // 计算本周哪些天是节假日/周末(灰显用); 传入表 ID 使命中调休映射的放假日不灰
                 val greyDays by produceState<Set<Int>>(
-                    emptySet(), page, state.currentTable?.startDate, state.transfers
+                    emptySet(), page, state.selectedTableId, state.currentTable?.startDate, state.transfers
                 ) {
                     val start = state.currentTable?.startDate
                     if (start.isNullOrBlank()) {
                         value = emptySet()
                     } else {
-                        val greySet = mutableSetOf<Int>()
-                        for (day in 1..7) {
-                            val date = DateUtils.dateOfWeek(start, page + 1, day)
-                            if (HolidayManager.shouldGrey(context, date, state.effectiveCurrentTable?.id)) {
-                                greySet.add(day)
+                        value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                            val greySet = mutableSetOf<Int>()
+                            for (day in 1..7) {
+                                val date = DateUtils.dateOfWeek(start, page + 1, day)
+                                if (HolidayManager.shouldGrey(context, date, state.effectiveCurrentTable?.id)) {
+                                    greySet.add(day)
+                                }
                             }
+                            greySet
                         }
-                        value = greySet
                     }
                 }
                 when (viewMode) {

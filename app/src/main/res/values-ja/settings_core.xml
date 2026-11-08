@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_schedule_management">時間割の管理</string>
+    <string name="settings_application">アプリの設定</string>
+    <string name="settings_data">データ</string>
+    <string name="settings_holidays">祝日と振替授業</string>
+    <string name="settings_backup">バックアップと復元</string>
+    <string name="settings_backup_create">完全バックアップを作成</string>
+    <string name="settings_backup_restore">バックアップから復元</string>
+    <string name="settings_performance">パフォーマンス</string>
+    <string name="settings_editing">編集操作</string>
+    <string name="settings_undo_experiment">試験的機能。履歴はメモリ内にのみ保存され、アプリのプロセス終了時に消去されます。</string>
+    <string name="settings_undo_mode">履歴の上限</string>
+    <string name="settings_undo_off">無効</string>
+    <string name="settings_undo_limited">回数指定</string>
+    <string name="settings_undo_unlimited">無制限</string>
+    <string name="settings_undo_count_hint">保存する回数を正の整数で入力してください。</string>
+</resources>

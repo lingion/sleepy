@@ -60,6 +60,7 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.component.HueSlider
+import com.lingion.sleepy.ui.component.SettingsFlatCard
 import com.lingion.sleepy.ui.component.SectionHeader
 import com.lingion.sleepy.ui.component.SegmentOption
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
@@ -82,7 +83,7 @@ import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
 /**
- * 外观页(决策 D2 合并页): 仅主题色彩组。课程显示/小组件组已迁至 GeneralSettingsScreen(2026-08-24)。
+ * 外观按模式、主题色彩、底部导航、课程配色和课表显示入口排序。
  * 保留 refreshWidgets() 管线, 主题变更后即时刷新小组件。
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -91,7 +92,9 @@ fun AppearanceScreen(
     onBack: () -> Unit,
     themeMode: String = AppPrefs.THEME_MODE_SYSTEM,
     onThemeModeChange: (String) -> Unit = {},
-    onOpenPeriodHeaderSettings: () -> Unit = {},
+    navDock: Boolean = false,
+    onNavDockChange: (Boolean) -> Unit = {},
+    onOpenScheduleDisplay: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val colors = MaterialTheme.colorScheme
@@ -170,6 +173,36 @@ fun AppearanceScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // ── Section② 外观深浅 ──
+            item {
+                SectionHeader(title = stringResource(R.string.theme_appearance))
+            }
+
+            item {
+                val modes = listOf(
+                    AppPrefs.THEME_MODE_SYSTEM to stringResource(R.string.theme_mode_system),
+                    AppPrefs.THEME_MODE_LIGHT to stringResource(R.string.theme_mode_light),
+                    AppPrefs.THEME_MODE_DARK to stringResource(R.string.theme_mode_dark)
+                )
+                // 轨道式分段(2026-10-20 用户裁定): 与课表页/假期页同款 SegmentedSwitcher,
+                // 替换旧手搓 if(sel) 选中盒 Row — thumb 弹簧滑动+逐字擦色, 全 app 一致。
+                SegmentedSwitcher(
+                    options = modes,
+                    selected = selectedMode,
+                    onSelect = { mode ->
+                        if (mode != selectedMode) {
+                            AppPrefs.setThemeMode(context, mode); onThemeModeChange(mode); refreshWidgets()
+                            // 深浅切换在 FOLLOW_THEME 下可能移动 anchor(系统动态取色深浅 primary
+                            // 色相不同/预设深浅 primary 不同)→ 按 spec §2.3 时机2 重算保表与
+                            // 新课补色同 anchor。CUSTOM 档 anchor=种子(与深浅无关),不重算。
+                            if (courseColorMode == AppPrefs.COURSE_COLOR_MODE_FOLLOW_THEME) recalcAllCourses()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    dbgTagPrefix = "settings_mode_segment",
+                )
+            }
+
             // ── Section① 主题色彩 ──
             item {
                 SectionHeader(title = stringResource(R.string.appearance_section_theme))
@@ -227,39 +260,34 @@ fun AppearanceScreen(
                 }
             }
 
-            // ── Section② 外观深浅 ──
+            // 底栏形态与主题相邻，两个选项分别控制位置和视觉效果。
             item {
-                SectionHeader(title = stringResource(R.string.theme_appearance))
+                SectionHeader(title = stringResource(R.string.settings_appearance_navigation))
             }
-
             item {
-                val modes = listOf(
-                    AppPrefs.THEME_MODE_SYSTEM to stringResource(R.string.theme_mode_system),
-                    AppPrefs.THEME_MODE_LIGHT to stringResource(R.string.theme_mode_light),
-                    AppPrefs.THEME_MODE_DARK to stringResource(R.string.theme_mode_dark)
-                )
-                // 轨道式分段(2026-10-20 用户裁定): 与课表页/假期页同款 SegmentedSwitcher,
-                // 替换旧手搓 if(sel) 选中盒 Row — thumb 弹簧滑动+逐字擦色, 全 app 一致。
-                SegmentedSwitcher(
-                    options = modes,
-                    selected = selectedMode,
-                    onSelect = { mode ->
-                        if (mode != selectedMode) {
-                            AppPrefs.setThemeMode(context, mode); onThemeModeChange(mode); refreshWidgets()
-                            // 深浅切换在 FOLLOW_THEME 下可能移动 anchor(系统动态取色深浅 primary
-                            // 色相不同/预设深浅 primary 不同)→ 按 spec §2.3 时机2 重算保表与
-                            // 新课补色同 anchor。CUSTOM 档 anchor=种子(与深浅无关),不重算。
-                            if (courseColorMode == AppPrefs.COURSE_COLOR_MODE_FOLLOW_THEME) recalcAllCourses()
+                SettingsFlatCard(
+                    title = stringResource(R.string.settings_nav_style),
+                    options = listOf(
+                        stringResource(R.string.settings_nav_style_docked),
+                        stringResource(R.string.settings_nav_style_floating),
+                    ),
+                    selectedKey = if (navDock) 1 else 0,
+                    dbg = "appearance_nav_style",
+                    onSelect = { index ->
+                        val on = index == 1
+                        if (navDock != on) {
+                            AppPrefs.setNavDock(context, on)
+                            onNavDockChange(on)
                         }
                     },
-                    modifier = Modifier.fillMaxWidth(),
-                    dbgTagPrefix = "settings_mode_segment",
                 )
             }
-
-            // ── Section②·1 Dock 主题 ──
             item {
-                SectionHeader(title = stringResource(R.string.appearance_section_dock_theme))
+                Text(
+                    text = stringResource(R.string.appearance_section_dock_theme),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = colors.onSurfaceVariant,
+                )
             }
 
             item {
@@ -340,31 +368,14 @@ fun AppearanceScreen(
                 )
             }
 
-            // ── Section③ 课表显示：冲突样式及参数仍属于本组 ──
-            item {
-                SectionHeader(title = stringResource(R.string.appearance_section_schedule_display))
-            }
-            item {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = SleepyTheme.shapes.large,
-                    color = colors.surfaceContainer,
-                ) {
-                    ScheduleDisplayContent(modifier = Modifier.padding(16.dp))
-                }
-            }
-
-            // ── Section④ 节次表头 ──
-            item {
-                SectionHeader(title = stringResource(R.string.appearance_period_header))
-            }
             item {
                 AppearanceNavigationRow(
-                    title = stringResource(R.string.appearance_period_header),
-                    tag = "settings_period_header",
-                    onClick = onOpenPeriodHeaderSettings,
+                    title = stringResource(R.string.appearance_section_schedule_display),
+                    tag = "appearance_schedule_display",
+                    onClick = onOpenScheduleDisplay,
                 )
             }
+
         }
     }
 

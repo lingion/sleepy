@@ -79,12 +79,15 @@ import com.lingion.sleepy.ui.component.PillBarState
 import com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding
 import com.lingion.sleepy.ui.component.sleepyContentEnter
 import com.lingion.sleepy.ui.component.sleepyContentExit
+import com.lingion.sleepy.ui.component.TabPage
 import com.lingion.sleepy.ui.screen.edit.AddCourseScreen
 import com.lingion.sleepy.ui.screen.mine.AllTablesScreen
 import com.lingion.sleepy.ui.screen.mine.CourseListScreen
 import com.lingion.sleepy.ui.screen.mine.AppearanceScreen
 import com.lingion.sleepy.ui.screen.mine.PeriodHeaderSettingsScreen
 import com.lingion.sleepy.ui.screen.mine.EditTableScreen
+import com.lingion.sleepy.ui.screen.mine.BackupScreen
+import com.lingion.sleepy.ui.screen.mine.ScheduleDisplayScreen
 import com.lingion.sleepy.ui.screen.mine.GeneralSettingsScreen
 import com.lingion.sleepy.ui.screen.mine.HolidaySettingsScreen
 import com.lingion.sleepy.ui.screen.mine.ExportScreen
@@ -275,10 +278,16 @@ internal fun SleepyNavHost(
         }
 
         entry<SleepyRoute.AllTables> {
+            val context = LocalContext.current
             AllTablesScreen(
                 onBack = { navigator.pop() },
                 onCreateNewTable = onCreateNewTable,
                 onOpenEditTable = { tableId -> navigator.openEditTable(tableId = tableId) },
+                onUpdateFromJw = { tableId ->
+                    context.startActivity(android.content.Intent(context, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java)
+                        .putExtra(com.lingion.sleepy.ui.screen.imports.JwImportActivity.EXTRA_TARGET_TABLE_ID, tableId)
+                        .putExtra(com.lingion.sleepy.ui.screen.imports.JwImportActivity.EXTRA_UPDATE_TABLE, true))
+                },
             )
         }
 
@@ -308,6 +317,7 @@ internal fun SleepyNavHost(
 
             EditTableScreen(
                 tableId = routeTableId,
+                onOpenHoliday = { tableId -> navigator.openTableHoliday(tableId) },
                 pendingNewTableId = pending,
                 onBack = { navigator.pop() },
                 onDiscardPending = {
@@ -333,7 +343,9 @@ internal fun SleepyNavHost(
                 onBack = { navigator.pop() },
                 themeMode = themeMode,
                 onThemeModeChange = onThemeModeChange,
-                onOpenPeriodHeaderSettings = { navigator.openPeriodHeaderSettings() },
+                onOpenScheduleDisplay = { navigator.openScheduleDisplay() },
+                navDock = navDock,
+                onNavDockChange = onNavDockChange,
             )
         }
 
@@ -343,11 +355,23 @@ internal fun SleepyNavHost(
 
         // ----------------------------------------------------------------
         entry<SleepyRoute.General> {
-            GeneralSettingsScreen(
+            GeneralSettingsScreen(onBack = { navigator.pop() })
+        }
+        entry<SleepyRoute.ScheduleDisplay> {
+            ScheduleDisplayScreen(
                 onBack = { navigator.pop() },
-                onOpenHoliday = { navigator.openHoliday() },
-                navDock = navDock,
-                onNavDockChange = onNavDockChange,
+                onOpenPeriodHeaderSettings = { navigator.openPeriodHeaderSettings() },
+            )
+        }
+        entry<SleepyRoute.Backup> {
+            BackupScreen(onBack = { navigator.pop() })
+        }
+        entry<SleepyRoute.TableHoliday> { key ->
+            HolidaySettingsScreen(
+                onBack = { navigator.pop() },
+                tableId = currentTableId,
+                initialTableId = key.tableId,
+                viewModel = mainVm,
             )
         }
 
@@ -400,6 +424,7 @@ internal fun SleepyNavHost(
             WidgetSettingsScreen(
                 onBack = { navigator.pop() },
                 onOpenWidgetManagement = { navigator.openWidgetManagement() },
+                onOpenScheduleDisplay = { navigator.openScheduleDisplay() },
             )
         }
 
@@ -671,12 +696,11 @@ private fun MainRoute(
     } else if (navDock) {
         // Compact + 悬浮 Dock: FLClash 1:1 液态玻璃导航底栏
         val backdrop = rememberLayerBackdrop()
-        var dockExtraDp by remember { mutableStateOf(NavDockSpec.capsuleHeight + NavDockSpec.bottomFloat) }
         var dockOverlayPx by remember { mutableStateOf(0) }
         val densityForDock = LocalDensity.current
-        if (dockOverlayPx > 0) {
-            dockExtraDp = with(densityForDock) { dockOverlayPx.toDp() }
-        }
+        val dockExtraDp = if (dockOverlayPx > 0) {
+            with(densityForDock) { dockOverlayPx.toDp() }
+        } else NavDockSpec.capsuleHeight + NavDockSpec.bottomFloat
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -887,7 +911,7 @@ private fun PlainRailItem(
 
 /**
  * 右半边内容 — AnimatedContent 包 3 个子页 (Today / Manage / Mine)。
- * MD3E content 家族缩放淡入淡出 (sleepyContent* 工厂, 与页面转场同族)。
+ * MD3E content 家族入场缩放、退场缩放淡出 (sleepyContent* 工厂, 与页面转场同族)。
  * 子页面跳转回调全部接到 navigator (避免空 lambda 让按钮"点不动")。
  */
 @Composable
@@ -898,15 +922,7 @@ private fun RightHalfContent(
     onTabletEditCourse: (CourseEntity) -> Unit,
     onTabletManualAdd: () -> Unit,
 ) {
-    val contentEnter = sleepyContentEnter()
-    val contentExit = sleepyContentExit()
-    AnimatedContent(
-        targetState = currentTab,
-        transitionSpec = {
-            contentEnter togetherWith contentExit
-        },
-        label = "right-half-tab-switch",
-    ) { tab ->
+    RightHalfTabContent(currentTab) { tab ->
         when (tab) {
             Tab.Today -> CompactTodayPane(
                 onEditCourse = onTabletEditCourse,
@@ -927,6 +943,8 @@ private fun RightHalfContent(
                 onOpenCourseList = { navigator.openCourseList() },
                 onOpenPeriodTables = { navigator.openPeriodTables() },
                 onOpenAppearance = { navigator.openAppearance() },
+                onOpenHoliday = { navigator.openHoliday() },
+                onOpenBackup = { navigator.openBackup() },
                 onOpenGeneral = { navigator.openGeneral() },
                 onOpenWidgetSettings = { navigator.openWidgetSettings() },
                 onOpenReminder = { navigator.openReminder() },
@@ -940,3 +958,22 @@ private fun RightHalfContent(
     }
 }
 
+/** The right pane owns its background throughout the tab animation. */
+@Composable
+internal fun RightHalfTabContent(currentTab: Tab, content: @Composable (Tab) -> Unit) {
+    val contentEnter = sleepyContentEnter()
+    val contentExit = sleepyContentExit(includeFade = false)
+    AnimatedContent(
+        targetState = currentTab,
+        transitionSpec = {
+            (contentEnter togetherWith contentExit).apply {
+                targetContentZIndex = 1f
+            }
+        },
+        label = "right-half-tab-switch",
+    ) { tab ->
+        TabPage {
+            content(tab)
+        }
+    }
+}

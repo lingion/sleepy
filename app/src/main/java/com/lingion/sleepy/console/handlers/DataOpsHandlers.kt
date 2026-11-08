@@ -53,12 +53,14 @@ import com.lingion.sleepy.util.AppClock
  */
 interface ConsoleDataStore {
     suspend fun getAllTables(): List<TimeTableEntity>
+    suspend fun getReminderTables(): List<TimeTableEntity>
     suspend fun getTable(id: Long): TimeTableEntity?
     suspend fun getDefaultTable(): TimeTableEntity?
     suspend fun insertTable(table: TimeTableEntity): Long
     suspend fun updateTable(table: TimeTableEntity)
     suspend fun deleteTable(id: Long)
     suspend fun setDefault(id: Long)
+    suspend fun setTableReminderEnabled(id: Long, enabled: Boolean)
     suspend fun getCourses(tableId: Long): List<CourseEntity>
     /** 认亲入库（repository.insertCourses 语义：全库同名继承 groupId，缺 groupId 生成 UUID）。 */
     suspend fun insertCourses(courses: List<CourseEntity>): List<Long>
@@ -107,7 +109,7 @@ class CourseDeps(
 /** GET /v1/data/tables — 课表全量 + 每表课程 + 有效作息 + 全量节次表 + 默认表 id。 */
 internal suspend fun handleTables(store: ConsoleDataStore): String {
     val tables = JSONArray()
-    for (t in store.getAllTables()) {
+    for (t in store.getReminderTables()) {
         val courses = JSONArray()
         store.getCourses(t.id).forEach { courses.put(courseJson(it)) }
         val period = store.effectivePeriodTable(t.id)
@@ -146,9 +148,9 @@ internal suspend fun handleTableOp(store: ConsoleDataStore, body: String): Strin
                 timeJson = o.optString("timeJson", TimeTableUtils.DEFAULT_TIME_JSON),
                 color = o.optString("color", "#FF6750A4").ifBlank { "#FF6750A4" },
                 isDefault = o.optBoolean("isDefault", false),
-                reminderEnabled = if (o.has("reminderEnabled")) o.getBoolean("reminderEnabled") else true,
             )
             val id = store.insertTable(entity)
+            if (o.has("reminderEnabled")) store.setTableReminderEnabled(id, o.getBoolean("reminderEnabled"))
             return Envelope.ok(JSONObject().put("id", id).toString())
         }
         "update" -> {
@@ -161,10 +163,10 @@ internal suspend fun handleTableOp(store: ConsoleDataStore, body: String): Strin
                 nodesPerDay = if (o.has("nodesPerDay")) o.getInt("nodesPerDay") else current.nodesPerDay,
                 timeJson = if (o.has("timeJson")) o.getString("timeJson") else current.timeJson,
                 color = if (o.has("color")) o.getString("color") else current.color,
-                reminderEnabled = if (o.has("reminderEnabled")) o.getBoolean("reminderEnabled") else current.reminderEnabled,
             )
             store.updateTable(next)
-            return Envelope.ok(tableJson(next).toString())
+            if (o.has("reminderEnabled")) store.setTableReminderEnabled(id, o.getBoolean("reminderEnabled"))
+            return Envelope.ok(tableJson(store.getReminderTables().firstOrNull { it.id == id } ?: next).toString())
         }
         "delete" -> {
             val id = o.optId() ?: return Envelope.err(400, "delete requires numeric \"id\"")
@@ -658,12 +660,14 @@ private class SleepyAppRepository : ConsoleDataStore {
     private val repo: ScheduleRepository get() = SleepyApp.get().repository
 
     override suspend fun getAllTables() = repo.getAllTables()
+    override suspend fun getReminderTables() = repo.getReminderTables()
     override suspend fun getTable(id: Long) = repo.getTable(id)
     override suspend fun getDefaultTable() = repo.getDefaultTable()
     override suspend fun insertTable(table: TimeTableEntity) = repo.insertTable(table)
     override suspend fun updateTable(table: TimeTableEntity) = repo.updateTable(table)
     override suspend fun deleteTable(id: Long) = repo.deleteTable(id)
     override suspend fun setDefault(id: Long) = repo.setDefault(id)
+    override suspend fun setTableReminderEnabled(id: Long, enabled: Boolean) = repo.setTableReminderEnabled(id, enabled)
     override suspend fun getCourses(tableId: Long) = repo.getCourses(tableId)
     override suspend fun insertCourses(courses: List<CourseEntity>) = repo.insertCourses(courses)
     override suspend fun insertCoursesKeepingGroups(courses: List<CourseEntity>) =

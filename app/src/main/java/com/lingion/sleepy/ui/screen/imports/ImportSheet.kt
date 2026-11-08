@@ -234,8 +234,10 @@ fun AddTableScreen(
             scope.launch {
                 isLoading = true
                 try {
-                    val text = context.contentResolver.openInputStream(it)?.bufferedReader()?.use { r -> r.readText() }
-                        ?: throw Exception(cannotReadFileMessage)
+                    val text = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                        context.contentResolver.openInputStream(it)?.bufferedReader()?.use { reader -> reader.readText() }
+                            ?: throw Exception(cannotReadFileMessage)
+                    }
                     acceptPreview(buildImportPreview(text, targetTableId, context) { msg -> errorMsg = msg })
                     // 保持页面，预览对话框依赖这里的 preview 状态。
                 } catch (e: Exception) {
@@ -1547,7 +1549,9 @@ private suspend fun buildImportPreview(
         text
     }
     // 新建入口使用 0L；加课入口始终携带用户进入页面时的目标 ID。
-    val result = ScheduleParser.parse(payload, tableId)
+    val result = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+        ScheduleParser.parse(payload, tableId)
+    }
     return result.fold(
         onSuccess = { parseResult ->
             buildImportPreview(parseResult, tableId, context)

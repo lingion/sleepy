@@ -508,6 +508,17 @@ class DataOpsHandlerUnitTest {
         }
     }
 
+    @Test
+    fun tables_endpoint_reports_effective_default_reminder_selection() = runBlocking {
+        val store = FakeDataStore()
+        store.insertTable(TimeTableEntity(name = "First", startDate = "2026-09-07"))
+        val selected = store.insertTable(TimeTableEntity(name = "Selected", startDate = "2026-09-07"))
+        store.setDefault(selected)
+        val rows = JSONObject(handleTables(store)).getJSONObject("data").getJSONArray("tables")
+        assertFalse(rows.getJSONObject(0).getBoolean("reminderEnabled"))
+        assertTrue(rows.getJSONObject(1).getBoolean("reminderEnabled"))
+    }
+
     private class FakeDataStore : ConsoleDataStore {
         val tables = LinkedHashMap<Long, TimeTableEntity>()
         val courses = mutableListOf<CourseEntity>()
@@ -516,6 +527,7 @@ class DataOpsHandlerUnitTest {
         private var seq = 0L
 
         override suspend fun getAllTables(): List<TimeTableEntity> = tables.values.toList()
+        override suspend fun getReminderTables() = com.lingion.sleepy.data.repository.resolveReminderTableScope(getAllTables(), defaultId)
         override suspend fun getTable(id: Long): TimeTableEntity? = tables[id]
         override suspend fun getDefaultTable(): TimeTableEntity? = tables[defaultId]
         override suspend fun insertTable(table: TimeTableEntity): Long {
@@ -537,6 +549,11 @@ class DataOpsHandlerUnitTest {
 
         override suspend fun setDefault(id: Long) {
             defaultId = id
+        }
+
+        override suspend fun setTableReminderEnabled(id: Long, enabled: Boolean) {
+            val table = tables[id] ?: return
+            tables[id] = table.copy(reminderEnabled = enabled, reminderOverride = enabled)
         }
 
         override suspend fun getCourses(tableId: Long): List<CourseEntity> =

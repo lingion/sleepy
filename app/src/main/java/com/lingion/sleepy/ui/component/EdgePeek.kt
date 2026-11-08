@@ -40,10 +40,11 @@ import com.lingion.sleepy.R
  * - 翻页动画 300ms + 曲线 (0.1,0.1,0,1): 预测性返回官方动效规格
  *   (developer.android.com/design/architecture/predictive-back, CN 镜像同文);
  * - 预览条进入缩放 110%→100%、淡入阈值 35%: 同上预测性返回 enter/fade 规格;
- * - 防误触位移 8dp: Compose touchSlop 名义档位, FullCalendar everMoved 方向守卫同构。
+ * - 防误触水平位移 8dp: 本应用既有参数，不等同于设备 ViewConfiguration.touchSlop。
  */
 internal const val FLOAT_EDGE_ZONE_DP = 10f
 internal const val FLOAT_EDGE_DWELL_MS = 500L
+/** 驻留计时采样间隔；不控制卡片渲染帧率。 */
 internal const val FLOAT_EDGE_DWELL_STEP_MS = 50L
 internal const val FLOAT_PAGE_ANIM_MS = 300L
 // 吸附跳格动画时长 — Lawnchair CellLayout.REORDER_ANIMATION_DURATION(HEAD 实测)。
@@ -58,6 +59,7 @@ internal const val FLOAT_PAGE_ANIM_MS = 300L
 internal const val FLOAT_SNAP_ANIM_MS = 150L
 internal const val FLOAT_PEEK_FADE_START = 0.35f
 internal const val FLOAT_PEEK_ENTER_SCALE = 1.10f
+/** 防止原地长按/纵向移动误翻；不以扩大死区补偿错误的触点几何。 */
 internal const val FLOAT_EDGE_SLOP_DP = 8f
 internal val FLOAT_PAGE_EASING = CubicBezierEasing(0.1f, 0.1f, 0f, 1f)
 
@@ -80,6 +82,7 @@ internal fun FloatEdgePeek(
     val colors = MaterialTheme.colorScheme
     val onLeft = dir < 0
     val alpha = when {
+        progress <= 0f -> 0f  // 未进入边缘区时恒定透明隐藏 (#274)
         blocked -> 0.35f
         progress < FLOAT_PEEK_FADE_START -> 0f
         else -> ((progress - FLOAT_PEEK_FADE_START) / (1f - FLOAT_PEEK_FADE_START)).coerceIn(0f, 1f)

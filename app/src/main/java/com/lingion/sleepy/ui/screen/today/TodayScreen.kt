@@ -76,26 +76,14 @@ fun TodayScreen(
     } ?: DateUtils.SemesterStatus.IN_RANGE
     val isOutOfSemester = semesterStatus != DateUtils.SemesterStatus.IN_RANGE
     val renderTj = state.effectiveRenderTimeJson ?: state.effectiveCurrentTable?.timeJson
-    val todayCourses = (state.currentTable?.let { table ->
-        com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(
-            today, table.startDate, table.maxWeek, state.courses, state.transfers
-        )
-    } ?: emptyList()).let { list ->
-        // 用户报障 2026-09-10: ownTime 课渲染前按真实时间归一化节点(与网格同一预处理),
-        // 落库的表单占位节点不再影响今日页分组与显示。
-        if (renderTj == null) list else list.map { c -> c.normalizeNode(renderTj) }
-    }.sortedBy { it.startNode }
+    val presentation = viewModel.presentationCache.today(state, today)
+    val todayCourses = presentation.courses
 
     // v7.10.10 今日页冲突分栏 — 与周视图同一引擎同一分组(weekLaneRows):
     // 冲突区域一行内并排分栏(栏间浅细竖线), 无冲突课整宽单行。
-    // 分组在 LazyColumn 外 remember(LazyListScope 非 composable 上下文)。
     // 用户报障 2026-09-10: 分组走时间域(带 timeJson), 时间零交集的 ownTime 课对
     // 不再因节点占位值相同被并成假冲突行。
-    val laneRows = remember(todayCourses, renderTj) {
-        com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(
-            todayCourses, renderTj
-        )
-    }
+    val laneRows = presentation.rows
 
     var selectedCourse by remember { mutableStateOf<CourseEntity?>(null) }
 
@@ -135,7 +123,7 @@ fun TodayScreen(
                                 course = course,
                                 timeJson = renderTj,
                                 onClick = { selectedCourse = course },
-                                groupRows = todayCourses.filter { it.groupId == course.groupId }
+                                groupRows = presentation.groups[course.groupId].orEmpty()
                             )
                         }
                     }
@@ -168,7 +156,7 @@ fun TodayScreen(
                                             course = laneCourse,
                                             timeJson = renderTj,
                                             onClick = { selectedCourse = laneCourse },
-                                            groupRows = todayCourses.filter { it.groupId == laneCourse.groupId }
+                                            groupRows = presentation.groups[laneCourse.groupId].orEmpty()
                                         )
                                     }
                                 }
@@ -215,18 +203,9 @@ fun CompactTodayPane(
     } ?: DateUtils.SemesterStatus.IN_RANGE
     val isOutOfSemester = semesterStatus != DateUtils.SemesterStatus.IN_RANGE
     val renderTj = state.effectiveRenderTimeJson ?: state.effectiveCurrentTable?.timeJson
-    val todayCourses = (state.currentTable?.let { table ->
-        com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(
-            today, table.startDate, table.maxWeek, state.courses, state.transfers
-        )
-    } ?: emptyList()).let { list ->
-        if (renderTj == null) list else list.map { c -> c.normalizeNode(renderTj) }
-    }.sortedBy { it.startNode }
-    val laneRows = remember(todayCourses, renderTj) {
-        com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(
-            todayCourses, renderTj
-        )
-    }
+    val presentation = viewModel.presentationCache.today(state, today)
+    val todayCourses = presentation.courses
+    val laneRows = presentation.rows
 
     var selectedCourse by remember { mutableStateOf<CourseEntity?>(null) }
 
@@ -256,7 +235,7 @@ fun CompactTodayPane(
                             course = course,
                             timeJson = renderTj,
                             onClick = { selectedCourse = course },
-                            groupRows = todayCourses.filter { it.groupId == course.groupId }
+                            groupRows = presentation.groups[course.groupId].orEmpty()
                         )
                     }
                 } else {
@@ -286,7 +265,7 @@ fun CompactTodayPane(
                                         course = laneCourse,
                                         timeJson = renderTj,
                                         onClick = { selectedCourse = laneCourse },
-                                        groupRows = todayCourses.filter { it.groupId == laneCourse.groupId }
+                                        groupRows = presentation.groups[laneCourse.groupId].orEmpty()
                                     )
                                 }
                             }

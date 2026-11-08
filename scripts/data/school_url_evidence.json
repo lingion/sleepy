@@ -42789,10 +42789,19 @@
       "proposedCorrection": null,
       "title": "统一身份认证平台",
       "probeError": "curl-28",
-      "availability": "public-page",
-      "authenticatedImportTested": false,
+      "availability": "authenticated-import-tested",
+      "authenticatedImportTested": true,
+      "authenticatedImportReport": {
+        "source": "user-supplied-sleepy-import-success-report",
+        "date": "2026-11-07",
+        "versionName": "1.0.63",
+        "versionCode": 10063,
+        "reportedStatus": "unverified",
+        "protocol": "zf_new",
+        "courseCount": 24
+      },
       "defects": [
-        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page last confirmed live with HTTP 200 on 2026-10-16; no authenticated import performed."
+        "Public-page ownership remains independently unverified; the user-supplied authenticated-import report does not replace a recorded public identity source."
       ],
       "priorOwnershipSource": "wakeup-batch-probe"
     },
@@ -57047,22 +57056,20 @@
     {
       "catalogId": "moe:4137011065",
       "name": "青岛大学",
-      "url": "http://xjw.qdu.edu.cn",
-      "source": "wakeup-batch-probe",
-      "checkedAt": "2026-10-16",
+      "url": "https://xjw.qdu.edu.cn/",
+      "source": "shiguang-adapters",
+      "checkedAt": "2026-11-05",
       "http": 200,
-      "finalUrl": "http://xjw.qdu.edu.cn",
+      "finalUrl": "https://xjw.qdu.edu.cn/",
       "status": "unknown",
       "confidence": "low",
       "sources": [],
       "proposedCorrection": null,
       "title": "登录",
       "probeError": null,
-      "availability": "public-page",
-      "authenticatedImportTested": false,
-      "defects": [
-        "Entry page identity does not name this school; ownership unproven."
-      ]
+      "availability": "authenticated-import-tested",
+      "authenticatedImportTested": true,
+      "defects": []
     },
     {
       "catalogId": "moe:4137014666",

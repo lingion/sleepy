@@ -11,7 +11,8 @@ class TimetablePerformanceTest {
         // 私有未缓存实现就是缓存前的解析主体，仅用于本地测量。
         for (name in listOf("parseNodes", "parseTimeSlotRows")) {
             val cached = TimeTableUtils::class.java.declaredMethods.single {
-                it.name.substringBefore('$') == name && it.parameterCount == 1
+                it.name.substringBefore('$') == name && it.parameterCount == 1 &&
+                    java.lang.reflect.Modifier.isPublic(it.modifiers)
             }.apply { isAccessible = true }
             val uncached = TimeTableUtils::class.java.getDeclaredMethod(name + "Uncached", String::class.java)
                 .apply { isAccessible = true }

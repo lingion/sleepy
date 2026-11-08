@@ -1,4 +1,9 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="update_from_jw">从教务更新</string>
+    <string name="update_from_jw_title">确认更新课表</string>
+    <string name="update_from_jw_summary">新增 %1$d 门，变更 %2$d 门，取消 %3$d 门</string>
+    <string name="update_from_jw_no_changes">教务课表没有变化</string>
+    <string name="update_from_jw_confirm">确认更新</string>
     <string name="app_name">Sleepy 课程表</string>
     <string name="widget_today_label">今日课程 · 大</string>
     <string name="widget_today_small_label">今日课程 · 小</string>

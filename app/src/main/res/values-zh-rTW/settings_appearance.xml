@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_appearance_navigation">底部導覽</string>
+    <string name="settings_appearance_common">共同設定</string>
+    <string name="settings_appearance_holidays">節假日顯示</string>
+    <string name="settings_appearance_default_view">預設課表檢視</string>
+    <string name="settings_appearance_default_view_sub">冷啟動和從其他頁面返回課表時，使用所選檢視作為初始檢視。</string>
+    <string name="settings_appearance_header_date">表頭顯示日期</string>
+    <string name="settings_appearance_header_date_sub">同時影響應用程式內的網格課表和支援此設定的小工具。</string>
+    <string name="settings_appearance_time_scope">同時影響課表和支援課程時間顯示的小工具。</string>
+    <string name="settings_appearance_advanced_experimental">進階選項（實驗）</string>
+    <string name="settings_appearance_separator_scope">在應用程式內的網格課表和相關網格小工具中顯示行列分隔線。</string>
+    <string name="settings_appearance_break_scope">在應用程式內的網格課表和相關網格小工具中，為較長的午間和晚間課間留白。</string>
+    <string name="settings_appearance_workday_visible">補班日不灰顯</string>
+</resources>

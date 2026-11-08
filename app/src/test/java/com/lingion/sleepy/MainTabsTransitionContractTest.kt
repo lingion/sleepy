@@ -18,10 +18,8 @@ import org.junit.Test
  *      (与 BackRestoreSaveableContractTest 契约 2 同源 — AnimatedContent 过渡期双组合
  *      正是该保态语义的用武之地, key 不得改成 targetState 以外的东西)。
  *
- * 载体形态说明: 仓库 compose 管线测试 (IntRangeSliderGhostPipelineTest 型) 无法faithful
- * 托管 MainTabs — 它要求真 ScheduleViewModel(SleepyApp.get().repository) + navigator.session,
- * rememberSaveable 探针又必须注入四个真实 tab 屏内部 (需测试替身, 越界)。本文件按
- * BackRestoreSaveableContractTest 先例做源码结构锁定: 声明式接线读源头文件等价于读编译产物。
+ * 本文件只锁定接线结构。TabContentTransitionPixelTest 直接运行 MainTabs 使用的
+ * MainTabContent 容器，检查实际中间帧和滚动状态恢复；视觉正确性不由源码字符串推断。
  */
 class MainTabsTransitionContractTest {
 
@@ -53,12 +51,12 @@ class MainTabsTransitionContractTest {
         )
         assertTrue(
             "必须使用 sleepyContentExit() 工厂 (与 enter 成对)",
-            Regex("""=\s*sleepyContentExit\(\)""").containsMatchIn(mainSource)
+            Regex("""=\s*sleepyContentExit\(includeFade = false\)""").containsMatchIn(mainSource)
         )
         // enter/exit 的工厂调用必须出现在 transitionSpec = { 之前 (捕获模式的机械判据):
         val firstFactoryUse = minOf(
             mainSource.indexOf("sleepyContentEnter()"),
-            mainSource.indexOf("sleepyContentExit()"),
+            mainSource.indexOf("sleepyContentExit(includeFade = false)"),
         )
         val specLambda = mainSource.indexOf("transitionSpec = {")
         assertTrue(

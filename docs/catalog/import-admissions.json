@@ -7830,22 +7830,6 @@
     "ownershipAction": "retained-wakeup-662-declared-owner"
   },
   {
-    "catalogId": "wakeup:2ed7b2bf334e49518042",
-    "name": "南通理工学院（2023届及之后）",
-    "url": "https://zfjw.ntit.edu.cn/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-52.36-user-attachment",
-    "sourceRow": 758,
-    "checkedAt": "2026-10-16",
-    "http": 412,
-    "title": "",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "ownershipAction": "retained-wakeup-662-declared-owner"
-  },
-  {
     "catalogId": "moe:4136012795",
     "name": "南昌理工学院",
     "url": "https://my.nut.edu.cn/cas/login",
@@ -20785,7 +20769,8 @@
     "http": 200,
     "title": "统一身份认证平台",
     "fingerprints": [],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "authenticatedImportTested": true,
+    "limitation": "User supplied a Sleepy import-success report on 2026-11-07: app 1.0.63 (10063), catalogId moe:4136011318, zf_new, 24 courses imported through the unchanged catalog URL. Reported status was unverified; this report confirms authenticated import, not an independent public-page ownership audit.",
     "ownershipAction": "retained-wakeup-662-declared-owner"
   },
   {
@@ -34197,18 +34182,19 @@
   {
     "catalogId": "moe:4137011065",
     "name": "青岛大学",
-    "url": "http://xjw.qdu.edu.cn",
-    "type": "qz",
+    "url": "https://xjw.qdu.edu.cn/",
+    "type": "sg_asset",
     "sourceId": "wakeup-52.36-user-attachment",
     "sourceRow": 789,
-    "checkedAt": "2026-10-16",
+    "checkedAt": "2026-11-05",
     "http": 200,
     "title": "登录",
     "fingerprints": [
       "qz"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
-    "ownershipAction": "retained-wakeup-declared-owner"
+    "authenticatedImportTested": true,
+    "limitation": "User confirmed successful authenticated timetable import using the QDU-specific ShiGuang adapter on 2026-11-05.",
+    "ownershipAction": "retained-shiguang-adapters-owner"
   },
   {
     "catalogId": "moe:4237051858",

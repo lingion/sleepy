@@ -12,11 +12,6 @@ import org.junit.Test
  *      LaunchedEffect 驱动的 animateReturnToOrigin(defaultSpatialSpec) 弹簧落回原点
  *      (函数名终与行为一致); 瞬时写回 originX/originY 禁止复活 — D 契约测试的
  *      精确相等断言在 runOnIdle 排空后由「动画收敛到目标值」保证, 不靠同帧写死。
- *   2. 遮罩 fadeIn/fadeOut 走 motionScheme fastEffects — 且 API 分档兜底值
- *      (26-30 = 0.35, 31+ = 0.10) 是用户实测定值, 抽成纯函数 scrimAlphaFor 锁死。
- *   3. 网格模糊半径 0→20dp 经 animateFloatAsState(defaultSpatialSpec) 缓动,
- *      gridFloatBlur 收半径读取 lambda(终审 I-2: 半径在 graphicsLayer 的 draw
- *      相位求值, 组合相不再读动画 State), 判据抽成 floatBlurRadiusDp 纯函数。
  *   4. 浮框/卡片入场 = sleepyPopup 家族 (scale 0.8 + fast 对); 浮框退场 scale+fade,
  *      卡片收层瞬时移除 (brief 只为卡片定入场); 胶囊同 popup 家族。
  *      遮罩/浮框/卡片/胶囊全部经 AnimatedVisibility — 排空后节点删除语义保留,
@@ -45,18 +40,18 @@ class FloatLayerMotionContractTest {
     // ---- 契约 2: 遮罩兜底不透明度纯决策 ----
 
     @Test
-    fun scrim_alpha_keeps_api_gated_fallback_values() {
+    fun scrim_is_subtle_with_blur_and_stronger_on_older_devices() {
         assertEquals("API 26-30 无 RenderEffect, 压暗兜底 0.35", 0.35f, scrimAlphaFor(26), 0f)
         assertEquals(0.35f, scrimAlphaFor(30), 0f)
-        assertEquals("API 31+ 有模糊, 遮罩让位 0.10", 0.10f, scrimAlphaFor(31), 0f)
-        assertEquals(0.10f, scrimAlphaFor(35), 0f)
+        assertEquals("API 31+ 以模糊为主，轻微压暗", 0.12f, scrimAlphaFor(31), 0f)
+        assertEquals(0.12f, scrimAlphaFor(35), 0f)
     }
 
     // ---- 契约 3: 模糊半径纯决策 ----
 
     @Test
-    fun blur_radius_target_only_when_lifted_and_resting() {
-        assertEquals(20.dp, floatBlurRadiusDp(active = true, dragging = false))
+    fun blur_only_applies_to_a_lifted_stationary_course() {
+        assertEquals("静止浮起时模糊背景", 20.dp, floatBlurRadiusDp(active = true, dragging = false))
         assertEquals("拖拽中网格复原不糊", 0.dp, floatBlurRadiusDp(active = true, dragging = true))
         assertEquals(0.dp, floatBlurRadiusDp(active = false, dragging = false))
         assertEquals(0.dp, floatBlurRadiusDp(active = false, dragging = true))
@@ -112,19 +107,33 @@ class FloatLayerMotionContractTest {
     fun grid_blur_radius_is_animated_not_switched() {
         assertTrue("模糊半径必须 animateFloatAsState 缓动",
             Regex("""animateFloatAsState\(""").containsMatchIn(tableSource))
-        assertTrue("缓动规格必须来自 motionScheme defaultSpatial",
-            tableSource.contains("defaultSpatialSpec"))
+        assertTrue("长按时使用效果动画，拖动时立即移除模糊",
+            Regex("""val floatBlurRadiusPx = animateFloatAsState\([\s\S]*?animationSpec = if \(floatState.dragging\) snap\(\) else floatFade""")
+                .containsMatchIn(tableSource))
+        assertTrue("拖动时遮罩不能继续退场动画",
+            tableSource.contains("exit = if (floatState.dragging) ExitTransition.None else fadeOut(floatFade)"))
         assertTrue("gridFloatBlur 必须收 () -> Float 半径读取 lambda (draw 相位求值)",
-            Regex("""internal fun Modifier\.gridFloatBlur\(\s*\w+\s*:\s*\(\)\s*->\s*Float""")
+            Regex("""internal fun Modifier\.gridFloatBlur\([\s\S]*?radiusPx\s*:\s*\(\)\s*->\s*Float""")
                 .containsMatchIn(floatSource))
         // 终审 I-2 锁 (lockstep): 调用点必须在 draw 相位读半径 —
         // lambda 挂载形态存在, 组合相裸读形态禁止复活。
         assertTrue("调用点必须以 gridFloatBlur { ... } lambda 形态挂载",
-            tableSource.contains("gridFloatBlur {"))
+            tableSource.contains("gridFloatBlur(gridBgShape) {"))
         assertFalse("禁止组合相裸读 gridFloatBlur(floatBlurRadiusPx) — 每帧 recompose 最密子树",
             tableSource.contains("gridFloatBlur(floatBlurRadiusPx)"))
         assertTrue("floatBlurRadiusPx 必须是 State 句柄 (val = animateFloatAsState, 无 by 委托)",
             Regex("""val floatBlurRadiusPx = animateFloatAsState\(""").containsMatchIn(tableSource))
+    }
+
+    @Test
+    fun blur_clips_the_full_surface_before_padding_and_scrolling() {
+        assertTrue("模糊图层必须使用与课表面板一致的圆角",
+            floatSource.contains("this.shape = shape") && floatSource.contains("clip = true"))
+        assertTrue("边缘采样必须延展边缘像素，不能采样透明区域",
+            floatSource.contains("TileMode.Clamp"))
+        assertTrue("背景与内边距都必须处于模糊层内，浮卡不在其中",
+            Regex("""\.gridFloatBlur\(gridBgShape\)\s*\{[^}]+\}\s*\.background\(colors.surfaceContainerHigh\)\s*\.padding\(gridPadding\)\s*\.verticalScroll\(scrollState\)""")
+                .containsMatchIn(tableSource))
     }
 
     // ---- 契约 5: tag 存活 ----

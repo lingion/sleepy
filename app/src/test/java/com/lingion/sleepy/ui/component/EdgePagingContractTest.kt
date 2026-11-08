@@ -2,6 +2,7 @@ package com.lingion.sleepy.ui.component
 
 import com.lingion.sleepy.testutil.readProjectSource
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertEquals
 import org.junit.Test
 
 /**
@@ -15,7 +16,9 @@ class EdgePagingContractTest {
     private val edgePeek = readProjectSource("app/src/main/java/com/lingion/sleepy/ui/component/EdgePeek.kt")
     private val edgeOrFloatState = readProjectSource("app/src/main/java/com/lingion/sleepy/ui/component/FloatOccurrence.kt")
     private val tableView = readProjectSource("app/src/main/java/com/lingion/sleepy/ui/component/CourseTableView.kt")
+    private val placement = readProjectSource("app/src/main/java/com/lingion/sleepy/ui/component/FloatDragGeometry.kt")
     private val schedule = readProjectSource("app/src/main/java/com/lingion/sleepy/ui/screen/schedule/ScheduleScreen.kt")
+    private val pager = readProjectSource("app/src/main/java/com/lingion/sleepy/ui/screen/schedule/ScheduleWeekPager.kt")
     private val theme = readProjectSource("app/src/main/java/com/lingion/sleepy/ui/theme/Theme.kt")
 
     @Test fun edgeGeometryAndTimingMatchTheRatifiedValues() {
@@ -25,10 +28,14 @@ class EdgePagingContractTest {
         // 往上翻页就不是」。行为锁: CourseOccurrenceFloatDragTest
         // .triggerZonesAreMirrorSymmetricAtTheContainerEdge。
         assertTrue("缘容差 10dp", edgePeek.contains("FLOAT_EDGE_ZONE_DP = 10f"))
-        assertTrue("左右触发线镜像锚外壳缘(同一容差)", listOf(
-            "cx < FLOAT_EDGE_ZONE_DP -> -1",
-            "cx > maxWidth.value - FLOAT_EDGE_ZONE_DP -> 1",
-        ).all { tableView.contains(it) })
+        for ((center, expected) in listOf(5f to -1, 20f to 0, 340f to 0, 355f to 1)) {
+            assertEquals("左右缘同一容差", expected, floatEdgeDirection(center, center, 180f, 360f))
+        }
+        assertEquals("右侧抓取点先到边缘", 1, floatEdgeDirection(335f, 355f, 180f, 360f))
+        assertEquals("左侧抓取点先到边缘", -1, floatEdgeDirection(25f, 5f, 180f, 360f))
+        assertEquals("原地长按不能触发", 0, floatEdgeDirection(355f, 355f, 355f, 360f))
+        assertTrue("落子与翻页共用判据", tableView.contains("val inEdgeZone = currentFloatEdgeDirection() != 0") &&
+            tableView.contains("val dir = currentFloatEdgeDirection()"))
         assertTrue("驻留 500ms", edgePeek.contains("FLOAT_EDGE_DWELL_MS = 500L"))
         assertTrue("翻页动画 300ms", edgePeek.contains("FLOAT_PAGE_ANIM_MS = 300L"))
         assertTrue("防误触位移 8dp", edgePeek.contains("FLOAT_EDGE_SLOP_DP = 8f"))
@@ -71,7 +78,8 @@ class EdgePagingContractTest {
 
     @Test fun screenWiresPagerPagingAndTimeDomainToFloatWeek() {
         // 预览页保持组合(浮层跨页不丢), 动画时长与曲线取 EdgePeek 常量。
-        assertTrue("保留相邻页", schedule.contains("beyondViewportPageCount = 1"))
+        assertTrue("拖课时保留相邻页", pager.contains("beyondViewportPageCount = if (draggingCourse) 1 else 0"))
+        assertTrue("拖课状态接入分页", schedule.contains("draggingCourse = floatState.dragging"))
         assertTrue("翻页动画取常量", schedule.contains("FLOAT_PAGE_ANIM_MS.toInt()"))
         assertTrue("翻页曲线取常量", schedule.contains("FLOAT_PAGE_EASING"))
         assertTrue("夹取周上限", schedule.contains("coerceIn(0, pagerMaxWeek - 1)"))
@@ -135,20 +143,19 @@ class EdgePagingContractTest {
         // 同时钉死三条退路都把 snap 同步回跟手位/原位 (非法投影/弹回/否决拉伸),
         // 否则卡会卡在一个已作废的投影上。
         assertTrue("跳格时长常量 150ms", edgePeek.contains("FLOAT_SNAP_ANIM_MS = 150L"))
-        assertTrue("渲染动画时长取常量", tableView.contains("tween<Dp>(FLOAT_SNAP_ANIM_MS.toInt()"))
+        assertTrue("渲染动画时长取常量", placement.contains("tween<Dp>(FLOAT_SNAP_ANIM_MS.toInt()"))
         assertTrue("x/y/高三路动画自 snap*",
             listOf(
-                "animateDpAsState(floatState.snapX",
-                "animateDpAsState(floatState.snapY",
-                "animateDpAsState(floatState.snapHeight",
-            ).all { tableView.contains(it) }
+                "animateDpAsState(state.snapX",
+                "animateDpAsState(state.snapY",
+                "animateDpAsState(state.snapHeight",
+            ).all { placement.contains(it) }
         )
-        assertTrue("浮卡 offset 读动画值不读跟手位", tableView.contains(".offset(x = renderX, y = overlayY)"))
-        assertTrue("浮卡高度读动画值", tableView.contains(".height(renderH)"))
-        assertTrue("浮框跟随同一动画值", tableView.contains("x = renderX,"))
-        assertTrue("滚动补偿加在动画之外(overlayY 由 renderY 派生)",
-            tableView.contains("val overlayY = renderY + headH + gapH - floatScrollDp")
-        )
+        assertTrue("浮卡使用延迟读取的布局修饰器", tableView.contains(".floatOverlayPlacement(floatState, scrollState, headH + gapH)"))
+        assertTrue("浮框使用同一布局修饰器", tableView.contains(".floatOverlayPlacement(floatState, scrollState, headH + gapH, popupOffset"))
+        assertTrue("布局阶段读取投影，非法格跟手不等补间", placement.contains("if (free) state.snapX else x.value"))
+        assertTrue("浮卡高度读取投影动画", placement.contains("height.value.roundToPx()"))
+        assertTrue("滚动补偿在布局阶段", placement.contains("header - scrollDp"))
         assertTrue("非法投影退回跟手位", Regex("""floatState\.snapX = floatState\.x""").containsMatchIn(tableView))
         assertTrue("弹回同步 snap", Regex("""floatState\.snapY = floatState\.y""").containsMatchIn(tableView))
         assertTrue("否决拉伸同步 snap", edgeOrFloatState.contains("snapY = originY"))

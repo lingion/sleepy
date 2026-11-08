@@ -21,7 +21,7 @@ interface TimeTableDao {
     @Update
     suspend fun update(table: TimeTableEntity)
 
-    @Query("UPDATE time_tables SET reminderEnabled = :enabled WHERE id = :id")
+    @Query("UPDATE time_tables SET reminderEnabled = :enabled, reminderOverride = :enabled WHERE id = :id")
     suspend fun setReminderEnabled(id: Long, enabled: Boolean): Int
 
     @Query("DELETE FROM time_tables WHERE id = :id")

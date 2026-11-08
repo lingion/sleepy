@@ -1,11 +1,7 @@
 package com.lingion.sleepy.ui.screen.mine
 
 import android.util.Log
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,244 +9,58 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.ChevronRight
-import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import com.lingion.sleepy.ui.component.liquidglass.GlassSwitch as Switch
 import androidx.compose.material3.SwitchDefaults
+import com.lingion.sleepy.ui.component.liquidglass.GlassSwitch as Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
 import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.R
-import com.lingion.sleepy.data.AppDatabase
-import com.lingion.sleepy.data.migration.MigrationExecutor
-import com.lingion.sleepy.data.migration.MigrationModule
 import com.lingion.sleepy.data.undo.UndoManager
-import com.lingion.sleepy.ui.component.DisplayModeOption
 import com.lingion.sleepy.ui.component.SectionHeader
-import com.lingion.sleepy.ui.component.SettingsFlatCard
-import com.lingion.sleepy.ui.component.SettingsCard
-import com.lingion.sleepy.ui.component.SettingToggleRow
-import com.lingion.sleepy.ui.component.TimePickerField
+import com.lingion.sleepy.ui.component.SegmentedSwitcher
 import com.lingion.sleepy.ui.theme.SleepyTheme
-import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
-import com.lingion.sleepy.util.DateUtils
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
-import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
-/**
- * 通用设置页(决策 D1 L1 ⑤): 课程显示 / 小组件 / 语言 三组。
- * 课程显示与小组件自 AppearanceScreen 迁入(2026-08-24, 用户指定), 语言卡沿用原折叠列表卡片样式。
- * 显示项变更后即时刷新小组件(refreshWidgets 管线随迁移一并保留)。
- */
+/** Application language, performance and editing preferences. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GeneralSettingsScreen(
-    onBack: () -> Unit,
-    onOpenHoliday: () -> Unit = {},
-    navDock: Boolean = false,
-    onNavDockChange: (Boolean) -> Unit = {}
-) {
+fun GeneralSettingsScreen(onBack: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     var language by remember { mutableStateOf(AppPrefs.getLanguage(context)) }
-
-    val languages = listOf(
-        "zh-CN" to "简体中文",
-        "zh-TW" to "繁體中文",
-        "en" to "English",
-        "ja" to "日本語",
-        "es" to "Español"
-    )
-
-    // 课程显示 / 小组件设置项状态
-    // 折叠展开态跨页保真: AppRoot 经 SaveableStateProvider 恢复本页时, 折叠卡展开集
-    // 也按原样回来(Set 非内建 Bundle 类型, 用显式 Saver 转 ArrayList<String> 存取)。
-    var expandedSections by rememberSaveable(
-        stateSaver = Saver<Set<String>, ArrayList<String>>(
-            save = { ArrayList(it) },
-            restore = { it.toSet() }
-        )
-    ) { mutableStateOf(setOf<String>()) }
-    fun toggleSection(key: String) {
-        expandedSections = if (key in expandedSections) expandedSections - key else expandedSections + key
+    val languages = listOf("zh-CN" to "简体中文", "zh-TW" to "繁體中文", "en" to "English", "ja" to "日本語", "es" to "Español")
+    var undoDepth by remember { mutableStateOf(AppPrefs.getUndoDepth(context)) }
+    var customDepth by rememberSaveable { mutableStateOf(if (undoDepth > 0) undoDepth.toString() else "5") }
+    fun setUndoDepth(value: Int) {
+        undoDepth = value
+        AppPrefs.setUndoDepth(context, value)
+        UndoManager.applyMaxDepth(value)
     }
-    var displayMode by remember { mutableStateOf(AppPrefs.getDisplayMode(context)) }
-    var gridSubInfo by remember { mutableStateOf(AppPrefs.getGridSubInfo(context)) }
-    var autoHideEmptyEvening by remember { mutableStateOf(AppPrefs.isGridAutoHideEmptyEvening(context)) }
-    var gridAdaptiveHeight by remember { mutableStateOf(AppPrefs.isGridAdaptiveHeight(context)) }
-    // v1.0.56 T3: 双指捏放行高(实验室, 默认关)
-    var gridPinchZoom by remember { mutableStateOf(AppPrefs.isGridPinchZoom(context)) }
-    // v1.0.56 T4: 语言折叠卡展开态 — 默认收起; 选择语言即 recreate 重建, 会话态足够
-    var eveningStart by remember { mutableStateOf(AppPrefs.getGridEveningStart(context)) }
-    var weekTwoColumn by remember { mutableStateOf(AppPrefs.isWeekTwoColumn(context)) }
-    var weekTwoColumnMode by remember { mutableStateOf(AppPrefs.getWeekTwoColumnMode(context)) }
-    var weekHideEmptyDays by remember { mutableStateOf(AppPrefs.isWeekHideEmptyDays(context)) }
-    // issue#26: 周视图/网格视图场景别名开关
-    var weekUseAlias by remember { mutableStateOf(AppPrefs.isWeekUseAlias(context)) }
-    var gridUseAlias by remember { mutableStateOf(AppPrefs.isGridUseAlias(context)) }
-    var showDate by remember { mutableStateOf(AppPrefs.isShowDate(context)) }
-    var showViewSwitcher by remember { mutableStateOf(AppPrefs.isShowViewSwitcher(context)) }
-    var startView by remember { mutableStateOf(AppPrefs.getStartView(context)) }
-    var visibleDays by remember { mutableStateOf(AppPrefs.getVisibleDays(context)) }
-    var vertPunct by remember { mutableStateOf(AppPrefs.isVertPunctReplace(context)) }
-    var gridShowSeparators by remember { mutableStateOf(AppPrefs.isGridShowSeparators(context)) }
-    var gridLongBreakSpacing by remember { mutableStateOf(AppPrefs.isGridLongBreakSpacing(context)) }
-    // 多步撤回 spec D2: 实验室撤回步数输入态 — 初始值取持久偏好(默认 5)
-    var undoDepthInput by remember { mutableStateOf(AppPrefs.getUndoDepth(context).toString()) }
-
-    // 显示项变更后立即刷小组件(管线自 AppearanceScreen 迁移保留)
-    val widgetScope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
-    fun refreshWidgets() {
-        widgetScope.launch { com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(context) }
-    }
-
-    // ── 分组⑥ 数据迁移 (.sleepybackup 全量迁移) ──
-    val migrationScope = rememberCoroutineScope()
-    val migrationDb = remember { AppDatabase.get(context) }
-    val migrationPrefsStore = remember {
-        MigrationExecutor.PrefsStore { name -> context.getSharedPreferences(name, android.content.Context.MODE_PRIVATE) }
-    }
-    var migrationBusy by remember { mutableStateOf(false) }
-    var pendingExportBytes by remember { mutableStateOf<ByteArray?>(null) }
-    var pendingImportBytes by remember { mutableStateOf<ByteArray?>(null) }
-    var showImportDialog by remember { mutableStateOf(false) }
-
-    fun runMigrationImport(mode: MigrationExecutor.ImportMode) {
-        val bytes = pendingImportBytes ?: return
-        migrationBusy = true
-        migrationScope.launch {
-            try {
-                val report = withContext(Dispatchers.IO) {
-                    MigrationExecutor.import(
-                        bytes, mode, migrationPrefsStore,
-                        migrationDb.courseDao(), migrationDb.timeTableDao(),
-                        migrationDb.periodTableDao(), migrationDb.importDraftDao(),
-                    )
-                }
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.settings_migration_import_done, report.counts.timeTables, report.counts.courses),
-                    Toast.LENGTH_LONG
-                ).show()
-                // 偏好与小组件配置可能被替换, 迁移后统一刷新小组件
-                refreshWidgets()
-            } catch (e: Exception) {
-                Log.e("SleepyMigration", "import failed", e)
-                Toast.makeText(context, R.string.settings_migration_import_fail, Toast.LENGTH_LONG).show()
-            } finally {
-                migrationBusy = false
-                pendingImportBytes = null
-            }
-        }
-    }
-
-    val exportLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.CreateDocument("application/zip")
-    ) { uri ->
-        val bytes = pendingExportBytes
-        pendingExportBytes = null
-        if (uri == null || bytes == null) return@rememberLauncherForActivityResult
-        migrationBusy = true
-        migrationScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    context.contentResolver.openOutputStream(uri)?.use { it.write(bytes) }
-                        ?: error("output stream unavailable")
-                }
-                Toast.makeText(context, R.string.settings_migration_export_ok, Toast.LENGTH_SHORT).show()
-            } catch (e: Exception) {
-                Log.e("SleepyMigration", "export failed", e)
-                Toast.makeText(context, R.string.settings_migration_export_fail, Toast.LENGTH_LONG).show()
-            } finally {
-                migrationBusy = false
-            }
-        }
-    }
-
-    val importLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocument()
-    ) { uri ->
-        if (uri == null) return@rememberLauncherForActivityResult
-        migrationScope.launch {
-            val bytes = withContext(Dispatchers.IO) {
-                runCatching { context.contentResolver.openInputStream(uri)?.use { it.readBytes() } }.getOrNull()
-            }
-            if (bytes == null) {
-                Toast.makeText(context, R.string.settings_migration_import_fail, Toast.LENGTH_LONG).show()
-            } else {
-                pendingImportBytes = bytes
-                showImportDialog = true
-            }
-        }
-    }
-
-    fun onMigrationExportClick() {
-        if (migrationBusy) return
-        migrationBusy = true
-        migrationScope.launch {
-            try {
-                val result = withContext(Dispatchers.IO) {
-                    MigrationExecutor.export(
-                        setOf(MigrationModule.DATABASE, MigrationModule.PREFERENCES, MigrationModule.WIDGETS),
-                        migrationPrefsStore,
-                        migrationDb.courseDao(), migrationDb.timeTableDao(),
-                        migrationDb.periodTableDao(), migrationDb.importDraftDao(),
-                    )
-                }
-                pendingExportBytes = result.bytes
-                val stamp = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
-                withContext(Dispatchers.Main) { exportLauncher.launch("sleepy-backup-$stamp.sleepybackup") }
-            } catch (e: Exception) {
-                Log.e("SleepyMigration", "collect failed", e)
-                Toast.makeText(context, R.string.settings_migration_export_fail, Toast.LENGTH_LONG).show()
-                migrationBusy = false
-            }
-        }
-    }
-
     Scaffold(
         modifier = Modifier.fillMaxSize().background(colors.background),
         containerColor = colors.background,
@@ -275,209 +85,28 @@ fun GeneralSettingsScreen(
             contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // ── 分组① 课表显示 (2026-09-21 改名: 与③「画面与导航」拉开边界) ──
+            // ── 语言：从当前值锚点展开浮框 (分支裁定: 独立锚定窗口替代内联折叠) ──
             item {
-                SectionHeader(title = stringResource(R.string.appearance_section_schedule_display))
+                SectionHeader(title = stringResource(R.string.settings_language))
             }
 
-            // 课程时间显示: 节次 / 时间 — 二选一, 标题行右侧 tab 切换(用户 2026-09-03 指令)
             item {
-                SettingsFlatCard(
-                    title = stringResource(R.string.settings_display_mode),
-                    options = listOf(
-                        stringResource(R.string.settings_display_node),
-                        stringResource(R.string.settings_display_time)
-                    ),
-                    selectedKey = if (displayMode == "node") 0 else 1,
-                    dbg = "general_display_mode",
-                    onSelect = { i ->
-                        val v = if (i == 0) "node" else "time"
-                        displayMode = v; AppPrefs.setDisplayMode(context, v); refreshWidgets()
-                    }
-                )
-            }
-
-            // 网格卡片副信息: 教室 / 教师 / 无 — 三选一, 标题行右侧 tab 切换(周视图网格卡课程名下方那行；节次信息左栏已有)
-            item {
-                SettingsFlatCard(
-                    title = stringResource(R.string.settings_grid_sub_info),
-                    options = listOf(
-                        stringResource(R.string.settings_grid_sub_room),
-                        stringResource(R.string.settings_grid_sub_teacher),
-                        stringResource(R.string.settings_grid_sub_none)
-                    ),
-                    selectedKey = when (gridSubInfo) {
-                        "room" -> 0
-                        "teacher" -> 1
-                        else -> 2
+                com.lingion.sleepy.ui.component.liquidglass.GlassLanguageMenu(
+                    title = stringResource(R.string.settings_language),
+                    selectedCode = language,
+                    languages = languages,
+                    onSelect = { code ->
+                        if (language != code) {
+                            language = code
+                            AppPrefs.setLanguage(context, code)
+                            (context as? android.app.Activity)?.recreate()
+                        }
                     },
-                    dbg = "general_grid_sub_info",
-                    onSelect = { i ->
-                        val v = listOf("room", "teacher", "none")[i]
-                        gridSubInfo = v; AppPrefs.setGridSubInfo(context, v); refreshWidgets()
-                    }
                 )
             }
 
-            // 主页显示(issue#8): 网格/周视图各一个缩放 70%~130% + 圆角 0%~200%(5% 吸附) + 周视图两栏开关
-            item {
-                SettingsCard(title = stringResource(R.string.settings_pill), expanded = "gridScale" in expandedSections, dbg = "general_pill_card", onToggle = { toggleSection("gridScale") }) {
-                    // 样式参数(缩放/圆角)已迁外观与主题, 这里只保留内容/可见性参数
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_week_two_column),
-                        checked = weekTwoColumn,
-                        dbg = "general_week_two_column",
-                        onCheckedChange = { weekTwoColumn = it; AppPrefs.setWeekTwoColumn(context, it) }
-                    )
-                    // 分栏标准 — 两栏开启时才需要选
-                    if (weekTwoColumn) {
-                        HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                        DisplayModeOption(
-                            label = stringResource(R.string.settings_week_two_column_days),
-                            subtitle = "",
-                            selected = weekTwoColumnMode == "days",
-                            dbg = "general_two_column_mode",
-                            onClick = { weekTwoColumnMode = "days"; AppPrefs.setWeekTwoColumnMode(context, "days") }
-                        )
-                        HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                        DisplayModeOption(
-                            label = stringResource(R.string.settings_week_two_column_balance),
-                            subtitle = "",
-                            selected = weekTwoColumnMode == "balance",
-                            dbg = "general_two_column_mode",
-                            onClick = { weekTwoColumnMode = "balance"; AppPrefs.setWeekTwoColumnMode(context, "balance") }
-                        )
-                    }
-                    // 隐藏无课日 — 与两栏无关, 单栏/两栏都生效
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_week_hide_empty),
-                        checked = weekHideEmptyDays,
-                        dbg = "general_hide_empty_days",
-                        onCheckedChange = { weekHideEmptyDays = it; AppPrefs.setWeekHideEmptyDays(context, it) }
-                    )
-                    // issue#26 课程别名: 周视图/网格场景 原名/别名 二选一, 关=原名 开=别名(自独立卡挪入, 行为零变化)
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_week_alias),
-                        checked = weekUseAlias,
-                        dbg = "general_week_alias",
-                        onCheckedChange = { weekUseAlias = it; AppPrefs.setWeekUseAlias(context, it) }
-                    )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_grid_alias),
-                        checked = gridUseAlias,
-                        dbg = "general_grid_alias",
-                        onCheckedChange = { gridUseAlias = it; AppPrefs.setGridUseAlias(context, it) }
-                    )
-                    // 表头日期 — 网格视图列头 + 小组件列头共用的开关
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_show_date),
-                        checked = showDate,
-                        dbg = "general_show_date",
-                        onCheckedChange = { showDate = it; AppPrefs.setShowDate(context, it); refreshWidgets() }
-                    )
-                    // 视图切换栏属于课表显示设置, 与主页显示参数放在同一子选项内
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_show_view_switcher),
-                        checked = showViewSwitcher,
-                        dbg = "general_show_view_switcher",
-                        onCheckedChange = {
-                            showViewSwitcher = it
-                            AppPrefs.setShowViewSwitcher(context, it)
-                        }
-                    )
-                }
-            }
-
-            // 冲突课程样式: 叠层 / 折角 / 竖轨 — 样式参数, 已迁外观与主题页
-
-            // 显示星期: 周一~周日多选
-            item {
-                SettingsCard(title = stringResource(R.string.settings_visible_days), expanded = "visibleDays" in expandedSections, dbg = "general_visible_days_card", onToggle = { toggleSection("visibleDays") }) {
-                    Text(text = stringResource(R.string.settings_visible_days_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
-                    (1..7).forEach { day ->
-                        val checked = day in visibleDays
-                        Row(
-                            modifier = Modifier.fillMaxWidth().noRippleClickable {
-                                val n = if (checked) visibleDays - day else visibleDays + day
-                                if (n.isNotEmpty()) { visibleDays = n; AppPrefs.setVisibleDays(context, n); refreshWidgets() }
-                            }
-                                .dbgTag("general_visible_day#$day", text = DateUtils.localizedDay(day, context), role = "switch")
-                                .padding(vertical = 8.dp, horizontal = 4.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(text = DateUtils.localizedDay(day, context), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
-                            Switch(checked = checked, onCheckedChange = { on ->
-                                val n = if (on) visibleDays + day else visibleDays - day
-                                if (n.isNotEmpty()) { visibleDays = n; AppPrefs.setVisibleDays(context, n); refreshWidgets() }
-                            }, colors = SwitchDefaults.colors(checkedThumbColor = colors.onPrimary, checkedTrackColor = colors.primary))
-                        }
-                        if (day != 7) HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    }
-                }
-            }
-
-            // 节假日课程灰显: 点击进入二级页
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(SleepyTheme.shapes.large)
-                        .background(colors.surfaceContainer)
-                        .noRippleClickable(onOpenHoliday)
-                        .dbgTag("general_holiday_entry", text = stringResource(R.string.settings_holiday_title), role = "button")
-                        .padding(horizontal = 16.dp, vertical = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        // 仅标题(用户 2026-09-03 指令: 入口说明文字去掉)
-                        Text(
-                            text = stringResource(R.string.settings_holiday_title),
-                            style = MaterialTheme.typography.titleSmall,
-                            color = colors.onSurface
-                        )
-                    }
-                    Icon(
-                        Icons.Outlined.ChevronRight,
-                        contentDescription = null,
-                        tint = colors.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-
-            // ── 分隔线 ──
-            item { HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline)) }
-
-            // ── 分组③ 画面与导航 ──
-            item {
-                SectionHeader(title = stringResource(R.string.settings_section_display_navigation))
-            }
-
-            // 启动默认页: App 级启动偏好, 与课程/小组件渲染参数分组
-            item {
-                SettingsFlatCard(
-                    title = stringResource(R.string.settings_start_view),
-                    options = listOf(
-                        stringResource(R.string.settings_start_view_full),
-                        stringResource(R.string.settings_start_view_cards)
-                    ),
-                    selectedKey = if (startView == "full") 0 else 1,
-                    dbg = "general_start_view",
-                    onSelect = { i ->
-                        val v = if (i == 0) "full" else "cards"
-                        startView = v; AppPrefs.setStartView(context, v)
-                    }
-                )
-            }
-
-            // 高刷新率: 单行卡, 标题+开关(用户 2026-09-04 定版: 大标题「画面」+卡片「高刷新率」无说明)
+            item { SectionHeader(stringResource(R.string.settings_performance)) }
+            // Keep the existing high-refresh switch and immediate application behavior.
             item {
                 var highRefresh by remember { mutableStateOf(AppPrefs.isHighRefresh(context)) }
                 val colors = MaterialTheme.colorScheme
@@ -512,314 +141,44 @@ fun GeneralSettingsScreen(
                 }
             }
 
-            // 底栏样式: 贴底 / 悬浮药丸 Dock — 贴右 SegmentedSwitcher 双 tab(用户 2026-09-04: 放「画面」分组)
-            // 状态由 MainActivity(AppRoot) 持有下传: 底栏与设置页同一真值, 切换即生效
+            item { SectionHeader(stringResource(R.string.settings_editing)) }
             item {
-                SettingsFlatCard(
-                    title = stringResource(R.string.settings_nav_style),
-                    options = listOf(
-                        stringResource(R.string.settings_nav_style_docked),
-                        stringResource(R.string.settings_nav_style_floating)
-                    ),
-                    selectedKey = if (navDock) 1 else 0,
-                    dbg = "general_nav_style",
-                    onSelect = { idx ->
-                        val on = idx == 1
-                        if (navDock != on) {
-                            AppPrefs.setNavDock(context, on)
-                            onNavDockChange(on)
-                        }
-                    }
-                )
-            }
-
-            // ── 分隔线 ──
-            item { HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline)) }
-
-            // ── 分组④ 语言：从当前值锚点展开浮框 ──
-            item {
-                SectionHeader(title = stringResource(R.string.settings_language))
-            }
-
-            item {
-                com.lingion.sleepy.ui.component.liquidglass.GlassLanguageMenu(
-                    title = stringResource(R.string.settings_language),
-                    selectedCode = language,
-                    languages = languages,
-                    onSelect = { code ->
-                        if (language != code) {
-                            language = code
-                            AppPrefs.setLanguage(context, code)
-                            (context as? android.app.Activity)?.recreate()
-                        }
-                    },
-                )
-            }
-
-            // ── 分隔线 ──
-            item { HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline)) }
-
-            // ── 分组⑤ 实验室 (2026-09-16 用户令): 实验性功能默认全关, 可能随版本调整 ──
-            item {
-                SectionHeader(title = stringResource(R.string.settings_lab))
-            }
-            item {
-                Text(
-                    text = stringResource(R.string.settings_lab_sub),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = colors.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-            }
-            item {
-                Column(
-                    modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).padding(horizontal = 16.dp)
-                ) {
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_grid_adaptive_height),
-                        subtitle = stringResource(R.string.settings_grid_adaptive_height_sub),
-                        checked = gridAdaptiveHeight,
-                        dbg = "general_grid_adaptive_height",
-                        onCheckedChange = {
-                            gridAdaptiveHeight = it
-                            AppPrefs.setGridAdaptiveHeight(context, it)
-                        }
+                Column(modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(stringResource(R.string.settings_undo_depth), style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.settings_undo_experiment), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+                    Text(stringResource(R.string.settings_undo_mode), style = MaterialTheme.typography.bodyMedium)
+                    SegmentedSwitcher(
+                        options = listOf(0 to stringResource(R.string.settings_undo_off), 1 to stringResource(R.string.settings_undo_limited), 2 to stringResource(R.string.settings_undo_unlimited)),
+                        selected = when { undoDepth == 0 -> 0; undoDepth < 0 -> 2; else -> 1 },
+                        onSelect = { mode ->
+                            val next = when (mode) { 0 -> 0; 2 -> -1; else -> customDepth.toIntOrNull()?.takeIf { it > 0 } ?: 5 }
+                            if (mode == 1) customDepth = next.toString()
+                            setUndoDepth(next)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        containerColor = colors.surfaceContainerHighest,
                     )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    // v1.0.56 T3: 双指捏放行高 — 默认关, 关=网格视图捏不动
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_grid_pinch_zoom),
-                        subtitle = stringResource(R.string.settings_grid_pinch_zoom_sub),
-                        checked = gridPinchZoom,
-                        dbg = "general_grid_pinch_zoom",
-                        onCheckedChange = {
-                            gridPinchZoom = it
-                            AppPrefs.setGridPinchZoom(context, it)
-                        }
-                    )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_grid_auto_hide_evening),
-                        subtitle = stringResource(R.string.settings_grid_auto_hide_evening_sub),
-                        checked = autoHideEmptyEvening,
-                        dbg = "general_auto_hide_evening",
-                        onCheckedChange = {
-                            autoHideEmptyEvening = it
-                            AppPrefs.setGridAutoHideEmptyEvening(context, it)
-                        }
-                    )
-                    if (autoHideEmptyEvening) {
-                        HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.settings_grid_evening_start),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = colors.onSurface,
-                                modifier = Modifier.weight(1f)
-                            )
-                            TimePickerField(
-                                value = eveningStart,
-                                onValueChange = {
-                                    eveningStart = it
-                                    AppPrefs.setGridEveningStart(context, it)
-                                },
-                                label = "",
-                                modifier = Modifier.width(150.dp)
-                                    .dbgTag("general_evening_start", role = "button")
-                            )
-                        }
-                    }
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_vert_punct),
-                        subtitle = stringResource(R.string.settings_vert_punct_sub),
-                        checked = vertPunct,
-                        dbg = "general_vert_punct",
-                        onCheckedChange = {
-                            vertPunct = it
-                            AppPrefs.setVertPunctReplace(context, it)
-                            refreshWidgets()
-                        }
-                    )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_grid_show_separators),
-                        subtitle = stringResource(R.string.settings_grid_show_separators_sub),
-                        checked = gridShowSeparators,
-                        dbg = "general_grid_show_separators",
-                        onCheckedChange = {
-                            gridShowSeparators = it
-                            AppPrefs.setGridShowSeparators(context, it)
-                            refreshWidgets()
-                        }
-                    )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_grid_long_break_spacing),
-                        subtitle = stringResource(R.string.settings_grid_long_break_spacing_sub),
-                        checked = gridLongBreakSpacing,
-                        dbg = "general_grid_long_break_spacing",
-                        onCheckedChange = {
-                            gridLongBreakSpacing = it
-                            AppPrefs.setGridLongBreakSpacing(context, it)
-                            refreshWidgets()
-                        }
-                    )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    // 多步撤回 spec D2: 撤回步数设置行(标题左、输入框右, 照本文件晚间起始 TimePickerField 行)。
-                    // 用 KeyboardType.Text + "-?" 正则过滤而非 Number: 系统数字键盘无负号键, -1 是法定输入。
-                    // 过滤正则提为组合期单例(remember), 避免每次按键重编译。
-                    val undoDepthFilter = remember { Regex("^-?\\d{0,6}$") }
-                    LaunchedEffect(undoDepthInput) {
-                        if (undoDepthInput.isBlank()) return@LaunchedEffect
-                        val v = undoDepthInput.toIntOrNull() ?: return@LaunchedEffect // 溢出/非整数不落库
-                        AppPrefs.setUndoDepth(context, v)
-                        UndoManager.applyMaxDepth(v)
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = stringResource(R.string.settings_undo_depth),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = colors.onSurface
-                            )
-                            Text(
-                                text = stringResource(R.string.settings_undo_depth_sub),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = colors.onSurfaceVariant
-                            )
-                        }
-                        val undoDepthFieldDesc = stringResource(R.string.settings_undo_depth_label)
-                        // 统一色块输入框(2026-08-25 定令: 全 app TextField + fieldShape/fieldColors, 禁描线),
-                        // 宽 120.dp 照 ReminderScreen 课前分钟数字行先例, 不设 label(标题已在左列)。
+                    if (undoDepth > 0) {
                         TextField(
-                            value = undoDepthInput,
-                            onValueChange = { txt ->
-                                if (undoDepthFilter.matches(txt)) undoDepthInput = txt
+                            value = customDepth,
+                            onValueChange = { value ->
+                                if (value.length <= 6 && value.all { it.isDigit() }) {
+                                    customDepth = value
+                                    value.toIntOrNull()?.takeIf { it > 0 }?.let { setUndoDepth(it) }
+                                }
                             },
+                            label = { Text(stringResource(R.string.settings_undo_depth_label)) },
+                            supportingText = { Text(stringResource(R.string.settings_undo_count_hint)) },
+                            isError = customDepth.toIntOrNull()?.let { it > 0 } != true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                            modifier = Modifier
-                                .width(120.dp)
-                                .semantics { contentDescription = undoDepthFieldDesc }
-                                .dbgTag("general_undo_depth_field", text = undoDepthFieldDesc, role = "textbox"),
+                            modifier = Modifier.fillMaxWidth(),
                             shape = SleepyTheme.fieldShape,
                             colors = SleepyTheme.fieldColors()
                         )
                     }
                 }
             }
-
-            // ── 分隔线 ──
-            item { HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline)) }
-
-            // ── 分组⑥ 数据迁移 (.sleepybackup 全量迁移) ──
-            item {
-                SectionHeader(title = stringResource(R.string.settings_migration))
-            }
-            item {
-                Text(
-                    text = stringResource(R.string.settings_migration_sub),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = colors.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-            }
-            item {
-                Column(
-                    modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth()
-                            .clickable(enabled = !migrationBusy) { onMigrationExportClick() }
-                            .dbgTag("general_migration_export", text = stringResource(R.string.settings_migration_export), role = "button")
-                            .alpha(if (migrationBusy) 0.5f else 1f)
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = stringResource(R.string.settings_migration_export),
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                                color = colors.onSurface
-                            )
-                            Text(
-                                text = stringResource(R.string.settings_migration_export_sub),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = colors.onSurfaceVariant
-                            )
-                        }
-                        Icon(
-                            Icons.Outlined.ChevronRight,
-                            contentDescription = null,
-                            tint = colors.onSurfaceVariant
-                        )
-                    }
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    Row(
-                        modifier = Modifier.fillMaxWidth()
-                            .clickable(enabled = !migrationBusy) {
-                                if (!migrationBusy) importLauncher.launch(arrayOf("application/zip", "application/octet-stream"))
-                            }
-                            .dbgTag("general_migration_import", text = stringResource(R.string.settings_migration_import), role = "button")
-                            .alpha(if (migrationBusy) 0.5f else 1f)
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = stringResource(R.string.settings_migration_import),
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                                color = colors.onSurface
-                            )
-                            Text(
-                                text = stringResource(R.string.settings_migration_import_sub),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = colors.onSurfaceVariant
-                            )
-                        }
-                        Icon(
-                            Icons.Outlined.ChevronRight,
-                            contentDescription = null,
-                            tint = colors.onSurfaceVariant
-                        )
-                    }
-                }
-            }
         }
-    }
-
-    if (showImportDialog) {
-        AlertDialog(
-            onDismissRequest = { showImportDialog = false; pendingImportBytes = null },
-            title = { Text(stringResource(R.string.settings_migration_import_dialog_title)) },
-            text = { Text(stringResource(R.string.settings_migration_import_dialog_text)) },
-            confirmButton = {
-                Row {
-                    TextButton(onClick = { showImportDialog = false; runMigrationImport(MigrationExecutor.ImportMode.OVERWRITE) },
-                        modifier = Modifier.dbgTag("general_import_overwrite", role = "button")) {
-                        Text(stringResource(R.string.settings_migration_import_overwrite))
-                    }
-                    TextButton(onClick = { showImportDialog = false; runMigrationImport(MigrationExecutor.ImportMode.MERGE) },
-                        modifier = Modifier.dbgTag("general_import_merge", role = "button")) {
-                        Text(stringResource(R.string.settings_migration_import_merge))
-                    }
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showImportDialog = false; pendingImportBytes = null },
-                    modifier = Modifier.dbgTag("general_import_cancel", role = "button")) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
-        )
     }
 }
