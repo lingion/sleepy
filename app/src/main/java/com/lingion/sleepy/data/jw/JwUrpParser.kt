@@ -33,14 +33,22 @@ class JwUrpParser(source: String) : JwParser(source) {
         val stepIndex = column("节数")
         val buildingIndex = column("教学楼")
         val roomIndex = column("教室")
+        val creditIndex = column("学分")
         if (listOf(nameIndex, weekIndex, dayIndex, nodeIndex).any { it < 0 }) return emptyList()
         val rows = table.select("tbody > tr").filter { it.closest("table") == table }
         val carried = mutableMapOf<Int, Pair<org.jsoup.nodes.Element, Int>>()
+        var previousMetadata: Map<Int, String>? = null
         val courses = mutableListOf<JwCourse>()
         for ((rowIndex, row) in rows.withIndex()) {
             val cells = arrayOfNulls<org.jsoup.nodes.Element>(headers.size)
             for ((index, entry) in carried) if (entry.second >= rowIndex) cells[index] = entry.first
-            var cursor = 0
+            val directCells = row.children().filter { it.tagName() == "td" }
+            val continuation = previousMetadata != null && weekIndex > 0 &&
+                listOf(nameIndex, teacherIndex, creditIndex).filter { it >= 0 }.all { it < weekIndex } &&
+                cells.all { it == null } && directCells.size == headers.size - weekIndex &&
+                directCells.all { (!it.hasAttr("rowspan") || it.attr("rowspan") == "1") &&
+                    (!it.hasAttr("colspan") || it.attr("colspan") == "1") }
+            var cursor = if (continuation) weekIndex else 0
             for (cell in row.children()) {
                 if (cell.tagName() != "td") return emptyList()
                 val span = if (cell.hasAttr("rowspan")) cell.attr("rowspan").toIntOrNull() else 1
@@ -52,15 +60,18 @@ class JwUrpParser(source: String) : JwParser(source) {
                 if (span > 1) carried[cursor] = cell to rowIndex + span - 1
                 cursor++
             }
-            if (cells.any { it == null }) continue
-            fun text(index: Int): String = cells.getOrNull(index)?.text()?.trim().orEmpty()
+            if (cells.indices.any { cells[it] == null && (!continuation || it >= weekIndex) }) continue
+            fun text(index: Int): String = if (continuation && index in 0 until weekIndex)
+                previousMetadata?.get(index).orEmpty() else cells.getOrNull(index)?.text()?.trim().orEmpty()
             val name = text(nameIndex)
             if (name.isEmpty()) continue
+            if (!continuation) previousMetadata = (0 until weekIndex).associateWith(::text)
+            val credit = text(creditIndex).toFloatOrNull()?.takeIf { it.isFinite() && it >= 0 } ?: 0f
             val day = dayNumber(text(dayIndex)) ?: continue
             val ranges = nodeRanges(text(nodeIndex))
             if (ranges.isEmpty()) continue
             val step = if (stepIndex < 0) null else smallNumber(text(stepIndex)) ?: continue
-            if (step != null && step !in 1..30) continue
+            if (step != null && step !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
             val weekText = text(weekIndex)
             val parsedWeeks = schoolWeekRanges(weekText, trailingParityAppliesToAll = true)
             val weeks = if (weekText.contains(',') || weekText.contains('，')) {
@@ -69,11 +80,11 @@ class JwUrpParser(source: String) : JwParser(source) {
                 }.distinct().sorted())
             } else parsedWeeks
             for ((start, end) in ranges) {
-                val last = if (step == null) end else start + step - 1
-                if (last !in start..30) continue
+                val last = if (step == null) end else explicitScheduleEnd(start, step) ?: continue
+                if (start !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND || last !in start..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
                 for ((firstWeek, lastWeek, parity) in weeks) {
                     courses += JwCourse(name, text(buildingIndex) + text(roomIndex), text(teacherIndex), day,
-                        start, last, firstWeek, lastWeek, parity)
+                        start, last, firstWeek, lastWeek, parity, credit = credit)
                 }
             }
         }
@@ -96,11 +107,11 @@ class JwUrpParser(source: String) : JwParser(source) {
         val cleaned = raw.removePrefix("第").removeSuffix("节")
         if (cleaned.endsWith("大")) {
             val number = smallNumber(cleaned.removeSuffix("大")) ?: return emptyList()
-            val start = number * 2 - 1
-            return if (start in 1..30) listOf(start to start) else emptyList()
+            val start = explicitSchedulePair(number)?.first ?: return emptyList()
+            return listOf(start to start)
         }
         val number = smallNumber(cleaned.removeSuffix("小"))
-        return if (number != null && number in 1..30) listOf(number to number) else schoolNodeRanges(cleaned)
+        return if (number != null && number in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND) listOf(number to number) else schoolNodeRanges(cleaned)
     }
 
     /**

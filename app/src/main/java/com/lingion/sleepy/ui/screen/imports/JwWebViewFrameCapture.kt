@@ -118,7 +118,7 @@ object FrameTraversalTree {
         "cdut", "gzhuyjs", "dhu", "ecjtu", "zptc", "ctgu", "nyist", "jxau",
         "hniu", "uic", "cityu", "stu", "nfu", "jmucy", "nuaajc", "qmu", "javtc", "hitsz",
         "bjtu", "scau", "jnu", "swust", "xjtu_post", "uestc_post", "bfa_post", "gdbyxy",
-        "cupl_post", "ysu_post", "whu_post", "hrbeu_post", "shtu_post", "ustc_post", "xauat_post", "shuwei_old")
+        "cupl_post", "ysu_post", "whu_post", "hrbeu_post", "shtu_post", "ustc_post", "xauat_post", "shuwei_old", "urp")
     /**
      * 锚点集 — 与 parser 容器选择器对齐
      * (Table1→JwOldZfParser, blacktab→T1 兜底链, kbtable→JwQzParser,
