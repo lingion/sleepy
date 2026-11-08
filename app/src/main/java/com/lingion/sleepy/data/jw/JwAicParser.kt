@@ -19,7 +19,7 @@ class JwAicParser(source: String) : JwParser(source) {
         val root = table ?: throw IllegalArgumentException("请选择学期课表后再导入")
         val rows = root.select("tr").filter { it.closest("table") == root }
         for ((node, row) in rows.withIndex()) {
-            if (node !in 1..30) continue
+            if (node !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
             val cells = row.children().filter { it.tagName() == "td" }
             for ((day, cell) in cells.withIndex()) {
                 if (day !in 1..7) continue
