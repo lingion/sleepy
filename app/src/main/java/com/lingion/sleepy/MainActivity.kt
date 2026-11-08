@@ -52,6 +52,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.screen.edit.AddCourseScreen
 import com.lingion.sleepy.ui.component.NavDockSpec
+import com.lingion.sleepy.ui.component.NavIconMotionKey
 import com.lingion.sleepy.ui.component.PillNavigationBar
 import com.lingion.sleepy.ui.component.PillBarState
 import androidx.compose.ui.Alignment
@@ -236,11 +237,15 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-internal enum class Tab(val labelRes: Int, val icon: ImageVector) {
-    Schedule(R.string.tab_schedule, Icons.Outlined.CalendarMonth),
-    Today(R.string.tab_today, Icons.Outlined.Today),
-    Manage(R.string.tab_manage, Icons.Outlined.Settings),
-    Mine(R.string.tab_mine, Icons.Outlined.Person)
+internal enum class Tab(
+    val labelRes: Int,
+    val icon: ImageVector,
+    val motionKey: NavIconMotionKey,
+) {
+    Schedule(R.string.tab_schedule, Icons.Outlined.CalendarMonth, NavIconMotionKey.PageFlip),
+    Today(R.string.tab_today, Icons.Outlined.Today, NavIconMotionKey.Hop),
+    Manage(R.string.tab_manage, Icons.Outlined.Settings, NavIconMotionKey.GearSpin),
+    Mine(R.string.tab_mine, Icons.Outlined.Person, NavIconMotionKey.Jelly)
 }
 
 @Composable
