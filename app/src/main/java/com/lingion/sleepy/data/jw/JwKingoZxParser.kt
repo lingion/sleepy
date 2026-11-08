@@ -60,7 +60,8 @@ class JwKingoZxParser(source: String) : JwParser(source) {
                 val afterDay = timing.substring(dayMatch.range.last + 1).trim()
                 val section = sectionToken.find(afterDay) ?: continue
                 val sections = schoolNodeRanges(section.groupValues[1])
-                if (sections.isEmpty() || sections.any { it.first !in 1..30 || it.second !in it.first..30 }) continue
+                if (sections.isEmpty() || sections.any { it.first !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND ||
+                        it.second !in it.first..EXPLICIT_SCHEDULE_RESOURCE_BOUND }) continue
                 // Source code supports both [weeks] day [sections] and day sections weeks.
                 val beforeDay = timing.substring(0, dayMatch.range.first).trim('[', ']', ' ')
                 val weekSpec = if (beforeDay.any(Char::isDigit)) beforeDay
@@ -95,7 +96,8 @@ class JwKingoZxParser(source: String) : JwParser(source) {
                     val firstSection = if (parts[2].substringAfter('[', "").startsWith("傍晚")) 9
                         else section?.groupValues?.get(1)?.toIntOrNull() ?: continue
                     val lastSection = section?.groupValues?.get(2)?.toIntOrNull() ?: firstSection
-                    if (firstSection !in 1..30 || lastSection !in firstSection..30) continue
+                    if (firstSection !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND ||
+                        lastSection !in firstSection..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
                     for ((first, last, type) in weekRuns(parts[2].substringBefore('['))) {
                         add(JwCourse(parts[0], parts[3], parts[1], day, firstSection, lastSection, first, last, type))
                     }

@@ -606,10 +606,13 @@ internal object WakeUpCompat {
         val documents = listOf(Jsoup.parse(source))
         fun nodes(text: String): Pair<Int, Int>? {
             if (text.trim() == "傍晚") return 9 to 9
-            val match = Regex("^\\s*(\\d{1,2})(?:\\s*[-~至]\\s*(\\d{1,2}))?\\s*(?:节)?\\s*$").matchEntire(text) ?: return null
+            val match = Regex("^\\s*(\\d+)(?:\\s*[-~至]\\s*(\\d+))?\\s*(?:节)?\\s*$").matchEntire(text) ?: return null
             val first = match.groupValues[1].toIntOrNull() ?: return null
-            val last = match.groupValues[2].takeIf(String::isNotBlank)?.toIntOrNull() ?: first
-            return if (first in 1..30 && last in first..30) first to last else null
+            val last = match.groupValues[2].takeIf(String::isNotBlank)?.let {
+                it.toIntOrNull() ?: return null
+            } ?: first
+            return if (first in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND &&
+                last in first..EXPLICIT_SCHEDULE_RESOURCE_BOUND) first to last else null
         }
         fun emit(name: String, teacher: String, room: String, day: Int, nodeText: String, weeksText: String, credit: Float = 0f): List<JwCourse> {
             val (start, end) = nodes(nodeText) ?: return emptyList()
