@@ -17,7 +17,7 @@ class JwXbellsoftParser(source: String) : JwParser(source) {
                 val day = integer("xqj") ?: continue
                 val node = integer("djj") ?: continue
                 val code = integer("dsz") ?: continue
-                if (name.isBlank() || day !in 1..7 || node !in 1..30) continue
+                if (name.isBlank() || day !in 1..7 || node !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
                 val parity = when (code) { 1 -> 1; 2 -> 0; else -> 2 }
                 val tokens = text("qmz").split(';', '；').filter { it.isNotBlank() }
                 if (tokens.isEmpty()) continue
