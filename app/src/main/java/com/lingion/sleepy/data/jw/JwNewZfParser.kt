@@ -419,7 +419,7 @@ class JwNewZfParser(source: String) : JwParser(source) {
     // ─── HTML 表格解析（兜底） ─────────────────────────────────
 
     /** 移植自 JwOldZfParser 的 (N-M节) 模式, table1/kbgrid 变体共用 */
-    private val NODE_PATTERN = Regex("""\(\d{1,2}[-]*\d*节""")
+    private val NODE_PATTERN = Regex("""\(\d+(?:-\d+)?节""")
 
     /**
      * 新正方 HTML 渲染后的课表解析。容器优先级:
@@ -577,6 +577,8 @@ class JwNewZfParser(source: String) : JwParser(source) {
                     val nodes = nodeMatch.value.substring(1).removeSuffix("节").split("-")
                     val startNode = nodes.getOrNull(0)?.toIntOrNull() ?: continue
                     val endNode = if (nodes.size == 1) startNode else nodes[1].toIntOrNull() ?: continue
+                    if (startNode !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND ||
+                        endNode !in startNode..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
 
                     // 周次段: 剥 (N-M节) 后按逗号拆
                     val weekStr = NODE_PATTERN.replace(infoStr, "").trim()
@@ -626,6 +628,8 @@ class JwNewZfParser(source: String) : JwParser(source) {
                 val nodes = sectionStr.split("-", limit = 2)
                 val startNode = nodes.getOrNull(0)?.trim()?.toIntOrNull() ?: continue
                 val endNode = if (nodes.size == 1) startNode else nodes[1].trim().toIntOrNull() ?: continue
+                if (startNode !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND ||
+                    endNode !in startNode..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
 
                 // td[1] 内 .title div
                 val titleDiv = tds[1].getElementsByClass("title").firstOrNull()
