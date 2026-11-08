@@ -21567,7 +21567,7 @@
     "name": "江西科技师范大学",
     "url": "https://cas-jxstnu-edu-cn-s.atrust.jxstnu.edu.cn/lyuapServer/login",
     "type": "zf_new",
-    "status": "unverified",
+    "status": "supported",
     "aliases": [],
     "sortKeyFull": "jiangxikejishifandaxue",
     "enableFetch": false,

@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import android.content.Context
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.pager.HorizontalPager
+import com.lingion.sleepy.ui.screen.schedule.ScheduleWeekPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableIntStateOf
@@ -198,8 +198,8 @@ class FloatDragRegressionTest {
             SleepyThemeProvider(darkTheme = false, themeKey = "default") {
                 pager = rememberPagerState { 100 }
                 scope = rememberCoroutineScope()
-                HorizontalPager(pager, beyondViewportPageCount = 1, modifier = Modifier.size(360.dp, 640.dp)) { page ->
-                    if (!shouldComposeFloatDragPage(page + 1, pager.currentPage + 1, state)) return@HorizontalPager
+                ScheduleWeekPager(pager, draggingCourse = state.dragging, modifier = Modifier.size(360.dp, 640.dp)) { page ->
+                    if (!shouldComposeFloatDragPage(page + 1, pager.currentPage + 1, state)) return@ScheduleWeekPager
                     DisposableEffect(page) {
                         composedPages.add(page)
                         maxPages = maxOf(maxPages, composedPages.size)

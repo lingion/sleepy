@@ -75,13 +75,17 @@ fun sleepyContentEnter(): EnterTransition =
         initialScale = SleepyContentScaleStart,
     )
 
-/** 页面/大块内容退场: scaleOut →0.92 defaultSpatial + fadeOut defaultEffects。 */
+/** 页面/大块内容退场；标签容器自行控制退出透明度，以便中途切回时立即恢复不透明。 */
 @Composable
-fun sleepyContentExit(): ExitTransition =
-    scaleOut(
+fun sleepyContentExit(includeFade: Boolean = true): ExitTransition {
+    val scale = scaleOut(
         animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>(),
         targetScale = SleepyContentScaleStart,
-    ) + fadeOut(animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>())
+    )
+    return if (includeFade) {
+        scale + fadeOut(animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>())
+    } else scale
+}
 
 /** AnimatedVisibility 展开家族的 enter/exit 规格对 (单一调参点, 由 sleepyExpandSpecs 产出)。 */
 class SleepyExpandTransition internal constructor(

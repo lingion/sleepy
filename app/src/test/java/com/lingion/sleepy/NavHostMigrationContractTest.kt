@@ -303,7 +303,7 @@ class NavHostMigrationContractTest {
         assertTrue(
             "右半区 AnimatedContent 必须捕获 sleepyContentEnter()/sleepyContentExit() 结果组转场",
             navHostSrc.contains("val contentEnter = sleepyContentEnter()") &&
-                navHostSrc.contains("val contentExit = sleepyContentExit()") &&
+                navHostSrc.contains("val contentExit = sleepyContentExit(includeFade = false)") &&
                 navHostSrc.contains("contentEnter togetherWith contentExit")
         )
     }

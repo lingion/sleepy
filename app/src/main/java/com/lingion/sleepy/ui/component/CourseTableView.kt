@@ -308,7 +308,7 @@ fun CardsGridView(
     val headerLayout = AppPrefs.getPeriodHeaderLayout(context)
     val headerHanging = AppPrefs.getPeriodHeaderHanging(context)
     val headerShowX = AppPrefs.isPeriodHeaderShowX(context)
-    val headerTextMeasurer = rememberTextMeasurer()
+    val headerTextMeasurer = rememberTimetableTextMeasurer()
     val headerDensity = LocalDensity.current
     // columnFont/columnPlacements 需真实行高, 故搁后到 rowHeightDp 可用后 (见下 BoxWithConstraints)。
 
@@ -752,6 +752,17 @@ fun CardsGridView(
                         springFloatBack()
                         return
                     }
+                }
+                // 原位松手在当前事件内直接收层。若先结束 dragging 再异步查询课程，
+                // active && !dragging 会短暂重新显示浮框和模糊，随后才被回调关闭。
+                // 比较显示位置快照：调休课/自定义时间课也适用；跨周或改跨度仍需提交。
+                if (floatState.week == floatState.originWeek &&
+                    sortedDays[drop.dayIndex] == floatState.day &&
+                    drop.startNode == floatState.originStartNode &&
+                    drop.step == floatState.originEndNode - floatState.originStartNode + 1
+                ) {
+                    floatState.dismiss()
+                    return
                 }
                 // Issue #276: 松手瞬间立即退出拖拽与边缘指示，卡片停在吸附位等待落库弹窗，
                 // 防弹窗期间边缘翻页协程因 dragging==true 继续触发翻页

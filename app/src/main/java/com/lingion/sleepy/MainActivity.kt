@@ -22,6 +22,7 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Today
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -63,6 +64,10 @@ import androidx.compose.ui.platform.LocalDensity
 import com.lingion.sleepy.ui.component.PillNavItemSpec
 import com.lingion.sleepy.ui.component.sleepyContentEnter
 import com.lingion.sleepy.ui.component.sleepyContentExit
+import com.lingion.sleepy.ui.component.TabPage
+import com.lingion.sleepy.ui.component.LocalTimetableTextMeasurer
+import com.lingion.sleepy.ui.component.TimetableTextCacheSize
+import androidx.compose.ui.text.rememberTextMeasurer
 import com.lingion.sleepy.ui.screen.manage.ManagementPage
 import com.lingion.sleepy.ui.screen.widget.WidgetManagementScreen
 import com.lingion.sleepy.ui.screen.widget.WidgetEditScreen
@@ -329,22 +334,8 @@ internal fun MainTabs(
     // tab 往返滚动位置保真: AnimatedContent 过渡期同时组合新旧两页, 各页内容包
     // SaveableStateProvider(currentTab.name) — key 稳定(tab 枚举名), 返回时恢复。
     // 注意: scheduleViewMode 会话态仍由 AppRoot 持有(§1.4 契约), 此处只管组合作用域。
-    // MD3E content 家族过渡 (Task 3): scale 0.92↔1 + fade, 规格来自 SleepyMotion 工厂;
-    // transitionSpec lambda 非可组合, 工厂结果须在组合体内先算好再捕获 (Task 2 教训)。
     val session = navigator.session
-    val tabEnter = sleepyContentEnter()
-    val tabExit = sleepyContentExit()
-    AnimatedContent(
-        targetState = currentTab,
-        transitionSpec = {
-            ContentTransform(
-                targetContentEnter = tabEnter,
-                initialContentExit = tabExit,
-                // 四页尺寸差异大, togetherWith 默认 clip=true 会裁切过渡内容
-                sizeTransform = SizeTransform(clip = false),
-            )
-        },
-    ) { currentTab ->
+    MainTabContent(currentTab) { currentTab ->
         when (currentTab) {
             Tab.Schedule -> holder.SaveableStateProvider(currentTab.name) {
                 ScheduleScreen(
@@ -385,6 +376,34 @@ internal fun MainTabs(
                     onOpenReminder = { navigator.openReminder() },
                     onOpenAbout = { navigator.openAbout() },
                     updateNoticeVisible = updateNoticeVisible)
+            }
+        }
+    }
+}
+
+/** Production tab transition, separated from screen dependencies for frame-level tests. */
+@Composable
+internal fun MainTabContent(currentTab: Tab, content: @Composable (Tab) -> Unit) {
+    val tabEnter = sleepyContentEnter()
+    // TabPage owns the fade so reversing an exit cannot leave the target translucent.
+    val tabExit = sleepyContentExit(includeFade = false)
+    val timetableTextMeasurer = rememberTextMeasurer(cacheSize = TimetableTextCacheSize)
+    CompositionLocalProvider(LocalTimetableTextMeasurer provides timetableTextMeasurer) {
+        AnimatedContent(
+            targetState = currentTab,
+            transitionSpec = {
+                ContentTransform(
+                    targetContentEnter = tabEnter,
+                    initialContentExit = tabExit,
+                    targetContentZIndex = 1f,
+                    // 四页尺寸差异大, togetherWith 默认 clip=true 会裁切过渡内容
+                    sizeTransform = SizeTransform(clip = false),
+                )
+            },
+        ) { tab ->
+            // The background must move with each page, covering its transparent gaps.
+            TabPage {
+                content(tab)
             }
         }
     }
