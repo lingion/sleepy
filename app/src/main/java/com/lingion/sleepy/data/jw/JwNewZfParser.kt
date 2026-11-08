@@ -576,7 +576,7 @@ class JwNewZfParser(source: String) : JwParser(source) {
                     val nodeMatch = NODE_PATTERN.find(infoStr) ?: continue
                     val nodes = nodeMatch.value.substring(1).removeSuffix("节").split("-")
                     val startNode = nodes.getOrNull(0)?.toIntOrNull() ?: continue
-                    val endNode = nodes.getOrNull(1)?.toIntOrNull() ?: startNode
+                    val endNode = if (nodes.size == 1) startNode else nodes[1].toIntOrNull() ?: continue
 
                     // 周次段: 剥 (N-M节) 后按逗号拆
                     val weekStr = NODE_PATTERN.replace(infoStr, "").trim()
@@ -625,7 +625,7 @@ class JwNewZfParser(source: String) : JwParser(source) {
                 // 解析节次: "1-2" / "5-6" → (start, end)
                 val nodes = sectionStr.split("-", limit = 2)
                 val startNode = nodes.getOrNull(0)?.trim()?.toIntOrNull() ?: continue
-                val endNode = nodes.getOrNull(1)?.trim()?.toIntOrNull() ?: startNode
+                val endNode = if (nodes.size == 1) startNode else nodes[1].trim().toIntOrNull() ?: continue
 
                 // td[1] 内 .title div
                 val titleDiv = tds[1].getElementsByClass("title").firstOrNull()
