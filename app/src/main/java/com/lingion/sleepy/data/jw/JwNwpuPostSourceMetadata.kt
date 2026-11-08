@@ -1,11 +1,12 @@
 package com.lingion.sleepy.data.jw
 
+import com.lingion.sleepy.util.AppClock
 import org.jsoup.Jsoup
 import java.time.LocalDate
 
 /** School defaults accompany the parsed table; authenticated captured times take priority. */
 internal object JwNwpuPostSourceMetadata {
-    fun periods(source: String, month: Int = LocalDate.now().monthValue): List<Triple<Int, String, String>> {
+    fun periods(source: String, month: Int = LocalDate.now(AppClock).monthValue): List<Triple<Int, String, String>> {
         val table = Jsoup.parse(source).selectFirst("#sample-table-1") ?: return emptyList()
         val headers = table.selectFirst("thead tr")?.select("th")?.map { it.text() } ?: return emptyList()
         val timeColumn = headers.indexOfFirst { it.contains("上课时间") }
