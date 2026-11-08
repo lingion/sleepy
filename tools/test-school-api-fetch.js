@@ -51,7 +51,7 @@ async function execute(type, options = {}) {
   }};
   function frame(active) {
     return {location:new URL('https://' + (options.wrongHost ? 'unrelated.invalid' : host) + '/index.html'), frames:[], fetch,
-      document:{querySelector:s=>active && s === selector ? selected : null}};
+      document:{querySelector:s=>active && s === selector ? selected : null, querySelectorAll:s=>s === 'input,select,textarea' ? [] : active && s === selector ? [selected] : []}};
   }
   const root = frame(!options.nested && !options.noControl);
   if (options.nested) root.frames = [{get location(){throw Error('cross origin');}}, frame(true)];
@@ -79,8 +79,8 @@ async function execute(type, options = {}) {
     const data=JSON.parse(r.result.data);assert.deepEqual(data.weeks.map(x=>x.week),[1,2,3]);
     assert.deepEqual(data.weeks.map(x=>x.data.wdkb.length),[1,0,1]);
     assert.equal(data.weeks[0].data.wdkb[0].qsz,1);assert.equal(data.weeks[0].data.wdkb[0].jsz,20);
-    assert.equal(r.calls.length,4);assert.equal(data.calendar.startTime,'2026-09-02');
-    assert.deepEqual(r.calls.map(x=>new URL(x.url).searchParams.get('week')),['','1','2','3']);
+    assert.equal(r.calls.length,5);assert.equal(data.calendar.startTime,'2026-09-02');
+    assert.deepEqual(r.calls.map(x=>new URL(x.url).searchParams.get('week')),['','1','2','3','']);
     assert.ok(r.calls.every(x=>x.init.credentials==='include' && x.init.mode==='same-origin'));
     fixtures.ccibe=r.result.data;
   });

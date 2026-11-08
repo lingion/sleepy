@@ -18,6 +18,9 @@ private const val SCHOOL_API_FETCH_JS = """(function(){
   var deadline = setTimeout(function(){ fail('课表读取超时，请重试'); }, 20000);
   function finish(result) {
     if (finished) return;
+    if (result.ok) {
+      try { samePage(); } catch(e) { result = {ok:false, err:e.message, format:type}; }
+    }
     finished = true;
     clearTimeout(deadline);
     if (controller) controller.abort();
@@ -34,27 +37,55 @@ private const val SCHOOL_API_FETCH_JS = """(function(){
   }
   var selector = type === 'ccibe' ? '#rc_select_0_list [aria-selected="true"]' :
     type === 'jlu_post' ? '#myXnxqSelect' : '.je-grid-btnbar-queryStrategy';
-  function findFrame(w, depth) {
-    if (!w || depth > 8) return null;
+  function candidateFrames(w, depth, candidates) {
+    if (depth > 8) throw new Error('课表页面嵌套过深，请直接打开需要导入的课表');
+    var children = [];
     try {
       var host = w.location.hostname.toLowerCase();
       var allowed = type === 'ccibe' ? host === 'my.vpn.ccibe.edu.cn' || host === 'my.ccibe.edu.cn' :
         type === 'jlu_post' ? (host === 'jlu.edu.cn' || host.endsWith('.jlu.edu.cn')) && w.location.pathname.indexOf('/gsapp/sys/') >= 0 :
         host === 'jw.cppu.edu.cn';
-      if (allowed && /^https?:$/.test(w.location.protocol) && w.document.querySelector(selector)) return w;
-      for (var i=0; i<w.frames.length; i++) {
-        var found = findFrame(w.frames[i], depth+1);
-        if (found) return found;
-      }
+      if (allowed && /^https?:$/.test(w.location.protocol) && w.document.querySelector(selector)) candidates.push(w);
+      for (var i=0; i<w.frames.length; i++) children.push(w.frames[i]);
     } catch(e) {}
-    return null;
+    for (var j=0; j<children.length; j++) candidateFrames(children[j], depth+1, candidates);
   }
-  var W = findFrame(window, 0);
-  if (!W) { fail('请登录教务系统并打开课表，选择需要导入的学期'); return; }
-  async function request(path, fields) {
+  function controlState(doc) {
+    var nodes = doc.querySelectorAll('input,select,textarea');
+    if (nodes.length > 10000) throw new Error('页面控件过多，请直接打开课表');
+    return JSON.stringify(Array.prototype.map.call(nodes, function(n){
+      return [n.tagName,n.name || '',n.id || '',n.type || '',scalar(n.value),!!n.checked,
+        n.options ? Array.prototype.map.call(n.options,function(o){return [scalar(o.value),!!o.selected];}) : null];
+    }));
+  }
+  function selectionState(doc) {
+    var nodes = doc.querySelectorAll(selector);
+    return JSON.stringify(Array.prototype.map.call(nodes, function(n){
+      if (type === 'ccibe') return scalar(n.textContent);
+      if (type === 'jlu_post') return scalar(n.value) || scalar(n.options && n.options[0] && n.options[0].value);
+      return n.parentElement ? Array.prototype.filter.call(n.parentElement.childNodes,function(c){return c.nodeType === 3;})
+        .map(function(c){return c.textContent || '';}).join(' ') : '';
+    }));
+  }
+  var W, initialDocument, initialHref, initialControls, initialSelection;
+  try {
+    var candidates = []; candidateFrames(window,0,candidates);
+    if (candidates.length !== 1) throw new Error('请仅打开一个已选择学期的教务课表页面');
+    W = candidates[0]; initialDocument = W.document; initialHref = W.location.href;
+    initialControls = controlState(initialDocument); initialSelection = selectionState(initialDocument);
+  } catch(e) { fail(e.message); return; }
+  function samePage() {
     if (finished) throw new Error('采集已结束');
-    var url = new URL(path, W.location.href);
-    if (url.origin !== W.location.origin) throw new Error('课表地址与当前页面不一致');
+    var candidates = []; candidateFrames(window,0,candidates);
+    if (candidates.length !== 1 || candidates[0] !== W || W.document !== initialDocument || W.location.href !== initialHref)
+      throw new Error('采集期间课表页面发生变化，请重试');
+    if (controlState(initialDocument) !== initialControls || selectionState(initialDocument) !== initialSelection)
+      throw new Error('采集期间所选学期或页面控件发生变化，请重试');
+  }
+  async function request(path, fields) {
+    samePage();
+    var url = new URL(path, initialHref);
+    if (url.origin !== W.location.origin || url.username || url.password) throw new Error('课表地址与当前页面不一致');
     var options = {method:fields ? 'POST' : 'GET', credentials:'include', mode:'same-origin', redirect:'error'};
     if (controller) options.signal = controller.signal;
     if (fields) {
@@ -63,10 +94,13 @@ private const val SCHOOL_API_FETCH_JS = """(function(){
       options.body = form;
     }
     var response = await W.fetch(url.href, options);
-    if (finished) throw new Error('采集已结束');
+    samePage();
     if (!response.ok) throw new Error('课表请求失败 HTTP ' + response.status);
-    if (response.url && new URL(response.url, url.href).origin !== url.origin) throw new Error('登录状态已变化，请重新登录');
-    var result = JSON.parse(await response.text());
+    var finalUrl = new URL(response.url || url.href, url.href);
+    if (finalUrl.origin !== url.origin || finalUrl.pathname !== url.pathname || finalUrl.search !== url.search)
+      throw new Error('登录状态已变化，请重新登录');
+    var text = await response.text(); samePage();
+    var result = JSON.parse(text);
     if (!object(result) || result.success === false || result.success === 'false') throw new Error('课表接口未返回成功结果');
     return result;
   }
@@ -87,6 +121,10 @@ private const val SCHOOL_API_FETCH_JS = """(function(){
       if (page.calendar && scalar(page.calendar.id) !== id) throw new Error('采集期间学期发生变化');
       weeks.push({week:week, data:page});
     }
+    var check = await request(path + '?calendarId=' + encodeURIComponent(selected) + '&week=');
+    var checked = check.data && check.data.calendar;
+    if (!object(checked) || scalar(checked.id) !== id || positiveInt(checked.allWeek) !== count ||
+        scalar(checked.startTime) !== scalar(calendar.startTime)) throw new Error('采集期间学期日历发生变化，请重试');
     finish({ok:true, format:type, data:JSON.stringify({calendar:calendar, time:data.time || [], weeks:weeks})});
   }
   async function cppu() {
@@ -95,7 +133,8 @@ private const val SCHOOL_API_FETCH_JS = """(function(){
     var label = control.parentElement ? Array.prototype.filter.call(control.parentElement.childNodes, function(n){
       return n.nodeType === 3;
     }).map(function(n){ return n.textContent || ''; }).join(' ') : '';
-    var term = await request('/je/system/' + (label.indexOf('下一') >= 0 ? 'getNowNextXnxq' : 'getNowXnxq'));
+    var termPath = '/je/system/' + (label.indexOf('下一') >= 0 ? 'getNowNextXnxq' : 'getNowXnxq');
+    var term = await request(termPath);
     var code = object(term.data) ? scalar(term.data.values && term.data.values.DM) : scalar(term.data);
     if (!code) throw new Error('未取得所选学期');
     var calendar = await request('/edumis_je/pkgl/pksz/xlsj/getClassFormDefault.action', {xnxqCode:code});
@@ -114,6 +153,11 @@ private const val SCHOOL_API_FETCH_JS = """(function(){
         if (!/^[0-9]+$/.test(total) || Number(total) !== result.rows.length) throw new Error('课表响应不完整，请重试');
       }
     }
+    var checkTerm = await request(termPath);
+    var checkedCode = object(checkTerm.data) ? scalar(checkTerm.data.values && checkTerm.data.values.DM) : scalar(checkTerm.data);
+    if (checkedCode !== code) throw new Error('采集期间所选学期发生变化，请重试');
+    var checkCalendar = await request('/edumis_je/pkgl/pksz/xlsj/getClassFormDefault.action', {xnxqCode:code});
+    if (scalar(checkCalendar.jxzqsrq) !== startDate) throw new Error('采集期间学期日历发生变化，请重试');
     result.startDate = startDate;
     finish({ok:true, format:type, data:JSON.stringify(result)});
   }

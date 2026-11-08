@@ -16,6 +16,7 @@ private const val PAGED_SCHOOL_FETCH_JS = """(function(){
   var deadline=setTimeout(function(){ fail('课表读取超时，请重试'); },60000);
   function finish(result){
     if(finished)return;
+    if(result.ok){try{samePage();}catch(e){result={ok:false,format:type,err:e.message};}}
     finished=true;clearTimeout(deadline);
     if(controller)controller.abort();
     window.__sleepyBridge.onWiseduResult(JSON.stringify(result));
@@ -23,31 +24,53 @@ private const val PAGED_SCHOOL_FETCH_JS = """(function(){
   function fail(message){ finish({ok:false,format:type,err:message}); }
   function object(value){ return value!==null && typeof value==='object' && !Array.isArray(value); }
   function scalar(value){ return typeof value==='string' || typeof value==='number' ? String(value).trim() : ''; }
-  function findFrame(w,depth){
-    if(!w || depth>8)return null;
+  function candidateFrames(w,depth,candidates){
+    if(depth>8)throw new Error('课表页面嵌套过深，请直接打开需要导入的课表');
+    var children=[];
     try {
       var path=w.location.pathname;
       if(/^https?:$/.test(w.location.protocol) && (type==='fstvc' ? /\/studentportal\.php(?:\/|$)/.test(path) :
-          /\/(?:Login\/MainDesktop|student(?:\/|$))/.test(path)))return w;
-      for(var i=0;i<w.frames.length;i++){var found=findFrame(w.frames[i],depth+1);if(found)return found;}
+          /\/(?:Login\/MainDesktop|student(?:\/|$))/.test(path)))candidates.push(w);
+      for(var i=0;i<w.frames.length;i++)children.push(w.frames[i]);
     }catch(e){}
-    return null;
+    for(var j=0;j<children.length;j++)candidateFrames(children[j],depth+1,candidates);
   }
-  var W=findFrame(window,0);
-  if(!W){fail('请登录教务系统并打开学生课表页面');return;}
-  async function request(path,fields,html){
+  function controlState(doc){
+    var nodes=doc.querySelectorAll('input,select,textarea');
+    if(nodes.length>10000)throw new Error('页面控件过多，请直接打开课表');
+    return JSON.stringify(Array.prototype.map.call(nodes,function(n){
+      return [n.tagName,n.name || '',n.id || '',n.type || '',scalar(n.value),!!n.checked,
+        n.options ? Array.prototype.map.call(n.options,function(o){return [scalar(o.value),!!o.selected];}) : null];
+    }));
+  }
+  var W,initialDocument,initialHref,initialControls;
+  try{
+    var candidates=[];candidateFrames(window,0,candidates);
+    if(candidates.length!==1)throw new Error('请仅打开一个学生课表页面');
+    W=candidates[0];initialDocument=W.document;initialHref=W.location.href;initialControls=controlState(initialDocument);
+  }catch(e){fail(e.message);return;}
+  function samePage(){
     if(finished)throw new Error('采集已结束');
-    var url=new URL(path,W.location.href);
+    var candidates=[];candidateFrames(window,0,candidates);
+    if(candidates.length!==1 || candidates[0]!==W || W.document!==initialDocument || W.location.href!==initialHref)
+      throw new Error('采集期间课表页面发生变化，请重试');
+    if(controlState(initialDocument)!==initialControls)throw new Error('采集期间所选学期或页面控件发生变化，请重试');
+  }
+  async function request(path,fields,html){
+    samePage();
+    var url=new URL(path,initialHref);
     if(url.origin!==W.location.origin || url.username || url.password)throw new Error('课表接口与当前页面不一致');
     var options={method:fields?'POST':'GET',credentials:'include',mode:'same-origin',redirect:'error'};
     if(controller)options.signal=controller.signal;
     if(fields)options.body=new URLSearchParams(fields);
     var response=await W.fetch(url.href,options);
-    if(finished)throw new Error('采集已结束');
+    samePage();
     if(!response.ok)throw new Error('课表请求失败 HTTP '+response.status);
-    if(response.url && new URL(response.url,url.href).origin!==url.origin)throw new Error('登录状态已变化，请重新登录');
+    var finalUrl=new URL(response.url || url.href,url.href);
+    if(finalUrl.origin!==url.origin || finalUrl.pathname!==url.pathname || finalUrl.search!==url.search)
+      throw new Error('登录状态已变化，请重新登录');
     var text=await response.text();
-    if(finished)throw new Error('采集已结束');
+    samePage();
     if(html)return text;
     var data=JSON.parse(text);
     if(!object(data) || data.success===false || data.success==='false')throw new Error('课表接口未返回成功结果');
@@ -84,9 +107,7 @@ private const val PAGED_SCHOOL_FETCH_JS = """(function(){
     }
     throw new Error('课表分页未结束');
   }
-  async function fstvc(){
-    var prefix=W.location.pathname.slice(0,W.location.pathname.indexOf('/studentportal.php'));
-    var html=await request(prefix+'/studentportal.php/Jxxx/xxjdxx',null,true);
+  function fstvcEndpoint(html,prefix){
     var table=new DOMParser().parseFromString(html,'text/html').querySelector('table#mainlist');
     var match=table && /\burl\s*:\s*(['"])(.*?)\1/.exec(table.getAttribute('data-options') || '');
     if(!match || !match[2].trim())throw new Error('未找到课表接口，请重新打开学习进度页面');
@@ -96,7 +117,16 @@ private const val PAGED_SCHOOL_FETCH_JS = """(function(){
       if(absolute.origin!==W.location.origin || absolute.username || absolute.password)throw new Error('课表接口与当前页面不一致');
       path=absolute.href;
     }else{path=prefix+'/'+path.replace(/^\/+/, '');}
+    var resolved=new URL(path,initialHref);
+    if(resolved.origin!==W.location.origin || resolved.username || resolved.password)throw new Error('课表接口与当前页面不一致');
+    return resolved.href;
+  }
+  async function fstvc(){
+    var prefix=W.location.pathname.slice(0,W.location.pathname.indexOf('/studentportal.php'));
+    var sourcePath=prefix+'/studentportal.php/Jxxx/xxjdxx';
+    var path=fstvcEndpoint(await request(sourcePath,null,true),prefix);
     var result=await fetchPages(function(page){return request(path,{page:String(page),rows:'30',zc:'0',sort:'skrq',order:'asc'});},'rows',30,true);
+    if(fstvcEndpoint(await request(sourcePath,null,true),prefix)!==path)throw new Error('采集期间所选课表接口发生变化，请重试');
     finish({ok:true,format:type,data:JSON.stringify(result.rows)});
   }
   async function gdbh(){
@@ -108,6 +138,8 @@ private const val PAGED_SCHOOL_FETCH_JS = """(function(){
     var result=await fetchPages(function(page){
       return request(prefix+'/student/getstutable?_dc='+Date.now()+'&term='+encodeURIComponent(term)+'&page='+page+'&start='+((page-1)*50)+'&limit=50');
     },'data',50,false);
+    var check=await request(prefix+'/student/StuInfo');
+    if(scalar(check.term)!==term)throw new Error('采集期间所选学期发生变化，请重试');
     finish({ok:true,format:type,data:JSON.stringify(result)});
   }
   (type==='fstvc'?fstvc():gdbh()).catch(function(e){fail(e && e.message ? e.message : '课表读取失败');});

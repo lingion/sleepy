@@ -10,7 +10,7 @@ async function execute(type, {count=65, prefix='', failure='', frame=false, api=
     {skbjmc:'软件技术一班',kcmc:'课程'+i,skjsxm:'教师'+i,zc:1+i%20,skrq:null,jcshow:i%2?'11-12':'3-4',skcdmc:'教室'+i,sknl:'内容'+i,xq:1,xqs:1+i%7,xn:'2026-2027'} :
     {cname:'课程'+i,name:'教师'+i,croomno:'教室'+i,week:1+i%7,seq:1+i%6,startweek:1+i%10,endweek:1+i%10,xf:'2.5'});
   const location=new URL('https://school.example'+prefix+(type==='fstvc'?'/studentportal.php':'/Login/MainDesktop'));
-  const win={location,frames:[],document:{},fetch:async (url, options)=>{
+  const win={location,frames:[],document:{querySelectorAll:()=>[]},fetch:async (url, options)=>{
     const u=new URL(url); calls.push({url,options});
     if(failure==='timeout')return new Promise(r=>pending=r);
     if(failure==='network')throw Error('network failure');
@@ -31,7 +31,7 @@ async function execute(type, {count=65, prefix='', failure='', frame=false, api=
     return {ok:failure!=='http',status:403,url:failure==='redirect'?'https://other.example/login':url,
       text:async()=>failure==='login'?'<html>Login</html>':body};
   }};
-  const top=frame?{location:new URL('https://school.example/home'),document:{},frames:[win]}:win;
+  const top=frame?{location:new URL('https://school.example/home'),document:{querySelectorAll:()=>[]},frames:[win]}:win;
   top.__sleepyBridge={onWiseduResult:s=>results.push(JSON.parse(s))};
   class DOMParser {
     parseFromString(text) {return {querySelector:selector=>text==='PAGE'&&failure!=='missing-table'&&selector==='table#mainlist'?
@@ -56,7 +56,8 @@ async function execute(type, {count=65, prefix='', failure='', frame=false, api=
     for(const prefix of ['','/https/proxy'])await check(type+' complete pagination '+prefix,async()=>{
       const r=await execute(type,{prefix,frame:true});assert.equal(r.result.ok,true);
       const output=JSON.parse(r.result.data); assert.deepEqual(type==='fstvc'?output:output.data,r.data);
-      const requests=r.calls.slice(1);assert.equal(requests.length,type==='fstvc'?3:2);
+      const requests=r.calls.slice(1,-1);assert.equal(requests.length,type==='fstvc'?3:2);
+      assert.equal(new URL(r.calls.at(-1).url).pathname,type==='fstvc'?prefix+'/studentportal.php/Jxxx/xxjdxx':prefix+'/student/StuInfo');
       for(let i=0;i<requests.length;i++){
         const {url,options}=requests[i],u=new URL(url);
         assert.equal(options.credentials,'include');assert.equal(options.mode,'same-origin');assert.equal(options.redirect,'error');
@@ -81,7 +82,7 @@ async function execute(type, {count=65, prefix='', failure='', frame=false, api=
   }
   await check('GDBH unknown total continues past fifty rows',async()=>{
     const r=await execute('gdbh',{count:100,unknownTotal:true});assert.equal(r.result.ok,true);
-    assert.equal(r.calls.length,4);assert.deepEqual(JSON.parse(r.result.data).data,r.data);
+    assert.equal(r.calls.length,5);assert.deepEqual(JSON.parse(r.result.data).data,r.data);
   });
   await check('GDBH missing term never guesses',async()=>{const r=await execute('gdbh',{failure:'term'});assert.equal(r.result.ok,false);assert.equal(r.calls.length,1);});
   await check('FSTVC missing API marker',async()=>{const r=await execute('fstvc',{failure:'missing-table'});assert.equal(r.result.ok,false);assert.equal(r.calls.length,1);});
