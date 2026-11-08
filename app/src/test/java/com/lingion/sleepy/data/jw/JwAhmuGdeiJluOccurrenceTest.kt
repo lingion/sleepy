@@ -37,6 +37,13 @@ class JwAhmuGdeiJluOccurrenceTest {
         verify("ahmu", source, listOf("好课||B|3|5|9"))
     }
 
+    @Test fun `AHMU explicit high periods survive declared registry and import paths`() {
+        val source = JSONArray(listOf(ahmu("集中实践", "张", "实训楼", 3, 30, 3, 2, 3),
+            ahmu("晚课", "李", "实验楼", 7, 31, 1, 6, 6))).toString()
+        verify("ahmu", source, (2..3).flatMap { w -> (30..32).map { n -> "集中实践|张|实训楼|3|$n|$w" } } +
+            "晚课|李|实验楼|7|31|6")
+    }
+
     private fun gdei(name: String, week: String, node: String?, room: String, teacher: String) =
         "<div><div>$name</div><div><span>$week</span>" + (node?.let { "<span>$it</span>" } ?: "") +
             "</div><div>未用</div><div>$room</div><div>$teacher</div></div>"
