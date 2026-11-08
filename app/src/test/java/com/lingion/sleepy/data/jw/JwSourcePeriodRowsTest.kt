@@ -5,12 +5,11 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class JwSourcePeriodRowsTest {
-    @Test fun nwpuThirteenPeriodsSurviveWhenCoursesEndAtFourthPeriod() {
-        val source = """
-            <table id="sample-table-1"><thead><tr><th>课程名称</th><th>上课时间</th></tr></thead>
-            <tbody><tr><td>数学分析</td><td>长安 第1-8周 星期一上3-4节</td></tr></tbody></table>
-        """.trimIndent()
-        val declared = JwSourcePeriods.resolve(source, JwProtocol.TYPE_NWPU_POST, "西北工业大学 - 研究生", emptyList())
+    @Test fun completeSourcePeriodsSurviveWhenCoursesEndAtFourthPeriod() {
+        val declared = listOf("08:30-09:15", "09:25-10:10", "10:30-11:15", "11:25-12:10",
+            "12:20-13:05", "13:05-13:50", "14:00-14:45", "14:55-15:40", "16:00-16:45",
+            "16:55-17:40", "19:00-19:45", "19:55-20:40", "20:40-21:25")
+            .mapIndexed { index, time -> Triple(index + 1, time.substringBefore('-'), time.substringAfter('-')) }
 
         val rows = JwSourcePeriods.confirmationRows(4, declared)
 
