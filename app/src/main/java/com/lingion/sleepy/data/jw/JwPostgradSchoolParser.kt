@@ -340,9 +340,9 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
                 for (cell in row.children().filter { it.tagName() == "td" && it.ownText().isBlank() }) {
                     while (column < 7 && occupiedUntil[column] > rowIndex) column++
                     if (column >= 7) break
-                    val height = if (cell.hasAttr("rowspan")) cell.attr("rowspan").toIntOrNull()?.takeIf { it in 1..30 } else 1
-                    if (height == null) return@buildList
-                    occupiedUntil[column] = rowIndex + height
+                    val height = if (cell.hasAttr("rowspan")) cell.attr("rowspan").toIntOrNull() else 1
+                    val endNode = height?.let { explicitScheduleEnd(rowIndex, it) } ?: return@buildList
+                    occupiedUntil[column] = endNode + 1
                     for (anchor in cell.getElementsByTag("a")) {
                         val name = anchor.selectFirst("strong")?.text().orEmpty()
                         val tail = anchor.html().split(Regex("(?i)<br\\s*/?>\\s*<br\\s*/?>")).last()
@@ -359,7 +359,7 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
                             }
                         }.joinToString(",")
                         addSlots(name, fields[teacherIndex + 1], fields[teacherIndex], column + 1,
-                            "$rowIndex-${rowIndex + height - 1}", weekText)
+                            "$rowIndex-$endNode", weekText)
                     }
                     column++
                 }
