@@ -9,8 +9,7 @@ class JwHbmzuParser(source: String) : JwParser(source) {
         val root = table ?: return@buildList
         val rows = root.select("tr").filter { it.closest("table") == root }
         for ((index, row) in rows.withIndex()) {
-            val first = index * 2 + 1
-            if (first !in 1..29) continue
+            val nodes = explicitSchedulePair(index + 1) ?: continue
             for ((column, cell) in row.children().filter { it.tagName() == "td" }.withIndex()) {
                 val day = column + 1
                 if (day !in 1..7) continue
@@ -21,7 +20,7 @@ class JwHbmzuParser(source: String) : JwParser(source) {
                     if (name.isEmpty()) continue
                     for ((from, to, type) in schoolWeekRanges(spans[1].text())) {
                         add(JwCourse(name, spans[2].text().trim(), spans[3].text().trim(), day,
-                            first, first + 1, from, to, type))
+                            nodes.first, nodes.last, from, to, type))
                     }
                 }
             }
