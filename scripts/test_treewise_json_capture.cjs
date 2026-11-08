@@ -75,6 +75,25 @@ function valid(r,expected){assert.equal(r.result.ok,true,r.result.err);assert.de
  await check('unsafe numeric lessonId rejected',async()=>assert.equal((await run('ahnu',[{body:{lessonIds:[9007199254740992]}}])).result.ok,false));
  await check('business selection change in-flight rejected',async()=>assert.equal((await run('cumtb',[{body:{lessonIds:[7]}}],{globals:{bizTypeId:2},beforeText:async(p)=>{p.W.bizTypeId=8;}})).result.ok,false));
  for(const index of [1,2]) await check('HFU term switch at request '+index+' rejected',async()=>{const r=await run('ahnu',[{body:{lessonIds:[]}},{body:{lessonIds:[7]}},{body:hfu}],{beforeResponse:async(p,i)=>{if(i===index)p.state.terms=[node(102)];}});assert.equal(r.result.ok,false);assert.equal(r.calls.length,index+1);});
+ for(const base of ['/student','/eams5','/eams5-student']) {
+  const url='https://jw.example.edu'+base+'/for-std/course-table';
+  await check('NWPU preserves '+base+' deployment prefix',async()=>{
+   const r=await run('nwpu',[{body:student}],{url,globals:{dataId:204}});valid(r,student);
+   assert.equal(r.calls[0].url,url+'/semester/101/print-data/204?hasExperiment=true');
+  });
+  await check('new student preserves '+base+' print route',async()=>{
+   const resource=url+'/semester/101/print-data/204?layout=print';
+   const r=await run('shuwei_new',[{body:student}],{url,entries:[{name:resource}]});valid(r,student);
+   assert.equal(r.calls[0].url,resource);
+  });
+ }
+ for(const type of ['nwpu','shuwei_new'])for(const url of ['https://jw.example.edu/eams5','https://uis.nwpu.edu.cn/cas/login'])
+  await check(type+' refuses unselected entry '+url,async()=>{
+   const r=await run(type,[],{url,globals:{dataId:204}});assert.equal(r.result.ok,false);assert.equal(r.calls.length,0);
+  });
+ await check('new student does not infer print route from NWPU dataId',async()=>{
+  const r=await run('shuwei_new',[],{globals:{dataId:204}});assert.equal(r.result.ok,false);assert.equal(r.calls.length,0);
+ });
  await check('six exact dispatch aliases',async()=>{for(const type of ['shuwei_new','jmu','nwpu','cumtb','ahnu','hfu'])assert.ok(source.includes('"'+type+'"'));
   const screen=fs.readFileSync(path.resolve(__dirname,'../app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt'),'utf8');
   assert.ok(screen.includes('JwTreewiseJsonCapture.scriptFor(school.type)?.let { script ->'));
