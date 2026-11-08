@@ -7,6 +7,7 @@ object JwSourcePeriods {
     fun resolve(source: String, type: String?, schoolName: String,
         captured: List<Triple<Int, String, String>>): List<Triple<Int, String, String>> {
         if (captured.isNotEmpty()) return captured
+        if (type == JwProtocol.TYPE_ECUPL || type == JwProtocol.TYPE_ECUPL_SUPER) return JwEcuplSourcePeriods.resolve(source)
         if (type == JwProtocol.TYPE_SUES) return JwSuesParser.periods
         if (type == JwProtocol.TYPE_SHU2024) return JwUndergradBHtmlParser.shuPeriods
         JwUndergradCSourcePeriods.resolve(type.orEmpty()).takeIf { it.isNotEmpty() }?.let { return it }
