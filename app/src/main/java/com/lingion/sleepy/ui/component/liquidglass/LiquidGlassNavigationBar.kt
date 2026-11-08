@@ -69,7 +69,11 @@ import androidx.compose.ui.unit.sp
 import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.shapes.Capsule
+import com.lingion.sleepy.ui.component.NavIconDriver
+import com.lingion.sleepy.ui.component.NavIconDriverEffects
 import com.lingion.sleepy.ui.component.PillNavItemSpec
+import com.lingion.sleepy.ui.component.navIconMotion
+import com.lingion.sleepy.ui.component.rememberNavIconDrivers
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import material.Hct
 import kotlin.math.abs
@@ -129,6 +133,14 @@ fun LiquidGlassNavigationBar(
     var dragging by remember { mutableStateOf(false) }
     var dropping by remember { mutableStateOf(false) }
     var pointerId by remember { mutableStateOf<Long?>(null) }
+
+    // 图标专属动效驱动表(NavIconMotion.kt): bar 层一份, 透镜内外双遍 DestinationsRow
+    // 共享同一实例 → 两圈相位逐帧一致, 透镜像素不撕裂。pressed = 手指按住 bar 且
+    // 透镜正落在本格(lensSpring.value 为连续座位坐标, 半格内算覆盖)。
+    val iconDrivers = rememberNavIconDrivers(items, clampedSelected)
+    NavIconDriverEffects(items, iconDrivers, clampedSelected) { i ->
+        pressedIndex != null && abs(lensSpring.value - i) < 0.5f
+    }
 
     // 外部 selectedIndex 改变时, 驱动镜头滑向目标
     LaunchedEffect(clampedSelected) {
@@ -564,6 +576,7 @@ fun LiquidGlassNavigationBar(
                         items = items,
                         layout = layout,
                         tint = colorScheme.onSurfaceVariant,
+                        iconDrivers = iconDrivers,
                     )
                 }
             }
@@ -919,6 +932,7 @@ fun LiquidGlassNavigationBar(
                             items = items,
                             layout = layout,
                             tint = colorScheme.primary,
+                            iconDrivers = iconDrivers,
                             itemTransform = { computeInsideTransform(it) },
                         )
                     }
@@ -945,6 +959,7 @@ private fun DestinationsRow(
     items: List<PillNavItemSpec>,
     layout: FlClashDockPhysics.DockLayout,
     tint: Color,
+    iconDrivers: List<NavIconDriver>,
     itemTransform: (index: Int) -> DestinationTransform = { DestinationTransform.Identity },
 ) {
     Row(
@@ -974,7 +989,9 @@ private fun DestinationsRow(
                             imageVector = item.icon,
                             contentDescription = item.label,
                             tint = tint,
-                            modifier = Modifier.size(24.dp),
+                            modifier = Modifier
+                                .navIconMotion(iconDrivers.getOrNull(index))
+                                .size(24.dp),
                         )
                         if (item.badge) {
                             Box(
