@@ -64,15 +64,20 @@ internal class JwSchoolTableParser(source: String, private val protocol: String)
                 val cells = row.select("td")
                 if (cells.size < 3) continue
                 val nodes = schoolNodeRanges(cells[0].text().trim().removeSuffix("节"))
-                if (nodes.any { it.second > 10 }) continue
+                if (nodes.any { it.second > EXPLICIT_SCHEDULE_RESOURCE_BOUND }) continue
                 val raw = cells[1].text()
                 val week = Regex("([0-9]+(?:-[0-9]+)?)周").find(raw) ?: continue
                 val name = raw.substring(0, week.range.first).trim()
                 val room = Regex("[（(]([图0-9][0-9]{1,3})[）)]").find(raw)?.groupValues?.get(1)
                     ?: Regex("；([^】]+)】").find(raw)?.groupValues?.get(1)?.trim().orEmpty()
-                for ((first, last) in nodes) for ((start, end, parity) in schoolWeekRanges(week.groupValues[1])) output += JwCourse(
-                    name, room, cells[2].text().trim(), weekday, first, last, start, end, parity,
-                    hnjmPeriods[first - 1].first, hnjmPeriods[last - 1].second)
+                for ((first, last) in nodes) {
+                    val clocks = (first..last).map { hnjmPeriods.getOrNull(it - 1) }
+                    val complete = clocks.all { it != null }
+                    for ((start, end, parity) in schoolWeekRanges(week.groupValues[1])) output += JwCourse(
+                        name, room, cells[2].text().trim(), weekday, first, last, start, end, parity,
+                        if (complete) clocks.first()?.first.orEmpty() else "",
+                        if (complete) clocks.last()?.second.orEmpty() else "")
+                }
             }
         }
         return output
