@@ -12,7 +12,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -261,7 +260,7 @@ fun PeriodHeaderCellContent(
             //   3. 卡片宽覆盖全轨道和联合文字包络, 任何位置都不裁剪文字。
             //   4. 所有宽度由 TextMeasurer 实测, 不固定值。
             val density = LocalDensity.current
-            val measurer = rememberTextMeasurer()
+            val measurer = rememberTimetableTextMeasurer()
             // 基线测量用于宽度预算, 实际绘制字号由卡片尺寸自适应。
             val baseStartW = measurer.measure(slot.displayStart, timeStyle).size.width.toFloat()
             val baseEndW = measurer.measure(slot.displayEnd, timeStyle).size.width.toFloat()
@@ -392,7 +391,7 @@ fun PeriodHeaderCellContent(
             //   sharedLegacyAxis 由网格侧按全列最紧约束解一次; 垂直解每卡就地做 —
             //   字号基线/行高/卡高三条输入全列同源, 解出的 fontScale 天然一致。
             val density = LocalDensity.current
-            val measurer = rememberTextMeasurer()
+            val measurer = rememberTimetableTextMeasurer()
             val centerTime = AppPrefs.getPeriodHeaderTimeAlignment(context) == "center"
             val rowInk = legacyRowInk(slot, label, measurer, scale)
             val axisX = sharedLegacyAxis ?: if (centerTime) {

@@ -18,6 +18,7 @@ class EdgePagingContractTest {
     private val tableView = readProjectSource("app/src/main/java/com/lingion/sleepy/ui/component/CourseTableView.kt")
     private val placement = readProjectSource("app/src/main/java/com/lingion/sleepy/ui/component/FloatDragGeometry.kt")
     private val schedule = readProjectSource("app/src/main/java/com/lingion/sleepy/ui/screen/schedule/ScheduleScreen.kt")
+    private val pager = readProjectSource("app/src/main/java/com/lingion/sleepy/ui/screen/schedule/ScheduleWeekPager.kt")
     private val theme = readProjectSource("app/src/main/java/com/lingion/sleepy/ui/theme/Theme.kt")
 
     @Test fun edgeGeometryAndTimingMatchTheRatifiedValues() {
@@ -77,7 +78,8 @@ class EdgePagingContractTest {
 
     @Test fun screenWiresPagerPagingAndTimeDomainToFloatWeek() {
         // 预览页保持组合(浮层跨页不丢), 动画时长与曲线取 EdgePeek 常量。
-        assertTrue("保留相邻页", schedule.contains("beyondViewportPageCount = 1"))
+        assertTrue("拖课时保留相邻页", pager.contains("beyondViewportPageCount = if (draggingCourse) 1 else 0"))
+        assertTrue("拖课状态接入分页", schedule.contains("draggingCourse = floatState.dragging"))
         assertTrue("翻页动画取常量", schedule.contains("FLOAT_PAGE_ANIM_MS.toInt()"))
         assertTrue("翻页曲线取常量", schedule.contains("FLOAT_PAGE_EASING"))
         assertTrue("夹取周上限", schedule.contains("coerceIn(0, pagerMaxWeek - 1)"))

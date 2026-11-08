@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -376,15 +375,14 @@ fun ScheduleScreen(
                 pagerReady = true
             }
 
-            HorizontalPager(
+            ScheduleWeekPager(
                 state = pagerState,
-                // 接收手势的页由 trackFloatDragPointer 固定，毋须为一次拖拽加载整个学期。
-                beyondViewportPageCount = 1,
+                draggingCourse = floatState.dragging,
                 modifier = Modifier.fillMaxSize()
             ) { page ->
                 if (viewMode == ViewMode.Cards &&
                     !com.lingion.sleepy.ui.component.shouldComposeFloatDragPage(page + 1, pagerState.currentPage + 1, floatState)) {
-                    return@HorizontalPager
+                    return@ScheduleWeekPager
                 }
                 // 拖拽坐标、缩放和弹窗变化不改变课程投影，只有数据/周次/调休/作息变化才重算。
                 val renderCourses = viewModel.presentationCache.weekCourses(state, page + 1)

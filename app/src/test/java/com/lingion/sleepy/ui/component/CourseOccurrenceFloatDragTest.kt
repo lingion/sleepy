@@ -340,6 +340,99 @@ class CourseOccurrenceFloatDragTest {
         compose.onNodeWithTag("float-popup").assertIsDisplayed()
     }
 
+    @Test fun draggingBackToOriginDoesNotReopenPopupWhileWaitingForStorage() {
+        verifyOriginDrop(regrab = false)
+    }
+
+    @Test fun regrabbingAndReturningToOriginDoesNotReopenPopup() {
+        verifyOriginDrop(regrab = true)
+    }
+
+    private fun verifyOriginDrop(regrab: Boolean) {
+        val state = CourseFloatState()
+        // A no-op drop must not enter the asynchronous persistence path at all.
+        // With the old implementation this leaves the popup visible until storage replies.
+        grid(state, onMove = { c, d, n, s, resizeOnly, _ ->
+            moves.add(Move(c.id, d, n, s, resizeOnly))
+        })
+        if (regrab) {
+            compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+            compose.onNodeWithTag("float-popup").assertIsDisplayed()
+            compose.onNodeWithTag("float-card").performTouchInput {
+                down(center)
+                moveBy(Offset(160f, 0f), 150)
+                moveBy(Offset(-160f, 0f), 150)
+            }
+        } else {
+            compose.onNodeWithText("FloatMath").performTouchInput {
+                down(center)
+                moveTo(center, delayMillis = 900)
+                moveBy(Offset(160f, 0f), 150)
+                moveBy(Offset(-160f, 0f), 150)
+            }
+        }
+        compose.runOnIdle { assertTrue(state.dragging) }
+        compose.onNodeWithTag("float-popup").assertDoesNotExist()
+        compose.onNodeWithTag("float-backdrop").assertDoesNotExist()
+        compose.mainClock.autoAdvance = false
+        compose.onRoot().performTouchInput { up() }
+        repeat(24) {
+            compose.mainClock.advanceTimeByFrame()
+            compose.waitForIdle()
+            compose.onNodeWithTag("float-popup").assertDoesNotExist()
+            compose.onNodeWithTag("float-backdrop").assertDoesNotExist()
+        }
+        compose.onNodeWithTag("float-card").assertDoesNotExist()
+        compose.runOnIdle {
+            assertFalse(state.active)
+            assertFalse(state.dragging)
+            assertTrue("An unchanged occurrence must not invoke the save callback", moves.isEmpty())
+        }
+    }
+
+    @Test fun sameSlotInAnotherWeekStillSubmitsAMove() {
+        val state = CourseFloatState()
+        var targetWeek = 0
+        grid(state, onMove = { c, d, n, s, resizeOnly, onResult ->
+            targetWeek = state.week
+            moves.add(Move(c.id, d, n, s, resizeOnly))
+            onResult(true)
+        })
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(160f, 0f), 150)
+            moveBy(Offset(-160f, 0f), 150)
+        }
+        compose.runOnIdle {
+            state.week = 2
+            hostWeek.value = 2
+        }
+        compose.onRoot().performTouchInput { up() }
+        compose.runOnIdle {
+            assertEquals(2, targetWeek)
+            assertEquals(listOf(Move(7L, 1, 1, 2, false)), moves)
+            assertFalse(state.active)
+        }
+    }
+
+    @Test fun resizedCourseAtOriginalStartStillSubmitsNewSpan() {
+        val state = CourseFloatState()
+        grid(state)
+        compose.onNodeWithText("FloatMath").performTouchInput { longClick() }
+        stretchBottomHandle(state)
+        compose.onNodeWithTag("float-card").performTouchInput {
+            down(center)
+            moveBy(Offset(160f, 0f), 150)
+            moveBy(Offset(-160f, 0f), 150)
+            up()
+        }
+        compose.runOnIdle {
+            assertEquals(listOf(Move(7L, 1, 1, 3, false)), moves)
+            assertFalse(state.active)
+        }
+    }
+
     /** 2026-10-27 用户反馈: 长按浮起后手指微抖约 0.1cm, 模糊与浮框瞬间消失。
      *  浮起死区: 自浮起点累计位移未超过 2×touchSlop 前不得进入拖拽 —
      *  参照官方 DragGestureDetector 的 TouchSlopDetector(累计判据, 非逐帧增量)。 */
