@@ -9,8 +9,8 @@ internal class JwUndergradLegacyParser(source: String, private val protocol: Str
         "bjtu" -> parseBjtuLegacy()
         else -> emptyList()
     }).filter { course ->
-        course.name.isNotBlank() && course.day in 1..7 && course.startNode in 1..30 &&
-            course.endNode in course.startNode..30 && course.startWeek in 1..366 &&
+        course.name.isNotBlank() && course.day in 1..7 && course.startNode in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND &&
+            course.endNode in course.startNode..EXPLICIT_SCHEDULE_RESOURCE_BOUND && course.startWeek in 1..366 &&
             course.endWeek in course.startWeek..366 && course.type in 0..2
     }
 
@@ -26,7 +26,7 @@ internal class JwUndergradLegacyParser(source: String, private val protocol: Str
         val output = mutableListOf<JwCourse>()
         for ((dayIndex, row) in rows.subList(3, 10).withIndex()) {
             for ((node, cell) in row.select("td").withIndex()) {
-                if (node == 0) continue
+                if (node !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
                 val text = cell.select("div").text().trim()
                 if (text.isEmpty() || "课程：" !in text || '(' !in text) continue
                 val weeks = Regex("从第(\\d+)至(\\d+)").find(text)
