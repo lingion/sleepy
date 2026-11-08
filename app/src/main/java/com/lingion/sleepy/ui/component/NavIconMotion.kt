@@ -244,7 +244,6 @@ internal fun shouldActivate(selectedNow: Boolean, wasSelected: Boolean): Boolean
  */
 @Composable
 fun NavIconDriverEffects(
-    items: List<PillNavItemSpec>,
     drivers: List<NavIconDriver>,
     selectedIndex: Int,
     press: (Int) -> Boolean,
@@ -254,9 +253,8 @@ fun NavIconDriverEffects(
     // 形变中间帧(pulse=部分值)。外部 scope 只随组合销毁取消,
     // 同 driver 重复激活由 animateTo 内部抢占 + activate() 首行 snapTo 归零。
     val actScope = rememberCoroutineScope()
-    LaunchedEffect(selectedIndex, items) {
-        items.forEachIndexed { i, _ ->
-            val d = drivers.getOrNull(i) ?: return@forEachIndexed
+    LaunchedEffect(selectedIndex, drivers) {
+        drivers.forEachIndexed { i, d ->
             val sel = i == selectedIndex
             if (shouldActivate(selectedNow = sel, wasSelected = d.wasSelected)) {
                 actScope.launch { d.activate() }
@@ -264,10 +262,9 @@ fun NavIconDriverEffects(
             d.markSelected(sel)
         }
     }
-    LaunchedEffect(drivers, items) {
-        items.forEachIndexed { i, spec ->
-            if (spec.motionKey != NavIconMotionKey.GearSpin) return@forEachIndexed
-            val d = drivers.getOrNull(i) ?: return@forEachIndexed
+    LaunchedEffect(drivers) {
+        drivers.forEachIndexed { i, d ->
+            if (d.key != NavIconMotionKey.GearSpin) return@forEachIndexed
             launch {
                 snapshotFlow { press(i) }.collectLatest { pressed ->
                     // 松开 → collectLatest 取消 runPressLoop, 角度停在当前值。
@@ -282,6 +279,44 @@ fun NavIconDriverEffects(
 fun Modifier.navIconMotion(driver: NavIconDriver?): Modifier =
     if (driver == null || driver.key == NavIconMotionKey.None) this
     else graphicsLayer { driver.applyTo(this) }
+
+/**
+ * 官方形态(NavigationBar/NavigationRail)接线表 — dock 两形态之外唯一的动效入口。
+ *
+ * 报障根因(2026-11-08): 默认贴底走官方 NavigationBar, 图标经 NavigationTabIcon
+ * 绘制, 从未接驱动 → 四个图标一个都不动。本表把"驱动表 + 按压跟踪"一次装配,
+ * 贴底/平板 rail 共用同一实例(单一接线真源)。
+ */
+class OfficialNavIconMotion internal constructor(
+    internal val drivers: List<NavIconDriver>,
+    private val pressed: Array<MutableState<Boolean>>,
+) {
+    /** [index] = Tab.ordinal。越界 → null(与无动画逐位一致)。 */
+    fun driverFor(index: Int): NavIconDriver? = drivers.getOrNull(index)
+
+    /** 连续按压跟踪(仅 GearSpin 消费); 图标侧经 observePressTracker 观察。 */
+    fun pressTrackerFor(index: Int): MutableState<Boolean>? = pressed.getOrNull(index)
+}
+
+/**
+ * [motionKeys] 按 Tab.ordinal 对齐; [selectedIndex] = 当前选中项下标,
+ * 变化即选中边沿(与 dock 同一调度真源 NavIconDriverEffects)。
+ * 首组合按当前选中初始化, 防冷启动/pop 重建误放脉冲(同 dock 约定)。
+ */
+@Composable
+fun rememberOfficialNavIconMotion(
+    motionKeys: List<NavIconMotionKey>,
+    selectedIndex: Int,
+): OfficialNavIconMotion {
+    // 与 dock 版 rememberNavIconDrivers 同约定: remember 创建时同步初始化
+    // wasSelected, 防冷启动/pop 重建误放脉冲(异步 effect 会晚于调度器)。
+    val drivers = remember(motionKeys) {
+        motionKeys.mapIndexed { i, k -> NavIconDriver(k).also { it.markSelected(i == selectedIndex) } }
+    }
+    val pressed = remember(motionKeys) { Array(motionKeys.size) { mutableStateOf(false) } }
+    NavIconDriverEffects(drivers, selectedIndex) { i -> pressed.getOrNull(i)?.value == true }
+    return remember(drivers, pressed) { OfficialNavIconMotion(drivers, pressed) }
+}
 
 /**
  * 纯观察按压跟踪 — 不消费任何事件(下游 clickable/capsule 环语义不变),

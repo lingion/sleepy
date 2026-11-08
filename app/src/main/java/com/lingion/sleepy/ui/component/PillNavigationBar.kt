@@ -376,7 +376,7 @@ private fun DockNavigationBar(
         List(items.size) { mutableStateOf(false) }
     }
     val iconDrivers = rememberNavIconDrivers(items, selectedIndex)
-    NavIconDriverEffects(items, iconDrivers, selectedIndex) { i ->
+    NavIconDriverEffects(iconDrivers, selectedIndex) { i ->
         cellPressed.getOrNull(i)?.value == true
     }
 

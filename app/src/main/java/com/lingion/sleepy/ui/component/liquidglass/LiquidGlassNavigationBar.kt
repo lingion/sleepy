@@ -138,7 +138,7 @@ fun LiquidGlassNavigationBar(
     // 共享同一实例 → 两圈相位逐帧一致, 透镜像素不撕裂。pressed = 手指按住 bar 且
     // 透镜正落在本格(lensSpring.value 为连续座位坐标, 半格内算覆盖)。
     val iconDrivers = rememberNavIconDrivers(items, clampedSelected)
-    NavIconDriverEffects(items, iconDrivers, clampedSelected) { i ->
+    NavIconDriverEffects(iconDrivers, clampedSelected) { i ->
         pressedIndex != null && abs(lensSpring.value - i) < 0.5f
     }
 
