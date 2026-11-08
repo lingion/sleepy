@@ -85,16 +85,21 @@ class JwScauParser(source: String) : JwParser(source) {
     internal fun parseElementUiStrategy(): List<JwCourse> {
         val out = mutableListOf<JwCourse>()
         val doc = Jsoup.parse(source)
+        val sectionPattern = Regex("^([0-9]+)(?: *[-－~至] *([0-9]+))?节$")
+        fun sectionNodes(text: String): Pair<Int, Int>? {
+            val match = sectionPattern.matchEntire(text) ?: return null
+            val first = match.groupValues[1].toIntOrNull() ?: return null
+            val last = match.groupValues[2].ifEmpty { match.groupValues[1] }.toIntOrNull() ?: return null
+            if (first !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND || last !in first..EXPLICIT_SCHEDULE_RESOURCE_BOUND) return null
+            return first to last
+        }
         for (table in doc.select(".el-table__body-wrapper table.el-table__body")) {
             for ((rowIndex, tr) in table.select("tbody > tr").withIndex()) {
                 val cells = tr.children().filter { it.normalName() == "td" }
                 if (cells.size < 8) continue
-                val rowLabel = Regex("^([0-9]{1,2})(?: *[-－~至] *([0-9]{1,2}))?节$").matchEntire(cells[0].text().trim())
+                val rowLabel = cells[0].text().trim()
                 val defaults = arrayOf(1 to 2, 3 to 5, 6 to 7, 8 to 9, 10 to 12, 13 to 15)
-                val rowNodes = if (rowLabel != null) {
-                    val start = rowLabel.groupValues[1].toInt()
-                    start to (rowLabel.groupValues[2].toIntOrNull() ?: start)
-                } else if (cells[0].text().isBlank()) defaults.getOrNull(rowIndex) else null
+                val rowNodes = if (rowLabel.isBlank()) defaults.getOrNull(rowIndex) else sectionNodes(rowLabel)
                 for (day in 1..7) {
                     val cell = cells[day]
                     for (block in cell.select("div[style]").filter {
@@ -114,13 +119,8 @@ class JwScauParser(source: String) : JwParser(source) {
                             weekText.contains("双") -> 2
                             else -> 0
                         }
-                        val section = Regex("^([0-9]{1,2})(?: *[-－~至] *([0-9]{1,2}))?节$")
-                            .matchEntire(timing.substringBefore('(').substringBefore('（').trim())
-                        val nodes = if (section != null) {
-                            val start = section.groupValues[1].toInt()
-                            start to (section.groupValues[2].toIntOrNull() ?: start)
-                        } else if (timing.contains('节')) continue else rowNodes ?: continue
-                        if (nodes.first !in 1..30 || nodes.second !in nodes.first..30) continue
+                        val nodes = sectionNodes(timing.substringBefore('(').substringBefore('（').trim())
+                            ?: if (timing.contains('节')) continue else rowNodes ?: continue
                         for ((start, end, type) in parseWeekRuns(weekText, parity)) {
                             out += JwCourse(name, room, teacher, day, nodes.first, nodes.second, start, end, type)
                         }
@@ -254,15 +254,15 @@ class JwScauParser(source: String) : JwParser(source) {
                     val tdSection = tdSectionList.getOrNull(tdIdx) ?: continue
                     val sectionMatch = RE_SECTION.find(tdSection.text())
                     val sectionNum = sectionMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
-                    if (sectionNum !in 1..30) continue
+                    val nodes = explicitSchedulePair(sectionNum) ?: continue
 
                     for ((sw, ew, parity) in runs) out += JwCourse(
                         name = name,
                         teacher = teacher,
                         room = room,
                         day = day,
-                        startNode = sectionNum * 2 - 1,
-                        endNode = sectionNum * 2,
+                        startNode = nodes.first,
+                        endNode = nodes.last,
                         startWeek = sw,
                         endWeek = ew,
                         type = parity,
