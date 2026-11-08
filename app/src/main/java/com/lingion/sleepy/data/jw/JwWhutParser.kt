@@ -34,7 +34,8 @@ class JwWhutParser(source: String) : JwWiseduParser(source) {
             JSONObject(source).optJSONObject("sleepyWhutSectionMap")?.let { values ->
                 values.keys().asSequence().mapNotNull { key ->
                     val dm = key.toIntOrNull()?.takeIf { it > 0 } ?: return@mapNotNull null
-                    val node = values.opt(key)?.toString()?.toIntOrNull()?.takeIf { it in 1..30 } ?: return@mapNotNull null
+                    val node = values.opt(key)?.toString()?.toIntOrNull()
+                        ?.takeIf { it in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND } ?: return@mapNotNull null
                     dm to node
                 }.toMap()
             }.orEmpty()
