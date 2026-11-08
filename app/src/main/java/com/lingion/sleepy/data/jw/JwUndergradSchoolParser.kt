@@ -14,8 +14,8 @@ internal class JwUndergradSchoolParser(source: String, private val protocol: Str
         "nfu" -> parseNfu()
         else -> emptyList()
     }).filter { course ->
-        course.name.isNotBlank() && course.day in 1..7 && course.startNode in 1..30 &&
-            course.endNode in course.startNode..30 && course.startWeek in 1..366 &&
+        course.name.isNotBlank() && course.day in 1..7 && course.startNode in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND &&
+            course.endNode in course.startNode..EXPLICIT_SCHEDULE_RESOURCE_BOUND && course.startWeek in 1..366 &&
             course.endWeek in course.startWeek..366 && course.type in 0..2
     }
 
@@ -109,17 +109,23 @@ internal class JwUndergradSchoolParser(source: String, private val protocol: Str
         val occupied = IntArray(7)
         val output = mutableListOf<JwCourse>()
         for ((node, row) in rows.withIndex()) {
-            if (node == 0) continue
+            if (node !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
             var column = 0
             for (cell in row.select("td")) {
                 if (cell.className().lowercase() == "ctt-matrix-td-time") continue
                 while (column < occupied.size && occupied[column] >= node) column++
                 if (column >= occupied.size) break
                 val span = cell.attr("rowspan").toIntOrNull()?.coerceAtLeast(1) ?: 1
-                occupied[column] = node + span - 1
+                val last = explicitScheduleEnd(node, span)
+                // An oversized span still occupies its column throughout the supported rows.
+                occupied[column] = last ?: EXPLICIT_SCHEDULE_RESOURCE_BOUND
+                if (last == null) {
+                    column++
+                    continue
+                }
                 val parts = lines(cell)
                 if (cell.text().isNotBlank() && parts.size >= 3) {
-                    output += JwCourse(parts[1], parts[2], "", column + 1, node, node + span - 1, 1, 20)
+                    output += JwCourse(parts[1], parts[2], "", column + 1, node, last, 1, 20)
                     column++
                 }
             }
@@ -145,11 +151,11 @@ internal class JwUndergradSchoolParser(source: String, private val protocol: Str
                         if (!Regex("[0-9A-Z]-[0-9A-Z]").matches(nodes)) continue
                         val start = node(nodes.first())
                         val end = node(nodes.last())
-                        if (start !in 1..30 || end !in start..30) continue
+                        if (start !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND || end !in start..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
                         (start..end).toList()
                     } else {
                         if (!Regex("[0-9A-Z]+").matches(nodes)) continue
-                        nodes.map(::node).takeIf { values -> values.all { it in 1..30 } } ?: continue
+                        nodes.map(::node).takeIf { values -> values.all { it in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND } } ?: continue
                     }
                     val runs = mutableListOf<Pair<Int, Int>>()
                     for (section in advertised.distinct().sorted()) {

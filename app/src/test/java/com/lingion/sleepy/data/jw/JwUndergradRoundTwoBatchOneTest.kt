@@ -106,7 +106,7 @@ class JwUndergradRoundTwoBatchOneTest {
             "xq0_jc1" to "课名[老师][班-1][1-8周][A][第1-2节]",
             "xq8_jc1" to "课名[老师][班-1][1-8周][A][第1-2节]",
             "xq1_jc1" to "课名[老师][班-1][1-8周][A][第0-2节]",
-            "xq1_jc1" to "课名[老师][班-1][1-8周][A][第30-31节]",
+            "xq1_jc1" to "课名[老师][班-1][1-8周][A][第366-367节]",
             "xq1_jc1" to "课名[老师][班-1][0-8周][A][第1-2节]",
             "xq1_jc1" to "课名[老师][班-1][1-367周][A][第1-2节]",
             "xq1_jc1" to "课名[老师][班-1][8-1周][A][第1-2节]",
@@ -115,5 +115,11 @@ class JwUndergradRoundTwoBatchOneTest {
             val source = """[{"KEY":"$key","SKSJ":"$text"}]"""
             assertEquals(emptyList<JwCourse>(), imported("sustech", source))
         }
+    }
+
+    @Test fun sustechHighSectionsSurviveDeclaredSelectionImportAndDraft() {
+        val source = """[{"KEY":"xq7_jc1","SKSJ":"离散数学[王老师][教学班-01][2-8双周][A][第30-31节]"}]"""
+        assertEquals(listOf(JwCourse("离散数学", "A", "王老师", 7, 30, 31, 2, 8, 2, note = "01")),
+            imported("sustech", source))
     }
 }
