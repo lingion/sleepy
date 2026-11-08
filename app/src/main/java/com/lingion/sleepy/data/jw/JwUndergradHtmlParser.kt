@@ -11,8 +11,8 @@ internal class JwUndergradHtmlParser(source: String, private val protocol: Strin
         "hitsz" -> parseHitsz()
         else -> emptyList()
     }).filter { course ->
-        course.name.isNotBlank() && course.day in 1..7 && course.startNode in 1..30 &&
-            course.endNode in course.startNode..30 && course.startWeek in 1..366 &&
+        course.name.isNotBlank() && course.day in 1..7 && course.startNode in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND &&
+            course.endNode in course.startNode..EXPLICIT_SCHEDULE_RESOURCE_BOUND && course.startWeek in 1..366 &&
             course.endWeek in course.startWeek..366 && course.type in 0..2
     }
 
@@ -25,7 +25,7 @@ internal class JwUndergradHtmlParser(source: String, private val protocol: Strin
             val table = Jsoup.parse(fragment).getElementById("ctl00_ContentPlaceHolder3_ScheduleTable") ?: continue
             val output = mutableListOf<JwCourse>()
             for ((rowIndex, row) in table.select("tr").withIndex()) {
-                if (rowIndex == 0) continue
+                val nodes = explicitSchedulePair(rowIndex) ?: continue
                 for ((day, cell) in row.select("td").withIndex()) {
                     if (day !in 1..7) continue
                     for (block in cell.text().split('★')) {
@@ -35,7 +35,7 @@ internal class JwUndergradHtmlParser(source: String, private val protocol: Strin
                         val teacher = fields[fields.lastIndex - 1]
                         val weeks = fields.last()
                         for ((start, end, parity) in schoolWeekRanges(weeks)) output += JwCourse(
-                            fields[0], room, teacher, day, (rowIndex - 1) * 2 + 1, rowIndex * 2, start, end, parity,
+                            fields[0], room, teacher, day, nodes.first, nodes.last, start, end, parity,
                         )
                     }
                 }
@@ -56,8 +56,9 @@ internal class JwUndergradHtmlParser(source: String, private val protocol: Strin
             val day = value("week").toIntOrNull() ?: continue
             val node = value("unit").toIntOrNull() ?: continue
             val length = value("lsjs").toIntOrNull() ?: 1
+            val last = explicitScheduleEnd(node, length) ?: continue
             for ((start, end, parity) in schoolWeekRanges(value("weekly"))) output += JwCourse(
-                name, value("roomid"), value("jsm"), day, node, node + length - 1, start, end, parity,
+                name, value("roomid"), value("jsm"), day, node, last, start, end, parity,
             )
         }
         return output
@@ -71,16 +72,18 @@ internal class JwUndergradHtmlParser(source: String, private val protocol: Strin
             for (row in table.select("tr")) {
                 val cells = row.select("td[valign=top]")
                 if (cells.isEmpty()) continue
+                val nodes = explicitSchedulePair(rowIndex + 1) ?: break
                 for ((dayIndex, cell) in cells.withIndex()) {
                     val lines = cell.html().split("<br>").map(::text)
                     for ((index, line) in lines.withIndex()) {
                         if (index < 3) continue
                         val timing = Regex("^([0-9.\\-]+)周\\s+([^ ]*)\\s+([0-9]+)节$").matchEntire(line) ?: continue
                         val length = timing.groupValues[3].toIntOrNull()?.coerceAtMost(2) ?: continue
+                        val last = explicitScheduleEnd(nodes.first, length) ?: continue
                         val parity = when { "单" in timing.groupValues[2] -> 1; "双" in timing.groupValues[2] -> 2; else -> 0 }
                         for ((start, end) in schoolWeekRanges(timing.groupValues[1].replace('.', ','))) output += JwCourse(
                             lines[index - 3], lines[index - 1], lines[index - 2], dayIndex + 1,
-                            rowIndex * 2 + 1, rowIndex * 2 + length, start, end, parity,
+                            nodes.first, last, start, end, parity,
                         )
                     }
                 }
