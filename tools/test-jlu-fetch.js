@@ -4,8 +4,11 @@ const template=source.match(/const val SCHOOL_API_FETCH_JS = """([\s\S]*?)"""/)[
 async function execute({prefix='',fallback=false,failure='',noControl=false,totalSize=1}={}){
   const calls=[],results=[],timers=new Map();let id=0;
   const row={KCMC:'研究方法',RKJS:'张',PKSJDD:'[1-3周 星期三 5-6节]研教楼'};
-  const win={location:new URL('https://vpn.jlu.edu.cn'+prefix+'/gsapp/sys/wdkbapp/index.do'),frames:[],
-    document:{querySelector:s=>s==='#myXnxqSelect'&&!noControl?{value:fallback?'':'2026-2027-1',options:[{value:'2025-2026-2'}]}:null},
+  const selected={tagName:'SELECT',name:'xnxq',id:'myXnxqSelect',type:'select-one',
+    value:fallback?'':'2026-2027-1',checked:false,options:[{value:'2025-2026-2',selected:fallback}]};
+  const document={querySelector:s=>s==='#myXnxqSelect'&&!noControl?selected:null,
+    querySelectorAll:s=>s==='input,select,textarea'&&!noControl?[selected]:s==='#myXnxqSelect'&&!noControl?[selected]:[]};
+  const win={location:new URL('https://vpn.jlu.edu.cn'+prefix+'/gsapp/sys/wdkbapp/index.do'),frames:[],document,
     fetch:async(url,options)=>{
       calls.push({url,options});
       if(failure==='network')throw Error('offline');
