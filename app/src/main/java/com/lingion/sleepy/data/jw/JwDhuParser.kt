@@ -16,8 +16,7 @@ class JwDhuParser(source: String) : JwParser(source) {
                 val first = period(label.element.text()) ?: continue
                 for (cell in row) {
                     if (cell.column !in 1..7 || cell.columnSpan != 1) continue
-                    val last = first + cell.rowSpan - 1
-                    if (last > 30) continue
+                    val last = explicitScheduleEnd(first, cell.rowSpan) ?: continue
                     val fields = cell.element.text().trim().split(Regex("\\s+"))
                     for (start in fields.indices step 4) {
                         val name = fields[start].takeIf { it.isNotBlank() } ?: continue

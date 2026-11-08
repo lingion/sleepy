@@ -22,11 +22,12 @@ class JwCppuParser(source: String) : JwParser(source) {
             if (days !in 0L until 366L * 7) continue
             val week = (days / 7 + 1).toInt()
             val block = (row.opt("JC") as? String)?.substringBefore('@')?.trim()?.toIntOrNull()
-                ?.takeIf { it in 1..15 } ?: continue
+                ?: continue
+            val nodes = explicitSchedulePair(block) ?: continue
             val credit = row.opt("XF")?.toString()?.toFloatOrNull()?.takeIf { it.isFinite() && it >= 0f } ?: 0f
             add(JwCourse(name, (row.opt("DDMC") as? String)?.trim().orEmpty(),
                 (row.opt("JS") as? String)?.trim().orEmpty(), date.dayOfWeek.value,
-                block * 2 - 1, block * 2, week, week, credit = credit))
+                nodes.first, nodes.last, week, week, credit = credit))
         }
     }.distinct()
     override fun confidence(): Int = if (source.contains("\"startDate\"") && source.contains("\"SKRQ\"")) 100 else 0

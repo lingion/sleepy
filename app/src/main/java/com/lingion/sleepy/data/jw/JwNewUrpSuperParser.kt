@@ -62,11 +62,8 @@ class JwNewUrpSuperParser(source: String) : JwParser(source) {
             if (day !in 1..7) continue
 
             val startNode = id.optString("skjc", "").toIntOrNull() ?: continue
-            if (startNode !in 1..30) continue
-
             val continuing = item.optString("cxjc", "").toIntOrNull() ?: continue
-            if (continuing !in 1..30 || startNode > 30 - continuing + 1) continue
-            val realEndNode = startNode + continuing - 1
+            val realEndNode = explicitScheduleEnd(startNode, continuing) ?: continue
 
             val skzc = id.optString("skzc", "")
             if (skzc.isBlank()) continue
@@ -180,7 +177,7 @@ class JwNewUrpSuperParser(source: String) : JwParser(source) {
     }
 
     private fun parseWeekBits(s: String): List<Int> {
-        if (s.isEmpty() || s.length > 60 || s.any { it != '0' && it != '1' }) return emptyList()
+        if (s.isEmpty() || s.length > EXPLICIT_SCHEDULE_RESOURCE_BOUND || s.any { it != '0' && it != '1' }) return emptyList()
         val out = arrayListOf<Int>()
         for (i in s.indices) {
             if (s[i] == '1') out.add(i + 1)

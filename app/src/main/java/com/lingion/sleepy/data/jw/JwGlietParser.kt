@@ -9,9 +9,8 @@ class JwGlietParser(source: String) : JwParser(source) {
         for (table in tables) {
             val rows = table.select("tr").filter { it.closest("table") == table }
             for ((rowIndex, row) in rows.withIndex()) {
-                val first = rowIndex * 2 + 1
+                val first = explicitSchedulePair(rowIndex + 1)?.first ?: continue
                 val last = if (first > 10) first else first + 1
-                if (last > 30) continue
                 for ((day, cell) in row.children().filter { it.tagName() == "td" }.withIndex()) {
                     if (day !in 1..7) continue
                     // Each outer course container is flattened once; descendant divs must not be parsed twice.

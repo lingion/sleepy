@@ -25,8 +25,9 @@ class JwOldQzSuperParserTest {
         val mixed = parse(grid("<div>课<br>T<br>1-4单,9-12周[1节]<br>R</div>"))
         assertEquals(listOf(1, 0), mixed.map { it.type })
     }
-    @Test fun `isolated fixed id and conflicting group weekday rejected`() {
-        assertTrue(parse("<div id='1-3-2'>A<br>B<br>T<br>1-4周<br>R</div>").isEmpty())
+    @Test fun `existing fixed id is sufficient and conflicting group weekday rejected`() {
+        assertEquals(listOf(JwCourse("A", "R", "T", 3, 1, 2, 1, 4)),
+            parse("<div id='1-3-2'>A<br>B<br>T<br>1-4周<br>R</div>"))
         assertTrue(parse(grid("<div id='2-3'>A<br>B<br>T<br>1-4周<br>R</div>")).isEmpty())
     }
     @Test fun `distinct source forms preserve values`() {
@@ -59,7 +60,7 @@ class JwOldQzSuperParserTest {
         assertEquals(listOf("好"), c.map { it.name })
     }
     @Test fun `reject reversed ranges missing weeks and ambiguous columns`() {
-        for (time in listOf("4-2周[1节]", "1周[4-2节]", "周[1节]", "65周[1节]")) assertTrue(parse(grid("<div>课<br>T<br>$time<br>R</div>")).isEmpty())
+        for (time in listOf("4-2周[1节]", "1周[4-2节]", "周[1节]", "367周[1节]")) assertTrue(parse(grid("<div>课<br>T<br>$time<br>R</div>")).isEmpty())
         assertTrue(parse("<table id='kbtable'><tr><td><div>课<br>T<br>1周[1节]<br>R</div></td></tr></table>").isEmpty())
     }
     @Test fun `header order determines weekday and partial rows never shift`() {

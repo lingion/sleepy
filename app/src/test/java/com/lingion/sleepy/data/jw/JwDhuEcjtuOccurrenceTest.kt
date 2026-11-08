@@ -96,7 +96,7 @@ class JwDhuEcjtuOccurrenceTest {
     }
 
     @Test fun `ECJTU malformed blocks terminate locally and do not rename later valid courses`() {
-        val bad = listOf("-1-4 1,2", "1.5 1,2", "4-1 1,2", "2 0,2", "3 1.5,2", "2 1,31")
+        val bad = listOf("-1-4 1,2", "1.5 1,2", "4-1 1,2", "2 0,2", "3 1.5,2", "2 1,0")
             .mapIndexed { index, value -> "错误$index<br>坏教师@坏教室<br>$value<br>" }.joinToString("")
         val page = ecjtu("<tr><td>上午</td><td>$bad" +
             "有效课<br>真教师@真教室<br>9 2,4<br></td>" + "<td></td>".repeat(6) + "</tr>")

@@ -76,8 +76,8 @@ class JwNewUrpParser(source: String) : JwParser(source) {
                 val day = tp.optString("classDay", "").toIntOrNull() ?: continue
                 val startNode = tp.optString("classSessions", "").toIntOrNull() ?: continue
                 val continuing = tp.optString("continuingSession", "").toIntOrNull() ?: continue
-                if (day !in 1..7 || startNode !in 1..30 || continuing !in 1..30 || startNode > 30 - continuing + 1) continue
-                val endNode = startNode + continuing - 1
+                if (day !in 1..7) continue
+                val endNode = explicitScheduleEnd(startNode, continuing) ?: continue
                 val classWeek = tp.optString("classWeek", "")
                 val campus = tp.optString("campusName", "")
                 val building = tp.optString("teachingBuildingName", "")
@@ -162,7 +162,7 @@ class JwNewUrpParser(source: String) : JwParser(source) {
     }
 
     private fun parseWeekBits(s: String): List<Int> {
-        if (s.isEmpty() || s.length > 60 || s.any { it != '0' && it != '1' }) return emptyList()
+        if (s.isEmpty() || s.length > EXPLICIT_SCHEDULE_RESOURCE_BOUND || s.any { it != '0' && it != '1' }) return emptyList()
         val out = arrayListOf<Int>()
         for (i in s.indices) {
             if (s[i] == '1') out.add(i + 1)
