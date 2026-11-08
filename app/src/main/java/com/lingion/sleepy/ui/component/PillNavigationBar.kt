@@ -64,8 +64,16 @@ import com.lingion.sleepy.util.AppPrefs
 /**
  * 底栏单项数据。v2 起组件内部要管理 thumb 滑块几何(目标位置/逐字符扫过变色),
  * content lambda 拿不到子项坐标, API 从 { PillNavItem(...) } 改为数据驱动。
+ *
+ * [motionKey] = 图标专属动效键(仅 dock 两形态消费, 见 NavIconMotion.kt);
+ * 默认 None = 与无动画逐位一致。
  */
-data class PillNavItemSpec(val icon: ImageVector, val label: String, val badge: Boolean = false)
+data class PillNavItemSpec(
+    val icon: ImageVector,
+    val label: String,
+    val badge: Boolean = false,
+    val motionKey: NavIconMotionKey = NavIconMotionKey.None,
+)
 
 /**
  * 底栏 thumb 高亮状态 — 由调用方(AppRoot)在 NavDisplay 之外持有。
@@ -361,6 +369,17 @@ private fun DockNavigationBar(
     val capsuleShape = RoundedCornerShape(percent = 50)
     val glassBg = colors.surfaceContainer.copy(alpha = 0.86f)
 
+    // 图标专属动效驱动(NavIconMotion.kt)。经典 dock 无透镜, pressed =
+    // 本格手势 down..up 区间(observePressTracker 纯观察上报); 图标动效是纯
+    // graphicsLayer 变换, 不触碰 thumb 滑移/扫过变色等既有通路。
+    val cellPressed = remember(items) {
+        List(items.size) { mutableStateOf(false) }
+    }
+    val iconDrivers = rememberNavIconDrivers(items, selectedIndex)
+    NavIconDriverEffects(items, iconDrivers, selectedIndex) { i ->
+        cellPressed.getOrNull(i)?.value == true
+    }
+
     // 座位中心 = 内边距 + 座位宽/2 + i*(座位+间距) — 定宽几何, 直接算, 不实测
     val seatTotal = NavDockSpec.itemSeat + NavDockSpec.itemGap
     val centers = List(count) { i ->
@@ -440,6 +459,7 @@ private fun DockNavigationBar(
                     modifier = Modifier
                         .size(NavDockSpec.itemSeat, NavDockSpec.capsuleHeight)
                         .noRippleClickable { onSelect(i) }
+                        .observePressTracker(cellPressed[i])
                         .semantics {
                             role = Role.Tab
                             selected = isSel
@@ -452,7 +472,9 @@ private fun DockNavigationBar(
                             imageVector = item.icon,
                             contentDescription = null,
                             tint = lerp(colors.onSurfaceVariant, colors.onSecondaryContainer, iconCov),
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier
+                                .navIconMotion(iconDrivers.getOrNull(i))
+                                .size(24.dp)
                         )
                         // MD3E (Task 6): Dock 形态徽标点同款 popup 家族 (与贴底两处一致)
                         this@Column.AnimatedVisibility(

@@ -488,7 +488,7 @@ private fun MainRoute(
     updateNoticeVisible: Boolean,
     pillBarState: PillBarState,
 ) {
-    val navItems = Tab.entries.map { PillNavItemSpec(it.icon, stringResource(it.labelRes), badge = updateNoticeVisible && it == Tab.Mine) }
+    val navItems = Tab.entries.map { PillNavItemSpec(it.icon, stringResource(it.labelRes), badge = updateNoticeVisible && it == Tab.Mine, motionKey = it.motionKey) }
     val holder: SaveableStateHolder = rememberSaveableStateHolder()
     // 双击退出只在课表页生效;其它 tab 第一次返回回课表页。
     val ctxForExit = LocalContext.current
