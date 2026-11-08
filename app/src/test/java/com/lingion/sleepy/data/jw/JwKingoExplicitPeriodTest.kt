@@ -44,4 +44,10 @@ class JwKingoExplicitPeriodTest {
             assertTrue(nodes, WakeUpCompat.parseKingoSuperHtml(html).isEmpty())
         }
     }
+
+    @Test fun `legacy grid does not replace an overflowing end period with the start`() {
+        val html = """<div id="xkinfo"><table><tr><td class="td"><div>
+            无效课<br>教师<br>1-2[1-2147483648]<br>A101</div></td><td></td></tr></table></div>"""
+        assertTrue(JwKingoZxParser(html).generateCourseList().isEmpty())
+    }
 }

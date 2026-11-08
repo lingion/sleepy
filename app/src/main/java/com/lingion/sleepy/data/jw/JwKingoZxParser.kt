@@ -97,7 +97,8 @@ class JwKingoZxParser(source: String) : JwParser(source) {
                     val section = bracketSection.find(parts[2])
                     val firstSection = if (parts[2].substringAfter('[', "").startsWith("傍晚")) 9
                         else section?.groupValues?.get(1)?.toIntOrNull() ?: continue
-                    val lastSection = section?.groupValues?.get(2)?.toIntOrNull() ?: firstSection
+                    val lastSection = section?.groupValues?.get(2)?.takeIf(String::isNotBlank)
+                        ?.let { it.toIntOrNull() ?: continue } ?: firstSection
                     if (firstSection !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND ||
                         lastSection !in firstSection..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
                     for ((first, last, type) in weekRuns(parts[2].substringBefore('['))) {
