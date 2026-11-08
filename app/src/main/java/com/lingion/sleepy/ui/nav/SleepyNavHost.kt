@@ -50,7 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
@@ -720,9 +720,10 @@ private fun MainRoute(
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
+                    // 测量整个遮挡区域，包含系统导航栏和悬浮间距，供页面预留滚动空间。
+                    .onSizeChanged { size -> dockOverlayPx = size.height }
                     .windowInsetsPadding(WindowInsets.navigationBars)
-                    .padding(bottom = 12.dp)
-                    .onGloballyPositioned { c -> dockOverlayPx = c.size.height }
+                    .padding(bottom = NavDockSpec.bottomFloat)
             ) {
                 PillNavigationBar(
                     items = navItems,
