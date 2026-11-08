@@ -41,6 +41,8 @@ Paged school captures require all pages and validate completion before returning
 
 Source clock times, calendar dates and term length survive the editable import draft and entity conversion. Captured period times take precedence over source defaults. School-specific defaults remain scoped to the appropriate school and protocol.
 
+Confirmation rows cover both the highest course period and the highest source period. Unused source periods remain available in the draft and imported timetable; missing clock values stay empty for manual confirmation.
+
 NUIST row labels with either `~` or `～` declare two periods per row. When a course omits its packed period code, later rows keep their corresponding period pairs.
 
 ## Verification

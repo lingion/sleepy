@@ -947,20 +947,14 @@ class JwImportActivity : ComponentActivity() {
                                                 .resolve(htmlForParse, effectiveType, sch.name)
                                                 ?: getString(R.string.jw_import_title, sch.name)
                                             exitDraftState = exitDraftState.copy(activeImport = incomingDraftId != null)
-                                            // 根据课程实际节次数生成行；
-                                            // 如果 WebView 抓到 periods 则预填，否则空行让用户填
+                                            // 保留来源作息的全部节次；课程超出作息时留空行供用户填写。
                                             val maxNode = courses.maxOf { maxOf(it.startNode, it.endNode) }
                                             val sourcePeriods = com.lingion.sleepy.data.jw.JwSourcePeriods.resolve(
                                                 htmlForParse, effectiveType, sch.name, periods)
-                                            val periodMap = sourcePeriods.associate { it.first to (it.second to it.third) }
-                                            val newRows = (1..maxNode).map { node ->
-                                                val filled = periodMap[node]
-                                                TimeTableUtils.TimeSlotRow(
-                                                    node = node,
-                                                    start = filled?.first ?: "",
-                                                    end = filled?.second ?: ""
-                                                )
-                                            }
+                                            val newRows = com.lingion.sleepy.data.jw.JwSourcePeriods
+                                                .confirmationRows(maxNode, sourcePeriods).map { (node, start, end) ->
+                                                    TimeTableUtils.TimeSlotRow(node = node, start = start, end = end)
+                                                }
                                             configRows = newRows
                                             // 学期起始日预填: JSON 直连协议 (boya_pp/cqu/chaoxing) 能从
                                             // 接口拿到第一周周一 (如燕大 2026-2027-1 实为 2026-08-31,
