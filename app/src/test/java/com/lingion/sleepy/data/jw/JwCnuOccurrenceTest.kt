@@ -52,13 +52,18 @@ class JwCnuOccurrenceTest {
     }
 
     @Test fun `invalid timing and label columns cannot create default courses`() {
-        for (timing in listOf("周[1-2节]", "0-8周[1-2节]", "1-8周[0-2节]", "1-8周[5-3节]", "-1-8周[1-2节]", "1-8周[1.5节]", "1-8周[31节]", "1-8,待定周[1-2节]")) {
+        for (timing in listOf("周[1-2节]", "0-8周[1-2节]", "1-8周[0-2节]", "1-8周[5-3节]", "-1-8周[1-2节]", "1-8周[1.5节]", "1-8周[2147483648节]", "1-8,待定周[1-2节]")) {
             assertTrue(timing, parsed(table(row(1, 1, course("错误课", timing)))).isEmpty())
         }
         val labels = "<tr><td>${course("标签课", "1-8周[1-2节]")}</td>" + "<td></td>".repeat(7) + "</tr>"
         assertTrue(parsed(table(labels)).isEmpty())
         val wrongWidth = "<tr><td>标签</td><td>${course("列不完整", "1-8周[1-2节]")}</td></tr>"
         assertTrue(parsed(table(wrongWidth)).isEmpty())
+    }
+
+    @Test fun `explicit high section survives without an invented thirty section cap`() {
+        val html = table(row(1, 1, course("高级实验", "1-8周[31节]")))
+        assertEquals(listOf(JwCourse("高级实验", "A301", "张老师", 1, 31, 31, 1, 8)), parsed(html))
     }
 
     @Test fun `menu tbody cannot hide the real timetable and duplicate blocks do not duplicate occurrences`() {
