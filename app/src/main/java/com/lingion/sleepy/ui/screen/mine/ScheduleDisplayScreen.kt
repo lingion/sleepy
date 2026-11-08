@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -14,6 +15,12 @@ import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderState
+import com.lingion.sleepy.ui.component.liquidglass.GlassSliderThumb
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.material3.Text
 import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -176,12 +183,36 @@ private fun DisplaySlider(
     Column {
         Text("$label  $valueText", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
         Box {
-            Slider(value = value, onValueChange = onValueChange, onValueChangeFinished = onFinished, valueRange = range)
+            val sliderState = remember(range) {
+                SliderState(value = value, steps = 0, trackRange = range)
+            }
+            sliderState.value = value
+            val trackBackdrop = rememberLayerBackdrop()
+            Slider(
+                state = sliderState,
+                onValueChange = onValueChange,
+                onValueChangeFinished = onFinished,
+                thumb = { _ -> GlassSliderThumb(trackBackdrop = trackBackdrop) },
+                track = {
+                    Box(
+                        Modifier.fillMaxWidth().height(44.dp).layerBackdrop(trackBackdrop),
+                        contentAlignment = androidx.compose.ui.Alignment.Center,
+                    ) {
+                        androidx.compose.material3.SliderDefaults.Track(sliderState = sliderState)
+                    }
+                },
+            )
             if (singleSliderGhostVisible(value, initial, epsilon)) {
                 val baselineFrac = (initial - range.start) / (range.endInclusive - range.start)
+                val thumbWidthDp = if (LocalUiStyle.current == UiStyle.LiquidGlass) 37.dp else 4.dp
+                // 幽灵外形 = 真滑块静置外形 (2026-11-08 用户): 玻璃风格画 37x24 横胶囊
+                // + 同款淡色; Classic 传 null = 4dp 全高竖条原样。
+                val thumbHeightDp = if (LocalUiStyle.current == UiStyle.LiquidGlass) 24.dp else null
                 SingleSliderGhostMark(
                     baselineFrac = baselineFrac,
                     modifier = Modifier.testTag("display-slider-ghost"),
+                    thumbWidthDp = thumbWidthDp,
+                    thumbHeightDp = thumbHeightDp,
                 )
             }
         }

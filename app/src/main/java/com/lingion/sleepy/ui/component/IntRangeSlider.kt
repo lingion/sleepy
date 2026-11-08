@@ -6,9 +6,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Row
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.material3.MaterialTheme
@@ -34,7 +36,12 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.ui.component.liquidglass.GlassSliderThumb
+import com.lingion.sleepy.ui.component.liquidglass.GlassSliderThumbMetrics
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlinx.coroutines.coroutineScope
@@ -145,6 +152,7 @@ fun IntRangeSlider(
                     trackRange = trackRange,
                 )
             }
+            val trackBackdrop = rememberLayerBackdrop()
             sliderState.startValue = displayStart.toFloat()
             sliderState.endValue = displayEnd.toFloat()
             RangeSlider(
@@ -156,11 +164,20 @@ fun IntRangeSlider(
                 modifier = Modifier
                     .fillMaxWidth()
                     .semantics { contentDescription = if (label != null) "$label $summary" else summary },
+                startThumb = { rangeSliderState ->
+                    GlassSliderThumb(trackBackdrop = trackBackdrop)
+                },
+                endThumb = { rangeSliderState ->
+                    GlassSliderThumb(trackBackdrop = trackBackdrop)
+                },
                 track = { rangeSliderState ->
-                    // contentAlignment=Center: 真轨道 (16dp) 在盒内垂直居中, 幽灵
-                    // Canvas 撑满 thumb 全高 (44dp) — 盒高变化不移动真轨道视觉位置
-                    // (sliderHeight 本就由 44dp thumb 主导, trackOffsetY 同步抵消)
-                    Box(contentAlignment = Alignment.Center) {
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(44.dp)
+                            .layerBackdrop(trackBackdrop),
+                        contentAlignment = Alignment.Center,
+                    ) {
                         SliderDefaults.Track(
                             rangeSliderState = rangeSliderState,
                         )
@@ -183,6 +200,9 @@ fun IntRangeSlider(
                             val ghost = lastGhostRange
                             if (ghost != null) {
                                 val primary = colors.primary
+                                // 幽灵端帽形态分流 (2026-11-08 用户: 滑块长什么样幽灵就长
+                                // 什么样): Composable 上下文读风格, Canvas 只吃布尔。
+                                val glassThumb = LocalUiStyle.current == UiStyle.LiquidGlass
                                 val ghostStart = ghost.first
                                 val ghostEnd = ghost.last
                                 Canvas(
@@ -226,16 +246,42 @@ fun IntRangeSlider(
                                         cornerRadius = CornerRadius(corner, corner),
                                     )
                                 }
-                                // 两端条: 真 thumb 的 1:1 复刻 — 4dp 宽 x 44dp 全高
-                                // 全圆胶囊 (CornerFull), 只是半透明
+                                // 两端条: 真 thumb 的 1:1 复刻 (2026-11-08 用户:
+                                // "滑块长什么样，幽灵态就长什么样") — Classic = 4dp 宽
+                                // x 44dp 全高竖胶囊; 液态玻璃 = 真滑块静置外形
+                                // 37x24dp 横胶囊 + 同款主题淡色 (GlassSliderThumbMetrics
+                                // 单点真源, 禁手抄几何)。
                                 val barW = 4.dp.toPx()
-                                for (gx in floatArrayOf(g1, g2)) {
-                                    drawRoundRect(
-                                        color = primary.copy(alpha = 0.40f),
-                                        topLeft = Offset(gx - barW / 2f, 0f),
-                                        size = Size(barW, size.height),
-                                        cornerRadius = CornerRadius(barW / 2f, barW / 2f),
-                                    )
+                                val thumbW = GlassSliderThumbMetrics.RESTING_WIDTH.dp.toPx()
+                                val thumbH = GlassSliderThumbMetrics.RESTING_HEIGHT.dp.toPx()
+                                val thumbTop = (size.height - thumbH) / 2f
+                                val ghostThumbColor = GlassSliderThumbMetrics.restingColor(primary)
+                                // 玻璃端帽 x = 真 thumb 中心摆放公式 (singleSliderGhostX,
+                                // SliderLayout measurable 像素实测): 37dp 宽 thumb 轨道盒
+                                // 两端各缩进半个 thumb 宽 — 与 4dp 竖条的 track 端点公式
+                                // 不同源; 幽灵必须落在真滑块中心才叫"同款外形同位置"。
+                                fun ghostThumbX(value: Int): Float {
+                                    val frac = (value - minValue).toFloat() / (maxValue - minValue)
+                                    val f = if (isRtl) 1f - frac else frac
+                                    return singleSliderGhostX(size.width, f, steps, thumbW, trackH)
+                                }
+                                for (v in intArrayOf(ghostStart, ghostEnd)) {
+                                    val gx = if (glassThumb) ghostThumbX(v) else ghostX(v)
+                                    if (glassThumb) {
+                                        drawRoundRect(
+                                            color = ghostThumbColor.copy(alpha = 0.40f),
+                                            topLeft = Offset(gx - thumbW / 2f, thumbTop),
+                                            size = Size(thumbW, thumbH),
+                                            cornerRadius = CornerRadius(thumbH / 2f, thumbH / 2f),
+                                        )
+                                    } else {
+                                        drawRoundRect(
+                                            color = primary.copy(alpha = 0.40f),
+                                            topLeft = Offset(gx - barW / 2f, 0f),
+                                            size = Size(barW, size.height),
+                                            cornerRadius = CornerRadius(barW / 2f, barW / 2f),
+                                        )
+                                    }
                                 }
                             }
                             }
@@ -335,16 +381,25 @@ internal fun singleSliderGhostX(
  * 仅服务 Robolectric 存在性断言, 不参与朗读), 幽灵纯渲染 — 落库节奏仍归调用点
  * onValueChangeFinished 一克不动。BoxScope 扩展 = 本件只准放进 Box{ Slider; … }
  * 的轨道边界内 (matchParentSize 是 BoxScope 能力), 与双头幽灵同宿主形态。
+ *
+ * thumbHeightDp (2026-11-08 用户: "滑块长什么样子, 幽灵状态就是什么样子, 不是
+ * 液态玻璃椭圆滑块配 Material 竖条幽灵"): 非 null = 画 thumbWidthDp x thumbHeightDp
+ * 横胶囊 (全圆角) + 滑块同款主题淡色 (GlassSliderThumbMetrics.restingColor),
+ * 垂直居中 — 玻璃风格调用点 (DisplaySlider) 传 24dp 并同把 thumbWidthDp 切到 37dp;
+ * Classic 不传 (null) = 原 4dp 全高竖条一克不动, SingleSliderGhostGeometryTest
+ * 像素对拍走的就是这条默认分支。
  */
 @Composable
 internal fun BoxScope.SingleSliderGhostMark(
     baselineFrac: Float,
     modifier: Modifier = Modifier,
     steps: Int = 0,
+    thumbWidthDp: Dp = 4.dp,
+    thumbHeightDp: Dp? = null,
 ) {
     val primary = MaterialTheme.colorScheme.primary
     Canvas(modifier.matchParentSize()) {
-        val thumbW = 4.dp.toPx()
+        val thumbW = thumbWidthDp.toPx()
         val trackH = 16.dp.toPx()
         val barW = 4.dp.toPx()
         val frac = if (layoutDirection == LayoutDirection.Rtl) {
@@ -353,12 +408,24 @@ internal fun BoxScope.SingleSliderGhostMark(
             baselineFrac
         }
         val x = singleSliderGhostX(size.width, frac, steps, thumbW, trackH)
-        drawRoundRect(
-            color = primary.copy(alpha = 0.40f),
-            topLeft = Offset(x - barW / 2f, 0f),
-            size = Size(barW, size.height),
-            cornerRadius = CornerRadius(barW / 2f, barW / 2f),
-        )
+        val capsuleH = thumbHeightDp
+        if (capsuleH != null) {
+            // 玻璃幽灵 = 真滑块静置外形的半透明复刻 (37x24 横胶囊 + 同款淡色)
+            val ch = capsuleH.toPx()
+            drawRoundRect(
+                color = GlassSliderThumbMetrics.restingColor(primary).copy(alpha = 0.40f),
+                topLeft = Offset(x - thumbW / 2f, (size.height - ch) / 2f),
+                size = Size(thumbW, ch),
+                cornerRadius = CornerRadius(ch / 2f, ch / 2f),
+            )
+        } else {
+            drawRoundRect(
+                color = primary.copy(alpha = 0.40f),
+                topLeft = Offset(x - barW / 2f, 0f),
+                size = Size(barW, size.height),
+                cornerRadius = CornerRadius(barW / 2f, barW / 2f),
+            )
+        }
     }
 }
 

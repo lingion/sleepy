@@ -242,6 +242,53 @@ class LiquidGlassButtonScopeContractTest {
                 Regex("backdropAt\\(maxOf\\(1f, consumerDepth\\)\\)").containsMatchIn(segmented) &&
                 !segmented.contains("layerBackdrop("))
 
+        val range = loadSource("ui/component/IntRangeSlider.kt")
+        assertTrue("two-ended Material RangeSlider must provide glass thumbs in Liquid Glass mode",
+            range.contains("startThumb = { rangeSliderState ->") &&
+                range.contains("endThumb = { rangeSliderState ->") &&
+                range.contains("GlassSliderThumb(trackBackdrop = trackBackdrop)"))
+        val schedule = loadSource("ui/screen/mine/ScheduleDisplayScreen.kt")
+        assertTrue("single-ended Material Slider must use the same shared glass thumb",
+            schedule.contains("thumb = { _ -> GlassSliderThumb(trackBackdrop = trackBackdrop) }") &&
+                schedule.contains("SliderState(value = value, steps = 0, trackRange = range)"))
+        val sliderThumb = loadSource("ui/component/liquidglass/GlassSliderThumb.kt")
+        assertTrue("slider thumb must use Toggle's resting horizontal capsule geometry",
+            sliderThumb.contains("RESTING_WIDTH = 37f") &&
+                sliderThumb.contains("RESTING_HEIGHT = 24f") &&
+                sliderThumb.contains("LIFT_GROWTH_WIDTH = 16f") &&
+                sliderThumb.contains("LIFT_GROWTH_HEIGHT = 6f") &&
+                sliderThumb.contains("RoundedCornerShape(50)"))
+        assertTrue("slider thumb must draw with its own size so the 44dp Material slot does not stretch the capsule",
+            sliderThumb.contains("Box(\n        modifier\n            .size(width.dp, height.dp)"))
+        assertTrue(
+            "resting thumb must be a light tint of the theme color, not the track's primary " +
+                "(2026-11-08 用户: 静止时是白色/淡色, 按主题色里的淡色, 不得跟轨道同色)",
+            Regex("""lerp\(thumbColor, Color\.White, 0\.85f\)""").containsMatchIn(sliderThumb),
+        )
+        assertTrue(
+            "pressed lens must refract the track pixels beneath it: the sampling source combines the " +
+                "host scene prefix with the recorded track layer (2026-11-08 用户: 摁起来要把轨道包进透镜折射, " +
+                "不得是里面没东西的透明色块)",
+            sliderThumb.contains("rememberCombinedBackdrop") &&
+                sliderThumb.contains("backdropAt") &&
+                sliderThumb.contains("backdrop = lensSource"),
+        )
+
+        // 幽灵态 = 滑块静置外形 (2026-11-08 用户: "滑块长什么样，幽灵态就长什么样；
+        // 不是液态玻璃椭圆滑块配 Material 竖条幽灵") — 双头与单头两条通路都要按
+        // UiStyle 分支, Classic 4dp 细条通路一字不动 (SingleSliderGhostGeometryTest
+        // 像素对拍继续锁 Material thumb 同位)。
+        assertTrue("glass RangeSlider ghost must reuse the thumb's resting capsule width",
+            range.contains("GlassSliderThumbMetrics.RESTING_WIDTH.dp"))
+        assertTrue("glass RangeSlider ghost must center the capsule on the track band",
+            Regex("""thumbTop = \(size\.height - thumbH\) / 2f""").containsMatchIn(range))
+        assertTrue("glass RangeSlider ghost must tint with the thumb's light resting color",
+            range.contains("GlassSliderThumbMetrics.restingColor("))
+        assertTrue("glass DisplaySlider ghost must draw at the thumb's capsule height",
+            schedule.contains("thumbHeightDp = if (LocalUiStyle.current == UiStyle.LiquidGlass)") &&
+                schedule.contains("24.dp else null"))
+        assertTrue("single-slider ghost renders capsule only when a thumb height is supplied (Classic keeps the 4dp bar)",
+            range.contains("thumbHeightDp: Dp? = null"))
     }
 
     @Test
