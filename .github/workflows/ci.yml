@@ -92,6 +92,7 @@ jobs:
           node scripts/test_buaa_capture.cjs
           node scripts/test_json_school_capture.cjs
           node scripts/test_school_api_paged_context.cjs
+          node scripts/test_treewise_json_capture.cjs
 
   android-unit-test:
     runs-on: ubuntu-latest
