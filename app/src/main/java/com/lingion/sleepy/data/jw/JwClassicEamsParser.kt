@@ -1,5 +1,7 @@
 package com.lingion.sleepy.data.jw
 
+import org.json.JSONTokener
+
 /**
  * 经典金智/树维 EAMS (`courseTableForStd!courseTable.action` 系列) 课表解析器。
  *
@@ -229,12 +231,12 @@ class JwClassicEamsParser(
         task.name.takeIf { it.isNotBlank() }?.let { return it }
         val expr = task.nameExpr ?: return ""
         if (!expr.contains("courseNameLessonNo")) return ""
-        val re = Regex("""var\s+courseNameLessonNo\s*=\s*"([^"]*)"\s*;""")
+        val re = Regex("""var\s+courseNameLessonNo\s*=\s*("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')\s*;""")
         val preceding = re.findAll(source.substring(0, task.blockStart)).lastOrNull()
-        if (preceding != null) return preceding.groupValues[1]
+        if (preceding != null) return unquote(preceding.groupValues[1])
         val nextTask = Regex("""new\s+TaskActivity\(""").find(source, task.blockStart + 1)?.range?.first
             ?: source.length
-        return re.find(source.substring(task.blockStart, nextTask))?.groupValues?.get(1).orEmpty()
+        return re.find(source.substring(task.blockStart, nextTask))?.groupValues?.get(1)?.let(::unquote).orEmpty()
     }
 
     /**
@@ -270,8 +272,8 @@ class JwClassicEamsParser(
 
     private fun unquote(arg: String): String {
         val t = arg.trim()
-        if (t.length >= 2 && ((t.first() == '"' && t.last() == '"') || (t.first() == '\'' && t.last() == '\''))) {
-            return t.substring(1, t.length - 1)
+        if (isQuoted(t)) {
+            return runCatching { JSONTokener(t).nextValue() as? String }.getOrNull().orEmpty()
         }
         return t
     }
