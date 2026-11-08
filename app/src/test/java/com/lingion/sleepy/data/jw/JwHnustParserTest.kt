@@ -51,7 +51,7 @@ class JwHnustParserTest {
         // 真实页 "display: none;"（冒号后空格）与 fixture "display:none;"（无空格）必须都能命中
         val withSpace = """
 <html><body><table id="kbtable"><tr>
-<td><div id="1-1" style="display: none;">课A<br>王老师<br>1-10周<br>教室X</div></td>
+<td>节次</td><td><div id="1-1" style="display: none;">课A<br>王老师<br>1-10周<br>教室X</div></td>
 <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
 </tr></table></body></html>""".trimIndent()
         val noSpace = withSpace.replace("display: none;", "display:none;")
@@ -68,7 +68,7 @@ class JwHnustParserTest {
         // oldQzType=1（东北石油大学模式）：style != display:none 的 div 才是课
         val src = """
 <html><body><table id="kbtable"><tr>
-<td><div id="1-1">课B<br>李老师<br>1-8周<br>教室Y</div></td>
+<td>节次</td><td><div id="1-1">课B<br>李老师<br>1-8周<br>教室Y</div></td>
 <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
 </tr></table></body></html>""".trimIndent()
         val courses = JwHnustParser(src, 1).generateCourseList()
@@ -79,10 +79,10 @@ class JwHnustParserTest {
     }
 
     @Test
-    fun hnust_构造默认参数为0() {
-        // 默认 oldQzType=0：无 display:none 样式的页面 0 产出
-        val plain = """<html><body><table id="kbtable"><tr><td><div id="1-1">课C<br>师<br>1-2周<br>房</div></td></tr></table></body></html>"""
-        assertEquals(0, JwHnustParser(plain).generateCourseList().size)
+    fun hnust_默认按现代协议读取可见课程() {
+        // 当前协议不按 CSS 隐藏状态过滤；显式旧模式仍可单独选择。
+        val plain = """<html><body><table id="kbtable"><tr><td>节次</td><td><div id="1-1">课C<br>师<br>1-2周<br>房</div></td></tr></table></body></html>"""
+        assertEquals(1, JwHnustParser(plain).generateCourseList().size)
         assertEquals(1, JwHnustParser(plain, 1).generateCourseList().size)
     }
 }

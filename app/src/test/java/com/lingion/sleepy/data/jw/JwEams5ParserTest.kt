@@ -154,9 +154,8 @@ class JwEams5ParserTest {
     }
 
     @Test
-    fun `unmappable start time falls back to periods not dropped`() {
-        // KDoc 承诺 periods 兜底: startTime 缺失 (0) 时旧行为是整行丢弃;
-        // 现在退到 startNode=1, endNode = 1 + periods - 1
+    fun `duration without start time must not invent the first period`() {
+        // A duration cannot locate a class in the day.
         val p = JwEams5Parser("""
         {"result": {
           "lessonList": [{"id": 9001, "courseName": "兜底课"}],
@@ -167,9 +166,7 @@ class JwEams5ParserTest {
         }}
         """.trimIndent())
         val courses = p.generateCourseList()
-        assertEquals(1, courses.size)
-        assertEquals(1, courses[0].startNode)
-        assertEquals(3, courses[0].endNode)
+        assertTrue(courses.isEmpty())
     }
 
     @Test
@@ -360,7 +357,7 @@ class JwEams5ParserTest {
     }
 
     @Test
-    fun `AHU empty weekIndexes falls back to week 1`() {
+    fun `AHU empty weekIndexes does not invent week 1`() {
         val p = JwEams5Parser("""
         {
           "code": 200,
@@ -373,8 +370,7 @@ class JwEams5ParserTest {
           }]
         }
         """.trimIndent())
-        val c = p.generateCourseList().single()
-        assertEquals("空 weekIndexes 兜底 1", 1, c.startWeek)
+        assertTrue(p.generateCourseList().isEmpty())
     }
 
     // -------- parseWeekIndex 边界 (weekIndexes bitmap 单/双周标记) --------
@@ -586,17 +582,14 @@ class JwEams5ParserTest {
     }
 
     @Test
-    fun `parseWeekRanges - 空 bitmap 兜底 (1,1,0)`() {
+    fun `parseWeekRanges - 空周次不生成课程`() {
         val p = JwEams5Parser("""
         {"studentTableVms": [{"activities": [
           {"lessonId": "A", "courseName": "T空", "teacherNames": ["t"],
            "weekday": 1, "weekIndexes": "", "startUnit": 1, "endUnit": 2}
         ]}]}
         """.trimIndent())
-        val c = p.generateCourseList().single()
-        assertEquals("空 bitmap startWeek=1", 1, c.startWeek)
-        assertEquals("空 bitmap endWeek=1", 1, c.endWeek)
-        assertEquals("空 bitmap type=0", 0, c.type)
+        assertTrue(p.generateCourseList().isEmpty())
     }
 
     // -------- teacher 字段多形态 fallback (5 仓 teacherNames + teachers + teacher + personName) --------

@@ -232,7 +232,7 @@ class JwBjtuParser(source: String) : JwParser(source) {
         }
         return candidates.maxWithOrNull(
             compareBy<Candidate>({ it.courses.size }, { sectionPriority(it.label) })
-        )?.courses ?: emptyList()
+        )?.courses ?: JwUndergradLegacyParser(source, "bjtu").generateCourseList()
     }
 
     override fun confidence(): Int = when {
@@ -311,7 +311,7 @@ class JwBjtuParser(source: String) : JwParser(source) {
         val courses = mutableListOf<JwCourse>()
         val groups = linkedMapOf<String, MutableList<BlockInfo>>()
         for (b in infos) {
-            groups.getOrPut("${b.name}|${b.weeksText}|${b.room}|${b.day}") { mutableListOf() } += b
+            groups.getOrPut("${b.name}|${b.weeksText}|${b.room}|${b.teacher}|${b.day}") { mutableListOf() } += b
         }
         for (members in groups.values) {
             val first = members.first()
@@ -387,7 +387,7 @@ class JwBjtuParser(source: String) : JwParser(source) {
                 parts += t to teacher
             }
         }
-        return parts.distinctBy { it.first }
+        return parts.distinct()
     }
 
     /** 教师: 块内全部 i 标签 (ellipsis/title 路径用) */

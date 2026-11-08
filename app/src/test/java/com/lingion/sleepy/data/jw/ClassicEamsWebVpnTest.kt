@@ -51,11 +51,10 @@ class ClassicEamsWebVpnTest {
 
     @Test
     fun `ids 隐藏域兜底仅在 addInput 缺席时生效`() {
-        // §4 组合正则语义: 闭合 > 之后同行出现 value="数字" 才命中 (真实 NBCC 页
-        // 隐藏域恒空, 首选 addInput 承载全部提取 — 兜底形态按正则定义域测)。
-        val hidden = "<input type=\"hidden\" name=\"ids\">value=\"2024777777\""
+        // 隐藏域的 name 和 value 属于同一 input；有 addInput 时仍优先采用脚本参数。
+        val hidden = "<input type=\"hidden\" name=\"ids\" value=\"2024777777\">"
         assertEquals("2024777777", ClassicEamsWebVpn.extractIds(hidden))
-        // 兜底不跨行: 标签行后无同行 value=数字 即 null
+        // input 自身没有 value 时，不得从后续标签借值。
         val crossTag = "<input type=\"hidden\" name=\"ids\">\n<span value=\"123\"></span>"
         assertNull(ClassicEamsWebVpn.extractIds(crossTag))
         // addInput 存在时优先, 隐藏域不得越位
@@ -73,16 +72,16 @@ class ClassicEamsWebVpnTest {
         assertEquals("279", ClassicEamsWebVpn.extractSemesterId(spaced))
         // 真实 NBCC 形态: 隐藏域 value="" 为空 → 兜底提不出数字 (Dart 实测)
         assertNull(ClassicEamsWebVpn.extractSemesterId("<input id=\"s\" name=\"semester.id\" value=\"\">"))
-        // 兜底按 §4 组合正则定义域测: 闭合 > 之后同行 value="数字"
-        assertEquals("279", ClassicEamsWebVpn.extractSemesterId("<input name=\"semester.id\">value=\"279\""))
+        // 合法隐藏域把 value 写在 input 属性中。
+        assertEquals("279", ClassicEamsWebVpn.extractSemesterId("<input name=\"semester.id\" value=\"279\">"))
         // calendar 优先
-        val both = "<input name=\"semester.id\">value=\"280\"\n" + cal
+        val both = "<input name=\"semester.id\" value=\"280\">\n" + cal
         assertEquals("279", ClassicEamsWebVpn.extractSemesterId(both))
     }
 
     @Test
     fun `project 隐藏域数字值与缺省 1`() {
-        assertEquals("9", ClassicEamsWebVpn.extractProjectId("<input type=\"hidden\" name=\"project.id\">value=\"9\""))
+        assertEquals("9", ClassicEamsWebVpn.extractProjectId("<input type=\"hidden\" name=\"project.id\" value=\"9\">"))
         // 真实 NBCC 形态: <select ... name="project.id"> 空 option 列表 → 无数值 → null → 缺省 "1"
         assertNull(ClassicEamsWebVpn.extractProjectId("<select id=\"s\" name=\"project.id\">\n</select>"))
         val scope = scheduleScope(entryPage)
@@ -131,9 +130,9 @@ class ClassicEamsWebVpnTest {
     fun `隐藏学期域存在时补第三候选`() {
         val scope = """
             var form = document.courseTableForm;
-            <input name="semester.id">value="280"
+            <input name="semester.id" value="280">
             jQuery("#x").semesterCalendar({value:"279"},"searchTable()");
-            <input name="project.id">value="9"
+            <input name="project.id" value="9">
             bg.form.addInput(form,"ids","2024000001");
         """.trimIndent()
         val cands = ClassicEamsWebVpn.buildCandidates(scope)
@@ -147,7 +146,7 @@ class ClassicEamsWebVpnTest {
     fun `隐藏学期域与首选同值时去重为两组`() {
         val scope = """
             var form = document.courseTableForm;
-            <input name="semester.id">value="279"
+            <input name="semester.id" value="279">
             jQuery("#x").semesterCalendar({value:"279"});
             bg.form.addInput(form,"ids","2024000001");
         """.trimIndent()
@@ -156,7 +155,7 @@ class ClassicEamsWebVpnTest {
 
     @Test
     fun `ids 缺失时候选为空不猜`() {
-        val scope = """jQuery("#x").semesterCalendar({value:"279"});<input name="semester.id">value="" """
+        val scope = """jQuery("#x").semesterCalendar({value:"279"});<input name="semester.id" value=""> """
         assertEquals(emptyList<String>(), ClassicEamsWebVpn.buildCandidates(scope))
     }
 

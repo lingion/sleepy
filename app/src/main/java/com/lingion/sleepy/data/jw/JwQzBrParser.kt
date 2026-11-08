@@ -18,17 +18,8 @@ package com.lingion.sleepy.data.jw
  */
 class JwQzBrParser(source: String) : JwQzParser(source) {
 
-    /**
-     * 课名提取：用课名后第一个 `<br>` 截断，不再走 `<font` 路径。
-     * 上游原始实现见 QzBrParser.parseCourseName。
-     *
-     * 注意：上游没有对 substringBefore 缺失 `<br>` 做兜底，强行走 Jsoup 解析会
-     * 把整段 HTML 当课名；我们保留上游忠实行为，依赖 `generateCourseList`
-     * 入口处的 `courseElements.html()` 必然含 `<br>`（强智单元格结构）。
-     */
-    override fun parseCourseName(infoStr: String): String {
-        return infoStr.substringBefore("<br>").trim()
-    }
+    override fun parseCourseName(infoStr: String): String =
+        org.jsoup.Jsoup.parseBodyFragment(infoStr.substringBefore("<br>")).text().trim()
 
     /** T8 §2.5: 继承 kbtable 锚点 + br-not-font 特征 */
     override fun matchedFeatures(): List<String> =

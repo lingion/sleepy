@@ -169,7 +169,8 @@ class JwNewUrpSuperParserTest {
         assertEquals(2, JwNewUrpSuperParser(payload("110")).generateCourseList().single().endWeek)
         assertEquals(3, JwNewUrpSuperParser(payload("101")).generateCourseList().single().endWeek)
         assertTrue(JwNewUrpSuperParser(payload("10X")).generateCourseList().isEmpty())
-        assertTrue(JwNewUrpSuperParser(payload("1".repeat(61))).generateCourseList().isEmpty())
+        assertEquals(61, JwNewUrpSuperParser(payload("1".repeat(61))).generateCourseList().single().endWeek)
+        assertTrue(JwNewUrpSuperParser(payload("1".repeat(367))).generateCourseList().isEmpty())
     }
 
     @Test

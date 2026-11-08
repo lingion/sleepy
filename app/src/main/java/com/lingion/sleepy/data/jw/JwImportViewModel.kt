@@ -356,6 +356,7 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
          *  - B5 补 CF/PKU/BNUZ/HNUST URL 分支
          */
         internal fun detectProtocolFromUrlImpl(u: String): String? = when {
+            JwChaoxingShareCapture.isShareUrl(u) -> JwProtocol.TYPE_CHAOXING_SHARE
             // ⓪ CAS / authserver 统一身份认证网关页：只是一跳中转，不当任何协议指纹。
             //    service= 参数里常带 jwglxt 等业务路径，不与业务锚点同判（fp.cas-gateway）。
             u.matches(Regex(""".*/cas/login.*"""))
@@ -679,7 +680,15 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
      */
     fun toCourseEntities(courses: List<JwCourse>, tableId: Long, defaultColor: String): List<CourseEntity> {
         return courses.map { jw ->
-            val step = (jw.endNode - jw.startNode + 1).coerceAtLeast(1)
+            require(jw.day in 1..7 && jw.startNode >= 1 && jw.endNode >= jw.startNode &&
+                jw.startWeek >= 1 && jw.endWeek >= jw.startWeek && jw.type in 0..2) {
+                "课程的星期、节次或周次无效：${jw.name}"
+            }
+            require((jw.startTime.isEmpty() && jw.endTime.isEmpty()) ||
+                JwCourse.isValidTimeRange(jw.startTime, jw.endTime)) {
+                "课程起止时间无效：${jw.name}"
+            }
+            val step = jw.endNode - jw.startNode + 1
             CourseEntity(
                 id = 0,
                 groupId = "",
@@ -687,13 +696,19 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                 courseName = jw.name.ifBlank { "未命名" },
                 teacher = jw.teacher,
                 room = jw.room,
-                day = jw.day.coerceIn(1, 7),
-                startNode = jw.startNode.coerceAtLeast(1),
+                day = jw.day,
+                startNode = jw.startNode,
                 step = step,
-                startWeek = jw.startWeek.coerceAtLeast(1),
-                endWeek = jw.endWeek.coerceAtLeast(jw.startWeek),
+                startWeek = jw.startWeek,
+                endWeek = jw.endWeek,
                 type = jw.type,
-                color = defaultColor
+                color = defaultColor,
+                ownTime = jw.hasActualTime,
+                isIrregularTime = jw.hasActualTime,
+                startTime = jw.startTime,
+                endTime = jw.endTime,
+                credit = jw.credit,
+                note = jw.note,
             )
         }
     }

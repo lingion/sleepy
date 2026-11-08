@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="jw_dated_calendar_required">ページには授業日がありますが、学期開始日は確認できません。第1週の日付を入力してください。その週の月曜日から週数を計算します。選択した表示期間を第1週として扱うことはありません。</string>
+    <string name="jw_dated_calendar_rebase_hint">第1週の日付を変更すると授業の週数を再計算し、実際の授業日は維持します。</string>
+</resources>

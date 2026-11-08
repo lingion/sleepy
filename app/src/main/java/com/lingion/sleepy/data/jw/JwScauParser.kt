@@ -32,8 +32,53 @@ class JwScauParser(source: String) : JwParser(source) {
     override fun generateCourseList(): List<JwCourse> {
         val elementUi = parseElementUiStrategy()
         if (elementUi.isNotEmpty()) return elementUi
+        val explicit = parseExplicitSectionStrategy()
+        if (explicit.isNotEmpty()) return explicit
         val primary = parsePrimaryStrategy()
         return if (primary.isNotEmpty()) primary else parseFallbackStrategy()
+    }
+
+    private fun parseExplicitSectionStrategy(): List<JwCourse> {
+        val output = mutableListOf<JwCourse>()
+        val doc = Jsoup.parse(source)
+        doc.outputSettings().prettyPrint(false)
+        for (table in doc.select(SELECTOR_PRIMARY_TABLE)) {
+            for (row in table.select("tr")) {
+                for ((dayIndex, cell) in row.select(SELECTOR_TD_VALIGN_TOP).withIndex()) {
+                    val day = dayIndex + 1
+                    if (day !in 1..7) continue
+                    val lines = cell.html().split("<br>").map { Jsoup.parseBodyFragment(it).text().trim() }
+                    for ((index, line) in lines.withIndex()) {
+                        val section = Regex("\\(([^()]+)节\\)").find(line) ?: continue
+                        val packed = section.groupValues[1].trim()
+                        val sections = if ('-' in packed) {
+                            schoolNodeRanges(packed)
+                        } else {
+                            val split = when (packed.length) {
+                                1 -> packed to packed
+                                2 -> packed.take(1) to packed.takeLast(1)
+                                3 -> packed.take(1) to packed.takeLast(2)
+                                4 -> packed.take(2) to packed.takeLast(2)
+                                else -> continue
+                            }
+                            schoolNodeRanges("${split.first}-${split.second}")
+                        }
+                        val firstLineSection = index == 0
+                        val name = lines.getOrNull(if (firstLineSection) index else index - 1)?.takeIf { it.isNotBlank() } ?: continue
+                        val teacher = if (firstLineSection) "" else lines.getOrNull(index + 1) ?: continue
+                        val room = lines.getOrNull(index + if (firstLineSection) 1 else 2) ?: continue
+                        val weeks = lines.getOrNull(index + 3) ?: continue
+                        val parity = when { "(单)" in line || "（单）" in line -> 1; "(双)" in line || "（双）" in line -> 2; else -> 0 }
+                        for ((startWeek, endWeek, type) in parseWeekRuns(weeks, parity, globalParity = true)) {
+                            for ((startNode, endNode) in sections) output += JwCourse(
+                                name, room, teacher, day, startNode, endNode, startWeek, endWeek, type,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        return output
     }
 
     /** Pinned greyovo/ScheduleXParser_SCAU sample: Element UI's seven weekday cells follow a section cell. */
@@ -240,7 +285,7 @@ class JwScauParser(source: String) : JwParser(source) {
     }
 
     /** Keep sparse advertised weeks as separate runs. */
-    internal fun parseWeekRuns(text: String, parity: Int = 0): List<Triple<Int, Int, Int>> {
+    internal fun parseWeekRuns(text: String, parity: Int = 0, globalParity: Boolean = false): List<Triple<Int, Int, Int>> {
         val runs = mutableListOf<Triple<Int, Int, Int>>()
         for (token in text.split(',', '，', '、', ';', '；')) {
             val explicit = when {
@@ -248,14 +293,15 @@ class JwScauParser(source: String) : JwParser(source) {
                 token.contains("双") -> 2
                 else -> 0
             }
-            val tokenParity = if (explicit != 0) explicit else if (text.split(',', '，', '、', ';', '；').size == 1) parity else 0
+            if (globalParity && parity != 0 && explicit != 0 && parity != explicit) return emptyList()
+            val tokenParity = if (explicit != 0) explicit else if (globalParity || text.split(',', '，', '、', ';', '；').size == 1) parity else 0
             val clean = token.replace("（单）", "").replace("（双）", "")
                 .replace("(单)", "").replace("(双)", "")
                 .replace("单周", "").replace("双周", "").replace("周", "")
-            val match = Regex("""^ *([0-9]{1,2})(?: *[-－—~至] *([0-9]{1,2}))? *$""").matchEntire(clean) ?: continue
-            val start = match.groupValues[1].toInt()
-            val end = match.groupValues[2].toIntOrNull() ?: start
-            if (start !in 1..30 || end !in start..30) continue
+            val match = Regex("""^ *([0-9]+)(?: *[-－—~至] *([0-9]+))? *$""").matchEntire(clean) ?: return emptyList()
+            val start = match.groupValues[1].toIntOrNull() ?: return emptyList()
+            val end = match.groupValues[2].takeIf(String::isNotBlank)?.let { it.toIntOrNull() ?: return emptyList() } ?: start
+            if (start !in 1..366 || end !in start..366) return emptyList()
             val weeks = (start..end).filter { tokenParity == 0 || it % 2 == tokenParity % 2 }
             if (weeks.isEmpty()) continue
             var first = weeks.first()

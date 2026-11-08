@@ -68,7 +68,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.jw.EAMS5_PREFIX_PLACEHOLDER
 import com.lingion.sleepy.data.jw.JwImportViewModel
+import com.lingion.sleepy.data.jw.JwChaoxingShareCapture
 import com.lingion.sleepy.data.jw.JwProtocol
+import com.lingion.sleepy.data.jw.JwThuCapturePayload
 import com.lingion.sleepy.data.jw.JwSchoolInfo
 import com.lingion.sleepy.data.jw.eams5PathPrefixFor
 import com.lingion.sleepy.data.jw.initialDesktopUa
@@ -158,10 +160,50 @@ fun JwWebViewLoginScreen(
     val sepPortalHintMsg = stringResource(R.string.jw_err_ucas_sep_portal)
     val thuPageHintMsg = stringResource(R.string.jw_err_thu_course_page)
     val thuNavHintMsg = stringResource(R.string.jw_nav_hint_thu)
+    val kingoNavHintMsg = stringResource(R.string.jw_nav_hint_kingo_new)
     val fetchTimeoutMsg = stringResource(R.string.jw_fetch_timeout)
     val fetchNoCoursesMsg = stringResource(R.string.jw_fetch_no_courses)
     val fetchFallbackPeriodsMsg = stringResource(R.string.jw_fetch_fallback_periods)
     val urlInvalidMsg = stringResource(R.string.jw_url_invalid)
+
+    val thuCaptureToken = remember { java.util.concurrent.atomic.AtomicLong(0) }
+    fun deliverPageCapture(html: String) {
+        if (school.type != JwProtocol.TYPE_THU) {
+            onHtmlCaptured(html, school, emptyList(), "")
+            return
+        }
+        val wv = webViewRef ?: return
+        val initialUrl = wv.url
+        val token = thuCaptureToken.incrementAndGet()
+        fun fail(message: String) {
+            onCaptureError(FrameCaptureResult(null, "", emptyList(),
+                status = FrameCaptureStatus.UNKNOWN, diagnosticHint = message), message)
+        }
+        scope.launch {
+            try {
+                val payload = JwThuSemesterCapture.capture(html)
+                if (token != thuCaptureToken.get()) return@launch
+                if (webViewRef !== wv || wv.url != initialUrl) {
+                    fail("采集期间页面已改变，请在所选学期课表重新导入")
+                    return@launch
+                }
+                captureOnce(wv, school.type) { current ->
+                    if (token != thuCaptureToken.get()) return@captureOnce
+                    if (webViewRef !== wv || wv.url != initialUrl ||
+                        current.status !in setOf(FrameCaptureStatus.OK, FrameCaptureStatus.EMPTY_SEMESTER) ||
+                        !JwThuCapturePayload.sameSemester(html, current.html)) {
+                        fail("采集期间学期或页面已改变，请重新导入")
+                    } else {
+                        onHtmlCaptured(payload, school, emptyList(), "")
+                    }
+                }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                if (token == thuCaptureToken.get()) fail(e.message ?: fetchFailedNoResponseMsg)
+            }
+        }
+    }
 
     // wisedu (金智) 协议：WebView 内 fetch 课表 JSON 的回调结果处理
     // 桥回调已切到主线程；result 形如 {ok:true,data:"<xskcb.do JSON>"} 或 {ok:false,err:"..."}
@@ -246,7 +288,11 @@ fun JwWebViewLoginScreen(
                         }
                     }
                     val effectiveStartDate = termStart.ifBlank { termStartDate }
-                    onHtmlCaptured(data, school, periods, effectiveStartDate)
+                    val capturedSchool = if (obj.optString("protocol") == JwProtocol.TYPE_CHAOXING_SHARE &&
+                        JwChaoxingShareCapture.isShareUrl(currentUrl)) {
+                        school.copy(type = JwProtocol.TYPE_CHAOXING_SHARE)
+                    } else school
+                    onHtmlCaptured(data, capturedSchool, periods, effectiveStartDate)
                 }
             } else {
                 val err = obj.optString("err", "")
@@ -435,7 +481,11 @@ fun JwWebViewLoginScreen(
         },
         bottomBar = {
             CaptureBar(
-                navigationHint = if (school.type == JwProtocol.TYPE_THU) thuNavHintMsg else null,
+                navigationHint = when (school.type) {
+                    JwProtocol.TYPE_THU -> thuNavHintMsg
+                    JwProtocol.TYPE_KINGO_NEW -> kingoNavHintMsg
+                    else -> null
+                },
                 enabled = webViewRef != null,
                 onCapture = {
                     val wv = webViewRef
@@ -449,9 +499,34 @@ fun JwWebViewLoginScreen(
                         )
                         return@CaptureBar
                     }
+                    if (school.type == JwProtocol.TYPE_CHAOXING_SHARE ||
+                        JwChaoxingShareCapture.isShareUrl(wv.url.orEmpty())) {
+                        evaluateFetchWithTimeout(wv, JwChaoxingShareCapture.FETCH_JS)
+                        return@CaptureBar
+                    }
                     val url = wv.url ?: ""
                     Log.d("JwWebView", "capture tapped, current url=$url")
                     scope.launch { snackbar.showSnackbar(fetchingMsg) }
+                    JwTreewiseJsonCapture.scriptFor(school.type)?.let { script ->
+                        evaluateFetchWithTimeout(wv, script)
+                        return@CaptureBar
+                    }
+                    JwPagedSchoolCapture.scriptFor(school.type)?.let { script ->
+                        evaluateFetchWithTimeout(wv, script, 65_000L)
+                        return@CaptureBar
+                    }
+                    JwJsonSchoolCapture.scriptFor(school.type)?.let { script ->
+                        evaluateFetchWithTimeout(wv, script, 65_000L)
+                        return@CaptureBar
+                    }
+                    JwBuaaCapture.scriptFor(school.type)?.let { script ->
+                        evaluateFetchWithTimeout(wv, script)
+                        return@CaptureBar
+                    }
+                    JwSchoolApiCapture.scriptFor(school.type)?.let { script ->
+                        evaluateFetchWithTimeout(wv, script)
+                        return@CaptureBar
+                    }
                     // sg_asset (拾光适配脚本通用通路, 上游 shiguang_warehouse MIT):
                     // 按 vendor manifest 取该校拾光 JS, 前置桥接 shim 后整段 evaluate。
                     // 解码唯一落点 = JwSgAssetParser (shim 只传输)。脚本可跑数十秒,
@@ -610,7 +685,7 @@ fun JwWebViewLoginScreen(
                         return@CaptureBar
                     }
                     // T7: DFS frame 抓取 + ready 重试, 决策在 JVM 层(可测可日志)
-                    captureWithRetry(wv, 0) { r ->
+                    captureWithRetry(wv, 0, school.type) { r ->
                         Log.d("JwWebView", "captured frame=${r.selectedFramePath} anchors=${r.matchedAnchors} status=${r.status}")
                         // #18: UCAS 入口是 SEP 门户, 学生登录后常停在 SEP 应用列表页点导入
                         // (还没跳到 xkgo 课表页) → hint 换成精确动线指引, Activity 对
@@ -627,7 +702,7 @@ fun JwWebViewLoginScreen(
                         } else r.diagnosticHint
                         when (r.status) {
                             FrameCaptureStatus.OK, FrameCaptureStatus.EMPTY_SEMESTER ->
-                                onHtmlCaptured(r.html, school, emptyList(), "")   // 0 课交给 Activity 按空学期文案报
+                                deliverPageCapture(r.html)
                             FrameCaptureStatus.SESSION_EXPIRED,
                             FrameCaptureStatus.CROSS_DOMAIN_IFRAME_BLOCKED,
                             FrameCaptureStatus.CONTAINER_EMPTY_AFTER_DELAY,
@@ -657,7 +732,7 @@ fun JwWebViewLoginScreen(
                     if (!editingUrl && !url.isNullOrBlank()) currentUrl = url
                 },
                 onWebViewCreated = { wv -> webViewRef = wv },
-                onHtmlCaptured = { html -> onHtmlCaptured(html, school, emptyList(), "") },
+                onHtmlCaptured = { html -> deliverPageCapture(html) },
                 onWiseduResult = handleWiseduResult,
                 onWebViewReady = onWebViewReady
             )
@@ -1680,6 +1755,22 @@ private const val BOYA_PP_FETCH_JS = """
 private const val WHUT_FETCH_JS = """
 (function(){
   try {
+    function legacyFrame(w, depth) {
+      if (!w || depth > 8) return null;
+      try {
+        if (w.document.querySelector('#xqkb .table-class-even')) return w;
+        for (var i=0; i<w.frames.length; i++) {
+          var found = legacyFrame(w.frames[i], depth+1);
+          if (found) return found;
+        }
+      } catch(e) {}
+      return null;
+    }
+    var legacy = legacyFrame(window, 0);
+    if (legacy) {
+      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true, data:legacy.document.documentElement.outerHTML, periods:[]}));
+      return;
+    }
     if (location.hostname.indexOf('whut.edu.cn') < 0) {
       window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'请先登录并进入武汉理工教务后再点导入'}));
       return;
@@ -1721,13 +1812,6 @@ private const val WHUT_FETCH_JS = """
           if (n < 10) sectionMap = fallbackMap;
         } catch(e) { sectionMap = fallbackMap; }
       }).catch(function(){ sectionMap = fallbackMap; });
-      var applyMap = function(rows){
-        for (var i = 0; i < rows.length; i++) {
-          var r = rows[i];
-          if (sectionMap[r.KSJC] != null) r.KSJC = String(sectionMap[r.KSJC]);
-          if (sectionMap[r.JSJC] != null) r.JSJC = String(sectionMap[r.JSJC]);
-        }
-      };
       return mapReady.then(function(){
         // 3) 主通道: wdkbby/学生课程表 cxxszhxqkb.do (2026-09 用户采集包实锤 —
         //    学生"我的课表"页面走这条: POST XNXQDM → datas.cxxszhxqkb.rows[],
@@ -1737,7 +1821,8 @@ private const val WHUT_FETCH_JS = """
         .then(function(k){
           var rows = (k.datas && k.datas.cxxszhxqkb && k.datas.cxxszhxqkb.rows) || [];
           if (rows.length > 0) {
-            applyMap(rows);
+            // Preserve raw DM values. Kotlin owns the only DM-to-period conversion.
+            k.sleepyWhutSectionMap = sectionMap;
             window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true, data:JSON.stringify(k), periods:[]}));
             return null;
           }
@@ -1746,7 +1831,7 @@ private const val WHUT_FETCH_JS = """
           .then(function(k2){
             var rows2 = (k2.datas && k2.datas.cxxskcb && k2.datas.cxxskcb.rows) || [];
             if (rows2.length === 0) throw new Error('课表为空: 请确认已在教务"我的课表"页可见本学期课程');
-            applyMap(rows2);
+            k2.sleepyWhutSectionMap = sectionMap;
             window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true, data:JSON.stringify(k2), periods:[]}));
           });
         });
@@ -2030,7 +2115,8 @@ private const val CLASSIC_EAMS_FETCH_JS = """
         if (bind < 0) continue;
         var scope = t.substring(bind);
         if (/addInput\(\s*form\s*,\s*["']ids["']\s*,\s*["'](\d+)["']/.test(scope) ||
-            /semesterCalendar\(\{[^}]*value\s*:\s*["'](\d+)["']/.test(scope)) {
+            /semesterCalendar\(\{[^}]*["']?\bvalue["']?\s*:\s*["'](\d+)["']/.test(scope) ||
+            /<input\b(?=[^>]*\sname\s*=\s*["']ids["'])(?=[^>]*\svalue\s*=\s*["'](\d+)["'])[^>]*>/.test(scope) || /<input\b(?=[^>]*\sname\s*=\s*["']semester\.id["'])(?=[^>]*\svalue\s*=\s*["'](\d+)["'])[^>]*>/.test(scope)) {
           pageUrl = texts[j][1];
           return scope;
         }
@@ -2063,12 +2149,12 @@ private const val CLASSIC_EAMS_FETCH_JS = """
     // ② 参数提取 (宽松 regex, §4; ids 取不到 → 不猜, 直接 err)
     function pick(re){ var m = scope.match(re); return m ? m[1] : null; }
     var ids = pick(/addInput\(\s*form\s*,\s*["']ids["']\s*,\s*["'](\d+)["']/)
-           || pick(/<[^>]*\bname\s*=\s*["']ids["'][^>]*>.*?\bvalue\s*=\s*["'](\d+)["']/);
+           || pick(/<input\b(?=[^>]*\sname\s*=\s*["']ids["'])(?=[^>]*\svalue\s*=\s*["'](\d+)["'])[^>]*>/);
     if (!ids) { fail('未能从课表页提取学号参数, 请在课表页停留后重试'); return; }
-    var semCal = pick(/semesterCalendar\(\{[^}]*value\s*:\s*["'](\d+)["']/)
-              || pick(/<[^>]*\bname\s*=\s*["']semester\.id["'][^>]*>.*?\bvalue\s*=\s*["'](\d+)["']/);
-    var semHidden = pick(/<[^>]*\bname\s*=\s*["']semester\.id["'][^>]*>.*?\bvalue\s*=\s*["'](\d+)["']/);
-    var projectId = pick(/<[^>]*\bname\s*=\s*["']project\.id["'][^>]*>.*?\bvalue\s*=\s*["'](\d+)["']/) || '1';
+    var semCal = pick(/semesterCalendar\(\{[^}]*["']?\bvalue["']?\s*:\s*["'](\d+)["']/)
+              || pick(/<input\b(?=[^>]*\sname\s*=\s*["']semester\.id["'])(?=[^>]*\svalue\s*=\s*["'](\d+)["'])[^>]*>/);
+    var semHidden = pick(/<input\b(?=[^>]*\sname\s*=\s*["']semester\.id["'])(?=[^>]*\svalue\s*=\s*["'](\d+)["'])[^>]*>/);
+    var projectId = pick(/<input\b(?=[^>]*\sname\s*=\s*["']project\.id["'])(?=[^>]*\svalue\s*=\s*["'](\d+)["'])[^>]*>/) || '1';
     // ③ 候选 ≤3 组, Dart buildCourseTableParamsCandidates 同序 (§3.1-③), 去重
     var semesters = [];
     if (semCal) semesters.push(semCal);
@@ -2751,9 +2837,11 @@ const val RESOURCE_REPLAY_JS = """
 """
 
 /** 单次抓取: evaluateJavascript → FrameSnapshot.fromJson → selectBestFrame。回调已在主线程。 */
-private fun captureOnce(wv: WebView, onResult: (FrameCaptureResult) -> Unit) {
+private fun captureOnce(wv: WebView, declaredType: String?, onResult: (FrameCaptureResult) -> Unit) {
     wv.evaluateJavascript(
-        CAPTURE_FRAMES_JS_TEMPLATE + "(8);",
+        (if (declaredType == JwProtocol.TYPE_THU) CAPTURE_FRAMES_JS_TEMPLATE.replace(
+            "win.document.documentElement.outerHTML", JwThuSemesterCapture.LIVE_HTML_JS)
+        else CAPTURE_FRAMES_JS_TEMPLATE) + "(8);",
         ValueCallback<String> { raw ->
             if (raw.isNullOrEmpty() || raw == "null") {
                 onResult(FrameCaptureResult(null, "", emptyList(),
@@ -2766,7 +2854,7 @@ private fun captureOnce(wv: WebView, onResult: (FrameCaptureResult) -> Unit) {
                 val unquoted = if (raw.startsWith("\""))
                     org.json.JSONTokener(raw).nextValue().toString()
                 else raw
-                onResult(FrameTraversalTree.selectBestFrame(FrameSnapshotList.fromJson(unquoted)))
+                onResult(FrameTraversalTree.selectBestFrame(FrameSnapshotList.fromJson(unquoted), declaredType = declaredType))
             } catch (e: Exception) {
                 Log.e("JwWebView", "parse frame snapshot failed", e)
                 onResult(FrameCaptureResult(null, "", emptyList(),
@@ -2777,8 +2865,8 @@ private fun captureOnce(wv: WebView, onResult: (FrameCaptureResult) -> Unit) {
 }
 
 /** 带重试的抓取: 空壳 iframe / 延迟渲染容器按 1500ms 间隔重试, 至多 3 次。 */
-private fun captureWithRetry(wv: WebView, retryCount: Int, onResult: (FrameCaptureResult) -> Unit) {
-    captureOnce(wv) { first ->
+private fun captureWithRetry(wv: WebView, retryCount: Int, declaredType: String?, onResult: (FrameCaptureResult) -> Unit) {
+    captureOnce(wv, declaredType) { first ->
         // ① 空壳 iframe: 先于 Readiness 判定(about:blank 壳不属于"容器空")
         val shell = first.html.isBlank() || RenderReadinessChecker.checkBlankShell(first.html)
         // ② readiness 只看选中 frame 的 html
@@ -2791,7 +2879,7 @@ private fun captureWithRetry(wv: WebView, retryCount: Int, onResult: (FrameCaptu
             RenderReadinessChecker.Readiness.READY -> onResult(first)
             RenderReadinessChecker.Readiness.DELAY -> {
                 Log.d("JwWebView", "frame not ready, retry #${retryCount + 1} after 1500ms")
-                wv.postDelayed({ captureWithRetry(wv, retryCount + 1, onResult) }, 1500L)
+                wv.postDelayed({ captureWithRetry(wv, retryCount + 1, declaredType, onResult) }, 1500L)
             }
             RenderReadinessChecker.Readiness.GIVE_UP -> onResult(first.copy(
                 status = when {

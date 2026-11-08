@@ -1,5 +1,8 @@
 package com.lingion.sleepy.data.jw
 
+import org.jsoup.Jsoup
+import org.json.JSONObject
+
 /**
  * 武汉理工大学 (WHUT) — 金智 wisedu jwapp 变体解析器 (2026-09-05 调研落地)。
  *
@@ -14,8 +17,8 @@ package com.lingion.sleepy.data.jw
  *    HEU 数据喂进来也照常解析 (兼容回归测试钉死)。
  * 2. **节次 DM ≠ 物理节次**: WHUT 大节 DM 序列 1..16 中 6/7/13 缺位
  *    (中课/晚课大节), DM 8→物理6, 9→7, 14→11 …。不映射则下午/晚上课全部
- *    错位。表外 DM (教务改版新增) 原值直通, 禁丢行。实机上取数 JS 先拉
- *    jcjcx.do 动态映射, 此表兜底。
+ *    错位。表外 DM (教务改版新增) 原值直通, 禁丢行。取数 JS 透传
+ *    jcjcx.do 动态映射和原始 DM，由本解析器唯一转换，此表兜底。
  *
  * 上游协议形态参考: XingHeYuZhuan/shiguang_warehouse (MIT) resources/WHUT/whut_01.js
  * 与 TokenTeam/iwut (AGPL-3.0, 仅引协议形态不抄码)。代码自写, 节次映射表
@@ -24,6 +27,45 @@ package com.lingion.sleepy.data.jw
  * 取数 JS (登录态 WebView fetch): 见 JwWebViewLoginScreen WHUT_FETCH_JS。
  */
 class JwWhutParser(source: String) : JwWiseduParser(source) {
+
+    private val legacyTable by lazy { Jsoup.parse(source).selectFirst("#xqkb .table-class-even") }
+    private val dynamicSections by lazy {
+        runCatching {
+            JSONObject(source).optJSONObject("sleepyWhutSectionMap")?.let { values ->
+                values.keys().asSequence().mapNotNull { key ->
+                    val dm = key.toIntOrNull()?.takeIf { it > 0 } ?: return@mapNotNull null
+                    val node = values.opt(key)?.toString()?.toIntOrNull()?.takeIf { it in 1..30 } ?: return@mapNotNull null
+                    dm to node
+                }.toMap()
+            }.orEmpty()
+        }.getOrDefault(emptyMap())
+    }
+
+    override fun generateCourseList(): List<JwCourse> {
+        val table = legacyTable ?: return super.generateCourseList()
+        return buildList {
+            for (row in table.select("tr").filter { it.closest("table") == table }) {
+                val cells = row.children().filter { it.tagName() == "td" }.dropWhile { !it.hasAttr("style") }
+                for ((index, cell) in cells.withIndex()) {
+                    val day = index + 1
+                    if (day !in 1..7) continue
+                    for (item in cell.select("a")) {
+                        val name = item.ownText().trim()
+                        val children = item.children()
+                        if (name.isEmpty() || children.size < 2) continue
+                        val time = children[1].text().trim().replace('（', '(').replace('）', ')')
+                        val match = Regex("""(.+)\(([^()]*)节\)""").matchEntire(time) ?: continue
+                        val weeks = schoolWeekRanges(match.groupValues[1])
+                        // HTML already contains physical periods. Only the JSON path uses DM mapping.
+                        for ((first, last) in schoolNodeRanges(match.groupValues[2])) for ((from, to, type) in weeks) {
+                            add(JwCourse(name, children[0].text().trim().removePrefix("@"), "", day,
+                                first, last, from, to, type))
+                        }
+                    }
+                }
+            }
+        }.distinct()
+    }
 
     companion object {
         /**
@@ -42,9 +84,10 @@ class JwWhutParser(source: String) : JwWiseduParser(source) {
 
     override val moduleNames: List<String> = listOf("cxxszhxqkb", "cxxskcb", "xskcb")
 
-    override fun mapSection(dm: Int): Int = mapSectionDm(dm)
+    override fun mapSection(dm: Int): Int = dynamicSections[dm] ?: mapSectionDm(dm)
 
     override fun confidence(): Int = when {
+        legacyTable != null -> 100
         // 2026-09 采集包实锤: 学生课表主通道 wdkbby/cxxszhxqkb.do
         source.contains("cxxszhxqkb") -> 96
         source.contains("cxxskcb.do") -> 95
@@ -59,6 +102,7 @@ class JwWhutParser(source: String) : JwWiseduParser(source) {
 
     override fun matchedFeatures(): List<String> =
         super.matchedFeatures() + buildList {
+            if (legacyTable != null) add("xqkb/table-class-even")
             if (source.contains("cxxszhxqkb")) add("wdkbby/cxxszhxqkb.do")
             if (source.contains("cxxskcb.do")) add("kcbcxby/cxxskcb.do")
             if (source.contains("cxxskcb")) add("datas.cxxskcb.rows")

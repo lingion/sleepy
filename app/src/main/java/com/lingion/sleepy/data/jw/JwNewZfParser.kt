@@ -433,7 +433,7 @@ class JwNewZfParser(source: String) : JwParser(source) {
 
         // ── 1. 上游 NewZFParser.kt 期望结构 ──
         val table1 = doc.getElementById("table1")
-        if (table1 != null && table1.selectFirst("td.festival") != null) {
+        if (table1 != null) {
             val result = parseTable1FestivalView(table1)
             if (result.isNotEmpty()) return result
         }
@@ -475,11 +475,6 @@ class JwNewZfParser(source: String) : JwParser(source) {
         val result = mutableListOf<JwCourse>()
         val trs = table.getElementsByTag("tr")
         for (tr in trs) {
-            // 行头: 节次数字 (class="festival")
-            val nodeStr = tr.getElementsByClass("festival").text().trim()
-            if (nodeStr.isEmpty()) continue
-            val rowNode = nodeStr.toIntOrNull() ?: continue
-
             val tds = tr.getElementsByTag("td")
             for (td in tds) {
                 // 跳过无 id 的 td(表头星期单元格)
@@ -502,31 +497,32 @@ class JwNewZfParser(source: String) : JwParser(source) {
                     var teacher = ""
                     var room = ""
                     var timeStr = ""
+                    var credit = 0f
+                    var note = ""
                     val pList = div.getElementsByTag("p")
                     for (p in pList) {
-                        when (p.attr("title")) {
+                        val titleElement = p.getElementsByAttribute("title").firstOrNull()
+                        val label = titleElement?.attr("title")?.trim().orEmpty()
+                            .ifEmpty { titleElement?.attr("data-original-title")?.trim().orEmpty() }
+                        when (label) {
                             "教师" -> teacher = p.text().trim()
                             "上课地点" -> room = p.text().trim()
                             "节/周", "周/节" -> timeStr = p.text().trim()
+                            "学分" -> credit = p.text().trim().toFloatOrNull()?.takeIf { it.isFinite() && it >= 0f } ?: 0f
+                            "选课备注" -> note = p.text().trim()
                         }
                     }
                     if (timeStr.isEmpty()) continue
 
-                    // 节/周文本解析: "(N-M节)X-Y周(单),A-B周(双)"
-                    val nodeInfo = NODE_PATTERN.find(timeStr)?.value ?: continue
-                    val nodes = nodeInfo.substring(1).removeSuffix("节").split("-")
-                    var startNode = nodes.getOrNull(0)?.toIntOrNull() ?: continue
-                    val endNode = nodes.getOrNull(1)?.toIntOrNull() ?: startNode
-                    // (N-M节) 优先, 行头 rowNode 仅作缺省
-                    if (startNode <= 0) startNode = rowNode
-
-                    // 周次段
-                    val weekList = NODE_PATTERN.replace(timeStr, "").split(",")
-                    for (weekPart in weekList) {
-                        val trimmed = weekPart.trim()
-                        if (trimmed.isEmpty()) continue
-                        val ranges = parseWeekStr(trimmed)
-                        for (r in ranges) {
+                    val schedule = timeStr.replace('（', '(').replace('）', ')')
+                    val section = Regex("\\(([^()]*)节\\)").find(schedule) ?: continue
+                    val nodes = parseSectionRanges(section.groupValues[1])
+                        .filter { it.first in 1..30 && it.second in it.first..30 }
+                    if (nodes.isEmpty()) continue
+                    val weekText = schedule.substring(section.range.last + 1)
+                    val ranges = parseWeekStr(weekText)
+                    for (r in ranges) {
+                        for ((startNode, endNode) in nodes) {
                             result += JwCourse(
                                 name = courseName,
                                 room = room,
@@ -536,7 +532,9 @@ class JwNewZfParser(source: String) : JwParser(source) {
                                 endNode = endNode,
                                 startWeek = r.first,
                                 endWeek = r.second,
-                                type = r.third
+                                type = r.third,
+                                credit = credit,
+                                note = note,
                             )
                         }
                     }

@@ -1,0 +1,74 @@
+{
+  "calendar": {
+    "id": "term-a",
+    "allWeek": 3,
+    "startTime": "2026-09-02"
+  },
+  "time": [
+    "08:00-08:45"
+  ],
+  "weeks": [
+    {
+      "week": 1,
+      "data": {
+        "calendar": {
+          "id": "term-a",
+          "allWeek": 3,
+          "startTime": "2026-09-02"
+        },
+        "time": [
+          "08:00-08:45"
+        ],
+        "wdkb": [
+          {
+            "kcmc": "逐周课程",
+            "xqj": "三",
+            "jc": "1,3",
+            "jxdd": "A楼",
+            "jsxm": "张老师",
+            "qsz": 1,
+            "jsz": 20
+          }
+        ]
+      }
+    },
+    {
+      "week": 2,
+      "data": {
+        "calendar": {
+          "id": "term-a",
+          "allWeek": 3,
+          "startTime": "2026-09-02"
+        },
+        "time": [
+          "08:00-08:45"
+        ],
+        "wdkb": []
+      }
+    },
+    {
+      "week": 3,
+      "data": {
+        "calendar": {
+          "id": "term-a",
+          "allWeek": 3,
+          "startTime": "2026-09-02"
+        },
+        "time": [
+          "08:00-08:45"
+        ],
+        "wdkb": [
+          {
+            "kcmc": "逐周课程",
+            "xqj": "三",
+            "jc": "1,3",
+            "jxdd": "A楼",
+            "jsxm": "张老师",
+            "qsz": 1,
+            "jsz": 20
+          }
+        ]
+      }
+    }
+  ]
+}

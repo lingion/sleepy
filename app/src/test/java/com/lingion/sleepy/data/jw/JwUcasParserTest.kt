@@ -14,18 +14,9 @@ class JwUcasParserTest {
 
     // ---- HTML 路径 (fallback) ----
 
-    @Test fun `parses UCAS schedule grid and merges adjacent nodes`() {
+    @Test fun `UCAS grid without explicit weeks does not create provisional courses`() {
         val courses = JwUcasParser(htmlFixture()).generateCourseList()
-        assertEquals(6, courses.size)
-        val theory = courses.single { it.name == "新时代中国特色社会主义理论与实践" }
-        assertEquals(1, theory.day)
-        assertEquals(1, theory.startNode)
-        assertEquals(2, theory.endNode)
-        assertEquals(JwUcasParser.PROVISIONAL_START_WEEK, theory.startWeek)
-        assertEquals(JwUcasParser.PROVISIONAL_END_WEEK, theory.endWeek)
-        val architecture = courses.single { it.name == "计算机体系结构" && it.day == 1 }
-        assertEquals(10, architecture.startNode)
-        assertEquals(11, architecture.endNode)
+        assertEquals(emptyList<JwCourse>(), courses)
     }
 
     @Test fun `UCAS HTML parser identifies captured page shape`() {
@@ -160,10 +151,8 @@ class JwUcasParserTest {
 
         // 详情页里的周四块在网格没有对应格子 → 不造课 (网格权威)
         assertTrue(courses.none { it.name == "网络攻防基础" && it.day == 4 })
-        // 无详情的课保持占位
-        val badminton = courses.single { it.name == "羽毛球" }
-        assertEquals(JwUcasParser.PROVISIONAL_START_WEEK, badminton.startWeek)
-        assertEquals(JwUcasParser.PROVISIONAL_END_WEEK, badminton.endWeek)
+        // 无详情的课不能虚构整学期周次。
+        assertTrue(courses.none { it.name == "羽毛球" })
     }
 
     @Test fun `continuous weeks stay single course and room is enriched`() {
@@ -182,9 +171,7 @@ class JwUcasParserTest {
         assertEquals("教一楼107", theory.room)
 
         // 同名但节点不重叠的格子 (计算机体系结构 周六第 2 节 vs 详情块周一 1-2) 不误挂
-        val arch = courses.single { it.name == "计算机体系结构" && it.day == 6 }
-        assertEquals(JwUcasParser.PROVISIONAL_START_WEEK, arch.startWeek)
-        assertEquals(JwUcasParser.PROVISIONAL_END_WEEK, arch.endWeek)
+        assertTrue(courses.none { it.name == "计算机体系结构" && it.day == 6 })
     }
 
     @Test fun `parity week runs collapse to a single odd or even course`() {
@@ -218,13 +205,10 @@ class JwUcasParserTest {
         assertEquals(JwUcasParser.TYPE_ODD, oddCourse.type)
     }
 
-    @Test fun `malformed detail section falls back to placeholder`() {
+    @Test fun `malformed detail section does not create placeholder courses`() {
         val combined = GRID + detailSection("https://xkcts.ucas.ac.cn:8443/course/coursetime/999999", "<html><body>无标签内容</body></html>")
         val courses = JwUcasParser(combined).generateCourseList()
-        assertEquals(6, courses.size)
-        assertTrue(courses.all {
-            it.startWeek == JwUcasParser.PROVISIONAL_START_WEEK && it.endWeek == JwUcasParser.PROVISIONAL_END_WEEK
-        })
+        assertEquals(emptyList<JwCourse>(), courses)
     }
 
     @Test fun `detail section for unknown course is ignored`() {
@@ -236,10 +220,7 @@ class JwUcasParserTest {
             "</tbody></table></body></html>"
         val combined = GRID + detailSection("https://xkcts.ucas.ac.cn:8443/course/coursetime/1", detail)
         val courses = JwUcasParser(combined).generateCourseList()
-        assertEquals(6, courses.size)
-        assertTrue(courses.all {
-            it.startWeek == JwUcasParser.PROVISIONAL_START_WEEK && it.endWeek == JwUcasParser.PROVISIONAL_END_WEEK
-        })
+        assertEquals(emptyList<JwCourse>(), courses)
     }
 
     @Test fun `extractDetailUrls dedupes and absolutizes relative forms`() {
@@ -330,14 +311,13 @@ class JwUcasParserTest {
         "315625", "315663", "315751", "315821", "316019", "319037"
     )
 
-    @Test fun `real 0906 grid page hits UCAS confidence gate and yields courses`() {
+    @Test fun `real 0906 grid is recognized but does not provide course weeks`() {
         // v1.1 采集器包: 无详情页, 网格页必须能被认出 (>=90 才会被 registry 选中)
         val html = readRealGrid("person-schedule.real-0906.html")
         val parser = JwUcasParser(html)
         assertTrue("confidence 应 >=90, got ${parser.confidence()}", parser.confidence() >= 90)
         val courses = parser.generateCourseList()
-        // 0906 网格页实有 13 门课 (含 AI for Science 方法与磐石平台应用 / 网络攻防基础)
-        assertTrue("课程数应 >=13, got ${courses.size}", courses.size >= 13)
+        assertEquals(emptyList<JwCourse>(), courses)
     }
 
     @Test fun `real 0908 grid plus 11 real detail pages gives exact weeks`() {
@@ -386,16 +366,11 @@ class JwUcasParserTest {
         assertTrue("不应有占位周次课: ${provisional.map { it.name }}", provisional.isEmpty())
     }
 
-    @Test fun `real 0908 grid alone still falls back to provisional weeks`() {
-        // 只有网格页 (无详情) 时走 fallback 占位 1..16 — 报告人 0906 采集器场景
+    @Test fun `real 0908 grid alone requires its detail pages`() {
         val html = readRealGrid("person-schedule.real-0908.html")
         val parser = JwUcasParser(html)
         val courses = parser.generateCourseList()
-        assertTrue(courses.isNotEmpty())
-        assertTrue(
-            "无详情时全部应为 1..16 占位: ${courses.filter { it.startWeek != 1 || it.endWeek != 16 }.map { it.name }}",
-            courses.all { it.startWeek == 1 && it.endWeek == 16 }
-        )
+        assertEquals(emptyList<JwCourse>(), courses)
     }
 
     @Test fun `real 0906 grid detail urls match expected course ids`() {
