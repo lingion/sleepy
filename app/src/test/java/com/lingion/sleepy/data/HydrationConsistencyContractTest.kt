@@ -79,20 +79,21 @@ class HydrationConsistencyContractTest {
     }
 
     @Test
-    fun import_time_domain_writes_bound_owner_and_freezes_backup() {
+    fun import_time_domain_preserves_bound_owner_and_freezes_backup() {
         val repository = findUpward("app/src/main/java/com/lingion/sleepy/data/repository/ScheduleRepository.kt").readText()
         val append = repository.substringAfter("internal suspend fun appendImportedCourses(")
-            .substringBefore("suspend fun getDefaultTable(")
+            .substringBefore("/** Replace a timetable's course rows")
         assertTrue(append.contains("db.withTransaction"))
         assertTrue(append.contains("table.hydratedWith(bound)"))
-        assertTrue(append.contains("periodTableDao.update(bound.copy("))
+        assertFalse(append.contains("periodTableDao.update("))
+        assertTrue(append.contains("requireImportPeriodCoverage(accepted, extended)"))
         assertTrue(append.contains("timeJson = if (bound == null) extended else table.timeJson"))
         assertTrue(append.contains("tableDao.insert(effective.copy("))
         assertTrue(append.contains("periodTableId = null"))
         assertTrue(append.contains("courseDao.insertAll(existing.map"))
         assertTrue(append.contains("if (backupOriginal)"))
         assertTrue(!append.contains("deleteByTable"))
-        assertTrue(importSheet.contains("CourseImportPolicy.mergeTimeJson("))
-        assertTrue(append.contains("CourseImportPolicy.mergeTimeJson("))
+        assertTrue(importSheet.contains("CourseImportPolicy.timeJsonForAppend("))
+        assertTrue(append.contains("CourseImportPolicy.timeJsonForAppend("))
     }
 }

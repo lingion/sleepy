@@ -777,6 +777,13 @@ class JwImportActivity : ComponentActivity() {
                                         bindId = configBindPeriodTableId,
                                         tables = allPeriodTables.map { it.id to it.timeJson }
                                     )
+                                    val missingNode = TimeTableUtils.firstMissingCourseNode(
+                                        jwViewModel.toCourseEntities(confirmedCourses, 0L, "#FF6750A4"), effectiveRows
+                                    )
+                                    if (missingNode != null) {
+                                        confirmError = getString(R.string.slot_time_required, missingNode)
+                                        return@TextButton
+                                    }
                                     val emptyRows = effectiveRows.filter { it.start.isBlank() || it.end.isBlank() }
                                     if (emptyRows.isNotEmpty()) {
                                         confirmError = getString(R.string.slot_time_required, emptyRows.first().node)
