@@ -168,7 +168,10 @@ fun Modifier.glassControl(
                     )
                     when (val outline = shape.createOutline(size, layoutDirection, this)) {
                         is androidx.compose.ui.graphics.Outline.Generic -> drawPath(outline.path, gradient, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 0.5f * density))
-                        is androidx.compose.ui.graphics.Outline.Rounded -> drawRoundRect(gradient, cornerRadius = androidx.compose.ui.geometry.CornerRadius(radius), style = androidx.compose.ui.graphics.drawscope.Stroke(width = 0.5f * density))
+                        is androidx.compose.ui.graphics.Outline.Rounded -> {
+                            val path = androidx.compose.ui.graphics.Path().apply { addRoundRect(outline.roundRect) }
+                            drawPath(path, gradient, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 0.5f * density))
+                        }
                         else -> drawRect(gradient, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 0.5f * density))
                     }
                 }
