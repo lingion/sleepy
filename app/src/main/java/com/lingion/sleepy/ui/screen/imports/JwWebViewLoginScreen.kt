@@ -507,6 +507,10 @@ fun JwWebViewLoginScreen(
                     val url = wv.url ?: ""
                     Log.d("JwWebView", "capture tapped, current url=$url")
                     scope.launch { snackbar.showSnackbar(fetchingMsg) }
+                    JwTreewiseJsonCapture.scriptFor(school.type)?.let { script ->
+                        evaluateFetchWithTimeout(wv, script)
+                        return@CaptureBar
+                    }
                     JwPagedSchoolCapture.scriptFor(school.type)?.let { script ->
                         evaluateFetchWithTimeout(wv, script, 65_000L)
                         return@CaptureBar
