@@ -187,6 +187,7 @@ kotlin {
 
 tasks.withType<Test>().configureEach {
     systemProperty("sleepy.test.root", rootDir.absolutePath)
+    systemProperty("sleepy.test.settingsScreenshots", providers.gradleProperty("settingsScreenshots").getOrElse("false"))
 }
 
 dependencies {

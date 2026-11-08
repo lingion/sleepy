@@ -50,6 +50,8 @@ class SettingsLayoutTest {
     private fun bounds(text: String) = compose.onNodeWithText(text, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
 
     private fun screenshot(name: String) {
+        // Opt in with -PsettingsScreenshots=true; normal test runs only check layout and interaction.
+        if (!System.getProperty("sleepy.test.settingsScreenshots", "false").toBoolean()) return
         val directory = File("build/reports/settings-layout").apply { mkdirs() }
         File(directory, "$name.png").outputStream().use {
             assertTrue(compose.onNodeWithTag("settings-sample").captureToImage().asAndroidBitmap()
