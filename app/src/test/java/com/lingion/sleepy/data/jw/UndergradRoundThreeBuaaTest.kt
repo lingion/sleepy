@@ -11,7 +11,7 @@ class UndergradRoundThreeBuaaTest {
         val courses = JwParserRegistry.parserFor(type, source).generateCourseList()
         assertEquals(courses, JwParserRegistry.selectBest(source, type).first)
         assertEquals(courses, JwImportViewModel.parseHtmlStatic(source, type).first)
-        
+
         val draft = JwImportDraftSnapshot(JwSchoolInfo("T", "协议回归", type = type), courses, emptyList())
         assertEquals(courses, JwImportDraftCodec.fromJson(JwImportDraftCodec.toJson(draft))!!.courses)
         return courses
