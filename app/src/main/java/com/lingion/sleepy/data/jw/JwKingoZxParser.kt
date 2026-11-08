@@ -68,7 +68,9 @@ class JwKingoZxParser(source: String) : JwParser(source) {
                     else afterDay.substring(section.range.last + 1).trim('[', ']', ' ')
                 val room = (if ('/' in line) line.substringAfter('/') else line.substringAfter(' ', ""))
                     .trim().ifBlank { if (name.endsWith('m')) "在线" else "" }
-                for ((first, last, type) in weekRuns(weekSpec, singletonIsExplicit = dayMatch.value.length == 1)) {
+                for ((first, last, type) in weekRuns(weekSpec,
+                    singletonIsExplicit = dayMatch.value.length == 1,
+                    parityAppliesToAll = beforeDay.any(Char::isDigit))) {
                     for ((start, end) in sections) add(JwCourse(name, room, teacher, day, start, end, first, last, type, credit = credit))
                 }
             }
@@ -106,12 +108,18 @@ class JwKingoZxParser(source: String) : JwParser(source) {
         }
     }.distinct()
 
-    private fun weekRuns(spec: String, singletonIsExplicit: Boolean = false): List<Triple<Int, Int, Int>> {
+    private fun weekRuns(
+        spec: String,
+        singletonIsExplicit: Boolean = false,
+        parityAppliesToAll: Boolean = false,
+    ): List<Triple<Int, Int, Int>> {
         val weeks = sortedSetOf<Int>()
         var cleanSpec = spec.replace("周", "").replace('，', ',').filterNot(Char::isWhitespace)
             .replace("[", "").replace("]", "")
         val globalParity = if (cleanSpec.count { it == '单' || it == '双' } == 1) {
-            val marker = cleanSpec.firstOrNull()?.takeIf { it == '单' || it == '双' }
+            // Prefix-week reports apply their single marker to the complete advertised week list.
+            val marker = cleanSpec.firstOrNull { parityAppliesToAll && (it == '单' || it == '双') }
+                ?: cleanSpec.firstOrNull()?.takeIf { it == '单' || it == '双' }
                 ?: cleanSpec.lastOrNull()?.takeIf { it == '单' || it == '双' }
             if (marker != null) cleanSpec = cleanSpec.replace(marker.toString(), "")
             marker?.toString().orEmpty()

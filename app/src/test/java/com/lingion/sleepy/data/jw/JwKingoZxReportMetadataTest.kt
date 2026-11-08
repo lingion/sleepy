@@ -47,4 +47,33 @@ class JwKingoZxReportMetadataTest {
                 listOf(JwCourse("实验", "A101", "张老师", 3, 3, 4, 1, 8)))
         }
     }
+
+    private fun actualWeeks(courses: List<JwCourse>): Set<Int> = courses.flatMap { course ->
+        (course.startWeek..course.endWeek).filter { course.type == 0 || it % 2 == course.type % 2 }
+    }.toSet()
+
+    @Test fun `single parity marker inside report week list filters every fragment`() {
+        for (id in listOf("pageRpt", "reportArea")) {
+            val html = report(id, "[1-5单周,8-12周]星期三[3-4节]/A101")
+            for (courses in listOf(JwKingoZxParser(html).generateCourseList(),
+                JwParserRegistry.selectBest(html, "kingo_zx").first)) {
+                assertEquals(setOf(1, 3, 5, 9, 11), actualWeeks(courses))
+                assertEquals(setOf(Triple("实验", "张老师", "A101")),
+                    courses.map { Triple(it.name, it.teacher, it.room) }.toSet())
+            }
+        }
+    }
+
+    @Test fun `mixed report parity markers keep local week semantics`() {
+        val courses = JwKingoZxParser(report("pageRpt",
+            "[1-5单周,8-12双周]星期三[3-4节]/A101")).generateCourseList()
+        assertEquals(setOf(1, 3, 5, 8, 10, 12), actualWeeks(courses))
+    }
+
+    @Test fun `middle grid marker remains local to its week fragment`() {
+        val html = """<div id="xkinfo"><table><tr><td class="td"><div>
+            实验<br>张老师<br>1-5单周,8-12周[3-4节]<br>A101</div></td><td></td></tr></table></div>"""
+        assertEquals(setOf(1, 3, 5, 8, 9, 10, 11, 12),
+            actualWeeks(JwKingoZxParser(html).generateCourseList()))
+    }
 }
