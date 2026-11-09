@@ -16,6 +16,7 @@ object JwSourcePeriods {
             if (!annualSelected) JwEcuplScriptParser.sourcePeriods(source).takeIf { it.isNotEmpty() }?.let { return it }
         }
         if (type == JwProtocol.TYPE_ECUPL || type == JwProtocol.TYPE_ECUPL_SUPER) return JwEcuplSourcePeriods.resolve(source)
+        if (type == JwProtocol.TYPE_NWPU_POST) return JwNwpuPostSourceMetadata.periods(source)
         if (type == JwProtocol.TYPE_SUES) return JwSuesParser.periods
         if (type == JwProtocol.TYPE_SHU2024) return JwUndergradBHtmlParser.shuPeriods
         JwUndergradCSourcePeriods.resolve(type.orEmpty()).takeIf { it.isNotEmpty() }?.let { return it }
