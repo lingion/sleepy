@@ -675,8 +675,8 @@ internal fun TopBar(
         DateUtils.SemesterStatus.AFTER_END -> R.string.semester_ended
         else -> 0
     }
-    val weekLabel = if (statusRes == 0) stringResource(R.string.schedule_current_week, currentWeek)
-        else "${stringResource(statusRes)} · ${stringResource(R.string.schedule_week_prefix, currentWeek)}"
+    val weekLabel = stringResource(R.string.schedule_current_week, currentWeek)
+    val weekDescription = if (statusRes == 0) weekLabel else "${stringResource(statusRes)} · $weekLabel"
     val numberLabel = currentWeek.toString()
     val labelStyle = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
     val measurer = rememberTextMeasurer()
@@ -692,22 +692,25 @@ internal fun TopBar(
             .glassSurfaceBackground(colors.surface, androidx.compose.ui.graphics.RectangleShape)
             .padding(vertical = 6.dp),
         centerWidths = mapOf(
-            WeekControlDensity.Full to 96.dp + 16.dp + fullTextWidth + 28.dp,
-            WeekControlDensity.NumberOnly to 96.dp + 8.dp + numberTextWidth + 16.dp,
-            WeekControlDensity.Grouped to 66.dp + groupedLabelWidth,
+            WeekControlDensity.Full to with(density) {
+                (2 * 48.dp.roundToPx() + 2 * 8.dp.roundToPx() + 2 * 14.dp.roundToPx() + fullTextWidth.roundToPx()).toDp()
+            },
+            WeekControlDensity.Grouped to with(density) {
+                (2 * 32.dp.roundToPx() + 2 * 1.dp.roundToPx() + groupedLabelWidth.roundToPx()).toDp()
+            },
         ),
         startWidths = ToolbarSideWidths(
             48.dp + (if (historyPresent) 73.dp else 0.dp) + (if (scaleUncommitted) 56.dp else 0.dp),
-            40.dp + (if (historyPresent) 69.dp else 0.dp) + (if (scaleUncommitted) 44.dp else 0.dp),
+            48.dp + (if (historyPresent) 65.dp else 0.dp) + (if (scaleUncommitted) 48.dp else 0.dp),
         ),
-        endWidths = ToolbarSideWidths(104.dp, 84.dp),
-        start = { compact ->
-            val gap = if (compact) 4.dp else 8.dp
+        endWidths = ToolbarSideWidths(104.dp, 96.dp),
+        start = { side ->
+            val gap = side.gap * side.scale
             Row(verticalAlignment = Alignment.CenterVertically) {
                 WeekNavButton(
                     icon = Icons.Outlined.CalendarMonth, tag = "schedule_switch_table",
                     contentDescriptionRes = R.string.schedule_switch_table,
-                    compact = compact, onClick = onSwitchTable,
+                    scale = side.scale, onClick = onSwitchTable,
                 )
                 AnimatedVisibility(
                     visibleState = historyVisibility,
@@ -716,7 +719,7 @@ internal fun TopBar(
                     Row {
                         Spacer(Modifier.width(gap))
                         UndoRedoCapsule(
-                            showUndo = hasUndo, showRedo = hasRedo, scale = 1f,
+                            showUndo = hasUndo, showRedo = hasRedo, scale = side.scale,
                             onUndo = onUndo, onRedo = onRedo,
                         )
                     }
@@ -726,7 +729,7 @@ internal fun TopBar(
                     WeekNavButton(
                         icon = Icons.Outlined.Check, tag = "schedule_scale_keep",
                         contentDescriptionRes = R.string.schedule_scale_keep,
-                        compact = compact, onClick = onScaleCommit,
+                        scale = side.scale, onClick = onScaleCommit,
                     )
                 }
             }
@@ -734,14 +737,14 @@ internal fun TopBar(
         center = { mode ->
             val grouped = mode == WeekControlDensity.Grouped
             val interaction = remember { MutableInteractionSource() }
-            val gap = if (mode == WeekControlDensity.Full) 8.dp else 4.dp
+            val gap = 8.dp
             val groupModifier = if (grouped) Modifier
                 .height(32.dp)
-                .glassControl(grouped = true, motionClearance = 4.dp, interactionSource = interaction)
+                .glassControl(grouped = true, interactionSource = interaction)
                 .clip(CircleShape).background(controlFill(colors.surfaceContainerHigh))
                 .dbgTag("schedule_week_group") else Modifier
             BoxWithConstraints {
-                val labelMaxWidth = (maxWidth - 112.dp).coerceAtLeast(0.dp)
+                val labelMaxWidth = (maxWidth - 96.dp - gap * 2).coerceAtLeast(0.dp)
                 Row(groupModifier, verticalAlignment = Alignment.CenterVertically) {
                     if (grouped) {
                         GroupedWeekArrow(Icons.Outlined.ChevronLeft, "schedule_prev_week", interaction, onPrevWeek)
@@ -755,15 +758,15 @@ internal fun TopBar(
                             .size(groupedLabelWidth, 32.dp)
                             .clickable(interactionSource = interaction, indication = null, role = Role.Button, onClick = openWeek)
                         else Modifier
-                            .glassControl(shape = SleepyTheme.shapes.medium, motionClearance = 4.dp)
+                            .glassControl(shape = SleepyTheme.shapes.medium)
                             .clip(SleepyTheme.shapes.medium)
                             .background(controlFill(if (isOnActual) colors.primaryContainer else colors.primaryContainer.copy(alpha = SleepyTheme.Alpha.inactive)))
                             .noRippleGlassClickable(onClick = openWeek)
                         Box(
                             labelModifier
-                                .semantics { contentDescription = weekLabel }
+                                .semantics { contentDescription = weekDescription }
                                 .dbgTag("schedule_week_label", text = weekLabel, role = "button")
-                                .then(if (grouped) Modifier else Modifier.padding(horizontal = if (mode == WeekControlDensity.Full) 14.dp else 8.dp, vertical = 4.dp)),
+                                .then(if (grouped) Modifier else Modifier.padding(horizontal = 14.dp, vertical = 4.dp)),
                             contentAlignment = Alignment.Center,
                         ) {
                             Text(
@@ -798,7 +801,7 @@ internal fun TopBar(
                                         Box(
                                             modifier = Modifier
                                                 .size(40.dp)
-                                                .glassControl(shape = CircleShape, selected = isCurrent, motionClearance = 4.dp)
+                                                .glassControl(shape = CircleShape, selected = isCurrent)
                                                 .clip(CircleShape)
                                                 .background(
                                                     controlFill(if (isCurrent) colors.primary
@@ -834,18 +837,18 @@ internal fun TopBar(
                 }
             }
         },
-        end = { compact ->
+        end = { side ->
             Row(verticalAlignment = Alignment.CenterVertically) {
                 WeekNavButton(
                     icon = Icons.Outlined.Add, tag = "schedule_add_course",
                     contentDescriptionRes = R.string.schedule_add_course,
-                    compact = compact, onClick = onAddCourse,
+                    scale = side.scale, onClick = onAddCourse,
                 )
-                Spacer(Modifier.width(if (compact) 4.dp else 8.dp))
+                Spacer(Modifier.width(side.gap * side.scale))
                 WeekNavButton(
                     icon = Icons.Outlined.IosShare, tag = "schedule_share",
                     contentDescriptionRes = R.string.schedule_share_table,
-                    compact = compact, onClick = onShare,
+                    scale = side.scale, onClick = onShare,
                 )
             }
         },
@@ -858,35 +861,39 @@ private fun WeekNavButton(
     tag: String,
     onClick: () -> Unit,
     contentDescriptionRes: Int? = null,
-    compact: Boolean = false,
+    scale: Float = 1f,
 ) {
     val colors = MaterialTheme.colorScheme
-    if (compact) {
-        val interaction = remember { MutableInteractionSource() }
+    if (!liquidGlassControlsEnabled()) {
         Box(
-            Modifier.size(40.dp).dbgTag(tag, role = "button")
-                .clickable(interactionSource = interaction, indication = null, role = Role.Button, onClick = onClick),
+            Modifier.size(48.dp * scale)
+                .dbgTag(tag, role = "button")
+                .noRippleClickable(onClick),
             contentAlignment = Alignment.Center,
         ) {
             Box(
-                Modifier.size(28.dp).glassControl(interactionSource = interaction, motionClearance = 6.dp),
+                Modifier.size(32.dp * scale)
+                    .clip(CircleShape)
+                    .background(colors.surfaceContainerHigh),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(icon, contentDescriptionRes?.let { stringResource(it) }, Modifier.size(20.dp), tint = colors.onSurfaceVariant)
+                Icon(icon, contentDescriptionRes?.let { stringResource(it) }, Modifier.size(20.dp * scale), tint = colors.onSurfaceVariant)
             }
         }
         return
     }
-    com.lingion.sleepy.ui.component.liquidglass.GlassIconButton(
-        onClick = onClick,
-        modifier = Modifier.dbgTag(tag, role = "button"),
+    val interaction = remember { MutableInteractionSource() }
+    Box(
+        Modifier.size(48.dp * scale).dbgTag(tag, role = "button")
+            .clickable(interactionSource = interaction, indication = null, role = Role.Button, onClick = onClick),
+        contentAlignment = Alignment.Center,
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = contentDescriptionRes?.let { stringResource(it) },
-            tint = colors.onSurfaceVariant,
-            modifier = Modifier.size(20.dp),
-        )
+        Box(
+            Modifier.size(36.dp * scale).glassControl(interactionSource = interaction),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(icon, contentDescriptionRes?.let { stringResource(it) }, Modifier.size(20.dp * scale), tint = colors.onSurfaceVariant)
+        }
     }
 }
 
@@ -938,7 +945,7 @@ private fun UndoRedoCapsule(
     Row(
         modifier = Modifier
             .height(halfSize)
-            .glassControl(grouped = true, motionClearance = 4.dp, interactionSource = interaction)
+            .glassControl(grouped = true, interactionSource = interaction)
             .clip(CircleShape)
             .background(controlFill(colors.surfaceContainerHigh)),
         verticalAlignment = Alignment.CenterVertically

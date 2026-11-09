@@ -4,68 +4,101 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.LayoutDirection
+import kotlin.math.ceil
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.dp
 
-internal enum class WeekControlDensity { Full, NumberOnly, Grouped }
-internal data class ToolbarSideWidths(val normal: Dp, val compact: Dp)
+internal enum class WeekControlDensity { Full, Grouped }
+/** Full spacing and zero internal spacing, before uniform scaling. */
+internal data class ToolbarSideWidths(val normal: Dp, val tight: Dp)
+internal data class ToolbarSideDensity(val gap: Dp = 8.dp, val scale: Float = 1f)
 
-/** Try full words, then just the week number, then one capsule; wrap only after all fail. */
+/** The week navigator always owns the toolbar's exact horizontal center. */
 @Composable
 internal fun ScheduleToolbarLayout(
     modifier: Modifier = Modifier,
     centerWidths: Map<WeekControlDensity, Dp>,
     startWidths: ToolbarSideWidths,
     endWidths: ToolbarSideWidths,
-    start: @Composable (compact: Boolean) -> Unit,
+    start: @Composable (ToolbarSideDensity) -> Unit,
     center: @Composable (WeekControlDensity) -> Unit,
-    end: @Composable (compact: Boolean) -> Unit,
+    end: @Composable (ToolbarSideDensity) -> Unit,
 ) {
     SubcomposeLayout(modifier) { constraints ->
         val width = constraints.maxWidth
-        val loose = constraints.copy(minWidth = 0, minHeight = 0)
-        var compact = false
+        val loose = constraints.copy(minWidth = 0, minHeight = 0, maxWidth = Constraints.Infinity)
+        var side = ToolbarSideDensity()
         var inset = 12.dp.roundToPx()
         var gap = 8.dp.roundToPx()
-        fun sideWidth(widths: ToolbarSideWidths) = (if (compact) widths.compact else widths.normal).roundToPx()
-        fun available() = (width - 2 * inset - sideWidth(startWidths) - sideWidth(endWidths) - 2 * gap).coerceAtLeast(0)
-        var mode = WeekControlDensity.Full.takeIf { centerWidths.getValue(it).roundToPx() <= available() }
+        fun sideWidth(widths: ToolbarSideWidths): Int =
+            ((widths.tight + (widths.normal - widths.tight) * (side.gap / 8.dp)) * side.scale).roundToPx()
+        // Reserve the larger side on BOTH sides, rather than moving the center
+        // towards whichever group of actions happens to be shorter.
+        fun available() = (width - 2 * (inset + gap + maxOf(sideWidth(startWidths), sideWidth(endWidths)))).coerceAtLeast(0)
+        fun fits(mode: WeekControlDensity) = centerWidths.getValue(mode).roundToPx() + 2 <= available()
+        var mode = WeekControlDensity.Full.takeIf { fits(it) }
         if (mode == null) {
-            inset = 8.dp.roundToPx()
-            gap = 4.dp.roundToPx()
-            mode = listOf(WeekControlDensity.Full, WeekControlDensity.NumberOnly).firstOrNull {
-                centerWidths.getValue(it).roundToPx() <= available()
+            // Exhaust margins before changing any control's size or week text.
+            for ((edge, between, internal) in listOf(Triple(8, 4, 4), Triple(4, 0, 0), Triple(0, 0, 0))) {
+                inset = edge.dp.roundToPx()
+                gap = between.dp.roundToPx()
+                side = ToolbarSideDensity(gap = internal.dp)
+                if (fits(WeekControlDensity.Full)) {
+                    mode = WeekControlDensity.Full
+                    break
+                }
             }
         }
         if (mode == null) {
-            compact = true
-            mode = WeekControlDensity.Grouped.takeIf { centerWidths.getValue(it).roundToPx() <= available() }
+            // A 48dp action stops at 32dp; its icon remains legible at 13.3dp.
+            // All side actions, including undo/redo, use the same scale.
+            for (scale in listOf(.95f, .9f, .85f, .8f, .75f, .7f, 2f / 3f)) {
+                side = ToolbarSideDensity(gap = 0.dp, scale = scale)
+                if (fits(WeekControlDensity.Full)) {
+                    mode = WeekControlDensity.Full
+                    break
+                }
+            }
         }
-        // Compose each live control once. Unplaced trial compositions still expose semantics.
-        val left = subcompose("start") { Box { start(compact) } }.single().measure(loose)
-        val right = subcompose("end") { Box { end(compact) } }.single().measure(loose)
-        val oneRow = mode != null
-        val innerWidth = (width - 2 * inset).coerceAtLeast(0)
-        // Wrapping moves the compact capsule as a whole; it must never expand back into separate buttons.
-        val chosen = mode ?: WeekControlDensity.Grouped
+        if (mode == null) {
+            mode = WeekControlDensity.Grouped
+        }
+        val left = subcompose("start") { Box { start(side) } }.single().measure(loose)
+        val right = subcompose("end") { Box { end(side) } }.single().measure(loose)
+        val chosen = mode
         val middle = subcompose("center-$chosen") { Box { center(chosen) } }.single().measure(
-            loose.copy(maxWidth = if (oneRow) available() else innerWidth)
+            loose.copy(maxWidth = centerWidths.getValue(chosen).roundToPx())
         )
-        val actionsFit = left.width + right.width + gap <= innerWidth
-        val actionsHeight = if (actionsFit) maxOf(left.height, right.height) else left.height + gap + right.height
-        val height = if (oneRow) maxOf(actionsHeight, middle.height) else actionsHeight + 8.dp.roundToPx() + middle.height
-        layout(width, constraints.constrainHeight(height)) {
-            if (oneRow) {
-                left.placeRelative(inset, (height - left.height) / 2)
-                right.placeRelative(width - inset - right.width, (height - right.height) / 2)
-                val minX = inset + left.width + gap
-                val maxX = width - inset - right.width - gap - middle.width
-                middle.placeRelative(((width - middle.width) / 2).coerceIn(minX, maxX), (height - middle.height) / 2)
-            } else {
-                left.placeRelative(inset, if (actionsFit) (actionsHeight - left.height) / 2 else 0)
-                right.placeRelative(width - inset - right.width, if (actionsFit) (actionsHeight - right.height) / 2 else left.height + gap)
-                middle.placeRelative((width - middle.width) / 2, actionsHeight + 8.dp.roundToPx())
+        // Even an exceptionally narrow window stays on one row. Measure whole
+        // controls first, then uniformly fit their visual bounds; never squeeze
+        // individual labels into wrapping or let the side groups cross center.
+        val requiredWidth = middle.width + 2 * maxOf(left.width, right.width) + 2 * gap + 2
+        val fitScale = minOf(1f, (width - 2 * inset).coerceAtLeast(0).toFloat() / requiredWidth)
+        val height = constraints.constrainHeight(ceil(maxOf(left.height, right.height, middle.height) * fitScale).toInt())
+        layout(width, height) {
+            fun placeAction(child: androidx.compose.ui.layout.Placeable, leading: Boolean) {
+                val onLeft = leading == (layoutDirection == LayoutDirection.Ltr)
+                val x = if (onLeft) inset.toFloat() else width - inset - child.width * fitScale
+                child.placeWithLayer(0, 0) {
+                    translationX = x
+                    translationY = (height - child.height * fitScale) / 2
+                    scaleX = fitScale
+                    scaleY = fitScale
+                    transformOrigin = TransformOrigin(0f, 0f)
+                }
+            }
+            placeAction(left, leading = true)
+            placeAction(right, leading = false)
+            middle.placeWithLayer(0, 0) {
+                translationX = (width - middle.width * fitScale) / 2
+                translationY = (height - middle.height * fitScale) / 2
+                scaleX = fitScale
+                scaleY = fitScale
+                transformOrigin = TransformOrigin(0f, 0f)
             }
         }
     }

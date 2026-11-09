@@ -161,17 +161,19 @@ class MineNavRedoCourseListContractTest {
     }
 
     @Test
-    fun `UndoRedoCapsule preserves its default stadium and only yields space on collision`() {
+    fun `UndoRedoCapsule preserves its default stadium and scales with the side actions`() {
         val capsuleBlock = Regex(
             """fun\s+UndoRedoCapsule\([\s\S]*?\n\}"""
         ).find(scheduleScreen)?.value ?: error("UndoRedoCapsule 找不到")
         assertTrue("胶囊外 Row 必须 clip(CircleShape)", capsuleBlock.contains(".clip(CircleShape)"))
         assertTrue("中缝 Box 宽必须是 1.dp", capsuleBlock.contains(".size(width = 1.dp"))
         assertTrue("胶囊默认半区必须保持 32dp", capsuleBlock.contains("val halfSize = 32.dp * scale"))
-        assertTrue("胶囊保留完整尺寸，由顶栏换行让出空间", scheduleScreen.contains("scale = 1f"))
+        assertTrue("胶囊必须与同侧动作一起缩放，为居中的完整周文字让位",
+            Regex("""showUndo = hasUndo, showRedo = hasRedo, scale = side.scale""").containsMatchIn(scheduleScreen))
         assertTrue("顶栏由三槽布局测量并处理碰撞", scheduleScreen.contains("ScheduleToolbarLayout("))
         val weekButtonBlock = Regex("""fun\s+WeekNavButton\([\s\S]*?\n\}""").find(scheduleScreen)?.value ?: error("WeekNavButton 找不到")
-        assertTrue("顶栏按钮使用统一图标控件", weekButtonBlock.contains("GlassIconButton("))
+        assertTrue("经典与玻璃按钮保留统一缩放的48dp触摸槽", weekButtonBlock.contains(".size(48.dp * scale)"))
+        assertTrue("经典按钮保留有色圆片", weekButtonBlock.contains("colors.surfaceContainerHigh"))
     }
 
     @Test
