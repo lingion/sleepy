@@ -187,7 +187,7 @@ class WeekGridWideRenderTest {
         return changed
     }
     private fun export(bitmap: Bitmap, name: String) {
-        val file = File("build/reports/week-grid-wide/$name").apply { parentFile.mkdirs() }
+        val file = File("build/reports/week-grid-wide/$name").apply { requireNotNull(parentFile).mkdirs() }
         file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
     private fun fixture(name: String = "高等数学", room: String = "A201"): WeekData = WeekData(

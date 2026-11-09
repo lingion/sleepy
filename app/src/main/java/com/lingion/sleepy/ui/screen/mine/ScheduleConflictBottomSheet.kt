@@ -13,7 +13,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import com.lingion.sleepy.ui.component.liquidglass.GlassModalBottomSheet as ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,7 +45,10 @@ fun ScheduleConflictBottomSheet(
     onCancel: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
+    )
 
     val otherCount = (boundTableCount - 1).coerceAtLeast(0)
     val summaryTail = if (otherCount == 0) {

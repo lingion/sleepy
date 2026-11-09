@@ -698,7 +698,7 @@ fun LiquidGlassNavigationBar(
                                 sampling = sampling,
                                 glow = touchGlow,
                             )
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && lensShader != null) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                 uniforms.forEach { (name, values) ->
                                     lensShader.setFloatUniform(name, values)
                                 }
@@ -907,7 +907,7 @@ fun LiquidGlassNavigationBar(
                                     sampling = sampling,
                                     glow = LiquidGlassGlow.None,
                                 )
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && contentShader != null) {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                     uniforms.forEach { (name, values) ->
                                         contentShader.setFloatUniform(name, values)
                                     }

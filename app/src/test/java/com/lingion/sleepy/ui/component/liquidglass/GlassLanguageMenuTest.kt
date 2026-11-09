@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -118,7 +118,13 @@ class GlassLanguageMenuTest {
 
     @Test fun selectionWaitsForExitAndRejectsRepeatedActions() {
         val selected = mutableListOf<String>()
-        showMenu(onSelect = { selected += it })
+        showMenu(onSelect = {
+            assertTrue(
+                "popup window must be removed before saving or recreating",
+                WindowInspector.getGlobalWindowViews().none { view -> view.javaClass.simpleName == "PopupLayout" },
+            )
+            selected += it
+        })
         compose.onNodeWithTag("general_language_card").performClick()
         // 先让打开的重组/动画完成，再冻结退出动画；否则 Popup 还未加入语义树。
         compose.onNodeWithTag("general_language#ja").assertIsDisplayed()
@@ -133,6 +139,9 @@ class GlassLanguageMenuTest {
         }
         compose.mainClock.advanceTimeByFrame()
         compose.onNodeWithTag("general_language#en").assertIsNotEnabled()
+        compose.mainClock.advanceTimeBy(100)
+        compose.runOnIdle { assertTrue("must not commit halfway through exit", selected.isEmpty()) }
+        compose.onNodeWithTag("general_language#en").assertExists()
         compose.mainClock.advanceTimeBy(1_000)
         compose.mainClock.autoAdvance = true
         compose.onNodeWithTag("general_language#en").assertDoesNotExist()
