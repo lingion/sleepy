@@ -97,7 +97,12 @@ fun GlassDropdownMenu(
     ) {
         MaterialDropdownMenu(
             expanded, onDismissRequest,
-            modifier.recordGlassPopupScene(popupScene).glassControl(shape = carrierShape, enabled = false, registerPane = false, role = GlassMaterialRole.Menu),
+            // Material's dropdown owns the content layer. A second backdrop placement layer
+            // drops its foreground on API 33; the backdrop's draw-time outline clip remains.
+            modifier.recordGlassPopupScene(popupScene).glassControl(
+                shape = carrierShape, enabled = false, registerPane = false,
+                role = GlassMaterialRole.Menu, placementLayer = false,
+            ),
             offset, scrollState, properties, carrierShape,
             if (glass) Color.Transparent else containerColor,
             if (glass) 0.dp else tonalElevation,
