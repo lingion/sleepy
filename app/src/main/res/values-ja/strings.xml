@@ -1080,6 +1080,8 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="fluid_coloros_countdown">%1$d分後に開始</string>
     <string name="fluid_coloros_capsule">%1$d分後</string>
     <string name="fluid_coloros_capsule_compact">%1$s·%2$d分</string>
+    <string name="recent_import_schools">最近インポートした学校</string>
+    <string name="recent_import_schools_hint">取り込み成功後に自動保存 · 最大3校</string>
     <string name="possible_schools">候補の学校</string>
     <plurals name="school_location_city">
         <item quantity="other">現在の都市：%1$s · %2$d校</item>
