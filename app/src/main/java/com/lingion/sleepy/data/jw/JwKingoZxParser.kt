@@ -60,14 +60,17 @@ class JwKingoZxParser(source: String) : JwParser(source) {
                 val afterDay = timing.substring(dayMatch.range.last + 1).trim()
                 val section = sectionToken.find(afterDay) ?: continue
                 val sections = schoolNodeRanges(section.groupValues[1])
-                if (sections.isEmpty() || sections.any { it.first !in 1..30 || it.second !in it.first..30 }) continue
+                if (sections.isEmpty() || sections.any { it.first !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND ||
+                        it.second !in it.first..EXPLICIT_SCHEDULE_RESOURCE_BOUND }) continue
                 // Source code supports both [weeks] day [sections] and day sections weeks.
                 val beforeDay = timing.substring(0, dayMatch.range.first).trim('[', ']', ' ')
                 val weekSpec = if (beforeDay.any(Char::isDigit)) beforeDay
                     else afterDay.substring(section.range.last + 1).trim('[', ']', ' ')
                 val room = (if ('/' in line) line.substringAfter('/') else line.substringAfter(' ', ""))
                     .trim().ifBlank { if (name.endsWith('m')) "在线" else "" }
-                for ((first, last, type) in weekRuns(weekSpec, singletonIsExplicit = dayMatch.value.length == 1)) {
+                for ((first, last, type) in weekRuns(weekSpec,
+                    singletonIsExplicit = dayMatch.value.length == 1,
+                    parityAppliesToAll = beforeDay.any(Char::isDigit))) {
                     for ((start, end) in sections) add(JwCourse(name, room, teacher, day, start, end, first, last, type, credit = credit))
                 }
             }
@@ -94,8 +97,10 @@ class JwKingoZxParser(source: String) : JwParser(source) {
                     val section = bracketSection.find(parts[2])
                     val firstSection = if (parts[2].substringAfter('[', "").startsWith("傍晚")) 9
                         else section?.groupValues?.get(1)?.toIntOrNull() ?: continue
-                    val lastSection = section?.groupValues?.get(2)?.toIntOrNull() ?: firstSection
-                    if (firstSection !in 1..30 || lastSection !in firstSection..30) continue
+                    val lastSection = section?.groupValues?.get(2)?.takeIf(String::isNotBlank)
+                        ?.let { it.toIntOrNull() ?: continue } ?: firstSection
+                    if (firstSection !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND ||
+                        lastSection !in firstSection..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
                     for ((first, last, type) in weekRuns(parts[2].substringBefore('['))) {
                         add(JwCourse(parts[0], parts[3], parts[1], day, firstSection, lastSection, first, last, type))
                     }
@@ -104,12 +109,18 @@ class JwKingoZxParser(source: String) : JwParser(source) {
         }
     }.distinct()
 
-    private fun weekRuns(spec: String, singletonIsExplicit: Boolean = false): List<Triple<Int, Int, Int>> {
+    private fun weekRuns(
+        spec: String,
+        singletonIsExplicit: Boolean = false,
+        parityAppliesToAll: Boolean = false,
+    ): List<Triple<Int, Int, Int>> {
         val weeks = sortedSetOf<Int>()
         var cleanSpec = spec.replace("周", "").replace('，', ',').filterNot(Char::isWhitespace)
             .replace("[", "").replace("]", "")
         val globalParity = if (cleanSpec.count { it == '单' || it == '双' } == 1) {
-            val marker = cleanSpec.firstOrNull()?.takeIf { it == '单' || it == '双' }
+            // Prefix-week reports apply their single marker to the complete advertised week list.
+            val marker = cleanSpec.firstOrNull { parityAppliesToAll && (it == '单' || it == '双') }
+                ?: cleanSpec.firstOrNull()?.takeIf { it == '单' || it == '双' }
                 ?: cleanSpec.lastOrNull()?.takeIf { it == '单' || it == '双' }
             if (marker != null) cleanSpec = cleanSpec.replace(marker.toString(), "")
             marker?.toString().orEmpty()

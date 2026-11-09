@@ -3,8 +3,8 @@ package com.lingion.sleepy.data.jw
 
 import org.jsoup.Jsoup
 
-/** SCAU timetable HTML parser. Three independently gated shapes: pinned greyovo Njw2017
- * Element UI DOM, WakeUp border-grid DOM, and WakeUp old bordercolor row pairs.
+/** SCAU timetable HTML parser. Independently gated shapes: pinned greyovo Njw2017
+ * Element UI DOM, border grids, and old bordercolor tables with paired or indexed rows.
  * Evidence and limitations: docs/history/scau-cross-verify-2026-10-13/. */
 class JwScauParser(source: String) : JwParser(source) {
 
@@ -35,7 +35,9 @@ class JwScauParser(source: String) : JwParser(source) {
         val explicit = parseExplicitSectionStrategy()
         if (explicit.isNotEmpty()) return explicit
         val primary = parsePrimaryStrategy()
-        return if (primary.isNotEmpty()) primary else parseFallbackStrategy()
+        if (primary.isNotEmpty()) return primary
+        val paired = parseFallbackStrategy()
+        return if (paired.isNotEmpty()) paired else parseIndexedFallbackStrategy()
     }
 
     private fun parseExplicitSectionStrategy(): List<JwCourse> {
@@ -271,6 +273,37 @@ class JwScauParser(source: String) : JwParser(source) {
             }
         }
         return out
+    }
+
+    /** Old indexed view: two heading rows, then name/teacher, room, and weeks per cell. */
+    private fun parseIndexedFallbackStrategy(): List<JwCourse> = buildList {
+        for (table in Jsoup.parse(source).select(SELECTOR_FALLBACK_TABLE)) {
+            val rows = table.select("tr").filter { it.closest("table") === table }
+            // Paired section headings have their own field order and must not enter this strategy.
+            if (rows.any { row -> row.select("td").any { RE_SECTION.containsMatchIn(it.text()) } }) continue
+            for ((index, row) in rows.drop(2).withIndex()) {
+                val nodes = explicitSchedulePair(index + 1) ?: continue
+                for ((dayIndex, cell) in row.select(SELECTOR_TD_VALIGN_TOP).withIndex()) {
+                    if (dayIndex >= 7) break
+                    val fields = cell.html().split(Regex("<br\\s*/?>", RegexOption.IGNORE_CASE))
+                        .map { Jsoup.parseBodyFragment(it).text().trim() }
+                    if (fields.size < 3) continue
+                    var name = fields[0].substringBefore('：').trim()
+                    val teacher = fields[0].substringAfter('：', "").trim()
+                    val suffix = name.substringAfterLast(' ', "")
+                    val weekText = if (RE_WEEK_SEGMENT.matches(suffix)) {
+                        name = name.substringBeforeLast(' ').replace(" ", "")
+                        suffix
+                    } else fields[2].substringBefore('周')
+                    if (name.isBlank() || ('单' in fields[2] && '双' in fields[2])) continue
+                    val parity = when { '单' in fields[2] -> 1; '双' in fields[2] -> 2; else -> 0 }
+                    for ((first, last, type) in parseWeekRuns(weekText, parity, globalParity = true)) {
+                        add(JwCourse(name, fields[1], teacher, dayIndex + 1,
+                            nodes.first, nodes.last, first, last, type))
+                    }
+                }
+            }
+        }
     }
 
     /**
