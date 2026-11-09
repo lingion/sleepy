@@ -128,7 +128,7 @@ class GlassDropdownMenuRenderTest {
                                         modifier = Modifier.fillMaxWidth()) {
                                         repeat(20) { index ->
                                             Box(Modifier.size(40.dp)
-                                                .glassControl(shape = CircleShape, selected = index == 1, motionClearance = 4.dp)
+                                                .glassControl(shape = CircleShape, selected = index == 1)
                                                 .clip(CircleShape).background(Color.Red)
                                                 .noRippleGlassClickable {}.testTag("nested-$index")) {
                                                 Text((index + 1).toString())
