@@ -17,6 +17,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -73,10 +74,12 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
@@ -90,6 +93,7 @@ import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.data.parser.ScheduleParser
 import com.lingion.sleepy.ui.component.DatePickerField
+import com.lingion.sleepy.ui.component.liquidglass.GlassControlLayout
 import com.lingion.sleepy.ui.component.TimeSlotEditor
 import com.lingion.sleepy.ui.component.resolveAutoPeriodConfig
 import com.lingion.sleepy.ui.component.sleepyExpandSpecs
@@ -771,42 +775,76 @@ private fun ImportMethodRow(
 @Composable
 private fun FormatRow(name: String, desc: String, dbgTag: String? = null, onDetail: () -> Unit) {
     val colors = MaterialTheme.colorScheme
-    Row(
+    val density = LocalDensity.current
+    val textMeasurer = rememberTextMeasurer()
+    val nameStyle = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium)
+    val descriptionStyle = MaterialTheme.typography.bodySmall
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 3.dp),
-        verticalAlignment = Alignment.Top
     ) {
-        Text(
-            text = "•",
-            style = MaterialTheme.typography.bodySmall,
-            color = colors.primary,
-            modifier = Modifier.padding(end = 8.dp, top = 2.dp)
-        )
-        Text(
-            text = name,
-            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-            color = colors.onSurface,
-            modifier = Modifier.width(110.dp)
-        )
-        Text(
-            text = desc,
-            style = MaterialTheme.typography.bodySmall,
-            color = colors.onSurfaceVariant,
-            modifier = Modifier.weight(1f)
-        )
-        Icon(
-            imageVector = Icons.Outlined.Info,
-            contentDescription = stringResource(R.string.format_detail_content_desc),
-            tint = colors.onSurfaceVariant,
-            modifier = Modifier
-                .padding(start = 6.dp, top = 2.dp)
-                .size(16.dp)
-                .glassControl(shape = SleepyTheme.shapes.small)
-                .clip(SleepyTheme.shapes.small)
-                .noRippleGlassClickable(onClick = onDetail)
-                .then(dbgTag?.let { Modifier.dbgTag(it, text = name, role = "button") } ?: Modifier)
-        )
+        val nameWidth = with(density) {
+            textMeasurer.measure(name, style = nameStyle, softWrap = false, maxLines = 1).size.width.toDp()
+        }
+        val minimumNameWidth = with(density) {
+            name.split(' ').maxOf { word ->
+                textMeasurer.measure(word, style = nameStyle, softWrap = false, maxLines = 1).size.width.toDp()
+            }
+        }
+        val bulletWidth = with(density) {
+            textMeasurer.measure("•", style = descriptionStyle, softWrap = false, maxLines = 1).size.width.toDp()
+        }
+        val minimumDescriptionWidth = with(density) {
+            textMeasurer.measure(desc, style = descriptionStyle, softWrap = false, maxLines = 1)
+                .size.width.toDp().coerceAtMost((descriptionStyle.fontSize * 4f).toDp())
+        }
+        val regularNameWidth = (maxWidth - bulletWidth - GlassControlLayout.touchTarget - 24.dp) * .45f
+        val regularInlineFits = minimumNameWidth <= regularNameWidth
+        val compactInlineFits = maxWidth >= bulletWidth + nameWidth + minimumDescriptionWidth +
+            GlassControlLayout.touchTarget + 12.dp
+        val stackText = !regularInlineFits && !compactInlineFits
+        val nameText: @Composable (Modifier) -> Unit = { modifier ->
+            Text(text = name, style = nameStyle, color = colors.onSurface, modifier = modifier)
+        }
+        val descriptionText: @Composable (Modifier) -> Unit = { modifier ->
+            Text(text = desc, style = descriptionStyle, color = colors.onSurfaceVariant, modifier = modifier)
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(if (regularInlineFits) 8.dp else 4.dp),
+        ) {
+            Text(
+                text = "•",
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.primary,
+            )
+            if (stackText) {
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    nameText(Modifier.fillMaxWidth())
+                    descriptionText(Modifier.fillMaxWidth())
+                }
+            } else if (regularInlineFits) {
+                nameText(Modifier.weight(.9f))
+                descriptionText(Modifier.weight(1.1f))
+            } else {
+                nameText(Modifier.width(nameWidth))
+                descriptionText(Modifier.weight(1f))
+            }
+            IconButton(
+                onClick = onDetail,
+                modifier = Modifier
+                    .then(dbgTag?.let { Modifier.dbgTag(it, text = name, role = "button") } ?: Modifier)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Info,
+                    contentDescription = stringResource(R.string.format_detail_content_desc),
+                    tint = colors.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+        }
     }
 }
 

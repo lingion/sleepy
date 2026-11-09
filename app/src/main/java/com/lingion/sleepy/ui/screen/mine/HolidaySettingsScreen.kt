@@ -2,6 +2,7 @@ package com.lingion.sleepy.ui.screen.mine
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -272,22 +273,24 @@ fun HolidaySettingsScreen(
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.weight(1f)
                         )
-                        when (state) {
-                            HolidayUiState.Loading -> CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp).padding(2.dp),
-                                color = colors.primary,
-                                strokeWidth = 2.dp
-                            )
-                            else -> IconButton(
-                                onClick = { load(year, force = true) },
-                                modifier = Modifier.size(36.dp)
-                            ) {
-                                Icon(
-                                    Icons.Outlined.Refresh,
-                                    contentDescription = stringResource(R.string.holiday_data_refresh),
-                                    tint = colors.onSurfaceVariant,
-                                    modifier = Modifier.size(20.dp)
+                        Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) {
+                            when (state) {
+                                HolidayUiState.Loading -> CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp).padding(2.dp),
+                                    color = colors.primary,
+                                    strokeWidth = 2.dp
                                 )
+                                else -> IconButton(
+                                    onClick = { load(year, force = true) },
+                                    modifier = Modifier.size(48.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Outlined.Refresh,
+                                        contentDescription = stringResource(R.string.holiday_data_refresh),
+                                        tint = colors.onSurfaceVariant,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
                             }
                         }
                     }
