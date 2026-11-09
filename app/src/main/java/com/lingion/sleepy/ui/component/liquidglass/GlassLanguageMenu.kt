@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -81,16 +82,16 @@ fun GlassLanguageMenu(
     var completing by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val select by rememberUpdatedState(onSelect)
-    Row(
+    FlowRow(
         modifier = modifier.fillMaxWidth().clip(SleepyTheme.shapes.large)
             .background(colors.surfaceContainer)
             .clickable(enabled = !expanded && !completing, role = Role.Button) { expanded = true }
             .dbgTag("general_language_card", text = currentLabel, role = "button")
             .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Text(title, Modifier.weight(1f), style = MaterialTheme.typography.titleSmall, color = colors.onSurface)
+        Text(title, Modifier.padding(end = 12.dp), style = MaterialTheme.typography.titleSmall, color = colors.onSurface, maxLines = 1)
         Box(Modifier.widthIn(max = 180.dp).dbgTag("general_language_value", text = currentLabel, clickable = false)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
