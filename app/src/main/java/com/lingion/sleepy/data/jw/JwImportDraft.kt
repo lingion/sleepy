@@ -22,6 +22,9 @@ data class JwImportDraftSnapshot(
     val termWeekCount: Int = 0,
     /** Original calendar used to turn single-date SHSMU lessons into course weeks. */
     val datedCourseOrigin: String = "",
+    val importSourceJson: String = "",
+    /** May be set before any courses have been captured; revalidate against the current manifest. */
+    val selectedSgAdapterId: String = "",
 ) {
     /** Reopening a login draft never skips the school admission confirmation. */
     val requiresSchoolConfirmation: Boolean get() = phase == JwImportDraftPhase.WEBVIEW_LOGIN &&
@@ -58,6 +61,8 @@ object JwImportDraftCodec {
         put("datedCourseOrigin", snapshot.datedCourseOrigin)
         put("tableName", snapshot.tableName)
         put("smartConfigJson", snapshot.smartConfigJson)
+        put("importSourceJson", snapshot.importSourceJson)
+        put("selectedSgAdapterId", snapshot.selectedSgAdapterId)
     }.toString()
 
     /** Returns null for an unsupported schema or any invalid/incomplete external payload. */
@@ -99,6 +104,10 @@ object JwImportDraftCodec {
             datedCourseOrigin = root.optString("datedCourseOrigin", "").also { origin ->
                 if (origin.isNotEmpty() && JwShsmuCaptureCalendar.monday(origin)?.toString() != origin) return null
             },
+            importSourceJson = root.optString("importSourceJson", "").also {
+                if (it.isNotEmpty() && JwSgSourceMetadata.read(it) == null) return null
+            },
+            selectedSgAdapterId = root.optString("selectedSgAdapterId", ""),
         )
     }.getOrNull()
 

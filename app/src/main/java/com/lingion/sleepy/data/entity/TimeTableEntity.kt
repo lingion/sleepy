@@ -66,7 +66,10 @@ data class TimeTableEntity(
     @ColumnInfo(name = "reminderEnabled", defaultValue = "1") val reminderEnabled: Boolean = true,
 
     /** Null means no manual choice; the resolver follows selection only when all overrides are null. */
-    @ColumnInfo(name = "reminderOverride", defaultValue = "NULL") val reminderOverride: Boolean? = null
+    @ColumnInfo(name = "reminderOverride", defaultValue = "NULL") val reminderOverride: Boolean? = null,
+
+    /** Original selected academic entry and source suggestions; confirmed schedule fields stay authoritative. */
+    @ColumnInfo(name = "importSourceJson", defaultValue = "") val importSourceJson: String = "",
 ) {
     /**
      * issue#40 有效时间表水合(设计 §5.1): 绑定存在 → 节次时间/智慧节次/节次数
