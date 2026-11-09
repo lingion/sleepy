@@ -34,10 +34,12 @@ class ReminderReliabilityCardContractTest {
 
     @Test
     fun `clickable status rows keep full-width tap targets`() {
+        // 分支裁定(2026-11-04 长条操作按钮玻璃化): 三行状态键走 noRippleGlassClickable,
+        // 契约本意不变 — 未授权行的点击区仍是全宽 Text 本身, 禁回归为局部小按钮。
         assertTrue(cardBody.contains("Modifier.fillMaxWidth()"))
-        assertTrue(cardBody.contains("noRippleClickable(onNotificationPermission)"))
-        assertTrue(cardBody.contains("noRippleClickable(onExactAlarmSettings)"))
-        assertTrue(cardBody.contains("noRippleClickable(onBatterySettings)"))
+        assertTrue(cardBody.contains("noRippleGlassClickable(onNotificationPermission)"))
+        assertTrue(cardBody.contains("noRippleGlassClickable(onExactAlarmSettings)"))
+        assertTrue(cardBody.contains("noRippleGlassClickable(onBatterySettings)"))
     }
 
     @Test
