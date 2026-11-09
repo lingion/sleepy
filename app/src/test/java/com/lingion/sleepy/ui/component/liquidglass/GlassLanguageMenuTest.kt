@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
@@ -16,8 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
@@ -82,6 +88,23 @@ class GlassLanguageMenuTest {
                 }
             }
         }
+    }
+
+    @Test fun narrowLargeFontKeepsLanguageTitleWhole() {
+        compose.setContent {
+            MaterialTheme {
+                CompositionLocalProvider(LocalDensity provides Density(1f, 1.5f)) {
+                    Box(Modifier.width(248.dp)) { GlassLanguageMenu("语言 / Language", "zh-CN", languages, {}) }
+                }
+            }
+        }
+        val title = compose.onNodeWithText("语言 / Language", useUnmergedTree = true)
+        val layouts = mutableListOf<TextLayoutResult>()
+        title.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
+        val layout = layouts.single()
+        assertTrue("the English word must remain whole", layout.lineCount == 1 && layout.getLineEnd(0, true) == layout.layoutInput.text.length)
+        val value = compose.onNodeWithTag("general_language_value", true).fetchSemanticsNode().boundsInRoot
+        assertTrue("value uses its own row when the full labels cannot fit", value.top >= title.fetchSemanticsNode().boundsInRoot.bottom + 7.9f)
     }
 
     @Test fun wholeRowOpensAnIndependentMenuWithCurrentSelection() {
