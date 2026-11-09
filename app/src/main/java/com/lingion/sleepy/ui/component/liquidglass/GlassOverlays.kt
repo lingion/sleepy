@@ -94,6 +94,7 @@ fun GlassDropdownMenu(
         LocalGlassOverlay provides glass,
         LocalGlassOverlaySamplingHost provides parentScene,
         LocalGlassPopupScene provides popupScene,
+        LocalGlassPlacementLayer provides false,
     ) {
         MaterialDropdownMenu(
             expanded, onDismissRequest,

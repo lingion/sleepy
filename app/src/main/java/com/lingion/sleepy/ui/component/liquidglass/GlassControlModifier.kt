@@ -41,6 +41,9 @@ enum class GlassMaterialRole { Regular, Menu, Alert }
 /** Popup windows paint locally while sampling the parent window's glass-free scene. */
 internal val LocalGlassOverlay = androidx.compose.runtime.compositionLocalOf { false }
 
+/** A dropdown already owns the placement layer for its complete content tree. */
+internal val LocalGlassPlacementLayer = androidx.compose.runtime.compositionLocalOf { true }
+
 /** Adds optical material without owning clicks or introducing a second semantic node. */
 @Composable
 fun Modifier.glassControl(
@@ -79,8 +82,9 @@ fun Modifier.glassControl(
     val backdrop = remember(samplingHost, consumerDepth, isOverlay, filterBand) {
         filterBand?.backdrop(samplingHost) ?: if (isOverlay) samplingHost.overlayBackdrop else samplingHost.backdropAt(consumerDepth)
     }
-    val renderOptions = remember(placementLayer) {
-        if (placementLayer) BackdropRenderOptions.Default else BackdropRenderOptions(placementLayer = false)
+    val contentPlacementLayer = placementLayer && LocalGlassPlacementLayer.current
+    val renderOptions = remember(contentPlacementLayer) {
+        if (contentPlacementLayer) BackdropRenderOptions.Default else BackdropRenderOptions(placementLayer = false)
     }
     val scope = rememberCoroutineScope()
     val lift = remember { Animatable(0f) }
