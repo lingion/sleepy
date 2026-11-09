@@ -1729,6 +1729,7 @@ internal suspend fun applyNewTableImport(
             nodesPerDay = nodes,
             timeJson = confirmedTimeJson,
             smartConfigJson = confirmedSmartConfigJson,
+            importSourceJson = preview.parseResult.importSourceJson,
             periodTableId = bindPeriodTableId,
         ),
         courses = preview.parseResult.courses,

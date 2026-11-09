@@ -1,6 +1,11 @@
 package com.lingion.sleepy.data.jw
 
 import com.lingion.sleepy.data.migration.MigrationDatabaseCodec
+import com.lingion.sleepy.data.entity.TimeTableEntity
+import com.lingion.sleepy.data.entity.CourseEntity
+import com.lingion.sleepy.data.parser.ScheduleExporter
+import com.lingion.sleepy.data.parser.ScheduleParser
+import com.lingion.sleepy.data.parser.SleepyNativeExporter
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
@@ -64,4 +69,35 @@ class JwSgMetadataPersistenceTest {
         }
     }
 
+    @Test fun `native and JSON exports retain provenance through real parsers`() {
+        val source = JSONObject(metadata).apply {
+            getJSONObject("adapter").put("name", "研究生|入口\n二 Ａ１－～　𠮷")
+                .put("importUrl", "https://example.edu.cn/Ａ１?name=～")
+        }.toString()
+        val table = TimeTableEntity(name = "回归", startDate = "2026-09-07", importSourceJson = source)
+        val course = CourseEntity(groupId = "regression", tableId = 0, courseName = "离散数学", teacher = "甲", room = "A",
+            day = 3, startNode = 1, step = 2, startWeek = 1, endWeek = 4, color = "#FF6750A4")
+        val exported = listOf(
+            SleepyNativeExporter.exportFile(table.name, table.startDate, 24, 12, table.timeJson, listOf(course), importSourceJson = source),
+            SleepyNativeExporter.exportShareText(table.name, table.startDate, 24, 12, table.timeJson, listOf(course), importSourceJson = source),
+            ScheduleExporter.exportWakeUpJson(table, listOf(course)),
+            ScheduleExporter.exportWakeUpShareText(table, listOf(course)),
+        )
+        for (text in exported) {
+            val result = ScheduleParser.parse(text, 0L, "#FF6750A4").getOrThrow()
+            assertEquals(source, result.importSourceJson)
+            assertEquals("离散数学", result.courses.single().courseName)
+            assertTrue("Untampered export: ${result.warnings}", result.warnings.none { it.contains("完整性校验") })
+        }
+    }
+
+    @Test fun `native integrity still detects a changed provenance record`() {
+        val source = JSONObject(metadata).apply { getJSONObject("adapter").put("name", "入口Ａ") }.toString()
+        val exported = SleepyNativeExporter.exportFile("回归", "2026-09-07", 24, 12, "", emptyList(),
+            importSourceJson = source)
+        val modified = exported.replace("入口Ａ", "入口A")
+        assertNotEquals(exported, modified)
+        val result = ScheduleParser.parse(modified, 0L, "#FF6750A4").getOrThrow()
+        assertTrue(result.warnings.any { it.contains("完整性校验") })
+    }
 }

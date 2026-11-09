@@ -18,9 +18,10 @@ object SleepyNativeExporter {
         nodesPerDay: Int,
         timeJson: String,
         courses: List<CourseEntity>,
-        periodTable: PeriodTableExport? = null
+        periodTable: PeriodTableExport? = null,
+        importSourceJson: String = "",
     ): String {
-        val body = buildBody(tableName, startDate, maxWeek, nodesPerDay, timeJson, courses, periodTable)
+        val body = buildBody(tableName, startDate, maxWeek, nodesPerDay, timeJson, courses, periodTable, importSourceJson)
         val withChk = body + "\nz|chk=crc32:" + SleepyNativeFormat.crc32(body.toByteArray(Charsets.UTF_8))
         return withChk
     }
@@ -33,9 +34,10 @@ object SleepyNativeExporter {
         nodesPerDay: Int,
         timeJson: String,
         courses: List<CourseEntity>,
-        periodTable: PeriodTableExport? = null
+        periodTable: PeriodTableExport? = null,
+        importSourceJson: String = "",
     ): String {
-        val body = buildBody(tableName, startDate, maxWeek, nodesPerDay, timeJson, courses, periodTable)
+        val body = buildBody(tableName, startDate, maxWeek, nodesPerDay, timeJson, courses, periodTable, importSourceJson)
         return "【来自Sleepy】\n课程分享：\n\n<<<SLEEPY-BEGIN>>>\n$body\n<<<SLEEPY-END>>>"
     }
 
@@ -46,7 +48,8 @@ object SleepyNativeExporter {
         nodesPerDay: Int,
         timeJson: String,
         courses: List<CourseEntity>,
-        periodTable: PeriodTableExport? = null
+        periodTable: PeriodTableExport? = null,
+        importSourceJson: String = "",
     ): String {
         val sb = StringBuilder()
         sb.append("#sleepy-v1\n")
@@ -63,6 +66,7 @@ object SleepyNativeExporter {
         // 散周 partition 后, 计算最终 C 行数: 用 exportCourses 的逻辑同一处
         val partitionedCount = countAfterPartition(courses)
         sb.append('|').append("n=").append(partitionedCount)
+        if (importSourceJson.isNotEmpty()) sb.append("|source=").append(SleepyNativeFormat.escape(importSourceJson))
         sb.append('\n')
 
         // ---- issue#40: P 行(独立时间节次表, §6 新格式可选区块) ----
