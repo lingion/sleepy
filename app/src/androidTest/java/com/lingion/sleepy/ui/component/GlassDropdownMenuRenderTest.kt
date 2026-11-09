@@ -5,6 +5,19 @@ import android.os.Bundle
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Text
+import androidx.compose.ui.platform.testTag
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.lightColorScheme
@@ -97,6 +110,49 @@ class GlassDropdownMenuRenderTest {
             putString("stream", "Popup foreground pixels: $counts\n")
         })
         assertTrue("popup foreground must reach actual window pixels and stay live: $failures", failures.isEmpty())
+    }
+
+    @OptIn(ExperimentalLayoutApi::class)
+    @Test fun allNestedMenuControlsReachWindowPixels() {
+        val style = mutableStateOf(UiStyle.Classic)
+        compose.setContent {
+            MaterialTheme(colorScheme = lightColorScheme()) {
+                CompositionLocalProvider(LocalUiStyle provides style.value) {
+                    key(style.value) {
+                        GlassHost {
+                            GlassDropdownMenu(true, {}, modifier = Modifier.width(280.dp)) {
+                                Column(Modifier.padding(12.dp)) {
+                                    Text("跳转到周次", modifier = Modifier.padding(start = 4.dp, bottom = 8.dp))
+                                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.fillMaxWidth()) {
+                                        repeat(20) { index ->
+                                            Box(Modifier.size(40.dp)
+                                                .glassControl(shape = CircleShape, selected = index == 1, motionClearance = 4.dp)
+                                                .clip(CircleShape).background(Color.Red)
+                                                .noRippleGlassClickable {}.testTag("nested-$index")) {
+                                                Text((index + 1).toString())
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        compose.mainClock.advanceTimeBy(600)
+        compose.waitForIdle()
+        val classic = captureForeground("nested-classic", red = true)
+        compose.runOnIdle { style.value = UiStyle.LiquidGlass }
+        compose.mainClock.advanceTimeBy(600)
+        compose.waitForIdle()
+        val liquid = captureForeground("nested-liquid", red = true)
+        InstrumentationRegistry.getInstrumentation().sendStatus(2, Bundle().apply {
+            putString("stream", "Nested menu pixels: classic=$classic, liquid=$liquid\n")
+        })
+        assertTrue("all twenty menu controls must reach the actual popup: classic=$classic liquid=$liquid", liquid >= classic * 0.98f)
     }
 
     private fun captureForeground(name: String, red: Boolean): Int {
