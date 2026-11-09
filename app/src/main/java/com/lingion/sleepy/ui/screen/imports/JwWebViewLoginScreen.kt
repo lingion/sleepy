@@ -1461,90 +1461,148 @@ private const val CQU_FETCH_JS = """
  */
 private const val CHAOXING_FETCH_JS = """
 (function(){
-  try {
-    // 管理前缀按入口 URL 推断: 部分部署挂 /admin 或 /admin/ (吉林工商), 部分无前缀
-    // 修复: pathname 可能恰好是 '/admin' (无尾斜杠), 旧逻辑 indexOf('/admin/') === 0 判 false
-    var base = /^\/admin(\/|$)/.test(location.pathname) ? '/admin' : '';
-    var get = function(url){
-      return fetch(url, {credentials:'include', headers:{'X-Requested-With':'XMLHttpRequest'}})
-        .then(function(r){ return r.json(); });
-    };
-    var getText = function(url){
-      return fetch(url, {credentials:'include', headers:{'X-Requested-With':'XMLHttpRequest'}})
-        .then(function(r){ return r.text(); });
-    };
-    // 1) 当前学期 + 校区: getMenuList 响应含 jsxq.dataXnxq / xqid (session 态)
-    var ctx = get(base + '/api/getMenuList').then(function(j){
-      var jsxq = (j && (j.jsxq || (j.data && j.data.jsxq))) || {};
-      return { xnxq: jsxq.dataXnxq || '', xqid: jsxq.xqid || '' };
-    }).catch(function(){ return { xnxq: '', xqid: '' }; });
-    ctx.then(function(c){
-      if (!c.xnxq) {
-        // getMenuList 缺 jsxq 时回退: 让服务端自己用会话学期 (queryKbForGrdb 无参)
-      }
-      // 2) 个人课表: 先试 queryKbForGrdb (无参), 若返回 HTML (404) 则回退 sdpkkbList
-      return getText(base + '/pkgl/xskb/queryKbForGrdb?sf_request_type=ajax')
-      .then(function(txt){
-        if (txt.trim().startsWith('<')) {
-          // 404 HTML — 回退 sdpkkbList (Syswin 变体, 需 xhid)
-          // xhid 来源优先级: 本页 query → 本页 HTML → 同源 iframe 的 URL query
-          // (门户壳结构: 主框 /admin 门户外壳, 课表页在 iframe 内, xhid 在其 URL)
-          var xhid = '';
-          try {
-            var pm = location.search.match(/[?&]xhid=([A-Z0-9]+)/);
-            if (pm) xhid = pm[1];
-            if (!xhid) {
-              var m = document.body.innerHTML.match(/xhid['":\s=]+['"]?([A-Z0-9]{60,})/);
-              if (m) xhid = m[1];
-            }
-            if (!xhid) {
-              var fs = document.querySelectorAll('iframe');
-              for (var fi = 0; fi < fs.length && !xhid; fi++) {
-                try {
-                  var fm = fs[fi].contentWindow.location.search.match(/[?&]xhid=([A-Z0-9]+)/);
-                  if (fm) xhid = fm[1];
-                } catch(e2) {}
-              }
-            }
-          } catch(e) {}
-          if (!xhid) throw new Error('无法识别课表接口: 请先在教务里打开"我的课表"页再导入');
-          return get(base + '/xsd/pkgl/xskb/sdpkkbList?xnxq=' + encodeURIComponent(c.xnxq) +
-                    '&xhid=' + encodeURIComponent(xhid) + '&xqdm=' + encodeURIComponent(c.xqid) +
-                    '&zdzc=&zxzc=&xskbxslx=0')
-          .then(function(kb){ return kb.data || []; });
-        }
-        return JSON.parse(txt).data || [];
-      })
-      .then(function(rows){
-        if (!rows || !rows.length) throw new Error('课表为空: 请先在教务里打开"我的课表"页再导入');
-        // 3) 节次时间 (尽力而为, 失败不阻断 — periods 仅用于展示)
-        return get(base + '/api/getZclistByXnxq?xnxq=' + encodeURIComponent(c.xnxq) +
-                  '&xqid=' + encodeURIComponent(c.xqid) + '&role=&userId=&sf_request_type=ajax')
-        .then(function(zc){
-          var periods = [];
-          try {
-            var arr = zc.data.jcsjszList || [];
-            for (var i = 0; i < arr.length; i++) {
-              periods.push({node: parseInt(arr[i].jc, 10), kssj: arr[i].kssj, jssj: arr[i].jssj});
-            }
-          } catch(e) {}
-          var payload = JSON.stringify({
-            xnxq: c.xnxq,
-            dqzc: (zc && zc.data && zc.data.dqzc) || null,
-            rows: rows,
-            periods: periods
-          });
-          window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true, data: payload, periods: periods}));
-        });
-      });
-    })
-    .catch(function(e){
-      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(e)}));
-    });
-  } catch(e) {
-    window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(e)}));
+  var base = /^\/admin(\/|$)/.test(location.pathname) ? '/admin' : '';
+  var initialUrl = location.href;
+  function finish(payload) { window.__sleepyBridge.onWiseduResult(JSON.stringify(payload)); }
+  function loginHtml(text) {
+    return text.trim().startsWith('<') && (/<input\b[^>]*type\s*=\s*["']?password/i.test(text) ||
+      /casloginform|统一身份认证|会话已过期|session timeout/i.test(text));
   }
-})()"""
+  function expired(error) { return !!(error && error.sessionExpired); }
+  function sessionError() {
+    var error = Error('登录态已失效，请重新登录后导入'); error.sessionExpired = true; return error;
+  }
+  async function get(path, allowMissing) {
+    var target = new URL(path, location.href);
+    if (target.origin !== location.origin) throw Error('教务请求必须保持同源');
+    var response = await fetch(target.href, {method:'GET',credentials:'include',mode:'same-origin',
+      redirect:'error',headers:{'X-Requested-With':'XMLHttpRequest'}});
+    var text = await response.text();
+    var finalUrl = response.url ? new URL(response.url, location.href) : target;
+    if (finalUrl.origin !== location.origin || /\/(?:login|cas|sso)(?:\/|$)/i.test(finalUrl.pathname) ||
+        loginHtml(text) || response.status === 401 || response.status === 403) throw sessionError();
+    if (!response.ok && !(allowMissing && response.status === 404)) throw Error('教务请求失败 HTTP ' + response.status);
+    return {text:text,missing:response.status === 404};
+  }
+  function json(result) {
+    var value;
+    try { value = JSON.parse(result.text); } catch(e) { throw Error('教务响应不是有效 JSON'); }
+    if (value && (value.code === 401 || value.code === 403)) throw sessionError();
+    if (value && value.success === false) throw Error('教务未返回课表数据');
+    return value;
+  }
+  function selectedTerm(select, live) {
+    if (!select) return '';
+    if (live && select.value) return String(select.value);
+    var options = Array.prototype.slice.call(select.options || []).filter(function(option){return !!option.value;});
+    var explicit = options.filter(function(option){return option.hasAttribute('selected');});
+    if (explicit.length === 1) return String(explicit[0].value);
+    if (explicit.length > 1) throw Error('课表页存在多个已选学期');
+    return options.length === 1 ? String(options[0].value) : '';
+  }
+  function context(doc, live) {
+    function field(id) { var element = doc.querySelector(id); return element ? String(element.value || '') : ''; }
+    return {xhid:field('#xhid'),xqid:field('#xqdm'),xnxq:selectedTerm(doc.querySelector('#xnxq1'),live)};
+  }
+  function merge(primary, fallback) {
+    return {xhid:primary.xhid || fallback.xhid || '',xqid:primary.xqid || fallback.xqid || '',
+      xnxq:primary.xnxq || fallback.xnxq || ''};
+  }
+  function liveContext() {
+    var sources = [{frame:null,doc:document,url:location.href}], values = {xhid:'',xqid:'',xnxq:''};
+    var frames = document.querySelectorAll('iframe');
+    for (var i = 0; i < frames.length; i++) {
+      var frame, url;
+      try {
+        frame = frames[i].contentDocument;
+        url = frames[i].contentWindow.location.href;
+      } catch(e) { continue; /* Cross-origin frames cannot supply context. */ }
+      // Both document and location must be readable, including inherited about:blank frames.
+      if (frame) {
+        sources.push({frame:frames[i],doc:frame,url:url});
+      }
+    }
+    for (var j = 0; j < sources.length; j++) {
+      var source = sources[j], body = source.doc.body && source.doc.body.innerHTML || '';
+      var address = new URL(source.url,location.href);
+      if (/\/(?:login|cas|sso)(?:\/|$)/i.test(address.pathname) || loginHtml(body)) throw sessionError();
+      var current = context(source.doc,true);
+      if (!current.xhid) current.xhid = address.searchParams.get('xhid') || '';
+      if (!current.xhid && source.doc === document) {
+        var found = body.match(/xhid['":\s=]+['"]?([A-Za-z0-9_-]{60,})/);
+        if (found) current.xhid = found[1];
+      }
+      for (var key of ['xhid','xqid','xnxq']) {
+        if (values[key] && current[key] && values[key] !== current[key]) {
+          throw Error('课表页面的学生、校区或学期信息不一致，请重新选择后导入');
+        }
+      }
+      source.values = current;
+      values = merge(values,current);
+    }
+    return {sources:sources,values:values};
+  }
+  function sameContext(before, after) {
+    if (before.sources.length !== after.sources.length) return false;
+    for (var i = 0; i < before.sources.length; i++) {
+      var a = before.sources[i], b = after.sources[i];
+      if (a.frame !== b.frame || a.doc !== b.doc || a.url !== b.url) return false;
+      for (var key of ['xhid','xqid','xnxq']) if (a.values[key] !== b.values[key]) return false;
+    }
+    return true;
+  }
+  // These metadata requests are optional. A missing clock cannot discard already fetched courses.
+  async function optional(action) {
+    var timer;
+    try { return await Promise.race([action(),new Promise(function(resolve){
+      timer = setTimeout(function(){resolve(null);},4000);
+    })]); } catch(error) { if (expired(error)) throw error; return null; }
+    finally { if (timer !== undefined) clearTimeout(timer); }
+  }
+  (async function(){
+    if (/\/(?:login|cas|sso)(?:\/|$)/i.test(location.pathname)) throw sessionError();
+    var initialContext = liveContext(), live = initialContext.values;
+    var menu = await optional(async function(){ return json(await get(base + '/api/getMenuList')); });
+    var jsxq = menu && (menu.jsxq || menu.data && menu.data.jsxq) || {};
+    var selected = merge(live,{xnxq:jsxq.dataXnxq,xqid:jsxq.xqid});
+    var result = await get(base + '/pkgl/xskb/queryKbForGrdb?sf_request_type=ajax',true);
+    var rows;
+    if (result.missing || result.text.trim().startsWith('<')) {
+      if (!selected.xhid || !selected.xnxq) {
+        var page = await get(base + '/pkgl/xskb/queryKbForXsd');
+        if (!page.text.trim().startsWith('<')) throw Error('旧版课表入口响应无效');
+        var doc = new DOMParser().parseFromString(page.text,'text/html');
+        selected = merge(live,merge(context(doc,false),selected));
+      }
+      if (!selected.xhid || !selected.xnxq) throw Error('请先打开我的课表并明确选择学期后导入');
+      var params = '?xnxq=' + encodeURIComponent(selected.xnxq) + '&xhid=' + encodeURIComponent(selected.xhid) +
+        '&xqdm=' + encodeURIComponent(selected.xqid) + '&zdzc=&zxzc=&xskbxslx=0';
+      result = await get(base + '/pkgl/xskb/sdpkkbList' + params,true);
+      if (result.missing || result.text.trim().startsWith('<')) {
+        result = await get(base + '/xsd/pkgl/xskb/sdpkkbList' + params);
+      }
+    }
+    var payload = json(result);
+    rows = Array.isArray(payload) ? payload : payload && (payload.data || payload.rows);
+    if (!Array.isArray(rows) || !rows.length) throw Error('课表为空或响应格式无效，请先打开我的课表后导入');
+    var clock = await optional(async function(){
+      return json(await get(base + '/api/getZclistByXnxq?xnxq=' + encodeURIComponent(selected.xnxq) +
+        '&xqid=' + encodeURIComponent(selected.xqid) + '&role=&userId=&sf_request_type=ajax'));
+    });
+    var periods = [], clockRows = clock && clock.data && clock.data.jcsjszList;
+    if (Array.isArray(clockRows)) {
+      periods = clockRows.map(function(slot){
+        return {node:Number(slot.jc),start:slot.kssj,end:slot.jssj};
+      });
+    }
+    if (location.href !== initialUrl || !sameContext(initialContext,liveContext())) {
+      throw Error('采集期间页面或学期已改变，请重新导入');
+    }
+    finish({ok:true,data:JSON.stringify({xnxq:selected.xnxq,dqzc:clock && clock.data && clock.data.dqzc || null,
+      rows:rows,periods:periods}),periods:periods});
+  })().catch(function(error){finish({ok:false,err:String(error.message || error)});});
+})();
+"""
 
 /**
  * 强智移动教务 SPA (type=qz_app) 课表 JSON 抓取。
