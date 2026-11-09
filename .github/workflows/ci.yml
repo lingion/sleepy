@@ -3,6 +3,8 @@ name: CI
 on:
   pull_request:
     branches: [main]
+  push:
+    branches: [main]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -21,14 +23,15 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 22
-      - name: Lint PR commit messages
+      - name: Lint commit messages
         env:
-          BASE_REF: ${{ github.base_ref }}
+          BASE_REF: ${{ github.base_ref || 'main' }}
+          COMMIT_FROM: ${{ github.event_name == 'push' && github.event.before || format('origin/{0}', github.base_ref) }}
         run: |
           npm install -g @commitlint/cli @commitlint/config-conventional
-          # squash 合并后 PR 里每条 commit 都会进 main 历史, 逐条校验
+          # PR 校验分支范围，main 校验本次推送实际引入的提交。
           git fetch origin "$BASE_REF" --depth=200
-          npx commitlint --from "origin/$BASE_REF" --to HEAD --verbose
+          npx commitlint --from "$COMMIT_FROM" --to HEAD --verbose
 
   school-catalog-check:
     runs-on: ubuntu-latest
