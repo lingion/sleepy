@@ -53,4 +53,30 @@ class GlassIconLayoutTest {
         assertTrue("pressed and dragged disc must leave its neighbor clear", raised.right < second.left)
         compose.onNodeWithTag("target0").performTouchInput { cancel() }
     }
+    @Test fun cancelledClickReturnsToRestWhileTheFingerRemainsDown() {
+        compose.mainClock.autoAdvance = false
+        compose.setContent {
+            MaterialTheme {
+                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                    GlassHost {
+                        GlassIconButton({}, Modifier.testTag("target")) {
+                            Box(Modifier.fillMaxSize().testTag("pane"))
+                        }
+                    }
+                }
+            }
+        }
+        val pane = compose.onNodeWithTag("pane", true)
+        val resting = pane.fetchSemanticsNode().boundsInRoot
+        compose.onNodeWithTag("target").performTouchInput { down(center) }
+        compose.mainClock.advanceTimeBy(500)
+        assertTrue("effective press must raise the glass", pane.fetchSemanticsNode().boundsInRoot.width > resting.width)
+        compose.onNodeWithTag("target").performTouchInput { moveBy(Offset(120f, 0f), 100) }
+        compose.mainClock.advanceTimeBy(1000)
+        val cancelled = pane.fetchSemanticsNode().boundsInRoot
+        assertEquals("cancelled press must lower before pointer up", resting.width, cancelled.width, .2f)
+        assertEquals("cancelled press must clear drag offset", resting.left, cancelled.left, .2f)
+        compose.onNodeWithTag("target").performTouchInput { up() }
+    }
+
 }

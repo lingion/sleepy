@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -84,7 +85,8 @@ fun Modifier.glassControl(
     var motion by remember { mutableStateOf<Job?>(null) }
     val density = LocalDensity.current.density
     val pressed = interactionSource?.collectIsPressedAsState()?.value == true
-    val active = down || pressed
+    val currentPressed by rememberUpdatedState(pressed)
+    val active = if (interactionSource != null) pressed else down
     val pressSpring = spring<Float>(dampingRatio = 0.593f, stiffness = 311f)
     androidx.compose.runtime.LaunchedEffect(enabled, active) {
         if (!enabled) {
@@ -96,6 +98,7 @@ fun Modifier.glassControl(
             motion?.cancel()
             motion = scope.launch { lift.animateTo(1f, pressSpring) }
         } else {
+            pull = Offset.Zero
             val swelling = motion
             motion = scope.launch {
                 swelling?.join()
@@ -123,7 +126,7 @@ fun Modifier.glassControl(
                 translationY = pull.y.coerceIn(-yRoom, yRoom)
             }
         }
-        .pointerInput(enabled, grouped) {
+        .pointerInput(enabled, grouped, interactionSource) {
             if (!enabled) return@pointerInput
             awaitPointerEventScope {
                 while (true) {
@@ -134,6 +137,10 @@ fun Modifier.glassControl(
                         origin = pointer.position
                         pull = Offset.Zero
                     } else if (pointer.pressed && down) {
+                        if (interactionSource != null && !currentPressed) {
+                            pull = Offset.Zero
+                            continue
+                        }
                         val limit = min(size.width, size.height) * (7f / 32f)
                         fun rubber(v: Float): Float = if (limit > 0f) FlClashDockPhysics.rubberBand(v, limit) else 0f
                         val delta = pointer.position - origin
