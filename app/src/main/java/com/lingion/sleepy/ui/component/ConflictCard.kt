@@ -1246,8 +1246,7 @@ private fun ConflictCoursePickerDialog(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .glassControl(shape = SleepyTheme.shapes.small, tint = if (isTopLayer) colors.primaryContainer else null,
-                                motionClearance = 4.dp)
+                            .glassControl(shape = SleepyTheme.shapes.small, tint = if (isTopLayer) colors.primaryContainer else null)
                             .clip(SleepyTheme.shapes.small)
                             .background(controlFill(if (isTopLayer) colors.primaryContainer else colors.surfaceContainer))
                             .noRippleGlassClickable { onPick(course.id) }

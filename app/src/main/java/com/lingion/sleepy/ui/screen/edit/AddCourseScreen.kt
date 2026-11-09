@@ -2040,7 +2040,7 @@ private fun MultiDayPicker(
                         modifier = Modifier
                             .weight(1f)
                             .height(40.dp)
-                            .glassControl(shape = SleepyTheme.shapes.medium, selected = selected, motionClearance = 4.dp)
+                            .glassControl(shape = SleepyTheme.shapes.medium, selected = selected)
                             .clip(SleepyTheme.shapes.medium)
                             .background(controlFill(if (selected) colors.primary else colors.surfaceContainerHighest))
                             .noRippleGlassClickable { onToggleDay(day) },

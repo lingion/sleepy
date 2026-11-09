@@ -21,7 +21,6 @@ import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Dp
 import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.backdrop.BackdropRenderOptions
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
@@ -53,7 +52,6 @@ fun Modifier.glassControl(
     registerPane: Boolean = true,
     role: GlassMaterialRole = GlassMaterialRole.Regular,
     interactionSource: MutableInteractionSource? = null,
-    @Suppress("UNUSED_PARAMETER") motionClearance: Dp = Dp.Unspecified,
     placementLayer: Boolean = true,
 ): Modifier {
     check(!LocalGlassSourceContent.current) { "An optical consumer cannot be recorded as an ordinary source" }

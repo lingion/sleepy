@@ -468,8 +468,7 @@ private fun PositionCard(
     Box(
         modifier = modifier
             .heightIn(min = GlassControlLayout.touchTarget)
-            .glassControl(shape = SleepyTheme.shapes.small, tint = if (selected) groupColor else null,
-                motionClearance = GlassControlLayout.denseClearance)
+            .glassControl(shape = SleepyTheme.shapes.small, tint = if (selected) groupColor else null)
             .background(controlFill(bg), SleepyTheme.shapes.small)
             .noRippleGlassClickable(onClick)
             .padding(horizontal = 4.dp, vertical = 8.dp),
