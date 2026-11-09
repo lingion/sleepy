@@ -26,7 +26,7 @@ jobs:
       - name: Lint commit messages
         env:
           BASE_REF: ${{ github.base_ref || 'main' }}
-          COMMIT_FROM: ${{ github.event.before || format('origin/{0}', github.base_ref) }}
+          COMMIT_FROM: ${{ github.event_name == 'push' && github.event.before || format('origin/{0}', github.base_ref) }}
         run: |
           npm install -g @commitlint/cli @commitlint/config-conventional
           # PR 校验分支范围，main 校验本次推送实际引入的提交。
