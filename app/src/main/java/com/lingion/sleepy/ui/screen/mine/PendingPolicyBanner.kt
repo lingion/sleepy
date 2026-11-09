@@ -1,12 +1,10 @@
 package com.lingion.sleepy.ui.screen.mine
 
-import com.lingion.sleepy.ui.component.liquidglass.glassControl
-import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -24,6 +22,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
+import com.lingion.sleepy.ui.component.liquidglass.GlassControlLayout
+import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton
 import com.lingion.sleepy.ui.screen.schedule.SchedulePolicy
 import com.lingion.sleepy.ui.theme.SleepyTheme
 
@@ -63,22 +63,24 @@ fun PendingPolicyBanner(
             tint = colors.onSecondaryContainer,
             modifier = Modifier.height(18.dp)
         )
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(GlassControlLayout.controlGap))
         Text(
             text = stringResource(R.string.schedule_conflict_banner_format, policyText),
             style = MaterialTheme.typography.bodyMedium,
             color = colors.onSecondaryContainer,
             modifier = Modifier.weight(1f)
         )
-        Text(
-            text = stringResource(R.string.schedule_conflict_banner_modify),
-            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
-            color = colors.primary,
-            modifier = Modifier
-                .glassControl(shape = SleepyTheme.shapes.medium)
-                .clip(SleepyTheme.shapes.medium)
-                .clickable(onClick = onModify)
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-        )
+        Spacer(modifier = Modifier.width(GlassControlLayout.controlGap))
+        GlassTextButton(
+            onClick = onModify,
+            modifier = Modifier.defaultMinSize(minHeight = GlassControlLayout.touchTarget),
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.schedule_conflict_banner_modify),
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                color = colors.primary,
+            )
+        }
     }
 }
