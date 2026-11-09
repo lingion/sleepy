@@ -1176,4 +1176,11 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="widget_wide_grid_shapes">Cambiar forma</string>
     <string name="widget_wide_grid_unavailable">Este widget se ha eliminado o no está disponible</string>
     <string name="widget_wide_grid_vertical">Semana vertical, avanza cada período</string>
+    <string name="jw_select_academic_adapter">Elegir sistema académico</string>
+    <string name="jw_source_entry">Sistema académico: %1$s</string>
+    <string name="jw_source_suggestions">Sugerencias de origen guardadas como referencia</string>
+    <string name="jw_source_class_minutes">Duración de clase: %1$s min</string>
+    <string name="jw_source_break_minutes">Duración del descanso: %1$s min</string>
+    <string name="jw_source_first_weekday">Primer día de la semana: %1$s</string>
+    <string name="jw_invalid_semester_weeks">El total de semanas debe estar entre %1$d y 366</string>
 </resources>
