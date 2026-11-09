@@ -46,7 +46,7 @@ class GlassAppNavigationRenderTest {
             val monday = today.minusDays((today.dayOfWeek.value - 1).toLong()).minusWeeks(1)
             runBlocking {
                 val periodId = repository.insertPeriodTable(com.lingion.sleepy.data.entity.PeriodTableEntity(name = "视觉测试作息"))
-                val id = repository.insertTable(TimeTableEntity(name = "玻璃视觉测试", startDate = monday.toString(), maxWeek = 20, isDefault = true, periodTableId = periodId))
+                val id = repository.insertTable(TimeTableEntity(name = "长名称课表：软件工程专业第一学期课程安排", createdAt = 1794212345000L, startDate = monday.toString(), maxWeek = 20, isDefault = true, periodTableId = periodId))
                 repository.insertCourses(listOf(
                     course(1, id, "高等数学", today.dayOfWeek.value, 1, "#B4D9F2"),
                     course(2, id, "大学物理", today.dayOfWeek.value, 4, "#BCE0BD"),
@@ -116,6 +116,8 @@ class GlassAppNavigationRenderTest {
         compose.onNodeWithTag("schedule_add_course").performTouchInput { click() }
         waitText("手动创建课程")
         capture("$mode-add-course")
+        tap("新增一个上课时段")
+        capture("$mode-two-period-cards")
         back()
         tap("今日"); capture("$mode-today")
         tap("课表管理"); capture("$mode-manage")
@@ -134,7 +136,9 @@ class GlassAppNavigationRenderTest {
                 waitText("作息表"); capture("$mode-period-edit")
                 compose.onNodeWithContentDescription("分享作息表").performTouchInput { click() }
                 capture("$mode-period-share"); back()
-                tap("自动模式"); capture("$mode-period-auto")
+                tap("自动模式")
+                tap("添加短课时")
+                capture("$mode-period-auto")
                 back()
             }
             if (name == "general") {
@@ -177,8 +181,19 @@ class GlassAppNavigationRenderTest {
         compose.waitForIdle()
     }
     private fun tap(text: String) {
+        compose.waitForIdle()
+        val target = compose.onAllNodesWithText(text).onLast()
+        if (runCatching { target.assertIsDisplayed() }.isFailure) {
+            runCatching { target.performScrollTo() }
+            if (runCatching { target.assertIsDisplayed() }.isFailure) {
+                val scrolls = compose.onAllNodes(hasScrollAction())
+                for (index in scrolls.fetchSemanticsNodes().indices.reversed()) {
+                    if (runCatching { scrolls[index].performScrollToNode(hasText(text)) }.isSuccess) break
+                }
+            }
+        }
         waitText(text)
-        compose.onAllNodesWithText(text).onLast().performTouchInput { click() }
+        target.assertIsDisplayed().performTouchInput { click() }
         compose.waitForIdle()
     }
     private fun back() {
