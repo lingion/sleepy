@@ -229,6 +229,10 @@ data class LiquidGlassStyle(
         fun controlLens(colorScheme: ColorScheme, dark: Boolean): LiquidGlassStyle =
             lens(colorScheme, dark).copy(dispersion = 0.0)
 
+        /** The separate destination pane from FLClash's Dock, without RGB fringes. */
+        fun controlLensContent(colorScheme: ColorScheme, dark: Boolean): LiquidGlassStyle =
+            lensContent(colorScheme, dark).copy(dispersion = 0.0)
+
         /** FLClash navigation_dock.dart `_lensShadows`, shared by the floating controls. */
         fun controlLensShadow(dark: Boolean, lift: Float): Shadow =
             Shadow(radius = 5.dp, offset = DpOffset(0.dp, 8.dp),

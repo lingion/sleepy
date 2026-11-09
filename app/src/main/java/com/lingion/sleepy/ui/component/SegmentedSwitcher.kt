@@ -35,6 +35,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.ClipOp
+import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -195,11 +205,33 @@ fun <T> SegmentedSwitcher(
     val scene = if (LocalGlassOverlay.current) samplingHost?.overlayBackdrop else samplingHost?.backdropAt(LocalGlassDepth.current)
     // Only the ordinary sibling backing is recorded. It never contains this lens.
     val trackBackdrop = rememberLayerBackdrop()
+    val captureLift by rememberUpdatedState(if (glassActive) thumbLift else 0f)
+    val captureCount by rememberUpdatedState(count)
+    // FLClash records destinations separately: magnify each seat, then warp only glyphs.
+    // The visible label tree and its accessibility nodes are retained exactly once.
+    val recordLabels: ContentDrawScope.() -> Unit = remember {
+        {
+            val content = this
+            val padding = 4.dp.toPx()
+            val pitch = (size.width - 2 * padding) / captureCount
+            val magnification = 1f + .16f * captureLift
+            for (index in 0 until captureCount) {
+                val left = padding + index * pitch
+                clipRect(left, 0f, left + pitch, size.height) {
+                    scale(magnification, pivot = Offset(left + pitch / 2, size.height / 2)) {
+                        content.drawContent()
+                    }
+                }
+            }
+        }
+    }
+    val labelBackdrop = rememberLayerBackdrop(onDraw = recordLabels)
     val lensBackdrop = if (scene != null) rememberCombinedBackdrop(scene, trackBackdrop) else trackBackdrop
     val context = LocalContext.current
     val view = LocalView.current
     val dark = LocalDarkTheme.current
     val lensStyle = LiquidGlassStyle.controlLens(colors, dark).scale(thumbLift.toDouble())
+    val contentStyle = LiquidGlassStyle.controlLensContent(colors, dark).scale(thumbLift.toDouble())
     val trackShape = if (glassActive) RoundedCornerShape(50) else RoundedCornerShape(14.dp)
     val restingShape = if (glassActive) RoundedCornerShape(50) else RoundedCornerShape(12.dp)
 
@@ -303,12 +335,26 @@ fun <T> SegmentedSwitcher(
                             shadow = { LiquidGlassStyle.controlLensShadow(dark, thumbLift) },
                         ) else Modifier)
                 )
-                Box(Modifier.layerBackdrop(trackBackdrop)
-                    .background(containerColor ?: if (glassActive) colors.onSurface.copy(alpha = .045f) else colors.surfaceContainer, trackShape)) {
-                    Layout(modifier = Modifier.padding(4.dp), content = {
-                        Box(Modifier.background((if (glassActive) colors.surface else colors.secondaryContainer)
-                            .copy(alpha = if (glassActive) 1f - thumbLift else 1f), restingShape))
-                        // 层1..n: 点击段 — 透明, 只负责点击与无障碍
+                Layout(content = {
+                    // Track source contains only the ordinary platter, never glyphs or lenses.
+                    Layout(
+                        modifier = Modifier.layerBackdrop(trackBackdrop)
+                            .background(containerColor ?: if (glassActive) colors.onSurface.copy(alpha = .045f) else colors.surfaceContainer, trackShape)
+                            .padding(4.dp),
+                        content = {
+                            Box(Modifier.background((if (glassActive) colors.surface else colors.secondaryContainer)
+                                .copy(alpha = if (glassActive) 1f - thumbLift else 1f), restingShape))
+                        },
+                    ) { children, constraints ->
+                        val pitch = constraints.maxWidth.toFloat() / count
+                        val pill = children.single().measure(Constraints.fixed(pitch.toInt(), constraints.maxHeight))
+                        layout(constraints.maxWidth, constraints.maxHeight) {
+                            val x = thumbPosition * pitch
+                            pill.placeRelativeWithLayer(x.toInt(), 0) {
+                                translationX = (x - x.toInt()) * if (isRtl) -1f else 1f
+                            }
+                        }
+                    }
                         options.forEachIndexed { index, option ->
                             Box(
                                 Modifier
@@ -327,7 +373,25 @@ fun <T> SegmentedSwitcher(
                                     )
                             )
                         }
-                        // 层n+1..2n: 内容层(文字+可选徽标) — 每个字符按覆盖率 lerp 上色, 与 thumb 同帧
+                    Layout(
+                        modifier = Modifier.drawWithContent {
+                            if (glassActive && thumbLift > 0f) {
+                                val padding = 4.dp.toPx()
+                                val pitch = (size.width - 2 * padding) / count
+                                val width = (pitch + 16.dp.toPx() * thumbLift).roundToInt().toFloat()
+                                val height = (size.height - 2 * padding + 18.dp.toPx() * thumbLift).roundToInt().toFloat()
+                                val logical = padding + thumbPosition * pitch + (pitch - width) / 2
+                                val left = if (isRtl) size.width - logical - width else logical
+                                val top = (size.height - height) / 2
+                                val outline = Path().apply {
+                                    addRoundRect(RoundRect(Rect(left, top, left + width, top + height), CornerRadius(height / 2)))
+                                }
+                                // This clip affects only the visible replay. The sibling source
+                                // records full glyphs on its own canvas for the content lens.
+                                clipPath(outline, ClipOp.Difference) { this@drawWithContent.drawContent() }
+                            } else drawContent()
+                        }.layerBackdrop(labelBackdrop).padding(4.dp),
+                        content = {
                         options.forEachIndexed { index, option ->
                             val isSelected = index == selectedIndex
                             Row(
@@ -375,47 +439,38 @@ fun <T> SegmentedSwitcher(
                                 }
                             }
                         }
-                    },
-                    measurePolicy = { measurables, constraints ->
-                        val segmentWidth = if (count == 0) 0 else constraints.maxWidth / count
-                        val heightPx = constraints.maxHeight
-
-                        val thumbPlaceable = measurables[0].measure(
-                            Constraints(
-                                minWidth = segmentWidth,
-                                maxWidth = segmentWidth,
-                                minHeight = heightPx,
-                                maxHeight = heightPx,
-                            )
-                        )
-                        val clickPlaceables = measurables.drop(1).take(count).map { m ->
-                            m.measure(Constraints(minWidth = segmentWidth, maxWidth = segmentWidth, minHeight = heightPx, maxHeight = heightPx))
-                        }
-                        // 文字按自然尺寸测(min=0): 强制撑满段宽/段高会让 placeable 恒等于段尺寸,
-                        // 居中偏移 (段-物)/2 恒为 0, 文字就钉在左上角 — 必须自然测, place 时再居中
-                        val labelPlaceables = measurables.drop(1 + count).map { m ->
-                            m.measure(Constraints(maxWidth = segmentWidth, maxHeight = heightPx))
-                        }
-
-                        layout(constraints.maxWidth, heightPx) {
-                            val layoutSegW = constraints.maxWidth.toFloat() / count
-                            val exactX = thumbPosition * layoutSegW
-                            thumbPlaceable.placeRelativeWithLayer(exactX.toInt(), 0) {
-                                translationX = (exactX - exactX.toInt()) * if (isRtl) -1f else 1f
-                            }
-
-                            clickPlaceables.forEachIndexed { i, p -> p.placeRelative(x = i * segmentWidth, y = 0) }
-                            // 文字水平: placeable 自身已在段宽约束下测出, 需在段内水平居中; 垂直: 段内居中
-                            labelPlaceables.forEachIndexed { i, p ->
-                                p.placeRelative(
-                                    x = i * segmentWidth + (segmentWidth - p.width) / 2,
-                                    y = (heightPx - p.height) / 2
-                                )
+                        },
+                    ) { labels, constraints ->
+                        val pitch = constraints.maxWidth / count
+                        val height = constraints.maxHeight
+                        val placeables = labels.map { it.measure(Constraints(maxWidth = pitch, maxHeight = height)) }
+                        layout(constraints.maxWidth, height) {
+                            placeables.forEachIndexed { index, label ->
+                                label.placeRelative(index * pitch + (pitch - label.width) / 2, (height - label.height) / 2)
                             }
                         }
                     }
-                    )
+                }) { children, constraints ->
+                    val width = constraints.maxWidth
+                    val height = constraints.maxHeight
+                    val padding = with(density) { 4.dp.roundToPx() }
+                    val pitch = (width - padding * 2) / count
+                    val track = children[0].measure(Constraints.fixed(width, height))
+                    val clicks = children.drop(1).take(count).map { it.measure(Constraints.fixed(pitch, height - padding * 2)) }
+                    val labels = children.last().measure(Constraints.fixed(width, height))
+                    layout(width, height) {
+                        track.placeRelative(0, 0)
+                        clicks.forEachIndexed { index, click -> click.placeRelative(padding + index * pitch, padding) }
+                        labels.placeRelative(0, 0)
+                    }
                 }
+                Box(Modifier.then(if (glassActive && thumbLift > 0f) Modifier.drawBackdrop(
+                    backdrop = labelBackdrop,
+                    shape = { RoundedCornerShape(50) },
+                    effects = { liquidGlass(context = context, style = contentStyle) },
+                    highlight = null,
+                    shadow = null,
+                ) else Modifier))
             },
             measurePolicy = { measurables, constraints ->
                 val width = constraints.maxWidth
@@ -427,10 +482,14 @@ fun <T> SegmentedSwitcher(
                 val lensWidth = (segmentWidth + with(density) { 16.dp.toPx() } * lift).roundToInt()
                 val lensHeight = (height - 2 * padding + with(density) { 18.dp.toPx() } * lift).roundToInt()
                 val lens = measurables[0].measure(Constraints.fixed(lensWidth, lensHeight))
+                val contentLens = measurables[2].measure(Constraints.fixed(lensWidth, lensHeight))
                 layout(width, height) {
                     backing.placeRelative(0, 0)
                     val exactX = padding + thumbPosition * segmentWidth + (segmentWidth - lensWidth) / 2f
                     lens.placeRelativeWithLayer(exactX.toInt(), (height - lensHeight) / 2) {
+                        translationX = (exactX - exactX.toInt()) * if (isRtl) -1f else 1f
+                    }
+                    contentLens.placeRelativeWithLayer(exactX.toInt(), (height - lensHeight) / 2) {
                         translationX = (exactX - exactX.toInt()) * if (isRtl) -1f else 1f
                     }
                 }

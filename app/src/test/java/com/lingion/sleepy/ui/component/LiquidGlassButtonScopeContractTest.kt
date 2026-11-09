@@ -161,6 +161,8 @@ class LiquidGlassButtonScopeContractTest {
         assertTrue("track and labels must be sampled from an ordinary sibling", src.contains(".layerBackdrop(trackBackdrop)"))
         assertTrue("scene and local track must both reach the lens", src.contains("rememberCombinedBackdrop(scene, trackBackdrop)"))
         assertTrue("Tab must use the shared control optics", src.contains("LiquidGlassStyle.controlLens"))
+        assertTrue("glyphs need their own source, isolated from the track", src.contains(".layerBackdrop(labelBackdrop)"))
+        assertTrue("Tab must retain Dock's separate content magnification and refraction", src.contains("LiquidGlassStyle.controlLensContent") && src.contains("1f + .16f * captureLift"))
         assertFalse("Tab must not override the shared refraction", src.contains("refraction = -8.5"))
         val backing = src.indexOf("backing.placeRelative(0, 0)")
         val lens = src.indexOf("lens.placeRelativeWithLayer", backing)
