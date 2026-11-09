@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.captureToImage
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.ui.theme.SleepyThemeProvider
@@ -99,10 +99,10 @@ class SingleSliderGhostGeometryTest {
             SleepyThemeProvider(darkTheme = false, themeKey = "default") {
                 Box(modifier = Modifier.size(width = 360.dp, height = 48.dp).testTag("box-${c.name}")) {
                     Slider(
-                        value = c.value,
+                        state = androidx.compose.material3.rememberSliderState(
+                            value = c.value, steps = c.steps, trackRange = c.start..c.end,
+                        ),
                         onValueChange = {},
-                        valueRange = c.start..c.end,
-                        steps = c.steps,
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
