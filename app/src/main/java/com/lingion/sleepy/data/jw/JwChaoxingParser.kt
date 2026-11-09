@@ -2,10 +2,12 @@ package com.lingion.sleepy.data.jw
 
 import org.jsoup.Jsoup
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 
 /**
  * 超星学习通/ChaoXing「综合教务管理系统」课表 JSON 解析器。
@@ -36,6 +38,11 @@ import kotlinx.serialization.json.jsonPrimitive
  *   xjc     节号（字符串/数字皆容）；缺位回退 rqxl%100            → startNode=endNode
  *   zcstr   周次串 "1,2,3" 逗号形态 / "1-16" 区间形态             → 周次段
  *
+ * 旧 /admin/pkgl/xskb/sdpkkbList 也可直接返回顶层数组，djc 是单个节号，
+ * zc 为周列表或 "1-9(单)周" 等周次串，xingqi 仍为星期。
+ * 来源：moeshin/ai-schedule-chaoxing，4650f598 的 provider 和 getWeeks。
+ * 旧形态的 xqmc 校区附在教室后，避免同名教室跨校区混合。
+ *
  * 合并规则：同(课名,星期,教室,教师,周次串)且节号连续的行 → 合并为
  * startNode..endNode 单条（超星按单节粒度返回行, 连堂课拆多行）。
  */
@@ -47,16 +54,26 @@ class JwChaoxingParser(source: String) : JwParser(source) {
     private fun stripHtml(s: String): String = Jsoup.parseBodyFragment(s).text().trim()
 
     /** Invalid explicit coordinates must not become a partially invented schedule. */
-    private fun expandWeeks(zcstr: String): List<Int> {
+    private fun expandWeeks(value: JsonElement?): List<Int> {
+        if (value is JsonArray) {
+            val weeks = value.map {
+                (it as? JsonPrimitive)?.contentOrNull?.toIntOrNull() ?: return emptyList()
+            }
+            if (weeks.any { it !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND }) return emptyList()
+            return weeks.distinct().sorted()
+        }
+        val zcstr = (value as? JsonPrimitive)?.contentOrNull?.trim()?.removeSuffix("周")?.trim()
+            ?: return emptyList()
         if (zcstr.isBlank()) return emptyList()
         val weeks = sortedSetOf<Int>()
         for (part in zcstr.split(',', '，')) {
-            val match = Regex("""([0-9]+)(?:\s*[-～~]\s*([0-9]+))?""").matchEntire(part.trim())
+            val match = Regex("""([0-9]+)(?:\s*[-～~]\s*([0-9]+)(?:\s*\(([单双])\))?)?""").matchEntire(part.trim())
                 ?: return emptyList()
             val first = match.groupValues[1].toIntOrNull() ?: return emptyList()
             val last = match.groupValues[2].ifEmpty { match.groupValues[1] }.toIntOrNull() ?: return emptyList()
-            if (first <= 0 || last < first || last > 366) return emptyList()
-            weeks.addAll(first..last)
+            if (first <= 0 || last < first || last > EXPLICIT_SCHEDULE_RESOURCE_BOUND) return emptyList()
+            val parity = when (match.groupValues[3]) { "单" -> 1; "双" -> 0; else -> null }
+            weeks.addAll((first..last).filter { parity == null || it % 2 == parity })
         }
         return weeks.toList()
     }
@@ -86,9 +103,13 @@ class JwChaoxingParser(source: String) : JwParser(source) {
     }
 
     override fun generateCourseList(): List<JwCourse> {
-        val root = runCatching { json.parseToJsonElement(source).jsonObject }.getOrNull()
+        val root = runCatching { json.parseToJsonElement(source) }.getOrNull()
             ?: return emptyList()
-        val rows = runCatching { root["rows"]!!.jsonArray }.getOrNull() ?: return emptyList()
+        val rows = when (root) {
+            is JsonArray -> root
+            is JsonObject -> root["rows"] as? JsonArray
+            else -> null
+        } ?: return emptyList()
 
         data class Row(
             val name: String, val day: Int, val node: Int,
@@ -97,33 +118,40 @@ class JwChaoxingParser(source: String) : JwParser(source) {
 
         val parsed = mutableListOf<Row>()
         for (el in rows) {
-            val o = runCatching { el.jsonObject }.getOrNull() ?: continue
+            val o = el as? JsonObject ?: continue
             fun str(k: String): String =
-                o[k]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.trim().orEmpty()
+                (o[k] as? JsonPrimitive)?.contentOrNull?.trim().orEmpty()
+            fun field(vararg keys: String): JsonElement? = keys.firstNotNullOfOrNull { key ->
+                o[key]?.takeUnless { it == JsonNull || it is JsonPrimitive && it.contentOrNull?.isBlank() == true }
+            }
+            fun integer(value: JsonElement?): Int? = (value as? JsonPrimitive)?.contentOrNull?.trim()?.toIntOrNull()
 
             val name = stripHtml(str("kcmc"))
             if (name.isBlank()) continue
 
             // 星期: xingqi 优先, 缺位回退 rqxl 前缀 (rqxl = 星期*100 + 节号)
-            val day = str("xingqi").toIntOrNull()
-                ?: str("rqxl").toIntOrNull()?.div(100)
-                ?: continue
+            val explicitDay = field("xingqi")
+            val day = (if (explicitDay != null) integer(explicitDay) else integer(field("rqxl"))?.div(100)) ?: continue
             if (day !in 1..7) continue
 
-            // 节号: xjc 优先, 缺位回退 rqxl 后两位
-            val node = str("xjc").toIntOrNull()
-                ?: str("rqxl").toIntOrNull()?.let { if (it > 99) it % 100 else it }
-                ?: continue
+            // Each djc is one period, as in the source provider's sections=[djc].
+            // Only absent fields permit fallback; malformed explicit coordinates are rejected.
+            val explicitNode = field("xjc", "djc")
+            val node = (if (explicitNode != null) integer(explicitNode) else
+                integer(field("rqxl"))?.let { if (it > 99) it % 100 else it }) ?: continue
 
-            if (node <= 0) continue
+            if (node !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
 
-            val weeks = expandWeeks(str("zcstr"))
+            val weeks = expandWeeks(field("zcstr", "zc"))
             if (weeks.isEmpty()) continue
+
+            val campus = if (field("xjc") == null && field("djc") != null) stripHtml(str("xqmc")) else ""
+            val room = stripHtml(str("croommc")) + if (campus.isNotBlank()) "（$campus）" else ""
 
             parsed.add(
                 Row(
                     name = name, day = day, node = node, weeks = weeks,
-                    room = stripHtml(str("croommc")), teacher = stripHtml(str("tmc"))
+                    room = room, teacher = stripHtml(str("tmc"))
                 )
             )
         }
