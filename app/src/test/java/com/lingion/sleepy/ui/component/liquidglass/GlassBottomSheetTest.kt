@@ -10,7 +10,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -20,7 +21,7 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTouchInput
@@ -108,7 +109,10 @@ class GlassBottomSheetTest {
                         if (open.value) {
                             GlassModalBottomSheet(
                                 onDismissRequest = { dismissals++; open.value = false },
-                                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                                sheetState = rememberBottomSheetState(
+                                    initialValue = SheetValue.Hidden,
+                                    enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
+                                ),
                                 modifier = Modifier.testTag("sheet"),
                             ) {
                                 sheetScene = LocalGlassPopupScene.current

@@ -25,11 +25,11 @@ fun versionFromGit(): Pair<String, Int> {
     }
     // 真源 1: git describe 最近 v*.*.* tag
     val tag = try {
-        val p = ProcessBuilder("git", "describe", "--tags", "--match", "v*.*.*", "--abbrev=0")
-            .redirectErrorStream(true).start()
-        val out = p.inputStream.readBytes().toString(Charsets.UTF_8).trim()
-        p.waitFor()
-        if (p.exitValue() == 0) out else null
+        val result = providers.exec {
+            commandLine("git", "describe", "--tags", "--match", "v*.*.*", "--abbrev=0")
+            isIgnoreExitValue = true
+        }
+        if (result.result.get().exitValue == 0) result.standardOutput.asText.get().trim() else null
     } catch (_: Exception) { null }
     if (tag != null) return parse(tag)
     // 真源 2: docs/release-notes-v*.*.*.md 文件名最大版本 (tag 缺席时的日常 main)
@@ -139,7 +139,7 @@ android {
         }
     }
 
-    sourceSets.getByName("androidTest").assets.srcDir("schemas")
+    sourceSets.getByName("androidTest").assets.directories.add("schemas")
 
     lint {
         // 基线对齐 v1.0.57 (38 errors / 434 warnings):
@@ -157,7 +157,7 @@ android {
 		lintConfig = file("${rootProject.projectDir}/app/lint.xml")
     }
 
-    sourceSets.getByName("main").assets.srcDir("schemas")
+    sourceSets.getByName("main").assets.directories.add("schemas")
 
     splits {
         abi {

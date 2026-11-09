@@ -950,7 +950,6 @@ private fun JwWebView(
                     }
                 }
                 // 正常 WebView 配置
-                settings.databaseEnabled = true
                 setDownloadListener { downloadUrl, userAgent, contentDisposition, mimeType, contentLength ->
                     // 实体抓取 — 桌面 collector 4-downloads/ 对标: 下载文件字节落诊断包
                     // (导出 xls/ics 课表文件本身是协议证据)。后台线程 GET, 带 Cookie。

@@ -168,7 +168,7 @@ class ClassDndScheduler(private val context: Context) {
         val nodes = TimeTableUtils.parseNodes(table.timeJson)
         val result = mutableListOf<Pair<LocalDateTime, LocalDateTime>>()
         for (offsetDays in 0 until WINDOW_DAYS) {
-            val date = today.plusDays(offsetDays.toLong())
+            val date = today.plusDays(offsetDays)
             // Use the reminder policy for the same date semantics as course notifications.
             if (!com.lingion.sleepy.util.HolidayReminderPolicyAdapter
                     .decide(context, date, table.id)
