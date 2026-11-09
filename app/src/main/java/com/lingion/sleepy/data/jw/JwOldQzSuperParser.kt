@@ -15,7 +15,7 @@ class JwOldQzSuperParser(source: String, private val declaredForm: Form? = null)
     private fun bounds(text: String, max: Int): IntRange? {
         val m = range.matchEntire(text) ?: return null
         val start = m.groupValues[1].toIntOrNull() ?: return null
-        val end = m.groupValues[2].toIntOrNull() ?: start
+        val end = if (m.groupValues[2].isEmpty()) start else m.groupValues[2].toIntOrNull() ?: return null
         return (start..end).takeIf { start in 1..max && end in start..max }
     }
 
