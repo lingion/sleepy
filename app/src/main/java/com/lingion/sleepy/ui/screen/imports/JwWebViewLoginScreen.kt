@@ -700,11 +700,11 @@ fun JwWebViewLoginScreen(
                     if (school.type == JwProtocol.TYPE_EAMS5) {
                         val prefix = eams5PathPrefixFor(school.url)
                         // 安徽大学自建'新教务'走金智 EAMS 新版 GET 路径, 复用 EAMS5 type
-                        // 但 fetch JS 单独走 EAMS5_AHU_FETCH_JS (2026-09-06 cross-verified)
+                        // 学期选择与采集校验由独立 JwAhuCapture 处理。
                         val js = if (school.url.contains("ahu.edu.cn", ignoreCase = true) ||
                             (wv.url ?: "").contains("ahu.edu.cn", ignoreCase = true)
                         ) {
-                            EAMS5_AHU_FETCH_JS.replace(EAMS5_PREFIX_PLACEHOLDER, prefix)
+                            JwAhuCapture.FETCH_JS.replace(EAMS5_PREFIX_PLACEHOLDER, prefix)
                         } else {
                             EAMS5_FETCH_JS.replace(EAMS5_PREFIX_PLACEHOLDER, prefix)
                         }
@@ -2295,165 +2295,6 @@ private const val CLASSIC_EAMS_FETCH_JS = """
     });
   } catch(err) {
     fail(String(err));
-  }
-})();
-"""
-
-/**
- * 安大 (AHU) 自建'新教务' (jw.ahu.edu.cn, 金智 EAMS 新版部署形态)。
- *
- * 与合工大 EAMS5_FETCH_JS 的差异 (2026-09-06 cross-verified, 5 仓共识:
- * MoeclubM/AHU-AIO + qiqqqqq517/shangkeschschedule + abydym/Ahu_Plus +
- * Landon-3314/AHU-TimeTable + Zeraora-807/Anhui-Univ-DSH-Tool):
- *   - 不走 POST /ws/schedule-table/datum (安大返 HTTP 500, 不存在该 endpoint)
- *   - 走 GET /for-std/course-table/semester/<semesterId>/print-data
- *     (activities[] 含 weekday/weekIndexes/startUnit/endUnit/courseName/
- *      teacherNames/campus/building/room, 是真正的课表数据)
- *   - 不再依赖 get-data 的 lessons[]: 那是 metadata-only (courseCode/examMode),
- *     不含 weekday/节次, 不能直接渲染到课表
- *   - studentId (JW-internal Long, 非学号) 从 /grade/sheet 302 Location 提取
- *     (MoeclubM + abydym + Zeraora 共识 regex:
- *      /\/(?:semester-index|info)\/(\d+)(?:[/?#]|$)/)
- *   - dataId: 客户端尝试走 print-data 不需要 dataId; 若 print-data 失败, 退到
- *     get-data 走 dataId=<studentId> (MoeclubM 模式)
- *
- * 流程 (三段, 复用 __sleepyBridge.onWiseduResult 同一回调通道):
- *   1) GET /student/for-std/course-table → HTML 含 allSemesters + 已登录判定
- *   2) 从 HTML 提取 allSemesters, 取首个 semesterId
- *      并行: GET /student/for-std/grade/sheet (302 → 提取 studentId)
- *   3) GET /student/for-std/course-table/semester/<semesterId>/print-data?semesterId=<id>&hasExperiment=false
- *   4) __sleepyBridge.onWiseduResult({ok, data, periods}) 回调
- *
- * 外部佐证 (5 仓):
- *   - MoeclubM/AHU-AIO (lib/jw/api/jw_api.dart, GPL-3.0)
- *   - qiqqqqq517/shangkeschschedule (Apache-2.0, ahu.js)
- *   - abydym/Ahu_Plus (GPL-3.0, Kotlin 同栈 — 关键同栈证据)
- *   - Landon-3314/AHU-TimeTable (Flutter, print-data + get-data 双轨实现)
- *   - Zeraora-807/Anhui-Univ-DSH-Tool (TypeScript DeepSeek Harness)
- */
-private const val EAMS5_AHU_FETCH_JS = """
-(function(){
-  try {
-    if (location.hostname.indexOf('ahu.edu.cn') < 0) {
-      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'请先登录并进入安徽大学教务后再点导入'}));
-      return;
-    }
-    var PREFIX = '__EAMS5_PREFIX__';
-    // 1) GET course-table HTML, 提取 allSemesters (学期 JSON 数组) + 检测登录态
-    fetch(PREFIX + '/for-std/course-table', {credentials:'include', redirect:'follow'})
-    .then(function(r){
-      // 会话失效判定 (Zeraora client.ts:608-617 + abydym SessionAuthenticator.kt + Landon-3314 isLoginExpired 共识):
-      //   1) 302-399 redirect + Location 落到 CAS (/cas/login, one.ahu.edu.cn/cas)
-      //   2) 200 OK + HTML 含 'name="lt"' AND 'name="execution"' 双字段 (CAS 登录页)
-      //   3) URL 含 casloginform / 统一身份认证 / 请重新登录 (兜底)
-      // 5 仓 cross-verified 2026-09-06 (a999c385/aa707ac2033872402 agents)
-      var status = r.status;
-      var locHeader = r.headers.get('location') || '';
-      var isCasRedirect = status >= 300 && status < 400
-        && (locHeader.indexOf('one.ahu.edu.cn/cas') >= 0
-            || /\/cas\/login/.test(locHeader)
-            || /\/cas\b/.test(locHeader));
-      // r.text() 单次消费 — 先一次性读再判
-      return r.text().then(function(body){
-        // 同时读 r.url, fetch redirect:'follow' 后 finalUrl 是最终 URL (CAS 登录页)
-        var finalUrl = r.url || '';
-        var hasLtField = /name=["']lt["']/i.test(body);
-        var hasExecField = /name=["']execution["']/i.test(body);
-        var hasCasLoginUi = /统一身份认证|请重新登录|session timeout|会话已过期|name=["']casloginform["']/i.test(body);
-        var loginExpired = finalUrl.indexOf('/login') >= 0
-                        || finalUrl.indexOf('cas/login') >= 0
-                        || finalUrl.indexOf('one.ahu.edu.cn/cas') >= 0
-                        || finalUrl.indexOf('casloginform') >= 0
-                        || isCasRedirect
-                        || (hasLtField && hasExecField)
-                        || hasCasLoginUi;
-        return {html: body, finalUrl: finalUrl, status: status, loginExpired: loginExpired};
-      });
-    })
-    .then(function(ctx){
-      if (ctx.loginExpired) {
-        window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false,
-          err:'登录态已失效,请在教务主页重新登录后再试'}));
-        return null;
-      }
-      var html = ctx.html || '';
-      // 学期列表提取 — 5 仓共识 (a999c385 agent):
-      //   AHU 是 Thymeleaf/J2EE 模板渲染, 学期列表嵌入 HTML 内
-      //   `<select id="allSemesters"><option value="112">2024-2025-2</option>...`
-      //   qiqqqqq517 ahu.js:37 / abydym CourseRepository.kt:119-167 / Zeraora client.ts:480-489
-      //   共识 regex: <select[^>]*id=["']allSemesters["'][^>]*>([\s\S]*?)</select>
-      //   + 内部 <option value="(\d+)"[^>]*>([^<]+)</option> 循环
-      // 按 id 倒序取首 (服务器返回 newest-first, abydym + Zeraora 一致)
-      var semesterId = null;
-      var selectMatch = html.match(/<select[^>]*\bid=["']allSemesters["'][^>]*>([\s\S]*?)<\/select>/i);
-      if (selectMatch) {
-        var inner = selectMatch[1];
-        var optionRegex = /<option[^>]*\bvalue=["'](\d+)["'][^>]*>([^<]*)<\/option>/gi;
-        var m;
-        var opts = [];
-        while ((m = optionRegex.exec(inner)) !== null) {
-          opts.push({id: parseInt(m[1], 10), name: m[2].trim()});
-        }
-        // 取 id 最大 (newest first; abydym .sortedByDescending { it.id }.first())
-        if (opts.length) {
-          opts.sort(function(a, b) { return b.id - a.id; });
-          semesterId = String(opts[0].id);
-        }
-      }
-      // 优先级 2 fallback: Vue/Nuxt 嵌入的 JSON 形态 (防御性)
-      // 形如 var allSemesters = [...] 或 semesters = [...]
-      if (!semesterId) {
-        var jsonMatch = html.match(/(?:allSemesters|semesters)\s*[=:]\s*(\[[\s\S]*?\])\s*[;,]?/);
-        if (jsonMatch) {
-          try {
-            var arr = JSON.parse(jsonMatch[1]);
-            if (arr && arr.length) {
-              // 优先 isCurrentSemester 标志
-              var cur = null;
-              for (var i = 0; i < arr.length; i++) {
-                if (arr[i].isCurrentSemester === true || arr[i].isCurrent === true ||
-                    arr[i].current === true || arr[i].status === 'CURRENT') { cur = arr[i]; break; }
-              }
-              var semObj = cur || arr[0];
-              semesterId = String(semObj.id || semObj.semesterId || semObj.value || semObj.code);
-            }
-          } catch(e) {}
-        }
-      }
-      // 优先级 3 fallback: <option selected value="X">
-      if (!semesterId) {
-        var sel = html.match(/<option[^>]*\bselected\b[^>]*\bvalue=["']?(\d+)["']?/i);
-        if (sel) semesterId = sel[1];
-      }
-      // v1 兜底: abydym hardcoded DEFAULT_SEMESTER_ID = 112 (2024-2025-2 已知)
-      // 不强行猜, 直接报"未取到学期列表"
-      if (!semesterId) {
-        window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false,
-          err:'未取到学期列表 (allSemesters), 请在课表页面停留几秒后再点导入'}));
-        return null;
-      }
-      return semesterId;
-    })
-    .then(function(semesterId){
-      if (!semesterId) return null;
-      // 2) GET print-data (含 weekday/weekIndexes/startUnit/endUnit 的真实课表数据)
-      // followRedirects: 'follow' (服务端按 session 绑定学生, 不需要 studentId — 5 仓共识)
-      var url = PREFIX + '/for-std/course-table/semester/' + encodeURIComponent(semesterId)
-              + '/print-data?semesterId=' + encodeURIComponent(semesterId) + '&hasExperiment=false';
-      return fetch(url, {credentials:'include', redirect:'follow'}).then(function(r){
-        if (!r.ok) throw new Error('print-data 失败 HTTP ' + r.status);
-        return r.text();
-      });
-    })
-    .then(function(txt){
-      if (!txt) return;
-      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true, data:txt, periods:[]}));
-    })
-    .catch(function(e){
-      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(e)}));
-    });
-  } catch(err) {
-    window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(err)}));
   }
 })();
 """
