@@ -1,5 +1,8 @@
 package com.lingion.sleepy.ui.component
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,11 +23,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material3.AlertDialog
+import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -61,6 +64,7 @@ import androidx.compose.ui.res.stringResource
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.component.liquidglass.glassBackdropSource
 import com.lingion.sleepy.ui.theme.SleepyTextStyle
 import com.lingion.sleepy.ui.theme.noRippleCombinedClickable
 import com.lingion.sleepy.ui.theme.noRippleClickable
@@ -701,6 +705,7 @@ fun ConflictClusterCard(
         val laneYOffset = clusterYOffset(rowH, baseRowFrac, minStartRow, spanDpOf)
         Box(
             modifier = modifier
+                .glassBackdropSource(depth = 0f)
                 .width(colW)
                 .height(clusterH)
                 .offset(y = laneYOffset)
@@ -727,6 +732,7 @@ fun ConflictClusterCard(
 
     Box(
         modifier = modifier
+            .glassBackdropSource(depth = 0f)
             .width(colW)
             .height(clusterH)
             .offset(y = clusterYOffset)
@@ -1223,9 +1229,10 @@ private fun ConflictCoursePickerDialog(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .glassControl(shape = SleepyTheme.shapes.small, tint = if (isTopLayer) colors.primaryContainer else null)
                             .clip(SleepyTheme.shapes.small)
-                            .background(if (isTopLayer) colors.primaryContainer else colors.surfaceContainer)
-                            .noRippleClickable { onPick(course.id) }
+                            .background(controlFill(if (isTopLayer) colors.primaryContainer else colors.surfaceContainer))
+                            .noRippleGlassClickable { onPick(course.id) }
                             .padding(vertical = 10.dp, horizontal = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {

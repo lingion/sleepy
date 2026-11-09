@@ -1,5 +1,8 @@
 package com.lingion.sleepy.ui.screen.mine
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,14 +21,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import com.lingion.sleepy.ui.component.liquidglass.GlassSwitch as Switch
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import com.lingion.sleepy.ui.component.liquidglass.GlassSlider
+import com.lingion.sleepy.ui.component.liquidglass.liquidGlassControlsEnabled
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -139,14 +145,21 @@ fun PeriodHeaderSettingsScreen(onBack: () -> Unit) {
                         // 幽灵接线 (spec §3.1 单头变体): 拖离进页基线 → 基线刻度出现细条,
                         // 纯装饰零手势零语义, testTag 仅供管线定位; 落库节奏一克不动。
                         Box {
-                            Slider(
+                            if (liquidGlassControlsEnabled()) GlassSlider(
+                                value = hangingUnits,
+                                onValueChange = { hangingUnits = (it * 10f).roundToInt() / 10f },
+                                onValueChangeFinished = { AppPrefs.setPeriodHeaderHanging(context, hangingUnits) },
+                                valueRange = -1f..1f, steps = 19,
+                                initialValue = hangingBaseline, ghostEpsilon = .05f,
+                                ghostTag = "header-hanging-ghost",
+                            ) else Slider(
                                 value = hangingUnits,
                                 onValueChange = { hangingUnits = (it * 10f).roundToInt() / 10f },
                                 onValueChangeFinished = { AppPrefs.setPeriodHeaderHanging(context, hangingUnits) },
                                 valueRange = -1f..1f,
                                 steps = 19,
                             )
-                            if (singleSliderGhostVisible(hangingUnits, hangingBaseline, 0.05f)) {
+                            if (!liquidGlassControlsEnabled() && singleSliderGhostVisible(hangingUnits, hangingBaseline, 0.05f)) {
                                 SingleSliderGhostMark(
                                     baselineFrac = (hangingBaseline - (-1f)) / 2f,
                                     modifier = Modifier.testTag("header-hanging-ghost"),
@@ -252,9 +265,10 @@ private fun HeaderStylePreviews(
                 Surface(
                     modifier = Modifier
                         .widthIn(min = 76.dp)
+                        .glassControl(shape = SleepyTheme.shapes.medium, tint = if (value == selectedStyle) colors.primaryContainer else null)
                         .clip(SleepyTheme.shapes.medium)
-                        .noRippleClickable { onStyleSelected(value) },
-                    color = if (value == selectedStyle) colors.primaryContainer else colors.surfaceContainer,
+                        .noRippleGlassClickable { onStyleSelected(value) },
+                    color = controlFill(if (value == selectedStyle) colors.primaryContainer else colors.surfaceContainer),
                     shape = SleepyTheme.shapes.medium,
                 ) {
                     Column(

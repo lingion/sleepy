@@ -39,11 +39,14 @@ internal fun BackdropEffectScope.liquidGlass(
     goo: LiquidGlassShader.Goo? = null,
     rim: LiquidGlassRim? = null,
     veil: Color = Color.Transparent,
+    sampledBlurPx: Float = 0f,
 ) {
     if (!isRuntimeShaderSupported()) {
         val effectiveStyle = LiquidGlassStyle.standard(style)
         if (effectiveStyle.blur > 0.0) {
-            blur(effectiveStyle.blur.toFloat() * density)
+            val requestedPx = effectiveStyle.blur.toFloat() * density
+            val remainderPx = kotlin.math.sqrt((requestedPx * requestedPx - sampledBlurPx * sampledBlurPx).coerceAtLeast(0f))
+            if (remainderPx > 0f) blur(remainderPx)
         }
         vibrancy()
         return
@@ -75,6 +78,7 @@ internal fun BackdropEffectScope.liquidGlass(
             stretch = 1f,
             atlasSizePx = currentSize,
             sampling = sampling,
+            heldFrostTexelPx = sampledBlurPx,
             hazeSampling = hazeSampling,
             outline = outline,
             goo = goo,
@@ -98,7 +102,9 @@ internal fun BackdropEffectScope.liquidGlass(
         android.util.Log.w("LiquidGlassEffect", "RuntimeShader fallback to blur+vibrancy", e)
         val effectiveStyle = LiquidGlassStyle.standard(style)
         if (effectiveStyle.blur > 0.0) {
-            blur(effectiveStyle.blur.toFloat() * density)
+            val requestedPx = effectiveStyle.blur.toFloat() * density
+            val remainderPx = kotlin.math.sqrt((requestedPx * requestedPx - sampledBlurPx * sampledBlurPx).coerceAtLeast(0f))
+            if (remainderPx > 0f) blur(remainderPx)
         }
         vibrancy()
     }
@@ -107,6 +113,10 @@ internal fun BackdropEffectScope.liquidGlass(
 private fun BackdropEffectScope.extractCornerRadii(size: Size): LiquidGlassCornerRadii {
     val maxRadius = size.minDimension / 2f
     return when (val sh = shape) {
+        is FlClashGlassShape -> {
+            val r = sh.radiusDp.coerceAtMost(maxRadius / density)
+            LiquidGlassCornerRadii(r, r, r, r)
+        }
         is RoundedRectangularShape -> {
             val c = sh.corners(size, layoutDirection, this)
             LiquidGlassCornerRadii(

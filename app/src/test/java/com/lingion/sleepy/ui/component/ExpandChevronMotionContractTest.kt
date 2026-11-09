@@ -12,11 +12,11 @@ import java.io.File
  *   1. 全应用 AnimatedVisibility 纵向展开站点一律显式传 sleepyExpandSpecs()
  *      (T1 工厂; T5 rowExpand 先例) — 尺寸 fastSpatial、淡入 defaultEffects、
  *      淡出 fastEffects 全走 motionScheme, 禁裸 expandVertically()/shrinkVertically()
- *      默认 spring (与 Expressive 规格脱节)。站点清单 (8 处): SettingsCards、
+ *      默认 spring (与 Expressive 规格脱节)。站点清单 (7 处): SettingsCards、
  *      AddCourseScreen(非常规折叠栏)、ImportSheet(从文本导入, 旧版无 fadeIn —
- *      工厂补齐淡入)、EditTableScreen、GeneralSettingsScreen(旧全限定名一并转正)、
+ *      工厂补齐淡入)、EditTableScreen、
  *      PeriodTableEditScreen、LicenseScreen(导语卡+致谢卡两处)。
- *   2. 全部 5 处 ExpandMore chevron 一律 animateFloatAsState 0→180 defaultSpatial
+ *   2. 全部 4 处折叠 ExpandMore chevron 一律 animateFloatAsState 0→180 defaultSpatial
  *      + Modifier.rotate — 禁 rotate(if (expanded) 180f else 0f) 瞬时硬翻。
  *   3. 反向闸: 展开家族不许退化为 animateContentSize 常驻 alpha 或 if 直挂 —
  *      站点文件里展开家族的 enter 消费点计数只增不减 (7b 起同文件可能另有
@@ -26,6 +26,8 @@ import java.io.File
  * SettingsCard (公开组件、无 VM 依赖) 的行为终态另有 Robolectric 管线测试
  * SettingsCardExpandPipelineTest。AboutLicenseAttributionTest 的旧字面量锁
  * (enter = expandVertically() + fadeIn()) 随本 commit lockstep 改写。
+ * 2026-11-03 用户确认语言改为锚定浮框，并明确批准迁移旧语言契约；
+ * 其他折叠站点的断言保持，语言退出/重复提交由 GlassLanguageMenuTest 验证。
  */
 class ExpandChevronMotionContractTest {
 
@@ -42,6 +44,7 @@ class ExpandChevronMotionContractTest {
     private val importSheet: String by lazy { loadSource("ui/screen/imports/ImportSheet.kt") }
     private val editTable: String by lazy { loadSource("ui/screen/mine/EditTableScreen.kt") }
     private val generalSettings: String by lazy { loadSource("ui/screen/mine/GeneralSettingsScreen.kt") }
+    private val languageMenu: String by lazy { loadSource("ui/component/liquidglass/GlassLanguageMenu.kt") }
     private val periodTableEdit: String by lazy { loadSource("ui/screen/mine/PeriodTableEditScreen.kt") }
     private val license: String by lazy { loadSource("ui/screen/mine/LicenseScreen.kt") }
 
@@ -68,7 +71,7 @@ class ExpandChevronMotionContractTest {
         )
     }
 
-    // ---- 契约 1: 八个展开站点全走 sleepyExpandSpecs ----
+    // ---- 契约 1: 七个展开站点全走 sleepyExpandSpecs ----
 
     @Test
     fun all_expand_sites_consume_sleepy_expand_specs() {
@@ -76,7 +79,6 @@ class ExpandChevronMotionContractTest {
         assertExpandFamily(addCourse, "AddCourseScreen", expectSites = 1)
         assertExpandFamily(importSheet, "ImportSheet", expectSites = 1)
         assertExpandFamily(editTable, "EditTableScreen", expectSites = 1)
-        assertExpandFamily(generalSettings, "GeneralSettingsScreen", expectSites = 1)
         assertExpandFamily(periodTableEdit, "PeriodTableEditScreen", expectSites = 1)
         assertExpandFamily(license, "LicenseScreen", expectSites = 2)
     }
@@ -103,7 +105,7 @@ class ExpandChevronMotionContractTest {
         }
     }
 
-    // ---- 契约 2: 五处 chevron 全走 animateFloatAsState defaultSpatial ----
+    // ---- 契约 2: 四处折叠 chevron 全走 animateFloatAsState defaultSpatial ----
 
     private fun assertChevron(src: String, name: String) {
         assertTrue(
@@ -121,12 +123,22 @@ class ExpandChevronMotionContractTest {
     }
 
     @Test
-    fun all_five_chevrons_animate_rotation() {
+    fun all_collapse_chevrons_animate_rotation() {
         assertChevron(settingsCards, "SettingsCards")
         assertChevron(addCourse, "AddCourseScreen")
         assertChevron(editTable, "EditTableScreen")
-        assertChevron(generalSettings, "GeneralSettingsScreen")
         assertChevron(periodTableEdit, "PeriodTableEditScreen")
+    }
+
+    @Test
+    fun language_uses_anchored_popup_instead_of_inline_collapse() {
+        assertTrue("通用设置必须接入专用语言浮框", generalSettings.contains("GlassLanguageMenu("))
+        assertTrue("选择仍然更新语言偏好", generalSettings.contains("AppPrefs.setLanguage(context, code)"))
+        assertFalse("不得同时保留旧内联折叠状态", generalSettings.contains("languageExpanded"))
+        assertTrue("语言菜单必须使用独立锚定窗口", languageMenu.contains("popupPositionProvider = positionProvider"))
+        assertTrue("浮框展开沿用已确认参考弹簧", languageMenu.contains("spring(dampingRatio = .754f, stiffness = 400f)"))
+        assertTrue("退出动画必须完成后通知关闭", languageMenu.contains("progress.animateTo(0f, tween(200))\n            closed(pickedCode)"))
+        assertTrue("先移除 Popup 再提交业务选择", languageMenu.contains("withFrameNanos { }") && languageMenu.contains("if (code != null) select(code)"))
     }
 
     // ---- 契约 3: 折叠显隐仍归 AnimatedVisibility, 禁 if 直挂回潮 ----

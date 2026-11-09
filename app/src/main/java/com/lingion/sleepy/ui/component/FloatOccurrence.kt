@@ -1,5 +1,8 @@
 package com.lingion.sleepy.ui.component
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import android.annotation.SuppressLint
 import android.os.Build
 import androidx.compose.animation.core.Animatable
@@ -520,8 +523,9 @@ internal fun FloatActionPopup(
     Row(
         modifier = modifier
             .shadow((4 * scale).dp, shape, clip = false)
+            .glassControl(shape = shape, grouped = true)
             .clip(shape)
-            .background(colors.surfaceContainerHigh)
+            .background(controlFill(colors.surfaceContainerHigh))
             .border(1.dp, colors.outlineVariant, shape)
             .onGloballyPositioned { state.popupBounds = it.boundsInRoot() }
             .testTag("float-popup"),
@@ -534,7 +538,7 @@ internal fun FloatActionPopup(
                 fontSize = (12 * scale).sp,
             ),
             color = colors.primary,
-            modifier = Modifier.testTag("float-edit").noRippleClickable(onEdit)
+            modifier = Modifier.testTag("float-edit").noRippleGlassClickable(onEdit)
                 .padding(horizontal = (14 * scale).dp, vertical = (8 * scale).dp),
         )
         Box(Modifier.width(1.dp).height(20.dp).background(colors.outlineVariant))
@@ -545,7 +549,7 @@ internal fun FloatActionPopup(
                 fontSize = (12 * scale).sp,
             ),
             color = colors.error,
-            modifier = Modifier.testTag("float-delete").noRippleClickable(onDelete)
+            modifier = Modifier.testTag("float-delete").noRippleGlassClickable(onDelete)
                 .padding(horizontal = (14 * scale).dp, vertical = (8 * scale).dp),
         )
     }

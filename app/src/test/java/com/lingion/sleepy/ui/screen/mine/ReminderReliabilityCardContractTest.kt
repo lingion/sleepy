@@ -34,10 +34,19 @@ class ReminderReliabilityCardContractTest {
 
     @Test
     fun `clickable status rows keep full-width tap targets`() {
+        // 分支裁定(2026-11-09 用户令): 这三行是可点击项, 不是按钮 — 走 noRippleClickable,
+        // 点击区仍是全宽 Text 本身, 禁回归为局部小按钮。
         assertTrue(cardBody.contains("Modifier.fillMaxWidth()"))
         assertTrue(cardBody.contains("noRippleClickable(onNotificationPermission)"))
         assertTrue(cardBody.contains("noRippleClickable(onExactAlarmSettings)"))
         assertTrue(cardBody.contains("noRippleClickable(onBatterySettings)"))
+    }
+
+    @Test
+    fun `status rows must carry no glass optical material`() {
+        // 用户 2026-11-09: 诊断行不应带任何液态玻璃效果。
+        assertFalse(cardBody.contains("glassControl"))
+        assertFalse(cardBody.contains("noRippleGlassClickable"))
     }
 
     @Test

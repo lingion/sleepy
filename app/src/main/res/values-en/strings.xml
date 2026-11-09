@@ -598,7 +598,7 @@
     <string name="theme_editor_delete_confirm">Delete this custom theme?</string>
     <string name="theme_editor_delete_confirm_body">Pages and widgets using it will fall back to the default "Lilac" theme.</string>
 <string name="appearance_section_theme">Theme colors</string>
-    <string name="appearance_section_dock_theme">Dock Theme</string>
+    <string name="appearance_section_dock_theme">Interface style</string>
     <string name="dock_theme_classic">Classic</string>
     <string name="dock_theme_liquid_glass">Liquid Glass</string>
     <string name="dock_theme_experimental">Experimental</string>
@@ -1183,4 +1183,11 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="widget_wide_grid_shapes">Switch form</string>
     <string name="widget_wide_grid_unavailable">This widget was removed or is unavailable</string>
     <string name="widget_wide_grid_vertical">Vertical week, advance each period</string>
+    <string name="jw_select_academic_adapter">Choose academic system</string>
+    <string name="jw_source_entry">Academic entry: %1$s</string>
+    <string name="jw_source_suggestions">Source suggestions saved for reference</string>
+    <string name="jw_source_class_minutes">Class duration: %1$s min</string>
+    <string name="jw_source_break_minutes">Break duration: %1$s min</string>
+    <string name="jw_source_first_weekday">First weekday: %1$s</string>
+    <string name="jw_invalid_semester_weeks">Enter a semester week count in this range: %1$d–366.</string>
 </resources>

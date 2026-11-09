@@ -81,6 +81,21 @@ class DisplaySliderGhostContractTest {
     }
 
     @Test
+    fun liquid_glass_display_slider_uses_capsule_thumb_geometry_for_ghost_position() {
+        // 2026-11-08 用户追加"幽灵态 = 滑块外形": 摆位真宽 (37dp thumb) 与静置高
+        // (thumbHeightDp=24dp) 都按风格分支传给共享渲染件; Classic 保持 4dp 全高细条。
+        assertTrue(
+            "Liquid Glass DisplaySlider must position its ghost against the 37dp horizontal thumb, not the old 4dp Material thumb",
+            src.contains("thumbWidthDp = if (LocalUiStyle.current == UiStyle.LiquidGlass") &&
+                src.contains("37.dp"),
+        )
+        assertTrue(
+            "SingleSliderGhostMark must accept the thumb geometry used by the real slider",
+            loadSource("ui/component/IntRangeSlider.kt").contains("thumbWidthDp: Dp = 4.dp"),
+        )
+    }
+
+    @Test
     fun setters_appear_only_in_on_finished_not_in_drag_path() {
         // 拖动路径零副作用: onValueChange 的 lambda 体内不得出现任何 AppPrefs.set
         assertFalse(

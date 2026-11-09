@@ -1,8 +1,6 @@
 package com.lingion.sleepy.ui.screen.mine
 
 import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,24 +9,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
+import com.lingion.sleepy.ui.component.liquidglass.GlassSwitch as Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
+import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -39,7 +33,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -48,11 +41,10 @@ import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.component.SettingsLayout
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.undo.UndoManager
+import com.lingion.sleepy.ui.component.SectionHeader
 import com.lingion.sleepy.ui.component.settingsSection
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
-import com.lingion.sleepy.ui.component.sleepyExpandSpecs
 import com.lingion.sleepy.ui.theme.SleepyTheme
-import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
 
 /** Application language, performance and editing preferences. */
@@ -62,7 +54,6 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     var language by remember { mutableStateOf(AppPrefs.getLanguage(context)) }
-    var languageExpanded by rememberSaveable { mutableStateOf(false) }
     val languages = listOf("zh-CN" to "简体中文", "zh-TW" to "繁體中文", "en" to "English", "ja" to "日本語", "es" to "Español")
     var undoDepth by remember { mutableStateOf(AppPrefs.getUndoDepth(context)) }
     var customDepth by rememberSaveable { mutableStateOf(if (undoDepth > 0) undoDepth.toString() else "5") }
@@ -95,73 +86,24 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
             contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(SettingsLayout.cardGap)
         ) {
-            // The language card shows the current language until expanded.
-            settingsSection(R.string.settings_language, first = true) {
-                val currentLabel = languages.firstOrNull { it.first == language }?.second ?: language
-                Column(
-                    modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer)
-                ) {
-                    // 折叠头: 当前语言值 + 展开箭头(2026-09-21: 组标题已示「语言」, 卡标题禁两遍, 改显当前值)
-                    Row(
-                        modifier = Modifier.fillMaxWidth().noRippleClickable { languageExpanded = !languageExpanded }
-                            .dbgTag("general_language_card", text = currentLabel, role = "button")
-                            .heightIn(min = SettingsLayout.minRowHeight)
-                            .padding(horizontal = SettingsLayout.cardInset, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = currentLabel,
-                                style = SettingsLayout.headingStyle,
-                                color = colors.onSurface
-                            )
+            // ── 语言：从当前值锚点展开浮框 (分支裁定: 独立锚定窗口替代内联折叠) ──
+            item {
+                SectionHeader(title = stringResource(R.string.settings_language))
+            }
+
+            item {
+                com.lingion.sleepy.ui.component.liquidglass.GlassLanguageMenu(
+                    title = stringResource(R.string.settings_language),
+                    selectedCode = language,
+                    languages = languages,
+                    onSelect = { code ->
+                        if (language != code) {
+                            language = code
+                            AppPrefs.setLanguage(context, code)
+                            (context as? android.app.Activity)?.recreate()
                         }
-                        // MD3E (Task 7a): chevron 旋转走 defaultSpatial (收稳不弹, 与展开家族同拍)
-                        val langArrowRotation by animateFloatAsState(
-                            targetValue = if (languageExpanded) 180f else 0f,
-                            animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>(),
-                            label = "language-arrow"
-                        )
-                        Icon(
-                            Icons.Outlined.ExpandMore,
-                            contentDescription = null,
-                            tint = colors.onSurfaceVariant,
-                            modifier = Modifier.rotate(langArrowRotation)
-                        )
-                    }
-                    // MD3E (Task 7a): 旧全限定名一并转正; 展开家族 = 尺寸 fastSpatial
-                    // + 淡入淡出 motionScheme
-                    val expandSpecs = sleepyExpandSpecs()
-                    AnimatedVisibility(
-                        visible = languageExpanded,
-                        enter = expandSpecs.enter,
-                        exit = expandSpecs.exit,
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            languages.forEach { (code, label) ->
-                                val selected = language == code
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().noRippleClickable {
-                                        language = code
-                                        AppPrefs.setLanguage(context, code)
-                                        (context as? android.app.Activity)?.recreate()
-                                    }
-                                        .dbgTag("general_language#$code", text = label, role = "radio")
-                                        .heightIn(min = SettingsLayout.minRowHeight).padding(vertical = 8.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(text = label, style = SettingsLayout.itemStyle, color = if (selected) colors.primary else colors.onSurface)
-                                    if (selected) Icon(Icons.Outlined.Check, null, tint = colors.primary, modifier = Modifier.size(20.dp))
-                                }
-                                if (code != languages.last().first) HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                            }
-                        }
-                    }
-                }
+                    },
+                )
             }
 
             // Keep the existing high-refresh switch and immediate application behavior.

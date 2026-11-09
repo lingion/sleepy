@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -20,7 +21,7 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
+import com.lingion.sleepy.ui.component.liquidglass.GlassSwitch as Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,6 +37,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.component.liquidglass.glassSurfaceBackground
 import com.lingion.sleepy.ui.theme.noRippleClickable
 
 /**
@@ -77,7 +79,7 @@ fun SettingsCard(
         label = "settings-arrow"
     )
     Column(
-        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).noRippleClickable(onToggle)
+        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).glassSurfaceBackground(colors.surfaceContainer, SleepyTheme.shapes.large).noRippleClickable(onToggle)
             .then(dbg?.let { Modifier.dbgTag(it, text = title, role = "button") } ?: Modifier)
             .padding(horizontal = SettingsLayout.cardInset),
         verticalArrangement = Arrangement.Top
@@ -132,7 +134,7 @@ fun SettingsFlatCard(
     val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large)
-            .background(colors.surfaceContainer)
+            .glassSurfaceBackground(colors.surfaceContainer, SleepyTheme.shapes.large)
             .padding(horizontal = SettingsLayout.cardInset, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(SettingsLayout.headerGap),
     ) {
@@ -211,7 +213,7 @@ fun DisplayModeOption(
         animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
         label = "displayModeOptionLabel",
     )
-    Row(modifier = Modifier.fillMaxWidth().noRippleClickable(onClick)
+    Row(modifier = Modifier.fillMaxWidth().noRippleGlassClickable(onClick)
         .then(dbg?.let { Modifier.dbgTag(it, text = label, role = "radio") } ?: Modifier)
         .heightIn(min = SettingsLayout.minRowHeight).padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap), verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {

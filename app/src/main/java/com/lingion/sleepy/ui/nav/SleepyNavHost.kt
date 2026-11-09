@@ -23,6 +23,10 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.NavigationRailItemDefaults
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
@@ -47,6 +51,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.togetherWith
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -184,6 +189,13 @@ internal fun SleepyNavHost(
         backStack = nav,
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
+            remember {
+                androidx.navigation3.runtime.NavEntryDecorator<NavKey> { entry ->
+                    com.lingion.sleepy.ui.component.liquidglass.GlassHost(
+                        enabled = com.lingion.sleepy.ui.theme.LocalUiStyle.current == com.lingion.sleepy.ui.theme.UiStyle.LiquidGlass,
+                    ) { entry.Content() }
+                }
+            },
         ),
         onBack = { navigator.pop() },
         transitionSpec = { forwardTransform },
@@ -748,6 +760,7 @@ private fun MainRoute(
                     .padding(bottom = NavDockSpec.bottomFloat)
             ) {
                 PillNavigationBar(
+                    modifier = Modifier.testTag("app_navigation_dock"),
                     items = navItems,
                     selectedIndex = currentTab.ordinal,
                     onSelect = { setCurrentTab(Tab.entries[it]) },
@@ -769,10 +782,11 @@ private fun MainRoute(
                 NavigationBar {
                     Tab.entries.forEach { tab ->
                         NavigationBarItem(
+                            colors = NavigationBarItemDefaults.colors(indicatorColor = controlFill(MaterialTheme.colorScheme.secondaryContainer)),
                             modifier = Modifier.observePressTracker(officialMotion.pressTrackerFor(tab.ordinal)!!),
                             selected = currentTab == tab,
                             onClick = { setCurrentTab(tab) },
-                            icon = { NavigationTabIcon(tab, showUpdateDot = updateNoticeVisible && tab == Tab.Mine, motion = officialMotion) },
+                            icon = { GlassNavigationIcon(tab, selected = currentTab == tab, showUpdateDot = updateNoticeVisible && tab == Tab.Mine, motion = officialMotion) },
                             label = { Text(stringResource(tab.labelRes)) },
                         )
                     }
@@ -805,6 +819,24 @@ private fun MainRoute(
  * 与 dock 形态同一套四个专属动效。为 null 时退化为原始静态图标(逐位与改前一致)。
  * 红点画在变换层之外 —— 只动图标, 红点位置不受影响。
  */
+@Composable
+private fun GlassNavigationIcon(
+    tab: Tab,
+    selected: Boolean,
+    showUpdateDot: Boolean,
+    motion: OfficialNavIconMotion? = null,
+) {
+    if (com.lingion.sleepy.ui.theme.LocalUiStyle.current == com.lingion.sleepy.ui.theme.UiStyle.LiquidGlass) {
+        Box(
+            Modifier.size(width = 64.dp, height = 32.dp)
+                .glassControl(shape = RoundedCornerShape(percent = 50), selected = selected),
+            contentAlignment = Alignment.Center,
+        ) { NavigationTabIcon(tab, showUpdateDot, motion) }
+    } else {
+        NavigationTabIcon(tab, showUpdateDot, motion)
+    }
+}
+
 @Composable
 internal fun NavigationTabIcon(tab: Tab, showUpdateDot: Boolean, motion: OfficialNavIconMotion? = null) {
     val colors = MaterialTheme.colorScheme
@@ -865,8 +897,9 @@ private fun CombinedRailItem(
         Column(
             modifier = Modifier
                 .width(56.dp)
+                .glassControl(shape = RoundedCornerShape(percent = 50), tint = containerColor)
                 .clip(RoundedCornerShape(percent = 50))
-                .background(containerColor)
+                .background(controlFill(containerColor))
                 .padding(vertical = 4.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -914,10 +947,11 @@ private fun PlainRailItem(
     // 按压跟踪挂整项(比图标 24dp 命中区大): 齿轮按住缓转, 其它 key 无消费者=零影响。
     val tracker = motion?.pressTrackerFor(tab.ordinal)
     NavigationRailItem(
+        colors = NavigationRailItemDefaults.colors(indicatorColor = controlFill(MaterialTheme.colorScheme.secondaryContainer)),
         modifier = if (tracker != null) Modifier.observePressTracker(tracker) else Modifier,
         selected = selected,
         onClick = onClick,
-        icon = { NavigationTabIcon(tab, showUpdateDot = showUpdateDot, motion = motion) },
+        icon = { GlassNavigationIcon(tab, selected = selected, showUpdateDot = showUpdateDot, motion = motion) },
         label = { Text(stringResource(tab.labelRes)) },
     )
 }

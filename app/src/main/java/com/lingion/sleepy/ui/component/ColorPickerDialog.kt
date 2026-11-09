@@ -16,10 +16,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.AlertDialog
+import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassSlider
+import com.lingion.sleepy.ui.component.liquidglass.liquidGlassControlsEnabled
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -221,6 +223,19 @@ fun HueSlider(
     onHueCommit: (Float) -> Unit = {},
     initialHue: Float? = null,
 ) {
+    if (liquidGlassControlsEnabled()) {
+        val currentCommit by androidx.compose.runtime.rememberUpdatedState(onHueCommit)
+        val deliveredHue = remember(hue) { androidx.compose.runtime.mutableFloatStateOf(hue) }
+        GlassSlider(
+            value = hue, onValueChange = { deliveredHue.floatValue = it; onHueChange(it) }, modifier = modifier,
+            valueRange = 0f..360f, onValueChangeFinished = { currentCommit(deliveredHue.floatValue) },
+            initialValue = initialHue, ghostEpsilon = .5f, ghostTag = "hue-ghost",
+            thumbColor = Color(android.graphics.Color.HSVToColor(floatArrayOf(hue, 1f, 1f))),
+            trackBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                (0..6).map { Color(android.graphics.Color.HSVToColor(floatArrayOf(it * 60f, 1f, 1f))) }),
+        )
+        return
+    }
     // pointerInput(Unit) 只在首组成形, 闭包捕获的 hue 会过期; dragged 在 onDrag 逐帧
     // 更新, onDragEnd 松手提交 = 最后一帧视觉值(同 coroutine, 零竞态; cancel 复位不提交)。
     // 触碰未越过 touch slop 时 detectDragGestures 不触发, 点按走下方 tap 通道。

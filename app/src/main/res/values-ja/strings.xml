@@ -581,7 +581,7 @@
     <string name="theme_editor_delete_confirm">このカスタムテーマを削除しますか?</string>
     <string name="theme_editor_delete_confirm_body">使用中のページとウィジェットは既定の「ライラック」に戻ります。</string>
 <string name="appearance_section_theme">テーマカラー</string>
-    <string name="appearance_section_dock_theme">Dock テーマ</string>
+    <string name="appearance_section_dock_theme">インターフェーススタイル</string>
     <string name="dock_theme_classic">クラシック</string>
     <string name="dock_theme_liquid_glass">リキッドガラス</string>
     <string name="dock_theme_experimental">実験</string>
@@ -1175,4 +1175,11 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="widget_wide_grid_shapes">表示形式を切り替え</string>
     <string name="widget_wide_grid_unavailable">このウィジェットは削除されたか利用できません</string>
     <string name="widget_wide_grid_vertical">縦向きの7日間・時限ごとに移動</string>
+    <string name="jw_select_academic_adapter">教務システムを選択</string>
+    <string name="jw_source_entry">教務システム：%1$s</string>
+    <string name="jw_source_suggestions">参考用に保存した元の設定</string>
+    <string name="jw_source_class_minutes">授業時間：%1$s 分</string>
+    <string name="jw_source_break_minutes">休憩時間：%1$s 分</string>
+    <string name="jw_source_first_weekday">週の開始曜日：%1$s</string>
+    <string name="jw_invalid_semester_weeks">総週数は %1$d から 366 の範囲で入力してください</string>
 </resources>

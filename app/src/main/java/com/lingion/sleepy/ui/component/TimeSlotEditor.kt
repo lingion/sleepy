@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
@@ -29,10 +30,10 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.DragHandle
 import androidx.compose.material.icons.outlined.RemoveCircleOutline
-import androidx.compose.material3.Button
+import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -298,7 +299,7 @@ private fun BindChoiceRow(title: String, selected: Boolean, onClick: () -> Unit,
             .fillMaxWidth()
             .clip(SleepyTheme.shapes.medium)
             .background(if (selected) colors.primaryContainer else colors.surface)
-            .noRippleClickable(onClick)
+            .noRippleGlassClickable(onClick)
             .then(tag?.let { Modifier.dbgTag(it, text = title, role = "radio") } ?: Modifier)
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically

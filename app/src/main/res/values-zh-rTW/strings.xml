@@ -581,7 +581,7 @@
     <string name="theme_editor_delete_confirm">刪除這個自訂主題?</string>
     <string name="theme_editor_delete_confirm_body">刪除後使用該主題的頁面與小工具將回落到預設主題「淡紫」。</string>
 <string name="appearance_section_theme">主題色彩</string>
-    <string name="appearance_section_dock_theme">Dock 主題</string>
+    <string name="appearance_section_dock_theme">介面風格</string>
     <string name="dock_theme_classic">經典</string>
     <string name="dock_theme_liquid_glass">液態玻璃</string>
     <string name="dock_theme_experimental">實驗</string>
@@ -1142,4 +1142,11 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="widget_wide_grid_shapes">切換形態</string>
     <string name="widget_wide_grid_unavailable">此小工具已刪除或無法使用</string>
     <string name="widget_wide_grid_vertical">直向七天，逐節推進</string>
+    <string name="jw_select_academic_adapter">選擇教務入口</string>
+    <string name="jw_source_entry">教務入口：%1$s</string>
+    <string name="jw_source_suggestions">來源建議已保留，僅供參考</string>
+    <string name="jw_source_class_minutes">每節課時長：%1$s 分鐘</string>
+    <string name="jw_source_break_minutes">課間時長：%1$s 分鐘</string>
+    <string name="jw_source_first_weekday">每週首日：%1$s</string>
+    <string name="jw_invalid_semester_weeks">總週數須在 %1$d 至 366 之間</string>
 </resources>

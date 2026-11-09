@@ -158,16 +158,20 @@ class BackRestoreSaveableContractTest {
         }
     }
 
-    /** Language remains the only expandable group in General after display migration. */
+    /**
+     * 语言选择架构 (分支裁定 2026-11-05: GlassLanguageMenu 锚定浮窗替代内联折叠):
+     * 内联 languageExpanded 折叠态已不存在 — 浮窗天然瞬态(进屏即收起是正确行为),
+     * 无需 Saveable 恢复。契约改锁新架构锚点, 禁内联折叠回归(与浮窗双轨 = 两个语言入口)。
+     */
     @Test
-    fun generalSettingsScreen_languageExpansion_uses_rememberSaveable() {
+    fun generalSettingsScreen_language_uses_glass_language_menu() {
         assertTrue(
-            "Language expansion must survive navigation round trips",
-            Regex("""var\s+languageExpanded\s+by\s+rememberSaveable""").containsMatchIn(generalSource)
+            "Language selection must route through GlassLanguageMenu (anchored popup replaces inline expansion)",
+            generalSource.contains("GlassLanguageMenu(")
         )
         assertFalse(
-            "Language expansion must not be transient",
-            Regex("""var\s+languageExpanded\s+by\s+remember\s*\{""").containsMatchIn(generalSource)
+            "Inline languageExpanded state must not return — the popup is transient by design",
+            Regex("""languageExpanded""").containsMatchIn(generalSource)
         )
     }
 
