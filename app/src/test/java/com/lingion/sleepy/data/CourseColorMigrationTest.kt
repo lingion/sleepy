@@ -69,9 +69,9 @@ class CourseColorMigrationTest {
     }
 
     @Test
-    fun migrationChainReachesV14() {
+    fun migrationChainReachesV15() {
         val last = ALL_MIGRATIONS.last()
-        assertEquals("迁移链尾必须到 14", 14, last.endVersion)
+        assertEquals("迁移链尾必须到 15", 15, last.endVersion)
         assertNotNull(ALL_MIGRATIONS.first { it.startVersion == 11 })
     }
 }
