@@ -77,4 +77,19 @@ class ScheduleToolbarLayoutTest {
         assertEquals(bounds("schedule_add_course").center.y, bounds("schedule_prev_week").center.y, 1f)
         assertEquals(420f, (bounds("schedule_prev_week").left + bounds("schedule_next_week").right) / 2, 1f)
     }
+    @Test fun disabledRedoCannotLiftTheSharedCapsuleButEnabledUndoCan() {
+        compose.mainClock.autoAdvance = false
+        render(360, 1f, true)
+        val resting = bounds("schedule_undo")
+        compose.onNodeWithTag("schedule_redo").performTouchInput { down(center) }
+        compose.mainClock.advanceTimeBy(600)
+        assertEquals("disabled half cannot raise its shared pane", resting.width, bounds("schedule_undo").width, .2f)
+        compose.onNodeWithTag("schedule_redo").performTouchInput { up() }
+        compose.mainClock.advanceTimeBy(600)
+        compose.onNodeWithTag("schedule_undo").performTouchInput { down(center) }
+        compose.mainClock.advanceTimeBy(600)
+        assertTrue("enabled half retains the shared optical feedback", bounds("schedule_undo").width > resting.width)
+        compose.onNodeWithTag("schedule_undo").performTouchInput { up() }
+    }
+
 }

@@ -6,6 +6,10 @@ import com.lingion.sleepy.ui.component.liquidglass.glassSurfaceBackground
 import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.ui.semantics.Role
+import com.lingion.sleepy.ui.component.liquidglass.liquidGlassControlsEnabled
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -877,12 +881,20 @@ private fun UndoRedoCapsule(
     onRedo: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
+    val interaction = remember { MutableInteractionSource() }
+    val optical = liquidGlassControlsEnabled()
+    val undoClick = if (optical) Modifier.clickable(
+        interactionSource = interaction, indication = null, enabled = showUndo, role = Role.Button, onClick = onUndo,
+    ) else Modifier.noRippleGlassClickable(enabled = showUndo, onClick = onUndo)
+    val redoClick = if (optical) Modifier.clickable(
+        interactionSource = interaction, indication = null, enabled = showRedo, role = Role.Button, onClick = onRedo,
+    ) else Modifier.noRippleGlassClickable(enabled = showRedo, onClick = onRedo)
     val halfSize = 32.dp * scale
     val dividerHeight = 14.dp * scale
     Row(
         modifier = Modifier
             .height(halfSize)
-            .glassControl(grouped = true, motionClearance = 4.dp)
+            .glassControl(grouped = true, motionClearance = 4.dp, interactionSource = interaction)
             .clip(CircleShape)
             .background(controlFill(colors.surfaceContainerHigh)),
         verticalAlignment = Alignment.CenterVertically
@@ -894,7 +906,7 @@ private fun UndoRedoCapsule(
                     if (scale == 1f) Modifier.size(width = 32.dp, height = 32.dp)
                     else Modifier.size(width = halfSize, height = halfSize)
                 )
-                .noRippleGlassClickable(enabled = showUndo, onClick = onUndo)
+                .then(undoClick)
                 .dbgTag("schedule_undo", text = stringResource(R.string.schedule_undo), role = "button"),
             contentAlignment = Alignment.Center
         ) {
@@ -918,7 +930,7 @@ private fun UndoRedoCapsule(
                     if (scale == 1f) Modifier.size(width = 32.dp, height = 32.dp)
                     else Modifier.size(width = halfSize, height = halfSize)
                 )
-                .noRippleGlassClickable(enabled = showRedo, onClick = onRedo)
+                .then(redoClick)
                 .dbgTag("schedule_redo", text = stringResource(R.string.schedule_redo), role = "button"),
             contentAlignment = Alignment.Center
         ) {
