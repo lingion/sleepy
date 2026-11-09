@@ -17,8 +17,9 @@ import com.lingion.sleepy.util.AppClock
 internal object SleepyNativeParser {
 
     /** 两遍解析: 先扫 T 行(表级), 再解析其余行 */
-    fun parse(trimmed: String, defaultTableId: Long, defaultColor: String): ScheduleParser.ParseResult {
+    fun parse(trimmed: String, defaultTableId: Long, defaultColor: String, sourceText: String = trimmed): ScheduleParser.ParseResult {
         val lines = trimmed.lineSequence().map { it.trimEnd('\r') }.toList()
+        val originalLines = sourceText.lineSequence().map { it.trimEnd('\r') }.toList()
         val dropped = mutableListOf<String>()
         val warnings = mutableListOf<String>()
 
@@ -29,6 +30,7 @@ internal object SleepyNativeParser {
         var maxWeekRaw: Int? = null
         var nodesPerDayRaw: Int? = null
         var declaredCount: Int? = null
+        var importSourceJson = ""
         var bodyStart = 0
         var foundMagic = false
 
@@ -53,12 +55,18 @@ internal object SleepyNativeParser {
                     maxWeekRaw = cols.getOrNull(2)?.trim()?.toIntOrNull()
                     nodesPerDayRaw = cols.getOrNull(3)?.trim()?.toIntOrNull()
                     // 扩展键区: key=value
-                    for (kv in cols.drop(4)) {
+                    val originalCols = originalLines.getOrNull(idx)?.trim()?.drop(1)?.let(::splitRespectingEscape)
+                    for ((column, kv) in cols.withIndex().drop(4)) {
                         val eq = kv.indexOf('=')
                         if (eq > 0) {
                             val k = kv.substring(0, eq).trim()
                             val v = kv.substring(eq + 1).trim()
                             if (k == "n") declaredCount = v.toIntOrNull()
+                            if (k == "source") {
+                                // Do not apply forgiving course-text normalization to provenance.
+                                val originalKv = originalCols?.getOrNull(column) ?: kv
+                                importSourceJson = unescapeCol(originalKv.substringAfter('=')).orEmpty()
+                            }
                             // 未知键静默忽略(v2 契约)
                         }
                     }
@@ -199,8 +207,8 @@ internal object SleepyNativeParser {
                     // 校验范围 = magic 行(含)至 z 行(不含)的全部字节, 即 trimmed 中 z 行之前 + 结尾换行前的原文
                     val zIdx = lines.indexOfFirst { it.trim() == chkLine }
                     if (zIdx > bodyStart - 1) {
-                        // 用原文(未 trim 前)行 join —— 导出端对 body(不带尾 LF)计算 crc
-                        val bodyToChk = lines.subList(0, zIdx).joinToString("\n")
+                        // 完整性针对导出原文字节，不针对宽容解析时归一化的课程文本。
+                        val bodyToChk = originalLines.subList(0, zIdx).joinToString("\n")
                         val actual = SleepyNativeFormat.crc32(bodyToChk.toByteArray(Charsets.UTF_8))
                         if (!actual.equals(m.groupValues[2], ignoreCase = true)) {
                             warnings.add("完整性校验不符，文件可能被截断或修改")
@@ -260,7 +268,8 @@ internal object SleepyNativeParser {
             warnings = warnings,
             maxWeek = maxWeekClamped ?: 20,
             groupIdsAuthoritative = true,
-            periodTable = periodTable
+            periodTable = periodTable,
+            importSourceJson = importSourceJson,
         )
     }
 

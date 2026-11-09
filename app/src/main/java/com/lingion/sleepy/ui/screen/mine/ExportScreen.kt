@@ -304,6 +304,7 @@ fun ExportScreen(
                                         content = SleepyNativeExporter.exportFile(
                                             table.name, table.startDate, table.maxWeek, table.nodesPerDay,
                                             table.timeJson, courses,
+                                            importSourceJson = table.importSourceJson,
                                             // issue#40 §6: 绑定了独立时间节次表时携带 P 区块(共享关系可往返)
                                             periodTable = state.tables
                                                 .firstOrNull { it.id == table.id }
@@ -333,7 +334,7 @@ fun ExportScreen(
                                         ctx = ctx,
                                         content = SleepyNativeExporter.exportShareText(
                                             table.name, table.startDate, table.maxWeek, table.nodesPerDay,
-                                            table.timeJson, courses
+                                            table.timeJson, courses, importSourceJson = table.importSourceJson,
                                         ),
                                         subject = table.name,
                                         onResult = { msg -> snackbarHostState.showSnackbar(msg) }

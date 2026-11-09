@@ -94,7 +94,7 @@ fun ShareScheduleSheet(
                             ctx = ctx,
                             content = SleepyNativeExporter.exportShareText(
                                 table.name, table.startDate, table.maxWeek, table.nodesPerDay,
-                                table.timeJson, courses
+                                table.timeJson, courses, importSourceJson = table.importSourceJson,
                             ),
                             subject = table.name,
                             onResult = { }
@@ -140,7 +140,7 @@ fun ShareScheduleSheet(
                             ctx = ctx,
                             content = SleepyNativeExporter.exportShareText(
                                 table.name, table.startDate, table.maxWeek, table.nodesPerDay,
-                                table.timeJson, courses
+                                table.timeJson, courses, importSourceJson = table.importSourceJson,
                             ),
                             subject = table.name,
                             onResult = { }
