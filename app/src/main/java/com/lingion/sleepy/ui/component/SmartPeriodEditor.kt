@@ -6,6 +6,7 @@ import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -51,6 +53,7 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
+import com.lingion.sleepy.ui.component.liquidglass.GlassControlLayout
 /**
  * v1.0.16 智慧节次编辑器（自动模式）
  *
@@ -365,6 +368,7 @@ private fun AssignmentGroupSection(
         // Header: 名称 + 分钟数 + 删除
         Row(
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(GlassControlLayout.controlGap),
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
         ) {
             // 颜色 chip
@@ -373,7 +377,6 @@ private fun AssignmentGroupSection(
                     .size(10.dp)
                     .background(groupColor, RoundedCornerShape(50))
             )
-            Spacer(Modifier.width(8.dp))
             Text(
                 headerText,
                 style = MaterialTheme.typography.bodyMedium,
@@ -390,7 +393,7 @@ private fun AssignmentGroupSection(
                     .then(tagPrefix?.let { Modifier.dbgTag("${it}_min", role = "textbox") } ?: Modifier)
             )
             IconButton(onClick = onDelete,
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(GlassControlLayout.touchTarget)
                     .then(tagPrefix?.let { Modifier.dbgTag("${it}_del", text = stringResource(R.string.delete), role = "button") } ?: Modifier)) {
                 Icon(
                     Icons.Outlined.Close,
@@ -403,28 +406,33 @@ private fun AssignmentGroupSection(
 
         // 位置卡片网格
         if (slotCount > 0) {
-            val cardsPerRow = 8
-            val rows = (0 until slotCount).chunked(cardsPerRow)
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                rows.forEach { rowIndices ->
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        rowIndices.forEach { posIdx ->
-                            val selected = assigns.getOrNull(posIdx) == groupIdx
-                            PositionCard(
-                                label = labelFor(posIdx),
-                                selected = selected,
-                                groupColor = groupColor,
-                                onClick = { onToggle(posIdx) },
-                                modifier = Modifier.weight(1f)
-                                    .then(tagPrefix?.let { Modifier.dbgTag("${it}_pos#$posIdx", text = labelFor(posIdx), role = "button") } ?: Modifier)
-                            )
-                        }
-                        // 填满空位
-                        repeat(cardsPerRow - rowIndices.size) {
-                            Spacer(Modifier.weight(1f))
+            val fontScale = LocalDensity.current.fontScale
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val minimumCell = maxOf(GlassControlLayout.touchTarget, (32f * fontScale).dp)
+                val gap = GlassControlLayout.controlGap
+                val cardsPerRow = ((maxWidth + gap) / (minimumCell + gap)).toInt().coerceIn(1, 8)
+                val rows = (0 until slotCount).chunked(cardsPerRow)
+                Column(verticalArrangement = Arrangement.spacedBy(gap)) {
+                    rows.forEach { rowIndices ->
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(gap),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            rowIndices.forEach { posIdx ->
+                                val selected = assigns.getOrNull(posIdx) == groupIdx
+                                PositionCard(
+                                    label = labelFor(posIdx),
+                                    selected = selected,
+                                    groupColor = groupColor,
+                                    onClick = { onToggle(posIdx) },
+                                    modifier = Modifier.weight(1f)
+                                        .then(tagPrefix?.let { Modifier.dbgTag("${it}_pos#$posIdx", text = labelFor(posIdx), role = "button") } ?: Modifier)
+                                )
+                            }
+                            // 填满空位
+                            repeat(cardsPerRow - rowIndices.size) {
+                                Spacer(Modifier.weight(1f))
+                            }
                         }
                     }
                 }
@@ -450,14 +458,17 @@ private fun PositionCard(
 ) {
     val colors = MaterialTheme.colorScheme
     val bg = if (selected) groupColor else colors.surfaceContainerHigh
-    val fg = if (selected) colors.onPrimary else colors.onSurfaceVariant
+    val fg = if (selected) {
+        if (groupColor == colors.tertiary) colors.onTertiary else colors.onPrimary
+    } else colors.onSurfaceVariant
     Box(
         modifier = modifier
-            .heightIn(min = 36.dp)
-            .glassControl(shape = SleepyTheme.shapes.small, tint = if (selected) groupColor else null)
+            .heightIn(min = GlassControlLayout.touchTarget)
+            .glassControl(shape = SleepyTheme.shapes.small, tint = if (selected) groupColor else null,
+                motionClearance = GlassControlLayout.denseClearance)
             .background(controlFill(bg), SleepyTheme.shapes.small)
             .noRippleGlassClickable(onClick)
-            .padding(vertical = 8.dp),
+            .padding(horizontal = 4.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(

@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.background
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -60,7 +62,7 @@ fun DatePickerField(
     isError: Boolean = false,
     // 调试台语义身份: 传 tag → 输入框=<tag>、日历按钮=<tag>_pick、
     // 弹窗 确定/取消=<tag>_pick_confirm/_dismiss; null = 不打标, 既有调用点零影响
-    dbgTag: String? = null
+    dbgTag: String? = null,
 ) {
     val colors = MaterialTheme.colorScheme
     var showPicker by remember { mutableStateOf(false) }
@@ -145,7 +147,8 @@ fun TimePickerField(
     modifier: Modifier = Modifier,
     shape: CornerBasedShape = SleepyTheme.fieldShape,
     // 调试台语义身份: 传 tag → 字段=<tag>、弹窗 确定/取消=<tag>_pick_confirm/_dismiss
-    dbgTag: String? = null
+    dbgTag: String? = null,
+    compact: Boolean = false,
 ) {
     val colors = MaterialTheme.colorScheme
     var showPicker by remember { mutableStateOf(false) }
@@ -165,7 +168,17 @@ fun TimePickerField(
             .noRippleClickable { showPicker = true }
             .then(dbgTag?.let { Modifier.dbgTag(it, text = label, role = "textbox") } ?: Modifier)
     ) {
-        TextField(
+        if (compact) {
+            Column(
+                Modifier.fillMaxWidth().heightIn(min = 56.dp)
+                    .background(colors.surfaceContainerHighest, shape)
+                    .padding(horizontal = 4.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(label, style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
+                Text(value, style = MaterialTheme.typography.bodyMedium, color = colors.onSurface, maxLines = 1)
+            }
+        } else TextField(
             value = value,
             onValueChange = {},
             label = { Text(label) },

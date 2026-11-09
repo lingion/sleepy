@@ -34,6 +34,7 @@ import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassControlLayout
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -660,6 +661,7 @@ private fun TimeSlotRowItem(
                 value = row.start,
                 onValueChange = onStartChange,
                 label = stringResource(R.string.start_label),
+                compact = true,
                 dbgTag = startTag,
                 modifier = Modifier.weight(1f)
             )
@@ -667,6 +669,7 @@ private fun TimeSlotRowItem(
                 value = row.end,
                 onValueChange = onEndChange,
                 label = stringResource(R.string.end_label),
+                compact = true,
                 dbgTag = endTag,
                 modifier = Modifier.weight(1f)
             )
@@ -674,7 +677,7 @@ private fun TimeSlotRowItem(
                 IconButton(
                     onClick = onDelete,
                     modifier = Modifier
-                        .size(32.dp)
+                        .size(GlassControlLayout.touchTarget)
                         .then(deleteTag?.let { Modifier.dbgTag(it, role = "button") }
                             ?: Modifier.testTag("timeslot-delete"))
                 ) {
@@ -686,7 +689,7 @@ private fun TimeSlotRowItem(
                     )
                 }
             } else {
-                Spacer(Modifier.width(32.dp))
+                Spacer(Modifier.width(GlassControlLayout.touchTarget))
             }
         }
         // 空白行注脚 + 目标槽提示
