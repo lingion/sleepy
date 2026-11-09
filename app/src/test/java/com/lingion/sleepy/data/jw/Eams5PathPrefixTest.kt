@@ -87,16 +87,16 @@ class Eams5PathPrefixTest {
     }
 
     @Test
-    fun `AHU semester select extraction regex matches real Thymeleaf DOM`() {
-        // 5 仓 consensus (a999c385 agent): AHU 是 Thymeleaf/J2EE 模板渲染, 学期列表嵌入
+    fun `AHU semester options retain server order without implying a selected semester`() {
+        // AHU 的 Thymeleaf/J2EE 页面把学期列表嵌入
         //   `<select id="allSemesters"><option value="112">2024-2025-2</option>...`
         // qiqqqqq517 ahu.js:37 + abydym CourseRepository.kt:119-167 + Zeraora client.ts:480-489
-        // 锁契约: regex 必须匹配真实 HTML, 取 <option value="数字"> id, 按 id 倒序取首
+        // 这里只验证来源形态和顺序。实际选择优先级由 tools/test-ahu-fetch.js 执行生产脚本验证。
         val html = """
         <select id="allSemesters" name="allSemesters" class="select">
-          <option value="234" selected="selected">2024-2025-1</option>
           <option value="233">2023-2024-2</option>
-          <option value="232">2023-2024-1</option>
+          <option value="234" selected="selected">2024-2025-1</option>
+          <option value="500">2027-2028-1</option>
         </select>
         """
         val selectRegex = Regex("""<select[^>]*\bid=["']allSemesters["'][^>]*>([\s\S]*?)</select>""", RegexOption.IGNORE_CASE)
@@ -108,9 +108,7 @@ class Eams5PathPrefixTest {
             m.groupValues[1].toInt() to m.groupValues[2].trim()
         }.toList()
         org.junit.Assert.assertEquals("应抽出 3 个 option", 3, opts.size)
-        // 按 id 倒序取首 → 234
-        val maxId = opts.maxOf { it.first }
-        assertEquals("newest id 是 234", 234, maxId)
+        assertEquals(listOf(233 to "2023-2024-2", 234 to "2024-2025-1", 500 to "2027-2028-1"), opts)
     }
 
     @Test
@@ -138,7 +136,8 @@ class Eams5PathPrefixTest {
 
     @Test
     fun `AHU print-data url uses semester in path and hasExperiment=false`() {
-        // 安大 print-data 形态 (5 仓共识: MoeclubM + abydym + Landon-3314 + Zeraora-807 + qiqqqqq517):
+        // 安大 print-data 形态：MoeclubM、abydym、Landon-3314 和 Zeraora-807 提供端点证据。
+        // qiqqqqq517 的当前脚本使用 get-data，不作为 print-data 的佐证。
         //   GET /student/for-std/course-table/semester/<semesterId>/print-data
         //       ?semesterId=<id>&hasExperiment=false
         // 锁契约: semesterId 同时出现在 path 和 query, hasExperiment=false (安大默认)
@@ -154,7 +153,7 @@ class Eams5PathPrefixTest {
 
     @Test
     fun `AHU print-data uses GET not POST`() {
-        // 5 仓共识: print-data 是 GET (不是 POST)
+        // print-data 参考实现使用 GET。
         val url = "/student/for-std/course-table/semester/234/print-data?semesterId=234&hasExperiment=false"
         org.junit.Assert.assertTrue("AHU print-data 是 GET, 非 POST datum",
             url.contains("print-data"))

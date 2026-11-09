@@ -18,6 +18,9 @@ object JwSourcePeriods {
     fun resolve(source: String, type: String?, schoolName: String,
         captured: List<Triple<Int, String, String>>): List<Triple<Int, String, String>> {
         if (captured.isNotEmpty()) return captured
+        if (type == JwProtocol.TYPE_EAMS5 && schoolName.contains("安徽大学")) {
+            return JwAhuSourcePeriods.resolve(source)
+        }
         if (type in setOf(JwProtocol.TYPE_ECUPL_SCRIPT, JwProtocol.TYPE_ECUPL,
                 JwProtocol.TYPE_ECUPL_SUPER, JwProtocol.TYPE_CLASSIC_EAMS)) {
             val annualSelected = type in setOf(JwProtocol.TYPE_ECUPL, JwProtocol.TYPE_ECUPL_SUPER) &&
