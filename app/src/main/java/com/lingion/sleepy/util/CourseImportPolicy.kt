@@ -4,6 +4,10 @@ import com.lingion.sleepy.data.entity.CourseEntity
 
 /** Shared by preview and commit so the switch filters exactly the conflicts shown. */
 internal object CourseImportPolicy {
+    /** Binding chooses the shared schedule as-is; appending courses cannot edit it. */
+    fun timeJsonForAppend(current: String, incoming: String, requiredNodes: Int, bound: Boolean): String =
+        if (bound) current else mergeTimeJson(current, incoming, requiredNodes)
+
     /** Preserve existing slots (including edge slots); imports only fill missing nodes. */
     fun mergeTimeJson(current: String, incoming: String, requiredNodes: Int): String {
         val currentRows = if (current.isBlank()) emptyList() else TimeTableUtils.parseTimeSlotRows(current)

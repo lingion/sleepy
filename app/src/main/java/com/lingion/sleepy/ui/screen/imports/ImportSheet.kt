@@ -1493,6 +1493,11 @@ private fun ImportConfirmDialog(
                             bindId = selectedPeriodTableId,
                             tables = periodTableTimeJsonById.map { it.key to it.value }
                         )
+                        val missingNode = TimeTableUtils.firstMissingCourseNode(parseResult.courses, effectiveRows)
+                        if (missingNode != null) {
+                            errorMsg = slotTimeRequiredFormat.format(missingNode)
+                            return@DialogActionButtons
+                        }
                         val emptyRows = effectiveRows.filter { it.start.isBlank() || it.end.isBlank() }
                         if (emptyRows.isNotEmpty()) {
                             errorMsg = slotTimeRequiredFormat.format(emptyRows.first().node)
@@ -1567,10 +1572,12 @@ internal suspend fun buildImportPreview(
     val repo = SleepyApp.get().repository
     val existingTable = if (tableId == 0L) null else repo.getTable(tableId)
     if (tableId != 0L && existingTable == null) error(context.getString(R.string.manage_no_table))
-    val effective = existingTable?.hydratedWith(repo.effectivePeriodTable(tableId))
-    val effectiveTimeJson = com.lingion.sleepy.util.CourseImportPolicy.mergeTimeJson(
+    val bound = existingTable?.let { repo.effectivePeriodTable(tableId) }
+    val effective = existingTable?.hydratedWith(bound)
+    val effectiveTimeJson = com.lingion.sleepy.util.CourseImportPolicy.timeJsonForAppend(
         effective?.timeJson ?: "", parseResult.timeJson,
-        maxOf(parseResult.nodesPerDay, parseResult.courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0)
+        maxOf(parseResult.nodesPerDay, parseResult.courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0),
+        bound = bound != null,
     )
     val existingCourses = if (tableId == 0L) emptyList() else repo.getCourses(tableId)
     // issue#22: 同 groupId 多地点提示文案 — 按 (groupId) 聚合,
@@ -1628,6 +1635,21 @@ internal suspend fun applyCourseImport(
     val target = repo.getTable(preview.targetTableId)
     if (target == null) {
         onError(context.getString(R.string.manage_no_table))
+        return
+    }
+    val bound = repo.effectivePeriodTable(preview.targetTableId)
+    val effective = target.hydratedWith(bound)
+    val timeJson = com.lingion.sleepy.util.CourseImportPolicy.timeJsonForAppend(
+        effective.timeJson, preview.parseResult.timeJson,
+        maxOf(preview.parseResult.nodesPerDay, preview.parseResult.courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0),
+        bound != null,
+    )
+    val accepted = com.lingion.sleepy.util.CourseImportPolicy.selectIncoming(
+        preview.parseResult.courses, repo.getCourses(preview.targetTableId), decision.appendConflicts, timeJson
+    )
+    val missingNode = TimeTableUtils.firstMissingCourseNode(accepted, TimeTableUtils.parseTimeSlotRows(timeJson))
+    if (missingNode != null) {
+        onError(context.getString(R.string.slot_time_required, missingNode))
         return
     }
     val added = repo.appendImportedCourses(

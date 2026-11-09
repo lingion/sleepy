@@ -779,6 +779,25 @@ object TimeTableUtils {
         return parseTimeSlotRows(json)
     }
 
+    /** First unavailable node used by a period-based course; actual-time courses need no bell slot. */
+    fun firstMissingCourseNode(courses: List<CourseEntity>, rows: List<TimeSlotRow>): Long? {
+        val nodes = rows.map { it.node.toLong() }.distinct().sorted()
+        for (course in courses) {
+            if (course.ownTime || course.isIrregularTime || course.step <= 0) continue
+            var expected = course.startNode.toLong()
+            val last = expected + course.step - 1L
+            // Walk declared nodes, not the course range: malformed huge spans stay bounded.
+            for (node in nodes) {
+                if (node < expected) continue
+                if (node > expected) break
+                expected++
+                if (expected > last) break
+            }
+            if (expected <= last) return expected
+        }
+        return null
+    }
+
     // ------------------------------------------------------------------
     // 课表外节次 (issue #23 / 用户 2026-09-06 手动课程"非常规"开关)
     //

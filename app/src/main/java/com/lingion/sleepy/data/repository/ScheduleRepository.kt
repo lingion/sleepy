@@ -121,6 +121,14 @@ class ScheduleRepository(private val db: AppDatabase) {
 
     suspend fun getTable(id: Long): TimeTableEntity? = tableDao.getById(id)
 
+    /** Recheck inside the write transaction in case the selected schedule changed after confirmation. */
+    private fun requireImportPeriodCoverage(courses: List<CourseEntity>, timeJson: String) {
+        val missingNode = com.lingion.sleepy.util.TimeTableUtils.firstMissingCourseNode(
+            courses, com.lingion.sleepy.util.TimeTableUtils.parseTimeSlotRows(timeJson)
+        ) ?: return
+        throw IllegalArgumentException(SleepyApp.get().getString(com.lingion.sleepy.R.string.slot_time_required, missingNode))
+    }
+
     /** Back up and append in one transaction; a failed write leaves no partial backup. */
     internal suspend fun appendImportedCourses(
         tableId: Long,
@@ -137,14 +145,15 @@ class ScheduleRepository(private val db: AppDatabase) {
             val bound = table.periodTableId?.let { periodTableDao.getById(it) }
             val effective = table.hydratedWith(bound)
             val existing = courseDao.getByTable(tableId)
-            val extended = com.lingion.sleepy.util.CourseImportPolicy.mergeTimeJson(
+            val extended = com.lingion.sleepy.util.CourseImportPolicy.timeJsonForAppend(
                 effective.timeJson, incomingTimeJson,
-                maxOf(incomingNodes, incoming.maxOfOrNull { it.startNode + it.step - 1 } ?: 0)
+                maxOf(incomingNodes, incoming.maxOfOrNull { it.startNode + it.step - 1 } ?: 0), bound != null
             )
             val accepted = com.lingion.sleepy.util.CourseImportPolicy.selectIncoming(
                 incoming, existing, appendConflicts, extended
             )
             if (accepted.isEmpty()) return@withTransaction 0
+            requireImportPeriodCoverage(accepted, extended)
             captureForUndo()
             if (backupOriginal) {
                 val names = tableDao.getAll().map { it.name }
@@ -170,9 +179,6 @@ class ScheduleRepository(private val db: AppDatabase) {
             )
             val maxNode = com.lingion.sleepy.util.TimeTableUtils.parseTimeSlotRows(extended)
                 .maxOfOrNull { it.node } ?: effective.nodesPerDay
-            if (bound != null && extended != bound.timeJson) {
-                periodTableDao.update(bound.copy(timeJson = extended, nodesPerDay = maxNode, updatedAt = AppClock.millis()))
-            }
             tableDao.update(table.copy(
                 maxWeek = maxOf(table.maxWeek, accepted.maxOf { it.endWeek }),
                 timeJson = if (bound == null) extended else table.timeJson,
@@ -260,7 +266,13 @@ class ScheduleRepository(private val db: AppDatabase) {
         keepGroups: Boolean = false
     ): Long {
         val id = importNewTableAtomically(object : NewTableImportStore {
-            override suspend fun atomic(block: suspend () -> Long): Long = db.withTransaction { block() }
+            override suspend fun atomic(block: suspend () -> Long): Long = db.withTransaction {
+                val bound = bindPeriodTableId?.let { periodTableDao.getById(it) }
+                if (bindPeriodTableId == null || bound != null) {
+                    requireImportPeriodCoverage(courses, bound?.timeJson ?: periodTable?.timeJson ?: table.timeJson)
+                }
+                block()
+            }
             override suspend fun periodExists(id: Long) = periodTableDao.getById(id) != null
             override suspend fun captureUndo() = captureForUndo()
             override suspend fun insertPeriod(period: com.lingion.sleepy.data.entity.PeriodTableEntity): Long {
