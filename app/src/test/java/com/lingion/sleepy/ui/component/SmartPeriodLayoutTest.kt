@@ -68,11 +68,16 @@ class SmartPeriodLayoutTest {
                 }
             }
         }
-        for (tag in listOf("smart_duration", "smart_total", "smart_dur_short", "smart_dur_long", "smart_break_short", "smart_break_long")) {
-            val layouts = compose.onAllNodes(hasAnyAncestor(hasTestTag(tag)) and SemanticsMatcher.keyIsDefined(SemanticsActions.GetTextLayoutResult), true)
+        for (tag in listOf("smart_dur_short", "smart_dur_long", "smart_break_short", "smart_break_long")) {
+            val layouts = compose.onAllNodes((hasAnyAncestor(hasTestTag(tag)) or hasTestTag(tag)) and SemanticsMatcher.keyIsDefined(SemanticsActions.GetTextLayoutResult), true)
                 .fetchSemanticsNodes().flatMap { node -> mutableListOf<TextLayoutResult>().also { node.config[SemanticsActions.GetTextLayoutResult].action!!(it) } }
             assertTrue("$tag exposes actual text layouts", layouts.isNotEmpty())
             layouts.forEach { assertWholeLine(tag, it) }
+        }
+        for (label in listOf("每节时长", "总节数")) {
+            val layouts = mutableListOf<TextLayoutResult>()
+            compose.onNodeWithText(label, useUnmergedTree = true).performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
+            assertWholeLine(label, layouts.single())
         }
     }
 
@@ -94,6 +99,21 @@ class SmartPeriodLayoutTest {
             compose.onNodeWithText(time, useUnmergedTree = true).performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
             assertWholeLine(time, layouts.single())
         }
+    }
+
+    @Test fun narrowNumberFieldsKeepTheirEditableIdentity() {
+        var changed = 0
+        compose.setContent {
+            MaterialTheme(typography = com.lingion.sleepy.ui.theme.SleepyTypography) {
+                CompositionLocalProvider(LocalDensity provides Density(1f, 1.5f)) {
+                    Box(Modifier.width(216.dp)) {
+                        SmartPeriodEditor(SmartPeriodConfig(), { changed = it.periodMinutes }, dbgTagPrefix = "smart")
+                    }
+                }
+            }
+        }
+        compose.onNodeWithTag("smart_duration").performTextReplacement("50")
+        org.junit.Assert.assertEquals(50, changed)
     }
     private fun assertWholeLine(tag: String, layout: TextLayoutResult) {
         assertTrue("$tag must display all of ${layout.layoutInput.text}",

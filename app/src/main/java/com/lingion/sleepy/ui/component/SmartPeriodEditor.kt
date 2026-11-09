@@ -110,8 +110,8 @@ fun SmartPeriodEditor(
                 unit = stringResource(R.string.unit_minutes),
                 value = config.periodMinutes,
                 onValueChange = { onConfigChange(config.copy(periodMinutes = it.coerceAtLeast(1))) },
-                modifier = Modifier.weight(1f)
-                    .then(dbgTagPrefix?.let { Modifier.dbgTag("${it}_duration", text = durationLabel, role = "textbox") } ?: Modifier)
+                modifier = Modifier.weight(1f),
+                dbgTag = dbgTagPrefix?.let { "${it}_duration" },
             )
             NumberField(
                 label = totalLabel,
@@ -120,8 +120,8 @@ fun SmartPeriodEditor(
                 onValueChange = { newN ->
                     onConfigChange(config.copy(totalPeriods = newN.coerceAtLeast(1)))
                 },
-                modifier = Modifier.weight(1f)
-                    .then(dbgTagPrefix?.let { Modifier.dbgTag("${it}_total", text = totalLabel, role = "textbox") } ?: Modifier)
+                modifier = Modifier.weight(1f),
+                dbgTag = dbgTagPrefix?.let { "${it}_total" },
             )
         }
 
@@ -393,8 +393,8 @@ private fun AssignmentGroupSection(
                 unit = stringResource(R.string.unit_minutes),
                 value = minuteValue,
                 onValueChange = onMinuteChange,
-                modifier = Modifier.width(110.dp)
-                    .then(tagPrefix?.let { Modifier.dbgTag("${it}_min", role = "textbox") } ?: Modifier)
+                modifier = Modifier.width(110.dp),
+                dbgTag = tagPrefix?.let { "${it}_min" },
             )
             IconButton(onClick = onDelete,
                 modifier = Modifier.size(GlassControlLayout.touchTarget)
@@ -552,7 +552,8 @@ private fun NumberField(
     unit: String,
     value: Int,
     onValueChange: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    dbgTag: String? = null,
 ) {
     var text by remember(value) { mutableStateOf(value.toString()) }
     val updateText: (String) -> Unit = { newText ->
@@ -561,6 +562,7 @@ private fun NumberField(
             newText.toIntOrNull()?.let(onValueChange)
         }
     }
+    val inputIdentity = dbgTag?.let { Modifier.dbgTag(it, text = label, role = "textbox") } ?: Modifier
     BoxWithConstraints(modifier) {
         if (label.isNotBlank() && maxWidth < (160 * LocalDensity.current.fontScale).dp) {
             val colors = MaterialTheme.colorScheme
@@ -573,7 +575,7 @@ private fun NumberField(
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     BasicTextField(
                         value = text, onValueChange = updateText,
-                        modifier = Modifier.weight(1f).semantics { contentDescription = label }, singleLine = true,
+                        modifier = Modifier.weight(1f).then(inputIdentity).semantics { contentDescription = label }, singleLine = true,
                         textStyle = MaterialTheme.typography.bodyLarge.copy(color = colors.onSurface),
                         cursorBrush = SolidColor(colors.primary),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
@@ -598,7 +600,7 @@ private fun NumberField(
                 ),
                 shape = SleepyTheme.fieldShape,
                 colors = SleepyTheme.fieldColors(),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().then(inputIdentity)
             )
         }
     }
