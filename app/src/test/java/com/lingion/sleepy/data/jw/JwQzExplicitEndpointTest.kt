@@ -19,13 +19,14 @@ class JwQzExplicitEndpointTest {
             parse(route, listOf("单值课程" to "7周[2节]")))
     }
 
-    @Test fun compactFourDigitsKeepNinetyNinePeriodBoundary() {
+    @Test fun compactFourDigitsKeepPackedSemanticsAndExplicitPeriodsCanExceedNinetyNine() {
         for (route in routes.filter { it != "timetable" }) {
             assertEquals(route, listOf(course("紧凑课程", 98, 99, 3, 4)),
                 parse(route, listOf("紧凑课程" to "3-4周[9899节]")))
             assertEquals(route, listOf(course("末节课程", 99, 99, 3, 4)),
                 parse(route, listOf("末节课程" to "3-4周[9999节]")))
-            assertEquals(route, emptyList<JwCourse>(), parse(route, listOf("越界课程" to "3-4周[100-101节]")))
+            assertEquals(route, listOf(course("高节次课程", 100, 101, 3, 4)),
+                parse(route, listOf("高节次课程" to "3-4周[100-101节]")))
         }
     }
 
