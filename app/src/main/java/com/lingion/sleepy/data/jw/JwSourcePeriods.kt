@@ -4,6 +4,17 @@ import org.json.JSONArray
 
 /** Optional source-declared period defaults for the editable import confirmation screen. */
 object JwSourcePeriods {
+    /** Keep the complete source timetable even when the current courses use fewer periods. */
+    fun confirmationRows(courseMaxNode: Int,
+        sourcePeriods: List<Triple<Int, String, String>>): List<Triple<Int, String, String>> {
+        val periodMap = sourcePeriods.associate { it.first to (it.second to it.third) }
+        val maxNode = maxOf(courseMaxNode, sourcePeriods.maxOfOrNull { it.first } ?: 0)
+        return (1..maxNode).map { node ->
+            val filled = periodMap[node]
+            Triple(node, filled?.first ?: "", filled?.second ?: "")
+        }
+    }
+
     fun resolve(source: String, type: String?, schoolName: String,
         captured: List<Triple<Int, String, String>>): List<Triple<Int, String, String>> {
         if (captured.isNotEmpty()) return captured
