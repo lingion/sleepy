@@ -85,6 +85,8 @@ import com.lingion.sleepy.data.jw.SchoolDomainMatch
 import com.lingion.sleepy.data.jw.SchoolCityIndex
 import com.lingion.sleepy.data.jw.SchoolSearchIndex
 import com.lingion.sleepy.data.jw.SchoolLocationState
+import com.lingion.sleepy.data.jw.RecentJwSchools
+import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
@@ -219,12 +221,23 @@ fun SchoolSelectScreen(
     val sections = remember(filtered) { groupByLetter(filtered) }
     val showIndexBar = query.isBlank() && sections.size > 1
     val showRecommendations = query.isBlank()
+    // 最近成功导入的学校：空态完全不插入列表项，首次进入时列表结构与原来一致；
+    // 搜索时也收起，避免在搜索结果顶部混入未过滤的卡片。
+    val recentKeysFlow = remember(context) { AppPrefs.recentJwSchoolKeysFlow(context) }
+    val recentSchoolKeys by recentKeysFlow.collectAsState(
+        initial = remember { AppPrefs.getRecentJwSchoolKeys(context) }
+    )
+    val recentSchools = remember(schools, recentSchoolKeys) {
+        RecentJwSchools.resolve(recentSchoolKeys, schools)
+    }
+    val showRecentSchools = query.isBlank() && recentSchools.isNotEmpty()
     val city = (locationState as? SchoolLocationState.Ready)?.city
     val recommendedSchools = remember(schools, city) {
         city?.let { SchoolCityIndex.schoolsInCity(schools, it) }.orEmpty()
     }
-    // The recommendation card and custom URL entry each occupy one LazyColumn item.
-    val sectionStartIndex = if (showRecommendations) 2 else 1
+    // custom_url_entry 恒占一项；possible_schools 与 recent_schools 各在可见时占一项。
+    // 字母索引的偏移必须跟着这两张卡片一起变，否则点击字母会跳错分组。
+    val sectionStartIndex = 1 + (if (showRecommendations) 1 else 0) + (if (showRecentSchools) 1 else 0)
 
     val listState = rememberLazyListState()
 
@@ -363,6 +376,14 @@ fun SchoolSelectScreen(
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
                         verticalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
+                        if (showRecentSchools) {
+                            item(key = "recent_schools") {
+                                RecentSchoolsCard(
+                                    schools = recentSchools,
+                                    onSchoolSelected = onSchoolSelected
+                                )
+                            }
+                        }
                         if (showRecommendations) {
                             item(key = "possible_schools") {
                                 PossibleSchoolsCard(
@@ -424,6 +445,42 @@ fun SchoolSelectScreen(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * 最近通过教务直连成功导入的学校 — 放在选校页最顶端，最多 3 所。
+ * 复用 [SchoolRow] 与原有的 onSchoolSelected，点击后的确认弹窗/导航行为不变。
+ */
+@Composable
+private fun RecentSchoolsCard(
+    schools: List<JwSchoolInfo>,
+    onSchoolSelected: (JwSchoolInfo) -> Unit
+) {
+    val colors = MaterialTheme.colorScheme
+    OutlinedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .dbgTag("school_recent_card")
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(
+                text = stringResource(R.string.recent_import_schools),
+                style = MaterialTheme.typography.titleMedium,
+                color = colors.primary
+            )
+            Text(
+                text = stringResource(R.string.recent_import_schools_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            schools.forEach { school ->
+                SchoolRow(school = school, onClick = { onSchoolSelected(school) })
+                HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
             }
         }
     }

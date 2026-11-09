@@ -1047,6 +1047,8 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="fluid_coloros_countdown">%1$d 分鐘後上課</string>
     <string name="fluid_coloros_capsule">%1$d 分鐘後</string>
     <string name="fluid_coloros_capsule_compact">%1$s·%2$d分</string>
+    <string name="recent_import_schools">最新匯入學校</string>
+    <string name="recent_import_schools_hint">教務直連匯入成功後自動記錄，最多 3 所</string>
     <string name="possible_schools">可能的學校</string>
     <plurals name="school_location_city">
         <item quantity="other">目前城市：%1$s · %2$d 個學校入口</item>
