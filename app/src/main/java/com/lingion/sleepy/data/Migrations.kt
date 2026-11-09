@@ -90,7 +90,7 @@ val MIGRATION_7_8: Migration = object : Migration(7, 8) {
                       (id, name, nodesPerDay, timeJson, smartConfigJson, createdAt, updatedAt)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                     """.trimIndent(),
-                    arrayOf(id, name, nodesPerDay, timeJson, smartConfigJson, createdAt, createdAt)
+                    arrayOf<Any?>(id, name, nodesPerDay, timeJson, smartConfigJson, createdAt, createdAt)
                 )
                 db.execSQL(
                     "UPDATE time_tables SET periodTableId = ? WHERE id = ?",

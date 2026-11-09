@@ -56,8 +56,14 @@ fun GlassSlider(
     thumbColor: Color = MaterialTheme.colorScheme.primary,
 ) {
     if (!liquidGlassControlsEnabled()) {
-        androidx.compose.material3.Slider(value, onValueChange, modifier, enabled,
-            valueRange = valueRange, steps = steps, onValueChangeFinished = onValueChangeFinished)
+        val state = remember(steps, valueRange) {
+            androidx.compose.material3.SliderState(value = value, steps = steps, trackRange = valueRange)
+        }
+        state.value = value
+        androidx.compose.material3.Slider(
+            state = state, onValueChange = onValueChange, modifier = modifier, enabled = enabled,
+            onValueChangeFinished = onValueChangeFinished,
+        )
         return
     }
     GlassSliderBody(
