@@ -4,7 +4,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Icon
-import android.os.Bundle
+import androidx.core.os.BundleCompat
 import androidx.test.platform.app.InstrumentationRegistry
 import com.lingion.sleepy.MainActivity
 import org.junit.Assert.*
@@ -27,36 +27,37 @@ class VivoIslandExtrasTest {
 
     @Test fun vivoAndIqooDeclareExpandedCardAndCorrectClickKey() {
         for (vendor in listOf(LiveCardVendor.VIVO, LiveCardVendor.IQOO)) {
-            val extras = build(vendor).extras
+            val notification = build(vendor)
+            val extras = notification.extras
             val island = extras.getBundle("notification.superx.island")!!
-            assertEquals(4, island.get("island.superx.template"))
-            assertEquals(0, island.get("island.superx.islandClick"))
+            assertEquals(4, island.getInt("island.superx.template", -1))
+            assertEquals(0, island.getInt("island.superx.islandClick", -1))
             assertFalse(island.containsKey("island.superx.click"))
-            assertTrue(island.get("island.superx.clickResp") is PendingIntent)
-            assertEquals(1, island.get("island.superx.leftTemplate"))
-            assertEquals(2, island.get("island.superx.rightTemplate"))
+            assertNotNull(BundleCompat.getParcelable(island, "island.superx.clickResp", PendingIntent::class.java))
+            assertEquals(1, island.getInt("island.superx.leftTemplate", -1))
+            assertEquals(2, island.getInt("island.superx.rightTemplate", -1))
             // Expanded island uses its own basic template, independent of progress nodes.
             val islandBase = island.getBundle("island.superx.baseInfos")!!
             assertEquals("Math", islandBase.getCharSequence("notification.superx.baseInfos.title"))
             assertEquals("09:00  ·  A101  ·  Teacher", islandBase.getCharSequence("notification.superx.baseInfos.content"))
-            assertTrue(islandBase.get("notification.superx.baseInfos.icon") is Icon)
-            assertEquals(5, islandBase.get("notification.superx.baseInfos.subInfo"))
-            assertEquals(10, islandBase.get("notification.superx.baseInfos.subProgress"))
-            assertEquals(0, islandBase.get("notification.superx.baseInfos.progressState"))
-            assertTrue(islandBase.get("notification.superx.baseInfos.subProgressColor") is Int)
+            assertNotNull(BundleCompat.getParcelable(islandBase, "notification.superx.baseInfos.icon", Icon::class.java))
+            assertEquals(5, islandBase.getInt("notification.superx.baseInfos.subInfo", -1))
+            assertEquals(10, islandBase.getInt("notification.superx.baseInfos.subProgress", -1))
+            assertEquals(0, islandBase.getInt("notification.superx.baseInfos.progressState", -1))
+            assertEquals(notification.color, islandBase.getInt("notification.superx.baseInfos.subProgressColor", notification.color.inv()))
             assertFalse(island.containsKey("island.superx.infos"))
             assertFalse(islandBase.containsKey("notification.superx.infos.nodeIcon"))
             // Notification center retains the existing progress visualization.
-            assertEquals(2, extras.get("notification.superx.template"))
+            assertEquals(2, extras.getInt("notification.superx.template", -1))
             val base = extras.getBundle("notification.superx.baseInfos")!!
             assertEquals("Math", base.getCharSequence("notification.superx.baseInfos.title"))
             val infos = extras.getBundle("notification.superx.infos")!!
-            assertTrue(infos.get("notification.superx.infos.progress") is Int)
-            val icons = infos.getParcelableArrayList<Icon>("notification.superx.infos.nodeIcon")!!
+            assertEquals(10, infos.getInt("notification.superx.infos.progress", -1))
+            val icons = BundleCompat.getParcelableArrayList(infos, "notification.superx.infos.nodeIcon", Icon::class.java)!!
             assertEquals(2, icons.size)
             val right = island.getBundle("island.superx.rightInfo")!!
-            assertEquals(10, right.get("island.superx.rightInfo.progressValue"))
-            assertEquals(0, right.get("island.superx.rightInfo.progressState"))
+            assertEquals(10, right.getInt("island.superx.rightInfo.progressValue", -1))
+            assertEquals(0, right.getInt("island.superx.rightInfo.progressState", -1))
         }
     }
 
@@ -67,8 +68,8 @@ class VivoIslandExtrasTest {
             val base = build(sequence = 2, now = now).extras
                 .getBundle("notification.superx.island")!!
                 .getBundle("island.superx.baseInfos")!!
-            assertEquals(progress, base.get("notification.superx.baseInfos.subProgress"))
-            assertEquals(progressState, base.get("notification.superx.baseInfos.progressState"))
+            assertEquals(progress, base.getInt("notification.superx.baseInfos.subProgress", -1))
+            assertEquals(progressState, base.getInt("notification.superx.baseInfos.progressState", -1))
         }
     }
 
@@ -76,15 +77,15 @@ class VivoIslandExtrasTest {
         val extras = build().extras
         val capsule = extras.getBundle("notification.superx.capsule")!!
         assertNotNull(extras.getBundle("notification.superx.island"))
-        assertEquals(1, capsule.get("notification.superx.capsule.state"))
-        assertTrue(capsule.get("notification.superx.capsule.icon") is Icon)
-        assertTrue(capsule.get("notification.superx.capsule.clickResp") is PendingIntent)
+        assertEquals(1, capsule.getInt("notification.superx.capsule.state", -1))
+        assertNotNull(BundleCompat.getParcelable(capsule, "notification.superx.capsule.icon", Icon::class.java))
+        assertNotNull(BundleCompat.getParcelable(capsule, "notification.superx.capsule.clickResp", PendingIntent::class.java))
     }
 
     @Test fun createUpdateAndEndRemainTypedOperations() {
-        assertEquals(0, build(sequence = 1).extras.get("notification.superx.operation"))
-        assertEquals(1, build(sequence = 2).extras.get("notification.superx.operation"))
-        assertEquals(2, build(sequence = 3, now = 1000L).extras.get("notification.superx.operation"))
+        assertEquals(0, build(sequence = 1).extras.getInt("notification.superx.operation", -1))
+        assertEquals(1, build(sequence = 2).extras.getInt("notification.superx.operation", -1))
+        assertEquals(2, build(sequence = 3, now = 1000L).extras.getInt("notification.superx.operation", -1))
     }
 
     @Test fun rejectedProbeKeepsStandardNotification() {
