@@ -3,6 +3,8 @@ package com.lingion.sleepy.ui.component.liquidglass
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,6 +21,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import com.kyant.backdrop.drawPlainBackdrop
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
@@ -46,6 +49,8 @@ fun Modifier.glassControl(
     grouped: Boolean = false,
     registerPane: Boolean = true,
     role: GlassMaterialRole = GlassMaterialRole.Regular,
+    interactionSource: MutableInteractionSource? = null,
+    motionClearance: Dp = Dp.Unspecified,
 ): Modifier {
     check(!LocalGlassSourceContent.current) { "An optical consumer cannot be recorded as an ordinary source" }
     val host = LocalGlassHost.current
@@ -78,15 +83,26 @@ fun Modifier.glassControl(
     var down by remember { mutableStateOf(false) }
     var motion by remember { mutableStateOf<Job?>(null) }
     val density = LocalDensity.current.density
-    androidx.compose.runtime.LaunchedEffect(enabled) {
+    val pressed = interactionSource?.collectIsPressedAsState()?.value == true
+    val active = down || pressed
+    val pressSpring = spring<Float>(dampingRatio = 0.593f, stiffness = 311f)
+    androidx.compose.runtime.LaunchedEffect(enabled, active) {
         if (!enabled) {
             motion?.cancel()
             down = false
             pull = Offset.Zero
             lift.snapTo(0f)
+        } else if (active) {
+            motion?.cancel()
+            motion = scope.launch { lift.animateTo(1f, pressSpring) }
+        } else {
+            val swelling = motion
+            motion = scope.launch {
+                swelling?.join()
+                lift.animateTo(0f, pressSpring)
+            }
         }
     }
-    val pressSpring = spring<Float>(dampingRatio = 0.593f, stiffness = 311f)
     return this
         .graphicsLayer {
             val growth = min(0.25f, 16f * density / size.maxDimension.coerceAtLeast(1f))
@@ -95,6 +111,17 @@ fun Modifier.glassControl(
             scaleY = swell * (1f + abs(pull.y) / size.height.coerceAtLeast(1f) * 0.5f)
             translationX = pull.x
             translationY = pull.y
+            if (motionClearance.value.isFinite()) {
+                // Dense controls own a measured gutter. Keep every animated pixel inside it,
+                // including spring overshoot and rubber-band translation.
+                val clearance = motionClearance.value.coerceAtLeast(0f) * density
+                scaleX = scaleX.coerceAtMost(1f + 2f * clearance / size.width.coerceAtLeast(1f))
+                scaleY = scaleY.coerceAtMost(1f + 2f * clearance / size.height.coerceAtLeast(1f))
+                val xRoom = (clearance - size.width * (scaleX - 1f) / 2f).coerceAtLeast(0f)
+                val yRoom = (clearance - size.height * (scaleY - 1f) / 2f).coerceAtLeast(0f)
+                translationX = pull.x.coerceIn(-xRoom, xRoom)
+                translationY = pull.y.coerceIn(-yRoom, yRoom)
+            }
         }
         .pointerInput(enabled, grouped) {
             if (!enabled) return@pointerInput
@@ -106,8 +133,6 @@ fun Modifier.glassControl(
                         down = true
                         origin = pointer.position
                         pull = Offset.Zero
-                        motion?.cancel()
-                        motion = scope.launch { lift.animateTo(1f, pressSpring) }
                     } else if (pointer.pressed && down) {
                         val limit = min(size.width, size.height) * (7f / 32f)
                         fun rubber(v: Float): Float = if (limit > 0f) FlClashDockPhysics.rubberBand(v, limit) else 0f
@@ -116,12 +141,6 @@ fun Modifier.glassControl(
                     } else if (!pointer.pressed && down) {
                         down = false
                         pull = Offset.Zero
-                        val swelling = motion
-                        motion = scope.launch {
-                            // A short tap still reaches the reference's full swell before settling.
-                            swelling?.join()
-                            lift.animateTo(0f, pressSpring)
-                        }
                     }
                 }
             }

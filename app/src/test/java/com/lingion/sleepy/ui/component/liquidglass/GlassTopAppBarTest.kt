@@ -1,6 +1,7 @@
 package com.lingion.sleepy.ui.component.liquidglass
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -53,12 +54,12 @@ class GlassTopAppBarTest {
                                 expandedHeight = 64.dp,
                                 windowInsets = WindowInsets(0, 0, 0, 0),
                                 navigationIcon = {
-                                    if (!action) GlassIconButton(onClick = { clicks++ }, modifier = Modifier.testTag("control")) {
+                                    if (!action) Box(Modifier.size(48.dp).testTag("control").glassControl().clickable { clicks++ }, contentAlignment = androidx.compose.ui.Alignment.Center) {
                                         Box(Modifier.size(40.dp).background(marker.value))
                                     }
                                 },
                                 actions = {
-                                    if (action) GlassIconButton(onClick = { clicks++ }, modifier = Modifier.testTag("control")) {
+                                    if (action) Box(Modifier.size(48.dp).testTag("control").glassControl().clickable { clicks++ }, contentAlignment = androidx.compose.ui.Alignment.Center) {
                                         Box(Modifier.size(40.dp).background(marker.value))
                                     }
                                 },
