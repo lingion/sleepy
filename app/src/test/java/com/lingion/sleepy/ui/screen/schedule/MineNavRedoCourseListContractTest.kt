@@ -146,17 +146,10 @@ class MineNavRedoCourseListContractTest {
 
     @Test
     fun `schedule screen TopBar mounts capsule only when undo or redo exists`() {
-        // 挂载条件:hasUndo = UndoManager.hasSnapshot;hasRedo = UndoManager.hasRedoSnapshot
-        // 同一显隐源 (2026-10-29 Task 6 lockstep: 直挂 if 改 AnimatedVisibility
-        // popup 家族 — 一体显隐语义不变, 锚点从 if(...) 随接线改写为
-        // visible = hasUndo || hasRedo, 断言强度等价)
-        val pattern = Regex(
-            """val\s+hasUndo\s*=\s*[\w.]*UndoManager\.hasSnapshot\s*[\s\S]{0,200}?val\s+hasRedo\s*=\s*[\w.]*UndoManager\.hasRedoSnapshot\s*[\s\S]{0,200}?AnimatedVisibility\(\s*visible = hasUndo \|\| hasRedo"""
-        )
-        assertTrue(
-            "ScheduleScreen TopBar 必须先取 hasUndo/hasRedo 再以此为唯一显隐源挂胶囊(配对显隐)",
-            pattern.containsMatchIn(scheduleScreen)
-        )
+        assertTrue("撤回显隐仍来自真实历史", scheduleScreen.contains("UndoManager.hasSnapshot") && scheduleScreen.contains("UndoManager.hasRedoSnapshot"))
+        assertTrue("目标状态只取决于撤回或重做", scheduleScreen.contains("historyVisibility.targetState = hasUndo || hasRedo"))
+        assertTrue("退场结束前继续为胶囊预留宽度", scheduleScreen.contains("historyVisibility.currentState || historyVisibility.targetState"))
+        assertTrue("同一状态驱动整片胶囊的显隐", Regex("""AnimatedVisibility\(\s*visibleState = historyVisibility,""").containsMatchIn(scheduleScreen))
     }
 
     @Test
@@ -175,14 +168,10 @@ class MineNavRedoCourseListContractTest {
         assertTrue("胶囊外 Row 必须 clip(CircleShape)", capsuleBlock.contains(".clip(CircleShape)"))
         assertTrue("中缝 Box 宽必须是 1.dp", capsuleBlock.contains(".size(width = 1.dp"))
         assertTrue("胶囊默认半区必须保持 32dp", capsuleBlock.contains("val halfSize = 32.dp * scale"))
-        assertTrue("胶囊比例必须由顶栏实际可用空间决定", scheduleScreen.contains("val capsuleScale"))
-        assertTrue("空间足够时胶囊必须保持原尺寸", scheduleScreen.contains("coerceIn(0.65f, 1f)"))
-        assertTrue("中央周导航必须提供实际位置用于防碰撞", scheduleScreen.contains("positionInParent().x"))
-
-        val weekButtonBlock = Regex(
-            """fun\s+WeekNavButton\([\s\S]*?\n\}"""
-        ).find(scheduleScreen)?.value ?: error("WeekNavButton 找不到")
-        assertTrue("其他顶栏按钮必须保持固定 32dp", weekButtonBlock.contains(".size(32.dp)"))
+        assertTrue("胶囊保留完整尺寸，由顶栏换行让出空间", scheduleScreen.contains("scale = 1f"))
+        assertTrue("顶栏由三槽布局测量并处理碰撞", scheduleScreen.contains("ScheduleToolbarLayout("))
+        val weekButtonBlock = Regex("""fun\s+WeekNavButton\([\s\S]*?\n\}""").find(scheduleScreen)?.value ?: error("WeekNavButton 找不到")
+        assertTrue("顶栏按钮使用统一图标控件", weekButtonBlock.contains("GlassIconButton("))
     }
 
     @Test

@@ -4,10 +4,17 @@ import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
 import com.lingion.sleepy.ui.component.liquidglass.glassSurfaceBackground
 import com.lingion.sleepy.ui.component.liquidglass.controlFill
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.ui.semantics.Role
+import com.lingion.sleepy.ui.component.liquidglass.liquidGlassControlsEnabled
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -56,8 +63,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import java.time.LocalDate
@@ -65,6 +72,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -131,10 +141,18 @@ fun ScheduleScreen(
     // 用户令 2026-09-23: 周视图/网格视图切换栏可隐藏 — 默认显示保留现有行为;
     // 只影响这根 Bar 的去留, 不改 viewMode 本身与启动默认页。
     var showViewSwitcher by remember { mutableStateOf(AppPrefs.isShowViewSwitcher(context)) }
+    var holidayPrefVersion by remember { mutableIntStateOf(0) }
     LaunchedEffect(Unit) {
         AppPrefs.changeBus.collect { key ->
             if (key == AppPrefs.KEY_SHOW_VIEW_SWITCHER) {
                 showViewSwitcher = AppPrefs.isShowViewSwitcher(context)
+            }
+            if (key == AppPrefs.KEY_HOLIDAY_GREY_HOLIDAY ||
+                key == AppPrefs.KEY_HOLIDAY_GREY_WEEKEND ||
+                key == AppPrefs.KEY_HOLIDAY_IGNORE_WORKDAY ||
+                key == AppPrefs.KEY_HOLIDAY_OVERRIDES
+            ) {
+                holidayPrefVersion++
             }
         }
     }
@@ -390,25 +408,11 @@ fun ScheduleScreen(
                 }
                 // 拖拽坐标、缩放和弹窗变化不改变课程投影，只有数据/周次/调休/作息变化才重算。
                 val renderCourses = viewModel.presentationCache.weekCourses(state, page + 1)
-                // 计算本周哪些天是节假日/周末(灰显用); 传入表 ID 使命中调休映射的放假日不灰
-                val greyDays by produceState<Set<Int>>(
-                    emptySet(), page, state.selectedTableId, state.currentTable?.startDate, state.transfers
+                // 计算本周哪些天是节假日/周末(灰显用); 纯内存快速计算 + 缓存, 避免首帧异步跳变导致转场中途重组
+                val greyDays = remember(
+                    page, state.selectedTableId, state.currentTable?.startDate, state.transfers, holidayPrefVersion
                 ) {
-                    val start = state.currentTable?.startDate
-                    if (start.isNullOrBlank()) {
-                        value = emptySet()
-                    } else {
-                        value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                            val greySet = mutableSetOf<Int>()
-                            for (day in 1..7) {
-                                val date = DateUtils.dateOfWeek(start, page + 1, day)
-                                if (HolidayManager.shouldGrey(context, date, state.effectiveCurrentTable?.id)) {
-                                    greySet.add(day)
-                                }
-                            }
-                            greySet
-                        }
-                    }
+                    viewModel.presentationCache.weekGreyDays(context, state, page + 1)
                 }
                 when (viewMode) {
                     ViewMode.Full -> FullWeekView(
@@ -633,7 +637,7 @@ private fun TableSwitcherDialog(
 }
 
 @Composable
-private fun TopBar(
+internal fun TopBar(
     currentWeek: Int,
     maxWeek: Int,
     startDate: String,
@@ -661,192 +665,191 @@ private fun TopBar(
     val isOnActual = currentWeek == actualWeek
     val semesterStatus = displayContext?.semesterStatus
         ?: DateUtils.semesterStatus(startDate, maxWeek)
+    val hasUndo = com.lingion.sleepy.data.undo.UndoManager.hasSnapshot
+    val hasRedo = com.lingion.sleepy.data.undo.UndoManager.hasRedoSnapshot
+    val historyVisibility = remember { MutableTransitionState(hasUndo || hasRedo) }
+    historyVisibility.targetState = hasUndo || hasRedo
+    val historyPresent = historyVisibility.currentState || historyVisibility.targetState
+    val statusRes = when (semesterStatus) {
+        DateUtils.SemesterStatus.BEFORE_START -> R.string.semester_not_started
+        DateUtils.SemesterStatus.AFTER_END -> R.string.semester_ended
+        else -> 0
+    }
+    val weekLabel = if (statusRes == 0) stringResource(R.string.schedule_current_week, currentWeek)
+        else "${stringResource(statusRes)} · ${stringResource(R.string.schedule_week_prefix, currentWeek)}"
+    val numberLabel = currentWeek.toString()
+    val labelStyle = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
+    val measurer = rememberTextMeasurer()
     val density = LocalDensity.current
-    var centerLeftPx by remember { mutableFloatStateOf(Float.POSITIVE_INFINITY) }
-    val capsuleScale = ((with(density) { centerLeftPx.toDp().value } - 32f - 6f -
-        (if (scaleUncommitted) 38f else 0f) - 6f) / 65f).coerceIn(0.65f, 1f)
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
+    val fullTextWidth = with(density) { measurer.measure(weekLabel, labelStyle, softWrap = false).size.width.toDp() }
+    val numberTextWidth = with(density) { measurer.measure(numberLabel, labelStyle, softWrap = false).size.width.toDp() }
+    val groupedLabelWidth = maxOf(32.dp, numberTextWidth + 8.dp)
+    val openWeek = {
+        if (isOnActual) menuOpen = true else onJumpToActual()
+    }
+    ScheduleToolbarLayout(
+        modifier = Modifier.fillMaxWidth()
             .glassSurfaceBackground(colors.surface, androidx.compose.ui.graphics.RectangleShape)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // v7.10.12: 三件套改 Box 叠加实现屏幕正中 —
-        // 旧 weight(1f)+Center 是在"扣除右侧按钮后的剩余空间"里居中, 视觉偏左;
-        // Box 叠加让三件套对齐全宽正中, 加课/分享绝对定位右缘(用户 2026-09-02)。
-        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            // v7.10.14: 最左 logo — 点击弹课表切换弹窗, 右缘操作区(加课/分享)对称位
-            Row(
-                modifier = Modifier.align(Alignment.CenterStart),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            .padding(vertical = 6.dp),
+        centerWidths = mapOf(
+            WeekControlDensity.Full to 96.dp + 16.dp + fullTextWidth + 28.dp,
+            WeekControlDensity.NumberOnly to 96.dp + 8.dp + numberTextWidth + 16.dp,
+            WeekControlDensity.Grouped to 66.dp + groupedLabelWidth,
+        ),
+        startWidths = ToolbarSideWidths(
+            48.dp + (if (historyPresent) 73.dp else 0.dp) + (if (scaleUncommitted) 56.dp else 0.dp),
+            40.dp + (if (historyPresent) 69.dp else 0.dp) + (if (scaleUncommitted) 44.dp else 0.dp),
+        ),
+        endWidths = ToolbarSideWidths(104.dp, 84.dp),
+        start = { compact ->
+            val gap = if (compact) 4.dp else 8.dp
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 WeekNavButton(
-                    icon = Icons.Outlined.CalendarMonth,
-                    tag = "schedule_switch_table",
+                    icon = Icons.Outlined.CalendarMonth, tag = "schedule_switch_table",
                     contentDescriptionRes = R.string.schedule_switch_table,
-                    onClick = onSwitchTable
+                    compact = compact, onClick = onSwitchTable,
                 )
-                // 2026-09-21 用户令: 撤回/取消撤回合成一个体育场形状(两半圆+中间矩形)胶囊,
-                // 一起出现一起消失, 中间一条淡淡竖线 — TopBar 空间紧张, 单胶囊比两个分立按钮省位。
-                // 无 undo 也无 redo 时整个胶囊隐藏; scale tick 仍独立圆形按钮(语义不同, 不入胶囊)。
-                // MD3E (Task 6): 显隐走 AnimatedVisibility popup 家族 — 一体显隐语义不变,
-                // 出入场补上 popup 签名性格 (0.8 尺度弹入弹出)。
-                val hasUndo = com.lingion.sleepy.data.undo.UndoManager.hasSnapshot
-                val hasRedo = com.lingion.sleepy.data.undo.UndoManager.hasRedoSnapshot
                 AnimatedVisibility(
-                    visible = hasUndo || hasRedo,
-                    enter = sleepyPopupEnter(),
-                    exit = sleepyPopupExit(),
+                    visibleState = historyVisibility,
+                    enter = sleepyPopupEnter(), exit = sleepyPopupExit(),
                 ) {
                     Row {
-                        Spacer(modifier = Modifier.width(6.dp))
+                        Spacer(Modifier.width(gap))
                         UndoRedoCapsule(
-                            showUndo = hasUndo,
-                            showRedo = hasRedo,
-                            scale = capsuleScale,
-                            onUndo = onUndo,
-                            onRedo = onRedo
+                            showUndo = hasUndo, showRedo = hasRedo, scale = 1f,
+                            onUndo = onUndo, onRedo = onRedo,
                         )
                     }
                 }
-                // 2026-09-16 用户令: 捏合未确认时 tick 单列,与数据撤回胶囊互不干涉;
-                // tick=落盘长期生效, 撤回=回到上次确认值(语义不同, 不并入胶囊)。
                 if (scaleUncommitted) {
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(Modifier.width(gap))
                     WeekNavButton(
-                        icon = Icons.Outlined.Check,
-                        tag = "schedule_scale_keep",
+                        icon = Icons.Outlined.Check, tag = "schedule_scale_keep",
                         contentDescriptionRes = R.string.schedule_scale_keep,
-                        onClick = onScaleCommit
+                        compact = compact, onClick = onScaleCommit,
                     )
                 }
             }
-            // 翻页三件套(箭头+胶囊+箭头) — 箭头紧贴胶囊
-            Row(
-                modifier = Modifier.onGloballyPositioned {
-                    centerLeftPx = it.positionInParent().x
-                },
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-            WeekNavButton(icon = Icons.Outlined.ChevronLeft, tag = "schedule_prev_week", onClick = onPrevWeek)
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            // 第 N 周 标签 — 点击行为根据是否在当前实际周而不同
-            // 学期外: 标签带上周数(学期未开始 · 第 3 周), 翻周时数字跟着变, 用户才知道自己看到第几周
-            Box {
-                val statusRes = when (semesterStatus) {
-                    DateUtils.SemesterStatus.BEFORE_START -> R.string.semester_not_started
-                    DateUtils.SemesterStatus.AFTER_END -> R.string.semester_ended
-                    else -> 0
-                }
-                val weekLabel = if (statusRes == 0)
-                    stringResource(R.string.schedule_current_week, currentWeek)
-                else "${stringResource(statusRes)} · ${stringResource(R.string.schedule_week_prefix, currentWeek)}"
-                Text(
-                    // 表头语义永远=第 N 周(学期外带状态前缀但仍保留周数)。
-                    // 最近有课日只能影响自动选中的周, 不能改写表头文案或点击行为。
-                    text = weekLabel,
-                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
-                    color = if (isOnActual) colors.onPrimaryContainer else colors.primary,
-                    modifier = Modifier
-                        .glassControl(shape = SleepyTheme.shapes.medium)
-                        .clip(SleepyTheme.shapes.medium)
-                        .background(controlFill(if (isOnActual) colors.primaryContainer else colors.primaryContainer.copy(alpha = SleepyTheme.Alpha.inactive)))
-                        .noRippleGlassClickable {
-                            if (isOnActual) {
-                                // 在当前实际周 → 弹下拉菜单
-                                menuOpen = true
-                            } else {
-                                // 不在当前实际周 → 一键跳回
-                                onJumpToActual()
-                            }
-                        }
-                        .dbgTag("schedule_week_label", text = weekLabel, role = "button")
-                        .padding(horizontal = 14.dp, vertical = 4.dp)
-                )
-
-                // Material3 DropdownMenu — FlowRow 标签式选周
-                @OptIn(ExperimentalLayoutApi::class)
-                DropdownMenu(
-                    expanded = menuOpen,
-                    onDismissRequest = { menuOpen = false },
-                    modifier = Modifier.width(280.dp),
-                    // 菜单浮在 surfaceContainer 背景上, 用 Highest 拉开对比(默认 High 与背景几乎同色=隐形)
-                    containerColor = colors.surfaceContainerHighest
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text(
-                            text = stringResource(R.string.schedule_jump_week),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = colors.onSurfaceVariant,
-                            modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
-                        )
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxWidth()
+        },
+        center = { mode ->
+            val grouped = mode == WeekControlDensity.Grouped
+            val interaction = remember { MutableInteractionSource() }
+            val gap = if (mode == WeekControlDensity.Full) 8.dp else 4.dp
+            val groupModifier = if (grouped) Modifier
+                .height(32.dp)
+                .glassControl(grouped = true, motionClearance = 4.dp, interactionSource = interaction)
+                .clip(CircleShape).background(controlFill(colors.surfaceContainerHigh))
+                .dbgTag("schedule_week_group") else Modifier
+            BoxWithConstraints {
+                val labelMaxWidth = (maxWidth - 112.dp).coerceAtLeast(0.dp)
+                Row(groupModifier, verticalAlignment = Alignment.CenterVertically) {
+                    if (grouped) {
+                        GroupedWeekArrow(Icons.Outlined.ChevronLeft, "schedule_prev_week", interaction, onPrevWeek)
+                        WeekGroupDivider()
+                    } else {
+                        WeekNavButton(Icons.Outlined.ChevronLeft, "schedule_prev_week", onPrevWeek)
+                        Spacer(Modifier.width(gap))
+                    }
+                    Box(Modifier.widthIn(max = if (grouped) groupedLabelWidth else labelMaxWidth)) {
+                        val labelModifier = if (grouped) Modifier
+                            .size(groupedLabelWidth, 32.dp)
+                            .clickable(interactionSource = interaction, indication = null, role = Role.Button, onClick = openWeek)
+                        else Modifier
+                            .glassControl(shape = SleepyTheme.shapes.medium, motionClearance = 4.dp)
+                            .clip(SleepyTheme.shapes.medium)
+                            .background(controlFill(if (isOnActual) colors.primaryContainer else colors.primaryContainer.copy(alpha = SleepyTheme.Alpha.inactive)))
+                            .noRippleGlassClickable(onClick = openWeek)
+                        Box(
+                            labelModifier
+                                .semantics { contentDescription = weekLabel }
+                                .dbgTag("schedule_week_label", text = weekLabel, role = "button")
+                                .then(if (grouped) Modifier else Modifier.padding(horizontal = if (mode == WeekControlDensity.Full) 14.dp else 8.dp, vertical = 4.dp)),
+                            contentAlignment = Alignment.Center,
                         ) {
-                            (1..maxWeek).forEach { w ->
-                                val isCurrent = w == currentWeek
-                                Box(
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .glassControl(shape = CircleShape, selected = isCurrent)
-                                        .clip(CircleShape)
-                                        .background(
-                                            controlFill(if (isCurrent) colors.primary
-                                            else colors.surfaceContainerHigh)
-                                        )
-                                        .noRippleGlassClickable {
-                                            onSelectWeek(w)
-                                            menuOpen = false
-                                        }
-                                        .dbgTag("schedule_week#$w", text = w.toString(), role = "button"),
-                                    contentAlignment = Alignment.Center
+                            Text(
+                                text = if (mode == WeekControlDensity.Full) weekLabel else numberLabel,
+                                style = labelStyle, maxLines = 1, softWrap = false, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                color = if (isOnActual && !grouped) colors.onPrimaryContainer else colors.primary,
+                            )
+                        }
+                        // Material3 DropdownMenu — FlowRow 标签式选周
+                        @OptIn(ExperimentalLayoutApi::class)
+                        DropdownMenu(
+                            expanded = menuOpen,
+                            onDismissRequest = { menuOpen = false },
+                            modifier = Modifier.width(280.dp),
+                            // 菜单浮在 surfaceContainer 背景上, 用 Highest 拉开对比(默认 High 与背景几乎同色=隐形)
+                            containerColor = colors.surfaceContainerHighest
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(
+                                    text = stringResource(R.string.schedule_jump_week),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = colors.onSurfaceVariant,
+                                    modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
+                                )
+                                FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    Text(
-                                        text = w.toString(),
-                                        style = MaterialTheme.typography.labelLarge.copy(
-                                            fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal
-                                        ),
-                                        color = if (isCurrent) colors.onPrimary else colors.onSurface
-                                    )
+                                    (1..maxWeek).forEach { w ->
+                                        val isCurrent = w == currentWeek
+                                        Box(
+                                            modifier = Modifier
+                                                .size(40.dp)
+                                                .glassControl(shape = CircleShape, selected = isCurrent, motionClearance = 4.dp)
+                                                .clip(CircleShape)
+                                                .background(
+                                                    controlFill(if (isCurrent) colors.primary
+                                                    else colors.surfaceContainerHigh)
+                                                )
+                                                .noRippleGlassClickable {
+                                                    onSelectWeek(w)
+                                                    menuOpen = false
+                                                }
+                                                .dbgTag("schedule_week#$w", text = w.toString(), role = "button"),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = w.toString(),
+                                                style = MaterialTheme.typography.labelLarge.copy(
+                                                    fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal
+                                                ),
+                                                color = if (isCurrent) colors.onPrimary else colors.onSurface
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
+                    if (grouped) {
+                        WeekGroupDivider()
+                        GroupedWeekArrow(Icons.Outlined.ChevronRight, "schedule_next_week", interaction, onNextWeek)
+                    } else {
+                        Spacer(Modifier.width(gap))
+                        WeekNavButton(Icons.Outlined.ChevronRight, "schedule_next_week", onNextWeek)
+                    }
                 }
             }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            WeekNavButton(icon = Icons.Outlined.ChevronRight, tag = "schedule_next_week", onClick = onNextWeek)
-        }
-
-            // 右侧操作区: 加课 + 分享 — 与翻页箭头同款圆形底, Box 右缘绝对定位
-            Row(
-                modifier = Modifier.align(Alignment.CenterEnd),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+        },
+        end = { compact ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 WeekNavButton(
-                    icon = Icons.Outlined.Add,
-                    tag = "schedule_add_course",
+                    icon = Icons.Outlined.Add, tag = "schedule_add_course",
                     contentDescriptionRes = R.string.schedule_add_course,
-                    onClick = onAddCourse
+                    compact = compact, onClick = onAddCourse,
                 )
-                Spacer(modifier = Modifier.width(6.dp))
+                Spacer(Modifier.width(if (compact) 4.dp else 8.dp))
                 WeekNavButton(
-                    icon = Icons.Outlined.IosShare,
-                    tag = "schedule_share",
+                    icon = Icons.Outlined.IosShare, tag = "schedule_share",
                     contentDescriptionRes = R.string.schedule_share_table,
-                    onClick = onShare
+                    compact = compact, onClick = onShare,
                 )
             }
-        }
-    }
+        },
+    )
 }
 
 @Composable
@@ -854,26 +857,58 @@ private fun WeekNavButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     tag: String,
     onClick: () -> Unit,
-    contentDescriptionRes: Int? = null
+    contentDescriptionRes: Int? = null,
+    compact: Boolean = false,
 ) {
     val colors = MaterialTheme.colorScheme
-    Box(
-        modifier = Modifier
-            .size(32.dp)
-            .glassControl()
-            .clip(CircleShape)
-            .background(controlFill(colors.surfaceContainerHigh))
-            .noRippleGlassClickable(onClick)
-            .dbgTag(tag, role = "button")
-            .padding(6.dp),
-        contentAlignment = Alignment.Center
+    if (compact) {
+        val interaction = remember { MutableInteractionSource() }
+        Box(
+            Modifier.size(40.dp).dbgTag(tag, role = "button")
+                .clickable(interactionSource = interaction, indication = null, role = Role.Button, onClick = onClick),
+            contentAlignment = Alignment.Center,
+        ) {
+            Box(
+                Modifier.size(28.dp).glassControl(interactionSource = interaction, motionClearance = 6.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(icon, contentDescriptionRes?.let { stringResource(it) }, Modifier.size(20.dp), tint = colors.onSurfaceVariant)
+            }
+        }
+        return
+    }
+    com.lingion.sleepy.ui.component.liquidglass.GlassIconButton(
+        onClick = onClick,
+        modifier = Modifier.dbgTag(tag, role = "button"),
     ) {
         Icon(
             imageVector = icon,
             contentDescription = contentDescriptionRes?.let { stringResource(it) },
-            tint = colors.onSurfaceVariant
+            tint = colors.onSurfaceVariant,
+            modifier = Modifier.size(20.dp),
         )
     }
+}
+
+@Composable
+private fun GroupedWeekArrow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    tag: String,
+    interaction: MutableInteractionSource,
+    onClick: () -> Unit,
+) {
+    Box(
+        Modifier.size(32.dp).dbgTag(tag, role = "button")
+            .clickable(interactionSource = interaction, indication = null, role = Role.Button, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(icon, null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun WeekGroupDivider() {
+    Box(Modifier.size(1.dp, 14.dp).background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = SleepyTheme.Alpha.inactive)))
 }
 
 /**
@@ -890,12 +925,20 @@ private fun UndoRedoCapsule(
     onRedo: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
+    val interaction = remember { MutableInteractionSource() }
+    val optical = liquidGlassControlsEnabled()
+    val undoClick = if (optical) Modifier.clickable(
+        interactionSource = interaction, indication = null, enabled = showUndo, role = Role.Button, onClick = onUndo,
+    ) else Modifier.noRippleGlassClickable(enabled = showUndo, onClick = onUndo)
+    val redoClick = if (optical) Modifier.clickable(
+        interactionSource = interaction, indication = null, enabled = showRedo, role = Role.Button, onClick = onRedo,
+    ) else Modifier.noRippleGlassClickable(enabled = showRedo, onClick = onRedo)
     val halfSize = 32.dp * scale
     val dividerHeight = 14.dp * scale
     Row(
         modifier = Modifier
             .height(halfSize)
-            .glassControl(grouped = true)
+            .glassControl(grouped = true, motionClearance = 4.dp, interactionSource = interaction)
             .clip(CircleShape)
             .background(controlFill(colors.surfaceContainerHigh)),
         verticalAlignment = Alignment.CenterVertically
@@ -907,7 +950,7 @@ private fun UndoRedoCapsule(
                     if (scale == 1f) Modifier.size(width = 32.dp, height = 32.dp)
                     else Modifier.size(width = halfSize, height = halfSize)
                 )
-                .noRippleGlassClickable(enabled = showUndo, onClick = onUndo)
+                .then(undoClick)
                 .dbgTag("schedule_undo", text = stringResource(R.string.schedule_undo), role = "button"),
             contentAlignment = Alignment.Center
         ) {
@@ -931,7 +974,7 @@ private fun UndoRedoCapsule(
                     if (scale == 1f) Modifier.size(width = 32.dp, height = 32.dp)
                     else Modifier.size(width = halfSize, height = halfSize)
                 )
-                .noRippleGlassClickable(enabled = showRedo, onClick = onRedo)
+                .then(redoClick)
                 .dbgTag("schedule_redo", text = stringResource(R.string.schedule_redo), role = "button"),
             contentAlignment = Alignment.Center
         ) {

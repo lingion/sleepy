@@ -1,8 +1,7 @@
 package com.lingion.sleepy.ui.screen.mine
 
-import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
-import com.lingion.sleepy.ui.component.liquidglass.controlFill
+import com.lingion.sleepy.ui.component.liquidglass.GlassControlLayout
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,6 +29,7 @@ import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import com.lingion.sleepy.ui.component.liquidglass.GlassTonalButton as FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -47,6 +48,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -431,7 +433,7 @@ private fun SystemThemeCard(selected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun PresetThemeCard(preset: ThemePreset, selected: Boolean, onClick: () -> Unit) {
+internal fun PresetThemeCard(preset: ThemePreset, selected: Boolean, onClick: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     val scheme = if (colors.background.red < 0.5f) preset.light else preset.dark
     // 2026-08-25 用户指令: 全 app 纯色块禁描线 — 选中态只用色块层级+对勾表达
@@ -442,10 +444,17 @@ private fun PresetThemeCard(preset: ThemePreset, selected: Boolean, onClick: () 
         color = bgColor, shape = SleepyTheme.shapes.large
     ) {
         Column(Modifier.padding(16.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ColorSwatch(scheme.primary)
-                ColorSwatch(scheme.secondary)
-                ColorSwatch(scheme.tertiary)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.defaultMinSize(minHeight = GlassControlLayout.touchTarget)
+            ) {
+                Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    ColorSwatch(scheme.primary, Modifier.weight(1f, fill = false))
+                    ColorSwatch(scheme.secondary, Modifier.weight(1f, fill = false))
+                    ColorSwatch(scheme.tertiary, Modifier.weight(1f, fill = false))
+                }
+                Spacer(Modifier.size(GlassControlLayout.touchTarget))
             }
             Spacer(Modifier.height(12.dp))
             // ✓槽位恒定 20dp 占位,图标仅在选中时渲染进槽位 —— 真机字体缩放(fontScale<1)
@@ -453,7 +462,7 @@ private fun PresetThemeCard(preset: ThemePreset, selected: Boolean, onClick: () 
             // =选中卡比未选中卡高(2026-09-22 用户实测)。禁改回 raw `if (selected) Icon(...)`。
             // 不用 alpha(0f) 隐藏:读屏会照常播报"已选中",占位 Box 才是布局+a11y 双正确。
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(preset.nameRes), style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium), color = colors.onSurface, modifier = Modifier.weight(1f))
+                Text(stringResource(preset.nameRes), style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium), color = colors.onSurface, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
                 Box(Modifier.size(20.dp), contentAlignment = Alignment.Center) {
                     if (selected) Icon(Icons.Outlined.Check, stringResource(R.string.selected), tint = colors.primary, modifier = Modifier.size(20.dp))
                 }
@@ -463,8 +472,8 @@ private fun PresetThemeCard(preset: ThemePreset, selected: Boolean, onClick: () 
 }
 
 @Composable
-private fun ColorSwatch(color: Color) {
-    Box(Modifier.size(28.dp).clip(SleepyTheme.shapes.small).background(color))
+private fun ColorSwatch(color: Color, modifier: Modifier = Modifier) {
+    Box(modifier.size(28.dp).testTag("theme-swatch").clip(SleepyTheme.shapes.small).background(color))
 }
 
 /** 「新建主题」入口 — 裸虚线圆圈+加号,无卡片无背景无文字(2026-09-11 用户定稿) */
@@ -474,7 +483,7 @@ private fun NewThemeCard(onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(96.dp)
+            .height(112.dp)
             .noRippleClickable(onClick)
             .dbgTag("settings_theme_new", role = "button"),
         contentAlignment = Alignment.Center
@@ -520,7 +529,7 @@ private fun DashedCircleWithPlus(size: androidx.compose.ui.unit.Dp, strokeColor:
  *  (2026-09-13 用户定稿: 裸图标贴主题名旁 = 不知道点哪, 24dp IconButton 嵌名称行
  *  还把卡片撑得比预设卡高) */
 @Composable
-private fun CustomThemeCard(
+internal fun CustomThemeCard(
     theme: com.lingion.sleepy.data.CustomTheme,
     selected: Boolean,
     onClick: () -> Unit,
@@ -537,27 +546,26 @@ private fun CustomThemeCard(
         color = bgColor, shape = SleepyTheme.shapes.large
     ) {
         Column(Modifier.padding(16.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ColorSwatch(scheme.primary)
-                ColorSwatch(scheme.secondary)
-                ColorSwatch(scheme.tertiary)
-                Spacer(Modifier.weight(1f))
-                // edit 色块: surfaceContainerHighest 与卡片底色拉开层级; 28dp 与色板同高, 首行结构与 Preset 卡完全一致不撑高
-                Box(
-                    modifier = Modifier
-                        .size(28.dp)
-                        .glassControl(shape = SleepyTheme.shapes.small)
-                        .clip(SleepyTheme.shapes.small)
-                        .background(controlFill(colors.surfaceContainerHighest))
-                        .noRippleGlassClickable(onEdit)
-                        .dbgTag("settings_theme_edit", text = theme.name, role = "button"),
-                    contentAlignment = Alignment.Center
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.defaultMinSize(minHeight = GlassControlLayout.touchTarget)
+            ) {
+                Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    ColorSwatch(scheme.primary, Modifier.weight(1f, fill = false))
+                    ColorSwatch(scheme.secondary, Modifier.weight(1f, fill = false))
+                    ColorSwatch(scheme.tertiary, Modifier.weight(1f, fill = false))
+                }
+                IconButton(
+                    onClick = onEdit,
+                    colors = IconButtonDefaults.iconButtonColors(containerColor = colors.surfaceContainerHighest),
+                    modifier = Modifier.dbgTag("settings_theme_edit", text = theme.name, role = "button")
                 ) {
                     Icon(
                         Icons.Outlined.Edit,
                         contentDescription = stringResource(R.string.theme_custom_edit),
                         tint = colors.onSurfaceVariant,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }

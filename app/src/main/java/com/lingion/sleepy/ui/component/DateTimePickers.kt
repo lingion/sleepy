@@ -1,10 +1,12 @@
 package com.lingion.sleepy.ui.component
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.background
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,6 +38,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
 import com.lingion.sleepy.console.ui.dbgTag
@@ -60,7 +64,7 @@ fun DatePickerField(
     isError: Boolean = false,
     // 调试台语义身份: 传 tag → 输入框=<tag>、日历按钮=<tag>_pick、
     // 弹窗 确定/取消=<tag>_pick_confirm/_dismiss; null = 不打标, 既有调用点零影响
-    dbgTag: String? = null
+    dbgTag: String? = null,
 ) {
     val colors = MaterialTheme.colorScheme
     var showPicker by remember { mutableStateOf(false) }
@@ -145,7 +149,8 @@ fun TimePickerField(
     modifier: Modifier = Modifier,
     shape: CornerBasedShape = SleepyTheme.fieldShape,
     // 调试台语义身份: 传 tag → 字段=<tag>、弹窗 确定/取消=<tag>_pick_confirm/_dismiss
-    dbgTag: String? = null
+    dbgTag: String? = null,
+    compact: Boolean = false,
 ) {
     val colors = MaterialTheme.colorScheme
     var showPicker by remember { mutableStateOf(false) }
@@ -159,13 +164,30 @@ fun TimePickerField(
     // Box + clickable 包装：OutlinedTextField 内部设 enabled=false
     // 让 click 事件穿透到外层 Box 的 clickable。
     // Box 必须先 clip(shape) 再 clickable — 否则涟漪是方角、且能溢出字段圆角。
-    Box(
+    val textMeasurer = rememberTextMeasurer()
+    BoxWithConstraints(
         modifier = modifier
             .clip(shape)
             .noRippleClickable { showPicker = true }
             .then(dbgTag?.let { Modifier.dbgTag(it, text = label, role = "textbox") } ?: Modifier)
     ) {
-        TextField(
+        if (compact) {
+            val horizontalPadding = if (maxWidth < 68.dp) 2.dp else 4.dp
+            val regularTime = MaterialTheme.typography.bodyMedium
+            val regularTimeWidth = with(LocalDensity.current) {
+                textMeasurer.measure(value, style = regularTime, softWrap = false, maxLines = 1).size.width.toDp()
+            }
+            val timeStyle = if (regularTimeWidth + horizontalPadding * 2 > maxWidth) MaterialTheme.typography.bodySmall else regularTime
+            Column(
+                Modifier.fillMaxWidth().heightIn(min = 56.dp)
+                    .background(colors.surfaceContainerHighest, shape)
+                    .padding(horizontal = horizontalPadding, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(label, style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant, maxLines = 1)
+                Text(value, style = timeStyle, color = colors.onSurface, maxLines = 1)
+            }
+        } else TextField(
             value = value,
             onValueChange = {},
             label = { Text(label) },
