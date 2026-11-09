@@ -146,17 +146,10 @@ class MineNavRedoCourseListContractTest {
 
     @Test
     fun `schedule screen TopBar mounts capsule only when undo or redo exists`() {
-        // 挂载条件:hasUndo = UndoManager.hasSnapshot;hasRedo = UndoManager.hasRedoSnapshot
-        // 同一显隐源 (2026-10-29 Task 6 lockstep: 直挂 if 改 AnimatedVisibility
-        // popup 家族 — 一体显隐语义不变, 锚点从 if(...) 随接线改写为
-        // visible = hasUndo || hasRedo, 断言强度等价)
-        val pattern = Regex(
-            """val\s+hasUndo\s*=\s*[\w.]*UndoManager\.hasSnapshot\s*[\s\S]{0,200}?val\s+hasRedo\s*=\s*[\w.]*UndoManager\.hasRedoSnapshot\s*[\s\S]{0,200}?AnimatedVisibility\(\s*visible = hasUndo \|\| hasRedo"""
-        )
-        assertTrue(
-            "ScheduleScreen TopBar 必须先取 hasUndo/hasRedo 再以此为唯一显隐源挂胶囊(配对显隐)",
-            pattern.containsMatchIn(scheduleScreen)
-        )
+        assertTrue("撤回显隐仍来自真实历史", scheduleScreen.contains("UndoManager.hasSnapshot") && scheduleScreen.contains("UndoManager.hasRedoSnapshot"))
+        assertTrue("目标状态只取决于撤回或重做", scheduleScreen.contains("historyVisibility.targetState = hasUndo || hasRedo"))
+        assertTrue("退场结束前继续为胶囊预留宽度", scheduleScreen.contains("historyVisibility.currentState || historyVisibility.targetState"))
+        assertTrue("同一状态驱动整片胶囊的显隐", Regex("""AnimatedVisibility\(\s*visibleState = historyVisibility,""").containsMatchIn(scheduleScreen))
     }
 
     @Test

@@ -721,7 +721,10 @@ internal fun TopBar(
                 ) {
                     Row {
                         Spacer(Modifier.width(gap))
-                        UndoRedoCapsule(hasUndo, hasRedo, 1f, onUndo, onRedo)
+                        UndoRedoCapsule(
+                            showUndo = hasUndo, showRedo = hasRedo, scale = 1f,
+                            onUndo = onUndo, onRedo = onRedo,
+                        )
                     }
                 }
                 if (scaleUncommitted) {
