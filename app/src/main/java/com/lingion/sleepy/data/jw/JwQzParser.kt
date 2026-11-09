@@ -92,7 +92,7 @@ open class JwQzParser(source: String) : JwParser(source) {
                 range.groupValues[2].isEmpty() -> start
                 else -> range.groupValues[2].toIntOrNull() ?: return emptyList()
             }
-            if (start !in 1..99 || end !in start..99) return emptyList()
+            if (start !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND || end !in start..EXPLICIT_SCHEDULE_RESOURCE_BOUND) return emptyList()
             values.addAll(start..end)
         }
         val runs = mutableListOf<Pair<Int, Int>>()

@@ -185,8 +185,9 @@ class JwNewZfParser(source: String) : JwParser(source) {
                 val room = firstStr(o, "cdmc", "classroomName", "jxcd", "jsmc", "jxlh", "jasdm")
 
                 // ── 星期(优先数字 xqj, 文本 xqjmc 兜底) ──────────
-                val day = firstInt(o, "xqj", "kcxq", "xq", "classDay", "skxq")
-                    ?: xqjmcToInt(o) ?: continue
+                val numericDay = firstStr(o, "xqj", "kcxq", "xq", "classDay", "skxq")
+                val day = if (numericDay.isNotEmpty()) numericDay.toIntOrNull() else xqjmcToInt(o)
+                if (day == null || day !in 1..7) continue
 
                 // ── 节次(字符串, 支持范围/补零/多段) ──────────────
                 val jcStr = firstStr(o, "jcs", "jc", "classSessions", "ksjcsd", "ksjc")
@@ -203,7 +204,7 @@ class JwNewZfParser(source: String) : JwParser(source) {
                             name = name,
                             room = room,
                             teacher = teacher,
-                            day = day.coerceIn(1, 7),
+                            day = day,
                             startNode = node.first,
                             endNode = node.second,
                             startWeek = r.first,
@@ -317,16 +318,10 @@ class JwNewZfParser(source: String) : JwParser(source) {
      */
     private fun xqjmcToInt(o: org.json.JSONObject): Int? {
         val s = o.optString("xqjmc", "").trim()
-        if (s.isEmpty()) return null
-        val zh = charArrayOf('一', '二', '三', '四', '五', '六', '日', '天')
-        for (c in s) {
-            val idx = zh.indexOf(c)
-            if (idx >= 0) {
-                // '日'/'天' 在下标 6/7 → 都是 7 (周日)
-                return if (idx >= 6) 7 else idx + 1
-            }
-        }
-        return null
+        val day = Regex("(?:星期|周)([一二三四五六日天])").matchEntire(s)?.groupValues?.get(1)
+            ?: return null
+        val idx = "一二三四五六日天".indexOf(day.single())
+        return if (idx >= 6) 7 else idx + 1
     }
 
     private fun firstStr(o: org.json.JSONObject, vararg keys: String): String {
@@ -337,53 +332,35 @@ class JwNewZfParser(source: String) : JwParser(source) {
         return ""
     }
 
-    private fun firstInt(o: org.json.JSONObject, vararg keys: String): Int? {
-        for (k in keys) {
-            val v = o.optString(k, "").trim()
-            if (v.isNotBlank()) return v.toIntOrNull()
-        }
-        return null
-    }
-
     /** 周次字符串 → (start, end, type) 范围列表（T4 加固：剥 { } 第，单双周显式枚举） */
     private fun parseWeekStr(s0: String): List<Triple<Int, Int, Int>> {
-        // 1. 先剥离花括号与 '第' 字 (SHUFEZJ: '{第1-16周}')
-        val s = s0.replace("{", "").replace("}", "").replace("第", "").trim()
-        if (s.isBlank()) return listOf(Triple(1, 16, 0))
+        // Only remove a complete outer wrapper. Missing coordinates do not imply a semester.
+        val raw = s0.trim()
+        val s = (if (raw.startsWith("{") && raw.endsWith("}")) raw.substring(1, raw.length - 1) else raw)
+            .replace('（', '(').replace('）', ')').trim()
+        if (s.isBlank()) return emptyList()
         val result = mutableListOf<Triple<Int, Int, Int>>()
 
         // 2. bitmap 模式：11111111111100000（每位 = 第 N 周）
         if (s.length >= 10 && s.all { it == '0' || it == '1' }) {
+            if (s.length > EXPLICIT_SCHEDULE_RESOURCE_BOUND) return emptyList()
             val weeks = s.mapIndexedNotNull { i, c -> if (c == '1') i + 1 else null }
             return bitsToRanges(weeks)
         }
 
         // 3. 范围/列表模式: "1-16" / "1-16周" / "1-16周(单)" / "1,3,5,7" / "1-8,11-16周(双)"
-        s.split(",", "，", ";", "；").forEach { part0 ->
-            val part = part0.trim()
-            if (part.isEmpty()) return@forEach
-            // 单双周后缀显式枚举 (防误判 '单元'/'双方' 等词)
-            val type = when {
-                part.contains("(单)") || part.contains("(单周)") || part.endsWith("单") || part.endsWith("单周") -> 1
-                part.contains("(双)") || part.contains("(双周)") || part.endsWith("双") || part.endsWith("双周") -> 2
-                else -> 0
-            }
-            val cleaned = part
-                .replace("周", "")
-                .replace("(", "").replace(")", "")
-                .replace("（", "").replace("）", "")
-                .trim()
-            if (cleaned.contains("-")) {
-                val parts = cleaned.split("-", limit = 2)
-                val start = parts.getOrNull(0)?.filter { it.isDigit() }?.takeIf { it.isNotEmpty() }?.toIntOrNull()
-                val end = parts.getOrNull(1)?.filter { it.isDigit() }?.takeIf { it.isNotEmpty() }?.toIntOrNull()
-                if (start != null && end != null) result += Triple(start, end, type)
-            } else {
-                val v = cleaned.filter { it.isDigit() }.takeIf { it.isNotEmpty() }?.toIntOrNull()
-                if (v != null) result += Triple(v, v, type)
-            }
+        val segment = Regex("""(?:第\s*)?(\d+)\s*(?:-\s*(\d+))?\s*(?:周\s*)?(?:(?:\(([单双])(?:周)?\)|([单双])(?:周)?)\s*)?(?:周)?""")
+        for (part in s.split(",", "，", ";", "；")) {
+            val match = segment.matchEntire(part.trim()) ?: return emptyList()
+            val start = match.groupValues[1].toIntOrNull() ?: return emptyList()
+            val endText = match.groupValues[2]
+            val end = if (endText.isEmpty()) start else endText.toIntOrNull() ?: return emptyList()
+            if (start !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND || end !in start..EXPLICIT_SCHEDULE_RESOURCE_BOUND) return emptyList()
+            val parity = match.groupValues[3].ifEmpty { match.groupValues[4] }
+            val type = when (parity) { "单" -> 1; "双" -> 2; else -> 0 }
+            result += Triple(start, end, type)
         }
-        return if (result.isEmpty()) listOf(Triple(1, 16, 0)) else result
+        return result
     }
 
     private fun bitsToRanges(weeks: List<Int>): List<Triple<Int, Int, Int>> {
@@ -419,7 +396,7 @@ class JwNewZfParser(source: String) : JwParser(source) {
     // ─── HTML 表格解析（兜底） ─────────────────────────────────
 
     /** 移植自 JwOldZfParser 的 (N-M节) 模式, table1/kbgrid 变体共用 */
-    private val NODE_PATTERN = Regex("""\(\d+(?:-\d+)?节""")
+    private val NODE_PATTERN = Regex("""\(\d+(?:-\d+)?节\)""")
 
     /**
      * 新正方 HTML 渲染后的课表解析。容器优先级:
@@ -568,13 +545,15 @@ class JwNewZfParser(source: String) : JwParser(source) {
                     // p[0] = 节/周; p[1] = 地点; p[2] = 教师
                     val pList = tc.getElementsByTag("p")
                     if (pList.size < 3) continue  // 缺字段直接跳过(对齐 grid_missing_fields 边界)
-                    val infoStr = pList[0].text().trim()
+                    // 网格把标签和安排分别放在两个 font 中，标签不属于周次串。
+                    val infoFonts = pList[0].getElementsByTag("font")
+                    val infoStr = (infoFonts.getOrNull(1)?.text() ?: pList[0].text()).trim()
                     val position = pList[1].text().trim()
                     val teacher = pList[2].text().trim()
 
                     // 节次解析: infoStr 必须含 "(N-M节)"
                     val nodeMatch = NODE_PATTERN.find(infoStr) ?: continue
-                    val nodes = nodeMatch.value.substring(1).removeSuffix("节").split("-")
+                    val nodes = nodeMatch.value.substring(1).removeSuffix("节)").split("-")
                     val startNode = nodes.getOrNull(0)?.toIntOrNull() ?: continue
                     val endNode = if (nodes.size == 1) startNode else nodes[1].toIntOrNull() ?: continue
                     if (startNode !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND ||

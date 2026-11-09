@@ -66,13 +66,15 @@ class JwNewUrpParser(source: String) : JwParser(source) {
 
         for (i in 0 until courseList.length()) {
             val course = courseList.optJSONObject(i) ?: continue
-            val name = course.optString("courseName", "").trim()
-            if (name.isEmpty()) continue
+            val courseName = course.optString("courseName", "").trim()
             val teacher = course.optString("attendClassTeacher", "").trim()
             val timeAndPlaceList = course.optJSONArray("timeAndPlaceList") ?: continue
 
             for (j in 0 until timeAndPlaceList.length()) {
                 val tp = timeAndPlaceList.optJSONObject(j) ?: continue
+                // SHOU deployments put the name on each arrangement, with this spelling.
+                val name = courseName.ifEmpty { tp.optString("coureName", "").trim() }
+                if (name.isEmpty()) continue
                 val day = tp.optString("classDay", "").toIntOrNull() ?: continue
                 val startNode = tp.optString("classSessions", "").toIntOrNull() ?: continue
                 val continuing = tp.optString("continuingSession", "").toIntOrNull() ?: continue
