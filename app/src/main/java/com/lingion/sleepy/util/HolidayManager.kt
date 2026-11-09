@@ -40,6 +40,10 @@ object HolidayManager {
     private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
     private val entriesCache = java.util.concurrent.ConcurrentHashMap<Int, List<HolidayEntry>>()
+    /** First-frame UI snapshot only: null means not cached; an empty list is a cached empty year.
+     * Never reads preferences or parses JSON on the composition thread. */
+    fun peekYearEntries(year: Int): List<HolidayEntry>? = entriesCache[year]
+
     /** 各年数据是否拉取成功过(空结果+成功=false => 网络失败) */
     private val yearFetchFailed = java.util.concurrent.ConcurrentHashMap<Int, Boolean>()
 
