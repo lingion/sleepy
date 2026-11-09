@@ -48,6 +48,7 @@ import androidx.compose.material3.Text
 import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -152,7 +153,8 @@ fun JwWebViewLoginScreen(
     // 其余校 initialDesktopUa=false → 行为与旧 `mutableStateOf(false)` 完全一致 (批B §3.5)。
     var desktopUa by remember { mutableStateOf(initialDesktopUa(school)) }
     var uaSwitchReload by remember { mutableStateOf(0) }
-    val logToken = remember { java.util.concurrent.atomic.AtomicLong(0) }
+    val fetchBudget = remember { JwFetchBudget(android.os.SystemClock::elapsedRealtime) }
+    var sgDocumentUsed by remember { mutableStateOf(false) }
     val sgContext = LocalContext.current
     val webviewNotReadyMsg = stringResource(R.string.jw_webview_not_ready)
     val fetchingMsg = stringResource(R.string.jw_fetching)
@@ -168,6 +170,31 @@ fun JwWebViewLoginScreen(
     val fetchNoCoursesMsg = stringResource(R.string.jw_fetch_no_courses)
     val fetchFallbackPeriodsMsg = stringResource(R.string.jw_fetch_fallback_periods)
     val urlInvalidMsg = stringResource(R.string.jw_url_invalid)
+
+    fun cancelCapture() {
+        fetchBudget.cancel()
+    }
+
+    fun scheduleFetchTimeout(wv: WebView, id: String) {
+        val remaining = fetchBudget.remainingMs(id) ?: return
+        wv.postDelayed({
+            val left = fetchBudget.remainingMs(id)
+            if (left != null && left == 0L) {
+                cancelCapture()
+                onCaptureError(
+                    FrameCaptureResult(null, "", emptyList(),
+                        status = FrameCaptureStatus.CONTAINER_EMPTY_AFTER_DELAY,
+                        diagnosticHint = fetchTimeoutMsg), fetchTimeoutMsg,
+                )
+            } else if (left != null) {
+                scheduleFetchTimeout(wv, id)
+            }
+        }, remaining.coerceAtLeast(1))
+    }
+
+    DisposableEffect(Unit) {
+        onDispose { cancelCapture() }
+    }
 
     val thuCaptureToken = remember { java.util.concurrent.atomic.AtomicLong(0) }
     fun deliverPageCapture(html: String) {
@@ -210,9 +237,10 @@ fun JwWebViewLoginScreen(
 
     // wisedu (金智) 协议：WebView 内 fetch 课表 JSON 的回调结果处理
     // 桥回调已切到主线程；result 形如 {ok:true,data:"<xskcb.do JSON>"} 或 {ok:false,err:"..."}
-    val handleWiseduResult: (String) -> Unit = { json ->
+    val handleWiseduResult: (String) -> Unit = result@{ json ->
         try {
             val obj = org.json.JSONObject(json)
+            if (!fetchBudget.complete(obj.optString("captureId"))) return@result
             if (obj.optBoolean("ok", false)) {
                 val data = obj.optString("data", "")
                 if (data.isBlank()) {
@@ -320,24 +348,15 @@ fun JwWebViewLoginScreen(
 
     // fetch JS 注入超时闸: evaluateJavascript 无内建超时, 教务宕机/挂起时
     // 桥回调永远不来, 用户只见「正在抓取」无限 pending。20s 无回调即报超时。
-    fun evaluateFetchWithTimeout(wv: WebView, js: String, timeoutMs: Long = FETCH_TIMEOUT_MS) {
-        var answered = false
-        val beginToken = logToken.incrementAndGet()
-        wv.evaluateJavascript(js) {
-            answered = true
-            Log.d("JwWebView", "fetch js done token=$beginToken")
-        }
-        wv.postDelayed({
-            if (!answered) {
-                Log.w("JwWebView", "fetch js timeout token=$beginToken")
-                onCaptureError(
-                    FrameCaptureResult(null, "", emptyList(),
-                        status = FrameCaptureStatus.CONTAINER_EMPTY_AFTER_DELAY,
-                        diagnosticHint = fetchTimeoutMsg),
-                    fetchTimeoutMsg,
-                )
-            }
-        }, timeoutMs)
+    fun evaluateFetchWithTimeout(
+        wv: WebView, js: String, timeoutMs: Long = FETCH_TIMEOUT_MS,
+        captureId: String = java.util.UUID.randomUUID().toString(),
+    ) {
+        cancelCapture()
+        fetchBudget.begin(captureId, timeoutMs)
+        // evaluateJavascript returns after the synchronous part; only the bridge completes the task.
+        wv.evaluateJavascript(scopeJwFetchScript(js, captureId), null)
+        scheduleFetchTimeout(wv, captureId)
     }
 
     // 浏览器式地址栏: 校验 + 规范化 + 提交导航。
@@ -360,6 +379,7 @@ fun JwWebViewLoginScreen(
             return
         }
         editingUrl = false
+        cancelCapture()
         webViewRef?.loadUrl(normalized)
     }
 
@@ -368,6 +388,7 @@ fun JwWebViewLoginScreen(
             editingUrl = false
             return@BackHandler
         }
+        cancelCapture()
         webViewRef?.let { wv ->
             if (wv.canGoBack()) wv.goBack() else onBack()
         } ?: onBack()
@@ -403,7 +424,7 @@ fun JwWebViewLoginScreen(
                     IconButton(
                         modifier = Modifier.dbgTag("jw_back", role = "button"),
                         onClick = {
-                            if (editingUrl) editingUrl = false else onBack()
+                            if (editingUrl) editingUrl = false else { cancelCapture(); onBack() }
                         }
                     ) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
@@ -443,6 +464,7 @@ fun JwWebViewLoginScreen(
                                 else R.string.jw_toggle_desktop_ua
                             ), role = "button"),
                             onClick = {
+                                cancelCapture()
                                 desktopUa = !desktopUa
                                 uaSwitchReload++   // 触发 JwWebView 重建 (UA 创建期生效)
                             },
@@ -460,7 +482,7 @@ fun JwWebViewLoginScreen(
                         }
                         IconButton(
                             modifier = Modifier.dbgTag("jw_refresh", text = stringResource(R.string.jw_refresh), role = "button"),
-                            onClick = { webViewRef?.reload() },
+                            onClick = { cancelCapture(); webViewRef?.reload() },
                             enabled = webViewRef != null
                         ) {
                             Icon(
@@ -526,6 +548,10 @@ fun JwWebViewLoginScreen(
                         evaluateFetchWithTimeout(wv, script)
                         return@CaptureBar
                     }
+                    JwUstcCapture.scriptFor(school.type)?.let { script ->
+                        evaluateFetchWithTimeout(wv, script)
+                        return@CaptureBar
+                    }
                     JwSchoolApiCapture.scriptFor(school.type)?.let { script ->
                         evaluateFetchWithTimeout(wv, script)
                         return@CaptureBar
@@ -536,6 +562,12 @@ fun JwWebViewLoginScreen(
                     // 超时闸放宽到 SG_ASSET_TIMEOUT_MS; manifest 无条目直接明错,
                     // 不悄悄落 outerHTML 抓取 (避免把「没适配」伪装成「没课表」)。
                     if (school.type == JwProtocol.TYPE_SG_ASSET) {
+                        if (sgDocumentUsed) {
+                            cancelCapture()
+                            wv.reload()
+                            scope.launch { snackbar.showSnackbar("正在重新加载页面，请加载完成后再次导入") }
+                            return@CaptureBar
+                        }
                         val js = JwSgAssetBridge.bridgeJs(sgContext, school.name)
                         if (js == null) {
                             val msg = fetchFailedFmt.format("该校暂无拾光适配脚本")
@@ -546,6 +578,7 @@ fun JwWebViewLoginScreen(
                                 msg,
                             )
                         } else {
+                            sgDocumentUsed = true
                             evaluateFetchWithTimeout(wv, js, SG_ASSET_TIMEOUT_MS)
                         }
                         return@CaptureBar
@@ -678,7 +711,7 @@ fun JwWebViewLoginScreen(
                     // 路径指纹: school.type 显式 zf_new, 或 URL 含 /jwglxt/、/kbcx/ (广东医科等新版), 或 WebVPN /http/<hex>/ 重写形态
                     val currentUrl = wv.url ?: ""
                     if (shouldUseZfNewFetch(school.type, currentUrl)) {
-                        wv.evaluateJavascript(ZF_NEW_FETCH_JS, null)
+                        evaluateFetchWithTimeout(wv, ZF_NEW_FETCH_JS)
                         return@CaptureBar
                     }
                     // T7: DFS frame 抓取 + ready 重试, 决策在 JVM 层(可测可日志)
@@ -728,7 +761,11 @@ fun JwWebViewLoginScreen(
                 onNavigationUrlChanged = { url ->
                     if (!editingUrl && !url.isNullOrBlank()) currentUrl = url
                 },
-                onWebViewCreated = { wv -> webViewRef = wv },
+                onPageStarted = { cancelCapture(); sgDocumentUsed = false },
+                onWebViewCreated = { wv ->
+                    webViewRef = wv
+                    sgDocumentUsed = false
+                },
                 onHtmlCaptured = { html -> deliverPageCapture(html) },
                 onWiseduResult = handleWiseduResult,
                 onWebViewReady = onWebViewReady
@@ -779,6 +816,7 @@ private fun JwWebView(
     onWebViewCreated: (WebView) -> Unit,
     onHtmlCaptured: (String) -> Unit,
     onWiseduResult: (String) -> Unit = {},
+    onPageStarted: () -> Unit = {},
     onWebViewReady: ((WebView) -> Unit)? = null
 ) {
     // key 含 recreateKey: UA 切换时销毁重建 WebView (userAgentString 仅创建期可靠,
@@ -880,6 +918,7 @@ private fun JwWebView(
                         evaluateJavascript(DIAGNOSTIC_NETWORK_INSTALL_JS, null)
                     },
                     onUrlChanged = onNavigationUrlChanged,
+                    onPageStarted = onPageStarted,
                 )
                 onNavigationUrlChanged(lastUrl)
                 loadUrl(lastUrl)

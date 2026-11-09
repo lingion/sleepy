@@ -88,6 +88,7 @@ jobs:
           node tools/test-paged-school-fetch.js
           node tools/test-school-api-fetch.js
           node tools/test-whut-fetch.js
+          node tools/test-ustc-fetch.js
           node scripts/test_sues_capture.cjs
           node scripts/test_thu_capture.cjs
           node scripts/test_buaa_capture.cjs
