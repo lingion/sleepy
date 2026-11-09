@@ -191,11 +191,15 @@ internal object WeekGridWideRenderer {
             }
         }
         val courses = data.days.flatMap { it.courses }
+        val colorless = AppPrefs.isWidgetColorless(context)
         for (card in geometry.cards) {
             val base = CourseColorUtil.pickCourseColorIntWithGroupRows(card.course, courses.filter { it.groupId == card.course.groupId },
-                data.isDark, scheme.surfaceVariant.toArgb(), AppPrefs.isWidgetColorless(context), persistedHue = CourseHueStore.hueFor(card.course.groupId))
+                data.isDark, scheme.secondaryContainer.toArgb(), colorless, persistedHue = CourseHueStore.hueFor(card.course.groupId))
             val grey = data.days.firstOrNull { it.date == card.date }?.isGrey == true
-            paint.color = base; paint.alpha = if (grey) 120 else 220
+            paint.color = base
+            paint.alpha = if (colorless) {
+                if (grey) 153 else 255
+            } else if (grey) 120 else 220
             canvas.drawRoundRect(card.bounds, minOf(6f * d, card.bounds.height() / 4), minOf(6f * d, card.bounds.height() / 4), paint)
             val luminance = Color.red(base) * .299 + Color.green(base) * .587 + Color.blue(base) * .114
             paint.color = if (luminance < 145) Color.WHITE else Color.rgb(29, 27, 32)
