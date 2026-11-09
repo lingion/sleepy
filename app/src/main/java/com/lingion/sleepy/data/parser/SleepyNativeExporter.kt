@@ -183,21 +183,6 @@ object SleepyNativeExporter {
         return sb.toString().trimEnd('\n')
     }
 
-    /**
-     * 按 §4 散周 partition 拆行: 把每个课程的上课周集合按"极大连续段"拆为多条 C 行, 每行 type 重新判定:
-     * - 段全奇 → type 1 (S-E单)
-     * - 段全偶 → type 2 (S-E双)
-     * - 段全周 → type 0 (S-E)
-     * - 段非全周非纯奇偶 → type 3 (S-E定)
-     * 不支持"零散单周内插"(1, 10, 12): 本函数按"区间合并到段"处理, 多段分别一行 type 3。
-     */
-    private fun partitionWeeks(startWeek: Int, endWeek: Int, type: Int): List<Triple<Int, Int, Int>> {
-        // 简化: 当前实现尊重输入的 (startWeek, endWeek, type) 三元组, 输出单条。
-        // 完整 partition 需要按课程实际周集合枚举; v1 简化为"信任原 type 与区间", 仅当 type=0 区间全周时直通。
-        // 复杂 partition 留给 exportCourses 单行扩展。
-        return listOf(Triple(startWeek, endWeek, type))
-    }
-
     private fun exportCourses(courses: List<CourseEntity>, forceToken: Boolean): List<String> {
         // 按 groupId 排序输出(§8.1)
         val sorted = courses.sortedWith(compareBy({ it.groupId }, { it.courseName }))

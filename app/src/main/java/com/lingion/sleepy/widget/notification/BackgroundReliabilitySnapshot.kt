@@ -19,13 +19,6 @@ data class BackgroundReliabilitySnapshot(
         !exactAlarmAllowed -> ReminderTransportState.DEGRADED_INEXACT_ALARM
         else -> ReminderTransportState.READY
     }
-
-    fun standardNotificationAllowed(): Boolean = notificationPermissionGranted
-
-    fun backgroundPermissionFactsSatisfied(): Boolean =
-        notificationPermissionGranted && exactAlarmAllowed && batteryOptimizationIgnored
-
-    fun vendorSurfaceGuaranteed(): Boolean = liveCardState == VendorCapabilityState.ENABLED
 }
 
 enum class ReminderTransportState {

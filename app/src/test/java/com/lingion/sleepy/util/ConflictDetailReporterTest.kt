@@ -31,6 +31,29 @@ class ConflictDetailReporterTest {
     private val dayNames = arrayOf("周一", "周二", "周三", "周四", "周五", "周六", "周日")
 
     @Test
+    fun week_range_boundaries_use_the_actual_conflict_reporter() {
+        // Preserve the old standalone overlap cases at the production entry point.
+        data class Case(val a: Triple<Int, Int, Int>, val b: Triple<Int, Int, Int>, val text: String?)
+        val cases = listOf(
+            Case(Triple(1, 5, 0), Triple(6, 10, 0), null),
+            Case(Triple(1, 5, 0), Triple(3, 8, 0), "第3-5周"),
+            Case(Triple(1, 5, 1), Triple(2, 8, 2), null),
+            Case(Triple(1, 5, 1), Triple(3, 8, 1), "单周 第3-5周"),
+            Case(Triple(1, 5, 0), Triple(3, 8, 1), "单周 第3-5周"),
+            Case(Triple(2, 6, 0), Triple(1, 5, 2), "双周 第2-4周"),
+            Case(Triple(1, 5, 2), Triple(6, 10, 1), null),
+            Case(Triple(5, 5, 0), Triple(5, 10, 0), "第5周"),
+        )
+        cases.forEach { case ->
+            val stored = course(1, "stored", 1, 1, 1, case.a.first, case.a.second, case.a.third)
+            val draft = course(2, "draft", 1, 1, 1, case.b.first, case.b.second, case.b.third)
+            val details = ConflictDetailReporter.draftConflictDetails(listOf(draft), listOf(stored), dayNames)
+            assertEquals(case.toString(), if (case.text == null) 0 else 1, details.size)
+            assertEquals(case.toString(), case.text, details.singleOrNull()?.weekText)
+        }
+    }
+
+    @Test
     fun reports_existing_course_hit_by_new_draft_with_full_detail() {
         val stored = listOf(course(1, "高等数学", day = 5, startNode = 3, step = 2))
         val draft = course(100, "大学英语", day = 5, startNode = 4, step = 2)

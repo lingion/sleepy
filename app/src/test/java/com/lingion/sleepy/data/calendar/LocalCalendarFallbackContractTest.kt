@@ -47,16 +47,15 @@ class LocalCalendarFallbackContractTest {
     @Test fun repeatedAndConcurrentCallsCreateExactlyOneCalendar() = runBlocking {
         val policy = LocalCalendarFallback()
         val store = Store()
-        val results = (1..20).map { async(Dispatchers.Default) { policy.ensure(store) } }.awaitAll()
-        assertEquals(List(20) { info }, results)
-        assertEquals(info, policy.ensure(store))
+        val results = (1..20).map { async(Dispatchers.Default) { policy.writable(store) } }.awaitAll()
+        assertEquals(List(20) { listOf(info) }, results)
+        assertEquals(listOf(info), policy.writable(store))
         assertEquals(1, store.inserts)
     }
 
     @Test fun deniedPermissionDoesNotAccessProvider() = runBlocking {
         val store = Store().apply { permission = false }
         val policy = LocalCalendarFallback()
-        assertNull(policy.ensure(store))
         assertTrue(policy.writable(store).isEmpty())
         assertEquals(0, store.queries)
         assertEquals(0, store.inserts)
@@ -85,7 +84,7 @@ class LocalCalendarFallbackContractTest {
     @Test fun hiddenOrInstancesDisabledOwnedCalendarIsRepairedWithoutDuplicate() = runBlocking {
         for (visible in listOf(true, false)) {
             val store = Store().apply { rows = listOf(LocalCalendarRow(info, true, false, visible, false)) }
-            assertEquals(info, LocalCalendarFallback().ensure(store))
+            assertEquals(listOf(info), LocalCalendarFallback().writable(store))
             assertEquals(1, store.enables)
             assertEquals(0, store.inserts)
         }
@@ -95,11 +94,11 @@ class LocalCalendarFallbackContractTest {
         val repair = Store().apply {
             rows = listOf(LocalCalendarRow(info, true, false, true, false)); enableResult = false
         }
-        assertNull(LocalCalendarFallback().ensure(repair))
+        assertTrue(LocalCalendarFallback().writable(repair).isEmpty())
         assertEquals(0, repair.inserts)
         for (deleted in listOf(true, false)) {
             val store = Store().apply { rows = listOf(LocalCalendarRow(info, deleted, deleted, true, true)) }
-            assertNull(LocalCalendarFallback().ensure(store))
+            assertTrue(LocalCalendarFallback().writable(store).isEmpty())
             assertEquals(0, store.inserts)
         }
     }

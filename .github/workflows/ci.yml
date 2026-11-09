@@ -119,6 +119,8 @@ jobs:
           ./gradlew :app:testDebugUnitTest --info --stacktrace 2>&1 | tee gradle-unit-test.log | tail -400
           git diff --exit-code -- app/schemas
           test -z "$(git ls-files --others --exclude-standard app/schemas)"
+      - name: Release console lifecycle
+        run: ./gradlew -I scripts/console-lifecycle.init.gradle :app:testReleaseUnitTest --tests '*ReleaseConsoleLifecycleTest' --stacktrace
 
   android-lint:
     # Lint uses app/lint-baseline.xml for accepted legacy findings; new findings fail CI.

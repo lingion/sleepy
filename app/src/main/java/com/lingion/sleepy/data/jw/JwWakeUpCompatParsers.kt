@@ -473,28 +473,6 @@ internal object WakeUpCompat {
         }
     }
 
-    /** KingoInfo JSON: 顶层数组, 行 week1..week7 → day=列号, 值=[{jcxx:"a-b", kcmc, skdd, rkjs, xf}], week=row 索引. */
-    private fun parseKingoInfo(root: Any): List<JwCourse> {
-        val rows = root as? JSONArray ?: return emptyList()
-        if (rows.length() == 0) return emptyList()
-        return buildList {
-            for (r in 0 until rows.length()) {
-                val row = rows.optJSONObject(r) ?: continue
-                for (d in 1..7) {
-                    val cells = row.optJSONArray("week$d") ?: continue
-                    for (c in 0 until cells.length()) {
-                        val cell = cells.optJSONObject(c) ?: continue
-                        val name = cell.optString("kcmc")
-                        val bounds = cell.optString("jcxx").split('-')
-                        val start = bounds.firstOrNull()?.trim()?.toIntOrNull() ?: continue
-                        if (name.isBlank() || start < 1) continue
-                        add(JwCourse(name, cell.optString("skdd"), cell.optString("rkjs"), d, start, bounds.getOrNull(1)?.trim()?.toIntOrNull() ?: start, r, r, 0))
-                    }
-                }
-            }
-        }
-    }
-
     fun parseChaoxing(source: String): List<JwCourse> {
         val root = parseJson(source)
         val rows = when (root) {
@@ -1370,9 +1348,6 @@ class JwJzParser(source: String) : WakeUpMarkerParser(source, setOf("courseTable
     }
     override fun confidence(): Int = if (nativeFeatures.isNotEmpty()) 95 else super.confidence()
     override fun matchedFeatures(): List<String> = nativeFeatures + super.matchedFeatures()
-}
-class JwJzSuperParser(source: String) : WakeUpMarkerParser(source, setOf("el-table__body-wrapper", "Njw2017", "course-list", "v-jsxsd", "studentTableVms", "JinZhi")) {
-    override fun generateCourseList() = WakeUpCompat.parseJzSuper(source).ifEmpty { super.generateCourseList() }
 }
 class JwSouthSoftParser(source: String) : WakeUpMarkerParser(source, setOf("studentTableVms", "studentTableVm", "activities", "south_soft")) {
     override fun generateCourseList() = WakeUpCompat.parseSouthSoft(source).ifEmpty { super.generateCourseList() }

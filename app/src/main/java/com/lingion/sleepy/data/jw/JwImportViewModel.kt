@@ -809,8 +809,6 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
 
     sealed class ImportState {
         object Idle : ImportState()
-        data class Parsed(val courses: List<JwCourse>) : ImportState()
-        data class Imported(val tableId: Long) : ImportState()
         data class Error(val message: String) : ImportState()
     }
 }

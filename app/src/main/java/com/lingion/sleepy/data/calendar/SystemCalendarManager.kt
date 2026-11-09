@@ -109,10 +109,6 @@ object SystemCalendarManager {
 
     private val localCalendarFallback = LocalCalendarFallback()
 
-    suspend fun ensureLocalCalendar(context: Context): SystemCalendarInfo? = withContext(Dispatchers.IO) {
-        localCalendarFallback.ensure(AndroidLocalCalendarStore(context))
-    }
-
     suspend fun writableCalendars(context: Context): List<SystemCalendarInfo> = withContext(Dispatchers.IO) {
         localCalendarFallback.writable(AndroidLocalCalendarStore(context))
     }
