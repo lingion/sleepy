@@ -37,6 +37,8 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.ui.component.liquidglass.glassSurfaceBackground
 import com.lingion.sleepy.ui.theme.noRippleClickable
 
@@ -133,7 +135,9 @@ fun SettingsFlatCard(
 ) {
     val colors = MaterialTheme.colorScheme
     Column(
-        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large)
+        // The backing owns its rounded shape; a lifted glass lens may overflow it.
+        modifier = Modifier.fillMaxWidth()
+            .then(if (LocalUiStyle.current == UiStyle.LiquidGlass) Modifier else Modifier.clip(SleepyTheme.shapes.large))
             .glassSurfaceBackground(colors.surfaceContainer, SleepyTheme.shapes.large)
             .padding(horizontal = SettingsLayout.cardInset, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(SettingsLayout.headerGap),
