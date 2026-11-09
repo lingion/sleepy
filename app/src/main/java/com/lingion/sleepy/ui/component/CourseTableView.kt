@@ -431,13 +431,30 @@ fun CardsGridView(
                 } else w
             }
             val boundaryWeights: List<Float> = naturalWeights
-            /** natural 累计坐标 (r = 行分数, 同 yOfRows 口径, 无折权)。 */
+
+            // 几何前缀和数组 (O(1) 替代每帧数百次 O(N) 循环求和与 Set 遍历)
+            val naturalWeightPrefixSum = FloatArray(naturalWeights.size + 1).apply {
+                var sum = 0f
+                for (i in naturalWeights.indices) {
+                    sum += naturalWeights[i]
+                    this[i + 1] = sum
+                }
+            }
+            val mealBreakPrefixCount = IntArray(naturalWeights.size + 1).apply {
+                var count = 0
+                for (i in 1..naturalWeights.size) {
+                    if ((i - 1) in mealBreakAfterRows) count++
+                    this[i] = count
+                }
+            }
+
+            /** natural 累计坐标 (r = 行分数, 同 yOfRows 口径, 无折权, O(1))。 */
             fun naturalSpan(r: Float): Dp {
-                val ws = naturalWeights
-                var acc = 0f
-                val full = r.toInt().coerceAtMost(ws.size)
-                for (i in 0 until full) acc += ws[i]
-                if (full < ws.size && r > full) acc += ws[full] * (r - full)
+                val full = r.toInt().coerceAtMost(naturalWeights.size)
+                var acc = naturalWeightPrefixSum[full]
+                if (full < naturalWeights.size && r > full) {
+                    acc += naturalWeights[full] * (r - full)
+                }
                 return rowH * acc
             }
             /** natural 跨度 (dp): 卡片高度用 — 餐段空隙不计入卡高。 */
@@ -446,16 +463,11 @@ fun CardsGridView(
 
             // 用户反馈 2026-09-09 (精度): 时间轴按分钟加权 — 占位行只占真实分钟占比
             // (5 分钟占位 ≈ 0.111 标准行), 不再整行拉满把时间轴歪曲。
-            // yOfRows(r) = 加权行坐标 r(0.0=网格顶, 1.0=一标准行) → dp (boundary 口径);
+            // yOfRows(r) = 加权行坐标 r(0.0=网格顶, 1.0=一标准行) → dp (boundary 口径, O(1));
             fun yOfRows(r: Float): Dp {
-                val ws = boundaryWeights
-                var acc = 0f
-                val full = r.toInt().coerceAtMost(ws.size)
-                for (i in 0 until full) acc += ws[i]
-                if (full < ws.size && r > full)
-                    acc += (naturalWeights.getOrNull(full) ?: ws[full]) * (r - full)
-                val crossedBreaks = mealBreakAfterRows.count { it + 1 <= full }
-                return rowH * acc + mealGapExtra * crossedBreaks
+                val full = r.toInt().coerceAtMost(naturalWeights.size)
+                val crossedBreaks = mealBreakPrefixCount[full]
+                return naturalSpan(r) + mealGapExtra * crossedBreaks
             }
             fun rowHeightAt(i: Int): Dp = rowH * (naturalWeights.getOrNull(i) ?: 1f)
             fun gapAfterRow(i: Int): Dp = gapH + if (i in mealBreakAfterRows) mealGapExtra else 0.dp
