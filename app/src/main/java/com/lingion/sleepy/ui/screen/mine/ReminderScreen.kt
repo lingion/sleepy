@@ -3,7 +3,6 @@ package com.lingion.sleepy.ui.screen.mine
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.widget.Toast
 import android.os.Build
 import android.content.ActivityNotFoundException
@@ -73,6 +72,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.lingion.sleepy.ui.component.SettingsLayout
+import androidx.compose.foundation.layout.heightIn
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
@@ -584,13 +585,13 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
             state = listState,
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(SettingsLayout.cardGap)
         ) {
             item {
                 ReminderCard {
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(
@@ -599,10 +600,10 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                         ) {
                             IconBox(icon = Icons.Outlined.Notifications, color = colors.primary)
                             Spacer(modifier = Modifier.size(12.dp))
-                            Column {
+                            Column(verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
                                 Text(
                                     text = stringResource(R.string.reminder_master_title),
-                                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                                    style = SettingsLayout.headingStyle,
                                     color = colors.onSurface
                                 )
                                 Text(
@@ -660,17 +661,17 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                 item {
                     ReminderCard {
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(4.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth().heightIn(min = SettingsLayout.minRowHeight).padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                                 IconBox(icon = Icons.Outlined.School, color = colors.primary)
                                 Spacer(modifier = Modifier.size(12.dp))
-                                Column {
+                                Column(verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
                                     Text(
                                         text = stringResource(R.string.reminder_before_class_title),
-                                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                                        style = SettingsLayout.headingStyle,
                                         color = colors.onSurface
                                     )
                                     Text(
@@ -700,15 +701,15 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 8.dp, horizontal = 4.dp),
+                                    .padding(vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
                                     text = stringResource(R.string.reminder_before_minutes_label),
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier.weight(1f),
+                                    style = SettingsLayout.itemStyle,
                                     color = colors.onSurface
                                 )
-                                Spacer(modifier = Modifier.weight(1f))
                                 TextField(
                                     value = minutesInput,
                                     onValueChange = { txt ->
@@ -739,17 +740,17 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                 text = beforeClassPreviewText,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = colors.onSurfaceVariant,
-                                modifier = Modifier.padding(start = 52.dp, top = 8.dp, bottom = 8.dp, end = 4.dp)
+                                modifier = Modifier.padding(vertical = 8.dp)
                             )
                             SubDivider()
                             // 形态互斥 tab (用户 2026-10-17 指令: 旧双开关下 banner 被 fluid
                             // 静默吞掉, 改分段二选一): 横幅 = 普通可划通知, 天然兼容手环同步;
                             // 流体云 = Android 16 promoted 实况卡片, 带实验标签, 用户自选即
                             // 接受"系统不支持则无卡片"的代价 — 不做静默回落。
-                            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 4.dp)) {
+                            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
                                 Text(
                                     text = stringResource(R.string.reminder_mode_label),
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    style = SettingsLayout.itemStyle,
                                     color = colors.onSurface
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
@@ -807,10 +808,10 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                             }
                             if (fluidEnabled) {
                                 SubDivider()
-                                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 8.dp)) {
+                                Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
                                     Text(
                                         text = stringResource(R.string.reminder_fluid_fields),
-                                        style = MaterialTheme.typography.bodyMedium,
+                                        style = SettingsLayout.itemStyle,
                                         color = colors.onSurface
                                     )
                                     Spacer(modifier = Modifier.height(6.dp))
@@ -1048,15 +1049,15 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                 item {
                     ReminderCard {
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(4.dp),
+                            modifier = Modifier.fillMaxWidth().heightIn(min = SettingsLayout.minRowHeight).padding(vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             IconBox(icon = Icons.Outlined.AccessTime, color = colors.primary)
                             Spacer(modifier = Modifier.size(12.dp))
-                            Column(modifier = Modifier.weight(1f)) {
+                            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
                                 Text(
                                     text = stringResource(R.string.reminder_daily_title),
-                                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                                    style = SettingsLayout.headingStyle,
                                     color = colors.onSurface
                                 )
                                 Text(
@@ -1133,14 +1134,14 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                 ReminderCard {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(4.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth().heightIn(min = SettingsLayout.minRowHeight).padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Column(modifier = Modifier.weight(1f)) {
+                            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
                                 Text(
                                     text = stringResource(R.string.reminder_date_rules_title),
-                                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                                    style = SettingsLayout.headingStyle,
                                     color = colors.onSurface
                                 )
                                 Text(
@@ -1167,7 +1168,7 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                 text = stringResource(R.string.reminder_date_rules_inactive),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = colors.onSurfaceVariant,
-                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
+                                modifier = Modifier.padding(vertical = 4.dp)
                             )
                         } else {
                             SubDivider()
@@ -1381,11 +1382,11 @@ private fun ReminderTimeRow(label: String, time: String, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .noRippleClickable(onClick = onClick)
-            .padding(vertical = 12.dp, horizontal = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .padding(vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(label, style = MaterialTheme.typography.bodyMedium, color = colors.onSurface)
+        Text(label, modifier = Modifier.weight(1f), style = SettingsLayout.itemStyle, color = colors.onSurface)
         Text(
             text = time,
             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
@@ -1405,13 +1406,13 @@ private fun ReminderToggleRow(
 ) {
     val colors = MaterialTheme.colorScheme
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(modifier = Modifier.weight(1f)) {
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(title, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = colors.onSurface)
+                Text(title, modifier = Modifier.weight(1f, fill = false), style = SettingsLayout.itemStyle, color = colors.onSurface)
                 if (tag != null) {
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
@@ -1489,7 +1490,6 @@ private fun IconBox(icon: ImageVector, color: androidx.compose.ui.graphics.Color
 private fun SubDivider() {
     val colors = MaterialTheme.colorScheme
     androidx.compose.material3.HorizontalDivider(
-        modifier = Modifier.padding(start = 52.dp),
         color = colors.outline.copy(alpha = SleepyTheme.Alpha.hairline)
     )
 }

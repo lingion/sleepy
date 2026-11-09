@@ -38,9 +38,9 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.console.ui.dbgTag
+import com.lingion.sleepy.ui.component.SettingsLayout
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.AppDatabase
 import com.lingion.sleepy.data.migration.MigrationExecutor
@@ -193,14 +193,13 @@ fun BackupScreen(onBack: () -> Unit) {
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(SettingsLayout.cardGap)
         ) {
             item {
                 Text(
                     text = stringResource(R.string.settings_migration_sub),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = colors.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    style = SettingsLayout.descriptionStyle,
+                    color = colors.onSurfaceVariant
                 )
             }
             item {
@@ -213,12 +212,13 @@ fun BackupScreen(onBack: () -> Unit) {
                             .dbgTag("general_migration_export", text = stringResource(R.string.settings_backup_create), role = "button")
                             .alpha(if (migrationBusy) 0.5f else 1f)
                             .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap)
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
+                        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
                             Text(
                                 text = stringResource(R.string.settings_backup_create),
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                                style = SettingsLayout.headingStyle,
                                 color = colors.onSurface
                             )
                             Text(
@@ -242,12 +242,13 @@ fun BackupScreen(onBack: () -> Unit) {
                             .dbgTag("general_migration_import", text = stringResource(R.string.settings_backup_restore), role = "button")
                             .alpha(if (migrationBusy) 0.5f else 1f)
                             .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap)
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
+                        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
                             Text(
                                 text = stringResource(R.string.settings_backup_restore),
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                                style = SettingsLayout.headingStyle,
                                 color = colors.onSurface
                             )
                             Text(

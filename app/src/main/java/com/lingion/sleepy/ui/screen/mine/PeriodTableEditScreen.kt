@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Check
@@ -45,11 +44,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.lingion.sleepy.ui.component.SettingsLayout
+import androidx.compose.foundation.layout.PaddingValues
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.PeriodTableEntity
 import com.lingion.sleepy.data.entity.SmartPeriodConfig
@@ -181,10 +179,10 @@ fun PeriodTableEditScreen(
         containerColor = colors.background
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            modifier = Modifier.fillMaxSize().padding(padding),
+            contentPadding = PaddingValues(start = SettingsLayout.pageInset, end = SettingsLayout.pageInset, top = SettingsLayout.pageInset, bottom = 28.dp),
+            verticalArrangement = Arrangement.spacedBy(SettingsLayout.cardGap)
         ) {
-            item { Spacer(modifier = Modifier.height(2.dp)) }
 
             item {
                 Column(
@@ -226,7 +224,7 @@ fun PeriodTableEditScreen(
                         Column {
                             Text(
                                 text = stringResource(R.string.edit_table_time_slots),
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                                style = SettingsLayout.headingStyle,
                                 color = colors.onSurface
                             )
                             Text(
@@ -354,7 +352,6 @@ fun PeriodTableEditScreen(
                 }
             }
 
-            item { Spacer(modifier = Modifier.height(28.dp)) }
         }
     }
 
