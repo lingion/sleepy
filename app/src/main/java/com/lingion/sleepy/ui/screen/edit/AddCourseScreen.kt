@@ -1175,18 +1175,24 @@ private fun MeetingBlockEditor(
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // 卡头 = 折叠开关 (用户定令 2026-11-09): 编辑页所有时段卡默认全收起,
-        // 一次只看一张; 从课表点胶囊跳进来的那张由跳转 effect 自动展开。
-        // 收起态保留 标题+摘要+星期+标准节次滑杆 (用户拍板「摘要 + 星期/节次可见」)。
+        // 卡头 = 折叠开关 (用户定令 2026-11-09, 同日版式返工): 收起态只显示
+        // 标题 + 两行摘要文字, 星期/节次控件一律收进展开区; 删除叉在最左,
+        // 折叠箭头归最右 (用户版式裁定); 从课表点胶囊跳进来的那张由跳转 effect 自动展开。
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.Top
         ) {
+            if (canRemove) {
+                IconButton(onClick = onRemove) {
+                    Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.delete_slot), tint = colors.onSurfaceVariant)
+                }
+            }
             Row(
                 modifier = Modifier
                     .weight(1f)
-                    .noRippleGlassClickable { block.expanded = !block.expanded },
+                    .noRippleGlassClickable { block.expanded = !block.expanded }
+                    .padding(end = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.Top
             ) {
@@ -1210,52 +1216,6 @@ private fun MeetingBlockEditor(
                         .rotate(chevronRotation)
                 )
             }
-            if (canRemove) {
-                IconButton(onClick = onRemove) {
-                    Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.delete_slot), tint = colors.onSurfaceVariant)
-                }
-            }
-        }
-
-        MultiDayPicker(selectedDays = block.days.toSet(), onToggleDay = { day ->
-            if (day in block.days) block.days.remove(day) else block.days.add(day)
-        })
-
-        // 标准卡: 第 startNode..(startNode+step-1) 节, 1..maxStd — MD3 双头滑杆整数区间,
-        // 一头拖开始节一头拖结束节; steps 吸附整数档位, 物理上拖不出交叉/越界 (issue#9
-        // 的"输入超界"路径随数字框一起消失, clamped 提示机制作废删除)。
-        // 普通课程主路径, 不被"非常规"折叠栏干扰; 非常规节次卡走槽位选择, 不渲染滑杆。
-        if (!block.isIrregularNode) {
-            // 显示口径统一夹进 1..maxStd: 导入脏数据(越界/交叉)时滑杆与摘要读数一致,
-            // 落库前 validateCourseDraft 仍按原值报 issue#9 错误, 不会静默吞掉。
-            val nodeStart = block.startNode.coerceIn(1, maxStd)
-            val nodeEnd = (block.startNode + block.step - 1).coerceIn(nodeStart, maxStd)
-            val nodeCount = nodeEnd - nodeStart + 1
-            val nodeSummary = if (nodeCount <= 1) {
-                stringResource(R.string.slot_summary_period_single, nodeStart)
-            } else {
-                stringResource(R.string.slot_summary_period_range, nodeStart, nodeEnd, nodeCount)
-            }
-            IntRangeSlider(
-                summary = nodeSummary,
-                minValue = 1,
-                maxValue = maxStd,
-                startValue = nodeStart,
-                endValue = nodeEnd,
-                onValueChange = { s, e ->
-                    block.startNode = s
-                    block.step = e - s + 1
-                },
-                // 幽灵基线: 原节次区间按显示口径 startNode..startNode+step-1 换算;
-                // 两值皆非 null (编辑既有组/单卡) 才有基线, 新卡 null → 无幽灵
-                initialStart = block.initialStartNode,
-                initialEnd = if (block.initialStartNode != null && block.initialStep != null) {
-                    block.initialStartNode + block.initialStep - 1
-                } else {
-                    null
-                },
-                modifier = Modifier.padding(top = 4.dp),
-            )
         }
 
         val expandSpecs = sleepyExpandSpecs()
@@ -1265,6 +1225,47 @@ private fun MeetingBlockEditor(
             exit = expandSpecs.exit,
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                MultiDayPicker(selectedDays = block.days.toSet(), onToggleDay = { day ->
+                    if (day in block.days) block.days.remove(day) else block.days.add(day)
+                })
+
+                // 标准卡: 第 startNode..(startNode+step-1) 节, 1..maxStd — MD3 双头滑杆整数区间,
+                // 一头拖开始节一头拖结束节; steps 吸附整数档位, 物理上拖不出交叉/越界 (issue#9
+                // 的"输入超界"路径随数字框一起消失, clamped 提示机制作废删除)。
+                // 普通课程主路径, 不被"非常规"折叠栏干扰; 非常规节次卡走槽位选择, 不渲染滑杆。
+                if (!block.isIrregularNode) {
+                    // 显示口径统一夹进 1..maxStd: 导入脏数据(越界/交叉)时滑杆与摘要读数一致,
+                    // 落库前 validateCourseDraft 仍按原值报 issue#9 错误, 不会静默吞掉。
+                    val nodeStart = block.startNode.coerceIn(1, maxStd)
+                    val nodeEnd = (block.startNode + block.step - 1).coerceIn(nodeStart, maxStd)
+                    val nodeCount = nodeEnd - nodeStart + 1
+                    val nodeSummary = if (nodeCount <= 1) {
+                        stringResource(R.string.slot_summary_period_single, nodeStart)
+                    } else {
+                        stringResource(R.string.slot_summary_period_range, nodeStart, nodeEnd, nodeCount)
+                    }
+                    IntRangeSlider(
+                        summary = nodeSummary,
+                        minValue = 1,
+                        maxValue = maxStd,
+                        startValue = nodeStart,
+                        endValue = nodeEnd,
+                        onValueChange = { s, e ->
+                            block.startNode = s
+                            block.step = e - s + 1
+                        },
+                        // 幽灵基线: 原节次区间按显示口径 startNode..startNode+step-1 换算;
+                        // 两值皆非 null (编辑既有组/单卡) 才有基线, 新卡 null → 无幽灵
+                        initialStart = block.initialStartNode,
+                        initialEnd = if (block.initialStartNode != null && block.initialStep != null) {
+                            block.initialStartNode + block.initialStep - 1
+                        } else {
+                            null
+                        },
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
+
                 // issue#23 逐卡: 非常规节次 / 非常规时间 — 收进同一折叠栏 (用户反馈 2026-09-09:
                 // 平铺的"非常规"字样让用户误以为表单不能添加正常课程)
                 IrregularOptionsSection(

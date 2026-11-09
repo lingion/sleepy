@@ -80,15 +80,30 @@ class MeetingBlockCollapseTest {
     }
 
     @Test
-    fun collapsed_body_keeps_summary_days_and_node_slider() {
+    fun collapsed_body_shows_only_title_and_summary_text() {
         val body = editorBody(editorSource())
         val av = body.indexOf("AnimatedVisibility(")
         assertTrue("AnimatedVisibility 必须存在", av > 0)
-        // 摘要/星期/节次滑杆在折叠区之前 = 收起态仍可见 (用户拍板「摘要 + 星期/节次可见」);
-        // 第一个 IntRangeSlider 是节次滑杆, 周次滑杆在其后 — 位置序即折叠边界
+        // 版式返工 2026-11-09: 收起态只剩 标题 + 摘要两行文字 — 星期选择器与
+        // 节次滑杆一律收进展开区 (此前「摘要+星期/节次可见」被用户推翻)
         assertTrue("摘要必须在折叠区外 (收起态可见)", body.indexOf("MeetingBlockSummary(") in 0 until av)
-        assertTrue("星期选择必须在折叠区外 (收起态可见)", body.indexOf("MultiDayPicker(") in 0 until av)
-        assertTrue("标准节次滑杆必须在折叠区外 (收起态可见)", body.indexOf("IntRangeSlider(") in 0 until av)
+        assertTrue("星期选择必须收进折叠区 (收起态不显示)", body.indexOf("MultiDayPicker(") > av)
+        val firstSlider = body.indexOf("IntRangeSlider(")
+        assertTrue("标准节次滑杆必须收进折叠区 (收起态不显示)", firstSlider > av)
+    }
+
+    @Test
+    fun delete_cross_sits_left_of_expand_chevron_at_right_edge() {
+        val body = editorBody(editorSource())
+        val header = body.substringAfter("卡头 = 折叠开关").substringBefore("AnimatedVisibility")
+        val cross = header.indexOf("R.string.delete_slot")
+        val chevron = header.indexOf("Icons.Outlined.ExpandMore")
+        val toggleClick = header.indexOf("block.expanded = !block.expanded")
+        assertTrue("删除叉必须在卡头 (最左位)", cross in 0 until header.length)
+        assertTrue("折叠箭头必须在卡头", chevron in 0 until header.length)
+        // 版式裁定 2026-11-09: 叉在前 (左), 箭头在后 (右); 箭头与文案同属可点行
+        assertTrue("删除叉必须排在箭头之前 (叉左箭头右)", cross < chevron)
+        assertTrue("折叠点击行必须包住箭头 (整行可点)", toggleClick < chevron)
     }
 
     @Test
