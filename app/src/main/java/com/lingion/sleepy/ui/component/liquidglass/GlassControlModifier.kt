@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import com.kyant.backdrop.drawPlainBackdrop
+import com.kyant.backdrop.BackdropRenderOptions
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
@@ -52,6 +53,7 @@ fun Modifier.glassControl(
     role: GlassMaterialRole = GlassMaterialRole.Regular,
     interactionSource: MutableInteractionSource? = null,
     motionClearance: Dp = Dp.Unspecified,
+    placementLayer: Boolean = true,
 ): Modifier {
     check(!LocalGlassSourceContent.current) { "An optical consumer cannot be recorded as an ordinary source" }
     val host = LocalGlassHost.current
@@ -76,6 +78,9 @@ fun Modifier.glassControl(
     val filterBand = samplingHost.filterBand(consumerDepth, isOverlay, material.blur.toFloat())
     val backdrop = remember(samplingHost, consumerDepth, isOverlay, filterBand) {
         filterBand?.backdrop(samplingHost) ?: if (isOverlay) samplingHost.overlayBackdrop else samplingHost.backdropAt(consumerDepth)
+    }
+    val renderOptions = remember(placementLayer) {
+        if (placementLayer) BackdropRenderOptions.Default else BackdropRenderOptions(placementLayer = false)
     }
     val scope = rememberCoroutineScope()
     val lift = remember { Animatable(0f) }
@@ -153,6 +158,7 @@ fun Modifier.glassControl(
             }
         }
         .drawPlainBackdrop(
+            renderOptions = renderOptions,
             backdrop = backdrop,
             shape = { shape },
             effects = {
