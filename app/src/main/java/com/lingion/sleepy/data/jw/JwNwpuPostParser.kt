@@ -14,7 +14,7 @@ import java.util.regex.Pattern
  * 4. 周次提取：`第(\\d+)-(\\d+)周` 或 `第(\\d+)周`，包含单周/双周标识；
  * 5. 星期拆分：`星期.+?(?=<|星期|$)`，支持星期一至星期日映射；
  * 6. 时段与节次偏移：上(0), 中(4), 下(6), 晚(10) + 节次序号；连续节次自动合并；
- * 7. 本解析器只输出课程，不推断校区作息时间或学期起始日期。
+ * 7. 课程之外的校区作息和所选学期名由 JwNwpuPostSourceMetadata 提供，不推断学期起始日期。
  */
 class JwNwpuPostParser(source: String) : JwParser(source) {
 
