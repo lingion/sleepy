@@ -52,7 +52,14 @@ class JwUrlBarContractTest {
     @Test
     fun screen_seeds_edit_draft_from_live_url_and_exits_edit_before_back() {
         assertTrue(screen.contains("replace(0, length, currentUrl)"))
-        assertTrue(screen.contains("if (editingUrl) editingUrl = false else onBack()"))
+        val navigation = screen.substringAfter("navigationIcon = {").substringBefore("actions = {")
+        assertTrue(navigation.contains("if (editingUrl) editingUrl = false else { cancelCapture(); onBack() }"))
+        val backHandler = screen.substringAfter("BackHandler {").substringBefore("Scaffold(")
+        val editExit = backHandler.indexOf("return@BackHandler")
+        val captureCancel = backHandler.indexOf("cancelCapture()")
+        assertTrue(backHandler.contains("if (editingUrl) {"))
+        assertTrue(backHandler.substringBefore("return@BackHandler").contains("editingUrl = false"))
+        assertTrue(editExit >= 0 && captureCancel > editExit)
     }
 
     @Test
