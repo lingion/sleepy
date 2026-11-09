@@ -5,6 +5,8 @@ import android.graphics.Bitmap
 import androidx.compose.ui.test.*
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.room.Room
 import androidx.test.platform.app.InstrumentationRegistry
 import com.lingion.sleepy.MainActivity
@@ -138,14 +140,23 @@ class GlassAppNavigationRenderTest {
         tap("教务直连"); capture("$mode-school-select"); back(); back()
         tap("我的"); capture("$mode-mine")
         for ((entry, name) in listOf(
-            "所有课表" to "tables", "作息表" to "periods", context.getString(com.lingion.sleepy.R.string.settings_holidays) to "holiday", "提醒" to "reminders",
+            "所有课表" to "tables", "作息表" to "periods", compose.activity.getString(com.lingion.sleepy.R.string.settings_holidays) to "holiday", "提醒" to "reminders",
             "外观与主题" to "appearance", "通用" to "general", "小组件" to "widgets", "关于" to "about",
         )) {
             tap(entry)
             capture("$mode-$name")
             if (name == "periods") {
                 compose.onAllNodesWithContentDescription("编辑课表").onFirst().performTouchInput { click() }
-                waitText("作息表"); capture("$mode-period-edit")
+                waitText("作息表")
+                for (time in listOf("08:00", "08:45")) {
+                    val layouts = mutableListOf<TextLayoutResult>()
+                    compose.onAllNodesWithText(time, useUnmergedTree = true).onFirst()
+                        .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
+                    val layout = layouts.single()
+                    assertTrue("actual app time $time must show all five characters",
+                        layout.lineCount == 1 && layout.getLineEnd(0, true) == time.length && layout.getLineRight(0) <= layout.size.width + .5f)
+                }
+                capture("$mode-period-edit")
                 compose.onNodeWithContentDescription("分享作息表").performTouchInput { click() }
                 capture("$mode-period-share"); back()
                 tap("自动模式")
@@ -192,7 +203,7 @@ class GlassAppNavigationRenderTest {
     }
 
     private fun waitText(text: String) {
-        compose.waitUntil(20_000) { compose.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(20_000) { compose.onAllNodes(hasText(text) or hasContentDescription(text)).fetchSemanticsNodes().isNotEmpty() }
         compose.waitForIdle()
     }
     private fun tap(text: String) {
@@ -201,13 +212,14 @@ class GlassAppNavigationRenderTest {
     }
     private fun reveal(text: String): SemanticsNodeInteraction {
         compose.waitForIdle()
-        val target = compose.onAllNodesWithText(text).onLast()
+        val matcher = hasText(text) or hasContentDescription(text)
+        val target = compose.onAllNodes(matcher).onLast()
         if (runCatching { target.assertIsDisplayed() }.isFailure) {
             runCatching { target.performScrollTo() }
             if (runCatching { target.assertIsDisplayed() }.isFailure) {
                 val scrolls = compose.onAllNodes(hasScrollAction())
                 for (index in scrolls.fetchSemanticsNodes().indices.reversed()) {
-                    if (runCatching { scrolls[index].performScrollToNode(hasText(text)) }.isSuccess) break
+                    if (runCatching { scrolls[index].performScrollToNode(matcher) }.isSuccess) break
                 }
             }
         }
@@ -227,6 +239,9 @@ class GlassAppNavigationRenderTest {
     }
     private fun capture(name: String) {
         compose.waitForIdle()
+        // A separate Activity can still be cross-fading after Compose becomes idle.
+        // Wait for the accessibility window to settle before requesting the HWUI commit.
+        InstrumentationRegistry.getInstrumentation().uiAutomation.waitForIdle(300, 5_000)
         val committed = java.util.concurrent.CountDownLatch(1)
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             val activity = com.lingion.sleepy.console.ActivityTracker.currentActivity() ?: compose.activity

@@ -31,14 +31,14 @@ class ScheduleToolbarLayoutTest {
     @get:Rule val compose = createComposeRule()
     @After fun clearHistory() { UndoManager.clear() }
 
-    private fun render(width: Int, font: Float, history: Boolean) {
+    private fun render(width: Int, font: Float, history: Boolean, prev: () -> Unit = {}, next: () -> Unit = {}, jump: () -> Unit = {}) {
         if (history) UndoManager.capture(emptyList(), emptyList(), null)
         compose.setContent {
             MaterialTheme {
                 CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass, LocalDensity provides Density(1f, font)) {
                     GlassHost {
                         Box(Modifier.width(width.dp)) {
-                            TopBar(2, 20, "2099-09-01", null, {}, {}, {}, history, {}, {}, {}, {}, {}, {}, {})
+                            TopBar(2, 20, "2099-09-01", null, {}, {}, {}, history, {}, prev, next, jump, {}, {}, {})
                         }
                     }
                 }
@@ -55,20 +55,63 @@ class ScheduleToolbarLayoutTest {
             assertTrue("${tags[a]} must not overlap ${tags[b]}: ${boxes[a]}, ${boxes[b]}", !boxes[a].overlaps(boxes[b]))
         }
         listOf("schedule_switch_table", "schedule_prev_week", "schedule_next_week", "schedule_add_course", "schedule_share").forEach {
-            compose.onNodeWithTag(it).assertWidthIsAtLeast(48.dp).assertHeightIsAtLeast(48.dp)
+            compose.onNodeWithTag(it).assertWidthIsAtLeast(32.dp).assertHeightIsAtLeast(32.dp)
         }
     }
 
     @Test fun narrowLargeFontKeepsEveryActionClearWithUndoAndScaleConfirmation() {
-        render(280, 1.5f, true)
+        var previous = 0
+        var next = 0
+        var jump = 0
+        render(280, 1.5f, true, { previous++ }, { next++ }, { jump++ })
         assertSeparated(true)
+        compose.onNodeWithTag("schedule_week_group").assertIsDisplayed()
+        compose.onNodeWithTag("schedule_week_label").assertTextEquals("2")
         assertTrue("week navigation needs its own row when actions occupy the width", bounds("schedule_week_label").top > bounds("schedule_add_course").bottom)
+        val group = bounds("schedule_week_group")
+        listOf("schedule_prev_week", "schedule_week_label", "schedule_next_week").forEach {
+            val child = bounds(it)
+            assertTrue("all three actions stay inside the shared capsule", child.left >= group.left && child.right <= group.right)
+            compose.onNodeWithTag(it).performClick()
+        }
+        assertEquals(1, previous)
+        assertEquals(1, jump)
+        assertEquals(1, next)
     }
 
     @Test fun ordinaryPhoneKeepsLongSemesterStatusAndActionsClear() {
         render(360, 1f, false)
         assertSeparated(false)
-        assertEquals("week navigation stays centered", 180f, (bounds("schedule_prev_week").left + bounds("schedule_next_week").right) / 2, 1f)
+        compose.onNodeWithTag("schedule_week_label").assertTextEquals("2")
+        compose.onNodeWithTag("schedule_week_group").assertDoesNotExist()
+        assertEquals("strip words before wrapping", bounds("schedule_add_course").center.y, bounds("schedule_prev_week").center.y, 1f)
+        compose.onNodeWithTag("schedule_prev_week").assertWidthIsAtLeast(48.dp)
+    }
+
+    @Test fun busyPhoneGroupsTheThreeWeekActionsBeforeWrapping() {
+        render(360, 1f, true)
+        assertSeparated(true)
+        compose.onNodeWithTag("schedule_week_group").assertExists()
+        compose.onNodeWithTag("schedule_week_label").assertTextEquals("2")
+        assertEquals("group before wrapping", bounds("schedule_add_course").center.y, bounds("schedule_prev_week").center.y, 1f)
+        assertTrue(bounds("schedule_prev_week").right < bounds("schedule_week_label").left)
+        assertTrue(bounds("schedule_week_label").right < bounds("schedule_next_week").left)
+    }
+
+    @Test fun groupedWeekControlKeepsThreeIndependentActionsAndItsFullDescription() {
+        var previous = 0
+        var next = 0
+        var jump = 0
+        render(360, 1f, true, { previous++ }, { next++ }, { jump++ })
+        compose.onNodeWithTag("schedule_prev_week").performClick()
+        compose.onNodeWithTag("schedule_week_label").performClick()
+        compose.onNodeWithTag("schedule_next_week").performClick()
+        assertEquals(1, previous)
+        assertEquals(1, jump)
+        assertEquals(1, next)
+        val description = compose.onNodeWithTag("schedule_week_label").fetchSemanticsNode()
+            .config[androidx.compose.ui.semantics.SemanticsProperties.ContentDescription].joinToString()
+        assertTrue("short visible label keeps the semester and full week description", description.contains("学期未开始") && description.contains("第 2 周"))
     }
 
     @Test fun wideToolbarKeepsTheOriginalSingleCenteredRow() {
@@ -76,6 +119,7 @@ class ScheduleToolbarLayoutTest {
         assertSeparated(true)
         assertEquals(bounds("schedule_add_course").center.y, bounds("schedule_prev_week").center.y, 1f)
         assertEquals(420f, (bounds("schedule_prev_week").left + bounds("schedule_next_week").right) / 2, 1f)
+        compose.onNodeWithTag("schedule_week_label").assertTextContains("第", substring = true)
     }
     @Test fun disabledRedoCannotLiftTheSharedCapsuleButEnabledUndoCan() {
         compose.mainClock.autoAdvance = false
