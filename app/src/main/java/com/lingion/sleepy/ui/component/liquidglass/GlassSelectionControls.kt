@@ -33,7 +33,7 @@ fun GlassFilterChip(
 ) {
     val glass = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
     MaterialFilterChip(
-        selected, onClick, label, modifier.glassControl(shape, enabled = enabled, selected = selected, motionClearance = GlassControlLayout.denseClearance),
+        selected, onClick, label, modifier.glassControl(shape, enabled = enabled, selected = selected),
         enabled, leadingIcon, trailingIcon, shape,
         if (glass) colors.copy(
             containerColor = Color.Transparent, selectedContainerColor = Color.Transparent,

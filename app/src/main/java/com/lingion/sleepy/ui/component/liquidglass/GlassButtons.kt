@@ -43,7 +43,7 @@ object GlassControlLayout {
     val denseClearance = 4.dp
 }
 
-/** The 6dp perimeter belongs to the motion, rather than to the resting glass. */
+/** The resting disc leaves 6dp around it; a held pane may float beyond the slot. */
 @Composable
 fun GlassIconButton(
     onClick: () -> Unit,
@@ -68,7 +68,6 @@ fun GlassIconButton(
                 Box(
                     Modifier.size(GlassControlLayout.iconDisc).glassControl(
                         enabled = enabled, interactionSource = interaction,
-                        motionClearance = GlassControlLayout.iconClearance,
                     ),
                     contentAlignment = Alignment.Center,
                 ) { content() }
@@ -100,7 +99,7 @@ fun GlassButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     MaterialButton(
-        onClick, modifier.glassControl(shape, colors.containerColor, enabled, motionClearance = GlassControlLayout.denseClearance), enabled, shape,
+        onClick, modifier.glassControl(shape, colors.containerColor, enabled), enabled, shape,
         if (hasGlass()) colors.copy(containerColor = Color.Transparent, disabledContainerColor = Color.Transparent) else colors,
         if (hasGlass()) null else elevation, border, contentPadding, interactionSource, content,
     )
@@ -120,7 +119,7 @@ fun GlassTonalButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     MaterialTonalButton(
-        onClick, modifier.glassControl(shape, colors.containerColor, enabled, motionClearance = GlassControlLayout.denseClearance), enabled, shape,
+        onClick, modifier.glassControl(shape, colors.containerColor, enabled), enabled, shape,
         if (hasGlass()) colors.copy(containerColor = Color.Transparent, disabledContainerColor = Color.Transparent) else colors,
         if (hasGlass()) null else elevation, border, contentPadding, interactionSource, content,
     )
@@ -140,7 +139,7 @@ fun GlassTextButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     MaterialTextButton(
-        onClick, modifier.glassControl(shape, enabled = enabled, motionClearance = GlassControlLayout.denseClearance), enabled, shape,
+        onClick, modifier.glassControl(shape, enabled = enabled), enabled, shape,
         if (hasGlass()) colors.copy(containerColor = Color.Transparent, disabledContainerColor = Color.Transparent) else colors,
         elevation, border, contentPadding, interactionSource, content,
     )
@@ -160,7 +159,7 @@ fun GlassOutlinedButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     MaterialOutlinedButton(
-        onClick, modifier.glassControl(shape, enabled = enabled, motionClearance = GlassControlLayout.denseClearance), enabled, shape,
+        onClick, modifier.glassControl(shape, enabled = enabled), enabled, shape,
         if (hasGlass()) colors.copy(containerColor = Color.Transparent, disabledContainerColor = Color.Transparent) else colors,
         elevation, if (hasGlass()) null else border, contentPadding, interactionSource, content,
     )

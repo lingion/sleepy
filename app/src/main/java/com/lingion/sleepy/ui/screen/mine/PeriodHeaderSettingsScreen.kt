@@ -266,8 +266,7 @@ private fun HeaderStylePreviews(
                 Surface(
                     modifier = Modifier
                         .widthIn(min = 76.dp)
-                        .glassControl(shape = SleepyTheme.shapes.medium, tint = if (value == selectedStyle) colors.primaryContainer else null,
-                            motionClearance = 4.dp)
+                        .glassControl(shape = SleepyTheme.shapes.medium, tint = if (value == selectedStyle) colors.primaryContainer else null)
                         .clip(SleepyTheme.shapes.medium)
                         .noRippleGlassClickable { onStyleSelected(value) },
                     color = controlFill(if (value == selectedStyle) colors.primaryContainer else colors.surfaceContainer),
