@@ -5,6 +5,7 @@ on:
     branches: [main]
   push:
     branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -26,10 +27,10 @@ jobs:
       - name: Lint commit messages
         env:
           BASE_REF: ${{ github.base_ref || 'main' }}
-          COMMIT_FROM: ${{ github.event_name == 'push' && github.event.before || format('origin/{0}', github.base_ref) }}
+          COMMIT_FROM: ${{ github.event_name == 'push' && github.event.before || github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || 'HEAD^' }}
         run: |
           npm install -g @commitlint/cli @commitlint/config-conventional
-          # PR 校验分支范围，main 校验本次推送实际引入的提交。
+          # PR 校验分支范围，main 校验推送范围，手动运行校验所选提交。
           git fetch origin "$BASE_REF" --depth=200
           npx commitlint --from "$COMMIT_FROM" --to HEAD --verbose
 
