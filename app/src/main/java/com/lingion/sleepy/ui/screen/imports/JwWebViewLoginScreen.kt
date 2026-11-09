@@ -552,6 +552,10 @@ fun JwWebViewLoginScreen(
                         evaluateFetchWithTimeout(wv, script)
                         return@CaptureBar
                     }
+                    if (school.type == JwProtocol.TYPE_FDU) {
+                        evaluateFetchWithTimeout(wv, JwFduCapture.FETCH_JS)
+                        return@CaptureBar
+                    }
                     JwSchoolApiCapture.scriptFor(school.type)?.let { script ->
                         evaluateFetchWithTimeout(wv, script)
                         return@CaptureBar
