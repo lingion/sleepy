@@ -86,7 +86,7 @@ internal class JwUndergradBGridParser(source: String, private val protocol: Stri
             if (rowIndex == 0) continue
             for ((column, cell) in row.select("td").withIndex()) {
                 if (column < leading) {
-                    if ('～' in cell.text()) doubleRow = true
+                    if (cell.text().any { it == '~' || it == '～' }) doubleRow = true
                     continue
                 }
                 val day = column - leading + 1
