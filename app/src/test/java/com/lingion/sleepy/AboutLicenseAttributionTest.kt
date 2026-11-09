@@ -37,6 +37,20 @@ class AboutLicenseAttributionTest {
     // ----- 跨校普适项目 (Foundational) token 集 -----
 
     private val FOUNDATIONAL_ATTRIBUTIONS = listOf(
+        Attribution("ncc-devlab/elecon-adapters", "ncc-devlab"),
+        Attribution("KnellInferno/zfn_api_ts", "MPL-2.0"),
+        Attribution("moeshin/ai-schedule-chaoxing", "MIT"),
+        Attribution("whoisnian/getMyCourses", "MIT"),
+        Attribution("WenqiOfficial/SHOU-URP-AiSchedule", "MIT"),
+        Attribution("SaltGardenia/calm-schedule", "GPL-3.0"),
+        Attribution("Landon-3314/AHU-TimeTable", "Landon-3314"),
+        Attribution("MoeclubM/AHU-AIO", "GPL-3.0"),
+        Attribution("Zeraora-807/Anhui-Univ-DSH-Tool", "GPL-3.0"),
+        Attribution("abydym/Ahu_Plus", "GPL-3.0"),
+        Attribution("NanCunChild/elecon", "MIT"),
+        Attribution("Cheukfung/ZFCrawler", "MIT"),
+        Attribution("FarmerChillax/new-school-sdk", "MIT"),
+        Attribution("cuijinyu/qingguospider", "cuijinyu"),
         Attribution("Crazy-ChenMiLin/TableAPK", "Apache-2.0"),
         Attribution("LonelyMarch/OpenWakeUp", "AGPL-3.0"),
         Attribution("ThaiCao/WakeupSchedule_Kotlin", "Apache-2.0"),
@@ -233,6 +247,7 @@ class AboutLicenseAttributionTest {
         Attribution("USTC-timetable-to-ics", ""),
         Attribution("ustc-course-timetable", "HowardZorn"),
         Attribution("ustc-timetable", "kirsh1"),
+        Attribution("USTC-XeF2/pyustc", "MIT"),
         // 四川大学 SCU
         Attribution("ScuTimetable", ""),
         // 东北大学 NEU
@@ -658,6 +673,25 @@ class AboutLicenseAttributionTest {
     private val ALL_RELEASED_LOCALES = listOf(
         "values", "values-zh-rCN", "values-zh-rTW", "values-en", "values-ja", "values-es"
     )
+
+    @Test
+    fun `cross-repository references bind each project to its own license`() {
+        val paired = FOUNDATIONAL_ATTRIBUTIONS.take(14).map {
+            if (it.project in setOf("ncc-devlab/elecon-adapters", "Landon-3314/AHU-TimeTable", "cuijinyu/qingguospider"))
+                it.copy(licenseOrAuthor = "No LICENSE") else it
+        }
+        val screen = File(basePath.parentFile, "java/com/lingion/sleepy/ui/screen/mine/LicenseScreen.kt").readText()
+        for ((label, body) in ALL_RELEASED_LOCALES.map { it to readString(it, "about_license_body") } + ("LicenseScreen" to screen)) {
+            for (entry in paired) {
+                val records = Regex(Regex.escape(entry.project) + """\s*\(([^)]*)\)""")
+                    .findAll(body).map { it.groupValues[1] }.toList()
+                assertTrue("$label: ${entry.project} must carry its own ${entry.licenseOrAuthor} record",
+                    records.any { entry.licenseOrAuthor in it })
+            }
+        }
+        assertTrue("DanXi must retain its independently checked GPL-3.0 record",
+            Regex("""DanXi-Dev/DanXi\s*\(GPL-3\.0[;)]""").containsMatchIn(screen))
+    }
 
     @Test
     fun `all released locales list foundational attributions`() {
