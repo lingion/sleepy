@@ -67,7 +67,7 @@ class JwScauParserTest {
     @Test
     fun `explicit malformed Element UI sections do not invent row defaults`() {
         val base = "<div style='position:relative'><div></div><div></div><div></div>" +
-            "<div>课</div><div></div><div>班</div><div>99-100节(1-8周)</div><div>室</div></div>"
+            "<div>课</div><div></div><div>班</div><div>366-367节(1-8周)</div><div>室</div></div>"
         val html = "<div class='el-table__body-wrapper'><table class='el-table__body'><tbody>" +
             "<tr><td>1-2节</td><td>$base</td>" + "<td></td>".repeat(6) + "</tr>" +
             "</tbody></table></div>"
