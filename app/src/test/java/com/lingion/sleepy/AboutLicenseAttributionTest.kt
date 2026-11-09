@@ -674,6 +674,93 @@ class AboutLicenseAttributionTest {
         "values", "values-zh-rCN", "values-zh-rTW", "values-en", "values-ja", "values-es"
     )
 
+    // Exact repository identities from the two newly read source batches.
+    // Each bracketed record binds its own license state and copyright evidence.
+    private val NEW_SOURCE_ATTRIBUTIONS = listOf(
+        Attribution("0-sprey/shiguang_warehouse", "MIT; Copyright (c) 2025 星河欲转"),
+        Attribution("00mjk/funhubu", "license unconfirmed or undeclared; copyright unconfirmed"),
+        Attribution("06xy/aischedule", "license unconfirmed or undeclared; copyright unconfirmed; info.txt developer: 颜致恒"),
+        Attribution("090012/ZFCheckScores", "Apache-2.0; Copyright © 2024 NianBroken; root copyright template unfilled"),
+        Attribution("0x24bin/ZF-system", "license unconfirmed or undeclared; copyright unconfirmed; ASPX meta credits zfsoft"),
+        Attribution("0x65ca/QZAPI", "license unconfirmed or undeclared; copyright unconfirmed"),
+        Attribution("0x8ubb1e/cuit-ai-timetable", "license unconfirmed or undeclared; copyright unconfirmed"),
+        Attribution("0xiaobao0/school-api", "MIT; Copyright (c) 2018 戴艺森; code author: dairoot"),
+        Attribution("0XPYEX0/FaQ_Kingo", "license unconfirmed or undeclared; copyright unconfirmed"),
+        Attribution("1026266545/URP", "license unconfirmed or undeclared; copyright unconfirmed; index.html creator: avastms@ghostunix.org"),
+        Attribution("123456lj7q/Jsoup-Android-Timetable", "license unconfirmed or undeclared; account: 123456lj7q; copyright unconfirmed"),
+        Attribution("123zhuzhu61/shiguang_warehouse", "MIT; Copyright (c) 2025 星河欲转"),
+        Attribution("1246365871/school-api", "MIT; Copyright (c) 2018 dairoot"),
+        Attribution("1246365871/zf-tools", "GPL-3.0; README Copyright (C) 2020 sunnysab; AES helper has separate credits"),
+        Attribution("1250422131/tjdz-aischedule-adapter", "license unconfirmed or undeclared; copyright unconfirmed"),
+        Attribution("1252158112/AISchedule_ECJTU", "license unconfirmed or undeclared; copyright unconfirmed"),
+        Attribution("1253818934/MI-AICourseTable", "AGPL-3.0; copyright holder unfilled; historical README: horizon86, Zhaosn"),
+        Attribution("1375272391/ZFCheckScores-AHDY", "Apache-2.0; copyright holder unfilled in LICENSE"),
+        Attribution("1434334/zhengfang-xuanke", "Apache-2.0; copyright holder unfilled in LICENSE"),
+        Attribution("1443690715/ZfsoftCampusAssit", "Apache-2.0; copyright holder unfilled; README contact: huangjiawendanny; code author: hjw"),
+        Attribution("15098424032/zhengfang-jwc01-password", "license unconfirmed or undeclared; copyright unconfirmed"),
+        Attribution("1531691629/ZF_Spider", "MIT; Copyright (c) 2018, holder unfilled; README: vhyz"),
+        Attribution("1547119495/fudgeclass", "MulanPSL-2.0; copyright year and holder unfilled in LICENSE template"),
+        Attribution("1713344511/zfnew", "license conflict: root LICENSE MIT; setup classifier GPLv3; Copyright (c) 2019 Wenhao Liao; setup author: NeroAsmar"),
+        Attribution("1757526725/jwmis", "license unconfirmed or undeclared; copyright unconfirmed"),
+        Attribution("1757526725/kingoHelper", "license conflict: root LICENSE GPL-3.0; file headers Apache Licence; code author: itacajsj; copyright unconfirmed"),
+        Attribution("1757526725/tit-client", "license unconfirmed or undeclared; copyright unconfirmed"),
+        Attribution("1757526725/zhkuas_ssm_maven", "MIT; Copyright (c) 2017 灿"),
+        Attribution("1816586742-stack/course-research-tool", "MIT; Copyright (c) 2026 湖汽猫学长"),
+        Attribution("18214091046/school-api", "MIT; Copyright (c) 2018 dairoot"),
+        Attribution("187155317/ZCrawler", "Apache-2.0; source Copyright 2017 yuan1994 all rights reserved; composer author: yuan1994"),
+        Attribution("1963077475/WeCourseService", "MIT; Copyright (c) 2020 清丶风"),
+        Attribution("1itt1eB0y/NEAU-URP", "GPL-3.0; copyright holder unfilled; script contact: adobe17"),
+        Attribution("1ming1/zucc_xk_ZhengFang", "license unconfirmed or undeclared; copyright unconfirmed"),
+        Attribution("1wang-cell/ZFCheckScores", "Apache-2.0; Copyright © 2024 NianBroken; root copyright template unfilled"),
+        Attribution("1zhangyy1/WeCourseService", "MIT; Copyright (c) 2020 清丶风"),
+        Attribution("2018wzh/ecnu-eams-client", "GPL-3.0; project copyright unconfirmed in generic LICENSE"),
+        Attribution("20231009/ZFCheckScores", "Apache-2.0; Copyright © 2024 NianBroken; root copyright template unfilled"),
+        Attribution("2029881498/ZFCheckScores", "Apache-2.0; Copyright © 2024 NianBroken; root copyright template unfilled"),
+        Attribution("2041818984/coursetable", "license unconfirmed or undeclared; copyright unconfirmed"),
+        Attribution("2151834060/ZFCheckScores", "Apache-2.0; Copyright © 2024 NianBroken; root copyright template unfilled"),
+        Attribution("2239828197/ZF_Spider", "MIT; Copyright (c) 2018, holder unfilled; README: vhyz"),
+        Attribution("2250127831/zero-one-eams", "license unconfirmed or undeclared; copyright unconfirmed; eams-frontstu template credit: KeJun"),
+        Attribution("2317715129p-droid/ZFCheckScores", "Apache-2.0; Copyright © 2024 NianBroken; root copyright template unfilled"),
+        Attribution("2601869897-hue/new-school-sdk", "MIT; Copyright (c) 2018 dairoot; code author: -Farmer"),
+        Attribution("2601869897-hue/ZFCheckScores", "Apache-2.0; Copyright © 2024 NianBroken; root copyright template unfilled"),
+        Attribution("26560/ZFCheckScores", "Apache-2.0; Copyright © 2024 NianBroken; root copyright template unfilled"),
+        Attribution("2705496023/eams", "license unconfirmed or undeclared; copyright unconfirmed"),
+        Attribution("2746267826/kebiao-to-ics", "license unconfirmed or undeclared; copyright unconfirmed"),
+        Attribution("2889563008/zhishuidezhengfang", "Apache-2.0; Copyright © 2024 NianBroken; root copyright template unfilled"),
+    )
+
+    private fun hasResearchRecord(body: String, entry: Attribution): Boolean {
+        val records = Regex("""(?<![A-Za-z0-9_./-])""" + Regex.escape(entry.project) + """ \[([^\]\r\n]*)\]""")
+            .findAll(body.replace("\\n", "\n")).map { it.groupValues[1] }.toList()
+        return records == listOf(entry.licenseOrAuthor)
+    }
+
+    @Test
+    fun `new source batches bind all fifty exact repositories to their own evidence`() {
+        val screen = File(basePath.parentFile, "java/com/lingion/sleepy/ui/screen/mine/LicenseScreen.kt").readText()
+        val surfaces = ALL_RELEASED_LOCALES.map { it to readString(it, "about_license_body") } + ("LicenseScreen" to screen)
+        assertTrue("The source batches contain fifty distinct repositories", NEW_SOURCE_ATTRIBUTIONS.map { it.project }.toSet().size == 50)
+        for ((label, body) in surfaces) {
+            for (entry in NEW_SOURCE_ATTRIBUTIONS) {
+                assertTrue("$label: ${entry.project} must retain its own single license and copyright record",
+                    hasResearchRecord(body, entry))
+            }
+        }
+    }
+
+    @Test
+    fun `source record matcher rejects borrowed evidence partial identities and duplicate records`() {
+        for (entry in NEW_SOURCE_ATTRIBUTIONS) {
+            val own = "${entry.project} [${entry.licenseOrAuthor}]"
+            assertTrue("A complete record must match ${entry.project}", hasResearchRecord(own, entry))
+            assertTrue("Raw Android newline escapes must preserve ${entry.project}", hasResearchRecord("\\n$own", entry))
+            assertFalse("Another project cannot supply the evidence for ${entry.project}",
+                hasResearchRecord("${entry.project} [wrong license]; unrelated/project [${entry.licenseOrAuthor}]", entry))
+            assertFalse("A different owner path cannot stand in for ${entry.project}", hasResearchRecord("prefix/$own", entry))
+            assertFalse("Duplicate records must fail for ${entry.project}", hasResearchRecord("$own; $own", entry))
+        }
+    }
+
     @Test
     fun `cross-repository references bind each project to its own license`() {
         val paired = FOUNDATIONAL_ATTRIBUTIONS.take(14).map {
