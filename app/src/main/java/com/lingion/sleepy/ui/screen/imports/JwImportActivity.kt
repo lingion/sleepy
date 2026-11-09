@@ -174,6 +174,9 @@ class JwImportActivity : ComponentActivity() {
                 var parsedDatedCourseOrigin by remember { mutableStateOf("") }
                 var shsmuStartReply by remember { mutableStateOf<((String?) -> Unit)?>(null) }
                 var configTermWeekCount by remember { mutableIntStateOf(0) }
+                var configTermWeekText by remember { mutableStateOf("") }
+                var importSourceJson by remember { mutableStateOf("") }
+                var selectedSgAdapterId by remember { mutableStateOf("") }
                 var configTimeJson by remember { mutableStateOf("") }
                 var configRows by remember { mutableStateOf(emptyList<TimeTableUtils.TimeSlotRow>()) }
                 // issue#28 P2: 自动模式"添加课间"的状态 — 旧代码没传 smartConfig/
@@ -198,7 +201,11 @@ class JwImportActivity : ComponentActivity() {
                         periods = configRows.map { JwImportDraftPeriod(it.node, it.start, it.end) },
                         termStartDate = configStartDate,
                         datedCourseOrigin = parsedDatedCourseOrigin,
-                        termWeekCount = configTermWeekCount,
+                        // Unvalidated editor text remains recoverable without violating the numeric draft domain.
+                        termWeekCount = configTermWeekCount.takeIf { it in 0..366 } ?: 0,
+                        termWeekText = configTermWeekText,
+                        importSourceJson = importSourceJson,
+                        selectedSgAdapterId = selectedSgAdapterId,
                         tableName = configTableName,
                         smartConfigJson = Json.encodeToString(configSmartConfig),
                         phase = if (parsedCourses.isEmpty()) {
@@ -498,6 +505,12 @@ class JwImportActivity : ComponentActivity() {
                     configStartDate = snapshot.termStartDate
                     parsedDatedCourseOrigin = snapshot.datedCourseOrigin
                     configTermWeekCount = snapshot.termWeekCount
+                    configTermWeekText = snapshot.termWeekText
+                        ?: snapshot.termWeekCount.takeIf { it > 0 }?.toString()
+                        ?: snapshot.courses.maxOfOrNull { it.endWeek }?.toString().orEmpty()
+                    configTermWeekCount = configTermWeekText.toIntOrNull() ?: 0
+                    importSourceJson = snapshot.importSourceJson
+                    selectedSgAdapterId = snapshot.selectedSgAdapterId
                     configTableName = snapshot.tableName.ifBlank {
                         getString(R.string.jw_import_title, snapshot.school.name)
                     }
@@ -706,6 +719,17 @@ class JwImportActivity : ComponentActivity() {
                                     if (parsedDatedCourseOrigin.isNotEmpty()) {
                                         Text(getString(R.string.jw_dated_calendar_rebase_hint), style = MaterialTheme.typography.bodySmall)
                                     }
+                                    TextField(
+                                        value = configTermWeekText,
+                                        onValueChange = {
+                                            configTermWeekText = it
+                                            configTermWeekCount = it.toIntOrNull() ?: 0
+                                            checkpointDraft()
+                                        },
+                                        label = { Text(getString(R.string.edit_table_max_week)) },
+                                        singleLine = true,
+                                        modifier = Modifier.fillMaxWidth().dbgTag("jw_weeks_field", role = "textbox")
+                                    )
                                     // 用户可改的导入课表名 — 教务直连此前无任何命名入口,
                                     // 硬编码成 "教务导入 - {学校名}" 后用户改名要进课表管理.
                                     // 此次把命名入口放到导入前, 落库前最后一次修改机会.
@@ -720,6 +744,7 @@ class JwImportActivity : ComponentActivity() {
                                     if (confirmError != null) {
                                         Text(text = confirmError!!, color = colors.error, style = MaterialTheme.typography.bodySmall)
                                     }
+                                    JwSourceSuggestions(importSourceJson)
                                     TimeSlotEditor(
                                         rows = configRows,
                                         onRowsChange = { newRows ->
@@ -756,6 +781,12 @@ class JwImportActivity : ComponentActivity() {
                                     modifier = Modifier.dbgTag("jw_config_confirm", text = getString(R.string.import_confirm), role = "button"),
                                     onClick = {
                                     if (isApplying) return@TextButton
+                                    val minimumWeeks = parsedCourses.maxOf { it.endWeek }
+                                    val confirmedWeeks = configTermWeekText.toIntOrNull()
+                                    if (confirmedWeeks == null || confirmedWeeks !in minimumWeeks..366) {
+                                        confirmError = getString(R.string.jw_invalid_semester_weeks, minimumWeeks)
+                                        return@TextButton
+                                    }
                                     if (runCatching { java.time.LocalDate.parse(configStartDate) }.isFailure) {
                                         confirmError = getString(R.string.start_date_format)
                                         return@TextButton
@@ -810,6 +841,7 @@ class JwImportActivity : ComponentActivity() {
                                                 timeJson = configTimeJson,
                                                 nodesPerDay = effectiveRows.maxOfOrNull { it.node } ?: 1,
                                                 maxWeek = maxOf(configTermWeekCount, confirmedCourses.maxOf { it.endWeek }),
+                                                importSourceJson = importSourceJson,
                                                 periodTable = if (configBindPeriodTableId == -1L) {
                                                     ScheduleParser.ParsedPeriodTable(
                                                         sourceId = 0L,
@@ -863,6 +895,8 @@ class JwImportActivity : ComponentActivity() {
                                         return@SchoolSelectScreen
                                     }
                                     selectedSchool = school
+                                    selectedSgAdapterId = ""
+                                    importSourceJson = ""
                                     exitDraftState = exitDraftState.copy(activeImport = incomingDraftId != null)
                                     stage = Stage.WebViewLogin
                                 },
@@ -878,6 +912,8 @@ class JwImportActivity : ComponentActivity() {
                         } else saveableStateHolder.SaveableStateProvider("WebViewLogin") {
                             JwWebViewLoginScreen(
                                 school = school,
+                                initialSgAdapterId = selectedSgAdapterId,
+                                onSgAdapterSelected = { selectedSgAdapterId = it; checkpointDraft() },
                                 onHtmlCaptured = { html, sch, periods, termStartDate ->
                                     // T6 双层判定：sch.type 已知直接用；空 → HTML/URL 组合兜底
                                     val rawType = sch.type
@@ -936,6 +972,9 @@ class JwImportActivity : ComponentActivity() {
                                                 statusMsg = null
                                                 return@launch
                                             }
+                                            // Validate source metadata before replacing a completed capture.
+                                            val capturedImportSourceJson = com.lingion.sleepy.data.jw.JwSgSourceMetadata
+                                                .capture(htmlForParse, effectiveType)
                                             // 不直接落库，进配置确认页
                                             parsedCourses = courses
                                             parsedDatedCourseOrigin = if (isDatedCapture) {
@@ -963,6 +1002,13 @@ class JwImportActivity : ComponentActivity() {
                                                 .resolveStartDate(htmlForParse, effectiveType, termStartDate)
                                             configTermWeekCount = com.lingion.sleepy.data.jw.JwSourceCalendar
                                                 .resolveWeekCount(htmlForParse, effectiveType, sch.name)
+                                            configTermWeekCount = maxOf(configTermWeekCount, courses.maxOf { it.endWeek })
+                                            configTermWeekText = configTermWeekCount.toString()
+                                            importSourceJson = capturedImportSourceJson
+                                            if (effectiveType == JwProtocol.TYPE_SG_ASSET) {
+                                                selectedSgAdapterId = com.lingion.sleepy.data.jw.JwSgSourceMetadata.read(importSourceJson)
+                                                    ?.optJSONObject("adapter")?.optString("adapterId").orEmpty()
+                                            }
                                             configTimeJson = ""
                                             // issue#23 T5: seed both live confirmation state and draft
                                             // persistence from the same inference result. Incomplete rows
@@ -1055,6 +1101,10 @@ class JwImportActivity : ComponentActivity() {
                             TextButton(onClick = {
                                 catalogNotice = null
                                 if (mayTry) {
+                                    if (selectedSchool?.name != school.name) {
+                                        selectedSgAdapterId = ""
+                                        importSourceJson = ""
+                                    }
                                     selectedSchool = school
                                     exitDraftState = exitDraftState.copy(activeImport = true)
                                     stage = Stage.WebViewLogin
