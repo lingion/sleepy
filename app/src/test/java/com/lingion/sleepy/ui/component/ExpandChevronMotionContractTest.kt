@@ -13,7 +13,8 @@ import java.io.File
  *      (T1 工厂; T5 rowExpand 先例) — 尺寸 fastSpatial、淡入 defaultEffects、
  *      淡出 fastEffects 全走 motionScheme, 禁裸 expandVertically()/shrinkVertically()
  *      默认 spring (与 Expressive 规格脱节)。站点清单 (7 处): SettingsCards、
- *      AddCourseScreen(非常规折叠栏)、ImportSheet(从文本导入, 旧版无 fadeIn —
+ *      AddCourseScreen(非常规折叠栏 + 时段整卡折叠, 2026-11-09 站点增建 → 计数 2)、
+ *      ImportSheet(从文本导入, 旧版无 fadeIn —
  *      工厂补齐淡入)、EditTableScreen、
  *      PeriodTableEditScreen、LicenseScreen(导语卡+致谢卡两处)。
  *   2. 全部 4 处折叠 ExpandMore chevron 一律 animateFloatAsState 0→180 defaultSpatial
@@ -76,7 +77,7 @@ class ExpandChevronMotionContractTest {
     @Test
     fun all_expand_sites_consume_sleepy_expand_specs() {
         assertExpandFamily(settingsCards, "SettingsCards", expectSites = 1)
-        assertExpandFamily(addCourse, "AddCourseScreen", expectSites = 1)
+        assertExpandFamily(addCourse, "AddCourseScreen", expectSites = 2)
         assertExpandFamily(importSheet, "ImportSheet", expectSites = 1)
         assertExpandFamily(editTable, "EditTableScreen", expectSites = 1)
         assertExpandFamily(periodTableEdit, "PeriodTableEditScreen", expectSites = 1)

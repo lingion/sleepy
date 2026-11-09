@@ -5,6 +5,8 @@ import android.graphics.Bitmap
 import androidx.compose.ui.test.*
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.room.Room
 import androidx.test.platform.app.InstrumentationRegistry
 import com.lingion.sleepy.MainActivity
@@ -33,7 +35,8 @@ class GlassAppNavigationRenderTest {
     private lateinit var app: SleepyApp
     private var repositoryDelegate: Any? = null
     private var savedPrefs: Map<String, *> = emptyMap<String, Any>()
-    private val changedKeys = listOf(AppPrefs.KEY_UI_STYLE, AppPrefs.KEY_THEME_MODE, AppPrefs.KEY_NAV_DOCK, AppPrefs.KEY_UPDATE_CHECK_ENABLED)
+    private var savedThemes: String? = null
+    private val changedKeys = listOf(AppPrefs.KEY_UI_STYLE, AppPrefs.KEY_THEME_MODE, AppPrefs.KEY_NAV_DOCK, AppPrefs.KEY_UPDATE_CHECK_ENABLED, AppPrefs.KEY_COURSE_COLOR_MODE)
 
     @get:Rule(order = 1) val memory = object : ExternalResource() {
         override fun before() {
@@ -46,7 +49,7 @@ class GlassAppNavigationRenderTest {
             val monday = today.minusDays((today.dayOfWeek.value - 1).toLong()).minusWeeks(1)
             runBlocking {
                 val periodId = repository.insertPeriodTable(com.lingion.sleepy.data.entity.PeriodTableEntity(name = "视觉测试作息"))
-                val id = repository.insertTable(TimeTableEntity(name = "玻璃视觉测试", startDate = monday.toString(), maxWeek = 20, isDefault = true, periodTableId = periodId))
+                val id = repository.insertTable(TimeTableEntity(name = "长名称课表：软件工程专业第一学期课程安排", createdAt = 1794212345000L, startDate = monday.toString(), maxWeek = 20, isDefault = true, periodTableId = periodId))
                 repository.insertCourses(listOf(
                     course(1, id, "高等数学", today.dayOfWeek.value, 1, "#B4D9F2"),
                     course(2, id, "大学物理", today.dayOfWeek.value, 4, "#BCE0BD"),
@@ -56,6 +59,12 @@ class GlassAppNavigationRenderTest {
             delegate.set(app, lazyOf(repository))
             val prefs = context.getSharedPreferences("sleepy_prefs", Context.MODE_PRIVATE)
             savedPrefs = prefs.all.filterKeys { it in changedKeys }
+            val themePrefs = context.getSharedPreferences("custom_themes", Context.MODE_PRIVATE)
+            savedThemes = themePrefs.getString("custom_themes", null)
+            com.lingion.sleepy.data.CustomThemeStore.save(context, com.lingion.sleepy.data.CustomTheme(
+                "layout-visual-fixture", "长名称自定义主题", "#6750A4", "#625B71", "#7D5260", 265.0, 8.0, 0,
+            ))
+            AppPrefs.setCourseColorMode(context, AppPrefs.COURSE_COLOR_MODE_CLASSIC)
             AppPrefs.setUpdateCheckEnabled(context, false)
             AppPrefs.setUiStyle(context, UiStyle.LiquidGlass)
             AppPrefs.setThemeMode(context, if (testName.methodName.contains("Dark")) "dark" else "light")
@@ -69,9 +78,13 @@ class GlassAppNavigationRenderTest {
                     null -> edit.remove(key)
                     is String -> edit.putString(key, old)
                     is Boolean -> edit.putBoolean(key, old)
+                    is Int -> edit.putInt(key, old)
                 }
             }
             edit.commit()
+            context.getSharedPreferences("custom_themes", Context.MODE_PRIVATE).edit().apply {
+                if (savedThemes == null) remove("custom_themes") else putString("custom_themes", savedThemes)
+            }.commit()
             db.close()
         }
     }
@@ -111,11 +124,14 @@ class GlassAppNavigationRenderTest {
         compose.waitForIdle()
         compose.onNodeWithTag("schedule_week_label").performTouchInput { click() }
         compose.waitUntil(10_000) { compose.onAllNodesWithTag("schedule_week#1").fetchSemanticsNodes().isNotEmpty() }
+        compose.mainClock.advanceTimeBy(600)
         capture("$mode-week-menu")
         back()
         compose.onNodeWithTag("schedule_add_course").performTouchInput { click() }
         waitText("手动创建课程")
         capture("$mode-add-course")
+        tap("新增一个上课时段")
+        capture("$mode-two-period-cards")
         back()
         tap("今日"); capture("$mode-today")
         tap("课表管理"); capture("$mode-manage")
@@ -124,29 +140,43 @@ class GlassAppNavigationRenderTest {
         tap("教务直连"); capture("$mode-school-select"); back(); back()
         tap("我的"); capture("$mode-mine")
         for ((entry, name) in listOf(
-            "所有课表" to "tables", "作息表" to "periods", "提醒" to "reminders",
+            "所有课表" to "tables", "作息表" to "periods", compose.activity.getString(com.lingion.sleepy.R.string.settings_holidays) to "holiday", "提醒" to "reminders",
             "外观与主题" to "appearance", "通用" to "general", "小组件" to "widgets", "关于" to "about",
         )) {
             tap(entry)
             capture("$mode-$name")
             if (name == "periods") {
                 compose.onAllNodesWithContentDescription("编辑课表").onFirst().performTouchInput { click() }
-                waitText("作息表"); capture("$mode-period-edit")
+                waitText("作息表")
+                for (time in listOf("08:00", "08:45")) {
+                    val layouts = mutableListOf<TextLayoutResult>()
+                    compose.onAllNodesWithText(time, useUnmergedTree = true).onFirst()
+                        .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
+                    val layout = layouts.single()
+                    assertTrue("actual app time $time must show all five characters",
+                        layout.lineCount == 1 && layout.getLineEnd(0, true) == time.length && layout.getLineRight(0) <= layout.size.width + .5f)
+                }
+                capture("$mode-period-edit")
                 compose.onNodeWithContentDescription("分享作息表").performTouchInput { click() }
                 capture("$mode-period-share"); back()
-                tap("自动模式"); capture("$mode-period-auto")
+                tap("自动模式")
+                tap("添加短课时")
+                capture("$mode-period-auto")
                 back()
-            }
-            if (name == "general") {
-                compose.onAllNodes(hasScrollAction()).onFirst().performScrollToNode(hasText("节假日调休设置"))
-                tap("节假日调休设置"); capture("$mode-holiday"); back()
             }
             if (name == "about") {
                 compose.onAllNodes(hasScrollAction()).onFirst().performScrollToNode(hasText("开源声明"))
                 tap("开源声明"); capture("$mode-licenses"); back()
             }
             if (name == "appearance") {
-                compose.onNodeWithText("界面风格").performScrollTo()
+                reveal("长名称自定义主题")
+                capture("$mode-theme-cards")
+                val edit = compose.onNodeWithContentDescription("编辑主题")
+                edit.assertIsDisplayed().performTouchInput { down(center) }
+                compose.mainClock.advanceTimeBy(180)
+                capture("$mode-theme-edit-pressed")
+                edit.performTouchInput { cancel() }
+                reveal("界面风格")
                 capture("$mode-style-selector")
             }
             if (name == "widgets") {
@@ -173,13 +203,28 @@ class GlassAppNavigationRenderTest {
     }
 
     private fun waitText(text: String) {
-        compose.waitUntil(20_000) { compose.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(20_000) { compose.onAllNodes(hasText(text) or hasContentDescription(text)).fetchSemanticsNodes().isNotEmpty() }
         compose.waitForIdle()
     }
     private fun tap(text: String) {
-        waitText(text)
-        compose.onAllNodesWithText(text).onLast().performTouchInput { click() }
+        reveal(text).performTouchInput { click() }
         compose.waitForIdle()
+    }
+    private fun reveal(text: String): SemanticsNodeInteraction {
+        compose.waitForIdle()
+        val matcher = hasText(text) or hasContentDescription(text)
+        val target = compose.onAllNodes(matcher).onLast()
+        if (runCatching { target.assertIsDisplayed() }.isFailure) {
+            runCatching { target.performScrollTo() }
+            if (runCatching { target.assertIsDisplayed() }.isFailure) {
+                val scrolls = compose.onAllNodes(hasScrollAction())
+                for (index in scrolls.fetchSemanticsNodes().indices.reversed()) {
+                    if (runCatching { scrolls[index].performScrollToNode(matcher) }.isSuccess) break
+                }
+            }
+        }
+        waitText(text)
+        return target.assertIsDisplayed()
     }
     private fun back() {
         val popup = compose.onAllNodes(isPopup() or isDialog()).fetchSemanticsNodes().isNotEmpty()
@@ -194,6 +239,9 @@ class GlassAppNavigationRenderTest {
     }
     private fun capture(name: String) {
         compose.waitForIdle()
+        // A separate Activity can still be cross-fading after Compose becomes idle.
+        // Wait for the accessibility window to settle before requesting the HWUI commit.
+        InstrumentationRegistry.getInstrumentation().uiAutomation.waitForIdle(300, 5_000)
         val committed = java.util.concurrent.CountDownLatch(1)
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             val activity = com.lingion.sleepy.console.ActivityTracker.currentActivity() ?: compose.activity
@@ -208,7 +256,8 @@ class GlassAppNavigationRenderTest {
             java.io.FileInputStream(descriptor.fileDescriptor).use { android.graphics.BitmapFactory.decodeStream(it) }
         }
         assertTrue("screenshot must have actual pixels", image != null && image.width > 0 && image.height > 0)
-        val dir = File(context.cacheDir, "glass-route-matrix").apply { mkdirs() }
+        val directory = InstrumentationRegistry.getArguments().getString("glassCaptureDirectory") ?: "glass-route-matrix"
+        val dir = File(context.cacheDir, directory).apply { mkdirs() }
         File(dir, "$name.png").outputStream().use { assertTrue(image.compress(Bitmap.CompressFormat.PNG, 100, it)) }
         image.recycle()
         println("GLASS_ROUTE_CAPTURE=$name")

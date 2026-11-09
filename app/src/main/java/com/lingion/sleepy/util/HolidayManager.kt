@@ -89,16 +89,73 @@ object HolidayManager {
         dateHasTransfer: Boolean,
     ): Boolean = date in holidays && !dateHasTransfer
 
+    /** Cache-only year entries: memory cache → disk cache → emptyList; never performs network I/O. */
+    fun getCachedYearEntries(ctx: Context, year: Int): List<HolidayEntry> {
+        entriesCache[year]?.let { return it }
+        diskCache(ctx, year)?.let {
+            entriesCache[year] = it
+            return it
+        }
+        return emptyList()
+    }
+
     /** Cache-only holiday decision for scheduler/recovery paths; never performs network I/O. */
     fun isPublicHolidayCached(ctx: Context, date: LocalDate, tableId: Long? = null): Boolean {
         if (!AppPrefs.isHolidayGreyHoliday(ctx)) return false
-        val networkEntries = entriesCache[date.year] ?: diskCache(ctx, date.year) ?: emptyList()
+        val networkEntries = getCachedYearEntries(ctx, date.year)
         val ranges = AppPrefs.getHolidayRanges(ctx)
         val merged = HolidayRangeOps.mergeSegments(networkEntries, ranges)
         val (holidays, _) = HolidayRangeOps.toSets(merged.active)
         val hasTransfer = tableId != null &&
             HolidayRangeOps.HolidayTransferOps.transferFor(date, AppPrefs.getHolidayTransfers(ctx, tableId)) != null
         return decideSkipPublicHoliday(date, holidays, hasTransfer)
+    }
+
+    /**
+     * 批量纯缓存快速计算整周各星期几（1..7）是否灰显。
+     * 避免逐日重复读取 SharedPreferences 及重复解析 JSON，纯内存运算无 IO 挂起。
+     */
+    fun fastComputeGreyDays(
+        ctx: Context,
+        datesByDay: Map<Int, LocalDate>,
+        tableId: Long? = null,
+        transfers: List<HolidayTransferEntry> = emptyList(),
+    ): Set<Int> {
+        val greyHoliday = AppPrefs.isHolidayGreyHoliday(ctx)
+        val greyWeekend = AppPrefs.isHolidayGreyWeekend(ctx)
+        if (!greyHoliday && !greyWeekend) return emptySet()
+
+        val ignoreWorkday = AppPrefs.isHolidayIgnoreWorkday(ctx)
+        val ranges = AppPrefs.getHolidayRanges(ctx)
+        val years = datesByDay.values.map { it.year }.distinct()
+        val customWorkdays = if (tableId != null) {
+            transfers.map { it.targetDate }.toSet()
+        } else emptySet()
+
+        val yearData = years.associateWith { year ->
+            val entries = getCachedYearEntries(ctx, year)
+            val merged = HolidayRangeOps.mergeSegments(entries, ranges)
+            HolidayRangeOps.toSets(merged.active)
+        }
+
+        val result = mutableSetOf<Int>()
+        for ((day, date) in datesByDay) {
+            val (holidays, networkWorkdays) = yearData[date.year] ?: (emptySet<LocalDate>() to emptySet<LocalDate>())
+            val workdays = if (greyWeekend && ignoreWorkday) networkWorkdays + customWorkdays else emptySet()
+            val hasTransfer = tableId != null && HolidayRangeOps.HolidayTransferOps.transferFor(date, transfers) != null
+            if (decideGrey(
+                date = date,
+                holidays = holidays,
+                workdays = workdays,
+                greyHoliday = greyHoliday,
+                greyWeekend = greyWeekend,
+                ignoreWorkday = ignoreWorkday,
+                dateHasTransfer = hasTransfer
+            )) {
+                result.add(day)
+            }
+        }
+        return result
     }
 
 

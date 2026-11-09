@@ -6,6 +6,7 @@ import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Close
@@ -36,8 +38,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -51,6 +57,7 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
+import com.lingion.sleepy.ui.component.liquidglass.GlassControlLayout
 /**
  * v1.0.16 智慧节次编辑器（自动模式）
  *
@@ -103,8 +110,8 @@ fun SmartPeriodEditor(
                 unit = stringResource(R.string.unit_minutes),
                 value = config.periodMinutes,
                 onValueChange = { onConfigChange(config.copy(periodMinutes = it.coerceAtLeast(1))) },
-                modifier = Modifier.weight(1f)
-                    .then(dbgTagPrefix?.let { Modifier.dbgTag("${it}_duration", text = durationLabel, role = "textbox") } ?: Modifier)
+                modifier = Modifier.weight(1f),
+                dbgTag = dbgTagPrefix?.let { "${it}_duration" },
             )
             NumberField(
                 label = totalLabel,
@@ -113,8 +120,8 @@ fun SmartPeriodEditor(
                 onValueChange = { newN ->
                     onConfigChange(config.copy(totalPeriods = newN.coerceAtLeast(1)))
                 },
-                modifier = Modifier.weight(1f)
-                    .then(dbgTagPrefix?.let { Modifier.dbgTag("${it}_total", text = totalLabel, role = "textbox") } ?: Modifier)
+                modifier = Modifier.weight(1f),
+                dbgTag = dbgTagPrefix?.let { "${it}_total" },
             )
         }
 
@@ -365,6 +372,7 @@ private fun AssignmentGroupSection(
         // Header: 名称 + 分钟数 + 删除
         Row(
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(GlassControlLayout.controlGap),
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
         ) {
             // 颜色 chip
@@ -373,7 +381,6 @@ private fun AssignmentGroupSection(
                     .size(10.dp)
                     .background(groupColor, RoundedCornerShape(50))
             )
-            Spacer(Modifier.width(8.dp))
             Text(
                 headerText,
                 style = MaterialTheme.typography.bodyMedium,
@@ -386,11 +393,11 @@ private fun AssignmentGroupSection(
                 unit = stringResource(R.string.unit_minutes),
                 value = minuteValue,
                 onValueChange = onMinuteChange,
-                modifier = Modifier.width(110.dp)
-                    .then(tagPrefix?.let { Modifier.dbgTag("${it}_min", role = "textbox") } ?: Modifier)
+                modifier = Modifier.width(110.dp),
+                dbgTag = tagPrefix?.let { "${it}_min" },
             )
             IconButton(onClick = onDelete,
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(GlassControlLayout.touchTarget)
                     .then(tagPrefix?.let { Modifier.dbgTag("${it}_del", text = stringResource(R.string.delete), role = "button") } ?: Modifier)) {
                 Icon(
                     Icons.Outlined.Close,
@@ -403,28 +410,33 @@ private fun AssignmentGroupSection(
 
         // 位置卡片网格
         if (slotCount > 0) {
-            val cardsPerRow = 8
-            val rows = (0 until slotCount).chunked(cardsPerRow)
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                rows.forEach { rowIndices ->
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        rowIndices.forEach { posIdx ->
-                            val selected = assigns.getOrNull(posIdx) == groupIdx
-                            PositionCard(
-                                label = labelFor(posIdx),
-                                selected = selected,
-                                groupColor = groupColor,
-                                onClick = { onToggle(posIdx) },
-                                modifier = Modifier.weight(1f)
-                                    .then(tagPrefix?.let { Modifier.dbgTag("${it}_pos#$posIdx", text = labelFor(posIdx), role = "button") } ?: Modifier)
-                            )
-                        }
-                        // 填满空位
-                        repeat(cardsPerRow - rowIndices.size) {
-                            Spacer(Modifier.weight(1f))
+            val fontScale = LocalDensity.current.fontScale
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val minimumCell = maxOf(GlassControlLayout.touchTarget, (32f * fontScale).dp)
+                val gap = GlassControlLayout.controlGap
+                val cardsPerRow = ((maxWidth + gap) / (minimumCell + gap)).toInt().coerceIn(1, 8)
+                val rows = (0 until slotCount).chunked(cardsPerRow)
+                Column(verticalArrangement = Arrangement.spacedBy(gap)) {
+                    rows.forEach { rowIndices ->
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(gap),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            rowIndices.forEach { posIdx ->
+                                val selected = assigns.getOrNull(posIdx) == groupIdx
+                                PositionCard(
+                                    label = labelFor(posIdx),
+                                    selected = selected,
+                                    groupColor = groupColor,
+                                    onClick = { onToggle(posIdx) },
+                                    modifier = Modifier.weight(1f)
+                                        .then(tagPrefix?.let { Modifier.dbgTag("${it}_pos#$posIdx", text = labelFor(posIdx), role = "button") } ?: Modifier)
+                                )
+                            }
+                            // 填满空位
+                            repeat(cardsPerRow - rowIndices.size) {
+                                Spacer(Modifier.weight(1f))
+                            }
                         }
                     }
                 }
@@ -450,14 +462,17 @@ private fun PositionCard(
 ) {
     val colors = MaterialTheme.colorScheme
     val bg = if (selected) groupColor else colors.surfaceContainerHigh
-    val fg = if (selected) colors.onPrimary else colors.onSurfaceVariant
+    val fg = if (selected) {
+        if (groupColor == colors.tertiary) colors.onTertiary else colors.onPrimary
+    } else colors.onSurfaceVariant
     Box(
         modifier = modifier
-            .heightIn(min = 36.dp)
-            .glassControl(shape = SleepyTheme.shapes.small, tint = if (selected) groupColor else null)
+            .heightIn(min = GlassControlLayout.touchTarget)
+            .glassControl(shape = SleepyTheme.shapes.small, tint = if (selected) groupColor else null,
+                motionClearance = GlassControlLayout.denseClearance)
             .background(controlFill(bg), SleepyTheme.shapes.small)
             .noRippleGlassClickable(onClick)
-            .padding(vertical = 8.dp),
+            .padding(horizontal = 4.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -537,33 +552,58 @@ private fun NumberField(
     unit: String,
     value: Int,
     onValueChange: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    dbgTag: String? = null,
 ) {
     var text by remember(value) { mutableStateOf(value.toString()) }
-    TextField(
-        value = text,
-        onValueChange = { newText ->
-            if (newText.all { it.isDigit() } && newText.length <= 4) {
-                text = newText
-                val parsed = newText.toIntOrNull()
-                if (parsed != null) onValueChange(parsed)
+    val updateText: (String) -> Unit = { newText ->
+        if (newText.all { it.isDigit() } && newText.length <= 4) {
+            text = newText
+            newText.toIntOrNull()?.let(onValueChange)
+        }
+    }
+    val inputIdentity = dbgTag?.let { Modifier.dbgTag(it, text = label, role = "textbox") } ?: Modifier
+    BoxWithConstraints(modifier) {
+        if (label.isNotBlank() && maxWidth < (160 * LocalDensity.current.fontScale).dp) {
+            val colors = MaterialTheme.colorScheme
+            Column(
+                Modifier.fillMaxWidth().heightIn(min = 56.dp).background(colors.surfaceContainerHighest, SleepyTheme.fieldShape)
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(label, style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    BasicTextField(
+                        value = text, onValueChange = updateText,
+                        modifier = Modifier.weight(1f).then(inputIdentity).semantics { contentDescription = label }, singleLine = true,
+                        textStyle = MaterialTheme.typography.bodyLarge.copy(color = colors.onSurface),
+                        cursorBrush = SolidColor(colors.primary),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                    )
+                    Text(unit, style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant, maxLines = 1)
+                }
             }
-        },
-        label = if (label.isNotBlank()) {
-            { Text(label) }
-        } else null,
-        suffix = if (unit.isNotBlank()) {
-            { Text(unit) }
-        } else null,
-        singleLine = true,
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number,
-            imeAction = ImeAction.Done
-        ),
-        shape = SleepyTheme.fieldShape,
-        colors = SleepyTheme.fieldColors(),
-        modifier = modifier
-    )
+        } else {
+            TextField(
+                value = text,
+                onValueChange = updateText,
+                label = if (label.isNotBlank()) {
+                    { Text(label) }
+                } else null,
+                suffix = if (unit.isNotBlank()) {
+                    { Text(unit) }
+                } else null,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done
+                ),
+                shape = SleepyTheme.fieldShape,
+                colors = SleepyTheme.fieldColors(),
+                modifier = Modifier.fillMaxWidth().then(inputIdentity)
+            )
+        }
+    }
 }
 
 @Composable
@@ -575,36 +615,40 @@ private fun AddBreakChip(
     dbgTag: String? = null
 ) {
     val chipLabel = stringResource(R.string.add_label, label)
-    FilterChip(
-        selected = false,
-        onClick = onAdd,
-        modifier = modifier
-            .then(dbgTag?.let { Modifier.dbgTag(it, text = chipLabel, role = "button") } ?: Modifier),
-        label = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Outlined.Add,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = color
-                )
-                Spacer(Modifier.width(4.dp))
-                Text(chipLabel)
-            }
-        },
-        colors = FilterChipDefaults.filterChipColors(
-            containerColor = color.copy(alpha = SleepyTheme.Alpha.tinted),
-            labelColor = color
-        ),
-        border = FilterChipDefaults.filterChipBorder(
-            enabled = true,
+    BoxWithConstraints(modifier) {
+        val compact = maxWidth < (100 * LocalDensity.current.fontScale).dp
+        FilterChip(
             selected = false,
-            borderColor = Color.Transparent,
-            selectedBorderColor = Color.Transparent,
-            disabledBorderColor = Color.Transparent,
-            disabledSelectedBorderColor = Color.Transparent
+            onClick = onAdd,
+            modifier = Modifier.fillMaxWidth().semantics { contentDescription = chipLabel }
+                .then(dbgTag?.let { Modifier.dbgTag(it, text = chipLabel, role = "button") } ?: Modifier),
+            label = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Outlined.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = color
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(if (compact) label else chipLabel, maxLines = 1,
+                        style = if (compact) MaterialTheme.typography.labelSmall else MaterialTheme.typography.labelLarge)
+                }
+            },
+            colors = FilterChipDefaults.filterChipColors(
+                containerColor = color.copy(alpha = SleepyTheme.Alpha.tinted),
+                labelColor = color
+            ),
+            border = FilterChipDefaults.filterChipBorder(
+                enabled = true,
+                selected = false,
+                borderColor = Color.Transparent,
+                selectedBorderColor = Color.Transparent,
+                disabledBorderColor = Color.Transparent,
+                disabledSelectedBorderColor = Color.Transparent
+            )
         )
-    )
+    }
 }
 
 // smartConfigToRows 死函数已删（全库零调用; 调用方直接用 SmartPeriodConfig.derive()）

@@ -65,7 +65,7 @@ class ScheduleMotionContractTest {
     @Test
     fun undo_redo_capsule_mounts_via_popup_family() {
         assertTrue("胶囊显隐必须挂 AnimatedVisibility popup 家族 (T1 工厂, 不得手抄)",
-            Regex("""AnimatedVisibility\(\s*visible = hasUndo \|\| hasRedo,\s*enter = sleepyPopupEnter\(\),\s*exit = sleepyPopupExit\(\)""")
+            Regex("""AnimatedVisibility\(\s*visibleState = historyVisibility,\s*enter = sleepyPopupEnter\(\),\s*exit = sleepyPopupExit\(\)""")
                 .containsMatchIn(screen))
         assertFalse("旧的 if 直挂显隐不得残留 (会砍掉退场动画)",
             Regex("""if\s*\(hasUndo\s*\|\|\s*hasRedo\)""").containsMatchIn(screen))
