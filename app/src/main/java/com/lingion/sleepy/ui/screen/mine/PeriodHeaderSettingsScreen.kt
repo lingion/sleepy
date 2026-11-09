@@ -27,6 +27,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import com.lingion.sleepy.ui.component.liquidglass.GlassSwitch as Switch
 import androidx.compose.material3.Slider
+import androidx.compose.material3.rememberSliderState
 import androidx.compose.material3.Text
 import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -153,11 +154,11 @@ fun PeriodHeaderSettingsScreen(onBack: () -> Unit) {
                                 initialValue = hangingBaseline, ghostEpsilon = .05f,
                                 ghostTag = "header-hanging-ghost",
                             ) else Slider(
-                                value = hangingUnits,
+                                state = rememberSliderState(
+                                    value = hangingUnits, steps = 19, trackRange = -1f..1f,
+                                ).apply { value = hangingUnits },
                                 onValueChange = { hangingUnits = (it * 10f).roundToInt() / 10f },
                                 onValueChangeFinished = { AppPrefs.setPeriodHeaderHanging(context, hangingUnits) },
-                                valueRange = -1f..1f,
-                                steps = 19,
                             )
                             if (!liquidGlassControlsEnabled() && singleSliderGhostVisible(hangingUnits, hangingBaseline, 0.05f)) {
                                 SingleSliderGhostMark(

@@ -200,7 +200,7 @@ internal object SleepyNativeParser {
 
         // chk 校验(§6.3-Q: 警告不硬拒)
         if (chkLine != null) {
-            val m = Regex("""chk=([a-z0-9]+):([0-9a-fA-F]{8})""").find(chkLine!!)
+            val m = Regex("""chk=([a-z0-9]+):([0-9a-fA-F]{8})""").find(chkLine)
             if (m != null) {
                 val algo = m.groupValues[1]
                 if (algo == "crc32") {
@@ -333,7 +333,7 @@ internal object SleepyNativeParser {
             dropped.add(shorten(line))  // 重复节号: 首行生效
             return
         }
-        nodeTimes[nodeNo!!] = start!! to end!!
+        nodeTimes[nodeNo] = start to end
     }
 
     // ---- P 区块 (issue#40 §6: 独立时间节次表) ----
@@ -386,7 +386,7 @@ internal object SleepyNativeParser {
             dropped.add(shorten("Pn$body"))  // 重复节号: 首行生效
             return
         }
-        nodeTimes[nodeNo!!] = start!! to end!!
+        nodeTimes[nodeNo] = start to end
     }
 
     // ---- C 行 (§3.1, 恒 10 列 + issue#26 可选第 11 列=课程别名) ----
