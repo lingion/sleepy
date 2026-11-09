@@ -268,26 +268,32 @@ object CourseColorUtil {
         else -> onSurface
     }
 
-    // ============================ 第二层 · HSL 转换 ============================
+    // ============================ 第二层 · HSL 转换与颜色解析缓存 ============================
 
-    /** HSL → Compose Color（供 TodayScreen / CourseTableView 的 Compose 路径） */
-    fun hslToColor(h: Float, s: Float, l: Float): Color {
-        val c = (1f - kotlin.math.abs(2f * l - 1f)) * s
-        val x = c * (1f - kotlin.math.abs((h / 60f) % 2f - 1f))
-        val m = l - c / 2f
-        val (r, g, b) = when {
-            h < 60f   -> Triple(c, x, 0f)
-            h < 120f  -> Triple(x, c, 0f)
-            h < 180f  -> Triple(0f, c, x)
-            h < 240f  -> Triple(0f, x, c)
-            h < 300f  -> Triple(x, 0f, c)
-            else      -> Triple(c, 0f, x)
+    private val parsedColorCache = java.util.concurrent.ConcurrentHashMap<String, Int>()
+    private data class HslCacheKey(val h: Float, val s: Float, val l: Float)
+    private val hslComposeCache = java.util.concurrent.ConcurrentHashMap<HslCacheKey, Color>()
+    private val hslIntCache = java.util.concurrent.ConcurrentHashMap<HslCacheKey, Int>()
+
+    /** 安全解析十六进制颜色，带内存字典缓存（避免重复字符串解析与异常开销） */
+    fun safeParseColorInt(hex: String): Int? {
+        if (hex.isBlank()) return null
+        parsedColorCache[hex]?.let { return it }
+        val parsed = try {
+            android.graphics.Color.parseColor(hex)
+        } catch (_: Exception) {
+            return null
         }
-        return Color(r + m, g + m, b + m)
+        if (parsedColorCache.size < 256) {
+            parsedColorCache[hex] = parsed
+        }
+        return parsed
     }
 
-    /** HSL → ARGB Int（供 WeekGridWidgetProvider / WidgetBitmapRenderers 的 Canvas 路径） */
-    fun hslToColorInt(h: Float, s: Float, l: Float): Int {
+    /** HSL → Compose Color（供 TodayScreen / CourseTableView 的 Compose 路径，带高速纯函数缓存） */
+    fun hslToColor(h: Float, s: Float, l: Float): Color {
+        val key = HslCacheKey(h, s, l)
+        hslComposeCache[key]?.let { return it }
         val c = (1f - kotlin.math.abs(2f * l - 1f)) * s
         val x = c * (1f - kotlin.math.abs((h / 60f) % 2f - 1f))
         val m = l - c / 2f
@@ -299,10 +305,36 @@ object CourseColorUtil {
             h < 300f  -> Triple(x, 0f, c)
             else      -> Triple(c, 0f, x)
         }
-        return (0xFF shl 24) or
+        val result = Color(r + m, g + m, b + m)
+        if (hslComposeCache.size < 256) {
+            hslComposeCache[key] = result
+        }
+        return result
+    }
+
+    /** HSL → ARGB Int（供 WeekGridWidgetProvider / WidgetBitmapRenderers 的 Canvas 路径，带高速纯函数缓存） */
+    fun hslToColorInt(h: Float, s: Float, l: Float): Int {
+        val key = HslCacheKey(h, s, l)
+        hslIntCache[key]?.let { return it }
+        val c = (1f - kotlin.math.abs(2f * l - 1f)) * s
+        val x = c * (1f - kotlin.math.abs((h / 60f) % 2f - 1f))
+        val m = l - c / 2f
+        val (r, g, b) = when {
+            h < 60f   -> Triple(c, x, 0f)
+            h < 120f  -> Triple(x, c, 0f)
+            h < 180f  -> Triple(0f, c, x)
+            h < 240f  -> Triple(0f, x, c)
+            h < 300f  -> Triple(x, 0f, c)
+            else      -> Triple(c, 0f, x)
+        }
+        val result = (0xFF shl 24) or
             ((r + m).coerceIn(0f, 1f).times(255f).toInt() shl 16) or
             ((g + m).coerceIn(0f, 1f).times(255f).toInt() shl 8) or
             (b + m).coerceIn(0f, 1f).times(255f).toInt()
+        if (hslIntCache.size < 256) {
+            hslIntCache[key] = result
+        }
+        return result
     }
 
     // ============================ 第三层 · 平台适配入口 ============================
@@ -322,7 +354,7 @@ object CourseColorUtil {
         persistedHue: Float? = null
     ): Color {
         if (hasCustomColor(course)) {
-            runCatching { return Color(android.graphics.Color.parseColor(course.color)) }
+            safeParseColorInt(course.color)?.let { return Color(it) }
         }
         if (colorless) return neutralColor
         val hue = persistedHue ?: stableHue(course.groupId)
@@ -344,7 +376,7 @@ object CourseColorUtil {
         persistedHue: Float? = null
     ): Int {
         if (hasCustomColor(course)) {
-            runCatching { return android.graphics.Color.parseColor(course.color) }
+            safeParseColorInt(course.color)?.let { return it }
         }
         if (colorless) return neutralColorInt
         val hue = persistedHue ?: stableHue(course.groupId)
@@ -379,9 +411,9 @@ object CourseColorUtil {
         persistedHue: Float? = null
     ): Color {
         return when (row.colorMode) {
-            CourseColorMode.CUSTOM -> runCatching {
-                Color(android.graphics.Color.parseColor(row.color))
-            }.getOrElse { neutralColor }
+            CourseColorMode.CUSTOM -> {
+                safeParseColorInt(row.color)?.let { Color(it) } ?: neutralColor
+            }
             CourseColorMode.AUTO -> {
                 if (colorless) return neutralColor
                 val hue = GoldenAngleColor.forRow(
@@ -392,7 +424,7 @@ object CourseColorUtil {
             }
             else -> {  // GROUP(0) 或未知
                 if (hasCustomColor(row)) {
-                    runCatching { return Color(android.graphics.Color.parseColor(row.color)) }
+                    safeParseColorInt(row.color)?.let { return Color(it) }
                 }
                 if (colorless) return neutralColor
                 val hue = persistedHue ?: stableHue(row.groupId)
@@ -413,9 +445,9 @@ object CourseColorUtil {
         persistedHue: Float? = null
     ): Int {
         return when (row.colorMode) {
-            CourseColorMode.CUSTOM -> runCatching {
-                android.graphics.Color.parseColor(row.color)
-            }.getOrElse { neutralColorInt }
+            CourseColorMode.CUSTOM -> {
+                safeParseColorInt(row.color) ?: neutralColorInt
+            }
             CourseColorMode.AUTO -> {
                 if (colorless) return neutralColorInt
                 val hue = GoldenAngleColor.forRow(
@@ -426,7 +458,7 @@ object CourseColorUtil {
             }
             else -> {
                 if (hasCustomColor(row)) {
-                    runCatching { return android.graphics.Color.parseColor(row.color) }
+                    safeParseColorInt(row.color)?.let { return it }
                 }
                 if (colorless) return neutralColorInt
                 val hue = persistedHue ?: stableHue(row.groupId)

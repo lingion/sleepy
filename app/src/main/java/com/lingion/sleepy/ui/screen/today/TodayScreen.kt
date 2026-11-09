@@ -47,7 +47,6 @@ import com.lingion.sleepy.ui.component.CourseDetailSheet
 import com.lingion.sleepy.ui.component.SectionHead
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
-import com.lingion.sleepy.ui.component.liquidglass.glassBackdropSource
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.CourseColorUtil
@@ -206,6 +205,7 @@ fun CompactTodayPane(
     val presentation = viewModel.presentationCache.today(state, today)
     val todayCourses = presentation.courses
     val laneRows = presentation.rows
+    val hueMap by CourseHueStore.hueMapFlow.collectAsState()
 
     var selectedCourse by remember { mutableStateOf<CourseEntity?>(null) }
 
@@ -235,11 +235,15 @@ fun CompactTodayPane(
                             course = course,
                             timeJson = renderTj,
                             onClick = { selectedCourse = course },
-                            groupRows = presentation.groups[course.groupId].orEmpty()
+                            groupRows = presentation.groups[course.groupId].orEmpty(),
+                            hueMap = hueMap
                         )
                     }
                 } else {
                     val laneGap = 6.dp
+                    val laneCoursesByLane = remember(row.courses, row.laneOf) {
+                        row.courses.groupBy { row.laneOf[it.id] }
+                    }
                     Row(
                         modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
                         horizontalArrangement = Arrangement.spacedBy(laneGap)
@@ -255,7 +259,7 @@ fun CompactTodayPane(
                                         )
                                 )
                             }
-                            val laneCourses = row.courses.filter { row.laneOf[it.id] == li }
+                            val laneCourses = laneCoursesByLane[li].orEmpty()
                             Column(
                                 modifier = Modifier.weight(1f),
                                 verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -265,7 +269,8 @@ fun CompactTodayPane(
                                         course = laneCourse,
                                         timeJson = renderTj,
                                         onClick = { selectedCourse = laneCourse },
-                                        groupRows = presentation.groups[laneCourse.groupId].orEmpty()
+                                        groupRows = presentation.groups[laneCourse.groupId].orEmpty(),
+                                        hueMap = hueMap
                                     )
                                 }
                             }
@@ -418,22 +423,28 @@ private fun EmptyToday(semesterStatus: DateUtils.SemesterStatus = DateUtils.Seme
 }
 
 @Composable
-private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null, onClick: (() -> Unit)? = null, groupRows: List<CourseEntity> = listOf(course)) {
+private fun TodayCourseCard(
+    course: CourseEntity,
+    timeJson: String? = null,
+    onClick: (() -> Unit)? = null,
+    groupRows: List<CourseEntity> = listOf(course),
+    hueMap: Map<String, Float>? = null,
+) {
     val colors = MaterialTheme.colorScheme
     val palette = SleepyTheme.palette
     val context = LocalContext.current
     // 统一取色入口 — hue 源自动对齐 groupId（修复原 course.id%360 导致同门课多节次异色+三屏三色）
     // colorless 读取 AppPrefs course_colorless 独立开关
     // issue#22: 同名课程多地点 — 用 groupRows 传同 groupId 全行,支持 AUTO/CUSTOM 模式取色
-    // spec §2.1: 派生档持久 hue（订阅快照流, CLASSIC/查无 → null → stableHue 老路径逐值不变）
-    val hueMap by CourseHueStore.hueMapFlow.collectAsState()
+    // spec §2.1: 派生档持久 hue（外部统一收集传入优先，未传回退内部订阅）
+    val effectiveHueMap = hueMap ?: CourseHueStore.hueMapFlow.collectAsState().value
     val bg = CourseColorUtil.pickCourseColorComposeWithGroupRows(
         row = course,
         groupRows = groupRows,
         isDark = CourseColorUtil.isPaletteDark(palette),
         neutralColor = colors.secondaryContainer,
         colorless = AppPrefs.isCourseColorless(context),
-        persistedHue = hueMap[course.groupId]
+        persistedHue = effectiveHueMap[course.groupId]
     )
     // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface
     val fg = CourseColorUtil.textColorOn(bg, CourseColorUtil.isPaletteDark(palette), colors.onSurface)
@@ -446,7 +457,6 @@ private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null, onCl
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .glassBackdropSource(depth = 0f)
             .clip(SleepyTheme.shapes.large)
             .background(bg)
             .then(if (onClick != null) Modifier.noRippleClickable(onClick = onClick) else Modifier)
