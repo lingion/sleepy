@@ -418,7 +418,7 @@ private fun ManualTimeSlotEditor(
                     .background(colors.surfaceContainerLow, SleepyTheme.shapes.large)
                     .padding(if (compactRows) 4.dp else 10.dp),
                 verticalArrangement = Arrangement.spacedBy(ROW_GAP_DP)
-            ) {
+            ) rowsColumn@{
                 displayRows.forEachIndexed { index, row ->
                     val isDragging = draggingIndex == index
                     val isDropTarget = !isDragging &&
@@ -438,7 +438,7 @@ private fun ManualTimeSlotEditor(
                     // 记忆 — 末尾增行只有新槽位首播展开入场; 中间删行时后续行落在既有
                     // 槽位 (state 已是 true) → 不重播, 高度收拢交给宿主 animateContentSize。
                     val rowVisible = remember { MutableTransitionState(false).apply { targetState = true } }
-                    this@Column.AnimatedVisibility(
+                    this@rowsColumn.AnimatedVisibility(
                         visibleState = rowVisible,
                         enter = rowExpand.enter,
                         exit = rowExpand.exit,
