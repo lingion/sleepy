@@ -46,8 +46,9 @@ internal fun ScheduleToolbarLayout(
         val left = subcompose("start") { Box { start(compact) } }.single().measure(loose)
         val right = subcompose("end") { Box { end(compact) } }.single().measure(loose)
         val oneRow = mode != null
-        val chosen = mode ?: WeekControlDensity.Full
         val innerWidth = (width - 2 * inset).coerceAtLeast(0)
+        val chosen = mode ?: if (centerWidths.getValue(WeekControlDensity.Full).roundToPx() <= innerWidth)
+            WeekControlDensity.Full else WeekControlDensity.NumberOnly
         val middle = subcompose("center-$chosen") { Box { center(chosen) } }.single().measure(
             loose.copy(maxWidth = if (oneRow) available() else innerWidth)
         )
