@@ -63,6 +63,7 @@ object MigrationDatabaseCodec {
         val preBindSnapshotJson: String = "",
         val reminderEnabled: Boolean = true,
         val reminderOverride: Boolean? = null,
+        val importSourceJson: String = "",
     )
 
     @Serializable
@@ -120,6 +121,7 @@ object MigrationDatabaseCodec {
         createdAt = createdAt, periodTableId = periodTableId,
         preBindSnapshotJson = preBindSnapshotJson,
         reminderEnabled = reminderEnabled, reminderOverride = reminderOverride,
+        importSourceJson = importSourceJson,
     )
 
     fun PeriodTableEntity.toRow() = PeriodTableRow(
@@ -148,6 +150,7 @@ object MigrationDatabaseCodec {
         createdAt = createdAt, periodTableId = periodTableId,
         preBindSnapshotJson = preBindSnapshotJson,
         reminderEnabled = reminderEnabled, reminderOverride = reminderOverride,
+        importSourceJson = importSourceJson,
     )
 
     fun PeriodTableRow.toEntity() = PeriodTableEntity(

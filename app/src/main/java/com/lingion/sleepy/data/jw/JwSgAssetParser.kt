@@ -12,6 +12,8 @@ import org.json.JSONObject
  *   weeks[int] / isCustomTime / customStartTime / customEndTime / credit
  *
  * 本类是唯一解码落点 (跨语言 invariant: shim JS 只做传输, 不解析课程)。
+ * 旧数组仍可直接导入；带 sleepySgAsset 标记的内部载荷保留 coursesJson
+ * 原文和独立 config，供确认页消费完整学期元数据。
  * 映射规则:
  *   - day → day; startSection/endSection → startNode/endNode
  *   - weeks 集合仅压缩无缺口的区间，不补充原文不存在的周次。
@@ -22,7 +24,12 @@ class JwSgAssetParser(source: String) : JwParser(source) {
 
     override fun generateCourseList(): List<JwCourse> {
         val arr = try {
-            JSONArray(source.trim())
+            val text = source.trim()
+            if (text.startsWith("{")) {
+                val root = JSONObject(text)
+                if (!root.optBoolean("sleepySgAsset")) return emptyList()
+                JSONArray(root.getString("coursesJson"))
+            } else JSONArray(text)
         } catch (_: Exception) {
             return emptyList()
         }
@@ -44,8 +51,9 @@ class JwSgAssetParser(source: String) : JwParser(source) {
                 (0 until w.length()).mapNotNull { j -> w.optInt(j, -1).takeIf { it > 0 } }
             }.orEmpty().distinct().sorted()
             if (weeks.isEmpty()) continue
+            val credit = item.opt("credit")?.toString()?.toFloatOrNull()?.takeIf { it.isFinite() } ?: 0f
             out += toCourses(name, item.optString("teacher"), item.optString("position"), day, ps, pe, weeks)
-                .map { it.copy(startTime = startTime, endTime = endTime) }
+                .map { it.copy(startTime = startTime, endTime = endTime, credit = credit) }
         }
         return out
     }
@@ -98,7 +106,8 @@ class JwSgAssetParser(source: String) : JwParser(source) {
     )
 
     override fun confidence(): Int =
-        if (source.trim().startsWith("[") && source.contains("\"day\"") && source.contains("\"weeks\"")) 90 else 0
+        if (runCatching { JSONObject(source).optBoolean("sleepySgAsset") }.getOrDefault(false) ||
+            (source.trim().startsWith("[") && source.contains("\"day\"") && source.contains("\"weeks\""))) 90 else 0
 
     override fun matchedFeatures(): List<String> =
         if (confidence() >= 80) listOf("sg-asset-courses-json") else emptyList()
