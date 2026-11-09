@@ -24,6 +24,24 @@ import kotlinx.coroutines.flow.map
 object AppPrefs {
     private const val FILE = "sleepy_prefs"
 
+    // ===== 内存高速缓存（零反序列化与 SharedPreferences 穿透开销）=====
+    @Volatile private var cachedVisibleDays: Set<Int>? = null
+    @Volatile private var cachedHolidayRanges: List<com.lingion.sleepy.util.HolidayRange>? = null
+    private val holidayTransfersCache = java.util.concurrent.ConcurrentHashMap<Long, List<com.lingion.sleepy.util.HolidayTransferEntry>>()
+    @Volatile private var cachedRecentJwSchoolKeys: List<String>? = null
+    @Volatile private var cachedGridSubInfo: String? = null
+    @Volatile private var cachedHolidayStyle: String? = null
+
+    @androidx.annotation.VisibleForTesting
+    fun clearMemoryCachesForTesting() {
+        cachedVisibleDays = null
+        cachedHolidayRanges = null
+        holidayTransfersCache.clear()
+        cachedRecentJwSchoolKeys = null
+        cachedGridSubInfo = null
+        cachedHolidayStyle = null
+    }
+
     /**
      * 全局 prefs key 变化广播 — UI 用它主动 recompose 而非依赖 SharedPreferences 监听器
      * (主视图在 Compose 里读 prefs, 没显式订阅者就感知不到 change)
@@ -437,11 +455,16 @@ object AppPrefs {
 
     // ===== 网格卡片副信息：教室 / 教师 / 无 =====
 
-    fun getGridSubInfo(ctx: Context): String =
-        sp(ctx).getString(KEY_GRID_SUB_INFO, "room") ?: "room"
+    fun getGridSubInfo(ctx: Context): String {
+        cachedGridSubInfo?.let { return it }
+        val value = sp(ctx).getString(KEY_GRID_SUB_INFO, "room") ?: "room"
+        cachedGridSubInfo = value
+        return value
+    }
 
     fun setGridSubInfo(ctx: Context, value: String) {
         require(value == "room" || value == "teacher" || value == "none")
+        cachedGridSubInfo = value
         sp(ctx).edit().putString(KEY_GRID_SUB_INFO, value).apply()
     }
 
@@ -598,11 +621,16 @@ object AppPrefs {
     // ===== 可见天 =====
 
     fun getVisibleDays(ctx: Context): Set<Int> {
+        cachedVisibleDays?.let { return it }
         val raw = sp(ctx).getString(KEY_VISIBLE_DAYS, "1,2,3,4,5,6,7") ?: "1,2,3,4,5,6,7"
-        return raw.split(",").mapNotNull { it.trim().toIntOrNull() }.toSet()
+        val parsed = raw.split(",").mapNotNull { it.trim().toIntOrNull() }.toSet()
+        cachedVisibleDays = parsed
+        return parsed
     }
 
     fun setVisibleDays(ctx: Context, days: Set<Int>) {
+        val sorted = days.sorted().toSet()
+        cachedVisibleDays = sorted
         sp(ctx).edit().putString(KEY_VISIBLE_DAYS, days.sorted().joinToString(",")).apply()
     }
 
@@ -933,11 +961,16 @@ object AppPrefs {
     }
 
     /** 灰显样式 — 默认 "grey" */
-    fun getHolidayStyle(ctx: Context): String =
-        sp(ctx).getString(KEY_HOLIDAY_STYLE, "grey") ?: "grey"
+    fun getHolidayStyle(ctx: Context): String {
+        cachedHolidayStyle?.let { return it }
+        val style = sp(ctx).getString(KEY_HOLIDAY_STYLE, "grey") ?: "grey"
+        cachedHolidayStyle = style
+        return style
+    }
 
     fun setHolidayStyle(ctx: Context, style: String) {
         require(style == "grey" || style == "strikethrough")
+        cachedHolidayStyle = style
         sp(ctx).edit().putString(KEY_HOLIDAY_STYLE, style).apply()
     }
 
@@ -994,10 +1027,15 @@ object AppPrefs {
     // ===== 节假日用户覆盖（范围化段）=====
 
     /** 用户范围化覆盖段: 编辑/新增/删除节日段。JSON 由 HolidayRangeOps 编解码。 */
-    fun getHolidayRanges(ctx: Context): List<com.lingion.sleepy.util.HolidayRange> =
-        com.lingion.sleepy.util.HolidayRangeOps.decodeOverrides(sp(ctx).getString(KEY_HOLIDAY_OVERRIDES, "[]") ?: "[]")
+    fun getHolidayRanges(ctx: Context): List<com.lingion.sleepy.util.HolidayRange> {
+        cachedHolidayRanges?.let { return it }
+        val parsed = com.lingion.sleepy.util.HolidayRangeOps.decodeOverrides(sp(ctx).getString(KEY_HOLIDAY_OVERRIDES, "[]") ?: "[]")
+        cachedHolidayRanges = parsed
+        return parsed
+    }
 
     fun setHolidayRanges(ctx: Context, ranges: List<com.lingion.sleepy.util.HolidayRange>) {
+        cachedHolidayRanges = ranges
         sp(ctx).edit().putString(KEY_HOLIDAY_OVERRIDES, com.lingion.sleepy.util.HolidayRangeOps.encodeOverrides(ranges)).apply()
     }
 
@@ -1010,12 +1048,17 @@ object AppPrefs {
     private fun transferKey(tableId: Long) = "holiday_transfer_$tableId"
 
     /** 某课表的调休映射; 无表/未设置 = 空(全部按自然星期取课) */
-    fun getHolidayTransfers(ctx: Context, tableId: Long): List<com.lingion.sleepy.util.HolidayTransferEntry> =
-        com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.decodeTransfers(
+    fun getHolidayTransfers(ctx: Context, tableId: Long): List<com.lingion.sleepy.util.HolidayTransferEntry> {
+        holidayTransfersCache[tableId]?.let { return it }
+        val parsed = com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.decodeTransfers(
             sp(ctx).getString(transferKey(tableId), "[]") ?: "[]"
         )
+        holidayTransfersCache[tableId] = parsed
+        return parsed
+    }
 
     fun setHolidayTransfers(ctx: Context, tableId: Long, transfers: List<com.lingion.sleepy.util.HolidayTransferEntry>) {
+        holidayTransfersCache[tableId] = transfers
         sp(ctx).edit().putString(
             transferKey(tableId),
             com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.encodeTransfers(transfers)
@@ -1045,6 +1088,7 @@ object AppPrefs {
 
     /** 删表时清掉该表映射 */
     fun clearHolidayTransfers(ctx: Context, tableId: Long) {
+        holidayTransfersCache.remove(tableId)
         sp(ctx).edit().remove(transferKey(tableId)).apply()
     }
 
@@ -1074,15 +1118,20 @@ object AppPrefs {
 
     // ===== 教务直连：最近导入的学校 =====
 
-    fun getRecentJwSchoolKeys(ctx: Context): List<String> =
-        com.lingion.sleepy.data.jw.RecentJwSchools.sanitize(
+    fun getRecentJwSchoolKeys(ctx: Context): List<String> {
+        cachedRecentJwSchoolKeys?.let { return it }
+        val parsed = com.lingion.sleepy.data.jw.RecentJwSchools.sanitize(
             decodeRecentJwSchoolKeys(sp(ctx).getString(KEY_RECENT_JW_SCHOOLS, "[]") ?: "[]")
         )
+        cachedRecentJwSchoolKeys = parsed
+        return parsed
+    }
 
     /** 仅在一次教务直连导入真正成功后调用；点选学校但未导入不写盘。 */
     fun recordRecentJwSchool(ctx: Context, stableKey: String) {
         if (stableKey.isBlank()) return
         val next = com.lingion.sleepy.data.jw.RecentJwSchools.merge(getRecentJwSchoolKeys(ctx), stableKey)
+        cachedRecentJwSchoolKeys = next
         sp(ctx).edit().putString(KEY_RECENT_JW_SCHOOLS, encodeRecentJwSchoolKeys(next)).apply()
     }
 
