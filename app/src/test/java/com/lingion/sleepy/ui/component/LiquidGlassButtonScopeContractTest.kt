@@ -301,7 +301,7 @@ class LiquidGlassButtonScopeContractTest {
         assertTrue("lens must sample the checked track itself to achieve symmetric refraction",
             src.contains("backdrop = trackBackdrop") && src.contains("shape = { thumbShape }"))
         val backgroundIndex = src.indexOf(".background(thumbColor.copy")
-        val lensIndex = src.indexOf(".drawPlainBackdrop(", backgroundIndex)
+        val lensIndex = src.indexOf(".drawBackdrop(", backgroundIndex)
         assertTrue("Toggle must paint the translucent thumb before the lens so the track is visible inside it", backgroundIndex >= 0 && lensIndex > backgroundIndex)
     }
 
@@ -336,16 +336,14 @@ class LiquidGlassButtonScopeContractTest {
         )
         assertTrue("thumb shape must be fully-rounded (ellipse at rest, capsule when wide)",
             Regex("""RoundedCornerShape\(50\)""").containsMatchIn(src))
-        // 升镜生长沿 lift 连续 (Dock lensGrowth×lift)
-        assertTrue("switch thumb scales into the reference capsule",
-            src.contains("scaleX = 1f + 0.2f * lift") && src.contains("scaleY = 1f + 0.2f * lift"))
-        assertTrue("pressed glass capsule must use restrained dispersion and a bright surface",
-            src.contains("brightness = if (dark) 1.12 else 1.08") && src.contains("dispersion = 1.8"))
-        val chain = src.substringAfter(".requiredSize(thumbWidth.dp, thumbHeight.dp)").substringBefore("contentAlignment = Alignment.Center")
-        assertTrue("shadow must follow the capsule shape", chain.contains(".shadow((8f * lift).dp, thumbShape, clip = false)"))
+        assertFalse("scaling a sampled texture must not magnify or displace the underlying track", src.contains("scaleX = 1f + 0.2f * lift"))
+        assertTrue("pressed glass capsule must share the control optical factory",
+            src.contains("val baseLens = LiquidGlassStyle.controlLens(scheme, dark)"))
+        val chain = src.substringAfter(".requiredSize((thumbWidth *").substringBefore("contentAlignment = Alignment.Center")
+        assertTrue("shadow must follow the shared FLClash profile", chain.contains("controlLensShadow(dark, lift)"))
         assertTrue("lens backdrop must follow the capsule shape", chain.contains("shape = { thumbShape }"))
         assertTrue("light pressed thumb must reveal the sampled backdrop as an optical lens",
-            chain.contains("thumbColor.alpha * (1f - 0.78f * lift)"))
+            chain.contains("thumbColor.alpha * (1f - lift)"))
         assertFalse("thumb chain must not pin a plain CircleShape", chain.contains("CircleShape"))
     }
 }

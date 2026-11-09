@@ -22,9 +22,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
@@ -34,9 +32,10 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.kyant.backdrop.backdrops.rememberCombinedBackdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import com.kyant.backdrop.drawPlainBackdrop
+import com.kyant.backdrop.drawBackdrop
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
@@ -45,7 +44,7 @@ import kotlin.math.PI
 import kotlin.math.sin
 
 /**
- * FlClash switch.dart：实心轨道，按住时滑块升起为采样轨道的镜片。
+ * 实心轨道，按住时滑块升起为采样轨道与宿主背景的镜片。
  *
  * 几何真源: sleepy/docs/liquid-glass-ios27/controls/controls-toggle.md §1
  * (sarunw iOS17↔26 对比图 @3x 像素尺实测; 2026-11-06 重测修订, ±0.5pt):
@@ -145,32 +144,17 @@ fun GlassSwitch(
     val thumbColor = if (enabled) lerp(colors.uncheckedThumbColor, colors.checkedThumbColor, on)
         else lerp(colors.disabledUncheckedThumbColor, colors.disabledCheckedThumbColor, on)
     val stretch = sin(PI * on).toFloat()
-    // 静置即横椭圆 37×24 (2026-11-06 重测: 轨道 84px 高、白核 72px 高 → 上下各 2pt 留白;
-    // 旧 26 高把留白吃成 1dp, 白块顶天立地); 拖动过中线橡皮筋展宽到 49,
-    // 按住/拖动升镜片再 +16 (用户 2026-11-04: 宽度变宽、圆形泡成胶囊)。
-    // 2026-11-06 用户: "浮起的玻璃块高度不够，没有超出上下边缘" —— iOS 参考帧实测
-    // 按压镜片 129×65px vs 静置轨道 127×55px = 镜片高 1.18× 轨道, 上下缘各溢出;
-    // 旧值 24×1.105=26.5dp 仍矮于 28dp 轨道 = 永远不越界。升镜高度 +6 (24→30,
-    // 再 ×1.105 生长 = 33.2dp = 轨道 1.19×); 宽度 +16 仍远大于高度增量,
-    // 全升时 53:30 = 1.77 胶囊比, 40x38 方形气泡旧 bug 不会借道回归。
+    // The physical lens grows around its center; the track stays at its original scale.
     val thumbWidth = (37f + 12f * stretch) + 16f * lift
     val thumbHeight = (24f - 2f * stretch) + 6f * lift
     val thumbShape = androidx.compose.foundation.shape.RoundedCornerShape(50)
     val track = rememberLayerBackdrop()
-    val trackBackdrop = track
+    val samplingHost = if (LocalGlassOverlay.current) LocalGlassOverlaySamplingHost.current ?: host else host
+    val scene = if (LocalGlassOverlay.current) samplingHost.overlayBackdrop else samplingHost.backdropAt(LocalGlassDepth.current)
+    val trackBackdrop = rememberCombinedBackdrop(scene, track)
     val context = LocalContext.current
     val dark = LocalDarkTheme.current
-    val baseLens = LiquidGlassStyle.lens(scheme, dark).copy(
-        refraction = -8.5,
-        bevel = 9.0,
-        brightness = if (dark) 1.12 else 1.08,
-        rim = if (dark) 0.48 else 0.72,
-        rimWidth = 1.2,
-        endShade = 0.06,
-        dispersion = 1.8,
-        hairline = 0.28,
-        contrast = 0.0,
-    )
+    val baseLens = LiquidGlassStyle.controlLens(scheme, dark)
     val lensStyle = baseLens.scale(lift.toDouble())
     // 热区 68×48: 轨道 63×28 居中; 高度保留 Material 无障碍契约 ≥48dp
     // （GlassSwitchTest.minimumTarget 断言, iOS 实测热区仅 51×31, 平台兼容取大者）。
@@ -184,20 +168,16 @@ fun GlassSwitch(
             // 位移 = (position−0.5)×行程 22dp: 白块两端各留 2dp, 与上下留白对称
             // (2026-11-06 逐图核对 sarunw-toggles-ios26.png: 四周均 2pt margin)。
             Modifier.offset(x = ((if (rtl) .5f - position else position - .5f) * 22f).dp)
-                .requiredSize(thumbWidth.dp, thumbHeight.dp)
-                // 升镜时沿生长方向轻微外扩 (Dock lensGrowth×lift 语义, 比例随 lift)
-                .graphicsLayer {
-                    if (lift > 0f) {
-                        scaleX = 1f + 0.2f * lift
-                        scaleY = 1f + 0.2f * lift
-                    }
-                }
-                .shadow((8f * lift).dp, thumbShape, clip = false)
-                .background(thumbColor.copy(alpha = thumbColor.alpha * (1f - 0.78f * lift)), thumbShape)
-                .then(if (lift > 0f) Modifier.drawPlainBackdrop(
+                // Measure the lifted size as FLClash's positioned lens does. Scaling the
+                // sampled texture afterwards also scales the track and shifts its center.
+                .requiredSize((thumbWidth * (1f + .2f * lift)).dp, (thumbHeight * (1f + .2f * lift)).dp)
+                .background(thumbColor.copy(alpha = thumbColor.alpha * (1f - lift)), thumbShape)
+                .then(if (lift > 0f) Modifier.drawBackdrop(
                         backdrop = trackBackdrop,
                         shape = { thumbShape },
                         effects = { liquidGlass(context = context, style = lensStyle) },
+                        highlight = null,
+                        shadow = { LiquidGlassStyle.controlLensShadow(dark, lift) },
                     )
                 else Modifier),
             contentAlignment = Alignment.Center,

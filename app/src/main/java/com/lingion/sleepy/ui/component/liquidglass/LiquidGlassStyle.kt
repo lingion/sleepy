@@ -4,6 +4,9 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.dp
+import com.kyant.backdrop.shadow.Shadow
 import material.Hct
 
 /**
@@ -221,6 +224,15 @@ data class LiquidGlassStyle(
                 rimBlur = 1.5,
                 hairline = 0.42,
             )
+
+        /** The reference controls bend their track without the Dock's RGB separation. */
+        fun controlLens(colorScheme: ColorScheme, dark: Boolean): LiquidGlassStyle =
+            lens(colorScheme, dark).copy(dispersion = 0.0)
+
+        /** FLClash navigation_dock.dart `_lensShadows`, shared by the floating controls. */
+        fun controlLensShadow(dark: Boolean, lift: Float): Shadow =
+            Shadow(radius = 5.dp, offset = DpOffset(0.dp, 8.dp),
+                color = Color.Black.copy(alpha = .055f * (if (dark) 3f else 1f) * lift.coerceIn(0f, 1f)))
 
         fun lensContent(colorScheme: ColorScheme, dark: Boolean): LiquidGlassStyle =
             LiquidGlassStyle(
