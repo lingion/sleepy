@@ -10,6 +10,7 @@ import shutil
 import stat
 import subprocess
 import sys
+import time
 import zipfile
 
 _spec = importlib.util.spec_from_file_location("debug_ci", Path(__file__).with_name("debug_ci.py"))
@@ -108,8 +109,8 @@ def current_build(event, context):
 
 def artifacts(run_id):
     pages = json.loads(subprocess.check_output([
-        "gh", "api", "--paginate", "--slurp",
-        f"repos/{REPOSITORY}/actions/runs/{run_id}/artifacts?per_page=100"], text=True))
+        "gh", "api", "--paginate", "--slurp", "-H", "Cache-Control: no-cache",
+        f"repos/{REPOSITORY}/actions/runs/{run_id}/artifacts?per_page=100"], text=True, stderr=subprocess.PIPE))
     return [item for page in pages for item in page["artifacts"]]
 
 
@@ -245,17 +246,53 @@ def cleanup_artifacts(destination, context):
     for field in ("run_id", "run_attempt"):
         if info[field] != context[field]:
             raise ValueError("Cleanup identity differs from current attempt")
-    expected = set()
+    expected = {}
     for abi in ci.selected_abis(info["abi"]):
         metadata = json.loads((destination / abi / "build-info.json").read_text())
-        expected.add(Path(metadata["apk"]).stem)
-    items = artifacts(int(context["run_id"]))
-    live = [item for item in items if not item["expired"] and item["name"] in expected]
-    if len(live) != len(expected) or {item["name"] for item in live} != expected:
-        raise ValueError("Not all official ABI artifacts were published; retaining signing input")
-    for item in items:
-        if item["workflow_run"]["id"] != int(context["run_id"]):
-            raise ValueError("Artifact belongs to another run")
+        name = Path(metadata["apk"]).stem
+        if name in expected:
+            raise ValueError("Duplicate official ABI metadata; retaining signing input")
+        expected[name] = abi
+    run_id = int(context["run_id"])
+    delays = (1, 2, 4, 8)
+
+    def diagnostic(check, status, **fields):
+        # Artifact names and upstream error bodies may contain private or multiline text.
+        print("Official artifact cleanup: " + json.dumps(dict(
+            check=check, max_checks=len(delays) + 1, status=status,
+            expected_abis=list(expected.values()), **fields)), file=sys.stderr)
+
+    for check in range(1, len(delays) + 2):
+        try:
+            items = artifacts(run_id)
+        except (subprocess.CalledProcessError, OSError, ValueError, KeyError, TypeError) as error:
+            diagnostic(check, "api-error", error_type=type(error).__name__)
+            raise ValueError("Artifact listing failed; retaining signing input") from None
+        # Validate every entry before any DELETE, including later cleanup candidates.
+        valid = isinstance(items, list) and all(
+            isinstance(item, dict) and type(item.get("id")) is int and item["id"] > 0
+            and isinstance(item.get("name"), str) and type(item.get("expired")) is bool
+            and isinstance(item.get("workflow_run"), dict)
+            and type(item["workflow_run"].get("id")) is int and item["workflow_run"]["id"] == run_id
+            for item in items)
+        if not valid or len({item["id"] for item in items}) != len(items):
+            diagnostic(check, "integrity-error")
+            raise ValueError("Invalid artifact inventory or run identity; retaining signing input")
+        matched = [item for item in items if item["name"] in expected]
+        observed = [{"id": item["id"], "name_sha256": hashlib.sha256(
+            item["name"].encode("utf-8", errors="replace")).hexdigest(),
+            "abi": expected.get(item["name"]), "expired": item["expired"]} for item in items
+            if item["name"] in expected or item["name"].startswith(("sleepy-debug-official-", "debug-signing-input-"))]
+        if len({item["name"] for item in matched}) != len(matched) or any(item["expired"] for item in matched):
+            diagnostic(check, "integrity-error", observed=observed)
+            raise ValueError("Duplicate or expired official ABI artifacts; retaining signing input")
+        missing = [abi for name, abi in expected.items() if not any(item["name"] == name for item in matched)]
+        diagnostic(check, "incomplete" if missing else "complete", missing_abis=missing, observed=observed)
+        if not missing:
+            break
+        if check > len(delays):
+            raise ValueError("Not all official ABI artifacts were published; retaining signing input")
+        time.sleep(delays[check - 1])
     for item in items:
         if item["name"] not in expected and (
                 item["name"].startswith(f"debug-signing-input-{context['run_id']}-")
