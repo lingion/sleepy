@@ -80,7 +80,8 @@ class ScheduleToolbarRenderTest {
 
     private fun save(name: String) {
         val bitmap = compose.onRoot().captureToImage().asAndroidBitmap()
-        val directory = File(InstrumentationRegistry.getInstrumentation().targetContext.cacheDir, "glass-route-matrix").apply { mkdirs() }
+        val output = InstrumentationRegistry.getArguments().getString("glassCaptureDirectory") ?: "glass-route-matrix"
+        val directory = File(InstrumentationRegistry.getInstrumentation().targetContext.cacheDir, output).apply { mkdirs() }
         File(directory, "$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
         println("GLASS_TOOLBAR_CAPTURE=$name")
     }
