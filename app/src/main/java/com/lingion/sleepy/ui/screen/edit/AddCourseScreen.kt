@@ -1125,7 +1125,12 @@ private fun SwitchRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyMedium,
@@ -1142,7 +1147,7 @@ private fun SwitchRow(
 }
 
 @Composable
-private fun MeetingBlockEditor(
+internal fun MeetingBlockEditor(
     title: String,
     block: MeetingBlockDraft,
     groupSourceColorHex: String,
@@ -1175,19 +1180,19 @@ private fun MeetingBlockEditor(
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // 卡头 = 折叠开关 (用户定令 2026-11-09, 同日版式二修): 收起态只显示
-        // 标题 + 两行摘要文字, 星期/节次控件一律收进展开区; 版式裁定 =
-        // 文案独占行宽在最左, 右侧按钮簇 删除叉在左、折叠箭头最右。
+        // 卡头 = 折叠开关 (用户定令 2026-11-09): 收起态只显示标题 + 两行摘要文字,
+        // 星期/节次控件一律收进展开区; 顺序不变量: 标题和摘要 [删除叉] [折叠箭头].
+        // 文案居左 (weight 1f 独占剩余行宽), 右侧动作簇为统一 48dp IconButton (8dp 间距).
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.Top
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .noRippleGlassClickable { block.expanded = !block.expanded }
-                    .padding(top = 10.dp, bottom = 10.dp, end = 4.dp),
+                    .padding(vertical = 4.dp),
                 verticalArrangement = Arrangement.spacedBy(3.dp)
             ) {
                 Text(
@@ -1199,24 +1204,19 @@ private fun MeetingBlockEditor(
             }
             if (canRemove) {
                 IconButton(onClick = onRemove) {
-                    Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.delete_slot), tint = colors.onSurfaceVariant)
+                    Icon(
+                        Icons.Outlined.Close,
+                        contentDescription = stringResource(R.string.delete_slot),
+                        tint = colors.onSurfaceVariant
+                    )
                 }
             }
-            // 箭头独立最右且同样可点 — 整行只剩文字区 + 这一个圆点, 两处热区合并
-            // 成"文字或箭头"的展开开关, 与两按钮右对齐簇的版式裁定共存。
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .noRippleGlassClickable { block.expanded = !block.expanded },
-                contentAlignment = Alignment.Center
-            ) {
+            IconButton(onClick = { block.expanded = !block.expanded }) {
                 Icon(
                     Icons.Outlined.ExpandMore,
-                    contentDescription = null,
+                    contentDescription = stringResource(if (block.expanded) R.string.collapse else R.string.expand),
                     tint = colors.onSurfaceVariant,
-                    modifier = Modifier
-                        .size(20.dp)
-                        .rotate(chevronRotation)
+                    modifier = Modifier.rotate(chevronRotation)
                 )
             }
         }
@@ -1870,7 +1870,8 @@ private fun GroupColorSection(
                 text = if (CourseColorUtil.hasCustomColorHex(groupSourceColorHex)) groupSourceColorHex
                 else stringResource(R.string.color_group_auto),
                 style = MaterialTheme.typography.labelSmall,
-                color = colors.onSurfaceVariant
+                color = colors.onSurfaceVariant,
+                modifier = Modifier.weight(1f, fill = false)
             )
             Spacer(modifier = Modifier.weight(1f))
             Button(
@@ -1912,16 +1913,21 @@ private fun ColorSection(
             Text(
                 text = stringResource(R.string.course_color),
                 style = MaterialTheme.typography.labelLarge,
-                color = colors.onSurfaceVariant
+                color = colors.onSurfaceVariant,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp)
             )
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 // 文案只描述开=什么 (2026-09-15 用户令): 静态「自定义颜色」, 不随开关态变
                 Text(
                     text = stringResource(R.string.color_custom_switch),
                     style = MaterialTheme.typography.labelSmall,
                     color = colors.onSurfaceVariant
                 )
-                Spacer(modifier = Modifier.width(8.dp))
                 Switch(
                     checked = useDifferent,
                     onCheckedChange = { on ->
