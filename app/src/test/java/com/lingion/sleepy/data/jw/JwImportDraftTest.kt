@@ -160,6 +160,39 @@ class JwImportDraftTest {
         assertEquals(JwImportDraftPhase.WEBVIEW_LOGIN, decoded?.phase)
     }
 
+    @Test fun `editable semester text preserves invalid incomplete and formatted input`() {
+        for (typedText in listOf("367", "", "abc", "2147483648", "00024")) {
+            val json = org.json.JSONObject(JwImportDraftCodec.toJson(snapshot.copy(termWeekCount = 0)))
+                .put("termWeekText", typedText)
+            val restored = JwImportDraftCodec.fromJson(json.toString())
+            org.junit.Assert.assertNotNull("Editor text is recoverable even before validation: $typedText", restored)
+            val encoded = org.json.JSONObject(JwImportDraftCodec.toJson(requireNotNull(restored)))
+            assertEquals("Raw editor text must survive exactly", typedText, encoded.opt("termWeekText"))
+            assertEquals(0, restored.termWeekCount)
+            assertEquals(snapshot.courses, restored.courses)
+            assertEquals(snapshot.periods, restored.periods)
+        }
+    }
+
+    @Test fun `editor text does not relax numeric week bounds or coerce other JSON types`() {
+        val outsideDomain = org.json.JSONObject(JwImportDraftCodec.toJson(snapshot.copy(termWeekCount = 367)))
+            .put("termWeekText", "367")
+        assertNull(JwImportDraftCodec.fromJson(outsideDomain.toString()))
+        for (invalidText in listOf(org.json.JSONObject.NULL, 367, true, org.json.JSONArray())) {
+            val json = org.json.JSONObject(JwImportDraftCodec.toJson(snapshot)).put("termWeekText", invalidText)
+            assertNull("Only a JSON string is accepted when editor text is present", JwImportDraftCodec.fromJson(json.toString()))
+        }
+    }
+
+    @Test fun `legacy drafts without editor text retain their explicit semester length`() {
+        val legacy = snapshot.copy(termWeekCount = 24)
+        val json = org.json.JSONObject(JwImportDraftCodec.toJson(legacy)).apply { remove("termWeekText") }
+        val restored = requireNotNull(JwImportDraftCodec.fromJson(json.toString()))
+        assertEquals(legacy, restored)
+        assertEquals(24, restored.termWeekCount)
+        org.junit.Assert.assertFalse(org.json.JSONObject(JwImportDraftCodec.toJson(restored)).has("termWeekText"))
+    }
+
     @Test
     fun `json uses explicit schema and preserves course ordering`() {
         val json = JwImportDraftCodec.toJson(snapshot)
