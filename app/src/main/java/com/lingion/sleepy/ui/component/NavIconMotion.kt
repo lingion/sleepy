@@ -1,8 +1,11 @@
 package com.lingion.sleepy.ui.component
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.runtime.Composable
@@ -122,52 +125,34 @@ class NavIconDriver internal constructor(internal val key: NavIconMotionKey) {
         wasSelected = selected
     }
 
+    /** 部件渲染层逐帧直读用(draw lambda 里读 state → 仅本节点重绘)。 */
+    internal fun pulsePhase(): Float = pulse.value
+
+    internal fun spinRadians(): Float = spin.value
+
     internal suspend fun activate() {
         when (key) {
             NavIconMotionKey.PageFlip -> {
                 pulse.snapTo(1f)
                 pulse.animateTo(
                     0f,
-                    spring(
-                        dampingRatio = Spring.DampingRatioLowBouncy,
-                        stiffness = Spring.StiffnessMediumLow,
-                    ),
+                    tween(durationMillis = 650, easing = LinearEasing),
                 )
             }
 
             NavIconMotionKey.Hop -> {
-                pulse.snapTo(0f)
-                pulse.animateTo(
-                    1f,
-                    spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessMedium,
-                    ),
-                )
+                pulse.snapTo(1f)
                 pulse.animateTo(
                     0f,
-                    spring(
-                        dampingRatio = Spring.DampingRatioNoBouncy,
-                        stiffness = Spring.StiffnessMediumLow,
-                    ),
+                    tween(durationMillis = 500, easing = FastOutSlowInEasing),
                 )
             }
 
             NavIconMotionKey.Jelly -> {
-                pulse.snapTo(0f)
-                pulse.animateTo(
-                    1f,
-                    spring(
-                        dampingRatio = Spring.DampingRatioLowBouncy,
-                        stiffness = Spring.StiffnessMedium,
-                    ),
-                )
+                pulse.snapTo(1f)
                 pulse.animateTo(
                     0f,
-                    spring(
-                        dampingRatio = Spring.DampingRatioNoBouncy,
-                        stiffness = Spring.StiffnessMediumLow,
-                    ),
+                    tween(durationMillis = 600, easing = FastOutSlowInEasing),
                 )
             }
 
@@ -176,7 +161,7 @@ class NavIconDriver internal constructor(internal val key: NavIconMotionKey) {
                     spin.value + PI.toFloat() / 2f,
                     spring(
                         dampingRatio = Spring.DampingRatioLowBouncy,
-                        stiffness = Spring.StiffnessMediumLow,
+                        stiffness = Spring.StiffnessLow,
                     ),
                 )
             }
@@ -202,7 +187,7 @@ class NavIconDriver internal constructor(internal val key: NavIconMotionKey) {
         // 动作几何单真源 = transformFor(纯函数, 契约测试直接锁它);
         // 本处只负责把它灌进 GraphicsLayerScope。四属性全显式赋值 →
         // 非该 key 的分量恒回默认(0/1), 不留上一 key 的残值。
-        val t = transformFor(key, pulse.value, spin.value, layer.size.height.toFloat())
+        val t = transformFor(key, pulse.value, spin.value, layer.size.height)
         layer.scaleX = t.scaleX
         layer.scaleY = t.scaleY
         layer.translationY = t.translationY
