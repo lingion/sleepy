@@ -151,6 +151,8 @@ object AppPrefs {
     const val KEY_HOLIDAY_REMINDER_TRANSFER_HOLIDAY = "holiday_reminder_transfer_holiday"
     const val KEY_HOLIDAY_REMINDER_MAKEUP_WORKDAY = "holiday_reminder_makeup_workday"
     const val KEY_HOLIDAY_REMINDER_ORDINARY_WEEKEND = "holiday_reminder_ordinary_weekend"
+    /** JSON array of JwSchoolInfo.stableKey — 教务直连最近成功导入的学校, 最多 3 个。 */
+    const val KEY_RECENT_JW_SCHOOLS = "recent_jw_schools"
 
     private fun sp(ctx: Context): SharedPreferences =
         ctx.applicationContext.getSharedPreferences(FILE, Context.MODE_PRIVATE)
@@ -1069,4 +1071,42 @@ object AppPrefs {
     fun clearCurrentTableId(ctx: Context) {
         sp(ctx).edit().remove(KEY_CURRENT_TABLE_ID).apply()
     }
+
+    // ===== 教务直连：最近导入的学校 =====
+
+    fun getRecentJwSchoolKeys(ctx: Context): List<String> =
+        com.lingion.sleepy.data.jw.RecentJwSchools.sanitize(
+            decodeRecentJwSchoolKeys(sp(ctx).getString(KEY_RECENT_JW_SCHOOLS, "[]") ?: "[]")
+        )
+
+    /** 仅在一次教务直连导入真正成功后调用；点选学校但未导入不写盘。 */
+    fun recordRecentJwSchool(ctx: Context, stableKey: String) {
+        if (stableKey.isBlank()) return
+        val next = com.lingion.sleepy.data.jw.RecentJwSchools.merge(getRecentJwSchoolKeys(ctx), stableKey)
+        sp(ctx).edit().putString(KEY_RECENT_JW_SCHOOLS, encodeRecentJwSchoolKeys(next)).apply()
+    }
+
+    /** 同一 Activity 内导入成功后退回选校页也能立刻看到新条目。 */
+    fun recentJwSchoolKeysFlow(ctx: Context): Flow<List<String>> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_RECENT_JW_SCHOOLS) trySend(getRecentJwSchoolKeys(ctx))
+        }
+        val preferences = sp(ctx)
+        preferences.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getRecentJwSchoolKeys(ctx))
+        awaitClose { preferences.unregisterOnSharedPreferenceChangeListener(listener) }
+    }.distinctUntilChanged()
+
+    private fun encodeRecentJwSchoolKeys(keys: List<String>): String {
+        val array = org.json.JSONArray()
+        keys.forEach { array.put(it) }
+        return array.toString()
+    }
+
+    private fun decodeRecentJwSchoolKeys(json: String): List<String> = try {
+        val array = org.json.JSONArray(json)
+        (0 until array.length()).mapNotNull { index ->
+            array.optString(index, "").takeIf { it.isNotBlank() }
+        }
+    } catch (_: Exception) { emptyList() }
 }

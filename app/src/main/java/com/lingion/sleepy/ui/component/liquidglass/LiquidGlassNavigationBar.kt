@@ -72,7 +72,7 @@ import com.kyant.shapes.Capsule
 import com.lingion.sleepy.ui.component.NavIconDriver
 import com.lingion.sleepy.ui.component.NavIconDriverEffects
 import com.lingion.sleepy.ui.component.PillNavItemSpec
-import com.lingion.sleepy.ui.component.navIconMotion
+import com.lingion.sleepy.ui.component.NavPartIcon
 import com.lingion.sleepy.ui.component.rememberNavIconDrivers
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import material.Hct
@@ -985,13 +985,12 @@ private fun DestinationsRow(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Box(modifier = Modifier.size(24.dp)) {
-                        Icon(
-                            imageVector = item.icon,
-                            contentDescription = item.label,
+                        NavPartIcon(
+                            driver = iconDrivers.getOrNull(index),
+                            fallback = item.icon,
                             tint = tint,
-                            modifier = Modifier
-                                .navIconMotion(iconDrivers.getOrNull(index))
-                                .size(24.dp),
+                            iconSize = 24.dp,
+                            contentDescription = item.label,
                         )
                         if (item.badge) {
                             Box(
