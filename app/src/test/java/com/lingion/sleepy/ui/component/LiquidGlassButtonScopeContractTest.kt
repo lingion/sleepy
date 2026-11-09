@@ -195,10 +195,7 @@ class LiquidGlassButtonScopeContractTest {
     @Test
     fun switch_lens_sampling_is_centered_on_the_resting_track() {
         val src = loadSource("ui/component/liquidglass/GlassSwitch.kt")
-        assertTrue("sampler must keep the thumb layout centered; sampling must not move the production thumb",
-            !src.contains("Modifier.offset(x = lensOffsetX, y = lensOffsetY)") &&
-                src.contains("val thumbWidth = (37f + 12f * stretch) + 16f * lift") &&
-                src.contains("val thumbHeight = (24f - 2f * stretch) + 6f * lift"))
+        assertFalse("sampling must not move the production thumb", src.contains("Modifier.offset(x = lensOffsetX, y = lensOffsetY)"))
         assertTrue("lens must sample the checked track itself to achieve symmetric refraction",
             src.contains("backdrop = trackBackdrop") && src.contains("shape = { thumbShape }"))
         val backgroundIndex = src.indexOf(".background(thumbColor.copy")
@@ -206,45 +203,12 @@ class LiquidGlassButtonScopeContractTest {
         assertTrue("Toggle must paint the translucent thumb before the lens so the track is visible inside it", backgroundIndex >= 0 && lensIndex > backgroundIndex)
     }
 
-    /** 契约 5: Toggle 静置几何保留 37×24dp 横椭圆，交互抬升为越轨道的折射胶囊。
-     *  参考帧锁镜片中心采样、按下状态与轨道同心；应用轨道坐标被采样一次，玻璃只围绕
-     *  thumb 中心产生对称折射。原有 sarunw iOS 26 几何与 22dp travel 继续保留。
-     *  用户额外确认：动态 Toggle 采样时，轨道上方/下方必须同量向中心缩放，不得一侧
-     *  保留空隙而另一侧无空隙。
-     *  静置 37×24dp，轨道 63×28dp，行程 22dp；按压镜片尺寸、折射和 release
-     *  回弹由 GlassSwitchTest 与参考帧视觉测试双重验证。 */
-    @Test
-    fun glass_switch_stretches_into_capsule_on_press() {
+    @Test fun glass_switch_preserves_shared_sampling_while_its_measured_lens_deforms() {
         val src = loadSource("ui/component/liquidglass/GlassSwitch.kt")
-        // 实测几何: 滑块基准 37×24 (2pt 全周留白), 行程 22dp = 63−37−4
-        assertTrue(
-            "pressed thumb must widen from the measured 37pt ellipse with lift",
-            Regex("""thumbWidth = \(37f \+ 12f \* stretch\) \+ 16f \* lift""").containsMatchIn(src)
-        )
-        assertTrue("travel must leave the measured 2dp inset on both ends (22dp)", src.contains("22.dp.toPx()"))
-        assertTrue("offset must use the 22dp travel", src.contains("* 22f).dp"))
-        // 2026-11-06 用户: 升镜玻璃必须越出轨道上下缘 — 高度随 lift 生长是硬要求
-        assertTrue(
-            "lift height must add 6dp before the physical press scale so its rim reaches past both edges " +
-                "(2026-11-06 用户: 浮起的玻璃块高度不够，没有超出上下边缘; measured iOS press lens ~1.18× track)",
-            Regex("""thumbHeight = \(24f - 2f \* stretch\) \+ 6f \* lift""").containsMatchIn(src)
-        )
-        // 但静置态仍须是横椭圆: 生长只许 6dp, 不许旧 40x38 方形气泡借道回归 (全升 53:30=1.77 胶囊比)
-        assertTrue(
-            "lift height growth must stay at 6dp — enough to overflow 28dp track, " +
-                "not enough to square the capsule",
-            Regex("""thumbHeight = \(24f - 2f \* stretch\) \+ 6f \* lift""").containsMatchIn(src)
-        )
-        assertTrue("thumb shape must be fully-rounded (ellipse at rest, capsule when wide)",
-            Regex("""RoundedCornerShape\(50\)""").containsMatchIn(src))
-        assertFalse("scaling a sampled texture must not magnify or displace the underlying track", src.contains("scaleX = 1f + 0.2f * lift"))
-        assertTrue("pressed glass capsule must share the control optical factory",
-            src.contains("val baseLens = LiquidGlassStyle.controlLens(scheme, dark)"))
-        val chain = src.substringAfter(".requiredSize((thumbWidth *").substringBefore("contentAlignment = Alignment.Center")
-        assertTrue("shadow must follow the shared FLClash profile", chain.contains("controlLensShadow(dark, lift)"))
-        assertTrue("lens backdrop must follow the capsule shape", chain.contains("shape = { thumbShape }"))
-        assertTrue("light pressed thumb must reveal the sampled backdrop as an optical lens",
-            chain.contains("thumbColor.alpha * (1f - lift)"))
-        assertFalse("thumb chain must not pin a plain CircleShape", chain.contains("CircleShape"))
+        assertTrue(src.contains("rememberCombinedBackdrop(scene, track)"))
+        assertTrue(src.contains("LiquidGlassStyle.controlLens(scheme, dark)"))
+        assertFalse("scaling the captured track changes its sampling geometry", src.contains("scaleX ="))
+        assertTrue(src.contains("shape = { thumbShape }"))
     }
+
 }

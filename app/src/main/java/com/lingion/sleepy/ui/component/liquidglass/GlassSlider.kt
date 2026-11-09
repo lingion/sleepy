@@ -106,6 +106,10 @@ private fun GlassSliderBody(
     val view = LocalView.current
     val backdrop = rememberLayerBackdrop()
     var active by remember { mutableIntStateOf(-1) }
+    var startActivation by remember { mutableIntStateOf(0) }
+    var endActivation by remember { mutableIntStateOf(0) }
+    val startMotion = rememberGlassControlMotion(fraction(start), active == 0, active == 0, startActivation, enabled)
+    val endMotion = rememberGlassControlMotion(fraction(end), active == 1, active == 1, endActivation, enabled)
     val primary = thumbColor
     val inactive = MaterialTheme.colorScheme.onSurface.copy(alpha = .12f)
     val inset = with(density) { (GlassSliderThumbMetrics.RESTING_WIDTH / 2).dp.toPx() }
@@ -139,6 +143,7 @@ private fun GlassSliderBody(
                     val downValue = at(down.position.x)
                     val now = currentValue
                     active = if (range && abs(downValue - now.start) < abs(downValue - now.endInclusive)) 0 else 1
+                    if (active == 0) startActivation++ else endActivation++
                     var lastTick = (fraction(if (active == 0) now.start else now.endInclusive) * (if (steps > 0) steps + 1 else 40)).roundToInt()
                     LiquidGlassHaptics.selectionClick(view)
                     // A touch on the thumb keeps its center under the same finger offset.
@@ -170,8 +175,8 @@ private fun GlassSliderBody(
             // This sibling records only ordinary pixels; neither thumb is inside its source.
             Box(Modifier.fillMaxSize().layerBackdrop(backdrop)) {
                 Canvas(Modifier.fillMaxSize()) {
-                    fun x(v: Float): Float {
-                        val f = fraction(v)
+                    fun x(position: Float): Float {
+                        val f = position.coerceIn(0f, 1f)
                         return inset + (size.width - inset * 2) * if (rtl) 1f - f else f
                     }
                     val trackHeight = 4.dp.toPx()
@@ -180,8 +185,8 @@ private fun GlassSliderBody(
                     if (trackBrush != null) {
                         drawRoundRect(trackBrush, Offset(inset, top), Size(size.width - 2 * inset, trackHeight), CornerRadius(trackHeight / 2))
                     } else {
-                        val x1 = x(if (range) start else valueRange.start)
-                        val x2 = x(end)
+                        val x1 = x(if (range) startMotion.position.value else 0f)
+                        val x2 = x(endMotion.position.value)
                         drawRoundRect(primary, Offset(minOf(x1, x2), top), Size(abs(x2 - x1), trackHeight), CornerRadius(trackHeight / 2))
                     }
                 }
@@ -212,6 +217,8 @@ private fun GlassSliderBody(
                     trackBackdrop = backdrop,
                     pressedOverride = active == index,
                     colorOverride = primary,
+                    enabled = enabled,
+                    motionOverride = if (index == 0) startMotion else endMotion,
                     modifier = Modifier.testTag(if (index == 0) "glass-slider-start" else "glass-slider-end")
                         .semantics {
                             if (!enabled) disabled()
@@ -246,7 +253,7 @@ private fun GlassSliderBody(
             track.place(0, 0)
             thumbs.forEachIndexed { i, thumb ->
                 val index = if (range) i else 1
-                val f = fraction(if (index == 0) start else end)
+                val f = (if (index == 0) startMotion else endMotion).position.value
                 val x = inset + (width - 2 * inset) * (if (rtl) 1f - f else f)
                 thumb.placeWithLayer((x - thumb.width / 2f).roundToInt(), (height - thumb.height) / 2)
             }
