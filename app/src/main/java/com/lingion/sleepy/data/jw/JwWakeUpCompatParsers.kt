@@ -27,6 +27,8 @@ internal object WakeUpCompat {
             "JinZhiCourseFormTable" to ::parseJzHtml,
             "JinZhiMtt" to ::parseJzMtt,
             "WIST" to ::parseJzWist,
+            "JinZhiHqu" to { html -> parseJzMttLayout(html, JzMttLayout.HQU) },
+            "JinZhiXjtu" to { html -> parseJzMttLayout(html, JzMttLayout.XJTU) },
             "JinZhiX" to ::parseJzX,
             "JinZhiPost" to ::parseJzPost,
             "JinZhiXTable" to ::parseJzXTable,
@@ -268,8 +270,12 @@ internal object WakeUpCompat {
         return (first to last).takeIf { first > 0 && last >= first }
     }
 
-    /** WakeUp 6.6.2 JZ standard, HQU and XJTU layouts use the same item classes. */
-    internal fun parseJzMtt(source: String): List<JwCourse> {
+    private enum class JzMttLayout { COMMA, HQU, XJTU }
+
+    internal fun parseJzMtt(source: String): List<JwCourse> = parseJzMttLayout(source, JzMttLayout.COMMA)
+
+    /** Shared item classes do not make these layouts additive schedules. */
+    private fun parseJzMttLayout(source: String, layout: JzMttLayout): List<JwCourse> {
         val table = Jsoup.parse(source.replace("divclass=", "div class=")).selectFirst(".wut_table")
             ?: return emptyList()
         return buildList {
@@ -280,6 +286,12 @@ internal object WakeUpCompat {
                     val headingWeeks = heading.firstOrNull { Regex("""\d周""").containsMatchIn(it) }
                     val roomText = item.selectFirst(".mtt_item_room")?.text()?.trim() ?: continue
                     val spaceLayout = !roomText.contains(',') && headingWeeks == null
+                    val itemLayout = when {
+                        headingWeeks != null -> JzMttLayout.XJTU
+                        spaceLayout -> JzMttLayout.HQU
+                        else -> JzMttLayout.COMMA
+                    }
+                    if (itemLayout != layout) continue
                     val arrangement = if (spaceLayout) roomText.split(Regex("""\s+""")) else roomText.split(',')
                     val fields = arrangement.map(String::trim)
                     val dayIndex = fields.indexOfFirst { it.startsWith("星期") }
