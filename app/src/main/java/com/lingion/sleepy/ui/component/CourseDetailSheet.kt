@@ -21,7 +21,8 @@ import com.lingion.sleepy.ui.component.liquidglass.GlassModalBottomSheet as Moda
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -72,7 +73,10 @@ fun CourseDetailSheet(
     // 两门 ownTime 课(节点区间恰好相同)误判成冲突簇。null = 旧行为(节点域)。
     timeJson: String? = null
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
+    )
 
     if (course != null) {
         // 找出 course 所在冲突簇(仅当 day 下 ≥2 课区间相交才有)。

@@ -136,7 +136,6 @@ class MainActivity : ComponentActivity() {
             window.setBackgroundDrawable(
                 ColorDrawable(getColor(com.lingion.sleepy.R.color.splash_background))
             )
-            true
         }
     }
 
