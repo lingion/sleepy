@@ -33,7 +33,8 @@ class GlassAppNavigationRenderTest {
     private lateinit var app: SleepyApp
     private var repositoryDelegate: Any? = null
     private var savedPrefs: Map<String, *> = emptyMap<String, Any>()
-    private val changedKeys = listOf(AppPrefs.KEY_UI_STYLE, AppPrefs.KEY_THEME_MODE, AppPrefs.KEY_NAV_DOCK, AppPrefs.KEY_UPDATE_CHECK_ENABLED)
+    private var savedThemes: String? = null
+    private val changedKeys = listOf(AppPrefs.KEY_UI_STYLE, AppPrefs.KEY_THEME_MODE, AppPrefs.KEY_NAV_DOCK, AppPrefs.KEY_UPDATE_CHECK_ENABLED, AppPrefs.KEY_COURSE_COLOR_MODE)
 
     @get:Rule(order = 1) val memory = object : ExternalResource() {
         override fun before() {
@@ -56,6 +57,12 @@ class GlassAppNavigationRenderTest {
             delegate.set(app, lazyOf(repository))
             val prefs = context.getSharedPreferences("sleepy_prefs", Context.MODE_PRIVATE)
             savedPrefs = prefs.all.filterKeys { it in changedKeys }
+            val themePrefs = context.getSharedPreferences("custom_themes", Context.MODE_PRIVATE)
+            savedThemes = themePrefs.getString("custom_themes", null)
+            com.lingion.sleepy.data.CustomThemeStore.save(context, com.lingion.sleepy.data.CustomTheme(
+                "layout-visual-fixture", "长名称自定义主题", "#6750A4", "#625B71", "#7D5260", 265.0, 8.0, 0,
+            ))
+            AppPrefs.setCourseColorMode(context, AppPrefs.COURSE_COLOR_MODE_CLASSIC)
             AppPrefs.setUpdateCheckEnabled(context, false)
             AppPrefs.setUiStyle(context, UiStyle.LiquidGlass)
             AppPrefs.setThemeMode(context, if (testName.methodName.contains("Dark")) "dark" else "light")
@@ -69,9 +76,13 @@ class GlassAppNavigationRenderTest {
                     null -> edit.remove(key)
                     is String -> edit.putString(key, old)
                     is Boolean -> edit.putBoolean(key, old)
+                    is Int -> edit.putInt(key, old)
                 }
             }
             edit.commit()
+            context.getSharedPreferences("custom_themes", Context.MODE_PRIVATE).edit().apply {
+                if (savedThemes == null) remove("custom_themes") else putString("custom_themes", savedThemes)
+            }.commit()
             db.close()
         }
     }
@@ -126,7 +137,7 @@ class GlassAppNavigationRenderTest {
         tap("教务直连"); capture("$mode-school-select"); back(); back()
         tap("我的"); capture("$mode-mine")
         for ((entry, name) in listOf(
-            "所有课表" to "tables", "作息表" to "periods", "提醒" to "reminders",
+            "所有课表" to "tables", "作息表" to "periods", context.getString(com.lingion.sleepy.R.string.settings_holidays) to "holiday", "提醒" to "reminders",
             "外观与主题" to "appearance", "通用" to "general", "小组件" to "widgets", "关于" to "about",
         )) {
             tap(entry)
@@ -141,16 +152,19 @@ class GlassAppNavigationRenderTest {
                 capture("$mode-period-auto")
                 back()
             }
-            if (name == "general") {
-                compose.onAllNodes(hasScrollAction()).onFirst().performScrollToNode(hasText("节假日调休设置"))
-                tap("节假日调休设置"); capture("$mode-holiday"); back()
-            }
             if (name == "about") {
                 compose.onAllNodes(hasScrollAction()).onFirst().performScrollToNode(hasText("开源声明"))
                 tap("开源声明"); capture("$mode-licenses"); back()
             }
             if (name == "appearance") {
-                compose.onNodeWithText("界面风格").performScrollTo()
+                reveal("长名称自定义主题")
+                capture("$mode-theme-cards")
+                val edit = compose.onNodeWithContentDescription("编辑主题")
+                edit.assertIsDisplayed().performTouchInput { down(center) }
+                compose.mainClock.advanceTimeBy(180)
+                capture("$mode-theme-edit-pressed")
+                edit.performTouchInput { cancel() }
+                reveal("界面风格")
                 capture("$mode-style-selector")
             }
             if (name == "widgets") {
@@ -181,6 +195,10 @@ class GlassAppNavigationRenderTest {
         compose.waitForIdle()
     }
     private fun tap(text: String) {
+        reveal(text).performTouchInput { click() }
+        compose.waitForIdle()
+    }
+    private fun reveal(text: String): SemanticsNodeInteraction {
         compose.waitForIdle()
         val target = compose.onAllNodesWithText(text).onLast()
         if (runCatching { target.assertIsDisplayed() }.isFailure) {
@@ -193,8 +211,7 @@ class GlassAppNavigationRenderTest {
             }
         }
         waitText(text)
-        target.assertIsDisplayed().performTouchInput { click() }
-        compose.waitForIdle()
+        return target.assertIsDisplayed()
     }
     private fun back() {
         val popup = compose.onAllNodes(isPopup() or isDialog()).fetchSemanticsNodes().isNotEmpty()
