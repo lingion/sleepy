@@ -33,8 +33,8 @@ class JwRucParser(source: String) : JwParser(source) {
             val day = row.optString("week", "").trim().toIntOrNull() ?: continue
             val first = row.optString("start", "").trim().toIntOrNull() ?: continue
             val length = row.optString("quittingTime", "").trim().toIntOrNull() ?: continue
-            if (name.isEmpty() || day !in 1..7 || first !in 1..30 || length !in 1..30 || first > 31 - length) continue
-            val last = first + length - 1
+            if (name.isEmpty() || day !in 1..7) continue
+            val last = explicitScheduleEnd(first, length) ?: continue
             val start = clocks.getOrNull(first - 1)?.first.orEmpty()
             val end = clocks.getOrNull(last - 1)?.second.orEmpty()
             val completeClock = (first..last).all { clocks.getOrNull(it - 1) != null } && JwCourse.isValidTimeRange(start, end)

@@ -17,7 +17,7 @@ class JwJxauParser(source: String) : JwParser(source) {
             var node = 1
             for ((index, cell) in row.children().filter { it.tagName() == "td" }.drop(1).withIndex()) {
                 if (index == 4 || index == 6) continue
-                if (node > 29) break
+                if (node >= EXPLICIT_SCHEDULE_RESOURCE_BOUND) break
                 for (lesson in cell.select("dl")) {
                     val name = lesson.selectFirst("a")?.text()?.trim().orEmpty()
                     val details = lesson.select("dd")

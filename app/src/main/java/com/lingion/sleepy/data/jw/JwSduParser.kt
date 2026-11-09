@@ -14,7 +14,7 @@ class JwSduParser(source: String) : JwParser(source) {
             val name = cells[2].text().trim()
             val day = cells[9].text().trim().toIntOrNull() ?: continue
             val node = cells[10].text().trim().toIntOrNull() ?: continue
-            if (name.isEmpty() || day !in 1..7 || node !in 1..30) continue
+            if (name.isEmpty() || day !in 1..7 || node !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
             for ((from, to, type) in schoolWeekRanges(cells[8].text())) {
                 add(JwCourse(name, cells.last().text().trim(), cells[7].text().trim(), day, node, node, from, to, type))
             }
