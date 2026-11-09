@@ -26,12 +26,6 @@ internal interface LocalCalendarStore {
 internal class LocalCalendarFallback {
     private val mutex = Mutex()
 
-    suspend fun ensure(store: LocalCalendarStore): SystemCalendarInfo? = safely(null) {
-        mutex.withLock {
-            if (!store.hasPermissions()) null else ensureLocked(store)
-        }
-    }
-
     suspend fun writable(store: LocalCalendarStore): List<SystemCalendarInfo> = safely(emptyList()) {
         mutex.withLock {
             if (!store.hasPermissions()) return@withLock emptyList()

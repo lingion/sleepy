@@ -4,13 +4,15 @@ import com.lingion.sleepy.ui.screen.imports.FrameCaptureStatus
 import com.lingion.sleepy.ui.screen.imports.FrameSnapshot
 import com.lingion.sleepy.ui.screen.imports.FrameSnapshotList
 import com.lingion.sleepy.ui.screen.imports.FrameTraversalTree
+import com.lingion.sleepy.ui.screen.imports.shouldUseZfNewFetch
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class JwZfRoundTwoCaptureTest {
     @Test fun `bare kbcx path reaches the existing ZF JSON collector`() {
         val school = JwSchoolInfo("G", "测试学校", "https://jw.example.edu.cn/kbcx/", JwProtocol.TYPE_ZF_NEW)
-        assertEquals(FetchKind.ZF_NEW, JwFetchProtocol.pick(school,
+        assertTrue(shouldUseZfNewFetch(school.type,
             "https://jw.example.edu.cn/kbcx/xskbcx_cxXskbcxIndex.html?gnmkdm=N2151"))
     }
 

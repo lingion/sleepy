@@ -1,7 +1,6 @@
 package com.lingion.sleepy.data.repository
 
 import com.lingion.sleepy.data.AppDatabase
-import com.lingion.sleepy.data.diff.DiffResult
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.data.undo.UndoManager
@@ -114,8 +113,6 @@ class ScheduleRepository(private val db: AppDatabase) {
 
     private fun resolveReminderTables(tables: List<TimeTableEntity>): List<TimeTableEntity> =
         resolveReminderTableScope(tables, AppPrefs.getCurrentTableId(SleepyApp.get()))
-
-    fun observeTable(id: Long): Flow<TimeTableEntity?> = tableDao.observeById(id)
 
     suspend fun getAllTables(): List<TimeTableEntity> = tableDao.getAll()
 
@@ -504,9 +501,6 @@ class ScheduleRepository(private val db: AppDatabase) {
     suspend fun getPeriodTable(id: Long): com.lingion.sleepy.data.entity.PeriodTableEntity? =
         periodTableDao.getById(id)
 
-    /** 某时间节次表被多少张课程表绑定。 */
-    suspend fun periodTableBoundCount(id: Long): Int = periodTableDao.boundTableCount(id)
-
     /**
      * 甲案 (设计文档 §4.1): 绑定到指定作息表的全部课表 —
      * 弹窗"另有 N 张课表绑定"提示 + 三选项作用域语义共用。
@@ -651,9 +645,6 @@ class ScheduleRepository(private val db: AppDatabase) {
     fun observeCourses(tableId: Long): Flow<List<CourseEntity>> =
         courseDao.observeByTable(tableId)
 
-    fun observeCoursesByDay(tableId: Long, day: Int): Flow<List<CourseEntity>> =
-        courseDao.observeByTableAndDay(tableId, day)
-
     suspend fun getCoursesByDayOnce(tableId: Long, day: Int): List<CourseEntity> =
         courseDao.getByTableAndDayOnce(tableId, day)
 
@@ -695,14 +686,6 @@ class ScheduleRepository(private val db: AppDatabase) {
         return ids
     }
 
-    /** 覆盖式导入(保留解析端 groupId), 配合 insertCoursesKeepingGroups 的 sleepy-v1 路径 */
-    suspend fun replaceCoursesKeepingGroups(tableId: Long, courses: List<CourseEntity>) {
-        captureForUndo()
-        courseDao.replaceAll(tableId, courses)
-        onDataChanged()
-        pruneDefaultTopPrefs()
-    }
-
     suspend fun updateCourse(course: CourseEntity) {
         captureForUndo()
         courseDao.update(course)
@@ -712,20 +695,6 @@ class ScheduleRepository(private val db: AppDatabase) {
     /** 查同 groupId 下所有课程（用于编辑回填，按时段分 block） */
     suspend fun getGroupCourses(tableId: Long, groupId: String): List<CourseEntity> =
         courseDao.getByGroupId(tableId, groupId)
-
-    /** 编辑课程组：原子地删除同 groupId 全部记录并插入新草稿（DAO 层 @Transaction）。
-     *  防呆: groupId 空串(早期版本导入的存量数据)禁止走组替换 — 否则 DELETE WHERE groupId=''
-     *  会把该表全部空组课程一起删掉。空组时退化为逐条插入。 */
-    suspend fun updateCourseGroup(tableId: Long, groupId: String, newCourses: List<CourseEntity>) {
-        captureForUndo()
-        if (groupId.isBlank()) {
-            courseDao.insertAll(newCourses)
-            onDataChanged()
-            return
-        }
-        courseDao.replaceGroup(tableId, groupId, newCourses)
-        onDataChanged()
-    }
 
     suspend fun deleteCourse(id: Long) {
         captureForUndo()
@@ -868,26 +837,6 @@ class ScheduleRepository(private val db: AppDatabase) {
     }
 
     /**
-     * 行级 diff/patch 落库(替代 [updateCourseGroup] 整组覆盖, issue#22 同名多地点修复):
-     *   - toDelete 行按 id 批量删除
-     *   - toUpdate 行按 id 批量覆盖(保留 RowKey)
-     *   - toInsert 行批量新增(id=0 让 Room 自增)
-     *
-     * v7.10.16v 撤回修复(用户 2026-09-10 报"编辑课程后没有撤回按钮"): 本方法自带
-     * [captureForUndo] — issue#22 接手时原契约"调用前必须已 capture"无任何调用方
-     * 履行, 编辑课程从此不产生快照。
-     */
-    suspend fun applyDiff(tableId: Long, diff: DiffResult) {
-        captureForUndo()
-        if (diff.toDelete.isNotEmpty()) courseDao.deleteByIds(diff.toDelete)
-        if (diff.toUpdate.isNotEmpty()) courseDao.updateAll(diff.toUpdate)
-        if (diff.toInsert.isNotEmpty()) courseDao.insertAll(diff.toInsert)
-        // issue#23 修: 编辑删行也要回收(否则编辑掉 edge 上的 block 后节点残留)
-        if (diff.toDelete.isNotEmpty()) reclaimUnusedEdgeNodes(tableId)
-        onDataChanged()
-    }
-
-    /**
      * 改组色(issue#22 spec §6.2 "改组色"按钮的落库路径):
      * 把选中色写到同 groupId 所有 colorMode=GROUP 行的 color 字段。
      *
@@ -909,26 +858,10 @@ class ScheduleRepository(private val db: AppDatabase) {
 
     suspend fun countCourses(tableId: Long): Int = courseDao.countByTable(tableId)
 
-    suspend fun totalCourseCount(): Int = courseDao.totalCount()
-
-    /** 覆盖式导入（先删后插） */
-    suspend fun replaceCourses(tableId: Long, courses: List<CourseEntity>) {
-        captureForUndo()
-        // 认亲（spec §2.4）: 名册在删前取 — 被覆盖表自己的旧同名行也是认亲对象,
-        // 重导入同名课 groupId/hue 双继承 → 覆盖导入颜色不变。
-        val withGroupIds = assignGroupIds(courses, knownNameToGroupId(courseDao.getAll()))
-        courseDao.replaceAll(tableId, withGroupIds)
-        com.lingion.sleepy.util.CourseColorWriteGlue.persistNewGroupHues(
-            SleepyApp.get(), db.courseColorDao(), withGroupIds
-        )
-        onDataChanged()
-        pruneDefaultTopPrefs()
-    }
-
     /**
      * v7.10.16p: 课程集变化后清理指向已失效课程的置顶偏好 —
      * repId 已删/键已不存在(锚课被删·簇解体)的条目静默失效还会画出幽灵图层选项,
-     * 这里按现存课全量校验删除。删课/删组/覆盖导入/撤销四条写路径都会走到。
+     * 这里按现存课全量校验删除，供课程编辑、删除及撤回/重做路径使用。
      */
     private suspend fun pruneDefaultTopPrefs() {
         val ctx = SleepyApp.get()

@@ -136,7 +136,7 @@ object ConflictDetailReporter {
         fun hits(week: Int, type: Int): Boolean = when (type) {
             1 -> week % 2 == 1
             2 -> week % 2 == 0
-            else -> true  // 0/3 与 weekRangesOverlap 同语义
+            else -> true  // 0/3 及其他类型按区间内每周处理
         }
         // 奇偶限定: 任一方带单/双周限定即继承(另一方每周不与之错开);
         // 两方限定不同(单vs双)必然无公共周, 由下方命中循环落空返回 null。

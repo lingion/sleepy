@@ -81,6 +81,32 @@ class CourseOccurrenceRepositoryTest {
         assertEquals((split + other).toSet(), repo.getCourses(1).toSet())
     }
 
+    @Test fun editingGroupUpdatesInsertsAndDeletesWithOneUndoRestoringAllRows() = runBlocking {
+        val removed = course.copy(id = 8, day = 2)
+        val unrelated = course.copy(id = 9, groupId = "other", courseName = "Physics")
+        db.courseDao().insertAll(listOf(removed, unrelated))
+        val before = repo.getCourses(table.id)
+        val renamed = course.copy(alias = "Math alias", note = "Updated note")
+        val added = course.copy(id = 0, day = 3, room = "Lab")
+
+        assertTrue(repo.saveCourseDraft(listOf(renamed, added), course.groupId, before,
+            table, table.timeJson, emptyList()))
+        val after = repo.getCourses(table.id)
+        assertEquals(3, after.size)
+        assertEquals(renamed, after.single { it.id == course.id })
+        assertEquals(unrelated, after.single { it.id == unrelated.id })
+        val inserted = after.single { it.day == 3 }
+        assertTrue(inserted.id > 0)
+        assertEquals(added, inserted.copy(id = 0))
+        assertFalse(after.any { it.id == removed.id })
+
+        assertTrue(repo.restoreLastSnapshot())
+        assertEquals(before, repo.getCourses(table.id))
+        assertFalse(repo.canUndo)
+        assertTrue(repo.redoLastUndo())
+        assertEquals(after, repo.getCourses(table.id))
+    }
+
     @Test fun deletingOnlyOccurrenceRemovesTheEntireCourseAndUndoRestoresIt() = runBlocking {
         val single = course.copy(startWeek = 5, endWeek = 5)
         db.courseDao().update(single)

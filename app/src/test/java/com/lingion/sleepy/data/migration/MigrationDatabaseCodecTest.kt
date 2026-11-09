@@ -50,7 +50,6 @@ internal class FakeCourseDao : CourseDao {
     override suspend fun getAll(): List<CourseEntity> = rows.values.toList()
     override suspend fun getById(id: Long): CourseEntity? = rows[id]
     override fun observeByTable(tableId: Long): Flow<List<CourseEntity>> = flowOf(emptyList())
-    override fun observeByTableAndDay(tableId: Long, day: Int): Flow<List<CourseEntity>> = flowOf(emptyList())
     override suspend fun getByTableAndDayOnce(tableId: Long, day: Int): List<CourseEntity> = emptyList()
     override suspend fun getByTable(tableId: Long): List<CourseEntity> = rows.values.filter { it.tableId == tableId }
     override suspend fun getByGroupId(tableId: Long, groupId: String): List<CourseEntity> =

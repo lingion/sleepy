@@ -13,8 +13,7 @@ import com.lingion.sleepy.data.entity.CourseEntity
  *      - server 无 draft 匹配 → delete(server.id)
  *   3. groupId="" 走兜底(契约一保护): draft 全 insert, server 全 delete
  *
- * 替代 [com.lingion.sleepy.data.dao.CourseDao.replaceGroup] 的整组覆盖模式 —
- * 旧模式会丢数据(同名课多地点编辑一处带崩全局)
+ * 由 ScheduleRepository.saveCourseDraft 在保存事务内应用差异，保留未修改的课程行。
  */
 object RowKeyDiffer {
 
@@ -73,6 +72,7 @@ object RowKeyDiffer {
     /** 比较除 id/groupId/RowKey 包含字段外的其他字段是否相同 */
     private fun fieldsDiffer(a: CourseEntity, b: CourseEntity): Boolean {
         if (a.courseName != b.courseName) return true
+        // Alias is display data, not part of RowKey; changing it still requires an update.
         if (a.alias != b.alias) return true
         if (a.note != b.note) return true
         if (a.color != b.color) return true
@@ -85,9 +85,4 @@ object RowKeyDiffer {
         if (a.tableId != b.tableId) return true
         return false
     }
-
-    /** 用户报障 2026-09-11: 别名无法保存 — RowKey 不含 alias(展示名非身份)但 fieldsDiffer 必须含。
-     *  漏掉一行 → diff 判"完全相同" 跳过 update, 旧 alias 永远进不去。 */
-    @Suppress("unused")
-    private fun aliasInDiffAnchor() = Unit
 }

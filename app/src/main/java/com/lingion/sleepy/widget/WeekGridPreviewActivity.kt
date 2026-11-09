@@ -4,35 +4,17 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.component.CardsGridView
-import com.lingion.sleepy.ui.component.TimeSlot
-import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import androidx.compose.runtime.collectAsState
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import com.lingion.sleepy.util.AppClock
@@ -40,7 +22,7 @@ import com.lingion.sleepy.util.AppClock
 /**
  * WeekGridWidget 真复刻 — 1:1 复刻 ScheduleScreen 的 CardsGridView（app 内"网格"视图）
  *
- * 直接调 ui.component.CardsGridView + 加 TopBar + SegmentedSwitcher + 底部 nav
+ * 沉浸全屏调用 ui.component.CardsGridView。
  * (历史上的 Glance WeekGridContent 复刻已废弃, Glance 层已删除, 决策 D5-11)
  */
 class WeekGridPreviewActivity : ComponentActivity() {
@@ -97,24 +79,6 @@ class WeekGridPreviewActivity : ComponentActivity() {
         }
     }
 
-    @androidx.compose.runtime.Composable
-    private fun TopBarSimple(currentWeek: Int) {
-        val colors = MaterialTheme.colorScheme
-        androidx.compose.foundation.layout.Row(
-            modifier = androidx.compose.ui.Modifier
-                .fillMaxWidth()
-                .background(colors.surface)
-                .padding(horizontal = 16.dp, vertical = 6.dp),
-            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-        ) {
-            androidx.compose.material3.Text(
-                text = "第 $currentWeek 周",
-                style = androidx.compose.material3.MaterialTheme.typography.labelLarge,
-                color = colors.primary
-            )
-        }
-    }
 }
 
 private data class ScreenData(

@@ -39,7 +39,7 @@ class JwJzSuperHardeningTest {
         val empty = "<tr><td>1-2节</td>" + "<td></td>".repeat(7) + "</tr>"
         val course = """<tr><td></td><td><div class="cell"><div class="cell"><div style="position:relative"><div></div><div></div><div></div><div>*高数</div><div>王老师</div><div>班级</div><div>16-17节(1-8周)</div><div>B101</div></div></div></div></td>""" + "<td></td>".repeat(6) + "</tr>"
         val html = "<div class='el-table__body-wrapper'><table><tbody>" + empty.repeat(6) + course + "</tbody></table></div>"
-        val courses = JwJzSuperParser(html).generateCourseList()
+        val courses = JwParserRegistry.parserFor(JwProtocol.TYPE_JZ, html).generateCourseList()
         assertEquals(1, courses.size)
         assertEquals("高数", courses[0].name)
         assertEquals(16, courses[0].startNode)

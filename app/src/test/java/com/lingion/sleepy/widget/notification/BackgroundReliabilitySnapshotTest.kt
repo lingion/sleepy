@@ -1,8 +1,6 @@
 package com.lingion.sleepy.widget.notification
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class BackgroundReliabilitySnapshotTest {
@@ -25,7 +23,6 @@ class BackgroundReliabilitySnapshotTest {
             ReminderTransportState.DEGRADED_INEXACT_ALARM,
             snapshot.reminderTransportState()
         )
-        assertTrue(snapshot.standardNotificationAllowed())
     }
 
     @Test
@@ -38,15 +35,28 @@ class BackgroundReliabilitySnapshotTest {
         )
 
         assertEquals(ReminderTransportState.READY, snapshot.reminderTransportState())
-        assertTrue(snapshot.backgroundPermissionFactsSatisfied())
     }
 
     @Test
-    fun `private vendor unknown does not block standard notification`() {
-        val snapshot = snapshot(liveCardState = VendorCapabilityState.UNKNOWN)
+    fun `battery exemption and widget binding do not block reminder transport`() {
+        val snapshot = snapshot(batteryOptimizationIgnored = false, widgetBound = false)
 
-        assertTrue(snapshot.standardNotificationAllowed())
-        assertFalse(snapshot.vendorSurfaceGuaranteed())
+        assertEquals(ReminderTransportState.READY, snapshot.reminderTransportState())
+    }
+
+    @Test
+    fun `vendor capability never overrides notification permission for reminder transport`() {
+        VendorCapabilityState.entries.forEach { state ->
+            assertEquals(state.name, ReminderTransportState.READY,
+                snapshot(liveCardState = state).reminderTransportState())
+            assertEquals(state.name, ReminderTransportState.BLOCKED_NOTIFICATION_PERMISSION,
+                snapshot(notificationPermissionGranted = false, liveCardState = state).reminderTransportState())
+            assertEquals(state.name, ReminderTransportState.DEGRADED_INEXACT_ALARM,
+                snapshot(exactAlarmAllowed = false, liveCardState = state).reminderTransportState())
+            assertEquals(state.name, ReminderTransportState.BLOCKED_NOTIFICATION_PERMISSION,
+                snapshot(notificationPermissionGranted = false, exactAlarmAllowed = false,
+                    liveCardState = state).reminderTransportState())
+        }
     }
 
     private fun snapshot(
