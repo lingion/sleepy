@@ -1817,7 +1817,6 @@ private fun GroupColorSection(
                     else stringResource(R.string.color_group_auto),
                     style = MaterialTheme.typography.labelSmall,
                     color = colors.onSurfaceVariant,
-                    maxLines = 1,
                 )
             }
             Button(
@@ -1828,7 +1827,7 @@ private fun GroupColorSection(
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                 )
             ) {
-                Text(stringResource(R.string.change_group_color), style = MaterialTheme.typography.labelMedium, maxLines = 1)
+                Text(stringResource(R.string.change_group_color), style = MaterialTheme.typography.labelMedium)
             }
         }
     }
