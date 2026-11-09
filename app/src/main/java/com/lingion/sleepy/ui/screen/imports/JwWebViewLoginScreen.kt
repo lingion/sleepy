@@ -28,6 +28,7 @@ import androidx.compose.material.icons.outlined.PhoneAndroid
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.School
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.KeyboardActionHandler
@@ -55,6 +56,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -133,6 +135,8 @@ fun JwWebViewLoginScreen(
     onCaptureError: (result: FrameCaptureResult, hint: String) -> Unit,
     onBack: () -> Unit,
     onWebViewReady: ((WebView) -> Unit)? = null,
+    initialSgAdapterId: String = "",
+    onSgAdapterSelected: (String) -> Unit = {},
     viewModel: JwImportViewModel = viewModel()
 ) {
     val colors = MaterialTheme.colorScheme
@@ -154,8 +158,21 @@ fun JwWebViewLoginScreen(
     var desktopUa by remember { mutableStateOf(initialDesktopUa(school)) }
     var uaSwitchReload by remember { mutableStateOf(0) }
     val fetchBudget = remember { JwFetchBudget(android.os.SystemClock::elapsedRealtime) }
+    var sgInteraction by remember { mutableStateOf<JwSgAssetInteraction?>(null) }
+    var sgSessionId by remember { mutableStateOf<String?>(null) }
     var sgDocumentUsed by remember { mutableStateOf(false) }
+    var sgAdapterDialog by remember { mutableStateOf<android.app.AlertDialog?>(null) }
     val sgContext = LocalContext.current
+    val sgAdapters = remember(sgContext, school.name, school.type) {
+        if (school.type == JwProtocol.TYPE_SG_ASSET) JwSgAssetBridge.entries(sgContext, school.name)
+        else emptyList()
+    }
+    // Initial-only draft selection; later choices are owned by this login session.
+    var sgAdapterChoice by remember(school.name) { mutableStateOf(
+        JwSgAssetBridge.restoreChoice(sgAdapters, initialSgAdapterId)
+    ) }
+    val latestAdapterSelected by rememberUpdatedState(onSgAdapterSelected)
+    LaunchedEffect(sgAdapterChoice) { latestAdapterSelected(sgAdapterChoice?.adapterId.orEmpty()) }
     val webviewNotReadyMsg = stringResource(R.string.jw_webview_not_ready)
     val fetchingMsg = stringResource(R.string.jw_fetching)
     val fetchFailedNoResponseMsg = stringResource(R.string.jw_fetch_failed_no_response)
@@ -170,9 +187,30 @@ fun JwWebViewLoginScreen(
     val fetchNoCoursesMsg = stringResource(R.string.jw_fetch_no_courses)
     val fetchFallbackPeriodsMsg = stringResource(R.string.jw_fetch_fallback_periods)
     val urlInvalidMsg = stringResource(R.string.jw_url_invalid)
+    val selectAdapterMsg = stringResource(R.string.jw_select_academic_adapter)
 
-    fun cancelCapture() {
+    fun cancelCapture(dismissAdapter: Boolean = true) {
         fetchBudget.cancel()
+        if (dismissAdapter) {
+            sgAdapterDialog?.dismiss()
+            sgAdapterDialog = null
+        }
+        sgInteraction?.cancelSession()
+        sgSessionId?.let { sessionId ->
+            webViewRef?.evaluateJavascript(
+                "window.SleepySgShim && window.SleepySgShim.cancelSession(${org.json.JSONObject.quote(sessionId)});", null,
+            )
+        }
+        sgSessionId = null
+    }
+
+    fun chooseSgAdapter(wv: WebView) {
+        cancelCapture()
+        sgAdapterDialog = showJwSgAdapterChooser(wv.context, selectAdapterMsg, sgAdapters) { choice ->
+            cancelCapture()
+            sgAdapterChoice = choice
+            wv.loadUrl(choice.importUrl)
+        }
     }
 
     fun scheduleFetchTimeout(wv: WebView, id: String) {
@@ -241,8 +279,23 @@ fun JwWebViewLoginScreen(
         try {
             val obj = org.json.JSONObject(json)
             if (!fetchBudget.complete(obj.optString("captureId"))) return@result
+            sgInteraction?.cancelSession()
+            sgSessionId = null
             if (obj.optBoolean("ok", false)) {
-                val data = obj.optString("data", "")
+                val rawData = obj.optString("data", "")
+                // 课程保持不透明字符串，由 sg_asset 解析器唯一解码；配置随同源载荷
+                // 保存，使学期总周数也能经过草稿与确认页。
+                val sgConfig = obj.optJSONObject("sgConfig")
+                val data = if (rawData.isNotBlank() && school.type == JwProtocol.TYPE_SG_ASSET && sgConfig != null) {
+                    org.json.JSONObject().put("sleepySgAsset", true)
+                        .put("coursesJson", rawData).put("config", sgConfig).apply {
+                            sgAdapterChoice?.let { adapter ->
+                                put("adapter", org.json.JSONObject().put("adapterId", adapter.adapterId)
+                                    .put("schoolId", adapter.schoolId).put("category", adapter.category)
+                                    .put("name", adapter.adapterName).put("importUrl", adapter.importUrl))
+                            }
+                        }.toString()
+                } else rawData
                 if (data.isBlank()) {
                     onCaptureError(
                         FrameCaptureResult(null, "", emptyList(),
@@ -322,6 +375,8 @@ fun JwWebViewLoginScreen(
                     val capturedSchool = if (obj.optString("protocol") == JwProtocol.TYPE_CHAOXING_SHARE &&
                         JwChaoxingShareCapture.isShareUrl(currentUrl)) {
                         school.copy(type = JwProtocol.TYPE_CHAOXING_SHARE)
+                    } else if (school.type == JwProtocol.TYPE_SG_ASSET && sgAdapterChoice != null) {
+                        school.copy(url = sgAdapterChoice!!.importUrl)
                     } else school
                     onHtmlCaptured(data, capturedSchool, periods, effectiveStartDate)
                 }
@@ -350,12 +405,16 @@ fun JwWebViewLoginScreen(
     // 桥回调永远不来, 用户只见「正在抓取」无限 pending。20s 无回调即报超时。
     fun evaluateFetchWithTimeout(
         wv: WebView, js: String, timeoutMs: Long = FETCH_TIMEOUT_MS,
-        captureId: String = java.util.UUID.randomUUID().toString(),
+        captureId: String = java.util.UUID.randomUUID().toString(), sgAsset: Boolean = false,
     ) {
         cancelCapture()
         fetchBudget.begin(captureId, timeoutMs)
+        if (sgAsset) {
+            sgSessionId = captureId
+            sgInteraction?.beginSession(captureId)
+        }
         // evaluateJavascript returns after the synchronous part; only the bridge completes the task.
-        wv.evaluateJavascript(scopeJwFetchScript(js, captureId), null)
+        wv.evaluateJavascript(if (sgAsset) js else scopeJwFetchScript(js, captureId), null)
         scheduleFetchTimeout(wv, captureId)
     }
 
@@ -455,6 +514,15 @@ fun JwWebViewLoginScreen(
                         )
                     }
                     if (!editingUrl) {
+                        if (sgAdapters.size > 1) {
+                            IconButton(
+                                modifier = Modifier.dbgTag("jw_select_adapter", text = selectAdapterMsg, role = "button"),
+                                onClick = { webViewRef?.let(::chooseSgAdapter) },
+                                enabled = webViewRef != null,
+                            ) {
+                                Icon(Icons.Outlined.School, contentDescription = selectAdapterMsg)
+                            }
+                        }
                         // #18: 部分门户 (UCAS SEP 等) 手机 UA 下不显示"个人课表"入口,
                         // 桌面 UA 可见。切换 = 销毁重建 WebView (UA 只在创建期生效),
                         // 同步保留 cookie (CookieManager 全局共享) 与当前 URL
@@ -566,13 +634,21 @@ fun JwWebViewLoginScreen(
                     // 超时闸放宽到 SG_ASSET_TIMEOUT_MS; manifest 无条目直接明错,
                     // 不悄悄落 outerHTML 抓取 (避免把「没适配」伪装成「没课表」)。
                     if (school.type == JwProtocol.TYPE_SG_ASSET) {
+                        val candidates = sgAdapters
+                        val selected = sgAdapterChoice?.takeIf { it in candidates }
+                        if (selected == null && candidates.isNotEmpty()) {
+                            chooseSgAdapter(wv)
+                            return@CaptureBar
+                        }
+                        sgAdapterChoice = selected
                         if (sgDocumentUsed) {
                             cancelCapture()
                             wv.reload()
                             scope.launch { snackbar.showSnackbar("正在重新加载页面，请加载完成后再次导入") }
                             return@CaptureBar
                         }
-                        val js = JwSgAssetBridge.bridgeJs(sgContext, school.name)
+                        val captureId = java.util.UUID.randomUUID().toString()
+                        val js = JwSgAssetBridge.bridgeJs(sgContext, school.name, captureId, selected)
                         if (js == null) {
                             val msg = fetchFailedFmt.format("该校暂无拾光适配脚本")
                             onCaptureError(
@@ -583,7 +659,7 @@ fun JwWebViewLoginScreen(
                             )
                         } else {
                             sgDocumentUsed = true
-                            evaluateFetchWithTimeout(wv, js, SG_ASSET_TIMEOUT_MS)
+                            evaluateFetchWithTimeout(wv, js, SG_ASSET_TIMEOUT_MS, captureId, sgAsset = true)
                         }
                         return@CaptureBar
                     }
@@ -757,7 +833,9 @@ fun JwWebViewLoginScreen(
                 .padding(padding)
         ) {
             JwWebView(
-                url = school.url.ifBlank { "https://www.baidu.com" },
+                url = if (school.type == JwProtocol.TYPE_SG_ASSET && sgAdapters.isNotEmpty()) {
+                    sgAdapterChoice?.importUrl ?: "about:blank"
+                } else school.url.ifBlank { "https://www.baidu.com" },
                 school = school,
                 desktopUa = desktopUa,
                 recreateKey = uaSwitchReload,
@@ -765,13 +843,24 @@ fun JwWebViewLoginScreen(
                 onNavigationUrlChanged = { url ->
                     if (!editingUrl && !url.isNullOrBlank()) currentUrl = url
                 },
-                onPageStarted = { cancelCapture(); sgDocumentUsed = false },
+                onPageStarted = { cancelCapture(dismissAdapter = false); sgDocumentUsed = false },
                 onWebViewCreated = { wv ->
                     webViewRef = wv
                     sgDocumentUsed = false
+                    sgInteraction = JwSgAssetInteraction(wv, onWaitingChanged = { waiting ->
+                        fetchBudget.captureId?.let { id ->
+                            fetchBudget.setWaiting(id, waiting)
+                            if (!waiting) scheduleFetchTimeout(wv, id)
+                        }
+                    }, onSessionCancelled = { cancelCapture() })
+                    if (school.type == JwProtocol.TYPE_SG_ASSET && sgAdapters.isNotEmpty() && sgAdapterChoice == null) {
+                        chooseSgAdapter(wv)
+                    }
                 },
                 onHtmlCaptured = { html -> deliverPageCapture(html) },
                 onWiseduResult = handleWiseduResult,
+                onSgInteraction = { sgInteraction?.handleRequest(it) },
+                onSgInteractionAcknowledged = { sgInteraction?.handleAcknowledged(it) },
                 onWebViewReady = onWebViewReady
             )
 
@@ -820,6 +909,8 @@ private fun JwWebView(
     onWebViewCreated: (WebView) -> Unit,
     onHtmlCaptured: (String) -> Unit,
     onWiseduResult: (String) -> Unit = {},
+    onSgInteraction: (String) -> Unit = {},
+    onSgInteractionAcknowledged: (String) -> Unit = {},
     onPageStarted: () -> Unit = {},
     onWebViewReady: ((WebView) -> Unit)? = null
 ) {
@@ -837,7 +928,7 @@ private fun JwWebView(
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
                 // wisedu (金智) 协议：注册 JS 桥，async fetch 课表 JSON 完成后回调
-                addJavascriptInterface(WiseduBridge(onWiseduResult), "__sleepyBridge")
+                addJavascriptInterface(WiseduBridge(onWiseduResult, onSgInteraction, onSgInteractionAcknowledged), "__sleepyBridge")
                 // 诊断桥常驻；页面内 recorder 只观察网络，不替换请求或响应。
                 addJavascriptInterface(DiagnosticNetworkBridge(), "__sleepyNetworkBridge")
                 settings.apply {
@@ -2402,13 +2493,23 @@ private const val BJTU_FETCH_JS = """
  * wisedu fetch 结果 JS 桥。@JavascriptInterface 回调跑在 WebView JS 线程，
  * post 到主线程后再回调 Compose，避免线程问题。
  */
-private class WiseduBridge(private val onResult: (String) -> Unit) {
+private class WiseduBridge(
+    private val onResult: (String) -> Unit,
+    private val onInteraction: (String) -> Unit,
+    private val onAcknowledged: (String) -> Unit,
+) {
     private val main = android.os.Handler(android.os.Looper.getMainLooper())
 
     @android.webkit.JavascriptInterface
     fun onWiseduResult(json: String) {
         main.post { onResult(json) }
     }
+
+    @JavascriptInterface
+    fun onSgInteraction(json: String) { main.post { onInteraction(json) } }
+
+    @JavascriptInterface
+    fun onSgInteractionAcknowledged(json: String) { main.post { onAcknowledged(json) } }
 }
 
 /** 页面内网络 recorder 的批量结果桥。记录本身留在 JS，避免每个请求跨 bridge。 */

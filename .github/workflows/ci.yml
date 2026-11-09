@@ -88,6 +88,8 @@ jobs:
           node tools/test-paged-school-fetch.js
           node tools/test-school-api-fetch.js
           node tools/test-whut-fetch.js
+          node tools/test-sg-asset-bridge.js
+          node tools/test-sg-asset-interaction.js
           node tools/test-ustc-fetch.js
           node tools/test-fdu-fetch.js
           node tools/test-ahu-fetch.js
