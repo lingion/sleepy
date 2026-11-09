@@ -372,6 +372,10 @@ private val recentAttributionGroups = listOf(
 
 /** 跨校普适项目 (单卡, 不可展开)。 */
 private val attributionEntries: List<AttributionEntry> = listOf(
+    AttributionEntry(
+        "jw-cross-repository-sources", "教务协议跨仓参考", "协议形态与字段核验",
+        "NanCunChild/elecon (elecon contributors, MIT); Cheukfung/ZFCrawler (Cheukfung Ho, MIT); FarmerChillax/new-school-sdk (FarmerChillax; dairoot, MIT); cuijinyu/qingguospider (cuijinyu, No LICENSE); ncc-devlab/elecon-adapters (ncc-devlab, No LICENSE); KnellInferno/zfn_api_ts (KnellInferno, MPL-2.0); moeshin/ai-schedule-chaoxing (moeshin, MIT); whoisnian/getMyCourses (whoisnian, MIT); WenqiOfficial/SHOU-URP-AiSchedule (WenqiOfficial, MIT); SaltGardenia/calm-schedule (SaltGardenia, GPL-3.0); Landon-3314/AHU-TimeTable (Landon-3314, No LICENSE); MoeclubM/AHU-AIO (MoeclubM, GPL-3.0); Zeraora-807/Anhui-Univ-DSH-Tool (Zeraora-807, GPL-3.0); abydym/Ahu_Plus (abydym, GPL-3.0)"
+    ),
     AttributionEntry("old-qz-audit", "Old-QZ 协议核对", "历史协议参考", "Old-QZ protocol verification: Crazy-ChenMiLin/TableAPK (Apache-2.0; protocol reference); LonelyMarch/OpenWakeUp (AGPL-3.0; protocol reference); ThaiCao/WakeupSchedule_Kotlin (Apache-2.0; protocol reference); YuZhangWang/Java-Demo (GPL-3.0; protocol reference); dIT8Zv/WakeupSchedule_BUPT (Apache-2.0; protocol reference); ershiyidian/WakeUp_SHU (NOASSERTION; protocol reference); historical WakeUp APK (YZune; closed-source protocol reference, no code reused)."),
     AttributionEntry(
         "foundational-wakeup", "WakeUp 课程表 (YZune)", "Apache-2.0",
@@ -458,7 +462,7 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
     ),
     PerSchoolEntry(
         "school-ustc", "中国科学技术大学 USTC",
-        "USTC-timetable-to-ics (1970633640)\nustc-course-timetable (HowardZorn, GPL-3.0)\nustc-timetable (kirsh1, AGPL-3.0)"
+        "USTC-timetable-to-ics (1970633640)\nustc-course-timetable (HowardZorn, GPL-3.0)\nustc-timetable (kirsh1, AGPL-3.0)\nUSTC-XeF2/pyustc (XeF2, MIT)"
     ),
     PerSchoolEntry(
         "school-scu", "四川大学 SCU",
