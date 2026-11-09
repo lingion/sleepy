@@ -64,6 +64,10 @@ class ScheduleToolbarRenderTest {
             if (busy) compose.onNodeWithTag("schedule_week_group").assertExists()
             else compose.onNodeWithTag("schedule_week_group").assertDoesNotExist()
         }
+        if (width == 280) {
+            compose.onNodeWithTag("schedule_week_group").assertIsDisplayed()
+            compose.onNodeWithTag("schedule_week_label").assertTextEquals("2")
+        }
         save(name)
         if (busy && width == 360) {
             compose.mainClock.autoAdvance = false

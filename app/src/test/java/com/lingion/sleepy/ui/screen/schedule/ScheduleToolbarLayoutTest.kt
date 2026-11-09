@@ -60,10 +60,23 @@ class ScheduleToolbarLayoutTest {
     }
 
     @Test fun narrowLargeFontKeepsEveryActionClearWithUndoAndScaleConfirmation() {
-        render(280, 1.5f, true)
+        var previous = 0
+        var next = 0
+        var jump = 0
+        render(280, 1.5f, true, { previous++ }, { next++ }, { jump++ })
         assertSeparated(true)
+        compose.onNodeWithTag("schedule_week_group").assertIsDisplayed()
         compose.onNodeWithTag("schedule_week_label").assertTextEquals("2")
         assertTrue("week navigation needs its own row when actions occupy the width", bounds("schedule_week_label").top > bounds("schedule_add_course").bottom)
+        val group = bounds("schedule_week_group")
+        listOf("schedule_prev_week", "schedule_week_label", "schedule_next_week").forEach {
+            val child = bounds(it)
+            assertTrue("all three actions stay inside the shared capsule", child.left >= group.left && child.right <= group.right)
+            compose.onNodeWithTag(it).performClick()
+        }
+        assertEquals(1, previous)
+        assertEquals(1, jump)
+        assertEquals(1, next)
     }
 
     @Test fun ordinaryPhoneKeepsLongSemesterStatusAndActionsClear() {
