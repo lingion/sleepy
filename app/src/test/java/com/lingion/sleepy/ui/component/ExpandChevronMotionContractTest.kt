@@ -131,32 +131,28 @@ class ExpandChevronMotionContractTest {
     }
 
     @Test
-    fun language_uses_anchored_popup_instead_of_inline_collapse() {
-        assertTrue("通用设置必须接入专用语言浮框", generalSettings.contains("GlassLanguageMenu("))
+    fun language_popup_preserves_preference_wiring_and_reference_spring() {
+        // 接入/禁止旧折叠由 BackRestoreSaveableContractTest 覆盖；定位和退出顺序由
+        // GlassLanguageMenuTest 验证实际行为，避免重复锁定源码排版与局部变量名。
         assertTrue("选择仍然更新语言偏好", generalSettings.contains("AppPrefs.setLanguage(context, code)"))
-        assertFalse("不得同时保留旧内联折叠状态", generalSettings.contains("languageExpanded"))
-        assertTrue("语言菜单必须使用独立锚定窗口", languageMenu.contains("popupPositionProvider = positionProvider"))
         assertTrue("浮框展开沿用已确认参考弹簧", languageMenu.contains("spring(dampingRatio = .754f, stiffness = 400f)"))
-        assertTrue("退出动画必须完成后通知关闭", languageMenu.contains("progress.animateTo(0f, tween(200))\n            closed(pickedCode)"))
-        assertTrue("先移除 Popup 再提交业务选择", languageMenu.contains("withFrameNanos { }") && languageMenu.contains("if (code != null) select(code)"))
     }
 
     // ---- 契约 3: 折叠显隐仍归 AnimatedVisibility, 禁 if 直挂回潮 ----
     // (站点级 AnimatedVisibility 计数已在 assertExpandFamily 锁死; 此处反向
-    //  锁 EditTable/PeriodTable/GeneralSettings 三处折叠头没有 if(expanded) 内容块)
+    //  锁 EditTable/PeriodTable 两处折叠头没有 if(expanded) 内容块)
 
     @Test
     fun collapse_content_never_mounted_via_if() {
         for ((src, name) in listOf(
             editTable to "EditTableScreen",
             periodTableEdit to "PeriodTableEditScreen",
-            generalSettings to "GeneralSettingsScreen",
         )) {
             // `) \{` 只锁"直接挂内容块"形态; 折叠头摘要里的 if(expanded) A else B
             // 三元 (收起/展开文案、旋转角) 是合法消费, 不在射程
             assertFalse(
                 "$name 折叠内容禁 if(xxxExpanded) { ... } 直挂 (砍掉退场动画)",
-                Regex("""if \((timeSlots|language)Expanded\) \{""").containsMatchIn(src)
+                Regex("""if \(timeSlotsExpanded\) \{""").containsMatchIn(src)
             )
         }
     }

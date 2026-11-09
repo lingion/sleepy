@@ -12,6 +12,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -363,11 +365,12 @@ private fun ManualTimeSlotEditor(
     LaunchedEffect(rows) { if (draggingIndex == null) displayRows = rows }
     val colors = MaterialTheme.colorScheme
 
-    Box(modifier = modifier) {
+    BoxWithConstraints(modifier = modifier) {
+        val compactRows = maxWidth < (240 * LocalDensity.current.fontScale).dp
         Column(modifier = Modifier.fillMaxWidth()) {
             // Header
             Row(
-                modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, bottom = 6.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = if (compactRows) 4.dp else 12.dp).padding(bottom = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -382,6 +385,7 @@ private fun ManualTimeSlotEditor(
                     modifier = dbgTagPrefix?.let { Modifier.dbgTag("${it}_add", role = "button") }
                         ?: Modifier.testTag("timeslot-add-row"),
                     shape = SleepyTheme.shapes.medium,
+                    contentPadding = PaddingValues(horizontal = if (compactRows) 8.dp else 24.dp, vertical = 8.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colors.secondaryContainer,
                         contentColor = colors.onSecondaryContainer
@@ -393,7 +397,7 @@ private fun ManualTimeSlotEditor(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(Modifier.width(4.dp))
-                    Text(stringResource(R.string.add_period), style = MaterialTheme.typography.labelMedium)
+                    Text(stringResource(R.string.add_period), style = MaterialTheme.typography.labelMedium, maxLines = 1)
                 }
             }
             if (reorderEnabled) {
@@ -412,9 +416,9 @@ private fun ManualTimeSlotEditor(
                     .fillMaxWidth()
                     .animateContentSize(rowHostSpec)
                     .background(colors.surfaceContainerLow, SleepyTheme.shapes.large)
-                    .padding(10.dp),
+                    .padding(if (compactRows) 4.dp else 10.dp),
                 verticalArrangement = Arrangement.spacedBy(ROW_GAP_DP)
-            ) {
+            ) rowsColumn@{
                 displayRows.forEachIndexed { index, row ->
                     val isDragging = draggingIndex == index
                     val isDropTarget = !isDragging &&
@@ -434,7 +438,7 @@ private fun ManualTimeSlotEditor(
                     // 记忆 — 末尾增行只有新槽位首播展开入场; 中间删行时后续行落在既有
                     // 槽位 (state 已是 true) → 不重播, 高度收拢交给宿主 animateContentSize。
                     val rowVisible = remember { MutableTransitionState(false).apply { targetState = true } }
-                    this@Column.AnimatedVisibility(
+                    this@rowsColumn.AnimatedVisibility(
                         visibleState = rowVisible,
                         enter = rowExpand.enter,
                         exit = rowExpand.exit,
@@ -532,6 +536,7 @@ private fun ManualTimeSlotEditor(
                     val context = androidx.compose.ui.platform.LocalContext.current
                     val conflictMsg = TimeTableUtils.findConflictForSlot(displayRows, row.node)?.errorMessage(context)
                     TimeSlotRowItem(
+                        compact = compactRows,
                         row = row.copy(node = index + 1),
                         canDelete = displayRows.size > 1,
                         isBlank = row.start.isBlank() && row.end.isBlank(),
@@ -574,6 +579,7 @@ private fun ManualTimeSlotEditor(
 
 @Composable
 private fun TimeSlotRowItem(
+    compact: Boolean,
     row: TimeSlotRow,
     canDelete: Boolean,
     isBlank: Boolean,
@@ -618,6 +624,7 @@ private fun TimeSlotRowItem(
         shape = rowShape
     ) else Modifier
     val blankHint = if (isBlank) stringResource(R.string.timeslot_row_blank_hint) else ""
+    val nodeLabel = stringResource(R.string.course_node_format, row.node)
     Column(
         modifier = modifier.fillMaxWidth()
     ) {
@@ -647,14 +654,15 @@ private fun TimeSlotRowItem(
                         )
                     } ?: Modifier
                 )
-                .padding(horizontal = 10.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                .padding(horizontal = if (compact) 4.dp else 10.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(if (compact) 4.dp else 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = stringResource(R.string.course_node_format, row.node),
-                modifier = Modifier.width(44.dp),
-                style = MaterialTheme.typography.bodyMedium,
+                text = if (compact) row.node.toString() else nodeLabel,
+                modifier = Modifier.width(if (compact) 20.dp else 44.dp)
+                    .semantics { contentDescription = nodeLabel },
+                style = if (compact) MaterialTheme.typography.labelSmall else MaterialTheme.typography.bodyMedium,
                 color = if (dropInvalid) colors.onErrorContainer else colors.onSurface
             )
             TimePickerField(

@@ -2,7 +2,7 @@ package com.lingion.sleepy.console
 
 import android.app.Application
 import androidx.compose.ui.test.*
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import com.lingion.sleepy.console.handlers.EnableFlow
 import com.lingion.sleepy.ui.theme.SleepyThemeProvider
 import kotlinx.coroutines.runBlocking
