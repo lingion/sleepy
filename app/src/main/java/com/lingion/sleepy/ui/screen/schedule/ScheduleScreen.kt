@@ -6,8 +6,14 @@ import com.lingion.sleepy.ui.component.liquidglass.glassSurfaceBackground
 import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.ui.semantics.Role
+import com.lingion.sleepy.ui.component.liquidglass.liquidGlassControlsEnabled
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -627,7 +633,7 @@ private fun TableSwitcherDialog(
 }
 
 @Composable
-private fun TopBar(
+internal fun TopBar(
     currentWeek: Int,
     maxWeek: Int,
     startDate: String,
@@ -655,24 +661,14 @@ private fun TopBar(
     val isOnActual = currentWeek == actualWeek
     val semesterStatus = displayContext?.semesterStatus
         ?: DateUtils.semesterStatus(startDate, maxWeek)
-    val density = LocalDensity.current
-    var centerLeftPx by remember { mutableFloatStateOf(Float.POSITIVE_INFINITY) }
-    val capsuleScale = ((with(density) { centerLeftPx.toDp().value } - 32f - 6f -
-        (if (scaleUncommitted) 38f else 0f) - 6f) / 65f).coerceIn(0.65f, 1f)
-    Row(
+    ScheduleToolbarLayout(
         modifier = Modifier
             .fillMaxWidth()
             .glassSurfaceBackground(colors.surface, androidx.compose.ui.graphics.RectangleShape)
             .padding(horizontal = 12.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // v7.10.12: 三件套改 Box 叠加实现屏幕正中 —
-        // 旧 weight(1f)+Center 是在"扣除右侧按钮后的剩余空间"里居中, 视觉偏左;
-        // Box 叠加让三件套对齐全宽正中, 加课/分享绝对定位右缘(用户 2026-09-02)。
-        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            // v7.10.14: 最左 logo — 点击弹课表切换弹窗, 右缘操作区(加课/分享)对称位
+        start = {
             Row(
-                modifier = Modifier.align(Alignment.CenterStart),
+                modifier = Modifier,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 WeekNavButton(
@@ -694,11 +690,11 @@ private fun TopBar(
                     exit = sleepyPopupExit(),
                 ) {
                     Row {
-                        Spacer(modifier = Modifier.width(6.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
                         UndoRedoCapsule(
                             showUndo = hasUndo,
                             showRedo = hasRedo,
-                            scale = capsuleScale,
+                            scale = 1f,
                             onUndo = onUndo,
                             onRedo = onRedo
                         )
@@ -707,7 +703,7 @@ private fun TopBar(
                 // 2026-09-16 用户令: 捏合未确认时 tick 单列,与数据撤回胶囊互不干涉;
                 // tick=落盘长期生效, 撤回=回到上次确认值(语义不同, 不并入胶囊)。
                 if (scaleUncommitted) {
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                     WeekNavButton(
                         icon = Icons.Outlined.Check,
                         tag = "schedule_scale_keep",
@@ -716,113 +712,114 @@ private fun TopBar(
                     )
                 }
             }
-            // 翻页三件套(箭头+胶囊+箭头) — 箭头紧贴胶囊
-            Row(
-                modifier = Modifier.onGloballyPositioned {
-                    centerLeftPx = it.positionInParent().x
-                },
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-            WeekNavButton(icon = Icons.Outlined.ChevronLeft, tag = "schedule_prev_week", onClick = onPrevWeek)
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            // 第 N 周 标签 — 点击行为根据是否在当前实际周而不同
-            // 学期外: 标签带上周数(学期未开始 · 第 3 周), 翻周时数字跟着变, 用户才知道自己看到第几周
-            Box {
-                val statusRes = when (semesterStatus) {
-                    DateUtils.SemesterStatus.BEFORE_START -> R.string.semester_not_started
-                    DateUtils.SemesterStatus.AFTER_END -> R.string.semester_ended
-                    else -> 0
-                }
-                val weekLabel = if (statusRes == 0)
-                    stringResource(R.string.schedule_current_week, currentWeek)
-                else "${stringResource(statusRes)} · ${stringResource(R.string.schedule_week_prefix, currentWeek)}"
-                Text(
-                    // 表头语义永远=第 N 周(学期外带状态前缀但仍保留周数)。
-                    // 最近有课日只能影响自动选中的周, 不能改写表头文案或点击行为。
-                    text = weekLabel,
-                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
-                    color = if (isOnActual) colors.onPrimaryContainer else colors.primary,
-                    modifier = Modifier
-                        .glassControl(shape = SleepyTheme.shapes.medium)
-                        .clip(SleepyTheme.shapes.medium)
-                        .background(controlFill(if (isOnActual) colors.primaryContainer else colors.primaryContainer.copy(alpha = SleepyTheme.Alpha.inactive)))
-                        .noRippleGlassClickable {
-                            if (isOnActual) {
-                                // 在当前实际周 → 弹下拉菜单
-                                menuOpen = true
-                            } else {
-                                // 不在当前实际周 → 一键跳回
-                                onJumpToActual()
-                            }
-                        }
-                        .dbgTag("schedule_week_label", text = weekLabel, role = "button")
-                        .padding(horizontal = 14.dp, vertical = 4.dp)
-                )
-
-                // Material3 DropdownMenu — FlowRow 标签式选周
-                @OptIn(ExperimentalLayoutApi::class)
-                DropdownMenu(
-                    expanded = menuOpen,
-                    onDismissRequest = { menuOpen = false },
-                    modifier = Modifier.width(280.dp),
-                    // 菜单浮在 surfaceContainer 背景上, 用 Highest 拉开对比(默认 High 与背景几乎同色=隐形)
-                    containerColor = colors.surfaceContainerHighest
+        },
+        center = {
+            BoxWithConstraints {
+                val labelMaxWidth = (maxWidth - 112.dp).coerceAtLeast(0.dp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
+                    WeekNavButton(icon = Icons.Outlined.ChevronLeft, tag = "schedule_prev_week", onClick = onPrevWeek)
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    // 第 N 周 标签 — 点击行为根据是否在当前实际周而不同
+                    // 学期外: 标签带上周数(学期未开始 · 第 3 周), 翻周时数字跟着变, 用户才知道自己看到第几周
+                    Box(Modifier.widthIn(max = labelMaxWidth)) {
+                        val statusRes = when (semesterStatus) {
+                            DateUtils.SemesterStatus.BEFORE_START -> R.string.semester_not_started
+                            DateUtils.SemesterStatus.AFTER_END -> R.string.semester_ended
+                            else -> 0
+                        }
+                        val weekLabel = if (statusRes == 0)
+                            stringResource(R.string.schedule_current_week, currentWeek)
+                        else "${stringResource(statusRes)} · ${stringResource(R.string.schedule_week_prefix, currentWeek)}"
                         Text(
-                            text = stringResource(R.string.schedule_jump_week),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = colors.onSurfaceVariant,
-                            modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
+                            // 表头语义永远=第 N 周(学期外带状态前缀但仍保留周数)。
+                            // 最近有课日只能影响自动选中的周, 不能改写表头文案或点击行为。
+                            text = weekLabel,
+                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                            color = if (isOnActual) colors.onPrimaryContainer else colors.primary,
+                            modifier = Modifier
+                                .glassControl(shape = SleepyTheme.shapes.medium, motionClearance = 4.dp)
+                                .clip(SleepyTheme.shapes.medium)
+                                .background(controlFill(if (isOnActual) colors.primaryContainer else colors.primaryContainer.copy(alpha = SleepyTheme.Alpha.inactive)))
+                                .noRippleGlassClickable {
+                                    if (isOnActual) {
+                                        // 在当前实际周 → 弹下拉菜单
+                                        menuOpen = true
+                                    } else {
+                                        // 不在当前实际周 → 一键跳回
+                                        onJumpToActual()
+                                    }
+                                }
+                                .dbgTag("schedule_week_label", text = weekLabel, role = "button")
+                                .padding(horizontal = 14.dp, vertical = 4.dp)
                         )
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxWidth()
+
+                        // Material3 DropdownMenu — FlowRow 标签式选周
+                        @OptIn(ExperimentalLayoutApi::class)
+                        DropdownMenu(
+                            expanded = menuOpen,
+                            onDismissRequest = { menuOpen = false },
+                            modifier = Modifier.width(280.dp),
+                            // 菜单浮在 surfaceContainer 背景上, 用 Highest 拉开对比(默认 High 与背景几乎同色=隐形)
+                            containerColor = colors.surfaceContainerHighest
                         ) {
-                            (1..maxWeek).forEach { w ->
-                                val isCurrent = w == currentWeek
-                                Box(
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .glassControl(shape = CircleShape, selected = isCurrent)
-                                        .clip(CircleShape)
-                                        .background(
-                                            controlFill(if (isCurrent) colors.primary
-                                            else colors.surfaceContainerHigh)
-                                        )
-                                        .noRippleGlassClickable {
-                                            onSelectWeek(w)
-                                            menuOpen = false
-                                        }
-                                        .dbgTag("schedule_week#$w", text = w.toString(), role = "button"),
-                                    contentAlignment = Alignment.Center
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(
+                                    text = stringResource(R.string.schedule_jump_week),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = colors.onSurfaceVariant,
+                                    modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
+                                )
+                                FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    Text(
-                                        text = w.toString(),
-                                        style = MaterialTheme.typography.labelLarge.copy(
-                                            fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal
-                                        ),
-                                        color = if (isCurrent) colors.onPrimary else colors.onSurface
-                                    )
+                                    (1..maxWeek).forEach { w ->
+                                        val isCurrent = w == currentWeek
+                                        Box(
+                                            modifier = Modifier
+                                                .size(40.dp)
+                                                .glassControl(shape = CircleShape, selected = isCurrent, motionClearance = 4.dp)
+                                                .clip(CircleShape)
+                                                .background(
+                                                    controlFill(if (isCurrent) colors.primary
+                                                    else colors.surfaceContainerHigh)
+                                                )
+                                                .noRippleGlassClickable {
+                                                    onSelectWeek(w)
+                                                    menuOpen = false
+                                                }
+                                                .dbgTag("schedule_week#$w", text = w.toString(), role = "button"),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = w.toString(),
+                                                style = MaterialTheme.typography.labelLarge.copy(
+                                                    fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal
+                                                ),
+                                                color = if (isCurrent) colors.onPrimary else colors.onSurface
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    WeekNavButton(icon = Icons.Outlined.ChevronRight, tag = "schedule_next_week", onClick = onNextWeek)
                 }
             }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            WeekNavButton(icon = Icons.Outlined.ChevronRight, tag = "schedule_next_week", onClick = onNextWeek)
-        }
-
-            // 右侧操作区: 加课 + 分享 — 与翻页箭头同款圆形底, Box 右缘绝对定位
+        },
+        end = {
             Row(
-                modifier = Modifier.align(Alignment.CenterEnd),
+                modifier = Modifier,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 WeekNavButton(
@@ -831,7 +828,7 @@ private fun TopBar(
                     contentDescriptionRes = R.string.schedule_add_course,
                     onClick = onAddCourse
                 )
-                Spacer(modifier = Modifier.width(6.dp))
+                Spacer(modifier = Modifier.width(8.dp))
                 WeekNavButton(
                     icon = Icons.Outlined.IosShare,
                     tag = "schedule_share",
@@ -840,7 +837,7 @@ private fun TopBar(
                 )
             }
         }
-    }
+    )
 }
 
 @Composable
@@ -851,21 +848,15 @@ private fun WeekNavButton(
     contentDescriptionRes: Int? = null
 ) {
     val colors = MaterialTheme.colorScheme
-    Box(
-        modifier = Modifier
-            .size(32.dp)
-            .glassControl()
-            .clip(CircleShape)
-            .background(controlFill(colors.surfaceContainerHigh))
-            .noRippleGlassClickable(onClick)
-            .dbgTag(tag, role = "button")
-            .padding(6.dp),
-        contentAlignment = Alignment.Center
+    com.lingion.sleepy.ui.component.liquidglass.GlassIconButton(
+        onClick = onClick,
+        modifier = Modifier.dbgTag(tag, role = "button"),
     ) {
         Icon(
             imageVector = icon,
             contentDescription = contentDescriptionRes?.let { stringResource(it) },
-            tint = colors.onSurfaceVariant
+            tint = colors.onSurfaceVariant,
+            modifier = Modifier.size(20.dp),
         )
     }
 }
@@ -884,12 +875,20 @@ private fun UndoRedoCapsule(
     onRedo: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
+    val interaction = remember { MutableInteractionSource() }
+    val optical = liquidGlassControlsEnabled()
+    val undoClick = if (optical) Modifier.clickable(
+        interactionSource = interaction, indication = null, enabled = showUndo, role = Role.Button, onClick = onUndo,
+    ) else Modifier.noRippleGlassClickable(enabled = showUndo, onClick = onUndo)
+    val redoClick = if (optical) Modifier.clickable(
+        interactionSource = interaction, indication = null, enabled = showRedo, role = Role.Button, onClick = onRedo,
+    ) else Modifier.noRippleGlassClickable(enabled = showRedo, onClick = onRedo)
     val halfSize = 32.dp * scale
     val dividerHeight = 14.dp * scale
     Row(
         modifier = Modifier
             .height(halfSize)
-            .glassControl(grouped = true)
+            .glassControl(grouped = true, motionClearance = 4.dp, interactionSource = interaction)
             .clip(CircleShape)
             .background(controlFill(colors.surfaceContainerHigh)),
         verticalAlignment = Alignment.CenterVertically
@@ -901,7 +900,7 @@ private fun UndoRedoCapsule(
                     if (scale == 1f) Modifier.size(width = 32.dp, height = 32.dp)
                     else Modifier.size(width = halfSize, height = halfSize)
                 )
-                .noRippleGlassClickable(enabled = showUndo, onClick = onUndo)
+                .then(undoClick)
                 .dbgTag("schedule_undo", text = stringResource(R.string.schedule_undo), role = "button"),
             contentAlignment = Alignment.Center
         ) {
@@ -925,7 +924,7 @@ private fun UndoRedoCapsule(
                     if (scale == 1f) Modifier.size(width = 32.dp, height = 32.dp)
                     else Modifier.size(width = halfSize, height = halfSize)
                 )
-                .noRippleGlassClickable(enabled = showRedo, onClick = onRedo)
+                .then(redoClick)
                 .dbgTag("schedule_redo", text = stringResource(R.string.schedule_redo), role = "button"),
             contentAlignment = Alignment.Center
         ) {

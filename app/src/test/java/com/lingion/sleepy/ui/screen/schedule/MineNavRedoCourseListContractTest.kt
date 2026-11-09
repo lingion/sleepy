@@ -175,14 +175,10 @@ class MineNavRedoCourseListContractTest {
         assertTrue("胶囊外 Row 必须 clip(CircleShape)", capsuleBlock.contains(".clip(CircleShape)"))
         assertTrue("中缝 Box 宽必须是 1.dp", capsuleBlock.contains(".size(width = 1.dp"))
         assertTrue("胶囊默认半区必须保持 32dp", capsuleBlock.contains("val halfSize = 32.dp * scale"))
-        assertTrue("胶囊比例必须由顶栏实际可用空间决定", scheduleScreen.contains("val capsuleScale"))
-        assertTrue("空间足够时胶囊必须保持原尺寸", scheduleScreen.contains("coerceIn(0.65f, 1f)"))
-        assertTrue("中央周导航必须提供实际位置用于防碰撞", scheduleScreen.contains("positionInParent().x"))
-
-        val weekButtonBlock = Regex(
-            """fun\s+WeekNavButton\([\s\S]*?\n\}"""
-        ).find(scheduleScreen)?.value ?: error("WeekNavButton 找不到")
-        assertTrue("其他顶栏按钮必须保持固定 32dp", weekButtonBlock.contains(".size(32.dp)"))
+        assertTrue("胶囊保留完整尺寸，由顶栏换行让出空间", scheduleScreen.contains("scale = 1f"))
+        assertTrue("顶栏由三槽布局测量并处理碰撞", scheduleScreen.contains("ScheduleToolbarLayout("))
+        val weekButtonBlock = Regex("""fun\s+WeekNavButton\([\s\S]*?\n\}""").find(scheduleScreen)?.value ?: error("WeekNavButton 找不到")
+        assertTrue("顶栏按钮使用统一图标控件", weekButtonBlock.contains("GlassIconButton("))
     }
 
     @Test
