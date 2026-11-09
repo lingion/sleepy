@@ -138,7 +138,7 @@ class GlassAppNavigationRenderTest {
         tap("教务直连"); capture("$mode-school-select"); back(); back()
         tap("我的"); capture("$mode-mine")
         for ((entry, name) in listOf(
-            "所有课表" to "tables", "作息表" to "periods", context.getString(com.lingion.sleepy.R.string.settings_holidays) to "holiday", "提醒" to "reminders",
+            "所有课表" to "tables", "作息表" to "periods", compose.activity.getString(com.lingion.sleepy.R.string.settings_holidays) to "holiday", "提醒" to "reminders",
             "外观与主题" to "appearance", "通用" to "general", "小组件" to "widgets", "关于" to "about",
         )) {
             tap(entry)
