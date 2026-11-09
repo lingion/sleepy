@@ -453,27 +453,33 @@ fun CardsGridView(
                 }
             }
 
+            // 用户反馈 2026-09-09 (精度): 时间轴按分钟加权 — 占位行只占真实分钟占比
+            // (5 分钟占位 ≈ 0.111 标准行), 不再整行拉满把时间轴歪曲。
+            // yOfRows(r) = 加权行坐标 r(0.0=网格顶, 1.0=一标准行) → dp (boundary 口径, O(1));
+            fun yOfRows(r: Float): Dp {
+                val ws = boundaryWeights
+                val full = r.toInt().coerceAtMost(ws.size)
+                var acc = naturalWeightPrefixSum[full]
+                if (full < ws.size && r > full) {
+                    acc += (naturalWeights.getOrNull(full) ?: ws[full]) * (r - full)
+                }
+                val crossedBreaks = mealBreakPrefixCount[full]
+                return rowH * acc + mealGapExtra * crossedBreaks
+            }
+
             /** natural 累计坐标 (r = 行分数, 同 yOfRows 口径, 无折权, O(1))。 */
             fun naturalSpan(r: Float): Dp {
-                val full = r.toInt().coerceAtMost(naturalWeights.size)
+                val ws = naturalWeights
+                val full = r.toInt().coerceAtMost(ws.size)
                 var acc = naturalWeightPrefixSum[full]
-                if (full < naturalWeights.size && r > full) {
-                    acc += naturalWeights[full] * (r - full)
+                if (full < ws.size && r > full) {
+                    acc += ws[full] * (r - full)
                 }
                 return rowH * acc
             }
             /** natural 跨度 (dp): 卡片高度用 — 餐段空隙不计入卡高。 */
             fun contentSpanDpOf(from: Float, to: Float): Dp =
                 naturalSpan(to) - naturalSpan(from)
-
-            // 用户反馈 2026-09-09 (精度): 时间轴按分钟加权 — 占位行只占真实分钟占比
-            // (5 分钟占位 ≈ 0.111 标准行), 不再整行拉满把时间轴歪曲。
-            // yOfRows(r) = 加权行坐标 r(0.0=网格顶, 1.0=一标准行) → dp (boundary 口径, O(1));
-            fun yOfRows(r: Float): Dp {
-                val full = r.toInt().coerceAtMost(naturalWeights.size)
-                val crossedBreaks = mealBreakPrefixCount[full]
-                return naturalSpan(r) + mealGapExtra * crossedBreaks
-            }
             fun rowHeightAt(i: Int): Dp = rowH * (naturalWeights.getOrNull(i) ?: 1f)
             fun gapAfterRow(i: Int): Dp = gapH + if (i in mealBreakAfterRows) mealGapExtra else 0.dp
 
