@@ -155,6 +155,9 @@ internal class MeetingBlockDraft(
     val initialStep: Int? = null,
     val initialStartWeek: Int? = null,
     val initialEndWeek: Int? = null,
+    /** 整卡折叠态 (用户定令 2026-11-09): 编辑页所有时段卡默认全收起, 一次只展开
+     *  命中/新建的那张。收起态保留 标题+摘要+星期+标准节次滑杆, 其余进 AnimatedVisibility。 */
+    expanded: Boolean = false,
 ) {
     var startNode by mutableStateOf(startNode)
     var step by mutableStateOf(step)
@@ -177,6 +180,9 @@ internal class MeetingBlockDraft(
     var isIrregularTime by mutableStateOf(isIrregularTime)
     /** 非常规选项折叠栏: 编辑已启用任一非常规项的卡时自动展开, 否则默认收起 (普通课程主路径不被"非常规"字样干扰) */
     var irregularOptionsExpanded by mutableStateOf(isIrregularNode || isIrregularTime)
+    /** 整卡折叠态 (用户定令 2026-11-09): 默认值由构造参数决定 — 编辑页回填卡=false (全收起),
+     *  新建首卡/「新增时段」新卡=true (用户进来就是要填这张)。跳转 effect 命中后置 true。 */
+    var expanded by mutableStateOf(expanded)
 
     /** §3.3 契约: 本卡生效起止 = 覆盖值 / 槽位默认 / 标准节次时间, 单一出口 */
     fun effectiveRange(timeJson: String): Pair<String, String>? =
@@ -351,13 +357,21 @@ fun AddCourseScreen(
     // 主键唯一, 块里记下 groupSlotsForEdit 切出的同组所有行 id)。
     // v3(用户报障 2026-10-08): targetIdx>=0 才滚 — 即使 idx=0, "基础信息"header
     // 也占用屏幕空间, 第一个时段块在 header 下方不可见, 必须滚。
+    // v4(用户定令 2026-11-09): 命中卡默认展开, 其余保持折叠。守卫记"块对象身份"
+    // 而非 course id — group 回填会 clear+重建块(对象换了, 必须再展开再滚),
+    // 而用户手动收起后新增时段触发的 size 跳变块对象不变, 不得把收起的卡强行撑开。
+    var autoExpandedBlock by remember(editingCourse?.id) { mutableStateOf<MeetingBlockDraft?>(null) }
     LaunchedEffect(editingCourse?.id, meetingBlocks.size) {
         val targetIdx = findTargetBlockIndex(meetingBlocks, editingCourse)
         if (targetIdx >= 0) {
-            // LazyColumn 前面有 Spacer、基础信息、周次范围、时段标题 4 个 item；
-            // targetIdx 是 meetingBlocks 下标，不能直接当 LazyColumn 下标。
-            val headerItemCount = 4 + if (validationIssues.isNotEmpty()) 1 else 0
-            listState.animateScrollToItem(headerItemCount + targetIdx)
+            if (autoExpandedBlock !== meetingBlocks[targetIdx]) {
+                autoExpandedBlock = meetingBlocks[targetIdx]
+                meetingBlocks[targetIdx].expanded = true
+                // LazyColumn 前面有 Spacer、基础信息、周次范围、时段标题 4 个 item；
+                // targetIdx 是 meetingBlocks 下标，不能直接当 LazyColumn 下标。
+                val headerItemCount = 4 + if (validationIssues.isNotEmpty()) 1 else 0
+                listState.animateScrollToItem(headerItemCount + targetIdx)
+            }
         }
     }
 
@@ -728,7 +742,9 @@ fun AddCourseScreen(
                                 endWeek = 16,
                                 weekType = 0,
                                 room = previous?.roomState.orEmpty(),
-                                teacher = previous?.teacherState.orEmpty()
+                                teacher = previous?.teacherState.orEmpty(),
+                                // 新卡立刻要填 — 展开, 不等用户再点一次
+                                expanded = true
                             )
                         )
                         nextBlockId += 1
@@ -848,7 +864,9 @@ private fun initialMeetingBlock(course: CourseEntity?): MeetingBlockDraft {
             startNode = 1,
             step = 2,
             startTime = "08:00",
-            endTime = "09:40"
+            endTime = "09:40",
+            // 新建课首卡 = 用户此刻要填的表单 — 展开 (编辑课走默认折叠, 由跳转 effect 命中再展开)
+            expanded = true
         )
     }
     val days = androidx.compose.runtime.mutableStateListOf(course.day)
@@ -1107,7 +1125,12 @@ private fun SwitchRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyMedium,
@@ -1124,7 +1147,7 @@ private fun SwitchRow(
 }
 
 @Composable
-private fun MeetingBlockEditor(
+internal fun MeetingBlockEditor(
     title: String,
     block: MeetingBlockDraft,
     groupSourceColorHex: String,
@@ -1142,6 +1165,12 @@ private fun MeetingBlockEditor(
     onDeselectEdge: (releasedNode: Int) -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
+    // 整卡 chevron 旋转与 IrregularOptionsSection 同族 (MD3E defaultSpatial)
+    val chevronRotation by animateFloatAsState(
+        targetValue = if (block.expanded) 180f else 0f,
+        animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>(),
+        label = "slot-card-chevron"
+    )
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -1151,13 +1180,19 @@ private fun MeetingBlockEditor(
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        // 卡头 = 折叠开关 (用户定令 2026-11-09): 收起态只显示标题 + 两行摘要文字,
+        // 星期/节次控件一律收进展开区; 顺序不变量: 标题和摘要 [删除叉] [折叠箭头].
+        // 文案居左 (weight 1f 独占剩余行宽), 右侧动作簇为统一 48dp IconButton (8dp 间距).
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Top
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .noRippleGlassClickable { block.expanded = !block.expanded }
+                    .padding(vertical = 4.dp),
                 verticalArrangement = Arrangement.spacedBy(3.dp)
             ) {
                 Text(
@@ -1169,136 +1204,158 @@ private fun MeetingBlockEditor(
             }
             if (canRemove) {
                 IconButton(onClick = onRemove) {
-                    Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.delete_slot), tint = colors.onSurfaceVariant)
+                    Icon(
+                        Icons.Outlined.Close,
+                        contentDescription = stringResource(R.string.delete_slot),
+                        tint = colors.onSurfaceVariant
+                    )
                 }
             }
-        }
-
-        MultiDayPicker(selectedDays = block.days.toSet(), onToggleDay = { day ->
-            if (day in block.days) block.days.remove(day) else block.days.add(day)
-        })
-
-        // 标准卡: 第 startNode..(startNode+step-1) 节, 1..maxStd — MD3 双头滑杆整数区间,
-        // 一头拖开始节一头拖结束节; steps 吸附整数档位, 物理上拖不出交叉/越界 (issue#9
-        // 的"输入超界"路径随数字框一起消失, clamped 提示机制作废删除)。
-        // 普通课程主路径, 不被"非常规"折叠栏干扰; 非常规节次卡走槽位选择, 不渲染滑杆。
-        if (!block.isIrregularNode) {
-            // 显示口径统一夹进 1..maxStd: 导入脏数据(越界/交叉)时滑杆与摘要读数一致,
-            // 落库前 validateCourseDraft 仍按原值报 issue#9 错误, 不会静默吞掉。
-            val nodeStart = block.startNode.coerceIn(1, maxStd)
-            val nodeEnd = (block.startNode + block.step - 1).coerceIn(nodeStart, maxStd)
-            val nodeCount = nodeEnd - nodeStart + 1
-            val nodeSummary = if (nodeCount <= 1) {
-                stringResource(R.string.slot_summary_period_single, nodeStart)
-            } else {
-                stringResource(R.string.slot_summary_period_range, nodeStart, nodeEnd, nodeCount)
+            IconButton(onClick = { block.expanded = !block.expanded }) {
+                Icon(
+                    Icons.Outlined.ExpandMore,
+                    contentDescription = stringResource(if (block.expanded) R.string.collapse else R.string.expand),
+                    tint = colors.onSurfaceVariant,
+                    modifier = Modifier.rotate(chevronRotation)
+                )
             }
-            IntRangeSlider(
-                summary = nodeSummary,
-                minValue = 1,
-                maxValue = maxStd,
-                startValue = nodeStart,
-                endValue = nodeEnd,
-                onValueChange = { s, e ->
-                    block.startNode = s
-                    block.step = e - s + 1
-                },
-                // 幽灵基线: 原节次区间按显示口径 startNode..startNode+step-1 换算;
-                // 两值皆非 null (编辑既有组/单卡) 才有基线, 新卡 null → 无幽灵
-                initialStart = block.initialStartNode,
-                initialEnd = if (block.initialStartNode != null && block.initialStep != null) {
-                    block.initialStartNode + block.initialStep - 1
-                } else {
-                    null
-                },
-                modifier = Modifier.padding(top = 4.dp),
-            )
         }
 
-        // issue#23 逐卡: 非常规节次 / 非常规时间 — 收进同一折叠栏 (用户反馈 2026-09-09:
-        // 平铺的"非常规"字样让用户误以为表单不能添加正常课程)
-        IrregularOptionsSection(
-            block = block,
-            fieldShape = fieldShape,
-            fieldColors = fieldColors,
-            timeJson = timeJson,
-            candidates = candidates,
-            onPickEdge = onPickEdge,
-            onEditSlot = onEditSlot,
-            onDeselectEdge = onDeselectEdge
-        )
+        val expandSpecs = sleepyExpandSpecs()
+        AnimatedVisibility(
+            visible = block.expanded,
+            enter = expandSpecs.enter,
+            exit = expandSpecs.exit,
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                MultiDayPicker(selectedDays = block.days.toSet(), onToggleDay = { day ->
+                    if (day in block.days) block.days.remove(day) else block.days.add(day)
+                })
 
-        // 周次 — 每时段独立, MD3 双头滑杆 (第 X–Y 周), 域 1..maxWeek 与课表网格同源。
-        // 显示口径夹进域内 (导入脏数据/新卡默认 16 周越界时读数一致), 落库仍按原值。
-        val blockWeekStart = block.startWeek.coerceIn(1, maxWeek)
-        val blockWeekEnd = block.endWeek.coerceIn(blockWeekStart, maxWeek)
-        IntRangeSlider(
-            summary = if (blockWeekStart == blockWeekEnd) {
-                stringResource(R.string.slot_summary_week_single, blockWeekStart)
-            } else {
-                stringResource(R.string.slot_summary_week_range, blockWeekStart, blockWeekEnd)
-            },
-            minValue = 1,
-            maxValue = maxWeek,
-            startValue = blockWeekStart,
-            endValue = blockWeekEnd,
-            onValueChange = { s, e -> block.startWeek = s; block.endWeek = e },
-            // 幽灵基线: 本卡打开页面时的周次 (新卡 null → 无幽灵)
-            initialStart = block.initialStartWeek,
-            initialEnd = block.initialEndWeek,
-            modifier = Modifier.padding(top = 4.dp),
-        )
-        // 单双周 + 按周次 — 4 态 SegmentedSwitcher
-        // 0=每周 1=单周 2=双周 3=按周次列实际指定的周（导入 type=3 单次实验课时出现）
-        SegmentedSwitcher(
-            options = listOf(
-                0 to stringResource(R.string.week_every),
-                1 to stringResource(R.string.week_odd),
-                2 to stringResource(R.string.week_even),
-                3 to stringResource(R.string.week_custom)
-            ),
-            selected = block.weekType,
-            onSelect = { block.weekType = it },
-            modifier = Modifier.fillMaxWidth()
-        )
+                // 标准卡: 第 startNode..(startNode+step-1) 节, 1..maxStd — MD3 双头滑杆整数区间,
+                // 一头拖开始节一头拖结束节; steps 吸附整数档位, 物理上拖不出交叉/越界 (issue#9
+                // 的"输入超界"路径随数字框一起消失, clamped 提示机制作废删除)。
+                // 普通课程主路径, 不被"非常规"折叠栏干扰; 非常规节次卡走槽位选择, 不渲染滑杆。
+                if (!block.isIrregularNode) {
+                    // 显示口径统一夹进 1..maxStd: 导入脏数据(越界/交叉)时滑杆与摘要读数一致,
+                    // 落库前 validateCourseDraft 仍按原值报 issue#9 错误, 不会静默吞掉。
+                    val nodeStart = block.startNode.coerceIn(1, maxStd)
+                    val nodeEnd = (block.startNode + block.step - 1).coerceIn(nodeStart, maxStd)
+                    val nodeCount = nodeEnd - nodeStart + 1
+                    val nodeSummary = if (nodeCount <= 1) {
+                        stringResource(R.string.slot_summary_period_single, nodeStart)
+                    } else {
+                        stringResource(R.string.slot_summary_period_range, nodeStart, nodeEnd, nodeCount)
+                    }
+                    IntRangeSlider(
+                        summary = nodeSummary,
+                        minValue = 1,
+                        maxValue = maxStd,
+                        startValue = nodeStart,
+                        endValue = nodeEnd,
+                        onValueChange = { s, e ->
+                            block.startNode = s
+                            block.step = e - s + 1
+                        },
+                        // 幽灵基线: 原节次区间按显示口径 startNode..startNode+step-1 换算;
+                        // 两值皆非 null (编辑既有组/单卡) 才有基线, 新卡 null → 无幽灵
+                        initialStart = block.initialStartNode,
+                        initialEnd = if (block.initialStartNode != null && block.initialStep != null) {
+                            block.initialStartNode + block.initialStep - 1
+                        } else {
+                            null
+                        },
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
 
-        // issue#22: 老师/地点/备注下沉到每时段独立编辑 — 同名同周次不同地点时不再相互覆盖
-        TextField(
-            value = block.teacherState,
-            onValueChange = { block.teacherState = it },
-            label = { Text(stringResource(R.string.course_teacher)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            shape = fieldShape,
-            colors = fieldColors
-        )
-        TextField(
-            value = block.roomState,
-            onValueChange = { block.roomState = it },
-            label = { Text(stringResource(R.string.course_room)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            shape = fieldShape,
-            colors = fieldColors
-        )
-        TextField(
-            value = block.noteState,
-            onValueChange = { block.noteState = it },
-            label = { Text(stringResource(R.string.course_note)) },
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 2,
-            maxLines = 4,
-            shape = fieldShape,
-            colors = fieldColors
-        )
+                // issue#23 逐卡: 非常规节次 / 非常规时间 — 收进同一折叠栏 (用户反馈 2026-09-09:
+                // 平铺的"非常规"字样让用户误以为表单不能添加正常课程)
+                IrregularOptionsSection(
+                    block = block,
+                    fieldShape = fieldShape,
+                    fieldColors = fieldColors,
+                    timeJson = timeJson,
+                    candidates = candidates,
+                    onPickEdge = onPickEdge,
+                    onEditSlot = onEditSlot,
+                    onDeselectEdge = onDeselectEdge
+                )
 
-        // 颜色 — 三态(GROUP 跟组 / AUTO 自动 / CUSTOM 自定义); 改组色入口在
-        // 基础信息卡组色节, 逐卡 OFF 态仅显示组色
-        ColorSection(
-            block = block,
-            groupSourceColorHex = groupSourceColorHex
-        )
+                // 周次 — 每时段独立, MD3 双头滑杆 (第 X–Y 周), 域 1..maxWeek 与课表网格同源。
+                // 显示口径夹进域内 (导入脏数据/新卡默认 16 周越界时读数一致), 落库仍按原值。
+                val blockWeekStart = block.startWeek.coerceIn(1, maxWeek)
+                val blockWeekEnd = block.endWeek.coerceIn(blockWeekStart, maxWeek)
+                IntRangeSlider(
+                    summary = if (blockWeekStart == blockWeekEnd) {
+                        stringResource(R.string.slot_summary_week_single, blockWeekStart)
+                    } else {
+                        stringResource(R.string.slot_summary_week_range, blockWeekStart, blockWeekEnd)
+                    },
+                    minValue = 1,
+                    maxValue = maxWeek,
+                    startValue = blockWeekStart,
+                    endValue = blockWeekEnd,
+                    onValueChange = { s, e -> block.startWeek = s; block.endWeek = e },
+                    // 幽灵基线: 本卡打开页面时的周次 (新卡 null → 无幽灵)
+                    initialStart = block.initialStartWeek,
+                    initialEnd = block.initialEndWeek,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+                // 单双周 + 按周次 — 4 态 SegmentedSwitcher
+                // 0=每周 1=单周 2=双周 3=按周次列实际指定的周（导入 type=3 单次实验课时出现）
+                SegmentedSwitcher(
+                    options = listOf(
+                        0 to stringResource(R.string.week_every),
+                        1 to stringResource(R.string.week_odd),
+                        2 to stringResource(R.string.week_even),
+                        3 to stringResource(R.string.week_custom)
+                    ),
+                    selected = block.weekType,
+                    onSelect = { block.weekType = it },
+                    modifier = Modifier.fillMaxWidth()
+                )
 
+                // issue#22: 老师/地点/备注下沉到每时段独立编辑 — 同名同周次不同地点时不再相互覆盖
+                TextField(
+                    value = block.teacherState,
+                    onValueChange = { block.teacherState = it },
+                    label = { Text(stringResource(R.string.course_teacher)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = fieldShape,
+                    colors = fieldColors
+                )
+                TextField(
+                    value = block.roomState,
+                    onValueChange = { block.roomState = it },
+                    label = { Text(stringResource(R.string.course_room)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = fieldShape,
+                    colors = fieldColors
+                )
+                TextField(
+                    value = block.noteState,
+                    onValueChange = { block.noteState = it },
+                    label = { Text(stringResource(R.string.course_note)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 2,
+                    maxLines = 4,
+                    shape = fieldShape,
+                    colors = fieldColors
+                )
+
+                // 颜色 — 三态(GROUP 跟组 / AUTO 自动 / CUSTOM 自定义); 改组色入口在
+                // 基础信息卡组色节, 逐卡 OFF 态仅显示组色
+                ColorSection(
+                    block = block,
+                    groupSourceColorHex = groupSourceColorHex
+                )
+            }
+        }
+
+        // 校验错误永远可见 — 卡收起也要看得见"这卡有问题", 否则保存被拦却找不到拦在哪
         if (issues.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 issues.forEach { issue ->
@@ -1813,7 +1870,8 @@ private fun GroupColorSection(
                 text = if (CourseColorUtil.hasCustomColorHex(groupSourceColorHex)) groupSourceColorHex
                 else stringResource(R.string.color_group_auto),
                 style = MaterialTheme.typography.labelSmall,
-                color = colors.onSurfaceVariant
+                color = colors.onSurfaceVariant,
+                modifier = Modifier.weight(1f, fill = false)
             )
             Spacer(modifier = Modifier.weight(1f))
             Button(
@@ -1855,16 +1913,21 @@ private fun ColorSection(
             Text(
                 text = stringResource(R.string.course_color),
                 style = MaterialTheme.typography.labelLarge,
-                color = colors.onSurfaceVariant
+                color = colors.onSurfaceVariant,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp)
             )
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 // 文案只描述开=什么 (2026-09-15 用户令): 静态「自定义颜色」, 不随开关态变
                 Text(
                     text = stringResource(R.string.color_custom_switch),
                     style = MaterialTheme.typography.labelSmall,
                     color = colors.onSurfaceVariant
                 )
-                Spacer(modifier = Modifier.width(8.dp))
                 Switch(
                     checked = useDifferent,
                     onCheckedChange = { on ->
@@ -1975,7 +2038,7 @@ private fun MultiDayPicker(
                         modifier = Modifier
                             .weight(1f)
                             .height(40.dp)
-                            .glassControl(shape = SleepyTheme.shapes.medium, selected = selected)
+                            .glassControl(shape = SleepyTheme.shapes.medium, selected = selected, motionClearance = 4.dp)
                             .clip(SleepyTheme.shapes.medium)
                             .background(controlFill(if (selected) colors.primary else colors.surfaceContainerHighest))
                             .noRippleGlassClickable { onToggleDay(day) },
