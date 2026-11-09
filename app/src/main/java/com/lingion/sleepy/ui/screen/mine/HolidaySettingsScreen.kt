@@ -74,7 +74,9 @@ import com.lingion.sleepy.util.HolidayRange
 import com.lingion.sleepy.util.HolidayRangeOps
 import com.lingion.sleepy.widget.notification.ReminderRescheduler
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import com.lingion.sleepy.util.AppClock
 
@@ -107,7 +109,14 @@ fun HolidaySettingsScreen(
     val scope = rememberCoroutineScope()
 
     var year by rememberSaveable { mutableStateOf(LocalDate.now(AppClock).year) }
-    var state by remember { mutableStateOf<HolidayUiState>(HolidayUiState.Loading) }
+    // Preloaded years must render their final layout on the first navigation frame.
+    var state by remember(year) {
+        mutableStateOf<HolidayUiState>(
+            HolidayManager.peekYearEntries(year)?.let { HolidayUiState.Loaded(it) }
+                ?: HolidayUiState.Loading
+        )
+    }
+    var isLoading by remember(year) { mutableStateOf(state is HolidayUiState.Loading) }
     var loadJob by remember { mutableStateOf<Job?>(null) }
     var overrides by remember { mutableStateOf(AppPrefs.getHolidayRanges(context)) }
     var editing by remember { mutableStateOf<EditingTarget?>(null) }
@@ -176,22 +185,45 @@ fun HolidaySettingsScreen(
     fun load(targetYear: Int, force: Boolean = false) {
         loadJob?.cancel()
         loadJob = scope.launch {
-            state = HolidayUiState.Loading
-            val entries = if (force) {
-                HolidayManager.refreshYearEntries(context, targetYear)
-            } else {
-                HolidayManager.getYearEntries(context, targetYear)
+            isLoading = true
+            try {
+                // Disk-cache reads/JSON parsing also need IO, not just the network fetch.
+                val (entries, ranges) = withContext(Dispatchers.IO) {
+                    val entries = if (force) {
+                        HolidayManager.refreshYearEntries(context, targetYear)
+                    } else {
+                        HolidayManager.getYearEntries(context, targetYear)
+                    }
+                    entries to AppPrefs.getHolidayRanges(context)
+                }
+                overrides = ranges
+                state = when {
+                    entries.isEmpty() && HolidayManager.isYearFetchFailed(targetYear) -> HolidayUiState.Failed
+                    else -> HolidayUiState.Loaded(entries)
+                }
+                if (force) ReminderRescheduler.request()
+            } finally {
+                isLoading = false
             }
-            overrides = AppPrefs.getHolidayRanges(context)
-            state = when {
-                entries.isEmpty() && HolidayManager.isYearFetchFailed(targetYear) -> HolidayUiState.Failed
-                else -> HolidayUiState.Loaded(entries)
-            }
-            if (force) ReminderRescheduler.request()
         }
     }
 
-    LaunchedEffect(year) { load(year) }
+    LaunchedEffect(year) {
+        loadJob?.cancel()
+        if (state !is HolidayUiState.Loaded) load(year)
+    }
+
+    val loaded = state as? HolidayUiState.Loaded
+    val merged = remember(loaded, overrides) {
+        loaded?.let { HolidayRangeOps.mergeSegments(it.entries, overrides) }
+    }
+    val workdayDates = remember(merged) {
+        merged?.active.orEmpty()
+            .filter { it.type == HolidayManager.TYPE_TRANSFER_WORKDAY }
+            .flatMap { s -> generateSequence(s.startDate) { if (it < s.endDate) it.plusDays(1) else null } }
+            .distinct()
+            .sorted()
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize().background(colors.background),
@@ -273,26 +305,10 @@ fun HolidaySettingsScreen(
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.weight(1f)
                         )
-                        Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) {
-                            when (state) {
-                                HolidayUiState.Loading -> CircularProgressIndicator(
-                                    modifier = Modifier.size(18.dp).padding(2.dp),
-                                    color = colors.primary,
-                                    strokeWidth = 2.dp
-                                )
-                                else -> IconButton(
-                                    onClick = { load(year, force = true) },
-                                    modifier = Modifier.size(48.dp)
-                                ) {
-                                    Icon(
-                                        Icons.Outlined.Refresh,
-                                        contentDescription = stringResource(R.string.holiday_data_refresh),
-                                        tint = colors.onSurfaceVariant,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                            }
-                        }
+                        HolidayDataSourceAction(
+                            isLoading = isLoading,
+                            onRefresh = { load(year, force = true) },
+                        )
                     }
                     if (state is HolidayUiState.Failed) {
                         Text(
@@ -382,13 +398,10 @@ fun HolidaySettingsScreen(
 
 
             // Loaded holiday data: per-table mappings precede shared date maintenance.
-            val loaded = state as? HolidayUiState.Loaded
-            if (loaded != null) {
+            if (merged != null) {
                 // 覆盖变化时基于原始网络数据即时重合并, 不重新走网络
-                val merged = HolidayRangeOps.mergeSegments(loaded.entries, overrides)
                 val userRangeIds = overrides.map { it.id }.toSet()
                 val holidaySegments = merged.active.filter { it.type == HolidayManager.TYPE_PUBLIC_HOLIDAY }
-                val workdaySegments = merged.active.filter { it.type == HolidayManager.TYPE_TRANSFER_WORKDAY }
 
                 if (holidaySegments.isNotEmpty()) {
                     // 映射只设置所选课表的补课日期，共享日期编辑统一放在日期管理区。
@@ -397,10 +410,7 @@ fun HolidaySettingsScreen(
                             HolidayTransferCard(
                                 segment = seg,
                                 transfers = transfers,
-                                workdayDates = workdaySegments
-                                    .flatMap { s -> generateSequence(s.startDate) { if (it < s.endDate) it.plusDays(1) else null } }
-                                    .distinct()
-                                    .sorted(),
+                                workdayDates = workdayDates,
                                 dayNames = dayNames,
                                 onPick = { source, target -> saveTransfer(source, target, seg.id) }
                             )
@@ -486,6 +496,30 @@ fun HolidaySettingsScreen(
                 editing = null
             }
         )
+    }
+}
+
+@Composable
+internal fun HolidayDataSourceAction(isLoading: Boolean, onRefresh: () -> Unit) {
+    // Both states occupy the full touch target, including Material's minimum size.
+    // Otherwise loading -> loaded changes this row's height and shifts every card below it.
+    Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) {
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(18.dp).padding(2.dp),
+                color = MaterialTheme.colorScheme.primary,
+                strokeWidth = 2.dp,
+            )
+        } else {
+            IconButton(onClick = onRefresh, modifier = Modifier.size(48.dp)) {
+                Icon(
+                    Icons.Outlined.Refresh,
+                    contentDescription = stringResource(R.string.holiday_data_refresh),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+        }
     }
 }
 
