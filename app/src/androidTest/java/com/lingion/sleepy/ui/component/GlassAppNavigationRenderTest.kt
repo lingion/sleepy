@@ -122,6 +122,7 @@ class GlassAppNavigationRenderTest {
         compose.waitForIdle()
         compose.onNodeWithTag("schedule_week_label").performTouchInput { click() }
         compose.waitUntil(10_000) { compose.onAllNodesWithTag("schedule_week#1").fetchSemanticsNodes().isNotEmpty() }
+        compose.mainClock.advanceTimeBy(600)
         capture("$mode-week-menu")
         back()
         compose.onNodeWithTag("schedule_add_course").performTouchInput { click() }
@@ -240,7 +241,8 @@ class GlassAppNavigationRenderTest {
             java.io.FileInputStream(descriptor.fileDescriptor).use { android.graphics.BitmapFactory.decodeStream(it) }
         }
         assertTrue("screenshot must have actual pixels", image != null && image.width > 0 && image.height > 0)
-        val dir = File(context.cacheDir, "glass-route-matrix").apply { mkdirs() }
+        val directory = InstrumentationRegistry.getArguments().getString("glassCaptureDirectory") ?: "glass-route-matrix"
+        val dir = File(context.cacheDir, directory).apply { mkdirs() }
         File(dir, "$name.png").outputStream().use { assertTrue(image.compress(Bitmap.CompressFormat.PNG, 100, it)) }
         image.recycle()
         println("GLASS_ROUTE_CAPTURE=$name")
