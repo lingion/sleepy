@@ -122,6 +122,11 @@ class NavIconDriver internal constructor(internal val key: NavIconMotionKey) {
         wasSelected = selected
     }
 
+    /** 部件渲染层逐帧直读用(draw lambda 里读 state → 仅本节点重绘)。 */
+    internal fun pulsePhase(): Float = pulse.value
+
+    internal fun spinRadians(): Float = spin.value
+
     internal suspend fun activate() {
         when (key) {
             NavIconMotionKey.PageFlip -> {
