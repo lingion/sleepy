@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -29,6 +30,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import kotlin.math.roundToInt
+import kotlin.math.abs
 
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -55,12 +57,12 @@ class GlassTopAppBarTest {
                                 windowInsets = WindowInsets(0, 0, 0, 0),
                                 navigationIcon = {
                                     if (!action) Box(Modifier.size(48.dp).testTag("control").glassControl().clickable { clicks++ }, contentAlignment = androidx.compose.ui.Alignment.Center) {
-                                        Box(Modifier.size(40.dp).background(marker.value))
+                                        Box(Modifier.fillMaxSize().background(marker.value))
                                     }
                                 },
                                 actions = {
                                     if (action) Box(Modifier.size(48.dp).testTag("control").glassControl().clickable { clicks++ }, contentAlignment = androidx.compose.ui.Alignment.Center) {
-                                        Box(Modifier.size(40.dp).background(marker.value))
+                                        Box(Modifier.fillMaxSize().background(marker.value))
                                     }
                                 },
                             )
@@ -78,16 +80,17 @@ class GlassTopAppBarTest {
         show(rtl = rtl, action = action)
         val control = compose.onNodeWithTag("control")
         val centerX = control.fetchSemanticsNode().boundsInRoot.center.x.roundToInt()
-        // 用户批准校正取样：bottom 是裁切外第一行；+2 已超出本夹具的纯色标记。
-        val belowBar = compose.onNodeWithTag("bar").fetchSemanticsNode().boundsInRoot.bottom.roundToInt()
+        // 标记填满控件，让栏外取样点落在拖动后色块内部，避开缩放边缘的混色。
+        // 仍在栏底以下验证绘制，不能退回栏内而漏掉裁切回归。
+        val belowBar = compose.onNodeWithTag("bar").fetchSemanticsNode().boundsInRoot.bottom.roundToInt() + 2
         control.performTouchInput { down(center) }
         compose.waitForIdle()
         control.performTouchInput { moveBy(Offset(0f, 100f), 200) }
         compose.waitForIdle()
-        assertEquals("放大拖拽后的按钮必须绘制在栏底以下", android.graphics.Color.RED,
+        assertDraggedPixelColor("放大拖拽后的按钮必须绘制在栏底以下", android.graphics.Color.RED,
             compose.onRoot().captureToImage().asAndroidBitmap().getPixel(centerX, belowBar))
         compose.runOnIdle { marker.value = Color.Blue }
-        assertEquals("抬起层必须继续更新前景", android.graphics.Color.BLUE,
+        assertDraggedPixelColor("抬起层必须继续更新前景", android.graphics.Color.BLUE,
             compose.onRoot().captureToImage().asAndroidBitmap().getPixel(centerX, belowBar))
         control.performTouchInput { cancel() }
         compose.waitForIdle()
@@ -96,6 +99,18 @@ class GlassTopAppBarTest {
         compose.runOnIdle { assertEquals(0, clicks) }
         control.performClick()
         compose.runOnIdle { assertEquals("原语义节点只回调一次", 1, clicks) }
+    }
+
+    private fun assertDraggedPixelColor(message: String, expected: Int, actual: Int) {
+        // 允许 8-bit RGB 通道的 1 级舍入误差；透明度仍须完全匹配。
+        assertEquals("$message (alpha)", android.graphics.Color.alpha(expected), android.graphics.Color.alpha(actual))
+        val maxChannelDelta = listOf(16, 8, 0).maxOf { shift ->
+            abs(((expected ushr shift) and 0xFF) - ((actual ushr shift) and 0xFF))
+        }
+        assertTrue(
+            "$message: expected=${Integer.toHexString(expected)}, actual=${Integer.toHexString(actual)}",
+            maxChannelDelta <= 1,
+        )
     }
 
     @Test fun navigationDragPaintsOutsideToolbarAndSettlesBack() = dragAndCheck()
