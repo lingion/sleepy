@@ -154,81 +154,19 @@ class LiquidGlassButtonScopeContractTest {
         assertTrue("AlphabetIndexBar must keep its pointer-input drag mapping", rail.contains("onLetterTap(letters[idx])"))
     }
 
-    /** 契约 4: 分段滑块三态 (2026-11-06 用户: "tab滑块要求手按压瞬间像Toggle和dock滑块一样
-     *  浮起有透射效果"; 同日晚追加: "摁起来像toggle一样, 变成一大块透明的玻璃, 有透射效果,
-     *  跟随的手指移动滑动, 就像Dock的那一大块悬浮出来的那个玻璃效果一样") —
-     *  rest 实心 secondaryContainer 药丸由 spring 连续滑动 + 拖动跟手;
-     *  按压/拖动瞬间 lift 驱动: 放大 1.155 + 8dp 托影 + 固体底色淡到 0.5 保底 +
-     *  采样宿主场景前置层 (backdropAt, depth ≥1 含滑块下方轨道/文字) 的活玻璃镜片。
-     *  禁回归: 药丸底色禁止淡到 0 (2026-11-05 白雾教训); 镜片禁止走 tinted glassControl 面板
-     *  (0.82 alpha 实心材质在升镜时原样保留 → 按下去无"透明玻璃"变化, 用户同日否决);
-     *  本文件禁止出现 layerBackdrop 本地注册 — 背板注册在滑块祖先上再让后代采样是
-     *  prepareTreeImpl 无限递归环 (2026-11-05 SIGSEGV 根因; 2026-11-08 Robolectric
-     *  全量跑同点复炸 exit 132)。 */
+    /** Geometry and gestures are exercised by FloatingGlassControlTest and render tests. */
     @Test
-    fun segmented_switcher_thumb_lifts_while_dragging() {
+    fun segmented_switcher_uses_a_sibling_source_and_draws_lens_last() {
         val src = loadSource("ui/component/SegmentedSwitcher.kt")
-        assertTrue(
-            "lift must be driven by press OR drag (2026-11-06: 按压瞬间就要浮起, 不等 slop)",
-            src.contains("animateFloatAsState(if (dragging || pressing || tapLift) 1f else 0f")
-        )
-        val thumbBlock = src.substringAfter(".testTag(\"segment-thumb\")").substringBefore("// 层1..n: 点击段")
-        assertTrue("thumb lift must scale X like the reference glass capsule", thumbBlock.contains("scaleX = 1f + 0.2f * l"))
-        assertTrue("thumb lift must scale Y enough to rise outside the track", thumbBlock.contains("scaleY = 1f + 0.2f * l"))
-        assertTrue("thumb lift must cast elevation shadow", thumbBlock.contains("shadowElevation = if (l > 0f) 8.dp.toPx() * l else 0f"))
-        assertTrue("thumb lift layer must not clip its own shadow", thumbBlock.contains("clip = false"))
-        // 按压透射镜片: 与 GlassSwitch 同一 lens 材质 + lift 连续生长
-        assertTrue("press must grow a refractive lens over the pill", thumbBlock.contains("drawPlainBackdrop"))
-        assertTrue("lens must use the complete iOS press material before scaling by lift",
-            src.contains("refraction = -8.5") && src.contains("bevel = 9.0") && src.contains("rim = if (LocalDarkTheme.current) 0.48 else 0.72"))
-        assertTrue(
-            "lens must sample the host scene prefix, never an ancestor-registered local backdrop " +
-                "(祖先背板被后代采样 = prepareTreeImpl 无限递归, 2026-11-05 SIGSEGV / 2026-11-08 测试JVM 复炸)",
-            src.contains("backdrop = lensBackdrop") &&
-                Regex("backdropAt\\(maxOf\\(1f, consumerDepth\\)\\)").containsMatchIn(src) &&
-                !src.contains("layerBackdrop(")
-        )
-        assertTrue("lens layer must not paint before lift arrives", thumbBlock.contains("if (glassActive && thumbLift > 0f"))
-        // 升镜三态与 GlassSwitch 同构: 固体淡到 0.5 保底, 镜片盖顶 → "一大块透明的玻璃"
-        assertTrue(
-            "thumb fill must fade to the 0.5 floor exactly like GlassSwitch (一大块透明玻璃; " +
-                "淡到 0 = 白雾 2026-11-05, 不淡 = 实心药丸无变化 2026-11-06 用户两次否决); " +
-                "淡出只在玻璃风格生效 — Classic 无镜片可盖, 淡半透=糊",
-            thumbBlock.contains("alpha = if (glassActive) 1f - 0.5f * thumbLift else 1f")
-        )
-        assertFalse(
-            "thumb pane must not be a tinted glassControl slab — its 0.82-alpha solid material " +
-                "survives lift unchanged, that was the \"没有透明玻璃\" complaint",
-            thumbBlock.contains(".glassControl(")
-        )
-        // 真源行为: 拖动跟手 + 释放吸附
-        assertTrue("thumb must support horizontal drag (FlClash 拖拽切换)", src.contains("horizontalDrag"))
-        // Tab 由同一棵树的前置场景层提供折射 (backdropAt); 本地背板注册已清除 —
-        // 祖先注册 + 后代采样 = prepareTreeImpl 递归 (2026-11-05 SIGSEGV 教训)。
-        assertFalse(
-            "segmented switcher must not register any local layerBackdrop for the thumb to sample",
-            src.contains("rememberLayerBackdrop()")
-        )
-        assertTrue(
-            "floating tab thumb must use Dock lens geometry and center placement",
-            src.contains("FlClashDockPhysics.lensRect") &&
-                src.contains("lensRect.width") &&
-                src.contains("lensRect.height") &&
-                src.contains("heightPx - lensRect.height")
-        )
-        assertTrue(
-            "floating tab lens must reuse Dock's complete lens rect/optics path",
-            src.contains("FlClashDockPhysics.lensRect") && src.contains("LiquidGlassStyle.lens")
-        )
-        // 轨道外层不再 clip(14dp): 投影与放大需要越出轨道; 圆角由带形状的 background 自绘。
-        assertFalse(
-            "track outer modifier must not clip at 14dp anymore (float-out requires overflow)",
-            src.contains(".clip(RoundedCornerShape(14.dp))")
-        )
-        assertTrue(
-            "track fill must carry its own 14dp rounded shape",
-            src.contains(".background(controlFill(containerColor ?: colors.surfaceContainer), RoundedCornerShape(14.dp))")
-        )
+        assertTrue("track and labels must be sampled from an ordinary sibling", src.contains(".layerBackdrop(trackBackdrop)"))
+        assertTrue("scene and local track must both reach the lens", src.contains("rememberCombinedBackdrop(scene, trackBackdrop)"))
+        assertTrue("Tab must use the shared control optics", src.contains("LiquidGlassStyle.controlLens"))
+        assertFalse("Tab must not override the shared refraction", src.contains("refraction = -8.5"))
+        val backing = src.indexOf("backing.placeRelative(0, 0)")
+        val lens = src.indexOf("lens.placeRelativeWithLayer", backing)
+        assertTrue("source and glyphs must draw before the refracting lens", backing >= 0 && lens > backing)
+        assertTrue("moving between segments must trigger selection feedback", src.contains("LiquidGlassHaptics.selectionClick(view)"))
+        assertFalse("root track must not clip the raised lens", src.contains(".clip(RoundedCornerShape(14.dp))"))
     }
 
     @Test
