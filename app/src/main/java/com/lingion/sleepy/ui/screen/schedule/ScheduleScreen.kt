@@ -601,10 +601,9 @@ private fun TableSwitcherDialog(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .glassControl(shape = SleepyTheme.shapes.small, tint = if (isCurrent) colors.primaryContainer else null)
                             .clip(SleepyTheme.shapes.small)
-                            .background(controlFill(if (isCurrent) colors.primaryContainer else colors.surfaceContainer))
-                            .noRippleGlassClickable { onSelect(table.id) }
+                            .background(if (isCurrent) colors.primaryContainer else colors.surfaceContainer)
+                            .noRippleClickable { onSelect(table.id) }
                             .dbgTag("schedule_table_item", text = table.name, role = "button")
                             .padding(vertical = 10.dp, horizontal = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
