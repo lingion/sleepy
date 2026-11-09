@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -35,7 +34,6 @@ import com.lingion.sleepy.ui.component.liquidglass.GlassSwitch as Switch
 import androidx.compose.material3.SwitchDefaults
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
@@ -63,6 +61,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.BuildConfig
+import com.lingion.sleepy.ui.component.SettingsLayout
 import com.lingion.sleepy.R
 import com.lingion.sleepy.console.ConsoleBootstrap
 import com.lingion.sleepy.console.DebugGate
@@ -303,7 +302,7 @@ fun AboutScreen(
                 // 两处版本号共享七次点击计数，本地输入密钥与 HTTP 共用解锁链。
                 Text(
                     text = "v${BuildConfig.VERSION_NAME}",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = SettingsLayout.descriptionStyle,
                     color = colors.onSurfaceVariant,
                     modifier = Modifier
                         .noRippleClickable { tapVersion() }
@@ -329,12 +328,12 @@ fun AboutScreen(
                     Column {
                         Text(
                             text = stringResource(R.string.about_version),
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                            style = SettingsLayout.headingStyle,
                             color = colors.onSurface
                         )
                         Text(
                             text = stringResource(R.string.about_version_detail, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = SettingsLayout.descriptionStyle,
                             color = colors.onSurfaceVariant
                         )
                     }
@@ -364,7 +363,7 @@ fun AboutScreen(
                         Column {
                             Text(
                                 text = stringResource(R.string.about_update),
-                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                                style = SettingsLayout.headingStyle,
                                 color = colors.onSurface
                             )
                             Text(
@@ -397,10 +396,10 @@ fun AboutScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
                         Text(
                             text = stringResource(R.string.about_update_check),
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                            style = SettingsLayout.headingStyle,
                             color = colors.onSurface
                         )
                         Text(
@@ -438,10 +437,10 @@ fun AboutScreen(
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
                         Text(
                             text = stringResource(R.string.about_feedback),
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                            style = SettingsLayout.headingStyle,
                             color = colors.onSurface
                         )
                         Text(
@@ -491,10 +490,10 @@ fun AboutScreen(
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
                         Text(
                             text = stringResource(R.string.about_qq_title),
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                            style = SettingsLayout.headingStyle,
                             color = colors.onSurface
                         )
                         Text(
@@ -528,15 +527,15 @@ fun AboutScreen(
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
                         Text(
                             text = stringResource(R.string.about_author),
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                            style = SettingsLayout.headingStyle,
                             color = colors.onSurface
                         )
                         Text(
                             text = stringResource(R.string.about_author_name),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = SettingsLayout.descriptionStyle,
                             color = colors.onSurfaceVariant
                         )
                     }
@@ -566,15 +565,15 @@ fun AboutScreen(
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
                         Text(
                             text = stringResource(R.string.about_source),
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                            style = SettingsLayout.headingStyle,
                             color = colors.onSurface
                         )
                         Text(
                             text = stringResource(R.string.about_source_url),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = SettingsLayout.descriptionStyle,
                             color = colors.primary,
                             textDecoration = TextDecoration.Underline
                         )
@@ -604,15 +603,15 @@ fun AboutScreen(
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
                         Text(
                             text = stringResource(R.string.about_privacy),
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                            style = SettingsLayout.headingStyle,
                             color = colors.onSurface
                         )
                         Text(
                             text = stringResource(R.string.about_privacy_url),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = SettingsLayout.descriptionStyle,
                             color = colors.primary,
                             textDecoration = TextDecoration.Underline
                         )
@@ -641,10 +640,10 @@ fun AboutScreen(
                         .noRippleClickable(onOpenLicense)
                         .dbgTag("about_license_entry", role = "button")
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
                         Text(
                             text = stringResource(R.string.about_license_title),
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                            style = SettingsLayout.headingStyle,
                             color = colors.onSurface
                         )
                         Text(

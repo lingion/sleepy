@@ -5,9 +5,9 @@
   "statusCounts": {
     "supported": 353,
     "grad_supported": 2,
-    "unverified": 2477,
+    "unverified": 2478,
     "grad_pending": 253,
-    "pending": 1007,
+    "pending": 1006,
     "grad_unverified": 48
   },
   "sourceCounts": {
@@ -22,7 +22,7 @@
   "sources": [
     {
       "path": "scripts/data/school_catalog_baseline.json",
-      "sha256": "f3fbe134623726ebf8c50c4b335d12aed9b94edb2e70fe02294dcd2b21741d8f"
+      "sha256": "d8aeabba6e97e56e96a81e10eddd3a5c6d616a5c4ac7c939ef7b443c8a7fef77"
     },
     {
       "path": "scripts/data/official_schools.json",
@@ -38,7 +38,7 @@
     },
     {
       "path": "scripts/data/school_import_admissions.json",
-      "sha256": "91e6a3bae6125c5b27b5a51ab5170cb3c4faaeb71b8441005d4e660d2a54e589"
+      "sha256": "e5b4ba6052f65777c52cc4d07dfcb92929ea5a2cd1ad2cadefc313cd12ac910f"
     },
     {
       "path": "scripts/data/school_catalog_renames.json",
@@ -46,7 +46,7 @@
     },
     {
       "path": "scripts/data/school_url_evidence.json",
-      "sha256": "c14e22afdd585f4efc23e3ff7b93d8dad81e11f7f1733dfa18ab4f91631df375"
+      "sha256": "f9ab0978fc63e0a9b95bfab2e540208f18160ab97182a55f8673405e5e785e7f"
     },
     {
       "path": "scripts/data/school_catalog_domain_reference.json",
@@ -56,18 +56,18 @@
   "matchingPolicy": "Exact trimmed full names plus reviewed school_catalog_renames.json; no fuzzy aliases or graduate/campus suffix removal. Historical source rows remain independently traceable.",
   "ownershipAudit": {
     "evidenceCounts": {
-      "unknown": 2272,
+      "unknown": 2276,
       "verified": 748,
       "contradicted": 1
     },
     "actions": {
       "retained-existing-config-ownership-unresolved": 140,
       "ownership-confirmed": 748,
-      "retained-wakeup-declared-owner": 589,
+      "retained-wakeup-declared-owner": 590,
       "retained-wakeup-662-declared-owner": 1304,
       "retained-shiguang-adapters-owner": 56,
       "retained-shiguang-declared-owner": 42,
-      "withheld-new-unproven-owner": 53,
+      "withheld-new-unproven-owner": 56,
       "withheld-domain-collision": 88,
       "corrected-official-entry": 1
     },
@@ -6251,6 +6251,14 @@
       {
         "catalogId": "moe:4122013604",
         "name": "吉林建筑科技学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "moe:4122013605",
+        "name": "长春建筑学院",
         "ownershipStatus": "unknown",
         "action": "withheld-new-unproven-owner",
         "operationalUrl": "",
@@ -15905,6 +15913,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "moe:4144013711",
+        "name": "江门职业技术学院",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "moe:4144013713",
         "name": "珠海城市职业技术学院",
         "ownershipStatus": "unknown",
@@ -22569,6 +22585,14 @@
         "authenticatedImportTested": false
       },
       {
+        "catalogId": "wakeup:4e6e8c213c7625d5f0e7",
+        "name": "桂林电子科技大学北海校区",
+        "ownershipStatus": "unknown",
+        "action": "withheld-new-unproven-owner",
+        "operationalUrl": "",
+        "authenticatedImportTested": false
+      },
+      {
         "catalogId": "wakeup:6817d742f1bea617120a",
         "name": "甘肃机电职业技术学院",
         "ownershipStatus": "unknown",
@@ -24238,6 +24262,14 @@
         "ownershipStatus": "unknown",
         "action": "retained-wakeup-declared-owner",
         "operationalUrl": "https://jwxt.aqnu.edu.cn/",
+        "authenticatedImportTested": false
+      },
+      {
+        "catalogId": "wakeup:943a145aa0e81bda7c57",
+        "name": "辽宁轨道交通职业学院 1",
+        "ownershipStatus": "unknown",
+        "action": "retained-wakeup-declared-owner",
+        "operationalUrl": "https://vpn.lngpi.edu.cn/portal/",
         "authenticatedImportTested": false
       }
     ]

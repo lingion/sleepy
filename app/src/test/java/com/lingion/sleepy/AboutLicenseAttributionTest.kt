@@ -198,6 +198,13 @@ class AboutLicenseAttributionTest {
     // ----- 单校项目 (PerSchool) token 集: 每校 + 该校仓库 token -----
 
     private val PER_SCHOOL_ATTRIBUTIONS = listOf(
+        Attribution("flben233/SWUST-Schedule-Export", "ShirakawaTyu"),
+        Attribution("danbaixi/UAAS-API", "MIT"),
+        Attribution("shixiang123/XJTU-SE-project", "shixiang123"),
+        Attribution("wpplane/sheep-reptile", "wpplane"),
+        Attribution("DragonBaiMo/baiyunu-school", "DragonBaiMo"),
+        Attribution("cursimple/cursimple-app", "MIT"),
+        Attribution("Holyn/BaiYun2", "Holyn"),
         // 合肥工业大学 HFUT
         Attribution("HFUT-Schedule", "Apache-2.0"),
         Attribution("HfutOpenApi", "BoynChan"),

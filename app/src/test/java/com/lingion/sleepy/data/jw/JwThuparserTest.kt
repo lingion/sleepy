@@ -268,7 +268,7 @@ class JwThuparserTest {
 
     @Test
     fun `invalid week ranges are skipped and counted`() {
-        for (week in listOf("第0-8周", "第8-3周", "第1-31周")) {
+        for (week in listOf("第0-8周", "第8-3周", "第1-367周")) {
             val html = sample().replace("前八周", week)
             val parser = JwThuparser(html)
             assertEquals(4, parser.generateCourseList().size)

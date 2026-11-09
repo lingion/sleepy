@@ -79,7 +79,7 @@ class JwNwpuPostParser(source: String) : JwParser(source) {
                     thText.contains("课程名称") -> courseName = tdText
                     thText.contains("班级名称") -> className = tdText
                     thText.contains("主讲教师") -> teacher = tdText
-                    thText.contains("学分") -> credit = tdText.toFloatOrNull() ?: 0.0f
+                    thText.contains("学分") -> credit = tdText.toFloatOrNull()?.takeIf { it.isFinite() && it >= 0f } ?: 0.0f
                     thText.contains("班级说明") -> classNote = tdText
                     thText.contains("上课时间") -> timeRoomRaw = tdText
                 }
@@ -194,7 +194,9 @@ class JwNwpuPostParser(source: String) : JwParser(source) {
                                     endNode = curEnd,
                                     startWeek = startWeek,
                                     endWeek = endWeek,
-                                    type = weekType
+                                    type = weekType,
+                                    credit = credit,
+                                    note = note
                                 )
                             )
                             curStart = orderedNodes[i]
@@ -212,7 +214,9 @@ class JwNwpuPostParser(source: String) : JwParser(source) {
                             endNode = curEnd,
                             startWeek = startWeek,
                             endWeek = endWeek,
-                            type = weekType
+                            type = weekType,
+                            credit = credit,
+                            note = note
                         )
                     )
                 }

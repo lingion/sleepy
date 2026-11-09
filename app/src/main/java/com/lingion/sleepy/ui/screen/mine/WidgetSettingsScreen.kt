@@ -45,9 +45,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.lingion.sleepy.ui.component.SettingsLayout
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding
-import com.lingion.sleepy.ui.component.SectionHeader
+import com.lingion.sleepy.ui.component.settingsSection
 import com.lingion.sleepy.ui.component.SettingToggleRow
 import com.lingion.sleepy.ui.component.SettingsCard
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -133,7 +134,7 @@ fun WidgetSettingsScreen(
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp + navExtra
+                start = 16.dp, end = 16.dp, top = 16.dp, bottom = 24.dp + navExtra
             ),
             verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)
         ) {
@@ -142,17 +143,17 @@ fun WidgetSettingsScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 8.dp)
                         .clip(SleepyTheme.shapes.large)
                         .background(colors.surfaceContainer)
                         .noRippleClickable(onOpenWidgetManagement)
-                        .padding(horizontal = 16.dp, vertical = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(SettingsLayout.cardInset),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(SettingsLayout.controlGap)
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = stringResource(R.string.widget_manage_entry),
-                            style = MaterialTheme.typography.titleSmall,
+                            style = SettingsLayout.headingStyle,
                             color = colors.onSurface
                         )
                     }
@@ -201,11 +202,12 @@ fun WidgetSettingsScreen(
                         .background(colors.surfaceContainer)
                         .noRippleClickable(onOpenScheduleDisplay)
                         .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(SettingsLayout.controlGap)
                 ) {
-                    Column(Modifier.weight(1f)) {
+                    Column(Modifier.weight(1f), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
                         Text(stringResource(R.string.settings_widget_shared_display),
-                            style = MaterialTheme.typography.titleSmall)
+                            style = SettingsLayout.headingStyle)
                         Text(stringResource(R.string.settings_widget_shared_display_sub),
                             style = MaterialTheme.typography.bodySmall,
                             color = colors.onSurfaceVariant)
@@ -214,11 +216,10 @@ fun WidgetSettingsScreen(
                         tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
                 }
             }
-            item { SectionHeader(title = stringResource(R.string.settings_widget_advanced)) }
-            item {
+            settingsSection(R.string.settings_widget_advanced) {
                 Column(
                     modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large)
-                        .background(colors.surfaceContainer).padding(horizontal = 16.dp)
+                        .background(colors.surfaceContainer).padding(SettingsLayout.cardInset)
                 ) {
                     SettingToggleRow(
                         label = stringResource(R.string.settings_widget_vert_punct_experimental),
@@ -234,8 +235,8 @@ fun WidgetSettingsScreen(
             }
 
             // 刷新所有小组件: 桌面已有已放置实例才出现(空桌面 = 无可刷, 按钮隐藏)
-            item {
-                if (items.isNotEmpty()) {
+            if (items.isNotEmpty()) {
+                item {
                     FilledTonalButton(
                         onClick = {
                             uiScope.launch {

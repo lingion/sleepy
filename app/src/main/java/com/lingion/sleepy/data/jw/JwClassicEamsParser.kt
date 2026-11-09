@@ -1,5 +1,7 @@
 package com.lingion.sleepy.data.jw
 
+import org.json.JSONTokener
+
 /**
  * 经典金智/树维 EAMS (`courseTableForStd!courseTable.action` 系列) 课表解析器。
  *
@@ -24,7 +26,7 @@ package com.lingion.sleepy.data.jw
  *   - index = D*unitCount+P → day=D+1, node=P+1; unitCount 从页面抠 (禁写死:
  *     电子科大/天大/安工程 12, 湖南师大 13, 河南理工 11); 兼容 `index =42;`
  *     纯数字形态 (day = i/unitCount, node = i%unitCount, 均 +1)
- *   - 教师 [1] 可能是 actTeacherName.join(',') 表达式 → 块起点前 2500 字符内
+ *   - 教师 [1] 可能是 actTeacherName.join(',') 表达式 → 块起点之前
  *     反查最近的 var actTeachers = [...] 抠 name (hpu.js 形态)
  *   - 参数切分用带引号/括号深度状态机 (课名可含逗号), 禁 naive split(',')
  *   - 异常防护: 教师 = "-1" 跳块 (停课标记); 教室 = "停课" 不输出;
@@ -33,7 +35,10 @@ package com.lingion.sleepy.data.jw
  * 算法形态参考: shiguang_warehouse (MIT) hunnu.js/uestc.js/hpu.js +
  * WakeupSchedule_Kotlin (Apache-2.0) ImportViewModel.kt; 代码自写。
  */
-class JwClassicEamsParser(source: String) : JwParser(source) {
+class JwClassicEamsParser(
+    source: String,
+    private val transformWeekBitmap: (String) -> String = { it },
+) : JwParser(source) {
 
     /** 一条 TaskActivity 记录 (块级, 尚未按 index/位图展开) */
     private data class Task(
@@ -45,74 +50,54 @@ class JwClassicEamsParser(source: String) : JwParser(source) {
         val nameExpr: String?, // 第 4 参为表达式时记原式 (courseNameLessonNo)
     )
 
+    internal data class Activity(
+        val name: String,
+        val teacher: String,
+        val room: String,
+        val weeks: List<Int>,
+        val indices: List<Pair<Int, Int>>,
+    )
+
+    /** Share JavaScript decoding while keeping each protocol's week and section semantics separate. */
+    internal fun decodedActivities(defaultUnitCount: Int? = null): List<Activity> {
+        val count = (unitCountFromPage() ?: defaultUnitCount)?.takeIf { it > 0 } ?: return emptyList()
+        return blocks(count).mapNotNull { (task, indices) ->
+            val name = resolveCourseName(task)
+            if (task.teacher == "-1" || task.room == "停课" || name.isBlank()) null
+            else Activity(name, task.teacher, task.room, task.weeks, indices)
+        }
+    }
+
     override fun generateCourseList(): List<JwCourse> {
-        if (source.contains("newActivity(") && source.contains("addActivityByTime(")) {
+        if (!Regex("""new\s+TaskActivity\(""").containsMatchIn(source) &&
+            source.contains("newActivity(") && source.contains("addActivityByTime(")) {
             return timeActivities()
         }
-        val unitCount = unitCountFromPage() ?: return emptyList()
         val out = mutableListOf<JwCourse>()
 
-        for ((task, indexPairs) in blocks(unitCount)) {
-            if (task.teacher == "-1" || task.teacher.isBlank()) continue // 停课/异常排课标记 (WakeupSchedule 经验)
-            if (task.room == "停课") continue          // 电子科大: 停课教室扣整条
-            val resolvedName = resolveCourseName(task)
-            if (resolvedName.isBlank()) continue
-
+        for (task in decodedActivities()) {
             // (day, startNode, endNode) 连堂合并 + 每周展开 → 与强智位图语义对齐
-            val (day, startNode, endNode) = mergeConsecutiveNodes(indexPairs)
-            for (week in task.weeks) {
-                out += JwCourse(
-                    name = resolvedName,
-                    room = task.room,
-                    teacher = task.teacher,
-                    day = day,
-                    startNode = startNode,
-                    endNode = endNode,
-                    startWeek = week,
-                    endWeek = week,
-                    type = 0,
-                )
+            for ((day, startNode, endNode) in mergeConsecutiveNodes(task.indices)) {
+                for (week in task.weeks) {
+                    out += JwCourse(
+                        name = task.name,
+                        room = task.room,
+                        teacher = task.teacher,
+                        day = day,
+                        startNode = startNode,
+                        endNode = endNode,
+                        startWeek = week,
+                        endWeek = week,
+                        type = 0,
+                    )
+                }
             }
         }
         return out
     }
 
-    private data class TimeActivity(
-        val teacher: String,
-        val name: String,
-        val room: String,
-        val weeks: List<Int>,
-    )
-
-    private fun timeActivities(): List<JwCourse> {
-        val links = Regex("""addActivityByTime\(activity\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)""").findAll(source).toList()
-        return links.mapNotNull { link ->
-            val activityStart = source.substring(0, link.range.first).lastIndexOf("newActivity(")
-            if (activityStart < 0) return@mapNotNull null
-            val args = splitArgs(source, activityStart + "newActivity(".length).first
-            if (args.size < 8) return@mapNotNull null
-            val activity = TimeActivity(
-                teacher = unquote(args[1]),
-                name = unquote(args[3]),
-                room = unquote(args[5]),
-                weeks = bitmapToWeeks(args[7].trim()),
-            )
-            val day = link.groupValues[1].toIntOrNull() ?: return@mapNotNull null
-            val start = timeToNode(link.groupValues[2].toIntOrNull() ?: return@mapNotNull null)
-            val end = timeToNode(link.groupValues[3].toIntOrNull() ?: return@mapNotNull null)
-            activity.weeks.map { week -> JwCourse(activity.name, activity.room, activity.teacher, day, start, end, week, week) }
-        }.flatten()
-    }
-
-    private fun timeToNode(minutes: Int): Int = when {
-        minutes <= 900 -> 1
-        minutes <= 1010 -> 3
-        minutes <= 1170 -> 5
-        minutes <= 1330 -> 7
-        minutes <= 1450 -> 9
-        minutes <= 1615 -> 11
-        else -> 13
-    }
+    private fun timeActivities(): List<JwCourse> =
+        JwEcuplScriptParser(source).generateCourseList()
 
     /** 页面 var unitCount = N; — 拿不到返回 null (硬失败, 别猜默认值) */
     private fun unitCountFromPage(): Int? =
@@ -130,11 +115,11 @@ class JwClassicEamsParser(source: String) : JwParser(source) {
 
         for ((i, m) in matches.withIndex()) {
             val argStart = m.range.last + 1
-            val (args, _) = splitArgs(source, argStart)
-            if (args.size < 7) continue
+            val (args, closingParen) = splitArgs(source, argStart)
+            if (args.size < 7 || closingParen < 0) continue
 
             // 教师: 老版 args[1] 是字面姓名串; 新版 args[0]/args[1] 是 actTeacher*.join 表达式,
-            // 块前 2500 字符反查 var actTeachers (hpu.js 形态)。表达式判据: 含 join( 且非引号串。
+            // 块前反查 var actTeachers (hpu.js 形态)。表达式判据: 含 join( 且非引号串。
             val nameArgRaw = args[1].trim()
             val teacher = if (nameArgRaw.startsWith("\"") || nameArgRaw.startsWith("'")) {
                 unquote(nameArgRaw)
@@ -145,17 +130,17 @@ class JwClassicEamsParser(source: String) : JwParser(source) {
             }
             val nameArg = args[3]
             val room = unquote(args[5])
-            val bitmap = unquote(args[6])
+            val bitmap = transformWeekBitmap(unquote(args[6]))
             val weeks = bitmapToWeeks(bitmap)
             if (weeks.isEmpty()) continue
 
             val task = Task(
                 teacher = teacher.trim(),
-                name = if (nameArg.startsWith("\"")) unquote(nameArg) else "",
+                name = if (isQuoted(nameArg)) unquote(nameArg) else "",
                 room = room.trim(),
                 weeks = weeks,
                 blockStart = m.range.first,
-                nameExpr = if (nameArg.startsWith("\"")) null else nameArg.trim(),
+                nameExpr = if (isQuoted(nameArg)) null else nameArg.trim(),
             )
 
             // 本块的 index 段: TaskActivity(...) 之后到下一个块声明 (或 marshalTable) 之间
@@ -163,15 +148,24 @@ class JwClassicEamsParser(source: String) : JwParser(source) {
             val tail = source.substring(m.range.last + 1, blockEnd)
             val indexPairs = mutableListOf<Pair<Int, Int>>()
             // 兼容: index =D*unitCount+P; / index=D*12+P; / index =42; 三种形态
-            val idxRe = Regex("""index\s*=\s*(?:(\d+)\s*\*\s*(?:unitCount|\d+)\s*\+\s*(\d+)|(\d+))\s*;""")
+            val idxRe = Regex("""index\s*=\s*(?:(\d+)\s*\*\s*(unitCount|\d+)\s*\+\s*(\d+)|(\d+))\s*;""")
             for (im in idxRe.findAll(tail)) {
                 val d = im.groupValues[1]
-                val p = im.groupValues[2]
+                val multiplier = im.groupValues[2]
+                val p = im.groupValues[3]
                 if (d.isNotEmpty() && p.isNotEmpty()) {
-                    indexPairs += d.toInt() to p.toInt()
-                } else if (im.groupValues[3].isNotEmpty()) {
-                    val linear = im.groupValues[3].toIntOrNull() ?: continue
-                    indexPairs += linear / unitCount to linear % unitCount
+                    val day = d.toIntOrNull() ?: continue
+                    val node = p.toIntOrNull() ?: continue
+                    if (multiplier == "unitCount") {
+                        if (day in 0..6 && node in 0 until unitCount) indexPairs += day to node
+                    } else {
+                        val stride = multiplier.toIntOrNull()?.takeIf { it > 0 } ?: continue
+                        val linear = day.toLong() * stride + node
+                        if (linear in 0 until 7L * unitCount) indexPairs += (linear / unitCount).toInt() to (linear % unitCount).toInt()
+                    }
+                } else if (im.groupValues[4].isNotEmpty()) {
+                    val linear = im.groupValues[4].toLongOrNull() ?: continue
+                    if (linear in 0 until 7L * unitCount) indexPairs += (linear / unitCount).toInt() to (linear % unitCount).toInt()
                 }
             }
             if (indexPairs.isNotEmpty()) result += task to indexPairs
@@ -186,20 +180,24 @@ class JwClassicEamsParser(source: String) : JwParser(source) {
     private fun splitArgs(src: String, start: Int): Pair<List<String>, Int> {
         val args = mutableListOf<String>()
         val cur = StringBuilder()
-        var inQuote = false
+        var quote: Char? = null
         var depth = 0
         var i = start
         var closed = -1
         while (i < src.length) {
             val ch = src[i]
             when {
-                ch == '"' && !isEscaped(src, i) -> { inQuote = !inQuote; cur.append(ch) }
-                ch == '(' && !inQuote -> { depth++; cur.append(ch) }
-                ch == ')' && !inQuote -> {
+                quote != null -> {
+                    if (ch == quote && !isEscaped(src, i)) quote = null
+                    cur.append(ch)
+                }
+                ch == '"' || ch == '\'' -> { quote = ch; cur.append(ch) }
+                ch == '(' -> { depth++; cur.append(ch) }
+                ch == ')' -> {
                     if (depth == 0) { closed = i; break }
                     depth--; cur.append(ch)
                 }
-                ch == ',' && !inQuote && depth == 0 -> { args += cur.toString().trim(); cur.clear() }
+                ch == ',' && depth == 0 -> { args += cur.toString().trim(); cur.clear() }
                 else -> cur.append(ch)
             }
             i++
@@ -215,14 +213,13 @@ class JwClassicEamsParser(source: String) : JwParser(source) {
         return back % 2 == 1
     }
 
-    /** 块起点前 2500 字符内最近的 var actTeachers = [{id:..,name:".."},..] → 逗号连名 */
+    /** Resolve the closest declared teacher array without an arbitrary character cutoff. */
     private fun resolveTeachersFromActTeachers(blockStart: Int): String {
-        val segStart = (blockStart - 2500).coerceAtLeast(0)
-        val seg = source.substring(segStart, blockStart)
+        val seg = source.substring(0, blockStart)
         val arrayRe = Regex("""var\s+actTeachers\s*=\s*\[([^\]]*)\]\s*;""")
         val arr = arrayRe.findAll(seg).lastOrNull()?.groupValues?.get(1) ?: return ""
-        val nameRe = Regex("""name\s*:\s*"([^"]*)"""")
-        return nameRe.findAll(arr).mapNotNull { it.groupValues.getOrNull(1) }
+        val nameRe = Regex("""(?:["']name["']|\bname)\s*:\s*("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')""")
+        return nameRe.findAll(arr).map { unquote(it.groupValues[1]) }
             .filter { it.isNotBlank() }
             .joinToString("/")
     }
@@ -234,8 +231,12 @@ class JwClassicEamsParser(source: String) : JwParser(source) {
         task.name.takeIf { it.isNotBlank() }?.let { return it }
         val expr = task.nameExpr ?: return ""
         if (!expr.contains("courseNameLessonNo")) return ""
-        val re = Regex("""var\s+courseNameLessonNo\s*=\s*"([^"]*)"\s*;""")
-        return re.find(source)?.groupValues?.get(1).orEmpty()
+        val re = Regex("""var\s+courseNameLessonNo\s*=\s*("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')\s*;""")
+        val preceding = re.findAll(source.substring(0, task.blockStart)).lastOrNull()
+        if (preceding != null) return unquote(preceding.groupValues[1])
+        val nextTask = Regex("""new\s+TaskActivity\(""").find(source, task.blockStart + 1)?.range?.first
+            ?: source.length
+        return re.find(source.substring(task.blockStart, nextTask))?.groupValues?.get(1)?.let(::unquote).orEmpty()
     }
 
     /**
@@ -243,31 +244,36 @@ class JwClassicEamsParser(source: String) : JwParser(source) {
      * 超长位图 (53/54 位) 天然兼容。
      */
     private fun bitmapToWeeks(bitmap: String): List<Int> {
-        if (bitmap.length > 20 && bitmap.any { it == '8' || it == '9' }) {
-            val value = bitmap.toLongOrNull() ?: return emptyList()
-            return (1..63).filter { value and (1L shl (it - 1)) != 0L }
-        }
+        if (bitmap.isEmpty() || bitmap.any { it != '0' && it != '1' }) return emptyList()
         return bitmap.mapIndexedNotNull { i, ch -> if (i >= 1 && ch == '1') i else null }
     }
 
-    /** index 对 (0基) → (day, startNode, endNode): 排序后连续节次合并成连堂 */
-    private fun mergeConsecutiveNodes(pairs: List<Pair<Int, Int>>): Triple<Int, Int, Int> {
-        val sorted = pairs.sortedWith(compareBy({ it.first }, { it.second }))
-        val day = sorted.first().first + 1
-        val nodes = sorted.map { it.second + 1 }.distinct().sorted()
-        // 连续段取首尾 (跨天 index 不该出现在同一块; 出现时取最小段保守处理)
-        var start = nodes.first()
-        var end = nodes.first()
-        for (n in nodes.drop(1)) {
-            if (n == end + 1) end = n else break
+    /** Each assignment is one occurrence. Merge only adjacent periods on the same weekday. */
+    private fun mergeConsecutiveNodes(pairs: List<Pair<Int, Int>>): List<Triple<Int, Int, Int>> = buildList {
+        for ((day, slots) in pairs.groupBy { it.first }.toSortedMap()) {
+            val nodes = slots.map { it.second + 1 }.distinct().sorted()
+            var start = nodes.first()
+            var end = start
+            for (node in nodes.drop(1)) {
+                if (node == end + 1) {
+                    end = node
+                } else {
+                    add(Triple(day + 1, start, end))
+                    start = node
+                    end = node
+                }
+            }
+            add(Triple(day + 1, start, end))
         }
-        return Triple(day, start, end)
     }
+
+    private fun isQuoted(value: String): Boolean = value.length >= 2 &&
+        (value.first() == '"' || value.first() == '\'') && value.last() == value.first()
 
     private fun unquote(arg: String): String {
         val t = arg.trim()
-        if (t.length >= 2 && ((t.first() == '"' && t.last() == '"') || (t.first() == '\'' && t.last() == '\''))) {
-            return t.substring(1, t.length - 1)
+        if (isQuoted(t)) {
+            return runCatching { JSONTokener(t).nextValue() as? String }.getOrNull().orEmpty()
         }
         return t
     }

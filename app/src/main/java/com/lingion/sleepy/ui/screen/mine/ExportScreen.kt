@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Code
@@ -65,7 +64,8 @@ import androidx.core.net.toUri
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.lingion.sleepy.ui.component.SectionHeader
+import com.lingion.sleepy.ui.component.settingsSection
+import com.lingion.sleepy.ui.component.SettingsLayout
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.parser.ScheduleExporter
 import com.lingion.sleepy.data.parser.SleepyNativeExporter
@@ -284,8 +284,7 @@ fun ExportScreen(
                     }
                 }
             } else if (table != null) {
-                item { SectionHeader(title = stringResource(R.string.settings_export_sharing)) }
-                item {
+                settingsSection(R.string.settings_export_sharing) {
                     Column(
                         modifier = Modifier.fillMaxWidth()
                             .clip(SleepyTheme.shapes.large)
@@ -362,8 +361,7 @@ fun ExportScreen(
                         )
                     }
                 }
-                item { SectionHeader(title = stringResource(R.string.settings_export_calendar_assistants)) }
-                item {
+                settingsSection(R.string.settings_export_calendar_assistants) {
                     Column(
                         modifier = Modifier.fillMaxWidth()
                             .clip(SleepyTheme.shapes.large)
@@ -512,7 +510,7 @@ private fun PickerRow(title: String, subtitle: String?, isSelected: Boolean, onC
             .padding(vertical = 10.dp, horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(modifier = Modifier.weight(1f)) {
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
@@ -569,10 +567,9 @@ internal fun ExportItem(
                 tint = colors.onPrimaryContainer
             )
         }
-        Spacer(modifier = Modifier.size(16.dp))
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Text(text = title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = colors.onSurface)
-            Spacer(modifier = Modifier.height(2.dp))
+        Spacer(modifier = Modifier.size(SettingsLayout.controlGap))
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
+            Text(text = title, style = SettingsLayout.headingStyle, color = colors.onSurface)
             Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
         }
     }

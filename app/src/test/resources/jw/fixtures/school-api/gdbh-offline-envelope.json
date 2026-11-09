@@ -1,0 +1,655 @@
+{
+  "data": [
+    {
+      "cname": "课程0",
+      "name": "教师0",
+      "croomno": "教室0",
+      "week": 1,
+      "seq": 1,
+      "startweek": 1,
+      "endweek": 1,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程1",
+      "name": "教师1",
+      "croomno": "教室1",
+      "week": 2,
+      "seq": 2,
+      "startweek": 2,
+      "endweek": 2,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程2",
+      "name": "教师2",
+      "croomno": "教室2",
+      "week": 3,
+      "seq": 3,
+      "startweek": 3,
+      "endweek": 3,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程3",
+      "name": "教师3",
+      "croomno": "教室3",
+      "week": 4,
+      "seq": 4,
+      "startweek": 4,
+      "endweek": 4,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程4",
+      "name": "教师4",
+      "croomno": "教室4",
+      "week": 5,
+      "seq": 5,
+      "startweek": 5,
+      "endweek": 5,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程5",
+      "name": "教师5",
+      "croomno": "教室5",
+      "week": 6,
+      "seq": 6,
+      "startweek": 6,
+      "endweek": 6,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程6",
+      "name": "教师6",
+      "croomno": "教室6",
+      "week": 7,
+      "seq": 1,
+      "startweek": 7,
+      "endweek": 7,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程7",
+      "name": "教师7",
+      "croomno": "教室7",
+      "week": 1,
+      "seq": 2,
+      "startweek": 8,
+      "endweek": 8,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程8",
+      "name": "教师8",
+      "croomno": "教室8",
+      "week": 2,
+      "seq": 3,
+      "startweek": 9,
+      "endweek": 9,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程9",
+      "name": "教师9",
+      "croomno": "教室9",
+      "week": 3,
+      "seq": 4,
+      "startweek": 10,
+      "endweek": 10,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程10",
+      "name": "教师10",
+      "croomno": "教室10",
+      "week": 4,
+      "seq": 5,
+      "startweek": 1,
+      "endweek": 1,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程11",
+      "name": "教师11",
+      "croomno": "教室11",
+      "week": 5,
+      "seq": 6,
+      "startweek": 2,
+      "endweek": 2,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程12",
+      "name": "教师12",
+      "croomno": "教室12",
+      "week": 6,
+      "seq": 1,
+      "startweek": 3,
+      "endweek": 3,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程13",
+      "name": "教师13",
+      "croomno": "教室13",
+      "week": 7,
+      "seq": 2,
+      "startweek": 4,
+      "endweek": 4,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程14",
+      "name": "教师14",
+      "croomno": "教室14",
+      "week": 1,
+      "seq": 3,
+      "startweek": 5,
+      "endweek": 5,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程15",
+      "name": "教师15",
+      "croomno": "教室15",
+      "week": 2,
+      "seq": 4,
+      "startweek": 6,
+      "endweek": 6,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程16",
+      "name": "教师16",
+      "croomno": "教室16",
+      "week": 3,
+      "seq": 5,
+      "startweek": 7,
+      "endweek": 7,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程17",
+      "name": "教师17",
+      "croomno": "教室17",
+      "week": 4,
+      "seq": 6,
+      "startweek": 8,
+      "endweek": 8,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程18",
+      "name": "教师18",
+      "croomno": "教室18",
+      "week": 5,
+      "seq": 1,
+      "startweek": 9,
+      "endweek": 9,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程19",
+      "name": "教师19",
+      "croomno": "教室19",
+      "week": 6,
+      "seq": 2,
+      "startweek": 10,
+      "endweek": 10,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程20",
+      "name": "教师20",
+      "croomno": "教室20",
+      "week": 7,
+      "seq": 3,
+      "startweek": 1,
+      "endweek": 1,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程21",
+      "name": "教师21",
+      "croomno": "教室21",
+      "week": 1,
+      "seq": 4,
+      "startweek": 2,
+      "endweek": 2,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程22",
+      "name": "教师22",
+      "croomno": "教室22",
+      "week": 2,
+      "seq": 5,
+      "startweek": 3,
+      "endweek": 3,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程23",
+      "name": "教师23",
+      "croomno": "教室23",
+      "week": 3,
+      "seq": 6,
+      "startweek": 4,
+      "endweek": 4,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程24",
+      "name": "教师24",
+      "croomno": "教室24",
+      "week": 4,
+      "seq": 1,
+      "startweek": 5,
+      "endweek": 5,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程25",
+      "name": "教师25",
+      "croomno": "教室25",
+      "week": 5,
+      "seq": 2,
+      "startweek": 6,
+      "endweek": 6,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程26",
+      "name": "教师26",
+      "croomno": "教室26",
+      "week": 6,
+      "seq": 3,
+      "startweek": 7,
+      "endweek": 7,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程27",
+      "name": "教师27",
+      "croomno": "教室27",
+      "week": 7,
+      "seq": 4,
+      "startweek": 8,
+      "endweek": 8,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程28",
+      "name": "教师28",
+      "croomno": "教室28",
+      "week": 1,
+      "seq": 5,
+      "startweek": 9,
+      "endweek": 9,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程29",
+      "name": "教师29",
+      "croomno": "教室29",
+      "week": 2,
+      "seq": 6,
+      "startweek": 10,
+      "endweek": 10,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程30",
+      "name": "教师30",
+      "croomno": "教室30",
+      "week": 3,
+      "seq": 1,
+      "startweek": 1,
+      "endweek": 1,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程31",
+      "name": "教师31",
+      "croomno": "教室31",
+      "week": 4,
+      "seq": 2,
+      "startweek": 2,
+      "endweek": 2,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程32",
+      "name": "教师32",
+      "croomno": "教室32",
+      "week": 5,
+      "seq": 3,
+      "startweek": 3,
+      "endweek": 3,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程33",
+      "name": "教师33",
+      "croomno": "教室33",
+      "week": 6,
+      "seq": 4,
+      "startweek": 4,
+      "endweek": 4,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程34",
+      "name": "教师34",
+      "croomno": "教室34",
+      "week": 7,
+      "seq": 5,
+      "startweek": 5,
+      "endweek": 5,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程35",
+      "name": "教师35",
+      "croomno": "教室35",
+      "week": 1,
+      "seq": 6,
+      "startweek": 6,
+      "endweek": 6,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程36",
+      "name": "教师36",
+      "croomno": "教室36",
+      "week": 2,
+      "seq": 1,
+      "startweek": 7,
+      "endweek": 7,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程37",
+      "name": "教师37",
+      "croomno": "教室37",
+      "week": 3,
+      "seq": 2,
+      "startweek": 8,
+      "endweek": 8,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程38",
+      "name": "教师38",
+      "croomno": "教室38",
+      "week": 4,
+      "seq": 3,
+      "startweek": 9,
+      "endweek": 9,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程39",
+      "name": "教师39",
+      "croomno": "教室39",
+      "week": 5,
+      "seq": 4,
+      "startweek": 10,
+      "endweek": 10,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程40",
+      "name": "教师40",
+      "croomno": "教室40",
+      "week": 6,
+      "seq": 5,
+      "startweek": 1,
+      "endweek": 1,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程41",
+      "name": "教师41",
+      "croomno": "教室41",
+      "week": 7,
+      "seq": 6,
+      "startweek": 2,
+      "endweek": 2,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程42",
+      "name": "教师42",
+      "croomno": "教室42",
+      "week": 1,
+      "seq": 1,
+      "startweek": 3,
+      "endweek": 3,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程43",
+      "name": "教师43",
+      "croomno": "教室43",
+      "week": 2,
+      "seq": 2,
+      "startweek": 4,
+      "endweek": 4,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程44",
+      "name": "教师44",
+      "croomno": "教室44",
+      "week": 3,
+      "seq": 3,
+      "startweek": 5,
+      "endweek": 5,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程45",
+      "name": "教师45",
+      "croomno": "教室45",
+      "week": 4,
+      "seq": 4,
+      "startweek": 6,
+      "endweek": 6,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程46",
+      "name": "教师46",
+      "croomno": "教室46",
+      "week": 5,
+      "seq": 5,
+      "startweek": 7,
+      "endweek": 7,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程47",
+      "name": "教师47",
+      "croomno": "教室47",
+      "week": 6,
+      "seq": 6,
+      "startweek": 8,
+      "endweek": 8,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程48",
+      "name": "教师48",
+      "croomno": "教室48",
+      "week": 7,
+      "seq": 1,
+      "startweek": 9,
+      "endweek": 9,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程49",
+      "name": "教师49",
+      "croomno": "教室49",
+      "week": 1,
+      "seq": 2,
+      "startweek": 10,
+      "endweek": 10,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程50",
+      "name": "教师50",
+      "croomno": "教室50",
+      "week": 2,
+      "seq": 3,
+      "startweek": 1,
+      "endweek": 1,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程51",
+      "name": "教师51",
+      "croomno": "教室51",
+      "week": 3,
+      "seq": 4,
+      "startweek": 2,
+      "endweek": 2,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程52",
+      "name": "教师52",
+      "croomno": "教室52",
+      "week": 4,
+      "seq": 5,
+      "startweek": 3,
+      "endweek": 3,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程53",
+      "name": "教师53",
+      "croomno": "教室53",
+      "week": 5,
+      "seq": 6,
+      "startweek": 4,
+      "endweek": 4,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程54",
+      "name": "教师54",
+      "croomno": "教室54",
+      "week": 6,
+      "seq": 1,
+      "startweek": 5,
+      "endweek": 5,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程55",
+      "name": "教师55",
+      "croomno": "教室55",
+      "week": 7,
+      "seq": 2,
+      "startweek": 6,
+      "endweek": 6,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程56",
+      "name": "教师56",
+      "croomno": "教室56",
+      "week": 1,
+      "seq": 3,
+      "startweek": 7,
+      "endweek": 7,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程57",
+      "name": "教师57",
+      "croomno": "教室57",
+      "week": 2,
+      "seq": 4,
+      "startweek": 8,
+      "endweek": 8,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程58",
+      "name": "教师58",
+      "croomno": "教室58",
+      "week": 3,
+      "seq": 5,
+      "startweek": 9,
+      "endweek": 9,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程59",
+      "name": "教师59",
+      "croomno": "教室59",
+      "week": 4,
+      "seq": 6,
+      "startweek": 10,
+      "endweek": 10,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程60",
+      "name": "教师60",
+      "croomno": "教室60",
+      "week": 5,
+      "seq": 1,
+      "startweek": 1,
+      "endweek": 1,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程61",
+      "name": "教师61",
+      "croomno": "教室61",
+      "week": 6,
+      "seq": 2,
+      "startweek": 2,
+      "endweek": 2,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程62",
+      "name": "教师62",
+      "croomno": "教室62",
+      "week": 7,
+      "seq": 3,
+      "startweek": 3,
+      "endweek": 3,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程63",
+      "name": "教师63",
+      "croomno": "教室63",
+      "week": 1,
+      "seq": 4,
+      "startweek": 4,
+      "endweek": 4,
+      "xf": "2.5"
+    },
+    {
+      "cname": "课程64",
+      "name": "教师64",
+      "croomno": "教室64",
+      "week": 2,
+      "seq": 5,
+      "startweek": 5,
+      "endweek": 5,
+      "xf": "2.5"
+    }
+  ],
+  "total": 65
+}

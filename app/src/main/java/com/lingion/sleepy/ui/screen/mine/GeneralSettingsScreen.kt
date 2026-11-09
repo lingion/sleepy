@@ -35,13 +35,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.console.ui.dbgTag
+import com.lingion.sleepy.ui.component.SettingsLayout
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.undo.UndoManager
 import com.lingion.sleepy.ui.component.SectionHeader
+import com.lingion.sleepy.ui.component.settingsSection
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.util.AppPrefs
@@ -83,7 +84,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(SettingsLayout.cardGap)
         ) {
             // ── 语言：从当前值锚点展开浮框 (分支裁定: 独立锚定窗口替代内联折叠) ──
             item {
@@ -105,19 +106,19 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
                 )
             }
 
-            item { SectionHeader(stringResource(R.string.settings_performance)) }
             // Keep the existing high-refresh switch and immediate application behavior.
-            item {
+            settingsSection(R.string.settings_performance) {
                 var highRefresh by remember { mutableStateOf(AppPrefs.isHighRefresh(context)) }
                 val colors = MaterialTheme.colorScheme
                 Row(
-                    modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).padding(horizontal = 16.dp, vertical = 14.dp),
+                    modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer)
+                        .padding(horizontal = SettingsLayout.cardInset, vertical = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = stringResource(R.string.settings_high_refresh),
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                        style = SettingsLayout.itemStyle,
                         color = colors.onSurface,
                         modifier = Modifier.weight(1f)
                     )
@@ -135,18 +136,18 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
                             com.lingion.sleepy.util.HighRefreshRate.apply(activity, on)
                         },
                         colors = SwitchDefaults.colors(checkedThumbColor = colors.onPrimary, checkedTrackColor = colors.primary),
-                        modifier = Modifier.heightIn(max = 32.dp)
-                            .dbgTag("general_high_refresh", text = stringResource(R.string.settings_high_refresh), role = "switch")
+                        modifier = Modifier.dbgTag("general_high_refresh", text = stringResource(R.string.settings_high_refresh), role = "switch")
                     )
                 }
             }
 
-            item { SectionHeader(stringResource(R.string.settings_editing)) }
-            item {
+            settingsSection(R.string.settings_editing) {
                 Column(modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(stringResource(R.string.settings_undo_depth), style = MaterialTheme.typography.titleMedium)
-                    Text(stringResource(R.string.settings_undo_experiment), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
-                    Text(stringResource(R.string.settings_undo_mode), style = MaterialTheme.typography.bodyMedium)
+                    Column(verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
+                        Text(stringResource(R.string.settings_undo_depth), style = SettingsLayout.headingStyle)
+                        Text(stringResource(R.string.settings_undo_experiment), style = SettingsLayout.descriptionStyle, color = colors.onSurfaceVariant)
+                    }
+                    Text(stringResource(R.string.settings_undo_mode), style = SettingsLayout.itemStyle)
                     SegmentedSwitcher(
                         options = listOf(0 to stringResource(R.string.settings_undo_off), 1 to stringResource(R.string.settings_undo_limited), 2 to stringResource(R.string.settings_undo_unlimited)),
                         selected = when { undoDepth == 0 -> 0; undoDepth < 0 -> 2; else -> 1 },

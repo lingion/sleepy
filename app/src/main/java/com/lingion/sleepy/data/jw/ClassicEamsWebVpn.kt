@@ -44,17 +44,17 @@ object ClassicEamsWebVpn {
     /** 学号首选: bg.form.addInput(form,"ids","NNN") — 课表表单作用域内绑定 (Dart _entryIdsRe 实测形态)。 */
     val CLASSIC_EAMS_IDS_RE = """addInput\(\s*form\s*,\s*["']ids["']\s*,\s*["'](\d+)["']"""
 
-    /** 学号隐藏域兜底 (§4 表原文 `.*?` 行内匹配; JS/Kotlin 默认 . 均不跨行)。 */
-    val CLASSIC_EAMS_IDS_INPUT_RE = """<[^>]*\bname\s*=\s*["']ids["'][^>]*>.*?\bvalue\s*=\s*["'](\d+)["']"""
+    /** 学号隐藏域兜底；字段名和值必须属于同一个 input，属性顺序不限。 */
+    val CLASSIC_EAMS_IDS_INPUT_RE = """<input\b(?=[^>]*\sname\s*=\s*["']ids["'])(?=[^>]*\svalue\s*=\s*["'](\d+)["'])[^>]*>"""
 
     /** 学期首选: semesterCalendar({…,value:"NNN"}) — Dart 实测隐藏域常为空。 */
-    val CLASSIC_EAMS_SEMESTER_CAL_RE = """semesterCalendar\(\{[^}]*value\s*:\s*["'](\d+)["']"""
+    val CLASSIC_EAMS_SEMESTER_CAL_RE = """semesterCalendar\(\{[^}]*["']?\bvalue["']?\s*:\s*["'](\d+)["']"""
 
     /** 学期兜底。 */
-    val CLASSIC_EAMS_SEMESTER_INPUT_RE = """<[^>]*\bname\s*=\s*["']semester\.id["'][^>]*>.*?\bvalue\s*=\s*["'](\d+)["']"""
+    val CLASSIC_EAMS_SEMESTER_INPUT_RE = """<input\b(?=[^>]*\sname\s*=\s*["']semester\.id["'])(?=[^>]*\svalue\s*=\s*["'](\d+)["'])[^>]*>"""
 
     /** 项目隐藏域。 */
-    val CLASSIC_EAMS_PROJECT_RE = """<[^>]*\bname\s*=\s*["']project\.id["'][^>]*>.*?\bvalue\s*=\s*["'](\d+)["']"""
+    val CLASSIC_EAMS_PROJECT_RE = """<input\b(?=[^>]*\sname\s*=\s*["']project\.id["'])(?=[^>]*\svalue\s*=\s*["'](\d+)["'])[^>]*>"""
 
     /** 候选体模板: 含 project 全形态 (§4 表原文, 去 project 变体由 buildCandidates 派生)。 */
     val CLASSIC_EAMS_PARAM_TEMPLATE = """ignoreHead=1&setting.kind=std&startWeek=&project.id=%s&semester.id=%s&ids=%s"""

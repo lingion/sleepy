@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -45,13 +44,14 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.PERIOD_HEADER_CARD_PAD_DP
 import com.lingion.sleepy.ui.component.PeriodHeaderAdaptiveFont
 import com.lingion.sleepy.ui.component.PeriodHeaderCellContent
-import com.lingion.sleepy.ui.component.SegmentedSwitcher
+import com.lingion.sleepy.ui.component.SettingsFlatCard
+import com.lingion.sleepy.ui.component.SettingToggleRow
+import com.lingion.sleepy.ui.component.SettingsLayout
 import com.lingion.sleepy.ui.component.SingleSliderGhostMark
 import com.lingion.sleepy.ui.component.singleSliderGhostVisible
 import com.lingion.sleepy.ui.component.TimeSlot
@@ -91,7 +91,7 @@ fun PeriodHeaderSettingsScreen(onBack: () -> Unit) {
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(SettingsLayout.cardGap),
         ) {
             item {
                 HeaderStylePreviews(
@@ -108,99 +108,36 @@ fun PeriodHeaderSettingsScreen(onBack: () -> Unit) {
                 )
             }
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(
-                        stringResource(R.string.appearance_header_layout),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    SegmentedSwitcher(
-                        options = listOf(
-                            "legacy" to stringResource(R.string.appearance_layout_legacy),
-                            "three_line" to stringResource(R.string.appearance_layout_three_line),
-                        ).mapIndexed { index, (_, label) -> index to label },
-                        selected = if (layout == "three_line") 1 else 0,
-                        onSelect = { index ->
-                            layout = if (index == 1) "three_line" else "legacy"
-                            AppPrefs.setPeriodHeaderLayout(context, layout)
-                        },
-                        modifier = Modifier.fillMaxWidth().height(40.dp),
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                    )
-                }
+                SettingsFlatCard(
+                    title = stringResource(R.string.appearance_header_layout),
+                    options = listOf(stringResource(R.string.appearance_layout_legacy), stringResource(R.string.appearance_layout_three_line)),
+                    selectedKey = if (layout == "three_line") 1 else 0,
+                    onSelect = { index ->
+                        layout = if (index == 1) "three_line" else "legacy"
+                        AppPrefs.setPeriodHeaderLayout(context, layout)
+                    },
+                )
             }
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Text(
-                            stringResource(R.string.appearance_header_show_x),
-                            style = MaterialTheme.typography.bodyLarge,
-                        )
-                        Switch(
-                            checked = showX,
-                            onCheckedChange = {
-                                showX = it
-                                AppPrefs.setPeriodHeaderShowX(context, it)
-                            },
-                        )
-                    }
-                    // 隐藏时间行仅适用旧式两行表头; 三行式以时间为主体, 不适用。
+                DisplaySettingsGroup {
+                    SettingToggleRow(
+                        label = stringResource(R.string.appearance_header_show_x),
+                        checked = showX,
+                        onCheckedChange = { showX = it; AppPrefs.setPeriodHeaderShowX(context, it) },
+                    )
+                    // Hiding the time applies only to the legacy two-line header.
                     if (layout == "legacy") {
-                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                            ) {
-                                Text(
-                                    stringResource(R.string.appearance_header_hide_time),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                )
-                                Switch(
-                                    checked = hideTime,
-                                    onCheckedChange = {
-                                        hideTime = it
-                                        AppPrefs.setPeriodHeaderHideTime(context, it)
-                                    },
-                                )
-                            }
-                            Text(
-                                stringResource(R.string.appearance_header_hide_time_sub),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        if (!hideTime) {
-                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Text(
-                                    stringResource(R.string.appearance_header_time_alignment),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                                SegmentedSwitcher(
-                                    options = listOf(
-                                        "dash" to stringResource(R.string.appearance_header_alignment_dash),
-                                        "center" to stringResource(R.string.appearance_header_alignment_center),
-                                    ).mapIndexed { index, (_, label) -> index to label },
-                                    selected = if (timeAlignment == "center") 1 else 0,
-                                    onSelect = { index ->
-                                        timeAlignment = if (index == 1) "center" else "dash"
-                                        AppPrefs.setPeriodHeaderTimeAlignment(context, timeAlignment)
-                                    },
-                                    modifier = Modifier.fillMaxWidth().height(40.dp),
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                                )
-                            }
-                        }
+                        SettingToggleRow(
+                            label = stringResource(R.string.appearance_header_hide_time),
+                            subtitle = stringResource(R.string.appearance_header_hide_time_sub),
+                            checked = hideTime,
+                            onCheckedChange = { hideTime = it; AppPrefs.setPeriodHeaderHideTime(context, it) },
+                        )
                     }
                     if (layout == "three_line") {
                         Text(
                             stringResource(R.string.appearance_header_hanging, String.format("%+.1f", hangingUnits)),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = SettingsLayout.itemStyle,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         // 幽灵接线 (spec §3.1 单头变体): 拖离进页基线 → 基线刻度出现细条,
@@ -221,6 +158,21 @@ fun PeriodHeaderSettingsScreen(onBack: () -> Unit) {
                                 )
                             }
                         }
+                    }
+                }
+            }
+            if (layout == "legacy") {
+                if (!hideTime) {
+                    item {
+                        SettingsFlatCard(
+                            title = stringResource(R.string.appearance_header_time_alignment),
+                            options = listOf(stringResource(R.string.appearance_header_alignment_dash), stringResource(R.string.appearance_header_alignment_center)),
+                            selectedKey = if (timeAlignment == "center") 1 else 0,
+                            onSelect = { index ->
+                                timeAlignment = if (index == 1) "center" else "dash"
+                                AppPrefs.setPeriodHeaderTimeAlignment(context, timeAlignment)
+                            },
+                        )
                     }
                 }
             }
@@ -294,7 +246,7 @@ private fun HeaderStylePreviews(
         it.coerceAtLeast(46.dp)
     }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(stringResource(R.string.appearance_header_preview), style = MaterialTheme.typography.titleSmall)
+        Text(stringResource(R.string.appearance_header_preview), style = SettingsLayout.headingStyle)
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),

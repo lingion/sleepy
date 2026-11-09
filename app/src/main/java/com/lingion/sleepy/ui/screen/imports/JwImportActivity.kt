@@ -59,6 +59,7 @@ import com.lingion.sleepy.data.jw.JwImportViewModel
 import com.lingion.sleepy.data.jw.JwParseDiagnostics
 import com.lingion.sleepy.data.jw.JwProtocol
 import com.lingion.sleepy.data.jw.JwSchoolInfo
+import com.lingion.sleepy.data.jw.JwShsmuCaptureCalendar
 import com.lingion.sleepy.data.jw.UcasDetailFetch
 import com.lingion.sleepy.data.diff.CourseUpdateDiff
 import com.lingion.sleepy.data.diff.diffImportedCourses
@@ -170,6 +171,9 @@ class JwImportActivity : ComponentActivity() {
                 var parsedSchool by remember { mutableStateOf<JwSchoolInfo?>(null) }
                 var draftId by remember { mutableStateOf(incomingDraftId) }
                 var configStartDate by remember { mutableStateOf("") }
+                var parsedDatedCourseOrigin by remember { mutableStateOf("") }
+                var shsmuStartReply by remember { mutableStateOf<((String?) -> Unit)?>(null) }
+                var configTermWeekCount by remember { mutableIntStateOf(0) }
                 var configTimeJson by remember { mutableStateOf("") }
                 var configRows by remember { mutableStateOf(emptyList<TimeTableUtils.TimeSlotRow>()) }
                 // issue#28 P2: 自动模式"添加课间"的状态 — 旧代码没传 smartConfig/
@@ -183,12 +187,8 @@ class JwImportActivity : ComponentActivity() {
                 }
                 // v1.0.56 T6: 第三 Tab 绑定选择 — null=未绑定(用教务解析出的节次); 落库时同步 periodTableId
                 var configBindPeriodTableId by remember { mutableStateOf<Long?>(null) }
-                // 用户可改的导入课表名; 初值 = "教务导入 - {学校名}"; 留空 = 沿用初值
-                var configTableName by remember(parsedSchool) {
-                    mutableStateOf(
-                        parsedSchool?.let { getString(R.string.jw_import_title, it.name) } ?: ""
-                    )
-                }
+                // Fresh capture and restored draft explicitly seed this editable value.
+                var configTableName by remember { mutableStateOf("") }
 
                 fun currentDraftSnapshot(): JwImportDraftSnapshot? {
                     val school = selectedSchool ?: parsedSchool ?: return null
@@ -197,6 +197,8 @@ class JwImportActivity : ComponentActivity() {
                         courses = parsedCourses,
                         periods = configRows.map { JwImportDraftPeriod(it.node, it.start, it.end) },
                         termStartDate = configStartDate,
+                        datedCourseOrigin = parsedDatedCourseOrigin,
+                        termWeekCount = configTermWeekCount,
                         tableName = configTableName,
                         smartConfigJson = Json.encodeToString(configSmartConfig),
                         phase = if (parsedCourses.isEmpty()) {
@@ -494,6 +496,8 @@ class JwImportActivity : ComponentActivity() {
                     selectedSchool = snapshot.school
                     parsedCourses = snapshot.courses
                     configStartDate = snapshot.termStartDate
+                    parsedDatedCourseOrigin = snapshot.datedCourseOrigin
+                    configTermWeekCount = snapshot.termWeekCount
                     configTableName = snapshot.tableName.ifBlank {
                         getString(R.string.jw_import_title, snapshot.school.name)
                     }
@@ -552,7 +556,7 @@ class JwImportActivity : ComponentActivity() {
                                         courses = jwViewModel.toCourseEntities(parsedCourses, targetId, "#FF6750A4"),
                                         timeJson = configTimeJson,
                                         nodesPerDay = parsedCourses.maxOf { maxOf(it.startNode, it.endNode) },
-                                        maxWeek = parsedCourses.maxOf { it.endWeek }
+                                        maxWeek = maxOf(configTermWeekCount, parsedCourses.maxOf { it.endWeek })
                                     ),
                                     tableId = targetId,
                                     context = this@JwImportActivity
@@ -699,6 +703,9 @@ class JwImportActivity : ComponentActivity() {
                                         isError = confirmError != null && (configStartDate.isBlank() ||
                                             !Regex("""^\d{4}-\d{2}-\d{2}$""").matches(configStartDate))
                                     )
+                                    if (parsedDatedCourseOrigin.isNotEmpty()) {
+                                        Text(getString(R.string.jw_dated_calendar_rebase_hint), style = MaterialTheme.typography.bodySmall)
+                                    }
                                     // 用户可改的导入课表名 — 教务直连此前无任何命名入口,
                                     // 硬编码成 "教务导入 - {学校名}" 后用户改名要进课表管理.
                                     // 此次把命名入口放到导入前, 落库前最后一次修改机会.
@@ -753,6 +760,16 @@ class JwImportActivity : ComponentActivity() {
                                         confirmError = getString(R.string.start_date_format)
                                         return@TextButton
                                     }
+                                    val confirmedCourses = try {
+                                        if (parsedDatedCourseOrigin.isEmpty()) parsedCourses else
+                                            JwShsmuCaptureCalendar.rebase(parsedCourses, parsedDatedCourseOrigin, configStartDate)
+                                    } catch (e: IllegalArgumentException) {
+                                        confirmError = e.message
+                                        return@TextButton
+                                    } catch (e: IllegalStateException) {
+                                        confirmError = e.message
+                                        return@TextButton
+                                    }
                                     // v1.0.56 T6 修正: 绑了作息表(id>0)时以表的 timeJson 为真源;
                                     // 教务协议没回节次时间 → 手动 rows 全空 → 旧代码误报「第 X 节时间不能为空」(用户反馈 2026-09-20)。
                                     val effectiveRows = TimeTableUtils.effectiveRowsForConfirm(
@@ -760,6 +777,13 @@ class JwImportActivity : ComponentActivity() {
                                         bindId = configBindPeriodTableId,
                                         tables = allPeriodTables.map { it.id to it.timeJson }
                                     )
+                                    val missingNode = TimeTableUtils.firstMissingCourseNode(
+                                        jwViewModel.toCourseEntities(confirmedCourses, 0L, "#FF6750A4"), effectiveRows
+                                    )
+                                    if (missingNode != null) {
+                                        confirmError = getString(R.string.slot_time_required, missingNode)
+                                        return@TextButton
+                                    }
                                     val emptyRows = effectiveRows.filter { it.start.isBlank() || it.end.isBlank() }
                                     if (emptyRows.isNotEmpty()) {
                                         confirmError = getString(R.string.slot_time_required, emptyRows.first().node)
@@ -782,10 +806,10 @@ class JwImportActivity : ComponentActivity() {
                                             val result = ScheduleParser.ParseResult(
                                                 tableName = configTableName,
                                                 startDate = configStartDate,
-                                                courses = jwViewModel.toCourseEntities(parsedCourses, 0L, "#FF6750A4"),
+                                                courses = jwViewModel.toCourseEntities(confirmedCourses, 0L, "#FF6750A4"),
                                                 timeJson = configTimeJson,
                                                 nodesPerDay = effectiveRows.maxOfOrNull { it.node } ?: 1,
-                                                maxWeek = parsedCourses.maxOf { it.endWeek },
+                                                maxWeek = maxOf(configTermWeekCount, confirmedCourses.maxOf { it.endWeek }),
                                                 periodTable = if (configBindPeriodTableId == -1L) {
                                                     ScheduleParser.ParsedPeriodTable(
                                                         sourceId = 0L,
@@ -864,11 +888,30 @@ class JwImportActivity : ComponentActivity() {
                                     scope.launch {
                                         try {
                                             // #18 UCAS: 课程格链到跨源详情站 xkcts:8443 (WebView fetch 被 CORS
-                                            // 挡), 详情页免登录 → 原生 HTTP 逐课直抓补全周次/教室; 失败降级原 HTML
-                                            // (parser 落 1-16 占位, 与既有行为一致)
-                                            val htmlForParse = if (effectiveType == JwProtocol.TYPE_UCAS) {
-                                                runCatching { UcasDetailFetch.enrich(html) }.getOrDefault(html)
+                                            // 挡)，使用原生 HTTP 逐课补全周次和教室。任一失败由下面的错误路径处理。
+                                            var htmlForParse = if (effectiveType == JwProtocol.TYPE_UCAS) {
+                                                UcasDetailFetch.enrich(html)
                                             } else html
+                                            val isDatedCapture = effectiveType == JwProtocol.TYPE_SHSMU &&
+                                                JwShsmuCaptureCalendar.isDatedCapture(htmlForParse)
+                                            if (isDatedCapture) {
+                                                val existingStart = if (targetTableId > 0L) {
+                                                    SleepyApp.get().repository.getTable(targetTableId)?.startDate
+                                                        ?: error("Target timetable was not found")
+                                                } else null
+                                                val selectedStart = existingStart ?: suspendCancellableCoroutine<String?> { cont ->
+                                                    shsmuStartReply = { selected ->
+                                                        shsmuStartReply = null
+                                                        if (cont.isActive) cont.resumeWith(Result.success(selected))
+                                                    }
+                                                    cont.invokeOnCancellation { shsmuStartReply = null }
+                                                } ?: run { statusMsg = null; return@launch }
+                                                htmlForParse = JwShsmuCaptureCalendar.bind(
+                                                    htmlForParse, selectedStart,
+                                                    if (existingStart == null) JwShsmuCaptureCalendar.Basis.USER_CONFIRMED
+                                                    else JwShsmuCaptureCalendar.Basis.EXISTING_TABLE,
+                                                )
+                                            }
                                             val courses = jwViewModel.parseHtml(htmlForParse, effectiveType ?: "")
                                             thuSkippedCount = if (effectiveType == JwProtocol.TYPE_THU)
                                                 jwViewModel.lastAttempts.firstOrNull { it.type == JwProtocol.TYPE_THU }
@@ -895,12 +938,21 @@ class JwImportActivity : ComponentActivity() {
                                             }
                                             // 不直接落库，进配置确认页
                                             parsedCourses = courses
+                                            parsedDatedCourseOrigin = if (isDatedCapture) {
+                                                JwShsmuCaptureCalendar.resolve(org.json.JSONObject(htmlForParse))?.toString()
+                                                    ?: error("Dated lessons require a confirmed semester start")
+                                            } else ""
                                             parsedSchool = sch
+                                            configTableName = com.lingion.sleepy.data.jw.JwSourceTableName
+                                                .resolve(htmlForParse, effectiveType, sch.name)
+                                                ?: getString(R.string.jw_import_title, sch.name)
                                             exitDraftState = exitDraftState.copy(activeImport = incomingDraftId != null)
                                             // 根据课程实际节次数生成行；
                                             // 如果 WebView 抓到 periods 则预填，否则空行让用户填
                                             val maxNode = courses.maxOf { maxOf(it.startNode, it.endNode) }
-                                            val periodMap = periods.associate { it.first to (it.second to it.third) }
+                                            val sourcePeriods = com.lingion.sleepy.data.jw.JwSourcePeriods.resolve(
+                                                htmlForParse, effectiveType, sch.name, periods)
+                                            val periodMap = sourcePeriods.associate { it.first to (it.second to it.third) }
                                             val newRows = (1..maxNode).map { node ->
                                                 val filled = periodMap[node]
                                                 TimeTableUtils.TimeSlotRow(
@@ -913,7 +965,10 @@ class JwImportActivity : ComponentActivity() {
                                             // 学期起始日预填: JSON 直连协议 (boya_pp/cqu/chaoxing) 能从
                                             // 接口拿到第一周周一 (如燕大 2026-2027-1 实为 2026-08-31,
                                             // 本地 9 月首一推断会差一周), 用户仍可在确认页修改
-                                            configStartDate = termStartDate
+                                            configStartDate = com.lingion.sleepy.data.jw.JwSourceCalendar
+                                                .resolveStartDate(htmlForParse, effectiveType, termStartDate)
+                                            configTermWeekCount = com.lingion.sleepy.data.jw.JwSourceCalendar
+                                                .resolveWeekCount(htmlForParse, effectiveType, sch.name)
                                             configTimeJson = ""
                                             // issue#23 T5: seed both live confirmation state and draft
                                             // persistence from the same inference result. Incomplete rows
@@ -957,6 +1012,35 @@ class JwImportActivity : ComponentActivity() {
                             )
                         } // end SaveableStateProvider("WebViewLogin") (school != null)
                     }
+                }
+
+                shsmuStartReply?.let { reply ->
+                    var firstWeekDate by remember(reply) { mutableStateOf("") }
+                    var calendarError by remember(reply) { mutableStateOf(false) }
+                    AlertDialog(
+                        onDismissRequest = { reply(null) },
+                        title = { Text(getString(R.string.import_week_start)) },
+                        text = {
+                            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Text(getString(R.string.jw_dated_calendar_required))
+                                DatePickerField(
+                                    value = firstWeekDate,
+                                    onValueChange = { firstWeekDate = it; calendarError = false },
+                                    label = getString(R.string.import_week_start),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    dbgTag = "jw_shsmu_first_week_date",
+                                    isError = calendarError,
+                                )
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                if (JwShsmuCaptureCalendar.date(firstWeekDate) == null) calendarError = true
+                                else reply(firstWeekDate)
+                            }) { Text(getString(R.string.import_confirm)) }
+                        },
+                        dismissButton = { TextButton(onClick = { reply(null) }) { Text(getString(R.string.cancel)) } },
+                    )
                 }
 
                 exitDraftState.takeIf { it.confirmationVisible }?.let {

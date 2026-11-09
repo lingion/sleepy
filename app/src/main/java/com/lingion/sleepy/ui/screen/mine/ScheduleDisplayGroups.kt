@@ -29,6 +29,7 @@ import com.lingion.sleepy.ui.component.SegmentedSwitcher
 import com.lingion.sleepy.ui.component.SettingToggleRow
 import com.lingion.sleepy.ui.component.SettingsCard
 import com.lingion.sleepy.ui.component.SettingsFlatCard
+import com.lingion.sleepy.ui.component.SettingsLayout
 import com.lingion.sleepy.ui.component.TimePickerField
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.util.AppPrefs
@@ -182,7 +183,7 @@ internal fun GridDisplaySettings() {
     var longBreakSpacing by remember { mutableStateOf(AppPrefs.isGridLongBreakSpacing(context)) }
     DisplaySettingsGroup {
         ScheduleDisplayContent(section = DisplayStyleSection.GRID)
-        Text(stringResource(R.string.settings_grid_sub_info), style = MaterialTheme.typography.bodyLarge)
+        Text(stringResource(R.string.settings_grid_sub_info), style = SettingsLayout.itemStyle)
         SegmentedSwitcher(
             options = listOf(
                 "room" to stringResource(R.string.settings_grid_sub_room),
@@ -220,7 +221,7 @@ internal fun GridDisplaySettings() {
         )
         if (autoHideEvening) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(stringResource(R.string.settings_grid_evening_start), modifier = Modifier.weight(1f))
+                Text(stringResource(R.string.settings_grid_evening_start), modifier = Modifier.weight(1f), style = SettingsLayout.itemStyle)
                 TimePickerField(
                     value = eveningStart,
                     onValueChange = { eveningStart = it; AppPrefs.setGridEveningStart(context, it) },
@@ -268,7 +269,7 @@ internal fun HolidayDisplaySettings() {
                 onCheckedChange = { ignoreWorkday = it; AppPrefs.setHolidayIgnoreWorkday(context, it) },
             )
         }
-        Text(stringResource(R.string.settings_holiday_style), style = MaterialTheme.typography.bodyLarge)
+        Text(stringResource(R.string.settings_holiday_style), style = SettingsLayout.itemStyle)
         SegmentedSwitcher(
             options = listOf(
                 "grey" to stringResource(R.string.settings_holiday_style_grey),

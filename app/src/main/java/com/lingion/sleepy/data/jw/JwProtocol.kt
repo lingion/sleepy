@@ -15,6 +15,19 @@ package com.lingion.sleepy.data.jw
  * 中 `app/src/main/java/com/suda/yzune/wakeupschedule/schedule_import/Common.kt`。
  */
 object JwProtocol {
+    const val TYPE_SHUWEI_M = "shuwei_m"
+    const val TYPE_XATU_SHUWEI = "xatu_shuwei"
+    const val TYPE_SIAS_SHUWEI = "sias_shuwei"
+    const val TYPE_SNUT_SHUWEI = "snut_shuwei"
+    const val TYPE_UESTC_SHUWEI = "uestc_shuwei"
+    const val TYPE_HUNNU_SHUWEI = "hunnu_shuwei"
+    const val TYPE_XSYU_SHUWEI = "xsyu_shuwei"
+    const val TYPE_NWPU = "nwpu"
+    const val TYPE_JMU = "jmu"
+    const val TYPE_SHUWEI_NEW = "shuwei_new"
+    const val TYPE_AHNU = "ahnu"
+    const val TYPE_HFU = "hfu"
+
 
     const val TYPE_HELP = "help"
     const val TYPE_ZF = "zf"
@@ -22,11 +35,55 @@ object JwProtocol {
     const val TYPE_ZF_NEW = "zf_new"
     const val TYPE_URP = "urp"
     const val TYPE_URP_NEW = "urp_new"
+    const val TYPE_URP_NEW_AJAX = "urp_new_ajax"
     const val TYPE_QZ = "qz"
     const val TYPE_QZ_OLD = "qz_old"
     const val TYPE_QZ_CRAZY = "qz_crazy"
     const val TYPE_QZ_BR = "qz_br"
     const val TYPE_QZ_WITH_NODE = "qz_with_node"
+    const val TYPE_QZ_SINGLE_NODE = "qz_single_node"
+    const val TYPE_QZ_NJUST = "qz_njust"
+    const val TYPE_QZ_WIT = "qz_wit"
+    const val TYPE_QZ_ECUST = "qz_ecust"
+    const val TYPE_QZ_AHUT = "qz_ahut"
+    const val TYPE_QZ_BJFU = "qz_bjfu"
+    const val TYPE_SIMC = "simc"
+    const val TYPE_SHTU_POST_2024 = "shtu_post_2024"
+    const val TYPE_RUC = "ruc"
+    const val TYPE_BFA = "bfa"
+    const val TYPE_HUST = "hust"
+    const val TYPE_AIC = "aic"
+    const val TYPE_HBMZU = "hbmzu"
+    const val TYPE_NUA = "nua"
+    const val TYPE_STUM = "stum"
+    const val TYPE_AHMU = "ahmu"
+    const val TYPE_GDEI = "gdei"
+    const val TYPE_JLU_POST = "jlu_post"
+    const val TYPE_CCIBE = "ccibe"
+    const val TYPE_CPPU = "cppu"
+    const val TYPE_SHCC = "shcc"
+    const val TYPE_FSTVC = "fstvc"
+    const val TYPE_GDBH = "gdbh"
+    const val TYPE_GLIET = "gliet"
+    const val TYPE_CNU = "cnu"
+    const val TYPE_XBELLSOFT = "login_xbellsoft"
+    const val TYPE_CDUT = "cdut"
+    const val TYPE_GZHUYJS = "gzhuyjs"
+    const val TYPE_DHU = "dhu"
+    const val TYPE_ECJTU = "ecjtu"
+    const val TYPE_ZPTC = "zptc"
+    const val TYPE_CTGU = "ctgu"
+    const val TYPE_NYIST = "nyist"
+    const val TYPE_JXAU = "jxau"
+    const val TYPE_FDU = "fdu"
+    const val TYPE_ZTVTIT = "ztvtit"
+    const val TYPE_SDU = "sdu"
+    const val TYPE_SEIG = "seig"
+    const val TYPE_KINGOSOFT = "kingosoft"
+    const val TYPE_JLICT_QZ_OLD = "jlict_qz_old"
+    const val TYPE_CCUT_QZ_OLD = "ccut_qz_old"
+    const val TYPE_CCSU_QZ_OLD = "ccsu_qz_old"
+    const val TYPE_CHAOXING_SHARE = "chaoxing_share"
     const val TYPE_CF = "cf"
 
     /**
@@ -34,7 +91,7 @@ object JwProtocol {
      * 页面 DOM 无课表数据, 课程行由 POST /new/student/xsgrkb/getCalendarWeekDatas
      * 按周返回; 节次时间在页面 businessHours JSON; 开学日 /new/xlxx/getDatesOfWeek。
      * WebView 内逐周并行抓取 (CF_NEW_FETCH_JS) 合并, JwCfNewParser 解析。
-     * 首校: 江西中医药大学 (jiaowu.jxutcm.edu.cn, 2026-09 采集包实锤)。
+     * 首校登记: 江西中医药大学 (jiaowu.jxutcm.edu.cn)；原采集包未归档，当前以合成回放验证。
      */
     const val TYPE_CF_NEW = "cf_new"
     const val TYPE_PKU = "pku"
@@ -58,6 +115,90 @@ object JwProtocol {
     const val TYPE_THU = "thu"
     /** WakeUp NewUrpSuperParser 的 flat-array/skzc 位图变体。 */
     const val TYPE_NEW_URP_SUPER = "new_urp_super"
+
+    /** School-specific layouts require an explicit catalog protocol. */
+    const val TYPE_JMUCY = "jmucy"
+    const val TYPE_NUAAJC = "nuaajc"
+    const val TYPE_QMU = "qmu"
+    const val TYPE_JAVTC = "javtc"
+    const val TYPE_XHTD = "xhtd"
+    const val TYPE_XYTC = "xytc"
+    const val TYPE_CIDP = "cidp"
+    const val TYPE_SDPEI = "sdpei"
+    const val TYPE_SHU = "shu"
+    const val TYPE_JMPT = "jmpt"
+    const val TYPE_LNGD = "lngd"
+    const val TYPE_VATUU = "vatuu"
+    const val TYPE_YZZY = "yzzy"
+
+    const val TYPE_JZ_1 = "jz_1"
+    const val TYPE_JZ_X = "jz_x"
+    const val TYPE_WIST = "wist"
+    const val TYPE_XMU = "xmu"
+    const val TYPE_SWJTU_POST = "swjtu_post"
+    const val TYPE_KG_ZX = "kg_zx"
+
+    const val TYPE_HUAT = "huat"
+    const val TYPE_SEU_2017 = "seu_2017"
+    const val TYPE_SHU2024 = "shu2024"
+    const val TYPE_TJU = "tju"
+    const val TYPE_HQU = "hqu"
+    const val TYPE_CHANGZHOU = "changzhou"
+    const val TYPE_SICNU = "sicnu"
+    const val TYPE_NUIST = "nuist"
+    const val TYPE_SIT = "sit"
+    const val TYPE_SYSU = "sysu"
+    const val TYPE_SUES = "sues"
+
+    const val TYPE_HBUT = "hbut"
+    const val TYPE_HNJM = "hnjm"
+    const val TYPE_LZ = "lz"
+    const val TYPE_NAU = "nau"
+    const val TYPE_NJU = "nju"
+    const val TYPE_CQUPT = "cqupt"
+
+    const val TYPE_HITSZ = "hitsz"
+
+    const val TYPE_QZ_2017 = "qz_2017"
+    const val TYPE_QZ_2024 = "qz_2024"
+    const val TYPE_QZ_FSPT = "qz_fspt"
+    const val TYPE_QZ_USTB = "qz_ustb"
+    const val TYPE_ZF_CLS = "zf_cls"
+
+    const val TYPE_JNU = "jnu"
+    const val TYPE_SWUST = "swust"
+
+    const val TYPE_XJTU_POST = "xjtu_post"
+    const val TYPE_UESTC_POST = "uestc_post"
+    const val TYPE_BFA_POST = "bfa_post"
+    const val TYPE_GDBYXY = "gdbyxy"
+    const val TYPE_CUPL_POST = "cupl_post"
+    const val TYPE_YSU_POST = "ysu_post"
+    const val TYPE_WHU_POST = "whu_post"
+    const val TYPE_HRBEU_POST = "hrbeu_post"
+    const val TYPE_SHTU_POST = "shtu_post"
+    const val TYPE_USTC_POST = "ustc_post"
+    const val TYPE_XAUAT_POST = "xauat_post"
+    const val TYPE_ZJU_POST = "zju_post"
+    const val TYPE_CSV = "csv"
+    const val TYPE_SHUWEI_OLD = "shuwei_old"
+
+    const val TYPE_HIT = "hit"
+    const val TYPE_BUAA = "buaa"
+
+    const val TYPE_GXIC = "gxic"
+    const val TYPE_GXNU = "gxnu"
+    const val TYPE_JXNU = "jxnu"
+    const val TYPE_NNUTC = "nnutc"
+
+    const val TYPE_SHSMU = "shsmu"
+    const val TYPE_YGU = "ygu"
+
+    const val TYPE_SUSTECH = "sustech"
+    const val TYPE_UIC = "uic"
+    const val TYPE_CITYU = "cityu"
+    const val TYPE_STU = "stu"
+    const val TYPE_NFU = "nfu"
 
     /** Kingosoft ZX: pageRpt reports and mytable grids. */
     const val TYPE_KINGO_ZX = "kingo_zx"
@@ -336,12 +477,159 @@ object JwProtocol {
 
     /** WakeUp-derived types routed by the compatibility layer; kept separate from legacy UI ordering. */
     val WAKEUP_COMPAT_TYPES: List<String> = listOf(
+        TYPE_SHUWEI_M, TYPE_XATU_SHUWEI, TYPE_SIAS_SHUWEI, TYPE_SNUT_SHUWEI, TYPE_UESTC_SHUWEI, TYPE_HUNNU_SHUWEI, TYPE_XSYU_SHUWEI, TYPE_NWPU, TYPE_JMU, TYPE_SHUWEI_NEW, TYPE_AHNU, TYPE_HFU,
+        TYPE_HUAT, TYPE_SEU_2017, TYPE_SHU2024, TYPE_TJU, TYPE_HQU, TYPE_CHANGZHOU, TYPE_SICNU, TYPE_NUIST, TYPE_SIT, TYPE_SYSU, TYPE_SUES,
+        TYPE_JZ_1, TYPE_JZ_X, TYPE_WIST, TYPE_XMU, TYPE_SWJTU_POST, TYPE_KG_ZX,
+        TYPE_HBUT, TYPE_HNJM, TYPE_LZ, TYPE_NAU, TYPE_NJU, TYPE_CQUPT,
+        TYPE_XHTD, TYPE_XYTC, TYPE_CIDP, TYPE_SDPEI, TYPE_SHU, TYPE_JMPT, TYPE_LNGD, TYPE_VATUU, TYPE_YZZY,
+        TYPE_HIT, TYPE_BUAA,
+        TYPE_GXIC, TYPE_GXNU, TYPE_JXNU, TYPE_NNUTC,
+        TYPE_SHSMU, TYPE_YGU,
+        TYPE_XJTU_POST, TYPE_UESTC_POST, TYPE_BFA_POST, TYPE_GDBYXY, TYPE_CUPL_POST, TYPE_YSU_POST, TYPE_WHU_POST, TYPE_HRBEU_POST, TYPE_SHTU_POST, TYPE_USTC_POST, TYPE_XAUAT_POST, TYPE_ZJU_POST, TYPE_CSV, TYPE_SHUWEI_OLD,
+        TYPE_JNU, TYPE_SWUST,
+        TYPE_QZ_2017, TYPE_QZ_2024, TYPE_QZ_FSPT, TYPE_QZ_USTB, TYPE_ZF_CLS,
+        TYPE_JMUCY, TYPE_NUAAJC, TYPE_QMU, TYPE_JAVTC, TYPE_HITSZ,
+        TYPE_SUSTECH, TYPE_UIC, TYPE_CITYU, TYPE_STU, TYPE_NFU,
+        TYPE_FSTVC, TYPE_GDBH, TYPE_GLIET, TYPE_CNU, TYPE_XBELLSOFT,
+        TYPE_CDUT, TYPE_GZHUYJS, TYPE_DHU, TYPE_ECJTU, TYPE_ZPTC, TYPE_CTGU, TYPE_NYIST, TYPE_JXAU,
+        TYPE_CCIBE, TYPE_CPPU, TYPE_SHCC,
+        TYPE_AHMU, TYPE_GDEI, TYPE_JLU_POST,
+        TYPE_HBMZU, TYPE_NUA, TYPE_STUM,
+        TYPE_HUST, TYPE_AIC,
+        TYPE_BFA, TYPE_FDU, TYPE_ZTVTIT,
+        TYPE_RUC, TYPE_SDU, TYPE_SEIG,
+        TYPE_SIMC, TYPE_CHAOXING_SHARE, TYPE_SHTU_POST_2024, TYPE_KINGOSOFT,
+        TYPE_JLICT_QZ_OLD, TYPE_CCUT_QZ_OLD, TYPE_CCSU_QZ_OLD, TYPE_URP_NEW_AJAX,
+        TYPE_QZ_SINGLE_NODE, TYPE_QZ_NJUST, TYPE_QZ_WIT, TYPE_QZ_ECUST, TYPE_QZ_AHUT, TYPE_QZ_BJFU,
         TYPE_KINGO_NEW, TYPE_KINGO_ZX, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
         TYPE_SHUWEI, TYPE_UMOOC, TYPE_YL, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST, TYPE_THU, TYPE_NWPU_POST, TYPE_NEW_URP_SUPER,
         TYPE_ECUPL, TYPE_ECUPL_SCRIPT, TYPE_ECUPL_SUPER, TYPE_SCAU,
     )
 
     fun displayName(type: String?): String = when (type) {
+        TYPE_SHUWEI_M -> "树维教务（shuwei_m）"
+        TYPE_XATU_SHUWEI -> "树维教务（xatu_shuwei）"
+        TYPE_SIAS_SHUWEI -> "树维教务（sias_shuwei）"
+        TYPE_SNUT_SHUWEI -> "树维教务（snut_shuwei）"
+        TYPE_UESTC_SHUWEI -> "树维教务（uestc_shuwei）"
+        TYPE_HUNNU_SHUWEI -> "树维教务（hunnu_shuwei）"
+        TYPE_XSYU_SHUWEI -> "树维教务（xsyu_shuwei）"
+        TYPE_NWPU -> "西北工业大学教务"
+        TYPE_JMU -> "集美大学教务"
+        TYPE_SHUWEI_NEW -> "树维新版教务"
+        TYPE_AHNU -> "安徽师范大学教务"
+        TYPE_HFU -> "HFU教务"
+
+        TYPE_HUAT -> "湖北汽车工业学院教务"
+        TYPE_SEU_2017 -> "东南大学2017教务"
+        TYPE_SHU2024 -> "上海大学2024教务"
+        TYPE_TJU -> "同济大学教务"
+        TYPE_HQU -> "华侨大学教务"
+        TYPE_CHANGZHOU -> "常州模板教务"
+        TYPE_SICNU -> "四川师范大学教务"
+        TYPE_NUIST -> "NUIST模板教务"
+        TYPE_SIT -> "上海应用技术大学教务"
+        TYPE_SYSU -> "中山大学教务"
+        TYPE_SUES -> "上海工程技术大学教务"
+        TYPE_JZ_1 -> "金智课程表"
+        TYPE_JZ_X -> "金智扩展课程表"
+        TYPE_WIST -> "武汉船舶课程表"
+        TYPE_XMU -> "厦门大学教务"
+        TYPE_SWJTU_POST -> "西南交通大学研究生教务"
+        TYPE_KG_ZX -> "青果正选课程表"
+        TYPE_HBUT -> "湖北工业大学教务"
+        TYPE_HNJM -> "河南经贸职业学院教务"
+        TYPE_LZ -> "LZ模板教务"
+        TYPE_NAU -> "南京审计大学教务"
+        TYPE_NJU -> "南京大学教务"
+        TYPE_CQUPT -> "重庆邮电大学教务"
+        TYPE_XHTD -> "西华通达教务"
+        TYPE_XYTC -> "襄阳模板教务"
+        TYPE_CIDP -> "防灾科技学院教务"
+        TYPE_SDPEI -> "山东体育学院教务"
+        TYPE_SHU -> "上海大学旧版教务"
+        TYPE_JMPT -> "江门职业技术学院教务"
+        TYPE_LNGD -> "轨道装备教务"
+        TYPE_VATUU -> "Vatuu教务"
+        TYPE_YZZY -> "永州职业技术学院教务"
+
+        TYPE_HIT -> "哈尔滨工业大学教务"
+        TYPE_BUAA -> "北京航空航天大学教务"
+        TYPE_GXIC -> "广西工业职业技术学院教务"
+        TYPE_GXNU -> "广西师范大学教务"
+        TYPE_JXNU -> "江西师范大学教务"
+        TYPE_NNUTC -> "南京师范大学泰州学院教务"
+
+        TYPE_SHSMU -> "上海交通大学医学院教务"
+        TYPE_YGU -> "阳光学院教务"
+        TYPE_XJTU_POST -> "西安交通大学研究生教务"
+        TYPE_UESTC_POST -> "电子科技大学研究生教务"
+        TYPE_BFA_POST -> "北京电影学院研究生教务"
+        TYPE_GDBYXY -> "广东白云学院教务"
+        TYPE_CUPL_POST -> "中国政法大学研究生教务"
+        TYPE_YSU_POST -> "燕山大学研究生教务"
+        TYPE_WHU_POST -> "武汉大学研究生教务"
+        TYPE_HRBEU_POST -> "哈尔滨工程大学研究生教务"
+        TYPE_SHTU_POST -> "上海科技大学旧版研究生教务"
+        TYPE_USTC_POST -> "中国科学技术大学研究生教务"
+        TYPE_XAUAT_POST -> "西安建筑科技大学研究生教务"
+        TYPE_ZJU_POST -> "浙江大学研究生教务"
+        TYPE_CSV -> "CSV 课程表"
+        TYPE_SHUWEI_OLD -> "树维旧版教务"
+        TYPE_JNU -> "JNU 旧版教务"
+        TYPE_SWUST -> "西南科技大学教务"
+        TYPE_QZ_2017 -> "强智 2017 课表"
+        TYPE_QZ_2024 -> "强智 2024 课表"
+        TYPE_QZ_FSPT -> "佛山职业技术学院强智教务"
+        TYPE_QZ_USTB -> "北京科技大学强智教务"
+        TYPE_ZF_CLS -> "正方班级课表"
+        TYPE_JMUCY -> "集美大学诚毅学院教务"
+        TYPE_NUAAJC -> "南航金城学院教务"
+        TYPE_QMU -> "齐齐哈尔医学院教务"
+        TYPE_JAVTC -> "江西航空职业技术学院教务"
+        TYPE_HITSZ -> "哈工大深圳教务"
+        TYPE_SUSTECH -> "南方科技大学教务"
+        TYPE_UIC -> "UIC 旧版教务"
+        TYPE_CITYU -> "CityU 课表"
+        TYPE_STU -> "汕头大学旧版教务"
+        TYPE_NFU -> "南方学院教务"
+        TYPE_BFA -> "北京电影学院教务"
+        TYPE_HUST -> "华中科技大学教务"
+        TYPE_AIC -> "AIC 智能校园教务"
+        TYPE_HBMZU -> "湖北民族大学教务"
+        TYPE_NUA -> "南京艺术学院教务"
+        TYPE_STUM -> "STUM 移动教务"
+        TYPE_AHMU -> "AHMU 教务"
+        TYPE_GDEI -> "广东第二师范学院教务"
+        TYPE_JLU_POST -> "吉林大学研究生教务"
+        TYPE_CCIBE -> "CCIBE 教务"
+        TYPE_CPPU -> "CPPU 教务"
+        TYPE_SHCC -> "SHCC 教务"
+        TYPE_FSTVC -> "FSTVC 教务"
+        TYPE_GDBH -> "桂电北海教务"
+        TYPE_GLIET -> "桂电教务"
+        TYPE_CNU -> "CNU 教务"
+        TYPE_XBELLSOFT -> "Xbellsoft 教务"
+        TYPE_CDUT -> "成都理工旧版教务"
+        TYPE_GZHUYJS -> "广州大学研究生教务"
+        TYPE_DHU -> "东华大学旧版教务"
+        TYPE_ECJTU -> "华东交通旧版教务"
+        TYPE_ZPTC -> "浙江邮电教务"
+        TYPE_CTGU -> "CTGU 旧版教务"
+        TYPE_NYIST -> "南阳理工学院旧版教务"
+        TYPE_JXAU -> "江西农业大学旧版教务"
+        TYPE_FDU -> "复旦大学教务"
+        TYPE_ZTVTIT -> "浙江交通职业技术学院教务"
+        TYPE_RUC -> "中国人民大学教务"
+        TYPE_SDU -> "山东大学教务"
+        TYPE_SEIG -> "广州软件学院教务"
+        TYPE_SHTU_POST_2024 -> "上海科技大学研究生教务"
+        TYPE_KINGOSOFT -> "Kingosoft 周课表"
+        TYPE_JLICT_QZ_OLD, TYPE_CCUT_QZ_OLD, TYPE_CCSU_QZ_OLD -> "旧版强智教务"
+        TYPE_URP_NEW_AJAX -> "新版 URP 教务"
+        TYPE_SIMC -> "上海工程技术大学高职教务"
+        TYPE_CHAOXING_SHARE -> "超星分享课表"
+        TYPE_QZ_SINGLE_NODE, TYPE_QZ_NJUST, TYPE_QZ_WIT, TYPE_QZ_ECUST, TYPE_QZ_AHUT, TYPE_QZ_BJFU -> "强智教务"
         TYPE_QZ, TYPE_QZ_OLD, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE -> "强智教务"
         TYPE_QZ_APP -> "强智移动教务"
         TYPE_QZ_IEAS -> "强智教务（iEAS 网络版）"
@@ -400,6 +688,10 @@ object JwProtocol {
      * 协议大类，用于 WebViewLogin UI 上的提示文案分类
      */
     fun category(type: String?): String = when (type) {
+        TYPE_QZ_2017, TYPE_QZ_2024, TYPE_QZ_FSPT, TYPE_QZ_USTB -> "qz"
+        TYPE_ZF_CLS -> "zf"
+        TYPE_SIMC -> "other"
+        TYPE_QZ_SINGLE_NODE, TYPE_QZ_NJUST, TYPE_QZ_WIT, TYPE_QZ_ECUST, TYPE_QZ_AHUT, TYPE_QZ_BJFU -> "qz"
         TYPE_QZ, TYPE_QZ_OLD, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE, TYPE_QZ_APP -> "qz"
         TYPE_QZ_IEAS -> "qz"
         TYPE_UCAS -> "other"

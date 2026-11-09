@@ -23,10 +23,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.ui.component.SettingsLayout
 import com.lingion.sleepy.R
-import com.lingion.sleepy.ui.theme.SleepyTheme
 
 /**
  * 设计 §6: widget 编辑页「滚动方式」节 — 强制滚动(实验) 本实例一档 (per-widget)。
@@ -48,10 +47,10 @@ object WidgetEditScrollSection : WidgetEditSection {
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = stringResource(titleRes),
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                style = SettingsLayout.headingStyle,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Spacer(modifier = Modifier.padding(top = 8.dp))
+            Spacer(modifier = Modifier.padding(top = SettingsLayout.headerGap))
             Surface(
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)),
                 color = MaterialTheme.colorScheme.surfaceContainer,
@@ -64,10 +63,11 @@ object WidgetEditScrollSection : WidgetEditSection {
                             if (scope.scrollEnabled) scope.onScrollEnabledChange(false)
                             else showConfirm = true
                         }
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(SettingsLayout.cardInset),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(SettingsLayout.controlGap)
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
                         Text(
                             text = stringResource(R.string.widget_scroll_dialog_title),
                             style = MaterialTheme.typography.bodyLarge,

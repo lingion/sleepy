@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="jw_dated_calendar_required">The page provides lesson dates but no confirmed semester start. Enter a date in week one. Weeks will be calculated from that Monday. The selected timetable range will not be treated as week one.</string>
+    <string name="jw_dated_calendar_rebase_hint">Changing the date for week one recalculates course weeks and preserves the actual lesson dates.</string>
+</resources>

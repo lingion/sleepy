@@ -6,20 +6,19 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.ExpandMore
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import com.lingion.sleepy.ui.component.liquidglass.GlassSwitch as Switch
@@ -55,11 +54,10 @@ import com.lingion.sleepy.ui.theme.noRippleClickable
 @Composable
 fun SectionHeader(title: String, subtitle: String? = null) {
     val colors = MaterialTheme.colorScheme
-    Column(Modifier.fillMaxWidth().padding(top = 8.dp)) {
-        Text(title, style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold), color = colors.onBackground)
-        if (subtitle != null) {
-            Spacer(Modifier.height(2.dp))
-            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
+        Text(title, style = SettingsLayout.headingStyle, color = colors.onBackground)
+        if (!subtitle.isNullOrBlank()) {
+            Text(subtitle, style = SettingsLayout.descriptionStyle, color = colors.onSurfaceVariant)
         }
     }
 }
@@ -83,11 +81,15 @@ fun SettingsCard(
     Column(
         modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).glassSurfaceBackground(colors.surfaceContainer, SleepyTheme.shapes.large).noRippleClickable(onToggle)
             .then(dbg?.let { Modifier.dbgTag(it, text = title, role = "button") } ?: Modifier)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+            .padding(horizontal = SettingsLayout.cardInset),
+        verticalArrangement = Arrangement.Top
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(text = title, style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold), color = colors.onSurface, modifier = Modifier.weight(1f))
+        Row(
+            modifier = Modifier.fillMaxWidth().heightIn(min = SettingsLayout.minRowHeight).padding(vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(text = title, style = SettingsLayout.headingStyle, color = colors.onSurface, modifier = Modifier.weight(1f))
             // 箭头随展开旋转, 与内容动画同拍
             Icon(
                 imageVector = Icons.Outlined.ExpandMore,
@@ -106,8 +108,7 @@ fun SettingsCard(
             enter = expandSpecs.enter,
             exit = expandSpecs.exit,
         ) {
-            Column {
-                Spacer(modifier = Modifier.height(4.dp))
+            Column(Modifier.padding(top = SettingsLayout.headerGap, bottom = SettingsLayout.cardInset)) {
                 content()
             }
         }
@@ -115,8 +116,7 @@ fun SettingsCard(
 }
 
 /**
- * 平铺设置卡(不折叠) — 标题行右侧内嵌课表页同款 SegmentedSwitcher(用户 2026-09-03 指令:
- * 整块圆角矩形 + 色块在元素上滑动, 和标题同一行非必要不换行)。
+ * 平铺设置卡：空间足够时标题与选项同行；窄屏或大字体时选项换行，极长选项改为单选行。
  * 用于内容为纯选项选择或单个开关的设置项; 有滑杆/多段逻辑的仍用 SettingsCard 折叠。
  * options 为空 = 单开关卡, 由 content 自行露出开关。
  */
@@ -133,45 +133,64 @@ fun SettingsFlatCard(
 ) {
     val colors = MaterialTheme.colorScheme
     Column(
-        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).glassSurfaceBackground(colors.surfaceContainer, SleepyTheme.shapes.large).padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large)
+            .glassSurfaceBackground(colors.surfaceContainer, SleepyTheme.shapes.large)
+            .padding(horizontal = SettingsLayout.cardInset, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(SettingsLayout.headerGap),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // 标题 weight(1f) 吃满剩余宽 → tab 永远贴本行最右(与开关行贴右同一逻辑)
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                color = colors.onSurface,
-                modifier = Modifier.weight(1f)
-            )
-            if (options.isNotEmpty()) {
-                // tab 宽 = n × 最宽段文字 + 段内边距(16dp×2) + 容器内边距(4dp×2)。
-                // 禁用 IntrinsicSize.Min: CJK 的 minIntrinsicWidth 是单字宽, 配 weight(1f) 会把
-                // 每段压到一个汉字宽导致全部换行 —— 必须用 TextMeasurer 实测宽度。
-                val density = LocalDensity.current
-                val textMeasurer = rememberTextMeasurer()
-                val labelStyle = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
-                val maxLabelPx = options.maxOf { textMeasurer.measure(AnnotatedString(it), labelStyle).size.width }
-                val tabWidth = with(density) {
-                    ((maxLabelPx + 32.dp.toPx()) * options.size + 8.dp.toPx()).toDp()
+        BoxWithConstraints(Modifier.fillMaxWidth()) {
+            val density = LocalDensity.current
+            val measurer = rememberTextMeasurer()
+            val titleStyle = SettingsLayout.headingStyle
+            val labelStyle = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
+            val labelSizes = options.map { measurer.measure(AnnotatedString(it), labelStyle).size }
+            val tabWidth = with(density) {
+                ((labelSizes.maxOfOrNull { it.width } ?: 0).toDp() + 32.dp) * options.size + 8.dp
+            }
+            val titleWidth = with(density) { measurer.measure(AnnotatedString(title), titleStyle).size.width.toDp() }
+            val controlHeight = with(density) {
+                // Compact visual track; the surrounding row still reserves 48dp.
+                ((labelSizes.maxOfOrNull { it.height } ?: 0).toDp() + 16.dp).coerceAtLeast(36.dp)
+            }
+            val inline = options.isNotEmpty() && titleWidth + SettingsLayout.controlGap + tabWidth <= maxWidth
+            val choices: @Composable (Modifier) -> Unit = { modifier ->
+                if (tabWidth <= maxWidth) {
+                    SegmentedSwitcher(
+                        options = options.mapIndexed { i, label -> i to label },
+                        selected = selectedKey,
+                        onSelect = onSelect,
+                        modifier = modifier.height(controlHeight),
+                        containerColor = colors.surfaceContainerHighest,
+                        dbgTagPrefix = dbg,
+                    )
+                } else {
+                    // Long translations / large fonts must remain readable and selectable.
+                    Column(Modifier.fillMaxWidth()) {
+                        options.forEachIndexed { index, label ->
+                            DisplayModeOption(label, "", index == selectedKey, { onSelect(index) },
+                                dbg = dbg?.let { "$it#$index" })
+                        }
+                    }
                 }
-                SegmentedSwitcher(
-                    options = options.mapIndexed { i, label -> i to label },
-                    selected = selectedKey,
-                    onSelect = onSelect,
-                    // 高度 36dp: 介于开关本体(32)与组件默认(42)之间 — 轨道不挤, 行高仍与开关行一致
-                    modifier = Modifier.width(tabWidth).height(36.dp),
-                    containerColor = colors.surfaceContainerHighest,
-                    dbgTagPrefix = dbg,
-                )
+            }
+            if (inline) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().heightIn(min = SettingsLayout.minRowHeight),
+                    horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(title, style = titleStyle, color = colors.onSurface, modifier = Modifier.weight(1f))
+                    choices(Modifier.width(tabWidth))
+                }
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(SettingsLayout.headerGap)) {
+                    Text(title, style = titleStyle, color = colors.onSurface)
+                    if (options.isNotEmpty()) choices(Modifier.fillMaxWidth())
+                }
             }
         }
-        if (subtitle != null) {
-            Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+        if (!subtitle.isNullOrBlank()) {
+            Text(text = subtitle, style = SettingsLayout.descriptionStyle, color = colors.onSurfaceVariant)
         }
         content()
     }
@@ -196,11 +215,11 @@ fun DisplayModeOption(
     )
     Row(modifier = Modifier.fillMaxWidth().noRippleGlassClickable(onClick)
         .then(dbg?.let { Modifier.dbgTag(it, text = label, role = "radio") } ?: Modifier)
-        .padding(vertical = 10.dp, horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = label, style = MaterialTheme.typography.bodyLarge, color = labelColor)
-            if (subtitle.isNotEmpty()) {
-                Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+        .heightIn(min = SettingsLayout.minRowHeight).padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap), verticalAlignment = Alignment.CenterVertically) {
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
+            Text(text = label, style = SettingsLayout.itemStyle, color = labelColor)
+            if (subtitle.isNotBlank()) {
+                Text(text = subtitle, style = SettingsLayout.descriptionStyle, color = colors.onSurfaceVariant)
             }
         }
         AnimatedVisibility(
@@ -225,11 +244,11 @@ fun SettingToggleRow(
     dbg: String? = null,
 ) {
     val colors = MaterialTheme.colorScheme
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = label, style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
-            if (subtitle != null) {
-                Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+    Row(modifier = Modifier.fillMaxWidth().heightIn(min = SettingsLayout.minRowHeight).padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap), verticalAlignment = Alignment.CenterVertically) {
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
+            Text(text = label, style = SettingsLayout.itemStyle, color = colors.onSurface)
+            if (!subtitle.isNullOrBlank()) {
+                Text(text = subtitle, style = SettingsLayout.descriptionStyle, color = colors.onSurfaceVariant)
             }
         }
         Switch(checked = checked, onCheckedChange = onCheckedChange,

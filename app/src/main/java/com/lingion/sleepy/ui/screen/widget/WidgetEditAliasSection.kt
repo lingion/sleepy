@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
@@ -20,10 +19,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.ui.component.SettingsLayout
 import com.lingion.sleepy.R
-import com.lingion.sleepy.ui.theme.SleepyTheme
 
 /**
  * issue#26 课程别名 — widget 编辑页「课程名显示」节。
@@ -41,10 +39,10 @@ object WidgetEditAliasSection : WidgetEditSection {
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = stringResource(titleRes),
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                style = SettingsLayout.headingStyle,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Spacer(modifier = Modifier.padding(top = 8.dp))
+            Spacer(modifier = Modifier.padding(top = SettingsLayout.headerGap))
             Surface(
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)),
                 color = MaterialTheme.colorScheme.surfaceContainer,
@@ -78,7 +76,8 @@ object WidgetEditAliasSection : WidgetEditSection {
                     else MaterialTheme.colorScheme.surfaceContainer
                 )
                 .padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(SettingsLayout.controlGap)
         ) {
             Text(
                 text = label,

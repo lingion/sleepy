@@ -16,7 +16,7 @@ object JwFetchProtocol {
         // ① 显式 type 优先
         when (school.type) {
             JwProtocol.TYPE_WISEDU -> if (u.contains("/jwapp/")) return FetchKind.WISEDU
-            JwProtocol.TYPE_ZF_NEW -> if (u.contains("/jwglxt/") || WEBVPN_HTTP_HEX.containsMatchIn(u)) {
+            JwProtocol.TYPE_ZF_NEW -> if (u.contains("/jwglxt/") || u.contains("/kbcx/") || WEBVPN_HTTP_HEX.containsMatchIn(u)) {
                 return FetchKind.ZF_NEW
             }
             JwProtocol.TYPE_QZ_IEAS -> return FetchKind.QZ_IEAS
@@ -30,7 +30,7 @@ object JwFetchProtocol {
         // ② type 未命中但 URL 路径指纹命中
         if (u.contains("/jwapp/")) return FetchKind.WISEDU
         if (u.contains("/ieas2.1/") || u.contains("jwxt.buaa.edu.cn")) return FetchKind.QZ_IEAS
-        if (u.contains("/jwglxt/") || WEBVPN_HTTP_HEX.containsMatchIn(u)) return FetchKind.ZF_NEW
+        if (u.contains("/jwglxt/") || u.contains("/kbcx/") || WEBVPN_HTTP_HEX.containsMatchIn(u)) return FetchKind.ZF_NEW
         if (school.enableFetch && u.contains("/jsxsd/")) return FetchKind.QZ
         return null
     }

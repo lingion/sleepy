@@ -30,21 +30,17 @@ import org.jsoup.Jsoup
  *        nodeBits    = timeBinary[-12:][::-1]        // 12 bit 节次位图, 位 i=1 -> 第 i+1 节
  *
  *    dayBits 到星期 1..7 的映射采用 ldiex 原仓 hardcode 字典 (POSITIVE 证据),
- *    不发明新编码。 节次位图解析后取最小与最大节次作为 startNode / endNode。
+ *    不发明新编码。节次位图仅合并相邻节次，不填补离散节次之间的空洞。
  *
  * 3. **HTML 网格路径 (fallback)**: 服务端渲染的个人课表页面 `/course/personSchedule`。
  *    表头 `节次/星期`, `tbody > tr > th` 是节次号, `td` 中 `a[href*=/course/coursetime/]`
- *    是课程名。当既无详情数据也无 JSON 时按当前学期 1-16 周占位导入 (provisional 常量)。
+ *    是课程名。网格未提供周次，必须与详情数据匹配后才产生课程。
  *
  * 三条路径的 confidence 特征在 [confidence] / [matchedFeatures] 上是独立的:
  * 命中任一即 confidence >= 90。
  */
 class JwUcasParser(source: String) : JwParser(source) {
     companion object {
-        /** HTML 网格路径无详情数据时的占位周次 (v1.2 采集包已证实详情页才是权威来源) */
-        const val PROVISIONAL_START_WEEK = 1
-        const val PROVISIONAL_END_WEEK = 16
-
         /**
          * 组合源里详情页段的分段标记。[UcasDetailFetch] 把网格 HTML 与逐课详情页
          * 拼成一个 source 喂给本 parser; 解析器按标记切段, 标记里的 URL 仅信息性。
@@ -120,10 +116,7 @@ class JwUcasParser(source: String) : JwParser(source) {
 
         /** "星期二： 第3、4节。" → 星期/节次列表 */
         private val DETAIL_TIME_RE =
-            Regex("""星期\s*([一二三四五六日天])\s*[：:]\s*第?\s*([\d、，,\s\-–—~至]+?)\s*节""")
-
-        /** "课程名称：X" (名字到下一个标签为止) */
-        private val DETAIL_NAME_RE = Regex("""课程名称\s*[：:]\s*([^<\r\n]+?)\s*<""")
+            Regex("""^星期\s*([一二三四五六日天])\s*[：:]\s*第?\s*([\d、，,\s\-–—~至]+?)\s*节[。.]?$""")
 
         /** HTML 注释 (名字提取前先剥, 防注释文本带 课程名称： 误命中) */
         private val HTML_COMMENT_RE = Regex("<!--.*?-->", RegexOption.DOT_MATCHES_ALL)
@@ -137,16 +130,33 @@ class JwUcasParser(source: String) : JwParser(source) {
          */
         internal fun parseNumberList(text: String): List<Int> {
             val out = mutableListOf<Int>()
-            for (m in NUM_TOKEN.findAll(text)) {
-                val a = m.groupValues[1].toIntOrNull() ?: continue
-                val b = m.groupValues[2].toIntOrNull()
-                if (b == null) {
-                    out += a
-                } else {
-                    for (w in a..b) out += w
-                }
+            for (token in text.split('、', '，', ',')) {
+                val m = NUM_TOKEN.matchEntire(token.trim()) ?: return emptyList()
+                val a = m.groupValues[1].toIntOrNull() ?: return emptyList()
+                val b = m.groupValues[2].ifEmpty { m.groupValues[1] }.toIntOrNull() ?: return emptyList()
+                // Bound expansion independently of the school's semester configuration.
+                if (a !in 1..366 || b !in a..366) return emptyList()
+                out += a..b
             }
-            return out
+            return out.distinct().sorted()
+        }
+
+        private fun nodeSegments(nodes: List<Int>): List<Pair<Int, Int>> {
+            if (nodes.isEmpty() || nodes.any { it !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND }) return emptyList()
+            val result = mutableListOf<Pair<Int, Int>>()
+            for (node in nodes.distinct().sorted()) {
+                val last = result.lastOrNull()
+                if (last != null && node == last.second + 1) result[result.lastIndex] = last.first to node
+                else result += node to node
+            }
+            return result
+        }
+
+        internal fun parseDetailPages(html: String): List<DetailPage> {
+            val doc = Jsoup.parse(html)
+            val panels = doc.select(".mc-body")
+            return if (panels.isEmpty()) listOfNotNull(parseDetailPage(html))
+            else panels.mapNotNull { parseDetailPage(it.outerHtml()) }
         }
 
         /**
@@ -192,7 +202,9 @@ class JwUcasParser(source: String) : JwParser(source) {
             val doc = Jsoup.parse(html)
             // 课程名称两种实测/宽容形态: ① 真实页 <p>课程名称：X</p> (标签+名同一文本节点);
             // ② 宽容兼容 th/td 分离行 (课程名称 | X)
-            val name = DETAIL_NAME_RE.find(HTML_COMMENT_RE.replace(html, ""))?.groupValues?.get(1)?.trim()?.takeIf { it.isNotBlank() }
+            val name = doc.select("p").firstNotNullOfOrNull { paragraph ->
+                Regex("""^课程名称\s*[：:]\s*(.+)$""").matchEntire(paragraph.text().trim())?.groupValues?.get(1)?.trim()
+            }
                 ?: doc.select("tr").firstNotNullOfOrNull { tr ->
                     if (tr.selectFirst("th")?.text()?.trim() == LABEL_NAME) {
                         tr.selectFirst("td")?.text()?.trim()
@@ -215,19 +227,16 @@ class JwUcasParser(source: String) : JwParser(source) {
                         pendingDay = m?.let { DAY_NAMES[it.groupValues[1]] } ?: 0
                         pendingNodes = nodes
                         pendingRoom = ""
-                        pendingValid = pendingDay > 0 && nodes.isNotEmpty()
+                        pendingValid = pendingDay > 0 && nodeSegments(nodes).isNotEmpty()
                     }
                     LABEL_PLACE -> if (pendingValid) pendingRoom = td
                     LABEL_WEEKS -> {
                         if (pendingValid) {
                             val weeks = parseNumberList(td).filter { it > 0 }
                             if (weeks.isNotEmpty() && pendingNodes.isNotEmpty()) {
-                                blocks += DetailBlock(
-                                    day = pendingDay,
-                                    startNode = pendingNodes.first(),
-                                    endNode = pendingNodes.last(),
-                                    room = pendingRoom,
-                                    weeks = weeks
+                                for ((first, last) in nodeSegments(pendingNodes)) blocks += DetailBlock(
+                                    day = pendingDay, startNode = first, endNode = last,
+                                    room = pendingRoom, weeks = weeks,
                                 )
                             }
                         }
@@ -245,6 +254,7 @@ class JwUcasParser(source: String) : JwParser(source) {
     }
 
     override fun confidence(): Int = when {
+        parseDetailPages(source).isNotEmpty() -> 100
         // JSON 路径: courseTimeList 列表 + selectedCourse 学期索引同时出现
         source.contains("\"courseTimeList\"") &&
             source.contains("\"selectedCourse\"") -> 95
@@ -255,6 +265,7 @@ class JwUcasParser(source: String) : JwParser(source) {
     }
 
     override fun matchedFeatures(): List<String> = buildList {
+        if (parseDetailPages(source).isNotEmpty()) add("ucas:explicit-detail")
         if (source.contains("\"courseTimeList\"")) add("json:courseTimeList")
         if (source.contains("\"selectedCourse\"")) add("json:selectedCourse")
         if (source.contains("个人课表")) add("title:个人课表")
@@ -280,10 +291,10 @@ class JwUcasParser(source: String) : JwParser(source) {
             val weeks = decodeWeeks(weekInt)
             if (weeks.isEmpty()) continue
             val decodedTime = decodeTime(timeInt) ?: continue
-            val (day, startNode, endNode) = decodedTime
+            val (day, nodes) = decodedTime
 
             // 位图周次集合 → 可表示周次段; 带洞集合拆多段, 禁 first..last 有损合并
-            for (run in splitWeekRuns(weeks)) {
+            for ((startNode, endNode) in nodeSegments(nodes)) for (run in splitWeekRuns(weeks)) {
                 result += JwCourse(
                     name = name,
                     room = place,
@@ -305,8 +316,9 @@ class JwUcasParser(source: String) : JwParser(source) {
      *   B. 单课文档: 顶层 courseTimeList 或嵌套 data 字段
      */
     private fun extractCourseTimeList(raw: String): JSONArray? {
-        val trimmed = raw.trim()
+        val trimmed = HTML_COMMENT_RE.replace(raw, "").trim()
         if (trimmed.isEmpty()) return null
+        if (trimmed.startsWith('[')) return runCatching { JSONArray(trimmed) }.getOrNull()
         // 跳过前导 HTML 注释 / 空白, 找首个 '{' 或 '[' 真正 JSON 起点
         // 优先 '{' — 顶层对象更常见, 避开注释里 `[2:]` 这类方括号误命中
         val objStart = trimmed.indexOf('{')
@@ -354,7 +366,7 @@ class JwUcasParser(source: String) : JwParser(source) {
      * courseTime 整数 → (day, startNode, endNode)。解码规则见 class kdoc。
      * 返回 null 表示 dayBits 不在 [DAY_BITS] 内 (ldiex 字典 hardcode), 数据异常。
      */
-    private fun decodeTime(timeInt: Int): Triple<Int, Int, Int>? {
+    private fun decodeTime(timeInt: Int): Pair<Int, List<Int>>? {
         if (timeInt <= 0) return null
         val binary = java.lang.Integer.toBinaryString(timeInt)
         if (binary.length <= 12) return null
@@ -367,7 +379,7 @@ class JwUcasParser(source: String) : JwParser(source) {
             if (c == '1') nodes += idx + 1
         }
         if (nodes.isEmpty()) return null
-        return Triple(day, nodes.first(), nodes.last())
+        return day to nodes
     }
 
     /**
@@ -383,59 +395,60 @@ class JwUcasParser(source: String) : JwParser(source) {
      * HTML 路径: 服务端课表网格 + (可选) 组合源里的详情页段。
      *
      * 网格定位 (课程名 × 星期 × 节次) 是权威; 详情块仅 enrich 周次/教室,
-     * 不会凭详情造网格里没有的课。没有详情段时整体回退 1-16 占位。
+     * 不会凭详情造网格里没有的课。没有详情段时不推测周次。
+     * 单独的详情页按自身明确的课程安排导入。
      */
     private fun parseHtml(): List<JwCourse> {
         val table = Jsoup.parse(source).select("table").firstOrNull { table ->
             table.select("thead th").any { it.text().contains("节次/星期") } &&
                 table.select("a[href*=/course/coursetime/]").isNotEmpty()
-        } ?: return emptyList()
+        } ?: return parseDetailPages(source).flatMap { page -> page.blocks.flatMap { block ->
+            splitWeekRuns(block.weeks).map { run -> JwCourse(page.courseName, block.room, "", block.day,
+                block.startNode, block.endNode, run.startWeek, run.endWeek, run.type) }
+        } }.distinct()
 
         // 平铺网格格子 → (name, day, node); 同格同名去重由 distinct 完成
-        val entries = mutableListOf<Triple<String, Int, Int>>()
+        data class Entry(val name: String, val id: String, val day: Int, val node: Int)
+        val idPattern = Regex("""/course/coursetime/(\d+)""")
+        val entries = mutableListOf<Entry>()
         table.select("tbody tr").forEach { row ->
             val node = row.selectFirst("th")?.text()?.trim()?.toIntOrNull() ?: return@forEach
+            if (node !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND) return@forEach
             row.select("> td").forEachIndexed { index, cell ->
                 val day = index + 1
-                cell.select("a[href*=/course/coursetime/]").map { it.text().trim() }
-                    .filter { it.isNotBlank() }.distinct().forEach { name ->
-                        entries += Triple(name, day, node)
+                if (day in 1..7) cell.select("a[href*=/course/coursetime/]").forEach { link ->
+                    val name = link.text().trim()
+                    val id = idPattern.find(link.attr("href"))?.groupValues?.get(1)
+                    if (name.isNotEmpty() && id != null) entries += Entry(name, id, day, node)
                     }
             }
         }
 
         // 详情段 → 页面模型, 平铺成 (课程名, 块) 列表 (网格链接文本与详情页 课程名称 同源)
-        val allBlocks = detailSections(source)
-            .mapNotNull { parseDetailPage(it) }
-            .flatMap { page -> page.blocks.map { page.courseName to it } }
+        data class NamedBlock(val name: String, val id: String, val block: DetailBlock)
+        val allBlocks = DETAIL_SECTION_RE.findAll(source).flatMap { section ->
+            val id = idPattern.find(section.groupValues[1])?.groupValues?.get(1).orEmpty()
+            parseDetailPages(section.groupValues[2]).flatMap { page ->
+                page.blocks.map { NamedBlock(page.courseName, id, it) }
+            }.asSequence()
+        }.toList()
 
-        // 每个 (name, day, node) 找第一个 (同名 + 同日 + 节次落块区间) 的详情块;
-        // 分组键带块身份 → 同一块命中的相邻格子自然共享周次, 后续按组合并节次
-        fun blockIndexFor(name: String, day: Int, node: Int): Int? {
-            allBlocks.forEachIndexed { i, (bname, b) ->
-                if (bname == name && b.day == day && node in b.startNode..b.endNode) return i
-            }
-            return null
-        }
-
-        val grouped = entries.groupBy { (name, day, node) ->
-            Triple(name, day, blockIndexFor(name, day, node))
-        }
+        // Each matching arrangement keeps its own weeks and room, including repeated slots.
+        val grouped = entries.distinct().flatMap { entry ->
+            allBlocks.indices.filter { index ->
+                val b = allBlocks[index]
+                b.id == entry.id && b.name == entry.name && b.block.day == entry.day && entry.node in b.block.startNode..b.block.endNode
+            }.map { Triple(entry.name, entry.day, it) to entry.node }
+        }.groupBy({ it.first }, { it.second })
         val result = mutableListOf<JwCourse>()
         for ((key, group) in grouped) {
             val (name, day, blockIdx) = key
-            val block = blockIdx?.let { allBlocks[it].second }
-            val room = block?.room.orEmpty()
-            val runs = block?.weeks?.let { splitWeekRuns(it) }
-                ?: listOf(WeekRun(PROVISIONAL_START_WEEK, PROVISIONAL_END_WEEK, TYPE_DEFAULT))
+            val block = allBlocks[blockIdx].block
+            val room = block.room
+            val runs = splitWeekRuns(block.weeks)
 
             // 同组内相邻节次合并 (10,11 → 10-11)
-            val segments = mutableListOf<Pair<Int, Int>>()
-            for (n in group.map { it.third }.sorted()) {
-                val last = segments.lastOrNull()
-                if (last != null && n == last.second + 1) segments[segments.lastIndex] = last.first to n
-                else segments += n to n
-            }
+            val segments = nodeSegments(group)
             for (seg in segments) {
                 for (run in runs) {
                     result += JwCourse(
@@ -451,7 +464,7 @@ class JwUcasParser(source: String) : JwParser(source) {
                 }
             }
         }
-        return result
+        return result.distinct()
     }
 
     /** 详情页解析模型: 课程名 + 时间/地点/周次块列表 */
@@ -470,5 +483,5 @@ class JwUcasParser(source: String) : JwParser(source) {
     internal data class WeekRun(val startWeek: Int, val endWeek: Int, val type: Int)
 
     private fun JSONObject.optIntOrNull(key: String): Int? =
-        if (!has(key) || isNull(key)) null else optInt(key)
+        if (!has(key) || isNull(key)) null else optString(key, "").trim().toIntOrNull()
 }

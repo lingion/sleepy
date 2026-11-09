@@ -1,5 +1,6 @@
 package com.lingion.sleepy.data.jw
 
+import org.jsoup.Jsoup
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
@@ -43,25 +44,21 @@ class JwChaoxingParser(source: String) : JwParser(source) {
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
     /** 剥离 <a href=.. onclick=..>名字</a> 等标签，留纯文本（班级表接口形态） */
-    private fun stripHtml(s: String): String =
-        if (s.contains('<')) s.replace(Regex("<[^>]*>"), "").trim() else s.trim()
+    private fun stripHtml(s: String): String = Jsoup.parseBodyFragment(s).text().trim()
 
-    /** 周次串 → 连续段列表（1..16 逗号/区间/混合形态） */
+    /** Invalid explicit coordinates must not become a partially invented schedule. */
     private fun expandWeeks(zcstr: String): List<Int> {
-        val weeks = mutableSetOf<Int>()
+        if (zcstr.isBlank()) return emptyList()
+        val weeks = sortedSetOf<Int>()
         for (part in zcstr.split(',', '，')) {
-            val t = part.trim()
-            if (t.isEmpty()) continue
-            if (t.contains('-') || t.contains('～') || t.contains('~')) {
-                val se = t.split('-', '～', '~').map { it.trim().toIntOrNull() }
-                if (se.size == 2 && se[0] != null && se[1] != null && se[0]!! <= se[1]!!) {
-                    for (w in se[0]!!..se[1]!!) weeks.add(w)
-                }
-            } else {
-                t.toIntOrNull()?.let { weeks.add(it) }
-            }
+            val match = Regex("""([0-9]+)(?:\s*[-～~]\s*([0-9]+))?""").matchEntire(part.trim())
+                ?: return emptyList()
+            val first = match.groupValues[1].toIntOrNull() ?: return emptyList()
+            val last = match.groupValues[2].ifEmpty { match.groupValues[1] }.toIntOrNull() ?: return emptyList()
+            if (first <= 0 || last < first || last > 366) return emptyList()
+            weeks.addAll(first..last)
         }
-        return weeks.sorted()
+        return weeks.toList()
     }
 
     /** 周次列表 → 连续段 [(startWeek, endWeek, type)]，口径与 [JwWiseduParser.weekRuns] 一致：
@@ -118,6 +115,8 @@ class JwChaoxingParser(source: String) : JwParser(source) {
                 ?: str("rqxl").toIntOrNull()?.let { if (it > 99) it % 100 else it }
                 ?: continue
 
+            if (node <= 0) continue
+
             val weeks = expandWeeks(str("zcstr"))
             if (weeks.isEmpty()) continue
 
@@ -129,41 +128,29 @@ class JwChaoxingParser(source: String) : JwParser(source) {
             )
         }
 
-        // 合并: 按 (课名,星期,教师) 分组 → 节号连续段拉通, 周次取并集, 同节多教室
-        // 用 "/" 连接。必要性 (闽江师范 2026-09-30 采集实锤): 同一节因按周次换教室
-        // 返回多行、各带不同周次串与教室 (如 5..15 周 A 室 + 17,19 周 B 室);
-        // 若按 (含周次或含教室) 的行分组, 同一节会渲染成两张重叠课程卡。
-        data class Key(val name: String, val day: Int, val teacher: String)
+        // Keep each week's node set attached to the teacher and room supplied by that row.
+        // Taking independent unions of weeks and nodes would create a Cartesian product.
+        data class Key(val name: String, val day: Int, val teacher: String, val room: String)
         val result = mutableListOf<JwCourse>()
-        for ((key, group) in parsed.groupBy { Key(it.name, it.day, it.teacher) }) {
-            val weeks = group.flatMap { it.weeks }.distinct().sorted()
-            val roomsByNode = group.groupBy { it.node }
-                .mapValues { (_, g) -> g.map { it.room }.filter { it.isNotBlank() }.distinct().joinToString("/") }
-            val nodes = group.map { it.node }.distinct().sorted()
-            var start = nodes.first()
-            var prev = nodes.first()
-            val blocks = mutableListOf<Pair<Int, Int>>()
-            for (n in nodes.drop(1)) {
-                if (n == prev + 1) prev = n
-                else {
-                    blocks += start to prev
-                    start = n; prev = n
+        for ((key, group) in parsed.groupBy { Key(it.name, it.day, it.teacher, it.room) }) {
+            val nodesByWeek = sortedMapOf<Int, java.util.SortedSet<Int>>()
+            for (row in group) for (week in row.weeks)
+                nodesByWeek.getOrPut(week) { sortedSetOf() }.add(row.node)
+            for ((nodes, entries) in nodesByWeek.entries.groupBy { it.value.toList() }) {
+                val weeks = entries.map { it.key }.sorted()
+                val blocks = mutableListOf<Pair<Int, Int>>()
+                for (node in nodes) {
+                    val previous = blocks.lastOrNull()
+                    if (previous != null && node == previous.second + 1)
+                        blocks[blocks.lastIndex] = previous.first to node
+                    else blocks += node to node
                 }
-            }
-            blocks += start to prev
-            for ((bs, be) in blocks) {
-                val room = (bs..be).mapNotNull { roomsByNode[it]?.takeIf { r -> r.isNotEmpty() } }
-                    .distinct().joinToString("/")
-                // 周次段: 并集展开后可能多段 (非连续周次, 如 1-3周 + 8-9周)
-                for ((sw, ew, type) in weekRuns(weeks)) {
-                    result.add(
-                        JwCourse(
-                            name = key.name, room = room, teacher = key.teacher,
-                            day = key.day, startNode = bs, endNode = be,
-                            startWeek = sw, endWeek = ew,
-                            type = type
-                        )
-                    )
+                for ((first, last) in blocks) for ((sw, ew, type) in weekRuns(weeks)) {
+                    result.add(JwCourse(
+                        name = key.name, room = key.room, teacher = key.teacher,
+                        day = key.day, startNode = first, endNode = last,
+                        startWeek = sw, endWeek = ew, type = type,
+                    ))
                 }
             }
         }

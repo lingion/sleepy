@@ -14,7 +14,7 @@ import java.net.URL
  * 也因此被迫走 tab 导航)。但详情页**免登录** (issue #18 v1.2 采集包实测:
  * 无 cookie 直连 200 + 完整周次数据), 所以原生 HTTP 直抓即可, 无须会话凭证。
  *
- * 用法: 网格 HTML 进, 组合源出。任何失败降级返回原 HTML (parser 回退 1-16 占位)。
+ * 用法: 网格 HTML 进，完整课程详情组合源出。任一失败交给导入界面处理。
  */
 object UcasDetailFetch {
 
@@ -26,25 +26,28 @@ object UcasDetailFetch {
 
     /**
      * 主入口: 网格 HTML → 逐课抓详情 → 拼组合源。
-     * 全部成功才拼详情; 任一失败只拼成功的部分; 全失败返回原网格 HTML。
+     * 全部详情有明确课程安排后才返回组合源，不把失败页面当成空课表。
      */
     suspend fun enrich(gridHtml: String): String = withContext(Dispatchers.IO) {
+        enrichWith(gridHtml) { fetchOne(it) }
+    }
+
+    internal suspend fun enrichWith(gridHtml: String, fetch: suspend (String) -> String): String {
         val urls = try {
             JwUcasParser.extractDetailUrls(gridHtml)
         } catch (e: Exception) {
             emptyList()
         }
-        if (urls.isEmpty()) return@withContext gridHtml
+        if (urls.isEmpty()) return gridHtml
+        if (urls.size > MAX_DETAILS) throw IOException("课程详情数量超过单次导入上限，无法完整导入")
 
         val details = mutableListOf<Pair<String, String>>()
-        for (url in urls.take(MAX_DETAILS)) {
-            try {
-                details += url to fetchOne(url)
-            } catch (e: Exception) {
-                // 单页失败跳过, 其余页照常 enrich; 该课落 1-16 占位
-            }
+        for (url in urls) {
+            val html = fetch(url)
+            if (JwUcasParser.parseDetailPages(html).isEmpty()) throw IOException("课程详情未提供完整上课安排，请重新进入课表页后重试")
+            details += url to html
         }
-        if (details.isEmpty()) gridHtml else combine(gridHtml, details)
+        return combine(gridHtml, details)
     }
 
     /** 纯函数: 网格 + (url, html) 列表 → 带 [JwUcasParser.DETAIL_MARKER_OPEN] 分段的组合源 */
@@ -62,7 +65,7 @@ object UcasDetailFetch {
         }
     }
 
-    /** 抓单个详情页; 非 200 / IO 异常抛出, 由调用方按页吞掉 */
+    /** 抓单个详情页；非 200 或 IO 异常使本次采集失败。 */
     private fun fetchOne(url: String): String {
         val conn = (URL(url).openConnection() as HttpURLConnection).apply {
             connectTimeout = CONNECT_TIMEOUT_MS

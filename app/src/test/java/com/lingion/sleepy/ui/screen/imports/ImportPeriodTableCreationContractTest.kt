@@ -64,8 +64,29 @@ class ImportPeriodTableCreationContractTest {
     @Test
     fun newImportTransactionIncludesAllRowsBeforeRefresh() {
         val src = loadSource("data/repository/ScheduleRepository.kt")
-        assertTrue(src.contains("override suspend fun atomic(block: suspend () -> Long): Long = db.withTransaction { block() }"))
+        val atomic = balancedBlock(src, "override suspend fun atomic(block: suspend () -> Long): Long = db.withTransaction {")
+        assertTrue(atomic.contains("requireImportPeriodCoverage(courses, bound?.timeJson ?: periodTable?.timeJson ?: table.timeJson)"))
+        assertTrue(atomic.indexOf("requireImportPeriodCoverage(") < atomic.indexOf("block()"))
         val body = src.substringAfter("suspend fun importNewTable(").substringBefore("/** Reminder settings")
         assertTrue(body.indexOf("importNewTableAtomically(") < body.indexOf("onDataChanged()"))
+    }
+
+    @Test
+    fun appendValidatesAcceptedCoursesBeforeUndoOrWritesAndKeepsSharedSchedule() {
+        val src = loadSource("data/repository/ScheduleRepository.kt")
+        val append = balancedBlock(src, "internal suspend fun appendImportedCourses(")
+        assertTrue(append.contains("CourseImportPolicy.timeJsonForAppend("))
+        assertTrue(append.indexOf("requireImportPeriodCoverage(accepted, extended)") > append.indexOf("selectIncoming("))
+        assertTrue(append.indexOf("requireImportPeriodCoverage(accepted, extended)") < append.indexOf("captureForUndo()"))
+        assertTrue(!append.contains("periodTableDao.update("))
+        val sheet = loadSource("ui/screen/imports/ImportSheet.kt")
+        val apply = balancedBlock(sheet, "internal suspend fun applyCourseImport(")
+        assertTrue(apply.indexOf("firstMissingCourseNode(") < apply.indexOf("repo.appendImportedCourses("))
+        assertTrue(apply.contains("R.string.slot_time_required, missingNode"))
+        val confirm = sheet.substringAfter("private fun ImportConfirmDialog(")
+            .substringBefore("private suspend fun buildImportPreview(")
+        assertTrue(confirm.contains("firstMissingCourseNode(parseResult.courses, effectiveRows)"))
+        val academic = loadSource("ui/screen/imports/JwImportActivity.kt")
+        assertTrue(academic.contains("getString(R.string.slot_time_required, missingNode)"))
     }
 }

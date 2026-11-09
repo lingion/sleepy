@@ -48,8 +48,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.ui.component.SettingsLayout
+import com.lingion.sleepy.ui.component.settingsSection
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.CustomTheme
 import com.lingion.sleepy.ui.component.ColorPickerDialog
@@ -143,19 +144,13 @@ fun CustomThemeEditorScreen(
             }
 
             // ── 实时预览:迷你课表样例(顶栏条 + 胶囊 + 卡片)用草稿派生 scheme 渲染 ──
-            item {
-                Text(
-                    stringResource(R.string.theme_editor_preview),
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                    color = colors.onSurface
-                )
-                Spacer(Modifier.height(8.dp))
+            settingsSection(R.string.theme_editor_preview) {
                 DraftPreview(draft)
             }
 
             // ── 三动作区 ──
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(SettingsLayout.cardGap)) {
                     ActionEntry(
                         icon = { Icon(Icons.Outlined.Palette, null, tint = colors.primary, modifier = Modifier.size(24.dp)) },
                         title = stringResource(R.string.theme_editor_from_seed),
@@ -180,7 +175,7 @@ fun CustomThemeEditorScreen(
             // ── 逐角色手选(展开后四个角色行) ──
             if (manualExpanded) {
                 item {
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(SettingsLayout.cardGap)) {
                         RoleRow(
                             title = stringResource(R.string.theme_role_primary),
                             desc = stringResource(R.string.theme_role_primary_desc),
@@ -340,8 +335,8 @@ private fun ActionEntry(
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) { icon() }
             Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleSmall, color = colors.onSurface)
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
+                Text(title, style = SettingsLayout.headingStyle, color = colors.onSurface)
                 Text(desc, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
             }
         }
@@ -361,8 +356,8 @@ private fun RoleRow(title: String, desc: String, swatchHex: String, onClick: () 
             .background(colors.surfaceContainer).noRippleClickable(onClick).padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.titleSmall, color = colors.onSurface)
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
+            Text(title, style = SettingsLayout.headingStyle, color = colors.onSurface)
             Text(desc, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
         }
         Spacer(Modifier.width(12.dp))

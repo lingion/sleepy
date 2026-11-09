@@ -17,11 +17,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
@@ -61,7 +59,8 @@ import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.component.HueSlider
 import com.lingion.sleepy.ui.component.SettingsFlatCard
-import com.lingion.sleepy.ui.component.SectionHeader
+import com.lingion.sleepy.ui.component.SettingsLayout
+import com.lingion.sleepy.ui.component.settingsSection
 import com.lingion.sleepy.ui.component.SegmentOption
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
 import com.lingion.sleepy.ui.theme.CustomSchemeDeriver
@@ -174,11 +173,7 @@ fun AppearanceScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // ── Section② 外观深浅 ──
-            item {
-                SectionHeader(title = stringResource(R.string.theme_appearance))
-            }
-
-            item {
+            settingsSection(R.string.theme_appearance, first = true) {
                 val modes = listOf(
                     AppPrefs.THEME_MODE_SYSTEM to stringResource(R.string.theme_mode_system),
                     AppPrefs.THEME_MODE_LIGHT to stringResource(R.string.theme_mode_light),
@@ -204,11 +199,7 @@ fun AppearanceScreen(
             }
 
             // ── Section① 主题色彩 ──
-            item {
-                SectionHeader(title = stringResource(R.string.appearance_section_theme))
-            }
-
-            item {
+            settingsSection(R.string.appearance_section_theme) {
                 SystemThemeCard(
                     selected = currentKey == ThemePresets.KEY_SYSTEM,
                     onClick = {
@@ -261,10 +252,7 @@ fun AppearanceScreen(
             }
 
             // 底栏形态与主题相邻，两个选项分别控制位置和视觉效果。
-            item {
-                SectionHeader(title = stringResource(R.string.settings_appearance_navigation))
-            }
-            item {
+            settingsSection(R.string.settings_appearance_navigation) {
                 SettingsFlatCard(
                     title = stringResource(R.string.settings_nav_style),
                     options = listOf(
@@ -283,42 +271,38 @@ fun AppearanceScreen(
                 )
             }
             item {
-                Text(
-                    text = stringResource(R.string.appearance_section_dock_theme),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = colors.onSurfaceVariant,
-                )
-            }
-
-            item {
-                val dockOptions = listOf(
-                    SegmentOption(
-                        value = AppPrefs.DOCK_THEME_CLASSIC,
-                        label = stringResource(R.string.dock_theme_classic)
-                    ),
-                    SegmentOption(
-                        value = AppPrefs.DOCK_THEME_LIQUID_GLASS,
-                        label = stringResource(R.string.dock_theme_liquid_glass),
-                        badge = stringResource(R.string.dock_theme_experimental)
+                Column(verticalArrangement = Arrangement.spacedBy(SettingsLayout.headerGap)) {
+                    Text(
+                        text = stringResource(R.string.appearance_section_dock_theme),
+                        style = SettingsLayout.headingStyle,
+                        color = colors.onSurface,
                     )
-                )
-                SegmentedSwitcher(
-                    options = dockOptions,
-                    selected = dockTheme,
-                    onSelect = { newTheme ->
-                        if (newTheme != dockTheme) {
-                            AppPrefs.setDockTheme(context, newTheme)
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                    val dockOptions = listOf(
+                        SegmentOption(
+                            value = AppPrefs.DOCK_THEME_CLASSIC,
+                            label = stringResource(R.string.dock_theme_classic)
+                        ),
+                        SegmentOption(
+                            value = AppPrefs.DOCK_THEME_LIQUID_GLASS,
+                            label = stringResource(R.string.dock_theme_liquid_glass),
+                            badge = stringResource(R.string.dock_theme_experimental)
+                        )
+                    )
+                    SegmentedSwitcher(
+                        options = dockOptions,
+                        selected = dockTheme,
+                        onSelect = { newTheme ->
+                            if (newTheme != dockTheme) {
+                                AppPrefs.setDockTheme(context, newTheme)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
 
             // ── Section②·5 课程配色 (spec §5: 三档 + 色相滑条 + 试算预览 + 重排按钮) ──
-            item {
-                SectionHeader(title = stringResource(R.string.appearance_section_course_color))
-            }
-            item {
+            settingsSection(R.string.appearance_section_course_color) {
                 CourseColorSection(
                     mode = courseColorMode,
                     seed = courseColorSeed,

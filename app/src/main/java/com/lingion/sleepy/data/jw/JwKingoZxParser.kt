@@ -8,59 +8,70 @@ import org.jsoup.nodes.TextNode
 class JwKingoZxParser(source: String) : JwParser(source) {
     private val doc by lazy { Jsoup.parse(source) }
     private val weekToken = Regex("^(\\d+)(?:-(\\d+))?\\s*(单|双)?$")
-    private val sectionToken = Regex("(?:第)?(\\d+)(?:-(\\d+))?节")
+    private val sectionToken = Regex("^(?:\\[\\s*)?(?:第)?([0-9]+(?:\\s*[-,]\\s*[0-9]+)*)节\\s*]?")
     private val bracketSection = Regex("\\[(\\d+)(?:-(\\d+))?节?]")
     private val dayToken = Regex("(?:星期|周)([一二三四五六日天])")
     private val dayNumbers = mapOf('一' to 1, '二' to 2, '三' to 3, '四' to 4, '五' to 5, '六' to 6, '日' to 7, '天' to 7)
 
     override fun generateCourseList(): List<JwCourse> {
-        doc.selectFirst("table#pageRpt")?.let { outer ->
-            val tables = outer.select("table").filter { it !== outer }
-            for (table in listOfNotNull(tables.getOrNull(1), tables.firstOrNull())) {
-                parseReport(table).takeIf { it.isNotEmpty() }?.let { return it }
-            }
+        for ((selector, timingColumn) in listOf("#pageRpt" to 10, "#reportArea" to 12)) {
+            val outer = doc.selectFirst(selector) ?: continue
+            val reports = outer.select("table").flatMap { parseReport(it, timingColumn) }.distinct()
+            if (reports.isNotEmpty()) return reports
         }
-        val grid = doc.selectFirst("table#mytable") ?: doc.selectFirst("#xkinfo table")
+        if (doc.selectFirst("table#mytable") != null) {
+            return WakeUpCompat.parseKingoSuperHtml(source)
+        }
+        val grid = doc.selectFirst("#xkinfo table")
             ?: doc.selectFirst("#reportArea table")
         return grid?.let(::parseGrid).orEmpty()
     }
 
     override fun confidence(): Int = when {
-        doc.selectFirst("table#pageRpt table") != null -> 90
+        doc.selectFirst("#pageRpt table, #reportArea table") != null -> 90
         doc.selectFirst("table#mytable td.td, #xkinfo table td.td, #reportArea table td.td") != null -> 85
         else -> 0
     }
 
     override fun matchedFeatures(): List<String> = buildList {
-        if (doc.selectFirst("table#pageRpt table") != null) add("pageRpt-report")
+        if (doc.selectFirst("#pageRpt table") != null) add("pageRpt-report")
+        if (doc.selectFirst("#reportArea table") != null) add("reportArea-report")
         if (doc.selectFirst("table#mytable td.td") != null) add("mytable-grid")
         if (doc.selectFirst("#xkinfo table td.td") != null) add("xkinfo-grid")
         if (doc.selectFirst("#reportArea table td.td") != null) add("reportArea-grid")
     }
 
-    private fun parseReport(table: Element): List<JwCourse> = buildList {
-        for (row in table.select("tr")) {
+    private fun parseReport(table: Element, timingColumn: Int): List<JwCourse> = buildList {
+        for (row in table.select("tr").filter { it.parents().firstOrNull { parent -> parent.tagName() == "table" } === table }) {
             val cells = row.children().filter { it.normalName() == "td" }
-            if (cells.size <= 10) continue
+            if (cells.size <= timingColumn) continue
             val name = cells[1].text().substringAfter(']', "").trim()
             if (name.isBlank()) continue
-            val teacher = cells[4].select("a").joinToString(" & ") { it.text().substringBefore('[').trim() }
-            val schedule = cells[10].clone()
+            val teachers = cells[4].select("a")
+            val teacher = if (teachers.isEmpty()) cells[4].text().substringBefore('[').trim()
+                else teachers.joinToString(" & ") { it.text().substringBefore('[').trim() }
+            val credit = cells[2].text().trim().toFloatOrNull()?.takeIf { it.isFinite() && it >= 0f } ?: 0f
+            val schedule = cells[timingColumn].clone()
             schedule.select("br").forEach { it.replaceWith(TextNode("\n")) }
             for (line in schedule.wholeText().lines().map(String::trim).filter(String::isNotBlank)) {
-                val dayMatch = dayToken.find(line) ?: continue
+                val timing = line.substringBefore('/').substringBefore(' ').trim()
+                val dayMatch = dayToken.find(timing) ?: Regex("^([一二三四五六日天])(?=\\s)").find(timing) ?: continue
                 val day = dayMatch.groupValues[1].firstOrNull()?.let(dayNumbers::get) ?: continue
-                val section = sectionToken.find(line) ?: continue
-                val start = section.groupValues[1].toIntOrNull() ?: continue
-                val end = section.groupValues[2].toIntOrNull() ?: start
-                if (start !in 1..30 || end !in start..30) continue
+                val afterDay = timing.substring(dayMatch.range.last + 1).trim()
+                val section = sectionToken.find(afterDay) ?: continue
+                val sections = schoolNodeRanges(section.groupValues[1])
+                if (sections.isEmpty() || sections.any { it.first !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND ||
+                        it.second !in it.first..EXPLICIT_SCHEDULE_RESOURCE_BOUND }) continue
                 // Source code supports both [weeks] day [sections] and day sections weeks.
-                val beforeDay = line.substring(0, dayMatch.range.first).trim('[', ']', ' ')
+                val beforeDay = timing.substring(0, dayMatch.range.first).trim('[', ']', ' ')
                 val weekSpec = if (beforeDay.any(Char::isDigit)) beforeDay
-                    else line.substring(section.range.last + 1).substringBefore('/').trim('[', ']', ' ')
-                val room = line.substringAfter('/', "").trim()
-                for ((first, last, type) in weekRuns(weekSpec)) {
-                    add(JwCourse(name, room, teacher, day, start, end, first, last, type))
+                    else afterDay.substring(section.range.last + 1).trim('[', ']', ' ')
+                val room = (if ('/' in line) line.substringAfter('/') else line.substringAfter(' ', ""))
+                    .trim().ifBlank { if (name.endsWith('m')) "在线" else "" }
+                for ((first, last, type) in weekRuns(weekSpec,
+                    singletonIsExplicit = dayMatch.value.length == 1,
+                    parityAppliesToAll = beforeDay.any(Char::isDigit))) {
+                    for ((start, end) in sections) add(JwCourse(name, room, teacher, day, start, end, first, last, type, credit = credit))
                 }
             }
         }
@@ -86,8 +97,10 @@ class JwKingoZxParser(source: String) : JwParser(source) {
                     val section = bracketSection.find(parts[2])
                     val firstSection = if (parts[2].substringAfter('[', "").startsWith("傍晚")) 9
                         else section?.groupValues?.get(1)?.toIntOrNull() ?: continue
-                    val lastSection = section?.groupValues?.get(2)?.toIntOrNull() ?: firstSection
-                    if (firstSection !in 1..30 || lastSection !in firstSection..30) continue
+                    val lastSection = section?.groupValues?.get(2)?.takeIf(String::isNotBlank)
+                        ?.let { it.toIntOrNull() ?: continue } ?: firstSection
+                    if (firstSection !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND ||
+                        lastSection !in firstSection..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
                     for ((first, last, type) in weekRuns(parts[2].substringBefore('['))) {
                         add(JwCourse(parts[0], parts[3], parts[1], day, firstSection, lastSection, first, last, type))
                     }
@@ -96,14 +109,29 @@ class JwKingoZxParser(source: String) : JwParser(source) {
         }
     }.distinct()
 
-    private fun weekRuns(spec: String): List<Triple<Int, Int, Int>> {
+    private fun weekRuns(
+        spec: String,
+        singletonIsExplicit: Boolean = false,
+        parityAppliesToAll: Boolean = false,
+    ): List<Triple<Int, Int, Int>> {
         val weeks = sortedSetOf<Int>()
-        for (part in spec.replace("周", "").replace('，', ',').split(',')) {
-            val match = weekToken.matchEntire(part.trim()) ?: continue
-            val first = match.groupValues[1].toIntOrNull() ?: continue
-            val last = match.groupValues[2].toIntOrNull() ?: first
-            val parity = match.groupValues[3]
-            if (first !in 1..30 || last !in first..30) continue
+        var cleanSpec = spec.replace("周", "").replace('，', ',').filterNot(Char::isWhitespace)
+            .replace("[", "").replace("]", "")
+        val globalParity = if (cleanSpec.count { it == '单' || it == '双' } == 1) {
+            // Prefix-week reports apply their single marker to the complete advertised week list.
+            val marker = cleanSpec.firstOrNull { parityAppliesToAll && (it == '单' || it == '双') }
+                ?: cleanSpec.firstOrNull()?.takeIf { it == '单' || it == '双' }
+                ?: cleanSpec.lastOrNull()?.takeIf { it == '单' || it == '双' }
+            if (marker != null) cleanSpec = cleanSpec.replace(marker.toString(), "")
+            marker?.toString().orEmpty()
+        } else ""
+        for (part in cleanSpec.split(',')) {
+            val match = weekToken.matchEntire(part) ?: return emptyList()
+            val first = match.groupValues[1].toIntOrNull() ?: return emptyList()
+            val last = match.groupValues[2].takeIf(String::isNotBlank)?.toIntOrNull()
+                ?: if (match.groupValues[2].isBlank()) first else return emptyList()
+            val parity = if (singletonIsExplicit && first == last) "" else match.groupValues[3].ifBlank { globalParity }
+            if (first !in 1..366 || last !in first..366) return emptyList()
             for (week in first..last) {
                 if (parity == "单" && week % 2 == 0) continue
                 if (parity == "双" && week % 2 == 1) continue

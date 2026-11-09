@@ -86,7 +86,7 @@
     "sortKey": "A",
     "name": "安徽工业大学",
     "url": "http://jwxt.ahut.edu.cn/jsxsd/",
-    "type": "qz",
+    "type": "qz_ahut",
     "aliases": [],
     "sortKeyFull": "anhuigongyedaxue",
     "catalogId": "A_安徽工业大学"
@@ -249,7 +249,7 @@
     "sortKey": "B",
     "name": "北京林业大学",
     "url": "http://newjwxt.bjfu.edu.cn/",
-    "type": "qz_br",
+    "type": "qz_bjfu",
     "aliases": [],
     "sortKeyFull": "beijinglinyedaxue",
     "catalogId": "B_北京林业大学"
@@ -1140,7 +1140,7 @@
     "sortKey": "H",
     "name": "华东理工大学",
     "url": "https://inquiry.ecust.edu.cn/jsxsd/",
-    "type": "qz",
+    "type": "qz_ecust",
     "aliases": [],
     "sortKeyFull": "huadongligongdaxue",
     "catalogId": "H_华东理工大学"
@@ -1794,7 +1794,7 @@
     "sortKey": "N",
     "name": "南京理工大学",
     "url": "http://202.119.81.112:8080/",
-    "type": "qz",
+    "type": "qz_njust",
     "aliases": [],
     "sortKeyFull": "nanjingligongdaxue",
     "catalogId": "N_南京理工大学"

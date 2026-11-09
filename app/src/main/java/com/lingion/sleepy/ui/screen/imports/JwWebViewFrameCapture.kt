@@ -2,6 +2,7 @@ package com.lingion.sleepy.ui.screen.imports
 
 import com.lingion.sleepy.data.jw.JwParseDiagnostics
 import com.lingion.sleepy.data.jw.JwNewUrpSuperParser
+import com.lingion.sleepy.data.jw.JwParserRegistry
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URI
@@ -113,6 +114,11 @@ data class FrameSnapshotList(
 }
 
 object FrameTraversalTree {
+    private val declaredHtmlTypes = setOf("pku", "huat", "seu_2017", "shu2024", "tju", "hqu", "changzhou", "sicnu", "nuist", "sit", "sysu", "jz_1", "jz_x", "wist", "xmu", "swjtu_post", "kg_zx", "hbut", "hnjm", "lz", "nau", "nju", "cqupt", "xhtd", "xytc", "cidp", "sdpei", "shu", "jmpt", "lngd", "vatuu", "yzzy", "cqu", "hit", "jz", "gxic", "gxnu", "jxnu", "nnutc", "shcc", "hbmzu", "nua", "gdei", "aic", "hust", "gliet", "cnu",
+        "cdut", "gzhuyjs", "dhu", "ecjtu", "zptc", "ctgu", "nyist", "jxau",
+        "hniu", "uic", "cityu", "stu", "nfu", "jmucy", "nuaajc", "qmu", "javtc", "hitsz",
+        "bjtu", "scau", "jnu", "swust", "xjtu_post", "uestc_post", "bfa_post", "gdbyxy",
+        "cupl_post", "ysu_post", "whu_post", "hrbeu_post", "shtu_post", "ustc_post", "xauat_post", "shuwei_old", "urp")
     /**
      * 锚点集 — 与 parser 容器选择器对齐
      * (Table1→JwOldZfParser, blacktab→T1 兜底链, kbtable→JwQzParser,
@@ -126,7 +132,7 @@ object FrameTraversalTree {
         "Table1", "blacktab", "kbtable", "kbgrid_table_0", "kblist_table", "kbList", "kbxx", "timetable", "_dgdata", "pageRpt", "mytable", "reportArea", "xkinfo", "sample-table-1",
         // 经典 EAMS 课表网格容器 (南开 #236; JwClassicEamsParser 95 分锚, NBCC 同族互证)。
         // 用户手点进课表页时 generic DFS 通路也能兜住; 空壳表页由 parser 置信度分层处理。
-        "manualArrangeCourseTable"
+        "manualArrangeCourseTable", "Table6", "table_tb", "kbgrid_table"
     )
 
     /** THU 网格课程由页面脚本填入 aN_M 单元；需要完整脚本指纹，不能仅凭泛用 id 命中。 */
@@ -153,10 +159,13 @@ object FrameTraversalTree {
         val anchors = ANCHORS.filter { anchor ->
             anchorNeedle(anchor).any { needle -> lower.contains(needle.lowercase()) }
         }
+        val modernQzAnchors = if (lower.contains("qz-tooltipcontent") || lower.contains("el-table__body")) {
+            anchors + com.lingion.sleepy.data.jw.JwQzModernHtml.features(org.jsoup.Jsoup.parse(html))
+        } else anchors
         val oldQzAnchors = if ((lower.contains("id=\"kb\"") || lower.contains("id='kb'") ||
             Regex("""id=["'][1-5]-[1-7]-2["']""").containsMatchIn(lower)) &&
             com.lingion.sleepy.data.jw.JwOldQzSuperParser(html).generateCourseList().isNotEmpty()
-        ) anchors + "old-qz-structural" else anchors
+        ) modernQzAnchors + "old-qz-structural" else modernQzAnchors
         val thuAnchors = if (isThuCoursePage(html)) oldQzAnchors + THU_SCRIPT_ANCHOR else oldQzAnchors
         // Some URP pages embed the timetable as a flat JSON array in a script,
         // without a table id/class. Validate its structure before selecting frame.
@@ -294,7 +303,7 @@ object FrameTraversalTree {
      *  ④ 全部可达 frame 均无锚点: 登录指纹 > 跨域 > WRONG_PAGE。
      *  ⑤ 全部 frame 不可达(顶层都跨域): blocked 非空 → CROSS_DOMAIN_IFRAME_BLOCKED, 否则 WRONG_PAGE。
      */
-    fun selectBestFrame(snapshots: FrameSnapshotList, maxDepth: Int = 8): FrameCaptureResult {
+    fun selectBestFrame(snapshots: FrameSnapshotList, maxDepth: Int = 8, declaredType: String? = null): FrameCaptureResult {
         val blocked = findBlockedFrames(snapshots)
         val reachable = snapshots.frames.filter { it.outerHTML != null && it.depth <= maxDepth }
         val maxDepthReached = snapshots.frames.maxOfOrNull { it.depth } ?: 0
@@ -315,6 +324,24 @@ object FrameTraversalTree {
                 skippedFrames = emptyList(),
                 diagnosticHint = "检测到登录页/会话过期特征(${logoutFrame.frameName ?: "(top)"} 含 logout.aspx 跳转脚本)，请重新登录后再点「导入此页」",
                 allFrames = allFrames
+            )
+        }
+        // Several declared school layouts have no generic table id. Validate with
+        // that school's parser before choosing a frame; do not widen generic detection.
+        if (declaredType in declaredHtmlTypes && reachable.none { looksLikeLoginPage(it.outerHTML!!) }) {
+            val declared = reachable.sortedByDescending { it.depth }.firstOrNull { frame ->
+                runCatching {
+                    JwParserRegistry.parserFor(declaredType!!, frame.outerHTML!!).generateCourseList().isNotEmpty()
+                }.getOrDefault(false)
+            }
+            if (declared != null) return FrameCaptureResult(
+                selectedFramePath = declared.parentPath + (declared.frameName ?: ""),
+                html = declared.outerHTML!!,
+                matchedAnchors = listOf("declared-$declaredType"),
+                status = FrameCaptureStatus.OK,
+                blockedFrames = blocked,
+                maxDepthReached = maxDepthReached,
+                allFrames = allFrames,
             )
         }
         // ②③ 候选
@@ -487,7 +514,8 @@ object FrameTraversalTree {
 object RenderReadinessChecker {
     /** 延迟渲染容器 — 新正方 grid/list 视图 + 老正方 Table1Wrap */
     val DELAYED_CONTAINER_ANCHORS: List<String> =
-        listOf("Table1Wrap", "kbgrid_table_0", "kblist_table", "kbcontent", "timetable_con")
+        listOf("Table1Wrap", "kbgrid_table_0", "kblist_table", "kbcontent", "timetable_con",
+            "el-table__body", "kbDataTd")
 
     enum class Readiness { READY, DELAY, GIVE_UP }
 

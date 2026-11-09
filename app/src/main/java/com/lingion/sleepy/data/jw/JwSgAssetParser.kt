@@ -14,9 +14,9 @@ import org.json.JSONObject
  * 本类是唯一解码落点 (跨语言 invariant: shim JS 只做传输, 不解析课程)。
  * 映射规则:
  *   - day → day; startSection/endSection → startNode/endNode
- *   - weeks 集合: 全奇 → type=1, 全偶 → type=2, 其余按连续区间拆分 type=0
- *   - isCustomTime=true 或节次缺失/颠倒/空周次 → 跳过该条 (不崩、不假装支持)
- *   - credit/自定义时间不映射 (JwCourse 无对应字段)
+ *   - weeks 集合仅压缩无缺口的区间，不补充原文不存在的周次。
+ *   - 自定义时间保留 HH:mm。未提供节次时使用占位节次，显示时按作息表映射。
+ *   - 无效星期、节次、时间区间或空周次跳过。
  */
 class JwSgAssetParser(source: String) : JwParser(source) {
 
@@ -31,10 +31,13 @@ class JwSgAssetParser(source: String) : JwParser(source) {
             val item = arr.optJSONObject(i) ?: continue
             val name = item.optString("name").trim()
             if (name.isEmpty()) continue
-            if (item.optBoolean("isCustomTime", false)) continue
+            val customTime = item.optBoolean("isCustomTime", false)
+            val startTime = if (customTime) item.optString("customStartTime").trim() else ""
+            val endTime = if (customTime) item.optString("customEndTime").trim() else ""
+            if (customTime && !JwCourse.isValidTimeRange(startTime, endTime)) continue
             val day = item.optInt("day", 0)
-            val ps = item.optInt("startSection", 0)
-            val pe = item.optInt("endSection", 0)
+            val ps = item.optInt("startSection", if (customTime) 1 else 0)
+            val pe = item.optInt("endSection", if (customTime) ps else 0)
             if (day !in 1..7) continue
             if (ps <= 0 || pe <= 0 || pe < ps) continue
             val weeks = item.optJSONArray("weeks")?.let { w ->
@@ -42,6 +45,7 @@ class JwSgAssetParser(source: String) : JwParser(source) {
             }.orEmpty().distinct().sorted()
             if (weeks.isEmpty()) continue
             out += toCourses(name, item.optString("teacher"), item.optString("position"), day, ps, pe, weeks)
+                .map { it.copy(startTime = startTime, endTime = endTime) }
         }
         return out
     }
@@ -54,8 +58,10 @@ class JwSgAssetParser(source: String) : JwParser(source) {
         val end = weeks.last()
         return when {
             weeks.size == end - start + 1 -> listOf(course(name, teacher, room, day, ps, pe, start, end, 0))
-            weeks.all { it % 2 == 1 } -> listOf(course(name, teacher, room, day, ps, pe, start, end, 1))
-            weeks.all { it % 2 == 0 } -> listOf(course(name, teacher, room, day, ps, pe, start, end, 2))
+            weeks.size == (end - start) / 2 + 1 && weeks.all { it % 2 == 1 } ->
+                listOf(course(name, teacher, room, day, ps, pe, start, end, 1))
+            weeks.size == (end - start) / 2 + 1 && weeks.all { it % 2 == 0 } ->
+                listOf(course(name, teacher, room, day, ps, pe, start, end, 2))
             else -> contiguousRuns(weeks).map { (a, b) -> course(name, teacher, room, day, ps, pe, a, b, 0) }
         }
     }

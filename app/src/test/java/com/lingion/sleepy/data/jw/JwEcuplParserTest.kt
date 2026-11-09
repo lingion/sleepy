@@ -25,14 +25,17 @@ class JwEcuplParserTest {
     @Test
     fun metadataFixturesNeverInventScheduleCoordinates() {
         assertTrue(JwEcuplParser(metadataOnly()).generateCourseList().isEmpty())
-        assertTrue(JwEcuplParser(superSample()).generateCourseList().isEmpty())
+        val metadata = org.jsoup.Jsoup.parse(superSample()).apply { select("script").remove() }.html()
+        assertTrue(JwEcuplParser(metadata).generateCourseList().isEmpty())
     }
 
     @Test
     fun taskActivityIndexProducesObservedSchedule() {
         val courses = JwEcuplParser(mainSample()).generateCourseList()
         assertTrue(courses.isNotEmpty())
-        assertEquals("民法(总则)(001)", courses.first().name)
+        assertEquals("民法(总则)", courses.first().name)
+        assertEquals(3.0f, courses.first().credit, 0f)
+        assertEquals("1-16每周", courses.first().note)
         assertEquals(1, courses.first().day)
         assertEquals(1, courses.first().startNode)
     }

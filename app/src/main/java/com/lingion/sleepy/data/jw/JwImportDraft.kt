@@ -18,6 +18,10 @@ data class JwImportDraftSnapshot(
     /** Serialized SmartPeriodConfig; kept opaque to avoid coupling this contract to UI/entity classes. */
     val smartConfigJson: String = "",
     val phase: JwImportDraftPhase = JwImportDraftPhase.CONFIGURE_CONFIRM,
+    /** Explicit semester length, including weeks without courses; zero means unknown. */
+    val termWeekCount: Int = 0,
+    /** Original calendar used to turn single-date SHSMU lessons into course weeks. */
+    val datedCourseOrigin: String = "",
 ) {
     /** Reopening a login draft never skips the school admission confirmation. */
     val requiresSchoolConfirmation: Boolean get() = phase == JwImportDraftPhase.WEBVIEW_LOGIN &&
@@ -50,6 +54,8 @@ object JwImportDraftCodec {
             snapshot.periods.forEach { put(periodToJson(it)) }
         })
         put("termStartDate", snapshot.termStartDate)
+        put("termWeekCount", snapshot.termWeekCount)
+        put("datedCourseOrigin", snapshot.datedCourseOrigin)
         put("tableName", snapshot.tableName)
         put("smartConfigJson", snapshot.smartConfigJson)
     }.toString()
@@ -78,6 +84,9 @@ object JwImportDraftCodec {
             }
         }
 
+        val termWeekCount = if (!root.has("termWeekCount")) 0 else {
+            root.opt("termWeekCount")?.toString()?.toIntOrNull()?.takeIf { it in 0..366 } ?: return null
+        }
         JwImportDraftSnapshot(
             school = school,
             courses = courses,
@@ -86,6 +95,10 @@ object JwImportDraftCodec {
             tableName = root.optString("tableName", ""),
             smartConfigJson = root.optString("smartConfigJson", ""),
             phase = phase,
+            termWeekCount = termWeekCount,
+            datedCourseOrigin = root.optString("datedCourseOrigin", "").also { origin ->
+                if (origin.isNotEmpty() && JwShsmuCaptureCalendar.monday(origin)?.toString() != origin) return null
+            },
         )
     }.getOrNull()
 
@@ -140,6 +153,10 @@ object JwImportDraftCodec {
         put("startWeek", course.startWeek)
         put("endWeek", course.endWeek)
         put("type", course.type)
+        put("startTime", course.startTime)
+        put("endTime", course.endTime)
+        put("credit", course.credit)
+        put("note", course.note)
     }
 
     private fun courseFromJson(json: JSONObject): JwCourse? {
@@ -153,12 +170,18 @@ object JwImportDraftCodec {
             startWeek = json.optInt("startWeek", 0),
             endWeek = json.optInt("endWeek", 0),
             type = json.optInt("type", 0),
+            startTime = json.optString("startTime", ""),
+            endTime = json.optString("endTime", ""),
+            credit = json.optDouble("credit", 0.0).toFloat(),
+            note = json.optString("note", ""),
         )
         return course.takeIf {
             it.name.isNotBlank() && it.day in 1..7 &&
                 it.startNode >= 1 && it.endNode >= it.startNode &&
                 it.startWeek >= 1 && it.endWeek >= it.startWeek &&
-                it.type >= 0
+                it.type in 0..2 && it.credit.isFinite() &&
+                ((it.startTime.isEmpty() && it.endTime.isEmpty()) ||
+                    JwCourse.isValidTimeRange(it.startTime, it.endTime))
         }
     }
 

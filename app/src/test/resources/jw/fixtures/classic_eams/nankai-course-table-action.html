@@ -2,8 +2,9 @@
      same-vfamily skeleton (classic EAMS courseTableForStd!courseTable.action). Credentials removed,
      synthetic names/ids only; semester.id=4384 is the real Nankai value seen in scrape_now.py.
      Bitmap/week arithmetic locked by JwClassicEamsParserTest: unitCount=12; blocks expand by week
-     count (indexPairs merge to one slot): block1 12 wks + block2 10 wks + block3 (linear 42 = day3
-     p6) 1 wk = 23 rows. semesterCalendar uses real unquoted-key form {onChange:"",value:"4384"}. -->
+     count: block1 Monday period 2 and Thursday period 10, each over 12 weeks; block2 10 weeks;
+     block3 Thursday period 7 (linear index 42) for week 20. Total 35 rows.
+     semesterCalendar uses real unquoted-key form {onChange:"",value:"4384"}. -->
 <html><head><title>南开大学 综合教务管理系统</title></head>
 <body>
 <form id="courseTableForm" name="courseTableForm" action="/eams/courseTableForStd!courseTable.action" method="post">

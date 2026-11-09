@@ -32,6 +32,7 @@ package com.lingion.sleepy.data.jw
 class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(source) {
 
     override fun generateCourseList(): List<JwCourse> {
+        if (type == 0) JwZfVariantHtml.parse(source)?.let { return it }
         val doc = org.jsoup.Jsoup.parse(source)
         // jsoup 1.20.1 起 pretty-printer 重写: Element.html() 把 <br> 从行尾
         // 挪到行首,parseImportBean 按 "<br><br>"/"<br><br><br>" 字符串切分课程
@@ -40,43 +41,51 @@ class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(sourc
         doc.outputSettings().prettyPrint(false)
         // T1 G5: #Table1 → table.blacktab → 文本含"星期一"的第一个 table
         val table1 = doc.getElementById("Table1")
+            ?: doc.getElementById("kbgrid_table")
+            ?: doc.getElementById("table1")
             ?: doc.select("table.blacktab").firstOrNull()
             ?: pickTableByMonday(doc)
             ?: return emptyList()
-        val trs = table1.getElementsByTag("tr")
+        val trs = table1.getElementsByTag("tr").filter { it.closest("table") == table1 }
         val importBeanList = ArrayList<ImportBean>()
         var node = -1
-        for (tr in trs) {
-            val tds = tr.getElementsByTag("td")
+        val occupiedThrough = IntArray(8) { -1 }
+        for ((rowIndex, tr) in trs.withIndex()) {
+            val tds = tr.children().filter { it.tagName() == "td" }
             var countFlag = false
             var countDay = 0
             for (td in tds) {
                 val courseSource = td.text().trim()
-                if (courseSource.length <= 1) {
-                    if (countFlag) {
-                        countDay++
-                    }
-                    continue
-                }
                 if (OTHER_HEADER.contains(courseSource)) {
                     // 表头行（"时间" "星期一" "中午" 等组头）
                     continue
                 }
-                val result = parseHeaderNodeString(courseSource)
+                val festival = td.getElementsByClass("festival").firstOrNull()?.text()?.trim()?.toIntOrNull()
+                val result = festival?.takeIf { courseSource == it.toString() } ?: parseHeaderNodeString(courseSource)
                 if (result != -1) {
                     // T1 G6: 合并行头"第N-M节"也在此返回首段 N, 不落入下方 countDay++
                     node = result
                     countFlag = true
                     continue
                 }
-                countDay++
+                if (courseSource.length <= 1 && !countFlag && node <= 0) continue
+                val explicitDay = Regex("([1-7])-[0-9]+").matchEntire(td.id())?.groupValues?.get(1)?.toIntOrNull()
+                if (explicitDay != null) countDay = explicitDay else {
+                    countDay++
+                    while (countDay <= 7 && occupiedThrough[countDay] >= rowIndex) countDay++
+                }
+                if (countDay !in 1..7) continue
+                val span = td.attr("rowspan").toIntOrNull()?.takeIf { it > 0 } ?: 1
+                occupiedThrough[countDay] = rowIndex + span - 1
+                if (courseSource.length <= 1) continue
                 when (type) {
-                    0 -> importBeanList.addAll(parseImportBean(countDay, td.html(), node))
-                    else -> importBeanList.addAll(parseImportBean1(countDay, courseSource, node))
+                    0 -> importBeanList.addAll(parseImportBean(countDay, td.html(), node).map { it.copy(span = span) })
+                    else -> importBeanList.addAll(parseImportBean1(countDay, courseSource, node).map { it.copy(span = span) })
                 }
             }
         }
-        return importList2CourseList(importBeanList, source)
+        val courses = importList2CourseList(importBeanList, source)
+        return courses.ifEmpty { if (type == 0) JwOldZfParser(source, 1).generateCourseList() else emptyList() }
     }
 
     /** type=0：标准老正方单元格，<a>课程名<br>周次<br>[老师<br>教室] </a>，多门课 <br><br> 分隔（未改动） */
@@ -94,7 +103,7 @@ class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(sourc
             val split = courseStr.substringAfter("\">").substringBeforeLast("</a>").split("<br>")
                 .map { stripAnchorTag(it.trim()) }
             if (split.isEmpty() || split.size < 3) continue
-            val temp: ImportBean = if (split[1] in COURSE_PROPERTY) {
+            val temp: ImportBean = if (isCourseProperty(split[1])) {
                 if (split.size == 4) {
                     ImportBean(startNode = node, name = split[0],
                         timeInfo = split[2],
@@ -143,7 +152,7 @@ class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(sourc
                         preIndex = i
                         continue
                     }
-                    if (split[preIndex - 1] in COURSE_PROPERTY) {
+                    if (isCourseProperty(split[preIndex - 1])) {
                         hasTypeFlag = true
                     }
                     val temp = ImportBean(startNode = node,
@@ -167,7 +176,7 @@ class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(sourc
             }
             if (i == split.size - 1) {
                 if (preIndex < 1) continue
-                if (split[preIndex - 1] in COURSE_PROPERTY) {
+                if (isCourseProperty(split[preIndex - 1])) {
                     hasTypeFlag = true
                 }
                 val temp = ImportBean(startNode = node,
@@ -275,7 +284,7 @@ class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(sourc
                 }
             }
         }
-        if (step == 0) step = 1
+        if (step == 0) step = bean.span
         // T1 G12: 补移植漏行(上游 L214 result[1] = step) — 缺此行 endNode 恒 = startNode-1
         result[1] = step
 
@@ -290,6 +299,7 @@ class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(sourc
                 weeks[0].toIntOrNull()?.let {
                     startWeek = it
                     result[2] = it
+                    result[3] = it
                 }
             }
             if (weeks.size > 1) {
@@ -320,10 +330,14 @@ class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(sourc
         var teacher: String?,
         var room: String?,
         var startNode: Int,
-        val cDay: Int
+        val cDay: Int,
+        val span: Int = 1,
     )
 
     companion object {
+        private fun isCourseProperty(value: String): Boolean = value in COURSE_PROPERTY ||
+            value.length in 1..2 && value.all { it in 'A'..'Z' || it in 'a'..'z' }
+
         // 正则与上游 Common.kt 逐字符一致, 勿改
         private val NODE_PATTERN = Regex("""\(\d{1,2}[-]*\d*节""")
         private val WEEK_PATTERN = Regex("""\{第\d{1,2}[-]*\d*周""")
@@ -391,7 +405,10 @@ class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(sourc
 
         /** T1 G5: 兜底 — 遍历所有 table 取文本含"星期一"的第一个（Speas-y/ClassScheduleApp 同策略） */
         private fun pickTableByMonday(doc: org.jsoup.nodes.Document): org.jsoup.nodes.Element? {
-            return doc.select("table").firstOrNull { it.text().contains("星期一") }
+            return doc.select("table").firstOrNull {
+                it.text().contains("星期一") && it.id() !in setOf("kbtable", "timetable") &&
+                    it.select(".kbcontent, .kbcontent1").isEmpty()
+            }
         }
 
         private fun getNodeStr(node: Int): String = when (node) {

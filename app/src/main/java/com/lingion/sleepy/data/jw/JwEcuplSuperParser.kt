@@ -1,46 +1,36 @@
 // ECUPL Super fallback dispatcher — wakeup-parity-ecupl-super-2026-10-06 SOP v1.11
 package com.lingion.sleepy.data.jw
 
+import java.util.concurrent.CancellationException
+
 /**
- * 华东政法大学 (ECUPL) Super 解析器 — 3-parser 调度器。
- *
- * 调度策略：独立实现的两个已观察到的协议分支。
- *  1. 主路径: [JwEcuplParser] (双 .listTable + 5 列模糊匹配)
- *  2. Script 路径: [JwEcuplScriptParser] (R5/R6/R7 script 子协议)
- *  3. Super fallback: 两个 parser 各自独立尝试, 合并去重结果
- *
- * 协议证据：LonelyMarch/OpenWakeUp EcuplParser.kt @ 9c2d0436；
- * 历史 APK 反编译归档 lingion/wakeup-mod @ 879f0d6（许可未确认）。
+ * ECUPL fallback order verified against the 6.6.2 ECUPLSuperParser DEX.
+ * Keep the first nonempty annual TaskActivity result. Use the time-script branch
+ * only when that branch has no courses; the two representations are not additive.
  */
-class JwEcuplSuperParser(source: String) : JwParser(source) {
+class JwEcuplSuperParser internal constructor(
+    source: String,
+    private val mainParserImpl: JwParser,
+    private val scriptParserImpl: JwParser,
+) : JwParser(source) {
+    constructor(source: String) : this(source, JwEcuplParser(source), JwEcuplScriptParser(source))
 
-    private val mainParserImpl = JwEcuplParser(source)
-    private val scriptParserImpl = JwEcuplScriptParser(source)
-
-    /**
-     * Super 调度:
-     *  - 主 parser 优先 (HTML 双表)
-     *  - Script parser 补齐 (script 子协议, 教务通知页路径)
-     *  - 合并去重: 仅完全相同的排课记录视为重复
-     */
     override fun generateCourseList(): List<JwCourse> {
-        val mainCourses = runCatching { mainParserImpl.generateCourseList() }.getOrDefault(emptyList())
-        val scriptCourses = runCatching { scriptParserImpl.generateCourseList() }.getOrDefault(emptyList())
-
-        val merged = mutableListOf<JwCourse>()
-        val seen = mutableSetOf<JwCourse>()
-
-        // 主 parser 优先 (HTML 是首校路径)
-        for (c in mainCourses) {
-            val key = c
-            if (seen.add(key)) merged += c
+        val errors = mutableListOf<Pair<String, Exception>>()
+        for ((name, parser) in listOf("ECUPLParser" to mainParserImpl, "ECUPLScriptParser" to scriptParserImpl)) {
+            try {
+                val courses = parser.generateCourseList()
+                if (courses.isNotEmpty()) return courses
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                errors += name to error
+            }
         }
-        // Script parser 补齐 (通知页路径)
-        for (c in scriptCourses) {
-            val key = c
-            if (seen.add(key)) merged += c
-        }
-        return merged
+        if (errors.isNotEmpty()) throw IllegalStateException(errors.joinToString("\n") { (name, error) ->
+            "$name: ${error.message.orEmpty()}"
+        }).apply { errors.forEach { (_, error) -> addSuppressed(error) } }
+        return emptyList()
     }
 
     override fun confidence(): Int {

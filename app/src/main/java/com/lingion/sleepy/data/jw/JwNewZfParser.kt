@@ -204,8 +204,8 @@ class JwNewZfParser(source: String) : JwParser(source) {
                             room = room,
                             teacher = teacher,
                             day = day.coerceIn(1, 7),
-                            startNode = node.first.coerceAtLeast(1),
-                            endNode = node.second.coerceAtLeast(node.first),
+                            startNode = node.first,
+                            endNode = node.second,
                             startWeek = r.first,
                             endWeek = r.second,
                             type = r.third
@@ -272,7 +272,8 @@ class JwNewZfParser(source: String) : JwParser(source) {
                 val parts = t.split("-", limit = 2).map { it.trim() }
                 val a = parts.getOrNull(0)?.toIntOrNull()
                 val b = parts.getOrNull(1)?.toIntOrNull()
-                if (a != null && b != null && a in 1..16 && b in 1..16) {
+                if (a != null && b != null && a in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND &&
+                    b in a..EXPLICIT_SCHEDULE_RESOURCE_BOUND) {
                     out += a to b
                 }
                 return@forEach
@@ -287,7 +288,7 @@ class JwNewZfParser(source: String) : JwParser(source) {
                 val nums = mutableListOf<Int>()
                 while (i + 1 < digits.length) {
                     val v = digits.substring(i, i + 2).toIntOrNull()
-                    if (v == null || v !in 1..16) { ok = false; break }
+                    if (v == null || v !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND) { ok = false; break }
                     nums += v
                     i += 2
                 }
@@ -295,7 +296,7 @@ class JwNewZfParser(source: String) : JwParser(source) {
                     // 相邻两位一组: 0102 → (1,2), 01121314 → (1,2),(13,14)
                     var k = 0
                     while (k + 1 < nums.size) {
-                        out += nums[k] to nums[k + 1]
+                        if (nums[k + 1] >= nums[k]) out += nums[k] to nums[k + 1]
                         k += 2
                     }
                 } else if (ok && nums.size == 1) {
@@ -305,7 +306,7 @@ class JwNewZfParser(source: String) : JwParser(source) {
             }
             // 形态 1 变体: 纯数字单节 "5"
             val v = digits.toIntOrNull()
-            if (v != null && v in 1..16) out += v to v
+            if (v != null && v in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND) out += v to v
         }
         return out
     }
@@ -418,7 +419,7 @@ class JwNewZfParser(source: String) : JwParser(source) {
     // ─── HTML 表格解析（兜底） ─────────────────────────────────
 
     /** 移植自 JwOldZfParser 的 (N-M节) 模式, table1/kbgrid 变体共用 */
-    private val NODE_PATTERN = Regex("""\(\d{1,2}[-]*\d*节""")
+    private val NODE_PATTERN = Regex("""\(\d+(?:-\d+)?节""")
 
     /**
      * 新正方 HTML 渲染后的课表解析。容器优先级:
@@ -433,7 +434,7 @@ class JwNewZfParser(source: String) : JwParser(source) {
 
         // ── 1. 上游 NewZFParser.kt 期望结构 ──
         val table1 = doc.getElementById("table1")
-        if (table1 != null && table1.selectFirst("td.festival") != null) {
+        if (table1 != null) {
             val result = parseTable1FestivalView(table1)
             if (result.isNotEmpty()) return result
         }
@@ -475,11 +476,6 @@ class JwNewZfParser(source: String) : JwParser(source) {
         val result = mutableListOf<JwCourse>()
         val trs = table.getElementsByTag("tr")
         for (tr in trs) {
-            // 行头: 节次数字 (class="festival")
-            val nodeStr = tr.getElementsByClass("festival").text().trim()
-            if (nodeStr.isEmpty()) continue
-            val rowNode = nodeStr.toIntOrNull() ?: continue
-
             val tds = tr.getElementsByTag("td")
             for (td in tds) {
                 // 跳过无 id 的 td(表头星期单元格)
@@ -502,31 +498,31 @@ class JwNewZfParser(source: String) : JwParser(source) {
                     var teacher = ""
                     var room = ""
                     var timeStr = ""
+                    var credit = 0f
+                    var note = ""
                     val pList = div.getElementsByTag("p")
                     for (p in pList) {
-                        when (p.attr("title")) {
+                        val titleElement = p.getElementsByAttribute("title").firstOrNull()
+                        val label = titleElement?.attr("title")?.trim().orEmpty()
+                            .ifEmpty { titleElement?.attr("data-original-title")?.trim().orEmpty() }
+                        when (label) {
                             "教师" -> teacher = p.text().trim()
                             "上课地点" -> room = p.text().trim()
                             "节/周", "周/节" -> timeStr = p.text().trim()
+                            "学分" -> credit = p.text().trim().toFloatOrNull()?.takeIf { it.isFinite() && it >= 0f } ?: 0f
+                            "选课备注" -> note = p.text().trim()
                         }
                     }
                     if (timeStr.isEmpty()) continue
 
-                    // 节/周文本解析: "(N-M节)X-Y周(单),A-B周(双)"
-                    val nodeInfo = NODE_PATTERN.find(timeStr)?.value ?: continue
-                    val nodes = nodeInfo.substring(1).removeSuffix("节").split("-")
-                    var startNode = nodes.getOrNull(0)?.toIntOrNull() ?: continue
-                    val endNode = nodes.getOrNull(1)?.toIntOrNull() ?: startNode
-                    // (N-M节) 优先, 行头 rowNode 仅作缺省
-                    if (startNode <= 0) startNode = rowNode
-
-                    // 周次段
-                    val weekList = NODE_PATTERN.replace(timeStr, "").split(",")
-                    for (weekPart in weekList) {
-                        val trimmed = weekPart.trim()
-                        if (trimmed.isEmpty()) continue
-                        val ranges = parseWeekStr(trimmed)
-                        for (r in ranges) {
+                    val schedule = timeStr.replace('（', '(').replace('）', ')')
+                    val section = Regex("\\(([^()]*)节\\)").find(schedule) ?: continue
+                    val nodes = parseSectionRanges(section.groupValues[1])
+                    if (nodes.isEmpty()) continue
+                    val weekText = schedule.substring(section.range.last + 1)
+                    val ranges = parseWeekStr(weekText)
+                    for (r in ranges) {
+                        for ((startNode, endNode) in nodes) {
                             result += JwCourse(
                                 name = courseName,
                                 room = room,
@@ -536,7 +532,9 @@ class JwNewZfParser(source: String) : JwParser(source) {
                                 endNode = endNode,
                                 startWeek = r.first,
                                 endWeek = r.second,
-                                type = r.third
+                                type = r.third,
+                                credit = credit,
+                                note = note,
                             )
                         }
                     }
@@ -578,7 +576,9 @@ class JwNewZfParser(source: String) : JwParser(source) {
                     val nodeMatch = NODE_PATTERN.find(infoStr) ?: continue
                     val nodes = nodeMatch.value.substring(1).removeSuffix("节").split("-")
                     val startNode = nodes.getOrNull(0)?.toIntOrNull() ?: continue
-                    val endNode = nodes.getOrNull(1)?.toIntOrNull() ?: startNode
+                    val endNode = if (nodes.size == 1) startNode else nodes[1].toIntOrNull() ?: continue
+                    if (startNode !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND ||
+                        endNode !in startNode..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
 
                     // 周次段: 剥 (N-M节) 后按逗号拆
                     val weekStr = NODE_PATTERN.replace(infoStr, "").trim()
@@ -627,7 +627,9 @@ class JwNewZfParser(source: String) : JwParser(source) {
                 // 解析节次: "1-2" / "5-6" → (start, end)
                 val nodes = sectionStr.split("-", limit = 2)
                 val startNode = nodes.getOrNull(0)?.trim()?.toIntOrNull() ?: continue
-                val endNode = nodes.getOrNull(1)?.trim()?.toIntOrNull() ?: startNode
+                val endNode = if (nodes.size == 1) startNode else nodes[1].trim().toIntOrNull() ?: continue
+                if (startNode !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND ||
+                    endNode !in startNode..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
 
                 // td[1] 内 .title div
                 val titleDiv = tds[1].getElementsByClass("title").firstOrNull()

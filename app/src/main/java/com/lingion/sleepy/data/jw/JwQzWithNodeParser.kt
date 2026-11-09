@@ -1,7 +1,5 @@
 package com.lingion.sleepy.data.jw
 
-import org.jsoup.Jsoup
-
 /**
  * 强智 qz_with_node 变体解析器。
  *
@@ -19,70 +17,8 @@ import org.jsoup.Jsoup
  */
 class JwQzWithNodeParser(source: String) : JwQzParser(source) {
 
-    override fun convert(day: Int, nodeCount: Int, infoStr: String, courseList: MutableList<JwCourse>) {
-        val courseHtml = Jsoup.parse(infoStr)
-        // 课名提取：上游 substringBefore("<font").substringBefore("<span>")
-        // 第二段 needle 是 "<span>"（带尖括号），对 "<span title=..>" 永不命中，
-        // 因此 with_node 页面必须用 <font title=..> 结构（实测 BUPT/JSNU 适配器一致）
-        val courseName = Jsoup.parse(
-            infoStr.substringBefore("<font").substringBefore("<span>").trim()
-        ).text()
-        val teacher = courseHtml.getElementsByAttributeValue("title", "老师").text().trim()
-        val room = courseHtml.getElementsByAttributeValue("title", "教室").text().trim() +
-            courseHtml.getElementsByAttributeValue("title", "分组").text().trim()
-        val tempStr = courseHtml.getElementsByAttributeValue("title", "周次(节次)").text()
-
-        // 三分支周次/节次提取
-        val weekStr = when {
-            tempStr.contains(' ') -> courseHtml.getElementsByAttributeValue("title", "周次(节次)").text().split(' ')[0]
-            tempStr.isBlank() -> courseHtml.getElementsByAttributeValue("title", "周次").text()
-            else -> courseHtml.getElementsByAttributeValue("title", "周次(节次)").text().substringBefore(')')
-        }
-        val nodeList = when {
-            tempStr.contains(' ') -> courseHtml.getElementsByAttributeValue("title", "周次(节次)").text()
-                .split(' ')[1].removeSurrounding("[", "]").split('-')
-            tempStr.isBlank() -> courseHtml.getElementsByAttributeValue("title", "节次").text()
-                .substringAfter(')').removeSurrounding("[", "]").split('-')
-            else -> courseHtml.getElementsByAttributeValue("title", "周次(节次)").text()
-                .substringAfter(')').removeSurrounding("[", "]").split('-')
-        }
-
-        val weekList = weekStr.split(',')
-        var startWeek = 0
-        var endWeek = 0
-        var type = 0
-
-        weekList.forEach { item ->
-            if (item.contains('-')) {
-                val weeks = item.split('-')
-                if (weeks.isNotEmpty()) startWeek = weeks[0].toInt()
-                if (weeks.size > 1) {
-                    type = when {
-                        weeks[1].contains('单') -> 1
-                        weeks[1].contains('双') -> 2
-                        else -> 0
-                    }
-                    endWeek = weeks[1].substringBefore('(').toInt()
-                }
-            } else {
-                startWeek = item.substringBefore('(').toInt()
-                endWeek = item.substringBefore('(').toInt()
-            }
-            courseList.add(
-                JwCourse(
-                    name = courseName,
-                    teacher = teacher,
-                    room = room,
-                    day = day,
-                    startNode = nodeList.first().substringBefore('节').toInt(),
-                    endNode = nodeList.last().substringBefore('节').toInt(),
-                    startWeek = startWeek,
-                    endWeek = endWeek,
-                    type = type
-                )
-            )
-        }
-    }
+    // 6.6.2 also reads explicit sections in the base parser. Use the same field decoder
+    // so teacher fallbacks, packed sections and local week parity cannot drift apart.
 
     /** T8 §2.5: 继承 + title=周次(节次) 含空格 / 独立 title=周次+节次 特征 */
     override fun matchedFeatures(): List<String> {

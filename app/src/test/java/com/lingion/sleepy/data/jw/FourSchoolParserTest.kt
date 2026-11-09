@@ -14,12 +14,13 @@ class FourSchoolParserTest {
         assertEquals("思想道德与法治(tb1130012.04)", course.name)
     }
 
-    @Test fun `LIXIN maps absolute time activity`() {
-        val course = JwClassicEamsParser(resource("jw/fixtures/classic_eams/lixin-new-activity.html")).generateCourseList().single()
-        assertEquals(3, course.day)
-        assertEquals(1, course.startNode)
-        assertEquals(3, course.endNode)
-        assertTrue(course.startWeek >= 1)
+    @Test fun `LIXIN fragment missing calendar and period matrix cannot invent weeks or nodes`() {
+        // The preserved fragment has table0 = {}. It cannot establish the semester origin
+        // of its decimal bitmap or the school's period indices. Full shapes are covered
+        // separately in JwEcuplOccurrenceParityTest.
+        assertEquals(emptyList<JwCourse>(), JwClassicEamsParser(
+            resource("jw/fixtures/classic_eams/lixin-new-activity.html")
+        ).generateCourseList())
     }
 
     @Test fun `NUIT expands every week from class date strings`() {

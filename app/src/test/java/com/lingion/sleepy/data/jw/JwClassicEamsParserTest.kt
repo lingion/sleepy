@@ -428,13 +428,21 @@ class JwClassicEamsParserTest {
             ),
             parser.matchedFeatures()
         )
-        // 位图周数即行数 (mergeConsecutiveNodes 把块内多 index 合成单 slot):
-        // 数学分析A 12 周 + 高等代数B 10 周 + 形势与政策 1 周 = 23 行
+        // 同一数学分析块明确赋值周一第 2 节和周四第 10 节，两个安排均须保留。
+        // 12 周乘以两个安排，加上另外两课的 10 周和 1 周，共 35 行。
         val courses = parser.generateCourseList()
-        assertEquals("南开样本出课行数不符: ${courses.map { "${it.name}@w${it.startWeek}" }}", 23, courses.size)
-        assertTrue("必须含数学分析A", courses.any { it.name.contains("数学分析A") })
-        assertTrue("必须含高等代数B", courses.any { it.name.contains("高等代数B") })
-        assertTrue("必须含形势与政策 (线性 index 42 形态)", courses.any { it.name.contains("形势与政策") })
+        val expected = buildList {
+            for (week in listOf(5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17)) {
+                add(JwCourse("数学分析A(100101G1)", "伯苓楼-101", "李老师/王老师", 1, 2, 2, week, week))
+                add(JwCourse("数学分析A(100101G1)", "伯苓楼-101", "李老师/王老师", 4, 10, 10, week, week))
+            }
+            for (week in 1..10) {
+                add(JwCourse("高等代数B(100202G2)", "省身楼-205", "张老师", 2, 5, 5, week, week))
+            }
+            add(JwCourse("形势与政策(100303G3)", "主楼-报告厅", "陈老师", 4, 7, 7, 20, 20))
+        }
+        assertEquals(35, courses.size)
+        assertEquals(expected.toSet(), courses.toSet())
     }
 
     // -------- 反例 a: 空壳无数据 (JS 渲染前形态) --------

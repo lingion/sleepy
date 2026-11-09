@@ -3,8 +3,8 @@ package com.lingion.sleepy.data.jw
 
 import org.jsoup.Jsoup
 
-/** SCAU timetable HTML parser. Three independently gated shapes: pinned greyovo Njw2017
- * Element UI DOM, WakeUp border-grid DOM, and WakeUp old bordercolor row pairs.
+/** SCAU timetable HTML parser. Independently gated shapes: pinned greyovo Njw2017
+ * Element UI DOM, border grids, and old bordercolor tables with paired or indexed rows.
  * Evidence and limitations: docs/history/scau-cross-verify-2026-10-13/. */
 class JwScauParser(source: String) : JwParser(source) {
 
@@ -32,24 +32,76 @@ class JwScauParser(source: String) : JwParser(source) {
     override fun generateCourseList(): List<JwCourse> {
         val elementUi = parseElementUiStrategy()
         if (elementUi.isNotEmpty()) return elementUi
+        val explicit = parseExplicitSectionStrategy()
+        if (explicit.isNotEmpty()) return explicit
         val primary = parsePrimaryStrategy()
-        return if (primary.isNotEmpty()) primary else parseFallbackStrategy()
+        if (primary.isNotEmpty()) return primary
+        val paired = parseFallbackStrategy()
+        return if (paired.isNotEmpty()) paired else parseIndexedFallbackStrategy()
+    }
+
+    private fun parseExplicitSectionStrategy(): List<JwCourse> {
+        val output = mutableListOf<JwCourse>()
+        val doc = Jsoup.parse(source)
+        doc.outputSettings().prettyPrint(false)
+        for (table in doc.select(SELECTOR_PRIMARY_TABLE)) {
+            for (row in table.select("tr")) {
+                for ((dayIndex, cell) in row.select(SELECTOR_TD_VALIGN_TOP).withIndex()) {
+                    val day = dayIndex + 1
+                    if (day !in 1..7) continue
+                    val lines = cell.html().split("<br>").map { Jsoup.parseBodyFragment(it).text().trim() }
+                    for ((index, line) in lines.withIndex()) {
+                        val section = Regex("\\(([^()]+)节\\)").find(line) ?: continue
+                        val packed = section.groupValues[1].trim()
+                        val sections = if ('-' in packed) {
+                            schoolNodeRanges(packed)
+                        } else {
+                            val split = when (packed.length) {
+                                1 -> packed to packed
+                                2 -> packed.take(1) to packed.takeLast(1)
+                                3 -> packed.take(1) to packed.takeLast(2)
+                                4 -> packed.take(2) to packed.takeLast(2)
+                                else -> continue
+                            }
+                            schoolNodeRanges("${split.first}-${split.second}")
+                        }
+                        val firstLineSection = index == 0
+                        val name = lines.getOrNull(if (firstLineSection) index else index - 1)?.takeIf { it.isNotBlank() } ?: continue
+                        val teacher = if (firstLineSection) "" else lines.getOrNull(index + 1) ?: continue
+                        val room = lines.getOrNull(index + if (firstLineSection) 1 else 2) ?: continue
+                        val weeks = lines.getOrNull(index + 3) ?: continue
+                        val parity = when { "(单)" in line || "（单）" in line -> 1; "(双)" in line || "（双）" in line -> 2; else -> 0 }
+                        for ((startWeek, endWeek, type) in parseWeekRuns(weeks, parity, globalParity = true)) {
+                            for ((startNode, endNode) in sections) output += JwCourse(
+                                name, room, teacher, day, startNode, endNode, startWeek, endWeek, type,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        return output
     }
 
     /** Pinned greyovo/ScheduleXParser_SCAU sample: Element UI's seven weekday cells follow a section cell. */
     internal fun parseElementUiStrategy(): List<JwCourse> {
         val out = mutableListOf<JwCourse>()
         val doc = Jsoup.parse(source)
+        val sectionPattern = Regex("^([0-9]+)(?: *[-－~至] *([0-9]+))?节$")
+        fun sectionNodes(text: String): Pair<Int, Int>? {
+            val match = sectionPattern.matchEntire(text) ?: return null
+            val first = match.groupValues[1].toIntOrNull() ?: return null
+            val last = match.groupValues[2].ifEmpty { match.groupValues[1] }.toIntOrNull() ?: return null
+            if (first !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND || last !in first..EXPLICIT_SCHEDULE_RESOURCE_BOUND) return null
+            return first to last
+        }
         for (table in doc.select(".el-table__body-wrapper table.el-table__body")) {
             for ((rowIndex, tr) in table.select("tbody > tr").withIndex()) {
                 val cells = tr.children().filter { it.normalName() == "td" }
                 if (cells.size < 8) continue
-                val rowLabel = Regex("^([0-9]{1,2})(?: *[-－~至] *([0-9]{1,2}))?节$").matchEntire(cells[0].text().trim())
+                val rowLabel = cells[0].text().trim()
                 val defaults = arrayOf(1 to 2, 3 to 5, 6 to 7, 8 to 9, 10 to 12, 13 to 15)
-                val rowNodes = if (rowLabel != null) {
-                    val start = rowLabel.groupValues[1].toInt()
-                    start to (rowLabel.groupValues[2].toIntOrNull() ?: start)
-                } else if (cells[0].text().isBlank()) defaults.getOrNull(rowIndex) else null
+                val rowNodes = if (rowLabel.isBlank()) defaults.getOrNull(rowIndex) else sectionNodes(rowLabel)
                 for (day in 1..7) {
                     val cell = cells[day]
                     for (block in cell.select("div[style]").filter {
@@ -69,13 +121,8 @@ class JwScauParser(source: String) : JwParser(source) {
                             weekText.contains("双") -> 2
                             else -> 0
                         }
-                        val section = Regex("^([0-9]{1,2})(?: *[-－~至] *([0-9]{1,2}))?节$")
-                            .matchEntire(timing.substringBefore('(').substringBefore('（').trim())
-                        val nodes = if (section != null) {
-                            val start = section.groupValues[1].toInt()
-                            start to (section.groupValues[2].toIntOrNull() ?: start)
-                        } else if (timing.contains('节')) continue else rowNodes ?: continue
-                        if (nodes.first !in 1..30 || nodes.second !in nodes.first..30) continue
+                        val nodes = sectionNodes(timing.substringBefore('(').substringBefore('（').trim())
+                            ?: if (timing.contains('节')) continue else rowNodes ?: continue
                         for ((start, end, type) in parseWeekRuns(weekText, parity)) {
                             out += JwCourse(name, room, teacher, day, nodes.first, nodes.second, start, end, type)
                         }
@@ -209,15 +256,15 @@ class JwScauParser(source: String) : JwParser(source) {
                     val tdSection = tdSectionList.getOrNull(tdIdx) ?: continue
                     val sectionMatch = RE_SECTION.find(tdSection.text())
                     val sectionNum = sectionMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
-                    if (sectionNum !in 1..30) continue
+                    val nodes = explicitSchedulePair(sectionNum) ?: continue
 
                     for ((sw, ew, parity) in runs) out += JwCourse(
                         name = name,
                         teacher = teacher,
                         room = room,
                         day = day,
-                        startNode = sectionNum * 2 - 1,
-                        endNode = sectionNum * 2,
+                        startNode = nodes.first,
+                        endNode = nodes.last,
                         startWeek = sw,
                         endWeek = ew,
                         type = parity,
@@ -226,6 +273,37 @@ class JwScauParser(source: String) : JwParser(source) {
             }
         }
         return out
+    }
+
+    /** Old indexed view: two heading rows, then name/teacher, room, and weeks per cell. */
+    private fun parseIndexedFallbackStrategy(): List<JwCourse> = buildList {
+        for (table in Jsoup.parse(source).select(SELECTOR_FALLBACK_TABLE)) {
+            val rows = table.select("tr").filter { it.closest("table") === table }
+            // Paired section headings have their own field order and must not enter this strategy.
+            if (rows.any { row -> row.select("td").any { RE_SECTION.containsMatchIn(it.text()) } }) continue
+            for ((index, row) in rows.drop(2).withIndex()) {
+                val nodes = explicitSchedulePair(index + 1) ?: continue
+                for ((dayIndex, cell) in row.select(SELECTOR_TD_VALIGN_TOP).withIndex()) {
+                    if (dayIndex >= 7) break
+                    val fields = cell.html().split(Regex("<br\\s*/?>", RegexOption.IGNORE_CASE))
+                        .map { Jsoup.parseBodyFragment(it).text().trim() }
+                    if (fields.size < 3) continue
+                    var name = fields[0].substringBefore('：').trim()
+                    val teacher = fields[0].substringAfter('：', "").trim()
+                    val suffix = name.substringAfterLast(' ', "")
+                    val weekText = if (RE_WEEK_SEGMENT.matches(suffix)) {
+                        name = name.substringBeforeLast(' ').replace(" ", "")
+                        suffix
+                    } else fields[2].substringBefore('周')
+                    if (name.isBlank() || ('单' in fields[2] && '双' in fields[2])) continue
+                    val parity = when { '单' in fields[2] -> 1; '双' in fields[2] -> 2; else -> 0 }
+                    for ((first, last, type) in parseWeekRuns(weekText, parity, globalParity = true)) {
+                        add(JwCourse(name, fields[1], teacher, dayIndex + 1,
+                            nodes.first, nodes.last, first, last, type))
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -240,7 +318,7 @@ class JwScauParser(source: String) : JwParser(source) {
     }
 
     /** Keep sparse advertised weeks as separate runs. */
-    internal fun parseWeekRuns(text: String, parity: Int = 0): List<Triple<Int, Int, Int>> {
+    internal fun parseWeekRuns(text: String, parity: Int = 0, globalParity: Boolean = false): List<Triple<Int, Int, Int>> {
         val runs = mutableListOf<Triple<Int, Int, Int>>()
         for (token in text.split(',', '，', '、', ';', '；')) {
             val explicit = when {
@@ -248,14 +326,15 @@ class JwScauParser(source: String) : JwParser(source) {
                 token.contains("双") -> 2
                 else -> 0
             }
-            val tokenParity = if (explicit != 0) explicit else if (text.split(',', '，', '、', ';', '；').size == 1) parity else 0
+            if (globalParity && parity != 0 && explicit != 0 && parity != explicit) return emptyList()
+            val tokenParity = if (explicit != 0) explicit else if (globalParity || text.split(',', '，', '、', ';', '；').size == 1) parity else 0
             val clean = token.replace("（单）", "").replace("（双）", "")
                 .replace("(单)", "").replace("(双)", "")
                 .replace("单周", "").replace("双周", "").replace("周", "")
-            val match = Regex("""^ *([0-9]{1,2})(?: *[-－—~至] *([0-9]{1,2}))? *$""").matchEntire(clean) ?: continue
-            val start = match.groupValues[1].toInt()
-            val end = match.groupValues[2].toIntOrNull() ?: start
-            if (start !in 1..30 || end !in start..30) continue
+            val match = Regex("""^ *([0-9]+)(?: *[-－—~至] *([0-9]+))? *$""").matchEntire(clean) ?: return emptyList()
+            val start = match.groupValues[1].toIntOrNull() ?: return emptyList()
+            val end = match.groupValues[2].takeIf(String::isNotBlank)?.let { it.toIntOrNull() ?: return emptyList() } ?: start
+            if (start !in 1..366 || end !in start..366) return emptyList()
             val weeks = (start..end).filter { tokenParity == 0 || it % 2 == tokenParity % 2 }
             if (weeks.isEmpty()) continue
             var first = weeks.first()

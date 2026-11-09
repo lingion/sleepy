@@ -55,7 +55,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
@@ -73,6 +73,10 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.NavDockSpec
+import com.lingion.sleepy.ui.component.OfficialNavIconMotion
+import com.lingion.sleepy.ui.component.navIconMotion
+import com.lingion.sleepy.ui.component.observePressTracker
+import com.lingion.sleepy.ui.component.rememberOfficialNavIconMotion
 import com.lingion.sleepy.ui.component.PillNavigationBar
 import com.lingion.sleepy.ui.component.PillNavItemSpec
 import com.lingion.sleepy.ui.component.PillBarState
@@ -500,7 +504,7 @@ private fun MainRoute(
     updateNoticeVisible: Boolean,
     pillBarState: PillBarState,
 ) {
-    val navItems = Tab.entries.map { PillNavItemSpec(it.icon, stringResource(it.labelRes), badge = updateNoticeVisible && it == Tab.Mine) }
+    val navItems = Tab.entries.map { PillNavItemSpec(it.icon, stringResource(it.labelRes), badge = updateNoticeVisible && it == Tab.Mine, motionKey = it.motionKey) }
     val holder: SaveableStateHolder = rememberSaveableStateHolder()
     // 双击退出只在课表页生效;其它 tab 第一次返回回课表页。
     val ctxForExit = LocalContext.current
@@ -535,6 +539,9 @@ private fun MainRoute(
         // 默认 currentTab = Tab.Schedule (Compact 分支默认),宽屏派生为 Tab.Today
         // 让右半默认显示今日、slot 1 胶囊默认高亮,两侧一致。
         // 红点显示条件 = 真实 updateNoticeVisible (云端有新 release + 用户未 dismiss)。
+        // 图标专属动效: rail 形态与贴底共用同一接线真源(选中边沿 = currentTab,
+        // 非 effectiveRightTab — Schedule→Today 派生切换不误放脉冲)。
+        val officialMotion = rememberOfficialNavIconMotion(Tab.entries.map { it.motionKey }, currentTab.ordinal)
         val effectiveRightTab: Tab = if (currentTab == Tab.Schedule) Tab.Today else currentTab
         val onTabletEditCourse: (CourseEntity) -> Unit = { course ->
             navigator.session.beginEditCourse(course)
@@ -564,18 +571,22 @@ private fun MainRoute(
                             tabIcon = Tab.Today.icon,
                             tabShowUpdateDot = false,
                             onClick = { setCurrentTab(Tab.Today) },
+                            tab = Tab.Today,
+                            motion = officialMotion,
                         )
                         PlainRailItem(
                             selected = false,
                             tab = Tab.Manage,
                             showUpdateDot = false,
                             onClick = { setCurrentTab(Tab.Manage) },
+                            motion = officialMotion,
                         )
                         PlainRailItem(
                             selected = false,
                             tab = Tab.Mine,
                             showUpdateDot = updateNoticeVisible,
                             onClick = { setCurrentTab(Tab.Mine) },
+                            motion = officialMotion,
                         )
                     }
                     Tab.Manage -> {
@@ -584,6 +595,7 @@ private fun MainRoute(
                             tab = Tab.Today,
                             showUpdateDot = false,
                             onClick = { setCurrentTab(Tab.Today) },
+                            motion = officialMotion,
                         )
                         CombinedRailItem(
                             selected = true,
@@ -591,12 +603,15 @@ private fun MainRoute(
                             tabIcon = Tab.Manage.icon,
                             tabShowUpdateDot = false,
                             onClick = { setCurrentTab(Tab.Manage) },
+                            tab = Tab.Manage,
+                            motion = officialMotion,
                         )
                         PlainRailItem(
                             selected = false,
                             tab = Tab.Mine,
                             showUpdateDot = updateNoticeVisible,
                             onClick = { setCurrentTab(Tab.Mine) },
+                            motion = officialMotion,
                         )
                     }
                     Tab.Mine -> {
@@ -605,12 +620,14 @@ private fun MainRoute(
                             tab = Tab.Today,
                             showUpdateDot = false,
                             onClick = { setCurrentTab(Tab.Today) },
+                            motion = officialMotion,
                         )
                         PlainRailItem(
                             selected = false,
                             tab = Tab.Manage,
                             showUpdateDot = false,
                             onClick = { setCurrentTab(Tab.Manage) },
+                            motion = officialMotion,
                         )
                         CombinedRailItem(
                             selected = true,
@@ -618,6 +635,8 @@ private fun MainRoute(
                             tabIcon = Tab.Mine.icon,
                             tabShowUpdateDot = updateNoticeVisible,
                             onClick = { setCurrentTab(Tab.Mine) },
+                            tab = Tab.Mine,
+                            motion = officialMotion,
                         )
                     }
                     else -> {
@@ -626,18 +645,21 @@ private fun MainRoute(
                             tab = Tab.Today,
                             showUpdateDot = false,
                             onClick = { setCurrentTab(Tab.Today) },
+                            motion = officialMotion,
                         )
                         PlainRailItem(
                             selected = false,
                             tab = Tab.Manage,
                             showUpdateDot = false,
                             onClick = { setCurrentTab(Tab.Manage) },
+                            motion = officialMotion,
                         )
                         PlainRailItem(
                             selected = false,
                             tab = Tab.Mine,
                             showUpdateDot = updateNoticeVisible,
                             onClick = { setCurrentTab(Tab.Mine) },
+                            motion = officialMotion,
                         )
                     }
                 }
@@ -732,9 +754,10 @@ private fun MainRoute(
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
+                    // 测量整个遮挡区域，包含系统导航栏和悬浮间距，供页面预留滚动空间。
+                    .onSizeChanged { size -> dockOverlayPx = size.height }
                     .windowInsetsPadding(WindowInsets.navigationBars)
-                    .padding(bottom = 12.dp)
-                    .onGloballyPositioned { c -> dockOverlayPx = c.size.height }
+                    .padding(bottom = NavDockSpec.bottomFloat)
             ) {
                 PillNavigationBar(
                     modifier = Modifier.testTag("app_navigation_dock"),
@@ -749,6 +772,9 @@ private fun MainRoute(
         }
     } else {
         // Compact + 贴底: 官方有 NavigationBar → 用官方(替自研贴底形态)
+        // 2026-11-08 报障"更新后底栏图标不动"正落在此分支: 官方 item 图标此前
+        // 从未接驱动 → 接线表 + 按压跟踪在此挂上(dock 分支不受影响)。
+        val officialMotion = rememberOfficialNavIconMotion(Tab.entries.map { it.motionKey }, currentTab.ordinal)
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             containerColor = MaterialTheme.colorScheme.background,
@@ -757,9 +783,10 @@ private fun MainRoute(
                     Tab.entries.forEach { tab ->
                         NavigationBarItem(
                             colors = NavigationBarItemDefaults.colors(indicatorColor = controlFill(MaterialTheme.colorScheme.secondaryContainer)),
+                            modifier = Modifier.observePressTracker(officialMotion.pressTrackerFor(tab.ordinal)!!),
                             selected = currentTab == tab,
                             onClick = { setCurrentTab(tab) },
-                            icon = { GlassNavigationIcon(tab, selected = currentTab == tab, showUpdateDot = updateNoticeVisible && tab == Tab.Mine) },
+                            icon = { GlassNavigationIcon(tab, selected = currentTab == tab, showUpdateDot = updateNoticeVisible && tab == Tab.Mine, motion = officialMotion) },
                             label = { Text(stringResource(tab.labelRes)) },
                         )
                     }
@@ -787,29 +814,39 @@ private fun MainRoute(
 /**
  * 官方 NavigationBar / NavigationRail 的 tab 图标 — Mine 且有更新提醒时右上角画主题色小圆点。
  * 三种导航形态(贴底/Rail/悬浮 Dock)与自研 PillNavigationBar 共用同一 noticeVisible 状态。
+ *
+ * [motion] = 官方形态接线表(rememberOfficialNavIconMotion); 传入时图标层接驱动,
+ * 与 dock 形态同一套四个专属动效。为 null 时退化为原始静态图标(逐位与改前一致)。
+ * 红点画在变换层之外 —— 只动图标, 红点位置不受影响。
  */
 @Composable
-private fun GlassNavigationIcon(tab: Tab, selected: Boolean, showUpdateDot: Boolean) {
+private fun GlassNavigationIcon(
+    tab: Tab,
+    selected: Boolean,
+    showUpdateDot: Boolean,
+    motion: OfficialNavIconMotion? = null,
+) {
     if (com.lingion.sleepy.ui.theme.LocalUiStyle.current == com.lingion.sleepy.ui.theme.UiStyle.LiquidGlass) {
         Box(
             Modifier.size(width = 64.dp, height = 32.dp)
                 .glassControl(shape = RoundedCornerShape(percent = 50), selected = selected),
             contentAlignment = Alignment.Center,
-        ) { NavigationTabIcon(tab, showUpdateDot) }
+        ) { NavigationTabIcon(tab, showUpdateDot, motion) }
     } else {
-        NavigationTabIcon(tab, showUpdateDot)
+        NavigationTabIcon(tab, showUpdateDot, motion)
     }
 }
 
 @Composable
-private fun NavigationTabIcon(tab: Tab, showUpdateDot: Boolean) {
+internal fun NavigationTabIcon(tab: Tab, showUpdateDot: Boolean, motion: OfficialNavIconMotion? = null) {
     val colors = MaterialTheme.colorScheme
+    val iconModifier = Modifier.navIconMotion(motion?.driverFor(tab.ordinal))
     if (!showUpdateDot) {
-        Icon(tab.icon, contentDescription = null)
+        Icon(tab.icon, contentDescription = null, modifier = iconModifier)
         return
     }
     Box {
-        Icon(tab.icon, contentDescription = null)
+        Icon(tab.icon, contentDescription = null, modifier = iconModifier)
         Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -832,6 +869,8 @@ private fun CombinedRailItem(
     tabIcon: androidx.compose.ui.graphics.vector.ImageVector,
     tabShowUpdateDot: Boolean = false,
     onClick: () -> Unit,
+    tab: Tab? = null,
+    motion: OfficialNavIconMotion? = null,
 ) {
     val colors = MaterialTheme.colorScheme
     // MD3E (Task 7b): 跑道胶囊选中进/出色走 fastEffects 缓动, 禁瞬时硬切。
@@ -845,9 +884,13 @@ private fun CombinedRailItem(
         animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
         label = "combinedRailIcon",
     )
+    // 上半"课表"永久固定(宽屏 currentTab 恒为右侧 tab), 只下半"从 tab"接专属动效。
+    val tabIconModifier = if (tab != null) Modifier.navIconMotion(motion?.driverFor(tab.ordinal)) else Modifier
+    val tracker = tab?.let { motion?.pressTrackerFor(it.ordinal) }
     Column(
         modifier = Modifier
             .padding(horizontal = 8.dp, vertical = 4.dp)
+            .then(if (tracker != null) Modifier.observePressTracker(tracker) else Modifier)
             .clickable(onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -875,7 +918,7 @@ private fun CombinedRailItem(
                 modifier = Modifier.size(28.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(tabIcon, contentDescription = "从 tab", tint = iconColor, modifier = Modifier.size(22.dp))
+                Icon(tabIcon, contentDescription = "从 tab", tint = iconColor, modifier = tabIconModifier.size(22.dp))
                 if (tabShowUpdateDot) {
                     Box(
                         modifier = Modifier
@@ -899,12 +942,16 @@ private fun PlainRailItem(
     tab: Tab,
     showUpdateDot: Boolean,
     onClick: () -> Unit,
+    motion: OfficialNavIconMotion? = null,
 ) {
+    // 按压跟踪挂整项(比图标 24dp 命中区大): 齿轮按住缓转, 其它 key 无消费者=零影响。
+    val tracker = motion?.pressTrackerFor(tab.ordinal)
     NavigationRailItem(
         colors = NavigationRailItemDefaults.colors(indicatorColor = controlFill(MaterialTheme.colorScheme.secondaryContainer)),
+        modifier = if (tracker != null) Modifier.observePressTracker(tracker) else Modifier,
         selected = selected,
         onClick = onClick,
-        icon = { GlassNavigationIcon(tab, selected = selected, showUpdateDot = showUpdateDot) },
+        icon = { GlassNavigationIcon(tab, selected = selected, showUpdateDot = showUpdateDot, motion = motion) },
         label = { Text(stringResource(tab.labelRes)) },
     )
 }

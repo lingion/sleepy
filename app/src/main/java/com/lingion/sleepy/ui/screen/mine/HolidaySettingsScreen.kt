@@ -2,7 +2,6 @@ package com.lingion.sleepy.ui.screen.mine
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -36,14 +35,12 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TextField
 import androidx.compose.material3.Text
 import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
 import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -56,19 +53,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.ui.component.SettingsLayout
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.DatePickerField
+import com.lingion.sleepy.ui.component.settingsSection
 import com.lingion.sleepy.ui.component.SectionHeader
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
 import com.lingion.sleepy.ui.theme.SleepyTheme
-import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.HolidayEntry
@@ -218,7 +214,7 @@ fun HolidaySettingsScreen(
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(SettingsLayout.cardGap)
         ) {
             item {
                 Row(
@@ -238,7 +234,7 @@ fun HolidaySettingsScreen(
                     }
                     Text(
                         text = year.toString(),
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                        style = SettingsLayout.headingStyle,
                         color = colors.onSurface,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
@@ -264,7 +260,7 @@ fun HolidaySettingsScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = stringResource(R.string.holiday_data_source),
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                            style = SettingsLayout.headingStyle,
                             color = colors.onSurface
                         )
                         Spacer(Modifier.width(10.dp))
@@ -326,7 +322,7 @@ fun HolidaySettingsScreen(
                 ) {
                     Text(
                         text = stringResource(R.string.holiday_makeup_title),
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                        style = SettingsLayout.headingStyle,
                         color = colors.onSurface
                     )
                     Text(
@@ -408,8 +404,7 @@ fun HolidaySettingsScreen(
                         }
                     }
                 }
-                item { SectionHeader(stringResource(R.string.settings_holiday_dates)) }
-                item {
+                settingsSection(R.string.settings_holiday_dates) {
                     Text(stringResource(R.string.settings_holiday_dates_scope),
                         style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
                 }
@@ -448,24 +443,25 @@ fun HolidaySettingsScreen(
                 val orphanEntries = transfers.filter { it.sourceDate !in yearDates }.sortedBy { it.sourceDate }
 
                 if (orphanEntries.isNotEmpty() || merged.removed.isNotEmpty()) {
-                    item { SectionHeader(stringResource(R.string.settings_holiday_maintenance)) }
-                }
-                if (orphanEntries.isNotEmpty()) {
-                    item {
-                        HolidayOrphanCard(
-                            entries = orphanEntries,
-                            dayNames = dayNames,
-                            onClear = { source -> saveTransfer(source, null, "orphan") }
-                        )
-                    }
-                }
-                if (merged.removed.isNotEmpty()) {
-                    item { SectionHeader(stringResource(R.string.holiday_removed_section)) }
-                    item {
-                        HolidayRemovedCard(
-                            segments = merged.removed,
-                            onRestore = { restoreRange(it) }
-                        )
+                    settingsSection(R.string.settings_holiday_maintenance) {
+                        Column(verticalArrangement = Arrangement.spacedBy(SettingsLayout.cardGap)) {
+                            if (orphanEntries.isNotEmpty()) {
+                                HolidayOrphanCard(
+                                    entries = orphanEntries,
+                                    dayNames = dayNames,
+                                    onClear = { source -> saveTransfer(source, null, "orphan") },
+                                )
+                            }
+                            if (merged.removed.isNotEmpty()) {
+                                Column(verticalArrangement = Arrangement.spacedBy(SettingsLayout.headerGap)) {
+                                    SectionHeader(stringResource(R.string.holiday_removed_section))
+                                    HolidayRemovedCard(
+                                        segments = merged.removed,
+                                        onRestore = { restoreRange(it) },
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -526,10 +522,10 @@ private fun HolidayDateManagementRow(segment: HolidayRange, onEdit: () -> Unit) 
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(Modifier.weight(1f)) {
+        Column(Modifier.weight(1f), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
             Text(
                 segment.name.ifBlank { segmentDateLabel(segment) },
-                style = MaterialTheme.typography.titleSmall,
+                style = SettingsLayout.headingStyle,
                 color = colors.onSurface
             )
             Text(segmentDateLabel(segment), style = MaterialTheme.typography.bodySmall,
@@ -581,8 +577,8 @@ private fun HolidayTransferCard(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold), color = colors.onSurface)
+            Column(Modifier.weight(1f), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
+                Text(title, style = SettingsLayout.headingStyle, color = colors.onSurface)
                 Text(subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
             }
         }
@@ -619,7 +615,7 @@ private fun HolidayOrphanCard(
     ) {
         Text(
             text = stringResource(R.string.holiday_transfer_orphan_title),
-            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+            style = SettingsLayout.headingStyle,
             color = colors.onSurfaceVariant
         )
         Text(

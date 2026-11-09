@@ -3,38 +3,56 @@ package com.lingion.sleepy.data.jw
 import org.json.JSONArray
 import org.json.JSONObject
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 import java.util.Locale
+import java.util.concurrent.CancellationException
 
 /** Compatibility parsers for WakeUp protocol variants. */
-private object WakeUpCompat {
+internal object WakeUpCompat {
     fun parse(source: String, markers: Set<String>, jsonHint: Boolean = false): List<JwCourse> {
         parseJson(source)?.let { root ->
             parseJsonCourses(root).takeIf { it.isNotEmpty() }?.let { return it }
             parseJzJson(root).takeIf { it.isNotEmpty() }?.let { return it }
         }
         parseJzSuper(source).takeIf { it.isNotEmpty() }?.let { return it }
-        parseJzHtml(source).takeIf { it.isNotEmpty() }?.let { return it }
+        parseJzNativeChain(source).takeIf { it.isNotEmpty() }?.let { return it }
         parseMarkedTable(source, markers).takeIf { it.isNotEmpty() }?.let { return it }
-        return if (jsonHint) emptyList() else parseDelimited(source)
+        return emptyList()
+    }
+
+    /** Native variants isolate failures and stop at the first nonempty schedule. */
+    internal fun parseJzNativeChain(source: String): List<JwCourse> {
+        val errors = mutableListOf<Pair<String, Exception>>()
+        val parsers = listOf(
+            "JinZhiCourseFormTable" to ::parseJzHtml,
+            "JinZhiMtt" to ::parseJzMtt,
+            "WIST" to ::parseJzWist,
+            "JinZhiHqu" to { html -> parseJzMttLayout(html, JzMttLayout.HQU) },
+            "JinZhiXjtu" to { html -> parseJzMttLayout(html, JzMttLayout.XJTU) },
+            "JinZhiX" to ::parseJzX,
+            "JinZhiPost" to ::parseJzPost,
+            "JinZhiXTable" to ::parseJzXTable,
+            "XMU" to ::parseJzXmu,
+        )
+        for ((name, parser) in parsers) {
+            try {
+                parser(source).takeIf { it.isNotEmpty() }?.let { return it }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                errors += name to error
+            }
+        }
+        if (errors.isNotEmpty()) throw IllegalStateException(errors.joinToString("\n") { (name, error) ->
+            "$name: ${error.message.orEmpty()}"
+        }).apply { errors.forEach { (_, error) -> addSuppressed(error) } }
+        return emptyList()
     }
 
     /** JZHandCourseInfoItem JSON: xqj=day, djj=起始节, qmz="1-8;10-16", dsz==1→单 / dsz!=2→双 / else 每周 (WakeUp 反转语义). */
     private fun parseJzJson(root: Any): List<JwCourse> {
-        val rows = root as? JSONArray ?: return emptyList()
-        return buildList {
-            for (i in 0 until rows.length()) {
-                val row = rows.optJSONObject(i) ?: continue
-                val name = row.optString("kcmc")
-                val day = row.optInt("xqj", 0)
-                val start = row.optInt("djj", 0)
-                if (name.isBlank() || day !in 1..7 || start < 1) continue
-                val type = when (row.optInt("dsz", 0)) { 1 -> 1; 2 -> 0; else -> 2 }
-                row.optString("qmz").split(';', '；').forEach { token ->
-                    val nums = Regex("\\d+").findAll(token).map { it.value.toInt() }.toList()
-                    if (nums.isNotEmpty()) add(JwCourse(name, row.optString("skdd"), row.optString("jsxm"), day, start, start, nums.first(), nums.getOrNull(1) ?: nums.first(), type))
-                }
-            }
-        }
+        if (root !is JSONArray) return emptyList()
+        return JwXbellsoftParser(root.toString()).generateCourseList()
     }
 
     /** 新强智 Njw2017 SPA (2026-10) HTML parser.
@@ -78,11 +96,12 @@ private object WakeUpCompat {
                 val tds = row.children().filter { it.tagName() == "td" }
                 if (tds.size < 8) continue // 0=节次标签, 1..7=周一..周日
                 val rowLabel = tds[0].text().trim()
-                val rowSections = Regex("""^(\d{1,2})(?:\s*[-~至]\s*(\d{1,2}))?节$""")
+                val rowSections = Regex("""^(\d+)(?:\s*[-~至]\s*(\d+))?节$""")
                     .matchEntire(rowLabel)?.let { match ->
                         val first = match.groupValues[1].toIntOrNull()
-                        val last = match.groupValues[2].takeIf(String::isNotBlank)?.toIntOrNull() ?: first
-                        if (first != null && last != null && first in 1..30 && last in first..30) first to last else null
+                        val last = if (match.groupValues[2].isBlank()) first else match.groupValues[2].toIntOrNull()
+                        if (first != null && last != null && first in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND &&
+                            last in first..EXPLICIT_SCHEDULE_RESOURCE_BOUND) first to last else null
                     } ?: if (rowLabel.isBlank() && rows.size == 6 && rowIdx < defaultStartByRow.size)
                         defaultStartByRow[rowIdx] to defaultEndByRow[rowIdx] else null
                 for (col in 1..7) {
@@ -109,11 +128,13 @@ private object WakeUpCompat {
                         val startNode: Int
                         val endNode: Int
                         if (weeksText.contains("节")) {
-                            val section = Regex("""^(\d{1,2})(?:\s*[-~至]\s*(\d{1,2}))?节$""")
+                            val section = Regex("""^(\d+)(?:\s*[-~至]\s*(\d+))?节$""")
                                 .matchEntire(weeksText.substringBefore('(').substringBefore('（').trim()) ?: continue
                             startNode = section.groupValues[1].toIntOrNull() ?: continue
-                            endNode = section.groupValues[2].takeIf(String::isNotBlank)?.toIntOrNull() ?: startNode
-                            if (startNode !in 1..30 || endNode !in startNode..30) continue
+                            endNode = if (section.groupValues[2].isBlank()) startNode
+                                else section.groupValues[2].toIntOrNull() ?: continue
+                            if (startNode !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND ||
+                                endNode !in startNode..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
                         } else {
                             val fallback = rowSections ?: continue
                             startNode = fallback.first
@@ -140,32 +161,313 @@ private object WakeUpCompat {
         }
     }
 
-    /** JZ HTML fallback: table#CourseFormTable; 节次行 td 按 <hr> 分块, 每块 <br> 分字段: [0]课名, [1]周次, [2]教师, "第a-b节", 末位地点. */
-    private fun parseJzHtml(source: String): List<JwCourse> {
-        val table = Jsoup.parse(source).selectFirst("#CourseFormTable") ?: return emptyList()
+    /** WakeUp 6.6.2 CourseFormTable: gutters do not consume days; rowspan reserves them. */
+    internal fun parseJzHtml(source: String): List<JwCourse> {
+        val doc = Jsoup.parse(source)
+        val table = doc.getElementById("1") ?: doc.selectFirst(".CourseFormTable, #CourseFormTable")
+            ?: return emptyList()
+        val occupiedUntil = IntArray(7)
         return buildList {
-            for (row in table.select("tr")) {
-                val tds = row.select("td")
-                if (tds.any { it.text().contains("星期") }) continue
-                for ((col, td) in tds.withIndex()) {
-                    if (td.attr("style").contains("center")) continue
-                    val day = col + 1
-                    for (chunk in td.html().split("<hr>")) {
-                        val f = chunk.split("<br>").map { Jsoup.parse(it).text().trim() }.filter { it.isNotEmpty() }
-                        if (f.size < 2) continue
-                        val name = f[0].substringBefore('(').trim()
+            for ((rowIndex, row) in table.select("tr").withIndex()) {
+                var dayIndex = 0
+                for (td in row.children().filter { it.tagName() == "td" }) {
+                    if (td.attr("style").contains("center", true) || td.hasClass("firstHiddenTd")) continue
+                    if (td.hasClass("NotFixCourseTableTd") || td.hasClass("commentAlign")) return@buildList
+                    while (dayIndex < 7 && occupiedUntil[dayIndex] > rowIndex) dayIndex++
+                    if (dayIndex >= 7) break
+                    val day = dayIndex + 1
+                    occupiedUntil[dayIndex] = rowIndex + (td.attr("rowspan").toIntOrNull() ?: 1).coerceAtLeast(1)
+                    dayIndex++
+                    if (td.text().isBlank()) continue
+                    val html = td.html().replace(Regex("(?i)&nbsp;\\s*<br\\s*/?>|<br\\s*/?>\\s*&nbsp;"), "<br>")
+                    for (chunk in html.split(Regex("(?i)<hr\\b[^>]*>"))) {
+                        // Keep interior empty fields: a blank teacher must not shift the room.
+                        val fields = chunk.split(Regex("(?i)<br\\s*/?>|&nbsp;|\u00a0"))
+                            .map { Jsoup.parse(it).text().trim() }
+                            .dropWhile(String::isBlank).dropLastWhile(String::isBlank)
+                        if (fields.size < 5) continue
+                        val name = fields[0].substringBefore('[').trim()
                         if (name.isBlank()) continue
-                        val weeksText = f.firstOrNull { it.firstOrNull()?.isDigit() == true } ?: continue
-                        val nodeField = f.firstOrNull { Regex("第\\s*\\d+").containsMatchIn(it) && it != weeksText }
-                        val nums = nodeField?.let { Regex("\\d+").findAll(it).map { m -> m.value.toInt() }.toList() }
-                        val start = nums?.getOrNull(0) ?: 1
-                        val end = nums?.getOrNull(1) ?: start
-                        val room = f.lastOrNull { it != name && it != weeksText && it != nodeField } ?: ""
-                        val teacher = f.firstOrNull { it != name && it != weeksText && it != nodeField && it != room } ?: ""
-                        parseWeekTokens(weeksText).forEach { (from, to, type) ->
-                            add(JwCourse(name, room, teacher, day, start, end, from, to, type))
+                        val weekIndex = if (fields[1].firstOrNull()?.isDigit() == true) 1 else 2
+                        val nodeIndex = (2..3).firstOrNull { fields[it].contains('节') } ?: continue
+                        val nodes = Regex("第\\s*(\\d+)(?:\\s*[-~至]\\s*(\\d+))?\\s*节").find(fields[nodeIndex]) ?: continue
+                        val fromNode = nodes.groupValues[1].toIntOrNull() ?: continue
+                        val toNode = nodes.groupValues[2].toIntOrNull() ?: fromNode
+                        if (fromNode < 1 || toNode < fromNode) continue
+                        val teacherIndex = (1..3).firstOrNull { it != weekIndex && it != nodeIndex } ?: continue
+                        val note = fields[nodeIndex].substringAfter(')', "").removeSurrounding("(", ")").trim()
+                        parseWeekTokens(fields[weekIndex]).forEach { (from, to, type) ->
+                            if (from > 0 && to >= from) add(JwCourse(name, fields[4], fields[teacherIndex], day,
+                                fromNode, toNode, from, to, type, note = note))
                         }
                     }
+                }
+            }
+        }
+    }
+
+    /** WakeUp 6.6.2 jz.OooOO0: data-week is the weekday, not the teaching week. */
+    internal fun parseJzX(source: String): List<JwCourse> {
+        val table = Jsoup.parse(source).selectFirst(".wut_tablex") ?: return emptyList()
+        return buildList {
+            for (cell in table.select("td[data-role][data-week]")) {
+                val day = cell.attr("data-week").toIntOrNull() ?: continue
+                if (day !in 1..7) continue
+                for (block in cell.children()) {
+                    val children = block.children()
+                    if (children.size < 3) continue
+                    val name = children[1].text().substringAfter('《').substringBefore('》').trim()
+                    val fields = children[2].html().split(Regex("&nbsp;|\u00a0"))
+                    val shift = if (fields.getOrNull(3)?.contains('节') == true) 0 else 1
+                    if (fields.size < 5 - shift || name.isBlank()) continue
+                    val nodes = parseJzNodes(stripMarkup(fields[3 - shift])) ?: continue
+                    val teacher = stripMarkup(fields[1 - shift])
+                    val room = stripMarkup(fields.drop(4 - shift).joinToString(""))
+                    for ((from, to, type) in parseWeekTokens(stripMarkup(fields[2 - shift]))) {
+                        if (from > 0 && to >= from) add(JwCourse(name, room, teacher, day,
+                            nodes.first, nodes.second, from, to, type))
+                    }
+                }
+            }
+        }
+    }
+
+    /** WakeUp 6.6.2 jz.OooOO0O: repeated name, teacher, explicit arrangement lines. */
+    internal fun parseJzXTable(source: String): List<JwCourse> {
+        val table = Jsoup.parse(source).selectFirst(".x-table") ?: return emptyList()
+        return buildList {
+            for (block in table.select("div")) {
+                if (block.children().any { it.tagName() == "div" }) continue
+                val fields = block.html().split(Regex("(?i)<br\\s*/?>"))
+                    .map(::stripMarkup)
+                for (i in 0 until (fields.size - 2).coerceAtLeast(0)) {
+                    if (i != 0 && !fields[i].startsWith(',')) continue
+                    val name = fields[i].substringAfter(',').substringBefore('[').trim()
+                    val arrangement = fields[i + 2].split('，').map(String::trim)
+                    if (name.isBlank() || arrangement.size < 4) continue
+                    val day = extractDay(arrangement[1]) ?: continue
+                    val nodes = parseJzNodes(arrangement[2]) ?: continue
+                    for ((from, to, type) in parseWeekTokens(arrangement[0])) {
+                        if (from > 0 && to >= from) add(JwCourse(name, arrangement.last(), fields[i + 1],
+                            day, nodes.first, nodes.second, from, to, type))
+                    }
+                }
+            }
+        }.distinct()
+    }
+
+    private fun parseJzNodes(text: String): Pair<Int, Int>? {
+        val match = Regex("第?\\s*([0-9一二三四五六七八九十]+)\\s*节?(?:\\s*[-~至]\\s*第?\\s*([0-9一二三四五六七八九十]+)\\s*节?)?")
+            .matchEntire(text.trim()) ?: return null
+        fun number(value: String): Int? {
+            value.toIntOrNull()?.let { return it }
+            val digit = mapOf("一" to 1, "二" to 2, "三" to 3, "四" to 4, "五" to 5,
+                "六" to 6, "七" to 7, "八" to 8, "九" to 9)
+            if (value == "十") return 10
+            if (value == "二十") return 20
+            if (value.startsWith("十")) return digit[value.drop(1)]?.plus(10)
+            return digit[value]
+        }
+        val first = number(match.groupValues[1]) ?: return null
+        val last = if (match.groupValues[2].isEmpty()) first else number(match.groupValues[2]) ?: return null
+        return (first to last).takeIf { first > 0 && last >= first }
+    }
+
+    private enum class JzMttLayout { COMMA, HQU, XJTU }
+
+    internal fun parseJzMtt(source: String): List<JwCourse> = parseJzMttLayout(source, JzMttLayout.COMMA)
+
+    /** Shared item classes do not make these layouts additive schedules. */
+    private fun parseJzMttLayout(source: String, layout: JzMttLayout): List<JwCourse> {
+        val table = Jsoup.parse(source.replace("divclass=", "div class=")).selectFirst(".wut_table")
+            ?: return emptyList()
+        return buildList {
+            for (cell in table.select("td")) {
+                for (item in cell.select(".mtt_arrange_item")) {
+                    val nameElement = item.selectFirst(".mtt_item_kcmc") ?: continue
+                    val heading = nameElement.html().split(Regex("""&nbsp;|\u00a0""")).map(::stripMarkup)
+                    val headingWeeks = heading.firstOrNull { Regex("""\d周""").containsMatchIn(it) }
+                    val roomText = item.selectFirst(".mtt_item_room")?.text()?.trim() ?: continue
+                    val spaceLayout = !roomText.contains(',') && headingWeeks == null
+                    val itemLayout = when {
+                        headingWeeks != null -> JzMttLayout.XJTU
+                        spaceLayout -> JzMttLayout.HQU
+                        else -> JzMttLayout.COMMA
+                    }
+                    if (itemLayout != layout) continue
+                    val arrangement = if (spaceLayout) roomText.split(Regex("""\s+""")) else roomText.split(',')
+                    val fields = arrangement.map(String::trim)
+                    val dayIndex = fields.indexOfFirst { it.startsWith("星期") }
+                    val day = cell.attr("data-week").toIntOrNull()
+                        ?: fields.getOrNull(dayIndex)?.let(::extractDay) ?: continue
+                    val nodeIndex = fields.indexOfFirst { it.contains('节') && parseJzNodes(it) != null }
+                    val nodes = if (nodeIndex >= 0) parseJzNodes(fields[nodeIndex]) else {
+                        val from = cell.attr("data-begin-unit").toIntOrNull()
+                        val to = cell.attr("data-end-unit").toIntOrNull()
+                        if (from != null && to != null && from > 0 && to >= from) from to to else null
+                    } ?: continue
+                    if (day !in 1..7) continue
+                    val ownName = nameElement.ownText().trim()
+                    var name = when {
+                        headingWeeks != null -> fields.first().substringAfter(' ').trim()
+                        Regex("""\[\d+]""").matches(ownName) -> nameElement.children().firstOrNull()?.text().orEmpty()
+                        else -> ownName.replace(Regex("""^\[\d+]\s*"""), "")
+                    }
+                    val creditMatch = if (spaceLayout) Regex("""\(([0-9.]+)学分\)""").find(name) else null
+                    val credit = creditMatch?.groupValues?.get(1)?.toFloatOrNull()?.takeIf { it.isFinite() } ?: 0f
+                    if (creditMatch != null) name = name.removeRange(creditMatch.range).trim()
+                    if (name.isBlank()) continue
+                    val teacher = if (headingWeeks != null) heading.last().substringBefore('[').trim()
+                        else item.select(".mtt_item_jxbmc").text().trim()
+                    val weekEnd = if (dayIndex >= 0) dayIndex else nodeIndex
+                    val weeks = when {
+                        headingWeeks != null -> headingWeeks
+                        spaceLayout -> fields.drop(1).dropLast(1).joinToString(",")
+                        weekEnd > 0 -> fields.take(weekEnd).joinToString(",")
+                        dayIndex < 0 && nodeIndex < 0 -> fields.dropLast(1).joinToString(",")
+                        else -> continue
+                    }
+                    val room = when {
+                        spaceLayout -> fields.first()
+                        dayIndex >= 0 && fields.size - dayIndex > 3 -> fields[fields.lastIndex - 1]
+                        else -> fields.last()
+                    }
+                    for ((from, to, type) in parseMttWeeks(weeks)) {
+                        if (from > 0 && to >= from) add(JwCourse(name, room, teacher, day,
+                            nodes.first, nodes.second, from, to, type, credit=credit))
+                    }
+                }
+            }
+        }
+    }
+
+    private fun parseMttWeeks(value: String): List<Triple<Int, Int, Int>> {
+        val result = mutableListOf<Triple<Int, Int, Int>>()
+        for (raw in value.split(',', '，')) {
+            val token = raw.trim().replace('（', '(').replace('）', ')')
+            val match = Regex("""第?([0-9]+)(?:-([0-9]+))?([单双])?周?(?:\(([单双])周?\))?""")
+                .matchEntire(token) ?: return emptyList()
+            val first = match.groupValues[1].toIntOrNull() ?: return emptyList()
+            val last = match.groupValues[2].ifEmpty { match.groupValues[1] }.toIntOrNull() ?: return emptyList()
+            if (first < 1 || last < first) return emptyList()
+            val markers = listOf(match.groupValues[3], match.groupValues[4]).filter(String::isNotEmpty).distinct()
+            if (markers.size > 1) return emptyList()
+            val parity = when (markers.firstOrNull()) { "单" -> 1; "双" -> 2; else -> 0 }
+            result += Triple(first, last, parity)
+        }
+        return result
+    }
+
+    /** jz.OooO0o has two branches reversed in JADX output; field order follows its DEX. */
+    internal fun parseJzPost(source: String): List<JwCourse> {
+        val table = Jsoup.parse(source).selectFirst("[id^=jsTbl_], table.MsoNormalTable.mtt_table")
+            ?: return emptyList()
+        return buildList {
+            for (cell in table.select("td[xq][jc]")) {
+                if (Regex("""display\s*:\s*none""", RegexOption.IGNORE_CASE).containsMatchIn(cell.attr("style"))) continue
+                val day = cell.attr("xq").trim().toIntOrNull() ?: continue
+                val node = cell.attr("jc").trim().toIntOrNull() ?: continue
+                val span = cell.attr("rowspan").trim().toIntOrNull() ?: 1
+                if (day !in 1..7 || node < 1 || span < 1) continue
+                for (item in cell.select(".arrage")) {
+                    val rawFields = item.children().map { it.text().trim() }
+                    val fields = if (rawFields.firstOrNull() in listOf("", "本", "研", "本研")) rawFields.drop(1) else rawFields
+                    if (fields.size < 3) continue
+                    val name = fields[1].substringBefore('(').trim()
+                    if (name.isBlank()) continue
+                    val mode = fields.getOrNull(3).orEmpty()
+                    val teacher = if (mode == "面授讲课")
+                        fields[0].substringAfterLast('(', "").substringBefore(')') else fields[2]
+                    val room = if (mode == "面授讲课") fields[2] else mode
+                    val weeksText = fields[0].split(',', '，', '、', '\\').joinToString(",") { token ->
+                        val parity = when { token.contains("单") -> "单"; token.contains("双") -> "双"; else -> "" }
+                        token.substringBefore('(').replace("研", "") + parity
+                    }
+                    for ((from, to, type) in parseWeekTokens(weeksText)) {
+                        if (from > 0 && to >= from) add(JwCourse(name, room, teacher, day,
+                            node, node + span - 1, from, to, type))
+                    }
+                }
+            }
+        }
+    }
+
+    /** WIST uses explicit item coordinates and has two named noon periods. */
+    internal fun parseJzWist(source: String): List<JwCourse> = mergeAdjacentJzNodes(buildList {
+        val numericNodes = Regex("""^(中?[1-9]\d?)(-(中?[1-9]\d?))?$""")
+        fun node(value: String): Int? = when (value) {
+            "中1" -> 5
+            "中2" -> 6
+            else -> value.toIntOrNull()
+        }
+        for (cell in Jsoup.parse(source).select("td[data-role=item]")) {
+            val day = cell.attr("data-week").toIntOrNull() ?: continue
+            if (day !in 1..7) continue
+            for (item in cell.select("div.mtt_arrange_item")) {
+                val name = item.selectFirst(".mtt_item_kcmc")?.ownText()?.trim().orEmpty()
+                if (name.isBlank()) continue
+                val teacher = item.selectFirst(".mtt_item_jxbmc")?.text()?.trim().orEmpty()
+                val fields = item.selectFirst(".mtt_item_room")?.text()?.split(',', '，')
+                    ?.map(String::trim) ?: continue
+                val explicitStart = cell.attr("data-begin-unit").toIntOrNull()
+                val explicitEnd = cell.attr("data-end-unit").toIntOrNull()
+                val nodes = if (explicitStart != null && explicitEnd != null) explicitStart to explicitEnd else {
+                    val token = fields.firstOrNull { numericNodes.matches(it) } ?: continue
+                    val bounds = token.split('-')
+                    (node(bounds.first()) ?: continue) to (node(bounds.last()) ?: continue)
+                }
+                if (nodes.first < 1 || nodes.second < nodes.first) continue
+                val rooms = fields.filter { !it.contains('周') && !numericNodes.matches(it) }
+                val room = rooms.firstOrNull { Regex("实验室|教室|机房").containsMatchIn(it) }
+                    ?: rooms.firstOrNull().orEmpty()
+                val weeks = schoolWeekRanges(fields.filter { it.contains('周') }.joinToString(","))
+                    .flatMap { (from, to, type) ->
+                        if (from < 1 || to < from) emptyList() else
+                            (from..to).filter { type == 0 || it % 2 == type % 2 }
+                    }.distinct().sorted()
+                for (week in weeks) add(JwCourse(name, room, teacher, day, nodes.first, nodes.second, week, week))
+            }
+        }
+    }.distinct())
+
+    private fun mergeAdjacentJzNodes(courses: List<JwCourse>): List<JwCourse> =
+        courses.groupBy { it.copy(startNode = 0, endNode = 0) }.values.flatMap { group ->
+            buildList {
+                var current: JwCourse? = null
+                for (course in group.sortedBy { it.startNode }) {
+                    val previous = current
+                    if (previous != null && course.startNode.toLong() <= previous.endNode.toLong() + 1) {
+                        current = previous.copy(endNode = maxOf(previous.endNode, course.endNode))
+                    } else {
+                        if (previous != null) add(previous)
+                        current = course
+                    }
+                }
+                current?.let(::add)
+            }
+        }
+
+    /** XMU embeds an ordinary JSON array; SKZC has no leading week-zero sentinel. */
+    internal fun parseJzXmu(source: String): List<JwCourse> {
+        val start = Regex("""var\s+scheduleList\s*=""").find(source)?.range?.last?.plus(1)
+            ?: return emptyList()
+        val remainder = source.substring(start)
+        val end = Regex(""";\s*var\s+notArrangedList""").find(remainder)?.range?.first
+            ?: return emptyList()
+        val rows = parseJson(remainder.substring(0, end)) as? JSONArray ?: return emptyList()
+        return buildList {
+            for (i in 0 until rows.length()) {
+                val row = rows.optJSONObject(i) ?: continue
+                val name = row.optString("KCM")
+                val day = firstInt(row, "SKXQ") ?: continue
+                val fromNode = firstInt(row, "KSJC") ?: continue
+                val toNode = firstInt(row, "JSJC") ?: continue
+                if (name.isBlank() || day !in 1..7 || fromNode < 1 || toNode < fromNode) continue
+                val room = row.optString("SKDD").ifBlank { row.optString("YPSJDD") }
+                val bitmap = row.optString("SKZC")
+                if (bitmap.any { it != '0' && it != '1' }) continue
+                for ((index, bit) in bitmap.withIndex()) if (bit == '1') {
+                    add(JwCourse(name, room, row.optString("SKJS"), day, fromNode, toNode, index + 1, index + 1))
                 }
             }
         }
@@ -194,8 +496,12 @@ private object WakeUpCompat {
     }
 
     fun parseChaoxing(source: String): List<JwCourse> {
-        val root = parseJson(source) as? JSONObject ?: return emptyList()
-        val rows = root.optJSONObject("data")?.optJSONArray("kckbData") ?: root.optJSONArray("kckbData") ?: return emptyList()
+        val root = parseJson(source)
+        val rows = when (root) {
+            is JSONArray -> root
+            is JSONObject -> root.optJSONObject("data")?.optJSONArray("kckbData") ?: root.optJSONArray("kckbData")
+            else -> null
+        } ?: return emptyList()
         return buildList {
             for (i in 0 until rows.length()) {
                 val row = rows.optJSONObject(i) ?: continue
@@ -205,7 +511,8 @@ private object WakeUpCompat {
                 if (name.isBlank() || day !in 1..7 || node < 1) continue
                 val type = row.optString("zctype").toIntOrNull() ?: 0
                 row.optString("zc").split(',').forEach { token ->
-                    val weeks = Regex("\\d+").findAll(token).map { it.value.toInt() }.toList()
+                    val weeks = Regex("\\d+").findAll(token.substringBefore('(').substringBefore('（'))
+                        .mapNotNull { it.value.toIntOrNull() }.toList()
                     if (weeks.isNotEmpty()) add(JwCourse(name, stripMarkup(row.optString("croommc")), stripMarkup(row.optString("tmc")), day, node, node, weeks.first(), weeks.getOrNull(1) ?: weeks.first(), type))
                 }
             }
@@ -216,25 +523,73 @@ private object WakeUpCompat {
         val payload = (parseJson(source) as? JSONObject)?.optJSONObject("result") ?: return emptyList()
         val names = mutableMapOf<Int, String>()
         val lessons = payload.optJSONArray("lessonList") ?: JSONArray()
-        for (i in 0 until lessons.length()) lessons.optJSONObject(i)?.let { names[it.optInt("id", -1)] = it.optString("courseName") }
+        for (i in 0 until lessons.length()) lessons.optJSONObject(i)?.let { lesson ->
+            lesson.opt("id")?.toString()?.toIntOrNull()?.let { id ->
+                names[id] = if (lesson.isNull("courseName")) "" else lesson.optString("courseName")
+            }
+        }
         val schedules = payload.optJSONArray("scheduleList") ?: return emptyList()
         return buildList {
             for (i in 0 until schedules.length()) {
                 val row = schedules.optJSONObject(i) ?: continue
-                // WakeUp oo000o.java:45 未知 lesson → "未知" 仍导入, 不丢行
-                val name = names[row.optInt("lessonId", -1)].orEmpty().ifBlank { "未知" }
-                val day = row.optInt("weekday", 0)
-                val week = row.optInt("weekIndex", 0)
-                val startTime = row.optInt("startTime", 0)
+                // WakeUp 6.6.2 o000O0: unknown lessons keep their occurrence and clock times.
+                fun integer(key: String): Int? = row.opt(key)?.toString()?.toIntOrNull()
+                val lessonId = integer("lessonId") ?: continue
+                val name = names[lessonId].orEmpty().ifBlank { "未知" }
+                val day = integer("weekday") ?: continue
+                val week = integer("weekIndex") ?: continue
+                val startTime = integer("startTime") ?: continue
+                val endTime = integer("endTime") ?: continue
+                fun clock(value: Int) = value.toString().padStart(4, '0').let {
+                    it.take(2) + ":" + it.drop(2)
+                }
+                val actualStart = clock(startTime)
+                val actualEnd = clock(endTime)
+                if (!JwCourse.isValidTimeRange(actualStart, actualEnd)) continue
                 val start = timeToNode(startTime)
                 if (day !in 1..7 || week < 1 || start < 1) continue
-                val count = durationToNodes(startTime, row.optInt("endTime", 0))
-                add(JwCourse(name, row.optJSONObject("room")?.optString("nameZh").orEmpty(), row.optString("personName"), day, start, start + count - 1, week, week))
+                val count = durationToNodes(startTime, endTime)
+                val room = row.optJSONObject("room")?.let { if (it.isNull("nameZh")) "" else it.optString("nameZh") }.orEmpty()
+                val teacher = if (row.isNull("personName")) "" else row.optString("personName")
+                add(JwCourse(name, room, teacher, day, start, start + count - 1, week, week,
+                    startTime = actualStart, endTime = actualEnd))
             }
         }
     }
 
     fun parseSouthSoft(source: String): List<JwCourse> {
+        val body = Jsoup.parse(source).selectFirst("#kb tbody")
+        if (body != null) return buildList {
+            var unnumberedRows = 0
+            for ((rowIndex, row) in body.select("tr").withIndex()) {
+                val cells = row.children().filter { it.tagName() == "td" }
+                if (cells.firstOrNull()?.text()?.contains("无节次") == true) unnumberedRows++
+                val node = rowIndex + 1 - unnumberedRows
+                if (node < 1) continue
+                for ((day, cell) in cells.withIndex()) {
+                    if (day !in 1..7) continue
+                    for (block in cell.select("div")) {
+                        val fields = block.html().split(Regex("(<[/]*((?!br).)*?> *)+"))
+                            .map { Jsoup.parse(it).text().trim() }
+                        for ((index, field) in fields.withIndex()) {
+                            val weeks = Regex("(\\d+)-(\\d+)周").find(field) ?: continue
+                            fun nameAt(offset: Int) = fields.getOrNull(index + offset).orEmpty()
+                                .substringBefore("班级：").substringBefore("班级:").trim()
+                            val name = nameAt(-1).ifBlank { nameAt(-2) }
+                                .substringAfter("课程名称:").replace("||##", "").substringBefore("||").trim()
+                            val teacher = fields.getOrNull(index + 1).orEmpty()
+                                .replace("(连续周)", "").replace("连续周", "").trim()
+                            val room = fields.getOrNull(index + 2).orEmpty()
+                            val from = weeks.groupValues[1].toInt()
+                            val to = weeks.groupValues[2].toInt()
+                            if (name.isNotBlank() && from >= 1 && to >= from) {
+                                add(JwCourse(name, room, teacher, day, node, node, from, to))
+                            }
+                        }
+                    }
+                }
+            }
+        }.distinct()
         val root = parseJson(source)
         val rows = when (root) {
             is JSONArray -> root
@@ -253,7 +608,7 @@ private object WakeUpCompat {
                 val end = nodes.getOrNull(1)?.toIntOrNull() ?: start
                 fields[1].split(',').forEach { token ->
                     val weeks = Regex("\\d+").findAll(token).map { it.value.toInt() }.toList()
-                    if (weeks.isNotEmpty()) add(JwCourse(row.optString("KCWZSM").ifBlank { fields[0] }, fields[4], fields[2], day, start, end, weeks.first(), weeks.getOrNull(1) ?: weeks.first(), when { token.contains("单") -> 1; token.contains("双") -> 2; else -> 0 }))
+                    if (weeks.isNotEmpty()) add(JwCourse(row.optString("KCWZSM").ifBlank { fields[0] }, fields[3], fields[2], day, start, end, weeks.first(), weeks.getOrNull(1) ?: weeks.first(), when { token.contains("单") -> 1; token.contains("双") -> 2; else -> 0 }))
                 }
             }
         }
@@ -265,32 +620,55 @@ private object WakeUpCompat {
         // Jsoup handles a head-less fragment and tables concatenated from same-origin frames.
         val documents = listOf(Jsoup.parse(source))
         fun nodes(text: String): Pair<Int, Int>? {
-            val match = Regex("^\\s*(\\d{1,2})(?:\\s*[-~至]\\s*(\\d{1,2}))?\\s*(?:节)?\\s*$").matchEntire(text) ?: return null
+            if (text.trim() == "傍晚") return 9 to 9
+            val match = Regex("^\\s*(\\d+)(?:\\s*[-~至]\\s*(\\d+))?\\s*(?:节)?\\s*$").matchEntire(text) ?: return null
             val first = match.groupValues[1].toIntOrNull() ?: return null
-            val last = match.groupValues[2].takeIf(String::isNotBlank)?.toIntOrNull() ?: first
-            return if (first in 1..30 && last in first..30) first to last else null
+            val last = match.groupValues[2].takeIf(String::isNotBlank)?.let {
+                it.toIntOrNull() ?: return null
+            } ?: first
+            return if (first in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND &&
+                last in first..EXPLICIT_SCHEDULE_RESOURCE_BOUND) first to last else null
         }
-        fun emit(name: String, teacher: String, room: String, day: Int, nodeText: String, weeksText: String): List<JwCourse> {
+        fun emit(name: String, teacher: String, room: String, day: Int, nodeText: String, weeksText: String, credit: Float = 0f): List<JwCourse> {
             val (start, end) = nodes(nodeText) ?: return emptyList()
             if (name.isBlank() || day !in 1..7) return emptyList()
             // Keep this source's week grammar strict; the generic compatibility parser is deliberately permissive.
-            val weekPattern = Regex("""^(\d{1,2})(?:[-~至](\d{1,2}))?周?(?:[\(（]([单双])[）\)]|([单双])周?)?$""")
-            val weeks = weeksText.split(',', '，', ';', '；').mapNotNull { raw ->
-                val match = weekPattern.matchEntire(raw.filterNot(Char::isWhitespace)) ?: return@mapNotNull null
-                val first = match.groupValues[1].toIntOrNull() ?: return@mapNotNull null
-                val last = match.groupValues[2].takeIf(String::isNotBlank)?.toIntOrNull() ?: first
-                if (first !in 1..60 || last !in first..60) return@mapNotNull null
+            val weekPattern = Regex("""^([0-9]+)(?:[-~至]([0-9]+))?周?(?:[\(（]([单双])[）\)]|([单双])周?)?$""")
+            val weeks = weeksText.split(',', '，', ';', '；').map { raw ->
+                val match = weekPattern.matchEntire(raw.filterNot(Char::isWhitespace)) ?: return emptyList()
+                val first = match.groupValues[1].toIntOrNull() ?: return emptyList()
+                val last = match.groupValues[2].takeIf(String::isNotBlank)?.let { it.toIntOrNull() ?: return emptyList() } ?: first
+                if (first !in 1..366 || last !in first..366) return emptyList()
                 val parity = match.groupValues[3].ifBlank { match.groupValues[4] }
                 Triple(first, last, when (parity) { "单" -> 1; "双" -> 2; else -> 0 })
             }
-            return weeks
-                .map { (from, to, type) -> JwCourse(name, room, teacher, day, start, end, from, to, type) }
+            val expanded = weeks.flatMap { (from, to, type) ->
+                (from..to).filter { type == 0 || it % 2 == type % 2 }
+            }
+            // Legacy positive-selection pages can repeat weeks in overlapping tokens.
+            // Merge their set only when necessary; retain explicit parity ranges otherwise.
+            val normalized = if (expanded.size == expanded.distinct().size) weeks else {
+                val ordered = expanded.distinct().sorted()
+                buildList {
+                    var i = 0
+                    while (i < ordered.size) {
+                        val step = if (i + 1 < ordered.size && ordered[i + 1] - ordered[i] == 2) 2 else 1
+                        var j = i
+                        while (j + 1 < ordered.size && ordered[j + 1] - ordered[j] == step) j++
+                        add(Triple(ordered[i], ordered[j], if (step == 1) 0 else if (ordered[i] % 2 == 1) 1 else 2))
+                        i = j + 1
+                    }
+                }
+            }
+            return normalized
+                .map { (from, to, type) -> JwCourse(name, room, teacher, day, start, end, from, to, type, credit = credit) }
         }
 
         val myTable = buildList {
             for (doc in documents) for (table in doc.select("#mytable")) {
                 fun isDayHeader(text: String, day: Int): Boolean {
                     val t = text.trim()
+                    if (t.length > 3) return false
                     val name = when (day) {
                         1 -> "一"; 2 -> "二"; 3 -> "三"; 4 -> "四"; 5 -> "五"; 6 -> "六"; 7 -> "日"
                         else -> return false
@@ -301,52 +679,71 @@ private object WakeUpCompat {
                         t.contains("星期$day") || t.contains("周$day")
                 }
 
-                var totalDays = 7
-                for (tr in table.select("tr")) {
-                    val texts = tr.children().map { it.text().trim() }
-                    val hasMon = texts.any { isDayHeader(it, 1) }
-                    val hasSun = texts.any { isDayHeader(it, 7) }
-                    val hasSat = texts.any { isDayHeader(it, 6) }
-                    val hasFri = texts.any { isDayHeader(it, 5) }
-                    if (hasMon && (hasSun || hasSat)) {
-                        totalDays = 7
-                        break
-                    } else if (hasMon && hasFri) {
-                        totalDays = 5
-                        break
+                val rows = table.select("tr").filter { row ->
+                    row.parents().firstOrNull { it.tagName() == "table" } === table
+                }
+                val grid = List(rows.size) { sortedMapOf<Int, Element>() }
+                for ((rowIndex, row) in rows.withIndex()) {
+                    var column = 0
+                    for (cell in row.children().filter { it.tagName() == "td" || it.tagName() == "th" }) {
+                        while (grid[rowIndex].containsKey(column)) column++
+                        val rowSpan = (cell.attr("rowspan").toIntOrNull() ?: 1).coerceIn(1, rows.size - rowIndex)
+                        val colSpan = (cell.attr("colspan").toIntOrNull() ?: 1).coerceIn(1, 1000)
+                        for (r in rowIndex until rowIndex + rowSpan) {
+                            for (c in column until column + colSpan) grid[r][c] = cell
+                        }
+                        column += colSpan
                     }
                 }
+                val dayColumns = grid.firstNotNullOfOrNull { row ->
+                    row.mapNotNull { (column, cell) ->
+                        val text = cell.text().trim()
+                        val day = (1..7).firstOrNull { day ->
+                            isDayHeader(text, day) && text.length <= 3
+                        }
+                        day?.let { column to it }
+                    }.toMap().takeIf { it.size >= 2 }
+                }.orEmpty()
+                val visited = mutableSetOf<Element>()
 
-                val tableCompact = table.select("div.div1").any { it.html().contains("xkinfo") }
-
-                for (row in table.select("tr:not(.H)")) {
+                for ((rowIndex, row) in rows.withIndex()) {
+                    if (row.hasClass("H")) continue
                     if (row.select("th").isNotEmpty() || row.children().any { isDayHeader(it.text(), 1) }) continue
-                    val allCells = row.select("td")
+                    val allCells = row.children().filter { it.tagName() == "td" }
                     if (allCells.isEmpty()) continue
 
-                    for ((column, cell) in allCells.withIndex()) {
-                        val day = if (allCells.size >= totalDays) {
-                            val distanceToLast = allCells.size - 1 - column
-                            if (distanceToLast >= totalDays) continue
-                            totalDays - distanceToLast
+                    for ((column, cell) in grid[rowIndex]) {
+                        if (!visited.add(cell)) continue
+                        val day = if (dayColumns.isNotEmpty()) {
+                            dayColumns[column] ?: continue
                         } else {
-                            column + 1
+                            // Empty weekday cells remain columns even without a td class.
+                            // Only explicit leading period/time labels are gutters.
+                            val gutters = grid[rowIndex].entries.takeWhile { (_, leading) ->
+                                !leading.hasClass("td") && (leading.text().trim() in
+                                    setOf("节次", "时间", "时段", "上午", "下午", "晚上") ||
+                                    Regex("第?\\d+(?:[-~至]\\d+)?节").matches(leading.text().trim()))
+                            }.size
+                            column - gutters + 1
                         }
                         if (day !in 1..7) continue
 
-                        var compact = tableCompact
+                        // The div1 marker applies to subsequent blocks in this cell only.
+                        var compact = false
                         val blocks = cell.children().filter { it.tagName() == "div" }.ifEmpty {
-                            if (Regex("\\[\\s*\\d+").containsMatchIn(cell.text())) listOf(cell) else emptyList()
+                            if (Regex("\\[\\s*(?:\\d+|傍晚)").containsMatchIn(cell.text())) listOf(cell) else emptyList()
                         }
                         for (block in blocks) {
                             if (block.hasClass("div1")) {
                                 compact = block.html().contains("xkinfo") && block.html().contains("&nbsp;")
                                 continue
                             }
-                            val html = if (compact) block.html().replace(Regex("(?i)(?:&nbsp;)+"), " ") else block.html()
+                            // In compact output NBSP separates fields, not words. A normal
+                            // space inside the timing line separates the teacher from weeks.
+                            val html = if (compact) block.html().replace(Regex("(?i)(?:&nbsp;)+"), "<br>") else block.html()
                             val lines = html.split(Regex("(?i)<br\\s*/?>")).map { Jsoup.parse(it).text().trim() }.filter { it.isNotEmpty() }
                             val timingIdx = lines.indexOfFirst { line ->
-                                ('[' in line && ']' in line) && Regex("\\[\\s*\\d+").containsMatchIn(line)
+                                ('[' in line && ']' in line) && Regex("\\[\\s*(?:\\d+|傍晚)").containsMatchIn(line)
                             }
                             if (timingIdx < 0) continue
 
@@ -384,6 +781,7 @@ private object WakeUpCompat {
                 val roomIndex = headers.indexOfFirst { it.contains("地点") }
                 val weeksIndex = headers.indexOfFirst { it.contains("周次") }
                 val parityIndex = headers.indexOfFirst { it.contains("单双周") }
+                val creditIndex = headers.indexOfFirst { it == "学分" }
                 for (row in table.select("tbody tr")) {
                     val cells = row.children()
                     val name = cells.getOrNull(nameIndex)?.text()?.substringAfter(']')?.trim().orEmpty()
@@ -391,13 +789,20 @@ private object WakeUpCompat {
                     val day = extractDay(timing.substringBefore('[')) ?: continue
                     val nodeText = timing.substringAfter('[', "").substringBefore(']')
                     val weeks = if (weeksIndex >= 0) cells.getOrNull(weeksIndex)?.text().orEmpty() else timing.substringAfter('(', "").substringBefore('周')
-                    val parity = cells.getOrNull(parityIndex)?.text().orEmpty()
+                    val parityText = cells.getOrNull(parityIndex)?.text().orEmpty()
+                    val parity = when {
+                        parityText.contains('单') -> "单"
+                        parityText.contains('双') -> "双"
+                        else -> ""
+                    }
+                    val credit = cells.getOrNull(creditIndex)?.text()?.trim()?.toFloatOrNull()
+                        ?.takeIf { it.isFinite() && it >= 0f } ?: 0f
                     val typedWeeks = weeks.replace('，', ',').split(',').joinToString(",") { part ->
                         val t = part.trim()
                         if (t.contains('单') || t.contains('双') || parity.isBlank()) t else "$t$parity"
                     }
                     addAll(emit(name, cells.getOrNull(teacherIndex)?.text()?.substringAfter(']').orEmpty(),
-                        cells.getOrNull(roomIndex)?.text().orEmpty(), day, nodeText, typedWeeks))
+                        cells.getOrNull(roomIndex)?.text().orEmpty(), day, nodeText, typedWeeks, credit))
                 }
             }
         }
@@ -409,15 +814,16 @@ private object WakeUpCompat {
                 val body = table.select("tbody").lastOrNull() ?: continue
                 for ((rowIndex, row) in body.select("tr").withIndex()) {
                     val allCells = row.select("td")
-                    if (allCells.size < 7) continue
                     val cells = allCells.takeLast(7)
                     for ((dayIndex, cell) in cells.withIndex()) {
                         val text = cell.text().trim()
-                        val name = text.substringBefore('(').trim()
-                        val detail = text.substringAfter('(', "").substringBeforeLast(')', "")
+                        // Teaching arrangements append timing after the course title;
+                        // the title itself may already contain parentheses.
+                        val name = text.substringBeforeLast('(').trim()
+                        val detail = text.substringAfterLast('(', "").substringBefore(')', "")
                         val parts = detail.split(Regex("\\s+")).filter(String::isNotBlank)
                         if (name.isBlank() || parts.isEmpty()) continue
-                        addAll(emit(name, "", parts.getOrNull(1).orEmpty(), dayIndex + 1,
+                        addAll(emit(name, "", if (parts.size > 1) parts.last() else "", dayIndex + 1,
                             (rowIndex + 1).toString(), parts[0]))
                     }
                 }
@@ -428,53 +834,11 @@ private object WakeUpCompat {
         return emptyList()
     }
 
-    /** Kingo TaskActivity JS grid: "activity = new TaskActivity(name,teacher,room,weeksBinary)"; index=a*unitCount+b → day=a+1, node=b+1; '1'@p → week p+1, 连续段合并成组, 全奇→单周/全偶→双周. */
-    fun parseKingoTaskActivity(source: String): List<JwCourse> {
-        if (!source.contains("TaskActivity")) return emptyList()
-        val block = Regex("var[\\s]*activity[\\s]*=[\\s]*null;[\\w\\W]*(?=table0\\.marshalTable)").find(source)?.value ?: return emptyList()
-        data class Pending(val name: String, val room: String, val teacher: String, val weeks: List<Int>)
-        val pending = ArrayDeque<Pending>()
-        return buildList {
-            var name = ""
-            var teacher = ""
-            for (stmt in block.split('\n').map { it.trim() }) {
-                Regex("courseName[\\s]*\\+?=[\\s]*[\"']([^\"']*)[\"']").find(stmt)?.let { name += it.groupValues[1] }
-                Regex("[\"']name[\"']\\s*:\\s*[\"']([^\"']*)[\"']").findAll(stmt).toList().takeIf { it.isNotEmpty() }?.let { ms -> teacher = ms.joinToString(",") { it.groupValues[1] } }
-                if (Regex("new[\\s]*TaskActivity[\\s]*\\(").containsMatchIn(stmt)) {
-                    val args = Regex("['\"]([^'\"]*)['\"]").findAll(stmt).toList()
-                    if (args.size >= 4) {
-                        val tName = args[0].groupValues[1].substringBefore('(').ifBlank { name }
-                        args.getOrNull(1)?.groupValues?.get(1)?.takeIf { it.isNotBlank() }?.let { teacher = it }
-                        val room = args[2].groupValues[1]
-                        val weeksBinary = args[3].groupValues[1]
-                        val weeks = weeksBinary.mapIndexedNotNull { pos, ch -> if (ch == '1') pos + 1 else null }
-                        if (tName.isNotBlank() && weeks.isNotEmpty()) pending += Pending(tName, room, teacher, weeks)
-                    }
-                }
-                Regex("index[\\s]*=[\\s]*(\\d+)[\\s]*\\*[\\s]*unitCount[\\s]*\\+[\\s]*(\\d+)").find(stmt)?.let { m ->
-                    // 跨仓 4 源一致: WakeUp o0000OO0.java i10=parseInt(g1)+1 / CourseHelper Swift dayOfWeek=match[1]
-                    // / shiguang HUNNU+UESTC day=D+1 — index 首因子是 0-based day, +1 才是星期几
-                    val day = m.groupValues[1].toInt() + 1
-                    val node = m.groupValues[2].toInt().let { if (it == 13) 10 else if (it < 9) it + 1 else it + 2 }
-                    pending.removeLastOrNull()?.let { p ->
-                        var i = 0
-                        while (i < p.weeks.size) {
-                            var j = i
-                            while (j + 1 < p.weeks.size && (p.weeks[j + 1] == p.weeks[j] + 1 || (p.weeks[j + 1] == p.weeks[j] + 2 && p.weeks[j] % 2 == 1 && p.weeks[j + 1] % 2 == 1))) j++
-                            val run = p.weeks[i]..p.weeks[j]
-                            val type = when {
-                                run.first % 2 == 1 && run.last % 2 == 1 -> 1
-                                run.first % 2 == 0 && run.last % 2 == 0 -> 2
-                                else -> 0
-                            }
-                            add(JwCourse(p.name, p.room, p.teacher, day, node, node, run.first, run.last, type))
-                            i = j + 1
-                        }
-                    }
-                }
-            }
-        }
-    }
+    /** Older catalog declarations may route a classic EAMS page here.
+     * TaskActivity has seven positional fields. SIMC's special periods are a separate protocol.
+     */
+    fun parseKingoTaskActivity(source: String): List<JwCourse> =
+        JwClassicEamsParser(source).generateCourseList()
 
     /** XJU dgData: 兼容两种表头形态。
      *  - 形态 A: th="节次|周X" 无时间列, 节次=阿拉伯数字, 单元格 "｛名(周次)[教师:X,地点:Y]｝"
@@ -545,9 +909,14 @@ private object WakeUpCompat {
             val occupiedNow = colExpire.filterValues { it >= rowIdx }.keys.toHashSet()
             var col = 0
             for (td in row.select("td")) {
-                val cs = td.attr("colspan").toIntOrNull() ?: 1
-                val rs = td.attr("rowspan").toIntOrNull() ?: 1
+                val cs = if (td.hasAttr("colspan")) td.attr("colspan").toIntOrNull() else 1
+                val rs = if (td.hasAttr("rowspan")) td.attr("rowspan").toIntOrNull() else 1
+                if (cs == null || cs !in 1..ths.size || rs == null || rs !in 1..dataRows.size - rowIdx) return emptyList()
                 while (col in occupiedNow) col += 1
+                if (col + cs > ths.size) {
+                    if (td.text().isBlank() && cs == 1 && rs == 1) continue
+                    return emptyList()
+                }
                 val isCenter = td.attr("align").lowercase() == "center"
                 val raw = td.text().replace(' ', ' ').replace('{', '｛').replace('}', '｝').trim()
                 for (i in 0 until cs) {
@@ -575,6 +944,7 @@ private object WakeUpCompat {
             if (node !in 1..20) continue
             if (col < firstDayCol) continue // 时间/节次列, 跳过
             val dayColIdx = col - firstDayCol
+            if (dayColIdx !in 0..6) continue
             val day = ((dayOfFirstCol - 1 + dayColIdx) % 7) + 1
             grid[day to node] = raw
         }
@@ -630,8 +1000,8 @@ private object WakeUpCompat {
                     val name = namePrefix
                     for (m in matches) {
                         val inner = m.groupValues[1]
-                        parseXjuWeeksWithBrackets(inner).forEach { (from, to, teacher, room) ->
-                            out += JwCourse(name, room, teacher, day, startNode, endNode, from, to, 0)
+                        parseXjuWeeksWithBrackets(inner).forEach { (from, to, teacher, room, type) ->
+                            out += JwCourse(name, room, teacher, day, startNode, endNode, from, to, type)
                         }
                     }
                     continue
@@ -649,10 +1019,6 @@ private object WakeUpCompat {
                         out += JwCourse(name, room, teacher, day, startNode, endNode, from, to, type)
                     }
                 }
-            } else if (block.isNotBlank()) {
-                val name = block.substringBefore('(').substringBefore('｛').trim()
-                val nums = Regex("\\d+").findAll(block).map { it.value.toInt() }.toList()
-                if (name.isNotBlank()) out += JwCourse(name, "", "", day, startNode, endNode, nums.firstOrNull() ?: 1, nums.getOrNull(1) ?: 20, 0)
             }
         }
         return out
@@ -660,65 +1026,80 @@ private object WakeUpCompat {
 
     /** 形态 B 块内解析: "12-19周[教师:孙冬璞,地点:待定]" */
     private fun parseXjuWeeksWithBrackets(inner: String): List<XjuWeekSlot> {
-        val bracket = Regex("\\[([^\\]]*)\\]").find(inner)?.groupValues?.get(1).orEmpty()
-        val teacher = Regex("教师[:：]([^,，\\]]*)").find(bracket)?.groupValues?.get(1)?.trim().orEmpty()
-        val room = Regex("地点[:：]([^,，\\]]*)").find(bracket)?.groupValues?.get(1)?.trim().orEmpty()
-        val beforeBracket = inner.substringBefore('[')
         val out = mutableListOf<XjuWeekSlot>()
-        for (token in beforeBracket.split('、', '，', ',')) {
-            parseWeekTokens(token).forEach { (from, to, _) ->
-                out += XjuWeekSlot(from, to, teacher, room)
+        val segments = Regex("([^\\[\\]]+)\\[([^\\[\\]]*)\\]").findAll(inner).toList()
+        if (segments.isEmpty() || inner.substring(segments.last().range.last + 1).isNotBlank()) return emptyList()
+        for (segment in segments) {
+            val weeks = segment.groupValues[1].trim().trimStart('、', '，', ',').trim()
+            val bracket = segment.groupValues[2]
+            val teacher = Regex("教师[:：]([^,，\\]]*)").find(bracket)?.groupValues?.get(1)?.trim().orEmpty()
+            val room = Regex("地点[:：]([^,，\\]]*)").find(bracket)?.groupValues?.get(1)?.trim().orEmpty()
+            for ((from, to, type) in schoolWeekRanges(weeks, trailingParityAppliesToAll = true)) {
+                out += XjuWeekSlot(from, to, teacher, room, type)
             }
         }
         return out
     }
 
-    private data class XjuWeekSlot(val from: Int, val to: Int, val teacher: String, val room: String)
+    private data class XjuWeekSlot(val from: Int, val to: Int, val teacher: String, val room: String, val type: Int)
 
 
-    /** Suda DataGrid1/MainWork_DataGrid1: th 行含 星期X 跳过; 数据行 align=center td=node 行标, 其余 td 索引+1=day; 单元格 "课程:"-名, "(x)"-教师(非辅讲), "主讲教师:"-教师, "第a-b周[单/双]"(以;/,分). */
+    /** Suzhou graduate grid: non-centered rows are periods, centered cells are gutters. */
     fun parseSuda(source: String): List<JwCourse> {
-        val table = Jsoup.parse(source).selectFirst("#DataGrid1") ?: Jsoup.parse(source).selectFirst("#MainWork_DataGrid1") ?: return emptyList()
+        val doc = Jsoup.parse(source)
+        val table = doc.getElementById("DataGrid1") ?: doc.getElementById("MainWork_DataGrid1")
+            ?: return emptyList()
+        val occupiedUntil = IntArray(7)
         return buildList {
-            for (row in table.select("tr")) {
-                val tds = row.select("td")
-                if (tds.any { it.text().contains("星期") }) continue
-                var node = 1
-                for ((col, td) in tds.withIndex()) {
-                    if (td.attr("align").lowercase(Locale.ROOT) == "center") {
-                        node = Regex("\\d+").find(td.text())?.value?.toIntOrNull() ?: node
-                        continue
-                    }
-                    val day = col + 1
-                    if (td.text().isBlank()) continue
-                    val lines = td.html().split("<br>").map { Jsoup.parse(it).text().trim() }.filter { it.isNotEmpty() }
-                    var name = ""
-                    var teacher = ""
-                    var room = ""
-                    val weeks = mutableListOf<Triple<Int, Int, Int>>()
-                    for (line in lines) {
-                        when {
-                            line.startsWith("课程:") || line.startsWith("课程：") -> name = line.dropWhile { it != ':' && it != '：' }.drop(1).trim()
-                            line.startsWith("(") && !line.contains("辅讲教师") -> teacher = line.trim('(', ')').trim()
-                            line.startsWith("主讲教师:") || line.startsWith("主讲教师：") -> teacher = line.dropWhile { it != ':' && it != '：' }.drop(1).trim()
-                            Regex("第\\s*\\d+.*周").containsMatchIn(line) -> Regex("第\\s*(\\d+)\\s*(-\\s*(\\d+))?\\s*周\\s*(单|双)?").findAll(line).forEach { m ->
-                                val from = m.groupValues[1].toInt()
-                                val to = m.groupValues[3].toIntOrNull() ?: from
-                                val type = when (m.groupValues[4]) { "单" -> 1; "双" -> 2; else -> 0 }
-                                weeks += Triple(from, to, type)
+            var node = 0
+            for (row in table.select("tr").filter { it.parents().firstOrNull { p -> p.tagName() == "table" } === table }) {
+                if (row.attr("align").equals("center", true) || row.children().any { it.tagName() == "th" }) continue
+                if (row.children().any { Regex("(?:星期|周)[一二三四五六日天]").matches(it.text().trim()) }) continue
+                node++
+                if (node > EXPLICIT_SCHEDULE_RESOURCE_BOUND) break
+                var column = 0
+                for (cell in row.children().filter { it.tagName() == "td" }) {
+                    if (cell.attr("align").equals("center", true)) continue
+                    while (column < 7 && occupiedUntil[column] >= node) column++
+                    if (column >= 7) break
+                    val day = column + 1
+                    val span = if (cell.hasAttr("rowspan")) cell.attr("rowspan").toIntOrNull() else 1
+                    val end = span?.let { explicitScheduleEnd(node, it) }
+                    // Unknown or oversized spans cannot release this day into later columns.
+                    occupiedUntil[column] = end ?: if (span == null || span > 0)
+                        EXPLICIT_SCHEDULE_RESOURCE_BOUND else node
+                    column++
+                    if (end == null || cell.text().isBlank()) continue
+                    val blocks = cell.html().split(Regex("(?i)(?:<br\\s*/?>\\s*){2,}"))
+                    for (block in blocks) {
+                        val lines = block.split(Regex("(?i)<br\\s*/?>"))
+                            .map { Jsoup.parse(it).text().trim() }.filter(String::isNotBlank)
+                        val name = lines.firstOrNull { it.startsWith("课程:") || it.startsWith("课程：") }
+                            ?.substringAfter(':')?.substringAfter('：')?.trim() ?: lines.firstOrNull().orEmpty()
+                        val room = lines.firstOrNull { it.startsWith('(') && !it.contains("辅讲教师") }
+                            ?.substringAfter('(')?.substringBeforeLast(')')?.trim().orEmpty()
+                        val teacher = lines.firstOrNull { it.startsWith("主讲教师:") || it.startsWith("主讲教师：") }
+                            ?.substringAfter(':')?.substringAfter('：')?.trim().orEmpty()
+                        if (name.isBlank()) continue
+                        for (line in lines.filter { Regex("\\d周").containsMatchIn(it) }) {
+                            for (token in line.split(';', ',', '；', '，')) {
+                                val week = Regex("第?\\s*(\\d+)(?:\\s*-\\s*(\\d+))?\\s*周(?:单双|[单双])?")
+                                    .find(token) ?: continue
+                                val from = week.groupValues[1].toIntOrNull() ?: continue
+                                val to = week.groupValues[2].toIntOrNull() ?: from
+                                val type = when {
+                                    token.contains("单双") -> 0
+                                    token.contains('单') -> 1
+                                    token.contains('双') -> 2
+                                    else -> 0
+                                }
+                                if (from > 0 && to >= from) add(JwCourse(name, room, teacher, day, node, end, from, to, type))
                             }
-                            else -> if (name.isBlank()) name = line else room = line
                         }
                     }
-                    if (name.isBlank()) name = lines.first()
-                    if (weeks.isEmpty()) weeks += Triple(1, 20, 0)
-                    // WakeUp dex L00e9 rowspan: 纵向合并单元格占多节 — endNode = node + rowspan - 1
-                    val rowspan = td.attr("rowspan").toIntOrNull() ?: 1
-                    val endNode = node + (rowspan - 1).coerceAtLeast(0)
-                    weeks.forEach { (from, to, type) -> add(JwCourse(name, room, teacher, day, node, endNode, from, to, type)) }
                 }
             }
-        }
+        }.distinct()
     }
 
     fun confidence(source: String, markers: Set<String>): Int = when {
@@ -730,7 +1111,35 @@ private object WakeUpCompat {
     fun features(source: String, markers: Set<String>): List<String> = markers.filter { source.contains(it, true) }.map { "marker=$it" }
 
     fun parseShuwei(source: String): List<JwCourse> {
-        val root = parseJson(source) ?: return emptyList()
+        val root = parseJson(source.substringAfter("index.js');", source)) ?: return emptyList()
+        // table0.activities is a flattened day-by-period matrix. Its array position is
+        // authoritative; course objects intentionally have no weekday or startSection.
+        if (root is JSONObject) {
+            val slots = root.optJSONArray("activities")
+            if (slots != null && (0 until slots.length()).any { slots.opt(it) is JSONArray }) {
+                val units = if (root.has("unitCount")) root.optInt("unitCount", 0)
+                    else root.optJSONArray("courseUnits")?.length() ?: 12
+                if (units <= 0) return emptyList()
+                return buildList {
+                    for (index in 0 until slots.length()) {
+                        val day = index / units + 1
+                        if (day !in 1..7) continue
+                        val node = index % units + 1
+                        val items = slots.optJSONArray(index) ?: continue
+                        for (i in 0 until items.length()) {
+                            val item = items.optJSONObject(i) ?: continue
+                            val name = item.optString("courseName").trim()
+                            val bitmap = item.optString("vaildWeeks").trim()
+                            if (name.isBlank() || bitmap.any { it != '0' && it != '1' }) continue
+                            for (week in 1 until bitmap.length) {
+                                if (bitmap[week] == '1') add(JwCourse(name, item.optString("roomName"),
+                                    item.optString("teacherName"), day, node, node, week, week))
+                            }
+                        }
+                    }
+                }.distinct()
+            }
+        }
         val result = mutableListOf<JwCourse>()
         fun visit(value: Any) {
             when (value) {
@@ -749,112 +1158,96 @@ private object WakeUpCompat {
             }
         }
         visit(root)
-        return result.distinctBy { listOf(it.name, it.day, it.startNode, it.startWeek, it.endWeek, it.type) }
+        return result.distinct()
     }
 
     /** UMOOC 教务系统 HTML 解析器。
      *  特征: timetable 元素, infolist_hr_common 类。
      *  解析逻辑: 查找 timetable 容器, 遍历行提取课程数据。 */
     fun parseUmooc(source: String): List<JwCourse> {
-        val doc = Jsoup.parse(source)
-        val timetable = doc.selectFirst(".timetable") ?: doc.selectFirst("#timetable") ?: return emptyList()
-        val result = mutableListOf<JwCourse>()
-        
-        // 查找课程表格行
-        val rows = timetable.select("tr")
-        for ((rowIndex, row) in rows.withIndex()) {
-            val cells = row.select("td")
-            for ((cellIndex, cell) in cells.withIndex()) {
-                val text = cell.text().trim()
-                if (text.isBlank() || text == "节次") continue
-                
-                // 尝试解析课程信息
-                // 格式通常是: 课程名\n教师\n教室\n周次
-                val lines = text.split("\n").map { it.trim() }.filter { it.isNotBlank() }
-                if (lines.size >= 2) {
-                    val name = lines[0]
-                    val teacher = lines.getOrNull(1) ?: ""
-                    val room = lines.getOrNull(2) ?: ""
-                    val weekInfo = lines.getOrNull(3) ?: ""
-                    
-                    // 解析周次 (例如: "1-16周" 或 "1-16(单)")
-                    val weekMatch = Regex("(\\d+)-(\\d+)").find(weekInfo)
-                    if (weekMatch != null) {
-                        val startWeek = weekMatch.groupValues[1].toInt()
-                        val endWeek = weekMatch.groupValues[2].toInt()
-                        val type = if (weekInfo.contains("单")) 1 else if (weekInfo.contains("双")) 0 else 2
-                        
-                        // 列索引对应星期几 (0=周一, 1=周二, ...)
-                        val day = cellIndex + 1
-                        if (day in 1..7) {
-                            // 行索引对应节次 (简化处理, 实际需要根据具体 HTML 结构调整)
-                            val startNode = rowIndex + 1
-                            result.add(JwCourse(name, room, teacher, day, startNode, startNode, startWeek, endWeek, type))
+        val table = Jsoup.parse(source).getElementById("timetable") ?: return emptyList()
+        return mergeCourseWeeks(buildList {
+            for (row in table.getElementsByClass("infolist_hr_common")) {
+                var headerNode: Int? = null
+                for (cell in row.children()) {
+                    if (cell.tagName() == "th") {
+                        headerNode = Regex("第\\s*(\\d+)\\s*节").find(cell.text())
+                            ?.groupValues?.get(1)?.toIntOrNull()
+                    }
+                    if (!cell.html().contains("&lt;&lt;")) continue
+                    val identity = cell.id().split('-')
+                    if (identity.size != 2) continue
+                    val day = identity.firstOrNull()?.trim()?.toIntOrNull() ?: continue
+                    val node = headerNode ?: identity.getOrNull(1)?.trim()?.toIntOrNull() ?: continue
+                    if (day !in 1..7 || node !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
+                    for (block in cell.html().split("&lt;&lt;").drop(1)) {
+                        val lines = block.split(Regex("(?i)<br\\s*/?>"))
+                            .map { Jsoup.parse(it).text().trim() }.dropLastWhile(String::isBlank)
+                        val name = lines.firstOrNull()?.substringBefore(">>")?.trim().orEmpty()
+                        if (name.isEmpty() || lines.size < 3) continue
+                        val room = lines[1]
+                        val teacher = if (lines.size < 5) lines[1] else lines[2]
+                        val weeksText = lines.asReversed().firstOrNull { line ->
+                            (Regex("\\d").containsMatchIn(line) &&
+                                !line.contains("学时") && !line.contains("补课") &&
+                                !Regex("\\d.*节|T\\d").containsMatchIn(line)) ||
+                                Regex("[全双单]周").containsMatchIn(line)
+                        }?.substringBefore('【')?.trim().orEmpty()
+                        for (week in umoocWeeks(weeksText)) {
+                            add(JwCourse(name, room, teacher, day, node, node, week, week))
                         }
                     }
                 }
             }
-        }
-        
-        return result.distinctBy { listOf(it.name, it.day, it.startNode, it.startWeek, it.endWeek, it.type) }
+        })
     }
 
-    /** 奕联教务系统 HTML 解析器。
-     *  特征: app-components-CourseTimeTable-styles-timeTable 类。
-     *  解析逻辑: 查找 timeTable 容器, 解析 tbody/tr 结构提取课程数据。 */
+    /** YL uses nested course boxes. The first table column is a period gutter. */
     fun parseYl(source: String): List<JwCourse> {
-        val doc = Jsoup.parse(source)
-        val timeTable = doc.selectFirst(".app-components-CourseTimeTable-styles-timeTable") 
-            ?: doc.selectFirst("[class*=CourseTimeTable]") 
+        val table = Jsoup.parse(source).selectFirst("div[class*=app-components-CourseTimeTable-styles-timeTable]")
             ?: return emptyList()
-        val result = mutableListOf<JwCourse>()
-        
-        // 查找课程表格
-        val tbody = timeTable.selectFirst("tbody") ?: return emptyList()
-        val rows = tbody.select("tr")
-        
-        for ((rowIndex, row) in rows.withIndex()) {
-            val cells = row.select("td")
-            for ((cellIndex, cell) in cells.withIndex()) {
-                val text = cell.text().trim()
-                if (text.isBlank() || text == "节次") continue
-                
-                // 尝试解析课程信息
-                val lines = text.split("\n").map { it.trim() }.filter { it.isNotBlank() }
-                if (lines.size >= 2) {
-                    val name = lines[0]
-                    val teacher = lines.getOrNull(1) ?: ""
-                    val room = lines.getOrNull(2) ?: ""
-                    val weekInfo = lines.getOrNull(3) ?: ""
-                    
-                    // 解析周次
-                    val weekMatch = Regex("(\\d+)-(\\d+)").find(weekInfo)
-                    if (weekMatch != null) {
-                        val startWeek = weekMatch.groupValues[1].toInt()
-                        val endWeek = weekMatch.groupValues[2].toInt()
-                        val type = if (weekInfo.contains("单")) 1 else if (weekInfo.contains("双")) 0 else 2
-                        
-                        val day = cellIndex + 1
-                        if (day in 1..7) {
-                            val startNode = rowIndex + 1
-                            result.add(JwCourse(name, room, teacher, day, startNode, startNode, startWeek, endWeek, type))
+        val body = table.selectFirst("tbody") ?: return emptyList()
+        return buildList {
+            for (row in body.select("tr")) {
+                for ((day, cell) in row.children().filter { it.tagName() == "td" }.withIndex()) {
+                    if (day !in 1..7) continue
+                    for (box in cell.select("div[class*=app-components-CourseTimeTable-styles-courseBox]")) {
+                        val fields = box.children()
+                        if (fields.size < 5) continue
+                        val name = fields[0].text().trim()
+                        val timing = fields[1].children()
+                        if (name.isEmpty() || timing.size < 3) continue
+                        val nodes = Regex("\\d+").findAll(timing[2].text()).map { it.value.toInt() }.toList()
+                        val start = nodes.firstOrNull() ?: continue
+                        val end = nodes.last()
+                        if (start < 1 || end < start) continue
+                        val room = fields[3].text().substringBefore('(').trim()
+                        val teacher = fields[4].text().trim()
+                        for ((from, to, type) in parseWeekTokens(timing[1].text())) {
+                            if (from >= 1 && to >= from) add(JwCourse(name, room, teacher, day, start, end, from, to, type))
                         }
                     }
                 }
             }
-        }
-        
-        return result.distinctBy { listOf(it.name, it.day, it.startNode, it.startWeek, it.endWeek, it.type) }
+        }.distinct()
     }
 
     private fun parseActivity(row: JSONObject): List<JwCourse>? {
-        val name = first(row, "courseName", "course", "name", "kcmc")
-        val day = firstInt(row, "weekday", "weekDay", "dayOfWeek", "classDay", "xqj", "day")
+        val name = first(row, "courseName", "course", "name", "kcmc", "KCM")
+        val day = firstInt(row, "weekday", "weekDay", "dayOfWeek", "classDay", "xqj", "day", "xq")
         val start = firstInt(row, "startSection", "beginSection", "beginNumber", "startNode", "ksjc", "start")
         if (name.isBlank() || day == null || day !in 1..7 || start == null || start < 1) return null
 
         val end = firstInt(row, "endSection", "endNumber", "endNode", "jsjc", "end") ?: start
-        val weeks = parseWeekTokens(first(row, "weeksStr", "weekDescription", "week", "weeks", "zc"))
+        if (end < start) return null
+        val weeks = if (row.has("startWeek") && row.has("endWeek")) {
+            val from = firstInt(row, "startWeek") ?: return null
+            val to = firstInt(row, "endWeek") ?: return null
+            val type = if (row.has("type")) firstInt(row, "type") ?: return null else 0
+            if (type !in 0..3) return null
+            listOf(Triple(from, to, type))
+        } else parseWeekTokens(first(row, "weeksStr", "weekDescription", "week", "weeks", "zc"))
+        if (weeks.any { (from, to, _) -> from < 1 || to < from }) return null
         if (weeks.isEmpty()) return null
         val room = first(row, "room", "classroom", "classroomName", "location", "JASMC", "cdmc")
         val teacher = first(row, "teacher", "teacherName", "teachers", "attendClassTeacher", "SKJS", "xm")
@@ -892,12 +1285,7 @@ private object WakeUpCompat {
             if (depth > 5) return
             when (value) {
                 is JSONArray -> for (i in 0 until value.length()) value.opt(i)?.let { item ->
-                    if (item is JSONObject) {
-                        val name = first(item, "courseName", "kcmc", "KCM", "name", "course")
-                        val day = firstInt(item, "weekday", "dayOfWeek", "xqj", "day", "classDay", "xq")
-                        val node = firstInt(item, "beginNumber", "beginSection", "startNode", "ksjc", "start")
-                        if (name.isNotBlank() && day != null && node != null) result += JwCourse(name, first(item, "location", "room", "classroomName", "JASMC", "cdmc"), first(item, "teacherName", "teacher", "teachers", "SKJS", "xm"), day.coerceIn(1, 7), node, firstInt(item, "endNumber", "endSection", "endNode", "jsjc", "end") ?: node, 1, 16)
-                    }
+                    if (item is JSONObject) parseActivity(item)?.let(result::addAll)
                     walk(item, depth + 1)
                 }
                 is JSONObject -> for (key in value.keys()) value.opt(key)?.let { walk(it, depth + 1) }
@@ -916,24 +1304,23 @@ private object WakeUpCompat {
             val name = row.attr("data-course").ifBlank { cells.firstOrNull()?.text()?.trim().orEmpty() }
             val day = row.attr("data-day").toIntOrNull() ?: extractDay(text) ?: continue
             val node = row.attr("data-node").toIntOrNull() ?: extractNode(text) ?: continue
-            if (name.isNotBlank()) add(JwCourse(name, row.attr("data-room").ifBlank { cells.getOrNull(3)?.text().orEmpty() }, row.attr("data-teacher").ifBlank { cells.getOrNull(2)?.text().orEmpty() }, day, node, node, 1, 16))
+            val weeks = parseWeekTokens(row.attr("data-weeks"))
+            val end = row.attr("data-end-node").toIntOrNull() ?: node
+            if (name.isBlank() || day !in 1..7 || node < 1 || end < node) continue
+            for ((from, to, type) in weeks) if (from > 0 && to >= from) {
+                add(JwCourse(name, row.attr("data-room").ifBlank { cells.getOrNull(3)?.text().orEmpty() },
+                    row.attr("data-teacher").ifBlank { cells.getOrNull(2)?.text().orEmpty() }, day, node, end, from, to, type))
+            }
         }
     }
 
-    private fun parseDelimited(source: String): List<JwCourse> = source.lineSequence().mapNotNull { line ->
-        val p = line.split(',', '\t').map { it.trim() }
-        val day = p.getOrNull(1)?.toIntOrNull()
-        val node = p.getOrNull(2)?.toIntOrNull()
-        if (p.size >= 5 && day != null && day in 1..7 && node != null) JwCourse(p[0], p.getOrNull(3).orEmpty(), p.getOrNull(4).orEmpty(), day, node, node, 1, 16) else null
-    }.toList()
-
     private fun first(o: JSONObject, vararg keys: String): String = keys.firstNotNullOfOrNull { o.optString(it).takeIf(String::isNotBlank) }.orEmpty()
-    private fun firstInt(o: JSONObject, vararg keys: String): Int? = keys.firstNotNullOfOrNull { o.optString(it).filter(Char::isDigit).toIntOrNull() }
+    private fun firstInt(o: JSONObject, vararg keys: String): Int? = keys.firstNotNullOfOrNull { o.optString(it).trim().toIntOrNull() }
     private fun stripMarkup(value: String): String = Jsoup.parse(value).text().trim()
     private fun extractDay(text: String): Int? = Regex("(?:星期|周)\\s*([一二三四五六日天1-7])").find(text)?.groupValues?.get(1)?.let { when (it) { "一" -> 1; "二" -> 2; "三" -> 3; "四" -> 4; "五" -> 5; "六" -> 6; "日", "天" -> 7; else -> it.toIntOrNull() } }
     private fun extractNode(text: String): Int? = Regex("(?:第\\s*)?(\\d{1,2})\\s*(?:[-~至](\\d{1,2}))?\\s*节").find(text)?.groupValues?.get(1)?.toIntOrNull()
     private fun timeToNode(time: Int): Int = when { time < 1230 -> ((time - 800) / 100) + 1; time < 1800 -> ((time - 1400) / 100) + 5; else -> ((time - 1900) / 100) + 9 }
-    private fun durationToNodes(start: Int, end: Int): Int = when (end - start) { in 50..99 -> 1; in 100..200 -> 2; in 210..340 -> 3; else -> 4 }
+    private fun durationToNodes(start: Int, end: Int): Int = when (end - start) { in 50..99 -> 1; in Int.MIN_VALUE..200 -> 2; in 210..340 -> 3; else -> 4 }
 }
 
 abstract class WakeUpMarkerParser(source: String, private val markers: Set<String>) : JwParser(source) {
@@ -943,8 +1330,6 @@ abstract class WakeUpMarkerParser(source: String, private val markers: Set<Strin
 }
 class JwKingoParser(source: String) : WakeUpMarkerParser(source, setOf("kingosoft", "courseTableForStd", "courseTableStudent", "new TaskActivity", "CourseTableForStd", "ScheduleTaskBean", "xkinfo", "kbDiv")) {
     override fun confidence(): Int = when {
-        // td.td is the positive-selection legacy ZX grid; its first td can be a section gutter.
-        Jsoup.parse(source).selectFirst("table#mytable td.td") != null -> 0
         source.contains("id=\"kbDiv\"") || source.contains("id='kbDiv'") -> 95
         source.contains("<thead") && source.contains("课程") && source.contains("节次") &&
             Regex("(?:星期|周)[一二三四五六日天1-7]").containsMatchIn(source) -> 93
@@ -952,30 +1337,40 @@ class JwKingoParser(source: String) : WakeUpMarkerParser(source, setOf("kingosof
         else -> super.confidence()
     }
     override fun generateCourseList(): List<JwCourse> {
-        // A declared KINGO_NEW school may still serve the older positive-selection grid.
-        // Delegate its td.td cells so the optional section gutter and sparse weeks keep ZX semantics.
-        if (Jsoup.parse(source).selectFirst("table#mytable td.td") != null) {
-            val legacy = JwKingoZxParser(source).generateCourseList()
-            if (legacy.isNotEmpty()) return legacy
-        }
         // Kingo Super 2026-10 — 内部叠加 HTML 3 链降级 (不新建独立类, 与 TYPE_KINGO_NEW 共用)
         // 阶段 1: HTML 3 链降级 (新青果 super 主入口) — 见 parseKingoSuperHtml
         val errors = mutableListOf<String>()
         val superHtml = WakeUpCompat.parseKingoSuperHtml(source, errors)
         if (superHtml.isNotEmpty()) return superHtml
-        // 阶段 2: TaskActivity JS grid (现有路径, 兼容老版本 kingo 教务)
+        // Older catalog declarations can point at a classic EAMS page.
         val taskActivity = WakeUpCompat.parseKingoTaskActivity(source)
         if (taskActivity.isNotEmpty()) return taskActivity
         // 阶段 3: 父类 WakeUpMarkerParser (markers 命中回退)
         val parent = super.generateCourseList()
         if (parent.isNotEmpty()) return parent
         // 全失败 — INV-ERROR-AGGREGATE: 错误列表聚合抛出
-        errors += "TaskActivity JS grid 链 (chain1/老 kingo) 解析为空"
+        errors += "Classic EAMS TaskActivity 回退解析为空"
         errors += "父类 WakeUpMarkerParser 链 (markers 命中回退) 解析为空"
         throw IllegalStateException("JwKingoParser (新青果 super 2026-10) 全链降级失败:\n" + errors.joinToString("\n"))
     }
 }
-class JwJzParser(source: String) : WakeUpMarkerParser(source, setOf("courseTableForStd", "courseTableStudent", "wisedu", "JinZhi"))
+class JwJzParser(source: String) : WakeUpMarkerParser(source, setOf("courseTableForStd", "courseTableStudent", "wisedu", "JinZhi")) {
+    private val nativeFeatures: List<String> by lazy {
+        val doc = Jsoup.parse(source.replace("divclass=", "div class="))
+        buildList {
+            for (selector in listOf(
+                "table[id=1]", "table#CourseFormTable", "table.CourseFormTable",
+                ".wut_table .mtt_arrange_item", ".wut_tablex td[data-role][data-week]",
+                ".x-table", "table[id^=jsTbl_] td[xq][jc]",
+                "td[data-role=item] .mtt_arrange_item",
+            )) if (doc.selectFirst(selector) != null) add("jz=$selector")
+            if (Regex("""\bvar\s+scheduleList\s*=""").containsMatchIn(source) &&
+                Regex("""\bvar\s+notArrangedList\s*=""").containsMatchIn(source)) add("jz=scheduleList")
+        }
+    }
+    override fun confidence(): Int = if (nativeFeatures.isNotEmpty()) 95 else super.confidence()
+    override fun matchedFeatures(): List<String> = nativeFeatures + super.matchedFeatures()
+}
 class JwJzSuperParser(source: String) : WakeUpMarkerParser(source, setOf("el-table__body-wrapper", "Njw2017", "course-list", "v-jsxsd", "studentTableVms", "JinZhi")) {
     override fun generateCourseList() = WakeUpCompat.parseJzSuper(source).ifEmpty { super.generateCourseList() }
 }
@@ -995,17 +1390,18 @@ class JwCumtbParser(source: String) : WakeUpMarkerParser(source, setOf("eams5-st
     override fun generateCourseList() = WakeUpCompat.parseCumtb(source).ifEmpty { super.generateCourseList() }
 }
 class JwXjuParser(source: String) : WakeUpMarkerParser(source, setOf("xjtu", "xju", "courseTable", "课程表")) {
-    override fun generateCourseList() = WakeUpCompat.parseXju(source).ifEmpty { super.generateCourseList() }
+    override fun generateCourseList(): List<JwCourse> {
+        val courses = WakeUpCompat.parseXju(source)
+        if (source.contains("contentParent_dgData")) return courses
+        return courses.ifEmpty { super.generateCourseList() }
+    }
 }
 
 /** UMOOC 教务系统 HTML 解析器。
  *  特征: /academic/common/security/login.jsp, timetable 元素, infolist_hr_common 类。
  *  解析逻辑: 查找 timetable 容器, 遍历行提取课程数据。 */
 class JwUmoocParser(source: String) : WakeUpMarkerParser(source, setOf("timetable", "infolist_hr_common", "academic/common/security")) {
-    override fun generateCourseList(): List<JwCourse> {
-        val parsed = WakeUpCompat.parseUmooc(source)
-        return parsed.ifEmpty { super.generateCourseList() }
-    }
+    override fun generateCourseList(): List<JwCourse> = WakeUpCompat.parseUmooc(source)
 }
 
 /** 奕联教务系统 HTML 解析器。
