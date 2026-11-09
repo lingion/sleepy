@@ -51,28 +51,58 @@ internal class NavIconPart(
     val motion: (pulse: Float, spinRad: Float) -> PartTransform,
 )
 
-// ═══════ 课表 PageFlip: 框体(双洞焊死)贴底压扁, 两行日期点错峰渐显 ═══════
+// ═══════ 课表 PageFlip: 框体稳定不动，中间 6 个日期格子按顺序依次闪出 ═══════
 
 private const val calFrameAndHoles =
     "M19,4h-1V2h-2v2H8V2H6v2H5C3.89,4 3.01,4.9 3.01,6L3,20c0,1.1 0.89,2 2,2h14c1.1,0 2,-0.9 2,-2V6C21,4.9 20.1,4 19,4z" +
         "M19,20H5V10h14V20zM19,8H5V6h14V8z"
-private const val calDotsRow1 = "M9,14H7v-2h2V14zM13,14h-2v-2h2V14zM17,14h-2v-2h2V14z"
-private const val calDotsRow2 = "M9,18H7v-2h2V18zM13,18h-2v-2h2V18zM17,18h-2v-2h2V18z"
 
-// 点跟随框体同步压扁(否则相对位置漂), 回落途中按错峰渐显 — "翻页重新印上日期"。
-private fun calBody(p: Float) = PartTransform(scaleX = 1f + 0.06f * p, scaleY = 1f - 0.18f * p)
-private fun calDots(delay: Float): (Float, Float) -> PartTransform = { pulse, _ ->
-    calBody(pulse).copy(alpha = (((1f - pulse) - delay) / (1f - delay)).coerceIn(0f, 1f))
+// 6 个独立日期格子 (行1: (7..9, 12..14), (11..13, 12..14), (15..17, 12..14); 行2: (7..9, 16..18), (11..13, 16..18), (15..17, 16..18))
+private const val calDot1 = "M9,14H7v-2h2V14z"
+private const val calDot2 = "M13,14h-2v-2h2V14z"
+private const val calDot3 = "M17,14h-2v-2h2V14z"
+private const val calDot4 = "M9,18H7v-2h2V18z"
+private const val calDot5 = "M13,18h-2v-2h2V18z"
+private const val calDot6 = "M17,18h-2v-2h2V18z"
+
+// 顺序错峰闪现：progress = 1 - pulse 从 0 到 1。每格按索引延迟逐个弹出
+private fun calStaggeredDot(index: Int): (Float, Float) -> PartTransform = { pulse, _ ->
+    if (pulse <= 0f) {
+        PartTransform()
+    } else {
+        val progress = (1f - pulse).coerceIn(0f, 1f)
+        val start = index * 0.10f
+        if (progress < start) {
+            PartTransform(scaleX = 0f, scaleY = 0f, alpha = 0f)
+        } else {
+            val u = ((progress - start) / (1f - start)).coerceIn(0f, 1f)
+            val pop = sin(u * PI.toFloat())
+            val scale = u + 0.25f * pop
+            val alpha = (u * 2.5f).coerceIn(0f, 1f)
+            PartTransform(scaleX = scale, scaleY = scale, alpha = alpha)
+        }
+    }
 }
 
-// ═══════ 今日 Hop: 框体(点洞焊死)全幅跃, 头带 clip 分离拖后 → 拉伸分离感 ═══════
+// ═══════ 今日 Hop: 外框保持稳定，中间代表今日的方格从无到有闪出 ═══════
 
-private const val todayFrame =
-    "M20,3h-1L19,1h-2v2L7,3L7,1L5,1v2L4,3c-1.1,0 -2,0.9 -2,2v16c0,1.1 0.9,2 2,2h16c1.1,0 2,-0.9 2,-2L22,5c0,-1.1 -0.9,-2 -2,-2z"
-private const val todayPanelHole = "M20,21L4,21L4,10h16v11z"
-private const val todayHeaderHole = "M20,8L4,8L4,5h16v3z"
+private const val todayFrameAndHoles =
+    "M19,3h-1V1h-2v2H8V1H6v2H5c-1.11,0 -2,0.9 -2,2v14c0,1.1 0.89,2 2,2h14c1.1,0 2,-0.9 2,-2V5c0,-1.1 -0.9,-2 -2,-2z" +
+        "M19,19H5V9h14v10z" +
+        "M19,7H5V5h14v2z"
 
-// ═══════ 我的 Jelly: 头(环:外圆+内孔焊死)上伸, 身(外廓+内弧焊死)下蹲鼓宽 ═══════
+private const val todayCenterSquare = "M7,11h5v5H7z"
+
+private fun todayCenterSquareMotion(pulse: Float): PartTransform {
+    if (pulse <= 0f) return PartTransform()
+    val progress = (1f - pulse).coerceIn(0f, 1f)
+    val pop = sin(progress * PI.toFloat())
+    val scale = progress + 0.35f * pop
+    val alpha = (progress * 2.5f).coerceIn(0f, 1f)
+    return PartTransform(scaleX = scale, scaleY = scale, alpha = alpha)
+}
+
+// ═══════ 我的 Jelly: 固定下半身，人头左右摇晃 ═══════
 
 private const val personHeadRing =
     "M12,4C9.79,4 8,5.79 8,8s1.79,4 4,4 4,-1.79 4,-4 -1.79,-4 -4,-4z" +
@@ -80,6 +110,15 @@ private const val personHeadRing =
 private const val personBody =
     "M12,14c-2.67,0 -8,1.34 -8,4v2h16v-2c0,-2.66 -5.33,-4 -8,-4z" +
         "M12,16c2.7,0 5.8,1.29 6,2L6,18c0.23,-0.72 3.31,-2 6,-2z"
+
+private fun personHeadMotion(pulse: Float): PartTransform {
+    if (pulse <= 0f) return PartTransform()
+    val progress = (1f - pulse).coerceIn(0f, 1f)
+    val decay = pulse
+    val rot = 18f * decay * sin(progress * 4f * PI.toFloat())
+    val tx = 1.2f * decay * sin(progress * 4f * PI.toFloat())
+    return PartTransform(rotationZ = rot, translationUnitsX = tx)
+}
 
 // ═══════ 管理 GearSpin: 齿环(内齿孔焊死)跟累计弧度转, 核(圆+孔)随脉冲泵 ═══════
 
@@ -108,22 +147,18 @@ private const val settingsCore =
  */
 internal fun navIconPartsFor(key: NavIconMotionKey): List<NavIconPart>? = when (key) {
     NavIconMotionKey.PageFlip -> listOf(
-        NavIconPart(calFrameAndHoles, pivotX = 12f, pivotY = 21f) { p, _ -> calBody(p) },
-        NavIconPart(calDotsRow1, pivotX = 12f, pivotY = 21f, motion = calDots(delay = 0f)),
-        NavIconPart(calDotsRow2, pivotX = 12f, pivotY = 21f, motion = calDots(delay = 0.25f)),
+        NavIconPart(calFrameAndHoles, pivotX = 12f, pivotY = 12f) { _, _ -> PartTransform() },
+        NavIconPart(calDot1, pivotX = 8f, pivotY = 13f, motion = calStaggeredDot(0)),
+        NavIconPart(calDot2, pivotX = 12f, pivotY = 13f, motion = calStaggeredDot(1)),
+        NavIconPart(calDot3, pivotX = 16f, pivotY = 13f, motion = calStaggeredDot(2)),
+        NavIconPart(calDot4, pivotX = 8f, pivotY = 17f, motion = calStaggeredDot(3)),
+        NavIconPart(calDot5, pivotX = 12f, pivotY = 17f, motion = calStaggeredDot(4)),
+        NavIconPart(calDot6, pivotX = 16f, pivotY = 17f, motion = calStaggeredDot(5)),
     )
 
     NavIconMotionKey.Hop -> listOf(
-        NavIconPart(
-            pathData = todayFrame + todayPanelHole,
-            pivotX = 12f, pivotY = 12f,
-            clipViewport = Rect(0f, 10f, 24f, 22f),
-        ) { p, _ -> PartTransform(translationUnitsY = -9f * p) },
-        NavIconPart(
-            pathData = todayFrame + todayHeaderHole,
-            pivotX = 12f, pivotY = 12f,
-            clipViewport = Rect(0f, 1f, 24f, 10f),
-        ) { p, _ -> PartTransform(translationUnitsY = -5.4f * p) },
+        NavIconPart(todayFrameAndHoles, pivotX = 12f, pivotY = 12f) { _, _ -> PartTransform() },
+        NavIconPart(todayCenterSquare, pivotX = 9.5f, pivotY = 13.5f) { p, _ -> todayCenterSquareMotion(p) },
     )
 
     NavIconMotionKey.GearSpin -> listOf(
@@ -137,14 +172,8 @@ internal fun navIconPartsFor(key: NavIconMotionKey): List<NavIconPart>? = when (
     )
 
     NavIconMotionKey.Jelly -> listOf(
-        NavIconPart(personHeadRing, pivotX = 12f, pivotY = 8f) { p, _ ->
-            val k = sin(p * PI.toFloat())
-            PartTransform(scaleY = 1f + 0.12f * k, translationUnitsY = -1.6f * k)
-        },
-        NavIconPart(personBody, pivotX = 12f, pivotY = 20f) { p, _ ->
-            val k = sin(p * PI.toFloat())
-            PartTransform(scaleX = 1f + 0.16f * k, scaleY = 1f - 0.14f * k)
-        },
+        NavIconPart(personHeadRing, pivotX = 12f, pivotY = 10f) { p, _ -> personHeadMotion(p) },
+        NavIconPart(personBody, pivotX = 12f, pivotY = 20f) { _, _ -> PartTransform() },
     )
 
     NavIconMotionKey.None -> null

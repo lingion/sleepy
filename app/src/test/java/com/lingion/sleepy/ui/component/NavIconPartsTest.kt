@@ -38,17 +38,15 @@ class NavIconPartsTest {
     @Test
     fun eachIconSplitsIntoIndependentParts() {
         for (key in animatedKeys) assertTrue("$key 部件数<2", partsOf(key).size >= 2)
-        assertEquals("课表: 框体(+双洞)/点行1/点行2", 3, partsOf(NavIconMotionKey.PageFlip).size)
-        assertEquals("今日: 框体(+点洞,clip)/头带(+帽洞,clip)", 2, partsOf(NavIconMotionKey.Hop).size)
+        assertEquals("课表: 框体(+双洞)/6个日期格子", 7, partsOf(NavIconMotionKey.PageFlip).size)
+        assertEquals("今日: 框体(+双洞)/中间方格", 2, partsOf(NavIconMotionKey.Hop).size)
         assertEquals("我的: 头(+内孔)/身(+内弧)", 2, partsOf(NavIconMotionKey.Jelly).size)
         assertEquals("管理: 齿轮环(+内齿孔)/核(+圆孔)", 2, partsOf(NavIconMotionKey.GearSpin).size)
     }
 
     @Test
     fun subpathsCoverOriginalExactly() {
-        // 拆而不丢、不增: 部件子路径**集合**必须与原图标相等。
-        // 用集合而非多重集 — clip 分区件(今日头带)按设计各自重画共享外框, 那是
-        // 唯一让"洞与框同件"又"框体/头带分件"两律共存的合法拆法。
+        // 拆而不丢、不增: 部件子路径集合必须与原图标相等。
         for ((key, original) in mapOf(
             NavIconMotionKey.PageFlip to originalCal,
             NavIconMotionKey.Hop to originalToday,
@@ -66,15 +64,22 @@ class NavIconPartsTest {
     @Test
     fun holesWeldedToTheirFrame() {
         // 洞-框焊接铁律: 同向(加法)子路径不得与给它挖洞的反向子路径分离到不同部件。
-        // 证据驱动: 每个 clip 分区件必须同时携带外框与其洞。
+        val cal = partsOf(NavIconMotionKey.PageFlip)
+        assertTrue("课表外框应含上洞", cal[0].pathData.contains("M19,8"))
+        assertTrue("课表外框应含下洞", cal[0].pathData.contains("M19,20"))
+
         val hop = partsOf(NavIconMotionKey.Hop)
-        hop.forEach { p ->
-            assertTrue("今日件应含外框", p.pathData.contains(todayFrameSub))
-            assertTrue("今日件应含其对应洞", p.pathData.contains("M20,21") || p.pathData.contains("M20,8"))
-        }
+        assertTrue("今日外框应含外廓", hop[0].pathData.contains("M19,3"))
+        assertTrue("今日外框应含底板洞", hop[0].pathData.contains("M19,19"))
+        assertTrue("今日外框应含头带洞", hop[0].pathData.contains("M19,7"))
+
         val gear = partsOf(NavIconMotionKey.GearSpin)
         assertTrue("齿环件应含内齿孔", gear[0].pathData.contains("M17.45"))
         assertTrue("核件应含圆孔", gear[1].pathData.contains("M12,14"))
+
+        val jelly = partsOf(NavIconMotionKey.Jelly)
+        assertTrue("人头件应含内圆孔", jelly[0].pathData.contains("M12,6"))
+        assertTrue("身体件应含内下弧孔", jelly[1].pathData.contains("M12,16"))
     }
 
     @Test
@@ -115,45 +120,89 @@ class NavIconPartsTest {
     }
 
     @Test
-    fun pageFlip_bodySquashesFromBase_dotRowsFadeInStaggered() {
+    fun pageFlip_frameSteady_dotsPopInSequentially() {
         val parts = partsOf(NavIconMotionKey.PageFlip)
-        val body = parts[0].motion(1f, 0f)
-        val row1 = parts[1].motion(1f, 0f)
-        val row2 = parts[2].motion(1f, 0f)
-        // 峰值 p=1(刚翻过去): 壳贴底压扁横补, 两行点全隐。
-        assertTrue("壳应竖压", body.scaleY < 1f)
-        assertTrue("壳应横补", body.scaleX > 1f)
-        assertEquals(0f, row1.alpha, 1e-4f)
-        assertEquals(0f, row2.alpha, 1e-4f)
-        // 回落: 第一行先亮(错峰), 越接近静息越亮, 且点始终跟随框体压扁几何。
-        val mid1 = parts[1].motion(0.7f, 0f).alpha
-        val mid2 = parts[2].motion(0.7f, 0f).alpha
-        assertTrue("第一行应先亮", mid1 > mid2)
-        assertTrue("更接近静息更亮", parts[1].motion(0.4f, 0f).alpha > mid1)
-        assertEquals(parts[0].motion(0.7f, 0f).scaleY, parts[1].motion(0.7f, 0f).scaleY, 1e-4f)
+        val frame = parts[0].motion(1f, 0f)
+        // 框体恒定不动
+        assertEquals(1f, frame.scaleX, 1e-4f)
+        assertEquals(1f, frame.scaleY, 1e-4f)
+        assertEquals(1f, frame.alpha, 1e-4f)
+
+        // 峰值 p=1 (起始瞬间): 6 个格子全不可见
+        for (i in 1..6) {
+            val dot = parts[i].motion(1f, 0f)
+            assertEquals(0f, dot.alpha, 1e-4f)
+            assertEquals(0f, dot.scaleX, 1e-4f)
+        }
+
+        // 回落过程: 前面的点比后面的点先出现 (按索引顺序闪出)
+        // p=0.7 (progress = 0.3): dot1 (start=0.0) 已出现，dot6 (start=0.5) 仍未出现
+        val midDot1 = parts[1].motion(0.7f, 0f)
+        val midDot6 = parts[6].motion(0.7f, 0f)
+        assertTrue("前排点先出现", midDot1.alpha > midDot6.alpha)
+        assertEquals(0f, midDot6.alpha, 1e-4f)
+
+        // 静息 p=0: 全部点恢复 1f
+        for (i in 1..6) {
+            val dot = parts[i].motion(0f, 0f)
+            assertEquals(1f, dot.alpha, 1e-4f)
+            assertEquals(1f, dot.scaleX, 1e-4f)
+        }
     }
 
     @Test
-    fun hop_headerLagsBody_stretchingApart() {
+    fun hop_frameSteady_centerSquarePopsIn() {
         val parts = partsOf(NavIconMotionKey.Hop)
-        val body = parts[0].motion(1f, 0f)
-        val header = parts[1].motion(1f, 0f)
-        // 都上跳(负)但头带幅度 0.6 → 峰值瞬间部件拉开(橡胶感)。
-        assertTrue(body.translationUnitsY < 0f)
-        assertTrue(header.translationUnitsY < 0f)
-        assertTrue("|body| > |header|", -body.translationUnitsY > -header.translationUnitsY)
-        assertEquals(-9f, body.translationUnitsY, 1e-4f)
+        val frame = parts[0].motion(1f, 0f)
+        val squarePeak = parts[1].motion(1f, 0f)
+        val squareMid = parts[1].motion(0.5f, 0f)
+        val squareRest = parts[1].motion(0f, 0f)
+
+        // 外框稳定不动
+        assertEquals(1f, frame.scaleX, 1e-4f)
+        assertEquals(1f, frame.scaleY, 1e-4f)
+        assertEquals(0f, frame.translationUnitsY, 1e-4f)
+
+        // 峰值 p=1: 中间方格隐去
+        assertEquals(0f, squarePeak.alpha, 1e-4f)
+        assertEquals(0f, squarePeak.scaleX, 1e-4f)
+
+        // 中间过程 p=0.5: 正在闪出
+        assertTrue("中间过程方格出现", squareMid.alpha > 0f)
+        assertTrue("中间过程方格缩放生长", squareMid.scaleX > 0f)
+
+        // 静息 p=0: 完整恒等显示
+        assertEquals(1f, squareRest.alpha, 1e-4f)
+        assertEquals(1f, squareRest.scaleX, 1e-4f)
     }
 
     @Test
-    fun jelly_headAndBodyMoveOpposite() {
+    fun jelly_bodyFixed_headWigglesLeftAndRight() {
         val parts = partsOf(NavIconMotionKey.Jelly)
-        val head = parts[0].motion(0.5f, 0f) // sin 峰
-        val body = parts[1].motion(0.5f, 0f)
-        assertTrue("头应伸", head.scaleY > 1f)
-        assertTrue("头应上跃", head.translationUnitsY < 0f)
-        assertTrue("身应瘪", body.scaleY < 1f)
-        assertTrue("身应鼓", body.scaleX > 1f)
+        // 任意脉冲下，下半身绝对固定不动
+        for (p in floatArrayOf(0f, 0.25f, 0.5f, 0.75f, 1f)) {
+            val body = parts[1].motion(p, 0f)
+            assertEquals(1f, body.scaleX, 1e-4f)
+            assertEquals(1f, body.scaleY, 1e-4f)
+            assertEquals(0f, body.translationUnitsX, 1e-4f)
+            assertEquals(0f, body.translationUnitsY, 1e-4f)
+            assertEquals(0f, body.rotationZ, 1e-4f)
+        }
+
+        // 人头左右摇晃，不形变 (scaleX == scaleY == 1f)
+        val headPeak = parts[0].motion(0.5f, 0f)
+        assertEquals(1f, headPeak.scaleX, 1e-4f)
+        assertEquals(1f, headPeak.scaleY, 1e-4f)
+
+        // 运动过程中存在正向与反向摇晃角度
+        val rotations = listOf(0.875f, 0.625f, 0.375f, 0.125f).map { parts[0].motion(it, 0f).rotationZ }
+        assertTrue("人头产生正向摇晃", rotations.any { it > 0.5f })
+        assertTrue("人头产生反向摇晃", rotations.any { it < -0.5f })
+
+        // 静息态复位
+        val headRest = parts[0].motion(0f, 0f)
+        assertEquals(0f, headRest.rotationZ, 1e-4f)
+        assertEquals(0f, headRest.translationUnitsX, 1e-4f)
     }
 
     @Test
@@ -173,8 +222,6 @@ class NavIconPartsTest {
     @Test
     fun partsDifferWithinSameIcon() {
         // "各自动作"在部件粒度成立: 同图标内部件在运动中段变换两两不同。
-        // 探针取 p=0.5 而非峰值: PageFlip 两行点在峰值同处"已翻过去"的 alpha=0
-        // (错峰的正确终态), 撞车检测要看的是错峰本身。
         for (key in animatedKeys) {
             val ts = partsOf(key).map { it.motion(0.5f, PI.toFloat() / 2f) }
             for (i in ts.indices) for (j in i + 1 until ts.size) {
@@ -184,17 +231,17 @@ class NavIconPartsTest {
     }
 
     companion object {
-        private const val todayFrameSub =
-            "M20,3h-1L19,1h-2v2L7,3L7,1L5,1v2L4,3c-1.1,0 -2,0.9 -2,2v16c0,1.1 0.9,2 2,2h16c1.1,0 2,-0.9 2,-2L22,5c0,-1.1 -0.9,-2 -2,-2z"
-
         // 用户给定真值 (Tab 图标的 android:pathData, viewport 24)。
         const val originalCal =
             "M19,4h-1V2h-2v2H8V2H6v2H5C3.89,4 3.01,4.9 3.01,6L3,20c0,1.1 0.89,2 2,2h14c1.1,0 2,-0.9 2,-2V6C21,4.9 20.1,4 19,4z" +
                 "M19,20H5V10h14V20zM19,8H5V6h14V8z" +
                 "M9,14H7v-2h2V14zM13,14h-2v-2h2V14zM17,14h-2v-2h2V14z" +
                 "M9,18H7v-2h2V18zM13,18h-2v-2h2V18zM17,18h-2v-2h2V18z"
-        const val originalToday = todayFrameSub +
-            "M20,21L4,21L4,10h16v11zM20,8L4,8L4,5h16v3z"
+        const val originalToday =
+            "M19,3h-1V1h-2v2H8V1H6v2H5c-1.11,0 -2,0.9 -2,2v14c0,1.1 0.89,2 2,2h14c1.1,0 2,-0.9 2,-2V5c0,-1.1 -0.9,-2 -2,-2z" +
+                "M19,19H5V9h14v10z" +
+                "M19,7H5V5h14v2z" +
+                "M7,11h5v5H7z"
         const val originalPerson =
             "M12,4C9.79,4 8,5.79 8,8s1.79,4 4,4 4,-1.79 4,-4 -1.79,-4 -4,-4z" +
                 "M12,6c1.1,0 2,0.9 2,2s-0.9,2 -2,2 -2,-0.9 -2,-2 0.9,-2 2,-2z" +

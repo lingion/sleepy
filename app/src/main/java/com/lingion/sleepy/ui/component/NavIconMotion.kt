@@ -129,48 +129,14 @@ class NavIconDriver internal constructor(internal val key: NavIconMotionKey) {
 
     internal suspend fun activate() {
         when (key) {
-            NavIconMotionKey.PageFlip -> {
+            NavIconMotionKey.PageFlip,
+            NavIconMotionKey.Hop,
+            NavIconMotionKey.Jelly -> {
                 pulse.snapTo(1f)
                 pulse.animateTo(
                     0f,
                     spring(
                         dampingRatio = Spring.DampingRatioLowBouncy,
-                        stiffness = Spring.StiffnessMediumLow,
-                    ),
-                )
-            }
-
-            NavIconMotionKey.Hop -> {
-                pulse.snapTo(0f)
-                pulse.animateTo(
-                    1f,
-                    spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessMedium,
-                    ),
-                )
-                pulse.animateTo(
-                    0f,
-                    spring(
-                        dampingRatio = Spring.DampingRatioNoBouncy,
-                        stiffness = Spring.StiffnessMediumLow,
-                    ),
-                )
-            }
-
-            NavIconMotionKey.Jelly -> {
-                pulse.snapTo(0f)
-                pulse.animateTo(
-                    1f,
-                    spring(
-                        dampingRatio = Spring.DampingRatioLowBouncy,
-                        stiffness = Spring.StiffnessMedium,
-                    ),
-                )
-                pulse.animateTo(
-                    0f,
-                    spring(
-                        dampingRatio = Spring.DampingRatioNoBouncy,
                         stiffness = Spring.StiffnessMediumLow,
                     ),
                 )
@@ -207,7 +173,7 @@ class NavIconDriver internal constructor(internal val key: NavIconMotionKey) {
         // 动作几何单真源 = transformFor(纯函数, 契约测试直接锁它);
         // 本处只负责把它灌进 GraphicsLayerScope。四属性全显式赋值 →
         // 非该 key 的分量恒回默认(0/1), 不留上一 key 的残值。
-        val t = transformFor(key, pulse.value, spin.value, layer.size.height.toFloat())
+        val t = transformFor(key, pulse.value, spin.value, layer.size.height)
         layer.scaleX = t.scaleX
         layer.scaleY = t.scaleY
         layer.translationY = t.translationY
