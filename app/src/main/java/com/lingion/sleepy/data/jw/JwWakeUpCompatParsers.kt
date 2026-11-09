@@ -1056,16 +1056,20 @@ internal object WakeUpCompat {
                 if (row.attr("align").equals("center", true) || row.children().any { it.tagName() == "th" }) continue
                 if (row.children().any { Regex("(?:星期|周)[一二三四五六日天]").matches(it.text().trim()) }) continue
                 node++
+                if (node > EXPLICIT_SCHEDULE_RESOURCE_BOUND) break
                 var column = 0
                 for (cell in row.children().filter { it.tagName() == "td" }) {
                     if (cell.attr("align").equals("center", true)) continue
                     while (column < 7 && occupiedUntil[column] >= node) column++
                     if (column >= 7) break
                     val day = column + 1
-                    val span = (cell.attr("rowspan").toIntOrNull() ?: 1).coerceIn(1, 30)
-                    occupiedUntil[column] = node + span - 1
+                    val span = if (cell.hasAttr("rowspan")) cell.attr("rowspan").toIntOrNull() else 1
+                    val end = span?.let { explicitScheduleEnd(node, it) }
+                    // Unknown or oversized spans cannot release this day into later columns.
+                    occupiedUntil[column] = end ?: if (span == null || span > 0)
+                        EXPLICIT_SCHEDULE_RESOURCE_BOUND else node
                     column++
-                    if (cell.text().isBlank()) continue
+                    if (end == null || cell.text().isBlank()) continue
                     val blocks = cell.html().split(Regex("(?i)(?:<br\\s*/?>\\s*){2,}"))
                     for (block in blocks) {
                         val lines = block.split(Regex("(?i)<br\\s*/?>"))
@@ -1089,7 +1093,7 @@ internal object WakeUpCompat {
                                     token.contains('双') -> 2
                                     else -> 0
                                 }
-                                if (from > 0 && to >= from) add(JwCourse(name, room, teacher, day, node, node + span - 1, from, to, type))
+                                if (from > 0 && to >= from) add(JwCourse(name, room, teacher, day, node, end, from, to, type))
                             }
                         }
                     }
