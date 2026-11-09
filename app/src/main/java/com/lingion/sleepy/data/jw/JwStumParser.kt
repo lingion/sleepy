@@ -18,7 +18,7 @@ class JwStumParser(source: String) : JwParser(source) {
                     "B" -> 12
                     "C" -> 13
                     else -> name.toIntOrNull()
-                }?.takeIf { it in 1..30 } ?: continue
+                }?.takeIf { it in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND } ?: continue
                 val start = row.optString("start_time")
                 val end = row.optString("end_time")
                 val hasTime = JwCourse.isValidTimeRange(start, end)

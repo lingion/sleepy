@@ -11,7 +11,7 @@ class JwZtvtitParser(source: String) : JwParser(source) {
             val day = listOf("", "mon", "tue", "wed", "thu", "fri", "sat", "sun").indexOf(owner.attr("week"))
             val node = owner.selectFirst("[lesson]")?.attr("lesson")?.toIntOrNull() ?: continue
             val name = info.select("span:not([class])").joinToString(" ") { it.text() }.trim()
-            if (name.isEmpty() || day !in 1..7 || node !in 1..30) continue
+            if (name.isEmpty() || day !in 1..7 || node !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
             val room = info.selectFirst(".place")?.text()?.trim().orEmpty()
             val teacher = info.selectFirst(".teacher")?.text()?.trim().orEmpty()
             val weeks = info.selectFirst(".WeekDetail")?.text() ?: continue
