@@ -182,7 +182,8 @@ fun TimePickerField(
                 Modifier.fillMaxWidth().heightIn(min = 56.dp)
                     .background(colors.surfaceContainerHighest, shape)
                     .padding(horizontal = horizontalPadding, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(label, style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant, maxLines = 1)
                 Text(value, style = timeStyle, color = colors.onSurface, maxLines = 1)
