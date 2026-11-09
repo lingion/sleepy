@@ -1134,9 +1134,9 @@ These entries describe changes to the declared parser and collection routes. Off
 
 <a id="en-engineering-maintenance"></a>
 
-- **Build and compatibility maintenance**. Build dependencies and Android APIs are updated; Windows CRLF-sensitive tests use platform-safe expectations, screenshot work separates UI-thread window capture from background PNG encoding, Gradle downloads use the configured verified mirrors, and the collector distributions are rebuilt with the recorded toolchain. The collector updates cdproto from 0.158.2 to 0.158.6 and Go from 1.27.1 to 1.27.3, with refreshed Linux amd64, macOS amd64/arm64 and Windows amd64 programs and checksum manifest. This is tool maintenance, without an additional school-login claim. Rendering checks wait for settled springs and foreground recomposition/drawing before capturing color samples; toolbar source contracts follow the single-row layout and shared side-control scaling. Rendering checks cover the complete marker area and sample outside the toolbar while retaining exact color assertions. CI checks both pull requests and merged main commits before release tagging.
+- **Build and compatibility maintenance**. Build dependencies and Android APIs are updated; Windows CRLF-sensitive tests use platform-safe expectations, screenshot work separates UI-thread window capture from background PNG encoding, Gradle downloads use the configured verified mirrors, and the collector distributions are rebuilt with the recorded toolchain. The collector updates cdproto from 0.158.2 to 0.158.6 and Go from 1.27.1 to 1.27.3, with refreshed Linux amd64, macOS amd64/arm64 and Windows amd64 programs and checksum manifest. This is tool maintenance, without an additional school-login claim. Rendering checks wait for settled springs and foreground recomposition/drawing before capturing color samples; toolbar source contracts follow the single-row layout and shared side-control scaling. Rendering checks cover the complete marker area and sample outside the toolbar while retaining exact color assertions. CI checks pull requests and merged main commits, and supports a manual run for the selected release source before tagging.
 
-  Evidence: PR #282, PR #314, PR #334, PR #362 (contributor @jim139129), PR #367, PR #388 (contributor @jim139129), PR #402 (contributor @jim139129), PR #403, PR #404, PR #406, PR #408.
+  Evidence: PR #282, PR #314, PR #334, PR #362 (contributor @jim139129), PR #367, PR #388 (contributor @jim139129), PR #402 (contributor @jim139129), PR #403, PR #404, PR #406, PR #408, PR #409.
 
 <a id="en-engineering-docs"></a>
 
@@ -2307,9 +2307,9 @@ Thank you to the five external authors behind these 32 pull requests. Each PR ke
 
 <a id="zh-engineering-maintenance"></a>
 
-- **构建与兼容性维护**. 更新构建依赖与Android接口；Windows的CRLF敏感测试使用跨平台预期，截图将界面线程窗口采集与后台PNG编码分开，Gradle通过已校验的既有镜像下载，采集器按记录的工具链重建。采集器 cdproto 从 0.158.2 更新至 0.158.6，Go 从 1.27.1 更新至 1.27.3，更新 Linux amd64、macOS amd64 和 arm64、Windows amd64 程序及校验清单。这些是工具维护，不新增学校登录结论。 渲染检查等待弹簧归位及前景重组、绘制完成后采样颜色；顶栏源码契约同步单行布局和两侧控件共同缩放规则。 渲染检查覆盖完整标记区域，在顶栏外采样并保留精确颜色断言。CI同时检查PR与合并后的主线提交，供发布打tag前核对。
+- **构建与兼容性维护**. 更新构建依赖与Android接口；Windows的CRLF敏感测试使用跨平台预期，截图将界面线程窗口采集与后台PNG编码分开，Gradle通过已校验的既有镜像下载，采集器按记录的工具链重建。采集器 cdproto 从 0.158.2 更新至 0.158.6，Go 从 1.27.1 更新至 1.27.3，更新 Linux amd64、macOS amd64 和 arm64、Windows amd64 程序及校验清单。这些是工具维护，不新增学校登录结论。 渲染检查等待弹簧归位及前景重组、绘制完成后采样颜色；顶栏源码契约同步单行布局和两侧控件共同缩放规则。 渲染检查覆盖完整标记区域，在顶栏外采样并保留精确颜色断言。CI检查PR与合并后的主线提交，也支持手动检查指定发布源码，供打tag前核对。
 
-  依据：PR #282, PR #314, PR #334, PR #362 (contributor @jim139129), PR #367, PR #388 (contributor @jim139129), PR #402 (contributor @jim139129), PR #403, PR #404, PR #406, PR #408.
+  依据：PR #282, PR #314, PR #334, PR #362 (contributor @jim139129), PR #367, PR #388 (contributor @jim139129), PR #402 (contributor @jim139129), PR #403, PR #404, PR #406, PR #408, PR #409.
 
 <a id="zh-engineering-docs"></a>
 
