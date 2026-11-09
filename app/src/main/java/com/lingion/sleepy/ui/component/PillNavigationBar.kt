@@ -468,13 +468,11 @@ private fun DockNavigationBar(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Box {
-                        Icon(
-                            imageVector = item.icon,
-                            contentDescription = null,
+                        NavPartIcon(
+                            driver = iconDrivers.getOrNull(i),
+                            fallback = item.icon,
                             tint = lerp(colors.onSurfaceVariant, colors.onSecondaryContainer, iconCov),
-                            modifier = Modifier
-                                .navIconMotion(iconDrivers.getOrNull(i))
-                                .size(24.dp)
+                            iconSize = 24.dp,
                         )
                         // MD3E (Task 6): Dock 形态徽标点同款 popup 家族 (与贴底两处一致)
                         this@Column.AnimatedVisibility(
