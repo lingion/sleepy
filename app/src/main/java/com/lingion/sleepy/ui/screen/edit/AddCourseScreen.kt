@@ -1175,38 +1175,41 @@ private fun MeetingBlockEditor(
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // 卡头 = 折叠开关 (用户定令 2026-11-09, 同日版式返工): 收起态只显示
-        // 标题 + 两行摘要文字, 星期/节次控件一律收进展开区; 删除叉在最左,
-        // 折叠箭头归最右 (用户版式裁定); 从课表点胶囊跳进来的那张由跳转 effect 自动展开。
+        // 卡头 = 折叠开关 (用户定令 2026-11-09, 同日版式二修): 收起态只显示
+        // 标题 + 两行摘要文字, 星期/节次控件一律收进展开区; 版式裁定 =
+        // 文案独占行宽在最左, 右侧按钮簇 删除叉在左、折叠箭头最右。
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.Top
         ) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .noRippleGlassClickable { block.expanded = !block.expanded }
+                    .padding(top = 10.dp, bottom = 10.dp, end = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                    color = colors.onSurface
+                )
+                MeetingBlockSummary(block = block, timeJson = timeJson)
+            }
             if (canRemove) {
                 IconButton(onClick = onRemove) {
                     Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.delete_slot), tint = colors.onSurfaceVariant)
                 }
             }
-            Row(
+            // 箭头独立最右且同样可点 — 整行只剩文字区 + 这一个圆点, 两处热区合并
+            // 成"文字或箭头"的展开开关, 与两按钮右对齐簇的版式裁定共存。
+            Box(
                 modifier = Modifier
-                    .weight(1f)
-                    .noRippleGlassClickable { block.expanded = !block.expanded }
-                    .padding(end = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.Top
+                    .size(48.dp)
+                    .noRippleGlassClickable { block.expanded = !block.expanded },
+                contentAlignment = Alignment.Center
             ) {
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(3.dp)
-                ) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                        color = colors.onSurface
-                    )
-                    MeetingBlockSummary(block = block, timeJson = timeJson)
-                }
                 Icon(
                     Icons.Outlined.ExpandMore,
                     contentDescription = null,

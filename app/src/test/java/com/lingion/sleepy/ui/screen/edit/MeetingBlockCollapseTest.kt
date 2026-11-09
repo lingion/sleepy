@@ -93,17 +93,16 @@ class MeetingBlockCollapseTest {
     }
 
     @Test
-    fun delete_cross_sits_left_of_expand_chevron_at_right_edge() {
+    fun delete_cross_and_chevron_both_at_right_chevron_rightmost() {
         val body = editorBody(editorSource())
         val header = body.substringAfter("卡头 = 折叠开关").substringBefore("AnimatedVisibility")
+        val summary = header.indexOf("MeetingBlockSummary(")
         val cross = header.indexOf("R.string.delete_slot")
         val chevron = header.indexOf("Icons.Outlined.ExpandMore")
-        val toggleClick = header.indexOf("block.expanded = !block.expanded")
-        assertTrue("删除叉必须在卡头 (最左位)", cross in 0 until header.length)
-        assertTrue("折叠箭头必须在卡头", chevron in 0 until header.length)
-        // 版式裁定 2026-11-09: 叉在前 (左), 箭头在后 (右); 箭头与文案同属可点行
-        assertTrue("删除叉必须排在箭头之前 (叉左箭头右)", cross < chevron)
-        assertTrue("折叠点击行必须包住箭头 (整行可点)", toggleClick < chevron)
+        assertTrue("文案必须在最左 (weight 1f 独占行宽)", summary > 0)
+        assertTrue("删除叉与箭头必须都排在文案之后 (收最右侧)", summary < cross && summary < chevron)
+        // 版式裁定 2026-11-09 二修: 最右 = 折叠箭头, 箭头左邻一位 = 删除叉
+        assertTrue("箭头必须是行内最后一个控件 (最右), 叉在箭头左侧相邻", cross < chevron)
     }
 
     @Test
