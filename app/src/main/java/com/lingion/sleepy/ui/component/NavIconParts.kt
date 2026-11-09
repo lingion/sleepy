@@ -71,7 +71,7 @@ private fun calStaggeredDot(index: Int): (Float, Float) -> PartTransform = { pul
         PartTransform()
     } else {
         val progress = (1f - pulse).coerceIn(0f, 1f)
-        val start = index * 0.10f
+        val start = index * 0.08f
         if (progress < start) {
             PartTransform(scaleX = 0f, scaleY = 0f, alpha = 0f)
         } else {

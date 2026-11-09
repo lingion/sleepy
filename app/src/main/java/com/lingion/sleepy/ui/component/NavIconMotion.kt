@@ -1,8 +1,11 @@
 package com.lingion.sleepy.ui.component
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.runtime.Composable
@@ -129,16 +132,27 @@ class NavIconDriver internal constructor(internal val key: NavIconMotionKey) {
 
     internal suspend fun activate() {
         when (key) {
-            NavIconMotionKey.PageFlip,
-            NavIconMotionKey.Hop,
+            NavIconMotionKey.PageFlip -> {
+                pulse.snapTo(1f)
+                pulse.animateTo(
+                    0f,
+                    tween(durationMillis = 650, easing = LinearEasing),
+                )
+            }
+
+            NavIconMotionKey.Hop -> {
+                pulse.snapTo(1f)
+                pulse.animateTo(
+                    0f,
+                    tween(durationMillis = 500, easing = FastOutSlowInEasing),
+                )
+            }
+
             NavIconMotionKey.Jelly -> {
                 pulse.snapTo(1f)
                 pulse.animateTo(
                     0f,
-                    spring(
-                        dampingRatio = Spring.DampingRatioLowBouncy,
-                        stiffness = Spring.StiffnessMediumLow,
-                    ),
+                    tween(durationMillis = 600, easing = FastOutSlowInEasing),
                 )
             }
 
@@ -147,7 +161,7 @@ class NavIconDriver internal constructor(internal val key: NavIconMotionKey) {
                     spin.value + PI.toFloat() / 2f,
                     spring(
                         dampingRatio = Spring.DampingRatioLowBouncy,
-                        stiffness = Spring.StiffnessMediumLow,
+                        stiffness = Spring.StiffnessLow,
                     ),
                 )
             }
