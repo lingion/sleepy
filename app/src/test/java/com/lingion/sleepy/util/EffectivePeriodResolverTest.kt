@@ -335,6 +335,19 @@ class EffectivePeriodResolverTest {
         }
     }
 
+    @Test fun rejectsMalformedAndLenientJsonInsteadOfFallingBackToDefaultPeriods() {
+        for (json in listOf("", "[", "null", "{}", "[null]", "[1]", "[{}]", "[{'number':1,'startTime':'08:00','endTime':'08:45'}]",
+            "[{number:1,startTime:\"08:00\",endTime:\"08:45\"}]", "$basic trailing", "[$basic,]")) {
+            invalid(json, combo())
+        }
+        for (json in listOf("", "{", "{'publicSchedules':[]}", "{publicSchedules:[]}",
+            "{\"publicSchedules\":[],}", "{\"publicSchedules\":[]} trailing", "{\"publicSchedules\":[],\"publicSchedules\":[]}")) {
+            invalid(basic.toString(), json)
+        }
+        invalid("""[{"number":1,"number":1,"startTime":"08:00","endTime":"08:45"}]""", combo())
+        invalid("""[{"number":1,"num\u0062er":1,"startTime":"08:00","endTime":"08:45"}]""", combo())
+    }
+
     @Test fun rejectsMixedBaseDialectsAndIncompleteNativeRows() {
         invalid("""[{"node":1,"number":1,"start":"08:00","end":"08:45"}]""", combo())
         invalid("""[{"node":1,"start":"08:00","end":"08:45"},{"number":2,"startTime":"09:00","endTime":"09:45"}]""", combo())

@@ -114,9 +114,36 @@ object EffectivePeriodResolver {
         resolve(baseJson, comboJson, parseDate(date, "date"))
 
     private fun parseJson(raw: String, path: String): JsonElement = try {
-        Json.parseToJsonElement(raw)
+        // Validate syntax first, then reject duplicate keys without depending on
+        // the different duplicate-key behavior of Android and JVM org.json.
+        Json.parseToJsonElement(raw).also { rejectDuplicateKeys(raw, path) }
     } catch (error: Exception) {
         throw IllegalArgumentException("$path must be valid JSON", error)
+    }
+
+    private fun rejectDuplicateKeys(raw: String, path: String) {
+        val objects = ArrayDeque<MutableSet<String>>()
+        var index = 0
+        while (index < raw.length) {
+            when (raw[index]) {
+                '{' -> objects.addLast(mutableSetOf())
+                '}' -> objects.removeLast()
+                '"' -> {
+                    val start = index++
+                    while (raw[index] != '"') {
+                        if (raw[index] == '\\') index++
+                        index++
+                    }
+                    var next = index + 1
+                    while (next < raw.length && raw[next].isWhitespace()) next++
+                    if (next < raw.length && raw[next] == ':') {
+                        val key = (Json.parseToJsonElement(raw.substring(start, index + 1)) as JsonPrimitive).content
+                        require(objects.last().add(key)) { "$path contains duplicate field $key" }
+                    }
+                }
+            }
+            index++
+        }
     }
 
     private fun parseRows(array: JsonArray, source: Boolean, path: String): List<TimeSlotRow> {
