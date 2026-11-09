@@ -64,7 +64,6 @@ import androidx.compose.ui.res.stringResource
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.SleepyTheme
-import com.lingion.sleepy.ui.component.liquidglass.glassBackdropSource
 import com.lingion.sleepy.ui.theme.SleepyTextStyle
 import com.lingion.sleepy.ui.theme.noRippleCombinedClickable
 import com.lingion.sleepy.ui.theme.noRippleClickable
@@ -705,7 +704,6 @@ fun ConflictClusterCard(
         val laneYOffset = clusterYOffset(rowH, baseRowFrac, minStartRow, spanDpOf)
         Box(
             modifier = modifier
-                .glassBackdropSource(depth = 0f)
                 .width(colW)
                 .height(clusterH)
                 .offset(y = laneYOffset)
@@ -732,7 +730,6 @@ fun ConflictClusterCard(
 
     Box(
         modifier = modifier
-            .glassBackdropSource(depth = 0f)
             .width(colW)
             .height(clusterH)
             .offset(y = clusterYOffset)

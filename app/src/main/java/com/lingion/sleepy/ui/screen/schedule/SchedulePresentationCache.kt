@@ -2,8 +2,11 @@ package com.lingion.sleepy.ui.screen.schedule
 
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
+import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.ConflictLayoutEngine
 import com.lingion.sleepy.util.DateUtils
+import com.lingion.sleepy.util.HolidayManager
+import com.lingion.sleepy.util.HolidayRange
 import com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps
 import com.lingion.sleepy.util.HolidayTransferEntry
 import java.time.LocalDate
@@ -85,5 +88,58 @@ internal class SchedulePresentationCache {
             rows = ConflictLayoutEngine.weekLaneRows(courses, timeJson),
             groups = courses.groupBy { it.groupId },
         )
+    }
+
+    private data class GreyInputs(
+        val tableId: Long?,
+        val startDate: String?,
+        val transfers: List<HolidayTransferEntry>,
+        val greyHoliday: Boolean,
+        val greyWeekend: Boolean,
+        val ignoreWorkday: Boolean,
+        val ranges: List<HolidayRange>,
+    )
+
+    private var greyInputs: GreyInputs? = null
+    private val greyWeeks = object : LinkedHashMap<Int, Set<Int>>(8, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, Set<Int>>): Boolean = size > 7
+    }
+
+    fun weekGreyDays(context: android.content.Context, state: ScheduleState, week: Int): Set<Int> {
+        val table = state.effectiveCurrentTable ?: state.currentTable
+        val startDate = state.currentTable?.startDate
+        if (startDate.isNullOrBlank()) return emptySet()
+
+        val greyHoliday = AppPrefs.isHolidayGreyHoliday(context)
+        val greyWeekend = AppPrefs.isHolidayGreyWeekend(context)
+        if (!greyHoliday && !greyWeekend) return emptySet()
+
+        val ignoreWorkday = AppPrefs.isHolidayIgnoreWorkday(context)
+        val ranges = AppPrefs.getHolidayRanges(context)
+        val nextInputs = GreyInputs(
+            tableId = table?.id,
+            startDate = startDate,
+            transfers = state.transfers,
+            greyHoliday = greyHoliday,
+            greyWeekend = greyWeekend,
+            ignoreWorkday = ignoreWorkday,
+            ranges = ranges,
+        )
+        if (nextInputs != greyInputs) {
+            greyInputs = nextInputs
+            greyWeeks.clear()
+        }
+
+        return greyWeeks.getOrPut(week) {
+            val datesByDay = (1..7).associateWith { day ->
+                DateUtils.dateOfWeek(startDate, week, day)
+            }
+            HolidayManager.fastComputeGreyDays(
+                ctx = context,
+                datesByDay = datesByDay,
+                tableId = table?.id,
+                transfers = state.transfers,
+            )
+        }
     }
 }
