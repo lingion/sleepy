@@ -1497,7 +1497,7 @@ private fun Modifier.verticalResizeGesture(
                         }
 
                         if (!locked && TimetableViewportPolicy.locksVerticalResize(
-                                startVerticalSpan = startVerticalSpan!!,
+                                startVerticalSpan = startVerticalSpan,
                                 currentVerticalSpan = verticalSpan,
                                 startHorizontalSpan = startHorizontalSpan,
                                 currentHorizontalSpan = horizontalSpan
@@ -1511,7 +1511,7 @@ private fun Modifier.verticalResizeGesture(
                             val maxRow = TimetableViewportPolicy.MAX_ROW_DP * latestScale.coerceIn(0.7f, 1.3f)
                             val nextRowHeight = TimetableViewportPolicy.rowHeightFromVerticalSpan(
                                 startRowHeightDp = startRowHeightDp,
-                                startVerticalSpan = startVerticalSpan!!,
+                                startVerticalSpan = startVerticalSpan,
                                 currentVerticalSpan = verticalSpan,
                                 minRowHeightDp = minRow,
                                 maxRowHeightDp = maxRow
@@ -1533,7 +1533,7 @@ private fun Modifier.verticalResizeGesture(
                             }
                             event.changes.forEach { it.consume() }
                         } else {
-                            val verticalDelta = abs(verticalSpan - startVerticalSpan!!)
+                            val verticalDelta = abs(verticalSpan - startVerticalSpan)
                             val horizontalDelta = abs(horizontalSpan - startHorizontalSpan)
                             // 双指明确横向展开/合拢时不改变高度，也不让 Pager 抢走这次手势。
                             if (horizontalDelta >= TimetableViewportPolicy.VERTICAL_GESTURE_THRESHOLD_DP &&
@@ -1842,7 +1842,7 @@ fun FullWeekView(
         for (day in visibleDays.filter { it in 1..7 }) {
             map[day] = runCatching {
                 val d = DateUtils.dateOfWeek(startDate, currentWeek, day)
-                if (d != null) DateUtils.shortDateChinese(d) else null
+                DateUtils.shortDateChinese(d)
             }.getOrNull()
         }
         map

@@ -11,8 +11,10 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.test.*
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.ui.component.liquidglass.*
@@ -32,10 +34,10 @@ class GlassSliderInteractionTest {
     private val value = mutableFloatStateOf(.4f)
     private var commits = 0
 
-    private fun show(enabled: Boolean = true, rtl: Boolean = false) {
+    private fun show(enabled: Boolean = true, rtl: Boolean = false, style: UiStyle = UiStyle.LiquidGlass) {
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass,
+                CompositionLocalProvider(LocalUiStyle provides style,
                     LocalLayoutDirection provides if (rtl) LayoutDirection.Rtl else LayoutDirection.Ltr) {
                     GlassHost {
                         Box(Modifier.padding(32.dp)) {
@@ -48,6 +50,24 @@ class GlassSliderInteractionTest {
                 }
             }
         }
+    }
+
+    @Test fun classicSliderTracksExternalUpdatesAndCommitsUserChanges() {
+        show(style = UiStyle.Classic)
+        val slider = compose.onNodeWithTag("slider")
+        compose.runOnIdle { value.floatValue = .8f }
+        slider.assert(SemanticsMatcher.expectValue(
+            SemanticsProperties.ProgressBarRangeInfo, ProgressBarRangeInfo(.8f, 0f..1f, 9),
+        ))
+        compose.runOnIdle { assertEquals(0, commits) }
+        slider.performSemanticsAction(SemanticsActions.SetProgress) { it(.2f) }
+        compose.runOnIdle {
+            assertEquals(.2f, value.floatValue, .001f)
+            assertEquals(1, commits)
+        }
+        slider.assert(SemanticsMatcher.expectValue(
+            SemanticsProperties.ProgressBarRangeInfo, ProgressBarRangeInfo(.2f, 0f..1f, 9),
+        ))
     }
 
     @Test fun heldThumbGrowsAroundItsCenterAndSettlesBack() {
