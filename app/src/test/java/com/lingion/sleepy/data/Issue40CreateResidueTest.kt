@@ -28,9 +28,9 @@ class Issue40CreateResidueTest {
 
     @Test
     fun unsaved_flag_only_true_for_pending_new_id_match() {
-        // 判定式(与 MainActivity isNewUnsaved 参数同构): editId == pendingNewId && pendingNewId != null
+        // 判定式(与 MainActivity isNewUnsaved 参数同构): pendingNewId != null && editId == pendingNewId
         fun isNewUnsaved(editId: Long, pendingNewId: Long?): Boolean =
-            editId == pendingNewId && pendingNewId != null
+            pendingNewId != null && editId == pendingNewId
 
         // 新建路径: 管理页建表 → pendingNewPeriodTableId = newId → 编辑页同 id = 未保存
         assertTrue(isNewUnsaved(editId = 9, pendingNewId = 9L))

@@ -48,8 +48,8 @@ class PeriodTableOnlyExportTest {
         assertEquals(0, r.courses.size)
         assertNotNull(r.periodTable)
         assertEquals("春季作息", r.periodTable!!.name)
-        assertEquals(3, r.periodTable!!.nodesPerDay)
-        val nodes = com.lingion.sleepy.util.TimeTableUtils.parseNodes(r.periodTable!!.timeJson)
+        assertEquals(3, r.periodTable.nodesPerDay)
+        val nodes = com.lingion.sleepy.util.TimeTableUtils.parseNodes(r.periodTable.timeJson)
         assertEquals(3, nodes.size)
         assertEquals("08:20", nodes[0].start.toString())
         assertEquals("11:05", nodes[2].end.toString())
@@ -83,8 +83,8 @@ class PeriodTableOnlyExportTest {
         assertEquals(0, r.courses.size)
         assertNotNull(r.periodTable)
         assertEquals("春季作息", r.periodTable!!.name)
-        assertEquals(3, r.periodTable!!.nodesPerDay)
-        assertEquals(3, com.lingion.sleepy.util.TimeTableUtils.parseNodes(r.periodTable!!.timeJson).size)
+        assertEquals(3, r.periodTable.nodesPerDay)
+        assertEquals(3, com.lingion.sleepy.util.TimeTableUtils.parseNodes(r.periodTable.timeJson).size)
     }
 
     // ---- 兜底: 旧 P 区块(带 C 行)不受影响 ----

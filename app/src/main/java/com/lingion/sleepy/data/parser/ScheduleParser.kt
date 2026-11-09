@@ -408,8 +408,8 @@ object ScheduleParser {
                 type = obj["type"]?.jsonPrimitive?.intOrZero() ?: 0,
                 color = obj["color"]?.jsonPrimitive?.content ?: defaultColor,
                 ownTime = ownTime,
-                startTime = if (ownTime) ownStart!! else "",
-                endTime = if (ownTime) ownEnd!! else ""
+                startTime = if (ownTime) ownStart else "",
+                endTime = if (ownTime) ownEnd else ""
             )
         }
 
@@ -454,8 +454,8 @@ object ScheduleParser {
                 type = obj["type"]?.jsonPrimitive?.intOrZero() ?: 0,
                 color = obj["color"]?.jsonPrimitive?.content ?: "#FF6750A4",
                 ownTime = ownTime,
-                startTime = if (ownTime) ownStart!! else "",
-                endTime = if (ownTime) ownEnd!! else ""
+                startTime = if (ownTime) ownStart else "",
+                endTime = if (ownTime) ownEnd else ""
             )
         }
     }
@@ -804,9 +804,9 @@ object ScheduleParser {
             val endSec = b.end.toSecondOfDay()
             val perNodeSec = (endSec - startSec).toDouble() / b.nodeCount
             for (k in 0 until b.nodeCount) {
-                val s = LocalTime.ofSecondOfDay(Math.round(startSec + k * perNodeSec).toLong())
+                val s = LocalTime.ofSecondOfDay(Math.round(startSec + k * perNodeSec))
                     .truncatedTo(java.time.temporal.ChronoUnit.MINUTES)
-                val e = LocalTime.ofSecondOfDay(Math.round(startSec + (k + 1) * perNodeSec).toLong())
+                val e = LocalTime.ofSecondOfDay(Math.round(startSec + (k + 1) * perNodeSec))
                     .truncatedTo(java.time.temporal.ChronoUnit.MINUTES)
                 out[b.firstNode + k] = s to e
             }
@@ -826,7 +826,7 @@ object ScheduleParser {
             val endMin = end.hour * 60 + end.minute
             val duration = endMin - startMin
             // 8:00 = 第 1 节; 节边界按 50min 周期近似(45课+5课间), +10min 防边界抖动
-            val startNode = ((startMin - 480 + 10) / 50).toInt() + 1
+            val startNode = ((startMin - 480 + 10) / 50) + 1
             val step = Math.round(duration / 50.0).toInt().coerceAtLeast(1)
             Pair(startNode.coerceAtLeast(1), step)
         } catch (e: Exception) { null }
