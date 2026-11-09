@@ -24,13 +24,15 @@ class LiquidGlassToneTest {
         assertEquals(Color.White, Color(0xFF336699).shiftTone(200.0))
     }
 
+    // f1f39c1f (用户锁定的 FLClash 参考资产) 起, 暗色 regular 玻璃直接取
+    // surfaceContainerHighest, 旧 darkGlassTint(+7) 模型废除。
     @Test
-    fun darkRegularGlassUsesTheShiftedSurfaceTint() {
+    fun darkRegularGlassUsesTheReferenceSurfaceTint() {
         val scheme = darkColorScheme(surfaceContainer = Color(0xFF202124))
         val style = LiquidGlassStyle.regular(scheme, dark = true)
-        val surfaceTone = Hct.fromInt(scheme.surfaceContainer.toArgb()).tone
+        val highestTone = Hct.fromInt(scheme.surfaceContainerHighest.toArgb()).tone
         val tintTone = Hct.fromInt(style.tint.copy(alpha = 1f).toArgb()).tone
-        assertEquals(surfaceTone + 7.0, tintTone, 0.5)
+        assertEquals(highestTone, tintTone, 0.5)
         assertEquals(0.62f, style.tint.alpha, 0.005f)
     }
 }

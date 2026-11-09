@@ -581,7 +581,7 @@
     <string name="theme_editor_delete_confirm">¿Eliminar este tema personalizado?</string>
     <string name="theme_editor_delete_confirm_body">Las páginas y widgets que lo usen volverán al tema predeterminado «Lila».</string>
 <string name="appearance_section_theme">Colores del tema</string>
-    <string name="appearance_section_dock_theme">Tema del Dock</string>
+    <string name="appearance_section_dock_theme">Estilo de interfaz</string>
     <string name="dock_theme_classic">Clásico</string>
     <string name="dock_theme_liquid_glass">Cristal líquido</string>
     <string name="dock_theme_experimental">Experimental</string>

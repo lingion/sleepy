@@ -968,7 +968,7 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="theme_editor_delete_confirm">删除这个自定义主题?</string>
     <string name="theme_editor_delete_confirm_body">删除后使用该主题的页面与小组件将回落到默认主题「淡紫」。</string>
     <string name="appearance_section_theme">主题色彩</string>
-    <string name="appearance_section_dock_theme">Dock 主题</string>
+    <string name="appearance_section_dock_theme">界面风格</string>
     <string name="dock_theme_classic">经典</string>
     <string name="dock_theme_liquid_glass">液态玻璃</string>
     <string name="dock_theme_experimental">实验</string>

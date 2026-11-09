@@ -598,7 +598,7 @@
     <string name="theme_editor_delete_confirm">Delete this custom theme?</string>
     <string name="theme_editor_delete_confirm_body">Pages and widgets using it will fall back to the default "Lilac" theme.</string>
 <string name="appearance_section_theme">Theme colors</string>
-    <string name="appearance_section_dock_theme">Dock Theme</string>
+    <string name="appearance_section_dock_theme">Interface style</string>
     <string name="dock_theme_classic">Classic</string>
     <string name="dock_theme_liquid_glass">Liquid Glass</string>
     <string name="dock_theme_experimental">Experimental</string>

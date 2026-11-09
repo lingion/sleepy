@@ -47,6 +47,7 @@ import com.lingion.sleepy.ui.component.CourseDetailSheet
 import com.lingion.sleepy.ui.component.SectionHead
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.component.liquidglass.glassBackdropSource
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.CourseColorUtil
@@ -445,6 +446,7 @@ private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null, onCl
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .glassBackdropSource(depth = 0f)
             .clip(SleepyTheme.shapes.large)
             .background(bg)
             .then(if (onClick != null) Modifier.noRippleClickable(onClick = onClick) else Modifier)

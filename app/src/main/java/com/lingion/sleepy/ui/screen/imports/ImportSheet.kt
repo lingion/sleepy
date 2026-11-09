@@ -1,5 +1,8 @@
 package com.lingion.sleepy.ui.screen.imports
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
+import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import androidx.compose.foundation.clickable
 import android.content.Context
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -40,20 +43,20 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.QrCode2
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.TopAppBar
+import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
+import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.IconButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.Switch
+import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassSwitch as Switch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -728,7 +731,7 @@ private fun ImportMethodRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(SleepyTheme.shapes.medium)
-            .noRippleClickable(enabled = enabled, onClick = onClick)
+            .clickable(enabled = enabled, onClick = onClick)
             .then(dbgTag?.let { Modifier.dbgTag(it, text = label, role = "button") } ?: Modifier)
             .padding(vertical = 14.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -799,8 +802,9 @@ private fun FormatRow(name: String, desc: String, dbgTag: String? = null, onDeta
             modifier = Modifier
                 .padding(start = 6.dp, top = 2.dp)
                 .size(16.dp)
+                .glassControl(shape = SleepyTheme.shapes.small)
                 .clip(SleepyTheme.shapes.small)
-                .noRippleClickable(onClick = onDetail)
+                .noRippleGlassClickable(onClick = onDetail)
                 .then(dbgTag?.let { Modifier.dbgTag(it, text = name, role = "button") } ?: Modifier)
         )
     }

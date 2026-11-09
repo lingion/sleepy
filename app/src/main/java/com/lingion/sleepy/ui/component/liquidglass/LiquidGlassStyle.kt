@@ -4,6 +4,9 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.dp
+import com.kyant.backdrop.shadow.Shadow
 import material.Hct
 
 /**
@@ -121,7 +124,7 @@ data class LiquidGlassStyle(
         fun regular(colorScheme: ColorScheme, dark: Boolean): LiquidGlassStyle =
             if (dark) {
                 LiquidGlassStyle(
-                    tint = darkGlassTint(colorScheme).copy(alpha = 0.62f),
+                    tint = colorScheme.surfaceContainerHighest.copy(alpha = 0.62f),
                     contrast = -0.4,
                     saturation = 2.84,
                     rim = 0.28,
@@ -149,7 +152,7 @@ data class LiquidGlassStyle(
         fun pill(colorScheme: ColorScheme, dark: Boolean): LiquidGlassStyle =
             if (dark) {
                 LiquidGlassStyle(
-                    tint = darkGlassTint(colorScheme).copy(alpha = 0.48f),
+                    tint = colorScheme.surfaceContainerHighest.copy(alpha = 0.48f),
                     contrast = -0.4,
                     blur = 0.0,
                     haze = 0.72,
@@ -173,7 +176,7 @@ data class LiquidGlassStyle(
         fun menu(colorScheme: ColorScheme, dark: Boolean): LiquidGlassStyle =
             if (dark) {
                 LiquidGlassStyle(
-                    tint = darkGlassTint(colorScheme).copy(alpha = 0.63f),
+                    tint = colorScheme.surfaceContainerHighest.copy(alpha = 0.63f),
                     contrast = -0.53,
                     blur = 12.0,
                     saturation = 1.75,
@@ -210,17 +213,30 @@ data class LiquidGlassStyle(
             LiquidGlassStyle(
                 tint = Color.Transparent,
                 blur = 0.0,
-                refraction = -5.0,
+                refraction = -4.3,
                 bevel = 5.5,
-                saturation = 1.35,
-                brightness = if (dark) 1.35 else 1.0,
-                rim = if (dark) 0.38 else 0.65,
-                rimWidth = 1.2,
+                saturation = 1.0,
+                brightness = if (dark) 1.33 else 1.0,
+                rim = if (dark) 0.3 else 0.6,
+                rimWidth = 1.1,
                 endShade = 0.045,
-                dispersion = 8.5,
-                rimBlur = 1.0,
-                hairline = 0.45,
+                dispersion = 6.5,
+                rimBlur = 1.5,
+                hairline = 0.42,
             )
+
+        /** The reference controls bend their track without the Dock's RGB separation. */
+        fun controlLens(colorScheme: ColorScheme, dark: Boolean): LiquidGlassStyle =
+            lens(colorScheme, dark).copy(dispersion = 0.0)
+
+        /** The separate destination pane from FLClash's Dock, without RGB fringes. */
+        fun controlLensContent(colorScheme: ColorScheme, dark: Boolean): LiquidGlassStyle =
+            lensContent(colorScheme, dark).copy(dispersion = 0.0)
+
+        /** FLClash navigation_dock.dart `_lensShadows`, shared by the floating controls. */
+        fun controlLensShadow(dark: Boolean, lift: Float): Shadow =
+            Shadow(radius = 5.dp, offset = DpOffset(0.dp, 8.dp),
+                color = Color.Black.copy(alpha = .055f * (if (dark) 3f else 1f) * lift.coerceIn(0f, 1f)))
 
         fun lensContent(colorScheme: ColorScheme, dark: Boolean): LiquidGlassStyle =
             LiquidGlassStyle(
@@ -229,10 +245,10 @@ data class LiquidGlassStyle(
                 refraction = 14.0,
                 bevel = 11.2,
                 saturation = 1.0,
-                brightness = 1.0,
+                brightness = if (dark) 1.33 else 1.0,
                 rim = 0.0,
-                dispersion = 0.0,
-                rimBlur = 0.0,
+                dispersion = 3.6,
+                rimBlur = 2.5,
             )
 
         /**
@@ -304,19 +320,6 @@ data class LiquidGlassGlow(
     companion object {
         val None = LiquidGlassGlow(center = Offset.Zero, reach = 1.0, strength = 0.0)
     }
-}
-
-private const val DARK_GLASS_TINT_OVER_CARD = 7.0
-
-private val darkGlassTints = HashMap<Color, Color>()
-
-/** FLClash 的 `_darkGlassTint`: 把 [ColorScheme.surfaceContainer] 的色调抬高 [DARK_GLASS_TINT_OVER_CARD]。 */
-private fun darkGlassTint(colorScheme: ColorScheme): Color {
-    val card = colorScheme.surfaceContainer
-    if (darkGlassTints.size > 8) {
-        darkGlassTints.clear()
-    }
-    return darkGlassTints.getOrPut(card) { card.shiftTone(DARK_GLASS_TINT_OVER_CARD) }
 }
 
 /**

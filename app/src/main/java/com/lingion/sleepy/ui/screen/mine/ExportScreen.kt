@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.screen.mine
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import android.Manifest
 import android.content.Intent
 import android.widget.Toast
@@ -27,7 +28,7 @@ import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material3.AlertDialog
+import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
@@ -39,13 +40,13 @@ import com.lingion.sleepy.data.calendar.SystemCalendarManager
 import com.lingion.sleepy.SleepyApp
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -205,7 +206,7 @@ fun ExportScreen(
                         .fillMaxWidth()
                         .clip(SleepyTheme.shapes.large)
                         .background(colors.primaryContainer)
-                        .noRippleClickable { showTablePicker = true }
+                        .noRippleGlassClickable { showTablePicker = true }
                         .padding(20.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -505,7 +506,7 @@ private fun PickerRow(title: String, subtitle: String?, isSelected: Boolean, onC
             .fillMaxWidth()
             .clip(SleepyTheme.shapes.small)
             .background(if (isSelected) colors.primaryContainer else colors.surfaceContainer)
-            .noRippleClickable(onClick)
+            .noRippleGlassClickable(onClick)
             .padding(vertical = 10.dp, horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -547,7 +548,7 @@ internal fun ExportItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .noRippleClickable(onClick)
+            .noRippleGlassClickable(onClick)
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

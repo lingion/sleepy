@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.screen.imports
 
+import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -34,15 +35,15 @@ import androidx.compose.material.icons.outlined.School
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.TextButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -533,7 +534,7 @@ private fun CustomUrlEntryRow(onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .noRippleClickable(onClick)
+            .noRippleGlassClickable(onClick)
             .dbgTag("school_custom_url_entry", text = stringResource(R.string.custom_url_entry), role = "button")
             .padding(vertical = 14.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -661,7 +662,7 @@ private fun SchoolRow(school: JwSchoolInfo, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .noRippleClickable(onClick)
+            .noRippleGlassClickable(onClick)
             .dbgTag("school_item", text = school.name, role = "button")
             .padding(vertical = 14.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -766,7 +767,7 @@ private fun UrlDirectRow(url: String, protocolType: String?, matchedSchool: JwSc
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .noRippleClickable(onClick)
+            .noRippleGlassClickable(onClick)
             .dbgTag("school_url_direct", text = url, role = "button")
             .padding(vertical = 14.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically

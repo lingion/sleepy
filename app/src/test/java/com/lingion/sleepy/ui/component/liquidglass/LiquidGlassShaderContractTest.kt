@@ -219,6 +219,26 @@ class LiquidGlassShaderContractTest {
     }
 
     @Test
+    fun centeredTrackSamplingHasSymmetricPixelsAroundLensCenter() {
+        val trackOriginPx = Offset(4f, 4f)
+        val lensCenterWithinTrackDp = Offset(31.5f, 14f)
+        val s = LiquidGlassShader.sampling(
+            trackOriginPx,
+            texelsPerDp = 3f,
+            clampPx = Rect(0f, 0f, 189f, 84f),
+        )
+        // sampleGlass uses (point - uSample.xy) / uSample.zw. With a glass pane centered over the track,
+        // equal offsets above/below its center must map to equidistant source pixels.
+        fun sourcePx(pointDp: Offset) = Offset((pointDp.x - s[0]) / s[2], (pointDp.y - s[1]) / s[3])
+        val center = sourcePx(Offset(31.5f, 14f))
+        val above = sourcePx(Offset(31.5f, 6f))
+        val below = sourcePx(Offset(31.5f, 22f))
+        assertEquals("lens center must map to the absolute track center x", 98.5f, center.x, 0.001f)
+        assertEquals("lens center must map to the absolute track center y", 46f, center.y, 0.001f)
+        assertEquals("top/bottom track samples must be symmetric about the thumb center", center.y - above.y, below.y - center.y, 0.001f)
+
+    }
+    @Test
     fun samplingMapsPaneDpOntoTexturePixels() {
         // sampleGlass(pointDp) → 纹理 px = pointDp * texelsPerDp + originPx
         val s = LiquidGlassShader.sampling(Offset(12f, 8f), texelsPerDp = 2f, clampPx = Rect(0f, 0f, 320f, 64f))
@@ -232,6 +252,7 @@ class LiquidGlassShaderContractTest {
         assertEquals(319.5f, s[6], 1e-6f)
         assertEquals(63.5f, s[7], 1e-6f)
     }
+
 
     @Test
     fun rimOnlyContributesItsShine() {
