@@ -7,15 +7,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 
-/**
- * 时段卡整卡折叠（用户定令 2026-11-09）：进编辑页所有时段卡默认全折叠，卡面只留
- * 标题 + 摘要 + 星期选择 + 标准节次滑杆；「课表点胶囊 → 跳到对应时段」命中的那张卡
- * 开局展开（跳转接线本身由 EditCourseJumpToClickedSlotTest 锁）。
- * 新建课首卡与「新增时段」新卡展开 — 用户进来就是要填这张卡，折叠碍主路径。
- *
- * 先例照抄（IrregularOptionsCollapseTest）：AddCourseScreen 挂 viewModel/SleepyApp
- * 太重无法在 JVM 测试里装配整屏 — 折叠默认值走 JVM 纯逻辑直测，UI 结构与接线走源码级守卫。
- */
 class MeetingBlockCollapseTest {
 
     private fun draft() = MeetingBlockDraft(
@@ -37,8 +28,6 @@ class MeetingBlockCollapseTest {
         expanded = true
     )
 
-    // ---- A. 折叠态默认值 ----
-
     @Test
     fun block_collapsed_by_default() {
         assertFalse("时段卡必须默认折叠 — 进编辑页先全收起", draft().expanded)
@@ -46,12 +35,8 @@ class MeetingBlockCollapseTest {
 
     @Test
     fun expanded_constructor_param_propagates() {
-        // 锁构造参数传递: initialMeetingBlock 新建分支与「新增时段」新卡靠 expanded=true
-        // 生效; 若类体 shadowing 写错 (mutableStateOf(false) 之类), 这两处行为静默退化
         assertTrue("传 expanded=true 的卡必须开局展开", draftExpanded().expanded)
     }
-
-    // ---- B. 源码级守卫: 折叠边界 ----
 
     private fun findUpward(rel: String): File {
         var dir: File? = File(".").absoluteFile
@@ -66,7 +51,6 @@ class MeetingBlockCollapseTest {
     private fun editorSource(): String =
         findUpward("app/src/main/java/com/lingion/sleepy/ui/screen/edit/AddCourseScreen.kt").readText()
 
-    /** MeetingBlockEditor 函数体: 到下一个 @Composable 声明为止 */
     private fun editorBody(src: String): String =
         src.substringAfter("fun MeetingBlockEditor").substringBefore("\n@Composable")
 
@@ -84,8 +68,6 @@ class MeetingBlockCollapseTest {
         val body = editorBody(editorSource())
         val av = body.indexOf("AnimatedVisibility(")
         assertTrue("AnimatedVisibility 必须存在", av > 0)
-        // 版式返工 2026-11-09: 收起态只剩 标题 + 摘要两行文字 — 星期选择器与
-        // 节次滑杆一律收进展开区 (此前「摘要+星期/节次可见」被用户推翻)
         assertTrue("摘要必须在折叠区外 (收起态可见)", body.indexOf("MeetingBlockSummary(") in 0 until av)
         assertTrue("星期选择必须收进折叠区 (收起态不显示)", body.indexOf("MultiDayPicker(") > av)
         val firstSlider = body.indexOf("IntRangeSlider(")
@@ -101,7 +83,6 @@ class MeetingBlockCollapseTest {
         val chevron = header.indexOf("Icons.Outlined.ExpandMore")
         assertTrue("文案必须在最左 (weight 1f 独占行宽)", summary > 0)
         assertTrue("删除叉与箭头必须都排在文案之后 (收最右侧)", summary < cross && summary < chevron)
-        // 版式裁定 2026-11-09 二修: 最右 = 折叠箭头, 箭头左邻一位 = 删除叉
         assertTrue("箭头必须是行内最后一个控件 (最右), 叉在箭头左侧相邻", cross < chevron)
     }
 
@@ -127,8 +108,6 @@ class MeetingBlockCollapseTest {
         val body = editorBody(editorSource())
         val av = body.indexOf("AnimatedVisibility(")
         assertTrue(av > 0)
-        // 注意不能锚 "if (issues.isNotEmpty())" — 卡背景色那行(AnimatedVisibility 之前)也有同串;
-        // 错误文案渲染块以独有注释定位
         val issuesRender = body.indexOf("校验错误永远可见")
         assertTrue("校验错误必须渲染在 AnimatedVisibility 之后 (不随折叠隐藏)",
             issuesRender > av)
@@ -136,16 +115,11 @@ class MeetingBlockCollapseTest {
             body.indexOf("issues.forEach") > av)
     }
 
-    // ---- C. 源码级守卫: 展开侧接线 ----
-
     @Test
     fun jump_effect_expands_matched_block_once_per_block() {
         val src = editorSource()
-        // 命中卡展开走已有 targetIdx (findTargetBlockIndex, 匹配规则不得重造)
         assertTrue("跳转 effect 必须展开命中的那张卡",
             src.contains("meetingBlocks[targetIdx].expanded = true"))
-        // 一次性守卫记块对象身份: group 回填 clear+重建块 → 必须再展开再滚;
-        // 用户手动收起后新增时段触发的 size 跳变 → 块对象不变, 不得强行撑开
         assertTrue("展开+滚动必须按块对象身份去重",
             src.contains("autoExpandedBlock !== meetingBlocks[targetIdx]"))
     }
@@ -167,7 +141,6 @@ class MeetingBlockCollapseTest {
         val src = editorSource()
         val start = src.indexOf("id = nextBlockId")
         assertTrue("「新增时段」按钮代码必须存在", start > 0)
-        // 该按钮里的 MeetingBlockDraft 调用一直延伸到 add_slot 文案之前 — 新卡必须展开
         val window = src.substring(start, src.indexOf("R.string.add_slot", start))
         assertTrue("「新增一个上课时段」的新卡必须展开", window.contains("expanded = true"))
     }
