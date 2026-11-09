@@ -452,14 +452,6 @@ object JwProtocol {
     const val TYPE_NUIT = "nuit"
 
     /**
-     * T6 协议识别置信度（仅内部诊断，不进 UI）。
-     *  HIGH = URL 唯一锚点（jwapp/sys/、jwglxt、default2.aspx ...）
-     *  PAGE_HIGH = HTML 页面级唯一锚点（zftal-ui-、__VIEWSTATE+Table1 ...）
-     *  LOW = 弱锚点（仅 host 子串）
-     */
-    enum class DetectConfidence { HIGH, PAGE_HIGH, LOW }
-
-    /**
      * T8 新增：所有协议族常量的有序列表（用于 Registry 兜底遍历顺序）。
      * 顺序按 TYPE_PRIORITY 优先级：wisedu > pku > bnuz > cf > hnust > hniu >
      *                            zf > zf_1 > urp > urp_new > zf_new >

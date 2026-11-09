@@ -60,9 +60,6 @@ interface CourseDao {
     fun observeByTable(tableId: Long): Flow<List<CourseEntity>>
 
     @Query("SELECT * FROM courses WHERE tableId = :tableId AND day = :day ORDER BY startNode")
-    fun observeByTableAndDay(tableId: Long, day: Int): Flow<List<CourseEntity>>
-
-    @Query("SELECT * FROM courses WHERE tableId = :tableId AND day = :day ORDER BY startNode")
     suspend fun getByTableAndDayOnce(tableId: Long, day: Int): List<CourseEntity>
 
     @Query("SELECT * FROM courses WHERE tableId = :tableId ORDER BY day, startNode, startWeek")
@@ -82,12 +79,5 @@ interface CourseDao {
     suspend fun replaceAll(tableId: Long, courses: List<CourseEntity>) {
         deleteByTableId(tableId)
         insertAll(courses)
-    }
-
-    /** 编辑课程组：删除同 groupId 全部记录，再插入新记录（原子事务） */
-    @Transaction
-    suspend fun replaceGroup(tableId: Long, groupId: String, newCourses: List<CourseEntity>) {
-        deleteByGroupId(tableId, groupId)
-        insertAll(newCourses)
     }
 }

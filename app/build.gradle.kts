@@ -141,8 +141,6 @@ android {
 
     sourceSets.getByName("androidTest").assets.srcDir("schemas")
 
-    sourceSets.getByName("androidTest").assets.srcDir("schemas")
-
     lint {
         // 基线对齐 v1.0.57 (38 errors / 434 warnings):
         // 本次集成前仓库 lint 从非 0, 这些 id 全部是 AGP 9.1 新检查在既有代码上的

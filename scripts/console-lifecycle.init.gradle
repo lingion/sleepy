@@ -1,4 +1,4 @@
-// AGP 默认不创建 release 单测；仅本次验证显式启用，发布构建不受影响。
+// AGP 默认不创建 release 单测；CI 和本地生命周期验证通过此脚本显式启用。
 // ./gradlew -I scripts/console-lifecycle.init.gradle :app:testReleaseUnitTest --tests '*ReleaseConsoleLifecycleTest'
 allprojects { project ->
     project.plugins.withId('com.android.application') {

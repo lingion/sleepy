@@ -239,14 +239,14 @@ class JwWakeUpCompatParserTest {
     }
 
     // ============================================================
-    // 新强智 Njw2017 SPA (强智 super) — JwJzSuperParser
+    // 新强智 Njw2017 SPA — 通过正式金智注册入口验证兼容解析链。
     // 跨仓验证清单 19 仓, 详见 scope.md
     // ============================================================
 
     @Test
     fun `jz super parses el-table body wrapper fixture without error`() {
         val source = java.io.File("src/test/resources/jw/fixtures/jz_super/jz_njw2017_sample.html").readText()
-        val courses = JwJzSuperParser(source).generateCourseList()
+        val courses = JwParserRegistry.parserFor(JwProtocol.TYPE_JZ, source).generateCourseList()
         assertTrue("应从 sample2021-2 真实 SPA HTML 解析到至少 1 门课程, 实际 0", courses.isNotEmpty())
     }
 
@@ -255,7 +255,7 @@ class JwWakeUpCompatParserTest {
         // greyovo/ScheduleXParser_SCAU QZParser.java 用 9 个 div 偏移 (BUG, 实际 8); 跑通即代表 8 偏移修复一致
         // 期望: 每门课生成 1 个 JwCourse (单周次范围)
         val source = java.io.File("src/test/resources/jw/fixtures/jz_super/jz_njw2017_sample.html").readText()
-        val courses = JwJzSuperParser(source).generateCourseList()
+        val courses = JwParserRegistry.parserFor(JwProtocol.TYPE_JZ, source).generateCourseList()
         assertTrue("应至少解析 5 门课 (sample2021-2 真实 HTML), 实际 ${courses.size}", courses.size >= 5)
     }
 
@@ -269,7 +269,7 @@ class JwWakeUpCompatParserTest {
                 <td></td><td></td><td></td><td></td><td></td><td></td></tr>
             </tbody></table></div></body></html>
         """.trimIndent()
-        val courses = JwJzSuperParser(source).generateCourseList()
+        val courses = JwParserRegistry.parserFor(JwProtocol.TYPE_JZ, source).generateCourseList()
         assertEquals(1, courses.size)
         assertEquals("数学分析", courses[0].name) // "* " 已被剥离
         assertEquals("李老师", courses[0].teacher)
@@ -289,7 +289,7 @@ class JwWakeUpCompatParserTest {
                 <td></td><td></td><td></td><td></td><td></td></tr>
             </tbody></table></div></body></html>
         """.trimIndent()
-        val courses = JwJzSuperParser(source).generateCourseList()
+        val courses = JwParserRegistry.parserFor(JwProtocol.TYPE_JZ, source).generateCourseList()
         assertEquals(1, courses.size)
         val c = courses[0]
         assertEquals("线性代数", c.name)
@@ -320,7 +320,7 @@ class JwWakeUpCompatParserTest {
             <tr><td><div class="cell"><span>13-15节</span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
             </tbody></table></div></body></html>
         """.trimIndent()
-        val courses = JwJzSuperParser(source).generateCourseList()
+        val courses = JwParserRegistry.parserFor(JwProtocol.TYPE_JZ, source).generateCourseList()
         assertEquals(1, courses.size)
         assertEquals(10, courses[0].startNode) // row=4 → 10-12 节默认
         assertEquals(12, courses[0].endNode)
@@ -337,7 +337,7 @@ class JwWakeUpCompatParserTest {
                 <td></td><td></td><td></td><td></td><td></td></tr>
             </tbody></table></div></body></html>
         """.trimIndent()
-        val courses = JwJzSuperParser(source).generateCourseList()
+        val courses = JwParserRegistry.parserFor(JwProtocol.TYPE_JZ, source).generateCourseList()
         assertEquals(1, courses.size)
         assertEquals(1, courses[0].type) // 单周
         assertEquals(15, courses[0].endWeek)
@@ -345,16 +345,9 @@ class JwWakeUpCompatParserTest {
 
     @Test
     fun `jz super returns empty list when el-table body wrapper marker absent`() {
-        // 缺主入口 → 不抛异常, 返回空列表 (由后续 parseMarkedTable / parseDelimited 兜底)
+        // 页面无有效课程时，正式兼容解析链返回空列表。
         val source = "<html><body><table id='CourseFormTable'><tr><td>fallback</td></tr></table></body></html>"
-        val courses = JwJzSuperParser(source).generateCourseList()
+        val courses = JwParserRegistry.parserFor(JwProtocol.TYPE_JZ, source).generateCourseList()
         assertEquals(0, courses.size)
-    }
-
-    @Test
-    fun `jz super WakeUpMarkerParser markers cover Njw2017 SPA signature`() {
-        // 验证 WakeUpMarkerParser 标记集合覆盖 Njw2017 SPA 入口串 (含 el-table__body-wrapper)
-        val hits = setOf("el-table__body-wrapper", "Njw2017", "course-list", "v-jsxsd")
-        assertTrue("标记集合应包含 Njw2017 SPA 入口串", hits.all { it.isNotBlank() })
     }
 }

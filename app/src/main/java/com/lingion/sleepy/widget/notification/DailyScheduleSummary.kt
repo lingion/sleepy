@@ -10,20 +10,12 @@ internal data class DailyTableCourses(val table: TimeTableEntity, val courses: L
 internal data class DailyScheduleEntry(
     val table: TimeTableEntity,
     val course: CourseEntity,
-    val startTime: LocalTime?,
-    val startTimeText: String
+    val startTime: LocalTime?
 )
 
 internal data class DailyScheduleSummary(
-    val entries: List<DailyScheduleEntry>,
-    val isMultiTable: Boolean
-) {
-    fun compactText(unknownRoom: String): String = entries.joinToString("\n") { entry ->
-        val source = if (isMultiTable) "[${entry.table.name}] " else ""
-        val room = entry.course.room.ifBlank { unknownRoom }
-        "$source${entry.startTimeText} ${entry.course.courseName} @ $room"
-    }
-}
+    val entries: List<DailyScheduleEntry>
+)
 
 /** Call after reminder, semester and holiday filtering; tables must have hydrated timeJson. */
 internal fun buildDailyScheduleSummary(tables: List<DailyTableCourses>): DailyScheduleSummary {
@@ -36,10 +28,8 @@ internal fun buildDailyScheduleSummary(tables: List<DailyTableCourses>): DailySc
             } else {
                 nodeTimes[course.startNode]?.start
             }
-            val text = customTime ?: start?.let { "%02d:%02d".format(it.hour, it.minute) }.orEmpty()
-            DailyScheduleEntry(table, course, start, text)
+            DailyScheduleEntry(table, course, start)
         }
     }.sortedWith(compareBy<DailyScheduleEntry> { it.startTime == null }.thenBy { it.startTime })
-    // Empty tables still count as sources: tomorrow's classes may be from a different table.
-    return DailyScheduleSummary(entries, isMultiTable = tables.size > 1)
+    return DailyScheduleSummary(entries)
 }

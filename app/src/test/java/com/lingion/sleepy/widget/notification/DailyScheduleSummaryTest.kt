@@ -3,14 +3,14 @@ package com.lingion.sleepy.widget.notification
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalTime
 
 class DailyScheduleSummaryTest {
     private fun table(id: Long, name: String, first: String = "08:00") = TimeTableEntity(
-        id = id, name = name, startDate = "2026-09-01",
+        id = id, name = name, startDate = "2026-09-01", createdAt = 0,
         timeJson = """[{"node":1,"start":"$first","end":"10:00"},{"node":2,"start":"14:00","end":"15:00"}]"""
     )
 
@@ -27,8 +27,9 @@ class DailyScheduleSummaryTest {
             DailyTableCourses(table(2, "辅修", "09:00"), listOf(course(2, 2, 1)))
         ))
         assertEquals(listOf(1L, 2L, 3L), summary.entries.map { it.course.id })
-        assertEquals("[主课表] 08:00 课1 @ 101\n[辅修] 09:00 课2 @ 101\n[主课表] 14:00 课3 @ 101",
-            summary.compactText("未知教室"))
+        assertEquals(listOf("主课表", "辅修", "主课表"), summary.entries.map { it.table.name })
+        assertEquals(listOf(LocalTime.of(8, 0), LocalTime.of(9, 0), LocalTime.of(14, 0)),
+            summary.entries.map { it.startTime })
     }
 
     @Test
@@ -37,19 +38,17 @@ class DailyScheduleSummaryTest {
             DailyTableCourses(table(1, "主课表"), emptyList()),
             DailyTableCourses(table(2, "辅修"), listOf(course(2, 2, 1).copy(room = "")))
         ))
-        assertTrue(summary.isMultiTable)
-        assertEquals("[辅修] 08:00 课2 @ 未知教室", summary.compactText("未知教室"))
+        assertEquals(table(2, "辅修"), summary.entries.single().table)
+        assertEquals("", summary.entries.single().course.room)
     }
 
     @Test
-    fun singleTableStillUsesSingleTableFormatAndChoosesActualFirstCourse() {
+    fun singleTableChoosesActualFirstCourse() {
         val summary = buildDailyScheduleSummary(listOf(
             DailyTableCourses(table(1, "主课表"), listOf(course(2, 1, 2), course(1, 1, 1)))
         ))
-        assertFalse(summary.isMultiTable)
         assertEquals(1L, summary.entries.first().course.id)
-        assertEquals("08:00", summary.entries.first().startTimeText)
-        assertEquals("08:00 课1 @ 101\n14:00 课2 @ 101", summary.compactText("未知教室"))
+        assertEquals(LocalTime.of(8, 0), summary.entries.first().startTime)
     }
 
     @Test
@@ -60,8 +59,8 @@ class DailyScheduleSummaryTest {
         ))))
         assertEquals(listOf(3L, 2L, 5L, 1L, 4L), summary.entries.map { it.course.id })
         assertEquals(LocalTime.of(7, 30), summary.entries.first().startTime)
-        assertEquals("", summary.entries[3].startTimeText)
-        assertEquals("bad-time", summary.entries[4].startTimeText)
+        assertNull(summary.entries[3].startTime)
+        assertNull(summary.entries[4].startTime)
     }
 
     @Test
@@ -75,13 +74,11 @@ class DailyScheduleSummaryTest {
     }
 
     @Test
-    fun noCoursesReturnsEmptySummaryWithSourceContext() {
+    fun noCoursesReturnsEmptySummary() {
         val summary = buildDailyScheduleSummary(listOf(
             DailyTableCourses(table(1, "主课表"), emptyList()),
             DailyTableCourses(table(2, "辅修"), emptyList())
         ))
         assertTrue(summary.entries.isEmpty())
-        assertTrue(summary.isMultiTable)
-        assertEquals("", summary.compactText("未知教室"))
     }
 }

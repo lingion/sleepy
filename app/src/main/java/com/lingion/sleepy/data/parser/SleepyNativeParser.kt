@@ -546,6 +546,3 @@ internal object SleepyNativeParser {
         tokenByIndex.clear()
     }
 }
-
-/** 解析中间态载体 — 临时 token 附加, 解析后移除 */
-private class MetadataToken(val token: String)

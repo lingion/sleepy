@@ -345,12 +345,6 @@ object ScheduleParser {
         )
     }
 
-    /** 旧签名兼容壳: 只取 timeJson/nodesPerDay(既有单测等调用方零改动) */
-    private fun harvestTimeJsonFromTableInfo(root: kotlinx.serialization.json.JsonObject): Pair<String, Int> {
-        val h = harvestTimeFromTableInfo(root, "")
-        return h.timeJson to h.nodesPerDay
-    }
-
     /** "08:00" / "8:00" / "0800" → LocalTime; 非法 null */
     private fun parseHmLenient(s: String): LocalTime? {
         val m = Regex("""(\d{1,2}):?(\d{2})""").find(s.trim()) ?: return null
@@ -1248,21 +1242,6 @@ object ScheduleParser {
         if (t == "3" || t.contains("自定义") || t.contains("按周次")) return 3
         // 未知值（包含负数、4+ 等）按"按周次"处理而非"每周"，保护用户数据
         return 3
-    }
-
-    /** 解析 "节次" 列：支持 "1-2" "第1-2节" "1,2" "1\u00a01" */
-    private fun parseRangeOrNode(s: String): Pair<Int, Int>? {
-        val t = s.trim().replace("节", "").replace("第", "")
-        // 优先 "1-2" / "1~2" / "1至2"
-        parseRange(t)?.let { return it }
-        // 尝试逗号/空格分隔的列表
-        val nums = t.split(',', ' ', '/').mapNotNull { it.toIntOrNull() }.sorted()
-        if (nums.isNotEmpty()) {
-            val start = nums.first()
-            val end = nums.last()
-            return start to (end - start + 1)
-        }
-        return null
     }
 
     /**

@@ -383,15 +383,6 @@ class JwUcasParser(source: String) : JwParser(source) {
     }
 
     /**
-     * 把 [weeks] 列表归类为 type: 全部单周=1, 全部双周=2, 混合=0。
-     */
-    private fun weeksToType(weeks: List<Int>): Int = when {
-        weeks.all { it % 2 == 1 } -> TYPE_ODD
-        weeks.all { it % 2 == 0 } -> TYPE_EVEN
-        else -> TYPE_DEFAULT
-    }
-
-    /**
      * HTML 路径: 服务端课表网格 + (可选) 组合源里的详情页段。
      *
      * 网格定位 (课程名 × 星期 × 节次) 是权威; 详情块仅 enrich 周次/教室,

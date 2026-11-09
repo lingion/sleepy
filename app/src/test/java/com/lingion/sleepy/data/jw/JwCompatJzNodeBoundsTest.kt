@@ -13,28 +13,28 @@ class JwCompatJzNodeBoundsTest {
 
     @Test fun explicitCellRetainsThirtyFirstSection() {
         val source = page(row("1-2节", block("高节次实验", "31节(1-7单周)")))
-        assertEquals(expected(31, 31), JwJzSuperParser(source).generateCourseList())
+        assertEquals(expected(31, 31), JwParserRegistry.parserFor(JwProtocol.TYPE_JZ, source).generateCourseList())
     }
 
     @Test fun explicitCellRetainsThreeDigitSectionRange() {
         val source = page(row("1-2节", block("高节次实验", "100-101节(1-7单周)")))
-        assertEquals(expected(100, 101), JwJzSuperParser(source).generateCourseList())
+        assertEquals(expected(100, 101), JwParserRegistry.parserFor(JwProtocol.TYPE_JZ, source).generateCourseList())
     }
 
     @Test fun explicitCellRetainsResourceBoundary() {
         val source = page(row("1-2节", block("高节次实验", "365-366节(1-7单周)")))
-        assertEquals(expected(365, 366), JwJzSuperParser(source).generateCourseList())
+        assertEquals(expected(365, 366), JwParserRegistry.parserFor(JwProtocol.TYPE_JZ, source).generateCourseList())
     }
 
     @Test fun declaredRowRetainsHighRangeWhenCourseOmitsSections() {
         val source = page(row("100-101节", block("高节次实验", "(1-7单周)")))
-        assertEquals(expected(100, 101), JwJzSuperParser(source).generateCourseList())
+        assertEquals(expected(100, 101), JwParserRegistry.parserFor(JwProtocol.TYPE_JZ, source).generateCourseList())
     }
 
     @Test fun explicitInvalidCellNeverBecomesRowDefaultAndFollowingCourseSurvives() {
         val invalid = listOf("0节", "5-3节", "367节", "2147483648节", "31-2147483648节")
         val content = invalid.joinToString("") { block("坏课", "$it(1-7单周)") } + block("高节次实验", "3节(1-7单周)")
-        assertEquals(expected(3, 3), JwJzSuperParser(page(row("1-2节", content))).generateCourseList())
+        assertEquals(expected(3, 3), JwParserRegistry.parserFor(JwProtocol.TYPE_JZ, page(row("1-2节", content))).generateCourseList())
     }
 
     @Test fun invalidDeclaredRowNeverBecomesPhysicalRowDefault() {
