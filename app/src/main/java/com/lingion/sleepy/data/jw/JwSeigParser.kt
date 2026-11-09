@@ -15,8 +15,7 @@ class JwSeigParser(source: String) : JwParser(source) {
                 listOf("rowspan", "colspan").any { cell.hasAttr(it) && cell.attr(it) != "1" }
             }) continue
             for ((index, row) in table.select("tr").filter { it.closest("table") == table }.drop(1).withIndex()) {
-                val last = (index + 1) * 2
-                if (last > 30) continue
+                val nodes = explicitSchedulePair(index + 1) ?: continue
                 val cells = row.children().filter { it.tagName() == "td" }
                 for ((day, cell) in cells.withIndex()) {
                     if (day !in 1..7) continue
@@ -32,7 +31,7 @@ class JwSeigParser(source: String) : JwParser(source) {
                     }
                     if (weeks.any { it == null || it !in 1..366 }) continue
                     for ((from, to, type) in JwChengFangParser.weekIntList2WeekBeanList(weeks.filterNotNull().distinct().sorted())) {
-                        add(JwCourse(name, room, fields[1], day, last - 1, last, from, to, type))
+                        add(JwCourse(name, room, fields[1], day, nodes.first, nodes.last, from, to, type))
                     }
                 }
             }
