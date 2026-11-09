@@ -2,6 +2,8 @@ package com.lingion.sleepy.ui.screen.mine
 
 import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
+import com.lingion.sleepy.ui.component.liquidglass.GlassControlLayout
+import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
@@ -14,8 +16,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -1000,48 +1004,52 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                         // 兜底到系统应用通知页 — 实测厂商 Intent 在不同 ROM 上表现不稳定,
                                         // 必须捕获异常, 不能用 resolveActivity 包揽决策(会一次性过滤掉所有候选)。
                                         val ctx = context
-                                        Text(
-                                            text = stringResource(R.string.reminder_fluid_go_to_settings),
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = colors.primary,
-                                            modifier = Modifier
-                                                .padding(top = 6.dp)
-                                                .glassControl(shape = SleepyTheme.shapes.medium)
-                                                .noRippleGlassClickable {
-                                                    val launched = cap.settingsIntents.any { spec ->
-                                                        try {
-                                                            val intent = Intent(spec.action).apply {
-                                                                putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, ctx.packageName)
-                                                                // EXTRA_CHANNEL_ID 只对通道设置页有意义;
-                                                                // 厂商全局页收到会忽略, 应用页不需要。
-                                                                if (spec.action == android.provider.Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS) {
-                                                                    putExtra(
-                                                                        android.provider.Settings.EXTRA_CHANNEL_ID,
-                                                                        com.lingion.sleepy.widget.notification.CourseNotificationScheduler.CHANNEL_FLUID
-                                                                    )
-                                                                }
+                                        GlassTextButton(
+                                            onClick = {
+                                                val launched = cap.settingsIntents.any { spec ->
+                                                    try {
+                                                        val intent = Intent(spec.action).apply {
+                                                            putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, ctx.packageName)
+                                                            // EXTRA_CHANNEL_ID 只对通道设置页有意义;
+                                                            // 厂商全局页收到会忽略, 应用页不需要。
+                                                            if (spec.action == android.provider.Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS) {
+                                                                putExtra(
+                                                                    android.provider.Settings.EXTRA_CHANNEL_ID,
+                                                                    com.lingion.sleepy.widget.notification.CourseNotificationScheduler.CHANNEL_FLUID
+                                                                )
                                                             }
-                                                            ctx.startActivity(intent)
-                                                            true
-                                                        } catch (_: ActivityNotFoundException) {
-                                                            false
-                                                        } catch (_: SecurityException) {
-                                                            false
                                                         }
-                                                    }
-                                                    if (!launched && cap.fallbackToAppNotificationSettings) {
-                                                        try {
-                                                            ctx.startActivity(
-                                                                Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
-                                                                    putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, ctx.packageName)
-                                                                }
-                                                            )
-                                                        } catch (_: ActivityNotFoundException) {
-                                                            // 系统页也不可用 — 设备过旧, 静默放弃
-                                                        }
+                                                        ctx.startActivity(intent)
+                                                        true
+                                                    } catch (_: ActivityNotFoundException) {
+                                                        false
+                                                    } catch (_: SecurityException) {
+                                                        false
                                                     }
                                                 }
-                                        )
+                                                if (!launched && cap.fallbackToAppNotificationSettings) {
+                                                    try {
+                                                        ctx.startActivity(
+                                                            Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                                                                putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, ctx.packageName)
+                                                            }
+                                                        )
+                                                    } catch (_: ActivityNotFoundException) {
+                                                        // 系统页也不可用 — 设备过旧, 静默放弃
+                                                    }
+                                                }
+                                            },
+                                            modifier = Modifier
+                                                .padding(top = 4.dp)
+                                                .defaultMinSize(minHeight = GlassControlLayout.touchTarget),
+                                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                                        ) {
+                                            Text(
+                                                text = stringResource(R.string.reminder_fluid_go_to_settings),
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = colors.primary,
+                                            )
+                                        }
                                     }
                                 }
                             }
