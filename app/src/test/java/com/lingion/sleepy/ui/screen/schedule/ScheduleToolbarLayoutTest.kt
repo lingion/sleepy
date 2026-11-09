@@ -62,6 +62,7 @@ class ScheduleToolbarLayoutTest {
     @Test fun narrowLargeFontKeepsEveryActionClearWithUndoAndScaleConfirmation() {
         render(280, 1.5f, true)
         assertSeparated(true)
+        compose.onNodeWithTag("schedule_week_label").assertTextEquals("2")
         assertTrue("week navigation needs its own row when actions occupy the width", bounds("schedule_week_label").top > bounds("schedule_add_course").bottom)
     }
 
