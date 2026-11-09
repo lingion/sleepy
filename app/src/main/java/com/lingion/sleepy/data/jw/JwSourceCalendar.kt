@@ -13,6 +13,10 @@ object JwSourceCalendar {
         if (type == JwProtocol.TYPE_WIST && schoolName.contains("武汉船舶职业技术学院")) return 20
         val root = JSONObject(source)
         when (type) {
+            JwProtocol.TYPE_SG_ASSET -> if (root.optBoolean("sleepySgAsset")) {
+                root.optJSONObject("config")?.opt("semesterTotalWeeks")?.toString()?.toIntOrNull()
+                    ?.takeIf { it in 1..366 } ?: 0
+            } else 0
             JwProtocol.TYPE_THU -> JwThuCapturePayload.semesterJson(source)?.let {
                 JSONObject(it).optInt("weekCount", 16)
             } ?: 0
@@ -37,6 +41,14 @@ object JwSourceCalendar {
     }?.let { runCatching { LocalDate.parse(it, dateFormat) }.getOrNull() }?.takeIf { it.year >= 1 }
 
     fun resolveStartDate(source: String, type: String?, capturedDate: String): String {
+        if (type == JwProtocol.TYPE_SG_ASSET) {
+            val config = runCatching { JSONObject(source).takeIf { it.optBoolean("sleepySgAsset") }
+                ?.optJSONObject("config") }.getOrNull()
+            if (config?.has("semesterStartDate") == true) {
+                return parseDate(config.opt("semesterStartDate") as? String)
+                    ?.let { DateUtils.mondayOf(it).toString() }.orEmpty()
+            }
+        }
         if (type == JwProtocol.TYPE_SHSMU) {
             val root = runCatching { JSONObject(source) }.getOrNull() ?: return ""
             return JwShsmuCaptureCalendar.resolve(root)?.toString().orEmpty()
