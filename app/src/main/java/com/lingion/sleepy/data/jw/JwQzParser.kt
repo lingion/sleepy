@@ -70,7 +70,8 @@ open class JwQzParser(source: String) : JwParser(source) {
             val normalized = segment.replace(Regex("[第周单双()\\s]"), "")
             val range = Regex("(\\d+)(?:-(\\d+))?").matchEntire(normalized) ?: continue
             val start = range.groupValues[1].toIntOrNull() ?: continue
-            val end = range.groupValues[2].takeIf { it.isNotEmpty() }?.toIntOrNull() ?: start
+            val end = if (range.groupValues[2].isEmpty()) start
+                else range.groupValues[2].toIntOrNull() ?: continue
             if (start <= 0 || end < start) continue
             for ((first, last) in nodes) {
                 courseList += JwCourse(courseName, room, teacher, day, first, last, start, end, type)
@@ -86,8 +87,11 @@ open class JwQzParser(source: String) : JwParser(source) {
             val range = Regex("(\\d+)(?:-(\\d+))?").matchEntire(token) ?: return emptyList()
             val packed = range.groupValues[2].isEmpty() && token.length == 4
             val start = (if (packed) token.take(2) else range.groupValues[1]).toIntOrNull() ?: return emptyList()
-            val end = if (packed) token.takeLast(2).toIntOrNull() ?: return emptyList()
-                else range.groupValues[2].takeIf { it.isNotEmpty() }?.toIntOrNull() ?: start
+            val end = when {
+                packed -> token.takeLast(2).toIntOrNull() ?: return emptyList()
+                range.groupValues[2].isEmpty() -> start
+                else -> range.groupValues[2].toIntOrNull() ?: return emptyList()
+            }
             if (start !in 1..99 || end !in start..99) return emptyList()
             values.addAll(start..end)
         }

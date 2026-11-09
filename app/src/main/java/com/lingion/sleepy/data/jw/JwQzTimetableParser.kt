@@ -79,7 +79,8 @@ class JwQzTimetableParser(source: String) : JwParser(source) {
             val normalized = segment.replace(Regex("[()周单双\\s]"), "")
             val range = Regex("(\\d+)(?:-(\\d+))?").matchEntire(normalized) ?: continue
             val start = range.groupValues[1].toIntOrNull() ?: continue
-            val end = range.groupValues[2].takeIf { it.isNotEmpty() }?.toIntOrNull() ?: start
+            val end = if (range.groupValues[2].isEmpty()) start
+                else range.groupValues[2].toIntOrNull() ?: continue
             if (start <= 0 || end < start) continue
             val first = if (type != 0 && start % 2 != type % 2) start + 1 else start
             if (first > end) continue
