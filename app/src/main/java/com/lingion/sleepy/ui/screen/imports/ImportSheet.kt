@@ -775,38 +775,38 @@ private fun FormatRow(name: String, desc: String, dbgTag: String? = null, onDeta
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 3.dp),
-        verticalAlignment = Alignment.Top
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
             text = "•",
             style = MaterialTheme.typography.bodySmall,
             color = colors.primary,
-            modifier = Modifier.padding(end = 8.dp, top = 2.dp)
         )
         Text(
             text = name,
             style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
             color = colors.onSurface,
-            modifier = Modifier.width(110.dp)
+            modifier = Modifier.weight(.9f)
         )
         Text(
             text = desc,
             style = MaterialTheme.typography.bodySmall,
             color = colors.onSurfaceVariant,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1.1f)
         )
-        Icon(
-            imageVector = Icons.Outlined.Info,
-            contentDescription = stringResource(R.string.format_detail_content_desc),
-            tint = colors.onSurfaceVariant,
+        IconButton(
+            onClick = onDetail,
             modifier = Modifier
-                .padding(start = 6.dp, top = 2.dp)
-                .size(16.dp)
-                .glassControl(shape = SleepyTheme.shapes.small)
-                .clip(SleepyTheme.shapes.small)
-                .noRippleGlassClickable(onClick = onDetail)
                 .then(dbgTag?.let { Modifier.dbgTag(it, text = name, role = "button") } ?: Modifier)
-        )
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Info,
+                contentDescription = stringResource(R.string.format_detail_content_desc),
+                tint = colors.onSurfaceVariant,
+                modifier = Modifier.size(20.dp),
+            )
+        }
     }
 }
 

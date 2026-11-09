@@ -97,7 +97,7 @@ fun AllTablesScreen(
 
             itemsIndexed(state.tables, key = { _, table -> table.id }) { _, table ->
                 val isCurrent = table.id == state.selectedTableId
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(SleepyTheme.shapes.large)
@@ -110,82 +110,86 @@ fun AllTablesScreen(
                             }
                         }
                         .padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (isCurrent) {
-                        Icon(
-                            Icons.Outlined.CheckCircle,
-                            contentDescription = null,
-                            tint = colors.primary,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    } else {
-                        Box(
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clip(SleepyTheme.shapes.medium)
-                                .background(colors.outlineVariant)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        // M3 对比度修正：当前行背景是 primaryContainer，文字/副标题应配对
-                        // onPrimaryContainer 系（之前用 onSurface/onSurfaceVariant，自定义高对比主题下对比度不足）。
-                        // 非当前行背景 surfaceContainer 维持 onSurface/onSurfaceVariant。
-                        val (titleColor, subtitleColor) = if (isCurrent) {
-                            colors.onPrimaryContainer to colors.onPrimaryContainer.copy(alpha = SleepyTheme.Alpha.highContent)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (isCurrent) {
+                            Icon(
+                                Icons.Outlined.CheckCircle,
+                                contentDescription = null,
+                                tint = colors.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
                         } else {
-                            colors.onSurface to colors.onSurfaceVariant
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clip(SleepyTheme.shapes.medium)
+                                    .background(colors.outlineVariant)
+                            )
                         }
-                        Text(
-                            text = table.name,
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                            color = titleColor
-                        )
-                        Text(
-                            text = if (isCurrent) stringResource(R.string.current_table_week, state.currentWeek) else stringResource(R.string.table_start_date, table.startDate),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = subtitleColor
-                        )
-                        // v7.10.15 每表显示导入时间(年月日 时分秒) — 方便用户分辨多张课表
-                        if (table.createdAt > 0) {
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            // M3 对比度修正：当前行背景是 primaryContainer，文字/副标题应配对
+                            // onPrimaryContainer 系（之前用 onSurface/onSurfaceVariant，自定义高对比主题下对比度不足）。
+                            // 非当前行背景 surfaceContainer 维持 onSurface/onSurfaceVariant。
+                            val (titleColor, subtitleColor) = if (isCurrent) {
+                                colors.onPrimaryContainer to colors.onPrimaryContainer.copy(alpha = SleepyTheme.Alpha.highContent)
+                            } else {
+                                colors.onSurface to colors.onSurfaceVariant
+                            }
                             Text(
-                                text = stringResource(
-                                    R.string.table_created_at,
-                                    java.time.Instant.ofEpochMilli(table.createdAt)
-                                        .atZone(java.time.ZoneId.systemDefault())
-                                        .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-                                ),
+                                text = table.name,
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                                color = titleColor,
+                                maxLines = 2,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                            )
+                            Text(
+                                text = if (isCurrent) stringResource(R.string.current_table_week, state.currentWeek) else stringResource(R.string.table_start_date, table.startDate),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = subtitleColor
                             )
                         }
+                        // 与复制作息表一致：先命名，确认后才创建副本。
+                        IconButton(onClick = {
+                            copyName = TimeTableUtils.suggestUniqueName(
+                                table.name,
+                                state.tables.map { it.name },
+                                periodTables.map { it.name }
+                            )
+                            copyTarget = table
+                        }) {
+                            Icon(
+                                Icons.Outlined.ContentCopy,
+                                contentDescription = stringResource(R.string.all_tables_duplicate),
+                                tint = colors.onSurfaceVariant,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        IconButton(onClick = { onUpdateFromJw(table.id) }) {
+                            Icon(Icons.Outlined.Refresh, contentDescription = stringResource(R.string.update_from_jw), tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                        }
+                        IconButton(onClick = { onOpenEditTable(table.id) }) {
+                            Icon(
+                                Icons.Outlined.Settings,
+                                contentDescription = stringResource(R.string.action_settings),
+                                tint = colors.onSurfaceVariant,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
-                    // 与复制作息表一致：先命名，确认后才创建副本。
-                    IconButton(onClick = {
-                        copyName = TimeTableUtils.suggestUniqueName(
-                            table.name,
-                            state.tables.map { it.name },
-                            periodTables.map { it.name }
-                        )
-                        copyTarget = table
-                    }) {
-                        Icon(
-                            Icons.Outlined.ContentCopy,
-                            contentDescription = stringResource(R.string.all_tables_duplicate),
-                            tint = colors.onSurfaceVariant,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                    IconButton(onClick = { onUpdateFromJw(table.id) }) {
-                        Icon(Icons.Outlined.Refresh, contentDescription = stringResource(R.string.update_from_jw), tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
-                    }
-                    IconButton(onClick = { onOpenEditTable(table.id) }) {
-                        Icon(
-                            Icons.Outlined.Settings,
-                            contentDescription = stringResource(R.string.action_settings),
-                            tint = colors.onSurfaceVariant,
-                            modifier = Modifier.size(20.dp)
+                    // The timestamp uses the card width instead of competing with three actions.
+                    if (table.createdAt > 0) {
+                        Text(
+                            text = stringResource(
+                                R.string.table_created_at,
+                                java.time.Instant.ofEpochMilli(table.createdAt)
+                                    .atZone(java.time.ZoneId.systemDefault())
+                                    .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (isCurrent) colors.onPrimaryContainer.copy(alpha = SleepyTheme.Alpha.highContent) else colors.onSurfaceVariant,
+                            modifier = Modifier.padding(start = 36.dp, top = 4.dp),
                         )
                     }
                 }
