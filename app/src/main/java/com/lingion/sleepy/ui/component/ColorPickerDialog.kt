@@ -104,8 +104,8 @@ fun ColorPickerDialog(
                     initialHue = hueBaseline,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(36.dp)
-                        .clip(SleepyTheme.shapes.large)
+                        .testTag("color-hue-slider")
+                        .height(48.dp)
                 )
 
                 // 预览 + Hex
