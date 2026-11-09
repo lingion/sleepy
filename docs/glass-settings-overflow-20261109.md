@@ -1,8 +1,5 @@
 # 设置分段镜片的裁切修复
 
-基线为 fix/glass-layout-polish 的 b78817bc，其 main 祖先为 7f9f632c。
-开始前 fetch 确认 github/main 新增 ae551f4a。本分支仍使用指定基线，没有更新主分支。
-
 ## 布局不变量
 
 卡片位置、内边距、标题和选项的顺序不变。背景继续由 glassSurfaceBackground 按原圆角绘制。
@@ -33,13 +30,12 @@ SettingsFlatCardOverflowTest 使用真实卡片、真实分段器和实际按住
 ```
 
 新增一项测试验证真实卡片的横拖镜片完整可见。已有四项设置布局测试和一项经典模式手势测试继续通过。
-首次编译修正了测试夹具误用 DpRect.width 的问题，此次编译失败没有计入缺陷复现。
 没有运行全量测试、模拟器或设备测试。未验证设备像素与真机表现。
 
 ## 用户要求与实现核对
 
 | 用户要求 | 实现行为 |
 | --- | --- |
-| 最小处理外层裁剪，保留圆角与经典模式 | 仅液态模式移除整卡裁剪；背景形状与经典模式裁剪保持原实现 |
-| 不修改光学或物理参数 | SegmentedSwitcher、GlassControlMotion 与 LiquidGlassPhysics 相对基线逐字节不变 |
-| 只改指定范围，不推送 | 变更仅含 SettingsCards.kt、本测试文件与本记录；只提交本地 |
+| 液态组件浮起时应保持完整，保留整体页面布局 | 仅液态模式移除整卡裁剪；背景形状与经典模式裁剪保持原实现 |
+| 保留现有果冻和折射效果 | SegmentedSwitcher、GlassControlMotion 与 LiquidGlassPhysics 相对基线逐字节不变 |
+| 组件之间的大小和间距保持统一 | 卡片与轨道的尺寸和16dp内边距不变，只解除对浮起镜片的裁切 |
