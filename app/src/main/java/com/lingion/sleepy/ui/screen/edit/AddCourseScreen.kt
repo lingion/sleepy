@@ -14,6 +14,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -1803,19 +1804,22 @@ private fun GroupColorSection(
             style = MaterialTheme.typography.labelLarge,
             color = colors.onSurfaceVariant
         )
-        Row(
+        FlowRow(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            GroupColorSwatch(hex = groupSourceColorHex)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = if (CourseColorUtil.hasCustomColorHex(groupSourceColorHex)) groupSourceColorHex
-                else stringResource(R.string.color_group_auto),
-                style = MaterialTheme.typography.labelSmall,
-                color = colors.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.weight(1f))
+            Row(Modifier.padding(end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                GroupColorSwatch(hex = groupSourceColorHex)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = if (CourseColorUtil.hasCustomColorHex(groupSourceColorHex)) groupSourceColorHex
+                    else stringResource(R.string.color_group_auto),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = colors.onSurfaceVariant,
+                    maxLines = 1,
+                )
+            }
             Button(
                 onClick = onChangeGroupColor,
                 shape = SleepyTheme.shapes.medium,
@@ -1824,7 +1828,7 @@ private fun GroupColorSection(
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                 )
             ) {
-                Text(stringResource(R.string.change_group_color), style = MaterialTheme.typography.labelMedium)
+                Text(stringResource(R.string.change_group_color), style = MaterialTheme.typography.labelMedium, maxLines = 1)
             }
         }
     }
