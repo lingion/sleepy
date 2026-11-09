@@ -20,6 +20,9 @@ import androidx.test.core.app.ApplicationProvider
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
+import com.lingion.sleepy.ui.component.liquidglass.GlassHost
 import com.lingion.sleepy.ui.theme.SleepyThemeProvider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -75,6 +78,8 @@ class MeetingBlockHeaderLayoutTest {
         compose.setContent {
             CompositionLocalProvider(LocalDensity provides Density(LocalDensity.current.density, fontScale)) {
                 SleepyThemeProvider(darkTheme = false, themeKey = "default") {
+                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                GlassHost {
                     Surface(
                         modifier = Modifier
                             .width(width.dp)
@@ -100,6 +105,8 @@ class MeetingBlockHeaderLayoutTest {
                     }
                 }
             }
+        }
+        }
         }
         compose.waitForIdle()
         return block
@@ -144,7 +151,7 @@ class MeetingBlockHeaderLayoutTest {
         assertTrue("删除叉与折叠箭头不能有交叠: deleteRight=${deleteBounds.right}, chevronLeft=${chevronBounds.left}",
             deleteBounds.right <= chevronBounds.left)
 
-        // 3. 按钮尺寸统一规范: 触控区 >= 48dp，视觉布局尺寸一致 (Material3 IconButton 40dp 盘面规范)
+        // 3. 按钮尺寸统一规范: 触控区 >= 48dp，视觉布局尺寸一致（液态主题36dp盘面）
         val density = compose.density.density
         val minTouchPx = 48f * density - 1f
         val deleteTouch = deleteNode.fetchSemanticsNode().touchBoundsInRoot
