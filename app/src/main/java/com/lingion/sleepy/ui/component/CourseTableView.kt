@@ -66,7 +66,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -83,7 +82,6 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.SleepyTextStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
-import com.lingion.sleepy.ui.component.liquidglass.glassBackdropSource
 import com.lingion.sleepy.ui.theme.noRippleCombinedClickable
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppClock
@@ -313,34 +311,38 @@ fun CardsGridView(
     val headerDensity = LocalDensity.current
     // columnFont/columnPlacements 需真实行高, 故搁后到 rowHeightDp 可用后 (见下 BoxWithConstraints)。
 
-    val timeW = if (headerLayout == "three_line") {
-        threeLineWidthDp(
-            renderSlots,
-            headerStyle,
-            scale,
-            headerTextMeasurer,
-            LocalDensity.current,
-            headerHanging,
-            headerShowX,
-        )
-            // 下限防极窄机型挤压时间列; 上限不再死钉 68dp — "第 X 节"更长标签
-            // 需要 3×开始时间宽度的完整轨道, 交给 threeLineWidthDp 按实测回传。
-            .coerceAtLeast(d(46f))
-    } else {
-        // 用户令 (老式表头同三行式统一): 列宽 = dash 轴几何
-        // (所有行 dash 同一 X, 列宽含最宽行两侧余量), 不再硬钉 68dp。
-        // hideTime=true 时时间行不渲染, 列宽收口到标签实测宽 (legacyTimeWidthDp)。
-        legacyTimeWidthDp(
-            renderSlots,
-            headerStyle,
-            scale,
-            headerTextMeasurer,
-            LocalDensity.current,
-            headerShowX,
-            AppPrefs.isPeriodHeaderHideTime(context),
-        )
-            // 下限与三行式同一防挤压口径
-            .coerceAtLeast(d(46f))
+    val periodHeaderHideTime = remember(context, prefVersion) { AppPrefs.isPeriodHeaderHideTime(context) }
+    val timeW = remember(
+        renderSlots,
+        headerStyle,
+        scale,
+        headerLayout,
+        headerHanging,
+        headerShowX,
+        periodHeaderHideTime,
+        headerDensity
+    ) {
+        if (headerLayout == "three_line") {
+            threeLineWidthDp(
+                renderSlots,
+                headerStyle,
+                scale,
+                headerTextMeasurer,
+                headerDensity,
+                headerHanging,
+                headerShowX,
+            ).coerceAtLeast(d(46f))
+        } else {
+            legacyTimeWidthDp(
+                renderSlots,
+                headerStyle,
+                scale,
+                headerTextMeasurer,
+                headerDensity,
+                headerShowX,
+                periodHeaderHideTime,
+            ).coerceAtLeast(d(46f))
+        }
     }
     val gapH = d(4f)
     val gapW = d(5f)
@@ -472,59 +474,78 @@ fun CardsGridView(
             }.coerceAtLeast(1f)
             // 用户 2026-09-29: 整列统一字号 — 全列行约束先收集, 由最紧约束算一次;
             // 每行共用同一个字号, 不再逐行独立自适应造成"有的行大有的行小"。
-            val columnFont = if (headerLayout != "three_line") null else {
-                val timeStyle = headerTimeStyle(scale)
-                val labelStyle = headerLabelStyle(scale)
-                val dPx = headerDensity.density
-                val rows = renderSlots.filter { !it.isPlaceholder }.map { slot ->
-                    val label = if (headerShowX && slot.nodeStart == slot.nodeEnd) {
-                        PeriodHeaderFormatter.fullLabel(slot.nodeStart, headerStyle)
-                    } else {
-                        PeriodHeaderFormatter.range(slot.nodeStart, slot.nodeEnd, headerStyle)
+            val columnFont = remember(
+                headerLayout,
+                headerStyle,
+                scale,
+                headerShowX,
+                headerContentHeightSp,
+                renderSlots,
+                headerDensity
+            ) {
+                if (headerLayout != "three_line") null else {
+                    val timeStyle = headerTimeStyle(scale)
+                    val labelStyle = headerLabelStyle(scale)
+                    val dPx = headerDensity.density
+                    val rows = renderSlots.filter { !it.isPlaceholder }.map { slot ->
+                        val label = if (headerShowX && slot.nodeStart == slot.nodeEnd) {
+                            PeriodHeaderFormatter.fullLabel(slot.nodeStart, headerStyle)
+                        } else {
+                            PeriodHeaderFormatter.range(slot.nodeStart, slot.nodeEnd, headerStyle)
+                        }
+                        val startW = headerTextMeasurer.measure(slot.displayStart, timeStyle).size.width
+                        val endW = headerTextMeasurer.measure(slot.displayEnd, timeStyle).size.width
+                        val labelW = headerTextMeasurer.measure(label, labelStyle).size.width.toFloat()
+                        val timeMaxW = maxOf(startW, endW)
+                        // 墨迹宽 = 时间块 + 标签在 u=0 时的联合包络 (端点异锚中点)
+                        // 用基准字号测, compute 内部会按字号比投影到自适应字号
+                        val inkW = timeMaxW + labelW
+                        PeriodHeaderAdaptiveFont.RowConstraint(
+                            inkWidthSp = inkW / dPx,
+                            timeMaxWidthSp = timeMaxW / dPx,
+                            labelWidthSp = labelW / dPx,
+                        )
                     }
-                    val startW = headerTextMeasurer.measure(slot.displayStart, timeStyle).size.width
-                    val endW = headerTextMeasurer.measure(slot.displayEnd, timeStyle).size.width
-                    val labelW = headerTextMeasurer.measure(label, labelStyle).size.width.toFloat()
-                    val timeMaxW = maxOf(startW, endW)
-                    // 墨迹宽 = 时间块 + 标签在 u=0 时的联合包络 (端点异锚中点)
-                    // 用基准字号测, compute 内部会按字号比投影到自适应字号
-                    val inkW = timeMaxW + labelW
-                    PeriodHeaderAdaptiveFont.RowConstraint(
-                        inkWidthSp = inkW / dPx,
-                        timeMaxWidthSp = timeMaxW / dPx,
-                        labelWidthSp = labelW / dPx,
+                    PeriodHeaderAdaptiveFont.forColumn(
+                        cardWidthSp = 240f,
+                        cardHeightSp = headerContentHeightSp,
+                        rows = rows,
                     )
                 }
-                PeriodHeaderAdaptiveFont.forColumn(
-                    cardWidthSp = 240f,
-                    cardHeightSp = headerContentHeightSp,
-                    rows = rows,
-                )
             }
             // 用户令 2026-10-03: legacy 列级 dash 轴 (dp, 相对卡内容框左缘) —
             // 几何与 legacyLineWidthDp 同一解 (pad 已在列宽里, 轴本身不含 pad);
             // 网格所有行同一轴, 预览单卡未传走行内退化。
-            val legacyAxis = if (headerLayout == "three_line") null else {
-                val timeStyle = headerTimeStyle(scale)
-                val labelStyle = headerLabelStyle(scale)
-                val rows = renderSlots.filter { !it.isPlaceholder }.map { slot ->
-                    val label = if (headerShowX && slot.nodeStart == slot.nodeEnd) {
-                        PeriodHeaderFormatter.fullLabel(slot.nodeStart, headerStyle)
-                    } else {
-                        PeriodHeaderFormatter.range(slot.nodeStart, slot.nodeEnd, headerStyle)
+            val legacyAxis = remember(
+                headerLayout,
+                headerStyle,
+                scale,
+                headerShowX,
+                renderSlots,
+                headerDensity
+            ) {
+                if (headerLayout == "three_line") null else {
+                    val timeStyle = headerTimeStyle(scale)
+                    val labelStyle = headerLabelStyle(scale)
+                    val rows = renderSlots.filter { !it.isPlaceholder }.map { slot ->
+                        val label = if (headerShowX && slot.nodeStart == slot.nodeEnd) {
+                            PeriodHeaderFormatter.fullLabel(slot.nodeStart, headerStyle)
+                        } else {
+                            PeriodHeaderFormatter.range(slot.nodeStart, slot.nodeEnd, headerStyle)
+                        }
+                        LegacyDashRowInk(
+                            labelPx = headerTextMeasurer.measure(label, labelStyle).size.width.toFloat(),
+                            timeLeftPx = headerTextMeasurer.measure(slot.displayStart, timeStyle).size.width.toFloat(),
+                            dashPx = headerTextMeasurer.measure("-", timeStyle).size.width.toFloat(),
+                            timeRightPx = headerTextMeasurer.measure(slot.displayEnd, timeStyle).size.width.toFloat(),
+                        )
                     }
-                    LegacyDashRowInk(
-                        labelPx = headerTextMeasurer.measure(label, labelStyle).size.width.toFloat(),
-                        timeLeftPx = headerTextMeasurer.measure(slot.displayStart, timeStyle).size.width.toFloat(),
-                        dashPx = headerTextMeasurer.measure("-", timeStyle).size.width.toFloat(),
-                        timeRightPx = headerTextMeasurer.measure(slot.displayEnd, timeStyle).size.width.toFloat(),
-                    )
-                }
-                with(LocalDensity.current) {
-                    // 偏移现在以卡片内容框 (SingleTimeHeadCell padding 之内) 为原点 —
-                    // PeriodHeaderCellContent 根 padding 已拆 (双重 pad 修复, 2026-10-04),
-                    // 此处不再 +padDp, 否则全列墨迹右偏一个 pad (设备实锤右溢 7px)。
-                    legacyDashColumnPx(rows, padPx = 0f).dashCenterX.toDp()
+                    with(headerDensity) {
+                        // 偏移现在以卡片内容框 (SingleTimeHeadCell padding 之内) 为原点 —
+                        // PeriodHeaderCellContent 根 padding 已拆 (双重 pad 修复, 2026-10-04),
+                        // 此处不再 +padDp, 否则全列墨迹右偏一个 pad (设备实锤右溢 7px)。
+                        legacyDashColumnPx(rows, padPx = 0f).dashCenterX.toDp()
+                    }
                 }
             }
             // 用户令 2026-09-30: 整列统一卡宽 — 所有行卡片 = timeW (整列最宽包络),
@@ -1673,7 +1694,6 @@ internal fun CourseOverlayCard(
 
     Box(
         modifier = modifier
-            .glassBackdropSource(depth = 0f)
             .padding(sd(2f))
             // 拖拽置灰 (边缘翻页特性): 原占位卡整卡纯降透明度, 浮卡跟手恒全亮。
             .then(if (dragDimmed) Modifier.graphicsLayer { alpha = SleepyTheme.Alpha.dragDim }.testTag("float-dim") else Modifier)
@@ -1748,7 +1768,6 @@ private fun DayHeadCell(day: Int, isToday: Boolean, isGrey: Boolean = false, cou
 
     Box(
         modifier = modifier
-            .glassBackdropSource(depth = 0f)
             .height(if (dateStr != null) sd(56f) else sd(52f))
             .clip(RoundedCornerShape((10 * scale * cornerRatio.coerceAtMost(1f)).dp))
             .background(bg)
@@ -2006,7 +2025,7 @@ private fun DaySummaryCell(
             val fullText = stringResource(R.string.course_count_format, courses.size)
             val numberText = courses.size.toString()
             val chipStyle = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold, fontSize = (10 * scale).sp, lineHeight = (14 * scale).sp)
-            val textMeasurer = rememberTextMeasurer()
+            val textMeasurer = rememberTimetableTextMeasurer()
             BoxWithConstraints(modifier = Modifier.align(Alignment.CenterHorizontally)) {
                 val chipPaddingPx = with(LocalDensity.current) { sd(14f).toPx() }.toInt()
                 val availablePx = with(LocalDensity.current) { maxWidth.toPx() }.toInt()
@@ -2401,7 +2420,6 @@ private fun LessonRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .glassBackdropSource(depth = 0f)
             .clip(RoundedCornerShape(sd(12f * cornerRatio)))
             .background(effectiveBg)
             .noRippleCombinedClickable(onClick, onLongClick)
