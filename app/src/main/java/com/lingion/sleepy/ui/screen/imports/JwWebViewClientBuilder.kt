@@ -51,6 +51,7 @@ object JwWebViewClientBuilder {
         desktopMode: Boolean = false,
         onPageFinished: (String?) -> Unit = {},
         onUrlChanged: (String?) -> Unit = {},
+        onPageStarted: () -> Unit = {},
     ): WebViewClient {
         // 主线程读: settings.userAgentString 是 main-thread-only API, 只能在工厂期一次捕获。
         val userAgent = webView.settings.userAgentString
@@ -67,7 +68,7 @@ object JwWebViewClientBuilder {
         // 布局宽度恒为手机屏宽, Bootstrap @media(min-width:980px) 永不命中 → 页面零变化。
         // 全协议注入后: 桌面 UA + 1024px 视口 = 响应式门户真正切桌面分支。
         val desktopViewport = desktopMode
-        return JwWebViewClientImpl(interceptors, ctx, schoolHost, desktopViewport, onPageFinished, onUrlChanged)
+        return JwWebViewClientImpl(interceptors, ctx, schoolHost, desktopViewport, onPageFinished, onUrlChanged, onPageStarted)
     }
 
     /**
@@ -100,7 +101,12 @@ private class JwWebViewClientImpl(
     private val desktopViewport: Boolean,
     private val onPageFinished: (String?) -> Unit,
     private val onUrlChanged: (String?) -> Unit,
+    private val onPageStarted: () -> Unit,
 ) : WebViewClient() {
+
+    override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
+        onPageStarted()
+    }
 
     override fun shouldInterceptRequest(
         view: WebView,

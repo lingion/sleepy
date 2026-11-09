@@ -17,12 +17,14 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.*
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -98,8 +100,7 @@ class GlassFloatingControlsRenderTest {
         return bitmap
     }
 
-    @Test fun heldControlsCaptureTheirOrdinarySiblingsAndOverflowBothEdges() {
-        val darkMode = mutableStateOf(false)
+    private fun showControls(darkMode: State<Boolean>, opticalPattern: State<Boolean> = mutableStateOf(false)) {
         compose.setContent {
             val view = LocalView.current
             SideEffect {
@@ -116,9 +117,24 @@ class GlassFloatingControlsRenderTest {
             MaterialTheme(colorScheme = if (darkMode.value) darkColorScheme() else lightColorScheme()) {
                 CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass, LocalDarkTheme provides darkMode.value) {
                     GlassHost(modifier = Modifier.fillMaxSize(), background = background) {
-                        Column(Modifier.fillMaxSize().background(background).padding(24.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
+                        GlassBackground(depth = 0f, modifier = Modifier.fillMaxSize()) {
+                            Box(Modifier.fillMaxSize().background(background).drawBehind {
+                            if (opticalPattern.value) {
+                                val stripe = 6.dp.toPx()
+                                var x = 0f
+                                var index = 0
+                                while (x < size.width) {
+                                    drawRect(if (index++ % 2 == 0) Color.Black else Color.White,
+                                        Offset(x, 0f), Size(stripe, size.height))
+                                    x += stripe
+                                }
+                            }
+                            })
+                        }
+                        Column(Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
                             Text("Toggle", color = MaterialTheme.colorScheme.onSurface)
                             GlassSwitch(checked, { checked = it }, Modifier.testTag("toggle"),
+                                thumbContent = { Box(Modifier.fillMaxSize().testTag("switch-lens")) },
                                 colors = SwitchDefaults.colors(checkedTrackColor = Color(0xFF34C759),
                                     checkedThumbColor = Color.White, uncheckedThumbColor = Color.White))
                             Spacer(Modifier.height(8.dp))
@@ -132,6 +148,104 @@ class GlassFloatingControlsRenderTest {
                 }
             }
         }
+    }
+
+    @Test fun motionFramesShowProgressiveLiftJellyAndRainbowEdges() {
+        val opticalPattern = mutableStateOf(false)
+        showControls(mutableStateOf(false), opticalPattern)
+        save("motion-rest")
+        compose.mainClock.autoAdvance = false
+        fun advance(ms: Int) {
+            repeat(ms / 16) {
+                compose.mainClock.advanceTimeByFrame()
+                compose.waitForIdle()
+            }
+        }
+        val samples = StringBuilder("control,phase,frame,width_dp,height_dp\n")
+        fun capture(control: String, phase: String, frame: Int, lens: SemanticsNodeInteraction): Bitmap {
+            val bounds = lens.getUnclippedBoundsInRoot()
+            samples.append("$control,$phase,$frame,${(bounds.right - bounds.left).value},${(bounds.bottom - bounds.top).value}\n")
+            return save("motion-$control-$phase-${frame.toString().padStart(2, '0')}")
+        }
+        for ((control, rootTag, lensTag) in listOf(
+            Triple("tab", "tabs", "segment-thumb"),
+            Triple("toggle", "toggle", "switch-lens"),
+            Triple("slider", "slider", "glass-slider-end"),
+        )) {
+            val node = compose.onNodeWithTag(rootTag)
+            val lens = compose.onNodeWithTag(lensTag, true)
+            val rest = lens.getUnclippedBoundsInRoot()
+            val restHeight = (rest.bottom - rest.top).value
+            node.performTouchInput {
+                down(Offset(width * when (control) { "tab" -> .25f; "slider" -> .55f; else -> .67f }, centerY))
+            }
+            for (frame in 0..20) {
+                advance(16)
+                if (frame % 2 == 0) capture(control, "rise", frame, lens)
+                if (frame == 9) {
+                    val height = lens.getUnclippedBoundsInRoot().let { (it.bottom - it.top).value }
+                    assertTrue("$control must have an intermediate rising frame", height > restHeight + 2f)
+                }
+            }
+            advance(320)
+            val full = lens.getUnclippedBoundsInRoot()
+            val fullWidth = (full.right - full.left).value
+            capture(control, "held", 0, lens)
+            if (control == "tab") {
+                // Black/white scene gives RGB dispersion an achromatic high-contrast source.
+                // A pale gray track alone cannot produce saturated channel differences.
+                compose.runOnUiThread { opticalPattern.value = true }
+                advance(32)
+                val held = save("motion-tab-dispersion-pattern")
+                val bounds = node.fetchSemanticsNode().boundsInRoot
+                val origin = IntArray(2)
+                compose.runOnUiThread { contentView.getLocationInWindow(origin) }
+                var colored = 0
+                for (y in (bounds.top.toInt() + origin[1] - 24).coerceAtLeast(0) until
+                    (bounds.bottom.toInt() + origin[1] + 24).coerceAtMost(held.height)) {
+                    for (x in bounds.left.toInt().coerceAtLeast(0) until bounds.right.toInt().coerceAtMost(held.width)) {
+                        val pixel = held.getPixel(x, y)
+                        val channels = listOf(android.graphics.Color.red(pixel), android.graphics.Color.green(pixel), android.graphics.Color.blue(pixel))
+                        if (channels.max() - channels.min() > 65) colored++
+                    }
+                }
+                assertTrue("achromatic scene must produce actual RGB edge separation, pixels=$colored", colored > 10)
+                compose.runOnUiThread { opticalPattern.value = false }
+                advance(32)
+            }
+            var widest = fullWidth
+            for (frame in 1..15) {
+                val fraction = frame / 15f
+                node.performTouchInput {
+                    val x = when (control) {
+                        "tab" -> .25f + .5f * fraction
+                        "slider" -> .55f + .3f * fraction
+                        else -> .67f - .5f * fraction
+                    }
+                    moveTo(Offset(width * x, centerY), 16)
+                }
+                advance(16)
+                val bounds = lens.getUnclippedBoundsInRoot()
+                widest = maxOf(widest, (bounds.right - bounds.left).value)
+                capture(control, "drag", frame, lens)
+            }
+            assertTrue("$control must stretch while moving: held=$fullWidth moving=$widest", widest > fullWidth * 1.015f)
+            node.performTouchInput { up() }
+            for (frame in 0..30) {
+                advance(32)
+                if (frame % 2 == 0) capture(control, "release", frame, lens)
+            }
+            val finalHeight = lens.getUnclippedBoundsInRoot().let { (it.bottom - it.top).value }
+            assertEquals("$control must return to its resting height", restHeight, finalHeight, 1f)
+        }
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        File(context.getExternalFilesDir(null), "pr299-controls/motion-samples.csv").writeText(samples.toString())
+        compose.mainClock.autoAdvance = true
+    }
+
+    @Test fun heldControlsCaptureTheirOrdinarySiblingsAndOverflowBothEdges() {
+        val darkMode = mutableStateOf(false)
+        showControls(darkMode)
         val restingInk = labelInkWidth(save("00-rest"))
         val tabs = compose.onNodeWithTag("tabs")
         tabs.performTouchInput { down(Offset(width / 4f, centerY)) }

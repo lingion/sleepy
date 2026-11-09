@@ -57,6 +57,7 @@ object ScheduleExporter {
                 put("maxWeek", table.maxWeek)
                 put("nodesPerDay", table.nodesPerDay)
                 put("time", table.timeJson)
+                put("importSourceJson", table.importSourceJson)
             })
             put("courses", courseArr)
         }
@@ -95,6 +96,7 @@ object ScheduleExporter {
             put("name", table.name)
             put("startDate", table.startDate)
             put("courseDetailJson", encoded)
+            put("tableInfo", buildJsonObject { put("importSourceJson", table.importSourceJson) })
         }
 
         return "【来自Sleepy】\n课程分享：\n\n" +

@@ -239,6 +239,12 @@ class JwEams5Parser(source: String) : JwParser(source) {
                         .filter { it.isNotBlank() }
                     if (names.isNotEmpty()) return@runCatching names.joinToString("/")
                 }
+                val nestedNames = (o["teacherDeepVms"] as? JsonArray)?.mapNotNull {
+                    ((it as? JsonObject)?.get("person") as? JsonObject)?.get("nameZh")
+                        ?.let { name -> runCatching { name.jsonPrimitive.contentOrNull }.getOrNull() }
+                        ?.trim()?.takeIf(String::isNotEmpty)
+                }.orEmpty()
+                if (nestedNames.isNotEmpty()) return@runCatching nestedNames.joinToString("/")
                 // 单字符串字段兜底
                 o["teacher"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.trim()
                     ?: o["personName"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.trim()
@@ -252,7 +258,15 @@ class JwEams5Parser(source: String) : JwParser(source) {
                 ?.trim().orEmpty()
             val roomNum = o["room"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }
                 ?.trim().orEmpty()
+                .ifEmpty { runCatching { o["customPlace"]?.jsonPrimitive?.contentOrNull }.getOrNull()?.trim().orEmpty() }
             val room = listOf(campus, building, roomNum).filter { it.isNotEmpty() }.joinToString(" ")
+            // USTC uses these names for HH:mm; other deployments may use calendar dates.
+            // Only a complete clock pair augments the authoritative explicit periods.
+            val sourceStart = runCatching { o["startDate"]?.jsonPrimitive?.contentOrNull }.getOrNull()?.trim().orEmpty()
+            val sourceEnd = runCatching { o["endDate"]?.jsonPrimitive?.contentOrNull }.getOrNull()?.trim().orEmpty()
+            val hasClock = JwCourse.isValidTimeRange(sourceStart, sourceEnd)
+            val startTime = if (hasClock) sourceStart else ""
+            val endTime = if (hasClock) sourceEnd else ""
 
             val day = o["weekday"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.toIntOrNull()
                 ?: continue
@@ -284,6 +298,8 @@ class JwEams5Parser(source: String) : JwParser(source) {
                     startWeek = startWeek,
                     endWeek = endWeek,
                     type = weekType,
+                    startTime = startTime,
+                    endTime = endTime,
                     credit = runCatching { o["credits"]?.jsonPrimitive?.contentOrNull?.toFloatOrNull() }
                         .getOrNull()?.takeIf { it.isFinite() && it >= 0f } ?: 0f,
                     note = listOf("lessonCode", "lessonRemark").joinToString("") { key ->

@@ -1,9 +1,5 @@
 package com.lingion.sleepy.ui.component.liquidglass
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.Easing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -30,6 +26,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.kyant.backdrop.backdrops.rememberCombinedBackdrop
@@ -39,9 +37,6 @@ import com.kyant.backdrop.drawBackdrop
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
-import kotlinx.coroutines.delay
-import kotlin.math.PI
-import kotlin.math.sin
 
 /**
  * 实心轨道，按住时滑块升起为采样轨道与宿主背景的镜片。
@@ -52,7 +47,7 @@ import kotlin.math.sin
  * - 滑块 37×24dp 横椭圆, 四周均 2pt 留白 (iOS 17 是 27 正圆; 轨道加宽正是为椭圆让位)
  * - 行程 = 63 − 37 − 2×2 = 22dp, 两端余量与上下留白对称
  * 热区按 HIG 通用规则 ≥44dp 高。三态模型 (§0): rest 标准填充 → press/drag
- * 隆起为活玻璃镜片 (下方 lift 路径) → release 沉回带过冲 (SwitchTravelEasing)。
+ * 隆起为活玻璃镜片 → release 沿 Dock 弹簧收回并保留速度。
  */
 @Composable
 fun GlassSwitch(
@@ -76,9 +71,7 @@ fun GlassSwitch(
     var dragging by remember { mutableStateOf(false) }
     var gestureEnd by remember { mutableIntStateOf(0) }
     var tapGeneration by remember { mutableIntStateOf(0) }
-    var tapLift by remember { mutableStateOf(false) }
     var position by remember { mutableFloatStateOf(if (checked) 1f else 0f) }
-    val animation = remember { Animatable(position) }
     val update by rememberUpdatedState(onCheckedChange)
     val currentChecked by rememberUpdatedState(checked)
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
@@ -87,24 +80,10 @@ fun GlassSwitch(
     // 用户实机看到 "小白色块的 margin 不太对")。拖动映射与位移共用同一真值。
     val travel = with(LocalDensity.current) { 22.dp.toPx() }
     LaunchedEffect(checked, dragging, gestureEnd) {
-        if (!dragging) {
-            animation.snapTo(position)
-            animation.animateTo(if (checked) 1f else 0f, tween(300, easing = SwitchTravelEasing)) {
-                position = value
-            }
-        }
+        if (!dragging) position = if (checked) 1f else 0f
     }
-    LaunchedEffect(tapGeneration, enabled) {
-        if (tapGeneration > 0 && enabled) {
-            tapLift = true
-            delay(200)
-        }
-        tapLift = false
-    }
-    val lift by animateFloatAsState(
-        if (enabled && (pressed || dragging || tapLift)) 1f else 0f,
-        tween(150), label = "switch-lift",
-    )
+    val motion = rememberGlassControlMotion(position, pressed || dragging, dragging, tapGeneration, enabled)
+    val lift = motion.lift
     val input = if (onCheckedChange == null) Modifier else Modifier
         .toggleable(
             value = checked, enabled = enabled, role = Role.Switch,
@@ -137,16 +116,16 @@ fun GlassSwitch(
             }
         }
 
-    val on = position.coerceIn(0f, 1f)
+    val on = motion.position.value.coerceIn(0f, 1f)
     val scheme = androidx.compose.material3.MaterialTheme.colorScheme
     val trackColor = if (enabled) lerp(colors.uncheckedTrackColor, colors.checkedTrackColor, on)
         else lerp(colors.disabledUncheckedTrackColor, colors.disabledCheckedTrackColor, on)
     val thumbColor = if (enabled) lerp(colors.uncheckedThumbColor, colors.checkedThumbColor, on)
         else lerp(colors.disabledUncheckedThumbColor, colors.disabledCheckedThumbColor, on)
-    val stretch = sin(PI * on).toFloat()
-    // The physical lens grows around its center; the track stays at its original scale.
-    val thumbWidth = (37f + 12f * stretch) + 16f * lift
-    val thumbHeight = (24f - 2f * stretch) + 6f * lift
+    val stretch = motion.stretch
+    val thumbWidth = glassLensWidth((37f + 16f * lift) * (1f + .2f * lift), stretch)
+    val thumbHeight = glassLensHeight((24f + 6f * lift) * (1f + .2f * lift), stretch,
+        minimum = 24f + 6f * lift)
     val thumbShape = androidx.compose.foundation.shape.RoundedCornerShape(50)
     val track = rememberLayerBackdrop()
     val samplingHost = if (LocalGlassOverlay.current) LocalGlassOverlaySamplingHost.current ?: host else host
@@ -165,12 +144,10 @@ fun GlassSwitch(
                 .then(if (focused) Modifier.border(2.dp, scheme.primary, CircleShape) else Modifier),
         )
         Box(
-            // 位移 = (position−0.5)×行程 22dp: 白块两端各留 2dp, 与上下留白对称
-            // (2026-11-06 逐图核对 sarunw-toggles-ios26.png: 四周均 2pt margin)。
-            Modifier.offset(x = ((if (rtl) .5f - position else position - .5f) * 22f).dp)
-                // Measure the lifted size as FLClash's positioned lens does. Scaling the
-                // sampled texture afterwards also scales the track and shifts its center.
-                .requiredSize((thumbWidth * (1f + .2f * lift)).dp, (thumbHeight * (1f + .2f * lift)).dp)
+            Modifier.offset {
+                IntOffset(((if (rtl) .5f - motion.position.value else motion.position.value - .5f) * travel).roundToInt(), 0)
+            }
+                .requiredSize(thumbWidth.dp, thumbHeight.dp)
                 .background(thumbColor.copy(alpha = thumbColor.alpha * (1f - lift)), thumbShape)
                 .then(if (lift > 0f) Modifier.drawBackdrop(
                         backdrop = trackBackdrop,
@@ -192,9 +169,4 @@ fun GlassSwitch(
             }
         }
     }
-}
-
-private val SwitchTravelEasing = Easing { fraction ->
-    val t = fraction - 1f
-    1f + 2.70158f * t * t * t + 1.70158f * t * t
 }

@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import com.lingion.sleepy.MainTabContent
 import com.lingion.sleepy.Tab
 import com.lingion.sleepy.ui.theme.SleepyThemeProvider
@@ -60,14 +60,14 @@ class TimetableTextMeasurerTest {
         compose.waitForIdle()
         compose.runOnIdle { tab.value = Tab.Schedule }
         compose.waitForIdle()
-        assertSame("Returning must reuse the measured paragraph", original, measured!!.multiParagraph)
+        assertSame("Returning must reuse the measured paragraph", original, measured.multiParagraph)
 
         compose.runOnIdle { density.value = Density(2f, 1.3f) }
         compose.waitForIdle()
-        val larger = measured!!.multiParagraph
+        val larger = measured.multiParagraph
         assertNotSame("Font scale changes must not reuse old geometry", original, larger)
         compose.runOnIdle { direction.value = LayoutDirection.Rtl }
         compose.waitForIdle()
-        assertNotSame("Layout direction changes must not reuse old geometry", larger, measured!!.multiParagraph)
+        assertNotSame("Layout direction changes must not reuse old geometry", larger, measured.multiParagraph)
     }
 }

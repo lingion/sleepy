@@ -13,7 +13,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import com.lingion.sleepy.ui.component.liquidglass.GlassModalBottomSheet as ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -49,7 +50,10 @@ fun ShareScheduleSheet(
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
     val colors = MaterialTheme.colorScheme
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
+    )
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -94,7 +98,7 @@ fun ShareScheduleSheet(
                             ctx = ctx,
                             content = SleepyNativeExporter.exportShareText(
                                 table.name, table.startDate, table.maxWeek, table.nodesPerDay,
-                                table.timeJson, courses
+                                table.timeJson, courses, importSourceJson = table.importSourceJson,
                             ),
                             subject = table.name,
                             onResult = { }
@@ -140,7 +144,7 @@ fun ShareScheduleSheet(
                             ctx = ctx,
                             content = SleepyNativeExporter.exportShareText(
                                 table.name, table.startDate, table.maxWeek, table.nodesPerDay,
-                                table.timeJson, courses
+                                table.timeJson, courses, importSourceJson = table.importSourceJson,
                             ),
                             subject = table.name,
                             onResult = { }

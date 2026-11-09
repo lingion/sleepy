@@ -28,6 +28,7 @@ import androidx.compose.material.icons.outlined.PhoneAndroid
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.School
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.KeyboardActionHandler
@@ -48,12 +49,14 @@ import androidx.compose.material3.Text
 import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -132,6 +135,8 @@ fun JwWebViewLoginScreen(
     onCaptureError: (result: FrameCaptureResult, hint: String) -> Unit,
     onBack: () -> Unit,
     onWebViewReady: ((WebView) -> Unit)? = null,
+    initialSgAdapterId: String = "",
+    onSgAdapterSelected: (String) -> Unit = {},
     viewModel: JwImportViewModel = viewModel()
 ) {
     val colors = MaterialTheme.colorScheme
@@ -152,8 +157,22 @@ fun JwWebViewLoginScreen(
     // 其余校 initialDesktopUa=false → 行为与旧 `mutableStateOf(false)` 完全一致 (批B §3.5)。
     var desktopUa by remember { mutableStateOf(initialDesktopUa(school)) }
     var uaSwitchReload by remember { mutableStateOf(0) }
-    val logToken = remember { java.util.concurrent.atomic.AtomicLong(0) }
+    val fetchBudget = remember { JwFetchBudget(android.os.SystemClock::elapsedRealtime) }
+    var sgInteraction by remember { mutableStateOf<JwSgAssetInteraction?>(null) }
+    var sgSessionId by remember { mutableStateOf<String?>(null) }
+    var sgDocumentUsed by remember { mutableStateOf(false) }
+    var sgAdapterDialog by remember { mutableStateOf<android.app.AlertDialog?>(null) }
     val sgContext = LocalContext.current
+    val sgAdapters = remember(sgContext, school.name, school.type) {
+        if (school.type == JwProtocol.TYPE_SG_ASSET) JwSgAssetBridge.entries(sgContext, school.name)
+        else emptyList()
+    }
+    // Initial-only draft selection; later choices are owned by this login session.
+    var sgAdapterChoice by remember(school.name) { mutableStateOf(
+        JwSgAssetBridge.restoreChoice(sgAdapters, initialSgAdapterId)
+    ) }
+    val latestAdapterSelected by rememberUpdatedState(onSgAdapterSelected)
+    LaunchedEffect(sgAdapterChoice) { latestAdapterSelected(sgAdapterChoice?.adapterId.orEmpty()) }
     val webviewNotReadyMsg = stringResource(R.string.jw_webview_not_ready)
     val fetchingMsg = stringResource(R.string.jw_fetching)
     val fetchFailedNoResponseMsg = stringResource(R.string.jw_fetch_failed_no_response)
@@ -168,6 +187,52 @@ fun JwWebViewLoginScreen(
     val fetchNoCoursesMsg = stringResource(R.string.jw_fetch_no_courses)
     val fetchFallbackPeriodsMsg = stringResource(R.string.jw_fetch_fallback_periods)
     val urlInvalidMsg = stringResource(R.string.jw_url_invalid)
+    val selectAdapterMsg = stringResource(R.string.jw_select_academic_adapter)
+
+    fun cancelCapture(dismissAdapter: Boolean = true) {
+        fetchBudget.cancel()
+        if (dismissAdapter) {
+            sgAdapterDialog?.dismiss()
+            sgAdapterDialog = null
+        }
+        sgInteraction?.cancelSession()
+        sgSessionId?.let { sessionId ->
+            webViewRef?.evaluateJavascript(
+                "window.SleepySgShim && window.SleepySgShim.cancelSession(${org.json.JSONObject.quote(sessionId)});", null,
+            )
+        }
+        sgSessionId = null
+    }
+
+    fun chooseSgAdapter(wv: WebView) {
+        cancelCapture()
+        sgAdapterDialog = showJwSgAdapterChooser(wv.context, selectAdapterMsg, sgAdapters) { choice ->
+            cancelCapture()
+            sgAdapterChoice = choice
+            wv.loadUrl(choice.importUrl)
+        }
+    }
+
+    fun scheduleFetchTimeout(wv: WebView, id: String) {
+        val remaining = fetchBudget.remainingMs(id) ?: return
+        wv.postDelayed({
+            val left = fetchBudget.remainingMs(id)
+            if (left != null && left == 0L) {
+                cancelCapture()
+                onCaptureError(
+                    FrameCaptureResult(null, "", emptyList(),
+                        status = FrameCaptureStatus.CONTAINER_EMPTY_AFTER_DELAY,
+                        diagnosticHint = fetchTimeoutMsg), fetchTimeoutMsg,
+                )
+            } else if (left != null) {
+                scheduleFetchTimeout(wv, id)
+            }
+        }, remaining.coerceAtLeast(1))
+    }
+
+    DisposableEffect(Unit) {
+        onDispose { cancelCapture() }
+    }
 
     val thuCaptureToken = remember { java.util.concurrent.atomic.AtomicLong(0) }
     fun deliverPageCapture(html: String) {
@@ -210,11 +275,27 @@ fun JwWebViewLoginScreen(
 
     // wisedu (金智) 协议：WebView 内 fetch 课表 JSON 的回调结果处理
     // 桥回调已切到主线程；result 形如 {ok:true,data:"<xskcb.do JSON>"} 或 {ok:false,err:"..."}
-    val handleWiseduResult: (String) -> Unit = { json ->
+    val handleWiseduResult: (String) -> Unit = result@{ json ->
         try {
             val obj = org.json.JSONObject(json)
+            if (!fetchBudget.complete(obj.optString("captureId"))) return@result
+            sgInteraction?.cancelSession()
+            sgSessionId = null
             if (obj.optBoolean("ok", false)) {
-                val data = obj.optString("data", "")
+                val rawData = obj.optString("data", "")
+                // 课程保持不透明字符串，由 sg_asset 解析器唯一解码；配置随同源载荷
+                // 保存，使学期总周数也能经过草稿与确认页。
+                val sgConfig = obj.optJSONObject("sgConfig")
+                val data = if (rawData.isNotBlank() && school.type == JwProtocol.TYPE_SG_ASSET && sgConfig != null) {
+                    org.json.JSONObject().put("sleepySgAsset", true)
+                        .put("coursesJson", rawData).put("config", sgConfig).apply {
+                            sgAdapterChoice?.let { adapter ->
+                                put("adapter", org.json.JSONObject().put("adapterId", adapter.adapterId)
+                                    .put("schoolId", adapter.schoolId).put("category", adapter.category)
+                                    .put("name", adapter.adapterName).put("importUrl", adapter.importUrl))
+                            }
+                        }.toString()
+                } else rawData
                 if (data.isBlank()) {
                     onCaptureError(
                         FrameCaptureResult(null, "", emptyList(),
@@ -294,6 +375,8 @@ fun JwWebViewLoginScreen(
                     val capturedSchool = if (obj.optString("protocol") == JwProtocol.TYPE_CHAOXING_SHARE &&
                         JwChaoxingShareCapture.isShareUrl(currentUrl)) {
                         school.copy(type = JwProtocol.TYPE_CHAOXING_SHARE)
+                    } else if (school.type == JwProtocol.TYPE_SG_ASSET && sgAdapterChoice != null) {
+                        school.copy(url = sgAdapterChoice!!.importUrl)
                     } else school
                     onHtmlCaptured(data, capturedSchool, periods, effectiveStartDate)
                 }
@@ -320,24 +403,19 @@ fun JwWebViewLoginScreen(
 
     // fetch JS 注入超时闸: evaluateJavascript 无内建超时, 教务宕机/挂起时
     // 桥回调永远不来, 用户只见「正在抓取」无限 pending。20s 无回调即报超时。
-    fun evaluateFetchWithTimeout(wv: WebView, js: String, timeoutMs: Long = FETCH_TIMEOUT_MS) {
-        var answered = false
-        val beginToken = logToken.incrementAndGet()
-        wv.evaluateJavascript(js) {
-            answered = true
-            Log.d("JwWebView", "fetch js done token=$beginToken")
+    fun evaluateFetchWithTimeout(
+        wv: WebView, js: String, timeoutMs: Long = FETCH_TIMEOUT_MS,
+        captureId: String = java.util.UUID.randomUUID().toString(), sgAsset: Boolean = false,
+    ) {
+        cancelCapture()
+        fetchBudget.begin(captureId, timeoutMs)
+        if (sgAsset) {
+            sgSessionId = captureId
+            sgInteraction?.beginSession(captureId)
         }
-        wv.postDelayed({
-            if (!answered) {
-                Log.w("JwWebView", "fetch js timeout token=$beginToken")
-                onCaptureError(
-                    FrameCaptureResult(null, "", emptyList(),
-                        status = FrameCaptureStatus.CONTAINER_EMPTY_AFTER_DELAY,
-                        diagnosticHint = fetchTimeoutMsg),
-                    fetchTimeoutMsg,
-                )
-            }
-        }, timeoutMs)
+        // evaluateJavascript returns after the synchronous part; only the bridge completes the task.
+        wv.evaluateJavascript(if (sgAsset) js else scopeJwFetchScript(js, captureId), null)
+        scheduleFetchTimeout(wv, captureId)
     }
 
     // 浏览器式地址栏: 校验 + 规范化 + 提交导航。
@@ -360,6 +438,7 @@ fun JwWebViewLoginScreen(
             return
         }
         editingUrl = false
+        cancelCapture()
         webViewRef?.loadUrl(normalized)
     }
 
@@ -368,6 +447,7 @@ fun JwWebViewLoginScreen(
             editingUrl = false
             return@BackHandler
         }
+        cancelCapture()
         webViewRef?.let { wv ->
             if (wv.canGoBack()) wv.goBack() else onBack()
         } ?: onBack()
@@ -403,7 +483,7 @@ fun JwWebViewLoginScreen(
                     IconButton(
                         modifier = Modifier.dbgTag("jw_back", role = "button"),
                         onClick = {
-                            if (editingUrl) editingUrl = false else onBack()
+                            if (editingUrl) editingUrl = false else { cancelCapture(); onBack() }
                         }
                     ) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
@@ -434,6 +514,15 @@ fun JwWebViewLoginScreen(
                         )
                     }
                     if (!editingUrl) {
+                        if (sgAdapters.size > 1) {
+                            IconButton(
+                                modifier = Modifier.dbgTag("jw_select_adapter", text = selectAdapterMsg, role = "button"),
+                                onClick = { webViewRef?.let(::chooseSgAdapter) },
+                                enabled = webViewRef != null,
+                            ) {
+                                Icon(Icons.Outlined.School, contentDescription = selectAdapterMsg)
+                            }
+                        }
                         // #18: 部分门户 (UCAS SEP 等) 手机 UA 下不显示"个人课表"入口,
                         // 桌面 UA 可见。切换 = 销毁重建 WebView (UA 只在创建期生效),
                         // 同步保留 cookie (CookieManager 全局共享) 与当前 URL
@@ -443,6 +532,7 @@ fun JwWebViewLoginScreen(
                                 else R.string.jw_toggle_desktop_ua
                             ), role = "button"),
                             onClick = {
+                                cancelCapture()
                                 desktopUa = !desktopUa
                                 uaSwitchReload++   // 触发 JwWebView 重建 (UA 创建期生效)
                             },
@@ -460,7 +550,7 @@ fun JwWebViewLoginScreen(
                         }
                         IconButton(
                             modifier = Modifier.dbgTag("jw_refresh", text = stringResource(R.string.jw_refresh), role = "button"),
-                            onClick = { webViewRef?.reload() },
+                            onClick = { cancelCapture(); webViewRef?.reload() },
                             enabled = webViewRef != null
                         ) {
                             Icon(
@@ -526,6 +616,14 @@ fun JwWebViewLoginScreen(
                         evaluateFetchWithTimeout(wv, script)
                         return@CaptureBar
                     }
+                    JwUstcCapture.scriptFor(school.type)?.let { script ->
+                        evaluateFetchWithTimeout(wv, script)
+                        return@CaptureBar
+                    }
+                    if (school.type == JwProtocol.TYPE_FDU) {
+                        evaluateFetchWithTimeout(wv, JwFduCapture.FETCH_JS)
+                        return@CaptureBar
+                    }
                     JwSchoolApiCapture.scriptFor(school.type)?.let { script ->
                         evaluateFetchWithTimeout(wv, script)
                         return@CaptureBar
@@ -536,7 +634,21 @@ fun JwWebViewLoginScreen(
                     // 超时闸放宽到 SG_ASSET_TIMEOUT_MS; manifest 无条目直接明错,
                     // 不悄悄落 outerHTML 抓取 (避免把「没适配」伪装成「没课表」)。
                     if (school.type == JwProtocol.TYPE_SG_ASSET) {
-                        val js = JwSgAssetBridge.bridgeJs(sgContext, school.name)
+                        val candidates = sgAdapters
+                        val selected = sgAdapterChoice?.takeIf { it in candidates }
+                        if (selected == null && candidates.isNotEmpty()) {
+                            chooseSgAdapter(wv)
+                            return@CaptureBar
+                        }
+                        sgAdapterChoice = selected
+                        if (sgDocumentUsed) {
+                            cancelCapture()
+                            wv.reload()
+                            scope.launch { snackbar.showSnackbar("正在重新加载页面，请加载完成后再次导入") }
+                            return@CaptureBar
+                        }
+                        val captureId = java.util.UUID.randomUUID().toString()
+                        val js = JwSgAssetBridge.bridgeJs(sgContext, school.name, captureId, selected)
                         if (js == null) {
                             val msg = fetchFailedFmt.format("该校暂无拾光适配脚本")
                             onCaptureError(
@@ -546,7 +658,8 @@ fun JwWebViewLoginScreen(
                                 msg,
                             )
                         } else {
-                            evaluateFetchWithTimeout(wv, js, SG_ASSET_TIMEOUT_MS)
+                            sgDocumentUsed = true
+                            evaluateFetchWithTimeout(wv, js, SG_ASSET_TIMEOUT_MS, captureId, sgAsset = true)
                         }
                         return@CaptureBar
                     }
@@ -663,11 +776,11 @@ fun JwWebViewLoginScreen(
                     if (school.type == JwProtocol.TYPE_EAMS5) {
                         val prefix = eams5PathPrefixFor(school.url)
                         // 安徽大学自建'新教务'走金智 EAMS 新版 GET 路径, 复用 EAMS5 type
-                        // 但 fetch JS 单独走 EAMS5_AHU_FETCH_JS (2026-09-06 cross-verified)
+                        // 学期选择与采集校验由独立 JwAhuCapture 处理。
                         val js = if (school.url.contains("ahu.edu.cn", ignoreCase = true) ||
                             (wv.url ?: "").contains("ahu.edu.cn", ignoreCase = true)
                         ) {
-                            EAMS5_AHU_FETCH_JS.replace(EAMS5_PREFIX_PLACEHOLDER, prefix)
+                            JwAhuCapture.FETCH_JS.replace(EAMS5_PREFIX_PLACEHOLDER, prefix)
                         } else {
                             EAMS5_FETCH_JS.replace(EAMS5_PREFIX_PLACEHOLDER, prefix)
                         }
@@ -678,7 +791,7 @@ fun JwWebViewLoginScreen(
                     // 路径指纹: school.type 显式 zf_new, 或 URL 含 /jwglxt/、/kbcx/ (广东医科等新版), 或 WebVPN /http/<hex>/ 重写形态
                     val currentUrl = wv.url ?: ""
                     if (shouldUseZfNewFetch(school.type, currentUrl)) {
-                        wv.evaluateJavascript(ZF_NEW_FETCH_JS, null)
+                        evaluateFetchWithTimeout(wv, ZF_NEW_FETCH_JS)
                         return@CaptureBar
                     }
                     // T7: DFS frame 抓取 + ready 重试, 决策在 JVM 层(可测可日志)
@@ -720,7 +833,9 @@ fun JwWebViewLoginScreen(
                 .padding(padding)
         ) {
             JwWebView(
-                url = school.url.ifBlank { "https://www.baidu.com" },
+                url = if (school.type == JwProtocol.TYPE_SG_ASSET && sgAdapters.isNotEmpty()) {
+                    sgAdapterChoice?.importUrl ?: "about:blank"
+                } else school.url.ifBlank { "https://www.baidu.com" },
                 school = school,
                 desktopUa = desktopUa,
                 recreateKey = uaSwitchReload,
@@ -728,9 +843,24 @@ fun JwWebViewLoginScreen(
                 onNavigationUrlChanged = { url ->
                     if (!editingUrl && !url.isNullOrBlank()) currentUrl = url
                 },
-                onWebViewCreated = { wv -> webViewRef = wv },
+                onPageStarted = { cancelCapture(dismissAdapter = false); sgDocumentUsed = false },
+                onWebViewCreated = { wv ->
+                    webViewRef = wv
+                    sgDocumentUsed = false
+                    sgInteraction = JwSgAssetInteraction(wv, onWaitingChanged = { waiting ->
+                        fetchBudget.captureId?.let { id ->
+                            fetchBudget.setWaiting(id, waiting)
+                            if (!waiting) scheduleFetchTimeout(wv, id)
+                        }
+                    }, onSessionCancelled = { cancelCapture() })
+                    if (school.type == JwProtocol.TYPE_SG_ASSET && sgAdapters.isNotEmpty() && sgAdapterChoice == null) {
+                        chooseSgAdapter(wv)
+                    }
+                },
                 onHtmlCaptured = { html -> deliverPageCapture(html) },
                 onWiseduResult = handleWiseduResult,
+                onSgInteraction = { sgInteraction?.handleRequest(it) },
+                onSgInteractionAcknowledged = { sgInteraction?.handleAcknowledged(it) },
                 onWebViewReady = onWebViewReady
             )
 
@@ -779,6 +909,9 @@ private fun JwWebView(
     onWebViewCreated: (WebView) -> Unit,
     onHtmlCaptured: (String) -> Unit,
     onWiseduResult: (String) -> Unit = {},
+    onSgInteraction: (String) -> Unit = {},
+    onSgInteractionAcknowledged: (String) -> Unit = {},
+    onPageStarted: () -> Unit = {},
     onWebViewReady: ((WebView) -> Unit)? = null
 ) {
     // key 含 recreateKey: UA 切换时销毁重建 WebView (userAgentString 仅创建期可靠,
@@ -795,7 +928,7 @@ private fun JwWebView(
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
                 // wisedu (金智) 协议：注册 JS 桥，async fetch 课表 JSON 完成后回调
-                addJavascriptInterface(WiseduBridge(onWiseduResult), "__sleepyBridge")
+                addJavascriptInterface(WiseduBridge(onWiseduResult, onSgInteraction, onSgInteractionAcknowledged), "__sleepyBridge")
                 // 诊断桥常驻；页面内 recorder 只观察网络，不替换请求或响应。
                 addJavascriptInterface(DiagnosticNetworkBridge(), "__sleepyNetworkBridge")
                 settings.apply {
@@ -817,7 +950,6 @@ private fun JwWebView(
                     }
                 }
                 // 正常 WebView 配置
-                settings.databaseEnabled = true
                 setDownloadListener { downloadUrl, userAgent, contentDisposition, mimeType, contentLength ->
                     // 实体抓取 — 桌面 collector 4-downloads/ 对标: 下载文件字节落诊断包
                     // (导出 xls/ics 课表文件本身是协议证据)。后台线程 GET, 带 Cookie。
@@ -880,6 +1012,7 @@ private fun JwWebView(
                         evaluateJavascript(DIAGNOSTIC_NETWORK_INSTALL_JS, null)
                     },
                     onUrlChanged = onNavigationUrlChanged,
+                    onPageStarted = onPageStarted,
                 )
                 onNavigationUrlChanged(lastUrl)
                 loadUrl(lastUrl)
@@ -1461,90 +1594,148 @@ private const val CQU_FETCH_JS = """
  */
 private const val CHAOXING_FETCH_JS = """
 (function(){
-  try {
-    // 管理前缀按入口 URL 推断: 部分部署挂 /admin 或 /admin/ (吉林工商), 部分无前缀
-    // 修复: pathname 可能恰好是 '/admin' (无尾斜杠), 旧逻辑 indexOf('/admin/') === 0 判 false
-    var base = /^\/admin(\/|$)/.test(location.pathname) ? '/admin' : '';
-    var get = function(url){
-      return fetch(url, {credentials:'include', headers:{'X-Requested-With':'XMLHttpRequest'}})
-        .then(function(r){ return r.json(); });
-    };
-    var getText = function(url){
-      return fetch(url, {credentials:'include', headers:{'X-Requested-With':'XMLHttpRequest'}})
-        .then(function(r){ return r.text(); });
-    };
-    // 1) 当前学期 + 校区: getMenuList 响应含 jsxq.dataXnxq / xqid (session 态)
-    var ctx = get(base + '/api/getMenuList').then(function(j){
-      var jsxq = (j && (j.jsxq || (j.data && j.data.jsxq))) || {};
-      return { xnxq: jsxq.dataXnxq || '', xqid: jsxq.xqid || '' };
-    }).catch(function(){ return { xnxq: '', xqid: '' }; });
-    ctx.then(function(c){
-      if (!c.xnxq) {
-        // getMenuList 缺 jsxq 时回退: 让服务端自己用会话学期 (queryKbForGrdb 无参)
-      }
-      // 2) 个人课表: 先试 queryKbForGrdb (无参), 若返回 HTML (404) 则回退 sdpkkbList
-      return getText(base + '/pkgl/xskb/queryKbForGrdb?sf_request_type=ajax')
-      .then(function(txt){
-        if (txt.trim().startsWith('<')) {
-          // 404 HTML — 回退 sdpkkbList (Syswin 变体, 需 xhid)
-          // xhid 来源优先级: 本页 query → 本页 HTML → 同源 iframe 的 URL query
-          // (门户壳结构: 主框 /admin 门户外壳, 课表页在 iframe 内, xhid 在其 URL)
-          var xhid = '';
-          try {
-            var pm = location.search.match(/[?&]xhid=([A-Z0-9]+)/);
-            if (pm) xhid = pm[1];
-            if (!xhid) {
-              var m = document.body.innerHTML.match(/xhid['":\s=]+['"]?([A-Z0-9]{60,})/);
-              if (m) xhid = m[1];
-            }
-            if (!xhid) {
-              var fs = document.querySelectorAll('iframe');
-              for (var fi = 0; fi < fs.length && !xhid; fi++) {
-                try {
-                  var fm = fs[fi].contentWindow.location.search.match(/[?&]xhid=([A-Z0-9]+)/);
-                  if (fm) xhid = fm[1];
-                } catch(e2) {}
-              }
-            }
-          } catch(e) {}
-          if (!xhid) throw new Error('无法识别课表接口: 请先在教务里打开"我的课表"页再导入');
-          return get(base + '/xsd/pkgl/xskb/sdpkkbList?xnxq=' + encodeURIComponent(c.xnxq) +
-                    '&xhid=' + encodeURIComponent(xhid) + '&xqdm=' + encodeURIComponent(c.xqid) +
-                    '&zdzc=&zxzc=&xskbxslx=0')
-          .then(function(kb){ return kb.data || []; });
-        }
-        return JSON.parse(txt).data || [];
-      })
-      .then(function(rows){
-        if (!rows || !rows.length) throw new Error('课表为空: 请先在教务里打开"我的课表"页再导入');
-        // 3) 节次时间 (尽力而为, 失败不阻断 — periods 仅用于展示)
-        return get(base + '/api/getZclistByXnxq?xnxq=' + encodeURIComponent(c.xnxq) +
-                  '&xqid=' + encodeURIComponent(c.xqid) + '&role=&userId=&sf_request_type=ajax')
-        .then(function(zc){
-          var periods = [];
-          try {
-            var arr = zc.data.jcsjszList || [];
-            for (var i = 0; i < arr.length; i++) {
-              periods.push({node: parseInt(arr[i].jc, 10), kssj: arr[i].kssj, jssj: arr[i].jssj});
-            }
-          } catch(e) {}
-          var payload = JSON.stringify({
-            xnxq: c.xnxq,
-            dqzc: (zc && zc.data && zc.data.dqzc) || null,
-            rows: rows,
-            periods: periods
-          });
-          window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true, data: payload, periods: periods}));
-        });
-      });
-    })
-    .catch(function(e){
-      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(e)}));
-    });
-  } catch(e) {
-    window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(e)}));
+  var base = /^\/admin(\/|$)/.test(location.pathname) ? '/admin' : '';
+  var initialUrl = location.href;
+  function finish(payload) { window.__sleepyBridge.onWiseduResult(JSON.stringify(payload)); }
+  function loginHtml(text) {
+    return text.trim().startsWith('<') && (/<input\b[^>]*type\s*=\s*["']?password/i.test(text) ||
+      /casloginform|统一身份认证|会话已过期|session timeout/i.test(text));
   }
-})()"""
+  function expired(error) { return !!(error && error.sessionExpired); }
+  function sessionError() {
+    var error = Error('登录态已失效，请重新登录后导入'); error.sessionExpired = true; return error;
+  }
+  async function get(path, allowMissing) {
+    var target = new URL(path, location.href);
+    if (target.origin !== location.origin) throw Error('教务请求必须保持同源');
+    var response = await fetch(target.href, {method:'GET',credentials:'include',mode:'same-origin',
+      redirect:'error',headers:{'X-Requested-With':'XMLHttpRequest'}});
+    var text = await response.text();
+    var finalUrl = response.url ? new URL(response.url, location.href) : target;
+    if (finalUrl.origin !== location.origin || /\/(?:login|cas|sso)(?:\/|$)/i.test(finalUrl.pathname) ||
+        loginHtml(text) || response.status === 401 || response.status === 403) throw sessionError();
+    if (!response.ok && !(allowMissing && response.status === 404)) throw Error('教务请求失败 HTTP ' + response.status);
+    return {text:text,missing:response.status === 404};
+  }
+  function json(result) {
+    var value;
+    try { value = JSON.parse(result.text); } catch(e) { throw Error('教务响应不是有效 JSON'); }
+    if (value && (value.code === 401 || value.code === 403)) throw sessionError();
+    if (value && value.success === false) throw Error('教务未返回课表数据');
+    return value;
+  }
+  function selectedTerm(select, live) {
+    if (!select) return '';
+    if (live && select.value) return String(select.value);
+    var options = Array.prototype.slice.call(select.options || []).filter(function(option){return !!option.value;});
+    var explicit = options.filter(function(option){return option.hasAttribute('selected');});
+    if (explicit.length === 1) return String(explicit[0].value);
+    if (explicit.length > 1) throw Error('课表页存在多个已选学期');
+    return options.length === 1 ? String(options[0].value) : '';
+  }
+  function context(doc, live) {
+    function field(id) { var element = doc.querySelector(id); return element ? String(element.value || '') : ''; }
+    return {xhid:field('#xhid'),xqid:field('#xqdm'),xnxq:selectedTerm(doc.querySelector('#xnxq1'),live)};
+  }
+  function merge(primary, fallback) {
+    return {xhid:primary.xhid || fallback.xhid || '',xqid:primary.xqid || fallback.xqid || '',
+      xnxq:primary.xnxq || fallback.xnxq || ''};
+  }
+  function liveContext() {
+    var sources = [{frame:null,doc:document,url:location.href}], values = {xhid:'',xqid:'',xnxq:''};
+    var frames = document.querySelectorAll('iframe');
+    for (var i = 0; i < frames.length; i++) {
+      var frame, url;
+      try {
+        frame = frames[i].contentDocument;
+        url = frames[i].contentWindow.location.href;
+      } catch(e) { continue; /* Cross-origin frames cannot supply context. */ }
+      // Both document and location must be readable, including inherited about:blank frames.
+      if (frame) {
+        sources.push({frame:frames[i],doc:frame,url:url});
+      }
+    }
+    for (var j = 0; j < sources.length; j++) {
+      var source = sources[j], body = source.doc.body && source.doc.body.innerHTML || '';
+      var address = new URL(source.url,location.href);
+      if (/\/(?:login|cas|sso)(?:\/|$)/i.test(address.pathname) || loginHtml(body)) throw sessionError();
+      var current = context(source.doc,true);
+      if (!current.xhid) current.xhid = address.searchParams.get('xhid') || '';
+      if (!current.xhid && source.doc === document) {
+        var found = body.match(/xhid['":\s=]+['"]?([A-Za-z0-9_-]{60,})/);
+        if (found) current.xhid = found[1];
+      }
+      for (var key of ['xhid','xqid','xnxq']) {
+        if (values[key] && current[key] && values[key] !== current[key]) {
+          throw Error('课表页面的学生、校区或学期信息不一致，请重新选择后导入');
+        }
+      }
+      source.values = current;
+      values = merge(values,current);
+    }
+    return {sources:sources,values:values};
+  }
+  function sameContext(before, after) {
+    if (before.sources.length !== after.sources.length) return false;
+    for (var i = 0; i < before.sources.length; i++) {
+      var a = before.sources[i], b = after.sources[i];
+      if (a.frame !== b.frame || a.doc !== b.doc || a.url !== b.url) return false;
+      for (var key of ['xhid','xqid','xnxq']) if (a.values[key] !== b.values[key]) return false;
+    }
+    return true;
+  }
+  // These metadata requests are optional. A missing clock cannot discard already fetched courses.
+  async function optional(action) {
+    var timer;
+    try { return await Promise.race([action(),new Promise(function(resolve){
+      timer = setTimeout(function(){resolve(null);},4000);
+    })]); } catch(error) { if (expired(error)) throw error; return null; }
+    finally { if (timer !== undefined) clearTimeout(timer); }
+  }
+  (async function(){
+    if (/\/(?:login|cas|sso)(?:\/|$)/i.test(location.pathname)) throw sessionError();
+    var initialContext = liveContext(), live = initialContext.values;
+    var menu = await optional(async function(){ return json(await get(base + '/api/getMenuList')); });
+    var jsxq = menu && (menu.jsxq || menu.data && menu.data.jsxq) || {};
+    var selected = merge(live,{xnxq:jsxq.dataXnxq,xqid:jsxq.xqid});
+    var result = await get(base + '/pkgl/xskb/queryKbForGrdb?sf_request_type=ajax',true);
+    var rows;
+    if (result.missing || result.text.trim().startsWith('<')) {
+      if (!selected.xhid || !selected.xnxq) {
+        var page = await get(base + '/pkgl/xskb/queryKbForXsd');
+        if (!page.text.trim().startsWith('<')) throw Error('旧版课表入口响应无效');
+        var doc = new DOMParser().parseFromString(page.text,'text/html');
+        selected = merge(live,merge(context(doc,false),selected));
+      }
+      if (!selected.xhid || !selected.xnxq) throw Error('请先打开我的课表并明确选择学期后导入');
+      var params = '?xnxq=' + encodeURIComponent(selected.xnxq) + '&xhid=' + encodeURIComponent(selected.xhid) +
+        '&xqdm=' + encodeURIComponent(selected.xqid) + '&zdzc=&zxzc=&xskbxslx=0';
+      result = await get(base + '/pkgl/xskb/sdpkkbList' + params,true);
+      if (result.missing || result.text.trim().startsWith('<')) {
+        result = await get(base + '/xsd/pkgl/xskb/sdpkkbList' + params);
+      }
+    }
+    var payload = json(result);
+    rows = Array.isArray(payload) ? payload : payload && (payload.data || payload.rows);
+    if (!Array.isArray(rows) || !rows.length) throw Error('课表为空或响应格式无效，请先打开我的课表后导入');
+    var clock = await optional(async function(){
+      return json(await get(base + '/api/getZclistByXnxq?xnxq=' + encodeURIComponent(selected.xnxq) +
+        '&xqid=' + encodeURIComponent(selected.xqid) + '&role=&userId=&sf_request_type=ajax'));
+    });
+    var periods = [], clockRows = clock && clock.data && clock.data.jcsjszList;
+    if (Array.isArray(clockRows)) {
+      periods = clockRows.map(function(slot){
+        return {node:Number(slot.jc),start:slot.kssj,end:slot.jssj};
+      });
+    }
+    if (location.href !== initialUrl || !sameContext(initialContext,liveContext())) {
+      throw Error('采集期间页面或学期已改变，请重新导入');
+    }
+    finish({ok:true,data:JSON.stringify({xnxq:selected.xnxq,dqzc:clock && clock.data && clock.data.dqzc || null,
+      rows:rows,periods:periods}),periods:periods});
+  })().catch(function(error){finish({ok:false,err:String(error.message || error)});});
+})();
+"""
 
 /**
  * 强智移动教务 SPA (type=qz_app) 课表 JSON 抓取。
@@ -2199,165 +2390,6 @@ private const val CLASSIC_EAMS_FETCH_JS = """
 """
 
 /**
- * 安大 (AHU) 自建'新教务' (jw.ahu.edu.cn, 金智 EAMS 新版部署形态)。
- *
- * 与合工大 EAMS5_FETCH_JS 的差异 (2026-09-06 cross-verified, 5 仓共识:
- * MoeclubM/AHU-AIO + qiqqqqq517/shangkeschschedule + abydym/Ahu_Plus +
- * Landon-3314/AHU-TimeTable + Zeraora-807/Anhui-Univ-DSH-Tool):
- *   - 不走 POST /ws/schedule-table/datum (安大返 HTTP 500, 不存在该 endpoint)
- *   - 走 GET /for-std/course-table/semester/<semesterId>/print-data
- *     (activities[] 含 weekday/weekIndexes/startUnit/endUnit/courseName/
- *      teacherNames/campus/building/room, 是真正的课表数据)
- *   - 不再依赖 get-data 的 lessons[]: 那是 metadata-only (courseCode/examMode),
- *     不含 weekday/节次, 不能直接渲染到课表
- *   - studentId (JW-internal Long, 非学号) 从 /grade/sheet 302 Location 提取
- *     (MoeclubM + abydym + Zeraora 共识 regex:
- *      /\/(?:semester-index|info)\/(\d+)(?:[/?#]|$)/)
- *   - dataId: 客户端尝试走 print-data 不需要 dataId; 若 print-data 失败, 退到
- *     get-data 走 dataId=<studentId> (MoeclubM 模式)
- *
- * 流程 (三段, 复用 __sleepyBridge.onWiseduResult 同一回调通道):
- *   1) GET /student/for-std/course-table → HTML 含 allSemesters + 已登录判定
- *   2) 从 HTML 提取 allSemesters, 取首个 semesterId
- *      并行: GET /student/for-std/grade/sheet (302 → 提取 studentId)
- *   3) GET /student/for-std/course-table/semester/<semesterId>/print-data?semesterId=<id>&hasExperiment=false
- *   4) __sleepyBridge.onWiseduResult({ok, data, periods}) 回调
- *
- * 外部佐证 (5 仓):
- *   - MoeclubM/AHU-AIO (lib/jw/api/jw_api.dart, GPL-3.0)
- *   - qiqqqqq517/shangkeschschedule (Apache-2.0, ahu.js)
- *   - abydym/Ahu_Plus (GPL-3.0, Kotlin 同栈 — 关键同栈证据)
- *   - Landon-3314/AHU-TimeTable (Flutter, print-data + get-data 双轨实现)
- *   - Zeraora-807/Anhui-Univ-DSH-Tool (TypeScript DeepSeek Harness)
- */
-private const val EAMS5_AHU_FETCH_JS = """
-(function(){
-  try {
-    if (location.hostname.indexOf('ahu.edu.cn') < 0) {
-      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'请先登录并进入安徽大学教务后再点导入'}));
-      return;
-    }
-    var PREFIX = '__EAMS5_PREFIX__';
-    // 1) GET course-table HTML, 提取 allSemesters (学期 JSON 数组) + 检测登录态
-    fetch(PREFIX + '/for-std/course-table', {credentials:'include', redirect:'follow'})
-    .then(function(r){
-      // 会话失效判定 (Zeraora client.ts:608-617 + abydym SessionAuthenticator.kt + Landon-3314 isLoginExpired 共识):
-      //   1) 302-399 redirect + Location 落到 CAS (/cas/login, one.ahu.edu.cn/cas)
-      //   2) 200 OK + HTML 含 'name="lt"' AND 'name="execution"' 双字段 (CAS 登录页)
-      //   3) URL 含 casloginform / 统一身份认证 / 请重新登录 (兜底)
-      // 5 仓 cross-verified 2026-09-06 (a999c385/aa707ac2033872402 agents)
-      var status = r.status;
-      var locHeader = r.headers.get('location') || '';
-      var isCasRedirect = status >= 300 && status < 400
-        && (locHeader.indexOf('one.ahu.edu.cn/cas') >= 0
-            || /\/cas\/login/.test(locHeader)
-            || /\/cas\b/.test(locHeader));
-      // r.text() 单次消费 — 先一次性读再判
-      return r.text().then(function(body){
-        // 同时读 r.url, fetch redirect:'follow' 后 finalUrl 是最终 URL (CAS 登录页)
-        var finalUrl = r.url || '';
-        var hasLtField = /name=["']lt["']/i.test(body);
-        var hasExecField = /name=["']execution["']/i.test(body);
-        var hasCasLoginUi = /统一身份认证|请重新登录|session timeout|会话已过期|name=["']casloginform["']/i.test(body);
-        var loginExpired = finalUrl.indexOf('/login') >= 0
-                        || finalUrl.indexOf('cas/login') >= 0
-                        || finalUrl.indexOf('one.ahu.edu.cn/cas') >= 0
-                        || finalUrl.indexOf('casloginform') >= 0
-                        || isCasRedirect
-                        || (hasLtField && hasExecField)
-                        || hasCasLoginUi;
-        return {html: body, finalUrl: finalUrl, status: status, loginExpired: loginExpired};
-      });
-    })
-    .then(function(ctx){
-      if (ctx.loginExpired) {
-        window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false,
-          err:'登录态已失效,请在教务主页重新登录后再试'}));
-        return null;
-      }
-      var html = ctx.html || '';
-      // 学期列表提取 — 5 仓共识 (a999c385 agent):
-      //   AHU 是 Thymeleaf/J2EE 模板渲染, 学期列表嵌入 HTML 内
-      //   `<select id="allSemesters"><option value="112">2024-2025-2</option>...`
-      //   qiqqqqq517 ahu.js:37 / abydym CourseRepository.kt:119-167 / Zeraora client.ts:480-489
-      //   共识 regex: <select[^>]*id=["']allSemesters["'][^>]*>([\s\S]*?)</select>
-      //   + 内部 <option value="(\d+)"[^>]*>([^<]+)</option> 循环
-      // 按 id 倒序取首 (服务器返回 newest-first, abydym + Zeraora 一致)
-      var semesterId = null;
-      var selectMatch = html.match(/<select[^>]*\bid=["']allSemesters["'][^>]*>([\s\S]*?)<\/select>/i);
-      if (selectMatch) {
-        var inner = selectMatch[1];
-        var optionRegex = /<option[^>]*\bvalue=["'](\d+)["'][^>]*>([^<]*)<\/option>/gi;
-        var m;
-        var opts = [];
-        while ((m = optionRegex.exec(inner)) !== null) {
-          opts.push({id: parseInt(m[1], 10), name: m[2].trim()});
-        }
-        // 取 id 最大 (newest first; abydym .sortedByDescending { it.id }.first())
-        if (opts.length) {
-          opts.sort(function(a, b) { return b.id - a.id; });
-          semesterId = String(opts[0].id);
-        }
-      }
-      // 优先级 2 fallback: Vue/Nuxt 嵌入的 JSON 形态 (防御性)
-      // 形如 var allSemesters = [...] 或 semesters = [...]
-      if (!semesterId) {
-        var jsonMatch = html.match(/(?:allSemesters|semesters)\s*[=:]\s*(\[[\s\S]*?\])\s*[;,]?/);
-        if (jsonMatch) {
-          try {
-            var arr = JSON.parse(jsonMatch[1]);
-            if (arr && arr.length) {
-              // 优先 isCurrentSemester 标志
-              var cur = null;
-              for (var i = 0; i < arr.length; i++) {
-                if (arr[i].isCurrentSemester === true || arr[i].isCurrent === true ||
-                    arr[i].current === true || arr[i].status === 'CURRENT') { cur = arr[i]; break; }
-              }
-              var semObj = cur || arr[0];
-              semesterId = String(semObj.id || semObj.semesterId || semObj.value || semObj.code);
-            }
-          } catch(e) {}
-        }
-      }
-      // 优先级 3 fallback: <option selected value="X">
-      if (!semesterId) {
-        var sel = html.match(/<option[^>]*\bselected\b[^>]*\bvalue=["']?(\d+)["']?/i);
-        if (sel) semesterId = sel[1];
-      }
-      // v1 兜底: abydym hardcoded DEFAULT_SEMESTER_ID = 112 (2024-2025-2 已知)
-      // 不强行猜, 直接报"未取到学期列表"
-      if (!semesterId) {
-        window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false,
-          err:'未取到学期列表 (allSemesters), 请在课表页面停留几秒后再点导入'}));
-        return null;
-      }
-      return semesterId;
-    })
-    .then(function(semesterId){
-      if (!semesterId) return null;
-      // 2) GET print-data (含 weekday/weekIndexes/startUnit/endUnit 的真实课表数据)
-      // followRedirects: 'follow' (服务端按 session 绑定学生, 不需要 studentId — 5 仓共识)
-      var url = PREFIX + '/for-std/course-table/semester/' + encodeURIComponent(semesterId)
-              + '/print-data?semesterId=' + encodeURIComponent(semesterId) + '&hasExperiment=false';
-      return fetch(url, {credentials:'include', redirect:'follow'}).then(function(r){
-        if (!r.ok) throw new Error('print-data 失败 HTTP ' + r.status);
-        return r.text();
-      });
-    })
-    .then(function(txt){
-      if (!txt) return;
-      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true, data:txt, periods:[]}));
-    })
-    .catch(function(e){
-      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(e)}));
-    });
-  } catch(err) {
-    window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(err)}));
-  }
-})();
-"""
-
-/**
  * 北京交通大学教学支撑平台 (AA, aa.bjtu.edu.cn) — WebView 同源 fetch 双端点组合源。
  *
  * 协议证据 (SOP 跨仓验证 2026-09-09, POSITIVE 12 仓): HFDLYS/BJTUselfService (MIT) +
@@ -2460,13 +2492,23 @@ private const val BJTU_FETCH_JS = """
  * wisedu fetch 结果 JS 桥。@JavascriptInterface 回调跑在 WebView JS 线程，
  * post 到主线程后再回调 Compose，避免线程问题。
  */
-private class WiseduBridge(private val onResult: (String) -> Unit) {
+private class WiseduBridge(
+    private val onResult: (String) -> Unit,
+    private val onInteraction: (String) -> Unit,
+    private val onAcknowledged: (String) -> Unit,
+) {
     private val main = android.os.Handler(android.os.Looper.getMainLooper())
 
     @android.webkit.JavascriptInterface
     fun onWiseduResult(json: String) {
         main.post { onResult(json) }
     }
+
+    @JavascriptInterface
+    fun onSgInteraction(json: String) { main.post { onInteraction(json) } }
+
+    @JavascriptInterface
+    fun onSgInteractionAcknowledged(json: String) { main.post { onAcknowledged(json) } }
 }
 
 /** 页面内网络 recorder 的批量结果桥。记录本身留在 JS，避免每个请求跨 bridge。 */

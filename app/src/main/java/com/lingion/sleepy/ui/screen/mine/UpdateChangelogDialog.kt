@@ -57,7 +57,6 @@ fun UpdateChangelogDialog(
                 is UpdateUiState.Downloading -> ""
                 is UpdateUiState.Failed -> state.version
                 is UpdateUiState.Installing -> ""
-                else -> ""
             }
             val changelog = when (state) {
                 is UpdateUiState.UpdateAvailable -> state.changelog
@@ -84,7 +83,7 @@ fun UpdateChangelogDialog(
                     Text(
                         when (state) {
                             is UpdateUiState.Installing -> stringResource(R.string.update_installing)
-                            is UpdateUiState.Downloading -> stringResource(R.string.update_downloading, (state as UpdateUiState.Downloading).progress)
+                            is UpdateUiState.Downloading -> stringResource(R.string.update_downloading, state.progress)
                             else -> stringResource(R.string.update_found_title, version)
                         },
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
@@ -193,7 +192,6 @@ fun UpdateChangelogDialog(
                             }
                         }
                         is UpdateUiState.Installing -> { /* 无按钮,等系统安装器 */ }
-                        else -> {}
                     }
                 }
             )

@@ -100,6 +100,12 @@ object ScheduleParser {
         if (raw.isEmpty()) return Result.failure(IllegalArgumentException("空内容"))
         // 防呆: 先统一全角字符(AI 常输出 １－２ / ～), 再提取标识, 再分派
         val trimmed = extractMarkedBody(normalizeFullWidth(raw))
+        // Source metadata is an opaque record, including URLs and entry identifiers.
+        // Keep its original characters while retaining existing course-field normalization.
+        val original = extractMarkedBody(raw)
+        val originalBody = if (!original.startsWith("{") && original.contains("{")) {
+            original.substring(original.indexOf("{"))
+        } else original
 
         // 兼容性：导出端常在 JSON 前加 "【来自Sleepy】\n课程分享：\n\n" 前缀。
         // 如果 trimmed 不以 { 开头但包含 {，剥掉前缀再判别。
@@ -114,12 +120,12 @@ object ScheduleParser {
                 SleepyNativeFormat.detectVersion(trimmed) > 1 ->
                     throw IllegalArgumentException("文件由新版 Sleepy 导出(v${SleepyNativeFormat.detectVersion(trimmed)}),请升级 Sleepy 后导入")
                 SleepyNativeFormat.detectVersion(trimmed) == 1 ->
-                    SleepyNativeParser.parse(trimmed, defaultTableId, defaultColor)
+                    SleepyNativeParser.parse(trimmed, defaultTableId, defaultColor, original)
                 // Excel "另存为网页" 的 Frameset HTML (issue #6): 顶层只有 <frame> 引用,
                 // 真课表在 xxx.files/sheet001.html 附属文件里, OpenDocument 拿不到 → 给出明确指引
                 isExcelFrameset(trimmed) -> throw IllegalArgumentException(excelFramesetError(trimmed))
-                body.contains("\"courseDetailJson\"") -> parseWakeUpShareText(body, defaultTableId)
-                body.startsWith("{") && (body.contains("\"courses\"") || body.contains("\"tableInfo\"")) -> parseWakeUpJson(body, defaultTableId, defaultColor)
+                body.contains("\"courseDetailJson\"") -> parseWakeUpShareText(body, defaultTableId, originalBody)
+                body.startsWith("{") && (body.contains("\"courses\"") || body.contains("\"tableInfo\"")) -> parseWakeUpJson(body, defaultTableId, defaultColor, originalBody)
                 body.startsWith("BEGIN:VCALENDAR") || body.startsWith("BEGIN:VEVENT") -> parseIcs(body, defaultTableId, defaultColor)
                 // HTML: 必须以 <!DOCTYPE / <html / <table / <body / <div 开头（先 trim 掉 BOM）
                 startsWithAnyTag(trimmed, "html", "body", "table", "div", "section", "article") -> parseHtml(trimmed, defaultTableId, defaultColor)
@@ -237,7 +243,7 @@ object ScheduleParser {
      * {"name":"...","startDate":"...","courses":[...]}
      * ```
      */
-    private fun parseWakeUpShareText(text: String, defaultTableId: Long): ParseResult {
+    private fun parseWakeUpShareText(text: String, defaultTableId: Long, sourceText: String = text): ParseResult {
         // 找到 JSON 部分
         val jsonStart = text.indexOf("{")
         if (jsonStart < 0) throw IllegalArgumentException("找不到 JSON")
@@ -266,6 +272,7 @@ object ScheduleParser {
         val harvested = harvestTimeFromTableInfo(root, name)
 
         return lossless(name, startDate, courses, harvested.timeJson, harvested.nodesPerDay, harvested.periodTable)
+            .copy(importSourceJson = originalImportSource(sourceText))
     }
 
     /**
@@ -353,7 +360,12 @@ object ScheduleParser {
         return if (h in 0..23 && mi in 0..59) LocalTime.of(h, mi) else null
     }
 
-    private fun parseWakeUpJson(text: String, defaultTableId: Long, defaultColor: String): ParseResult {
+    private fun originalImportSource(text: String): String = runCatching {
+        json.parseToJsonElement(text).jsonObject["tableInfo"]?.jsonObject
+            ?.get("importSourceJson")?.jsonPrimitive?.contentOrNull.orEmpty()
+    }.getOrDefault("")
+
+    private fun parseWakeUpJson(text: String, defaultTableId: Long, defaultColor: String, sourceText: String = text): ParseResult {
         val root = json.parseToJsonElement(text).jsonObject
         val name = root["name"]?.jsonPrimitive?.content ?: "导入的课表"
         val startDate = root["startDate"]?.jsonPrimitive?.content
@@ -396,8 +408,8 @@ object ScheduleParser {
                 type = obj["type"]?.jsonPrimitive?.intOrZero() ?: 0,
                 color = obj["color"]?.jsonPrimitive?.content ?: defaultColor,
                 ownTime = ownTime,
-                startTime = if (ownTime) ownStart!! else "",
-                endTime = if (ownTime) ownEnd!! else ""
+                startTime = if (ownTime) ownStart else "",
+                endTime = if (ownTime) ownEnd else ""
             )
         }
 
@@ -405,6 +417,7 @@ object ScheduleParser {
         // v1.0.56 T10: 同时收割独立作息表(混合导入自动建表+绑定)
         val harvested = harvestTimeFromTableInfo(root, name)
         return lossless(name, startDate, courses, harvested.timeJson, harvested.nodesPerDay, harvested.periodTable)
+            .copy(importSourceJson = originalImportSource(sourceText))
     }
 
     private fun parseCourseJsonArray(jsonStr: String, tableId: Long): List<CourseEntity> {
@@ -441,8 +454,8 @@ object ScheduleParser {
                 type = obj["type"]?.jsonPrimitive?.intOrZero() ?: 0,
                 color = obj["color"]?.jsonPrimitive?.content ?: "#FF6750A4",
                 ownTime = ownTime,
-                startTime = if (ownTime) ownStart!! else "",
-                endTime = if (ownTime) ownEnd!! else ""
+                startTime = if (ownTime) ownStart else "",
+                endTime = if (ownTime) ownEnd else ""
             )
         }
     }
@@ -791,9 +804,9 @@ object ScheduleParser {
             val endSec = b.end.toSecondOfDay()
             val perNodeSec = (endSec - startSec).toDouble() / b.nodeCount
             for (k in 0 until b.nodeCount) {
-                val s = LocalTime.ofSecondOfDay(Math.round(startSec + k * perNodeSec).toLong())
+                val s = LocalTime.ofSecondOfDay(Math.round(startSec + k * perNodeSec))
                     .truncatedTo(java.time.temporal.ChronoUnit.MINUTES)
-                val e = LocalTime.ofSecondOfDay(Math.round(startSec + (k + 1) * perNodeSec).toLong())
+                val e = LocalTime.ofSecondOfDay(Math.round(startSec + (k + 1) * perNodeSec))
                     .truncatedTo(java.time.temporal.ChronoUnit.MINUTES)
                 out[b.firstNode + k] = s to e
             }
@@ -813,7 +826,7 @@ object ScheduleParser {
             val endMin = end.hour * 60 + end.minute
             val duration = endMin - startMin
             // 8:00 = 第 1 节; 节边界按 50min 周期近似(45课+5课间), +10min 防边界抖动
-            val startNode = ((startMin - 480 + 10) / 50).toInt() + 1
+            val startNode = ((startMin - 480 + 10) / 50) + 1
             val step = Math.round(duration / 50.0).toInt().coerceAtLeast(1)
             Pair(startNode.coerceAtLeast(1), step)
         } catch (e: Exception) { null }
@@ -1438,7 +1451,8 @@ object ScheduleParser {
          * issue#40 §6: sleepy-v1 P 区块解析出的独立时间节次表。
          * null = 旧格式/未携带 — 导入流程须为每张课表各建一张(不误共享)。
          */
-        val periodTable: ParsedPeriodTable? = null
+        val periodTable: ParsedPeriodTable? = null,
+        val importSourceJson: String = "",
     )
 
     /** P 区块解析产物: sourceId = 导出时的 period_tables.id(恢复共享关系的键) */

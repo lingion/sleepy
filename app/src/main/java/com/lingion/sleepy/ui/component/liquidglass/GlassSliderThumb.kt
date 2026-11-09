@@ -1,7 +1,5 @@
 package com.lingion.sleepy.ui.component.liquidglass
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -18,7 +16,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -51,6 +48,7 @@ internal fun GlassSliderThumb(
     enabled: Boolean = true,
     pressedOverride: Boolean? = null,
     colorOverride: Color? = null,
+    motionOverride: GlassControlMotion? = null,
 ) {
     val host = LocalGlassHost.current
     val glass = LocalUiStyle.current == UiStyle.LiquidGlass && host != null
@@ -71,10 +69,10 @@ internal fun GlassSliderThumb(
     val thumbColor = colorOverride ?: if (enabled) colors.thumbColor else colors.disabledThumbColor
     val restingColor = GlassSliderThumbMetrics.restingColor(thumbColor)
     val shape = RoundedCornerShape(50)
-    val lift by animateFloatAsState(if (enabled && (pressedOverride ?: pressed)) 1f else 0f,
-        spring(dampingRatio = .72f, stiffness = 900f), label = "slider-lift")
-    val width = GlassSliderThumbMetrics.RESTING_WIDTH + GlassSliderThumbMetrics.LIFT_GROWTH_WIDTH * lift
-    val height = GlassSliderThumbMetrics.RESTING_HEIGHT + GlassSliderThumbMetrics.LIFT_GROWTH_HEIGHT * lift
+    val motion = motionOverride ?: rememberGlassControlMotion(0f, enabled && (pressedOverride ?: pressed), enabled = enabled)
+    val lift = motion.lift
+    val width = glassLensWidth(GlassSliderThumbMetrics.RESTING_WIDTH + GlassSliderThumbMetrics.LIFT_GROWTH_WIDTH * lift, motion.stretch)
+    val height = glassLensHeight(GlassSliderThumbMetrics.RESTING_HEIGHT + GlassSliderThumbMetrics.LIFT_GROWTH_HEIGHT * lift, motion.stretch)
     val dark = LocalDarkTheme.current
     val lensStyle = LiquidGlassStyle.controlLens(scheme, dark).scale(lift.toDouble())
 
@@ -107,11 +105,6 @@ internal fun GlassSliderThumb(
                         pressed = false
                     }
                 }
-            }
-            .graphicsLayer {
-                scaleX = 1f
-                scaleY = 1f
-                clip = false
             }
             .background(
                 restingColor.copy(alpha = 1f - lift.coerceIn(0f, 1f)),

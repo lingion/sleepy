@@ -496,7 +496,7 @@ fun AddTableScreen(
         val isPurePeriod = currentPreview.parseResult.courses.isEmpty() &&
             currentPreview.parseResult.periodTable != null
         if (isPurePeriod) {
-            val pt = currentPreview.parseResult.periodTable!!
+            val pt = currentPreview.parseResult.periodTable
             androidx.compose.runtime.LaunchedEffect(currentPreview) {
                 // 预填名 = 源名参与全局唯一名顺延(课程表∪作息表), 后缀 2/3 预览即可见
                 val courseNames = viewModel.getAllTableNamesOnce()
@@ -1729,6 +1729,7 @@ internal suspend fun applyNewTableImport(
             nodesPerDay = nodes,
             timeJson = confirmedTimeJson,
             smartConfigJson = confirmedSmartConfigJson,
+            importSourceJson = preview.parseResult.importSourceJson,
             periodTableId = bindPeriodTableId,
         ),
         courses = preview.parseResult.courses,

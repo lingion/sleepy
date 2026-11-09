@@ -12,8 +12,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.*
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassStyle
 import com.lingion.sleepy.ui.component.liquidglass.GlassHost
 import com.lingion.sleepy.ui.component.liquidglass.GlassSliderThumbMetrics
 import com.lingion.sleepy.ui.theme.LocalUiStyle
@@ -30,6 +31,49 @@ import org.robolectric.annotation.Config
 @Config(sdk = [35])
 class FloatingGlassControlTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun controlLensRetainsDockRainbowDispersionInBothPasses() {
+        val colors = androidx.compose.material3.lightColorScheme()
+        assertEquals(6.5, LiquidGlassStyle.controlLens(colors, false).dispersion, 0.0)
+        assertEquals(3.6, LiquidGlassStyle.controlLensContent(colors, false).dispersion, 0.0)
+    }
+
+    @Test fun tabRisesProgressivelyAndStartsLoweringWithoutAFixedReleaseDelay() {
+        compose.setContent {
+            MaterialTheme {
+                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                    GlassHost {
+                        Box(Modifier.padding(40.dp)) {
+                            SegmentedSwitcher(listOf(0 to "For You", 1 to "Library"), 0, {},
+                                Modifier.width(240.dp).testTag("tabs"))
+                        }
+                    }
+                }
+            }
+        }
+        compose.mainClock.autoAdvance = false
+        val tabs = compose.onNodeWithTag("tabs")
+        val thumb = compose.onNodeWithTag("segment-thumb", true)
+        fun height() = thumb.getUnclippedBoundsInRoot().let { (it.bottom - it.top).value }
+        tabs.performTouchInput { down(Offset(width / 4f, centerY)) }
+        fun advance(ms: Int) {
+            repeat(ms / 16) {
+                compose.mainClock.advanceTimeByFrame()
+                compose.waitForIdle()
+            }
+        }
+        advance(160)
+        val rising = height()
+        assertTrue("the lens must still be rising at 160ms, not pop to full size: $rising", rising > 40f && rising < 51.5f)
+        advance(800)
+        assertEquals(52f, height(), 1f)
+        tabs.performTouchInput { up() }
+        advance(80)
+        val lowering = height()
+        assertTrue("release must lower continuously rather than freeze at full height: $lowering", lowering > 34f && lowering < 51f)
+        advance(1504)
+        assertEquals(34f, height(), 1f)
+    }
 
     @Test fun heldTabOverflowsBothTrackEdgesAndKeepsItsCenter() {
         compose.setContent {

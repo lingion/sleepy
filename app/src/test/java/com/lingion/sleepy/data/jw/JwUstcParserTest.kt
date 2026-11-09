@@ -26,7 +26,7 @@ class JwUstcParserTest {
         // room: 教二楼301 (customPlace=null, 取 room)
         assertEquals("教二楼301", math.room)
         assertEquals(1, math.day)
-        // lessonCode "0102" → start=1, end=2
+        // Explicit startUnit/endUnit supply section 1-2.
         assertEquals(1, math.startNode)
         assertEquals(2, math.endNode)
         assertEquals(1, math.startWeek)
@@ -94,7 +94,8 @@ class JwUstcParserTest {
                 "teachers": ["张老师", "王老师"],
                 "weeksStr": "1-8",
                 "weekday": 4,
-                "lessonCode": "0304"
+                "lessonCode": "0304",
+                "startUnit": 3, "endUnit": 4
               }
             ]
           }
@@ -107,10 +108,8 @@ class JwUstcParserTest {
     }
 
     @Test
-    fun `parses USTC courses - malformed lessonCode falls back to start end time inference`() {
-        // lessonCode 并非协议契约 (上游 json_version.py 只把它拼进 description,
-        // 节次实际从 startDate/endDate HH:mm 推) — 4 位定宽解读是自创假设。
-        // 缺失/不合式时不得整行丢弃, 用 startTime/endTime 推断节次。
+    fun `parses USTC courses - clock-only course retains source times with malformed course code`() {
+        // lessonCode is an identifier. Actual source times survive without guessed campus periods.
         val json = """
         {
           "studentTableVm": {
@@ -134,11 +133,12 @@ class JwUstcParserTest {
         val courses = JwUstcParser(json).generateCourseList()
         assertEquals(1, courses.size)
         assertEquals(1, courses[0].startNode)
-        assertEquals(2, courses[0].endNode)
+        assertEquals("08:00", courses[0].startTime)
+        assertEquals("09:40", courses[0].endTime)
     }
 
     @Test
-    fun `parses USTC courses - lessonCode absent entirely still parses via time inference`() {
+    fun `parses USTC courses - clock-only course retains source times without course code`() {
         val json = """
         {
           "studentTableVm": {
@@ -160,8 +160,8 @@ class JwUstcParserTest {
         """.trimIndent()
         val courses = JwUstcParser(json).generateCourseList()
         assertEquals(1, courses.size)
-        assertEquals(9, courses[0].startNode)
-        assertEquals(10, courses[0].endNode)
+        assertEquals("19:00", courses[0].startTime)
+        assertEquals("20:50", courses[0].endTime)
     }
 
     @Test
