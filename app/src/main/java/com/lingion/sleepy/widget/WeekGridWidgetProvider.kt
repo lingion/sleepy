@@ -465,10 +465,12 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                         val laneW = dayW * laneRect.laneWidthFraction
                         p.color = CourseColorUtil.pickCourseColorIntWithGroupRows(
                             course, allCourses.filter { it.groupId == course.groupId },
-                            isDark, gridLine, colorless,
+                            isDark, unifiedCourseBg, colorless,
                             persistedHue = CourseHueStore.hueFor(course.groupId)
                         )
-                        p.alpha = if (dayData.isGrey) 120 else 200
+                        p.alpha = if (colorless) {
+                            if (dayData.isGrey) 153 else 255
+                        } else if (dayData.isGrey) 120 else 200
                         val r = minOf(dp(4f).toFloat(), barH / 2f)
                         c.drawRoundRect(RectF(laneX, top, laneX + laneW, top + barH), r, r, p)
                         p.alpha = 255
@@ -726,14 +728,16 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                     val cardRect = RectF(laneX, cardTop, laneX + laneW, cardTop + cardH)
 
                     // 卡片背景色 (v19e: 对齐 CourseTableView palette) — 统一入口 CourseColorUtil (决策 D3)
-                    // colorless 灰底传 gridLine(即 surfaceVariant 的 Int), 与原实现一致
+                    // 统一底色与应用课程卡同用 secondaryContainer，保持主题原色与灰显透明度。
                     val baseColor = CourseColorUtil.pickCourseColorIntWithGroupRows(
                         course, allCourses.filter { it.groupId == course.groupId },
-                        isDark, gridLine, colorless,
+                        isDark, unifiedCourseBg, colorless,
                         persistedHue = CourseHueStore.hueFor(course.groupId)
                     )
                     p.color = baseColor
-                    p.alpha = if (dayData.isGrey) 120 else 200
+                    p.alpha = if (colorless) {
+                        if (dayData.isGrey) 153 else 255
+                    } else if (dayData.isGrey) 120 else 200
                     c.drawRoundRect(cardRect, dp(10f).toFloat(), dp(10f).toFloat(), p)
                     p.alpha = 255
 
