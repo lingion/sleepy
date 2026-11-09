@@ -32,22 +32,43 @@ class JwEcuplScriptParser(source: String) : JwParser(source) {
 
         val RE_NEW_ACTIVITY: Regex = RE_NEW_ACTIVITY_8
 
+        internal fun sourcePeriods(source: String): List<Triple<Int, String, String>> =
+            declaredSource(source)?.periods?.mapIndexed { index, (start, end) ->
+                Triple(index + 1, hhmm(start)!!, hhmm(end)!!)
+            }.orEmpty()
+
+        private data class ScriptSource(val semester: java.time.LocalDate,
+            val periods: List<Pair<Int, Int>>, val script: String)
+
+        private fun declaredSource(source: String): ScriptSource? {
+            val table = RE_COURSE_TABLE.find(source) ?: return null
+            val semester = runCatching { java.time.LocalDate.parse(table.groupValues[1]) }.getOrNull() ?: return null
+            val script = org.jsoup.Jsoup.parse(source).select("script").asSequence().map { it.data() }
+                .firstOrNull { it.contains(table.value) } ?: return null
+            val rows = runCatching { org.json.JSONArray("[${table.groupValues[2]}]") }.getOrNull() ?: return null
+            if (rows.length() == 0) return null
+            val periods = (0 until rows.length()).map { index ->
+                val pair = rows.optJSONArray(index)?.takeIf { it.length() == 2 } ?: return null
+                val start = pair.opt(0)?.toString()?.toIntOrNull() ?: return null
+                val end = pair.opt(1)?.toString()?.toIntOrNull() ?: return null
+                if (start >= end || hhmm(start) == null || hhmm(end) == null) return null
+                start to end
+            }
+            return ScriptSource(semester, periods, script)
+        }
+
+        private fun hhmm(value: Int): String? {
+            if (value < 0 || value / 100 !in 0..23 || value % 100 !in 0..59) return null
+            return (value / 100).toString().padStart(2, '0') + ":" + (value % 100).toString().padStart(2, '0')
+        }
     }
 
     override fun generateCourseList(): List<JwCourse> {
         val out = mutableListOf<JwCourse>()
 
         // 协议族验证
-        val table = RE_COURSE_TABLE.find(source) ?: return out
-        val semester = runCatching { java.time.LocalDate.parse(table.groupValues[1]) }.getOrNull() ?: return out
-        val periods = RE_TIME_PAIR.findAll(table.groupValues[2]).map {
-            val start = it.groupValues[1].toIntOrNull()
-            val end = it.groupValues[2].toIntOrNull()
-            if (start == null || end == null || start >= end || hhmm(start) == null || hhmm(end) == null) null else start to end
-        }.toList()
-        if (periods.isEmpty() || periods.any { it == null }) return out
-        val script = org.jsoup.Jsoup.parse(source).select("script").asSequence().map { it.data() }
-            .firstOrNull { it.contains(table.value) } ?: return out
+        val declared = declaredSource(source) ?: return out
+        val (semester, periods, script) = declared
         val activity = RE_NEW_ACTIVITY_8
         val slot = Regex("""addActivityByTime\(\s*activity\s*,\s*(\d)\s*,\s*(\d+)\s*,\s*(\d+)\s*\);""")
         val starts = Regex("""newActivity\s*\(""").findAll(script).map { it.range.first }.toList()
@@ -81,8 +102,8 @@ class JwEcuplScriptParser(source: String) : JwParser(source) {
                 val day = slotMatch.groupValues[1].toInt()
                 val startMinute = slotMatch.groupValues[2].toIntOrNull() ?: continue
                 val endMinute = slotMatch.groupValues[3].toIntOrNull() ?: continue
-                val startNode = periods.indexOfFirst { it?.first == startMinute } + 1
-                val endNode = periods.indexOfFirst { it?.second == endMinute } + 1
+                val startNode = periods.indexOfFirst { it.first == startMinute } + 1
+                val endNode = periods.indexOfFirst { it.second == endMinute } + 1
                 if (day !in 1..7 || startNode <= 0 || endNode < startNode) continue
                 for (range in compactWeeks(weeks)) {
                     out += JwCourse(name = name, room = room, teacher = teacher, day = day,
@@ -94,11 +115,6 @@ class JwEcuplScriptParser(source: String) : JwParser(source) {
             }
         }
         return out
-    }
-
-    private fun hhmm(value: Int): String? {
-        if (value < 0 || value / 100 !in 0..23 || value % 100 !in 0..59) return null
-        return (value / 100).toString().padStart(2, '0') + ":" + (value % 100).toString().padStart(2, '0')
     }
 
     internal fun parseWeekBitmap(bitmap: String): Triple<Int, Int, Int>? {
