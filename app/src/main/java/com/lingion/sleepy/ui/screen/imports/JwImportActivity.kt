@@ -241,6 +241,9 @@ class JwImportActivity : ComponentActivity() {
                 // 维护者据此在 school_url_evidence 翻 verified, 下个版本该学校不再出现确认/报告。
                 // supported 学校维持原静默 finish, 零额外打扰。
                 suspend fun finishOrReport(school: JwSchoolInfo?) {
+                    // 导入真正落库后才记「最近导入的学校」— 选校页/登录页的往返不算。
+                    // 两条成功路径(新建课表 / 更新已有课表)都从这里收口。
+                    if (school != null) AppPrefs.recordRecentJwSchool(this@JwImportActivity, school.stableKey)
                     if (school != null && school.isUnverified) {
                         reportDialogSchool = school
                     } else {

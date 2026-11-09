@@ -74,7 +74,7 @@ import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.NavDockSpec
 import com.lingion.sleepy.ui.component.OfficialNavIconMotion
-import com.lingion.sleepy.ui.component.navIconMotion
+import com.lingion.sleepy.ui.component.NavPartIcon
 import com.lingion.sleepy.ui.component.observePressTracker
 import com.lingion.sleepy.ui.component.rememberOfficialNavIconMotion
 import com.lingion.sleepy.ui.component.PillNavigationBar
@@ -840,13 +840,13 @@ private fun GlassNavigationIcon(
 @Composable
 internal fun NavigationTabIcon(tab: Tab, showUpdateDot: Boolean, motion: OfficialNavIconMotion? = null) {
     val colors = MaterialTheme.colorScheme
-    val iconModifier = Modifier.navIconMotion(motion?.driverFor(tab.ordinal))
+    val driver = motion?.driverFor(tab.ordinal)
     if (!showUpdateDot) {
-        Icon(tab.icon, contentDescription = null, modifier = iconModifier)
+        NavPartIcon(driver = driver, fallback = tab.icon, iconSize = 24.dp)
         return
     }
     Box {
-        Icon(tab.icon, contentDescription = null, modifier = iconModifier)
+        NavPartIcon(driver = driver, fallback = tab.icon, iconSize = 24.dp)
         Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -885,7 +885,7 @@ private fun CombinedRailItem(
         label = "combinedRailIcon",
     )
     // 上半"课表"永久固定(宽屏 currentTab 恒为右侧 tab), 只下半"从 tab"接专属动效。
-    val tabIconModifier = if (tab != null) Modifier.navIconMotion(motion?.driverFor(tab.ordinal)) else Modifier
+    val tabDriver = tab?.let { motion?.driverFor(it.ordinal) }
     val tracker = tab?.let { motion?.pressTrackerFor(it.ordinal) }
     Column(
         modifier = Modifier
@@ -918,7 +918,7 @@ private fun CombinedRailItem(
                 modifier = Modifier.size(28.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(tabIcon, contentDescription = "从 tab", tint = iconColor, modifier = tabIconModifier.size(22.dp))
+                NavPartIcon(driver = tabDriver, fallback = tabIcon, iconSize = 22.dp, tint = iconColor, contentDescription = "从 tab")
                 if (tabShowUpdateDot) {
                     Box(
                         modifier = Modifier
