@@ -12,10 +12,9 @@ class JwAhmuParser(source: String) : JwParser(source) {
             if (name.isEmpty()) continue
             fun number(key: String) = row.opt(key)?.toString()?.toIntOrNull()
             val day = number("xqj")?.takeIf { it in 1..7 } ?: continue
-            val first = number("sjd")?.takeIf { it in 1..30 } ?: continue
-            val length = number("skcd")?.takeIf { it in 1..30 } ?: continue
-            val last = first + length - 1
-            if (last > 30) continue
+            val first = number("sjd")?.takeIf { it > 0 } ?: continue
+            val length = number("skcd")?.takeIf { it > 0 } ?: continue
+            val last = explicitScheduleEnd(first, length) ?: continue
             val from = number("qsz")?.takeIf { it in 1..366 } ?: continue
             val to = number("jsz")?.takeIf { it in from..366 } ?: continue
             add(JwCourse(name, (row.opt("jsmc") as? String)?.trim().orEmpty(),
