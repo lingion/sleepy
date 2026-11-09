@@ -225,13 +225,13 @@ data class LiquidGlassStyle(
                 hairline = 0.42,
             )
 
-        /** The reference controls bend their track without the Dock's RGB separation. */
+        /** Floating controls share the Dock's edge dispersion. */
         fun controlLens(colorScheme: ColorScheme, dark: Boolean): LiquidGlassStyle =
-            lens(colorScheme, dark).copy(dispersion = 0.0)
+            lens(colorScheme, dark)
 
-        /** The separate destination pane from FLClash's Dock, without RGB fringes. */
+        /** Glyph refraction retains the Dock's independent content dispersion. */
         fun controlLensContent(colorScheme: ColorScheme, dark: Boolean): LiquidGlassStyle =
-            lensContent(colorScheme, dark).copy(dispersion = 0.0)
+            lensContent(colorScheme, dark)
 
         /** FLClash navigation_dock.dart `_lensShadows`, shared by the floating controls. */
         fun controlLensShadow(dark: Boolean, lift: Float): Shadow =

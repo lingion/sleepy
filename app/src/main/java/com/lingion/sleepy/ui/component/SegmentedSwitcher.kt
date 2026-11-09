@@ -1,8 +1,6 @@
 package com.lingion.sleepy.ui.component
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -77,6 +75,9 @@ import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.UiStyle
+import com.lingion.sleepy.ui.component.liquidglass.rememberGlassControlMotion
+import com.lingion.sleepy.ui.component.liquidglass.glassLensWidth
+import com.lingion.sleepy.ui.component.liquidglass.glassLensHeight
 import com.lingion.sleepy.ui.component.liquidglass.LocalGlassDepth
 import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
 import com.lingion.sleepy.ui.component.liquidglass.LocalGlassOverlay
@@ -85,7 +86,6 @@ import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassStyle
 import com.lingion.sleepy.ui.component.liquidglass.liquidGlass
 import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassHaptics
 import androidx.compose.ui.zIndex
-import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 
 /**
@@ -155,39 +155,27 @@ fun <T> SegmentedSwitcher(
     val count = options.size
     if (count == 0) return
 
-    // thumb 位移: Animatable 值 = 逻辑段坐标(0..count-1), spring 驱动
-    // 高硬度+无阻尼: 用户反馈 MediumLow 拖沓不跟手, 提到 High 段切换 ≈150ms 收束
+    val glassHost = LocalGlassHost.current
+    val glassActive = LocalUiStyle.current == UiStyle.LiquidGlass && glassHost != null
     val thumbX = remember { Animatable(selectedIndex.toFloat()) }
-    // 动画与手势共用连续位置，文字着色不再取整跳段。
-    var thumbPosition by remember { mutableFloatStateOf(selectedIndex.toFloat()) }
+    var classicPosition by remember { mutableFloatStateOf(selectedIndex.toFloat()) }
+    var gesturePosition by remember { mutableFloatStateOf(selectedIndex.toFloat()) }
     var dragging by remember { mutableStateOf(false) }
-    // 按压瞬间即浮起 (2026-11-06 用户: "手按压瞬间像Toggle和dock滑块一样浮起有透射效果"):
-    // pressing 在 awaitFirstDown 立刻置位, 不等拖动 slop; tapLift 给点按/落位补一段短升镜
-    // (GlassSwitch tapGeneration 同款语义, 200ms)。
     var pressing by remember { mutableStateOf(false) }
     var tapGeneration by remember { mutableIntStateOf(0) }
-    var tapLift by remember { mutableStateOf(false) }
-    var gestureEnd by remember { mutableIntStateOf(0) }
-    // The 34dp resting thumb grows to 52dp around its center, beyond both 42dp track edges.
-    val thumbLift by animateFloatAsState(if (dragging || pressing || tapLift) 1f else 0f, tween(150), label = "segment-thumb-lift")
-    LaunchedEffect(tapGeneration) {
-        if (tapGeneration > 0) {
-            tapLift = true
-            delay(200)
-        }
-        tapLift = false
-    }
+    val motion = rememberGlassControlMotion(
+        if (dragging) gesturePosition else selectedIndex.toFloat(), pressing || dragging,
+        dragging, tapGeneration, glassActive,
+    )
+    val thumbPosition = if (glassActive) motion.position.value else classicPosition
+    val thumbLift = if (glassActive) motion.lift else 0f
+    val thumbStretch = if (glassActive) motion.stretch else 0f
     val currentOnSelect by rememberUpdatedState(onSelect)
     val currentSelectedIndex by rememberUpdatedState(selectedIndex)
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
-    LaunchedEffect(selectedIndex, dragging, gestureEnd, count) {
-        if (!dragging) {
-            thumbX.snapTo(thumbPosition)
-            thumbX.animateTo(
-                targetValue = selectedIndex.toFloat(),
-                animationSpec = SleepyThumbSpring,
-                block = { thumbPosition = value },
-            )
+    LaunchedEffect(selectedIndex, glassActive) {
+        if (!glassActive) {
+            thumbX.animateTo(selectedIndex.toFloat(), SleepyThumbSpring) { classicPosition = value }
         }
     }
 
@@ -199,8 +187,6 @@ fun <T> SegmentedSwitcher(
     val density = LocalDensity.current
     var trackWidthPx by remember { mutableIntStateOf(0) }
 
-    val glassHost = LocalGlassHost.current
-    val glassActive = LocalUiStyle.current == UiStyle.LiquidGlass && glassHost != null
     val samplingHost = if (LocalGlassOverlay.current) LocalGlassOverlaySamplingHost.current ?: glassHost else glassHost
     val scene = if (LocalGlassOverlay.current) samplingHost?.overlayBackdrop else samplingHost?.backdropAt(LocalGlassDepth.current)
     // Only the ordinary sibling backing is recorded. It never contains this lens.
@@ -256,9 +242,10 @@ fun <T> SegmentedSwitcher(
                     // 按下瞬间即升镜 (2026-11-06 用户: 手按压瞬间浮起透射, 不等 slop,
                     // 落点是否在高亮块上也升 — 点其它段后滑块弹簧过去的全程戴镜片, 同 Toggle)。
                     pressing = true
-                    var lastHapticIndex = thumbPosition.roundToInt()
+                    gesturePosition = thumbPosition
+                    var lastHapticIndex = gesturePosition.roundToInt()
                     fun tickIfChanged() {
-                        val index = thumbPosition.roundToInt()
+                        val index = gesturePosition.roundToInt()
                         if (index != lastHapticIndex) {
                             LiquidGlassHaptics.selectionClick(view)
                             lastHapticIndex = index
@@ -273,19 +260,19 @@ fun <T> SegmentedSwitcher(
                             val drag = awaitHorizontalTouchSlopOrCancellation(down.id) { change, _ ->
                                 change.consume()
                                 dragging = true
-                                thumbPosition = (start + (change.position.x - down.position.x) * direction / segmentWidth)
+                                gesturePosition = (start + (change.position.x - down.position.x) * direction / segmentWidth)
                                     .coerceIn(0f, (count - 1).toFloat())
                                 tickIfChanged()
                             }
                             if (drag != null) {
                                 val released = horizontalDrag(drag.id) { change ->
-                                    thumbPosition = (thumbPosition + change.positionChange().x * direction / segmentWidth)
+                                    gesturePosition = (gesturePosition + change.positionChange().x * direction / segmentWidth)
                                         .coerceIn(0f, (count - 1).toFloat())
                                     tickIfChanged()
                                     change.consume()
                                 }
                                 if (released) {
-                                    val target = thumbPosition.roundToInt().coerceIn(0, count - 1)
+                                    val target = gesturePosition.roundToInt().coerceIn(0, count - 1)
                                     if (target != currentSelectedIndex) currentOnSelect(options[target].value)
                                 }
                             }
@@ -298,13 +285,10 @@ fun <T> SegmentedSwitcher(
                             } while (true)
                         }
                     } finally {
-                        // 即使调用方拒绝更新，仍从当前手势位置吸附回受控 selected。
-                        gestureEnd++
+                        pressing = false
+                        dragging = false
                     }
-                    pressing = false
-                    dragging = false
-                    // 抬手后升镜再保持 200ms (GlassSwitch tapGeneration 同款):
-                    // 纯点按的下-上太短, 不加这段就看不见浮起透射。
+                    // The Dock's lift gate completes a short tap before lowering.
                     tapGeneration++
                 }
                 } finally {
@@ -378,8 +362,9 @@ fun <T> SegmentedSwitcher(
                             if (glassActive && thumbLift > 0f) {
                                 val padding = 4.dp.toPx()
                                 val pitch = (size.width - 2 * padding) / count
-                                val width = (pitch + 16.dp.toPx() * thumbLift).roundToInt().toFloat()
-                                val height = (size.height - 2 * padding + 18.dp.toPx() * thumbLift).roundToInt().toFloat()
+                                val width = glassLensWidth(pitch + 16.dp.toPx() * thumbLift, thumbStretch).roundToInt().toFloat()
+                                val height = glassLensHeight(size.height - 2 * padding + 18.dp.toPx() * thumbLift, thumbStretch,
+                                    minimum = size.height - 2 * padding + 10.dp.toPx() * thumbLift).roundToInt().toFloat()
                                 val logical = padding + thumbPosition * pitch + (pitch - width) / 2
                                 val left = if (isRtl) size.width - logical - width else logical
                                 val top = (size.height - height) / 2
@@ -479,8 +464,9 @@ fun <T> SegmentedSwitcher(
                 val padding = with(density) { 4.dp.toPx() }
                 val segmentWidth = (width - 2 * padding) / count
                 val lift = if (glassActive) thumbLift else 0f
-                val lensWidth = (segmentWidth + with(density) { 16.dp.toPx() } * lift).roundToInt()
-                val lensHeight = (height - 2 * padding + with(density) { 18.dp.toPx() } * lift).roundToInt()
+                val lensWidth = glassLensWidth(segmentWidth + with(density) { 16.dp.toPx() } * lift, thumbStretch).roundToInt()
+                val lensHeight = glassLensHeight(height - 2 * padding + with(density) { 18.dp.toPx() } * lift, thumbStretch,
+                    minimum = height - 2 * padding + with(density) { 10.dp.toPx() } * lift).roundToInt()
                 val lens = measurables[0].measure(Constraints.fixed(lensWidth, lensHeight))
                 val contentLens = measurables[2].measure(Constraints.fixed(lensWidth, lensHeight))
                 layout(width, height) {
