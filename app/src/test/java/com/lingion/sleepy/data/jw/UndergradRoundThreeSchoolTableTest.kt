@@ -48,7 +48,8 @@ class UndergradRoundThreeSchoolTableTest {
             JwCourse("英语", "图301", "王老师", 7, 9, 10, 2, 8, 0, "19:00", "20:40"),
             JwCourse("物理", "A101", "李老师", 7, 3, 4, 1, 5, 0, "10:15", "11:55"),
         ), parse(source, "hnjm"))
-        assertEquals(emptyList<JwCourse>(), parse(source.replace("9-10节", "11-12节").replace("1-5周", "8-1周"), "hnjm"))
+        assertEquals(listOf(JwCourse("英语", "图301", "王老师", 7, 11, 12, 2, 8)),
+            parse(source.replace("9-10节", "11-12节").replace("1-5周", "8-1周"), "hnjm"))
     }
 
     @Test fun lzReadsBothCellFormsAndDoesNotApplyParityToPreviousCourse() {

@@ -40,7 +40,7 @@ class JwXbellsoftOccurrenceTest {
     }
 
     @Test fun `missing and fractional integer fields are never truncated or defaulted`() {
-        for ((key, value) in listOf("xqj" to 7.9, "xqj" to 8, "djj" to 5.5, "djj" to 0, "djj" to 31, "dsz" to 1.5)) {
+        for ((key, value) in listOf("xqj" to 7.9, "xqj" to 8, "djj" to 5.5, "djj" to 0, "djj" to 367, "dsz" to 1.5)) {
             val source = "[${row().put(key, value)}]"
             assertTrue("$key=$value", JwJzParser(source).generateCourseList().isEmpty())
             assertTrue("$key=$value", parse(source).isEmpty())
@@ -49,6 +49,16 @@ class JwXbellsoftOccurrenceTest {
             val invalid = row().apply { remove(key) }
             assertTrue(key, parse("[$invalid]").isEmpty())
             assertTrue(key, JwJzParser("[$invalid]").generateCourseList().isEmpty())
+        }
+    }
+
+    @Test fun `explicit high periods survive declared import and the resource boundary`() {
+        for (node in listOf(31, 366)) {
+            val source = "[${row().put("djj", node).put("qmz", "3-4")}]"
+            val expected = listOf(JwCourse("操作系统", "E501", "何老师", 7, node, node, 3, 4))
+            assertEquals(expected, parse(source))
+            assertEquals(expected, JwJzParser(source).generateCourseList())
+            assertEquals(expected, JwImportViewModel.parseHtmlStatic(source, "login_xbellsoft").first)
         }
     }
 

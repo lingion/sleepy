@@ -50,6 +50,6 @@ internal class JwHitParser(source: String) : JwParser(source) {
     }
 
     private companion object {
-        val arrangement = Regex("([^，\\[\\]]+)\\[([0-9,，\\-单双周()]+)](?:([单双])?周)?([^，]*)")
+        val arrangement = Regex("([^，\\[\\]]*)\\[([0-9,，\\-单双周()]+)](?:([单双])?周)?([^，]*)")
     }
 }
