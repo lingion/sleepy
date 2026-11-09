@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import com.kyant.backdrop.drawPlainBackdrop
+import com.kyant.backdrop.BackdropRenderOptions
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
@@ -40,6 +41,9 @@ enum class GlassMaterialRole { Regular, Menu, Alert }
 /** Popup windows paint locally while sampling the parent window's glass-free scene. */
 internal val LocalGlassOverlay = androidx.compose.runtime.compositionLocalOf { false }
 
+/** A dropdown already owns the placement layer for its complete content tree. */
+internal val LocalGlassPlacementLayer = androidx.compose.runtime.compositionLocalOf { true }
+
 /** Adds optical material without owning clicks or introducing a second semantic node. */
 @Composable
 fun Modifier.glassControl(
@@ -52,6 +56,7 @@ fun Modifier.glassControl(
     role: GlassMaterialRole = GlassMaterialRole.Regular,
     interactionSource: MutableInteractionSource? = null,
     motionClearance: Dp = Dp.Unspecified,
+    placementLayer: Boolean = true,
 ): Modifier {
     check(!LocalGlassSourceContent.current) { "An optical consumer cannot be recorded as an ordinary source" }
     val host = LocalGlassHost.current
@@ -76,6 +81,10 @@ fun Modifier.glassControl(
     val filterBand = samplingHost.filterBand(consumerDepth, isOverlay, material.blur.toFloat())
     val backdrop = remember(samplingHost, consumerDepth, isOverlay, filterBand) {
         filterBand?.backdrop(samplingHost) ?: if (isOverlay) samplingHost.overlayBackdrop else samplingHost.backdropAt(consumerDepth)
+    }
+    val contentPlacementLayer = placementLayer && LocalGlassPlacementLayer.current
+    val renderOptions = remember(contentPlacementLayer) {
+        if (contentPlacementLayer) BackdropRenderOptions.Default else BackdropRenderOptions(placementLayer = false)
     }
     val scope = rememberCoroutineScope()
     val lift = remember { Animatable(0f) }
@@ -153,6 +162,7 @@ fun Modifier.glassControl(
             }
         }
         .drawPlainBackdrop(
+            renderOptions = renderOptions,
             backdrop = backdrop,
             shape = { shape },
             effects = {
