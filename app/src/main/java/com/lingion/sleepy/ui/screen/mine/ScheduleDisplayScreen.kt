@@ -19,6 +19,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderState
+import com.lingion.sleepy.ui.component.liquidglass.GlassSlider
+import com.lingion.sleepy.ui.component.liquidglass.liquidGlassControlsEnabled
 import com.lingion.sleepy.ui.component.liquidglass.GlassSliderThumb
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
@@ -236,7 +238,11 @@ private fun DisplaySlider(
             Text(label, modifier = Modifier.weight(1f), style = SettingsLayout.itemStyle, color = MaterialTheme.colorScheme.onSurface)
             Text(valueText, style = SettingsLayout.itemStyle, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        Box {
+        if (liquidGlassControlsEnabled()) {
+            GlassSlider(value = value, onValueChange = onValueChange, valueRange = range,
+                onValueChangeFinished = onFinished, initialValue = initial,
+                ghostEpsilon = epsilon, ghostTag = "display-slider-ghost")
+        } else Box {
             val sliderState = remember(range) {
                 SliderState(value = value, steps = 0, trackRange = range)
             }

@@ -113,6 +113,26 @@ class GlassSliderInteractionTest {
         compose.runOnIdle { assertEquals(7f, range.value.start); assertEquals(7f, range.value.endInclusive) }
     }
 
+    @Test fun hueTapCommitsTheValueDeliveredBeforeRecomposition() {
+        var delivered = 0f
+        var committed = -1f
+        compose.setContent {
+            MaterialTheme {
+                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                    GlassHost {
+                        HueSlider(0f, { delivered = it }, Modifier.width(280.dp).testTag("hue"),
+                            onHueCommit = { committed = it })
+                    }
+                }
+            }
+        }
+        compose.onNodeWithTag("hue").performTouchInput { click(Offset(width * .8f, centerY)) }
+        compose.runOnIdle {
+            assertTrue(delivered > 250f)
+            assertEquals("release must commit the delivered hue, even before a parent redraw", delivered, committed, .001f)
+        }
+    }
+
     @Test fun coincidentRangeThumbsCanBeSeparatedInEitherDirection() {
         val range = mutableStateOf(5f..5f)
         compose.setContent {

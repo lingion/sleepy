@@ -38,6 +38,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.ui.component.liquidglass.GlassRangeSlider
+import com.lingion.sleepy.ui.component.liquidglass.liquidGlassControlsEnabled
 import com.lingion.sleepy.ui.component.liquidglass.GlassSliderThumb
 import com.lingion.sleepy.ui.component.liquidglass.GlassSliderThumbMetrics
 import com.lingion.sleepy.ui.theme.LocalUiStyle
@@ -136,7 +138,16 @@ fun IntRangeSlider(
                 color = colors.onSurface
             )
         }
-        if (hasTwoStops) {
+        if (hasTwoStops && liquidGlassControlsEnabled()) {
+            GlassRangeSlider(
+                value = displayStart.toFloat()..displayEnd.toFloat(),
+                onValueChange = { val snapped = snapRangeToInt(it, minValue, maxValue); onValueChange(snapped.first, snapped.second) },
+                valueRange = minValue.toFloat()..maxValue.toFloat(),
+                steps = maxValue - minValue - 1,
+                initialValue = if (initialStart != null && initialEnd != null) initialStart.toFloat()..initialEnd.toFloat() else null,
+                modifier = Modifier.semantics { contentDescription = if (label != null) "$label $summary" else summary },
+            )
+        } else if (hasTwoStops) {
             // 值域版 RangeSlider 重载没有 track 插槽 (且已弃用, ReplaceWith 指向此
             // 状态版), 幽灵只能画进状态版的 track lambda — 与真轨道同盒同坐标。
             // 控制形态照抄 material3 值域重载内部实现 (Slider.kt: 建 state 后每
