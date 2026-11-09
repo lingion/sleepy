@@ -47,13 +47,8 @@ class GlassIconLayoutTest {
         assertEquals("glass visual disc", 36f, first.width, .1f)
         compose.onNodeWithTag("target0").assertWidthIsAtLeast(48.dp).assertHeightIsAtLeast(48.dp)
         assertTrue("at least 12dp of visible space between adjacent discs", second.left - first.right >= 11.9f)
-        compose.onNodeWithTag("target0").performTouchInput { down(center); moveBy(Offset(80f, 0f), 200) }
-        compose.waitForIdle()
-        val raised = compose.onNodeWithTag("pane0", true).fetchSemanticsNode().boundsInRoot
-        assertTrue("pressed and dragged disc must leave its neighbor clear", raised.right < second.left)
-        compose.onNodeWithTag("target0").performTouchInput { cancel() }
     }
-    @Test fun cancelledClickReturnsToRestWhileTheFingerRemainsDown() {
+    @Test fun leavingClickBoundsKeepsThePaneRaisedUntilTheFingerReleases() {
         compose.mainClock.autoAdvance = false
         compose.setContent {
             MaterialTheme {
@@ -73,10 +68,14 @@ class GlassIconLayoutTest {
         assertTrue("effective press must raise the glass", pane.fetchSemanticsNode().boundsInRoot.width > resting.width)
         compose.onNodeWithTag("target").performTouchInput { moveBy(Offset(120f, 0f), 100) }
         compose.mainClock.advanceTimeBy(1000)
-        val cancelled = pane.fetchSemanticsNode().boundsInRoot
-        assertEquals("cancelled press must lower before pointer up", resting.width, cancelled.width, .2f)
-        assertEquals("cancelled press must clear drag offset", resting.left, cancelled.left, .2f)
+        val held = pane.fetchSemanticsNode().boundsInRoot
+        assertTrue("click cancellation must not lower the held pane", held.width > resting.width)
+        assertTrue("the pane follows the held finger beyond its touch target", held.center.x > resting.center.x + 3f)
         compose.onNodeWithTag("target").performTouchInput { up() }
+        repeat(94) { compose.mainClock.advanceTimeByFrame(); compose.waitForIdle() }
+        val released = pane.fetchSemanticsNode().boundsInRoot
+        assertEquals(resting.width, released.width, .2f)
+        assertEquals(resting.left, released.left, .2f)
     }
 
 }

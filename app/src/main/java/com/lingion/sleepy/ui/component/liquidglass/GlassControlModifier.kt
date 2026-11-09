@@ -1,24 +1,23 @@
 package com.lingion.sleepy.ui.component.liquidglass
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.MotionDurationScale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -28,8 +27,7 @@ import com.kyant.backdrop.BackdropRenderOptions
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlin.coroutines.coroutineContext
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -55,7 +53,7 @@ fun Modifier.glassControl(
     registerPane: Boolean = true,
     role: GlassMaterialRole = GlassMaterialRole.Regular,
     interactionSource: MutableInteractionSource? = null,
-    motionClearance: Dp = Dp.Unspecified,
+    @Suppress("UNUSED_PARAMETER") motionClearance: Dp = Dp.Unspecified,
     placementLayer: Boolean = true,
 ): Modifier {
     check(!LocalGlassSourceContent.current) { "An optical consumer cannot be recorded as an ordinary source" }
@@ -86,80 +84,73 @@ fun Modifier.glassControl(
     val renderOptions = remember(contentPlacementLayer) {
         if (contentPlacementLayer) BackdropRenderOptions.Default else BackdropRenderOptions(placementLayer = false)
     }
-    val scope = rememberCoroutineScope()
-    val lift = remember { Animatable(0f) }
+    val motion = remember { GlassPressMotion() }
     var origin by remember { mutableStateOf(Offset.Zero) }
-    var pull by remember { mutableStateOf(Offset.Zero) }
-    var down by remember { mutableStateOf(false) }
-    var motion by remember { mutableStateOf<Job?>(null) }
+    var pointerId by remember { mutableStateOf<PointerId?>(null) }
+    var accepted by remember { mutableStateOf(false) }
     val density = LocalDensity.current.density
     val pressed = interactionSource?.collectIsPressedAsState()?.value == true
-    val currentPressed by rememberUpdatedState(pressed)
-    val active = if (interactionSource != null) pressed else down
-    val pressSpring = spring<Float>(dampingRatio = 0.593f, stiffness = 311f)
-    androidx.compose.runtime.LaunchedEffect(enabled, active) {
+    LaunchedEffect(enabled, pressed) {
         if (!enabled) {
-            motion?.cancel()
-            down = false
-            pull = Offset.Zero
-            lift.snapTo(0f)
-        } else if (active) {
-            motion?.cancel()
-            motion = scope.launch { lift.animateTo(1f, pressSpring) }
-        } else {
-            pull = Offset.Zero
-            val swelling = motion
-            motion = scope.launch {
-                swelling?.join()
-                lift.animateTo(0f, pressSpring)
-            }
+            accepted = false
+            motion.reset()
+        } else if (pressed) {
+            // A shared pane only lifts for an enabled child. Once accepted, a
+            // click cancellation must not end the raw pointer's optical drag.
+            if (pointerId != null) accepted = true
+            motion.press()
+        } else if (pointerId == null || !accepted) {
+            motion.release()
+        }
+    }
+    LaunchedEffect(motion) {
+        val durationScale = coroutineContext[MotionDurationScale]
+        runActiveFrameLoop({ motion.isRunning }) { dt ->
+            val scale = durationScale?.scaleFactor ?: 1f
+            if (scale <= 0f) motion.finish() else motion.tick(dt / scale)
         }
     }
     return this
+        // Observe in the fixed layout coordinates, before the painted layer
+        // moves. Leave click/scroll ownership to the existing gesture handlers.
+        .pointerInput(enabled, grouped, interactionSource) {
+            if (!enabled) return@pointerInput
+            try {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        if (pointerId == null) {
+                            val pointer = event.changes.firstOrNull { it.pressed && !it.previousPressed } ?: continue
+                            pointerId = pointer.id
+                            origin = pointer.position
+                            accepted = !grouped || interactionSource == null
+                            if (accepted) motion.press()
+                        } else {
+                            val pointer = event.changes.firstOrNull { it.id == pointerId } ?: continue
+                            if (pointer.pressed) {
+                                if (accepted) motion.drag(pointer.position - origin, min(size.width, size.height).toFloat())
+                            } else {
+                                if (accepted) motion.release()
+                                pointerId = null
+                                accepted = false
+                            }
+                        }
+                    }
+                }
+            } finally {
+                if (accepted) motion.release()
+                pointerId = null
+                accepted = false
+            }
+        }
         .graphicsLayer {
             val growth = min(0.25f, 16f * density / size.maxDimension.coerceAtLeast(1f))
-            val swell = 1f + lift.value * growth
+            val swell = 1f + motion.lift.value * growth
+            val pull = Offset(motion.pullX.value, motion.pullY.value)
             scaleX = swell * (1f + abs(pull.x) / size.width.coerceAtLeast(1f) * 0.5f)
             scaleY = swell * (1f + abs(pull.y) / size.height.coerceAtLeast(1f) * 0.5f)
             translationX = pull.x
             translationY = pull.y
-            if (motionClearance.value.isFinite()) {
-                // Dense controls own a measured gutter. Keep every animated pixel inside it,
-                // including spring overshoot and rubber-band translation.
-                val clearance = motionClearance.value.coerceAtLeast(0f) * density
-                scaleX = scaleX.coerceAtMost(1f + 2f * clearance / size.width.coerceAtLeast(1f))
-                scaleY = scaleY.coerceAtMost(1f + 2f * clearance / size.height.coerceAtLeast(1f))
-                val xRoom = (clearance - size.width * (scaleX - 1f) / 2f).coerceAtLeast(0f)
-                val yRoom = (clearance - size.height * (scaleY - 1f) / 2f).coerceAtLeast(0f)
-                translationX = pull.x.coerceIn(-xRoom, xRoom)
-                translationY = pull.y.coerceIn(-yRoom, yRoom)
-            }
-        }
-        .pointerInput(enabled, grouped, interactionSource) {
-            if (!enabled) return@pointerInput
-            awaitPointerEventScope {
-                while (true) {
-                    val event = awaitPointerEvent(PointerEventPass.Initial)
-                    val pointer = event.changes.firstOrNull() ?: continue
-                    if (pointer.pressed && !down) {
-                        down = true
-                        origin = pointer.position
-                        pull = Offset.Zero
-                    } else if (pointer.pressed && down) {
-                        if (interactionSource != null && !currentPressed) {
-                            pull = Offset.Zero
-                            continue
-                        }
-                        val limit = min(size.width, size.height) * (7f / 32f)
-                        fun rubber(v: Float): Float = if (limit > 0f) FlClashDockPhysics.rubberBand(v, limit) else 0f
-                        val delta = pointer.position - origin
-                        pull = Offset(rubber(delta.x), rubber(delta.y))
-                    } else if (!pointer.pressed && down) {
-                        down = false
-                        pull = Offset.Zero
-                    }
-                }
-            }
         }
         .drawPlainBackdrop(
             renderOptions = renderOptions,
@@ -180,9 +171,9 @@ fun Modifier.glassControl(
                     rim = rim,
                     glow = LiquidGlassGlow(
                         center = origin / density,
-                        reach = (28f + 3f * lift.value).toDouble(),
-                        strength = (0.06f * lift.value).toDouble(),
-                        wash = (0.7f * lift.value).toDouble(),
+                        reach = (28f + 3f * motion.lift.value).toDouble(),
+                        strength = (0.06f * motion.lift.value).toDouble(),
+                        wash = (0.7f * motion.lift.value).toDouble(),
                     ),
                 )
             },
