@@ -63,8 +63,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import java.time.LocalDate
@@ -141,10 +141,18 @@ fun ScheduleScreen(
     // 用户令 2026-09-23: 周视图/网格视图切换栏可隐藏 — 默认显示保留现有行为;
     // 只影响这根 Bar 的去留, 不改 viewMode 本身与启动默认页。
     var showViewSwitcher by remember { mutableStateOf(AppPrefs.isShowViewSwitcher(context)) }
+    var holidayPrefVersion by remember { mutableIntStateOf(0) }
     LaunchedEffect(Unit) {
         AppPrefs.changeBus.collect { key ->
             if (key == AppPrefs.KEY_SHOW_VIEW_SWITCHER) {
                 showViewSwitcher = AppPrefs.isShowViewSwitcher(context)
+            }
+            if (key == AppPrefs.KEY_HOLIDAY_GREY_HOLIDAY ||
+                key == AppPrefs.KEY_HOLIDAY_GREY_WEEKEND ||
+                key == AppPrefs.KEY_HOLIDAY_IGNORE_WORKDAY ||
+                key == AppPrefs.KEY_HOLIDAY_OVERRIDES
+            ) {
+                holidayPrefVersion++
             }
         }
     }
@@ -400,25 +408,11 @@ fun ScheduleScreen(
                 }
                 // 拖拽坐标、缩放和弹窗变化不改变课程投影，只有数据/周次/调休/作息变化才重算。
                 val renderCourses = viewModel.presentationCache.weekCourses(state, page + 1)
-                // 计算本周哪些天是节假日/周末(灰显用); 传入表 ID 使命中调休映射的放假日不灰
-                val greyDays by produceState<Set<Int>>(
-                    emptySet(), page, state.selectedTableId, state.currentTable?.startDate, state.transfers
+                // 计算本周哪些天是节假日/周末(灰显用); 纯内存快速计算 + 缓存, 避免首帧异步跳变导致转场中途重组
+                val greyDays = remember(
+                    page, state.selectedTableId, state.currentTable?.startDate, state.transfers, holidayPrefVersion
                 ) {
-                    val start = state.currentTable?.startDate
-                    if (start.isNullOrBlank()) {
-                        value = emptySet()
-                    } else {
-                        value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                            val greySet = mutableSetOf<Int>()
-                            for (day in 1..7) {
-                                val date = DateUtils.dateOfWeek(start, page + 1, day)
-                                if (HolidayManager.shouldGrey(context, date, state.effectiveCurrentTable?.id)) {
-                                    greySet.add(day)
-                                }
-                            }
-                            greySet
-                        }
-                    }
+                    viewModel.presentationCache.weekGreyDays(context, state, page + 1)
                 }
                 when (viewMode) {
                     ViewMode.Full -> FullWeekView(
