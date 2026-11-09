@@ -312,6 +312,11 @@ fun CardsGridView(
     // columnFont/columnPlacements 需真实行高, 故搁后到 rowHeightDp 可用后 (见下 BoxWithConstraints)。
 
     val periodHeaderHideTime = remember(context, prefVersion) { AppPrefs.isPeriodHeaderHideTime(context) }
+    val sharedHueMap by CourseHueStore.hueMapFlow.collectAsState()
+    val sharedGridSubInfo = remember(context, prefVersion) { AppPrefs.getGridSubInfo(context) }
+    val sharedGridUseAlias = remember(context, prefVersion) { AppPrefs.isGridUseAlias(context) }
+    val sharedHolidayStyle = remember(context, prefVersion) { AppPrefs.getHolidayStyle(context) }
+    val sharedCourseColorless = remember(context, prefVersion) { AppPrefs.isCourseColorless(context) }
     val timeW = remember(
         renderSlots,
         headerStyle,
@@ -1185,7 +1190,12 @@ fun CardsGridView(
                             gapW = gapW,
                             gapH = gapH,
                             isGrey = cluster.day in greyDays,
-                            modifier = Modifier.offset(x = cardX, y = cardY)
+                            modifier = Modifier.offset(x = cardX, y = cardY),
+                            hueMap = sharedHueMap,
+                            subInfo = sharedGridSubInfo,
+                            useAlias = sharedGridUseAlias,
+                            holidayStyle = sharedHolidayStyle,
+                            colorless = sharedCourseColorless
                         )
                     }
 
@@ -1276,7 +1286,12 @@ fun CardsGridView(
                                 floatState.course?.id == course.id &&
                                 course.day == floatState.day && course.startNode == floatState.originStartNode &&
                                 course.startNode + course.step.coerceAtLeast(1) - 1 == floatState.originEndNode,
-                            groupRows = groups[course.groupId].orEmpty()
+                            groupRows = groups[course.groupId].orEmpty(),
+                            hueMap = sharedHueMap,
+                            subInfo = sharedGridSubInfo,
+                            useAlias = sharedGridUseAlias,
+                            holidayStyle = sharedHolidayStyle,
+                            colorless = sharedCourseColorless
                         )
                     }
                     // 加课胶囊 = popup 家族第四处过渡 (Task 4): 弹入同款 scale+fade,
@@ -1665,32 +1680,35 @@ internal fun CourseOverlayCard(
     // 边缘翻页特性 (2026-10-27 用户裁决): 被拖起课程的原占位卡在拖拽期间纯降透明度置灰
     // (Material 3 disabled-content 档, SleepyTheme.Alpha.dragDim)。跟手浮卡不传, 恒全亮。
     dragDimmed: Boolean = false,
+    hueMap: Map<String, Float>? = null,
+    subInfo: String? = null,
+    useAlias: Boolean? = null,
+    holidayStyle: String? = null,
+    colorless: Boolean? = null,
 ) {
     val palette = SleepyTheme.palette
     val colors = MaterialTheme.colorScheme
     val context = androidx.compose.ui.platform.LocalContext.current
-    // 统一取色入口（决策 D3）— colorless 读取 AppPrefs course_colorless 独立开关
-    // issue#22: 同名课程多地点 — 用 groupRows 传同 groupId 全行,支持 AUTO/CUSTOM 模式取色
-    // spec §2.3: persistedHue 派生档持久色（CLASSIC/查无 → null → stableHue 老路径零变化）
-    val hueMap by CourseHueStore.hueMapFlow.collectAsState()
+    // 统一取色入口（决策 D3）— 优先使用上层传递的集中状态，未传安全回退单卡读取
+    val effectiveHueMap = hueMap ?: CourseHueStore.hueMapFlow.collectAsState().value
+    val effectiveColorless = colorless ?: AppPrefs.isCourseColorless(context)
     val bg = CourseColorUtil.pickCourseColorComposeWithGroupRows(
         row = course,
         groupRows = groupRows,
         isDark = CourseColorUtil.isPaletteDark(palette),
         neutralColor = colors.secondaryContainer,
-        colorless = AppPrefs.isCourseColorless(context),
-        persistedHue = hueMap[course.groupId]
+        colorless = effectiveColorless,
+        persistedHue = effectiveHueMap[course.groupId]
     )
     // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface
     val fg = CourseColorUtil.textColorOn(bg, CourseColorUtil.isPaletteDark(palette), colors.onSurface)
     val shape = RoundedCornerShape((12 * scale * cornerRatio).dp)
     val sd = { v: Float -> (v * scale).dp }
-    // 副信息（教室/教师/无）— 左栏 SingleTimeHeadCell 已有节次+时间，卡片 y 位置本身编码节次，
-    // 故卡内不再显示节次/时间，改由 grid_sub_info 设置决定
-    val subInfo = AppPrefs.getGridSubInfo(context)
-    // issue#26: 网格场景别名 — 网格设置开且别名非空才显示别名, 否则原名
-    val name = CourseDisplayUtil.displayName(course, AppPrefs.isGridUseAlias(context))
-    val subText = when (subInfo) {
+    // 副信息（教室/教师/无）
+    val effectiveSubInfo = subInfo ?: AppPrefs.getGridSubInfo(context)
+    val effectiveUseAlias = useAlias ?: AppPrefs.isGridUseAlias(context)
+    val name = CourseDisplayUtil.displayName(course, effectiveUseAlias)
+    val subText = when (effectiveSubInfo) {
         "room" -> course.room
         "teacher" -> course.teacher
         else -> ""
@@ -1699,8 +1717,8 @@ internal fun CourseOverlayCard(
     // 节假日灰显：色块叠 alpha + 文字应用 strikethrough 样式
     val effectiveBg = if (isGrey) bg.copy(alpha = SleepyTheme.Alpha.inactive) else bg
     val effectiveFg = if (isGrey) fg.copy(alpha = SleepyTheme.Alpha.inactive) else fg
-    val holidayStyle = AppPrefs.getHolidayStyle(context)
-    val textDecoration = if (isGrey && holidayStyle == "strikethrough") {
+    val effectiveHolidayStyle = holidayStyle ?: AppPrefs.getHolidayStyle(context)
+    val textDecoration = if (isGrey && effectiveHolidayStyle == "strikethrough") {
         androidx.compose.ui.text.style.TextDecoration.LineThrough
     } else null
 

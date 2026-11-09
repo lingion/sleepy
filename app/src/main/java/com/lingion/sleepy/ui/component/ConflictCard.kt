@@ -485,12 +485,22 @@ fun ConflictClusterCard(
     onRotate: () -> Unit = {},
     // 气泡弹窗选课 = 「换来看」: 把目标层转到轮换序首位(参数=该层在默认序中的位置)。
     onPickFromBadge: (Int) -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    hueMap: Map<String, Float>? = null,
+    subInfo: String? = null,
+    useAlias: Boolean? = null,
+    holidayStyle: String? = null,
+    colorless: Boolean? = null,
 ) {
     val palette = SleepyTheme.palette
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val cardShape = SleepyTheme.shapes.medium
+    val effectiveHueMap = hueMap ?: CourseHueStore.hueMapFlow.collectAsState().value
+    val effectiveColorless = colorless ?: AppPrefs.isCourseColorless(context)
+    val effectiveSubInfo = subInfo ?: AppPrefs.getGridSubInfo(context)
+    val effectiveUseAlias = useAlias ?: AppPrefs.isGridUseAlias(context)
+    val effectiveHolidayStyle = holidayStyle ?: AppPrefs.getHolidayStyle(context)
 
     // v7.10.16r 轮换(issue#10, N≥3): 先按簇全量课解析「置顶感知基准序」(用户置顶层
     // 恒在基准首位),轮换步数在其上循环左移得「完整轮换层序」,经 layoutCluster 的
@@ -563,16 +573,14 @@ fun ConflictClusterCard(
     // 课色(描边/虚线/flap 取色,含 isGrey 灰显,与卡渲染取同一色)
     // issue#22: 同名课程多地点 — 传 cluster 全行作为 groupRows,支持 AUTO/CUSTOM 模式取色
     val groupRowsForCard = cluster.courses
-    // spec §2.3: 派生档持久色上提组合函数作用域,闭包按 gid 查表（CLASSIC/查无 → null 老路径）
-    val hueMap by CourseHueStore.hueMapFlow.collectAsState()
     fun courseColorOf(course: CourseEntity): Color {
         val bg = CourseColorUtil.pickCourseColorComposeWithGroupRows(
             row = course,
             groupRows = groupRowsForCard,
             isDark = CourseColorUtil.isPaletteDark(palette),
             neutralColor = colors.secondaryContainer,
-            colorless = AppPrefs.isCourseColorless(context),
-            persistedHue = hueMap[course.groupId]
+            colorless = effectiveColorless,
+            persistedHue = effectiveHueMap[course.groupId]
         )
         return if (isGrey) bg.copy(alpha = SleepyTheme.Alpha.inactive) else bg
     }
@@ -807,7 +815,12 @@ fun ConflictClusterCard(
                                 modifier = Modifier.fillMaxSize(),
                                 isGrey = isGrey,
                                 shape = cardShape,
-                                groupRows = groupRowsForCard
+                                groupRows = groupRowsForCard,
+                                hueMap = effectiveHueMap,
+                                subInfo = effectiveSubInfo,
+                                useAlias = effectiveUseAlias,
+                                holidayStyle = effectiveHolidayStyle,
+                                colorless = effectiveColorless
                             )
                         }
                     }
@@ -1068,35 +1081,42 @@ private fun ConflictCourseCard(
     modifier: Modifier = Modifier,
     isGrey: Boolean = false,
     shape: Shape = SleepyTheme.shapes.medium,
-    groupRows: List<CourseEntity> = listOf(course)
+    groupRows: List<CourseEntity> = listOf(course),
+    hueMap: Map<String, Float>? = null,
+    subInfo: String? = null,
+    useAlias: Boolean? = null,
+    holidayStyle: String? = null,
+    colorless: Boolean? = null,
 ) {
     val palette = SleepyTheme.palette
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     // issue#22: 同名课程多地点 — 用 groupRows 传同 groupId 全行,支持 AUTO/CUSTOM 模式取色
-    // spec §2.3: persistedHue 派生档持久色（CLASSIC/查无 → null → stableHue 老路径零变化）
-    val hueMap by CourseHueStore.hueMapFlow.collectAsState()
+    // spec §2.3: persistedHue 派生档持久色（外部注入优先，未传回退内部订阅）
+    val effectiveHueMap = hueMap ?: CourseHueStore.hueMapFlow.collectAsState().value
+    val effectiveColorless = colorless ?: AppPrefs.isCourseColorless(context)
     val bg = CourseColorUtil.pickCourseColorComposeWithGroupRows(
         row = course,
         groupRows = groupRows,
         isDark = CourseColorUtil.isPaletteDark(palette),
         neutralColor = colors.secondaryContainer,
-        colorless = AppPrefs.isCourseColorless(context),
-        persistedHue = hueMap[course.groupId]
+        colorless = effectiveColorless,
+        persistedHue = effectiveHueMap[course.groupId]
     )
     val fg = CourseColorUtil.textColorOn(bg, CourseColorUtil.isPaletteDark(palette), colors.onSurface)
     val effectiveBg = if (isGrey) bg.copy(alpha = SleepyTheme.Alpha.inactive) else bg
     val effectiveFg = if (isGrey) fg.copy(alpha = SleepyTheme.Alpha.inactive) else fg
-    val holidayStyle = AppPrefs.getHolidayStyle(context)
-    val textDecoration = if (isGrey && holidayStyle == "strikethrough") TextDecoration.LineThrough else null
-    val subInfo = AppPrefs.getGridSubInfo(context)
-    val subText = when (subInfo) {
+    val effectiveHolidayStyle = holidayStyle ?: AppPrefs.getHolidayStyle(context)
+    val textDecoration = if (isGrey && effectiveHolidayStyle == "strikethrough") TextDecoration.LineThrough else null
+    val effectiveSubInfo = subInfo ?: AppPrefs.getGridSubInfo(context)
+    val subText = when (effectiveSubInfo) {
         "room" -> course.room
         "teacher" -> course.teacher
         else -> ""
     }
     // issue#26: 冲突卡属网格场景 — 跟随网格别名开关(与 CourseOverlayCard 同步)
-    val name = CourseDisplayUtil.displayName(course, AppPrefs.isGridUseAlias(context))
+    val effectiveUseAlias = useAlias ?: AppPrefs.isGridUseAlias(context)
+    val name = CourseDisplayUtil.displayName(course, effectiveUseAlias)
 
     Box(
         modifier = modifier
