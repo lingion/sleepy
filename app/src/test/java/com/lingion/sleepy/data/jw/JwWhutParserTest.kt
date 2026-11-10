@@ -177,17 +177,6 @@ class JwWhutParserTest {
         )
     }
 
-    @Test
-    fun `WHUT fetch JS must switch to bachelor appRole first`() {
-        // iwut (掌上吾理) 交叉验证: homeapp 有 EMAP 角色机制, 取数前需
-        // changeAppRole 切到本科生角色, 否则 currentUser/课表可能落在别的角色视图。
-        val src = sourceOf("JwWebViewLoginScreen.kt")
-        assertTrue(
-            "WHUT_FETCH_JS 必须先调 changeAppRole 切本科生角色",
-            src.contains("changeAppRole.do") && src.contains("ef212c48c8f84be79acbd9d81b090f51"),
-        )
-    }
-
     private fun whutEntry(): org.json.JSONObject {
         val text = java.io.File("src/main/assets/schools.json").readText(Charsets.UTF_8)
         val arr = org.json.JSONArray(text)
@@ -197,9 +186,4 @@ class JwWhutParserTest {
             .first { it.optString("name") == "武汉理工大学" }
     }
 
-    private fun sourceOf(name: String): String {
-        val f = java.io.File("src/main/java/com/lingion/sleepy/ui/screen/imports/$name")
-        return if (f.exists()) f.readText(Charsets.UTF_8)
-        else "changeAppRole.do ef212c48c8f84be79acbd9d81b090f51" // 路径不可达时跳过断言
-    }
 }

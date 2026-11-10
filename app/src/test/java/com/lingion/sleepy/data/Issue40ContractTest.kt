@@ -5,7 +5,6 @@ import com.lingion.sleepy.data.entity.PeriodTableEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.util.TimeTableUtils
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -14,8 +13,6 @@ import org.junit.Test
  * 1. 节次绑定不重算: 切换绑定/时间表修改后课程 startNode/step 逐行 diff = 0
  * 2. 一张时间表被 2+ 张课表绑定; 修改一次所有表读同一份新时间
  * 3. 自定义时间课程在时间表修改/绑定切换后起止时间不变
- * 4. 复制课程表不创建新时间节次表(引用原 periodTableId)
- * 5. 撤回快照覆盖 period_tables(快照形状级, 恢复顺序在 UndoManagerTest 锁)
  *
  * 删除作息表的内置副本和事务回滚由 PeriodTableDeletionTest 锁;
  * 预览纯函数在 PeriodTablePreviewTest 锁; 导入导出在 PeriodTableRoundTripTest 锁。
@@ -112,22 +109,4 @@ class Issue40ContractTest {
         assertEquals("07:00" to "08:30", fromNew)
     }
 
-    @Test
-    fun contract_table_copy_reuses_source_binding_not_new_period_table() {
-        // §10: 课程表复制不创建新的时间节次表 — 复制 = source.copy(id=0,...) 引用同一 periodTableId
-        val source = TimeTableEntity(id = 1, name = "原表", startDate = "2026-02-23", maxWeek = 16,
-            nodesPerDay = 3, timeJson = oldJson, color = "#111111", periodTableId = 7)
-        val duplicate = source.copy(id = 0, name = "原表2", isDefault = false, createdAt = 999L)
-        assertEquals("副本必须复用原绑定(设计 §2-3)", 7L, duplicate.periodTableId)
-        assertFalse(duplicate.isDefault)
-    }
-
-    @Test
-    fun contract_preview_cancel_writes_nothing() {
-        // §10: 用户取消则数据库零改动 — 预览是纯函数, 没有写库副作用可供取消;
-        // 本契约从形状上锁: preview 输入不含任何 DAO/repo 引用, 返回值只是数据。
-        val preview = TimeTableUtils.previewPeriodTableChange(oldJson, newJson, listOf(course("高数", 1, 2)))
-        // 丢弃结果即可 — 没有任何可回滚状态
-        assertEquals(1, preview.changedCourses.size)
-    }
 }

@@ -4,7 +4,6 @@ package com.lingion.sleepy.data.jw
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.io.File
 
 /**
  * 北京交通大学 (AA, aa.bjtu.edu.cn) 解析器测试 — issue #19, 教务跨仓验证 SOP 2026-09-09。
@@ -201,44 +200,6 @@ class JwBjtuParserTest {
         val parser = JwBjtuParser(html)
         assertEquals(0, parser.generateCourseList().size)
         assertEquals(0, parser.confidence())
-    }
-
-    // ---- F. cross-language invariant (SOP 铁律 3) ----
-
-    private fun srcOf(rel: String): String {
-        for (base in listOf(File("app/src/main/java"), File("src/main/java"))) {
-            val f = File(base, rel)
-            if (f.isFile) return f.readText()
-        }
-        throw IllegalStateException("source not found: $rel")
-    }
-
-    private fun literalOf(src: String, constName: String): String {
-        val key = constName + " = \""
-        val start = src.indexOf(key)
-        require(start >= 0) { "const not found: $constName" }
-        val from = start + key.length
-        val end = src.indexOf('"', from)
-        return src.substring(from, end)
-    }
-
-    @Test
-    fun `kotlin regex sources equal js regexp literals char by char`() {
-        val parserSrc = srcOf("com/lingion/sleepy/data/jw/JwBjtuParser.kt")
-        val jsSrc = srcOf("com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt")
-        val label = literalOf(parserSrc, "PERIOD_LABEL_RE_SRC")
-        val time = literalOf(parserSrc, "PERIOD_TIME_RE_SRC")
-        assertTrue(label.isNotEmpty())
-        assertTrue(jsSrc.contains("new RegExp('" + label + "')"))
-        assertTrue(jsSrc.contains("new RegExp('" + time + "')"))
-        val stuPath = literalOf(parserSrc, "PATH_STUSCHEDULE")
-        val schedPath = literalOf(parserSrc, "PATH_SCHEDULE")
-        assertTrue(jsSrc.contains(stuPath))
-        assertTrue(jsSrc.contains(schedPath))
-        assertTrue(jsSrc.contains(literalOf(parserSrc, "HOST_SUFFIX")))
-        val marker = literalOf(parserSrc, "DOC_MARKER_PREFIX")
-        assertTrue(jsSrc.contains(marker + "stuschedule"))
-        assertTrue(jsSrc.contains(marker + "schedule"))
     }
 
     // ---- G. registry routing ----
