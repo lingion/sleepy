@@ -76,7 +76,7 @@ def main():
  args=argparse.ArgumentParser();args.add_argument('--check',action='store_true');opts=args.parse_args();rows,manifest,accepted,links=generate()
  assert not audit(rows,'generated-catalog'), 'Unsafe operational URL in generated catalog'
  assert all('REDACTED' not in row.get('url','') for row in rows), 'Redacted provenance URL cannot be operational'
- outputs={'app/src/main/assets/schools.json':rows,'app/src/test/resources/jw/schools.json':rows,'docs/catalog/manifest.json':manifest,'docs/catalog/import-admissions.json':accepted,'docs/catalog/source-links.json':links}
+ outputs={'app/src/main/assets/schools.json':rows,'docs/catalog/manifest.json':manifest,'docs/catalog/import-admissions.json':accepted,'docs/catalog/source-links.json':links}
  for name,value in outputs.items():
   path=ROOT/name;text=encoded(value)
   if opts.check: assert path.read_text()==text,'Stale generated output: '+name
