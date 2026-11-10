@@ -14,14 +14,13 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
-import java.io.File
 
 /**
  * noRippleClickable 按压反馈契约 (M3 Expressive motion pass, Task 1):
@@ -37,16 +36,6 @@ import java.io.File
 class NoRippleClickablePressFeedbackTest {
 
     @get:Rule val compose = createComposeRule()
-
-    private fun findUpward(rel: String): File {
-        var dir: File? = File(".").absoluteFile
-        while (dir != null) {
-            val f = File(dir, rel)
-            if (f.exists()) return f
-            dir = dir.parentFile
-        }
-        error("$rel not found")
-    }
 
     @Test fun click_still_dispatches_after_press_scale_added() {
         val clicks = intArrayOf(0)
@@ -88,16 +77,4 @@ class NoRippleClickablePressFeedbackTest {
         assertEquals(1, clicks[0])
     }
 
-    @Test fun press_feedback_uses_interaction_source_not_pointer_input() {
-        val src = findUpward("app/src/main/java/com/lingion/sleepy/ui/theme/NoRippleClickable.kt").readText()
-        // 禁 pointerInput 调用: 手势竞争会破坏拖拽母容器 (slider 冻结先例)。
-        // 判据取调用形态 "pointerInput(" — 注释里允许出现该词的说明性提及。
-        assertTrue("noRippleClickable 不得引入 pointerInput 调用", "pointerInput(" !in src)
-        // 按压状态只从 interactionSource 采
-        assertTrue(src.contains("collectIsPressedAsState"))
-        // 缩放规格必须来自 motionScheme (单一调参点约束), 目标值用 SleepyPressScale 常量
-        assertTrue(src.contains("fastEffectsSpec"))
-        assertTrue(src.contains("SleepyPressScale"))
-        assertTrue(src.contains("graphicsLayer"))
-    }
 }

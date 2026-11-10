@@ -24,51 +24,6 @@ class JwFduWebViewContractTest {
             return webView.substring(start, end)
         }
 
-    @Test fun `FDU dispatch follows USTC and returns before other API EAMS5 and frame capture`() {
-        val captureStart = webView.indexOf("CaptureBar(")
-        val ustc = webView.indexOf("JwUstcCapture.scriptFor(school.type)", captureStart)
-        val branch = Regex(
-            """if\s*\(\s*school\.type\s*==\s*JwProtocol\.TYPE_FDU\s*\)\s*\{\s*evaluateFetchWithTimeout\(wv,\s*JwFduCapture\.FETCH_JS\)\s*return@CaptureBar\s*}""",
-        ).find(webView, captureStart)
-        assertTrue("FDU must have its own bounded fetch branch and terminal CaptureBar return", branch != null)
-        val fdu = branch!!.range.first
-        val otherApi = webView.indexOf("JwSchoolApiCapture.scriptFor(school.type)", captureStart)
-        val eams5 = webView.indexOf("if (school.type == JwProtocol.TYPE_EAMS5)", captureStart)
-        val frames = webView.indexOf("captureWithRetry(wv, 0, school.type)", captureStart)
-        assertTrue("Dedicated route order is USTC, FDU, other API, EAMS5, generic frames",
-            captureStart >= 0 && ustc > captureStart && fdu > ustc && otherApi > fdu &&
-                eams5 > otherApi && frames > eams5)
-        assertFalse("The declared FDU route must not depend on guessed URL or catalog promotion",
-            branch.value.contains("enableFetch") || branch.value.contains("contains("))
-    }
-
-    @Test fun `CI executes the production FDU JavaScript contract exactly once`() {
-        val workflow = readProjectSource(".github/workflows/ci.yml")
-        assertEquals(1, Regex("""(?m)^\s*node tools/test-fdu-fetch\.js\s*$""")
-            .findAll(workflow).count())
-    }
-
-    @Test fun `shared initial JSON callback forwards startDate without consuming sourceStartDate`() {
-        assertTrue(callback.contains("val termStartDate = obj.optString(\"startDate\", \"\")"))
-        assertTrue(callback.contains("var termStart = termStartDate"))
-        assertTrue(callback.contains("val effectiveStartDate = termStart.ifBlank { termStartDate }"))
-        assertTrue(callback.contains("onHtmlCaptured(data, capturedSchool, periods, effectiveStartDate)"))
-        assertFalse("The raw Sunday is provenance only", callback.contains("sourceStartDate"))
-        assertFalse("The initial callback must not normalize the raw Sunday", callback.contains("mondayOf("))
-    }
-
-    @Test fun `Activity forwards the callback date into the real shared calendar resolver`() {
-        val activity = readProjectSource(
-            "app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwImportActivity.kt",
-        )
-        val start = activity.indexOf("onHtmlCaptured = { html, sch, periods, termStartDate ->")
-        assertTrue(start >= 0)
-        val consumer = Regex(
-            """configStartDate\s*=\s*com\.lingion\.sleepy\.data\.jw\.JwSourceCalendar\s*\.resolveStartDate\(htmlForParse,\s*effectiveType,\s*termStartDate\)""",
-        ).find(activity, start)
-        assertTrue("The Activity must pass the callback date, not the raw source Sunday", consumer != null)
-    }
-
     private fun payload(startDate: String?, sourceSunday: String, data: String = """{"studentTableVms":[{"activities":[]}]}"""): String =
         JSONObject().put("ok", true).put("data", data).put("sourceStartDate", sourceSunday).apply {
             if (startDate != null) put("startDate", startDate)

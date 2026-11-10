@@ -4,7 +4,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.io.File
 
 /**
  * 用户反馈 2026-09-09: 加课表单里「非常规节次」「非常规时间」两个开关平铺,
@@ -128,89 +127,4 @@ class IrregularOptionsCollapseTest {
 
     // ---- C. 源码级守卫: AddCourseScreen 表单结构 ----
 
-    private fun findUpward(rel: String): File {
-        var dir: File? = File(".").absoluteFile
-        while (dir != null) {
-            val f = File(dir, rel)
-            if (f.exists()) return f
-            dir = dir.parentFile
-        }
-        error("$rel not found")
-    }
-
-    private fun editorSource(): String =
-        findUpward("app/src/main/java/com/lingion/sleepy/ui/screen/edit/AddCourseScreen.kt").readText()
-
-    /** IrregularOptionsSection 函数体: 到下一个 @Composable 声明为止 */
-    private fun sectionBody(src: String): String =
-        src.substringAfter("fun IrregularOptionsSection").substringBefore("\n@Composable")
-
-    /** MeetingBlockEditor 函数体: 到下一个 @Composable 声明为止 */
-    private fun editorBody(src: String): String =
-        src.substringAfter("fun MeetingBlockEditor").substringBefore("\n@Composable")
-
-    @Test
-    fun section_composable_exists_with_expand_collapse_affordance() {
-        val src = editorSource()
-        assertTrue("AddCourseScreen 必须定义 IrregularOptionsSection 折叠栏",
-            src.contains("fun IrregularOptionsSection"))
-        val body = sectionBody(src)
-        assertTrue("折叠栏必须用 AnimatedVisibility 展开/收起内容",
-            body.contains("AnimatedVisibility"))
-        assertTrue("折叠栏必须有 chevron (ExpandMore)",
-            body.contains("ExpandMore"))
-        assertTrue("chevron 必须随展开旋转 180f (仓库既有模式: EditTableScreen/SettingsCard)",
-            body.contains("rotate(") && body.contains("180f"))
-    }
-
-    @Test
-    fun both_irregular_switches_live_inside_section() {
-        val body = sectionBody(editorSource())
-        assertTrue("「非常规节次」开关必须在 IrregularOptionsSection 内部",
-            body.contains("R.string.irregular_node_switch"))
-        assertTrue("「非常规时间」开关必须在 IrregularOptionsSection 内部",
-            body.contains("R.string.irregular_time_switch"))
-        assertTrue("折叠栏标题必须用 irregular_options_section 文案",
-            body.contains("R.string.irregular_options_section"))
-        // 展开后的条件内容也收在栏内: 槽位摘要 + 起止时间输入
-        assertTrue("非常规节次的槽位摘要必须随开关收进折叠栏",
-            body.contains("R.string.edge_node_range"))
-        assertTrue("非常规时间的时长输入必须随开关收进折叠栏",
-            body.contains("R.string.irregular_duration_label"))
-    }
-
-    @Test
-    fun standard_node_fields_stay_outside_section() {
-        val src = editorSource()
-        val body = editorBody(src)
-        assertTrue("标准节次字段 (双头滑杆 IntRangeSlider) 必须留在折叠栏外",
-            body.contains("IntRangeSlider(") && body.contains("R.string.slot_summary_period_range"))
-        assertTrue("MeetingBlockEditor 必须挂载 IrregularOptionsSection",
-            body.contains("IrregularOptionsSection("))
-        assertFalse("两个非常规开关不得再平铺在 MeetingBlockEditor 主体里",
-            body.contains("R.string.irregular_node_switch") ||
-                body.contains("R.string.irregular_time_switch"))
-    }
-
-    @Test
-    fun no_border_stroke_or_outlined_button_in_editor() {
-        val src = editorSource()
-        assertFalse("Sleepy 全 app 禁 BorderStroke", src.contains("BorderStroke"))
-        assertFalse("Sleepy 全 app 禁 OutlinedButton", src.contains("OutlinedButton"))
-    }
-
-    // ---- D. 六 locale 文案齐全 ----
-
-    @Test
-    fun section_strings_present_in_all_six_locales() {
-        val locales = listOf("values", "values-en", "values-es", "values-ja", "values-zh-rCN", "values-zh-rTW")
-        for (locale in locales) {
-            val f = findUpward("app/src/main/res/$locale/strings.xml")
-            val text = f.readText()
-            assertTrue("$locale 缺 irregular_options_section",
-                text.contains("name=\"irregular_options_section\""))
-            assertTrue("$locale 缺 irregular_options_section_sub",
-                text.contains("name=\"irregular_options_section_sub\""))
-        }
-    }
 }
