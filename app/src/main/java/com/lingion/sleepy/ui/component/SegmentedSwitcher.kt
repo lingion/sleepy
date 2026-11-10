@@ -151,6 +151,7 @@ fun <T> SegmentedSwitcher(
     dbgTagPrefix: String? = null,
 ) {
     val colors = MaterialTheme.colorScheme
+    val selectionColors = colors.selectionColors()
     val selectedIndex = options.indexOfFirst { it.value == selected }.coerceAtLeast(0)
     val count = options.size
     if (count == 0) return
@@ -326,7 +327,7 @@ fun <T> SegmentedSwitcher(
                             .background(containerColor ?: if (glassActive) colors.onSurface.copy(alpha = .045f) else colors.surfaceContainer, trackShape)
                             .padding(4.dp),
                         content = {
-                            Box(Modifier.background((if (glassActive) colors.surface else colors.secondaryContainer)
+                            Box(Modifier.background(selectionColors.selectedContainer
                                 .copy(alpha = if (glassActive) 1f - thumbLift else 1f), restingShape))
                         },
                     ) { children, constraints ->
@@ -399,8 +400,8 @@ fun <T> SegmentedSwitcher(
                                         thumbEndPx = thumbEnd,
                                         segmentWidthPx = segW,
                                         selected = isSelected,
-                                        selectedColor = colors.onSecondaryContainer,
-                                        unselectedColor = colors.onSurfaceVariant
+                                        selectedColor = selectionColors.selectedContent,
+                                        unselectedColor = selectionColors.unselectedContent
                                     )
                                 )
                                 if (option.badge != null) {
@@ -412,12 +413,12 @@ fun <T> SegmentedSwitcher(
                                             lineHeight = 11.sp,
                                             fontWeight = FontWeight.Bold
                                         ),
-                                        color = if (isSelected) colors.primary else colors.onSurfaceVariant,
+                                        color = if (isSelected) selectionColors.accent else selectionColors.unselectedContent,
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(4.dp))
                                             .background(
-                                                if (isSelected) colors.primary.copy(alpha = 0.14f)
-                                                else colors.onSurfaceVariant.copy(alpha = 0.08f)
+                                                if (isSelected) selectionColors.accent.copy(alpha = 0.14f)
+                                                else selectionColors.unselectedContent.copy(alpha = 0.08f)
                                             )
                                             .padding(horizontal = 4.dp, vertical = 1.dp)
                                     )

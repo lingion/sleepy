@@ -582,7 +582,7 @@
     <string name="theme_editor_delete_confirm_body">Las páginas y widgets que lo usen volverán al tema predeterminado «Lila».</string>
 <string name="appearance_section_theme">Colores del tema</string>
     <string name="appearance_section_dock_theme">Estilo de interfaz</string>
-    <string name="dock_theme_classic">Clásico</string>
+    <string name="dock_theme_classic">Material Design</string>
     <string name="dock_theme_liquid_glass">Cristal líquido</string>
     <string name="dock_theme_experimental">Experimental</string>
     <string name="appearance_section_course_color">Colores de asignaturas</string>

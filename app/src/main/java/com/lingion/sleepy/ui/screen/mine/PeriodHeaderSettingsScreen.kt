@@ -269,7 +269,7 @@ private fun HeaderStylePreviews(
                         .glassControl(shape = SleepyTheme.shapes.medium, tint = if (value == selectedStyle) colors.primaryContainer else null)
                         .clip(SleepyTheme.shapes.medium)
                         .noRippleGlassClickable { onStyleSelected(value) },
-                    color = controlFill(if (value == selectedStyle) colors.primaryContainer else colors.surfaceContainer),
+                    color = if (value == selectedStyle) colors.primaryContainer else controlFill(colors.surfaceContainer),
                     shape = SleepyTheme.shapes.medium,
                 ) {
                     Column(

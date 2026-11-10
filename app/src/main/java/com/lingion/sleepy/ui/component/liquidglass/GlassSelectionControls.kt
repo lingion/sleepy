@@ -14,7 +14,7 @@ import androidx.compose.material3.FilterChip as MaterialFilterChip
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
 
-/** Same chip semantics and geometry, with a selected optical surface instead of a painted fill. */
+/** Preserve Material selection colors while the carrier supplies optical motion. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GlassFilterChip(
@@ -33,11 +33,13 @@ fun GlassFilterChip(
 ) {
     val glass = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
     MaterialFilterChip(
-        selected, onClick, label, modifier.glassControl(shape, enabled = enabled, selected = selected),
+        // The chip itself paints the exact caller-supplied selected Material colors.
+        // Its optical carrier remains neutral instead of adding a primary selection tint.
+        selected, onClick, label, modifier.glassControl(shape, enabled = enabled),
         enabled, leadingIcon, trailingIcon, shape,
         if (glass) colors.copy(
-            containerColor = Color.Transparent, selectedContainerColor = Color.Transparent,
-            disabledContainerColor = Color.Transparent, disabledSelectedContainerColor = Color.Transparent,
+            containerColor = Color.Transparent,
+            disabledContainerColor = Color.Transparent,
         ) else colors,
         elevation = if (glass) null else elevation,
         border = if (glass) null else border,
