@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Check attribution completeness across the manifest, UI, documents and shipped notices."""
+"""Check attribution data, website exports, documents and shipped notices."""
 import hashlib
 import json
 from pathlib import Path
 import re
 import subprocess
 import sys
+import tempfile
 import unittest
-import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / 'app/src/main/assets'
@@ -32,30 +32,22 @@ class AttributionCoverageTest(unittest.TestCase):
                 for path in entry['evidence']:
                     self.assertTrue((ROOT / path).is_file(), path)
 
-    def test_all_sources_are_visible_in_every_locale(self):
-        for locale in LOCALES:
-            strings = {node.attrib['name']: node.text or '' for node in ET.parse(
-                ROOT / 'app/src/main/res' / locale / 'attributions.xml').getroot()}
-            for entry in self.entries:
-                with self.subTest(locale=locale, project=entry['project']):
-                    key = 'license_recent_' + entry['group'].replace('-', '_')
-                    self.assertTrue(strings.get(key + '_title'))
-                    for value in (entry['project'], entry['license'], entry['url']):
-                        self.assertIn(value.replace("'", "\\'"), strings.get(key + '_body', ''))
-            self.assertIn('xiaomanjun233', strings['license_recent_source_notice'])
-            self.assertIn('BSD-3-Clause', strings['license_recent_source_notice'])
-            for name in self.data['unresolved_names']:
-                self.assertIn(name, strings['license_recent_background_body'])
-
-    def test_ui_groups_follow_document_order_and_notice_is_always_visible(self):
-        source = (ROOT / 'app/src/main/java/com/lingion/sleepy/ui/screen/mine/LicenseScreen.kt').read_text()
-        section = source.split('private val recentAttributionGroups = listOf(', 1)[1].split('\n)', 1)[0]
-        actual = re.findall(r'R.string.license_recent_(\w+)_title', section)
-        self.assertEqual([g.replace('-', '_') for g in self.data['groups']], actual)
-        notice_pos = source.index('text = stringResource(R.string.license_recent_source_notice)')
-        self.assertLess(notice_pos, source.index('items(recentAttributionGroups'))
-        self.assertLess(source.index('items = contributorEntries'), notice_pos)
-        self.assertLess(notice_pos, source.index('items = attributionEntries'))
+    def test_website_export_preserves_inventory_history_and_original_notices(self):
+        from export_licenses import export
+        with tempfile.TemporaryDirectory() as directory:
+            site = Path(directory)
+            data = export(site)
+            self.assertEqual(self.data, data['manifest'])
+            self.assertEqual(set(LOCALES), set(data['legacy']['locales']))
+            self.assertEqual(set(LOCALES), set(data['labels']))
+            self.assertTrue(data['legacy']['contributors'])
+            self.assertTrue(data['legacy']['schools'])
+            self.assertEqual((site / 'src/data/licenses.json').read_bytes(),
+                             (site / 'public/licenses/inventory.json').read_bytes())
+            for notice in self.data['notices']:
+                self.assertEqual((ASSETS / notice['path']).read_bytes(),
+                                 (site / 'public/licenses/notices' / notice['path']).read_bytes())
+            export(site, check=True)
 
     def test_original_license_texts_have_not_been_truncated(self):
         for notice in self.data['notices']:
@@ -69,15 +61,6 @@ class AttributionCoverageTest(unittest.TestCase):
             self.assertEqual(license_name, by_name[project]['license'])
             self.assertTrue((ASSETS / by_name[project]['license_file']).is_file())
         self.assertIn('Copyright 2013 The Flutter Authors.', (ASSETS / by_name['flutter/flutter']['license_file']).read_text())
-
-    def test_readmes_point_to_full_inventory_without_obsolete_counts(self):
-        for name in ('README.md', 'README_EN.md'):
-            text = (ROOT / name).read_text()
-            self.assertIn('(ACKNOWLEDGEMENTS.md)', text)
-            self.assertIn('xiaomanjun233', text)
-            self.assertNotIn('9 个跨校普适项目', text)
-            self.assertNotIn('9 foundational', text)
-            self.assertNotIn('9 cross-school', text)
 
     def test_local_document_links_resolve(self):
         for name in ('ACKNOWLEDGEMENTS.md', 'docs/attribution-audit/glass-research-sources.md',

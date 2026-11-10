@@ -83,7 +83,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun AboutScreen(
     onBack: () -> Unit,
-    onOpenLicense: () -> Unit = {},
     updateNoticeVisible: Boolean = false
 ) {
     val colors = MaterialTheme.colorScheme
@@ -631,13 +630,17 @@ fun AboutScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // License 入口行(v1.0.46 用户令): 长卡拆独立二级页, 这里只留入口
+            // The website hosts the complete inventory; original notices remain bundled.
             InfoCard {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .noRippleClickable(onOpenLicense)
+                        .noRippleClickable {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(
+                                "https://sleepy.is-my.app/licenses/"
+                            )))
+                        }
                         .dbgTag("about_license_entry", role = "button")
                 ) {
                     Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
@@ -653,7 +656,7 @@ fun AboutScreen(
                         )
                     }
                     Icon(
-                        imageVector = Icons.Outlined.ChevronRight,
+                        imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
                         contentDescription = null,
                         tint = colors.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)

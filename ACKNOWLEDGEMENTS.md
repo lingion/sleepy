@@ -18,8 +18,8 @@ SleepDown 的导入修订未在现有记录中固定，当前保留的许可文�
 
 既有教务来源包括 WakeUp / WakeupSchedule_BUPT、拾光 shiguang_warehouse、LumaSchedule、各学校维护者和协议交叉验证项目。原有逐校、逐仓与六语言致谢全部保留：
 
-- [应用内跨校与逐校致谢](app/src/main/java/com/lingion/sleepy/ui/screen/mine/LicenseScreen.kt)
-- [既有完整声明](app/src/main/res/values/strings.xml)
+- [官网开源许可与致谢](https://sleepy.is-my.app/licenses/)
+- [历史学校、协议与六语言声明](docs/attribution-audit/legacy-credits.json)
 - [解析器来源说明](app/src/main/assets/PARSERS_NOTICE.json)
 - [拾光脚本许可](app/src/main/assets/third_party/shiguang/LICENSE-MIT.txt)
 - [学校及协议研究归档](docs/history/)
@@ -27,7 +27,7 @@ SleepDown 的导入修订未在现有记录中固定，当前保留的许可文�
 
 ## 清单维护
 
-下列清单的真源为 [ATTRIBUTIONS.json](app/src/main/assets/ATTRIBUTIONS.json)。修改后运行 `python3 scripts/generate_attributions.py` 同步本文和六套语言资源，运行 `python3 scripts/generate_attributions.py --check` 检查漂移。未识别许可证或历史链接不可用的条目保留未确认状态，不推定为可复用代码。GitHub API 的许可字段是核验当天的元数据，不替代具体版本的许可原文。
+下列清单的真源为 [ATTRIBUTIONS.json](app/src/main/assets/ATTRIBUTIONS.json)。修改后运行 `python3 scripts/generate_attributions.py` 同步本文。运行 `python3 scripts/export_licenses.py --site /path/to/sleepy-site` 同步官网来源数据与许可原文，运行 `python3 scripts/generate_attributions.py --check` 检查漂移。未识别许可证或历史链接不可用的条目保留未确认状态，不推定为可复用代码。GitHub API 的许可字段是核验当天的元数据，不替代具体版本的许可原文。
 
 ## 源码移植与素材来源
 

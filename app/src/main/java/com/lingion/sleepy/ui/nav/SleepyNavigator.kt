@@ -61,7 +61,6 @@ class SleepyNavigator(
     fun openTableReminder() = push(SleepyRoute.TableReminder)
     fun openReminder() = push(SleepyRoute.Reminder)
     fun openAbout() = push(SleepyRoute.About)
-    fun openLicense() = push(SleepyRoute.License)
     fun openWidgetManagement() = push(SleepyRoute.WidgetManagement)
     fun openWidgetSettings() = push(SleepyRoute.WidgetSettings)
     fun openWidgetGallery() = push(SleepyRoute.WidgetGallery)

@@ -81,7 +81,6 @@ import com.lingion.sleepy.ui.screen.mine.HolidaySettingsScreen
 import com.lingion.sleepy.ui.screen.mine.ExportScreen
 import com.lingion.sleepy.ui.screen.mine.ReminderScreen
 import com.lingion.sleepy.ui.screen.mine.AboutScreen
-import com.lingion.sleepy.ui.screen.mine.LicenseScreen
 import com.lingion.sleepy.data.CustomThemeStore
 import com.lingion.sleepy.ui.screen.schedule.ScheduleScreen
 import com.lingion.sleepy.ui.screen.today.TodayScreen
