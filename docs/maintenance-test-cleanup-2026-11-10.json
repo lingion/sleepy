@@ -1,0 +1,1575 @@
+{
+  "baseline": "77b878fd5c8903a3f201ea938b3b152de4c4fbc0",
+  "counts": {
+    "jvm_test_methods_before": 4699,
+    "jvm_test_methods_after": 4071,
+    "jvm_test_methods_removed_net": 628,
+    "deleted_jvm_test_files": 88,
+    "go_test_functions_before": 44,
+    "go_test_functions_after": 39,
+    "go_test_functions_removed_net": 5,
+    "deleted_go_test_files": 2,
+    "deleted_python_documentation_tests": 12
+  },
+  "reviewed_changes": [
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/AboutLicenseAttributionTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "new source batches bind all fifty exact repositories to their own evidence",
+        "source record matcher rejects borrowed evidence partial identities and duplicate records",
+        "cross-repository references bind each project to its own license",
+        "all released locales list foundational attributions",
+        "all released locales list per-school attributions",
+        "contributor section header present in all released locales",
+        "license screen lists code contributors with pr tokens",
+        "contributor entry links github profile instead of enumerating",
+        "license expansion uses the shared enter and exit animations",
+        "attribution coverage summary"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/BackRestoreSaveableContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "every_overlay_route_is_registered_as_a_navhost_destination",
+        "addCourse_route_is_deliberately_outside_any_saveable_scope",
+        "editing_course_session_is_not_persisted",
+        "restore_guard_pops_add_course_when_session_is_gone",
+        "mainTabs_wraps_each_tab_content_in_SaveableStateProvider",
+        "generalSettingsScreen_language_uses_glass_language_menu",
+        "jwImportActivity_stage_branches_use_SaveableStateProvider",
+        "schoolSelectScreen_query_uses_rememberSaveable",
+        "schoolRow_badge_and_spacer_share_fate"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/DisplayModeDefaultTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "display_mode key literal is stable",
+        "factory default is time not node",
+        "widget renderers read prefs directly not a stale default"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/EditCourseSlotSummaryContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "slot header uses the live two-line summary",
+        "summary covers calendar range and every timing mode",
+        "teacher and room appear only when filled"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/MainTabsTransitionContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "mainTabs_animates_content_switching_via_AnimatedContent_on_currentTab",
+        "mainTabs_uses_sleepyContent_factories_captured_before_the_spec_lambda",
+        "mainTabs_content_transform_disables_size_clipping_for_oversized_pages",
+        "main_tabs_host_has_no_raw_tween_or_spring_specs",
+        "saveable_state_provider_shape_survives_the_AnimatedContent_wrap"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/NavHostMigrationContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "period_table_editor_never_reintroduces_period_table_binding_tab",
+        "editTable_route_backHandler_drops_pending_table_via_discardNewTable",
+        "editTable_pending_is_local_rememberSaveable_not_route_arg",
+        "periodTableEdit_route_backHandler_drops_pending_period_via_discardNewPeriodTable",
+        "editTable_local_backHandler_registers_after_onBack_navigation_chain",
+        "nav_transforms_delegate_to_shared_content_factories",
+        "pop_transform_reverses_none_and_slide_stays_banned",
+        "content_enter_is_opaque_scale_only_to_prevent_ghosting",
+        "nav_display_sits_on_opaque_backdrop_for_scale_transitions",
+        "mirrored_scale_lives_in_shared_factory_not_nav_literals",
+        "nav_files_have_no_hardcoded_tween_or_spring",
+        "manifest_predictive_back_is_enabled_for_lab_preview",
+        "splash_theme_uses_AndroidXSplashScreen_parent_with_postSplashScreenTheme_switch",
+        "runtime_theme_has_no_logo_windowBackground_drawable",
+        "no_oneShotPreDraw_windowBackground_downgrade_in_MainActivity",
+        "splash_background_drawable_is_deleted",
+        "night_adjusted_theme_split_shares_attributes_in_middle_layer",
+        "navigator_push_does_not_use_popUpTo_so_layers_stack",
+        "navigator_popToMain_clears_back_stack_to_main",
+        "navigator_open_methods_only_use_routes_constants_no_string_literals",
+        "no_id_sentinel_is_NO_ID_constant_only_no_adhoc_minus_one",
+        "manifest_enables_predictive_back_app_wide",
+        "old_in_house_overlay_stack_is_fully_retired_from_MainActivity",
+        "appRoot_delegates_to_SleepyNavHost_no_inline_overlay_branches",
+        "every_routes_constant_has_a_composable_destination",
+        "mainRoute_uses_official_nav_where_official_exists_and_keeps_self_dock",
+        "mainRoute_wide_layout_uses_safeDrawing_and_consumeWindowInsets"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ReminderPreviewContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "preview loads current schedule and keeps generic fallback",
+        "preview filters courses using the same date and week semantics as notifications",
+        "preview localizes actual dates and course details"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/StringsKeyParityTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "privacy_policy_keys_present_in_all_six_locales",
+        "jw_import_report_keys_present_in_all_six_locales",
+        "removed_badge_key_stays_deleted_in_all_six_locales",
+        "reminder_date_rules_keys_present_in_all_six_locales",
+        "all_six_locale_dirs_exist",
+        "mixed_duration_keys_present_in_all_six_locales",
+        "schedule_conflict_keys_present_in_all_six_locales",
+        "period_table_keys_present_in_all_six_locales",
+        "removed_reminder_keys_stay_deleted_in_all_six_locales",
+        "widget_redesign_keys_present_in_all_six_locales",
+        "all_six_strings_files_are_readable_and_non_empty",
+        "custom_theme_keys_present_in_all_six_locales",
+        "parity_helper_finds_key_occurrences_consistently"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/TabletMasterDetailContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "wide_screen_has_two_pane_layout",
+        "portrait_tablet_falls_back_to_single_pane",
+        "today_pane_exported_for_tablet_use",
+        "panes_have_dark_gap",
+        "schedule_pane_in_rounded_card",
+        "compact_phone_branches_untouched",
+        "rail_has_only_one_active_combined_capsule",
+        "left_half_is_permanent_schedule",
+        "right_half_animated_content",
+        "no_label_on_combined_capsule",
+        "deleted_legacy_anchors",
+        "update_dot_visible_when_mine_in_combined_capsule"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ThemeFollowSystemContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "dark_state_is_keyed_on_systemDark",
+        "dark_rederivation_reads_current_systemDark",
+        "systemDark_is_driven_by_configuration_change_state",
+        "jwImportActivity_follows_same_contract",
+        "manual_mode_switch_path_is_preserved",
+        "mainActivity_handles_uiMode_itself"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ThemeUnificationContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "compose_ui_layer_has_zero_sleepyTheme_colors_references",
+        "compose_ui_layer_has_zero_WakeUpColorScheme_type_references",
+        "compose_ui_layer_has_zero_LocalWakeUpColors_references",
+        "compose_ui_layer_uses_MaterialTheme_colorScheme_instead",
+        "test_sources_have_zero_sleepyTheme_colors_references",
+        "Theme_kt_constructs_m3Scheme_and_feeds_ExpressiveTheme"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/TomorrowReminderWiringContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "previous evening receiver targets tomorrow through shared summary path",
+        "both reminder types publish a no course summary",
+        "tomorrow reminder keeps an independent alarm and notification id",
+        "daily master gates both sub-reminders while old same-day behavior remains enabled"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/WidgetRenameStringsContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "entry and title carry add-or-manage wording in all 6 locales",
+        "no locale retains the old manage-only entry string",
+        "new keys exist in all 6 locales",
+        "mine widget entry label is widget word in all locales"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/data/HydrationConsistencyContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "schedule_grid_uses_hydrated_table_for_time_slots",
+        "add_course_time_domain_uses_hydrated_table",
+        "edit_table_persists_updated_metadata_in_all_save_routes",
+        "import_time_domain_preserves_bound_owner_and_freezes_backup"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/data/jw/HfutEams5DatumChainContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "v2 chain fetches info page for bizTypeId",
+        "v2 chain fetches get-data with bizTypeId and dataId",
+        "v2 chain reads lessonIds from get-data response",
+        "studentId falls back to redirect final url info path",
+        "v2 datum body carries lessonIds and numeric studentId",
+        "v2 chain keeps v1 empty-lessonIds fallback for other schools",
+        "v3 chain extracts selected semester option before get-data",
+        "v2 datum error message keeps original prefix"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/data/jw/HfutPortalEams5WebViewContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "EAMS5_FETCH_JS rejects portal host one dot hfut",
+        "EAMS5_FETCH_JS portal rejection message mentions jxglstu",
+        "EAMS5_FETCH_JS keeps existing host guards",
+        "EAMS5_FETCH_JS keeps specific login failure messages",
+        "EAMS5_FETCH_JS fetches timetable layout and merges courseUnitList",
+        "JVM and WebView studentId regex literals are character identical"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/data/jw/NbccClassicEamsWebViewContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "JS 与 Kotlin 五条 pattern 逐字符一致",
+        "JS 与 Kotlin 登录态判据 pattern 逐字符一致",
+        "JS 内含 §4 字面量三件套与 endpoint 与模板前缀",
+        "JS 形态B 零凭据接触与回调通道复用",
+        "常量文件与 JS 同存 CaptureBar 分支与桌面UA初值落点"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/data/repository/PeriodConflictBoundTablesContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "dao_getAllBoundTo_filters_time_tables_by_periodTableId",
+        "repo_getTablesBoundTo_delegates_to_tableDao_getAllBoundTo",
+        "legacy_boundTableIds_is_not_repurposed_for_full_entities",
+        "repo_does_not_invent_new_dao_for_bound_query"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/data/undo/LabUndoDepthContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "lab row wires string resource, prefs write and manager apply",
+        "undo mode exposes off limited and unlimited without magic number entry",
+        "limited undo depth rejects empty zero and malformed input",
+        "cold start applies persisted undo depth",
+        "all six locales carry the undo depth strings",
+        "lab segment references the title exactly once"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/data/undo/UndoCaptureCoverageTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "listed repository write methods capture undo snapshots"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/ExpandChevronMotionContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "all_expand_sites_consume_sleepy_expand_specs",
+        "no_bare_expand_literals_remain_anywhere",
+        "all_collapse_chevrons_animate_rotation",
+        "language_popup_preserves_preference_wiring_and_reference_spring",
+        "collapse_content_never_mounted_via_if"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/HueSliderGhostContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "hue_slider_signature_has_optional_initial_hue",
+        "ghost_reuses_shared_predicate_with_half_degree_epsilon",
+        "both_call_sites_pass_initial_hue_baseline"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/LiquidGlassButtonScopeContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "operation_button_files_route_through_glass_wrappers",
+        "wide_navigation_entries_stay_flat",
+        "alphabet_index_bar_has_no_glass",
+        "segmented_switcher_uses_a_sibling_source_and_draws_lens_last",
+        "liquid_sliders_use_the_custom_track_and_shared_oval",
+        "switch_lens_sampling_is_centered_on_the_resting_track",
+        "glass_switch_preserves_shared_sampling_while_its_measured_lens_deforms"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/PeriodHeaderHideTimeContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "cell_content_guards_legacy_time_string_behind_hideTime",
+        "legacy_width_helper_shrinks_when_time_row_hidden",
+        "grid_listens_for_hide_time_pref_changes"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/StateSwapMotionContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "display_mode_option_colors_animate_with_fast_effects",
+        "display_mode_option_check_mounts_via_popup_family",
+        "combined_rail_item_colors_animate_with_fast_effects",
+        "rail_structure_anchors_survive"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/TimeSlotEditorMotionContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "editor_has_no_raw_tween_or_spring_specs",
+        "drag_settles_and_returns_use_motion_scheme_specs",
+        "row_host_reflows_with_animate_content_size",
+        "rows_enter_via_animated_visibility_expand_family",
+        "drag_state_swaps_are_animated",
+        "drag_race_guard_and_restart_keys_survive"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/WeekStripEqualHeightContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "natural_height_must_be_measured_under_relaxed_max_constraints",
+        "week_strip_forbids_intrinsic_and_report_ratchet"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassDockFallbackContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "nav_bar_does_not_use_bare_isSystemInDarkTheme",
+        "provider_supplies_LocalDarkTheme",
+        "layer1_dock_capsule_has_unconditional_background",
+        "destination_transform_implements_edge_stretch_fallback",
+        "effect_fallback_applies_standard_style_for_blur"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/edit/OccurrenceNodeSliderContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "save_validation_chain_untouched",
+        "custom_time_fields_intact",
+        "fallback_branch_keeps_both_label_resources",
+        "ghost_baseline_recomputes_on_course_reopen",
+        "domain_guard_matches_add_course_parity"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/imports/ImportPeriodTableCreationContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "newImportsUseConfirmedScheduleAndAtomicRepositoryOperation",
+        "academicImportsUseSharedNewTableFlowAndKeepWarningsOnBothPaths",
+        "newImportTransactionIncludesAllRowsBeforeRefresh",
+        "appendValidatesAcceptedCoursesBeforeUndoOrWritesAndKeepsSharedSchedule"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/imports/JwCaptureDumpContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "cqu_fetch_script_is_wrapped_as_executable_iife",
+        "dump_creates_zip_with_five_files",
+        "dump_uses_media_store_downloads_path",
+        "dump_includes_frame_html_files",
+        "dump_includes_dom_inventory",
+        "dump_triggers_share_intent_after_save",
+        "dump_no_redaction_1b",
+        "dump_summary_includes_capture_result_fields",
+        "dump_matches_desktop_collector_parity",
+        "export_flow_grabs_cookies_storage_links",
+        "install_js_instruments_iframes_repeatedly",
+        "export_js_serializes_week_replay_chained_promises",
+        "invoke_on_cancellation_dispatches_webview_calls_to_main",
+        "download_listener_persists_file_bytes_to_4_downloads",
+        "download_listener_uses_bounded_executor",
+        "download_listener_records_one_entry_per_download",
+        "writeNetworkLive_unwraps_double_quoted_eval_result"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/imports/JwChaoxingWebViewContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "chaoxingWebView_dispatch_selects_a_dedicated_fetch_branch",
+        "chaoxingFetchJs_admin_prefix_matches_both_slash_and_no_slash",
+        "chaoxingFetchJs_falls_back_to_sdpkkbList_when_queryKbForGrdb_returns_html",
+        "chaoxingFetchJs_sdpkkbList_includes_xhid_parameter"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/imports/JwDiagnosticSessionContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "diagnostic_session_records_network_requests",
+        "diagnostic_session_records_console_messages",
+        "diagnostic_session_has_ring_buffer_limit_500",
+        "diagnostic_session_exports_netlog_text",
+        "diagnostic_session_exports_console_text",
+        "diagnostic_session_thread_safe"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/imports/JwErrorDialogContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "error_rendering_uses_alert_dialog_not_card",
+        "export_progress_expands_inside_error_dialog_below_action_buttons",
+        "error_dialog_has_dismiss_and_export_buttons",
+        "export_button_wires_dom_inventory_capture_dump_share_chain",
+        "status_message_uses_auto_dismissing_snackbar_lifecycle",
+        "export_runs_off_main_thread",
+        "export_reports_atomic_stage_progress_not_black_box"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/imports/JwNeuWebViewContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "neuWebView_dispatch_selects_a_dedicated_fetch_branch",
+        "neuFetchJs_targets_schedule_detail_endpoint_with_session_credentials"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/imports/JwQzAppWebViewContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "qzAppWebView_dispatch_selects_a_dedicated_fetch_branch",
+        "qzAppFetchJs_discovers_ApiUrl_via_serverconfig_and_posts_curriculum"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/imports/JwUnverifiedReportLoopContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "unverified school no longer renders a status badge in the list",
+        "unverified school keeps the pre-entry confirmation dialog",
+        "import success for unverified routes through the report dialog",
+        "copy report and join qq keep disjoint clipboard paths"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/imports/JwUrlBarContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "builder_forwards_navigation_url_without_reading_webViewUrl",
+        "screen_keeps_url_draft_separate_from_live_navigation_url",
+        "screen_submits_only_http_or_https_urls",
+        "screen_seeds_edit_draft_from_live_url_and_exits_edit_before_back",
+        "screen_hides_secondary_actions_while_editing_to_preserve_url_field_width",
+        "screen_uses_state_text_field_with_scrollable_single_line"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/imports/JwWebViewCallbackThreadAffinenessTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "shouldInterceptRequest_doesNotCallViewSettings",
+        "shouldInterceptRequest_doesNotCallViewUrl",
+        "onReceivedSslError_doesNotCallViewUrl",
+        "onReceivedSslError_doesNotCallViewSettings",
+        "doUpdateVisitedHistory_doesNotReadViewUrl",
+        "doUpdateVisitedHistory_doesNotReadViewSettings"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/imports/JwWiseduWebViewContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "wiseduFetch_reports_403_before_parsing_html_as_json",
+        "wiseduFetch_checks_both_entry_and_term_api_responses",
+        "seu_root_portal_uses_shared_wisedu_capture_and_checks_schedule_response"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/imports/JwYethanWebViewContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "yethanWebView_dispatch_selects_a_dedicated_fetch_branch",
+        "yethanFetchJs_reads_ytoken_from_cookie_first",
+        "yethanFetchJs_does_not_abort_when_token_missing",
+        "yethanFetchJs_distinguishes_wechat_qr_page_from_password_page",
+        "yethanFetchJs_still_targets_schedule_and_common_config",
+        "yethanFetchJs_routes_expired_codes_separately_from_login_hint",
+        "yethanFetchJs_hasSwjtuFallbackPeriods_with13Nodes",
+        "yethanConfig_is_consumed_into_periods_and_termStartDate"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/imports/SepXrwStripInterceptorContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "screen_mustDelegateToBuilderNotInlineNew",
+        "builder_mustWireSslBypassRegistry",
+        "builder_mustAssembleSepInterceptorForUcasDomain",
+        "builder_capturesUserAgentOnMainThread",
+        "interface_mustExposeHandlesAndHandle",
+        "context_mustCarryUserAgentAndCookieManager",
+        "interceptor_gateOnlySepHost",
+        "interceptor_stripsXrwAndAcceptEncoding",
+        "interceptor_manualRedirectsWithCookieSync",
+        "interceptor_leaveHostRedirectForTicketJumps",
+        "interceptor_postPassthroughLockedByUnitTests",
+        "desktopViewport_jsMustBeDeclaredInScreenFile",
+        "desktopViewport_builderMustPassDesktopModeToClient",
+        "desktopViewport_injectionGatedOnDesktopModeOnly"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/mine/AppearanceUiConsistencyContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "uniform_color_remains_a_fourth_exclusive_choice",
+        "appearance_screen_has_no_radio_button",
+        "appearance_screen_uses_shared_hue_slider_not_raw_slider",
+        "theme_mode_tab_no_handrolled_selected_box",
+        "track_switcher_used_for_both_segmented_controls",
+        "recalc_button_follows_sleepy_button_convention",
+        "hue_slider_supports_commit_on_drag_stop"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/mine/DisplaySliderGhostContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "six_page_entry_baselines_are_captured_once",
+        "display_slider_consumes_shared_ghost_pieces",
+        "liquid_glass_display_slider_uses_capsule_thumb_geometry_for_ghost_position",
+        "setters_appear_only_in_on_finished_not_in_drag_path",
+        "epsilon_locked_to_half_step_per_site"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/mine/EditSyncWiringContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "EditTableScreen draft sync no longer gated on bound period table",
+        "PeriodTableEditScreen backfills smartConfig when manual rows change"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/mine/ExportScreenEmptyStateContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "empty state requires both course tables and period tables to be absent",
+        "page body renders when period tables exist without course tables",
+        "no stray early return keeps period-only users out of the page"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/mine/HeaderHangingGhostContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "page_entry_baseline_captured_before_state",
+        "consumes_shared_ghost_pieces_with_domain_frac",
+        "setter_only_in_on_value_change_finished"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/mine/HolidaySettingsContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "screen_readsAndWrites_mappings_per_table",
+        "dropdown_uses_material3_exposed_dropdown",
+        "dropdown_menu_has_no_blank_placeholder_row",
+        "menu_container_follows_cell_color_and_corner",
+        "dropdown_lists_all_workdays_then_none_then_other",
+        "workday_candidates_never_filtered_or_disabled",
+        "no_in_place_inline_expansion_or_custom_popup",
+        "segment_editing_follows_mapping_in_date_management",
+        "add_button_at_bottom_for_custom_segments",
+        "orphan_entries_rendered_with_hint_not_deleted",
+        "mutual_exclusion_enforced_in_prefs_not_ui",
+        "table_switcher_bound_to_activeTableId_not_selectTable",
+        "screen_blocks_mapping_without_a_table",
+        "main_activity_passes_current_table_id"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/mine/MineWidgetEntryContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "widget entry is immediately adjacent after general entry in MineScreen",
+        "mine screen declares onOpenWidgetSettings parameter",
+        "general screen no longer hosts widget section",
+        "widget settings screen hosts the migrated section",
+        "routes navigator and navhost wire WidgetSettings entry"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/mine/ReminderExperimentalTagContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "fluid notification row keeps experimental tag in reminders screen"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/mine/ReminderReliabilityCardContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "status rows stay tight - no fixed vertical padding reintroduced",
+        "clickable status rows keep full-width tap targets",
+        "status rows must carry no glass optical material",
+        "widget note renders right after widget status row"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/mine/ReminderScreenContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "date_rule_screen_reads_all_preferences_and_persists_each_change",
+        "screen_exposes_advanced_holiday_callback_and_nav_host_wires_it",
+        "date_rule_copy_names_all_four_consumers"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/mine/ScheduleConflictFlowContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "conflict_sheet_is_a_modal_bottom_sheet_with_three_options",
+        "pending_banner_only_renders_when_policy_not_none",
+        "save_button_branches_through_three_invariants",
+        "execute_policy_uses_main_branch_primitives_only",
+        "cancel_restores_original_draft_and_clears_policy",
+        "re_edit_invalidates_pending_policy_invariant_five",
+        "repo_get_tables_bound_to_continues_to_back_dialog_count",
+        "schedule_undo_batch_atomics_all_three_policies"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/mine/WidgetRefreshRelocationContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "mine screen no longer hosts refresh widgets button",
+        "widget settings screen hosts conditional refresh button",
+        "refresh button follows management and all preferences",
+        "widget settings bottom padding respects nav dock overlay"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/schedule/EmptyStateFirstTableContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "empty state second button routes to table creation flow not AddCourse",
+        "main activity wires empty state create-table callback to EditTable flow",
+        "empty state strings use dedicated keys present in all six locales",
+        "empty state strings must not reuse add-course semantics",
+        "empty state import opens add table route"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/schedule/MineNavRedoCourseListContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "current table summary edits current table and only view all opens AllTables",
+        "management page declares onOpenAllTables parameter",
+        "mine screen StatsCard wires tables courses and period tables callbacks",
+        "mine screen declares onOpenCourseList parameter",
+        "StatItem overload supports onClick nullable",
+        "schedule screen undo redo capsule is paired via single component",
+        "schedule screen TopBar mounts capsule only when undo or redo exists",
+        "schedule screen TopBar signature includes onRedo",
+        "UndoRedoCapsule preserves its default stadium and scales with the side actions",
+        "noRippleClickable supports enabled overload for capsule disabled halves",
+        "routes declare CourseList data object",
+        "navigator exposes openCourseList",
+        "course list screen groups by courseName with empty-name fallback",
+        "course list screen groups locations inside each course card",
+        "week view filters empty days in single-column detail panel",
+        "course list screen renders empty state with course_list_empty",
+        "adding a slot reuses the previous slot teacher and room",
+        "six locales contain redo and course list strings",
+        "table_info string relabeled to arrangement count in CN zh-rCN and zh-rTW"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/schedule/ScheduleHeaderWeekOnlyContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "header never renders nearest busy day text",
+        "header text does not branch on week display status",
+        "header always renders week number via schedule_current_week"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/schedule/ScheduleMotionContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "programmatic_week_jump_animates",
+        "undo_redo_capsule_mounts_via_popup_family",
+        "badge_dots_swing_via_popup_family_in_both_variants",
+        "slider_ghost_swings_via_popup_family"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/schedule/SchedulePagerSyncRaceContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "sync_guard_sets_syncing_true_before_scroll",
+        "sync_guard_resets_syncing_false_in_finally",
+        "pager_current_page_effect_checks_sync_guard"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/schedule/ScheduleReturnRestoreRaceContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "pager_current_page_effect_must_use_restore_gate",
+        "selected_week_scroll_keeps_sync_guard"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/schedule/ScheduleViewModeSessionContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "scheduleScreen_does_not_initialize_viewMode_from_AppPrefs",
+        "scheduleScreen_receives_viewMode_via_injected_parameters",
+        "scheduleScreen_does_not_own_local_viewMode_state",
+        "viewMode_enum_is_visible_outside_ScheduleScreen_file",
+        "mainActivity_AppRoot_holds_session_level_viewMode_state",
+        "mainActivity_passes_viewMode_through_every_MainTabs_call_site",
+        "mainActivity_scheduleTab_wires_injected_state_into_ScheduleScreen",
+        "session_switch_never_persists_to_AppPrefs"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/theme/CustomThemeCardVisualParityTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "edit_stays_after_swatches_in_first_row",
+        "edit_uses_shared_glass_disc_and_keeps_classic_container_color",
+        "preset_and_custom_keep_matching_rows_and_spacing"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/theme/CustomThemeSaveAppliesImmediatelyTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "onSaved_writes_theme_key_so_provider_recomposes",
+        "same_id_custom_theme_edit_invalidates_provider",
+        "onSaved_refreshes_widgets_unconditionally"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/theme/CustomThemeUiContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "resolveSchemePublic_has_custom_branch",
+        "widget_custom_branch_uses_shared_deriver",
+        "theme_provider_has_custom_branch_with_same_deriver",
+        "appearance_screen_has_new_theme_card_and_custom_theme_card",
+        "theme_grid_orders_plus_sign_last",
+        "custom_card_selection_uses_prefixed_key",
+        "deleting_active_custom_theme_falls_back_to_default",
+        "editor_delete_button_is_color_block_no_border",
+        "editor_reuses_public_color_picker"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/theme/ThemeSwitchMotionContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "provider_wires_transitioning_scheme",
+        "wrapper_animates_every_color_slot_with_effects_spec",
+        "whole_tree_crossfade_stays_ruled_out",
+        "course_palette_switch_stays_instant_ruling"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/util/ClockContractScanTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "noBareDateOrTimeNow_callsRemain"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/util/HolidayReminderPolicyAdapterTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "adapter reads reminder preferences rather than grey holiday preferences",
+        "adapter reads effective entries merged by manager without merging twice",
+        "adapter scopes transfer lookup to the supplied table id"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/util/LongBreakGeometryWiringContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "uniform_weights_are_folded_even_without_placeholder_rows",
+        "yOfRows_reads_boundary_table_and_cards_read_natural_table",
+        "conflict_card_heights_thread_content_span"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/util/ReminderPreferenceContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "reminder date preferences are independent from grey holiday preferences",
+        "each getter uses its own key and default",
+        "each setter body contains only its matching persistent write",
+        "master setter cannot reset child preferences"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/HolidayTransferWidgetContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "all_consumers_use_shared_courseDayForDate"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/ScrollStripWholeImageTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "row layout uses fixed dp fallback never wrap_content",
+        "factory pins whole-image row height explicitly on API31 plus",
+        "nav scroll layout removed in v4 pager architecture",
+        "non-nav scroll layouts keep shell contract untouched",
+        "pushScrollable shell bitmap is nullable",
+        "today nav overflow uses twoday-identical shell plus strip with bar row",
+        "overflow scroll layer is twoday-identical unbarred frame",
+        "nav layouts label every element including spacers and root"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/TodayDateNavHeaderWiringTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "static shell draws date title inside bitmap",
+        "stack machinery fully removed",
+        "buttonless faces never draw the back-to-today text",
+        "ScrollStripService plumbs emptyHeader flag through",
+        "computeSizeDp passes orientation hint from min width and height",
+        "renderer nav triangle is low-contrast and glyph-free",
+        "renderer nav refresh matches triangle style and pushes as image bitmap",
+        "configure activity declares empty taskAffinity and delayed auto-finish"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/WeekViewScrollableWiringTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "weekview push gates on content height and falls back to scrollable",
+        "strip factory handles weekview scope with full-content render",
+        "weekview content height is the single source of truth"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/WidgetBitmapLifecycleTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "RemoteViewsWidgetHelper renderAndPush does not recycle after updateAppWidget",
+        "WeekGridWidgetProvider renderWidget does not recycle after updateAppWidget",
+        "recycle guard comments are preserved in render sources"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/WidgetScrollToggleTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "app prefs ships scroll disabled by default",
+        "all four push sites read the per-widget toggle",
+        "all receivers clear per-widget scroll on delete",
+        "edit section hides for weekgrid family and confirms before enabling",
+        "toggle flip triggers full widget re-push"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/WidgetSection9FixesTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "dead compact renderers stay deleted",
+        "generation gate wired in twoday weeklist weekview",
+        "weekgrid size parsing delegates to computeSizeDp",
+        "weeklist gate measures compact face for small variant",
+        "weekview gate caliber split face vs strip",
+        "weekview content height honors course cap"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/notification/BootReceiverRecoveryContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "boot receiver reschedules notifications after boot and package replacement",
+        "boot recovery is gated by the master reminder switch",
+        "manifest exposes only the persistent recovery broadcasts"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/notification/FluidCastGateContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "all green casts immediately",
+        "promoted ongoing denied blocks silent cast",
+        "settings required state blocks silent cast",
+        "notification denied blocks cast",
+        "unknown vendor state does not block",
+        "service marks state stopped on every self-stop path",
+        "screen derives cast state from service liveness not notification presence",
+        "action test posts reinforcement after first post",
+        "gate probes live state not cached snapshot"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/notification/FluidCloudSelectedTableContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "testResolverPrefersCurrentSelectedTable",
+        "testScheduleViewModelSelectTableAlignsFluidCloud",
+        "testCourseNotificationSchedulerFluidCloudOnlyCurrentTable",
+        "testImportNewTableDoesNotHijackDefaultWhenTablesExist"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/notification/FluidCloudServiceActionStopContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "ACTION_STOP_constant_is_declared_with_exact_value",
+        "ACTION_STOP_compiles_and_exposes_distinct_value",
+        "onStartCommand_branches_on_ACTION_STOP_before_first_return",
+        "ACTION_STOP_branch_cancels_notification_and_stops_service"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/notification/HolidayReminderConsumerTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "before_class_window_uses_policy_and_keeps_effective_weekday",
+        "daily_summary_returns_before_building_empty_notification",
+        "all_four_consumers_use_the_shared_policy_without_legacy_cache_checks",
+        "unavailable_policy_data_is_allowed_conservatively",
+        "before_class_data_source_keeps_legacy_fake_compatibility",
+        "stale_before_class_alarm_is_suppressed_without_a_resolved_table",
+        "fluid_cloud_reconciliation_stops_when_no_active_window_can_start",
+        "dnd_rebuild_restores_owned_state_when_no_current_class_interval_remains"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/notification/ReminderRefreshContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "refresh_action_reconciles_scheduler_dnd_and_fluid_cloud",
+        "fluid_cloud_has_explicit_stop_action_and_cleanup",
+        "fluid_cloud_creates_notification_channels_before_starting_foreground",
+        "dnd_exposes_refresh_reconciliation_entry_point",
+        "rescheduler_keeps_debounced_single_action"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/notification/VendorLiveCardRendererColorOsContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "coloros branch covers oppo oneplus and realme",
+        "coloros card keeps progress style for the countdown bar",
+        "coloros card shows countdown subtext and middot-joined detail",
+        "coloros capsule follows the user primary-field setting",
+        "coloros small icon is the countdown progress ring",
+        "fluid primary pref accepts the countdown value"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/notification/VendorLiveCardRendererExtrasTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "xiaomi keeps the v1056 promoted ongoing path free of vendor extras",
+        "vivo extras use notification superx envelope",
+        "meizu extras use notification live capsule keys",
+        "huawei honor and oppo oneplus realme do not fabricate SDK calls"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/notification/VendorLiveCardRendererFixContractTest.kt",
+      "deleted_file": true,
+      "reason": "Tests source spelling, removed UI, duplicated lint checks or a test-local copy of production logic.",
+      "removed_tests": [
+        "flyme live state permission is declared in manifest",
+        "xiaomi matches v1056 and carries no private focus extras",
+        "support suppress lint lives where hidden apis are actually called",
+        "renderer keeps promoted ongoing Android 16 path",
+        "flyme live-state permission is declared for meizu capability probe",
+        "vivo operation covers create update and end",
+        "vivo registers clickResp as PendingIntent bundle",
+        "vivo progress uses infos progress not baseInfos progress",
+        "vivo shortInfos includes icon and imageClickResp",
+        "vivo atomic island bundle carries templates and progress",
+        "meizu capsule forces opaque background before luminance",
+        "vivo_expanded_template_and_documented_capsule_fallback",
+        "vivo island rightInfo carries progress color",
+        "vivo renderer early-returns when scene registration fails",
+        "vivo island progress content stays short",
+        "samsung extras use a plain set without merge fallback",
+        "meizu capsule icon and colors are sent"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/IntRangeSliderVerticalDragTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source scans and their loaders; kept production behavior tests.",
+      "removed_tests": [
+        "freeze_locks_page_on_main_pass_and_filters_y_on_initial_pass"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/FloatLayerMotionContractTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source scans and their loaders; kept production behavior tests.",
+      "removed_tests": [
+        "springFloatBack_defers_position_to_animatable_spring",
+        "float_layer_uses_animated_visibility_and_popup_family",
+        "grid_blur_radius_is_animated_not_switched",
+        "blur_clips_the_full_surface_before_padding_and_scrolling",
+        "float_layer_test_tags_survive_the_transitions",
+        "float_layer_has_no_raw_tween_or_spring_specs"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/imports/JwFetchBudgetTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source scans and their loaders; kept production behavior tests.",
+      "removed_tests": [
+        "new ZF dispatch enters the scoped capture lifecycle"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/WidgetGalleryContractTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source scans and their loaders; kept production behavior tests.",
+      "removed_tests": [
+        "gallery screen renders the registry, never a hardcoded list",
+        "requestPinAppWidget lives in exactly one UI-path helper",
+        "pin helper has supported precheck and failure result",
+        "gallery screen pins via the single helper only",
+        "management screen has plus action routing to gallery",
+        "gallery route wired through navigator and navhost",
+        "management screen reloads placed list on resume"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/TodayDataLifecycleContractTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source scans and their loaders; kept production behavior tests.",
+      "removed_tests": [
+        "nav store shift is synchronized read-modify-write",
+        "nav store remove shares the same write lock",
+        "resolveCurrentTable materializes each course list at most once",
+        "WidgetUpdater arms a midnight one-shot refresh chain",
+        "loadDataSync computes now once and threads it through",
+        "loadDataForDate no longer calls now internally"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/schedule/HolidayTransferScheduleContractTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source scans and their loaders; kept production behavior tests.",
+      "removed_tests": [
+        "today_uses_courseDayFor",
+        "schedule_vm_uses_courseDayForDate",
+        "schedule_vm_keeps_forward_lookup_for_daySwap",
+        "transfers_are_loaded_per_tableId",
+        "schedule_screen_rewrites_render_day_from_mapping"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/WidgetCompactWindowOrderTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source scans and their loaders; kept production behavior tests.",
+      "removed_tests": [
+        "compact render branches delegate column order to keepDateOrder true"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/TodayOverflowScrollParityTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source scans and their loaders; kept production behavior tests.",
+      "removed_tests": [
+        "today nav overflow shell renders full content height not widget container",
+        "overflow scroll parity shell and strip share same renderToday size parameter",
+        "renderTodayRegular is a single-shot full-content renderer no paging window",
+        "paging geometry is deleted no pageOffsets no MAX_PAGES",
+        "strip is a single full-content bitmap not a row-by-row list"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/edit/IrregularOptionsCollapseTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source-text assertions; retained tests invoking production behavior.",
+      "removed_tests": [
+        "section_composable_exists_with_expand_collapse_affordance",
+        "both_irregular_switches_live_inside_section",
+        "standard_node_fields_stay_outside_section",
+        "no_border_stroke_or_outlined_button_in_editor",
+        "section_strings_present_in_all_six_locales"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/BottomBarFitTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source-text assertions; retained tests invoking production behavior.",
+      "removed_tests": [
+        "nav static layout declares bottom bar with capsule and buttons",
+        "compact layout keeps capsule and shrinks buttons",
+        "capsule is non-clickable in both bar layouts",
+        "old topbar machinery fully removed",
+        "push wiring carries bottom bar and fill-to-max budget",
+        "scroll branch forces back to today when controls gone",
+        "capsule renderer is themed pill with text"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/TodayOverflowGeometryTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source-text assertions; retained tests invoking production behavior.",
+      "removed_tests": [
+        "today content height derives from shared row geometry",
+        "today row geometry is pure and mirror free",
+        "strip factory renders single full-content bitmap not row items",
+        "scroll strip service consumes shared row geometry",
+        "getViewAt and getCount snapshot strips and never throw on binder thread",
+        "onDataSetChanged wraps binder entry in try catch with safe fallback",
+        "generation gate is two-stage around single full-content render",
+        "nav overflow branch is byte-identical to non-nav overflow pattern",
+        "strip long bitmap keeps header param parity with shell",
+        "strip row layout documents pre-API31 degradation",
+        "all strip list views disable overscroll stretch",
+        "渲染器行几何必须与 TodayRowGeometry 逐字同源",
+        "today pipeline threads timeJson through window geometry and strip"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/data/jw/NankaiClassicEamsWebViewContractTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source-text assertions; retained tests invoking production behavior.",
+      "removed_tests": [
+        "南开 host 判据与 entry 路径跨语言逐字符一致",
+        "自动动线行为面 — host 闸 登录302判 离页解析 scope复用",
+        "南开新增段形态B 零凭据接触复检"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/data/jw/JwBjtuParserTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source-text assertions; retained tests invoking production behavior.",
+      "removed_tests": [
+        "kotlin regex sources equal js regexp literals char by char"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/data/jw/JwWhutParserTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source-text assertions; retained tests invoking production behavior.",
+      "removed_tests": [
+        "WHUT fetch JS must switch to bachelor appRole first"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/imports/ImportDraftWiringContractTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source-text assertions; retained tests invoking production behavior.",
+      "removed_tests": [
+        "new table and course routes have distinct import targets without draft UI",
+        "new academic imports go directly to configuration and do not save drafts",
+        "new table confirmation cannot replace an existing table",
+        "ImportConfirmDialog seeds smartConfig from imported rows via shared inference",
+        "JwImportActivity seeds draft restoration and fresh parse via shared inference",
+        "keeping a draft creates one when leaving before courses are parsed"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/WidgetPreviewFacesContractTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source-text assertions; retained tests invoking production behavior.",
+      "removed_tests": [
+        "every preview png exists in both drawable dirs byte-identical matches declared aspect and min density"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/PeriodHeaderLayoutContractTest.kt",
+      "deleted_file": true,
+      "reason": "Source spelling and constant checks do not exercise preference persistence.",
+      "removed_tests": [
+        "persistence_contract_exposes_only_legacy_and_three_line",
+        "app_and_widget_use_the_same_global_layout_key"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/EdgePagingContractTest.kt",
+      "deleted_file": false,
+      "reason": "Kept edge-direction behavior; removed duplicate drag wiring and animation spelling checks.",
+      "removed_tests": [
+        "dragDimUsesMaterialDisabledContentValue",
+        "timerRestartsPerPageAndOnlyRunsOnTheFloatHost",
+        "holdingTheEdgeFlipsPerPageNoConsumeLockExists",
+        "dimScopeIsOriginPageOnly",
+        "screenWiresPagerPagingAndTimeDomainToFloatWeek",
+        "settledPageWriteBackReachesViewModelChip",
+        "floatingCardRendersSnapProjectionNotFinger",
+        "horizontalEdgeReleaseClampsInsteadOfBouncing",
+        "gridCardDragDeltasConvertToRootButFloatingCardStaysLocal"
+      ],
+      "rewritten_tests": [
+        "edgeGeometryAndTimingMatchTheRatifiedValues"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/EditCourseJumpToClickedSlotTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source spelling assertions or generated-copy equality; kept behavior and fixture tests.",
+      "removed_tests": [
+        "scroll effect waits for group blocks to finish loading",
+        "scroll is triggered when target index is valid",
+        "scroll target is matched by editing course id against sourceIds",
+        "LazyColumn state is bound to rememberLazyListState"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/data/TableReminderSettingsTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source spelling assertions or generated-copy equality; kept behavior and fixture tests.",
+      "removed_tests": [
+        "editorNoLongerOwnsReminderStateAndSettingsListIncludesAllTables",
+        "repositorySchedulesAfterWriteAndDoesNotEnableGlobalReminders"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/data/jw/RecentJwSchoolsTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source spelling assertions or generated-copy equality; kept behavior and fixture tests.",
+      "removed_tests": [
+        "recent card sits above the city card and contributes to the index offset",
+        "recording happens once at the successful import exit"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/data/jw/SchoolDomainMatchTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source spelling assertions or generated-copy equality; kept behavior and fixture tests.",
+      "removed_tests": [
+        "URL row uses the same tested selection helper for display and click"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/data/jw/JwNewSchoolsTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source spelling assertions or generated-copy equality; kept behavior and fixture tests.",
+      "removed_tests": [
+        "real schools json runtime size matches main assets exactly"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/edit/MeetingBlockCollapseTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source spelling assertions or generated-copy equality; kept behavior and fixture tests.",
+      "removed_tests": [
+        "added_slot_block_starts_expanded",
+        "new_course_first_block_starts_expanded",
+        "jump_effect_expands_matched_block_once_per_block",
+        "validation_issues_stay_visible_when_collapsed",
+        "week_teacher_room_note_color_live_in_expanded_area",
+        "delete_cross_and_chevron_both_at_right_chevron_rightmost",
+        "collapsed_body_shows_only_title_and_summary_text",
+        "collapse_animated_with_chevron"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/imports/JwFduWebViewContractTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source spelling assertions or generated-copy equality; kept behavior and fixture tests.",
+      "removed_tests": [
+        "Activity forwards the callback date into the real shared calendar resolver",
+        "shared initial JSON callback forwards startDate without consuming sourceStartDate",
+        "CI executes the production FDU JavaScript contract exactly once",
+        "FDU dispatch follows USTC and returns before other API EAMS5 and frame capture"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/imports/JwSgAssetManifestTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source spelling assertions or generated-copy equality; kept behavior and fixture tests.",
+      "removed_tests": [
+        "all declarations remain reachable in source order"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/imports/SgAssetVendorInvariantTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source spelling assertions or generated-copy equality; kept behavior and fixture tests.",
+      "removed_tests": [
+        "webview_dispatch_routes_sg_asset_before_generic_wisedu_with_wide_timeout",
+        "shim_never_decodes_course_fields_parser_is_the_only_sink",
+        "shim_mounts_all_four_window_names_including_deprecated_aliases",
+        "script_hash_ignores_line_endings_but_detects_content_changes"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/theme/NoRippleClickablePressFeedbackTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source spelling assertions or generated-copy equality; kept behavior and fixture tests.",
+      "removed_tests": [
+        "press_feedback_uses_interaction_source_not_pointer_input"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/FixedWindowWeekTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source spelling assertions or generated-copy equality; kept behavior and fixture tests.",
+      "removed_tests": [
+        "weekgrid bitmap floor removed and color-band ladder present",
+        "weekview push wiring carries per-column windows",
+        "weeklist push wiring carries per-column windows"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/FixedWindowWiringTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source spelling assertions or generated-copy equality; kept behavior and fixture tests.",
+      "removed_tests": [
+        "twoday push wiring carries per-column windows and footer",
+        "today push wiring carries window footer and force-scroll gate"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/TodayDateNavWiringTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source spelling assertions or generated-copy equality; kept behavior and fixture tests.",
+      "removed_tests": [
+        "WeekGrid minimum variant reuses pushTodayData without nav zones (scope guard)",
+        "onDeleted clears resize generation for widget id reuse",
+        "push commit points guard against stale generations",
+        "WidgetBindingStore-onDeleted cleanup has matching nav store cleanup",
+        "RemoteViewsWidgetHelper renderAndPush and pushScrollable expose configureViews hook",
+        "TodayWidget source loadDataSync resolves nav target",
+        "TodayWidget source wires nav pipeline with view header"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/WeekDisplayWidgetContractTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source spelling assertions or generated-copy equality; kept behavior and fixture tests.",
+      "removed_tests": [
+        "week grid data loader reads resolver switch so empty week jumps to busy week"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/WidgetBoundarySchedulerTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source spelling assertions or generated-copy equality; kept behavior and fixture tests.",
+      "removed_tests": [
+        "boundary receiver registered in manifest",
+        "boot receiver re-arms unconditionally",
+        "notifyDataChanged re-arms boundary chain"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/WidgetCompactWindowCoreTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source spelling assertions or generated-copy equality; kept behavior and fixture tests.",
+      "removed_tests": [
+        "week list and week view build compact window from per-widget store"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/WidgetPreviewFacesContractTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source spelling assertions or generated-copy equality; kept behavior and fixture tests.",
+      "removed_tests": [
+        "registry declared sizes match info xml and gallery renders per-variant aspect",
+        "in-app gallery registry references exactly the launcher preview drawables"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/WidgetVariantRenderTest.kt",
+      "deleted_file": false,
+      "reason": "Removed source spelling assertions or generated-copy equality; kept behavior and fixture tests.",
+      "removed_tests": [
+        "weekList compact face is 3-day column face not text lines"
+      ]
+    },
+    {
+      "path": "scripts/test_public_docs.py",
+      "deleted_file": true,
+      "reason": "Locks exact prose, historical counts and v1.0.63 release tokens instead of validating current data.",
+      "removed_tests": [
+        "test_release_provenance_and_revision_are_separate",
+        "test_undo_documents_depth_lifetime_and_redo_boundary",
+        "test_occurrence_drag_and_reference_controls",
+        "test_school_counts_are_status_counts_not_live_guarantees",
+        "test_online_wakeup_is_distinct_from_offline_exchange",
+        "test_graphics_and_launcher_api_boundaries",
+        "test_language_and_color_modes",
+        "test_console_is_opt_in_authenticated_and_write_capable",
+        "test_widget_and_reminder_boundaries",
+        "test_accounts_and_ios_are_not_overclaimed",
+        "test_no_private_contributor_or_secret_instructions",
+        "test_original_faq_coverage_is_retained"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/data/Issue40CreateResidueTest.kt",
+      "deleted_file": true,
+      "reason": "Exercises test-local predicates and mutable lists without invoking repository or navigation behavior.",
+      "removed_tests": [
+        "unsaved_flag_only_true_for_pending_new_id_match",
+        "discard_is_a_single_undo_unit_over_delete_guard",
+        "create_then_discard_leaves_zero_rows_in_shape",
+        "saved_new_row_survives_back_navigation"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/data/Issue40ContractTest.kt",
+      "deleted_file": false,
+      "reason": "Tests data-class copy and duplicates an existing preview assertion without checking any database write.",
+      "removed_tests": [
+        "contract_table_copy_reuses_source_binding_not_new_period_table",
+        "contract_preview_cancel_writes_nothing"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/SleepyMotionTest.kt",
+      "deleted_file": true,
+      "reason": "Locks arbitrary animation tuning constants instead of rendered or interactive behavior.",
+      "removed_tests": [
+        "popup_scale_root_matches_md3e_signature_family",
+        "content_scale_root_matches_page_family_mirror",
+        "press_scale_is_subtle_contraction",
+        "scale_roots_are_ordered_popup_below_content"
+      ]
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/widget/WidgetInfoXmlContractTest.kt",
+      "deleted_file": false,
+      "reason": "Forces duplicate PNG files in two density directories without testing the advertised image aspect ratio.",
+      "removed_tests": [
+        "M tier previews exist in both drawable dirs with wide aspect"
+      ]
+    }
+  ],
+  "supporting_test_cleanup": [
+    {
+      "path": "scripts/test_public_docs.py",
+      "reason": "锁定旧版本、发布文案和源码写法，移除对应 CI 步骤。",
+      "removed_tests": 12
+    },
+    {
+      "path": "tools/sleepy-collector/cft_cdp_test.go",
+      "reason": "默认下载 Chrome 并请求公网 example.com，重复浏览器握手覆盖，只检查标题非空和用户代理字符串。",
+      "removed_tests": 1
+    },
+    {
+      "path": "tools/sleepy-collector/selfcheck_direct_test.go",
+      "reason": "默认请求线上更新并替换正在执行的测试文件，不是可隔离的自更新契约。保留 checksum 和平台选择单测。",
+      "removed_tests": 1
+    },
+    {
+      "path": "tools/sleepy-collector/retry_test.go",
+      "reason": "两个测试依赖浏览器启动耗时的严格阈值，取消测试只断言错误含 context，使用无浏览器上下文也会通过。共享超时上下文丢弃全部 cancel，已随无效测试删除。保留 retryable 生产逻辑测试。",
+      "removed_tests": 3
+    },
+    {
+      "path": "tools/sleepy-collector/browser_test.go",
+      "reason": "浏览器集成测试使用已有显式开关，普通 go test 不下载浏览器。跨源会话测试改用每项独立上下文并注册清理。CI 仍显式执行完整浏览器测试。"
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/data/jw/JwJouAdaptationTest.kt",
+      "reason": "保留真实目录解析和排序断言，删除自动生成资源与输入的重复比较。"
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/data/jw/JwNewSchoolsTest.kt",
+      "reason": "删除要求贡献者手动复制目录的过时提示，测试资源由 Gradle 自动提供。"
+    }
+  ]
+}

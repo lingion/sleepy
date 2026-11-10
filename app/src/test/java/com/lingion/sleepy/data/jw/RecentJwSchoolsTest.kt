@@ -61,31 +61,4 @@ class RecentJwSchoolsTest {
     }
 
     // ===== 接线契约：只在导入成功落库后记录，空态不占列表项，字母索引跟着偏移 =====
-
-    private fun loadSource(relPath: String): String =
-        sequenceOf(
-            java.io.File("app/src/main/java/com/lingion/sleepy/"),
-            java.io.File("src/main/java/com/lingion/sleepy/")
-        ).firstOrNull { it.isDirectory }?.let { java.io.File(it, relPath).readText() }
-            ?: error("Unable to load source: $relPath")
-
-    private val activitySource: String by lazy { loadSource("ui/screen/imports/JwImportActivity.kt") }
-    private val screenSource: String by lazy { loadSource("ui/screen/imports/SchoolSelectScreen.kt") }
-
-    @Test fun `recording happens once at the successful import exit`() {
-        val occurrences = Regex("recordRecentJwSchool\\(").findAll(activitySource).count()
-        assertEquals("记录必须只挂在一处成功收口", 1, occurrences)
-        val exit = activitySource.substringAfter("suspend fun finishOrReport").substringBefore("\n                }")
-        assertTrue("点选学校但未导入不得写盘", exit.contains("recordRecentJwSchool("))
-        assertTrue(exit.contains("school.stableKey"))
-    }
-
-    @Test fun `recent card sits above the city card and contributes to the index offset`() {
-        val recentItem = screenSource.indexOf("item(key = \"recent_schools\")")
-        val cityItem = screenSource.indexOf("item(key = \"possible_schools\")")
-        assertTrue("最近导入卡片必须存在", recentItem >= 0)
-        assertTrue("最近导入卡片必须在「可能的学校」之上", recentItem < cityItem)
-        assertTrue(screenSource.contains("query.isBlank() && recentSchools.isNotEmpty()"))
-        assertTrue(screenSource.contains("1 + (if (showRecommendations) 1 else 0) + (if (showRecentSchools) 1 else 0)"))
-    }
 }

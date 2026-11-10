@@ -16,6 +16,7 @@ import (
 // 原实现依赖 httpbin.org/html, 网络抖动/被拦时 ERR_BLOCKED_BY_CLIENT
 // 假红 (2026-09-11 实锤); 测试目标是 jsStorage 序列化, 本地页即可。
 func TestStorageCapture(t *testing.T) {
+	requireBrowserTests(t)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_, _ = w.Write([]byte("<html><body>ok</body></html>"))
@@ -53,6 +54,7 @@ func TestStorageCapture(t *testing.T) {
 
 // TestSelectsCapture 验证 G2 学期/周次下拉枚举: option 的 value/text 全量序列化。
 func TestSelectsCapture(t *testing.T) {
+	requireBrowserTests(t)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_, _ = w.Write([]byte(`<html><body>

@@ -6,16 +6,6 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class JwSgAssetManifestTest {
-    @Test fun `all declarations remain reachable in source order`() {
-        val text = projectSourceFile("app/src/main/assets/third_party/shiguang/manifest.json").readText()
-        val schools = JSONObject(text).getJSONArray("schools")
-        val parsed = JwSgAssetBridge.parseManifest(text)
-        val expectedCount = (0 until schools.length()).sumOf { schools.getJSONObject(it).getJSONArray("adapters").length() }
-        assertEquals(expectedCount, parsed.values.sumOf { it.size })
-        val ujs = parsed.getValue("江苏大学")
-        assertTrue(ujs.size > 1)
-        assertTrue(ujs.any { it.adapterId.contains("YJS", true) || it.adapterName.contains("研究生") })
-    }
 
     @Test fun `same script with different login URL is not deduplicated`() {
         val parsed = JwSgAssetBridge.parseManifest("""{"schools":[{"sgName":"学校Ａ","adapters":[

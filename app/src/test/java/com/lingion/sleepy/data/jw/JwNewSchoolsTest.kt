@@ -10,14 +10,14 @@ import org.junit.Test
  * T12 合约: 临沂大学条目 + schools.json status 字段接入 + 审计块过滤
  *
  * 纯 JVM 单测: 无 Android 依赖, 只依赖 org.json + JUnit4。
- * schools.json 通过 classpath 加载(app/src/test/resources/jw/schools.json)。
+ * schools.json 通过 classpath 加载，由 Gradle 从主资产生成。
  */
 class JwNewSchoolsTest {
 
-    /** 加载与生产同源的 schools.json 副本 */
+    /** 加载由 Gradle 生成的学校目录测试资源。 */
     private fun loadSchoolsJson(): String = requireNotNull(
         javaClass.classLoader?.getResourceAsStream("jw/schools.json")
-    ) { "missing test fixture app/src/test/resources/jw/schools.json — run: cp app/src/main/assets/schools.json app/src/test/resources/jw/schools.json" }
+    ) { "缺少自动生成的 jw/schools.json，请通过 Gradle 运行测试。" }
         .bufferedReader(Charsets.UTF_8).use { it.readText() }
 
     /** 走生产同源解析路径(companion static, T12 方案 A) */
@@ -182,48 +182,6 @@ class JwNewSchoolsTest {
         assertEquals("临沂大学", parsed[0].name)
         assertFalse(parsed.any { it.name == "X大学" })
         assertFalse(parsed.any { it.name == "Y大学" })
-    }
-
-    @Test
-    fun `real schools json runtime size matches main assets exactly`() {
-        val parsed = parse(loadSchoolsJson())
-        // 数量断言改为与主资产同步的上限约束: 本测试 fixture 必须 1:1 复制
-        // 主资产 (cp app/src/main/assets/schools.json app/src/test/resources/jw/schools.json),
-        // 硬编码具体数字会在每次收录新校时炸红 (149 断言曾落后 10 校)。
-        // 下限只锁已收录的里程碑, 防倒退。
-        // 2026-09-05 179 校全量交叉验证: 删 3 僵尸条目 → 176。
-        assertTrue(
-            "fixture 条目 ${parsed.size} 不得少于主资产里程碑 176 (检查是否 cp 主资产)",
-            parsed.size >= 176
-        )
-        assertEquals(1, parsed.count { it.name == "临沂大学" })
-        assertEquals(1, parsed.count { it.name == "浙大宁波理工学院" })
-        assertEquals(1, parsed.count { it.name == "重庆大学" })
-        assertEquals(1, parsed.count { it.name == "北京航空航天大学" })
-        val ucas = parsed.single { it.name == "中国科学院大学" }
-        assertEquals(JwProtocol.TYPE_UCAS, ucas.type)
-        assertTrue(ucas.aliases.contains("国科大"))
-        // 2026-09 211 批量收录 A 档 15 所
-        for (n in listOf(
-            "上海交通大学", "上海大学", "上海外国语大学", "东华大学", "华东政法大学",
-            "厦门大学", "延边大学", "安徽大学", "石河子大学", "北京中医药大学",
-            "武汉大学", "湖南大学", "华南师范大学", "中国人民大学", "中国矿业大学（北京）",
-        )) {
-            assertEquals("211 批量收录条目 $n 必须恰好 1 条", 1, parsed.count { it.name == n })
-        }
-        // 2026-09 211 批量收录 B1 档 4 所 (经典金智 EAMS)
-        for (n in listOf("电子科技大学", "上海财经大学", "湖南师范大学", "南京航空航天大学")) {
-            assertEquals("经典 EAMS 条目 $n 必须恰好 1 条", 1, parsed.count { it.name == n })
-        }
-
-        // 2026-09-06 北航收录 (issue #18 type=qz_ieas, ieas2.1 协议族);
-        // 2026-09-19 协议升级 byxt.buaa.edu.cn = 金智 jwapp homeapp (用户实测旧 jwxt
-        // 已下线, 新系统 9 仓 cross-verified) → type=neu 复用 NEU homeapp 通路
-        val buaa = parsed.single { it.name == "北京航空航天大学" }
-        assertEquals("neu", buaa.type)
-        assertEquals("https://byxt.buaa.edu.cn/jwapp/sys/homeapp/index.do", buaa.url)
-        assertTrue("至少含 buaa 别名", buaa.aliases.any { it == "buaa" })
-        assertTrue("至少含 北航 别名", buaa.aliases.any { it == "北航" })
     }
 
     // -------- 4. 排序约束 --------

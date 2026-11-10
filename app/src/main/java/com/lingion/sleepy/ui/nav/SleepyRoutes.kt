@@ -28,6 +28,7 @@ sealed interface SleepyRoute : NavKey {
     @Serializable data object TableReminder : SleepyRoute
     @Serializable data object Reminder : SleepyRoute
     @Serializable data object About : SleepyRoute
+    // Older saved back stacks can still contain the former license screen.
     @Serializable data object License : SleepyRoute
     @Serializable data object WidgetManagement : SleepyRoute
     @Serializable data object WidgetSettings : SleepyRoute

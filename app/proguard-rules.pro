@@ -17,7 +17,6 @@
 -keepclasseswithmembers class com.lingion.sleepy.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
--keep class kotlinx.serialization.** { *; }
 -dontwarn kotlinx.serialization.**
 
 # ── Room (KSP 生成类, DAO 方法名被反射调用) ──
@@ -27,7 +26,7 @@
 -dontwarn androidx.room.paging.**
 
 # ── WorkManager (InputMerger 通过反射实例化; ListenableWorker 子类同理) ──
--keep class androidx.work.** { *; }
+# WorkManager supplies consumer rules for Worker and InputMerger constructors.
 -keep class * extends androidx.work.ListenableWorker { <init>(...); }
 
 # Glance keep 规则已随死代码删除移除(决策 D5-11): widget 全走 RemoteViews + Canvas bitmap
@@ -44,6 +43,3 @@
 
 # ── Coroutines (低层级 internal API) ──
 -dontwarn kotlinx.coroutines.**
-
-# ── Coil ──
--dontwarn coil.**

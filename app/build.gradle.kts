@@ -1,4 +1,6 @@
 import org.gradle.api.tasks.testing.Test
+import groovy.json.JsonGenerator
+import groovy.json.JsonSlurper
 
 plugins {
     alias(libs.plugins.android.application)
@@ -45,6 +47,30 @@ fun versionFromGit(): Pair<String, Int> {
     return "0.0.0" to 1
 }
 val (derivedVersionName, derivedVersionCode) = versionFromGit()
+
+// Keep the complete location audit in Git; ship only the map consumed by SchoolCityIndex.
+val runtimeAssets = layout.buildDirectory.dir("generated/runtimeAssets")
+val prepareRuntimeAssets = tasks.register<Sync>("prepareRuntimeAssets") {
+    from("src/main/assets") { exclude("school_cities.json", "schools.json") }
+    into(runtimeAssets)
+    val cities = layout.projectDirectory.file("src/main/assets/school_cities.json")
+    val schools = layout.projectDirectory.file("src/main/assets/schools.json")
+    inputs.file(cities).withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file(schools).withPathSensitivity(PathSensitivity.RELATIVE)
+    doLast {
+        val source = JsonSlurper().parse(cities.asFile) as Map<*, *>
+        val json = JsonGenerator.Options().disableUnicodeEscaping().build()
+        runtimeAssets.get().file("school_cities.json").asFile.writeText(
+            json.toJson(mapOf("schools" to checkNotNull(source["schools"])))
+        )
+        runtimeAssets.get().file("schools.json").asFile.writeText(json.toJson(JsonSlurper().parse(schools.asFile)))
+    }
+}
+
+val catalogTestResources = tasks.register<Sync>("catalogTestResources") {
+    from("src/main/assets/schools.json") { into("jw") }
+    into(layout.buildDirectory.dir("generated/catalogTestResources"))
+}
 
 android {
     namespace = "com.lingion.sleepy"
@@ -97,8 +123,8 @@ android {
         }
         release {
             isMinifyEnabled = true
-            // 保留 R8 shrinking 能力但关闭混淆改名(避免反射/序列化类被重命名后崩溃)
-            // 真正的混淆(mangling)由 shrinkResources + 下面的 keep 规则共同保护
+            isShrinkResources = true
+            // R8 removes unused code and resources. Reflection rules remain in proguard-rules.pro.
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -157,7 +183,13 @@ android {
 		lintConfig = file("${rootProject.projectDir}/app/lint.xml")
     }
 
-    sourceSets.getByName("main").assets.directories.add("schemas")
+    sourceSets.getByName("main").assets.directories.apply {
+        clear()
+        add(runtimeAssets.get().asFile.path)
+    }
+    sourceSets.getByName("test").resources.directories.add(
+        layout.buildDirectory.dir("generated/catalogTestResources").get().asFile.path
+    )
 
     splits {
         abi {
@@ -188,6 +220,11 @@ tasks.withType<Test>().configureEach {
     systemProperty("sleepy.test.settingsScreenshots", providers.gradleProperty("settingsScreenshots").getOrElse("false"))
 }
 
+tasks.named("preBuild") { dependsOn(prepareRuntimeAssets) }
+tasks.matching { it.name.endsWith("UnitTestJavaRes") }.configureEach {
+    dependsOn(catalogTestResources)
+}
+
 dependencies {
     val composeBom = platform(libs.compose.bom)
     implementation(composeBom)
@@ -199,9 +236,6 @@ dependencies {
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.material3.core)
     implementation(libs.compose.material3.window.size)
-    implementation(libs.compose.material3.adaptive.navigation)
-    implementation(libs.compose.adaptive.core)
-    implementation(libs.compose.adaptive.layout)
     implementation(libs.compose.material.icons)
     implementation(libs.compose.animation)
     implementation(libs.compose.foundation)
@@ -238,7 +272,6 @@ dependencies {
     // Agent Debug Console HTTP 服务器 (SPEC §4 用户预授权的唯一新增依赖)
     implementation("org.nanohttpd:nanohttpd:2.3.1")
     implementation(libs.core.splashscreen)
-    implementation(libs.coil.compose)
 
     // HCT 色调运算 (液态玻璃暗色 tint / 镜片托盘), 移植自 FLClash 的
     // material-color-utilities Hct; com.google.android.material:material-color-utilities
@@ -247,7 +280,6 @@ dependencies {
 
     // Test
     testImplementation(libs.junit)
-    testImplementation(libs.junit.params)
     testImplementation(libs.json)
     testImplementation(libs.sqlite.jdbc)
     // JVM-side pixel golden tests (Robolectric NATIVE graphics = real LayoutLib

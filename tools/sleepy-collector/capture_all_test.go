@@ -220,6 +220,7 @@ func TestUserAgentOverrideFromEnv(t *testing.T) {
 // 按主流程同样的路径挂 Collector 监听。返回 collector 与外站 base URL。
 func newCaptureEnv(t *testing.T) (*Collector, string, context.CancelFunc) {
 	t.Helper()
+	requireBrowserTests(t)
 	cftPath, err := downloadCftChrome()
 	if err != nil {
 		t.Fatalf("downloadCftChrome: %v", err)

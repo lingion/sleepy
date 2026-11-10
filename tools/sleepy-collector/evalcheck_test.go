@@ -10,6 +10,7 @@ import (
 
 // Prove evalAsync actually awaits a promise and returns the JSON string.
 func TestEvalAsyncAwaits(t *testing.T) {
+	requireBrowserTests(t)
 	ctx, cancel := chromedp.NewExecAllocator(context.Background(),
 		append(chromedp.DefaultExecAllocatorOptions[:], chromedp.Flag("headless", true), chromedp.Flag("no-sandbox", true), chromedp.Flag("disable-dev-shm-usage", true))...)
 	defer cancel()

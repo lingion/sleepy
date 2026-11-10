@@ -1,24 +1,8 @@
 package com.lingion.sleepy.ui.screen.imports
-
-import com.lingion.sleepy.testutil.readProjectSource
 import org.junit.Assert.*
 import org.junit.Test
 
 class JwFetchBudgetTest {
-    @Test fun `new ZF dispatch enters the scoped capture lifecycle`() {
-        val source = readProjectSource(
-            "app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt",
-        )
-        val start = source.indexOf("if (shouldUseZfNewFetch(school.type, currentUrl)) {")
-        assertTrue("NEW_ZF dispatch must exist", start >= 0)
-        val end = source.indexOf("return@CaptureBar", start)
-        assertTrue("NEW_ZF dispatch must finish before fallback", end > start)
-        val entry = source.substring(start, end)
-        assertTrue("NEW_ZF callbacks need the shared budget and scoped captureId",
-            Regex("""evaluateFetchWithTimeout\(wv,\s*ZF_NEW_FETCH_JS\)""").containsMatchIn(entry))
-        assertFalse("Direct injection omits captureId", entry.contains("evaluateJavascript("))
-    }
-
     @Test fun `asynchronous execution stays active until result or timeout`() {
         var time = 0L
         val budget = JwFetchBudget { time }

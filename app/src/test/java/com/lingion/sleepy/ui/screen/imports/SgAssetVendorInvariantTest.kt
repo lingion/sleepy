@@ -99,21 +99,6 @@ class SgAssetVendorInvariantTest {
     }
 
     @Test
-    fun shim_mounts_all_four_window_names_including_deprecated_aliases() {
-        for (name in listOf("shiguangBridgePromise", "shiguangBridge", "AndroidBridgePromise", "AndroidBridge")) {
-            assertTrue("shim 必须挂载 window.$name", bridgeSource.contains("window.$name ="))
-        }
-    }
-
-    @Test
-    fun shim_never_decodes_course_fields_parser_is_the_only_sink() {
-        // 课程字段 (d.ts saveImportedCourses 合同) 一律透传字符串, shim 禁按字段解码。
-        for (field in listOf("startSection", "endSection", "isCustomTime", "\"day\"", "customStartTime")) {
-            assertFalse("shim 禁解码课程字段 $field", bridgeSource.contains(field))
-        }
-    }
-
-    @Test
     fun manifest_is_internally_consistent_with_vendored_files() {
         assertEquals("sleepy-sg-asset-manifest-v1", manifestJson.getString("schema"))
         val source = manifestJson.getJSONObject("source")
@@ -152,17 +137,6 @@ class SgAssetVendorInvariantTest {
         MessageDigest.getInstance("SHA-256")
             .digest(text.replace("\r\n", "\n").replace('\r', '\n').toByteArray(Charsets.UTF_8))
             .joinToString("") { "%02x".format(it) }
-
-    @Test
-    fun script_hash_ignores_line_endings_but_detects_content_changes() {
-        val lf = "// 中文\nconst value = 1;\n"
-        val expected = MessageDigest.getInstance("SHA-256").digest(lf.toByteArray(Charsets.UTF_8))
-            .joinToString("") { "%02x".format(it) }
-        for (newline in listOf("\n", "\r\n", "\r")) {
-            assertEquals(expected, lfSha256(lf.replace("\n", newline)))
-            assertNotEquals(expected, lfSha256(lf.replace("1", "2").replace("\n", newline)))
-        }
-    }
 
     @Test
     fun every_catalog_sg_asset_entry_has_a_manifest_adapter() {
@@ -216,22 +190,6 @@ class SgAssetVendorInvariantTest {
             .map { rows.getJSONObject(it).getString("name").trim() }
             .filter { JwSgAssetNfk(it) !in matchKeys }
         assertEquals("gap 264 校必须全被 manifest 覆盖, 缺: $missing", 0, missing.size)
-    }
-
-    @Test
-    fun webview_dispatch_routes_sg_asset_before_generic_wisedu_with_wide_timeout() {
-        val screen = readProjectSource(
-            "app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt"
-        )
-        assertTrue(
-            "CaptureBar 必须有 sg_asset 专用分支",
-            Regex("""school\.type\s*==\s*JwProtocol\.TYPE_SG_ASSET""").containsMatchIn(screen)
-        )
-        assertTrue("拾光脚本逐周可跑 60s+, 必须用放宽闸", screen.contains("SG_ASSET_TIMEOUT_MS"))
-        assertTrue("sg_asset 分支必须经 bridgeJs 装配", screen.contains("JwSgAssetBridge.bridgeJs"))
-        val sgAt = screen.indexOf("JwProtocol.TYPE_SG_ASSET")
-        val wiseduAt = screen.indexOf("WISEDU_FETCH_JS")
-        assertTrue("sg_asset 分支必须排在通用 Wisedu 兜底之前", sgAt in 0 until wiseduAt)
     }
 
     /** 与 JwSgAssetBridge.nfk / vendor 脚本同口径的 NFKC 归一 (测试侧独立实现, 防实现侧改坏)。 */

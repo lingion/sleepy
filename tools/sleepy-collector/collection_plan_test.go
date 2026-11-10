@@ -139,9 +139,7 @@ func TestOutcomeSummaryDeduplicatesRepeatedCorsPreflightEvents(t *testing.T) {
 }
 
 func TestCaptureDetailNavigationsUsesSameBrowserSessionAcrossOrigins(t *testing.T) {
-	if execCtx() == nil {
-		t.Skip("chromedp unavailable")
-	}
+	ctx := newBrowserTestContext(t)
 	detail := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if _, err := r.Cookie("collector_session"); err != nil {
 			http.Error(w, "missing session", http.StatusUnauthorized)
@@ -156,12 +154,12 @@ func TestCaptureDetailNavigationsUsesSameBrowserSessionAcrossOrigins(t *testing.
 	}))
 	defer root.Close()
 
-	if err := chromedp.Do(execCtx(), chromedp.Navigate(root.URL+"/course/personSchedule")); err != nil {
+	if err := chromedp.Do(ctx, chromedp.Navigate(root.URL+"/course/personSchedule")); err != nil {
 		t.Fatalf("open root: %v", err)
 	}
 	p := newPacker()
 	c := NewCollector()
-	success, expired, failed := c.captureDetailNavigations(execCtx(), p, root.URL+"/course/personSchedule", []string{detail.URL + "/course/coursetime/315751"})
+	success, expired, failed := c.captureDetailNavigations(ctx, p, root.URL+"/course/personSchedule", []string{detail.URL + "/course/coursetime/315751"})
 	if success != 1 || expired != 0 || failed != 0 {
 		t.Fatalf("detail navigation result success=%d expired=%d failed=%d", success, expired, failed)
 	}

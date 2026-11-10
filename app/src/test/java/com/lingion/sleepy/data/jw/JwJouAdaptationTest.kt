@@ -22,7 +22,7 @@ import org.junit.Test
  *     SESSION_EXPIRED, 但特征列表要显式可读)。
  *  3. JOU 课表形态 = 老正方 Table1 (synthetic fixture: 骨架特征取自抓包, 单元格按
  *     JwOldZfParser 契约拼装) — 全字段断言锁形态。
- *  4. schools.json 条目 + 排序位置 + assets/test 副本 1:1 同步闸。
+ *  4. schools.json 条目和排序位置，测试资源由 Gradle 从主资产生成。
  */
 class JwJouAdaptationTest {
 
@@ -188,17 +188,12 @@ class JwJouAdaptationTest {
         assertEquals("周乙", jy.teacher)
     }
 
-    // ---- 5. schools.json 条目 + 排序 + 双副本同步闸 ----
+    // ---- 5. schools.json 条目和排序 ----
 
     @Test
     fun `schools json JOU entry sorted between jiangsugongcheng and jiangxi`() {
         val text = javaClass.classLoader.getResourceAsStream("jw/schools.json")!!
             .bufferedReader(Charsets.UTF_8).use { it.readText() }
-        val assets = java.io.File("src/main/assets/schools.json").readText(Charsets.UTF_8)
-        assertEquals(
-            "test resources 副本必须 1:1 同步主资产 (cp app/src/main/assets/schools.json app/src/test/resources/jw/schools.json)",
-            assets, text
-        )
         val schools = JwImportViewModel.parseSchoolsJson(text)
         val jouEntry = schools.single { it.name == "江苏海洋大学" }
         assertEquals("zf", jouEntry.type)

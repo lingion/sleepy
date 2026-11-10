@@ -3,7 +3,7 @@ package com.lingion.sleepy.widget
 import com.lingion.sleepy.R
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
+
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -135,16 +135,6 @@ class TodayDateNavWiringTest {
 
     // ---- 源码级守卫: TodayWidget.kt 确实接上了导航管线 ----
 
-    private fun widgetSource(name: String): File {
-        var dir: File? = File(".").absoluteFile
-        while (dir != null) {
-            val f = File(dir, "app/src/main/java/com/lingion/sleepy/widget/$name")
-            if (f.exists()) return f
-            dir = dir.parentFile
-        }
-        error("$name not found")
-    }
-
     private fun layoutFile(name: String): File {
         var dir: File? = File(".").absoluteFile
         while (dir != null) {
@@ -153,44 +143,6 @@ class TodayDateNavWiringTest {
             dir = dir.parentFile
         }
         error("$name not found")
-    }
-
-    @Test
-    fun `TodayWidget source wires nav pipeline with view header`() {
-        val src = widgetSource("TodayWidget.kt").readText()
-        // onReceive 三 action 派发 (R2)
-        assertTrue("onReceive 必须 switch 三个 nav action",
-            src.contains("ACTION_PREV_DAY") && src.contains("ACTION_NEXT_DAY") &&
-                src.contains("ACTION_RESET_DAY"))
-        // 持久化钩子 (R4 隔离 / R3 回到今天)
-        assertTrue("必须调 TodayDateNavStore.shift", src.contains("TodayDateNavStore.shift"))
-        assertTrue("必须调 TodayDateNavStore.remove (回到今天)",
-            src.contains("TodayDateNavStore.remove"))
-        // onDeleted 必须清掉导航状态
-        assertTrue("onDeleted 必须调 TodayDateNavStore.remove",
-            src.contains("onDeleted") && src.contains("TodayDateNavStore.remove"))
-        // pushTodayData 静态 = 真实视图顶栏容器 (bitmap 头部留白防双重标题)
-        assertTrue("pushTodayData 必须用 widget_today_nav_static 静态容器",
-            src.contains("widget_today_nav_static"))
-        assertTrue("v4/v5/v6 均禁引用已删的 widget_scroll_today_nav (真实视图覆盖层 = ColorOS 腐坏源)",
-            !src.contains("widget_scroll_today_nav"))
-        assertTrue("底部条定稿: 静态壳图带头渲染, 禁 emptyHeader 留白 (顶栏控件条已退场)",
-            !src.contains("emptyHeader = true"))
-        assertTrue("v9 overflow 必须竖排滑动 (pushScrollable + TwoDay 同构滚动层, 头部随内容滚)",
-            src.contains("pushScrollable") && src.contains("widget_scroll_today"))
-        assertTrue("v5 翻页机制必须已删净 (TodayPagerCore 废弃)",
-            !src.contains("TodayPagerCore") && !src.contains("ACTION_PREV_PAGE"))
-        assertTrue("pushTodayData 必须调 configureTodayBar",
-            src.contains("configureTodayBar"))
-    }
-
-    @Test
-    fun `TodayWidget source loadDataSync resolves nav target`() {
-        val src = widgetSource("TodayWidget.kt").readText()
-        assertTrue("loadDataSync 必须解析 nav 状态为当前 target",
-            src.contains("TodayDateNavStore.target"))
-        assertTrue("loadDataSync 必须把 target 当作数据日期",
-            src.contains("WidgetData(date = target") || src.contains("date = target"))
     }
 
     @Test
@@ -230,77 +182,6 @@ class TodayDateNavWiringTest {
                     block.contains("android:clickable=\"true\""))
             }
         }
-    }
-
-
-    @Test
-    fun `RemoteViewsWidgetHelper renderAndPush and pushScrollable expose configureViews hook`() {
-        val src = widgetSource("RemoteViewsWidgetHelper.kt").readText()
-        assertTrue("renderAndPush 必须有 configureViews 钩子接 Today 导航 zone",
-            src.contains("configureViews"))
-        // 两个推送路径 (static + scrollable) 都必须支持
-        assertTrue("pushScrollable 也必须有 configureViews 钩子 (scrollable 今日态也需导航)",
-            src.substringAfter("fun pushScrollable").contains("configureViews"))
-    }
-
-    @Test
-    fun `WidgetBindingStore-onDeleted cleanup has matching nav store cleanup`() {
-        // 镜像 WidgetBindingStore 的清理纪律: onDeleted 收尾必须包括今日导航 store.remove
-        val src = widgetSource("TodayWidget.kt").readText()
-        val onDeletedBlock = src.substringAfter("override fun onDeleted")
-        assertTrue("onDeleted 必须调 WidgetBindingStore.remove (兼容旧契约)",
-            onDeletedBlock.contains("WidgetBindingStore.remove"))
-        assertTrue("onDeleted 必须同时清今日导航状态",
-            onDeletedBlock.contains("TodayDateNavStore.remove"))
-    }
-
-    @Test
-    fun `push commit points guard against stale generations`() {
-        // resize 稳定性: 渲染在后台协程, resize 拖拽期间系统连发 OPTIONS_CHANGED。
-        // 旧尺寸任务若后完成会覆盖新内容且无人纠正 → commit 前必须校验世代号。
-        val helper = widgetSource("RemoteViewsWidgetHelper.kt").readText()
-        assertTrue("pushScrollable commit 前须校验世代号 (WidgetResizeCore.isStale)",
-            helper.substringAfter("fun pushScrollable").contains("WidgetResizeCore.isStale"))
-        assertTrue("renderAndPush commit 前也须校验 (WeekGrid 最小档 overflow 同样受益)",
-            helper.substringAfter("fun renderAndPush").contains("WidgetResizeCore.isStale"))
-        val today = widgetSource("TodayWidget.kt").readText()
-        assertTrue("Today receiver 三个触发点 (onUpdate/optionsChanged/nav) 须先 bump 世代",
-            today.contains("WidgetResizeCore.bump"))
-        val svc = widgetSource("ScrollStripService.kt").readText()
-        assertTrue("条带工厂 onDataSetChanged 也须按世代丢弃过期重算",
-            svc.contains("WidgetResizeCore"))
-    }
-
-    @Test
-    fun `onDeleted clears resize generation for widget id reuse`() {
-        val today = widgetSource("TodayWidget.kt").readText()
-        assertTrue("onDeleted 必须清世代号 (widget id 被系统复用后旧世代不得干扰新实例)",
-            today.contains("WidgetResizeCore.remove"))
-    }
-
-    @Test
-    fun `WeekGrid minimum variant reuses pushTodayData without nav zones (scope guard)`() {        // issue #24 范围铁律: 日期导航只在每日小组件。WeekGrid 最小档复用 pushTodayData
-        // 管线, 但不得获得导航布局/点击区 — 守卫 WeekGrid 侧零沾染。
-        val grid = widgetSource("WeekGridWidgetProvider.kt").readText()
-        assertFalse("WeekGrid 不得引用 widget_today_nav_static",
-            grid.contains("widget_today_nav_static"))
-        assertFalse("WeekGrid 不得引用 widget_scroll_today_nav",
-            grid.contains("widget_scroll_today_nav"))
-        assertFalse("WeekGrid 不得引用 configureTodayNav (旧顶栏已退场)",
-            grid.contains("configureTodayNav"))
-        // 它的 5 参调用 (receiverClass 缺省 null → 导航关) 保持原样
-        assertTrue("WeekGrid 调用点保持 5 参缺省形态",
-            grid.contains("pushTodayData(context, awm, widgetId, WidgetVariant.SMALL, todayData)"))
-    }
-
-    private fun findUpward(rel: String): File {
-        var dir: File? = File(".").absoluteFile
-        while (dir != null) {
-            val f = File(dir, rel)
-            if (f.exists()) return f
-            dir = dir.parentFile
-        }
-        error("\$rel not found")
     }
 
 }

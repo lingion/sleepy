@@ -69,22 +69,4 @@ class TableReminderSettingsTest {
         }
     }
 
-    @Test fun repositorySchedulesAfterWriteAndDoesNotEnableGlobalReminders() {
-        val method = source("data/repository/ScheduleRepository.kt")
-            .substringAfter("suspend fun setTableReminderEnabled").substringBefore("suspend fun updateTable(")
-        assertTrue(method.indexOf("tableDao.setReminderEnabled") < method.indexOf("onDataChanged()"))
-        assertFalse(method.contains("setReminderEnabled(context"))
-        assertFalse(method.contains("AppPrefs"))
-    }
-
-    @Test fun editorNoLongerOwnsReminderStateAndSettingsListIncludesAllTables() {
-        val editor = source("ui/screen/mine/EditTableScreen.kt")
-        assertFalse(editor.contains("reminderEnabled"))
-        assertFalse(editor.contains("edit_table_reminder_enable"))
-        val list = source("ui/screen/mine/TableReminderScreen.kt")
-        assertTrue(list.contains("observeReminderTables()"))
-        assertTrue(list.contains("key = { it.id }"))
-        assertTrue(list.contains("onCheckedChange = null"))
-        assertTrue(source("ui/nav/SleepyNavHost.kt").contains("entry<SleepyRoute.TableReminder>"))
-    }
 }

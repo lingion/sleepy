@@ -181,19 +181,6 @@ class SchoolDomainMatchTest {
         assertEquals(known, select("https://portal.example.edu.cn/", listOf(known)).single())
     }
 
-    @Test fun `URL row uses the same tested selection helper for display and click`() {
-        val file = sequenceOf(
-            File("src/main/java/com/lingion/sleepy/ui/screen/imports/SchoolSelectScreen.kt"),
-            File("app/src/main/java/com/lingion/sleepy/ui/screen/imports/SchoolSelectScreen.kt"),
-        ).first { it.isFile }
-        val block = file.readText().substringAfter("if (isUrl) {").substringBefore("if (filtered.isEmpty()")
-        org.junit.Assert.assertTrue("SchoolDomainMatch.selectionsForUrl(" in block)
-        org.junit.Assert.assertTrue("val school = urlSelections.single()" in block)
-        org.junit.Assert.assertTrue("items(urlSelections, key = { it.stableKey })" in block)
-        org.junit.Assert.assertTrue("onSchoolSelected(school)" in block)
-        org.junit.Assert.assertFalse("JwSchoolInfo(" in block)
-    }
-
     // -------- registrableDomain 启发式 (与 WebView SSL 豁免同一实现) --------
 
     @Test

@@ -99,7 +99,6 @@ import com.lingion.sleepy.ui.screen.mine.TableReminderScreen
 import com.lingion.sleepy.ui.screen.mine.ReminderScreen
 import com.lingion.sleepy.ui.screen.mine.AboutScreen
 import com.lingion.sleepy.util.UpdateNotifier
-import com.lingion.sleepy.ui.screen.mine.LicenseScreen
 import com.lingion.sleepy.ui.screen.mine.PeriodTablesScreen
 import com.lingion.sleepy.ui.screen.mine.PeriodTableEditScreen
 import com.lingion.sleepy.ui.screen.schedule.ScheduleScreen
@@ -406,15 +405,12 @@ internal fun SleepyNavHost(
         entry<SleepyRoute.About> {
             AboutScreen(
                 onBack = { navigator.pop() },
-                onOpenLicense = { navigator.openLicense() },
                 updateNoticeVisible = updateNoticeVisible,
             )
         }
-
         entry<SleepyRoute.License> {
-            LicenseScreen(onBack = { navigator.pop() })
+            AboutScreen(onBack = { navigator.pop() })
         }
-
         // ----------------------------------------------------------------
         entry<SleepyRoute.WidgetManagement> {
             WidgetManagementScreen(
