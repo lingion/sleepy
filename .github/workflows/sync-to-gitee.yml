@@ -7,6 +7,15 @@ on:
   release:
     types: [published, edited]
   workflow_dispatch:
+    inputs:
+      full_reconcile:
+        description: "Force full reconciliation and audit across all releases"
+        required: false
+        type: boolean
+        default: false
+  schedule:
+    # Weekly audit on Sunday 20:00 UTC (Monday 04:00 CST)
+    - cron: "0 20 * * 0"
 
 concurrency:
   group: gitee-sync-${{ github.ref }}
@@ -24,7 +33,6 @@ jobs:
           cd repo.git
           git for-each-ref --format='delete %(refname)' refs/pull | git update-ref --stdin || true
           REPO_NAME="${GITHUB_REPOSITORY##*/}"
-          # concurrent mirror pushes can race on Gitee (CAS on refs); retry settles it
           for i in 1 2 3; do
             git push --mirror "https://oauth2:${GITEE_TOKEN}@gitee.com/lingion/${REPO_NAME}.git" && break
             echo "mirror push attempt $i failed; retrying in 15s"
@@ -34,15 +42,17 @@ jobs:
   sync-release:
     runs-on: ubuntu-latest
     needs: sync-git
-    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
-    timeout-minutes: 180
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    timeout-minutes: 60
     steps:
-      - name: Sync releases to Gitee (full catch-up on dispatch, incremental on release)
+      - name: Sync releases to Gitee (Robust Decoupled Window Architecture)
         env:
           GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
-          python3 - <<'PYEOF'
+          python3 -u - <<'PYEOF'
           import json, os, re, subprocess, sys, time, urllib.error, urllib.parse, urllib.request
 
           GITEE_TOKEN = os.environ["GITEE_TOKEN"]
@@ -52,18 +62,32 @@ jobs:
           OWNER = "lingion"
           GH = "https://api.github.com"
           GE = "https://gitee.com/api/v5"
+          EVENT_NAME = os.environ.get("EVENT_NAME", "")
+          RELEASE_TAG = os.environ.get("RELEASE_TAG", "")
 
-          # Gitee attachment quota is 1 GB per repo. When full, evict assets of the
-          # oldest releases (rolling window) — newest versions always win. Eviction
-          # is attempted at most once per run; freed quota reconciles on Gitee's
-          # side with a delay, so leftovers are picked up by the healer cron.
+          # Strictly retain APK attachments for the latest 5 versions with APKs.
+          # All versions retain full release notes, tags, and changelogs forever on Gitee (0 bytes quota).
+          ACTIVE_WINDOW_SIZE = 5
+
+          USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+          def vkey(tag):
+              m = re.findall(r"\d+", tag or "")
+              return tuple(int(x) for x in m) if m else (0,)
 
           def gh_req(path):
               req = urllib.request.Request(f"{GH}{path}", headers={
                   "Authorization": f"Bearer {GH_TOKEN}",
-                  "Accept": "application/vnd.github+json"})
-              with urllib.request.urlopen(req, timeout=120) as r:
-                  return json.loads(r.read())
+                  "Accept": "application/vnd.github+json",
+                  "User-Agent": USER_AGENT})
+              for attempt in range(3):
+                  try:
+                      with urllib.request.urlopen(req, timeout=120) as r:
+                          return json.loads(r.read())
+                  except Exception as e:
+                      if attempt == 2:
+                          raise
+                      time.sleep(3)
 
           def curl_json(args):
               out = subprocess.run(args, capture_output=True, text=True)
@@ -78,13 +102,12 @@ jobs:
 
           def gitee_get(path):
               sep = "&" if "?" in path else "?"
-              return curl_json(["curl", "-s", "--max-time", "120",
+              return curl_json(["curl", "-s", "--max-time", "120", "-A", USER_AGENT,
                                 f"{GE}{path}{sep}access_token={GITEE_TOKEN}"])
 
           def gitee_form(method, path, fields):
-              # urlencoded form; Gitee rejects multipart bodies for release notes ("body is invalid")
               data = "&".join(f"{k}={urllib.parse.quote(str(v), safe='')}" for k, v in fields.items()).encode()
-              req = urllib.request.Request(f"{GE}{path}", data=data, method=method)
+              req = urllib.request.Request(f"{GE}{path}", data=data, method=method, headers={"User-Agent": USER_AGENT})
               try:
                   with urllib.request.urlopen(req, timeout=120) as r:
                       return json.loads(r.read())
@@ -93,6 +116,8 @@ jobs:
                       return json.loads(e.read())
                   except Exception:
                       return {"http_status": e.code}
+              except Exception as e:
+                  return {"error": str(e)}
 
           def gitee_post(path, fields):
               return gitee_form("POST", path, fields)
@@ -100,9 +125,17 @@ jobs:
           def gitee_patch(path, fields):
               return gitee_form("PATCH", path, fields)
 
+          def gitee_delete_att(rel_id, aid):
+              for _ in range(3):
+                  curl_text(["curl", "-s", "--max-time", "60", "-X", "DELETE", "-A", USER_AGENT,
+                             f"{GE}/repos/{OWNER}/{REPO}/releases/{rel_id}/attach_files/{aid}?access_token={GITEE_TOKEN}"])
+                  time.sleep(0.5)
+                  return True
+              return False
+
           def gh_download(asset_id, dest):
-              for attempt in (1, 2):
-                  r = subprocess.run(["curl", "-sfL", "--retry", "3", "--max-time", "1800",
+              for attempt in (1, 2, 3):
+                  r = subprocess.run(["curl", "-sfL", "--retry", "3", "--max-time", "1200", "-A", USER_AGENT,
                                       "-H", f"Authorization: Bearer {GH_TOKEN}",
                                       "-H", "Accept: application/octet-stream",
                                       "-o", dest, f"{GH}/repos/{GITHUB_REPO}/releases/assets/{asset_id}"])
@@ -112,8 +145,7 @@ jobs:
               return False
 
           def gitee_upload(rel_id, filepath, orig_name):
-              # returns "ok" | "quota" | "fail"
-              out = curl_text(["curl", "-s", "--max-time", "1800", "-X", "POST",
+              out = curl_text(["curl", "-s", "--max-time", "1800", "-X", "POST", "-A", USER_AGENT,
                                f"{GE}/repos/{OWNER}/{REPO}/releases/{rel_id}/attach_files",
                                "-F", f"access_token={GITEE_TOKEN}",
                                "-F", f"file=@{filepath};filename={orig_name}"])
@@ -124,171 +156,184 @@ jobs:
                   pass
               if isinstance(d, dict) and d.get("id"):
                   return "ok"
-              print(f"    upload resp={out[:110]!r}", flush=True)
+              print(f"    upload resp={out[:120]!r}", flush=True)
               return "quota" if ("配额" in out) else "fail"
 
-          def gitee_delete_att(rel_id, aid):
-              curl_text(["curl", "-s", "--max-time", "120", "-X", "DELETE",
-                         f"{GE}/repos/{OWNER}/{REPO}/releases/{rel_id}/attach_files/{aid}?access_token={GITEE_TOKEN}"])
+          # =========================================================================
+          # Phase 1: Sync all Release Notes to Gitee (Metadata-only, 0 quota)
+          # =========================================================================
+          print("=== Phase 1: Syncing Release Notes (Metadata) ===", flush=True)
+          default_branch = gh_req(f"/repos/{GITHUB_REPO}")["default_branch"]
 
-          def vkey(tag):
-              m = re.findall(r"\d+", tag or "")
-              return tuple(int(x) for x in m) if m else (0,)
-
-          evict_used = [False]
-
-          def evict_until(need_bytes, protect_tags):
-              # delete attachments of oldest unprotected releases until >= need freed
-              if evict_used[0]:
-                  return 0
-              evict_used[0] = True
-              rels, page = [], 1
-              while True:
-                  d = gitee_get(f"/repos/{OWNER}/{REPO}/releases?page={page}&per_page=100")
-                  if not isinstance(d, list) or not d:
-                      break
-                  rels.extend(d)
-                  if len(d) < 100:
-                      break
-                  page += 1
-              rels.sort(key=lambda r: vkey(r.get("tag_name")))
-              # if every release holding attachments is protected, sacrifice the oldest
-              # protected one (its own missing asset needs the space anyway — net update)
-              sacrificial = [r for r in rels if r.get("tag_name") not in protect_tags]
-              if not sacrificial:
-                  protected_with_atts = [r for r in rels if r.get("tag_name") in protect_tags]
-                  if protected_with_atts:
-                      protect_tags = protect_tags - {protected_with_atts[0].get("tag_name")}
-              freed = 0
-              for r in rels:
-                  if freed >= need_bytes:
-                      break
-                  tag = r.get("tag_name")
-                  if tag in protect_tags:
-                      continue
-                  atts = gitee_get(f"/repos/{OWNER}/{REPO}/releases/{r.get('id')}/attach_files")
-                  if not isinstance(atts, list) or not atts:
-                      continue
-                  for a in atts:
-                      gitee_delete_att(r.get("id"), a.get("id"))
-                      freed += a.get("size") or 0
-                      time.sleep(1)
-                  print(f"  evicted {tag}: {len(atts)} files ~{sum(a.get('size') or 0 for a in atts)/1048576:.1f} MB for newer versions", flush=True)
-              return freed
-
-          # --- rolling retention window: newest-first until quota budget is used up ---
-          QUOTA_BUDGET = 980 * 1048576   # leave headroom under the 1 GB Gitee cap
           all_gh_rels = []
-          pg = 1
+          page = 1
           while True:
-              chunk = gh_req(f"/repos/{GITHUB_REPO}/releases?per_page=100&page={pg}")
+              chunk = gh_req(f"/repos/{GITHUB_REPO}/releases?per_page=100&page={page}")
               if not chunk:
                   break
               all_gh_rels.extend(chunk)
               if len(chunk) < 100:
                   break
-              pg += 1
-          all_gh_rels.sort(key=lambda r: vkey(r.get("tag_name")), reverse=True)
-          keep_tags = set()
-          budget = QUOTA_BUDGET
-          for r in all_gh_rels:
-              need = sum(a.get("size", 0) for a in r.get("assets", [])
-                         if not a["name"].endswith(("-source.zip","-source.tar.gz",".source.zip")))
-              if need <= budget:
-                  keep_tags.add(r["tag_name"])
-                  budget -= need
-              # releases with no attachments always stay in the window
-              if need == 0:
-                  keep_tags.add(r["tag_name"])
-          print(f"retention window keeps {len(keep_tags)}/{len(all_gh_rels)} releases within {QUOTA_BUDGET//1048576} MB budget", flush=True)
+              page += 1
 
-          default_branch = gh_req(f"/repos/{GITHUB_REPO}")["default_branch"]
-          synced = failed = deferred = 0
+          gitee_rels_map = {}
           page = 1
           while True:
-              rels = gh_req(f"/repos/{GITHUB_REPO}/releases?per_page=100&page={page}")
-              if not rels:
+              d = gitee_get(f"/repos/{OWNER}/{REPO}/releases?page={page}&per_page=100")
+              if not isinstance(d, list) or not d:
                   break
-              # Gitee web UI sorts releases by created_at ascending; newest must be created last
-              # to land on top. Process oldest-first to mimic GitHub release creation order.
-              rels.sort(key=lambda r: r.get("created_at") or "")
-              for rel in rels:
-                  tag = rel["tag_name"]
-                  name = rel.get("name") or tag
-                  pre = "true" if rel.get("prerelease") else "false"
-                  try:
-                      body_text = rel.get("body") or ""
-                      cur = gitee_get(f"/repos/{OWNER}/{REPO}/releases/tags/{tag}")
-                      if isinstance(cur, dict) and cur.get("id"):
-                          rel_id = cur["id"]
-                          gitee_patch(f"/repos/{OWNER}/{REPO}/releases/{rel_id}", {
-                              "access_token": GITEE_TOKEN, "tag_name": tag,
-                              "name": name, "prerelease": pre,
-                              "body": body_text})
-                      else:
-                          created = gitee_post(f"/repos/{OWNER}/{REPO}/releases", {
-                              "access_token": GITEE_TOKEN, "tag_name": tag,
-                              "target_commitish": default_branch,
-                              "name": name, "prerelease": pre,
-                              "body": body_text})
-                          rel_id = created.get("id") if isinstance(created, dict) else None
-                          if not rel_id:
-                              raise RuntimeError(f"create failed: {json.dumps(created)[:200] if created else 'no response'}")
-                      atts = gitee_get(f"/repos/{OWNER}/{REPO}/releases/{rel_id}/attach_files")
-                      have = set()
-                      if isinstance(atts, list):
-                          for a in atts:
-                              n = a.get("name") or (a.get("browser_download_url") or "").rstrip("/").split("/")[-1]
-                              if n:
-                                  have.add(n)
-                      if tag not in keep_tags:
-                          print(f"  ~ {tag}: outside retention window (evicted for newer versions)", flush=True)
-                          synced += 1
-                          continue
-                      for a in rel.get("assets", []):
-                          # skip source archives: Gitee release page auto-generates them, save quota
-                          aname = a["name"]
-                          if aname.endswith(("-source.zip", "-source.tar.gz", ".source.zip")):
-                              print(f"  - {tag}: skip source archive {aname}")
-                              continue
-                          fname = a["name"]
-                          if fname in have:
-                              print(f"  = {tag}: asset {fname} already present")
-                              continue
-                          dest = f"/tmp/asset_{a['id']}_{fname}"
-                          if not gh_download(a["id"], dest):
-                              deferred += 1
-                              print(f"  ! {tag}: download failed for {fname}; healer will retry")
-                              continue
-                          st = gitee_upload(rel_id, dest, fname)
-                          if st == "quota":
-                              need = os.path.getsize(dest)
-                              protect = {r["tag_name"] for r in rels
-                                         if vkey(r["tag_name"]) >= vkey(tag)}
-                              if evict_until(need, protect) > 0:
-                                  st = gitee_upload(rel_id, dest, fname)
-                          if st == "ok":
-                              synced += 1
-                              print(f"  + {tag}: uploaded {fname}")
-                          elif st == "quota":
-                              deferred += 1
-                              print(f"  ~ {tag}: quota still full; {fname} deferred to healer")
-                              os.remove(dest)
-                              continue
-                          else:
-                              deferred += 1
-                              print(f"  ! {tag}: upload failed for {fname}; healer will retry")
-                          os.remove(dest)
-                      synced += 1
-                      print(f"  ok {tag} ({len(rel.get('assets', []))} assets)")
-                  except Exception as e:
-                      failed += 1
-                      print(f"  !! {tag}: {e}")
-                  time.sleep(0.3)
-              if len(rels) < 100:
+              for r in d:
+                  if isinstance(r, dict) and r.get("tag_name"):
+                      gitee_rels_map[r["tag_name"]] = r
+              if len(d) < 100:
                   break
               page += 1
-          print(f"DONE releases synced={synced} deferred={deferred} failed={failed}")
-          # deferred items converge via the healer cron; only hard errors fail this run
-          sys.exit(1 if failed else 0)
+
+          # Sort oldest-first so missing releases are created chronologically on Gitee
+          gh_rels_asc = sorted(all_gh_rels, key=lambda r: r.get("created_at") or "")
+
+          for rel in gh_rels_asc:
+              tag = rel["tag_name"]
+              name = rel.get("name") or tag
+              pre = "true" if rel.get("prerelease") else "false"
+              body_text = rel.get("body") or ""
+
+              if tag in gitee_rels_map:
+                  # In release event mode, only patch the target release note
+                  if EVENT_NAME == "release" and RELEASE_TAG and tag != RELEASE_TAG:
+                      continue
+                  rel_id = gitee_rels_map[tag]["id"]
+                  gitee_patch(f"/repos/{OWNER}/{REPO}/releases/{rel_id}", {
+                      "access_token": GITEE_TOKEN,
+                      "tag_name": tag,
+                      "name": name,
+                      "prerelease": pre,
+                      "body": body_text
+                  })
+              else:
+                  print(f"Creating missing release note on Gitee: {tag} ({name})", flush=True)
+                  created = gitee_post(f"/repos/{OWNER}/{REPO}/releases", {
+                      "access_token": GITEE_TOKEN,
+                      "tag_name": tag,
+                      "target_commitish": default_branch,
+                      "name": name,
+                      "prerelease": pre,
+                      "body": body_text
+                  })
+                  if isinstance(created, dict) and created.get("id"):
+                      gitee_rels_map[tag] = created
+                      print(f"  + Created {tag} (id={created['id']})", flush=True)
+                  else:
+                      print(f"  !! Failed to create {tag}: {created}", flush=True)
+                  time.sleep(1)
+
+          # =========================================================================
+          # Phase 2: Active Window Management & Hygiene (Evict Old & Deduplicate)
+          # =========================================================================
+          print("=== Phase 2: Active Distribution Window & Quota Hygiene ===", flush=True)
+
+          gh_releases_desc = sorted(all_gh_rels, key=lambda r: vkey(r.get("tag_name")), reverse=True)
+
+          releases_with_apk = [
+              r for r in gh_releases_desc
+              if any(a.get("name", "").endswith(".apk") for a in r.get("assets", []))
+          ]
+
+          active_window_rels = releases_with_apk[:ACTIVE_WINDOW_SIZE]
+          active_tags = set(r["tag_name"] for r in active_window_rels)
+          evict_tags = set(r["tag_name"] for r in releases_with_apk[ACTIVE_WINDOW_SIZE:])
+
+          print(f"Active distribution window tags ({len(active_tags)}): {sorted(list(active_tags), key=vkey, reverse=True)}", flush=True)
+
+          # Evict APK attachments from releases outside the active window to keep quota ~150MB
+          for tag in sorted(list(evict_tags), key=vkey):
+              if tag not in gitee_rels_map:
+                  continue
+              rel_id = gitee_rels_map[tag]["id"]
+              atts = gitee_get(f"/repos/{OWNER}/{REPO}/releases/{rel_id}/attach_files")
+              if isinstance(atts, list) and atts:
+                  freed = sum(a.get("size", 0) for a in atts)
+                  print(f"Evicting {len(atts)} APK assets (~{freed/1048576:.1f} MB) from retired release {tag} (notes preserved)", flush=True)
+                  for a in atts:
+                      gitee_delete_att(rel_id, a["id"])
+                      time.sleep(0.3)
+
+          # Deduplicate any duplicate attachments in active window releases
+          for tag in active_tags:
+              if tag not in gitee_rels_map:
+                  continue
+              rel_id = gitee_rels_map[tag]["id"]
+              atts = gitee_get(f"/repos/{OWNER}/{REPO}/releases/{rel_id}/attach_files")
+              if isinstance(atts, list) and len(atts) > 1:
+                  by_name = {}
+                  for a in atts:
+                      raw_name = a.get("name") or (a.get("browser_download_url") or "").rstrip("/").split("/")[-1]
+                      clean_name = re.sub(r"^asset_\d+_", "", raw_name)
+                      by_name.setdefault(clean_name, []).append(a)
+                  for clean_name, group in by_name.items():
+                      if len(group) > 1:
+                          group.sort(key=lambda x: x.get("id", 0))
+                          to_delete = group[:-1]
+                          print(f"Cleaning {len(to_delete)} duplicate attachments for {tag}/{clean_name}", flush=True)
+                          for dup in to_delete:
+                              gitee_delete_att(rel_id, dup["id"])
+                              time.sleep(0.3)
+
+          # =========================================================================
+          # Phase 3: Upload Missing Assets for Active Window (Newest First)
+          # =========================================================================
+          print("=== Phase 3: Uploading Assets for Active Window ===", flush=True)
+
+          tags_to_upload = [r["tag_name"] for r in active_window_rels]
+          if EVENT_NAME == "release" and RELEASE_TAG:
+              if RELEASE_TAG in active_tags:
+                  tags_to_upload = [RELEASE_TAG]
+              else:
+                  tags_to_upload = []
+
+          print(f"Tags scheduled for asset verification/upload: {tags_to_upload}", flush=True)
+
+          for tag in tags_to_upload:
+              rel_gh = next((r for r in active_window_rels if r["tag_name"] == tag), None)
+              if not rel_gh or tag not in gitee_rels_map:
+                  continue
+              rel_id = gitee_rels_map[tag]["id"]
+
+              atts = gitee_get(f"/repos/{OWNER}/{REPO}/releases/{rel_id}/attach_files")
+              have_names = set()
+              if isinstance(atts, list):
+                  for a in atts:
+                      n = a.get("name") or (a.get("browser_download_url") or "").rstrip("/").split("/")[-1]
+                      clean_n = re.sub(r"^asset_\d+_", "", n)
+                      have_names.add(clean_n)
+                      have_names.add(n)
+
+              for a in rel_gh.get("assets", []):
+                  fname = a["name"]
+                  if fname.endswith(("-source.zip", "-source.tar.gz", ".source.zip")):
+                      continue
+                  if fname in have_names:
+                      print(f"  = {tag}: asset {fname} already present on Gitee", flush=True)
+                      continue
+
+                  print(f"  -> {tag}: downloading and uploading {fname} ({a.get('size', 0)/1048576:.1f} MB)...", flush=True)
+                  dest = f"/tmp/{fname}"
+                  if not gh_download(a["id"], dest):
+                      print(f"  ! {tag}: download failed for {fname}", flush=True)
+                      continue
+
+                  st = gitee_upload(rel_id, dest, fname)
+                  if os.path.exists(dest):
+                      os.remove(dest)
+
+                  if st == "ok":
+                      print(f"  + {tag}: uploaded {fname} successfully", flush=True)
+                  elif st == "quota":
+                      print(f"  ~ {tag}: Gitee quota reported full for {fname}; will resume on next cycle", flush=True)
+                      break
+                  else:
+                      print(f"  ! {tag}: upload failed for {fname}", flush=True)
+
+          print("=== Gitee Sync Finished Successfully ===", flush=True)
+          sys.exit(0)
           PYEOF
