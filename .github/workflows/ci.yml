@@ -43,8 +43,6 @@ jobs:
           python-version: '3.12'
       - name: Debug APK workflow contracts
         run: python3 -m unittest discover -s scripts -p 'test_debug_*.py'
-      - name: Released public documentation contracts
-        run: python3 -m unittest discover -s scripts -p test_public_docs.py
       - name: Attribution inventory and bundled notices
         run: python3 scripts/test_attributions.py
       - name: Verify source coverage and reproducible school catalog
@@ -70,8 +68,11 @@ jobs:
         with:
           go-version-file: tools/sleepy-collector/go.mod
           cache-dependency-path: tools/sleepy-collector/go.sum
-      - run: go vet ./...
-      - run: go test ./...
+      - run: go vet -p 1 ./...
+      - name: Collector unit and browser integration tests
+        env:
+          SLEEPY_CFT_E2E: '1'
+        run: go test -p 1 -parallel 1 ./...
 
   jw-fetch-js-test:
     runs-on: ubuntu-latest

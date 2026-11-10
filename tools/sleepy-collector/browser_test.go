@@ -1,17 +1,37 @@
 package main
 
 import (
+	"context"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"testing"
+	"time"
+
+	"github.com/chromedp/chromedp"
 )
+
+func requireBrowserTests(t *testing.T) {
+	t.Helper()
+	if os.Getenv("SLEEPY_CFT_E2E") != "1" {
+		t.Skip("set SLEEPY_CFT_E2E=1 to run browser integration tests (may download ~180MB)")
+	}
+}
+
+func newBrowserTestContext(t *testing.T) context.Context {
+	t.Helper()
+	requireBrowserTests(t)
+	allocCtx, allocCancel := chromedp.NewExecAllocator(context.Background(),
+		append(chromedp.DefaultExecAllocatorOptions[:], chromedp.Flag("headless", true), chromedp.Flag("no-sandbox", true), chromedp.Flag("disable-dev-shm-usage", true))...)
+	browserCtx, browserCancel := chromedp.NewContext(allocCtx)
+	ctx, timeoutCancel := context.WithTimeout(browserCtx, 60*time.Second)
+	t.Cleanup(func() { timeoutCancel(); browserCancel(); allocCancel() })
+	return ctx
+}
 
 // 验证"没装 Chrome 也能用":直接调自动下载,绕过本机已有浏览器
 func TestDownloadCftChrome(t *testing.T) {
-	if os.Getenv("SLEEPY_CFT_E2E") != "1" {
-		t.Skip("set SLEEPY_CFT_E2E=1 to run (downloads ~180MB)")
-	}
+	requireBrowserTests(t)
 	p, err := downloadCftChrome()
 	if err != nil {
 		t.Fatalf("downloadCftChrome: %v", err)
