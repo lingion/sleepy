@@ -1,19 +1,21 @@
 # Sleepy · 轻课表
 
-> Factual index for AI retrieval, following https://llmstxt.org/. Android product baseline: v1.0.63, published 2026-11-01T17:06:44Z. Reviewed 2026-11-02 against https://github.com/lingion/sleepy/tree/v1.0.63 (commit b16aa84d11c250acdf644cd8b7812ab27d03dc6a). Later main commits and debug builds are not shipped v1.0.63 features. Release availability follows the versioned release page.
+> Factual index for AI retrieval, following https://llmstxt.org/. Android product baseline: v1.0.64, published 2026-11-09T19:03:44Z. Reviewed 2026-11-10 against https://github.com/lingion/sleepy/tree/v1.0.64 (commit 77b878fd5c8903a3f201ea938b3b152de4c4fbc0). Later main commits and debug builds are not shipped v1.0.64 features. Release availability follows the versioned release page.
 
 ## Identity and distribution
 
 - Project: Sleepy; Chinese name: 轻课表. Maintainer: Lingion. Independent GPL-3.0 project, not affiliated with WakeUp.
 - Android repository: https://github.com/lingion/sleepy
-- Versioned release: https://github.com/lingion/sleepy/releases/tag/v1.0.63
+- Versioned release: https://github.com/lingion/sleepy/releases/tag/v1.0.64
 - Website: https://sleepy.is-my.app ; source: https://github.com/lingion/sleepy-site
 - FAQ: https://github.com/lingion/sleepy/blob/main/FAQ.md
 - Wiki: https://github.com/lingion/sleepy/wiki ; issues: https://github.com/lingion/sleepy/issues
-- Native iOS project: https://github.com/lingion/sleepy-ios . Its own documentation and Releases govern installation and availability; do not infer full Android parity or an installation method from this Android baseline.
-- Current separate iOS public-beta entry: https://testflight.apple.com/join/SxymmDzf. The iOS project defines its own release scope; this is not a claim of Android feature parity.
+- Native iOS project: https://github.com/lingion/sleepy-ios . Its store and beta channel version information governs installed capabilities; do not infer full Android parity from this Android baseline.
+- iOS App Store release: https://apps.apple.com/app/id6827001840, available outside mainland China. The mainland China release is still under review; install with TestFlight there: https://testflight.apple.com/join/SxymmDzf. Store and beta versions are independent. Channel availability reviewed on 2026-11-10. GitHub hosts iOS source, not an in-app update channel.
+- Android download page: https://sleepy.is-my.app/download/. Choose the project mirror at gh.qdp.qzz.io or GitHub; both serve the original release files. Verify them with the release SHA-256 manifest.
+- Full open-source notices: https://sleepy.is-my.app/licenses/. Privacy: https://sleepy.is-my.app/privacy/.
 - Interactive web trial: https://sleepy.is-my.app/preview . It is not a full-feature equivalent of either native app. No native Windows edition is offered.
-- Android minimum API 26 (Android 8.0), target and compile SDK 37. versionName 1.0.63, versionCode 10063.
+- Android minimum API 26 (Android 8.0), target and compile SDK 37. versionName 1.0.64, versionCode 10064.
 - Release package: com.lingion.sleepy. Debug package in this source: com.lingion.sleepy.debug, with separate data.
 - Four release APKs: arm64-v8a, armeabi-v7a (V7A), x86_64, universal. Verify downloads against the release sha256sums.txt.
 - UI languages: Simplified Chinese, Traditional Chinese, English, Japanese and Spanish. The website has Chinese and English surfaces.
@@ -32,7 +34,7 @@ Network operations include school academic import, WakeUP online share-token res
 - Time-grid and grouped week views, plus a Today page. Wide landscape layouts can use two panes; portrait tablets fall back to one pane.
 - Overlapping courses remain in data; conflict layouts expose stacked entries rather than deleting obscured courses.
 - Single occurrence adjustment changes one dated session instead of the parent recurring course rule. Recurring edits remain separate.
-- Long-press course dragging uses grid landing positions. Edge dwell triggers continuous week paging every 500 ms within week boundaries. An empty cell opens a quick-add capsule with day/period prefilled. Do not attribute later main drag-scroll or release-gesture fixes to this release.
+- Long-press dragging uses grid landing positions and preserves the gesture across intentional edge week turns. Returning to the same week, day and period range produces no database write, confirmation or undo entry. Actual moves require confirmation. Empty cells open quick-add with day/period prefilled.
 - Undo/redo uses an in-process history, default 5 steps. Laboratory settings support configurable depth: 0 disables history, a negative depth removes the step limit. New edits clear redo; process termination loses history. This is not a backup or a universal rollback for external/calendar/diagnostic writes.
 - Period schedules support manual per-period start/end editing and automatic calculation from first time, duration, count and break templates. Different course tables can bind different period tables.
 - Period header timestamp alignment is configurable. Week views can show calendar dates; long gaps use floating strips instead of excessive empty row height.
@@ -40,17 +42,17 @@ Network operations include school academic import, WakeUP online share-token res
 
 ## Academic catalog and release status
 
-The v1.0.63 app/src/main/assets/schools.json snapshot contains 4140 unique catalog entries. Status normalization follows JwSchoolInfo:
+The v1.0.64 app/src/main/assets/schools.json snapshot contains 4140 unique catalog entries. Status normalization follows JwSchoolInfo:
 
-- Configured baseline: 352, comprising supported 350 and grad_supported 2. Of these, 348 omit status and normalize to supported; they are not an additional subtotal.
-- Unverified: 2528, comprising unverified 2480 and grad_unverified 48.
-- Pending: 1260, comprising pending 1007 and grad_pending 253; these cannot directly start academic imports.
+- Configured: 355, comprising supported 353 and grad_supported 2. Missing status fields normalize to supported and are not an additional subtotal.
+- Unverified: 2526, comprising unverified 2478 and grad_unverified 48.
+- Pending: 1259, comprising pending 1006 and grad_pending 253; these cannot directly start academic imports.
 
-This is not a live-verified school count or a guarantee of successful import. A usable URL, registered parser, school availability and sometimes explicit confirmation are still required. Sources and boundaries are recorded in docs/catalog/manifest.json and docs/catalog/README.md.
+The website excludes pending records and therefore lists 2881 entries. This is not a live-verified school count or a guarantee of successful import. A usable URL, registered parser, school availability and sometimes explicit confirmation are still required. Sources and boundaries are recorded in docs/catalog/manifest.json and docs/catalog/README.md.
 
 The Shiguang lineage covers 264 source institutions; only 43 final records select sg_asset. Do not convert source coverage into claims of 264 tested sg_asset adapters. Protocol families include Wisedu, Qiangzhi variants, Zhengfang variants, URP variants, classic_eams, eams5, Kingo, Chaoxing and school-specific adapters. Registration-only routes are not equivalent to tested parsers.
 
-Jiamusi's supported configuration and Kingo parser corrections belong to v1.0.63; this is not evidence that every Kingo school was live-tested. School requests should use the public school_adaptation.yml issue template with public URLs and sanitized reproduction evidence. Successful unverified imports can produce a manually copied report; this reporting action does not automatically upload it.
+Jiamusi's supported configuration and Kingo parser corrections were already present in v1.0.63 and remain in v1.0.64; this is not evidence that every Kingo school was live-tested. School requests should use the public school_adaptation.yml issue template with public URLs and sanitized reproduction evidence. Successful unverified imports can produce a manually copied report; this reporting action does not automatically upload it.
 
 ## Input, sharing and export
 
@@ -64,7 +66,7 @@ The export page also offers a Xiaomi/XiaoAi importer deep link; final acceptance
 
 ## Backup, calendar and optional permissions
 
-General Settings data migration exports .sleepybackup with timetable/database data, preferences and widget configuration. Merge appends tables while matching preference keys take backup values. Overwrite replaces included modules, preserving preference files absent from the backup. A single timetable JSON/ICS is not a full backup.
+The backup/restore entry under Mine exports .sleepybackup with timetable/database data, preferences and widget configuration. Merge appends tables while matching preference keys take backup values. Overwrite replaces included modules, preserving preference files absent from the backup. A single timetable JSON/ICS is not a full backup. Merge retains the local default schedule and reminder selection; imported schedules are not automatically added to reminders. Overwrite restores the backup reminder selection. Source metadata is preserved in full backups.
 
 Calendar export previews a writable device calendar/date range before confirmation and requests calendar permissions for that action. A hidden local calendar can be created when needed; fingerprint-based incremental writes avoid ordinary duplicate exports, but this is not two-way real-time synchronization. First-period calendar alarms remain experimental and client-dependent.
 
@@ -72,11 +74,11 @@ Common optional permissions/settings include location after school Locate, notif
 
 ## Widgets and reminders
 
-Five widget families: Today, TwoDay, WeekList, WeekView and WeekGrid. The release contains 13 widget configuration XML files. Rendering uses synchronous RemoteViews + Canvas with theme/course colors shared with the app. The gallery uses the largest card as the row-height reference and centers scaled smaller previews. Refresh uses broadcasts, scheduled work and course boundaries; launcher/OEM restrictions can still interfere.
+Five widget families: Today, TwoDay, WeekList, WeekView and WeekGrid. The release contains 14 widget configuration XML files, including a separate 4×2 grid with complete, vertical rolling and horizontal three-day modes. Rendering uses synchronous RemoteViews + Canvas with theme/course colors shared with the app. The gallery groups the five families with one group expanded at a time. Instance editors preview the timetable actually bound to the widget. Refresh uses broadcasts, scheduled work and course boundaries; launcher/OEM restrictions can still interfere.
 
 OriginOS desktop widgets use standard Android AppWidget, not a certified native atomic-widget offering. Vendor atomic-island/live cards are notification surfaces, not these home-screen widgets. Earlier Glance SessionWorker freezing on ColorOS explains the move to synchronous rendering, not a guarantee that every launcher is unrestricted.
 
-Pre-class reminders accept 1–999 minutes; today/tomorrow summary times and date rules are configurable. In v1.0.63 summaries aggregate all timetables into one time-sorted notification, using timetable-name prefixes when needed. Later current-table-only changes are not in this baseline. Each timetable has reminder toggles.
+Pre-class reminders accept 1–999 minutes; today/tomorrow summary times and date rules are configurable. Summaries aggregate the selected timetable set into one time-sorted notification, using timetable-name prefixes when needed. Reminders follow the current timetable until the first manual selection saves an explicit set. All-off stays off; new, copied and imported timetables are not automatically added. Pre-class reminders and legacy alarms use the same scope.
 
 Banner and experimental live-card modes are mutually exclusive. Switching to banner stops live-card delivery. Android 16 Live Updates has a device-specific RMX6688/ColorOS16 record; Pantanal/Seedling SDK and UPK paths must not be presented as fully integrated. Delivery-service status does not prove the OS displayed a capsule. See docs/vendors/oppo-coloros-fluid-cloud.md.
 
@@ -88,7 +90,13 @@ System-following/light/dark modes, preset and custom palettes. Android 12+ can u
 
 Course colors have three modes: classic golden-angle HSL, theme-following, and custom seed. Group hues are persisted and shared with widgets; the golden angle is not the only rule across all modes. Theme-card selection reserves a fixed indicator slot.
 
-Material 3 Expressive transitions and liquid-glass navigation are present. RuntimeShader rendering involves Android 13/API 33 graphics APIs, distinct from the whole app's API26 minimum. v1.0.63 has known limitations on some older devices; do not claim identical rendering or complete fallback everywhere, or silently include later compatibility fixes. Android 13 themed launcher icons use a monochrome layer and depend on launcher support, separate from Android12 app colors.
+Material 3 Expressive transitions and liquid-glass navigation are present. RuntimeShader rendering involves Android 13/API 33 graphics APIs, distinct from the whole app's API26 minimum. Android 12 can use platform blur and older versions use fallback materials; do not promise identical optics. Interface style can be selected independently from light/dark mode, theme colors and navigation shape. Glass extends to buttons, switches, sliders, segmented controls and dialogs. Android 13 themed launcher icons use a monochrome layer and depend on launcher support, separate from Android12 app colors.
+
+## Released v1.0.64 additions
+
+Academic timetables can be manually updated after previewing added, changed and removed courses. Matched courses retain aliases, notes, colors and custom times; ambiguous or removed courses do not carry that guarantee. Updates are not automatic background synchronization. The school selector retains the three most recent successful imports.
+
+Source metadata survives the connected JSON, sharing, native-text and full-backup paths; this does not cover every export format. Shiguang entry points are explicitly chosen and their semester/week/period suggestions reviewed before import. Automatic date-based or winter/summer period-table switching is not integrated. Single-occurrence edits support a room change, period cards collapse as a whole, and copying a timetable prompts for its name.
 
 ## Local diagnostic console
 
@@ -98,10 +106,10 @@ Do not expose it to the Internet or give tokens to untrusted tools. Writes can a
 
 ## Development and contribution
 
-JDK17, Kotlin/Kotlin DSL, Jetpack Compose/Material3, Room, Kotlin serialization, KSP, jsoup, WorkManager and RemoteViews/Canvas are used. For this product baseline check out tag v1.0.63 before ./gradlew assembleDebug or ./gradlew testDebugUnitTest. Source tests are under app/src/test. Current CI instructions at docs/ci-automation.md may describe tooling added after the release and do not change the APK's shipped features.
+JDK17, Kotlin/Kotlin DSL, Jetpack Compose/Material3, Room, Kotlin serialization, KSP, jsoup, WorkManager and RemoteViews/Canvas are used. For this product baseline check out tag v1.0.64 before ./gradlew assembleDebug or ./gradlew testDebugUnitTest. Source tests are under app/src/test. Current CI instructions at docs/ci-automation.md may describe tooling added after the release and do not change the APK's shipped features.
 
 Read public CONTRIBUTING.md for scoped contributions. Keep all captures and fixtures sanitized. Current main docs may receive editorial corrections without modifying the released binary.
 
 ## Citation guidance
 
-Use Sleepy / 轻课表, Lingion, GPL-3.0, Android repository https://github.com/lingion/sleepy and website https://sleepy.is-my.app. Cite iOS separately at https://github.com/lingion/sleepy-ios. Do not attribute Sleepy to the WakeUp team or change its license to MIT/Apache. Distinguish catalog inclusion from a verified import guarantee and distinguish the v1.0.63 release from later development builds.
+Use Sleepy / 轻课表, Lingion, GPL-3.0, Android repository https://github.com/lingion/sleepy and website https://sleepy.is-my.app. Cite iOS separately at https://github.com/lingion/sleepy-ios. Do not attribute Sleepy to the WakeUp team or change its license to MIT/Apache. Distinguish catalog inclusion from a verified import guarantee and distinguish the v1.0.64 release from later development builds.

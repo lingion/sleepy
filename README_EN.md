@@ -43,6 +43,10 @@
 
 ---
 
+## iOS and download channels
+
+For Android, choose the [project mirror or GitHub](https://sleepy.is-my.app/en/download/); original APKs and checksums remain on GitHub Releases. The independent [iOS app](https://github.com/lingion/sleepy-ios) is available on the [App Store](https://apps.apple.com/app/id6827001840) outside mainland China. The mainland China release is still under review; install the beta with [TestFlight](https://testflight.apple.com/join/SxymmDzf) there. Store and beta versions are independent, and Android version numbers do not establish iOS feature parity. Availability reviewed on 2026-11-10.
+
 ## Overview
 
 The school selector requests foreground location only after tapping Locate, for same-city school suggestions. Both precise and approximate access are supported; coordinates are neither saved nor sent to third parties. Fine location also supports devices that can obtain a fix only from GPS, without network location.
@@ -55,7 +59,7 @@ The school selector requests foreground location only after tapping Locate, for 
 | ABIs | arm64-v8a / armeabi-v7a / x86_64 |
 | Languages | zh-CN · zh-TW · en · ja · es |
 
-Sleepy is an Android timetable app built around three principles: **light, fast, accurate**. Its [school catalogue](docs/schools-list.md) distinguishes existing import configurations, unverified entries that require confirmation, and schools awaiting adaptation; catalogue inclusion is not an import guarantee. Features include JW import, multi-format parsing, single-session adjustments, five home-screen widget types in 13 fixed-size variants, daily course notifications, dark mode, and optional Liquid Glass. The version and supported-school catalogue are maintained in the app's About page and on GitHub Releases. Timetables are stored locally. Network operations include JW import, WakeUp share-code retrieval through WakeUp services, holiday-data refresh from `unpkg.com/holiday-calendar`, and update checks via GitHub (with the project mirror as fallback); these are not analytics services.
+Sleepy is an Android timetable app built around three principles: **light, fast, accurate**. Its [school catalogue](docs/schools-list.md) distinguishes existing import configurations, unverified entries that require confirmation, and schools awaiting adaptation; catalogue inclusion is not an import guarantee. Features include JW import, multi-format parsing, single-session adjustments, five home-screen widget types in 14 fixed-size variants, daily course notifications, dark mode, and optional Liquid Glass. The version and supported-school catalogue are maintained in the app's About page and on GitHub Releases. Timetables are stored locally. Network operations include JW import, WakeUp share-code retrieval through WakeUp services, holiday-data refresh from `unpkg.com/holiday-calendar`, and update checks via GitHub (with the project mirror as fallback); these are not analytics services.
 
 ---
 
@@ -276,9 +280,11 @@ Export can write courses to a writable calendar on the device. Choose a calendar
 
 ---
 
-## Home-screen Widgets (5 types, 13 variants)
+<a id="home-screen-widgets-5-types-13-variants"></a>
 
-Five widget types across 13 fixed-size variants: Today / TwoDay / WeekList each in regular / small / wide; WeekView / WeekGrid each in regular / small. Layouts adapt to launcher sizing.
+## Home-screen Widgets (5 types, 14 variants)
+
+Five widget types across 14 fixed-size variants: Today / TwoDay / WeekList / WeekGrid each in regular / small / wide; WeekView in regular / small. The separate 4×2 WeekGrid supports complete-grid, seven-day vertical rolling and horizontal three-day modes. Layouts adapt to launcher sizing.
 
 <table>
   <tr>
@@ -505,7 +511,7 @@ Each timetable can map a transfer date to another date’s courses. These mappin
 
 > Experimental settings and full migration entry
 
-General Settings → Data migration exports timetable and period-table data, preferences, and widget settings to `.sleepybackup`. Restore offers **Merge** (keep local timetables and append; matching preference keys take the backup values) or **Overwrite** (replace the timetable/settings modules included in the backup). This is a whole-app migration package, distinct from a single timetable’s JSON/ICS/text export; Android’s document picker chooses the file location.
+Mine → Backup and restore exports timetable and period-table data, preferences, and widget settings to `.sleepybackup`. Restore offers **Merge** (keep local timetables and append; matching preference keys take the backup values) or **Overwrite** (replace the timetable/settings modules included in the backup). This is a whole-app migration package, distinct from a single timetable’s JSON/ICS/text export; Android’s document picker chooses the file location.
 
 ---
 
@@ -717,7 +723,7 @@ Prefer to stay on GitHub? [Discussions](https://github.com/lingion/sleepy/discus
 
 The liquid glass source module is modified from [SleepDown Schedule](https://github.com/xiaomanjun233/SleepDown-Schedule), by **xiaomanjun233**. Sleepy is maintained by this project; changes include Android build wiring, Compose version adaptation and FLClash dock integration. SleepDown-owned content uses its source-available non-commercial license 1.1; original Kyant code retains Apache-2.0. FLClash ports retain GPL-3.0 and the Flutter superellipse port retains BSD-3-Clause. [Original notices and usage boundaries](ACKNOWLEDGEMENTS.md) are included in the repository and app.
 
-Sleepy-owned code is released under GPL-3.0; third-party material retains its own notices. See [Sources and acknowledgements](ACKNOWLEDGEMENTS.md) for source ports, dependencies, data, design references, research repositories and contributors. The app includes the same additions under Mine / About / Open-source licenses.
+Sleepy-owned code is released under GPL-3.0; third-party material retains its own notices. See [Sources and acknowledgements](ACKNOWLEDGEMENTS.md) for source ports, dependencies, data, design references, research repositories and contributors. The app’s Mine / About / Open-source licenses entry opens the [website’s full notices](https://sleepy.is-my.app/en/licenses/).
 
 ---
 
