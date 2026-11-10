@@ -17,6 +17,7 @@ import com.lingion.sleepy.util.TimeTableUtils.EdgeClass
 import com.lingion.sleepy.util.TimeTableUtils.TimeSlotRow
 import com.lingion.sleepy.widget.notification.ReminderRescheduler
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.*
@@ -50,7 +51,14 @@ class SchedulePolicyEdgeInsertionSaveTest {
     }
 
     @After fun cleanup() {
+        val job = model.viewModelScope.coroutineContext[Job]!!
         compose.runOnIdle { model.viewModelScope.cancel() }
+        // Cancellation requests are asynchronous while Room is querying. Wait
+        // for the observers to finish before closing their connection pool.
+        compose.waitUntil(10_000) {
+            shadowOf(Looper.getMainLooper()).idle()
+            job.isCompleted
+        }
         ReminderRescheduler.resetForTest()
         UndoManager.clear()
         db.close()
