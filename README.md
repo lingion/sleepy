@@ -43,6 +43,10 @@
 
 ---
 
+## iOS 与下载渠道
+
+Android 可在[官网下载页](https://sleepy.is-my.app/download/)选择项目镜像或 GitHub 原站；原始 APK 和校验文件仍保留在 GitHub Releases。独立的 [iOS 版](https://github.com/lingion/sleepy-ios)已在中国大陆以外的 [App Store](https://apps.apple.com/app/id6827001840) 上线。中国大陆区仍在审核中，可通过 [TestFlight](https://testflight.apple.com/join/SxymmDzf) 安装公测版。正式商店与公测独立发布，Android 版本号不代表 iOS 功能完全相同。渠道核对日期为2026年11月10日。
+
 ## 概要
 
 教务直连学校选择页新增前台定位权限，用于用户点击“定位”后的同城学校推荐；支持系统精准/大致位置选择，坐标不保存、不发送到第三方。申请精准位置是为了兼容没有网络定位、只能由 GPS 提供位置的设备。
@@ -59,7 +63,7 @@
 
 Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务导入会访问学校站点，WakeUp 分享口令导入会访问 WakeUp 服务，节假日数据和版本更新检查也需要联网；项目未集成 Firebase / Crashlytics / Sentry / Bugsnag 等第三方分析 SDK。[学校目录](docs/schools-list.md)按已有导入配置、待验证可尝试和待适配区分，收录不等于支持导入；[来源说明](docs/catalog/README.md)与生成清单记录当前范围。另支持 iCalendar（ICS）、WakeUp 课程包、CSV、HTML 和原生文本导入；导出的 ICS 文件可导入 Apple Calendar、Google Calendar、Outlook 等日历应用。
 
-桌面提供 5 种小组件、13 个固定尺寸变体（Today / TwoDay / WeekList / WeekView / WeekGrid），跨厂商兼容，放在首屏不用点开 App。GPL-3.0 开源，谁都能审计，谁都能 fork。
+桌面提供 5 种小组件、14 个固定尺寸变体（Today / TwoDay / WeekList / WeekView / WeekGrid），跨厂商兼容，放在首屏不用点开 App。GPL-3.0 开源，谁都能审计，谁都能 fork。
 
 按需权限：学校定位仅在点击定位后请求前台位置；添加到系统日历时请求日历读写；开启提醒时请求通知权限，相关页面提供精确闹钟、电池优化和勿扰授权入口；安装应用内下载的更新需允许安装未知来源应用。可离线查看已保存的课表，无需为了普通查看授予这些可选权限。
 
@@ -295,9 +299,11 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 
 ---
 
-## 桌面 Widget（5 类 13 变体）
+<a id="桌面-widget5-类-13-变体"></a>
 
-5 类 Widget × 13 个固定尺寸变体：Today / TwoDay / WeekList 各有常规 / 小 / 宽三档，WeekView / WeekGrid 各有常规 / 小两档。布局尺寸与各 launcher 自适应。
+## 桌面 Widget（5 类 14 变体）
+
+5 类 Widget × 14 个固定尺寸变体：Today / TwoDay / WeekList 各有常规 / 小 / 宽三档，WeekView / WeekGrid 各有常规 / 小两档。布局尺寸与各 launcher 自适应。
 
 <table>
   <tr>
@@ -458,7 +464,7 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 
 主题色与深浅模式独立设置：可跟随系统，也可强制浅色或深色。点击新建主题可随机生成、从主色派生整套配色，或逐一设置主交互色、次级强调、第三强调和表面中性色；编辑器提供颜色选择和实时预览，支持保存、重命名及删除。主题变更同步刷新桌面小组件。
 
-外观页可在经典与实验性**液态玻璃**底栏之间切换。液态玻璃提供背景折射、模糊和拖动透镜效果；运行时着色器效果需要 Android 13+，不支持时使用兼容渲染。页面切换、弹层和课表交互使用 Material 3 Expressive 动效。
+外观页可独立选择经典或**液态玻璃**界面风格，覆盖按钮、开关、滑杆、分段选择与弹窗；底栏形态、明暗模式和主题颜色分别设置。液态玻璃提供背景折射、模糊和拖动透镜效果；运行时着色器效果需要 Android 13+，不支持时使用兼容渲染。页面切换、弹层和课表交互使用 Material 3 Expressive 动效。
 
 课程配色可选经典黄金角、跟随主题或自定义主色，支持预览与重新配色，也可开启无色模式。
 
@@ -524,7 +530,7 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 
 > 实验设置与全量数据迁移入口
 
-「通用设置 → 数据迁移」可将全部课表、作息表、偏好和小组件配置打包为 `.sleepybackup`。恢复前可选**合并导入**（保留本机课表并追加，备份中的同名偏好会覆盖本机值）或**覆盖导入**（替换备份包含的课表与设置模块）。换机备份与单张课表的 JSON/ICS/文本导出用途不同。
+「我的 → 备份恢复」可将全部课表、作息表、偏好和小组件配置打包为 `.sleepybackup`。恢复前可选**合并导入**（保留本机课表并追加，备份中的同名偏好会覆盖本机值）或**覆盖导入**（替换备份包含的课表与设置模块）。换机备份与单张课表的 JSON/ICS/文本导出用途不同。
 
 ---
 
@@ -730,7 +736,7 @@ Bug 反馈和新学校适配请提交到 [Issues](https://github.com/lingion/sle
 
 [GPL-3.0](LICENSE)
 
-Sleepy 自有代码使用 GPL-3.0 发布；第三方内容保留各自的许可与署名。完整的源码移植、依赖、数据、设计资料、参考仓库和贡献者见 [引用来源与致谢](ACKNOWLEDGEMENTS.md)，应用内「我的 → 关于 → 开源声明」同步提供这些条目。
+Sleepy 自有代码使用 GPL-3.0 发布；第三方内容保留各自的许可与署名。完整的源码移植、依赖、数据、设计资料、参考仓库和贡献者见 [引用来源与致谢](ACKNOWLEDGEMENTS.md)，应用内「我的 → 关于 → 开源声明」通过链接打开[官网许可与致谢](https://sleepy.is-my.app/licenses/)，保留完整条目及许可原文。
 
 本项目的液态玻璃源码模块基于 [SleepDown课程表](https://github.com/xiaomanjun233/SleepDown-Schedule) 修改，原作者为 **xiaomanjun233**。Sleepy 由本项目维护，修改包括 Android 构建接线、Compose 版本适配及 FLClash 底栏集成。SleepDown 自有内容采用非商业、源码可见许可 1.1，Kyant 原始代码保留 Apache-2.0；FLClash 移植保留 GPL-3.0，Flutter 超椭圆移植保留 BSD-3-Clause。[许可原文与来源范围](ACKNOWLEDGEMENTS.md#源码来源声明)随仓库和应用保留。
 
