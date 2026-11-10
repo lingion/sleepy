@@ -478,11 +478,10 @@ object TimeTableUtils {
     }
 
     /**
-     * 删除某 node 后**重新编号**为 1..N (用户友好)，返回新 list。
+     * 删除某 node 后重排标准节次为 1..N，保留 Before 身份并顺延 After 节次。
      */
     fun removeAndRenumber(rows: List<TimeSlotRow>, node: Int): List<TimeSlotRow> =
-        rows.filter { it.node != node }
-            .mapIndexed { idx, r -> r.copy(node = idx + 1) }
+        renumberManualRows(rows.filter { it.node != node })
 
     /**
      * 追加导入扩展 timeJson — 把 incomingJson 中 node > currentMaxNode 的节次复制进来,
