@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -39,15 +38,9 @@ import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
 
 /**
- * 实心轨道，按住时滑块升起为采样轨道与宿主背景的镜片。
- *
- * 几何真源: sleepy/docs/liquid-glass-ios27/controls/controls-toggle.md §1
- * (sarunw iOS17↔26 对比图 @3x 像素尺实测; 2026-11-06 重测修订, ±0.5pt):
- * - 轨道 63×28dp 全圆角胶囊 (iOS 17 是 51×29)
- * - 滑块 37×24dp 横椭圆, 四周均 2pt 留白 (iOS 17 是 27 正圆; 轨道加宽正是为椭圆让位)
- * - 行程 = 63 − 37 − 2×2 = 22dp, 两端余量与上下留白对称
- * 热区按 HIG 通用规则 ≥44dp 高。三态模型 (§0): rest 标准填充 → press/drag
- * 隆起为活玻璃镜片 → release 沿 Dock 弹簧收回并保留速度。
+ * 实心轨道，按住时滑片渐变为采样轨道和宿主背景的玻璃镜片。
+ * iOS 26.5 原生测量与 Android 对齐范围见 docs/native-glass-control-alignment.md。
+ * 轨道 63×28，静止片 37×24、两端留白 2，行程 22；触摸目标保留 Android 48dp。
  */
 @Composable
 fun GlassSwitch(
@@ -75,15 +68,15 @@ fun GlassSwitch(
     val update by rememberUpdatedState(onCheckedChange)
     val currentChecked by rememberUpdatedState(checked)
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
-    // 行程 = 轨道宽 − 滑块宽 − 两端各 2dp 留白 = 63 − 37 − 4 = 22dp (2026-11-06 对
-    // sarunw-toggles-ios26.png 重测: 白块四周均 2pt, 旧 26 行程让白块贴轨道边缘 0 留白,
-    // 用户实机看到 "小白色块的 margin 不太对")。拖动映射与位移共用同一真值。
+    // Geometry and drag use the same measured 22dp travel.
     val travel = with(LocalDensity.current) { 22.dp.toPx() }
     LaunchedEffect(checked, dragging, gestureEnd) {
         if (!dragging) position = if (checked) 1f else 0f
     }
-    val motion = rememberGlassControlMotion(position, pressed || dragging, dragging, tapGeneration, enabled)
+    val motion = rememberGlassControlMotion(position, pressed || dragging, dragging, tapGeneration, enabled,
+        spec = GlassControlMotionSpec.Native)
     val lift = motion.lift
+    val geometryLift = motion.geometryLift
     val input = if (onCheckedChange == null) Modifier else Modifier
         .toggleable(
             value = checked, enabled = enabled, role = Role.Switch,
@@ -117,15 +110,22 @@ fun GlassSwitch(
         }
 
     val on = motion.position.value.coerceIn(0f, 1f)
+    // The solid thumb fades on the same lift clock as its glass geometry.
+    // The glass is always drawn behind this fill, so an almost-flat optical
+    // layer cannot hide the returning solid thumb during the last release frames.
+    val solidAlpha = 1f - lift
     val scheme = androidx.compose.material3.MaterialTheme.colorScheme
+    // Track fill follows the sliding position, including intermediate drag frames.
     val trackColor = if (enabled) lerp(colors.uncheckedTrackColor, colors.checkedTrackColor, on)
         else lerp(colors.disabledUncheckedTrackColor, colors.disabledCheckedTrackColor, on)
     val thumbColor = if (enabled) lerp(colors.uncheckedThumbColor, colors.checkedThumbColor, on)
         else lerp(colors.disabledUncheckedThumbColor, colors.disabledCheckedThumbColor, on)
-    val stretch = motion.stretch
-    val thumbWidth = glassLensWidth((37f + 16f * lift) * (1f + .2f * lift), stretch)
-    val thumbHeight = glassLensHeight((24f + 6f * lift) * (1f + .2f * lift), stretch,
-        minimum = 24f + 6f * lift)
+    // iOS 26.5 presentation layers: 37×24 at rest, 58×38⅓ held,
+    // briefly about 60×40 on rise. Keep geometric overshoot separate from alpha.
+    val stretch = motion.stretch * .25f
+    val thumbWidth = glassLensWidth(37f + 21f * geometryLift, stretch)
+    val thumbHeight = glassLensHeight(24f + (43f / 3f) * geometryLift, stretch,
+        minimum = 24f + 13f * geometryLift)
     val thumbShape = androidx.compose.foundation.shape.RoundedCornerShape(50)
     val track = rememberLayerBackdrop()
     val samplingHost = if (LocalGlassOverlay.current) LocalGlassOverlaySamplingHost.current ?: host else host
@@ -148,7 +148,6 @@ fun GlassSwitch(
                 IntOffset(((if (rtl) .5f - motion.position.value else motion.position.value - .5f) * travel).roundToInt(), 0)
             }
                 .requiredSize(thumbWidth.dp, thumbHeight.dp)
-                .background(thumbColor.copy(alpha = thumbColor.alpha * (1f - lift)), thumbShape)
                 .then(if (lift > 0f) Modifier.drawBackdrop(
                         backdrop = trackBackdrop,
                         shape = { thumbShape },
@@ -156,14 +155,12 @@ fun GlassSwitch(
                         highlight = null,
                         shadow = { LiquidGlassStyle.controlLensShadow(dark, lift) },
                     )
-                else Modifier),
+                else Modifier)
+                .background(thumbColor.copy(alpha = thumbColor.alpha * solidAlpha), thumbShape),
             contentAlignment = Alignment.Center,
         ) {
-            val iconColor = if (enabled) {
-                if (checked) colors.checkedIconColor else colors.uncheckedIconColor
-            } else {
-                if (checked) colors.disabledCheckedIconColor else colors.disabledUncheckedIconColor
-            }
+            val iconColor = if (enabled) lerp(colors.uncheckedIconColor, colors.checkedIconColor, on)
+                else lerp(colors.disabledUncheckedIconColor, colors.disabledCheckedIconColor, on)
             CompositionLocalProvider(LocalContentColor provides iconColor) {
                 thumbContent?.invoke()
             }
