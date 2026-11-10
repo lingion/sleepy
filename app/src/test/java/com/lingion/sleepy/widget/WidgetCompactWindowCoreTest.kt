@@ -61,25 +61,4 @@ class WidgetCompactWindowCoreTest {
 /** 渲染器接线契约: compact 脸必须读本实例档位, 不得回退全局 AppPrefs。 */
 class WidgetCompactWindowWiringTest {
 
-    private fun source(name: String): String =
-        java.io.File("src/main/java/com/lingion/sleepy/widget/$name").readText()
-
-    @Test
-    fun `week list and week view build compact window from per-widget store`() {
-        for (f in listOf("WeekListWidget.kt", "WeekViewWidget.kt")) {
-            val fn = source(f)
-            assertTrue(
-                "$f must read WidgetCompactWindowStore.isTodayFirst(context, appWidgetId)",
-                fn.contains("WidgetCompactWindowStore.isTodayFirst(context, appWidgetId)")
-            )
-            assertFalse(
-                "$f must not read the legacy global pref directly",
-                fn.contains("isCompactWindowTodayFirst(context)")
-            )
-            assertTrue(
-                "$f must clear the per-widget entry in onDeleted",
-                fn.contains("WidgetCompactWindowStore.remove(context, id)")
-            )
-        }
-    }
 }

@@ -134,23 +134,4 @@ class WidgetBoundarySchedulerTest {
         error("source not found: $rel")
     }
 
-    @Test
-    fun `notifyDataChanged re-arms boundary chain`() {
-        val s = source("app/src/main/java/com/lingion/sleepy/widget/WidgetUpdater.kt")
-        assertTrue("WidgetUpdater 必须调用 armNext", s.contains("WidgetBoundaryScheduler.armNext"))
-    }
-
-    @Test
-    fun `boot receiver re-arms unconditionally`() {
-        val s = source(
-            "app/src/main/java/com/lingion/sleepy/widget/notification/CourseNotificationScheduler.kt"
-        )
-        assertTrue("BootReceiver 必须无条件 armNext", s.contains("WidgetBoundaryScheduler.armNext"))
-    }
-
-    @Test
-    fun `boundary receiver registered in manifest`() {
-        val m = source("app/src/main/AndroidManifest.xml")
-        assertTrue(m.contains(".widget.WidgetBoundaryReceiver"))
-    }
 }

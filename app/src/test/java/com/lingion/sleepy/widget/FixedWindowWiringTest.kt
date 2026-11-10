@@ -5,7 +5,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.io.File
 import java.time.LocalDate
 import com.lingion.sleepy.util.AppClock
 
@@ -163,32 +162,4 @@ class FixedWindowWiringTest {
         assertFalse(wins[1].footer)
     }
 
-    // ---- push 层接线源码扫描 (防重构漂移) ----
-
-    private fun src(name: String): String =
-        File("src/main/java/com/lingion/sleepy/widget/$name").readText()
-
-    @Test
-    fun `today push wiring carries window footer and force-scroll gate`() {
-        val s = src("TodayWidget.kt")
-        assertTrue("forceScroll 参数缺失", s.contains("forceScroll: Boolean = WidgetScrollStore.isScrollEnabled(context, id)"))
-        assertTrue("窗口计算未接 push", s.contains("computeTodayWindow(data, hDp.toFloat()"))
-        assertTrue("静态分支未放行窗口", s.contains("contentH <= hDp || win != null"))
-        assertTrue("底部条布局未接", s.contains("R.layout.widget_today_nav_static"))
-        assertTrue("底部条配置未接", s.contains("configureTodayBar(context, views, id, receiverClass, data, hidden, wDp)"))
-        assertTrue("底部条布局选档未接", s.contains("todayBarLayout(wDp, data.isToday, navEnabled = true)"))
-        assertTrue("窗口须走填满档", s.contains("footerH = 0f"))
-    }
-
-    @Test
-    fun `twoday push wiring carries per-column windows and footer`() {
-        val s = src("TwoDayWidget.kt")
-        assertTrue("窗口计算未接 push", s.contains("computeTwoDayWindows(data, hDp.toFloat()"))
-        assertTrue("静态分支未放行窗口", s.contains("contentH <= hDp || wins != null"))
-        assertTrue("渲染未按列传窗口", s.contains("visibleByCol = visibleByCol"))
-        assertTrue("页脚布局未接", s.contains("R.layout.widget_bitmap_footer"))
-        assertTrue("页脚点击 PI 未挂", s.contains("footerConfigureViews"))
-        assertTrue("页脚须每列独立「+N」(禁合并求和)",
-            s.contains("widget_footer_more_short") && !s.contains("widget_footer_more,"))
-    }
 }

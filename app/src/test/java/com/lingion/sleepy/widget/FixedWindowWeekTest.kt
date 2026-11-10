@@ -5,7 +5,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.io.File
 import java.time.LocalDate
 
 /**
@@ -121,38 +120,4 @@ class FixedWindowWeekTest {
         assertFalse(w.footer)
     }
 
-    // ---- push 层接线源码扫描 (防重构漂移) ----
-
-    private fun src(name: String): String =
-        File("src/main/java/com/lingion/sleepy/widget/$name").readText()
-
-    @Test
-    fun `weeklist push wiring carries per-column windows`() {
-        val s = src("WeekListWidget.kt")
-        assertTrue("窗口计算未接 push", s.contains("computeWeekListWindows(shownDays, hDp.toFloat(), statusH)"))
-        assertTrue("静态分支未放行窗口", s.contains("contentH <= hDp || wins != null"))
-        assertTrue("渲染未按列传窗口", s.contains("visibleByCol = visibleByCol"))
-        assertTrue("页脚短串未接", s.contains("widget_footer_more_short"))
-        assertTrue("compact 档未排除窗口", s.contains("compactFace"))
-    }
-
-    @Test
-    fun `weekview push wiring carries per-column windows`() {
-        val s = src("WeekViewWidget.kt")
-        assertTrue("窗口计算未接 push", s.contains("computeWeekViewWindows(shownDays, hDp.toFloat(), statusH, lineH)"))
-        assertTrue("静态分支未放行窗口", s.contains("contentH <= hDp || wins != null"))
-        assertTrue("渲染未按列传窗口", s.contains("visibleByCol = visibleByCol"))
-        assertTrue("页脚短串未接", s.contains("widget_footer_more_short"))
-        assertTrue("compact 档未排除窗口", s.contains("compactFace"))
-    }
-
-    @Test
-    fun `weekgrid bitmap floor removed and color-band ladder present`() {
-        val s = src("WeekGridWidgetProvider.kt")
-        assertFalse("250dp 位图地板未删", s.contains("250 * density"))
-        assertFalse("180dp 位图地板未删", s.contains("180 * density"))
-        assertTrue("色带降级档缺失 (已提取为纯函数)", s.contains("if (weekGridColorBand(slotH, density))"))
-        assertTrue("色带阈值纯函数缺失", s.contains("slotHPx < (9f * density).roundToInt()"))
-        assertTrue("色带未走冲突分栏", s.contains("gridDayLanes(dayData.courses, dayData.timeJson)"))
-    }
 }

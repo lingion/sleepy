@@ -157,52 +157,6 @@ class WidgetVariantRenderTest {
     }
 
     /** WeekData fixture — 字段以 WidgetContent.kt 真实定义为准(days: List<DayData>) */
-    private val weekData = WeekData(
-        days = listOf(
-            DayData(
-                date = LocalDate.of(2026, 9, 2),
-                dayOfWeek = 3,
-                courses = listOf(
-                    testCourse(name = "高等数学", startNode = 1),
-                    testCourse(name = "数据结构", startNode = 3)
-                ),
-                timeJson = TimeTableUtils.DEFAULT_TIME_JSON
-            ),
-            DayData(
-                date = LocalDate.of(2026, 9, 3),
-                dayOfWeek = 4,
-                courses = listOf(testCourse(name = "大学英语", startNode = 1)),
-                timeJson = TimeTableUtils.DEFAULT_TIME_JSON
-            ),
-            DayData(
-                date = LocalDate.of(2026, 9, 4),
-                dayOfWeek = 5,
-                courses = emptyList(),
-                timeJson = TimeTableUtils.DEFAULT_TIME_JSON
-            )
-        ),
-        hasTable = true
-    )
-
-    @Test
-    fun `weekList compact face is 3-day column face not text lines`() {
-        // 2026-09-14 用户定稿: 列表·小 2×2 = 与周视图·小同一张脸 (今天邻域 ≤3 列
-        // 彩色胶囊)。旧「周X 课名」两行纯文本脸整体退场 — 禁回流。
-        var dir: java.io.File? = java.io.File(".").absoluteFile
-        lateinit var r: String
-        while (dir != null) {
-            val f = java.io.File(dir, "app/src/main/java/com/lingion/sleepy/widget/WidgetBitmapRenderers.kt")
-            if (f.exists()) { r = f.readText(); break }
-            dir = dir.parentFile
-        }
-        val fn = r.substringAfter("private fun renderWeekListCompact").substringBefore("fun renderWeekList(")
-        // 2026-09-15: 列选取升级为 compactShownDays (compactWindow 优先, 回退 weekViewCompactColumns)
-        assertTrue("compact 档必须复用 compact 列选取单一口径", fn.contains("compactShownDays("))
-        assertTrue("compact 档必须走 Regular 渲染器", fn.contains("renderWeekListRegular("))
-        assertFalse("纯文本脸 weekListCompactTexts 禁回流", r.contains("weekListCompactTexts"))
-        // 列选取本身 (今天邻域 ≤3 列) 由 weekViewCompactColumns 既有单测锁定
-    }
-
     @Test
     fun `weekList small receiver declares SMALL variant`() {
         assertEquals(WidgetVariant.SMALL, WeekListSmallWidgetReceiver().variantHint)

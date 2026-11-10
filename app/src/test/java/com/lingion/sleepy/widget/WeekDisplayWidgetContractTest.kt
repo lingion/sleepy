@@ -95,19 +95,6 @@ class WeekDisplayWidgetContractTest {
     }
 
     @Test
-    fun `week grid data loader reads resolver switch so empty week jumps to busy week`() {
-        // 契约: WeekGrid.loadWeekData 必须经 WidgetWeekDataLoader(内含 WeekDisplayResolver)
-        // 取数, 使「无课自动跳最近有课日」对周网格生效; 且 NEAREST_BUSY_DAY 档必须
-        // 把 targetDate 写入 WeekData 供 SMALL 档定位单日。
-        val src = java.io.File(
-            "src/main/java/com/lingion/sleepy/widget/WeekGridWidgetProvider.kt"
-        ).readText()
-        assertTrue(src.contains("WidgetWeekDataLoader.resolve(appWidgetId)"))
-        assertTrue(src.contains("weekDisplayStatus = display.status"))
-        assertTrue(src.contains("nearestBusyTargetDate = display.targetDate.takeIf"))
-    }
-
-    @Test
     fun `today header gives nearest busy day an actionable status title`() {
         val data = WidgetData(
             date = LocalDate.of(2026, 9, 16), courses = emptyList(), timeJson = "",

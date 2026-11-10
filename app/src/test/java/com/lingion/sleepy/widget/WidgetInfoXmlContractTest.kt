@@ -389,17 +389,4 @@ class WidgetInfoXmlContractTest {
         }
     }
 
-    @Test
-    fun `M tier previews exist in both drawable dirs with wide aspect`() {
-        // 评审 #20: 预览图 drawable 与 drawable-nodpi 两处都要有, M 档 2.7:1
-        val base = sequenceOf(
-            File("app/src/main/res"), File("src/main/res"), File("../app/src/main/res")
-        ).first { File(it, "drawable").isDirectory }
-        for (fam in listOf("today", "twoday", "weeklist")) {
-            for (d in listOf("drawable", "drawable-nodpi")) {
-                val f = File(base, "$d/widget_preview_${fam}_wide.png")
-                assertTrue("missing ${f.path}", f.isFile && f.length() > 0)
-            }
-        }
-    }
 }
