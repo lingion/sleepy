@@ -52,6 +52,7 @@ fun MineScreen(
     onOpenHoliday: () -> Unit = {},
     onOpenBackup: () -> Unit = {},
     onOpenAppearance: () -> Unit = {},
+    onOpenScheduleDisplay: () -> Unit = {},
     onOpenGeneral: () -> Unit = {},
     onOpenWidgetSettings: () -> Unit = {},
     onOpenReminder: () -> Unit = {},
@@ -122,6 +123,8 @@ fun MineScreen(
                     SettingsItem(icon = Icons.Outlined.Notifications, label = stringResource(R.string.reminder_title), onClick = onOpenReminder)
                     Divider()
                     SettingsItem(icon = Icons.Outlined.Palette, label = stringResource(R.string.mine_appearance), onClick = onOpenAppearance)
+                    Divider()
+                    SettingsItem(icon = Icons.Outlined.DateRange, label = stringResource(R.string.mine_schedule_settings), onClick = onOpenScheduleDisplay)
                     Divider()
                     SettingsItem(icon = Icons.Outlined.Tune, label = stringResource(R.string.mine_general), onClick = onOpenGeneral)
                     Divider()

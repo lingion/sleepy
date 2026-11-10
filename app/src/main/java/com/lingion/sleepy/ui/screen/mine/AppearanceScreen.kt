@@ -84,7 +84,7 @@ import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
 /**
- * 外观按模式、主题色彩、底部导航、课程配色和课表显示入口排序。
+ * 外观按模式、主题色彩、底部导航和课程配色排序。
  * 保留 refreshWidgets() 管线, 主题变更后即时刷新小组件。
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -95,7 +95,6 @@ fun AppearanceScreen(
     onThemeModeChange: (String) -> Unit = {},
     navDock: Boolean = false,
     onNavDockChange: (Boolean) -> Unit = {},
-    onOpenScheduleDisplay: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val colors = MaterialTheme.colorScheme
@@ -351,14 +350,6 @@ fun AppearanceScreen(
                         refreshWidgets()
                     },
                     previewGids = previewCourseGroups,
-                )
-            }
-
-            item {
-                AppearanceNavigationRow(
-                    title = stringResource(R.string.appearance_section_schedule_display),
-                    tag = "appearance_schedule_display",
-                    onClick = onOpenScheduleDisplay,
                 )
             }
 

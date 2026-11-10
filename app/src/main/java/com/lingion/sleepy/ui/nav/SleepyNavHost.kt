@@ -346,7 +346,6 @@ internal fun SleepyNavHost(
                 onBack = { navigator.pop() },
                 themeMode = themeMode,
                 onThemeModeChange = onThemeModeChange,
-                onOpenScheduleDisplay = { navigator.openScheduleDisplay() },
                 navDock = navDock,
                 onNavDockChange = onNavDockChange,
             )
@@ -986,6 +985,7 @@ private fun RightHalfContent(
                 onOpenCourseList = { navigator.openCourseList() },
                 onOpenPeriodTables = { navigator.openPeriodTables() },
                 onOpenAppearance = { navigator.openAppearance() },
+                onOpenScheduleDisplay = { navigator.openScheduleDisplay() },
                 onOpenHoliday = { navigator.openHoliday() },
                 onOpenBackup = { navigator.openBackup() },
                 onOpenGeneral = { navigator.openGeneral() },

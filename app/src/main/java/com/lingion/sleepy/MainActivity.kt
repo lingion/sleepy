@@ -372,6 +372,7 @@ internal fun MainTabs(
                     onOpenCourseList = { navigator.openCourseList() },
                     onOpenPeriodTables = { navigator.openPeriodTables() },
                     onOpenAppearance = { navigator.openAppearance() },
+                    onOpenScheduleDisplay = { navigator.openScheduleDisplay() },
                     onOpenHoliday = { navigator.openHoliday() },
                     onOpenBackup = { navigator.openBackup() },
                     onOpenGeneral = { navigator.openGeneral() },
