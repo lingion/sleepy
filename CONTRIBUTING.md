@@ -9,12 +9,12 @@
 ```bash
 git clone https://github.com/lingion/sleepy.git
 cd sleepy
-./gradlew :app:testDebugUnitTest   # 先跑一遍全量单测,确认基线全绿
+./gradlew :app:assembleDebug
 ```
 
-- 使用 JDK 17+、Gradle 9.8.2 Wrapper 和 AGP 9.4.1；Android Studio 需支持 AGP 9.4。命令行构建用 `./gradlew`，Windows 用 `.\gradlew.bat`，具体版本以[构建前置说明](README.md#前置)与仓库构建配置为准。
+- 使用 JDK 17+ 和仓库自带的 Gradle Wrapper。Android Studio 需支持版本目录中声明的 AGP；命令行构建用 `./gradlew`，Windows 用 `.\gradlew.bat`，具体版本以[构建前置说明](README.md#前置)与仓库构建配置为准。
 - SDK 安装与 SDK XML v4 兼容性警告的排查见 [构建前置说明](README.md#前置)；确保 IDE 与命令行使用同一套 SDK 和最新 Command-line Tools。
-- 改代码前先跑通测试基线；提交前确认自己新增的行为有测试锁定。
+- 先运行与改动相关的行为测试。完整单测、lint 和 Release 构建由 PR CI 执行。
 
 ## 提 Bug
 
@@ -40,14 +40,17 @@ cd sleepy
 
    如果是修 bug 或教务适配，把 `feat/your-topic` 换成对应的 `fix/...` 或 `adapt/...`。后续只在这个个人分支上 commit 和 push，再发起目标为 `main` 的 Pull Request。
 2. **一个分支一个主题**；小步 commit，格式 `<type>(<scope>): <subject>`，`<type>` ∈ {feat, fix, refactor, docs, test, chore, perf, build}。
-3. **合并前测试全绿**：
+3. **验证改动对应的行为**。例如修改新版正方解析器时：
 
    ```bash
-   ./gradlew :app:testDebugUnitTest
-   ./gradlew :app:lintDebug
+   ./gradlew :app:testDebugUnitTest --tests '*JwNewZfParserTest'
    ```
 
-   教务适配另跑该校 fixture 测试；改 WebView 内 JS 正则的，还必须同步通过对应的 `*WebViewContractTest`（如 `JwNeuWebViewContractTest`、`HfutPortalEams5WebViewContractTest`）。这类测试锁的是：同一条解析规则会同时出现在网页注入的 JS 和 Kotlin 两侧，两边写得不一致时页面表现和导入结果就对不上，contract 测试保证"两边写的是同一条规则"。
+   教务适配运行该校 fixture 测试。修改 WebView 采集脚本时运行对应的 `tools/test-*-fetch.js` 或 `scripts/test_*_capture.cjs`，实际执行采集逻辑。学校目录的测试资源在构建时从主资产生成，无需手动复制。只改文档不需要先完成 Android 全量测试。
+
+   测试应调用生产逻辑并检查结果。不要用源码字符串、函数名、注释、动画参数或复制到测试里的业务函数作为行为证据。已有行为覆盖的场景不重复添加测试。完整检查仍可在本地运行 `./gradlew :app:testDebugUnitTest :app:lintDebug`。
+
+   采集器改动在 `tools/sleepy-collector` 运行 `go test -p 1 -parallel 1 ./...`。默认测试不下载浏览器、不访问线上更新服务。需要验证真实浏览器采集时，运行 `SLEEPY_CFT_E2E=1 go test -p 1 -parallel 1 ./...`，可能下载约 180 MB 的 Chrome；CI 会启用这组集成测试。
 
 4. PR 描述写清动机和行为变化；关联 issue 用 `ref #N`（不用 `Fixes #N`，由维护者合并后统一关闭）。
 5. **合并走 PR + squash**(不要 merge / rebase 进 main)。main 受 ruleset 保护：禁直推、禁非 fast-forward、必需 CI 全绿（commit-lint / collector-test / android-unit-test / android-assemble）。PR 里的**每条 commit message** 都要符合上面的 `<type>(<scope>): <subject>` 格式——commit-lint job 逐条校验。
@@ -65,7 +68,7 @@ cd sleepy
 新增学校必须同时补齐教务入口和城市推荐数据，字段模板、官网核查要求与验证命令见 [新增学校与城市推荐数据规范](docs/adding-school-city.md)。城市表的键必须与目录名称完全一致；不能按校名中的地名猜城市。
 
 1. **调研归档**：解析规则要能对上真实页面。你的采集包（`sleepy-adapt.zip`）就是最好的依据；提交时说明页面上哪个元素对应哪条解析规则。
-2. **致谢**：凡参考了他人维护的教务/课表开源项目（无论参考了解析思路还是直接复用规则），都会在 App 内「关于 → 开源许可」页致谢。提 PR 时请列出你参考过的仓库，作者会核对补全。
+2. **致谢**：参考他人维护的教务或课表项目时，在 PR 中列出来源，维护者会更新来源清单与官网开源声明。应用内「关于 → 开源声明」打开官网页面。
 3. **测试**：每所学校带 fixture 测试；解析规则改动必须先有失败的测试再修（红→绿）。
 
 ## Commit 身份
