@@ -1,0 +1,43 @@
+name: Refresh official website
+
+on:
+  release:
+    types: [published, edited]
+  # Releases created using GITHUB_TOKEN do not emit another release workflow.
+  # workflow_run covers the official tag-driven Release job after its assets upload.
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: refresh-sleepy-site
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Refresh sleepy-site from the latest complete stable release
+        env:
+          GH_TOKEN: ${{ secrets.SLEEPY_SITE_DISPATCH_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo '::error::SLEEPY_SITE_DISPATCH_TOKEN must allow repository dispatch to lingion/sleepy-site'
+            exit 1
+          fi
+          # The receiver resolves latest at build time. Delayed/repeated events
+          # cannot pin the website to an older version or an incomplete event payload.
+          for attempt in 1 2 3; do
+            if gh api --method POST repos/lingion/sleepy-site/dispatches \
+              -f event_type=upstream-release; then
+              exit 0
+            fi
+            sleep 5
+          done
+          exit 1
