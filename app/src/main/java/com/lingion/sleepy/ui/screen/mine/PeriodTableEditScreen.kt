@@ -297,11 +297,9 @@ fun PeriodTableEditScreen(
                             return@Button
                         }
                         error = null
-                        val smartConfigJson = try {
-                            Json.encodeToString(smartConfig.value)
-                        } catch (e: Exception) {
-                            ""
-                        }
+                        val smartConfigJson = com.lingion.sleepy.ui.component.encodeMatchingSmartPeriodConfig(
+                            slotRows.toList(), smartConfig.value
+                        )
                         val newTimeJson = TimeTableUtils.buildTimeJsonFromRows(slotRows.toList())
                         val updated = periodTable.copy(
                             name = name.ifBlank { periodTable.name },

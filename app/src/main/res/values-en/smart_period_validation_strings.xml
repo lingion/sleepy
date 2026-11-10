@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="smart_period_invalid_start">The first period must start between 00:00 and 23:59. This change was not applied.</string>
+    <string name="smart_period_invalid_count">Use 1–1439 periods that fit within the day. This change was not applied.</string>
+    <string name="smart_period_invalid_duration">Period lengths must be positive and breaks cannot be negative. This change was not applied.</string>
+    <string name="smart_period_exceeds_day">Periods and breaks must finish by 23:59 on the same day. This change was not applied; reduce the count, lengths, or breaks.</string>
+</resources>

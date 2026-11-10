@@ -34,7 +34,7 @@ data class SmartPeriodConfig(
      * null 或越界表示使用主课程时长 [periodMinutes]。
      */
     fun effectivePeriodAssignments(): List<Int?> {
-        val n = totalPeriods.coerceAtLeast(0)
+        val n = totalPeriods.coerceIn(0, MAX_PERIODS_PER_DAY)
         val base = periodAssignments.take(n)
         return base.map { value ->
             if (value != null && value in durations.indices) value else null
@@ -54,7 +54,7 @@ data class SmartPeriodConfig(
      * 未填的位置默认 null（0 分钟连续）
      */
     fun effectiveAssignments(): List<Int?> {
-        val n = (totalPeriods - 1).coerceAtLeast(0)
+        val n = (totalPeriods.coerceIn(0, MAX_PERIODS_PER_DAY) - 1).coerceAtLeast(0)
         val base = transitionAssignments.take(n)
         return base.map { v ->
             if (v != null && v in breaks.indices) v else null
@@ -66,7 +66,7 @@ data class SmartPeriodConfig(
      * 默认（null 或越界）= 0 分钟
      */
     fun effectiveTransitionMinutes(): List<Int> {
-        val n = (totalPeriods - 1).coerceAtLeast(0)
+        val n = (totalPeriods.coerceIn(0, MAX_PERIODS_PER_DAY) - 1).coerceAtLeast(0)
         val assigns = effectiveAssignments()
         return (0 until n).map { i ->
             val idx = assigns[i]
@@ -74,14 +74,37 @@ data class SmartPeriodConfig(
         }
     }
 
-    /** 推导节次（不含 transition，仅节本身） */
+    /** Validate before deriving: persisted clocks and the manual editor both stop at 23:59. */
+    fun validationError(): SmartPeriodValidationError? {
+        val start = startMinute() ?: return SmartPeriodValidationError.StartTime
+        if (totalPeriods !in 1..MAX_PERIODS_PER_DAY) return SmartPeriodValidationError.PeriodCount
+        if (periodMinutes < 1 || durations.any { it.minutes < 1 } || breaks.any { it.minutes < 0 }) {
+            return SmartPeriodValidationError.Duration
+        }
+        // Use Long and inspect assignments directly, so a corrupt imported count or duration
+        // cannot overflow an Int or allocate an unbounded preview before being rejected.
+        var minute = start.toLong()
+        repeat(totalPeriods) { index ->
+            val duration = periodAssignments.getOrNull(index)?.let { durations.getOrNull(it) }?.minutes
+                ?: periodMinutes
+            minute += duration.toLong()
+            if (minute > LAST_MINUTE_OF_DAY) return SmartPeriodValidationError.ExceedsDay
+            if (index < totalPeriods - 1) {
+                minute += transitionAssignments.getOrNull(index)?.let { breaks.getOrNull(it) }?.minutes?.toLong() ?: 0L
+            }
+        }
+        return null
+    }
+
+    /** 推导节次（不含 transition，仅节本身）；非法配置不生成或截断作息。 */
     fun derive(): List<TimeSlotRow> {
+        if (validationError() != null) return emptyList()
         val rows = mutableListOf<TimeSlotRow>()
         val transMins = effectiveTransitionMinutes()
         val periodMins = effectivePeriodMinutes()
-        val (h0, m0) = parseStart()
-        var curH = h0
-        var curM = m0
+        val firstMinute = startMinute()!!
+        var curH = firstMinute / 60
+        var curM = firstMinute % 60
         for (i in 0 until totalPeriods) {
             val startStr = "%02d:%02d".format(curH, curM)
             curM += periodMins[i]
@@ -98,11 +121,18 @@ data class SmartPeriodConfig(
         return rows
     }
 
-    private fun parseStart(): Pair<Int, Int> {
-        val parts = startTime.split(":")
-        return if (parts.size == 2) parts[0].toInt() to parts[1].toInt() else 8 to 0
+    private fun startMinute(): Int? {
+        if (!Regex("(?:[01]\\d|2[0-3]):[0-5]\\d").matches(startTime)) return null
+        return startTime.substring(0, 2).toInt() * 60 + startTime.substring(3, 5).toInt()
+    }
+
+    companion object {
+        const val LAST_MINUTE_OF_DAY = 23 * 60 + 59
+        const val MAX_PERIODS_PER_DAY = LAST_MINUTE_OF_DAY
     }
 }
+
+enum class SmartPeriodValidationError { StartTime, PeriodCount, Duration, ExceedsDay }
 
 /**
  * Break 模板（用于"智慧节次"自动模式 UI）
