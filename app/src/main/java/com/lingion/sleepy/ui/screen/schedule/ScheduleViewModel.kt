@@ -187,6 +187,9 @@ class ScheduleViewModel : ViewModel() {
             com.lingion.sleepy.data.undo.UndoManager.beginBatch()
             try {
                 val current = repo.getTable(tableId) ?: return@launch
+                // Capture the schedule courses currently reference before either policy
+                // changes the binding. The compatibility snapshot can be a different day.
+                val previousTimeJson = current.hydratedWith(repo.effectivePeriodTable(tableId)).timeJson
                 when (policy) {
                     SchedulePolicy.DETACH_COPY -> {
                         // ① 写本表内置作息(兼容列) + 解绑; X 与其他绑定课表零改动
@@ -197,10 +200,12 @@ class ScheduleViewModel : ViewModel() {
                         repo.updateTableRemappingCourses(
                             editedTable.copy(
                                 periodTableId = null,
+                                preBindSnapshotJson = "",
                                 timeJson = newTimeJson,
                                 smartConfigJson = smartConfigJson,
                                 nodesPerDay = nodesPerDay
-                            )
+                            ),
+                            previousTimeJson = previousTimeJson
                         )
                     }
                     SchedulePolicy.CREATE_NEW -> {
@@ -214,7 +219,13 @@ class ScheduleViewModel : ViewModel() {
                         )
                         repo.bindPeriodTable(tableId, newId)
                         repo.updateTableRemappingCourses(
-                            editedTable.copy(periodTableId = newId)
+                            editedTable.copy(
+                                periodTableId = newId,
+                                timeJson = newTimeJson,
+                                smartConfigJson = smartConfigJson,
+                                nodesPerDay = nodesPerDay
+                            ),
+                            previousTimeJson = previousTimeJson
                         )
                     }
                     SchedulePolicy.SYNC -> {
@@ -453,7 +464,7 @@ class ScheduleViewModel : ViewModel() {
         return id
     }
 
-    /** issue#40: 修改共享时间节次表内容 — 全部绑定课表立即生效, 课程行零改动 */
+    /** 修改共享时间节次表内容；标准课保持节次绑定，边缘编号顺延时迁移其引用。 */
     fun updatePeriodTableContent(table: com.lingion.sleepy.data.entity.PeriodTableEntity) {
         viewModelScope.launch {
             repo.savePeriodTable(table)

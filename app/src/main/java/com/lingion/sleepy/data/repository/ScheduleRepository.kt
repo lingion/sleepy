@@ -376,9 +376,7 @@ class ScheduleRepository(private val db: AppDatabase) {
                     maxWeek = table.maxWeek
                 )
             )
-            periodTableDao.update(
-                periodTable.copy(updatedAt = AppClock.millis())
-            )
+            updateSharedPeriodPreservingEdgeCourses(periodTable)
         }
         onDataChanged()
     }
@@ -419,6 +417,8 @@ class ScheduleRepository(private val db: AppDatabase) {
                     )
                 else -> current.copy(periodTableId = periodTableId)
             }
+            // Migrate the target's existing bindings before adding a new binding to it.
+            periodContent?.let { updateSharedPeriodPreservingEdgeCourses(it) }
             tableDao.update(
                 next.copy(
                     name = table.name,
@@ -426,9 +426,6 @@ class ScheduleRepository(private val db: AppDatabase) {
                     maxWeek = table.maxWeek
                 )
             )
-            periodContent?.let {
-                periodTableDao.update(it.copy(updatedAt = AppClock.millis()))
-            }
         }
         onDataChanged()
     }
@@ -440,28 +437,41 @@ class ScheduleRepository(private val db: AppDatabase) {
      * 课程还停在 13-16 节。ownTime 课自带绝对时间(timeToNode 直接定位), 普通课按
      * remapCourseNodes 重排; 无法映射的课保持原节次。与 updateTable 同为单动作
      * 撤回单元(首快照 = 改表前)。
+     * [previousTimeJson] 用于已换绑/解绑的复合保存，传入换绑前真正生效的作息。
      */
-    suspend fun updateTableRemappingCourses(table: TimeTableEntity) {
+    suspend fun updateTableRemappingCourses(
+        table: TimeTableEntity,
+        previousTimeJson: String? = null
+    ) {
         captureForUndo()
-        val oldJson = tableDao.getById(table.id)?.timeJson.orEmpty()
-        tableDao.update(table)
-        if (table.timeJson != oldJson) {
-            val courses = courseDao.getByTable(table.id)
-            val remapped = courses.map { c ->
-                if (c.ownTime) {
-                    val mapped = com.lingion.sleepy.util.TimeTableUtils.timeToNode(
-                        c.startTime, c.endTime, table.timeJson
-                    )
-                    if (mapped != null) c.copy(startNode = mapped.first, step = mapped.second) else c
-                } else {
-                    val (node, step) = com.lingion.sleepy.util.TimeTableUtils.remapCourseNodes(
-                        c.startNode, c.step, oldJson, table.timeJson
-                    )
-                    c.copy(startNode = node, step = step)
+        db.withTransaction {
+            val current = tableDao.getById(table.id)
+            val bound = current?.periodTableId?.let { periodTableDao.getById(it) }
+            val oldJson = previousTimeJson ?: current?.hydratedWith(bound)?.timeJson.orEmpty()
+            tableDao.update(table)
+            if (table.timeJson != oldJson) {
+                val courses = courseDao.getByTable(table.id)
+                val edges = remapRenumberedEdgeCourses(courses, oldJson, table.timeJson)
+                val remapped = courses.mapIndexed { index, c ->
+                    if (c.isIrregularNode) {
+                        // Edge identity survives a standard insertion even when its clock
+                        // changes in the same draft; it must not attach to a standard slot.
+                        edges[index]
+                    } else if (c.ownTime) {
+                        val mapped = com.lingion.sleepy.util.TimeTableUtils.timeToNode(
+                            c.startTime, c.endTime, table.timeJson
+                        )
+                        if (mapped != null) c.copy(startNode = mapped.first, step = mapped.second) else c
+                    } else {
+                        val (node, step) = com.lingion.sleepy.util.TimeTableUtils.remapCourseNodes(
+                            c.startNode, c.step, oldJson, table.timeJson
+                        )
+                        c.copy(startNode = node, step = step)
+                    }
                 }
+                val changed = remapped.filterIndexed { i, c -> c != courses[i] }
+                if (changed.isNotEmpty()) courseDao.updateAll(changed)
             }
-            val changed = remapped.filterIndexed { i, c -> c != courses[i] }
-            if (changed.isNotEmpty()) courseDao.updateAll(changed)
         }
         onDataChanged()
     }
@@ -600,17 +610,33 @@ class ScheduleRepository(private val db: AppDatabase) {
 
     /**
      * 修改时间节次表内容(设计 §5.2): 更新实体+updatedAt。
-     * 所有绑定课表经 effectivePeriodTable 立即读到新作息, 课程行不重算。
+     * 标准课程保持节次绑定；随标准上界顺延的边缘课程保留其边缘身份。
      */
     suspend fun updatePeriodTable(table: com.lingion.sleepy.data.entity.PeriodTableEntity) {
         captureForUndo()
-        periodTableDao.update(table.copy(updatedAt = AppClock.millis()))
+        db.withTransaction { updateSharedPeriodPreservingEdgeCourses(table) }
         onDataChanged()
+    }
+
+    /** Called inside the same transaction as the shared schedule write. */
+    private suspend fun updateSharedPeriodPreservingEdgeCourses(
+        table: com.lingion.sleepy.data.entity.PeriodTableEntity
+    ) {
+        val previous = periodTableDao.getById(table.id)
+        if (previous != null && previous.timeJson != table.timeJson) {
+            periodTableDao.boundTableIds(table.id).forEach { tableId ->
+                val courses = courseDao.getByTable(tableId)
+                val remapped = remapRenumberedEdgeCourses(courses, previous.timeJson, table.timeJson)
+                val changed = remapped.filterIndexed { index, course -> course != courses[index] }
+                if (changed.isNotEmpty()) courseDao.updateAll(changed)
+            }
+        }
+        periodTableDao.update(table.copy(updatedAt = AppClock.millis()))
     }
 
     /**
      * 保存独立作息表内容。绑定课表通过 hydratedWith 实时读取新值，
-     * 因此这里只更新 period_tables，不再污染任何课表兼容列。
+     * 不改课表兼容列；边缘节次顺延时原子迁移绑定课程的边缘引用。
      * 返回当前绑定课表数，供 UI 预览文案使用。
      */
     suspend fun savePeriodTable(
@@ -619,7 +645,7 @@ class ScheduleRepository(private val db: AppDatabase) {
         if (periodTableDao.getById(table.id) == null) return 0
         captureForUndo()
         val boundCount = periodTableDao.boundTableCount(table.id)
-        periodTableDao.update(table.copy(updatedAt = AppClock.millis()))
+        db.withTransaction { updateSharedPeriodPreservingEdgeCourses(table) }
         onDataChanged()
         return boundCount
     }

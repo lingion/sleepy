@@ -44,6 +44,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -552,9 +553,11 @@ private fun ManualTimeSlotEditor(
                     }
                     val context = androidx.compose.ui.platform.LocalContext.current
                     val conflictMsg = TimeTableUtils.findConflictForSlot(displayRows, row.node)?.errorMessage(context)
+                    // A completed card can change slots; discard the old slot's remembered picker clocks.
+                    key(row.node, row.start, row.end, row.edgeClass) {
                     TimeSlotRowItem(
                         compact = compactRows,
-                        row = row.copy(node = index + 1),
+                        row = row,
                         canDelete = displayRows.size > 1,
                         isBlank = row.start.isBlank() && row.end.isBlank(),
                         conflictMsg = conflictMsg,
@@ -579,10 +582,15 @@ private fun ManualTimeSlotEditor(
                                     onLongClick(label = longPressLabel) { true }
                                 }
                             },
-                        onStartChange = { newStart -> onRowsChange(displayRows.map { if (it.node == row.node) it.copy(start = newStart) else it }) },
-                        onEndChange = { newEnd -> onRowsChange(displayRows.map { if (it.node == row.node) it.copy(end = newEnd) else it }) },
+                        onStartChange = { newStart ->
+                            onRowsChange(TimeTableUtils.updateManualRowTime(displayRows, row.node, start = newStart))
+                        },
+                        onEndChange = { newEnd ->
+                            onRowsChange(TimeTableUtils.updateManualRowTime(displayRows, row.node, end = newEnd))
+                        },
                         onDelete = { onRowsChange(TimeTableUtils.removeAndRenumber(displayRows, row.node)) }
                     )
+                    }
                     }
                 }
             }
