@@ -125,6 +125,16 @@ jobs:
           def gitee_patch(path, fields):
               return gitee_form("PATCH", path, fields)
 
+          def sanitize_gitee_body(text, tag_name):
+              # Gitee's `description` column in MySQL is TEXT (max 65,535 bytes).
+              # When release notes exceed 60,000 bytes, truncate cleanly without splitting UTF-8 characters.
+              encoded = (text or "").encode('utf-8')
+              if len(encoded) <= 60000:
+                  return text or ""
+              truncated = encoded[:58000].decode('utf-8', errors='ignore')
+              suffix = f"\n\n---\n*注：完整更新说明已超出 Gitee 文本容量上限（64 KB），完整更新日志与证据链请参阅 [GitHub Release](https://github.com/{GITHUB_REPO}/releases/tag/{tag_name})。*"
+              return truncated + suffix
+
           def gitee_delete_att(rel_id, aid):
               for _ in range(3):
                   curl_text(["curl", "-s", "--max-time", "60", "-X", "DELETE", "-A", USER_AGENT,
@@ -196,7 +206,7 @@ jobs:
               tag = rel["tag_name"]
               name = rel.get("name") or tag
               pre = "true" if rel.get("prerelease") else "false"
-              body_text = rel.get("body") or ""
+              body_text = sanitize_gitee_body(rel.get("body") or "", tag)
 
               if tag in gitee_rels_map:
                   # In release event mode, only patch the target release note
