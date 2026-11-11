@@ -553,7 +553,7 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 | 启动页 | Core Splash Screen 1.2.0 |
 | 本地调试控制台 | NanoHTTPD 2.3.1，监听 `127.0.0.1:3737` |
 | Android 基础库 | AndroidX Core 1.19.1；Activity Compose 1.13.0；Lifecycle 2.8.7 |
-| 构建 | AGP 9.4.1 + Gradle 9.8.2，使用 Kotlin DSL；应用使用 AGP 内置 Kotlin 支持 |
+| 构建 | JDK 25 + AGP 9.5.1 + Gradle 9.8.2，使用 Kotlin DSL；应用使用 AGP 内置 Kotlin 支持 |
 | Android SDK | `minSdk=26`；`compileSdk=37`；`targetSdk=37` |
 
 版本以[依赖版本目录](gradle/libs.versions.toml)、[根构建配置](build.gradle.kts)、[应用构建配置](app/build.gradle.kts)和 [Gradle Wrapper 配置](gradle/wrapper/gradle-wrapper.properties)为准。
@@ -638,6 +638,7 @@ sleepy/
 │   └── sleepy-collector/                                      # Go 教务适配采集器
 ├── tasks/                                                     # 计划与待办记录
 ├── gradle/
+│   ├── gradle-daemon-jvm.properties                           # 构建 JVM 固定为 JDK 25
 │   ├── libs.versions.toml                                     # 依赖版本目录
 │   └── wrapper/                                               # Gradle Wrapper 配置与 JAR
 ├── build.gradle.kts                                           # 根构建插件配置
@@ -654,15 +655,18 @@ sleepy/
 
 ### 前置
 
-构建使用仓库自带的 **Gradle 9.8.2 Wrapper + Android Gradle Plugin（AGP） 9.4.1**。Android Studio 需支持 AGP 9.4，版本兼容要求见 [AGP 9.4 官方说明](https://developer.android.com/build/releases/agp-9-4-0-release-notes)。CI 使用 JDK 17，Java / Kotlin 编译目标同为 17。
+构建使用 **JDK 25 + 仓库自带的 Gradle 9.8.2 Wrapper + Android Gradle Plugin（AGP）9.5.1**。Android Studio 需支持 AGP 9.5，版本兼容要求见 [AGP 9.5 官方说明](https://developer.android.com/build/releases/agp-9-5-0-release-notes)。本地编译、单元测试和 CI 统一使用 JDK 25；Java / Kotlin 编译目标仍为 17，最低 Android 版本仍为 Android 8.0（API 26）。
+
+先安装 JDK 25，将 `JAVA_HOME` 指向其根目录，并将其 `bin` 加入 `PATH`；Android Studio 的 Gradle JDK 也选择 JDK 25。仓库通过 [`gradle/gradle-daemon-jvm.properties`](gradle/gradle-daemon-jvm.properties) 固定 Gradle Daemon 使用已安装的 JDK 25，不自动下载 JDK。该配置优先于 `JAVA_HOME`；确认实际构建环境时应检查 `./gradlew --version` 的 `Daemon JVM`，不能只看 `java -version`。
 
 ```bash
-java -version           # JDK 17+
+java -version           # JDK 25
+./gradlew --version     # Daemon JVM: Java 25
 
 sdkmanager "platforms;android-37.0" "build-tools;36.0.0"
 ```
 
-项目配置 `compileSdk=37`、`targetSdk=37`；平台安装包标识为 `platforms;android-37.0`。项目未显式固定 `buildToolsVersion`，AGP 9.4 默认使用 Build Tools 36.0.0。
+项目配置 `compileSdk=37`、`targetSdk=37`；平台安装包标识为 `platforms;android-37.0`。项目未显式固定 `buildToolsVersion`，AGP 9.5 默认使用 Build Tools 36.0.0。
 
 若遇到 `SDK XML versions up to 3` / `SDK XML file of version 4` 警告，先确认通过本仓库的 `gradlew` / `gradlew.bat` 构建，再在 Android Studio 的 SDK Manager → SDK Tools 中更新 **Android SDK Command-line Tools (latest)**。IDE、`ANDROID_HOME` 和 `local.properties` 中的 `sdk.dir` 应指向同一个 SDK；命令行使用该 SDK 的 `cmdline-tools/latest/bin/sdkmanager`（Windows 为 `sdkmanager.bat`），避免 `PATH` 命中旧的 `tools/bin/sdkmanager`。参见 [sdkmanager 官方文档](https://developer.android.com/tools/sdkmanager)。
 
@@ -680,7 +684,7 @@ cd sleepy
 
 Windows 原生环境（PowerShell / CMD，无需 WSL 或 Git Bash）：
 
-1. 安装 JDK 17 或 21，将 `JAVA_HOME` 指向 JDK 根目录（不是 `bin`），或将 JDK 的 `bin` 目录加入 `PATH`。
+1. 安装 JDK 25，将 `JAVA_HOME` 指向 JDK 根目录（不是 `bin`），并将该 JDK 的 `bin` 目录加入 `PATH`。
 2. 安装 Android SDK Platform 37 和所需的 Build Tools（可通过 Android Studio 的 SDK Manager 安装）。将 `ANDROID_HOME` 指向 SDK 根目录，或在项目根目录的 `local.properties` 中配置 `sdk.dir=C:/Users/your-name/AppData/Local/Android/Sdk`（使用正斜杠，并替换为实际路径；此文件已被 Git 忽略）。
 3. 在项目根目录运行：
 

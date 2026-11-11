@@ -22,7 +22,7 @@ jobs:
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '25'
           check-latest: true
       - uses: gradle/actions/setup-gradle@v6
       - uses: actions/cache@v6
@@ -52,7 +52,7 @@ jobs:
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '25'
           check-latest: true
       - uses: gradle/actions/setup-gradle@v6
       - run: ./gradlew :app:assembleRelease --stacktrace

@@ -534,7 +534,7 @@ Mine → Backup and restore exports timetable and period-table data, preferences
 | Splash screen | Core Splash Screen 1.2.0 |
 | Local debug console | NanoHTTPD 2.3.1, listening on `127.0.0.1:3737` |
 | Android libraries | AndroidX Core 1.19.1; Activity Compose 1.13.0; Lifecycle 2.8.7 |
-| Build | AGP 9.4.1 + Gradle 9.8.2, using Kotlin DSL and AGP's built-in Kotlin support for the app |
+| Build | JDK 25 + AGP 9.5.1 + Gradle 9.8.2, using Kotlin DSL and AGP's built-in Kotlin support for the app |
 | Android SDK | `minSdk=26`; `compileSdk=37`; `targetSdk=37` |
 
 Versions are defined in the [version catalog](gradle/libs.versions.toml), [root build configuration](build.gradle.kts), [app build configuration](app/build.gradle.kts), and [Gradle Wrapper configuration](gradle/wrapper/gradle-wrapper.properties).
@@ -619,6 +619,7 @@ sleepy/
 │   └── sleepy-collector/                                      # Go academic adaptation collector
 ├── tasks/                                                     # Plans and task records
 ├── gradle/
+│   ├── gradle-daemon-jvm.properties                           # Build JVM pinned to JDK 25
 │   ├── libs.versions.toml                                     # Dependency version catalog
 │   └── wrapper/                                               # Gradle Wrapper configuration and JAR
 ├── build.gradle.kts                                           # Root build plugin configuration
@@ -635,15 +636,18 @@ sleepy/
 
 ### Prerequisites
 
-Build with the bundled **Gradle 9.8.2 Wrapper + Android Gradle Plugin (AGP) 9.4.1**. Android Studio must support AGP 9.4; see the [official AGP 9.4 compatibility requirements](https://developer.android.com/build/releases/agp-9-4-0-release-notes). CI uses JDK 17, and both Java and Kotlin compile to JVM target 17.
+Build with **JDK 25 + the bundled Gradle 9.8.2 Wrapper + Android Gradle Plugin (AGP) 9.5.1**. Android Studio must support AGP 9.5; see the [official AGP 9.5 compatibility requirements](https://developer.android.com/build/releases/agp-9-5-0-release-notes). Local compilation, unit tests, and CI use JDK 25. Java and Kotlin still compile to JVM target 17, and the minimum Android version remains Android 8.0 (API 26).
+
+Install JDK 25, point `JAVA_HOME` to its root directory, and add its `bin` directory to `PATH`. Select JDK 25 as the Gradle JDK in Android Studio as well. The repository pins the Gradle Daemon to an installed JDK 25 through [`gradle/gradle-daemon-jvm.properties`](gradle/gradle-daemon-jvm.properties); it does not download a JDK automatically. This setting takes precedence over `JAVA_HOME`. Check the `Daemon JVM` in `./gradlew --version` to confirm the actual build environment; `java -version` alone is insufficient.
 
 ```bash
-java -version           # JDK 17+
+java -version           # JDK 25
+./gradlew --version     # Daemon JVM: Java 25
 
 sdkmanager "platforms;android-37.0" "build-tools;36.0.0"
 ```
 
-The project sets `compileSdk=37` and `targetSdk=37`; the platform package identifier is `platforms;android-37.0`. It does not explicitly pin `buildToolsVersion`; AGP 9.4 defaults to Build Tools 36.0.0.
+The project sets `compileSdk=37` and `targetSdk=37`; the platform package identifier is `platforms;android-37.0`. It does not explicitly pin `buildToolsVersion`; AGP 9.5 defaults to Build Tools 36.0.0.
 
 If you see `SDK XML versions up to 3` / `SDK XML file of version 4`, build through this repository's `gradlew` / `gradlew.bat` and update **Android SDK Command-line Tools (latest)** under Android Studio's SDK Manager → SDK Tools. The IDE, `ANDROID_HOME`, and `sdk.dir` in `local.properties` should use the same SDK. Run its `cmdline-tools/latest/bin/sdkmanager` (`sdkmanager.bat` on Windows), and check that `PATH` does not select an older `tools/bin/sdkmanager`. See the [official sdkmanager documentation](https://developer.android.com/tools/sdkmanager).
 
@@ -661,7 +665,7 @@ cd sleepy
 
 Native Windows (PowerShell / CMD; no WSL or Git Bash required):
 
-1. Install JDK 17 or 21. Set `JAVA_HOME` to the JDK root directory (not `bin`), or add the JDK's `bin` directory to `PATH`.
+1. Install JDK 25. Set `JAVA_HOME` to the JDK root directory (not `bin`), and add that JDK's `bin` directory to `PATH`.
 2. Install Android SDK Platform 37 and the required Build Tools using Android Studio's SDK Manager or the command-line tools. Set `ANDROID_HOME` to the SDK root directory, or add `sdk.dir=C:/Users/your-name/AppData/Local/Android/Sdk` to `local.properties` in the project root (use forward slashes and your actual SDK path; this file is ignored by Git).
 3. Run these commands from the project root:
 

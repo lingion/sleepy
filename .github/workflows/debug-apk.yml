@@ -98,7 +98,7 @@ jobs:
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '25'
       # 构建阶段仅用一次性密钥；官方密钥只存在于独立签名 runner。
       - name: Create build-only debug signing key
         shell: bash
