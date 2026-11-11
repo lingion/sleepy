@@ -1,5 +1,6 @@
 # 白嫖 GitHub: 自动开依赖升级 PR, 走既有 CI 验证后合入。见 docs/ci-automation.md
 # 分组策略: 每个生态一个打包 PR, 避免一次冒出十几条单依赖 PR 淹没评审队列。
+# JDK 的 .tool-versions 与 Gradle 下载地址由 renovate.json 管理。
 version: 2
 updates:
   - package-ecosystem: gradle

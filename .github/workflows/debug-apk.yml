@@ -98,7 +98,9 @@ jobs:
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: '17'
+          # Read version data only; target code still executes exclusively in the container.
+          # Historical refs without a version file use this workflow's pinned JDK.
+          java-version-file: ${{ hashFiles('source/.tool-versions') != '' && 'source/.tool-versions' || 'tooling/.tool-versions' }}
       # 构建阶段仅用一次性密钥；官方密钥只存在于独立签名 runner。
       - name: Create build-only debug signing key
         shell: bash

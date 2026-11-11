@@ -41,6 +41,10 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
+      - name: JDK version and bootstrap consistency
+        run: |
+          python3 scripts/jdk_config.py --check
+          python3 -m unittest discover -s scripts -p test_jdk_config.py
       - name: Debug APK workflow contracts
         run: python3 -m unittest discover -s scripts -p 'test_debug_*.py'
       - name: Attribution inventory and bundled notices
@@ -112,8 +116,7 @@ jobs:
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: '17'
-          check-latest: true
+          java-version-file: .tool-versions
       - uses: gradle/actions/setup-gradle@v6
       # Robolectric 的 android-all jar (~150MB, 供 JVM 像素 golden 测试用) 走
       # ~/.m2 而非 Gradle 依赖缓存, setup-gradle 不会帮你存; 不缓存则每次 PR 重下。
@@ -141,8 +144,7 @@ jobs:
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: '17'
-          check-latest: true
+          java-version-file: .tool-versions
       - uses: gradle/actions/setup-gradle@v6
       - run: ./gradlew :app:lintDebug --stacktrace
       - uses: actions/upload-artifact@v7
@@ -158,8 +160,7 @@ jobs:
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: '17'
-          check-latest: true
+          java-version-file: .tool-versions
       - uses: gradle/actions/setup-gradle@v6
       - name: Assemble release APK
         run: ./gradlew :app:assembleRelease --stacktrace
