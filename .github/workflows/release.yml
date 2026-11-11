@@ -27,10 +27,15 @@ jobs:
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: '17'
-          check-latest: true
+          java-version-file: .tool-versions
 
       - uses: gradle/actions/setup-gradle@v6
+
+      - name: Verify release JDK configuration
+        run: |
+          python3 scripts/jdk_config.py --check
+          java -version
+          ./gradlew --version
 
       - name: Verify tag matches release notes
         run: |
