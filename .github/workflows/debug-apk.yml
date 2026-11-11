@@ -118,7 +118,9 @@ jobs:
       - name: Assemble selected debug ABI
         shell: bash
         run: |
-          docker build -t sleepy-debug-build -f tooling/.github/ci/debug-build.Dockerfile tooling/.github/ci
+          # buildkit 内嵌网络在 GitHub runner 上间歇性 DNS 失效
+          # (2026-11-11 五连红, 主机网络全程正常); 镜像构建走主机网络栈。
+          docker build --network=host -t sleepy-debug-build -f tooling/.github/ci/debug-build.Dockerfile tooling/.github/ci
           # runner 的 JDK cacerts 可能链接到挂载目录外；复制公共 CA 库并显式指定。
           cp -L "$JAVA_HOME/lib/security/cacerts" "$RUNNER_TEMP/java-cacerts"
           test -s "$RUNNER_TEMP/java-cacerts"
