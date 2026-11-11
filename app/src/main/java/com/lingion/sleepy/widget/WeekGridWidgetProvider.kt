@@ -157,9 +157,12 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
     companion object {
         private const val TAG = "WeekGridV19"
 
+        /** 表头高度单一事实来源 (dp) — 渲染与 bodyH 公式同源 (用户 2026-11-09 令 56→48, 压缩表头换课程空间)。 */
+        const val HEADER_HEIGHT_DP = 48f
+
         /**
          * §4.4 降级阶梯几何 — bodyH(px)/slotH(px) 推导 (渲染器与契约测试单一事实来源)。
-         * 与旧内联算式逐字节同式: outerPad 6dp×2 + headH 56dp, bodyH 地板 20dp,
+         * 与旧内联算式逐字节同式: outerPad 6dp×2 + headH 48dp, bodyH 地板 20dp,
          * 节间隙 1.5dp×(n+1), slotH 地板 3dp (整除口径保持 Int / Int)。
          *
          * 餐段薄带: 带厚从可用 body 高中先扣 (widget 位图不可滚动, 带必须占位),
@@ -169,7 +172,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             hPx: Int, density: Float, maxNode: Int, mealBreakCount: Int = 0, fontScale: Float = 1f
         ): Pair<Int, Float> {
             fun dp(v: Float) = (v * density).roundToInt()
-            val bodyH = (hPx - dp(6f) * 2 - dp(56f)).coerceAtLeast(dp(20f))
+            val bodyH = (hPx - dp(6f) * 2 - dp(HEADER_HEIGHT_DP)).coerceAtLeast(dp(20f))
             val totalGapH = dp(1.5f) * (maxNode + 1)
             val bands = mealBreakBandPx(density, fontScale) * mealBreakCount
             val slotH = ((bodyH - totalGapH - bands) / maxNode.coerceAtLeast(1)).coerceAtLeast(dp(3f).toFloat())
@@ -271,7 +274,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             // 之前 headH*0.30 cap dp(15f) 太大, day header 文字溢出 cell 边界全挤在一起
             // 改成: cap 降到 dp(13f), min 升到 dp(10f), 文字宽度永远 < dayW - padding
             val outerPad = dp(6f)
-            val headH = dp(56f)
+            val headH = dp(HEADER_HEIGHT_DP)
             // legacy 隐藏时间行: 仅节次标签, 列宽缩至 36dp(与 CourseTableView 36dp*1 同源)。
             val timeW = if (widgetHeaderHideTime) dp(36f) else dp(40f)
             val gapH = dp(1.5f)
@@ -350,7 +353,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             if (data.semesterStatus == DateUtils.SemesterStatus.BEFORE_START) {
                 val ctx2 = SleepyApp.get()
                 p.color = fgOnSurfaceVar
-                p.textSize = (headH * 0.16f).coerceAtMost(dp(9f).toFloat()).coerceAtLeast(dp(6f).toFloat())
+                p.textSize = dp(9f).toFloat()
                 p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
                 p.textAlign = Paint.Align.CENTER
                 c.drawText(ctx2.getString(R.string.semester_not_started), x + timeW / 2f, y + headH * 0.6f, p)
@@ -368,17 +371,17 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                 c.drawRoundRect(RectF(cellX, y, cellX + dayW, y + headH),
                     dp(14f).toFloat(), dp(14f).toFloat(), p)
 
-                // day name 字号 = headH * 0.24 (降比例, 防溢出 cell)
+                // day name 字号 = 绝对 13dp (v19c 整改锁定值; 表头 48dp 压缩只吃留白, 禁随头高缩字)
                 val dayName = DateUtils.localizedDay(dow, SleepyApp.get())
                 p.color = if (isToday) fgPrimary else fgOnSurface
-                p.textSize = (headH * 0.24f).coerceAtMost(dp(13f).toFloat()).coerceAtLeast(dp(9f).toFloat())
+                p.textSize = dp(13f).toFloat()
                 p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
                 p.textAlign = Paint.Align.CENTER
                 val cx = cellX + dayW / 2f
-                c.drawText(dayName, cx, y + headH * 0.4f, p)
+                c.drawText(dayName, cx, y + headH * 0.42f, p)
 
-                // date or count 字号 = headH * 0.18 (降比例)
-                p.textSize = (headH * 0.18f).coerceAtMost(dp(10f).toFloat()).coerceAtLeast(dp(7f).toFloat())
+                // date or count 字号 = 绝对 10dp (同 v19c cap 生效值)
+                p.textSize = dp(10f).toFloat()
                 p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
                 p.color = fgOnSurfaceVar
                 val sub = dateStr ?: if (count > 0) "$count" else "—"
@@ -674,10 +677,10 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             // 每卡按 cardH/unitHeight 算理想字号(v21: 用 token 单位高度替代旧字数)
             // → 全表取最小 → 所有卡用同一个字号(整齐)
             // 下限 11dp 保可读; 上限对齐表头"周一/周二"字号(用户原话: 课名字号最大不能超过周一周二)
-            //   表头 day-name 字号 = headH * 0.24 capped dp(13) → 这里 nameMaxDp 用同一 cap
+            //   表头 day-name 字号 = 绝对 13dp (48dp 表头压缩后不再随 headH 比例联动) → 这里同值
             val unifiedPad = dp(4f).toFloat()
             val nameMinDp = dp(11f).toFloat()   // 可读下限
-            val nameMaxDp = (headH * 0.24f).coerceAtMost(dp(13f).toFloat())  // 不超过表头"周一"字号
+            val nameMaxDp = dp(13f).toFloat()  // 不超过表头"周一"字号
             val dayAvailW = (dayW - unifiedPad * 2).coerceAtLeast(dp(8f).toFloat())
             val nameMaxPxByW = dayAvailW * 0.92f
             val nameCeil = minOf(nameMaxDp, nameMaxPxByW)
