@@ -326,7 +326,9 @@ fun LiquidGlassNavigationBar(
                 barHeightPx = coords.size.height.toFloat()
                 dockCoordinates = coords
             }
+            .glassGestureOwnership()
             .pointerInput(count, isLtr) {
+                try {
                 awaitPointerEventScope {
                     while (true) {
                         val event = awaitPointerEvent()
@@ -436,6 +438,17 @@ fun LiquidGlassNavigationBar(
                             }
                         }
                     }
+                }
+                } finally {
+                    pointerId = null
+                    pressedIndex = null
+                    dragging = false
+                    dropping = false
+                    lensSpring.springTo(currentSelected.toFloat(), FlClashSprings.TravelSpring)
+                    liftSpring.springTo(0f, FlClashSprings.LiftSpring)
+                    stretchSpring.springTo(0f, FlClashSprings.PressSpring)
+                    glowSpring.springTo(0f, FlClashSprings.GlowOutSpring)
+                    swellSpring.springTo(0f, FlClashSprings.PressSpring)
                 }
             },
         contentAlignment = Alignment.Center,

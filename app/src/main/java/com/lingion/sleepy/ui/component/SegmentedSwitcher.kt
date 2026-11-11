@@ -1,11 +1,10 @@
 package com.lingion.sleepy.ui.component
 
 import androidx.compose.animation.core.Animatable
+import com.lingion.sleepy.ui.component.liquidglass.glassGestureOwnership
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.awaitHorizontalTouchSlopOrCancellation
-import androidx.compose.foundation.gestures.horizontalDrag
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -46,7 +45,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
@@ -213,7 +211,8 @@ fun <T> SegmentedSwitcher(
                 trackWidthPx = (coords.size.width - with(density) { 8.dp.toPx() }).toInt().coerceAtLeast(0)
             }
             .selectableGroup()
-            .pointerInput(options, selectedIndex, isRtl, trackWidthPx, glassActive) {
+            .glassGestureOwnership(count > 1)
+            .pointerInput(options, isRtl, trackWidthPx, glassActive) {
                 // Classic 模式完全走原有 selectable 点击路径，不安装自定义拖动接管器。
                 if (!glassActive) return@pointerInput
                 if (count < 2 || trackWidthPx <= 0) return@pointerInput
@@ -221,7 +220,8 @@ fun <T> SegmentedSwitcher(
                 val direction = if (isRtl) -1f else 1f
                 try {
                 awaitEachGesture {
-                    val down = awaitFirstDown(requireUnconsumed = false)
+                    val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                    down.consume()
                     // 按下瞬间即升镜 (2026-11-06 用户: 手按压瞬间浮起透射, 不等 slop,
                     // 落点是否在高亮块上也升 — 点其它段后滑块弹簧过去的全程戴镜片, 同 Toggle)。
                     pressing = true
@@ -238,34 +238,29 @@ fun <T> SegmentedSwitcher(
                     val logicalX = (if (isRtl) size.width - down.position.x else down.position.x) - 4.dp.toPx()
                     val start = thumbPosition
                     try {
-                        // 只有从高亮块开始的横拖接管手势；普通段仍由 selectable 点击。
-                        if (logicalX in start * segmentWidth..(start + 1f) * segmentWidth) {
-                            val drag = awaitHorizontalTouchSlopOrCancellation(down.id) { change, _ ->
-                                change.consume()
-                                dragging = true
-                                gesturePosition = (start + (change.position.x - down.position.x) * direction / segmentWidth)
+                        val onThumb = logicalX in start * segmentWidth..(start + 1f) * segmentWidth
+                        var moved = false
+                        while (true) {
+                            val event = awaitPointerEvent(PointerEventPass.Initial)
+                            val pointer = event.changes.firstOrNull { it.id == down.id } ?: break
+                            if (!pointer.pressed) {
+                                if (pointer.isConsumed || (!onThumb && moved)) break
+                                pointer.consume()
+                                val target = if (dragging) gesturePosition.roundToInt()
+                                    else (logicalX / segmentWidth).toInt()
+                                val index = target.coerceIn(0, count - 1)
+                                if (index != currentSelectedIndex) currentOnSelect(options[index].value)
+                                break
+                            }
+                            val dx = pointer.position.x - down.position.x
+                            if ((pointer.position - down.position).getDistance() > viewConfiguration.touchSlop) moved = true
+                            if (onThumb && kotlin.math.abs(dx) > viewConfiguration.touchSlop) dragging = true
+                            if (dragging) {
+                                gesturePosition = (start + dx * direction / segmentWidth)
                                     .coerceIn(0f, (count - 1).toFloat())
                                 tickIfChanged()
                             }
-                            if (drag != null) {
-                                val released = horizontalDrag(drag.id) { change ->
-                                    gesturePosition = (gesturePosition + change.positionChange().x * direction / segmentWidth)
-                                        .coerceIn(0f, (count - 1).toFloat())
-                                    tickIfChanged()
-                                    change.consume()
-                                }
-                                if (released) {
-                                    val target = gesturePosition.roundToInt().coerceIn(0, count - 1)
-                                    if (target != currentSelectedIndex) currentOnSelect(options[target].value)
-                                }
-                            }
-                        } else {
-                            // 非高亮落点 (点按其它段): 不消费事件 (selectable 负责点击), 但要等抬手,
-                            // 让 pressing 跟住整根手指 — 滑块弹簧移向新段的全程都戴着升镜镜片。
-                            do {
-                                val event = awaitPointerEvent(PointerEventPass.Main)
-                                if (event.changes.none { it.pressed }) break
-                            } while (true)
+                            pointer.consume()
                         }
                     } finally {
                         pressing = false
@@ -275,8 +270,7 @@ fun <T> SegmentedSwitcher(
                     tapGeneration++
                 }
                 } finally {
-                    // 手势协程被取消 (pointerInput 重启 / 组合离开) 时不留悬空按压态,
-                    // 否则镜片永远浮着 (GlassSwitch detectHorizontalDragGestures 同款护栏)。
+                    // pointerInput 重启或离开组合时也必须收回镜片。
                     pressing = false
                     dragging = false
                 }

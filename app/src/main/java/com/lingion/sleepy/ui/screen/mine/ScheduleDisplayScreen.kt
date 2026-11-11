@@ -18,6 +18,7 @@ import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import com.lingion.sleepy.ui.component.liquidglass.materialSliderGestureOwnership
 import androidx.compose.material3.SliderState
 import com.lingion.sleepy.ui.component.liquidglass.GlassSlider
 import com.lingion.sleepy.ui.component.liquidglass.liquidGlassControlsEnabled
@@ -249,6 +250,7 @@ private fun DisplaySlider(
             sliderState.value = value
             val trackBackdrop = rememberLayerBackdrop()
             Slider(
+                modifier = Modifier.materialSliderGestureOwnership(sliderState, true, onValueChange, onFinished),
                 state = sliderState,
                 onValueChange = onValueChange,
                 onValueChangeFinished = onFinished,
