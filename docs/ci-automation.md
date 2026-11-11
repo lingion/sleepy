@@ -22,13 +22,15 @@
 
 ## 构建环境
 
-CI、Nightly、Release、Debug APK Build 和独立 debug 签名工作流统一使用 Temurin JDK 25。Debug 构建容器直接挂载 runner 安装的 JDK。本地也建议安装 JDK 25；仓库的 `gradle/gradle-daemon-jvm.properties` 固定 Gradle Daemon 的主版本，优先使用已有 JDK 25，并为 Linux x64 提供固定版本的 Temurin 下载地址。
+完整的 Temurin JDK 25 版本由根目录 `.tool-versions` 管理。CI、Nightly 和 Release 使用 `setup-java` 的 `java-version-file` 读取当前提交中的版本，不在构建时追踪最新补丁。Release 标签因此保留其选定的 JDK 版本，实际 Java 和 Gradle JVM 信息也会写入构建日志。
+
+Debug 构建读取目标源码的 `.tool-versions`（只读取版本数据，不执行源码）；历史源码没有该文件时，使用可信工作流源码 `tooling/.tool-versions`。独立签名任务始终使用可信工作流的版本文件。构建容器挂载 runner 安装的 JDK。本地应安装 `.tool-versions` 指定版本；Gradle 的 Daemon 配置只限定主版本，不能代替本地补丁版本管理。
 
 `pull_request_target` 执行主分支的工作流，PR 内的 `setup-java` 修改要合入 main 后才生效。迁移期间，旧工作流可能仍向容器挂载 JDK 17；Gradle 会依据 PR 源码中的 JVM 配置，在容器的临时 Gradle 用户目录内下载 JDK 25 后构建。下载需要联网，且不会写入宿主机只读挂载的 JDK 目录。
 
 使用 `./gradlew --version`（Windows 为 `.\gradlew.bat --version`）检查 `Daemon JVM`，不要仅依赖 `java -version`：后者可能与 `JAVA_HOME` 或 IDE 选择的 JDK 不同。Java / Kotlin 的编译目标保持 17，`minSdk=26`；升级构建 JDK 不提高最低 Android 版本。安装步骤见 [README](../README.md#前置)。
 
-依赖升级后，至少验证 `:app:testDebugUnitTest`、`:app:lintDebug` 和 `:app:assembleRelease`；Release 控制台生命周期测试使用 `./gradlew -I scripts/console-lifecycle.init.gradle :app:testReleaseUnitTest --tests '*ReleaseConsoleLifecycleTest'`。
+依赖升级后，至少验证 `:app:testDebugUnitTest`、`:app:lintDebug` 和 `:app:assembleRelease`；Release 控制台生命周期测试使用 `./gradlew -I scripts/console-lifecycle.init.gradle :app:testReleaseUnitTest --tests '*ReleaseConsoleLifecycleTest'`。CI 和 Release 还会执行 `python3 scripts/jdk_config.py --check`，阻止版本文件与 Gradle 备用下载地址不一致的提交进入发布构建。
 
 ## 1. 获取 debug APK
 
@@ -120,7 +122,15 @@ gh workflow run "iOS Build" -f ref=master -f config=Release
 每周自动检查 Gradle / GitHub Actions 版本,每月检查 collector 的 Go 依赖;发现新版就**自动开 PR**,走既有 CI 全绿后你再合。你不用手动盯 `libs.versions.toml`。
 
 ### 2.2 Nightly main 体检 (`.github/workflows/nightly.yml`)
-现有 CI 只在 **PR** 上跑;dependabot 合入或 runner 镜像变更造成的漂移,PR 门禁看不见。Nightly 每天(北京时间凌晨 2:30)对 main 跑一遍 单元测试 + 目录校验 + release 打包,确保 main 永远随时可发布。
+Nightly 每天（北京时间凌晨 2:30）对 main 运行单元测试、目录校验和 Release 打包，补充 PR 与 main push 的 CI 检查。
+
+### 2.3 JDK 补丁更新 (`renovate.json`)
+
+Renovate 专门管理 Temurin JDK；Gradle 依赖、GitHub Actions 和 Go 依赖继续由 Dependabot 管理。机器人每天在北京时间 00:00–03:59 的时间窗口检查官方 `adoptium/temurin25-binaries` 正式发布，将 `.tool-versions` 与 `gradle/gradle-daemon-jvm.properties` 的版本更新放在同一个 PR 中。配置仅允许 Java 25 的正式补丁和构建号更新，不自动升级 Java 主版本，也不自动合并。
+
+两处版本使用同一官方发布源和更新分组；`scripts/jdk_config.py --check` 确认 Gradle 文件与 `.tool-versions` 派生结果完全一致。更新 PR 运行既有的单元测试、Lint、Release 打包和 Debug 构建检查，全部通过后再合入。手动修改 `.tool-versions` 后，运行 `python scripts/jdk_config.py` 重新生成备用下载配置。
+
+启用条件：将 `renovate.json` 合入默认分支，并为本仓库安装或授权 [Renovate GitHub App](https://github.com/apps/renovate)。仅提交配置文件不会自动安装 App。Renovate 获得仓库访问权限后按配置检查版本并创建升级 PR，无需新增个人访问令牌或自建定时任务。
 
 ---
 

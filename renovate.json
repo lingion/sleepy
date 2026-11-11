@@ -1,0 +1,35 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "enabledManagers": ["custom.regex"],
+  "dependencyDashboard": false,
+  "timezone": "Asia/Shanghai",
+  "schedule": ["* 0-3 * * *"],
+  "prConcurrentLimit": 1,
+  "automerge": false,
+  "semanticCommits": "enabled",
+  "semanticCommitType": "build",
+  "semanticCommitScope": "deps",
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.tool-versions$/", "/^gradle/gradle-daemon-jvm\\.properties$/"],
+      "matchStrings": [
+        "(?:^|\\n)java temurin-(?<currentValue>25\\.\\d+\\.\\d+(?:\\.\\d+)?\\+\\d+)(?:\\r?\\n|$)",
+        "/binary/version/jdk-(?<currentValue>25\\.\\d+\\.\\d+(?:\\.\\d+)?\\+\\d+)/linux/"
+      ],
+      "depNameTemplate": "Temurin JDK",
+      "datasourceTemplate": "github-releases",
+      "packageNameTemplate": "adoptium/temurin25-binaries",
+      "extractVersionTemplate": "^jdk-(?<version>25\\.\\d+\\.\\d+(?:\\.\\d+)?\\+\\d+)$",
+      "versioningTemplate": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)(?:\\.(?<revision>\\d+))?\\+(?<build>\\d+)$"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchPackageNames": ["adoptium/temurin25-binaries"],
+      "groupName": "Temurin JDK 25",
+      "groupSlug": "jdk-25",
+      "allowedVersions": "/^25\\./"
+    }
+  ]
+}

@@ -657,7 +657,9 @@ sleepy/
 
 构建使用 **JDK 25 + 仓库自带的 Gradle 9.8.2 Wrapper + Android Gradle Plugin（AGP）9.5.1**。Android Studio 需支持 AGP 9.5，版本兼容要求见 [AGP 9.5 官方说明](https://developer.android.com/build/releases/agp-9-5-0-release-notes)。本地编译、单元测试和 CI 统一使用 JDK 25；Java / Kotlin 编译目标仍为 17，最低 Android 版本仍为 Android 8.0（API 26）。
 
-先安装 JDK 25，将 `JAVA_HOME` 指向其根目录，并将其 `bin` 加入 `PATH`；Android Studio 的 Gradle JDK 也选择 JDK 25。仓库通过 [`gradle/gradle-daemon-jvm.properties`](gradle/gradle-daemon-jvm.properties) 固定 Gradle Daemon 使用 JDK 25，优先使用已安装的版本；Linux x64 环境缺少 JDK 25 时会自动下载固定版本的 Temurin，其他平台需自行安装。该配置优先于 `JAVA_HOME`；确认实际构建环境时应检查 `./gradlew --version` 的 `Daemon JVM`，不能只看 `java -version`。
+完整的 Temurin JDK 版本统一记录在 [`.tool-versions`](.tool-versions)，CI、Nightly 和 Release 都从该文件安装。先安装文件指定的 JDK，将 `JAVA_HOME` 指向其根目录，并将其 `bin` 加入 `PATH`；Android Studio 的 Gradle JDK 也选择同一版本。使用 asdf 的开发者可通过 Java 插件执行 `asdf install`。
+
+[`gradle/gradle-daemon-jvm.properties`](gradle/gradle-daemon-jvm.properties) 将 Gradle Daemon 限定为 Java 25，并在 Linux x64 缺少 JDK 25 时下载 `.tool-versions` 对应版本。Gradle 的主版本条件不会强制升级本机已有 JDK 的补丁版本，本地对齐仍以 `.tool-versions` 为准。通过 `./gradlew --version` 检查 `Daemon JVM`，不要只看 `java -version`。Renovate 每日检查 Java 25 正式版补丁，并在同一 PR 中更新版本文件和下载地址；CI 校验一致性，详情见 [JDK 自动更新](docs/ci-automation.md#23-jdk-补丁更新-renovatejson)。
 
 ```bash
 java -version           # JDK 25
@@ -684,7 +686,7 @@ cd sleepy
 
 Windows 原生环境（PowerShell / CMD，无需 WSL 或 Git Bash）：
 
-1. 安装 JDK 25，将 `JAVA_HOME` 指向 JDK 根目录（不是 `bin`），并将该 JDK 的 `bin` 目录加入 `PATH`。
+1. 安装 `.tool-versions` 指定的 Temurin JDK 25，将 `JAVA_HOME` 指向 JDK 根目录（不是 `bin`），并将该 JDK 的 `bin` 目录加入 `PATH`。
 2. 安装 Android SDK Platform 37 和所需的 Build Tools（可通过 Android Studio 的 SDK Manager 安装）。将 `ANDROID_HOME` 指向 SDK 根目录，或在项目根目录的 `local.properties` 中配置 `sdk.dir=C:/Users/your-name/AppData/Local/Android/Sdk`（使用正斜杠，并替换为实际路径；此文件已被 Git 忽略）。
 3. 在项目根目录运行：
 

@@ -638,7 +638,9 @@ sleepy/
 
 Build with **JDK 25 + the bundled Gradle 9.8.2 Wrapper + Android Gradle Plugin (AGP) 9.5.1**. Android Studio must support AGP 9.5; see the [official AGP 9.5 compatibility requirements](https://developer.android.com/build/releases/agp-9-5-0-release-notes). Local compilation, unit tests, and CI use JDK 25. Java and Kotlin still compile to JVM target 17, and the minimum Android version remains Android 8.0 (API 26).
 
-Install JDK 25, point `JAVA_HOME` to its root directory, and add its `bin` directory to `PATH`. Select JDK 25 as the Gradle JDK in Android Studio as well. The repository pins the Gradle Daemon to JDK 25 through [`gradle/gradle-daemon-jvm.properties`](gradle/gradle-daemon-jvm.properties), preferring an installed JDK. Linux x64 environments without JDK 25 automatically download a pinned Temurin release; other platforms require a local installation. This setting takes precedence over `JAVA_HOME`. Check the `Daemon JVM` in `./gradlew --version` to confirm the actual build environment; `java -version` alone is insufficient.
+The complete Temurin JDK version is recorded in [`.tool-versions`](.tool-versions); CI, Nightly, and Release install from this file. Install the specified JDK, point `JAVA_HOME` to its root directory, and add its `bin` directory to `PATH`. Select the same Gradle JDK in Android Studio. Developers using asdf can run `asdf install` with the Java plugin.
+
+[`gradle/gradle-daemon-jvm.properties`](gradle/gradle-daemon-jvm.properties) requires Java 25 and downloads the version from `.tool-versions` on Linux x64 if no JDK 25 is installed. Gradle's major-version criterion does not upgrade an existing local JDK's patch version; use `.tool-versions` to align local builds. Check `Daemon JVM` in `./gradlew --version`, not just `java -version`. Renovate checks daily for Java 25 GA updates and updates the version file and download URL in one PR, with consistency enforced by CI. See [JDK updates](docs/ci-automation.md#23-jdk-补丁更新-renovatejson).
 
 ```bash
 java -version           # JDK 25
@@ -665,7 +667,7 @@ cd sleepy
 
 Native Windows (PowerShell / CMD; no WSL or Git Bash required):
 
-1. Install JDK 25. Set `JAVA_HOME` to the JDK root directory (not `bin`), and add that JDK's `bin` directory to `PATH`.
+1. Install the Temurin JDK 25 version specified in `.tool-versions`. Set `JAVA_HOME` to the JDK root directory (not `bin`), and add that JDK's `bin` directory to `PATH`.
 2. Install Android SDK Platform 37 and the required Build Tools using Android Studio's SDK Manager or the command-line tools. Set `ANDROID_HOME` to the SDK root directory, or add `sdk.dir=C:/Users/your-name/AppData/Local/Android/Sdk` to `local.properties` in the project root (use forward slashes and your actual SDK path; this file is ignored by Git).
 3. Run these commands from the project root:
 
