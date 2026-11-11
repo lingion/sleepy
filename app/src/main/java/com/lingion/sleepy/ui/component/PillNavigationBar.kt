@@ -359,6 +359,7 @@ private fun DockNavigationBar(
     state: PillBarState,
     modifier: Modifier = Modifier
 ) {
+    val selectionColors = colors.selectionColors()
     val count = items.size.coerceAtLeast(1)
     val seatHalf = with(density) { (NavDockSpec.itemSeat / 2).toPx() }
     val iconHalf = with(density) { 12.dp.toPx() }
@@ -441,7 +442,7 @@ private fun DockNavigationBar(
                     translationY = 0f
                 }
                 .clip(RoundedCornerShape(percent = 50))
-                .background(colors.secondaryContainer)
+                .background(selectionColors.selectedContainer)
         )
         Row(
             modifier = Modifier.fillMaxWidth().height(NavDockSpec.capsuleHeight),
@@ -471,7 +472,7 @@ private fun DockNavigationBar(
                         NavPartIcon(
                             driver = iconDrivers.getOrNull(i),
                             fallback = item.icon,
-                            tint = lerp(colors.onSurfaceVariant, colors.onSecondaryContainer, iconCov),
+                            tint = lerp(selectionColors.unselectedContent, selectionColors.selectedContent, iconCov),
                             iconSize = 24.dp,
                         )
                         // MD3E (Task 6): Dock 形态徽标点同款 popup 家族 (与贴底两处一致)
@@ -486,7 +487,7 @@ private fun DockNavigationBar(
                             Box(
                                 Modifier
                                     .size(7.dp)
-                                    .background(colors.primary, CircleShape)
+                                    .background(selectionColors.accent, CircleShape)
                             )
                         }
                     }
@@ -495,7 +496,7 @@ private fun DockNavigationBar(
                         text = item.label,
                         style = MaterialTheme.typography.labelSmall,
                         maxLines = 1,
-                        color = lerp(colors.onSurfaceVariant, colors.onSecondaryContainer, iconCov)
+                        color = lerp(selectionColors.unselectedContent, selectionColors.selectedContent, iconCov)
                     )
                 }
             }

@@ -44,6 +44,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -76,6 +77,7 @@ import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.util.TimeTableUtils.TimeSlotRow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 /**
@@ -112,12 +114,19 @@ fun mergeAutoRows(
     existingRows: List<TimeSlotRow>,
     derivedStandardRows: List<TimeSlotRow>
 ): List<TimeSlotRow> {
+    val lastStandardNode = derivedStandardRows.maxOfOrNull { it.node } ?: 0
+    val after = existingRows.filter { it.edgeClass == TimeTableUtils.EdgeClass.After }
+    // Only move a colliding group. Existing edge gaps and the merged display order
+    // remain intact, and reducing the standard count does not pull edges forward.
+    val afterShift = if (after.any { it.node in 1..lastStandardNode }) {
+        lastStandardNode + 1 - after.minOf { it.node }
+    } else 0
     var nextStandard = 0
     val merged = existingRows.mapNotNull { row ->
-        if (row.edgeClass != null) {
-            row
-        } else {
-            derivedStandardRows.getOrNull(nextStandard++)
+        when (row.edgeClass) {
+            TimeTableUtils.EdgeClass.After -> if (afterShift == 0) row else row.copy(node = row.node + afterShift)
+            TimeTableUtils.EdgeClass.Before -> row
+            null -> derivedStandardRows.getOrNull(nextStandard++)
         }
     }.toMutableList()
     if (nextStandard < derivedStandardRows.size) {
@@ -131,6 +140,13 @@ fun decodeSmartPeriodConfig(json: String?): SmartPeriodConfig? =
     json?.takeIf { it.isNotBlank() }?.let { raw ->
         runCatching { Json.decodeFromString<SmartPeriodConfig>(raw) }.getOrNull()
     }
+
+/** Only persist an automatic config that derives the validated manual rows being saved. */
+fun encodeMatchingSmartPeriodConfig(rows: List<TimeSlotRow>, stored: SmartPeriodConfig?): String =
+    resolveAutoPeriodConfig(rows, stored)
+        ?.takeIf { it.validationError() == null }
+        ?.let { Json.encodeToString(it) }
+        .orEmpty()
 
 /**
  * 节次编辑器 v1.0.16+ / v1.0.56 三 Tab
@@ -174,7 +190,7 @@ fun TimeSlotEditor(
     // Bug 2 fix: 自动模式下，smartConfig 一旦变化就立刻 derive 出 rows 同步给上层，
     // 否则保存时 timeJson 用的还是旧的手动 rows，导致"保存的不是自动模式数据"。
     LaunchedEffect(mode, smartConfig) {
-        if (mode == Mode.Auto) {
+        if (mode == Mode.Auto && smartConfig.validationError() == null) {
             onRowsChange(mergeAutoRows(rows, smartConfig.derive()))
         }
     }
@@ -182,7 +198,9 @@ fun TimeSlotEditor(
     // issue#23 Task 4: 手动→自动切换时, 若现有配置已经对应当前手动行则原样保留,
     // 否则从当前手动行重新推断 —— 禁进自动即重置为全新默认配置。
     val switchToAuto = {
-        val resolved = resolveAutoPeriodConfig(rows, smartConfig) ?: smartConfig
+        val resolved = resolveAutoPeriodConfig(rows, smartConfig)
+            ?: smartConfig.takeIf { it.validationError() == null }
+            ?: SmartPeriodConfig()
         onSmartConfigChange(resolved)
         mode = Mode.Auto
     }
@@ -535,9 +553,11 @@ private fun ManualTimeSlotEditor(
                     }
                     val context = androidx.compose.ui.platform.LocalContext.current
                     val conflictMsg = TimeTableUtils.findConflictForSlot(displayRows, row.node)?.errorMessage(context)
+                    // A completed card can change slots; discard the old slot's remembered picker clocks.
+                    key(row.node, row.start, row.end, row.edgeClass) {
                     TimeSlotRowItem(
                         compact = compactRows,
-                        row = row.copy(node = index + 1),
+                        row = row,
                         canDelete = displayRows.size > 1,
                         isBlank = row.start.isBlank() && row.end.isBlank(),
                         conflictMsg = conflictMsg,
@@ -562,10 +582,15 @@ private fun ManualTimeSlotEditor(
                                     onLongClick(label = longPressLabel) { true }
                                 }
                             },
-                        onStartChange = { newStart -> onRowsChange(displayRows.map { if (it.node == row.node) it.copy(start = newStart) else it }) },
-                        onEndChange = { newEnd -> onRowsChange(displayRows.map { if (it.node == row.node) it.copy(end = newEnd) else it }) },
+                        onStartChange = { newStart ->
+                            onRowsChange(TimeTableUtils.updateManualRowTime(displayRows, row.node, start = newStart))
+                        },
+                        onEndChange = { newEnd ->
+                            onRowsChange(TimeTableUtils.updateManualRowTime(displayRows, row.node, end = newEnd))
+                        },
                         onDelete = { onRowsChange(TimeTableUtils.removeAndRenumber(displayRows, row.node)) }
                     )
+                    }
                     }
                 }
             }

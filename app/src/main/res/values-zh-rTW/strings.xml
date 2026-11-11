@@ -582,7 +582,7 @@
     <string name="theme_editor_delete_confirm_body">刪除後使用該主題的頁面與小工具將回落到預設主題「淡紫」。</string>
 <string name="appearance_section_theme">主題色彩</string>
     <string name="appearance_section_dock_theme">介面風格</string>
-    <string name="dock_theme_classic">經典</string>
+    <string name="dock_theme_classic">Material Design</string>
     <string name="dock_theme_liquid_glass">液態玻璃</string>
     <string name="dock_theme_experimental">實驗</string>
     <string name="appearance_section_course_color">課程配色</string>

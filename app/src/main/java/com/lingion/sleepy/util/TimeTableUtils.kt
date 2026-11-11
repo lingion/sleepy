@@ -363,7 +363,9 @@ object TimeTableUtils {
         val start: String,
         val end: String,
         /** Non-null only for nodes created by the manual-course edge controls. */
-        val edgeClass: EdgeClass? = null
+        val edgeClass: EdgeClass? = null,
+        /** Editor-only lifecycle; persisted schedule JSON contains clocks and edge identity only. */
+        val pendingManualInsertion: Boolean = start.isBlank() || end.isBlank()
     )
 
     /**
@@ -476,11 +478,10 @@ object TimeTableUtils {
     }
 
     /**
-     * 删除某 node 后**重新编号**为 1..N (用户友好)，返回新 list。
+     * 删除某 node 后重排标准节次为 1..N，保留 Before 身份并顺延 After 节次。
      */
     fun removeAndRenumber(rows: List<TimeSlotRow>, node: Int): List<TimeSlotRow> =
-        rows.filter { it.node != node }
-            .mapIndexed { idx, r -> r.copy(node = idx + 1) }
+        renumberManualRows(rows.filter { it.node != node })
 
     /**
      * 追加导入扩展 timeJson — 把 incomingJson 中 node > currentMaxNode 的节次复制进来,
@@ -560,11 +561,64 @@ object TimeTableUtils {
     }
 
     /**
-     * 追加一节 (node = maxOfOrNull + 1)，时间留空让用户填。
+     * 追加标准节次，时间留空让用户填；后置边缘节次随标准上界顺延。
      */
     fun appendEmptyRow(rows: List<TimeSlotRow>): List<TimeSlotRow> {
-        val nextNode = (rows.maxOfOrNull { it.node } ?: 0) + 1
-        return rows + TimeSlotRow(nextNode, "", "")
+        val nextNode = rows.count { it.edgeClass == null } + 1
+        val numbered = renumberManualRows(rows + TimeSlotRow(nextNode, "", ""))
+        // The user starts editing the empty card at the visual tail, even when edge rows exist.
+        val added = numbered.single { it.edgeClass == null && it.node == nextNode }
+        return numbered.filterNot { it === added } + added
+    }
+
+    private fun renumberManualRows(rows: List<TimeSlotRow>): List<TimeSlotRow> {
+        val standard = rows.filter { it.edgeClass == null }.mapIndexed { index, row -> row.copy(node = index + 1) }
+        val before = rows.filter { it.edgeClass == EdgeClass.Before }.sortedBy { it.node }
+        val after = rows.filter { it.edgeClass == EdgeClass.After }.sortedBy { it.node }
+            .mapIndexed { index, row -> row.copy(node = standard.size + index + 1) }
+        // An unfinished card stays where the user is filling it, after established
+        // cards and edges, even when another blank is appended or completed first.
+        val (established, unfinished) = standard.partition { !it.pendingManualInsertion }
+        return before + established + after + unfinished
+    }
+
+    private fun completeManualStart(row: TimeSlotRow): LocalTime? {
+        val first = parsePeriodClock(row.start) ?: return null
+        val last = parsePeriodClock(row.end) ?: return null
+        return first.takeIf { last > first }
+    }
+
+    /**
+     * A newly completed manual card joins the clock order as soon as both clocks are valid.
+     * Partial or reversed input stays in place so setting the first clock cannot move the
+     * card under the user's second picker. Editing an already complete card keeps its node.
+     * Standard identities remain 1..N; After edges follow that range and retain their metadata.
+     * Persistence uses each editor's existing course-remapping / shared-table policy.
+     */
+    fun updateManualRowTime(
+        rows: List<TimeSlotRow>,
+        node: Int,
+        start: String? = null,
+        end: String? = null
+    ): List<TimeSlotRow> {
+        val previous = rows.firstOrNull { it.node == node } ?: return rows
+        val updated = previous.copy(start = start ?: previous.start, end = end ?: previous.end)
+        val completedStart = if (previous.edgeClass == null && previous.pendingManualInsertion) {
+            completeManualStart(updated)
+        } else null
+        val completed = if (completedStart != null) updated.copy(pendingManualInsertion = false) else updated
+        val edited = rows.map { if (it.node == node) completed else it }
+        if (completedStart == null) return edited
+
+        val (established, unfinished) = edited.filter { it.edgeClass == null && it.node != node }
+            .partition { !it.pendingManualInsertion }
+        // Insert only the newly completed card. Another established card may currently
+        // have invalid clocks, and equal starts keep existing cards ahead of the new one.
+        val insertionIndex = established.indexOfFirst {
+            parsePeriodClock(it.start)?.let { start -> start > completedStart } == true
+        }.takeIf { it >= 0 } ?: established.size
+        val ordered = established.toMutableList().apply { add(insertionIndex, completed) } + unfinished
+        return renumberManualRows(edited.filter { it.edgeClass != null } + ordered)
     }
 
     /**

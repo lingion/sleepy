@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="smart_period_invalid_start">La primera clase debe comenzar entre las 00:00 y las 23:59. No se aplicó el cambio.</string>
+    <string name="smart_period_invalid_count">Indica entre 1 y 1439 clases que quepan en el mismo día. No se aplicó el cambio.</string>
+    <string name="smart_period_invalid_duration">Las clases deben durar más de 0 minutos y los descansos no pueden ser negativos. No se aplicó el cambio.</string>
+    <string name="smart_period_exceeds_day">Las clases y los descansos deben terminar antes de las 23:59 del mismo día. No se aplicó el cambio; reduce la cantidad, la duración o los descansos.</string>
+</resources>

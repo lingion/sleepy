@@ -16,8 +16,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -49,8 +47,6 @@ import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDial
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.heightIn
-import com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenu as DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -760,7 +756,7 @@ internal fun TopBar(
                         else Modifier
                             .glassControl(shape = SleepyTheme.shapes.medium)
                             .clip(SleepyTheme.shapes.medium)
-                            .background(controlFill(if (isOnActual) colors.primaryContainer else colors.primaryContainer.copy(alpha = SleepyTheme.Alpha.inactive)))
+                            .background(if (isOnActual) colors.primaryContainer else colors.primaryContainer.copy(alpha = SleepyTheme.Alpha.inactive))
                             .noRippleGlassClickable(onClick = openWeek)
                         Box(
                             labelModifier
@@ -774,57 +770,6 @@ internal fun TopBar(
                                 style = labelStyle, maxLines = 1, softWrap = false, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                                 color = if (isOnActual && !grouped) colors.onPrimaryContainer else colors.primary,
                             )
-                        }
-                        // Material3 DropdownMenu — FlowRow 标签式选周
-                        @OptIn(ExperimentalLayoutApi::class)
-                        DropdownMenu(
-                            expanded = menuOpen,
-                            onDismissRequest = { menuOpen = false },
-                            modifier = Modifier.width(280.dp),
-                            // 菜单浮在 surfaceContainer 背景上, 用 Highest 拉开对比(默认 High 与背景几乎同色=隐形)
-                            containerColor = colors.surfaceContainerHighest
-                        ) {
-                            Column(modifier = Modifier.padding(12.dp)) {
-                                Text(
-                                    text = stringResource(R.string.schedule_jump_week),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = colors.onSurfaceVariant,
-                                    modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
-                                )
-                                FlowRow(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    (1..maxWeek).forEach { w ->
-                                        val isCurrent = w == currentWeek
-                                        Box(
-                                            modifier = Modifier
-                                                .size(40.dp)
-                                                .glassControl(shape = CircleShape, selected = isCurrent)
-                                                .clip(CircleShape)
-                                                .background(
-                                                    controlFill(if (isCurrent) colors.primary
-                                                    else colors.surfaceContainerHigh)
-                                                )
-                                                .noRippleGlassClickable {
-                                                    onSelectWeek(w)
-                                                    menuOpen = false
-                                                }
-                                                .dbgTag("schedule_week#$w", text = w.toString(), role = "button"),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text(
-                                                text = w.toString(),
-                                                style = MaterialTheme.typography.labelLarge.copy(
-                                                    fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal
-                                                ),
-                                                color = if (isCurrent) colors.onPrimary else colors.onSurface
-                                            )
-                                        }
-                                    }
-                                }
-                            }
                         }
                     }
                     if (grouped) {
@@ -853,6 +798,17 @@ internal fun TopBar(
             }
         },
     )
+    if (menuOpen) {
+        ScheduleWeekPicker(
+            currentWeek = currentWeek,
+            maxWeek = maxWeek,
+            onDismiss = { menuOpen = false },
+            onSelectWeek = { week ->
+                onSelectWeek(week)
+                menuOpen = false
+            },
+        )
+    }
 }
 
 @Composable

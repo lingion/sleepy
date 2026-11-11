@@ -39,10 +39,7 @@ import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.ClipOp
-import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.clipPath
-import androidx.compose.ui.graphics.drawscope.clipRect
-import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -76,6 +73,7 @@ import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.ui.component.liquidglass.rememberGlassControlMotion
+import com.lingion.sleepy.ui.component.liquidglass.GlassControlMotionSpec
 import com.lingion.sleepy.ui.component.liquidglass.glassLensWidth
 import com.lingion.sleepy.ui.component.liquidglass.glassLensHeight
 import com.lingion.sleepy.ui.component.liquidglass.LocalGlassDepth
@@ -151,6 +149,7 @@ fun <T> SegmentedSwitcher(
     dbgTagPrefix: String? = null,
 ) {
     val colors = MaterialTheme.colorScheme
+    val selectionColors = colors.selectionColors()
     val selectedIndex = options.indexOfFirst { it.value == selected }.coerceAtLeast(0)
     val count = options.size
     if (count == 0) return
@@ -166,10 +165,12 @@ fun <T> SegmentedSwitcher(
     val motion = rememberGlassControlMotion(
         if (dragging) gesturePosition else selectedIndex.toFloat(), pressing || dragging,
         dragging, tapGeneration, glassActive,
+        spec = GlassControlMotionSpec.NativeSegmented,
     )
     val thumbPosition = if (glassActive) motion.position.value else classicPosition
     val thumbLift = if (glassActive) motion.lift else 0f
-    val thumbStretch = if (glassActive) motion.stretch else 0f
+    val geometryLift = if (glassActive) motion.geometryLift else 0f
+    val thumbStretch = if (glassActive) motion.stretch * .5f else 0f
     val currentOnSelect by rememberUpdatedState(onSelect)
     val currentSelectedIndex by rememberUpdatedState(selectedIndex)
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
@@ -191,27 +192,9 @@ fun <T> SegmentedSwitcher(
     val scene = if (LocalGlassOverlay.current) samplingHost?.overlayBackdrop else samplingHost?.backdropAt(LocalGlassDepth.current)
     // Only the ordinary sibling backing is recorded. It never contains this lens.
     val trackBackdrop = rememberLayerBackdrop()
-    val captureLift by rememberUpdatedState(if (glassActive) thumbLift else 0f)
-    val captureCount by rememberUpdatedState(count)
-    // FLClash records destinations separately: magnify each seat, then warp only glyphs.
-    // The visible label tree and its accessibility nodes are retained exactly once.
-    val recordLabels: ContentDrawScope.() -> Unit = remember {
-        {
-            val content = this
-            val padding = 4.dp.toPx()
-            val pitch = (size.width - 2 * padding) / captureCount
-            val magnification = 1f + .16f * captureLift
-            for (index in 0 until captureCount) {
-                val left = padding + index * pitch
-                clipRect(left, 0f, left + pitch, size.height) {
-                    scale(magnification, pivot = Offset(left + pitch / 2, size.height / 2)) {
-                        content.drawContent()
-                    }
-                }
-            }
-        }
-    }
-    val labelBackdrop = rememberLayerBackdrop(onDraw = recordLabels)
+    // Native UISegmentLabel keeps its 1× transform while the lens locally refracts
+    // its edges. Record unscaled glyphs, keeping one visible/accessibility tree.
+    val labelBackdrop = rememberLayerBackdrop()
     val lensBackdrop = if (scene != null) rememberCombinedBackdrop(scene, trackBackdrop) else trackBackdrop
     val context = LocalContext.current
     val view = LocalView.current
@@ -288,7 +271,7 @@ fun <T> SegmentedSwitcher(
                         pressing = false
                         dragging = false
                     }
-                    // The Dock's lift gate completes a short tap before lowering.
+                    // Native segmented lenses can contract before reaching held size.
                     tapGeneration++
                 }
                 } finally {
@@ -326,7 +309,7 @@ fun <T> SegmentedSwitcher(
                             .background(containerColor ?: if (glassActive) colors.onSurface.copy(alpha = .045f) else colors.surfaceContainer, trackShape)
                             .padding(4.dp),
                         content = {
-                            Box(Modifier.background((if (glassActive) colors.surface else colors.secondaryContainer)
+                            Box(Modifier.background(selectionColors.selectedContainer
                                 .copy(alpha = if (glassActive) 1f - thumbLift else 1f), restingShape))
                         },
                     ) { children, constraints ->
@@ -362,9 +345,9 @@ fun <T> SegmentedSwitcher(
                             if (glassActive && thumbLift > 0f) {
                                 val padding = 4.dp.toPx()
                                 val pitch = (size.width - 2 * padding) / count
-                                val width = glassLensWidth(pitch + 16.dp.toPx() * thumbLift, thumbStretch).roundToInt().toFloat()
-                                val height = glassLensHeight(size.height - 2 * padding + 18.dp.toPx() * thumbLift, thumbStretch,
-                                    minimum = size.height - 2 * padding + 10.dp.toPx() * thumbLift).roundToInt().toFloat()
+                                val width = glassLensWidth(pitch + 24.dp.toPx() * geometryLift, thumbStretch).roundToInt().toFloat()
+                                val height = glassLensHeight(size.height - 2 * padding + 16.dp.toPx() * geometryLift, thumbStretch,
+                                    minimum = size.height - 2 * padding + 14.dp.toPx() * geometryLift).roundToInt().toFloat()
                                 val logical = padding + thumbPosition * pitch + (pitch - width) / 2
                                 val left = if (isRtl) size.width - logical - width else logical
                                 val top = (size.height - height) / 2
@@ -399,8 +382,8 @@ fun <T> SegmentedSwitcher(
                                         thumbEndPx = thumbEnd,
                                         segmentWidthPx = segW,
                                         selected = isSelected,
-                                        selectedColor = colors.onSecondaryContainer,
-                                        unselectedColor = colors.onSurfaceVariant
+                                        selectedColor = selectionColors.selectedContent,
+                                        unselectedColor = selectionColors.unselectedContent
                                     )
                                 )
                                 if (option.badge != null) {
@@ -412,12 +395,12 @@ fun <T> SegmentedSwitcher(
                                             lineHeight = 11.sp,
                                             fontWeight = FontWeight.Bold
                                         ),
-                                        color = if (isSelected) colors.primary else colors.onSurfaceVariant,
+                                        color = if (isSelected) selectionColors.accent else selectionColors.unselectedContent,
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(4.dp))
                                             .background(
-                                                if (isSelected) colors.primary.copy(alpha = 0.14f)
-                                                else colors.onSurfaceVariant.copy(alpha = 0.08f)
+                                                if (isSelected) selectionColors.accent.copy(alpha = 0.14f)
+                                                else selectionColors.unselectedContent.copy(alpha = 0.08f)
                                             )
                                             .padding(horizontal = 4.dp, vertical = 1.dp)
                                     )
@@ -463,10 +446,10 @@ fun <T> SegmentedSwitcher(
                 val backing = measurables[1].measure(Constraints.fixed(width, height))
                 val padding = with(density) { 4.dp.toPx() }
                 val segmentWidth = (width - 2 * padding) / count
-                val lift = if (glassActive) thumbLift else 0f
-                val lensWidth = glassLensWidth(segmentWidth + with(density) { 16.dp.toPx() } * lift, thumbStretch).roundToInt()
-                val lensHeight = glassLensHeight(height - 2 * padding + with(density) { 18.dp.toPx() } * lift, thumbStretch,
-                    minimum = height - 2 * padding + with(density) { 10.dp.toPx() } * lift).roundToInt()
+                val lift = geometryLift
+                val lensWidth = glassLensWidth(segmentWidth + with(density) { 24.dp.toPx() } * lift, thumbStretch).roundToInt()
+                val lensHeight = glassLensHeight(height - 2 * padding + with(density) { 16.dp.toPx() } * lift, thumbStretch,
+                    minimum = height - 2 * padding + with(density) { 14.dp.toPx() } * lift).roundToInt()
                 val lens = measurables[0].measure(Constraints.fixed(lensWidth, lensHeight))
                 val contentLens = measurables[2].measure(Constraints.fixed(lensWidth, lensHeight))
                 layout(width, height) {

@@ -172,7 +172,7 @@ fun ScheduleDisplayScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.appearance_section_schedule_display)) },
+                title = { Text(stringResource(R.string.mine_schedule_settings)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))

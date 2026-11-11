@@ -14,11 +14,21 @@ class AppearanceOrganizationContract(unittest.TestCase):
         source = (MINE / 'AppearanceScreen.kt').read_text()
         self.assertTrue(ordered(source, 'R.string.theme_appearance', 'R.string.appearance_section_theme',
             'R.string.settings_appearance_navigation', 'R.string.settings_nav_style',
-            'R.string.appearance_section_dock_theme', 'R.string.appearance_section_course_color',
-            'onClick = onOpenScheduleDisplay'))
+            'R.string.appearance_section_dock_theme', 'R.string.appearance_section_course_color'))
+        self.assertNotIn('onOpenScheduleDisplay', source)
         self.assertIn('AppPrefs.setNavDock(context, on)', source)
         self.assertIn('onNavDockChange(on)', source)
         self.assertNotIn('ScheduleDisplayContent(', source)
+    def test_schedule_settings_is_a_first_level_mine_entry(self):
+        source = (MINE / 'MineScreen.kt').read_text()
+        body = source[source.index('LazyColumn('):]
+        self.assertTrue(ordered(body, 'R.string.mine_appearance', 'R.string.mine_schedule_settings',
+            'R.string.mine_general', 'R.string.mine_widget'))
+        self.assertIn('onClick = onOpenScheduleDisplay', body)
+        self.assertIn('R.string.mine_schedule_settings', (MINE / 'ScheduleDisplayScreen.kt').read_text())
+        for filename in ('MainActivity.kt', 'ui/nav/SleepyNavHost.kt'):
+            navigation = (MINE.parents[2] / filename).read_text()
+            self.assertIn('onOpenScheduleDisplay = { navigator.openScheduleDisplay() }', navigation)
     def test_display_group_order_and_header_navigation(self):
         source = (MINE / 'ScheduleDisplayScreen.kt').read_text()
         body = source[source.index('fun ScheduleDisplayScreen('):]

@@ -1,7 +1,6 @@
 package com.lingion.sleepy.ui.component.liquidglass
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -41,7 +40,6 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
@@ -63,9 +61,7 @@ import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.UiStyle
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.math.min
 
 /** 整行打开，当前值提供锚点；选择回调只在浮层退出组合后执行。 */
 @Composable
@@ -117,11 +113,6 @@ fun GlassLanguageMenu(
     }
 }
 
-private data class LanguagePopupGeometry(
-    val anchor: IntRect = IntRect.Zero,
-    val origin: IntOffset = IntOffset.Zero,
-)
-
 @Composable
 private fun LanguagePopup(
     title: String,
@@ -144,11 +135,8 @@ private fun LanguagePopup(
     val safeBottom = safe.getBottom(density)
     val maxWidth = with(density) { (windowSize.width - safeLeft - safeRight - margin * 2).coerceAtLeast(1).toDp() }
     val maxHeight = with(density) { (windowSize.height - safeTop - safeBottom - margin * 2).coerceAtLeast(1).toDp() }
-    var geometry by remember { mutableStateOf(LanguagePopupGeometry()) }
     val positionProvider = remember(margin, safeLeft, safeRight, safeTop, safeBottom) {
-        LanguageMenuPositionProvider(margin, safeLeft, safeTop, safeRight, safeBottom) { anchor, origin ->
-            geometry = LanguagePopupGeometry(anchor, origin)
-        }
+        LanguageMenuPositionProvider(margin, safeLeft, safeTop, safeRight, safeBottom)
     }
     var closing by remember { mutableStateOf(false) }
     var pickedCode by remember { mutableStateOf<String?>(null) }
@@ -159,22 +147,19 @@ private fun LanguagePopup(
         closing = true
     }
     val progress = remember { Animatable(0f) }
-    val corners = remember { Animatable(1f) }
     LaunchedEffect(closing) {
         if (closing) {
             progress.animateTo(0f, tween(200))
             closed(pickedCode)
         } else {
-            launch {
-                // popup.dart: 圆角比展开晚 70ms，324/.75 弹簧从胶囊过渡至菜单。
-                delay(70)
-                corners.animateTo(0f, spring(dampingRatio = .75f, stiffness = 324f))
-            }
-            progress.animateTo(1f, spring(dampingRatio = .754f, stiffness = 400f))
+            progress.animateTo(1f, tween(180))
         }
     }
     val width = minOf(280.dp, maxWidth)
-    val carrierShape = FlClashGlassShape(24f + width.value * .48f * corners.value.coerceAtLeast(0f))
+    // A menu keeps its full rectangular content area throughout its lifetime.
+    // Morphing both the radius and aspect ratio into a circle clips the language
+    // rows and also gives the optical recorder a moving, highly distorted source.
+    val carrierShape = FlClashGlassShape(24f)
     Popup(
         popupPositionProvider = positionProvider,
         onDismissRequest = { close() },
@@ -188,20 +173,12 @@ private fun LanguagePopup(
             Column(
                 Modifier.width(width).heightIn(max = minOf(420.dp, maxHeight))
                     .graphicsLayer {
-                        val p = progress.value
-                        val anchor = geometry.anchor
-                        val anchorCenter = Offset(
-                            (anchor.left + anchor.right) / 2f - geometry.origin.x,
-                            (anchor.top + anchor.bottom) / 2f - geometry.origin.y,
-                        )
-                        val startScale = (.41f * min(anchor.width, anchor.height) / size.width.coerceAtLeast(1f)).coerceIn(.01f, 1f)
-                        val scale = startScale + (1f - startScale) * p
+                        val p = progress.value.coerceIn(0f, 1f)
+                        val scale = .96f + .04f * p
                         scaleX = scale
-                        scaleY = scale * (size.width + (size.height - size.width) * p) / size.height.coerceAtLeast(1f)
+                        scaleY = scale
                         transformOrigin = TransformOrigin.Center
-                        translationX = (anchorCenter.x - size.width / 2f) * (1f - p)
-                        translationY = (anchorCenter.y - size.height / 2f) * (1f - p)
-                        alpha = p.coerceIn(0f, 1f)
+                        alpha = p
                     }
                     .recordGlassPopupScene(popupScene)
                     .glassControl(shape = carrierShape, enabled = false, registerPane = false, role = GlassMaterialRole.Menu)
@@ -243,7 +220,6 @@ private class LanguageMenuPositionProvider(
     private val safeTop: Int,
     private val safeRight: Int,
     private val safeBottom: Int,
-    private val onPosition: (IntRect, IntOffset) -> Unit,
 ) : PopupPositionProvider {
     override fun calculatePosition(
         anchorBounds: IntRect,
@@ -257,7 +233,6 @@ private class LanguageMenuPositionProvider(
         val maxY = (windowSize.height - safeBottom - margin - popupContentSize.height).coerceAtLeast(top)
         val x = if (layoutDirection == LayoutDirection.Ltr) anchorBounds.right - popupContentSize.width else anchorBounds.left
         val position = IntOffset(x.coerceIn(left, maxX), (anchorBounds.top - margin / 2).coerceIn(top, maxY))
-        onPosition(anchorBounds, position)
         return position
     }
 }

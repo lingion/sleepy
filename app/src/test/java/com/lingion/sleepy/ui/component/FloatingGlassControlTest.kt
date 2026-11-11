@@ -64,13 +64,14 @@ class FloatingGlassControlTest {
         }
         advance(160)
         val rising = height()
-        assertTrue("the lens must still be rising at 160ms, not pop to full size: $rising", rising > 40f && rising < 51.5f)
+        assertTrue("the lens must still be rising at 160ms, not pop to full size: $rising", rising > 40f && rising < 49.5f)
         advance(800)
-        assertEquals(52f, height(), 1f)
+        // Native segmented picker grows by 16pt from its resting seat.
+        assertEquals(50f, height(), 1f)
         tabs.performTouchInput { up() }
         advance(80)
         val lowering = height()
-        assertTrue("release must lower continuously rather than freeze at full height: $lowering", lowering > 34f && lowering < 51f)
+        assertTrue("release must lower continuously rather than freeze at full height: $lowering", lowering > 34f && lowering < 49f)
         advance(1504)
         assertEquals(34f, height(), 1f)
     }

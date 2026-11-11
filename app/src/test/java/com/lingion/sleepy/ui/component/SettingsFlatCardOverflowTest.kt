@@ -45,8 +45,9 @@ class SettingsFlatCardOverflowTest {
             MaterialTheme(typography = SleepyTypography) {
                 CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
                     GlassHost(Modifier.fillMaxSize()) {
-                        // A 320dp settings page has a 288dp card and 256dp track.
-                        Column(Modifier.width(320.dp).padding(horizontal = 16.dp, vertical = 64.dp)) {
+                        // Match this 400dp window: a 368dp card and 336dp track.
+                        // The native-sized lens still crosses this card during a drag.
+                        Column(Modifier.width(400.dp).padding(horizontal = 16.dp, vertical = 64.dp)) {
                             Box(Modifier.testTag("card")) {
                                 var selected by remember { mutableIntStateOf(0) }
                                 SettingsFlatCard(
@@ -67,7 +68,7 @@ class SettingsFlatCardOverflowTest {
         val lens = compose.onNodeWithTag("segment-thumb", useUnmergedTree = true)
         val cardRight = compose.onNodeWithTag("card").getUnclippedBoundsInRoot().right.value
         val trackBounds = track.getUnclippedBoundsInRoot()
-        assertEquals("fixture must use the real wrapped choices", 256f,
+        assertEquals("fixture must use the real wrapped choices", 336f,
             (trackBounds.right - trackBounds.left).value, .5f)
         compose.mainClock.autoAdvance = false
         fun frame() {

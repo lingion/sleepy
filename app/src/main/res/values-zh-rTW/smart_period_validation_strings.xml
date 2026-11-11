@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="smart_period_invalid_start">第一節開始時間需為 00:00–23:59，此次修改未套用。</string>
+    <string name="smart_period_invalid_count">總節數需在 1–1439 之間，並能排入當天，此次修改未套用。</string>
+    <string name="smart_period_invalid_duration">每節時長必須大於 0，課間不能小於 0，此次修改未套用。</string>
+    <string name="smart_period_exceeds_day">課程與課間必須在當天 23:59 前結束，此次修改未套用，請減少節數、時長或課間。</string>
+</resources>

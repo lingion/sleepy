@@ -74,6 +74,7 @@ import com.lingion.sleepy.ui.component.NavIconDriverEffects
 import com.lingion.sleepy.ui.component.PillNavItemSpec
 import com.lingion.sleepy.ui.component.NavPartIcon
 import com.lingion.sleepy.ui.component.rememberNavIconDrivers
+import com.lingion.sleepy.ui.component.selectionColors
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import material.Hct
 import kotlin.math.abs
@@ -105,6 +106,7 @@ fun LiquidGlassNavigationBar(
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
     val colorScheme = MaterialTheme.colorScheme
+    val selectionColors = colorScheme.selectionColors()
     // 主题实时订阅: LocalDarkTheme 用 compositionLocalOf 提供(见 Theme.kt),
     // 组合期直读即注册依赖; derivedStateOf 把 dark 收敛成单一快照状态,
     // 供着色器 uniform / 底盘色 / 阴影强度等价消费,
@@ -259,14 +261,8 @@ fun LiquidGlassNavigationBar(
     // 阴影强度 (Dark: 3x, Light: 1x)
     val shadowStrength = if (dark) 3.0f else 1.0f
 
-    // 沉底底盘调色 (Dark: surfaceContainerHighest, Light: surfaceContainer / 优雅柔和不刺眼)
-    val restingPlatterColor = remember(colorScheme, dark) {
-        if (dark) {
-            colorScheme.surfaceContainerHighest.copy(alpha = 0.85f)
-        } else {
-            colorScheme.surfaceContainer.copy(alpha = 0.92f)
-        }
-    }
+    // Match the Material navigation selection before it lifts into a lens.
+    val restingPlatterColor = selectionColors.selectedContainer
 
     val lensBaseWidthDp = layout.lens.dp
     val lensBaseHeightDp = (FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f).dp
@@ -575,7 +571,8 @@ fun LiquidGlassNavigationBar(
                     DestinationsRow(
                         items = items,
                         layout = layout,
-                        tint = colorScheme.onSurfaceVariant,
+                        tint = selectionColors.unselectedContent,
+                        badgeTint = selectionColors.accent,
                         iconDrivers = iconDrivers,
                     )
                 }
@@ -828,7 +825,7 @@ fun LiquidGlassNavigationBar(
                     },
             )
 
-            // ── 层4: 镜内文字与图标 (Inside Destinations - primary, 1:1 FLClash lensContent 边缘非线性光学放大拉伸) ──
+            // ── 层4: 镜内文字与图标 (Material 选中文字色，保留镜片的光学放大拉伸) ──
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -931,7 +928,8 @@ fun LiquidGlassNavigationBar(
                         DestinationsRow(
                             items = items,
                             layout = layout,
-                            tint = colorScheme.primary,
+                            tint = selectionColors.selectedContent,
+                            badgeTint = selectionColors.accent,
                             iconDrivers = iconDrivers,
                             itemTransform = { computeInsideTransform(it) },
                         )
@@ -959,6 +957,7 @@ private fun DestinationsRow(
     items: List<PillNavItemSpec>,
     layout: FlClashDockPhysics.DockLayout,
     tint: Color,
+    badgeTint: Color,
     iconDrivers: List<NavIconDriver>,
     itemTransform: (index: Int) -> DestinationTransform = { DestinationTransform.Identity },
 ) {
@@ -997,7 +996,7 @@ private fun DestinationsRow(
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
                                     .size(7.dp)
-                                    .background(Color.Red, CircleShape),
+                                    .background(badgeTint, CircleShape),
                             )
                         }
                     }

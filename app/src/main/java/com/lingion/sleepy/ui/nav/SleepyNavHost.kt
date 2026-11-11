@@ -26,7 +26,6 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationRailItemDefaults
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
-import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
@@ -346,7 +345,6 @@ internal fun SleepyNavHost(
                 onBack = { navigator.pop() },
                 themeMode = themeMode,
                 onThemeModeChange = onThemeModeChange,
-                onOpenScheduleDisplay = { navigator.openScheduleDisplay() },
                 navDock = navDock,
                 onNavDockChange = onNavDockChange,
             )
@@ -778,7 +776,7 @@ private fun MainRoute(
                 NavigationBar {
                     Tab.entries.forEach { tab ->
                         NavigationBarItem(
-                            colors = NavigationBarItemDefaults.colors(indicatorColor = controlFill(MaterialTheme.colorScheme.secondaryContainer)),
+                            colors = NavigationBarItemDefaults.colors(indicatorColor = MaterialTheme.colorScheme.secondaryContainer),
                             modifier = Modifier.observePressTracker(officialMotion.pressTrackerFor(tab.ordinal)!!),
                             selected = currentTab == tab,
                             onClick = { setCurrentTab(tab) },
@@ -825,7 +823,8 @@ private fun GlassNavigationIcon(
     if (com.lingion.sleepy.ui.theme.LocalUiStyle.current == com.lingion.sleepy.ui.theme.UiStyle.LiquidGlass) {
         Box(
             Modifier.size(width = 64.dp, height = 32.dp)
-                .glassControl(shape = RoundedCornerShape(percent = 50), selected = selected),
+                .glassControl(shape = RoundedCornerShape(percent = 50))
+                .then(if (selected) Modifier.background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(percent = 50)) else Modifier),
             contentAlignment = Alignment.Center,
         ) { NavigationTabIcon(tab, showUpdateDot, motion) }
     } else {
@@ -895,7 +894,7 @@ private fun CombinedRailItem(
                 .width(56.dp)
                 .glassControl(shape = RoundedCornerShape(percent = 50), tint = containerColor)
                 .clip(RoundedCornerShape(percent = 50))
-                .background(controlFill(containerColor))
+                .background(containerColor)
                 .padding(vertical = 4.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -943,7 +942,7 @@ private fun PlainRailItem(
     // 按压跟踪挂整项(比图标 24dp 命中区大): 齿轮按住缓转, 其它 key 无消费者=零影响。
     val tracker = motion?.pressTrackerFor(tab.ordinal)
     NavigationRailItem(
-        colors = NavigationRailItemDefaults.colors(indicatorColor = controlFill(MaterialTheme.colorScheme.secondaryContainer)),
+        colors = NavigationRailItemDefaults.colors(indicatorColor = MaterialTheme.colorScheme.secondaryContainer),
         modifier = if (tracker != null) Modifier.observePressTracker(tracker) else Modifier,
         selected = selected,
         onClick = onClick,
@@ -986,6 +985,7 @@ private fun RightHalfContent(
                 onOpenCourseList = { navigator.openCourseList() },
                 onOpenPeriodTables = { navigator.openPeriodTables() },
                 onOpenAppearance = { navigator.openAppearance() },
+                onOpenScheduleDisplay = { navigator.openScheduleDisplay() },
                 onOpenHoliday = { navigator.openHoliday() },
                 onOpenBackup = { navigator.openBackup() },
                 onOpenGeneral = { navigator.openGeneral() },

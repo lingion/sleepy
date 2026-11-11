@@ -39,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
@@ -52,6 +53,7 @@ import androidx.compose.ui.unit.sp
 import com.lingion.sleepy.data.entity.BreakOption
 import com.lingion.sleepy.data.entity.DurationOption
 import com.lingion.sleepy.data.entity.SmartPeriodConfig
+import com.lingion.sleepy.data.entity.SmartPeriodValidationError
 import com.lingion.sleepy.data.entity.remapDurationAssignmentsAfterDeletion
 import com.lingion.sleepy.R
 import com.lingion.sleepy.console.ui.dbgTag
@@ -80,6 +82,18 @@ fun SmartPeriodEditor(
     dbgTagPrefix: String? = null
 ) {
     val colors = MaterialTheme.colorScheme
+    val context = LocalContext.current
+    var rejectedChange by remember { mutableStateOf<SmartPeriodValidationError?>(null) }
+    val updateConfig: (SmartPeriodConfig) -> Boolean = { candidate ->
+        val error = candidate.validationError()
+        rejectedChange = error
+        if (error == null) {
+            onConfigChange(candidate)
+        } else {
+            android.widget.Toast.makeText(context, context.getString(error.messageResId()), android.widget.Toast.LENGTH_SHORT).show()
+        }
+        error == null
+    }
     val breakAssigns = config.effectiveAssignments()
     val durationAssigns = config.effectivePeriodAssignments()
 
@@ -109,7 +123,7 @@ fun SmartPeriodEditor(
                 label = durationLabel,
                 unit = stringResource(R.string.unit_minutes),
                 value = config.periodMinutes,
-                onValueChange = { onConfigChange(config.copy(periodMinutes = it.coerceAtLeast(1))) },
+                onValueChange = { updateConfig(config.copy(periodMinutes = it)) },
                 modifier = Modifier.weight(1f),
                 dbgTag = dbgTagPrefix?.let { "${it}_duration" },
             )
@@ -118,7 +132,7 @@ fun SmartPeriodEditor(
                 unit = stringResource(R.string.unit_periods),
                 value = config.totalPeriods,
                 onValueChange = { newN ->
-                    onConfigChange(config.copy(totalPeriods = newN.coerceAtLeast(1)))
+                    updateConfig(config.copy(totalPeriods = newN))
                 },
                 modifier = Modifier.weight(1f),
                 dbgTag = dbgTagPrefix?.let { "${it}_total" },
@@ -128,11 +142,20 @@ fun SmartPeriodEditor(
         // 第一节开始时间
         TimePickerField(
             value = config.startTime,
-            onValueChange = { onConfigChange(config.copy(startTime = it)) },
+            onValueChange = { updateConfig(config.copy(startTime = it)) },
             label = stringResource(R.string.edit_period_first_start),
             modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
             dbgTag = dbgTagPrefix?.let { "${it}_start" }
         )
+
+        (rejectedChange ?: config.validationError())?.let { error ->
+            Text(
+                text = stringResource(error.messageResId()),
+                color = colors.error,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
+            )
+        }
 
         // 添加 duration
         Row(
@@ -142,14 +165,14 @@ fun SmartPeriodEditor(
             AddBreakChip(
                 label = stringResource(R.string.short_duration),
                 color = colors.tertiary,
-                onAdd = { onConfigChange(config.copy(durations = config.durations + DurationOption(30, false))) },
+                onAdd = { updateConfig(config.copy(durations = config.durations + DurationOption(30, false))) },
                 modifier = Modifier.weight(1f),
                 dbgTag = dbgTagPrefix?.let { "${it}_dur_short" }
             )
             AddBreakChip(
                 label = stringResource(R.string.long_duration),
                 color = colors.primary,
-                onAdd = { onConfigChange(config.copy(durations = config.durations + DurationOption(60, true))) },
+                onAdd = { updateConfig(config.copy(durations = config.durations + DurationOption(60, true))) },
                 modifier = Modifier.weight(1f),
                 dbgTag = dbgTagPrefix?.let { "${it}_dur_long" }
             )
@@ -169,10 +192,10 @@ fun SmartPeriodEditor(
                 DurationGroupSection(
                     durationOption = dur,
                     groupIdx = groupIdx,
-                    totalPeriods = config.totalPeriods,
+                    totalPeriods = config.totalPeriods.coerceIn(0, SmartPeriodConfig.MAX_PERIODS_PER_DAY),
                     assigns = durationAssigns,
                     onMinuteChange = { newMin ->
-                        onConfigChange(config.copy(
+                        updateConfig(config.copy(
                             durations = config.durations.toMutableList().also { it[groupIdx] = it[groupIdx].copy(minutes = newMin) }
                         ))
                     },
@@ -184,11 +207,11 @@ fun SmartPeriodEditor(
                         } else {
                             newAssigns[posIdx] = groupIdx
                         }
-                        onConfigChange(config.copy(periodAssignments = newAssigns))
+                        updateConfig(config.copy(periodAssignments = newAssigns))
                     },
                     onDelete = {
                         val newAssigns = remapDurationAssignmentsAfterDeletion(durationAssigns, groupIdx)
-                        onConfigChange(config.copy(
+                        updateConfig(config.copy(
                             durations = config.durations.toMutableList().also { it.removeAt(groupIdx) },
                             periodAssignments = newAssigns
                         ))
@@ -206,14 +229,14 @@ fun SmartPeriodEditor(
             AddBreakChip(
                 label = stringResource(R.string.short_break),
                 color = colors.tertiary,
-                onAdd = { onConfigChange(config.copy(breaks = config.breaks + BreakOption(10, false))) },
+                onAdd = { updateConfig(config.copy(breaks = config.breaks + BreakOption(10, false))) },
                 modifier = Modifier.weight(1f),
                 dbgTag = dbgTagPrefix?.let { "${it}_break_short" }
             )
             AddBreakChip(
                 label = stringResource(R.string.long_break),
                 color = colors.primary,
-                onAdd = { onConfigChange(config.copy(breaks = config.breaks + BreakOption(30, true))) },
+                onAdd = { updateConfig(config.copy(breaks = config.breaks + BreakOption(30, true))) },
                 modifier = Modifier.weight(1f),
                 dbgTag = dbgTagPrefix?.let { "${it}_break_long" }
             )
@@ -233,10 +256,10 @@ fun SmartPeriodEditor(
                 BreakGroupSection(
                     breakOption = br,
                     groupIdx = groupIdx,
-                    totalPeriods = config.totalPeriods,
+                    totalPeriods = config.totalPeriods.coerceIn(0, SmartPeriodConfig.MAX_PERIODS_PER_DAY),
                     assigns = breakAssigns,
                     onMinuteChange = { newMin ->
-                        onConfigChange(config.copy(
+                        updateConfig(config.copy(
                             breaks = config.breaks.toMutableList().also { it[groupIdx] = it[groupIdx].copy(minutes = newMin) }
                         ))
                     },
@@ -248,7 +271,7 @@ fun SmartPeriodEditor(
                         } else {
                             newAssigns[posIdx] = groupIdx
                         }
-                        onConfigChange(config.copy(transitionAssignments = newAssigns))
+                        updateConfig(config.copy(transitionAssignments = newAssigns))
                     },
                     onDelete = {
                         // 删除组后索引重映射：被删组清空 + 大于被删索引的全部减 1。
@@ -262,7 +285,7 @@ fun SmartPeriodEditor(
                                 else -> v
                             }
                         }
-                        onConfigChange(config.copy(
+                        updateConfig(config.copy(
                             breaks = config.breaks.toMutableList().also { it.removeAt(groupIdx) },
                             transitionAssignments = newAssigns
                         ))
@@ -285,13 +308,20 @@ fun SmartPeriodEditor(
     }
 }
 
+private fun SmartPeriodValidationError.messageResId(): Int = when (this) {
+    SmartPeriodValidationError.StartTime -> R.string.smart_period_invalid_start
+    SmartPeriodValidationError.PeriodCount -> R.string.smart_period_invalid_count
+    SmartPeriodValidationError.Duration -> R.string.smart_period_invalid_duration
+    SmartPeriodValidationError.ExceedsDay -> R.string.smart_period_exceeds_day
+}
+
 @Composable
 private fun BreakGroupSection(
     breakOption: BreakOption,
     groupIdx: Int,
     totalPeriods: Int,
     assigns: List<Int?>,
-    onMinuteChange: (Int) -> Unit,
+    onMinuteChange: (Int) -> Boolean,
     onToggle: (Int) -> Unit,
     onDelete: () -> Unit,
     tagPrefix: String? = null
@@ -319,7 +349,7 @@ private fun DurationGroupSection(
     groupIdx: Int,
     totalPeriods: Int,
     assigns: List<Int?>,
-    onMinuteChange: (Int) -> Unit,
+    onMinuteChange: (Int) -> Boolean,
     onToggle: (Int) -> Unit,
     onDelete: () -> Unit,
     tagPrefix: String? = null
@@ -354,7 +384,7 @@ private fun AssignmentGroupSection(
     groupIdx: Int,
     labelFor: (Int) -> String,
     emptyHintResId: Int,
-    onMinuteChange: (Int) -> Unit,
+    onMinuteChange: (Int) -> Boolean,
     minuteValue: Int,
     onToggle: (Int) -> Unit,
     onDelete: () -> Unit,
@@ -469,7 +499,7 @@ private fun PositionCard(
         modifier = modifier
             .heightIn(min = GlassControlLayout.touchTarget)
             .glassControl(shape = SleepyTheme.shapes.small, tint = if (selected) groupColor else null)
-            .background(controlFill(bg), SleepyTheme.shapes.small)
+            .background(if (selected) bg else controlFill(bg), SleepyTheme.shapes.small)
             .noRippleGlassClickable(onClick)
             .padding(horizontal = 4.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center
@@ -550,15 +580,15 @@ private fun NumberField(
     label: String,
     unit: String,
     value: Int,
-    onValueChange: (Int) -> Unit,
+    onValueChange: (Int) -> Boolean,
     modifier: Modifier = Modifier,
     dbgTag: String? = null,
 ) {
     var text by remember(value) { mutableStateOf(value.toString()) }
     val updateText: (String) -> Unit = { newText ->
         if (newText.all { it.isDigit() } && newText.length <= 4) {
-            text = newText
-            newText.toIntOrNull()?.let(onValueChange)
+            val number = newText.toIntOrNull()
+            text = if (number == null || onValueChange(number)) newText else value.toString()
         }
     }
     val inputIdentity = dbgTag?.let { Modifier.dbgTag(it, text = label, role = "textbox") } ?: Modifier
