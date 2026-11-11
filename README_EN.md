@@ -638,7 +638,7 @@ sleepy/
 
 Build with **JDK 25 + the bundled Gradle 9.8.2 Wrapper + Android Gradle Plugin (AGP) 9.5.1**. Android Studio must support AGP 9.5; see the [official AGP 9.5 compatibility requirements](https://developer.android.com/build/releases/agp-9-5-0-release-notes). Local compilation, unit tests, and CI use JDK 25. Java and Kotlin still compile to JVM target 17, and the minimum Android version remains Android 8.0 (API 26).
 
-Install JDK 25, point `JAVA_HOME` to its root directory, and add its `bin` directory to `PATH`. Select JDK 25 as the Gradle JDK in Android Studio as well. The repository pins the Gradle Daemon to an installed JDK 25 through [`gradle/gradle-daemon-jvm.properties`](gradle/gradle-daemon-jvm.properties); it does not download a JDK automatically. This setting takes precedence over `JAVA_HOME`. Check the `Daemon JVM` in `./gradlew --version` to confirm the actual build environment; `java -version` alone is insufficient.
+Install JDK 25, point `JAVA_HOME` to its root directory, and add its `bin` directory to `PATH`. Select JDK 25 as the Gradle JDK in Android Studio as well. The repository pins the Gradle Daemon to JDK 25 through [`gradle/gradle-daemon-jvm.properties`](gradle/gradle-daemon-jvm.properties), preferring an installed JDK. Linux x64 environments without JDK 25 automatically download a pinned Temurin release; other platforms require a local installation. This setting takes precedence over `JAVA_HOME`. Check the `Daemon JVM` in `./gradlew --version` to confirm the actual build environment; `java -version` alone is insufficient.
 
 ```bash
 java -version           # JDK 25

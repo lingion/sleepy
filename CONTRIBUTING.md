@@ -12,7 +12,7 @@ cd sleepy
 ./gradlew :app:assembleDebug
 ```
 
-- 使用 JDK 25 和仓库自带的 Gradle Wrapper，本地与 CI 保持一致。仓库固定 Gradle Daemon 使用已安装的 JDK 25；通过 `./gradlew --version`（Windows 为 `.\gradlew.bat --version`）检查 `Daemon JVM`。Java / Kotlin 编译目标保持 17。Android Studio 需支持版本目录中声明的 AGP，具体安装与配置见[构建前置说明](README.md#前置)。
+- 使用 JDK 25 和仓库自带的 Gradle Wrapper，本地与 CI 保持一致。仓库固定 Gradle Daemon 使用 JDK 25；通过 `./gradlew --version`（Windows 为 `.\gradlew.bat --version`）检查 `Daemon JVM`。Java / Kotlin 编译目标保持 17。Android Studio 需支持版本目录中声明的 AGP，具体安装与配置见[构建前置说明](README.md#前置)。
 - SDK 安装与 SDK XML v4 兼容性警告的排查见 [构建前置说明](README.md#前置)；确保 IDE 与命令行使用同一套 SDK 和最新 Command-line Tools。
 - 先运行与改动相关的行为测试。完整单测、lint 和 Release 构建由 PR CI 执行。
 

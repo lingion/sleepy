@@ -657,7 +657,7 @@ sleepy/
 
 构建使用 **JDK 25 + 仓库自带的 Gradle 9.8.2 Wrapper + Android Gradle Plugin（AGP）9.5.1**。Android Studio 需支持 AGP 9.5，版本兼容要求见 [AGP 9.5 官方说明](https://developer.android.com/build/releases/agp-9-5-0-release-notes)。本地编译、单元测试和 CI 统一使用 JDK 25；Java / Kotlin 编译目标仍为 17，最低 Android 版本仍为 Android 8.0（API 26）。
 
-先安装 JDK 25，将 `JAVA_HOME` 指向其根目录，并将其 `bin` 加入 `PATH`；Android Studio 的 Gradle JDK 也选择 JDK 25。仓库通过 [`gradle/gradle-daemon-jvm.properties`](gradle/gradle-daemon-jvm.properties) 固定 Gradle Daemon 使用已安装的 JDK 25，不自动下载 JDK。该配置优先于 `JAVA_HOME`；确认实际构建环境时应检查 `./gradlew --version` 的 `Daemon JVM`，不能只看 `java -version`。
+先安装 JDK 25，将 `JAVA_HOME` 指向其根目录，并将其 `bin` 加入 `PATH`；Android Studio 的 Gradle JDK 也选择 JDK 25。仓库通过 [`gradle/gradle-daemon-jvm.properties`](gradle/gradle-daemon-jvm.properties) 固定 Gradle Daemon 使用 JDK 25，优先使用已安装的版本；Linux x64 环境缺少 JDK 25 时会自动下载固定版本的 Temurin，其他平台需自行安装。该配置优先于 `JAVA_HOME`；确认实际构建环境时应检查 `./gradlew --version` 的 `Daemon JVM`，不能只看 `java -version`。
 
 ```bash
 java -version           # JDK 25

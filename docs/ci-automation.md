@@ -22,7 +22,9 @@
 
 ## 构建环境
 
-CI、Nightly、Release、Debug APK Build 和独立 debug 签名工作流统一使用 Temurin JDK 25。Debug 构建容器直接挂载 runner 安装的 JDK 25。本地也需安装 JDK 25；仓库的 `gradle/gradle-daemon-jvm.properties` 固定 Gradle Daemon 的主版本，不自动下载 JDK。
+CI、Nightly、Release、Debug APK Build 和独立 debug 签名工作流统一使用 Temurin JDK 25。Debug 构建容器直接挂载 runner 安装的 JDK。本地也建议安装 JDK 25；仓库的 `gradle/gradle-daemon-jvm.properties` 固定 Gradle Daemon 的主版本，优先使用已有 JDK 25，并为 Linux x64 提供固定版本的 Temurin 下载地址。
+
+`pull_request_target` 执行主分支的工作流，PR 内的 `setup-java` 修改要合入 main 后才生效。迁移期间，旧工作流可能仍向容器挂载 JDK 17；Gradle 会依据 PR 源码中的 JVM 配置，在容器的临时 Gradle 用户目录内下载 JDK 25 后构建。下载需要联网，且不会写入宿主机只读挂载的 JDK 目录。
 
 使用 `./gradlew --version`（Windows 为 `.\gradlew.bat --version`）检查 `Daemon JVM`，不要仅依赖 `java -version`：后者可能与 `JAVA_HOME` 或 IDE 选择的 JDK 不同。Java / Kotlin 的编译目标保持 17，`minSdk=26`；升级构建 JDK 不提高最低 Android 版本。安装步骤见 [README](../README.md#前置)。
 
