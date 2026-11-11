@@ -64,8 +64,9 @@ class NativeGlassControlPhaseTest {
         assertEquals(37f, bounds("thumb").width, 1f)
         val control = compose.onNodeWithTag("switch")
         control.performTouchInput { down(Offset(centerX, centerY)) }
+        compose.runOnIdle { }
         compose.mainClock.advanceTimeBy(64)
-        assertTrue("rise has an intermediate size", bounds("thumb").width in 40f..57f)
+        assertTrue("rise has an intermediate size: ${bounds("thumb")}", bounds("thumb").width in 40f..57f)
         compose.mainClock.advanceTimeBy(112)
         val peak = bounds("thumb")
         assertTrue("native rise briefly overshoots its held size", peak.width in 59f..62f)
@@ -75,6 +76,7 @@ class NativeGlassControlPhaseTest {
         assertEquals(58f, held.width, 1f)
         assertEquals(38.333f, held.height, 1f)
         control.performTouchInput { cancel() }
+        compose.runOnIdle { }
         compose.mainClock.advanceTimeBy(1_000)
         assertEquals(37f, bounds("thumb").width, 1f)
     }
@@ -83,9 +85,11 @@ class NativeGlassControlPhaseTest {
         show()
         val control = compose.onNodeWithTag("switch")
         control.performTouchInput { down(Offset(centerX, centerY)) }
+        compose.runOnIdle { }
         compose.mainClock.advanceTimeBy(500)
         val held = bounds("thumb")
         control.performTouchInput { up() }
+        compose.runOnIdle { }
         compose.mainClock.advanceTimeBy(80)
         val falling = bounds("thumb")
         assertTrue("release restores the solid geometry before travel finishes", falling.width < held.width - 3f)
@@ -101,11 +105,13 @@ class NativeGlassControlPhaseTest {
         val rest = bounds("segment-thumb")
         val control = compose.onNodeWithTag("segments")
         control.performTouchInput { down(Offset(width / 6f, centerY)) }
+        compose.runOnIdle { }
         compose.mainClock.advanceTimeBy(700)
         val held = bounds("segment-thumb")
         assertEquals(24f, held.width - rest.width, 1f)
         assertEquals(16f, held.height - rest.height, 1f)
         control.performTouchInput { cancel() }
+        compose.runOnIdle { }
         compose.mainClock.advanceTimeBy(1_000)
         assertEquals(rest.width, bounds("segment-thumb").width, 1f)
         assertEquals(rest.height, bounds("segment-thumb").height, 1f)

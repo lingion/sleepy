@@ -115,11 +115,13 @@ class GlassSelectionColorRegressionTest {
         val rest = frame("glass-toggle-0-rest.png")
         compose.mainClock.autoAdvance = false
         toggle.performTouchInput { down(Offset(centerX, centerY)) }
+        compose.runOnIdle { }
         compose.mainClock.advanceTimeBy(64)
         val rising = frame("glass-toggle-1-rising.png")
         compose.mainClock.advanceTimeBy(800)
         val held = frame("glass-toggle-2-held.png")
         toggle.performTouchInput { cancel() }
+        compose.runOnIdle { }
         compose.mainClock.advanceTimeBy(64)
         val lowering = frame("glass-toggle-3-lowering.png")
         compose.mainClock.advanceTimeBy(1_000)

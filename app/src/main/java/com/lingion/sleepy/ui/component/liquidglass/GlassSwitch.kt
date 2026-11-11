@@ -2,7 +2,9 @@ package com.lingion.sleepy.ui.component.liquidglass
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -55,7 +57,8 @@ fun GlassSwitch(
     val host = LocalGlassHost.current
     val glassEnabled = LocalUiStyle.current == UiStyle.LiquidGlass && host != null
     if (!glassEnabled) {
-        androidx.compose.material3.Switch(checked, onCheckedChange, modifier, thumbContent, enabled, colors, interactionSource)
+        androidx.compose.material3.Switch(checked, onCheckedChange,
+            modifier.glassGestureOwnership(enabled && onCheckedChange != null), thumbContent, enabled, colors, interactionSource)
         return
     }
     val interactions = interactionSource ?: remember { MutableInteractionSource() }
@@ -78,6 +81,7 @@ fun GlassSwitch(
     val lift = motion.lift
     val geometryLift = motion.geometryLift
     val input = if (onCheckedChange == null) Modifier else Modifier
+        .glassGestureOwnership(enabled)
         .toggleable(
             value = checked, enabled = enabled, role = Role.Switch,
             interactionSource = interactions, indication = null,
@@ -90,18 +94,33 @@ fun GlassSwitch(
         .pointerInput(checked, enabled, rtl, travel) {
             if (!enabled) return@pointerInput
             try {
-                detectHorizontalDragGestures(
-                    onDragStart = { dragging = true },
-                    onDragCancel = { dragging = false; gestureEnd++ },
-                    onDragEnd = {
-                        val target = position >= .5f
+                awaitEachGesture {
+                    val down = awaitFirstDown(pass = PointerEventPass.Initial)
+                    down.consume()
+                    dragging = true
+                    val start = if (currentChecked) 1f else 0f
+                    var moved = false
+                    try {
+                        while (true) {
+                            val event = awaitPointerEvent(PointerEventPass.Initial)
+                            val pointer = event.changes.firstOrNull { it.id == down.id } ?: break
+                            if (!pointer.pressed) {
+                                if (pointer.isConsumed) break
+                                pointer.consume()
+                                val target = if (moved) position >= .5f else !currentChecked
+                                tapGeneration++
+                                if (target != currentChecked) update?.invoke(target)
+                                break
+                            }
+                            val dx = pointer.position.x - down.position.x
+                            if (kotlin.math.abs(dx) > viewConfiguration.touchSlop) moved = true
+                            if (moved) position = (start + dx * (if (rtl) -1f else 1f) / travel).coerceIn(0f, 1f)
+                            pointer.consume()
+                        }
+                    } finally {
                         dragging = false
                         gestureEnd++
-                        if (target != currentChecked) update?.invoke(target)
-                    },
-                ) { change, amount ->
-                    change.consume()
-                    position = (position + amount * (if (rtl) -1f else 1f) / travel).coerceIn(0f, 1f)
+                    }
                 }
             } finally {
                 dragging = false
