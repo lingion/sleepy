@@ -120,7 +120,7 @@ def find_build_tool(name):
 
 def inspect_apk(path):
     badging = subprocess.check_output([find_build_tool("aapt"), "dump", "badging", str(path)], text=True)
-    package = re.search(r"^package: name='([^']+)' .*?versionName='([^']*)'", badging, re.MULTILINE)
+    package = re.search(r"^package: name='([^']+)' versionCode='(\d+)' .*?versionName='([^']*)'", badging, re.MULTILINE)
     if not package:
         raise ValueError(f"Cannot read APK package identity: {path.name}")
     certificates = subprocess.check_output([
@@ -132,7 +132,7 @@ def inspect_apk(path):
     with zipfile.ZipFile(path) as apk:
         native_abis = sorted({name.split('/')[1] for name in apk.namelist()
                               if name.startswith('lib/') and name.endswith('.so') and len(name.split('/')) >= 3})
-    return {"application_id": package[1], "version_name": package[2],
+    return {"application_id": package[1], "version_code": int(package[2]), "version_name": package[3],
             "debuggable": "application-debuggable" in badging, "native_abis": native_abis,
             "certificate_sha256": fingerprints.pop()}
 
@@ -207,6 +207,7 @@ def package_apks(source, destination, plan, source_sha, signing, inspector=inspe
         raise ValueError("Expected the debug variant")
     expected = selected_abis(plan["abi"])
     inventory = {}
+    versions = {}
     for element in metadata["elements"]:
         filters = element.get("filters", [])
         if any(item.get("filterType") != "ABI" for item in filters) or len(filters) > 1:
@@ -221,6 +222,7 @@ def package_apks(source, destination, plan, source_sha, signing, inspector=inspe
         if abi in inventory or abi not in expected:
             raise ValueError(f"Unexpected or duplicate ABI: {abi}")
         inventory[abi] = apk
+        versions[abi] = element
     if set(inventory) != set(expected) or set(source.glob("*.apk")) != set(inventory.values()):
         raise ValueError("APK inventory does not match selected ABIs")
 
@@ -229,6 +231,9 @@ def package_apks(source, destination, plan, source_sha, signing, inspector=inspe
     for abi, identity in identities.items():
         if not identity["debuggable"] or identity["application_id"] != metadata["applicationId"]:
             raise ValueError(f"APK is not debuggable or package metadata disagrees: {abi}")
+        for field, key in (("version_code", "versionCode"), ("version_name", "versionName")):
+            if key in versions[abi] and identity.get(field) != versions[abi][key]:
+                raise ValueError(f"APK version differs from Gradle output metadata: {abi}")
         # AGP's all-mode universal split also retains legacy x86 libraries from dependencies.
         allowed_native_abis = set(ABIS[:-1]) | {"x86"} if abi == "universal" else {abi}
         if not re.fullmatch(r"[0-9a-f]{64}", expected_certificate) or identity["certificate_sha256"] != expected_certificate:
