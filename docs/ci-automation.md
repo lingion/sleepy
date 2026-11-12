@@ -50,7 +50,9 @@ Debug 构建读取目标源码的 `.tool-versions`（只读取版本数据，不
 
 打开 Actions 的 Debug APK Build，点击 Run workflow。上方分支选择决定使用哪一版工作流；下方 `ref` 留空时，也构建该分支在本次事件中的固定提交。填写 `ref` 才会覆盖源码目标，支持本仓库中的分支、标签或完整 SHA。普通群友没有上游写权限时，可以在自己的 fork 手动运行，或通过 PR 触发上游自动构建。
 
-要获得官方签名包，上方工作流分支必须选官方 `main`，需要测试的分支填在下方 `ref`；其他工作流分支只验证构建，不进入官方签名。
+官方仓库手动选择分支也会在同一构建页交付官方签名包：签名任务固定调用官方 `main` 的可复用工作流，签名工具也只从官方 `main` 读取；上方所选分支仅提供构建流程与默认源码目标。`ref` 留空仍构建所选分支的固定提交，填写时覆盖源码目标，`abi=all` 分别提供四种下载。
+
+此修复必须先合入官方 `main`，并同步到上方所选的工作流分支。历史分支或标签里的旧工作流不会自动升级；构建这类源码时，上方选择 `main`，在下方 `ref` 填目标分支、标签或完整 SHA。独立 fork 仍不进入官方签名。
 
 ```bash
 # 从选中的分支运行，只生成 V7A APK；将仓库名换成自己的 fork
@@ -80,6 +82,8 @@ gh workflow run "Debug APK Build" --repo lingion/sleepy --ref main -f abi=all
 构建与签名之间会暂时出现 `debug-signing-input-运行ID-尝试编号` 中间 ZIP。全部官方包上传成功后，流程自动删除它及同一运行旧尝试的包，最终页面只保留本次所选 ABI 的官方包。签名失败不发布最终包；上传失败会保留中间产物供排查，最多 1 天。重跑时选择 **Re-run all jobs**，确保构建与签名对应同一个尝试编号。
 
 官方 APK 和 artifact 名包含 `official`、PR 或分支上下文、源码短 SHA、架构、原构建运行编号和尝试编号，例如 `sleepy-debug-official-pr286-a1b2c3d4e5f6-armeabi-v7a-r20-a1`。完整 SHA、实际包名、版本、签名证书指纹和原构建地址记录在元数据中。转发 APK 时不要去掉文件名里的源码身份。
+
+PR 的全部官方签名包上传成功并清理中间产物后，`github-actions[bot]` 会在原 PR 评论各架构的下载链接、PR head、实际合并构建 SHA 和构建编号。后续成功构建更新同一条机器人评论，不重复刷屏；如果 PR 已关闭或已有更新的 head，旧构建不更新评论。签名、上传或清理失败不会发布新的下载评论，原评论中的 SHA 和运行编号仍对应上一次成功构建。评论仅表示 APK 可用，单元测试和 lint 以 PR Checks 为准。评论权限只授予可信签名任务，源码构建容器不获得写权限或 token。
 
 ```bash
 gh run list --repo lingion/sleepy --workflow "Debug APK Build" --limit 5

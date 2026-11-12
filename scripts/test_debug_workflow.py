@@ -40,9 +40,10 @@ class WorkflowContractTest(unittest.TestCase):
         self.assertNotIn("workflow_run:", workflow)
         caller = (ROOT / ".github/workflows/debug-apk.yml").read_text()
         self.assertIn("needs: [prepare, assemble-debug]", caller)
-        self.assertIn("uses: ./.github/workflows/debug-sign.yml", caller)
+        self.assertIn("uses: lingion/sleepy/.github/workflows/debug-sign.yml@main", caller)
         self.assertIn("repository: lingion/sleepy", workflow)
-        self.assertIn("ref: ${{ github.workflow_sha }}", workflow)
+        self.assertIn("ref: refs/heads/main", workflow)
+        self.assertNotIn("ref: ${{ github.workflow_sha }}", workflow)
         self.assertEqual(workflow.count("uses: actions/checkout@"), 1)
         self.assertEqual(workflow.count("secrets.DEBUG_KEYSTORE_BASE64"), 1)
         self.assertNotIn("head_sha", workflow)
@@ -66,6 +67,9 @@ class WorkflowContractTest(unittest.TestCase):
             ("lingion/sleepy", "pull_request_target", canonical, True),
             ("lingion/sleepy", "push", canonical, True),
             ("lingion/sleepy", "workflow_dispatch", canonical, True),
+            ("lingion/sleepy", "workflow_dispatch", canonical.replace("main", "feature/test"), True),
+            ("lingion/sleepy", "workflow_dispatch", canonical.replace("main", ""), False),
+            ("lingion/sleepy", "workflow_dispatch", canonical.replace("refs/heads/main", "refs/tags/v1"), False),
             ("lingion/sleepy", "workflow_run", canonical, False),
             ("contributor/sleepy", "pull_request_target", canonical, False),
             ("Lingion/Sleepy", "pull_request_target", canonical, False),
@@ -75,7 +79,8 @@ class WorkflowContractTest(unittest.TestCase):
         ]:
             with self.subTest(repo=repo, kind=kind, ref=ref):
                 result = subprocess.run(["bash", "-e", "-o", "pipefail", "-c", script], env=dict(
-                    os.environ, GITHUB_REPOSITORY=repo, GITHUB_EVENT_NAME=kind, GITHUB_WORKFLOW_REF=ref))
+                    os.environ, GITHUB_REPOSITORY=repo, GITHUB_EVENT_NAME=kind, GITHUB_WORKFLOW_REF=ref,
+                    GITHUB_REF=ref.split("@", 1)[1]))
                 self.assertEqual(result.returncode == 0, expected)
         self.assertLess(workflow.index("Verify official signing context"), workflow.index("secrets.DEBUG_KEYSTORE_BASE64"))
 

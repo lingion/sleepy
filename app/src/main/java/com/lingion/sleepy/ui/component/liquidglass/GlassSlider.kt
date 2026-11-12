@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import com.lingion.sleepy.ui.component.sliderFreezePageScroll
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
 import kotlin.math.abs
@@ -61,7 +60,8 @@ fun GlassSlider(
         }
         state.value = value
         androidx.compose.material3.Slider(
-            state = state, onValueChange = onValueChange, modifier = modifier, enabled = enabled,
+            state = state, onValueChange = onValueChange,
+            modifier = modifier.materialSliderGestureOwnership(state, enabled, onValueChange, onValueChangeFinished), enabled = enabled,
             onValueChangeFinished = onValueChangeFinished,
         )
         return
@@ -137,11 +137,12 @@ private fun GlassSliderBody(
     }
     Layout(
         modifier = modifier.fillMaxWidth().height(48.dp).alpha(if (enabled) 1f else .38f)
-            .sliderFreezePageScroll()
+            .glassGestureOwnership(enabled)
             .pointerInput(enabled, rtl, valueRange, steps, range) {
                 if (!enabled) return@pointerInput
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                    down.consume()
                     fun at(x: Float): Float {
                         val physical = ((x - inset) / (size.width - 2 * inset).coerceAtLeast(1f)).coerceIn(0f, 1f)
                         return valueRange.start + (if (rtl) 1f - physical else physical) * span

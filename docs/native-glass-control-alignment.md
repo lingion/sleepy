@@ -19,6 +19,18 @@ Switch 短按在第一次升起峰值后收镜；已越过峰值再松手则直�
 
 Android 首帧前合并的分段点击保留一个部分升起的反馈，再收回，避免按下与松手抵消后完全没有镜片变化。这是输入兼容处理，其最小幅度不作为 iOS 原生实测结论。
 
+Android 玻璃控件从按下升镜起持有手势，而非等待横向 touch slop 后才排斥页面滚动。`glassGestureOwnership` 在子控件处理后的 Main pass 消费全部指针事件，直到最后一根手指抬起；开关、Slider/RangeSlider、分段 Tab 和底部导航共用此屏障。开关和分段在 Initial pass 读取横向位移，纵向及移出控件边界不把手势转交页面；取消不提交选择，禁用/组件移除依靠 pointerInput 协程取消清理，不维护全局锁。经典开关、分段与单滑杆也隔离页面滚动；无回调的展示型开关不拦截。经典开关和分段保留原生点击语义，不把越界拖动解释为新的选择。经典单滑杆在 Initial pass 累计相对横移，并通过 SliderState.value 保留离散吸附；纵向绕行不改变值，RTL 反转横移方向，点击轨道按默认 4dp 滑块的半宽内缩换算。没有使用 dispatchRawDelta：Material 的私有 rawOffset 初值为零，绕过内部 onPress 后直接调用会使首段横移从零计值，而不是从当前值开始。每次手势重建连续值累加器，避免小位移在离散档位内丢失；取消不调用完成回调。
+
+`GlassGestureOwnershipTest` 的 27 项测试覆盖两种模式的纵向后斜向拖动、越界、取消、最后一指释放、禁用和移除后页面恢复滚动，以及经典滑杆同手势连续横移、RTL、点击轨道、离散小步累计、下一次手势与多指交接。定向测试 27 项全部通过。原有 IntRangeSliderFreezePipelineTest 另验证经典区间滑杆在列表中段的双向冻结和释放恢复。此前 `:app:assembleDebug` 成功；该构建及以下模拟器记录早于本次经典滑杆补修，不作为补修后的设备验证。Maven Central 403 通过会话外置 init 脚本将 settings 级仓库临时指向可用镜像恢复，未修改项目仓库配置。Android 13 模拟器安装本次 APK 后，在液态玻璃模式下按住“表头显示日期”并上下、斜向及越界拖动，标签保持 `[64,859][236,899]`；松手后从页面空白区域滑动，标签移至 `[64,533][236,573]`，确认滚动恢复。Slider/RangeSlider、Tab 和释放边界由上述自动化测试覆盖，尚未逐项实机验证；无物理设备 GPU 验证结论。
+
 选中背景、文字和徽标直接读取当前 Material 配色。分段与浮动底栏共用 secondaryContainer、onSecondaryContainer、onSurfaceVariant、primary；Switch 和 FilterChip 保留调用方传入的 Material 颜色，包括禁用状态。透明颜色仍会与玻璃下方内容合成。
 
 验证包括实际控件的按下、中间帧、峰值、长按、松手移动与落定尺寸，以及五套主题的浅色和深色 Material/玻璃颜色对比。Android 图形验证使用 Robolectric native graphics；未完成 Android 真机 GPU 对照。
+
+本次最终全量单元测试为 4403 项，失败 0、错误 0、跳过 2；跳过的是 WakeUpLiveCrossVerifyTest 的两个既有握手验证用例。`:app:lintDebug` 成功，报告有 560 条 Warning、40 条 Hint，没有 Error；这些数量是整仓报告，不表示本次新增。最终命令同时请求 `:app:testDebugUnitTest :app:lintDebug --continue`，退出码为 0。单元测试在前一轮已执行并产出上述 XML，最终命令复用同一源码下的 UP-TO-DATE 结果。此前复用的 Gradle daemon 出现 512MB metaspace 紧张，最终通过命令行使用全新 daemon 和 1024MB metaspace 收口，未修改项目配置。
+
+### 用户原话 vs 实现行为
+
+- “无论手指纵向、斜向、越界移动，页面都不能纵向滚动或跳位”：手势测试同时断言控件交互期间页面偏移保持不变；经典区间滑杆另外在列表中段验证，排除滚到边界的假阳性。
+- “控件横向操作必须继续有效”：玻璃控件断言值或选择变化；经典单滑杆验证同一次手势先纵后横、连续横移、RTL 和离散档位，经典开关与分段保留并验证点击选择。
+- “经典模式与液态玻璃模式同等覆盖”：两模式均验证持有期冻结和释放后空白区域恢复滚动；取消、多指、禁用和移除有对应回归。不是所有控件与每一种边界条件的笛卡尔积都逐项运行，也未新增手机验证。

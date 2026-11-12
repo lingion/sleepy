@@ -118,7 +118,20 @@ jobs:
       - name: Assemble selected debug ABI
         shell: bash
         run: |
-          docker build -t sleepy-debug-build -f tooling/.github/ci/debug-build.Dockerfile tooling/.github/ci
+          # runner 内网 DNS 对 *.ubuntu.com 失效 (主机与容器同样解不出,
+          # 且 hosted runner 封外部 UDP/53, 容器内换公共 DNS 也无效);
+          # 用 DoH (TCP/443 可达) 查 IP 写入主机 /etc/hosts, 配合
+          # --network=host 让镜像构建直接按 IP 拉 apt 源。
+          for host in archive.ubuntu.com security.ubuntu.com; do
+            ip=$(curl -fsS --max-time 15 -H 'accept: application/dns-json' \
+              "https://1.1.1.1/dns-query?name=${host}&type=A" | jq -r '.Answer[0].data // empty') || true
+            if [ -n "$ip" ]; then
+              echo "$ip $host" | sudo tee -a /etc/hosts >/dev/null
+            else
+              echo "::warning::DoH 未能解析 ${host}, 依赖 Dockerfile 内公共 DNS 回退"
+            fi
+          done
+          docker build --network=host -t sleepy-debug-build -f tooling/.github/ci/debug-build.Dockerfile tooling/.github/ci
           # runner 的 JDK cacerts 可能链接到挂载目录外；复制公共 CA 库并显式指定。
           cp -L "$JAVA_HOME/lib/security/cacerts" "$RUNNER_TEMP/java-cacerts"
           test -s "$RUNNER_TEMP/java-cacerts"
@@ -168,10 +181,14 @@ jobs:
     needs: [prepare, assemble-debug]
     if: >-
       github.repository == 'lingion/sleepy' &&
-      github.workflow_ref == 'lingion/sleepy/.github/workflows/debug-apk.yml@refs/heads/main'
+      (github.workflow_ref == 'lingion/sleepy/.github/workflows/debug-apk.yml@refs/heads/main' ||
+       (github.event_name == 'workflow_dispatch' &&
+        startsWith(github.workflow_ref, 'lingion/sleepy/.github/workflows/debug-apk.yml@refs/heads/')))
     permissions:
       contents: read
       actions: write
-    uses: ./.github/workflows/debug-sign.yml
+      pull-requests: write
+    # Manual branch workflows must call the trusted signer, never their own copy.
+    uses: lingion/sleepy/.github/workflows/debug-sign.yml@main
     secrets:
       DEBUG_KEYSTORE_BASE64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
