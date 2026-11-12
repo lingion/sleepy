@@ -153,8 +153,8 @@ fun SettingsFlatCard(
             }
             val titleWidth = with(density) { measurer.measure(AnnotatedString(title), titleStyle).size.width.toDp() }
             val controlHeight = with(density) {
-                // Compact visual track; the surrounding row still reserves 48dp.
-                ((labelSizes.maxOfOrNull { it.height } ?: 0).toDp() + 16.dp).coerceAtLeast(36.dp)
+                val minimum = if (LocalUiStyle.current == UiStyle.LiquidGlass) 48.dp else 36.dp
+                ((labelSizes.maxOfOrNull { it.height } ?: 0).toDp() + 16.dp).coerceAtLeast(minimum)
             }
             val inline = options.isNotEmpty() && titleWidth + SettingsLayout.controlGap + tabWidth <= maxWidth
             val choices: @Composable (Modifier) -> Unit = { modifier ->

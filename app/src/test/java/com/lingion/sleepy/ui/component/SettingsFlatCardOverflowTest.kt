@@ -76,8 +76,12 @@ class SettingsFlatCardOverflowTest {
             compose.waitForIdle()
         }
         var overflowFrames = 0
+        var maximumRight = 0f
+        var maximumWidth = 0f
         fun assertVisibleBounds() {
             val full = lens.getUnclippedBoundsInRoot()
+            maximumRight = maxOf(maximumRight, full.right.value)
+            maximumWidth = maxOf(maximumWidth, (full.right - full.left).value)
             if (full.right.value > cardRight + 2f) {
                 overflowFrames++
                 val visible = lens.fetchSemanticsNode().boundsInRoot
@@ -89,15 +93,17 @@ class SettingsFlatCardOverflowTest {
         track.performTouchInput { down(Offset(width / 4f, centerY)) }
         try {
             repeat(32) { frame() }
-            repeat(10) { index ->
+            // A rapid flick is needed for the measured native deformation to
+            // cross the card; a 160 ms traverse now stays inside its 16 dp inset.
+            repeat(4) { index ->
                 track.performTouchInput {
-                    moveTo(Offset(width * (.25f + .5f * (index + 1) / 10f), centerY), 16)
+                    moveTo(Offset(width * (.25f + .5f * (index + 1) / 4f), centerY), 16)
                 }
                 frame()
                 assertVisibleBounds()
             }
             repeat(18) { frame(); assertVisibleBounds() }
-            assertTrue("the gesture must actually reproduce a lens extending beyond the 16dp card inset", overflowFrames > 0)
+            assertTrue("the gesture must reproduce an overflowing lens: maxRight=$maximumRight maxWidth=$maximumWidth cardRight=$cardRight", overflowFrames > 0)
         } finally {
             track.performTouchInput { up() }
             compose.mainClock.autoAdvance = true
