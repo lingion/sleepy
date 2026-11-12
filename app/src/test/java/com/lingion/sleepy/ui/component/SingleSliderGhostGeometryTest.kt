@@ -22,8 +22,8 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
-/** Render actual app sliders and isolated original-value circles, then compare their pixel centers.
- * The 24px sample row crosses the upper part of the 32dp circle at density 2, above the 8dp rail.
+/** Render actual app sliders and isolated original-value ovals, then compare their pixel centers.
+ * The 32px sample row crosses the 37×24dp oval at density 2, above the 8dp rail.
  * Cases retain continuous/discrete values, endpoints and off-center values.
  */
 @RunWith(RobolectricTestRunner::class)
@@ -55,8 +55,8 @@ class SingleSliderGhostGeometryTest {
         Case("s11-mid", 1.0f, 0.7f, 1.3f, 11),
     )
 
-    /** 截行取证: ROW_BG=1 在 thumb 圆头顶端 (y=4) 之上, 全行纯背景 — 拿它当底,
-     *  ROW_Y 上与底不同的列即唯一墨迹 (thumb / 幽灵细条)。端点案例 thumb 贴列 0,
+    /** 截行取证: ROW_BG=1 在 thumb 椭圆顶端 (y=24) 之上, 全行纯背景 — 拿它当底,
+     *  ROW_Y 上与底不同的列即唯一墨迹 (thumb / 幽灵椭圆)。端点案例 thumb 贴列 0,
      *  禁直接拿 (0,ROW_Y) 当背景。 */
     private fun inkColumns(tag: String): List<Int> {
         compose.waitForIdle()
@@ -65,8 +65,7 @@ class SingleSliderGhostGeometryTest {
         return (0 until bmp.width).filter { x -> bmp.getPixel(x, ROW_Y) != bg }
     }
 
-    /** 参考行众数色 = 页面底色 — 幽灵细条全高, ROW_BG 上也有其墨迹 (端点案例
-     *  恰在列 0), 单点采样会被自己的墨骗过, 众数免疫。 */
+    /** 参考行众数色 = 页面底色, 避免端点处的局部墨迹影响背景判定。 */
     private fun mostCommonRowColor(bmp: android.graphics.Bitmap, y: Int): Int {
         val counts = HashMap<Int, Int>()
         for (x in 0 until bmp.width) {
@@ -107,7 +106,7 @@ class SingleSliderGhostGeometryTest {
 
     private fun assertCoincide(c: Case) {
         renderGhost(c)
-        val ghostCenter = centerOf(inkColumns("gbox-${c.name}"), "案例 ${c.name} 幽灵细条")
+        val ghostCenter = centerOf(inkColumns("gbox-${c.name}"), "案例 ${c.name} 幽灵椭圆")
         val thumbCenter = checkNotNull(thumbCenters[c.name]) { "a 相未记录 ${c.name}" }
         val d = kotlin.math.abs(ghostCenter - thumbCenter)
         assertTrue(
@@ -141,9 +140,9 @@ class SingleSliderGhostGeometryTest {
     @Test fun b7s11MidGhost() = assertCoincide(caseOf("s11-mid"))
 
     companion object {
-        /** Circle top is 16px; rail top is 40px, so 24px isolates the actual circle. */
-        private const val ROW_Y = 24
-        /** 背景参考行 y: thumb 圆头顶端之上, 全行无墨。 */
+        /** Oval top is 24px; rail top is 40px, so 32px isolates the actual oval. */
+        private const val ROW_Y = 32
+        /** 背景参考行 y: thumb 椭圆顶端之上, 全行无墨。 */
         private const val ROW_BG = 1
         val thumbCenters = mutableMapOf<String, Float>()
     }

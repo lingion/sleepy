@@ -108,9 +108,18 @@ class FloatingGlassControlTest {
         tabs.performTouchInput { up() }
     }
 
-    @Test fun singleAndPrecisionRangeSlidersUseTheRequestedCircularSizes() {
-        assertEquals(32f, GlassSliderThumbMetrics.diameter(range = false), 0f)
-        assertEquals(24f, GlassSliderThumbMetrics.diameter(range = true), 0f)
+    @Test fun rangeSliderUsesTheSameOvalAsSingleAtThreeQuarterScale() {
+        assertEquals(37f, GlassSliderThumbMetrics.width(range = false), 0f)
+        assertEquals(24f, GlassSliderThumbMetrics.height(range = false), 0f)
+        assertEquals(27.75f, GlassSliderThumbMetrics.width(range = true), 0f)
+        assertEquals(18f, GlassSliderThumbMetrics.height(range = true), 0f)
+        assertEquals(.75f, GlassSliderThumbMetrics.RANGE_SCALE, 0f)
+        assertEquals(
+            GlassSliderThumbMetrics.width(false) / GlassSliderThumbMetrics.height(false),
+            GlassSliderThumbMetrics.width(true) / GlassSliderThumbMetrics.height(true),
+            .00001f,
+        )
+        assertEquals(1.55f, GlassSliderThumbMetrics.LIFT_SCALE, 0f)
         assertEquals(8f, GlassSliderThumbMetrics.TRACK_HEIGHT, 0f)
         assertEquals(2f, GlassSliderThumbMetrics.TICK_DIAMETER, 0f)
         assertTrue(GlassSliderThumbMetrics.TOUCH_HEIGHT >= 48f)

@@ -105,14 +105,18 @@ class UnifiedSliderAppearanceCaptureTest {
         val captures = JSONArray()
         val geometryFailures = JSONArray()
         val manifest = JSONObject()
-            .put("schema", 1).put("run_id", runId).put("package", context.packageName)
+            .put("schema", 2).put("run_id", runId).put("package", context.packageName)
             .put("sdk", Build.VERSION.SDK_INT).put("model", Build.MODEL)
             .put("build_fingerprint", Build.FINGERPRINT).put("density", density)
             .put("theme_preset", ThemePresets.KEY_DEFAULT)
             .put("renderer", "Product Compose controls; wait for HWUI frame commit, then PixelCopy window")
             .put("dimensions_source", "Unclipped semantics layout bounds, in dp and px; no inferred painted dimensions")
             .put("untagged_drawing", "Canvas-only track, dots or ghosts without product tags remain visible in PNG; they are not assigned invented bounds")
-            .put("requested_thumb_dp", JSONObject().put("single", 32).put("range", 24))
+            .put("requested_thumb_dp", JSONObject()
+                .put("shape", "horizontal oval")
+                .put("single", JSONObject().put("width", 37).put("height", 24))
+                .put("range", JSONObject().put("width", 27.75).put("height", 18))
+                .put("range_scale", .75).put("aspect_ratio", 37.0 / 24.0))
             .put("baseline", JSONObject().put("single", .30).put("range_start", 3).put("range_end", 8).put("hue", 72))
             .put("changed", JSONObject().put("single", .70).put("range_start", 5).put("range_end", 10).put("hue", 220))
             .put("captures", captures).put("geometry_failures", geometryFailures)
@@ -212,20 +216,28 @@ class UnifiedSliderAppearanceCaptureTest {
     }
 
     private fun assertProductGeometry(scene: Scene) {
-        for ((control, thumbs, diameter) in listOf(
-            Triple("single", listOf("glass-slider-end"), 32f),
-            Triple("range", listOf("glass-slider-start", "glass-slider-end"), 24f),
-            Triple("hue", listOf("glass-slider-end"), 32f),
+        val expectedAspectRatio = 37f / 24f
+        for ((control, thumbs, size) in listOf(
+            Triple("single", listOf("glass-slider-end"), 37f to 24f),
+            Triple("range", listOf("glass-slider-start", "glass-slider-end"), 27.75f to 18f),
+            Triple("hue", listOf("glass-slider-end"), 37f to 24f),
         )) {
+            val (expectedWidth, expectedHeight) = size
             val parent = hasAnyAncestor(hasTestTag("capture-$control"))
             for (tag in thumbs) {
                 val nodes = compose.onAllNodes(hasTestTag(tag) and parent, useUnmergedTree = true)
                 assertEquals("${scene.name}: $control must expose one $tag", 1, nodes.fetchSemanticsNodes().size)
                 val bounds = nodes[0].getUnclippedBoundsInRoot()
-                assertEquals("${scene.name}: $control $tag diameter width", diameter,
-                    (bounds.right - bounds.left).value, .75f)
-                assertEquals("${scene.name}: $control $tag diameter height", diameter,
-                    (bounds.bottom - bounds.top).value, .75f)
+                val width = (bounds.right - bounds.left).value
+                val height = (bounds.bottom - bounds.top).value
+                assertEquals("${scene.name}: $control $tag oval width", expectedWidth, width, .75f)
+                assertEquals("${scene.name}: $control $tag oval height", expectedHeight, height, .75f)
+                // Allow only the aspect change caused by rounding each dimension to pixels.
+                val pixelRoundingDp = .5f / density
+                val ratioTolerance = (expectedWidth + pixelRoundingDp) /
+                    (expectedHeight - pixelRoundingDp) - expectedAspectRatio + .005f
+                assertEquals("${scene.name}: $control $tag retains the shared oval aspect ratio",
+                    expectedAspectRatio, width / height, ratioTolerance)
             }
             val track = compose.onAllNodes(hasTestTag("slider-track") and parent, useUnmergedTree = true)
             val ticks = compose.onAllNodes(hasTestTag("slider-ticks") and parent, useUnmergedTree = true)

@@ -4,11 +4,11 @@
 
 本次实机是 OPPO PKX110，Android 16 / API 36。安装包为 `com.lingion.sleepy.debug`，与正式版数据隔离。下面区分原生测量、实现和仍存在的差异；通过测试不等于每帧像素相同。
 
-后续用户明确将软件内滑杆外观改为所附 Device Hub 样式：圆形白色滑块、圆角轨道、下方点状刻度；单头正常大小，双头更小以便精细选择。这项明确要求优先于前面的 iOS 椭圆 Slider 外形；下表的原生 Slider 数据仅保留为测量依据。
+滑杆按用户提供的 Device Hub 轨道与下方点状刻度统一；最新纠正明确要求单头和双头共用横向椭圆轮廓，双头只等比缩小。此前将两者固定成圆形是错误实现，已纠正。
 
-统一后的单头直径 32 dp、双头 24 dp，白色圆形和轻阴影；轨道 8 dp，刻度点 2 dp、位于轨道中心下方 14 dp。默认交互高度 48 dp。Material Design 与 LiquidGlass 使用相同外观度量，各自保留输入引擎；玻璃按住时等比升起，不再绘制椭圆形变。色相条保留彩虹含义，原值标记使用对应大小的圆形。刻度按业务档位绘制，过密时以最少 12 dp 间距抽样展示，不改变吸附档数。
+单头及色相滑块 37 × 24 dp，双头按 0.75 等比缩小为 27.75 × 18 dp；两者和原值标记共用同一横向圆角椭圆轮廓、白色与轻阴影。轨道 8 dp，刻度点 2 dp、位于轨道中心下方 14 dp，交互高度 48 dp。Material Design 与 LiquidGlass 使用相同外观度量，各自保留输入引擎；玻璃升降两轴共同缩放，宽高比不变。色相条保留彩虹含义，密集业务档位的刻度按最少 12 dp 间距抽样展示，不改变吸附档数。
 
-Slider 的原生轨迹另证明：视觉镜片中心行程为 `width − 37`，拖值增量却按完整控件宽度计算，首次起拖消耗实测 10 pt。335 pt 的正向与反向共 123 个触点/value 样本可由该映射复现，误差低于 3e−8；该阈值不能认定为 UIKit 内部 touchSlop。新的圆形玻璃 Slider 保留此已验证的相对拖值映射，视觉 inset 改为当前圆滑块半径。原生快反向抬手后的额外 value 漂移机制未证明，未模拟。
+Slider 的原生轨迹另证明：视觉镜片中心行程为 `width − 37`，拖值增量却按完整控件宽度计算，首次起拖消耗实测 10 pt。335 pt 的正向与反向共 123 个触点/value 样本可由该映射复现，误差低于 3e−8；该阈值不能认定为 UIKit 内部 touchSlop。新的椭圆玻璃 Slider 保留此已验证的相对拖值映射，视觉 inset 改为当前滑块半宽。原生快反向抬手后的额外 value 漂移机制未证明，未模拟。
 
 ## 直接点击与长按
 
@@ -97,7 +97,4 @@ adb shell am instrument -w \
   com.lingion.sleepy.debug.test/com.lingion.sleepy.SleepyRenderTestRunner
 ```
 
-2026-11-12 在 OPPO PKX110 上实际执行通过（1 项），导出八张图片，几何失败 0；已逐图检查圆形、大小差异、轨道、刻度点和原值标记。该入口默认跳过，显式运行时在真实 API 36 GPU 上导出 Material Design / LiquidGlass × 浅色 / 深色 × 初值 / 改值共八张图，并记录圆滑块、轨道、点状刻度和原值标记的实际语义尺寸。HWUI 提交帧后用 PixelCopy 取窗口；输出位于 debug app external files 的 `unified-slider-appearance/<sliderRunId>`。这些手工截图不加入日常 CI。
-
-
-新的 Device Hub 圆形玻璃 Slider 另以 `captureReferenceMotion`、`glassCapture=true`、`glassBackgrounds=grid`、`glassControls=slider` 实际截图通过（1 项），共 36 个阶段帧。静止约 31.93 × 31.93 dp，稳定按住约 49.75 × 49.75 dp（设备像素取整），升降各阶段始终等比圆形；白色层在光学场景之上按 `1−lift` 淡出 / 恢复，不会在启用 shader 的第一帧被不透明采样突然覆盖。该截图使用测试时钟逐阶段推进，不能据此声称真实速度或 iOS 每帧光学完全一致。
+2026-11-12 在 OPPO PKX110 上实际执行通过（1 项），运行标识为 `shared-oval-slider-20261112`，导出八张图片，几何失败 0；已逐图检查椭圆、大小差异、轨道、刻度点和原值标记。设备像素取整后的单头约 36.97 × 23.87 dp，双头约 27.90 × 18.15 dp。该入口默认跳过，显式运行时在真实 API 36 GPU 上导出 Material Design / LiquidGlass × 浅色 / 深色 × 初值 / 改值共八张图，并记录椭圆滑块、轨道、点状刻度和原值标记的实际语义尺寸。HWUI 提交帧后用 PixelCopy 取窗口；输出位于 debug app external files 的 `unified-slider-appearance/<sliderRunId>`。这些手工截图不加入日常 CI；本次八个静态场景不能证明完整运动过程与 iOS 逐帧一致。

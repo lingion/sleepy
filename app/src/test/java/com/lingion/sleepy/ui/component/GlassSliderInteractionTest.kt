@@ -74,19 +74,20 @@ class GlassSliderInteractionTest {
         show()
         val thumb = compose.onNodeWithTag("glass-slider-end")
         val rest = thumb.getUnclippedBoundsInRoot()
-        assertEquals(32f, (rest.right - rest.left).value, 1f)
-        assertEquals(32f, (rest.bottom - rest.top).value, 1f)
+        assertEquals(37f, (rest.right - rest.left).value, 1f)
+        assertEquals(24f, (rest.bottom - rest.top).value, 1f)
         thumb.performTouchInput { down(center) }
         compose.waitForIdle()
         val held = thumb.getUnclippedBoundsInRoot()
-        assertEquals(49.6f, (held.right - held.left).value, 1f)
-        assertEquals(49.6f, (held.bottom - held.top).value, 1f)
+        assertEquals(57.35f, (held.right - held.left).value, 1f)
+        assertEquals(37.2f, (held.bottom - held.top).value, 1f)
         assertTrue(held.right - held.left > rest.right - rest.left && held.bottom - held.top > rest.bottom - rest.top)
         assertEquals((rest.left.value + rest.right.value) / 2, (held.left.value + held.right.value) / 2, 1f)
         thumb.performTouchInput { up() }
         compose.waitForIdle()
         val settled = thumb.getUnclippedBoundsInRoot()
         assertEquals((rest.right - rest.left).value, (settled.right - settled.left).value, 1f)
+        assertEquals((rest.bottom - rest.top).value, (settled.bottom - settled.top).value, 1f)
     }
 
     @Test fun tapSnapsAndCommitsOnceAndCreatesGhost() {

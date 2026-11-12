@@ -20,10 +20,13 @@ class SliderVisualsTest {
         assertEquals(listOf(0f, 1f), sliderTickFractions(100, 1f, 12f))
     }
 
-    @Test fun circleCenterAndGhostFollowTheSameMirroredPath() {
-        assertEquals(16f, sliderVisualX(280f, 0f, 16f, false), 0f)
-        assertEquals(264f, sliderVisualX(280f, 1f, 16f, false), 0f)
-        assertEquals(sliderVisualX(280f, .25f, 16f, false), sliderVisualX(280f, .75f, 16f, true), 0f)
-        assertEquals(12f, sliderVisualX(280f, -1f, 12f, false), 0f)
+    @Test fun ovalCenterAndGhostFollowTheSameMirroredPath() {
+        val singleInset = GlassSliderThumbMetrics.width(false) / 2f
+        val rangeInset = GlassSliderThumbMetrics.width(true) / 2f
+        assertEquals(18.5f, sliderVisualX(280f, 0f, singleInset, false), 0f)
+        assertEquals(261.5f, sliderVisualX(280f, 1f, singleInset, false), 0f)
+        assertEquals(sliderVisualX(280f, .25f, singleInset, false), sliderVisualX(280f, .75f, singleInset, true), 0f)
+        assertEquals(13.875f, sliderVisualX(280f, -1f, rangeInset, false), 0f)
+        assertEquals(266.125f, sliderVisualX(280f, 2f, rangeInset, false), 0f)
     }
 }

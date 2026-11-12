@@ -7,7 +7,7 @@ import org.junit.Test
 
 /**
  * 单头滑杆原值幽灵的可见性纯函数契约 (需求 2026-10-29 用户定义原话语义):
- * 拖离进页基线 (例如原设 7dp 改成 8dp/6dp) → 基线位置出现细条提醒"上一次的结果";
+ * 拖离进页基线 (例如原设 7dp 改成 8dp/6dp) → 基线位置出现椭圆幽灵提醒"上一次的结果";
  * 拖回基线刻度点 → 消失; 退出重进基线重算 → 页面重建自然消失。
  * 容差比较 (epsilon) 由调用点按各自最小步进取半档 (0.1 步进 → 0.05, 1/20 量化 →
  * 0.025, 整数 dp 档 → 0.5, 色相 1 度档 → 0.5), 保证"拖回原刻度点"在浮点误差下判得住;
@@ -56,14 +56,14 @@ class SingleSliderGhostTest {
         assertFalse(singleSliderGhostVisible(current = Float.NaN, baseline = Float.NaN, epsilon = 0.05f))
     }
 
-    /** 32dp circles at density 2: W=720, inset=32, center travel=656px. */
+    /** 37dp-wide ovals at density 2: W=720, inset=37, center travel=646px. */
     @Test
-    fun ghost_x_matches_the_shared_linear_circle_path_and_clamps_endpoints() {
-        assertEquals(32f, singleSliderGhostX(720f, 0f, thumbWidthPx = 64f), 0f)
-        assertEquals(360f, singleSliderGhostX(720f, .5f, thumbWidthPx = 64f), 0f)
-        assertEquals(688f, singleSliderGhostX(720f, 1f, thumbWidthPx = 64f), 0f)
-        assertEquals(196f, singleSliderGhostX(720f, .25f, thumbWidthPx = 64f), 0f)
-        assertEquals(32f, singleSliderGhostX(720f, -.3f, thumbWidthPx = 64f), 0f)
-        assertEquals(688f, singleSliderGhostX(720f, 1.4f, thumbWidthPx = 64f), 0f)
+    fun ghost_x_matches_the_shared_linear_oval_path_and_clamps_endpoints() {
+        assertEquals(37f, singleSliderGhostX(720f, 0f, thumbWidthPx = 74f), 0f)
+        assertEquals(360f, singleSliderGhostX(720f, .5f, thumbWidthPx = 74f), 0f)
+        assertEquals(683f, singleSliderGhostX(720f, 1f, thumbWidthPx = 74f), 0f)
+        assertEquals(198.5f, singleSliderGhostX(720f, .25f, thumbWidthPx = 74f), 0f)
+        assertEquals(37f, singleSliderGhostX(720f, -.3f, thumbWidthPx = 74f), 0f)
+        assertEquals(683f, singleSliderGhostX(720f, 1.4f, thumbWidthPx = 74f), 0f)
     }
 }

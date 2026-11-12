@@ -5,7 +5,7 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,7 +27,7 @@ import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
 
-/** The shared white circular thumb; glass keeps its existing continuous rise/fall. */
+/** Single and range thumbs share the same horizontal silhouette and continuous rise/fall. */
 @Composable
 internal fun GlassSliderThumb(
     trackBackdrop: LayerBackdrop?,
@@ -39,22 +39,23 @@ internal fun GlassSliderThumb(
 ) {
     val host = LocalGlassHost.current
     val glass = LocalUiStyle.current == UiStyle.LiquidGlass && host != null
-    val restingDiameter = GlassSliderThumbMetrics.diameter(range)
+    val restingWidth = GlassSliderThumbMetrics.width(range)
+    val restingHeight = GlassSliderThumbMetrics.height(range)
+    val shape = RoundedCornerShape(50)
     if (!glass) {
-        Box(modifier.size(restingDiameter.dp)
-            .shadow(2.dp, CircleShape, clip = false)
-            .background(Color.White.copy(alpha = if (enabled) 1f else .38f), CircleShape))
+        Box(modifier.size(restingWidth.dp, restingHeight.dp)
+            .shadow(2.dp, shape, clip = false)
+            .background(Color.White.copy(alpha = if (enabled) 1f else .38f), shape))
         return
     }
 
     var pressed by remember { mutableStateOf(false) }
     val scheme = MaterialTheme.colorScheme
     val context = LocalContext.current
-    val shape = CircleShape
     val motion = motionOverride ?: rememberGlassControlMotion(0f, enabled && (pressedOverride ?: pressed), enabled = enabled,
         spec = GlassControlMotionSpec.NativeSlider)
     val lift = motion.lift
-    val diameter = restingDiameter * (1f + (GlassSliderThumbMetrics.LIFT_SCALE - 1f) * motion.geometryLift)
+    val scale = 1f + (GlassSliderThumbMetrics.LIFT_SCALE - 1f) * motion.geometryLift
     val dark = LocalDarkTheme.current
     val lensStyle = LiquidGlassStyle.controlLens(scheme, dark).scale(lift.toDouble())
 
@@ -73,7 +74,7 @@ internal fun GlassSliderThumb(
 
     Box(
         modifier
-            .size(diameter.dp)
+            .size((restingWidth * scale).dp, (restingHeight * scale).dp)
             .shadow(2.dp, shape, clip = false)
             .pointerInput(enabled) {
                 if (!enabled) return@pointerInput

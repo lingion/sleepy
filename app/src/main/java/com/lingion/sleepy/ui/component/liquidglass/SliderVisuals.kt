@@ -33,17 +33,19 @@ import com.lingion.sleepy.ui.component.sleepyPopupExit
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-/** App-wide DeviceHub-style slider geometry, independent of theme and input mechanics. */
+/** Shared horizontal thumb silhouette; precision range thumbs only scale it down. */
 object GlassSliderThumbMetrics {
-    const val SINGLE_DIAMETER = 32f
-    const val RANGE_DIAMETER = 24f
+    const val SINGLE_WIDTH = 37f
+    const val SINGLE_HEIGHT = 24f
+    const val RANGE_SCALE = .75f
     const val TRACK_HEIGHT = 8f
     const val TICK_DIAMETER = 2f
     const val TICK_OFFSET = 14f
     const val TOUCH_HEIGHT = 48f
     const val LIFT_SCALE = 1.55f
 
-    fun diameter(range: Boolean): Float = if (range) RANGE_DIAMETER else SINGLE_DIAMETER
+    fun width(range: Boolean): Float = SINGLE_WIDTH * if (range) RANGE_SCALE else 1f
+    fun height(range: Boolean): Float = SINGLE_HEIGHT * if (range) RANGE_SCALE else 1f
 }
 
 /** Linear shared geometry; discrete snapping belongs to the existing slider state. */
@@ -52,7 +54,7 @@ internal fun sliderVisualX(width: Float, fraction: Float, inset: Float, rtl: Boo
         if (rtl) 1f - fraction.coerceIn(0f, 1f) else fraction.coerceIn(0f, 1f)
 
 /**
- * A continuous rounded rail, white circular original-value ghosts and dots below the rail.
+ * A continuous rounded rail, white original-value ghosts with the same thumb silhouette and dots below the rail.
  * Material passes its already-inset track width; glass passes the full control plus inset.
  * Neither path adds a Material thumb gap, stop marker or in-rail tick.
  */
@@ -127,17 +129,20 @@ internal fun AppSliderTrack(
                     drawRoundRect(primary.copy(alpha = .25f), Offset(minOf(first, last), (size.height - height) / 2f),
                         Size(abs(last - first), height), CornerRadius(height / 2f))
                 }
-                val diameter = GlassSliderThumbMetrics.diameter(range).dp.toPx()
+                val thumbSize = Size(GlassSliderThumbMetrics.width(range).dp.toPx(),
+                    GlassSliderThumbMetrics.height(range).dp.toPx())
                 val values = if (range) listOf(retained.start, retained.endInclusive) else listOf(retained.endInclusive)
-                values.forEach { drawSliderGhost(Offset(x(it), size.height / 2f), diameter, primary) }
+                values.forEach { drawSliderGhost(Offset(x(it), size.height / 2f), thumbSize, primary) }
             }
         }
     }
 }
 
-internal fun DrawScope.drawSliderGhost(center: Offset, diameter: Float, primary: Color) {
-    drawCircle(Color.White.copy(alpha = .4f), diameter / 2f, center)
-    drawCircle(primary.copy(alpha = .3f), diameter / 2f, center, style = Stroke(1.dp.toPx()))
+internal fun DrawScope.drawSliderGhost(center: Offset, thumbSize: Size, primary: Color) {
+    val topLeft = Offset(center.x - thumbSize.width / 2f, center.y - thumbSize.height / 2f)
+    val corner = CornerRadius(thumbSize.height / 2f)
+    drawRoundRect(Color.White.copy(alpha = .4f), topLeft, thumbSize, corner)
+    drawRoundRect(primary.copy(alpha = .3f), topLeft, thumbSize, corner, style = Stroke(1.dp.toPx()))
 }
 
 /** Subsample real stops evenly while retaining both ends; never allocate per business step. */

@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.pointerInput
@@ -156,23 +157,24 @@ internal fun singleSliderGhostVisible(
     return abs(current - baseline) > epsilon
 }
 
-/** App slider and ghost share a linear center path, inset by half the circular thumb. */
+/** App slider and ghost share a linear center path, inset by half the thumb width. */
 internal fun singleSliderGhostX(nodeWidthPx: Float, frac: Float, thumbWidthPx: Float): Float =
     com.lingion.sleepy.ui.component.liquidglass.sliderVisualX(nodeWidthPx, frac, thumbWidthPx / 2f, false)
 
-/** Noninteractive original-value circle, identical to the shared single-thumb resting geometry. */
+/** Noninteractive original-value marker, identical to the single-thumb resting silhouette. */
 @Composable
 internal fun BoxScope.SingleSliderGhostMark(
     baselineFrac: Float,
     modifier: Modifier = Modifier,
-    thumbWidthDp: Dp = GlassSliderThumbMetrics.SINGLE_DIAMETER.dp,
+    thumbWidthDp: Dp = GlassSliderThumbMetrics.SINGLE_WIDTH.dp,
 ) {
     val primary = MaterialTheme.colorScheme.primary
     Canvas(modifier.matchParentSize()) {
-        val diameter = thumbWidthDp.toPx()
+        val thumbWidth = thumbWidthDp.toPx()
+        val thumbHeight = thumbWidth * GlassSliderThumbMetrics.SINGLE_HEIGHT / GlassSliderThumbMetrics.SINGLE_WIDTH
         val frac = if (layoutDirection == LayoutDirection.Rtl) 1f - baselineFrac else baselineFrac
-        val x = singleSliderGhostX(size.width, frac, diameter)
-        drawSliderGhost(Offset(x, size.height / 2f), diameter, primary)
+        val x = singleSliderGhostX(size.width, frac, thumbWidth)
+        drawSliderGhost(Offset(x, size.height / 2f), Size(thumbWidth, thumbHeight), primary)
     }
 }
 

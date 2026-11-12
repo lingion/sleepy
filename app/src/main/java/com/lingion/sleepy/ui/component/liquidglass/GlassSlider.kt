@@ -63,7 +63,7 @@ internal class GlassSliderDragMapping(
     }
 }
 
-/** Shared circular slider visuals; each appearance retains its existing input mechanics. */
+/** Shared horizontal slider silhouette; each appearance retains its existing input mechanics. */
 @Composable
 fun GlassSlider(
     value: Float,
@@ -191,11 +191,11 @@ private fun GlassSliderBody(
     var active by remember { mutableIntStateOf(-1) }
     var startActivation by remember { mutableIntStateOf(0) }
     var endActivation by remember { mutableIntStateOf(0) }
-    // Circular thumbs use only position and isotropic lift; zero travel skips deformation ODEs.
+    // Both thumb sizes share the same silhouette and isotropic lift.
     val startMotion = rememberGlassControlMotion(fraction(start), active == 0, active == 0, startActivation, enabled, GlassControlMotionSpec.NativeSlider)
     val endMotion = rememberGlassControlMotion(fraction(end), active == 1, active == 1, endActivation, enabled, GlassControlMotionSpec.NativeSlider)
-    val restingDiameter = GlassSliderThumbMetrics.diameter(range)
-    val inset = with(density) { (restingDiameter / 2).dp.toPx() }
+    val restingWidth = GlassSliderThumbMetrics.width(range)
+    val inset = with(density) { (restingWidth / 2).dp.toPx() }
     val baseline = initialValue?.takeIf { it.start.isFinite() && it.endInclusive.isFinite() }?.let {
         val first = if (range) it.start.coerceIn(valueRange.start, valueRange.endInclusive) else valueRange.start
         first..it.endInclusive.coerceIn(first, valueRange.endInclusive)
@@ -274,7 +274,7 @@ private fun GlassSliderBody(
                 endFraction = { endMotion.position.value },
                 tickCount = if (range || steps > 0) steps + 2 else 11,
                 modifier = Modifier.fillMaxSize().layerBackdrop(backdrop),
-                inset = (restingDiameter / 2f).dp, range = range, activeColor = thumbColor, trackBrush = trackBrush,
+                inset = (restingWidth / 2f).dp, range = range, activeColor = thumbColor, trackBrush = trackBrush,
                 ghost = ghost?.let { fraction(it.start)..fraction(it.endInclusive) }, ghostTag = ghostTag,
             )
             for (index in (if (range) 0 else 1)..1) {
