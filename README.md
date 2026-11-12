@@ -659,7 +659,7 @@ sleepy/
 
 完整的 Temurin JDK 版本统一记录在 [`.tool-versions`](.tool-versions)，CI、Nightly 和 Release 都从该文件安装。先安装文件指定的 JDK，将 `JAVA_HOME` 指向其根目录，并将其 `bin` 加入 `PATH`；Android Studio 的 Gradle JDK 也选择同一版本。使用 asdf 的开发者可通过 Java 插件执行 `asdf install`。
 
-[`gradle/gradle-daemon-jvm.properties`](gradle/gradle-daemon-jvm.properties) 将 Gradle Daemon 限定为 Java 25，并在 Linux x64 缺少 JDK 25 时下载 `.tool-versions` 对应版本。Gradle 的主版本条件不会强制升级本机已有 JDK 的补丁版本，本地对齐仍以 `.tool-versions` 为准。通过 `./gradlew --version` 检查 `Daemon JVM`，不要只看 `java -version`。Renovate 每日检查 Java 25 正式版补丁，并在同一 PR 中更新版本文件和下载地址；CI 校验一致性，详情见 [JDK 自动更新](docs/ci-automation.md#23-jdk-补丁更新-renovatejson)。
+[`gradle/gradle-daemon-jvm.properties`](gradle/gradle-daemon-jvm.properties) 将 Gradle Daemon 限定为 Java 25，并在 Linux x64/ARM64、macOS Intel/Apple Silicon 和 Windows x64 缺少 JDK 25 时下载 `.tool-versions` 对应版本。Gradle 的主版本条件不会强制升级本机已有 JDK 的补丁版本，本地对齐仍以 `.tool-versions` 为准。通过 `./gradlew --version` 检查 `Daemon JVM`，不要只看 `java -version`。Renovate 每日检查 Java 25 正式版补丁，并在同一 PR 中更新版本文件和下载地址；CI 校验一致性，详情见 [JDK 自动更新](docs/ci-automation.md#23-jdk-补丁更新-renovatejson)。
 
 ```bash
 java -version           # JDK 25

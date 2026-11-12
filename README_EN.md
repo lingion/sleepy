@@ -640,7 +640,7 @@ Build with **JDK 25 + the bundled Gradle 9.8.2 Wrapper + Android Gradle Plugin (
 
 The complete Temurin JDK version is recorded in [`.tool-versions`](.tool-versions); CI, Nightly, and Release install from this file. Install the specified JDK, point `JAVA_HOME` to its root directory, and add its `bin` directory to `PATH`. Select the same Gradle JDK in Android Studio. Developers using asdf can run `asdf install` with the Java plugin.
 
-[`gradle/gradle-daemon-jvm.properties`](gradle/gradle-daemon-jvm.properties) requires Java 25 and downloads the version from `.tool-versions` on Linux x64 if no JDK 25 is installed. Gradle's major-version criterion does not upgrade an existing local JDK's patch version; use `.tool-versions` to align local builds. Check `Daemon JVM` in `./gradlew --version`, not just `java -version`. Renovate checks daily for Java 25 GA updates and updates the version file and download URL in one PR, with consistency enforced by CI. See [JDK updates](docs/ci-automation.md#23-jdk-补丁更新-renovatejson).
+[`gradle/gradle-daemon-jvm.properties`](gradle/gradle-daemon-jvm.properties) requires Java 25 and downloads the version from `.tool-versions` on Linux x64/ARM64, macOS Intel/Apple Silicon, and Windows x64 if no JDK 25 is installed. Gradle's major-version criterion does not upgrade an existing local JDK's patch version; use `.tool-versions` to align local builds. Check `Daemon JVM` in `./gradlew --version`, not just `java -version`. Renovate checks daily for Java 25 GA updates and updates the version file and download URL in one PR, with consistency enforced by CI. See [JDK updates](docs/ci-automation.md#23-jdk-补丁更新-renovatejson).
 
 ```bash
 java -version           # JDK 25
