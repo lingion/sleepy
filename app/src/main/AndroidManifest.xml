@@ -241,14 +241,25 @@
         </receiver>
 
         <receiver
-            android:name=".widget.WeekGridWideWidgetProvider"
+            android:name=".widget.WeekGridVerticalWidgetProvider"
             android:exported="true"
-            android:label="@string/widget_week_grid_wide_label">
+            android:label="@string/widget_week_grid_vertical_label">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data android:name="android.appwidget.provider"
-                android:resource="@xml/week_grid_wide_widget_info" />
+                android:resource="@xml/week_grid_vertical_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.WeekGridHorizontalWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_week_grid_horizontal_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider"
+                android:resource="@xml/week_grid_horizontal_widget_info" />
         </receiver>
 
         <receiver

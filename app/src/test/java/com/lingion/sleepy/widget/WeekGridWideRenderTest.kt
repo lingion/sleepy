@@ -28,15 +28,6 @@ class WeekGridWideRenderTest {
         SleepyApp::class.java.getDeclaredField("instance").apply { isAccessible = true }.set(null, context)
     }
 
-    @Test fun originalDispatcherIsPixelIdenticalToExistingFullGrid() {
-        val data = fixture()
-        val settings = WeekGridWideSettings(WeekGridWideMode.valueOf("ORIGINAL"))
-        val actual = WeekGridWideRenderer.renderBitmap(context, data, settings, monday.atTime(7, 0), 300, 160)
-        val old = WeekGridWidgetProvider.renderBitmap(context, data, 300, 160)
-        assertTrue("original must delegate to the unchanged production renderer", old.sameAs(actual))
-        export(actual, "three-form-original.png")
-    }
-
     @Test fun verticalHasSevenColumnsFourFullRowsAndNoWeekdayHeader() {
         val layout = WeekGridWideRenderer.layout(context, fixture(), WeekGridWideSettings(), monday.atTime(7, 0), 300, 160)
         assertEquals(7, layout.dates.size)
@@ -116,6 +107,8 @@ class WeekGridWideRenderTest {
         try {
             metrics.density = 6f
             export(WeekGridWideRenderer.renderBitmap(context, data, WeekGridWideSettings(), monday.atTime(7, 0), 1800, 960), "preview.png")
+            export(WeekGridWideRenderer.renderBitmap(context, data,
+                WeekGridWideSettings(WeekGridWideMode.HORIZONTAL), monday.atTime(7, 0), 1800, 960), "preview-horizontal.png")
         } finally { metrics.density = old }
     }
 

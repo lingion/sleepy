@@ -1110,15 +1110,11 @@
     <string name="period_validation_invalid_data">作息表数据不完整或无法解析，请检查节次编号和起止时间</string>
     <string name="period_validation_invalid_format">第 %1$d 节时间格式不正确，需为 HH:mm</string>
     <string name="period_validation_overlap">第 %1$d 节与第 %3$d 节时间冲突：第 %1$d 节于 %2$s 结束，晚于第 %3$d 节开始时间 %4$s</string>
-<string name="widget_week_grid_wide_label">本周课表（网格）· 4×2</string>
     <string name="widget_wide_grid_empty">当前预览日期内没有课程</string>
     <string name="widget_wide_grid_horizontal">横向三天，逐日推进</string>
-    <string name="widget_wide_grid_layout">4×2 网格布局</string>
     <string name="widget_wide_grid_left">星期标签放左侧</string>
-    <string name="widget_wide_grid_original">原有完整网格</string>
     <string name="widget_wide_grid_preview_error">预览加载失败，请返回后重试</string>
     <string name="widget_wide_grid_right">星期标签放右侧</string>
-    <string name="widget_wide_grid_shapes">切换形态</string>
     <string name="widget_wide_grid_unavailable">此小组件已删除或不可用</string>
     <string name="widget_wide_grid_vertical">竖向七天，逐节推进</string>
     <string name="jw_select_academic_adapter">选择教务入口</string>
@@ -1128,4 +1124,7 @@
     <string name="jw_source_break_minutes">课间时长：%1$s 分钟</string>
     <string name="jw_source_first_weekday">每周首日：%1$s</string>
     <string name="jw_invalid_semester_weeks">总周数须在 %1$d 至 366 之间</string>
+    <string name="widget_week_grid_vertical_label">本周课表（竖向七天）· 4×2</string>
+    <string name="widget_week_grid_horizontal_label">本周课表（横向三天）· 4×2</string>
+    <string name="widget_wide_grid_preview">组件预览</string>
 </resources>

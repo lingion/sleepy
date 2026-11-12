@@ -38,9 +38,9 @@ class WeekGridWidePreviewTest {
         repo = ScheduleRepository(db)
         SleepyApp::class.java.getDeclaredField("database\$delegate").apply { isAccessible = true }.set(app, lazyOf(db))
         SleepyApp::class.java.getDeclaredField("repository\$delegate").apply { isAccessible = true }.set(app, lazyOf(repo))
-        val info = AppWidgetProviderInfo().apply { provider = ComponentName(app, WeekGridWideWidgetProvider::class.java) }
-        shadowOf(AppWidgetManager.getInstance(app)).addBoundWidget(51, info)
-        shadowOf(AppWidgetManager.getInstance(app)).addBoundWidget(52, info)
+        val manager = shadowOf(AppWidgetManager.getInstance(app))
+        manager.addBoundWidget(51, AppWidgetProviderInfo().apply { provider = ComponentName(app, WeekGridVerticalWidgetProvider::class.java) })
+        manager.addBoundWidget(52, AppWidgetProviderInfo().apply { provider = ComponentName(app, WeekGridHorizontalWidgetProvider::class.java) })
     }
 
     private suspend fun table(name: String, isDefault: Boolean = false, empty: Boolean = false): Long {
@@ -51,7 +51,7 @@ class WeekGridWidePreviewTest {
         return id
     }
 
-    @Test fun allThreePreviewsUseActualBindingAndProductionDispatcherAtRealDensity() = runBlocking {
+    @Test fun eachFixedPreviewUsesActualBindingAndProductionDispatcherAtRealDensity() = runBlocking {
         val a = table("Table A", isDefault = true)
         val b = table("Table B")
         WidgetBindingStore.put(app, 51, a)
@@ -59,7 +59,7 @@ class WeekGridWidePreviewTest {
         for ((id, name) in listOf(51 to "Table A", 52 to "Table B")) {
             val result = WeekGridWidePreviewLoader.load(app, id, WeekGridWideSettings(), now)
             assertEquals(WideGridPreviewStatus.READY, result.status)
-            assertEquals(listOf(WeekGridWideMode.ORIGINAL, WeekGridWideMode.VERTICAL, WeekGridWideMode.HORIZONTAL), result.frames.map { it.mode })
+            assertEquals(listOf(if (id == 51) WeekGridWideMode.VERTICAL else WeekGridWideMode.HORIZONTAL), result.frames.map { it.mode })
             for (frame in result.frames) {
                 assertTrue(frame.data.days.flatMap { it.courses }.isNotEmpty())
                 assertEquals(setOf(name), frame.data.days.flatMap { it.courses }.map { it.courseName }.toSet())
@@ -69,8 +69,7 @@ class WeekGridWidePreviewTest {
                 assertTrue("preview and provider must use the same dispatcher", direct.sameAs(frame.bitmap))
                 if (id == 51) export(frame.bitmap, "three-form-${frame.mode.name.lowercase()}.png")
             }
-            val horizontal = result.frames.last().data.days
-            assertEquals(listOf(now.toLocalDate(), now.toLocalDate().plusDays(1), now.toLocalDate().plusDays(2)), horizontal.map { it.date })
+            if (id == 52) assertEquals(listOf(now.toLocalDate(), now.toLocalDate().plusDays(1), now.toLocalDate().plusDays(2)), result.frames.single().data.days.map { it.date })
         }
     }
 
@@ -84,15 +83,15 @@ class WeekGridWidePreviewTest {
         WidgetBindingStore.put(app, 51, empty)
         val result = WeekGridWidePreviewLoader.load(app, 51, WeekGridWideSettings(), now)
         assertEquals(WideGridPreviewStatus.EMPTY, result.status)
-        assertEquals(3, result.frames.size)
+        assertEquals(1, result.frames.size)
         assertTrue(result.frames.all { it.data.hasTable && it.data.days.all { day -> day.courses.isEmpty() } })
         assertTrue(a != b)
     }
 
-    @Test fun missingTableHasThreeHonestEmptyImagesButUnknownReceiverHasNone() = runBlocking {
+    @Test fun missingTableHasOneHonestEmptyImageButUnknownReceiverHasNone() = runBlocking {
         val missing = WeekGridWidePreviewLoader.load(app, 51, WeekGridWideSettings(), now)
         assertEquals(WideGridPreviewStatus.NO_TABLE, missing.status)
-        assertEquals(3, missing.frames.size)
+        assertEquals(1, missing.frames.size)
         assertTrue(missing.frames.all { !it.data.hasTable && it.data.days.isEmpty() })
         val unknown = WeekGridWidePreviewLoader.load(app, 999, WeekGridWideSettings(), now)
         assertEquals(WideGridPreviewStatus.UNAVAILABLE, unknown.status)
@@ -101,12 +100,10 @@ class WeekGridWidePreviewTest {
 
     @Test fun changingHorizontalSideChangesPixelsButNotDatesAndCancellationDoesNotPublish() = runBlocking {
         table("Bound course", isDefault = true)
-        val left = WeekGridWidePreviewLoader.load(app, 51, WeekGridWideSettings(), now)
-        val right = WeekGridWidePreviewLoader.load(app, 51, WeekGridWideSettings(labelSide = WeekGridWideLabelSide.RIGHT), now)
+        val left = WeekGridWidePreviewLoader.load(app, 52, WeekGridWideSettings(), now)
+        val right = WeekGridWidePreviewLoader.load(app, 52, WeekGridWideSettings(labelSide = WeekGridWideLabelSide.RIGHT), now)
         assertEquals(left.frames.last().data.days.map { it.date }, right.frames.last().data.days.map { it.date })
         assertFalse(left.frames.last().bitmap.sameAs(right.frames.last().bitmap))
-        assertTrue(left.frames[0].bitmap.sameAs(right.frames[0].bitmap))
-        assertTrue(left.frames[1].bitmap.sameAs(right.frames[1].bitmap))
         export(right.frames.last().bitmap, "three-form-horizontal-right.png")
         val published = java.util.concurrent.atomic.AtomicInteger()
         val scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Default)
@@ -127,7 +124,7 @@ class WeekGridWidePreviewTest {
         assertEquals("closed preview collection must not publish after leaving", before, published.get())
     }
 
-    @Test fun originalPreviewRetainsActualSemesterStateBeforeAndAfterTerm() = runBlocking {
+    @Test fun fixedPreviewRetainsActualSemesterStateBeforeAndAfterTerm() = runBlocking {
         table("Semester", isDefault = true)
         for ((date, expected) in listOf(
             LocalDateTime.of(2026, 9, 20, 7, 0) to com.lingion.sleepy.util.DateUtils.SemesterStatus.BEFORE_START,
@@ -143,14 +140,16 @@ class WeekGridWidePreviewTest {
         com.lingion.sleepy.util.AppClock.setAbsolute(now.atZone(com.lingion.sleepy.util.AppClock.zone).toInstant().toEpochMilli())
         try {
             val alarms = shadowOf(app.getSystemService(android.app.AlarmManager::class.java))
-            for (mode in WeekGridWideMode.entries) {
-                for (id in listOf(51, 52)) WeekGridWideSettingsStore.write(app, id, WeekGridWideSettings(mode))
-                WidgetBoundaryScheduler.armNext(app)
-                val boundary = alarms.scheduledAlarms.filter {
-                    shadowOf(it.operation).savedIntent.component?.className == WidgetBoundaryReceiver::class.java.name
-                }
-                assertEquals("only VERTICAL contributes period boundaries: $mode", mode == WeekGridWideMode.VERTICAL, boundary.isNotEmpty())
+            WidgetBoundaryScheduler.armNext(app)
+            fun boundaries() = alarms.scheduledAlarms.filter {
+                shadowOf(it.operation).savedIntent.component?.className == WidgetBoundaryReceiver::class.java.name
             }
+            assertTrue("vertical component contributes individual period boundaries", boundaries().isNotEmpty())
+            shadowOf(AppWidgetManager.getInstance(app)).addBoundWidget(51, AppWidgetProviderInfo().apply {
+                provider = ComponentName(app, WeekGridHorizontalWidgetProvider::class.java)
+            })
+            WidgetBoundaryScheduler.armNext(app)
+            assertTrue("horizontal components do not contribute rolling period boundaries", boundaries().isEmpty())
         } finally { com.lingion.sleepy.util.AppClock.reset() }
     }
 

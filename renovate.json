@@ -15,7 +15,7 @@
       "managerFilePatterns": ["/^\\.tool-versions$/", "/^gradle/gradle-daemon-jvm\\.properties$/"],
       "matchStrings": [
         "(?:^|\\n)java temurin-(?<currentValue>25\\.\\d+\\.\\d+(?:\\.\\d+)?\\+\\d+)(?:\\r?\\n|$)",
-        "/binary/version/jdk-(?<currentValue>25\\.\\d+\\.\\d+(?:\\.\\d+)?\\+\\d+)/linux/"
+        "/binary/version/jdk-(?<currentValue>25\\.\\d+\\.\\d+(?:\\.\\d+)?\\+\\d+)/(?:linux|mac|windows)/"
       ],
       "depNameTemplate": "Temurin JDK",
       "datasourceTemplate": "github-releases",

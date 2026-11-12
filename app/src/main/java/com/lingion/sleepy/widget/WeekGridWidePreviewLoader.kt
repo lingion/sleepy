@@ -1,7 +1,6 @@
 package com.lingion.sleepy.widget
 
 import android.appwidget.AppWidgetManager
-import android.content.ComponentName
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.room.InvalidationTracker
@@ -29,9 +28,8 @@ internal enum class WideGridPreviewStatus { LOADING, READY, EMPTY, NO_TABLE, UNA
 internal data class WideGridPreview(val mode: WeekGridWideMode, val data: WeekData, val bitmap: Bitmap)
 internal data class WideGridPreviews(val status: WideGridPreviewStatus, val frames: List<WideGridPreview> = emptyList())
 
-/** Reads the binding once for one coherent three-image batch. No stock/example courses. */
+/** Previews the placed component's fixed layout from its actual schedule binding. */
 internal object WeekGridWidePreviewLoader {
-    val displayOrder = listOf(WeekGridWideMode.ORIGINAL, WeekGridWideMode.VERTICAL, WeekGridWideMode.HORIZONTAL)
 
     /** Cold, screen-owned stream: leaving/stopping cancels IO and unregisters all listeners. */
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
@@ -74,9 +72,10 @@ internal object WeekGridWidePreviewLoader {
         now: LocalDateTime = LocalDateTime.now(AppClock)): WideGridPreviews = withContext(Dispatchers.IO) {
         currentCoroutineContext().ensureActive()
         val manager = AppWidgetManager.getInstance(context.applicationContext)
-        val receiver = ComponentName(context, WeekGridWideWidgetProvider::class.java)
+        val receiver = manager.getAppWidgetInfo(widgetId)?.provider
+        val mode = WeekGridWideWidgetProvider.modeForReceiverName(receiver?.className)
+            ?: return@withContext WideGridPreviews(WideGridPreviewStatus.UNAVAILABLE)
         fun isAvailable() = manager.getAppWidgetInfo(widgetId)?.provider == receiver
-        if (!isAvailable()) return@withContext WideGridPreviews(WideGridPreviewStatus.UNAVAILABLE)
         val binding = WidgetBindingStore.get(context, widgetId)
         val storedSettings = WeekGridWideSettingsStore.read(context, widgetId)
         val source = WidgetWeekDataLoader.resolve(widgetId, now)
@@ -87,7 +86,7 @@ internal object WeekGridWidePreviewLoader {
         val density = context.resources.displayMetrics.density
         val width = (300 * density).toInt().coerceAtLeast(1)
         val height = (160 * density).toInt().coerceAtLeast(1)
-        val frames = displayOrder.map { mode ->
+        val frames = listOf(mode).map { mode ->
             currentCoroutineContext().ensureActive()
             val data = WeekGridWideWidgetProvider.dataForSource(context, source, mode, now, dark, theme)
             WideGridPreview(mode, data, WeekGridWideRenderer.renderBitmap(context, data,

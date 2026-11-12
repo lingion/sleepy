@@ -48,8 +48,9 @@ import com.lingion.sleepy.widget.WideGridPreviews
 import com.lingion.sleepy.widget.WideGridPreviewStatus
 
 object WidgetEditWideGridSection : WidgetEditSection {
-    override val titleRes: Int = R.string.widget_wide_grid_layout
-    fun appliesTo(receiverSimpleName: String?): Boolean = receiverSimpleName == "WeekGridWideWidgetProvider"
+    override val titleRes: Int = R.string.widget_wide_grid_preview
+    fun appliesTo(receiverSimpleName: String?): Boolean =
+        com.lingion.sleepy.widget.WeekGridWideWidgetProvider.modeForReceiverName(receiverSimpleName) != null
 
     @Composable override fun Content(scope: WidgetEditScope) {
         if (!appliesTo(scope.receiverSimpleName)) return
@@ -74,10 +75,9 @@ object WidgetEditWideGridSection : WidgetEditSection {
                 color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.padding(top = SettingsLayout.headerGap))
-            WideGridShapeOptions(
+            WideGridPreviewContent(
                 settings = scope.wideGridSettings,
                 previews = previews,
-                onModeChange = scope.onWideGridModeChange,
                 onLabelSideChange = scope.onWideGridLabelSideChange,
             )
         }
@@ -85,16 +85,14 @@ object WidgetEditWideGridSection : WidgetEditSection {
 }
 
 @Composable
-internal fun WideGridShapeOptions(
+internal fun WideGridPreviewContent(
     settings: WeekGridWideSettings,
     previews: WideGridPreviews,
-    onModeChange: (WeekGridWideMode) -> Unit,
     onLabelSideChange: (WeekGridWideLabelSide) -> Unit,
 ) {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .selectableGroup(),
+            .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         val message = when (previews.status) {
@@ -112,49 +110,31 @@ internal fun WideGridShapeOptions(
                 style = MaterialTheme.typography.bodyMedium
             )
         }
-        for (mode in WeekGridWidePreviewLoader.displayOrder) {
-            val label = stringResource(when (mode) {
-                WeekGridWideMode.ORIGINAL -> R.string.widget_wide_grid_original
-                WeekGridWideMode.VERTICAL -> R.string.widget_wide_grid_vertical
-                WeekGridWideMode.HORIZONTAL -> R.string.widget_wide_grid_horizontal
-            })
-            val selected = settings.mode == mode
-            Surface(
-                color = if (selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainer,
-                shape = MaterialTheme.shapes.large,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("wide-shape-${mode.name}")
-                    .selectable(selected, role = Role.RadioButton, onClick = { onModeChange(mode) })
-            ) {
-                Column(Modifier.padding(12.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(selected, onClick = null)
-                        Text(label, Modifier.padding(start = 8.dp), style = MaterialTheme.typography.titleSmall)
-                    }
-                    val frame = previews.frames.firstOrNull { it.mode == mode }
-                    if (frame != null) {
-                        Image(
-                            bitmap = frame.bitmap.asImageBitmap(),
-                            contentDescription = label,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(300f / 160f)
-                                .testTag("wide-preview-${mode.name}"),
-                            contentScale = ContentScale.Fit
-                        )
-                    } else {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(300f / 160f),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (previews.status == WideGridPreviewStatus.LOADING || previews.status == WideGridPreviewStatus.STALE) {
-                                CircularProgressIndicator()
-                            } else {
-                                Text(stringResource(message ?: R.string.widget_wide_grid_preview_error))
-                            }
+        val mode = settings.mode
+        val label = stringResource(if (mode == WeekGridWideMode.VERTICAL)
+            R.string.widget_wide_grid_vertical else R.string.widget_wide_grid_horizontal)
+        Surface(
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            shape = MaterialTheme.shapes.large,
+            modifier = Modifier.fillMaxWidth().testTag("wide-fixed-layout-${mode.name}")
+        ) {
+            Column(Modifier.padding(12.dp)) {
+                Text(label, style = MaterialTheme.typography.titleSmall)
+                val frame = previews.frames.firstOrNull { it.mode == mode }
+                if (frame != null) {
+                    Image(
+                        bitmap = frame.bitmap.asImageBitmap(),
+                        contentDescription = label,
+                        modifier = Modifier.fillMaxWidth().aspectRatio(300f / 160f)
+                            .testTag("wide-preview-${mode.name}"),
+                        contentScale = ContentScale.Fit
+                    )
+                } else {
+                    Box(Modifier.fillMaxWidth().aspectRatio(300f / 160f), contentAlignment = Alignment.Center) {
+                        if (previews.status == WideGridPreviewStatus.LOADING || previews.status == WideGridPreviewStatus.STALE) {
+                            CircularProgressIndicator()
+                        } else {
+                            Text(stringResource(message ?: R.string.widget_wide_grid_preview_error))
                         }
                     }
                 }

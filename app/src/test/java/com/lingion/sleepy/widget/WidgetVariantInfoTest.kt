@@ -14,8 +14,10 @@ import org.junit.Test
 class WidgetVariantInfoTest {
 
     @Test
-    fun `ALL_WIDGET_VARIANTS includes one dedicated wide grid entry`() {
-        assertEquals(1, ALL_WIDGET_VARIANTS.count { it.receiverClass == WeekGridWideWidgetProvider::class.java })
+    fun `ALL_WIDGET_VARIANTS includes two independently registered compact week layouts`() {
+        assertEquals(1, ALL_WIDGET_VARIANTS.count { it.receiverClass == WeekGridVerticalWidgetProvider::class.java })
+        assertEquals(1, ALL_WIDGET_VARIANTS.count { it.receiverClass == WeekGridHorizontalWidgetProvider::class.java })
+        assertEquals(0, ALL_WIDGET_VARIANTS.count { it.receiverClass == WeekGridWideWidgetProvider::class.java })
     }
 
     @Test
@@ -64,6 +66,8 @@ class WidgetVariantInfoTest {
                 .removeSuffix("SmallWidgetReceiver")
                 .removeSuffix("WideWidgetReceiver")
                 .removeSuffix("WideWidgetProvider")
+                .removeSuffix("VerticalWidgetProvider")
+                .removeSuffix("HorizontalWidgetProvider")
                 .removeSuffix("WidgetProvider")
                 .removeSuffix("WidgetReceiver")
         }
@@ -72,7 +76,7 @@ class WidgetVariantInfoTest {
         // WeekView/WeekGrid 不设 M (2)。
         val expected = mapOf(
             "Today" to 3, "TwoDay" to 3, "WeekList" to 3,
-            "WeekView" to 2, "WeekGrid" to 3
+            "WeekView" to 2, "WeekGrid" to 4
         )
         assertEquals(expected.keys, counts.keys)
         counts.forEach { (kind, count) ->

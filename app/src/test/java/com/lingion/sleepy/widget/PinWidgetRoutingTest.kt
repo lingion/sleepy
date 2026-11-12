@@ -25,7 +25,9 @@ class PinWidgetRoutingTest {
     @Test
     fun `every widget variant is routable by simple name and short key`() {
         assertEquals(ALL_WIDGET_VARIANTS.size, shortNames().size)
-        assertEquals(WeekGridWideWidgetProvider::class.java, PinWidgetRouting.resolveClass("weekgridwide"))
+        assertEquals(WeekGridVerticalWidgetProvider::class.java, PinWidgetRouting.resolveClass("weekgridvertical"))
+        assertEquals(WeekGridHorizontalWidgetProvider::class.java, PinWidgetRouting.resolveClass("weekgridhorizontal"))
+        assertEquals(WeekGridWidgetProvider::class.java, PinWidgetRouting.resolveClass("weekgridwide"))
         for (variant in ALL_WIDGET_VARIANTS) {
             val cls = variant.receiverClass
             // 入口 1: simpleName 全小写

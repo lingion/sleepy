@@ -16,7 +16,7 @@ class WidgetGalleryContractTest {
         )
         val allVariants = groups.flatMap { it.allVariants }
         assertEquals(
-            "全 14 个变体完整保留在 5 组中, 无遗漏",
+            "全 15 个变体完整保留在 5 组中, 无遗漏",
             ALL_WIDGET_VARIANTS.size,
             allVariants.size
         )

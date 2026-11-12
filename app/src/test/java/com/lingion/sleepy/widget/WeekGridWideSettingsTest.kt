@@ -1,11 +1,15 @@
 package com.lingion.sleepy.widget
 
+import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProviderInfo
+import android.content.ComponentName
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
@@ -13,39 +17,38 @@ import org.robolectric.annotation.Config
 class WeekGridWideSettingsTest {
     private val context get() = ApplicationProvider.getApplicationContext<Context>()
 
-    @Test fun independentInstancesAndDeletedIdReturnToVerticalDefault() {
-        val settings = WeekGridWideSettings(WeekGridWideMode.HORIZONTAL, WeekGridWideLabelSide.RIGHT)
-        WeekGridWideSettingsStore.write(context, 21, settings)
-        assertEquals(settings, WeekGridWideSettingsStore.read(context, 21))
-        assertEquals(WeekGridWideSettings(), WeekGridWideSettingsStore.read(context, 22))
-        WeekGridWideSettingsStore.remove(context, 21)
-        assertEquals(WeekGridWideSettings(), WeekGridWideSettingsStore.read(context, 21))
+    private fun bind(id: Int, receiver: Class<out android.appwidget.AppWidgetProvider>) {
+        shadowOf(AppWidgetManager.getInstance(context)).addBoundWidget(id,
+            AppWidgetProviderInfo().apply { provider = ComponentName(context, receiver) })
     }
 
-    @Test fun threeFormsRoundTripByNameNotOrdinalAndStayIndependent() {
-        val names = listOf("ORIGINAL", "VERTICAL", "HORIZONTAL")
-        assertEquals(names, WeekGridWideMode.entries.map { it.name })
-        names.forEachIndexed { index, name ->
-            val mode = WeekGridWideMode.valueOf(name)
-            WeekGridWideSettingsStore.write(context, 100 + index, WeekGridWideSettings(mode))
-        }
-        names.forEachIndexed { index, name ->
-            assertEquals(name, WeekGridWideSettingsStore.read(context, 100 + index).mode.name)
-            assertEquals(name, context.getSharedPreferences("widget_wide_grid", Context.MODE_PRIVATE).getString("mode_${100 + index}", null))
-        }
-        assertEquals(WeekGridWideMode.VERTICAL, WeekGridWideSettingsStore.read(context, 999).mode)
-    }
-
-    @Test fun invalidValuesResolveToSafeDefaults() {
+    @Test fun receiverFixesLayoutAndLegacyModeCannotOverrideIt() {
+        bind(21, WeekGridVerticalWidgetProvider::class.java)
+        bind(22, WeekGridHorizontalWidgetProvider::class.java)
         context.getSharedPreferences("widget_wide_grid", Context.MODE_PRIVATE).edit()
-            .putString("mode_23", "future_mode").putString("side_23", "future_side").apply()
-        assertEquals(WeekGridWideSettings(), WeekGridWideSettingsStore.read(context, 23))
+            .putString("mode_21", "HORIZONTAL").putString("mode_22", "ORIGINAL").apply()
+        assertEquals(WeekGridWideMode.VERTICAL, WeekGridWideSettingsStore.read(context, 21).mode)
+        assertEquals(WeekGridWideMode.HORIZONTAL, WeekGridWideSettingsStore.read(context, 22).mode)
+        assertEquals(WeekGridWideMode.VERTICAL, WeekGridVerticalWidgetProvider().layoutMode)
+        assertEquals(WeekGridWideMode.HORIZONTAL, WeekGridHorizontalWidgetProvider().layoutMode)
+        assertEquals(listOf("VERTICAL", "HORIZONTAL"), WeekGridWideMode.entries.map { it.name })
     }
 
-    @Test fun changingModeDoesNotLoseSelectedLabelSide() {
-        val selected = WeekGridWideSettings(WeekGridWideMode.HORIZONTAL, WeekGridWideLabelSide.RIGHT)
-        WeekGridWideSettingsStore.write(context, 24, selected)
-        WeekGridWideSettingsStore.write(context, 24, WeekGridWideSettingsStore.read(context, 24).copy(mode = WeekGridWideMode.VERTICAL))
-        assertEquals(WeekGridWideLabelSide.RIGHT, WeekGridWideSettingsStore.read(context, 24).labelSide)
+    @Test fun onlyLabelSidePersistsIndependentlyAndDeletionClearsIt() {
+        bind(21, WeekGridHorizontalWidgetProvider::class.java)
+        bind(22, WeekGridHorizontalWidgetProvider::class.java)
+        WeekGridWideSettingsStore.write(context, 21, WeekGridWideSettings(WeekGridWideMode.VERTICAL, WeekGridWideLabelSide.RIGHT))
+        assertEquals(WeekGridWideSettings(WeekGridWideMode.HORIZONTAL, WeekGridWideLabelSide.RIGHT), WeekGridWideSettingsStore.read(context, 21))
+        assertEquals(WeekGridWideLabelSide.LEFT, WeekGridWideSettingsStore.read(context, 22).labelSide)
+        assertFalse(context.getSharedPreferences("widget_wide_grid", Context.MODE_PRIVATE).contains("mode_21"))
+        WeekGridHorizontalWidgetProvider().onDeleted(context, intArrayOf(21))
+        assertEquals(WeekGridWideLabelSide.LEFT, WeekGridWideSettingsStore.read(context, 21).labelSide)
+    }
+
+    @Test fun invalidLabelFallsBackWithoutChangingFixedLayout() {
+        bind(23, WeekGridHorizontalWidgetProvider::class.java)
+        context.getSharedPreferences("widget_wide_grid", Context.MODE_PRIVATE).edit()
+            .putString("side_23", "future_side").apply()
+        assertEquals(WeekGridWideSettings(WeekGridWideMode.HORIZONTAL), WeekGridWideSettingsStore.read(context, 23))
     }
 }

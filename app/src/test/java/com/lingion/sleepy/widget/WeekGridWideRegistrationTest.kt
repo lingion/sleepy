@@ -6,19 +6,22 @@ import org.junit.Test
 import java.io.File
 
 class WeekGridWideRegistrationTest {
-    @Test fun newEntryIsImmediatelyAfterExistingGridGroupAndBeforeOtherWidgets() {
+    @Test fun twoFixedLayoutsReplaceTheModeSwitchingReceiver() {
         val names = ALL_WIDGET_VARIANTS.map { it.receiverClass.simpleName }
-        assertEquals(listOf("WeekGridWidgetProvider", "WeekGridSmallWidgetProvider", "WeekGridWideWidgetProvider", "TodayWidgetReceiver"), names.take(4))
-        assertEquals(1, names.count { it == "WeekGridWideWidgetProvider" })
-        val entry = ALL_WIDGET_VARIANTS.single { it.receiverClass.simpleName == "WeekGridWideWidgetProvider" }
-        assertEquals(300, entry.widthDp)
-        assertEquals(160, entry.heightDp)
-        assertTrue(WidgetUpdater.remoteViewsReceiverClasses.contains(entry.receiverClass))
+        assertEquals(listOf("WeekGridWidgetProvider", "WeekGridSmallWidgetProvider", "WeekGridVerticalWidgetProvider", "WeekGridHorizontalWidgetProvider", "TodayWidgetReceiver"), names.take(5))
+        assertFalse(names.contains("WeekGridWideWidgetProvider"))
+        for (name in listOf("WeekGridVerticalWidgetProvider", "WeekGridHorizontalWidgetProvider")) {
+            val entry = ALL_WIDGET_VARIANTS.single { it.receiverClass.simpleName == name }
+            assertEquals(300, entry.widthDp)
+            assertEquals(160, entry.heightDp)
+            assertTrue(WidgetUpdater.remoteViewsReceiverClasses.contains(entry.receiverClass))
+        }
     }
 
     @Test fun editorSectionOnlyAppliesToExplicitNewReceiver() {
-        assertTrue(WidgetEditWideGridSection.appliesTo("WeekGridWideWidgetProvider"))
-        for (name in listOf(null, "WeekGridWidgetProvider", "WeekGridSmallWidgetProvider", "TodayWideWidgetReceiver"))
+        assertTrue(WidgetEditWideGridSection.appliesTo("WeekGridVerticalWidgetProvider"))
+        assertTrue(WidgetEditWideGridSection.appliesTo("WeekGridHorizontalWidgetProvider"))
+        for (name in listOf(null, "WeekGridWideWidgetProvider", "WeekGridWidgetProvider", "WeekGridSmallWidgetProvider", "TodayWideWidgetReceiver"))
             assertFalse(WidgetEditWideGridSection.appliesTo(name))
     }
 
@@ -33,11 +36,16 @@ class WeekGridWideRegistrationTest {
 
     @Test fun metadataDeclaresExplicitFourByTwoAndPreservesOldDimensions() {
         val root = if (File("src/main/AndroidManifest.xml").exists()) File("src/main") else File("app/src/main")
-        val xml = File(root, "res/xml/week_grid_wide_widget_info.xml").readText()
-        assertTrue(xml.contains("android:targetCellWidth=\"4\""))
-        assertTrue(xml.contains("android:targetCellHeight=\"2\""))
-        assertTrue(xml.contains("android:previewLayout=\"@layout/widget_preview_weekgrid_wide\""))
-        assertTrue(File(root, "AndroidManifest.xml").readText().contains(".widget.WeekGridWideWidgetProvider"))
+        val manifest = File(root, "AndroidManifest.xml").readText()
+        for (layout in listOf("vertical", "horizontal")) {
+            val xml = File(root, "res/xml/week_grid_${layout}_widget_info.xml").readText()
+            assertTrue(xml.contains("android:targetCellWidth=\"4\""))
+            assertTrue(xml.contains("android:targetCellHeight=\"2\""))
+            assertTrue(xml.contains("android:previewLayout=\"@layout/widget_preview_weekgrid_$layout\""))
+            assertTrue(manifest.contains(".widget.WeekGrid${layout.replaceFirstChar { it.uppercase() }}WidgetProvider"))
+        }
+        assertFalse(manifest.contains(".widget.WeekGridWideWidgetProvider"))
+        assertFalse(File(root, "res/xml/week_grid_wide_widget_info.xml").exists())
         assertTrue(File(root, "res/xml/week_grid_small_widget_info.xml").readText().contains("android:minWidth=\"110dp\""))
         assertTrue(File(root, "res/xml/week_grid_widget_info.xml").readText().contains("android:minHeight=\"250dp\""))
     }

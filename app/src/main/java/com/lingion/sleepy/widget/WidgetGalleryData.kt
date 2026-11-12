@@ -86,6 +86,8 @@ object WidgetGalleryData {
             .removeSuffix("SmallWidgetReceiver")
             .removeSuffix("WideWidgetReceiver")
             .removeSuffix("WideWidgetProvider")
+            .removeSuffix("VerticalWidgetProvider")
+            .removeSuffix("HorizontalWidgetProvider")
             .removeSuffix("WidgetProvider")
             .removeSuffix("WidgetReceiver")
 }

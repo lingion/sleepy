@@ -1150,15 +1150,11 @@
     <string name="period_validation_invalid_data">El horario está incompleto o no se puede leer. Comprueba los identificadores y las horas de inicio y fin.</string>
     <string name="period_validation_invalid_format">Formato de hora incorrecto en el período %1$d, debe ser HH:mm</string>
     <string name="period_validation_overlap">Conflicto entre el período %1$d y el %3$d: el período %1$d termina a las %2$s, después del inicio del período %3$d a las %4$s</string>
-<string name="widget_week_grid_wide_label">Horario semanal en cuadrícula · 4×2</string>
     <string name="widget_wide_grid_empty">No hay clases en las fechas de vista previa</string>
     <string name="widget_wide_grid_horizontal">Tres días horizontales, avance diario</string>
-    <string name="widget_wide_grid_layout">Diseño de cuadrícula 4×2</string>
     <string name="widget_wide_grid_left">Etiquetas de días a la izquierda</string>
-    <string name="widget_wide_grid_original">Cuadrícula completa original</string>
     <string name="widget_wide_grid_preview_error">No se pudieron cargar las vistas previas. Vuelve e inténtalo de nuevo.</string>
     <string name="widget_wide_grid_right">Etiquetas de días a la derecha</string>
-    <string name="widget_wide_grid_shapes">Cambiar forma</string>
     <string name="widget_wide_grid_unavailable">Este widget se ha eliminado o no está disponible</string>
     <string name="widget_wide_grid_vertical">Semana vertical, avanza cada período</string>
     <string name="jw_select_academic_adapter">Elegir sistema académico</string>
@@ -1168,4 +1164,7 @@
     <string name="jw_source_break_minutes">Duración del descanso: %1$s min</string>
     <string name="jw_source_first_weekday">Primer día de la semana: %1$s</string>
     <string name="jw_invalid_semester_weeks">El total de semanas debe estar entre %1$d y 366</string>
+    <string name="widget_week_grid_vertical_label">Horario semanal · Vertical 7 días · 4×2</string>
+    <string name="widget_week_grid_horizontal_label">Horario semanal · Horizontal 3 días · 4×2</string>
+    <string name="widget_wide_grid_preview">Vista previa del widget</string>
 </resources>

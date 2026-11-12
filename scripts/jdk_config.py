@@ -1,4 +1,4 @@
-"""Keep Gradle's bootstrap JDK URL consistent with .tool-versions."""
+"""Keep Gradle's platform bootstrap JDK URLs consistent with .tool-versions."""
 from __future__ import annotations
 
 import argparse
@@ -8,6 +8,14 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 DAEMON_CONFIG = Path("gradle/gradle-daemon-jvm.properties")
+# Gradle platform names mapped to the published Adoptium OS and architecture.
+PLATFORMS = {
+    "LINUX.AARCH64": ("linux", "aarch64"),
+    "LINUX.X86_64": ("linux", "x64"),
+    "MAC_OS.AARCH64": ("mac", "aarch64"),
+    "MAC_OS.X86_64": ("mac", "x64"),
+    "WINDOWS.X86_64": ("windows", "x64"),
+}
 
 
 def java_version(tool_versions: str) -> str:
@@ -25,10 +33,13 @@ def daemon_config(version: str) -> str:
     return (
         "# Derived from .tool-versions; regenerate with python scripts/jdk_config.py.\n"
         "# Renovate updates both files in one PR; CI checks they remain consistent.\n"
-        "# Older trusted PR workflows can bootstrap JDK 25 inside the isolated container.\n"
-        "toolchainUrl.LINUX.X86_64=https\\://api.adoptium.net/v3/binary/version/"
-        f"jdk-{version}/linux/x64/jdk/hotspot/normal/eclipse\n"
-        "toolchainVersion=25\n"
+        "# Bootstrap JDK 25 on supported developer and CI platforms.\n"
+        + "".join(
+            f"toolchainUrl.{platform}=https\\://api.adoptium.net/v3/binary/version/"
+            f"jdk-{version}/{os}/{arch}/jdk/hotspot/normal/eclipse\n"
+            for platform, (os, arch) in PLATFORMS.items()
+        )
+        + "toolchainVersion=25\n"
     )
 
 
@@ -48,7 +59,8 @@ def main(argv: list[str] | None = None) -> int:
                 return 1
         else:
             target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_text(expected, encoding="utf-8", newline="\n")
+            with target.open("w", encoding="utf-8", newline="\n") as file:
+                file.write(expected)
         print(f"Temurin {version}: Gradle bootstrap configuration {'verified' if args.check else 'updated'}")
         return 0
     except (OSError, ValueError) as error:
