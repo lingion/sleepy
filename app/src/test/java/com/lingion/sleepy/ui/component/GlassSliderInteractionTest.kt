@@ -217,4 +217,38 @@ class GlassSliderInteractionTest {
         }
         compose.runOnIdle { assertTrue(range.value.start <= 2f); assertTrue(range.value.endInclusive >= 9f) }
     }
+
+    @Test fun coincidentRangeThumbsCanBeSeparatedByRailTaps() = verifyCoincidentRailTaps(rtl = false)
+
+    @Test fun coincidentRangeThumbsCanBeSeparatedByRailTapsInRtl() = verifyCoincidentRailTaps(rtl = true)
+
+    private fun verifyCoincidentRailTaps(rtl: Boolean) {
+        val range = mutableStateOf(5f..5f)
+        var updates = 0
+        compose.setContent {
+            MaterialTheme {
+                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass,
+                    LocalLayoutDirection provides if (rtl) LayoutDirection.Rtl else LayoutDirection.Ltr) {
+                    GlassHost {
+                        GlassRangeSlider(range.value, { range.value = it; updates++ },
+                            Modifier.width(280.dp).testTag("range"), 0f..10f, 0)
+                    }
+                }
+            }
+        }
+        val slider = compose.onNodeWithTag("range")
+        slider.performTouchInput { click(Offset(width * (if (rtl) .9f else .1f), centerY)) }
+        compose.runOnIdle {
+            assertTrue("A lower rail tap reopens the start thumb", range.value.start < 2f)
+            assertEquals(5f, range.value.endInclusive, 0f)
+            assertEquals("The rail tap emits one changed range", 1, updates)
+            range.value = 5f..5f
+        }
+        slider.performTouchInput { click(Offset(width * (if (rtl) .1f else .9f), centerY)) }
+        compose.runOnIdle {
+            assertEquals(5f, range.value.start, 0f)
+            assertTrue("A higher rail tap reopens the end thumb", range.value.endInclusive > 8f)
+            assertEquals(2, updates)
+        }
+    }
 }

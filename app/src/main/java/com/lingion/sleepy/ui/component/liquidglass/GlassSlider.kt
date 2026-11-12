@@ -259,7 +259,12 @@ private fun GlassSliderBody(
                     }
                     val downValue = at(down.position.x)
                     val now = currentValue
-                    active = if (range && abs(downValue - now.start) < abs(downValue - now.endInclusive)) 0 else 1
+                    active = if (range && (
+                        abs(downValue - now.start) < abs(downValue - now.endInclusive) ||
+                            // Coincident thumbs have equal distance on either side.
+                            // A rail tap must reopen the range toward that side.
+                            (now.start == now.endInclusive && downValue < now.start)
+                        )) 0 else 1
                     if (active == 0) startActivation++ else endActivation++
                     var lastTick = (fraction(if (active == 0) now.start else now.endInclusive) * (if (steps > 0) steps + 1 else 40)).roundToInt()
                     LiquidGlassHaptics.selectionClick(view)
