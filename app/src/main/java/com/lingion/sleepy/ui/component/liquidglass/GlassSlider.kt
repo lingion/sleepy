@@ -286,6 +286,9 @@ private fun GlassSliderBody(
                         while (true) {
                             val event = awaitPointerEvent(PointerEventPass.Initial)
                             val pointer = event.changes.firstOrNull { it.id == down.id } ?: break
+                            // Compose represents platform cancellation as an
+                            // already-consumed synthetic up. It must not commit.
+                            if (pointer.isConsumed) break
                             if (!pointer.pressed) { released = true; break }
                             val target = dragMapping?.valueAt(pointer.position.x) ?: at(pointer.position.x)
                             if (range && now.start == now.endInclusive && target != now.start) {

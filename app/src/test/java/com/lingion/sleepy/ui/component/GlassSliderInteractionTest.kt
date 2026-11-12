@@ -98,6 +98,25 @@ class GlassSliderInteractionTest {
         compose.onNodeWithTag("ghost").assertExists()
     }
 
+    @Test fun cancelledSliderDragDoesNotCommitAndNextTapStillWorks() {
+        show()
+        val slider = compose.onNodeWithTag("slider")
+        slider.performTouchInput {
+            down(Offset(width * .4f, centerY))
+            moveTo(Offset(width * .8f, centerY), 200)
+            cancel()
+        }
+        compose.runOnIdle {
+            assertTrue("Moving publishes the current value", value.floatValue > .4f)
+            assertEquals("System cancellation does not finish the gesture", 0, commits)
+        }
+        slider.performTouchInput { click(Offset(width * .2f, centerY)) }
+        compose.runOnIdle {
+            assertTrue(value.floatValue < .4f)
+            assertEquals("The next gesture still commits once", 1, commits)
+        }
+    }
+
     @Test fun accessibilityCanReturnToBaselineAndRemoveGhost() {
         show()
         val thumb = compose.onNodeWithTag("glass-slider-end")
