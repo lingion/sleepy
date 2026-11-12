@@ -14,15 +14,32 @@ import android.view.View
 import android.view.Window
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
@@ -41,6 +58,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.ComposeView
@@ -49,23 +69,34 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
 import com.lingion.sleepy.ui.component.liquidglass.GlassBackground
 import com.lingion.sleepy.ui.component.liquidglass.DockLensBoundsInRootPx
 import com.lingion.sleepy.ui.component.liquidglass.GlassHost
+import com.lingion.sleepy.ui.component.liquidglass.GlassButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog
+import com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenu
+import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassModalBottomSheet
 import com.lingion.sleepy.ui.component.liquidglass.GlassSlider
 import com.lingion.sleepy.ui.component.liquidglass.GlassSwitch
+import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar
+import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton
 import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassNavigationBar
 import com.lingion.sleepy.ui.component.liquidglass.LocalGlassDepth
 import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
+import com.lingion.sleepy.ui.theme.SleepyThemeProvider
+import com.lingion.sleepy.ui.theme.ThemePresets
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
@@ -122,6 +153,438 @@ class NativeGlassParityCaptureTest {
     private data class ReplayCallback(val value: String, val uptimeMs: Long)
     private val replayCallbacks = ConcurrentLinkedQueue<ReplayCallback>()
     private var realTimeReplay = false
+
+    private enum class OpticalSurface {
+        home, share_sheet, edit_sheet, menu, alert;
+
+        val heldTags get() = when (this) {
+            home -> listOf("static-icon-share", "static-switch-lens", "segment-thumb", "glass-slider-end", "dock-lens")
+            share_sheet, edit_sheet -> listOf("static-sheet-icon", "static-switch-lens", "segment-thumb", "glass-slider-end", "static-button")
+            menu -> listOf("static-menu-delete", "static-menu-second", "static-menu-first")
+            alert -> listOf("static-alert-confirm", "static-alert-cancel")
+        }
+        val presentation get() = this == menu || this == alert
+        val triggerTag get() = "static-${name}-anchor"
+        val carrierTag get() = "static-${name}-carrier"
+    }
+    private data class OpticalScene(val background: OpticalBackground, val dark: Boolean,
+                                    val surface: OpticalSurface = OpticalSurface.home,
+                                    val showControls: Boolean = true) {
+        val name get() = "${background.name}-${if (dark) "dark" else "light"}-${surface.name}"
+    }
+    private var opticalActivity: OpticalCaptureWindow? = null
+    private var opticalDialog: OpticalCaptureWindow? = null
+    private val opticalPresentationEvents = ArrayList<String>()
+    private val opticalPresentationTrace = ConcurrentLinkedQueue<JSONObject>()
+    private var opticalPresentationTextColors: Map<String, Int> = emptyMap()
+
+    /** Static optics are independent of the synthetic gesture/replay timelines below. */
+    @Test fun captureStaticOpticalBackgroundMatrix() {
+        val arguments = InstrumentationRegistry.getArguments()
+        assumeTrue("Pass glassStaticCapture=true for the multi-background GPU matrix",
+            arguments.getString("glassStaticCapture") == "true")
+        fun selected(name: String, allowed: List<String>, defaults: List<String> = allowed): List<String> {
+            val values = arguments.getString(name)?.split(',')?.map(String::trim)?.distinct() ?: defaults
+            require(values.isNotEmpty() && values.all { it in allowed }) { "$name must select from $allowed" }
+            return values
+        }
+        val backgrounds = selected("glassStaticBackgrounds", OpticalBackground.entries.map { it.name })
+            .map(OpticalBackground::valueOf)
+        val themes = selected("glassStaticThemes", listOf("light", "dark")).map { it == "dark" }
+        val surfaces = selected("glassStaticSurfaces", OpticalSurface.entries.map { it.name },
+            listOf("home", "share_sheet", "edit_sheet")).map(OpticalSurface::valueOf)
+        assumeTrue("menu captures require actual attached-popup PixelCopy, available on API 34+",
+            OpticalSurface.menu !in surfaces || Build.VERSION.SDK_INT >= 34)
+        val states = selected("glassStaticStates", listOf("rest", "held"))
+        val runId = (arguments.getString("glassStaticRunId") ?: System.currentTimeMillis().toString())
+            .replace(Regex("[^A-Za-z0-9_-]"), "_")
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val directory = File(context.getExternalFilesDir(null), "glass-optical-backgrounds/$runId")
+        assertTrue("Create static optical output directory", directory.isDirectory || directory.mkdirs())
+        val captures = JSONArray()
+        val baselines = JSONArray()
+        val presentationActions = JSONArray()
+        val manifest = JSONObject().put("schema", 1).put("run_id", runId)
+            .put("sdk", Build.VERSION.SDK_INT).put("model", Build.MODEL).put("fingerprint", Build.FINGERPRINT)
+            .put("inputs", JSONArray(OpticalBackground.entries.map { it.metadata() }))
+            .put("theme_preset", ThemePresets.KEY_DEFAULT)
+            .put("matrix", "Selected fixed inputs × themes × carriers; optional menu/alert use actual public presentation controls, with rest and each named held control")
+            .put("selected_backgrounds", JSONArray(backgrounds.map { it.name }))
+            .put("selected_themes", JSONArray(themes.map { if (it) "dark" else "light" }))
+            .put("selected_surfaces", JSONArray(surfaces.map { it.name })).put("selected_states", JSONArray(states))
+            .put("fixture_scope", "Actual product GlassTopAppBar/buttons/Dock/common controls, GlassModalBottomSheet share/edit carriers, and opt-in GlassDropdownMenu/GlassAlertDialog; not a full screen data-flow test")
+            .put("capture_sources", "PixelCopy of actual Activity/Dialog Window or API34+ attached Popup ViewRoot after HWUI commit, plus UiAutomation composited-display screenshot; both are saved separately")
+            .put("baseline_policy", "Plain background before any optical controls. Home window metrics use same-window baseline. Popup/Dialog surface metrics have no comparable surface baseline; display metrics compare the same full display background at measured screen coordinates, including any product scrim.")
+            .put("acceptance", "No single background or scalar metric proves parity. Review every input, theme and carrier. Center/edge RGB, luminance, saturation and channel gradients are descriptive, not inferred opacity/dispersion or pass thresholds.")
+            .put("clock", "Compose mainClock static snapshots; presentation taps wait for recomposition, advance one frame to start popup animation, then settle640ms. Held after640ms without movement; not natural-time motion evidence or a product-fix assertion.")
+            .put("presentation_fixture", "Menu anchor [126.5,411.5,122.5,33.5]dp and public offset [-63.5,-146]dp align its top-left with native [63,299]pt on the larger Android display; actual Material row/pane dimensions are unmodified. Content follows observed native above-anchor display order Delete/Second action/First action. Alert title/message/actions match native. Actual root/screen rectangles are exported; dimensions and backing controls differ from iOS.")
+            .put("baselines", baselines).put("captures", captures).put("presentation_actions", presentationActions)
+        val scene = mutableStateOf(OpticalScene(OpticalBackground.fine_grid, false, showControls = false))
+        compose.setContent { OpticalFixture(scene.value) }
+        compose.waitForIdle()
+        compose.mainClock.autoAdvance = false
+        try {
+            for (dark in themes) for (background in backgrounds) {
+                val plain = OpticalScene(background, dark, showControls = false)
+                compose.runOnIdle { scene.value = plain }
+                settleOptical()
+                val activity = checkNotNull(opticalActivity)
+                assertTrue("Static optics require hardware acceleration", activity.root.isHardwareAccelerated)
+                val baselineWindow = activity.capture()
+                val baselineScreen = opticalScreenCapture()
+                val baselineName = "${background.name}-${if (dark) "dark" else "light"}-background"
+                try {
+                    baselineWindow.saveOpticalPng(File(directory, "$baselineName-window.png"))
+                    baselineScreen.saveOpticalPng(File(directory, "$baselineName-screen.png"))
+                    baselines.put(JSONObject().put("background", background.name).put("dark", dark)
+                        .put("window_png", "$baselineName-window.png").put("screen_png", "$baselineName-screen.png"))
+                    for (surface in surfaces) {
+                        val current = OpticalScene(background, dark, surface)
+                        compose.runOnIdle { opticalPresentationEvents.clear(); scene.value = current }
+                        settleOptical()
+                        if (surface.presentation) tapOptical(surface.triggerTag)
+                        if ("rest" in states) captureOptical(current, "rest", directory, captures, baselineName, baselineWindow, baselineScreen)
+                        for (tag in if ("held" in states) surface.heldTags else emptyList()) {
+                            val node = compose.onNodeWithTag(tag, useUnmergedTree = true)
+                            val press = if (tag == "dock-lens") {
+                                node.fetchSemanticsNode().config[DockLensBoundsInRootPx].center - bounds(node).topLeft
+                            } else bounds(node).let { Offset(it.width / 2, it.height / 2) }
+                            node.performTouchInput { down(press) }
+                            try {
+                                settleOptical()
+                                captureOptical(current, "held-$tag", directory, captures, baselineName, baselineWindow, baselineScreen)
+                            } finally {
+                                node.performTouchInput { cancel() }
+                                settleOptical()
+                            }
+                        }
+                        if (surface.presentation) verifyOpticalPresentationActions(current, presentationActions)
+                        File(directory, "matrix.json").writeText(manifest.toString(2))
+                    }
+                } finally { baselineWindow.recycle(); baselineScreen.recycle() }
+            }
+            val statesPerScene = surfaces.sumOf { (if ("rest" in states) 1 else 0) +
+                (if ("held" in states) it.heldTags.size else 0) }
+            assertEquals("Every selected carrier/theme/background/state is captured",
+                backgrounds.size * themes.size * statesPerScene, captures.length())
+        } finally {
+            compose.mainClock.autoAdvance = true
+            File(directory, "matrix.json").writeText(manifest.put("density", density)
+                .put("presentation_trace", JSONArray(opticalPresentationTrace.toList())).toString(2))
+            writeOpticalMetricsCsv(File(directory, "optical-metrics.csv"), captures)
+        }
+    }
+
+    private fun settleOptical() {
+        compose.mainClock.advanceTimeBy(640)
+        compose.waitForIdle()
+    }
+
+    private fun tapOptical(tag: String) {
+        val rect = bounds(compose.onNodeWithTag(tag, useUnmergedTree = true))
+        opticalPresentationTrace.add(JSONObject().put("event", "tap_requested").put("tag", tag)
+            .put("compose_ms", compose.mainClock.currentTime).put("wall_uptime_ms", SystemClock.uptimeMillis())
+            .put("node_root_rect_px", JSONArray(listOf(rect.left, rect.top, rect.right, rect.bottom))))
+        compose.onNodeWithTag(tag, useUnmergedTree = true).performTouchInput {
+            down(center)
+            advanceEventTime(70)
+            up()
+        }
+        // A newly composed Popup owns a new animation. Let its composition and first
+        // frame exist before advancing that animation's clock; Activity-only settling
+        // can otherwise snapshot the Popup's initial alpha0/scale.8 frame.
+        compose.waitForIdle()
+        compose.mainClock.advanceTimeByFrame()
+        compose.waitForIdle()
+        settleOptical()
+        compose.runOnIdle {
+            opticalPresentationTrace.add(JSONObject().put("event", "tap_settled").put("tag", tag)
+                .put("compose_ms", compose.mainClock.currentTime).put("wall_uptime_ms", SystemClock.uptimeMillis())
+                .put("callbacks", JSONArray(opticalPresentationEvents)))
+        }
+    }
+
+    /** Observe real test-delivered events without consuming or replacing the product handler. */
+    private fun Modifier.observeOpticalPointer(tag: String): Modifier = pointerInput(tag) {
+        awaitPointerEventScope {
+            while (true) {
+                val event = awaitPointerEvent(PointerEventPass.Initial)
+                opticalPresentationTrace.add(JSONObject().put("event", "pointer_delivered").put("tag", tag)
+                    .put("type", event.type.toString()).put("wall_uptime_ms", SystemClock.uptimeMillis())
+                    .put("changes", JSONArray(event.changes.map { change ->
+                        JSONObject().put("event_uptime_ms", change.uptimeMillis).put("pressed", change.pressed)
+                            .put("previous_pressed", change.previousPressed).put("consumed_at_initial", change.isConsumed)
+                            .put("local_px", JSONArray(listOf(change.position.x, change.position.y)))
+                    })))
+            }
+        }
+    }
+
+    /** Exercise the same public open/action/dismiss path used for the captured carrier. */
+    private fun verifyOpticalPresentationActions(scene: OpticalScene, records: JSONArray) {
+        val actions = if (scene.surface == OpticalSurface.menu) listOf("first", "second", "delete")
+            else listOf("confirm", "cancel")
+        for ((index, action) in actions.withIndex()) {
+            if (index > 0) tapOptical(scene.surface.triggerTag)
+            assertEquals("${scene.name}: visible presentation before $action", 1,
+                compose.onAllNodes(hasTestTag(scene.surface.carrierTag), useUnmergedTree = true).fetchSemanticsNodes().size)
+            tapOptical("static-${scene.surface.name}-$action")
+            assertEquals("${scene.name}: $action dismisses presentation", 0,
+                compose.onAllNodes(hasTestTag(scene.surface.carrierTag), useUnmergedTree = true).fetchSemanticsNodes().size)
+        }
+        val observed = compose.runOnIdle { opticalPresentationEvents.toList() }
+        assertEquals("${scene.name}: every public action emits one callback",
+            actions.flatMap { listOf("opened", it) }, observed)
+        records.put(JSONObject().put("scene", scene.name).put("events", JSONArray(observed))
+            .put("verified", "public anchor DOWN/UP, visible carrier, public action DOWN/UP, carrier absent, one callback"))
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable private fun OpticalFixture(scene: OpticalScene) {
+        val view = LocalView.current
+        val currentDensity = LocalDensity.current.density
+        SideEffect {
+            opticalActivity = OpticalCaptureWindow.from(view)
+            density = currentDensity
+            if (!scene.showControls || scene.surface == OpticalSurface.home) opticalDialog = null
+        }
+        SleepyThemeProvider(darkTheme = scene.dark, themeKey = ThemePresets.KEY_DEFAULT) {
+            CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                val colors = MaterialTheme.colorScheme
+                GlassHost(Modifier.fillMaxSize(), background = colors.background) {
+                    GlassBackground(0f, Modifier.fillMaxSize()) { OpticalCaptureBackground(scene.background) }
+                    if (scene.showControls) key(scene.background, scene.dark, scene.surface) {
+                        if (scene.surface == OpticalSurface.home) {
+                            Box(Modifier.fillMaxSize()) {
+                                GlassTopAppBar(title = { Text("Optical background matrix") }, windowInsets = WindowInsets(0),
+                                    modifier = Modifier.align(Alignment.TopCenter).testTag("static-toolbar"),
+                                    actions = {
+                                        GlassIconButton({}, Modifier.testTag("static-icon-share")) { Icon(Icons.Filled.Share, "Share") }
+                                        GlassIconButton({}, Modifier.testTag("static-icon-edit")) { Icon(Icons.Filled.Edit, "Edit") }
+                                    })
+                                Column(Modifier.align(Alignment.Center).widthIn(max = 335.dp).fillMaxWidth().padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(16.dp)) { OpticalCommonControls() }
+                                var selection by remember { mutableIntStateOf(0) }
+                                val host = LocalGlassHost.current
+                                LiquidGlassNavigationBar(
+                                    listOf(PillNavItemSpec(Icons.Filled.Home, "Home"), PillNavItemSpec(Icons.Filled.Search, "Explore"),
+                                        PillNavItemSpec(Icons.Filled.Settings, "Settings")), selection, { selection = it },
+                                    Modifier.align(Alignment.BottomCenter).padding(bottom = 32.dp).width(316.dp).testTag("static-dock"),
+                                    host?.backdropAt(LocalGlassDepth.current),
+                                )
+                            }
+                        } else if (scene.surface.presentation) {
+                            OpticalPresentation(scene.surface)
+                        } else {
+                            val state = rememberBottomSheetState(initialValue = SheetValue.Expanded,
+                                enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
+                            GlassModalBottomSheet(onDismissRequest = {}, sheetState = state,
+                                modifier = Modifier.testTag("static-sheet-carrier")) {
+                                val dialogView = LocalView.current
+                                SideEffect { opticalDialog = OpticalCaptureWindow.from(dialogView) }
+                                Column(Modifier.fillMaxWidth().height(420.dp).padding(24.dp).testTag("static-sheet-content"),
+                                    verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically) {
+                                        Text(if (scene.surface == OpticalSurface.share_sheet) "Share schedule" else "Adjust course",
+                                            style = MaterialTheme.typography.titleLarge)
+                                        GlassIconButton({}, Modifier.testTag("static-sheet-icon")) {
+                                            Icon(if (scene.surface == OpticalSurface.share_sheet) Icons.Filled.Share else Icons.Filled.Edit, "Action")
+                                        }
+                                    }
+                                    OpticalCommonControls()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable private fun OpticalPresentation(surface: OpticalSurface) {
+        var visible by remember { mutableStateOf(false) }
+        val colors = MaterialTheme.colorScheme
+        SideEffect {
+            opticalPresentationTextColors = mapOf(
+                "static-menu-delete" to colors.error.toArgb(),
+                "static-menu-second" to colors.onSurface.toArgb(), "static-menu-first" to colors.onSurface.toArgb(),
+                "static-alert-confirm" to colors.primary.toArgb(), "static-alert-cancel" to colors.primary.toArgb())
+        }
+        fun dismiss(action: String) {
+            opticalPresentationEvents.add(action)
+            opticalPresentationTrace.add(JSONObject().put("event", "callback").put("action", action)
+                .put("wall_uptime_ms", SystemClock.uptimeMillis()))
+            visible = false
+        }
+        Box(Modifier.fillMaxSize()) {
+            Box(Modifier.offset(x = 126.5.dp, y = 411.5.dp).width(122.5.dp)) {
+                GlassButton({ opticalPresentationEvents.add("opened"); visible = true },
+                    Modifier.fillMaxWidth().height(33.5.dp).testTag(surface.triggerTag)
+                        .observeOpticalPointer(surface.triggerTag)) {
+                    Text(if (surface == OpticalSurface.menu) "System menu" else "System alert")
+                }
+                if (surface == OpticalSurface.menu) {
+                    GlassDropdownMenu(visible, { dismiss("dismissed") },
+                        modifier = Modifier.width(250.dp).testTag(surface.carrierTag),
+                        offset = DpOffset((-63.5).dp, (-146).dp)) {
+                        val popupView = LocalView.current
+                        SideEffect { opticalDialog = OpticalCaptureWindow.fromPopup(popupView) }
+                        for ((action, label) in listOf("delete" to "Delete", "second" to "Second action", "first" to "First action")) {
+                            DropdownMenuItem(text = { Text(label,
+                                color = if (action == "delete") MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface) },
+                                onClick = { dismiss(action) }, modifier = Modifier.testTag("static-menu-$action")
+                                    .observeOpticalPointer("static-menu-$action"))
+                        }
+                    }
+                }
+            }
+            if (surface == OpticalSurface.alert && visible) {
+                GlassAlertDialog({ dismiss("dismissed") },
+                    modifier = Modifier.testTag(surface.carrierTag),
+                    title = { Text("Native Alert") },
+                    text = { Text("System-provided alert, controls, material, and transition.") },
+                    confirmButton = {
+                        val dialogView = LocalView.current
+                        SideEffect { opticalDialog = OpticalCaptureWindow.from(dialogView) }
+                        GlassTextButton({ dismiss("confirm") }, Modifier.testTag("static-alert-confirm")
+                            .observeOpticalPointer("static-alert-confirm")) { Text("Confirm") }
+                    },
+                    dismissButton = {
+                        GlassTextButton({ dismiss("cancel") }, Modifier.testTag("static-alert-cancel")
+                            .observeOpticalPointer("static-alert-cancel")) { Text("Cancel") }
+                    })
+            }
+        }
+    }
+
+    @Composable private fun OpticalCommonControls() {
+        var checked by remember { mutableStateOf(true) }
+        var selected by remember { mutableIntStateOf(0) }
+        var value by remember { mutableFloatStateOf(.35f) }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Text("Include details", color = MaterialTheme.colorScheme.onSurface)
+            GlassSwitch(checked, { checked = it }, Modifier.testTag("static-switch"),
+                thumbContent = { Box(Modifier.fillMaxSize().testTag("static-switch-lens")) })
+        }
+        SegmentedSwitcher(listOf(0 to "First", 1 to "Second", 2 to "Third"), selected, { selected = it },
+            Modifier.fillMaxWidth().testTag("static-segments"))
+        GlassSlider(value, { value = it }, Modifier.fillMaxWidth().testTag("static-slider"))
+        GlassButton({}, Modifier.fillMaxWidth().testTag("static-button")) { Text("Continue") }
+    }
+
+    /** Require material and text in the real GPU surface, rather than accepting semantics alone. */
+    private fun verifyOpticalPresentationGpu(scene: OpticalScene, phase: String, bitmap: Bitmap,
+                                             origin: IntArray): JSONArray {
+        val observations = JSONArray()
+        fun windowRect(tag: String) = bounds(compose.onNodeWithTag(tag, useUnmergedTree = true))
+            .translate(Offset(origin[0].toFloat(), origin[1].toFloat()))
+        fun inspect(tag: String, region: Rect, expectedText: Int? = null) {
+            val left = floor(region.left).toInt(); val top = floor(region.top).toInt()
+            val right = ceil(region.right).toInt(); val bottom = ceil(region.bottom).toInt()
+            assertTrue("${scene.name}: $tag GPU ROI lies inside actual surface",
+                left >= 0 && top >= 0 && right <= bitmap.width && bottom <= bitmap.height && right > left && bottom > top)
+            var visible = 0; var textPixels = 0
+            for (y in top until bottom) for (x in left until right) {
+                val pixel = bitmap.getPixel(x, y)
+                val alpha = (pixel ushr 24) and 255
+                if (alpha >= 32) visible++
+                if (expectedText != null && alpha >= 192 && (0..2).all { channel ->
+                    kotlin.math.abs(((pixel ushr (channel * 8)) and 255) -
+                        ((expectedText ushr (channel * 8)) and 255)) <= 18
+                }) textPixels++
+            }
+            val pixels = (right - left) * (bottom - top)
+            val row = JSONObject().put("tag", tag).put("region_px", JSONArray(listOf(left, top, right, bottom)))
+                .put("samples", pixels).put("alpha_ge32_pixels", visible)
+                .put("expected_text_rgb", expectedText?.let { JSONArray(listOf((it ushr 16) and 255,
+                    (it ushr 8) and 255, it and 255)) } ?: JSONObject.NULL)
+                .put("expected_text_core_pixels", textPixels)
+            observations.put(row)
+            opticalPresentationTrace.add(JSONObject().put("event", "gpu_visibility").put("scene", scene.name)
+                .put("phase", phase).put("observation", row))
+            if (expectedText == null) assertTrue("${scene.name}: real GPU $tag material must cover its clear ROI",
+                visible >= pixels * .95)
+            else assertTrue("${scene.name}: real GPU $tag must contain visible label foreground", textPixels >= 4)
+        }
+        val carrier = windowRect(scene.surface.carrierTag)
+        if (scene.surface == OpticalSurface.menu) {
+            for (tag in scene.surface.heldTags) {
+                val row = windowRect(tag)
+                inspect("$tag-material", Rect(row.right - 48 * density, row.center.y - 8 * density,
+                    row.right - 30 * density, row.center.y + 8 * density))
+            }
+        } else {
+            inspect("static-alert-material", Rect(carrier.left + 16 * density, carrier.top + 40 * density,
+                carrier.left + 34 * density, carrier.top + 56 * density))
+        }
+        if (phase == "rest") for (tag in scene.surface.heldTags) {
+            val row = windowRect(tag)
+            // Text core colors are resolved from this fixture's actual Material theme.
+            inspect("$tag-foreground", Rect(row.left.coerceAtLeast(0f), row.top.coerceAtLeast(0f),
+                row.right.coerceAtMost(bitmap.width.toFloat()), row.bottom.coerceAtMost(bitmap.height.toFloat())),
+                checkNotNull(opticalPresentationTextColors[tag]))
+        }
+        return observations
+    }
+
+    private fun captureOptical(scene: OpticalScene, phase: String, directory: File, captures: JSONArray,
+                               baselineName: String, baselineWindow: Bitmap, baselineScreen: Bitmap) {
+        compose.waitForIdle()
+        val surface = if (scene.surface == OpticalSurface.home) checkNotNull(opticalActivity) else checkNotNull(opticalDialog)
+        val origin = surface.origin()
+        val screenOrigin = surface.screenOrigin()
+        val windowBitmap = surface.capture()
+        val screenBitmap = opticalScreenCapture()
+        val stem = "${scene.name}-$phase"
+        try {
+            windowBitmap.saveOpticalPng(File(directory, "$stem-window.png"))
+            screenBitmap.saveOpticalPng(File(directory, "$stem-screen.png"))
+            val gpuVisibility = if (scene.surface.presentation)
+                verifyOpticalPresentationGpu(scene, phase, windowBitmap, origin) else JSONArray()
+            val measurements = JSONArray()
+            val tags = if (scene.surface.presentation) listOf(scene.surface.carrierTag) + scene.surface.heldTags
+            else (if (scene.surface == OpticalSurface.home) listOf(
+                "static-toolbar", "static-icon-share", "static-icon-edit", "static-dock", "dock-lens",
+            ) else listOf("static-sheet-carrier", "static-sheet-content", "static-sheet-icon")) +
+                listOf("static-switch", "static-switch-lens", "static-segments", "segment-thumb",
+                    "static-slider", "glass-slider-end", "static-button")
+            for (tag in tags) {
+                val nodes = compose.onAllNodes(hasTestTag(tag), useUnmergedTree = true)
+                assertEquals("${scene.name}: one $tag", 1, nodes.fetchSemanticsNodes().size)
+                val node = nodes[0]
+                val rect = if (tag == "dock-lens") node.fetchSemanticsNode().config[DockLensBoundsInRootPx] else bounds(node)
+                val localWindowRect = rect.translate(Offset(origin[0].toFloat(), origin[1].toFloat()))
+                val screenRect = rect.translate(Offset(screenOrigin[0].toFloat(), screenOrigin[1].toFloat()))
+                measurements.put(JSONObject().put("tag", tag)
+                    .put("geometry_source", if (tag == "dock-lens") "product painted capsule mapped to root" else "unclipped semantics layout bounds")
+                    .put("window", opticalRegionMetrics(windowBitmap, if (scene.surface == OpticalSurface.home) baselineWindow else null, localWindowRect))
+                    .put("composited_display", opticalRegionMetrics(screenBitmap, baselineScreen, screenRect)))
+            }
+            val anchorRect = if (scene.surface.presentation) {
+                val activityOrigin = checkNotNull(opticalActivity).screenOrigin()
+                bounds(compose.onNodeWithTag(scene.surface.triggerTag, useUnmergedTree = true))
+                    .translate(Offset(activityOrigin[0].toFloat(), activityOrigin[1].toFloat()))
+            } else null
+            captures.put(JSONObject().put("scene", scene.name).put("background", scene.background.name)
+                .put("theme", if (scene.dark) "dark" else "light").put("carrier", scene.surface.name).put("phase", phase)
+                .put("window_source", when (scene.surface) {
+                    OpticalSurface.home -> "activity"
+                    OpticalSurface.menu -> "attached-popup-viewroot-api34"
+                    else -> "dialog"
+                })
+                .put("window_png", "$stem-window.png").put("screen_png", "$stem-screen.png")
+                .put("window_size_px", JSONArray(listOf(windowBitmap.width, windowBitmap.height)))
+                .put("gpu_visibility", gpuVisibility)
+                .put("presentation_anchor_screen_rect_px", anchorRect?.let {
+                    JSONArray(listOf(it.left, it.top, it.right, it.bottom))
+                } ?: JSONObject.NULL)
+                .put("window_baseline_png", if (scene.surface == OpticalSurface.home) "$baselineName-window.png" else JSONObject.NULL)
+                .put("display_baseline_png", "$baselineName-screen.png")
+                .put("content_origin_in_window_px", JSONArray(origin.toList()))
+                .put("content_origin_on_screen_px", JSONArray(screenOrigin.toList())).put("measurements", measurements))
+        } finally { windowBitmap.recycle(); screenBitmap.recycle() }
+    }
 
     private val tint = Color(0f, .65f, .75f, 1f)
     private val neutral = Color(.94f, .94f, .96f, 1f)
