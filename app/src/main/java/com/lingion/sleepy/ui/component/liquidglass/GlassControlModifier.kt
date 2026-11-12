@@ -53,6 +53,7 @@ fun Modifier.glassControl(
     role: GlassMaterialRole = GlassMaterialRole.Regular,
     interactionSource: MutableInteractionSource? = null,
     placementLayer: Boolean = true,
+    pressedContentAlpha: Float = 1f,
 ): Modifier {
     check(!LocalGlassSourceContent.current) { "An optical consumer cannot be recorded as an ordinary source" }
     val host = LocalGlassHost.current
@@ -82,13 +83,14 @@ fun Modifier.glassControl(
     val renderOptions = remember(contentPlacementLayer) {
         if (contentPlacementLayer) BackdropRenderOptions.Default else BackdropRenderOptions(placementLayer = false)
     }
-    val motion = remember { GlassPressMotion() }
+    val prominent = tint != null || selected
+    val motion = remember(prominent) { GlassPressMotion(prominent) }
     var origin by remember { mutableStateOf(Offset.Zero) }
     var pointerId by remember { mutableStateOf<PointerId?>(null) }
     var accepted by remember { mutableStateOf(false) }
     val density = LocalDensity.current.density
     val pressed = interactionSource?.collectIsPressedAsState()?.value == true
-    LaunchedEffect(enabled, pressed) {
+    LaunchedEffect(motion, enabled, pressed) {
         if (!enabled) {
             accepted = false
             motion.reset()
@@ -111,7 +113,7 @@ fun Modifier.glassControl(
     return this
         // Observe in the fixed layout coordinates, before the painted layer
         // moves. Leave click/scroll ownership to the existing gesture handlers.
-        .pointerInput(enabled, grouped, interactionSource) {
+        .pointerInput(motion, enabled, grouped, interactionSource) {
             if (!enabled) return@pointerInput
             try {
                 awaitPointerEventScope {
@@ -142,7 +144,7 @@ fun Modifier.glassControl(
             }
         }
         .graphicsLayer {
-            val growth = min(0.25f, 16f * density / size.maxDimension.coerceAtLeast(1f))
+            val growth = 16f * density / size.maxDimension.coerceAtLeast(1f)
             val swell = 1f + motion.lift.value * growth
             val pull = Offset(motion.pullX.value, motion.pullY.value)
             scaleX = swell * (1f + abs(pull.x) / size.width.coerceAtLeast(1f) * 0.5f)
@@ -169,9 +171,9 @@ fun Modifier.glassControl(
                     rim = rim,
                     glow = LiquidGlassGlow(
                         center = origin / density,
-                        reach = (28f + 3f * motion.lift.value).toDouble(),
-                        strength = (0.06f * motion.lift.value).toDouble(),
-                        wash = (0.7f * motion.lift.value).toDouble(),
+                        reach = (28f + 3f * motion.lift.value.coerceIn(0f, 1f)).toDouble(),
+                        strength = (0.06f * motion.lift.value.coerceIn(0f, 1f)).toDouble(),
+                        wash = (0.7f * motion.lift.value.coerceIn(0f, 1f)).toDouble(),
                     ),
                 )
             },
@@ -207,7 +209,16 @@ fun Modifier.glassControl(
                 if (android.os.Build.VERSION.SDK_INT < 33) drawRect(material.tint)
             },
         )
+        // This layer follows the optical draw node, so only the foreground fades.
+        // Menus, sheets and grouped panes retain the default fully opaque content.
+        .then(if (pressedContentAlpha < 1f) Modifier.graphicsLayer {
+            alpha = glassPressedContentAlpha(pressedContentAlpha, motion.lift.value)
+        } else Modifier)
 }
+
+/** Visual contrast fit to captured iOS 26.5 button glyphs, not an Apple opacity constant. */
+internal fun glassPressedContentAlpha(heldAlpha: Float, lift: Float): Float =
+    (1f + (heldAlpha.coerceIn(0f, 1f) - 1f) * lift.coerceIn(0f, 1f)).coerceIn(0f, 1f)
 
 /** Original backgrounds disappear only when an actual glass host is available. */
 @Composable

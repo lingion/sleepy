@@ -1,24 +1,23 @@
 package com.lingion.sleepy.ui.component.liquidglass
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 
-/** FLClash ElasticPress: independent lift and two-dimensional rubber-band springs. */
-internal class GlassPressMotion {
+/** Fits the iOS 26.5 button presentation trace; rubber-band tracking stays independent. */
+internal class GlassPressMotion(prominent: Boolean = false) {
+    private val rise = SpringDescription.withDampingRatio(
+        mass = 1.0, stiffness = if (prominent) 427.0 else 570.0, ratio = .625,
+    )
+    private val fall = SpringDescription.withDampingRatio(mass = 1.0, stiffness = 289.0, ratio = .565)
     val lift = SpringState(0f)
     val pullX = SpringState(0f)
     val pullY = SpringState(0f)
     private var held = false
-    private var dropping by mutableStateOf(false)
 
-    val isRunning: Boolean get() = dropping || lift.isRunning || pullX.isRunning || pullY.isRunning
+    val isRunning: Boolean get() = lift.isRunning || pullX.isRunning || pullY.isRunning
 
     fun press() {
         held = true
-        dropping = false
-        lift.springTo(1f, FlClashSprings.PressSpring)
+        lift.springTo(1f, rise)
     }
 
     fun drag(delta: Offset, shortestSide: Float) {
@@ -34,30 +33,21 @@ internal class GlassPressMotion {
         held = false
         pullX.springTo(0f, FlClashSprings.PressSpring)
         pullY.springTo(0f, FlClashSprings.PressSpring)
-        dropping = true
-        settle()
-    }
-
-    private fun settle() {
-        // Even a short tap completes the rise before the pane springs down.
-        if (dropping && lift.value >= .975f) {
-            dropping = false
-            lift.springTo(0f, FlClashSprings.PressSpring)
-        }
+        // A clean 67 ms native tap peaks below its held geometry. Retarget now,
+        // retaining velocity, so the rise and fall overlap without a full-rise gate.
+        lift.springTo(0f, fall)
     }
 
     fun tick(dt: Double) {
         lift.tickDelta(dt)
         pullX.tickDelta(dt)
         pullY.tickDelta(dt)
-        settle()
     }
 
     fun finish() {
         lift.jumpTo(if (held) 1f else 0f)
         pullX.jumpTo(if (held) pullX.target else 0f)
         pullY.jumpTo(if (held) pullY.target else 0f)
-        dropping = false
     }
 
     fun reset() {

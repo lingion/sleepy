@@ -67,7 +67,7 @@ fun GlassIconButton(
             CompositionLocalProvider(LocalContentColor provides if (enabled) colors.contentColor else colors.disabledContentColor) {
                 Box(
                     Modifier.size(GlassControlLayout.iconDisc).glassControl(
-                        enabled = enabled, interactionSource = interaction,
+                        enabled = enabled, interactionSource = interaction, pressedContentAlpha = .5f,
                     ),
                     contentAlignment = Alignment.Center,
                 ) { content() }
@@ -99,7 +99,7 @@ fun GlassButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     MaterialButton(
-        onClick, modifier.glassControl(shape, colors.containerColor, enabled), enabled, shape,
+        onClick, modifier.glassControl(shape, colors.containerColor, enabled, pressedContentAlpha = .8f), enabled, shape,
         if (hasGlass()) colors.copy(containerColor = Color.Transparent, disabledContainerColor = Color.Transparent) else colors,
         if (hasGlass()) null else elevation, border, contentPadding, interactionSource, content,
     )
@@ -119,7 +119,7 @@ fun GlassTonalButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     MaterialTonalButton(
-        onClick, modifier.glassControl(shape, colors.containerColor, enabled), enabled, shape,
+        onClick, modifier.glassControl(shape, colors.containerColor, enabled, pressedContentAlpha = .8f), enabled, shape,
         if (hasGlass()) colors.copy(containerColor = Color.Transparent, disabledContainerColor = Color.Transparent) else colors,
         if (hasGlass()) null else elevation, border, contentPadding, interactionSource, content,
     )
@@ -139,7 +139,7 @@ fun GlassTextButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     MaterialTextButton(
-        onClick, modifier.glassControl(shape, enabled = enabled), enabled, shape,
+        onClick, modifier.glassControl(shape, enabled = enabled, pressedContentAlpha = .5f), enabled, shape,
         if (hasGlass()) colors.copy(containerColor = Color.Transparent, disabledContainerColor = Color.Transparent) else colors,
         elevation, border, contentPadding, interactionSource, content,
     )
@@ -159,7 +159,7 @@ fun GlassOutlinedButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     MaterialOutlinedButton(
-        onClick, modifier.glassControl(shape, enabled = enabled), enabled, shape,
+        onClick, modifier.glassControl(shape, enabled = enabled, pressedContentAlpha = .5f), enabled, shape,
         if (hasGlass()) colors.copy(containerColor = Color.Transparent, disabledContainerColor = Color.Transparent) else colors,
         elevation, if (hasGlass()) null else border, contentPadding, interactionSource, content,
     )
