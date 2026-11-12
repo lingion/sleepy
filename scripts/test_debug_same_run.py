@@ -84,7 +84,7 @@ class SameRunTest(unittest.TestCase):
         self.assertIn("pull_request_target:", build)
         self.assertNotIn("  pull_request:", build)
         self.assertIn("needs: [prepare, assemble-debug]", build)
-        self.assertIn("uses: ./.github/workflows/debug-sign.yml", build)
+        self.assertIn("uses: lingion/sleepy/.github/workflows/debug-sign.yml@main", build)
         self.assertIn("workflow_call:", sign)
         self.assertNotIn("workflow_run:", sign)
         self.assertEqual(sign.count("uses: actions/upload-artifact@"), 4)

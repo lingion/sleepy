@@ -181,10 +181,13 @@ jobs:
     needs: [prepare, assemble-debug]
     if: >-
       github.repository == 'lingion/sleepy' &&
-      github.workflow_ref == 'lingion/sleepy/.github/workflows/debug-apk.yml@refs/heads/main'
+      (github.workflow_ref == 'lingion/sleepy/.github/workflows/debug-apk.yml@refs/heads/main' ||
+       (github.event_name == 'workflow_dispatch' &&
+        startsWith(github.workflow_ref, 'lingion/sleepy/.github/workflows/debug-apk.yml@refs/heads/')))
     permissions:
       contents: read
       actions: write
-    uses: ./.github/workflows/debug-sign.yml
+    # Manual branch workflows must call the trusted signer, never their own copy.
+    uses: lingion/sleepy/.github/workflows/debug-sign.yml@main
     secrets:
       DEBUG_KEYSTORE_BASE64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}

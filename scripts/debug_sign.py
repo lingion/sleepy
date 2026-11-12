@@ -83,10 +83,16 @@ def api(path):
 
 def current_build(event, context):
     """仅从可信 runner 事件恢复本次计划；不使用产物内自报的 PR head。"""
+    workflow_prefix = f"{REPOSITORY}/.github/workflows/debug-apk.yml@"
+    manual_branch = (
+        context["event_name"] == "workflow_dispatch"
+        and context["ref"].startswith("refs/heads/")
+        and len(context["ref"]) > len("refs/heads/")
+        and context["workflow_ref"] == workflow_prefix + context["ref"])
     if (context["repository"] != REPOSITORY
-            or context["workflow_ref"] != f"{REPOSITORY}/.github/workflows/debug-apk.yml@refs/heads/main"
+            or (context["workflow_ref"] != workflow_prefix + "refs/heads/main" and not manual_branch)
             or context["event_name"] not in ("pull_request_target", "push", "workflow_dispatch")):
-        raise ValueError("Official signing requires the main workflow context")
+        raise ValueError("Official signing requires main or an official manual branch context")
     run_id, attempt = int(context["run_id"]), int(context["run_attempt"])
     plan = ci.make_plan(event, context)
     # target 事件的 GITHUB_SHA 是基线提交，运行 API 的 head_sha 则是 PR head。
@@ -96,6 +102,10 @@ def current_build(event, context):
             ("id", run_id), ("run_attempt", attempt), ("run_number", int(context["run_number"])),
             ("head_sha", head_sha), ("event", context["event_name"]))):
         raise ValueError("Current run identity differs from the trusted event")
+    if context["event_name"] == "workflow_dispatch" and (
+            context["ref"] != f"refs/heads/{run['head_branch']}"
+            or context["workflow_ref"] != workflow_prefix + context["ref"]):
+        raise ValueError("Manual workflow branch differs from the trusted run")
     run["expected_plan"] = plan
     validate_run(run)
     jobs = json.loads(subprocess.check_output([
