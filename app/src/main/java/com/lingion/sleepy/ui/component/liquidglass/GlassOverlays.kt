@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CornerBasedShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.MenuDefaults
@@ -22,7 +24,6 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -289,20 +290,48 @@ fun GlassModalBottomSheet(
  * at y=1314 it is x=38 (bottom radius ~20pt). Reference:
  * native-static-optics/rest/optics-fine_grid-light-presentations-sheet-rest.png.
  */
-private object NativeGlassSheetShape : Shape {
-    override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
-        val top = 36f * density.density
-        val bottom = 20f * density.density
+private val NativeGlassSheetShape: CornerBasedShape = NativeGlassSheetContour(
+    topStart = CornerSize(36.dp), topEnd = CornerSize(36.dp),
+    bottomEnd = CornerSize(20.dp), bottomStart = CornerSize(20.dp),
+)
+
+/** Publish the same contour's radii to the optical shader's directional rim. */
+private class NativeGlassSheetContour(
+    topStart: CornerSize,
+    topEnd: CornerSize,
+    bottomEnd: CornerSize,
+    bottomStart: CornerSize,
+) : CornerBasedShape(topStart, topEnd, bottomEnd, bottomStart) {
+    override fun createOutline(
+        size: Size,
+        topStart: Float,
+        topEnd: Float,
+        bottomEnd: Float,
+        bottomStart: Float,
+        layoutDirection: LayoutDirection,
+    ): Outline {
+        val leftToRight = layoutDirection == LayoutDirection.Ltr
+        val topLeft = if (leftToRight) topStart else topEnd
+        val topRight = if (leftToRight) topEnd else topStart
+        val bottomRight = if (leftToRight) bottomEnd else bottomStart
+        val bottomLeft = if (leftToRight) bottomStart else bottomEnd
         val path = android.graphics.Path()
         LiquidGlassSuperellipse.buildPath(
             LiquidGlassSuperellipse.Rect2(0f, 0f, size.width, size.height),
             LiquidGlassSuperellipse.Radii(
-                topLeft = LiquidGlassSuperellipse.Size2(top, top),
-                topRight = LiquidGlassSuperellipse.Size2(top, top),
-                bottomRight = LiquidGlassSuperellipse.Size2(bottom, bottom),
-                bottomLeft = LiquidGlassSuperellipse.Size2(bottom, bottom),
+                topLeft = LiquidGlassSuperellipse.Size2(topLeft, topLeft),
+                topRight = LiquidGlassSuperellipse.Size2(topRight, topRight),
+                bottomRight = LiquidGlassSuperellipse.Size2(bottomRight, bottomRight),
+                bottomLeft = LiquidGlassSuperellipse.Size2(bottomLeft, bottomLeft),
             ),
         ).toAndroidPath(path)
         return Outline.Generic(path.asComposePath())
     }
+
+    override fun copy(
+        topStart: CornerSize,
+        topEnd: CornerSize,
+        bottomEnd: CornerSize,
+        bottomStart: CornerSize,
+    ): CornerBasedShape = NativeGlassSheetContour(topStart, topEnd, bottomEnd, bottomStart)
 }

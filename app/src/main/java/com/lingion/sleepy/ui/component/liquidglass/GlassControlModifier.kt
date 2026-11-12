@@ -76,7 +76,7 @@ fun Modifier.glassControl(
         GlassMaterialRole.Regular -> null
         GlassMaterialRole.Menu -> LiquidGlassRim.menu(dark)
         GlassMaterialRole.Alert -> LiquidGlassRim.alert(dark)
-        GlassMaterialRole.Sheet -> LiquidGlassRim.menu(dark)
+        GlassMaterialRole.Sheet -> LiquidGlassRim.sheet()
     }
     val samplingHost = if (isOverlay) LocalGlassOverlaySamplingHost.current ?: host else host
     // A global filter contains only its host's prefix. Reusing it inside a

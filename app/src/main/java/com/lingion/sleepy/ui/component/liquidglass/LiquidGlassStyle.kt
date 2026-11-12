@@ -306,6 +306,10 @@ data class LiquidGlassRim(
     }
 
     companion object {
+        /** A sheet retains its directional optical highlight without a menu's dark hairline. */
+        fun sheet(): LiquidGlassRim =
+            LiquidGlassRim(side = 0.0, corner = 0.0, flat = 0.0, shine = 0.16)
+
         fun alert(dark: Boolean): LiquidGlassRim =
             if (dark) {
                 LiquidGlassRim(side = 0.75, corner = 0.1, flat = 0.03, shine = 0.22)
