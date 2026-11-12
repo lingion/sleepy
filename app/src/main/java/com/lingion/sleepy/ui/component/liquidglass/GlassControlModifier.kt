@@ -34,7 +34,7 @@ import kotlin.math.min
 /** Separate scope for a single optical pane shared by multiple actions. */
 internal val LocalGlassGrouped = androidx.compose.runtime.compositionLocalOf { false }
 
-enum class GlassMaterialRole { Regular, Menu, Alert }
+enum class GlassMaterialRole { Regular, Menu, Alert, Sheet }
 
 /** Popup windows paint locally while sampling the parent window's glass-free scene. */
 internal val LocalGlassOverlay = androidx.compose.runtime.compositionLocalOf { false }
@@ -70,11 +70,13 @@ fun Modifier.glassControl(
             GlassMaterialRole.Regular -> LiquidGlassStyle.regular(colors, dark)
             GlassMaterialRole.Menu -> LiquidGlassStyle.menu(colors, dark)
             GlassMaterialRole.Alert -> LiquidGlassStyle.alert(colors, dark)
+            GlassMaterialRole.Sheet -> LiquidGlassStyle.sheet(dark)
         }
     val rim = when (role) {
         GlassMaterialRole.Regular -> null
         GlassMaterialRole.Menu -> LiquidGlassRim.menu(dark)
         GlassMaterialRole.Alert -> LiquidGlassRim.alert(dark)
+        GlassMaterialRole.Sheet -> LiquidGlassRim.menu(dark)
     }
     val samplingHost = if (isOverlay) LocalGlassOverlaySamplingHost.current ?: host else host
     // A global filter contains only its host's prefix. Reusing it inside a

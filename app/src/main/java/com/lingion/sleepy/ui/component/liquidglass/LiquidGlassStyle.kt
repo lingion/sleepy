@@ -196,6 +196,22 @@ data class LiquidGlassStyle(
         fun alert(colorScheme: ColorScheme, dark: Boolean): LiquidGlassStyle =
             menu(colorScheme, dark).copy(blur = 16.0)
 
+        /**
+         * Separate from context menus: measured iOS 26.5 system sheets have a
+         * neutral backing and retain far less background light in dark mode.
+         * These are empirical shader coefficients, not native material values.
+         */
+        fun sheet(dark: Boolean): LiquidGlassStyle =
+            if (dark) LiquidGlassStyle(
+                tint = Color(0xFF313131).copy(alpha = .59f),
+                contrast = -.09, blur = 12.0, brightness = .315,
+                saturation = 2.50, rim = 0.0,
+            ) else LiquidGlassStyle(
+                tint = Color(0xFFF2F2F2).copy(alpha = .70f),
+                contrast = .05, blur = 12.0, brightness = .88,
+                saturation = 1.90, rim = 0.0,
+            )
+
         fun tinted(colorScheme: ColorScheme, color: Color, dark: Boolean): LiquidGlassStyle =
             LiquidGlassStyle(
                 tint = color.copy(alpha = 0.82f),

@@ -3,6 +3,7 @@ package com.lingion.sleepy.ui.component.liquidglass
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BottomSheetDefaults
@@ -14,11 +15,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
@@ -224,7 +230,8 @@ fun GlassModalBottomSheet(
     modifier: Modifier = Modifier,
     sheetState: SheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden),
     sheetMaxWidth: Dp = BottomSheetDefaults.SheetMaxWidth,
-    shape: Shape = BottomSheetDefaults.ExpandedShape,
+    // Null selects the appearance's default; even an explicit Material default is respected.
+    shape: Shape? = null,
     containerColor: Color = BottomSheetDefaults.ContainerColor,
     contentColor: Color = androidx.compose.material3.contentColorFor(containerColor),
     tonalElevation: Dp = 0.dp,
@@ -241,7 +248,8 @@ fun GlassModalBottomSheet(
     )
     val parentScene = LocalGlassPopupScene.current ?: LocalGlassHost.current
     val popupScene = rememberGlassHostState()
-    val materialScope = rememberGlassMaterialScope(shape, parentScene?.overlayBackdrop)
+    val carrierShape = shape ?: if (glass) NativeGlassSheetShape else BottomSheetDefaults.ExpandedShape
+    val materialScope = rememberGlassMaterialScope(carrierShape, parentScene?.overlayBackdrop)
     CompositionLocalProvider(
         LocalGlassOverlay provides glass,
         LocalGlassOverlaySamplingHost provides parentScene,
@@ -249,10 +257,13 @@ fun GlassModalBottomSheet(
         LocalGlassMaterialBackdrop provides null,
     ) {
         val opticalModifier = modifier
+            // Keep the gap outside the optical carrier and Material's Surface, so the
+            // exported backing, foreground clip and touch bounds all share the inset.
+            .then(if (glass) Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp) else Modifier)
             .offset { IntOffset(0, sheetState.requireOffset().roundToInt()) }
             .recordGlassPopupScene(popupScene)
             .trackGlassMaterial(materialScope)
-            .glassControl(shape = shape, enabled = false, registerPane = false, role = GlassMaterialRole.Menu,
+            .glassControl(shape = carrierShape, enabled = false, registerPane = false, role = GlassMaterialRole.Sheet,
                 exportedBackdrop = materialScope?.exported)
             .offset { IntOffset(0, -sheetState.requireOffset().roundToInt()) }
         GlassMaterialContent(materialScope) {
@@ -262,12 +273,36 @@ fun GlassModalBottomSheet(
                 // 移至 sheet 的实际位置，再抵消内部位移，避免半高 sheet 被原点处的 clip 裁掉。
                 // 两次 offset 不改变测量尺寸，Material 仍拥有高度、手柄、拖动与输入法 insets。
                 modifier = opticalModifier,
-                sheetState = sheetState, sheetMaxWidth = sheetMaxWidth, shape = shape,
+                sheetState = sheetState, sheetMaxWidth = sheetMaxWidth, shape = carrierShape,
                 containerColor = if (glass) Color.Transparent else containerColor,
                 contentColor = contentColor, tonalElevation = if (glass) 0.dp else tonalElevation,
                 scrimColor = effectiveScrimColor, dragHandle = dragHandle, contentWindowInsets = contentWindowInsets,
                 properties = properties, content = content,
             )
         }
+    }
+}
+
+/**
+ * Contour fit, not an Apple API constant: the 750 x 1334 native sheet reference has
+ * bounds x=16..734, y=635.4..1318. At y=656 its left edge is x=37 (top radius ~36pt);
+ * at y=1314 it is x=38 (bottom radius ~20pt). Reference:
+ * native-static-optics/rest/optics-fine_grid-light-presentations-sheet-rest.png.
+ */
+private object NativeGlassSheetShape : Shape {
+    override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
+        val top = 36f * density.density
+        val bottom = 20f * density.density
+        val path = android.graphics.Path()
+        LiquidGlassSuperellipse.buildPath(
+            LiquidGlassSuperellipse.Rect2(0f, 0f, size.width, size.height),
+            LiquidGlassSuperellipse.Radii(
+                topLeft = LiquidGlassSuperellipse.Size2(top, top),
+                topRight = LiquidGlassSuperellipse.Size2(top, top),
+                bottomRight = LiquidGlassSuperellipse.Size2(bottom, bottom),
+                bottomLeft = LiquidGlassSuperellipse.Size2(bottom, bottom),
+            ),
+        ).toAndroidPath(path)
+        return Outline.Generic(path.asComposePath())
     }
 }
