@@ -98,17 +98,28 @@ class LiquidGlassPhysicsTest {
     fun dockLayoutDistributionMatchesFlClash() {
         // 4 tabs on mobile (360dp span)
         val layout = FlClashDockPhysics.dockLayout(360f, 4)
-        // (360 - 8) / 4 = 88 >= 84 -> pitch = 88, lens = 88 + 8 = 96, inset = 4
+        // (360 - 8) / 4 = 88 -> lens = 88 + 8 = 96, inset = 4
         assertEquals(88f, layout.pitch, 1e-4f)
         assertEquals(96f, layout.lens, 1e-4f)
         assertEquals(4f, layout.inset, 1e-4f)
 
         // Constrained span (240dp for 4 tabs)
         val constrained = FlClashDockPhysics.dockLayout(240f, 4)
-        // (240 - 8) / 4 = 58 < 84 -> lens = 84, closed = (240 - 84)/3 = 52, inset = (84-52)/2 = 16
-        assertEquals(52f, constrained.pitch, 1e-4f)
-        assertEquals(84f, constrained.lens, 1e-4f)
-        assertEquals(16f, constrained.inset, 1e-4f)
+        // The native lens keeps its width while the seats overlap.
+        assertEquals(146f / 3f, constrained.pitch, 1e-4f)
+        assertEquals(94f, constrained.lens, 1e-4f)
+        assertEquals((94f - 146f / 3f) / 2f, constrained.inset, 1e-4f)
+    }
+
+    @Test
+    fun dockMatchesNativeThreeAndFourDestinationFittingGeometry() {
+        // Actual UIKit presentation bounds on iOS 26.5, in a 351pt outer bar.
+        val three = FlClashDockPhysics.dockLayout(274f - 8f, 3)
+        assertEquals(86f, three.pitch, 1e-4f)
+        assertEquals(94f, three.lens, 1e-4f)
+        val four = FlClashDockPhysics.dockLayout(309f - 8f, 4)
+        assertEquals(69f, four.pitch, 1e-4f)
+        assertEquals(94f, four.lens, 1e-4f)
     }
 
     @Test

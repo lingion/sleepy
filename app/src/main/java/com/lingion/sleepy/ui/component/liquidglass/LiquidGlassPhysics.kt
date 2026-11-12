@@ -377,7 +377,8 @@ object FlClashDockPhysics {
     const val SHADOW_ROOM = 8f
     const val HIT_SLOP = 8f
     const val MAX_ITEM_EXTENT = 86f
-    const val MIN_LENS_WIDTH = 84f
+    // iOS 26.5 natural fitting layout keeps a 94pt lens as destinations overlap.
+    const val MIN_LENS_WIDTH = 94f
     const val FULL_WIDTH_COUNT = 5
     const val ICON_SIZE = 28f
     const val LABEL_GAP = 2f
