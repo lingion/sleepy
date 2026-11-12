@@ -3,6 +3,7 @@ package com.lingion.sleepy.ui.component.liquidglass
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.inspector.WindowInspector
+import android.os.SystemClock
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,11 +27,14 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.ui.theme.LocalUiStyle
@@ -50,7 +54,20 @@ import org.robolectric.annotation.GraphicsMode
 class GlassLanguageMenuTest {
     @get:Rule val compose = createComposeRule()
 
-    private val languages = listOf("zh-CN" to "简体中文", "en" to "English", "ja" to "日本語")
+    private val languages = listOf(
+        "zh-CN" to "简体中文",
+        "zh-TW" to "繁體中文",
+        "en" to "English",
+        "ja" to "日本語",
+        "es" to "Español",
+    )
+
+    private fun assertLanguageOptionsDisplayed() {
+        languages.forEach { (code, _) ->
+            val option = compose.onNodeWithTag("general_language#$code").assertIsDisplayed()
+            if (code == "en") option.assertIsSelected() else option.assertIsNotSelected()
+        }
+    }
 
     private fun popupView() = WindowInspector.getGlobalWindowViews()
         .first { it.javaClass.simpleName == "PopupLayout" }
@@ -69,18 +86,20 @@ class GlassLanguageMenuTest {
     }
 
     private fun showMenu(
-        style: UiStyle = UiStyle.Classic,
+        style: UiStyle = UiStyle.LiquidGlass,
         direction: LayoutDirection = LayoutDirection.Ltr,
         options: List<Pair<String, String>> = languages,
+        alignment: Alignment = Alignment.BottomCenter,
         onSelect: (String) -> Unit = {},
+        onDismissed: (String?) -> Unit = {},
     ) {
         compose.setContent {
             MaterialTheme {
                 CompositionLocalProvider(LocalUiStyle provides style, LocalLayoutDirection provides direction) {
                     GlassHost {
-                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+                        Box(Modifier.fillMaxSize(), contentAlignment = alignment) {
                             Column(Modifier.fillMaxWidth().padding(24.dp)) {
-                                GlassLanguageMenu("Language", "en", options, onSelect)
+                                GlassLanguageMenu("Language", "en", options, onSelect, onDismissed = onDismissed)
                                 Text("Following setting", Modifier.testTag("following_setting"))
                             }
                         }
@@ -93,8 +112,10 @@ class GlassLanguageMenuTest {
     @Test fun narrowLargeFontKeepsLanguageTitleWhole() {
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalDensity provides Density(1f, 1.5f)) {
-                    Box(Modifier.width(248.dp)) { GlassLanguageMenu("语言 / Language", "zh-CN", languages, {}) }
+                CompositionLocalProvider(LocalDensity provides Density(1f, 1.5f), LocalUiStyle provides UiStyle.LiquidGlass) {
+                    GlassHost {
+                        Box(Modifier.width(248.dp)) { GlassLanguageMenu("语言 / Language", "zh-CN", languages, {}) }
+                    }
                 }
             }
         }
@@ -110,20 +131,50 @@ class GlassLanguageMenuTest {
     @Test fun wholeRowOpensAnIndependentMenuWithCurrentSelection() {
         showMenu(style = UiStyle.LiquidGlass)
         val before = compose.onNodeWithTag("following_setting").fetchSemanticsNode().boundsInWindow
-        compose.onNodeWithTag("general_language#en").assertDoesNotExist()
+        languages.forEach { (code, _) -> compose.onNodeWithTag("general_language#$code").assertDoesNotExist() }
         compose.onNodeWithTag("general_language_card").performClick()
-        compose.onNodeWithTag("general_language#en").assertIsDisplayed().assertIsSelected()
+        assertLanguageOptionsDisplayed()
         assertEquals(before, compose.onNodeWithTag("following_setting").fetchSemanticsNode().boundsInWindow)
     }
 
-    @Test fun selectionWaitsForExitAndRejectsRepeatedActions() {
+    @Test fun materialDesignLanguageCardExpandsInlineAndCollapsesWithoutPopup() {
+        showMenu(style = UiStyle.Classic, alignment = Alignment.TopCenter)
+        val before = compose.onNodeWithTag("following_setting").fetchSemanticsNode().boundsInWindow
+        compose.runOnIdle {
+            assertTrue(WindowInspector.getGlobalWindowViews().none { it.javaClass.simpleName == "PopupLayout" })
+        }
+        languages.forEach { (code, _) -> compose.onNodeWithTag("general_language#$code").assertDoesNotExist() }
+        compose.onNodeWithTag("general_language_card").performClick()
+        assertLanguageOptionsDisplayed()
+        val expanded = compose.onNodeWithTag("following_setting").fetchSemanticsNode().boundsInWindow
+        assertTrue("inline language options push the following setting down", expanded.top > before.top)
+        compose.runOnIdle {
+            assertTrue("Material Design language settings never create a popup window",
+                WindowInspector.getGlobalWindowViews().none { it.javaClass.simpleName == "PopupLayout" })
+        }
+        compose.onNodeWithTag("general_language_card").performClick()
+        languages.forEach { (code, _) -> compose.onNodeWithTag("general_language#$code").assertDoesNotExist() }
+        assertEquals(before, compose.onNodeWithTag("following_setting").fetchSemanticsNode().boundsInWindow)
+        compose.runOnIdle {
+            assertTrue(WindowInspector.getGlobalWindowViews().none { it.javaClass.simpleName == "PopupLayout" })
+        }
+    }
+
+    @Test fun selectionCommitsImmediatelyAndDismissalWaitsForExit() {
         val selected = mutableListOf<String>()
+        val dismissed = mutableListOf<String?>()
         showMenu(onSelect = {
             assertTrue(
-                "popup window must be removed before saving or recreating",
-                WindowInspector.getGlobalWindowViews().none { view -> view.javaClass.simpleName == "PopupLayout" },
+                "selection is accepted synchronously while the menu is present",
+                WindowInspector.getGlobalWindowViews().any { view -> view.javaClass.simpleName == "PopupLayout" },
             )
             selected += it
+        }, onDismissed = {
+            assertTrue(
+                "dismissal callback follows popup window removal",
+                WindowInspector.getGlobalWindowViews().none { view -> view.javaClass.simpleName == "PopupLayout" },
+            )
+            dismissed += it
         })
         compose.onNodeWithTag("general_language_card").performClick()
         // 先让打开的重组/动画完成，再冻结退出动画；否则 Popup 还未加入语义树。
@@ -135,56 +186,97 @@ class GlassLanguageMenuTest {
         compose.runOnIdle {
             staleClick()
             staleClick()
-            assertTrue("must not save or recreate during exit", selected.isEmpty())
+            assertEquals("accepted selection is synchronous and emitted once", listOf("ja"), selected)
+            assertTrue("dismissal must wait for exit", dismissed.isEmpty())
         }
         compose.mainClock.advanceTimeByFrame()
         compose.onNodeWithTag("general_language#en").assertIsNotEnabled()
         compose.mainClock.advanceTimeBy(100)
-        compose.runOnIdle { assertTrue("must not commit halfway through exit", selected.isEmpty()) }
+        compose.runOnIdle {
+            assertEquals(listOf("ja"), selected)
+            assertTrue("must not dismiss halfway through exit", dismissed.isEmpty())
+        }
         compose.onNodeWithTag("general_language#en").assertExists()
         compose.mainClock.advanceTimeBy(1_000)
         compose.mainClock.autoAdvance = true
         compose.onNodeWithTag("general_language#en").assertDoesNotExist()
-        compose.runOnIdle { assertEquals(listOf("ja"), selected) }
+        compose.runOnIdle {
+            assertEquals(listOf("ja"), selected)
+            assertEquals(listOf("ja"), dismissed)
+        }
         compose.onNodeWithTag("general_language_card").performClick()
         compose.onNodeWithTag("general_language#en").assertIsDisplayed()
     }
 
     @Test fun outsideTouchDismissesWithoutSelecting() {
         val selected = mutableListOf<String>()
-        showMenu(onSelect = { selected += it })
+        val dismissed = mutableListOf<String?>()
+        showMenu(onSelect = { selected += it }, onDismissed = { dismissed += it })
         compose.onNodeWithTag("general_language_card").performClick()
+        assertLanguageOptionsDisplayed()
+        val menu = compose.onNodeWithTag("general_language_menu").fetchSemanticsNode().boundsInWindow
         compose.runOnIdle {
             val popup = popupView()
-            val event = MotionEvent.obtain(0, 0, MotionEvent.ACTION_OUTSIDE, -1f, -1f, 0)
-            try { popup.dispatchTouchEvent(event) } finally { event.recycle() }
+            val popupLocation = IntArray(2)
+            popup.getLocationInWindow(popupLocation)
+            val point = listOf(
+                Offset(8f, popup.height / 2f), Offset(popup.width - 8f, popup.height / 2f),
+                Offset(popup.width / 2f, 8f), Offset(popup.width / 2f, popup.height - 8f),
+            ).first { !menu.contains(it + Offset(popupLocation[0].toFloat(), popupLocation[1].toFloat())) }
+            val downTime = SystemClock.uptimeMillis()
+            listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP).forEachIndexed { index, action ->
+                val event = MotionEvent.obtain(downTime, downTime + index * 16L, action, point.x, point.y, 0)
+                try { popup.dispatchTouchEvent(event) } finally { event.recycle() }
+            }
         }
-        compose.onNodeWithTag("general_language#en").assertDoesNotExist()
-        compose.runOnIdle { assertTrue(selected.isEmpty()) }
+        languages.forEach { (code, _) -> compose.onNodeWithTag("general_language#$code").assertDoesNotExist() }
+        compose.runOnIdle {
+            assertTrue(selected.isEmpty())
+            assertEquals(listOf<String?>(null), dismissed)
+        }
+    }
+
+    @Test fun actionOutsideStillDismissesWithoutSelecting() {
+        val selected = mutableListOf<String>()
+        val dismissed = mutableListOf<String?>()
+        showMenu(onSelect = { selected += it }, onDismissed = { dismissed += it })
+        compose.onNodeWithTag("general_language_card").performClick()
+        assertLanguageOptionsDisplayed()
+        compose.runOnIdle {
+            val event = MotionEvent.obtain(0, 0, MotionEvent.ACTION_OUTSIDE, -1f, -1f, 0)
+            try { popupView().dispatchTouchEvent(event) } finally { event.recycle() }
+        }
+        compose.onNodeWithTag("general_language_menu").assertDoesNotExist()
+        compose.runOnIdle {
+            assertTrue(selected.isEmpty())
+            assertEquals(listOf<String?>(null), dismissed)
+        }
     }
 
     @Test fun backDismissesWithoutSelecting() {
         val selected = mutableListOf<String>()
         showMenu(onSelect = { selected += it })
         compose.onNodeWithTag("general_language_card").performClick()
+        assertLanguageOptionsDisplayed()
         compose.runOnIdle {
             val popup = popupView()
             popup.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK))
             popup.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK))
         }
-        compose.onNodeWithTag("general_language#en").assertDoesNotExist()
+        languages.forEach { (code, _) -> compose.onNodeWithTag("general_language#$code").assertDoesNotExist() }
         compose.runOnIdle { assertTrue(selected.isEmpty()) }
     }
 
-    @Test fun ltrMenuAlignsWithTrailingValueAndStaysAboveBottomEdge() {
+    @Test fun menuCentersOnWholeCardAndClampsAboveBottomEdge() {
         showMenu()
+        val anchor = compose.onNodeWithTag("general_language_card").fetchSemanticsNode().boundsInWindow
         compose.onNodeWithTag("general_language_card").performClick()
-        val anchor = compose.onNodeWithTag("general_language_value", useUnmergedTree = true)
-            .fetchSemanticsNode().boundsInWindow
         val menu = menuScreenBounds()
-        assertEquals(anchor.right, menu.right, 1f)
+        assertEquals(anchor.center.x, menu.center.x, 1f)
+        assertEquals(250f, menu.width, 1f)
         assertTrue(menu.top >= 16f)
-        assertTrue(menu.bottom <= 640f - 16f)
+        assertEquals(640f - 16f, menu.bottom, 1f)
+        assertTrue("the menu moves above a bottom anchor to remain on screen", menu.top < anchor.top)
     }
 
     @Test
@@ -194,17 +286,89 @@ class GlassLanguageMenuTest {
         showMenu(direction = LayoutDirection.Rtl, options = options)
         compose.onNodeWithTag("general_language_card").performClick()
         val menu = menuScreenBounds()
+        assertEquals(240f - 32f, menu.width, 1f)
         assertTrue(menu.left >= 16f && menu.right <= 240f - 16f)
         assertTrue(menu.top >= 16f && menu.bottom <= 320f - 16f)
         compose.onNodeWithTag("general_language#extra-20").performScrollTo().assertIsDisplayed()
     }
 
-    @Test fun rtlMenuAlignsItsLeftEdgeWithTheTrailingValue() {
-        showMenu(direction = LayoutDirection.Rtl)
-        compose.onNodeWithTag("general_language_card").performClick()
-        val anchor = compose.onNodeWithTag("general_language_value", useUnmergedTree = true)
-            .fetchSemanticsNode().boundsInWindow
+    @Test
+    @Config(sdk = [35], qualifiers = "w240dp-h320dp-mdpi")
+    fun heldSlidePastVisibleViewportCannotCommitAClippedRow() {
+        val selected = mutableListOf<String>()
+        val dismissed = mutableListOf<String?>()
+        val options = languages + (1..20).map { "extra-$it" to "Language $it" }
+        showMenu(options = options, alignment = Alignment.TopCenter,
+            onSelect = { selected += it }, onDismissed = { dismissed += it })
+        val anchor = compose.onNodeWithTag("general_language_card")
+        val anchorOrigin = anchor.fetchSemanticsNode().boundsInWindow.topLeft
+        anchor.performTouchInput { down(center) }
+        compose.mainClock.advanceTimeBy(400)
+        compose.waitForIdle()
+        compose.onNodeWithTag("general_language_menu").assertIsDisplayed()
         val menu = menuScreenBounds()
-        assertEquals(anchor.left, menu.left, 1f)
+        val clippedRow = unclippedPopupScreenBounds("general_language#extra-2")
+        val outside = Offset(clippedRow.center.x, menu.bottom + 4f)
+        assertTrue("the regression input is within a row's unclipped layout", clippedRow.contains(outside))
+        assertTrue("the same point is beyond the actual visible viewport", !menu.contains(outside))
+        assertTrue("the pointer remains on screen rather than relying on window cancellation", outside.y < 320f)
+        val visible = unclippedPopupScreenBounds("general_language#en").center
+        anchor.performTouchInput {
+            moveTo(visible - anchorOrigin, 16)
+            moveTo(outside - anchorOrigin, 16)
+            up()
+        }
+        compose.onNodeWithTag("general_language_menu").assertDoesNotExist()
+        compose.runOnIdle {
+            assertTrue("a clipped row is never committed by the original held stream", selected.isEmpty())
+            assertEquals("leaving the visible menu cancels the provisional selection", listOf<String?>(null), dismissed)
+        }
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w240dp-h320dp-mdpi")
+    fun heldSlideStillCommitsAVisibleRowOnceInTheClippedMenu() {
+        val selected = mutableListOf<String>()
+        val dismissed = mutableListOf<String?>()
+        val options = languages + (1..20).map { "extra-$it" to "Language $it" }
+        showMenu(options = options, alignment = Alignment.TopCenter,
+            onSelect = { selected += it }, onDismissed = { dismissed += it })
+        val anchor = compose.onNodeWithTag("general_language_card")
+        val anchorOrigin = anchor.fetchSemanticsNode().boundsInWindow.topLeft
+        anchor.performTouchInput { down(center) }
+        compose.mainClock.advanceTimeBy(400)
+        compose.waitForIdle()
+        val visible = unclippedPopupScreenBounds("general_language#ja").center
+        assertTrue(menuScreenBounds().contains(visible))
+        anchor.performTouchInput { moveTo(visible - anchorOrigin, 16); up() }
+        compose.onNodeWithTag("general_language_menu").assertDoesNotExist()
+        compose.runOnIdle {
+            assertEquals(listOf("ja"), selected)
+            assertEquals(listOf("ja"), dismissed)
+        }
+    }
+
+    private fun unclippedPopupScreenBounds(tag: String): Rect {
+        val bounds = compose.onNodeWithTag(tag).getUnclippedBoundsInRoot()
+        val pixelBounds = with(compose.density) {
+            Rect(bounds.left.toPx(), bounds.top.toPx(), bounds.right.toPx(), bounds.bottom.toPx())
+        }
+        var screenOrigin = Offset.Zero
+        compose.runOnIdle {
+            val origin = IntArray(2)
+            popupView().getLocationOnScreen(origin)
+            screenOrigin = Offset(origin[0].toFloat(), origin[1].toFloat())
+        }
+        return pixelBounds.translate(screenOrigin)
+    }
+
+    @Test fun rtlMenuUsesWholeCardCenterAndTopWhenSpacePermits() {
+        showMenu(direction = LayoutDirection.Rtl, alignment = Alignment.TopCenter)
+        val anchor = compose.onNodeWithTag("general_language_card").fetchSemanticsNode().boundsInWindow
+        compose.onNodeWithTag("general_language_card").performClick()
+        val menu = menuScreenBounds()
+        assertEquals(anchor.center.x, menu.center.x, 1f)
+        assertEquals(anchor.top, menu.top, 1f)
+        assertEquals(250f, menu.width, 1f)
     }
 }
