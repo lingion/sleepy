@@ -30,7 +30,6 @@ import androidx.compose.material3.Text
 import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import com.lingion.sleepy.ui.component.liquidglass.GlassSlider
-import com.lingion.sleepy.ui.component.liquidglass.liquidGlassControlsEnabled
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,8 +52,6 @@ import com.lingion.sleepy.ui.component.PeriodHeaderCellContent
 import com.lingion.sleepy.ui.component.SettingsFlatCard
 import com.lingion.sleepy.ui.component.SettingToggleRow
 import com.lingion.sleepy.ui.component.SettingsLayout
-import com.lingion.sleepy.ui.component.SingleSliderGhostMark
-import com.lingion.sleepy.ui.component.singleSliderGhostVisible
 import com.lingion.sleepy.ui.component.TimeSlot
 import com.lingion.sleepy.ui.component.legacyTimeWidthDp
 import com.lingion.sleepy.ui.component.threeLineWidthDp
@@ -143,27 +140,14 @@ fun PeriodHeaderSettingsScreen(onBack: () -> Unit) {
                         )
                         // 幽灵接线 (spec §3.1 单头变体): 拖离进页基线 → 基线刻度出现细条,
                         // 纯装饰零手势零语义, testTag 仅供管线定位; 落库节奏一克不动。
-                        Box {
-                            if (liquidGlassControlsEnabled()) GlassSlider(
-                                value = hangingUnits,
-                                onValueChange = { hangingUnits = (it * 10f).roundToInt() / 10f },
-                                onValueChangeFinished = { AppPrefs.setPeriodHeaderHanging(context, hangingUnits) },
-                                valueRange = -1f..1f, steps = 19,
-                                initialValue = hangingBaseline, ghostEpsilon = .05f,
-                                ghostTag = "header-hanging-ghost",
-                            ) else GlassSlider(
-                                value = hangingUnits, steps = 19, valueRange = -1f..1f,
-                                onValueChange = { hangingUnits = (it * 10f).roundToInt() / 10f },
-                                onValueChangeFinished = { AppPrefs.setPeriodHeaderHanging(context, hangingUnits) },
-                            )
-                            if (!liquidGlassControlsEnabled() && singleSliderGhostVisible(hangingUnits, hangingBaseline, 0.05f)) {
-                                SingleSliderGhostMark(
-                                    baselineFrac = (hangingBaseline - (-1f)) / 2f,
-                                    modifier = Modifier.testTag("header-hanging-ghost"),
-                                    steps = 19,
-                                )
-                            }
-                        }
+                        GlassSlider(
+                            value = hangingUnits,
+                            onValueChange = { hangingUnits = (it * 10f).roundToInt() / 10f },
+                            onValueChangeFinished = { AppPrefs.setPeriodHeaderHanging(context, hangingUnits) },
+                            valueRange = -1f..1f, steps = 19,
+                            initialValue = hangingBaseline, ghostEpsilon = .05f,
+                            ghostTag = "header-hanging-ghost",
+                        )
                     }
                 }
             }

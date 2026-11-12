@@ -74,9 +74,13 @@ class GlassSliderInteractionTest {
         show()
         val thumb = compose.onNodeWithTag("glass-slider-end")
         val rest = thumb.getUnclippedBoundsInRoot()
+        assertEquals(32f, (rest.right - rest.left).value, 1f)
+        assertEquals(32f, (rest.bottom - rest.top).value, 1f)
         thumb.performTouchInput { down(center) }
         compose.waitForIdle()
         val held = thumb.getUnclippedBoundsInRoot()
+        assertEquals(49.6f, (held.right - held.left).value, 1f)
+        assertEquals(49.6f, (held.bottom - held.top).value, 1f)
         assertTrue(held.right - held.left > rest.right - rest.left && held.bottom - held.top > rest.bottom - rest.top)
         assertEquals((rest.left.value + rest.right.value) / 2, (held.left.value + held.right.value) / 2, 1f)
         thumb.performTouchInput { up() }
@@ -87,7 +91,8 @@ class GlassSliderInteractionTest {
 
     @Test fun tapSnapsAndCommitsOnceAndCreatesGhost() {
         show()
-        compose.onNodeWithTag("slider").performTouchInput { click(Offset(width * .8f, centerY)) }
+        val halfThumb = compose.onNodeWithTag("glass-slider-end").fetchSemanticsNode().boundsInRoot.width / 2f
+        compose.onNodeWithTag("slider").performTouchInput { click(Offset(halfThumb + (width - halfThumb * 2) * .8f, centerY)) }
         compose.runOnIdle { assertEquals(.8f, value.floatValue, .001f); assertEquals(1, commits) }
         compose.onNodeWithTag("ghost").assertExists()
     }
@@ -112,7 +117,8 @@ class GlassSliderInteractionTest {
 
     @Test fun rtlTapUsesLogicalValueDirection() {
         show(rtl = true)
-        compose.onNodeWithTag("slider").performTouchInput { click(Offset(width * .2f, centerY)) }
+        val halfThumb = compose.onNodeWithTag("glass-slider-end").fetchSemanticsNode().boundsInRoot.width / 2f
+        compose.onNodeWithTag("slider").performTouchInput { click(Offset(halfThumb + (width - halfThumb * 2) * .2f, centerY)) }
         compose.runOnIdle { assertEquals(.8f, value.floatValue, .001f) }
     }
 
@@ -131,6 +137,37 @@ class GlassSliderInteractionTest {
         compose.runOnIdle { assertEquals(7f, range.value.start); assertEquals(7f, range.value.endInclusive) }
         compose.onNodeWithTag("glass-slider-end").performSemanticsAction(SemanticsActions.SetProgress) { it(1f) }
         compose.runOnIdle { assertEquals(7f, range.value.start); assertEquals(7f, range.value.endInclusive) }
+    }
+
+    @Test fun rangeAccessibilityUsesFullDomainStopSpacingAndRejectsUnchangedProgress() {
+        val range = mutableStateOf(2f..7f)
+        var updates = 0
+        compose.setContent {
+            MaterialTheme {
+                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                    GlassHost {
+                        GlassRangeSlider(range.value, { range.value = it; updates++ },
+                            Modifier.width(280.dp), 1f..20f, 18)
+                    }
+                }
+            }
+        }
+        val startThumb = compose.onNodeWithTag("glass-slider-start")
+        val startInfo = startThumb.fetchSemanticsNode().config[SemanticsProperties.ProgressBarRangeInfo]
+        assertEquals(ProgressBarRangeInfo(2f, 1f..7f, 5), startInfo)
+        val startStep = (startInfo.range.endInclusive - startInfo.range.start) / (startInfo.steps + 1)
+        startThumb.performSemanticsAction(SemanticsActions.SetProgress) { assertTrue(it(startInfo.current + startStep)) }
+        compose.runOnIdle { assertEquals(3f, range.value.start, 0f); assertEquals(1, updates) }
+
+        val endThumb = compose.onNodeWithTag("glass-slider-end")
+        val endInfo = endThumb.fetchSemanticsNode().config[SemanticsProperties.ProgressBarRangeInfo]
+        assertEquals(ProgressBarRangeInfo(7f, 3f..20f, 16), endInfo)
+        val endStep = (endInfo.range.endInclusive - endInfo.range.start) / (endInfo.steps + 1)
+        endThumb.performSemanticsAction(SemanticsActions.SetProgress) { assertTrue(it(endInfo.current - endStep)) }
+        compose.runOnIdle { assertEquals(6f, range.value.endInclusive, 0f); assertEquals(2, updates) }
+        endThumb.performSemanticsAction(SemanticsActions.SetProgress) { assertFalse(it(6f)) }
+        startThumb.performSemanticsAction(SemanticsActions.SetProgress) { assertFalse(it(3.1f)) }
+        compose.runOnIdle { assertEquals(2, updates) }
     }
 
     @Test fun hueTapCommitsTheValueDeliveredBeforeRecomposition() {

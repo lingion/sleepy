@@ -30,7 +30,7 @@ import org.robolectric.annotation.GraphicsMode
  * 域 0.7..1.3, Robolectric 全新 SharedPreferences 默认 1.0):
  *
  * 1. 进页基线=现值 → 初始无 testTag("display-slider-ghost");
- * 2. 拖离 → 细条出现且拖动真的改值 (幽灵层零手势回归: Canvas 不拦触摸);
+ * 2. 拖离 → 圆形幽灵出现且拖动真的改值 (幽灵层零手势回归: Canvas 不拦触摸);
  * 3. 松手后 AppPrefs 已落新值, 幽灵必须仍在 — 基线锚进页时刻、不追 setter
  *    (Review Focus 5 专断言, 防实现把基线误接最近一次落库);
  * 4. 拖回基线刻度 (落点在 snap 半档窗 [1.0,1.05) 内) → 幽灵消失;
@@ -38,13 +38,9 @@ import org.robolectric.annotation.GraphicsMode
  *    子树模拟离页/进页) → 基线重算=现值 → 幽灵消失
  *    — "直到退出这个页面才消失"的管线闭环。
  *
- * 手势法 (探针实测 TempSliderDragProbeTest, 已删): Robolectric 下 performTouchInput
- * 的 moveBy 相对量落在 material3 档位截断窗边缘时不可靠 (raw 1.0~1.05 全 snap 回
- * 1.0, 位移不足即"拖动没生效"假象); 故一律 down 后分步 moveTo 到**绝对像素目标**,
- * 目标坐标按实测轨道系数标定 — 拖离 = 基线位 +120px (raw≥1.05, 必跨一档),
- * 拖回 = 基线位 +15px (窗内中部, 对轨道系数 ±60% 漂移都落在 snap 窗)。
- * 存在性只用 testTag (locale 文案不可靠, 先例 TimeSlotEditorMotionPipelineTest);
- * 轨道几何复刻先例 IntRangeSliderGhostPipelineTest。
+ * 手势抓取真实圆形滑片, 位移按实际 rail 的宽度及当前值换算, 不使用扩大的
+ * Material 无障碍语义边界作为轨道宽度。目标取截断窗中部, 避免浮点数落在边界。
+ * 幽灵是 progressSemantics 合并的装饰子节点, 存在性查询使用 unmerged tree。
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -60,22 +56,6 @@ class DisplaySliderGhostPipelineTest {
             }
         }
         compose.waitForIdle()
-    }
-
-    /** gridScale 值域 → 轨道 frac。 */
-    private fun frac(v: Float) = (v - 0.7f) / 0.6f
-
-    /** 拇指中心 x (节点局部 px): 复刻 material3 摆放公式 (同双头管线先例)。
-     *  只用于取"基线刻度位置"与抓握起点的近似 — 判据不依赖公式精度,
-     *  落点一律走绝对 moveTo 标定 (见类 KDoc 手势法)。 */
-    private fun thumbX(nodeWidthPx: Float, v: Float): Float {
-        val density = 2f // xhdpi (qualifiers)
-        val thumbW = 4f * density          // SliderTokens.HandleWidth = 4dp
-        val trackH = 16f * density         // SliderTokens.InactiveTrackHeight = 16dp
-        val trackW = nodeWidthPx - thumbW
-        val corner = trackH / 2f
-        val xInTrack = corner + (trackW - 2f * corner) * frac(v)
-        return thumbW / 2f + xInTrack
     }
 
     /** 文档序第 0 条滑杆 = gridScale。默认 conflictStyle="rail" → 页面恰有四条
@@ -95,31 +75,26 @@ class DisplaySliderGhostPipelineTest {
         gridScaleSlider().fetchSemanticsNode().config[SemanticsProperties.ProgressBarRangeInfo].current
 
     private fun ghostExists(): Boolean =
-        compose.onAllNodesWithTag("display-slider-ghost").fetchSemanticsNodes().isNotEmpty()
+        compose.onAllNodesWithTag("display-slider-ghost", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
 
-    /** 基线 1.0 刻度的近似 x (页面布局固定, 直接现读节点宽)。 */
-    private fun baselineX(): Float =
-        thumbX(gridScaleSlider().fetchSemanticsNode().boundsInRoot.width, 1.0f)
-
-    /** 从 fromValue 的近似拇指位 down, 分 6 步绝对 moveTo 到 targetX, 松手。 */
-    private fun dragTo(fromValue: Float, targetX: Float) {
-        val slider = gridScaleSlider()
-        val node = slider.fetchSemanticsNode()
-        val y = node.boundsInRoot.height / 2f
-        val startX = thumbX(node.boundsInRoot.width, fromValue)
-        slider.performTouchInput {
-            down(Offset(startX, y))
-            repeat(6) { moveTo(Offset(startX + (targetX - startX) * (it + 1) / 6f, y)) }
+    /** 第 0 条仍是 gridScale, 抓取真实滑片并按 rail 的实际宽度分步横移。 */
+    private fun dragTo(targetValue: Float) {
+        val railWidth = compose.onAllNodesWithTag("slider-track", useUnmergedTree = true)[0]
+            .fetchSemanticsNode().boundsInRoot.width
+        val delta = (targetValue - currentGridScale()) / .6f * railWidth
+        compose.onAllNodesWithTag("glass-slider-end", useUnmergedTree = true)[0].performTouchInput {
+            down(center)
+            repeat(6) { moveBy(Offset(delta / 6f, 0f)) }
             up()
         }
         compose.waitForIdle()
     }
 
-    /** 拖离基线一档以上 (探针实测: +120px → 1.05 或 1.1, 两值 |Δ|>0.025 → 幽灵必现)。 */
-    private fun dragAway() = dragTo(currentGridScale(), baselineX() + 120f)
+    /** raw 1.12 落在 [1.1, 1.15) 内, 必须跨两档并离开基线。 */
+    private fun dragAway() = dragTo(1.12f)
 
-    /** 拖回基线刻度: 落点基线位+15px → raw≈1.01~1.03, 半档窗 [1.0,1.05) 中部。 */
-    private fun dragBack() = dragTo(currentGridScale(), baselineX() + 15f)
+    /** raw 1.02 落在 [1.0, 1.05) 内, 截断后必须返回基线 1.0。 */
+    private fun dragBack() = dragTo(1.02f)
 
     private fun appPrefsGridScale(): Float = AppPrefs.getGridScale(
         androidx.test.core.app.ApplicationProvider.getApplicationContext(),

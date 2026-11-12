@@ -1,18 +1,14 @@
 package com.lingion.sleepy.ui.component.liquidglass
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
@@ -38,7 +34,36 @@ import kotlin.math.roundToInt
 internal fun liquidGlassControlsEnabled(): Boolean =
     LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
 
-/** Precision slider: an unbroken thin track and a colored vertical lens. */
+/** Relative thumb tracking, separate from the shorter visual center travel.
+ * UIKit's recorded 335pt slider consumes 10pt once, then changes value by dx / 335.
+ * This is a measured threshold, not Android's platform touchSlop.
+ */
+internal class GlassSliderDragMapping(
+    private val downX: Float,
+    private val downValue: Float,
+    private val controlWidth: Float,
+    private val valueSpan: Float,
+    private val slop: Float,
+    private val rtl: Boolean,
+) {
+    private var anchorX: Float? = null
+
+    fun valueAt(x: Float): Float {
+        val anchor = anchorX ?: run {
+            val delta = x - downX
+            if (abs(delta) <= slop) return downValue
+            (downX + if (delta > 0f) slop else -slop).also { anchorX = it }
+        }
+        val delta = (x - anchor) / controlWidth.coerceAtLeast(1f) * valueSpan
+        return downValue + if (rtl) -delta else delta
+    }
+
+    companion object {
+        const val START_SLOP_DP = 10f
+    }
+}
+
+/** Shared circular slider visuals; each appearance retains its existing input mechanics. */
 @Composable
 fun GlassSlider(
     value: Float,
@@ -52,6 +77,7 @@ fun GlassSlider(
     ghostEpsilon: Float = 0f,
     ghostTag: String = "slider-ghost",
     trackBrush: Brush? = null,
+    // Existing callers may tint the rail; the shared thumb itself is always white.
     thumbColor: Color = MaterialTheme.colorScheme.primary,
 ) {
     if (!liquidGlassControlsEnabled()) {
@@ -59,10 +85,25 @@ fun GlassSlider(
             androidx.compose.material3.SliderState(value = value, steps = steps, trackRange = valueRange)
         }
         state.value = value
+        val span = (valueRange.endInclusive - valueRange.start).coerceAtLeast(.0001f)
+        val baseline = initialValue?.takeIf { it.isFinite() }?.coerceIn(valueRange.start, valueRange.endInclusive)
+        val ghost = baseline?.takeIf { abs(it - value) > ghostEpsilon }
+            ?.let { 0f..((it - valueRange.start) / span).coerceIn(0f, 1f) }
         androidx.compose.material3.Slider(
             state = state, onValueChange = onValueChange,
-            modifier = modifier.materialSliderGestureOwnership(state, enabled, onValueChange, onValueChangeFinished), enabled = enabled,
+            modifier = modifier.height(GlassSliderThumbMetrics.TOUCH_HEIGHT.dp)
+                .materialSliderGestureOwnership(state, enabled, onValueChange, onValueChangeFinished),
+            enabled = enabled,
             onValueChangeFinished = onValueChangeFinished,
+            thumb = { GlassSliderThumb(trackBackdrop = null, enabled = enabled,
+                modifier = Modifier.testTag("glass-slider-end")) },
+            track = {
+                AppSliderTrack(
+                    startFraction = { 0f }, endFraction = { ((state.value - valueRange.start) / span).coerceIn(0f, 1f) },
+                    tickCount = if (steps > 0) steps + 2 else 11,
+                    enabled = enabled, activeColor = thumbColor, trackBrush = trackBrush, ghost = ghost, ghostTag = ghostTag,
+                )
+            },
         )
         return
     }
@@ -81,8 +122,44 @@ internal fun GlassRangeSlider(
     valueRange: ClosedFloatingPointRange<Float>,
     steps: Int,
     initialValue: ClosedFloatingPointRange<Float>? = null,
-) = GlassSliderBody(value, onValueChange, modifier, true, valueRange, steps, null,
-    true, initialValue, 0f, "slider-ghost", null, MaterialTheme.colorScheme.primary)
+) {
+    if (!liquidGlassControlsEnabled()) {
+        val state = remember(steps, valueRange) {
+            androidx.compose.material3.RangeSliderState(
+                startValue = value.start, endValue = value.endInclusive,
+                steps = steps, trackRange = valueRange,
+            )
+        }
+        state.startValue = value.start
+        state.endValue = value.endInclusive
+        val span = (valueRange.endInclusive - valueRange.start).coerceAtLeast(.0001f)
+        fun fraction(v: Float) = ((v - valueRange.start) / span).coerceIn(0f, 1f)
+        val baseline = initialValue?.takeIf { it.start.isFinite() && it.endInclusive.isFinite() }?.let {
+            val first = it.start.coerceIn(valueRange.start, valueRange.endInclusive)
+            first..it.endInclusive.coerceIn(first, valueRange.endInclusive)
+        }
+        val ghost = baseline?.takeIf { it.start != state.startValue || it.endInclusive != state.endValue }
+            ?.let { fraction(it.start)..fraction(it.endInclusive) }
+        androidx.compose.material3.RangeSlider(
+            state = state, onValueChange = onValueChange,
+            modifier = modifier.fillMaxWidth().height(GlassSliderThumbMetrics.TOUCH_HEIGHT.dp),
+            startThumb = { GlassSliderThumb(trackBackdrop = null, range = true,
+                modifier = Modifier.testTag("glass-slider-start")) },
+            endThumb = { GlassSliderThumb(trackBackdrop = null, range = true,
+                modifier = Modifier.testTag("glass-slider-end")) },
+            track = {
+                AppSliderTrack(
+                    startFraction = { fraction(state.startValue) },
+                    endFraction = { fraction(state.endValue) },
+                    tickCount = steps + 2, range = true, ghost = ghost,
+                )
+            },
+        )
+        return
+    }
+    GlassSliderBody(value, onValueChange, modifier, true, valueRange, steps, null,
+        true, initialValue, 0f, "slider-ghost", null, MaterialTheme.colorScheme.primary)
+}
 
 @Composable
 private fun GlassSliderBody(
@@ -114,11 +191,11 @@ private fun GlassSliderBody(
     var active by remember { mutableIntStateOf(-1) }
     var startActivation by remember { mutableIntStateOf(0) }
     var endActivation by remember { mutableIntStateOf(0) }
-    val startMotion = rememberGlassControlMotion(fraction(start), active == 0, active == 0, startActivation, enabled)
-    val endMotion = rememberGlassControlMotion(fraction(end), active == 1, active == 1, endActivation, enabled)
-    val primary = thumbColor
-    val inactive = MaterialTheme.colorScheme.onSurface.copy(alpha = .12f)
-    val inset = with(density) { (GlassSliderThumbMetrics.RESTING_WIDTH / 2).dp.toPx() }
+    // Circular thumbs use only position and isotropic lift; zero travel skips deformation ODEs.
+    val startMotion = rememberGlassControlMotion(fraction(start), active == 0, active == 0, startActivation, enabled, GlassControlMotionSpec.NativeSlider)
+    val endMotion = rememberGlassControlMotion(fraction(end), active == 1, active == 1, endActivation, enabled, GlassControlMotionSpec.NativeSlider)
+    val restingDiameter = GlassSliderThumbMetrics.diameter(range)
+    val inset = with(density) { (restingDiameter / 2).dp.toPx() }
     val baseline = initialValue?.takeIf { it.start.isFinite() && it.endInclusive.isFinite() }?.let {
         val first = if (range) it.start.coerceIn(valueRange.start, valueRange.endInclusive) else valueRange.start
         first..it.endInclusive.coerceIn(first, valueRange.endInclusive)
@@ -129,14 +206,17 @@ private fun GlassSliderBody(
         val f = fraction(v)
         return valueRange.start + (if (steps > 0) (f * (steps + 1)).roundToInt().toFloat() / (steps + 1) else f) * span
     }
-    fun change(index: Int, v: Float) {
+    fun change(index: Int, v: Float): Boolean {
         val now = currentValue
         val next = snap(v)
-        update(if (index == 0) next.coerceAtMost(now.endInclusive)..now.endInclusive
-            else now.start..next.coerceAtLeast(if (range) now.start else valueRange.start))
+        val changed = if (index == 0) next.coerceAtMost(now.endInclusive)..now.endInclusive
+            else now.start..next.coerceAtLeast(if (range) now.start else valueRange.start)
+        if (changed == now) return false
+        update(changed)
+        return true
     }
     Layout(
-        modifier = modifier.fillMaxWidth().height(48.dp).alpha(if (enabled) 1f else .38f)
+        modifier = modifier.fillMaxWidth().height(GlassSliderThumbMetrics.TOUCH_HEIGHT.dp).alpha(if (enabled) 1f else .38f)
             .glassGestureOwnership(enabled)
             .pointerInput(enabled, rtl, valueRange, steps, range) {
                 if (!enabled) return@pointerInput
@@ -153,17 +233,26 @@ private fun GlassSliderBody(
                     if (active == 0) startActivation++ else endActivation++
                     var lastTick = (fraction(if (active == 0) now.start else now.endInclusive) * (if (steps > 0) steps + 1 else 40)).roundToInt()
                     LiquidGlassHaptics.selectionClick(view)
-                    // A touch on the thumb keeps its center under the same finger offset.
+                    // Track taps retain their absolute mapping; thumb drags start from the
+                    // actual value, consume the measured slop once, then use full width.
                     val selectedValue = if (active == 0) now.start else now.endInclusive
-                    val grabOffset = if (abs(downValue - selectedValue) / span * size.width <= 24.dp.toPx()) downValue - selectedValue else 0f
-                    change(active, downValue - grabOffset)
+                    val onThumb = abs(downValue - selectedValue) / span * size.width <= 24.dp.toPx()
+                    val dragMapping = if (onThumb) GlassSliderDragMapping(
+                        downX = down.position.x,
+                        downValue = selectedValue,
+                        controlWidth = size.width.toFloat(),
+                        valueSpan = span,
+                        slop = GlassSliderDragMapping.START_SLOP_DP.dp.toPx(),
+                        rtl = rtl,
+                    ) else null
+                    change(active, if (onThumb) selectedValue else downValue)
                     var released = false
                     try {
                         while (true) {
                             val event = awaitPointerEvent(PointerEventPass.Initial)
                             val pointer = event.changes.firstOrNull { it.id == down.id } ?: break
                             if (!pointer.pressed) { released = true; break }
-                            val target = at(pointer.position.x) - grabOffset
+                            val target = dragMapping?.valueAt(pointer.position.x) ?: at(pointer.position.x)
                             if (range && now.start == now.endInclusive && target != now.start) {
                                 active = if (target < now.start) 0 else 1
                             }
@@ -180,58 +269,35 @@ private fun GlassSliderBody(
             },
         content = {
             // This sibling records only ordinary pixels; neither thumb is inside its source.
-            Box(Modifier.fillMaxSize().layerBackdrop(backdrop)) {
-                Canvas(Modifier.fillMaxSize()) {
-                    fun x(position: Float): Float {
-                        val f = position.coerceIn(0f, 1f)
-                        return inset + (size.width - inset * 2) * if (rtl) 1f - f else f
-                    }
-                    val trackHeight = 4.dp.toPx()
-                    val top = (size.height - trackHeight) / 2
-                    drawRoundRect(inactive, Offset(inset, top), Size(size.width - 2 * inset, trackHeight), CornerRadius(trackHeight / 2))
-                    if (trackBrush != null) {
-                        drawRoundRect(trackBrush, Offset(inset, top), Size(size.width - 2 * inset, trackHeight), CornerRadius(trackHeight / 2))
-                    } else {
-                        val x1 = x(if (range) startMotion.position.value else 0f)
-                        val x2 = x(endMotion.position.value)
-                        drawRoundRect(primary, Offset(minOf(x1, x2), top), Size(abs(x2 - x1), trackHeight), CornerRadius(trackHeight / 2))
-                    }
-                }
-                if (ghost != null) {
-                    Canvas(Modifier.fillMaxSize().testTag(ghostTag)) {
-                        val w = GlassSliderThumbMetrics.RESTING_WIDTH.dp.toPx()
-                        val h = GlassSliderThumbMetrics.RESTING_HEIGHT.dp.toPx()
-                        fun gx(v: Float): Float {
-                            val f = fraction(v)
-                            return inset + (size.width - 2 * inset) * if (rtl) 1f - f else f
-                        }
-                        if (range) {
-                            val x1 = gx(ghost.start)
-                            val x2 = gx(ghost.endInclusive)
-                            val trackHeight = 4.dp.toPx()
-                            drawRoundRect(primary.copy(alpha = .25f), Offset(minOf(x1, x2), (size.height - trackHeight) / 2),
-                                Size(abs(x2 - x1), trackHeight), CornerRadius(trackHeight / 2))
-                        }
-                        val values = if (range) listOf(ghost.start, ghost.endInclusive) else listOf(ghost.endInclusive)
-                        for (v in values) drawRoundRect(primary.copy(alpha = .3f), Offset(gx(v) - w / 2, (size.height - h) / 2), Size(w, h), CornerRadius(w / 2, h / 2))
-                    }
-                }
-            }
+            AppSliderTrack(
+                startFraction = { if (range) startMotion.position.value else 0f },
+                endFraction = { endMotion.position.value },
+                tickCount = if (range || steps > 0) steps + 2 else 11,
+                modifier = Modifier.fillMaxSize().layerBackdrop(backdrop),
+                inset = (restingDiameter / 2f).dp, range = range, activeColor = thumbColor, trackBrush = trackBrush,
+                ghost = ghost?.let { fraction(it.start)..fraction(it.endInclusive) }, ghostTag = ghostTag,
+            )
             for (index in (if (range) 0 else 1)..1) {
                 val current = if (index == 0) start else end
                 val accessibleRange = if (index == 0) valueRange.start..end else (if (range) start else valueRange.start)..valueRange.endInclusive
+                val accessibleSteps = if (steps > 0) {
+                    // TalkBack divides this local range, so retain the full-domain step size.
+                    (((accessibleRange.endInclusive - accessibleRange.start) / span * (steps + 1)).roundToInt() - 1)
+                        .coerceAtLeast(0)
+                } else 0
                 GlassSliderThumb(
                     trackBackdrop = backdrop,
                     pressedOverride = active == index,
-                    colorOverride = primary,
+                    range = range,
                     enabled = enabled,
                     motionOverride = if (index == 0) startMotion else endMotion,
                     modifier = Modifier.testTag(if (index == 0) "glass-slider-start" else "glass-slider-end")
                         .semantics {
                             if (!enabled) disabled()
-                            progressBarRangeInfo = ProgressBarRangeInfo(current, accessibleRange, steps)
+                            progressBarRangeInfo = ProgressBarRangeInfo(current, accessibleRange, accessibleSteps)
                             setProgress { target ->
-                                if (!enabled) false else { change(index, target); finish?.invoke(); true }
+                                if (!enabled || !target.isFinite()) false
+                                else change(index, target).also { changed -> if (changed) finish?.invoke() }
                             }
                         }
                         .onKeyEvent {

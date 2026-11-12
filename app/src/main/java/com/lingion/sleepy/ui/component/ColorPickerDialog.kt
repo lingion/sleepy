@@ -21,7 +21,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
 import com.lingion.sleepy.ui.component.liquidglass.GlassSlider
-import com.lingion.sleepy.ui.component.liquidglass.liquidGlassControlsEnabled
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -203,18 +202,9 @@ fun SVPanel(
     }
 }
 
-/** 色相滑条：360°彩虹水平条。
- *  onHueChange 逐帧回调(拖动跟手), onHueCommit 松手/点按各回调一次 —
- *  供「拖动只动本地值, 松手才落库重算」的调用方(外观页课程配色种子)节流;
- *  默认空实现, ColorPickerDialog 等既有调用零改动。
- *
- *  initialHue 幽灵 (需求 2026-10-29 用户定义原话语义, spec §3.1 色相变体):
- *  拖离基线 (调用点传打开弹窗/进编辑区时刻的色相, null = 不接) → 基线刻度出现
- *  一条细双描条 (白芯+深描 — 单头共享件 primary 色在彩虹底衬上辨不清, 此处
- *  专用几何; 判据仍复用 singleSliderGhostVisible, epsilon = 色相 1 度步进取半档);
- *  拖回基线 → 消失。纯装饰: 零 pointerInput 零语义, testTag 仅供 Robolectric
- *  管线定位。真机目验待办: 双描配方 (白 2dp 芯 + 深色 1dp 描边) 在任意色相底衬
- *  的可辨性需最终在设备上过目 (spec §3.1 挂账)。 */
+/** Rainbow variant of the shared slider. Changes stay local while dragging and commit once on release.
+ * The original hue is retained as a circular, noninteractive ghost until returned to baseline.
+ */
 @Composable
 fun HueSlider(
     hue: Float,
@@ -223,88 +213,13 @@ fun HueSlider(
     onHueCommit: (Float) -> Unit = {},
     initialHue: Float? = null,
 ) {
-    if (liquidGlassControlsEnabled()) {
-        val currentCommit by androidx.compose.runtime.rememberUpdatedState(onHueCommit)
-        val deliveredHue = remember(hue) { androidx.compose.runtime.mutableFloatStateOf(hue) }
-        GlassSlider(
-            value = hue, onValueChange = { deliveredHue.floatValue = it; onHueChange(it) }, modifier = modifier,
-            valueRange = 0f..360f, onValueChangeFinished = { currentCommit(deliveredHue.floatValue) },
-            initialValue = initialHue, ghostEpsilon = .5f, ghostTag = "hue-ghost",
-            thumbColor = Color(android.graphics.Color.HSVToColor(floatArrayOf(hue, 1f, 1f))),
-            trackBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(
-                (0..6).map { Color(android.graphics.Color.HSVToColor(floatArrayOf(it * 60f, 1f, 1f))) }),
-        )
-        return
-    }
-    // pointerInput(Unit) 只在首组成形, 闭包捕获的 hue 会过期; dragged 在 onDrag 逐帧
-    // 更新, onDragEnd 松手提交 = 最后一帧视觉值(同 coroutine, 零竞态; cancel 复位不提交)。
-    // 触碰未越过 touch slop 时 detectDragGestures 不触发, 点按走下方 tap 通道。
-    Box(
-        modifier = modifier
-            .pointerInput(Unit) {
-                var dragged = -1f
-                detectDragGestures(
-                    onDragEnd = { if (dragged >= 0f) onHueCommit(dragged) },
-                    onDragCancel = { dragged = -1f },
-                    onDrag = { change, _ ->
-                        change.consume()
-                        val x = (change.position.x / size.width).coerceIn(0f, 1f)
-                        dragged = x * 360f
-                        onHueChange(dragged)
-                    }
-                )
-            }
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onTap = { offset ->
-                        val x = (offset.x / size.width).coerceIn(0f, 1f)
-                        val target = x * 360f
-                        onHueChange(target)
-                        onHueCommit(target)
-                    }
-                )
-            }
-    ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val hueColors = listOf(
-                Color(android.graphics.Color.HSVToColor(floatArrayOf(0f, 1f, 1f))),
-                Color(android.graphics.Color.HSVToColor(floatArrayOf(60f, 1f, 1f))),
-                Color(android.graphics.Color.HSVToColor(floatArrayOf(120f, 1f, 1f))),
-                Color(android.graphics.Color.HSVToColor(floatArrayOf(180f, 1f, 1f))),
-                Color(android.graphics.Color.HSVToColor(floatArrayOf(240f, 1f, 1f))),
-                Color(android.graphics.Color.HSVToColor(floatArrayOf(300f, 1f, 1f))),
-                Color(android.graphics.Color.HSVToColor(floatArrayOf(360f, 1f, 1f)))
-            )
-            drawRect(brush = androidx.compose.ui.graphics.Brush.horizontalGradient(colors = hueColors))
-            // 指示器
-            val cx = (hue / 360f) * size.width
-            val cy = size.height / 2f
-            drawCircle(Color.White, radius = 10f, center = androidx.compose.ui.geometry.Offset(cx, cy))
-            drawCircle(
-                Color(android.graphics.Color.HSVToColor(floatArrayOf(hue, 1f, 1f))),
-                radius = 8f,
-                center = androidx.compose.ui.geometry.Offset(cx, cy)
-            )
-        }
-        if (singleSliderGhostVisible(hue, initialHue, 0.5f)) {
-            // 双描细条: 白芯 (2dp) + 深色描边 (1dp), 任意色相底衬可辨;
-            // 几何 = 基线 hue 的满宽线性 x (无 thumb 内缩 — 与拖动换算同式)。
-            val baseline = initialHue!!.coerceIn(0f, 360f)
-            Canvas(modifier = Modifier.fillMaxSize().testTag("hue-ghost")) {
-                val x = (baseline / 360f) * size.width
-                val coreW = 2.dp.toPx()
-                val strokeW = 1.dp.toPx()
-                drawRect(
-                    color = Color.Black.copy(alpha = 0.85f),
-                    topLeft = androidx.compose.ui.geometry.Offset(x - coreW / 2f - strokeW, 0f),
-                    size = androidx.compose.ui.geometry.Size(coreW + 2f * strokeW, size.height),
-                )
-                drawRect(
-                    color = Color.White.copy(alpha = 0.95f),
-                    topLeft = androidx.compose.ui.geometry.Offset(x - coreW / 2f, 0f),
-                    size = androidx.compose.ui.geometry.Size(coreW, size.height),
-                )
-            }
-        }
-    }
+    val currentCommit by androidx.compose.runtime.rememberUpdatedState(onHueCommit)
+    val deliveredHue = remember(hue) { androidx.compose.runtime.mutableFloatStateOf(hue) }
+    GlassSlider(
+        value = hue, onValueChange = { deliveredHue.floatValue = it; onHueChange(it) }, modifier = modifier,
+        valueRange = 0f..360f, onValueChangeFinished = { currentCommit(deliveredHue.floatValue) },
+        initialValue = initialHue, ghostEpsilon = .5f, ghostTag = "hue-ghost",
+        trackBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+            (0..6).map { Color(android.graphics.Color.HSVToColor(floatArrayOf(it * 60f, 1f, 1f))) }),
+    )
 }

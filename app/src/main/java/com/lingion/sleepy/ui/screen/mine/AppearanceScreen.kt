@@ -681,8 +681,7 @@ private fun CourseColorSection(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp)
-                        .height(36.dp)
-                        .clip(SleepyTheme.shapes.large)
+                        .height(48.dp)
                         .dbgTag("settings_color_seed", role = "slider", clickable = false),
                 )
             }

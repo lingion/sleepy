@@ -108,11 +108,12 @@ class FloatingGlassControlTest {
         tabs.performTouchInput { up() }
     }
 
-    @Test fun precisionSliderHasSmallColoredVerticalThumb() {
-        assertTrue("precision thumb must be small", GlassSliderThumbMetrics.RESTING_WIDTH <= 20f)
-        assertTrue("thumb must be circular or vertical", GlassSliderThumbMetrics.RESTING_HEIGHT >= GlassSliderThumbMetrics.RESTING_WIDTH)
-        val color = GlassSliderThumbMetrics.restingColor(Color(0xFF267BEF))
-        assertTrue("thumb must retain visible color instead of whitening it away", color.blue - color.red > .3f)
+    @Test fun singleAndPrecisionRangeSlidersUseTheRequestedCircularSizes() {
+        assertEquals(32f, GlassSliderThumbMetrics.diameter(range = false), 0f)
+        assertEquals(24f, GlassSliderThumbMetrics.diameter(range = true), 0f)
+        assertEquals(8f, GlassSliderThumbMetrics.TRACK_HEIGHT, 0f)
+        assertEquals(2f, GlassSliderThumbMetrics.TICK_DIAMETER, 0f)
+        assertTrue(GlassSliderThumbMetrics.TOUCH_HEIGHT >= 48f)
     }
 
     @Test fun tabTicksWhenDraggingAcrossSelectionBoundaries() {

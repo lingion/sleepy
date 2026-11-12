@@ -137,14 +137,18 @@ class GlassGestureOwnershipTest {
         value.floatValue = .25f
         show("slider")
         val control = compose.onNodeWithTag("control")
-        control.performTouchInput { down(center); repeat(50) { moveBy(Offset(2f, 0f)) } }
+        val railWidth = compose.onNodeWithTag("slider-track", useUnmergedTree = true)
+            .fetchSemanticsNode().boundsInRoot.width
+        // Fifty individually sub-step deltas must accumulate to one quarter of the domain.
+        val smallDelta = railWidth * .25f / 50f
+        control.performTouchInput { down(center); repeat(50) { moveBy(Offset(smallDelta, 0f)) } }
         val first = compose.runOnIdle {
             assertEquals(.5f, value.floatValue, .001f)
             assertEquals(0, scroll.value)
             value.floatValue
         }
-        control.performTouchInput { up(); down(center); repeat(50) { moveBy(Offset(2f, 0f)) }; up() }
-        compose.runOnIdle { assertTrue(value.floatValue > first); assertEquals(2, finished) }
+        control.performTouchInput { up(); down(center); repeat(50) { moveBy(Offset(smallDelta, 0f)) }; up() }
+        compose.runOnIdle { assertEquals(first + .25f, value.floatValue, .001f); assertEquals(2, finished) }
         assertPageScrolls()
     }
 
@@ -185,6 +189,28 @@ class GlassGestureOwnershipTest {
         show("slider")
         compose.onNodeWithTag("control").performTouchInput { click(Offset(width * .8f, centerY)) }
         compose.runOnIdle { assertTrue("tap must update slider", value.floatValue > .6f) }
+    }
+
+    @Test fun classicSliderFineDragKeepsItsValueOnReleaseBelowTouchSlop() {
+        style = UiStyle.Classic
+        value.floatValue = .4f
+        show("slider")
+        val control = compose.onNodeWithTag("control")
+        val thumbWidth = compose.onNodeWithTag("glass-slider-end", useUnmergedTree = true)
+            .fetchSemanticsNode().boundsInRoot.width
+        control.performTouchInput {
+            down(Offset(thumbWidth / 2f + (width - thumbWidth) * .4f, centerY))
+            moveBy(Offset(1f, 0f))
+        }
+        val dragged = compose.runOnIdle {
+            value.floatValue.also { assertTrue("a fine horizontal drag updates immediately", it > .4f) }
+        }
+        control.performTouchInput { up() }
+        compose.runOnIdle {
+            assertEquals("release must not replace the fine drag with its down position", dragged, value.floatValue, .00001f)
+            assertEquals(1, finished)
+            assertEquals(0, scroll.value)
+        }
     }
 
     @Test fun classicSwitchTapStillWorks() {
