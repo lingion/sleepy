@@ -82,7 +82,7 @@ fun GlassSwitch(
         if (!dragging) position = if (checked) 1f else 0f
     }
     val motion = rememberGlassControlMotion(position, pressed || dragging, dragging, tapGeneration, enabled,
-        spec = GlassControlMotionSpec.Native)
+        spec = GlassControlMotionSpec.Native, travelDistanceDp = if (rtl) -22f else 22f)
     val lift = motion.lift
     val geometryLift = motion.geometryLift
     val input = if (onCheckedChange == null) Modifier else Modifier
