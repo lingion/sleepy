@@ -36,12 +36,119 @@ final class NativeReferenceTests: XCTestCase {
     func testTabBarStripes() { tabBar(background: "stripes") }
     func testPresentationsGrid() { presentations(background: "grid") }
     func testPresentationsStripes() { presentations(background: "stripes") }
+    func testLanguageMenuReference() {
+        settleDuration = 1.05
+        launch(scene: "language", background: "grid")
+        let anchor = app.buttons["language-menu"]
+        XCTAssertTrue(anchor.waitForExistence(timeout: 5))
+        for (index, choice) in ["English", "Español"].enumerated() {
+            let phase = index == 0 ? "first-use" : "warmed"
+            tap(anchor, label: "language \(phase): tap open")
+            let menu = languageMenu()
+            XCTAssertTrue(menu.waitForExistence(timeout: 5))
+            for label in ["简体中文", "繁體中文", "English", "日本語", "Español"] {
+                XCTAssertTrue(menu.buttons.matching(NSPredicate(format: "label == %@", label)).firstMatch.exists)
+            }
+            captureLanguage("language-\(phase)-open")
+            tap(menu.buttons.matching(NSPredicate(format: "label == %@", choice)).firstMatch,
+                label: "language \(phase): choose \(choice)")
+            XCTAssertTrue(anchor.waitForExistence(timeout: 5))
+            XCTAssertEqual(app.staticTexts["language-selection"].label, "Selected: \(choice)")
+            XCTAssertFalse(menu.exists)
+            captureLanguage("language-\(phase)-selected")
+        }
+        tap(anchor, label: "language: tap open for outside cancellation")
+        let menu = languageMenu()
+        XCTAssertTrue(menu.waitForExistence(timeout: 5))
+        let japanFrame = menu.buttons.matching(NSPredicate(format: "label == %@", "日本語")).firstMatch.frame
+        outsideLanguageMenu(menu, label: "language: tap outside cancel")
+        XCTAssertEqual(app.staticTexts["language-selection"].label, "Selected: Español")
+        captureLanguage("language-outside-cancelled")
+
+        hold(anchor, label: "language: long press anchor then release")
+        XCTAssertTrue(languageMenu().waitForExistence(timeout: 5))
+        captureLanguage("language-long-press-open")
+        outsideLanguageMenu(languageMenu(), label: "language: cancel held-open menu")
+        let destination = app.coordinate(withNormalizedOffset: .zero)
+            .withOffset(CGVector(dx: japanFrame.midX, dy: japanFrame.midY))
+        drag(from: anchor.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)),
+             to: destination, velocity: 100,
+             label: "language: hold anchor then slide into 日本語 and release", target: anchor)
+        XCTAssertEqual(app.staticTexts["language-selection"].label, "Selected: 日本語")
+        XCTAssertFalse(languageMenu().exists)
+        captureLanguage("language-slide-release-result")
+    }
+
+    func testLanguageMenuSameChoiceAndCancellationProbe() {
+        settleDuration = 0.8
+        launch(scene: "language", background: "grid", focused: true)
+        let anchor = app.buttons["language-menu"]
+        tap(anchor, label: "language focused first-use: tap open")
+        let menu = languageMenu()
+        XCTAssertTrue(menu.waitForExistence(timeout: 5))
+        tap(menu.buttons.matching(NSPredicate(format: "label == %@", "简体中文")).firstMatch,
+            label: "language focused first-use: choose current 简体中文")
+        XCTAssertEqual(app.staticTexts["language-selection"].label, "Selected: 简体中文")
+        tap(anchor, label: "language focused warmed: tap open")
+        XCTAssertTrue(languageMenu().waitForExistence(timeout: 5))
+        outsideLanguageMenu(languageMenu(), label: "language focused warmed: outside cancel")
+
+        // Public XCUITest may wait for animation quiescence between commands.
+        // Delivered touches determine whether this lands during opening; a pair
+        // of adjacent test statements does not prove an early cancellation.
+        let outside = app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: 20, dy: 120))
+        request("language: immediate outside-cancel probe", kind: "sequentialTapProbe", target: anchor)
+        anchor.tap()
+        outside.tap()
+        pause()
+        captureLanguage("language-immediate-outside-probe")
+        if languageMenu().exists {
+            outsideLanguageMenu(languageMenu(), label: "language: dismiss remaining probe menu")
+        }
+    }
+
+    private func languageMenu() -> XCUIElement {
+        app.collectionViews.containing(.button, identifier: "Español").firstMatch
+    }
+
+    private func outsideLanguageMenu(_ menu: XCUIElement, label: String) {
+        let frame = app.windows.firstMatch.frame
+        let candidates = [CGPoint(x: frame.minX + 20, y: frame.minY + 120),
+                          CGPoint(x: frame.maxX - 20, y: frame.maxY - 120)]
+        guard let point = candidates.first(where: { !menu.frame.insetBy(dx: -12, dy: -12).contains($0) }) else {
+            XCTFail("Native menu leaves no safe outside target"); return
+        }
+        let outside = app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: point.x, dy: point.y))
+        request(label, kind: "outsideTap", target: menu, extra: ["point": xy(outside.screenPoint)])
+        outside.tap()
+        pause()
+        XCTAssertFalse(menu.exists)
+    }
+
+    private func captureLanguage(_ name: String) {
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = name
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+        let hierarchy = XCTAttachment(string: app.debugDescription)
+        hierarchy.name = name + "-accessibility"
+        hierarchy.lifetime = .keepAlways
+        add(hierarchy)
+    }
 
     /// Distinguish direct selection preview from committed selection. Each kind
     /// starts in a fresh process with A selected; no horizontal drag is involved.
     func testDirectSelectionPhases() {
-        settleDuration = 1.05
-        for identifier in ["swiftui-segmented", "uikit-segmented", "uikit-tabbar"] {
+        directSelectionPhases(identifiers: ["swiftui-segmented", "uikit-segmented", "uikit-tabbar"])
+    }
+
+    func testDockDirectSelectionPhases() {
+        directSelectionPhases(identifiers: ["uikit-tabbar"])
+    }
+
+    private func directSelectionPhases(identifiers: [String]) {
+        settleDuration = 1.65
+        for identifier in identifiers {
             let isTabBar = identifier == "uikit-tabbar"
             launch(scene: isTabBar ? "toggle" : "segmented", background: "grid")
             let control = isTabBar ? app.tabBars[identifier] : app.segmentedControls[identifier]
@@ -50,6 +157,7 @@ final class NativeReferenceTests: XCTestCase {
             let second = control.buttons[isTabBar ? "Explore" : "Second"]
             XCTAssertTrue(first.exists)
             XCTAssertTrue(second.exists)
+            if isTabBar { captureLanguage("dock-three-tab-natural-layout") }
             tap(second, label: identifier + ": A selected, short tap B")
             tap(first, label: identifier + ": reset A after short tap")
             hold(second, label: identifier + ": A selected, hold unselected B without drag / release")
@@ -64,14 +172,22 @@ final class NativeReferenceTests: XCTestCase {
     }
 
     func testDragVelocityMatrix() {
-        settleDuration = 1.05
-        for identifier in ["uikit-segmented", "uikit-tabbar"] {
+        dragVelocityMatrix(identifiers: ["uikit-segmented", "uikit-tabbar"])
+    }
+
+    func testDockAdjacentVelocityMatrix() {
+        dragVelocityMatrix(identifiers: ["uikit-tabbar"], adjacent: true)
+    }
+
+    private func dragVelocityMatrix(identifiers: [String], adjacent: Bool = false) {
+        settleDuration = 1.65
+        for identifier in identifiers {
             let isTabBar = identifier == "uikit-tabbar"
             launch(scene: isTabBar ? "toggle" : "segmented", background: "grid")
             let control = isTabBar ? app.tabBars[identifier] : app.segmentedControls[identifier]
             XCTAssertTrue(control.waitForExistence(timeout: 5))
             let first = control.buttons[isTabBar ? "Home" : "First"]
-            let last = control.buttons[isTabBar ? "Settings" : "Third"]
+            let last = control.buttons[isTabBar ? (adjacent ? "Explore" : "Settings") : "Third"]
             for repetition in 1...2 {
                 for (forward, velocity, phase) in [
                     (true, 100.0, "slow forward"), (false, 100.0, "slow reverse"),
@@ -89,9 +205,200 @@ final class NativeReferenceTests: XCTestCase {
         }
     }
 
-    private func launch(scene: String, background: String) {
+    func testFourTabFirstLastMotion() {
+        settleDuration = 1.65
+        launch(scene: "toggle", background: "grid", tabCount: 4)
+        let control = app.tabBars["uikit-tabbar"]
+        XCTAssertTrue(control.waitForExistence(timeout: 5))
+        XCTAssertTrue(control.buttons["Courses"].exists)
+        let first = control.buttons["Home"]
+        let last = control.buttons["Settings"]
+        captureLanguage("dock-four-tab-natural-layout")
+        tap(last, label: "four-tab: first to last direct tap")
+        tap(first, label: "four-tab: last to first direct tap")
+        hold(last, label: "four-tab: hold unselected last then release")
+        hold(first, label: "four-tab: hold unselected first then release")
+        hold(first, label: "four-tab: hold selected first then release")
+        let cancelStart = last.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        drag(from: cancelStart, to: cancelStart.withOffset(CGVector(dx: 0, dy: -100)), velocity: 160,
+             label: "four-tab: hold unselected last then leave vertically / release (cancel probe)", target: last)
+        for repetition in 1...2 {
+            for (forward, velocity, phase) in [
+                (true, 100.0, "slow forward"), (false, 100.0, "slow reverse"),
+                (true, 900.0, "fast forward"), (false, 900.0, "fast reverse")
+            ] {
+                let source = forward ? first : last
+                let destination = forward ? last : first
+                let label = "four-tab: matrix \(repetition), \(phase)"
+                tap(source, label: label + ": select source")
+                drag(from: source.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)),
+                     to: destination.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)),
+                     velocity: velocity, label: label, target: control)
+            }
+        }
+        // Consecutive public commands do not guarantee a rapid waveform. Keep
+        // the delivered timestamps, including any XCUITest quiescence waits.
+        for repetition in 1...3 {
+            request("four-tab: consecutive taps \(repetition), last", kind: "consecutiveTapProbe", target: last)
+            last.tap()
+            request("four-tab: consecutive taps \(repetition), first", kind: "consecutiveTapProbe", target: first)
+            first.tap()
+        }
+        pause()
+    }
+
+    func testStaticOpticsFineGridLight() { staticOptics(background: "fine_grid", style: "light") }
+    func testStaticOpticsFineGridDark() { staticOptics(background: "fine_grid", style: "dark") }
+    func testStaticOpticsColorStripesLight() { staticOptics(background: "color_stripes", style: "light") }
+    func testStaticOpticsColorStripesDark() { staticOptics(background: "color_stripes", style: "dark") }
+    func testStaticOpticsTonalBlocksLight() { staticOptics(background: "tonal_blocks", style: "light") }
+    func testStaticOpticsTonalBlocksDark() { staticOptics(background: "tonal_blocks", style: "dark") }
+    func testStaticOpticsLandscapeLight() { staticOptics(background: "synthetic_landscape", style: "light") }
+    func testStaticOpticsLandscapeDark() { staticOptics(background: "synthetic_landscape", style: "dark") }
+
+    func testAlertOpticsFineGridLight() { alertOptics(background: "fine_grid", style: "light") }
+    func testAlertOpticsFineGridDark() { alertOptics(background: "fine_grid", style: "dark") }
+    func testAlertOpticsColorStripesLight() { alertOptics(background: "color_stripes", style: "light") }
+    func testAlertOpticsColorStripesDark() { alertOptics(background: "color_stripes", style: "dark") }
+    func testAlertOpticsTonalBlocksLight() { alertOptics(background: "tonal_blocks", style: "light") }
+    func testAlertOpticsTonalBlocksDark() { alertOptics(background: "tonal_blocks", style: "dark") }
+    func testAlertOpticsLandscapeLight() { alertOptics(background: "synthetic_landscape", style: "light") }
+    func testAlertOpticsLandscapeDark() { alertOptics(background: "synthetic_landscape", style: "dark") }
+
+    private func alertOptics(background: String, style: String) {
+        settleDuration = 0.8
+        launch(scene: "presentations", background: background, style: style, staticOptics: true)
+        let prefix = "alert-optics-\(background)-\(style)"
+        let trigger = app.buttons["show-alert"]
+        let alert = app.alerts["Native Alert"]
+        captureLanguage(prefix + "-before")
+        tap(trigger, label: prefix + ": present native alert for confirm")
+        XCTAssertTrue(alert.waitForExistence(timeout: 5))
+        XCTAssertTrue(alert.buttons["Confirm"].exists)
+        XCTAssertTrue(alert.buttons["Cancel"].exists)
+        captureLanguage(prefix + "-alert-rest")
+        tap(alert.buttons["Confirm"], label: prefix + ": native confirm")
+        XCTAssertFalse(alert.exists)
+        captureLanguage(prefix + "-after-confirm")
+        tap(trigger, label: prefix + ": present native alert for cancel")
+        XCTAssertTrue(alert.waitForExistence(timeout: 5))
+        tap(alert.buttons["Cancel"], label: prefix + ": native cancel")
+        XCTAssertFalse(alert.exists)
+        captureLanguage(prefix + "-after-cancel")
+        app.terminate()
+    }
+
+    func testStaticOpticsLanguageProbe() {
+        launch(scene: "language", background: "fine_grid", staticOptics: true)
+        openOpticalLanguageMenu(prefix: "optics-language-probe")
+        captureLanguage("optics-language-probe-menu-rest")
+        opticalHold(languageMenu().buttons.matching(NSPredicate(format: "label == %@", "English")).firstMatch,
+                    name: "optics-language-probe-menu-row-held")
+    }
+    func testStaticOpticsTonalBlocksLightLanguageRecapture() {
+        launch(scene: "language", background: "tonal_blocks", staticOptics: true)
+        openOpticalLanguageMenu(prefix: "optics-tonal_blocks-light-language-recapture")
+        captureLanguage("optics-tonal_blocks-light-language-recapture-menu-rest")
+        opticalHold(languageMenu().buttons.matching(NSPredicate(format: "label == %@", "English")).firstMatch,
+                    name: "optics-tonal_blocks-light-language-menu-row-held-recapture", duration: 6)
+    }
+
+    private func openOpticalLanguageMenu(prefix: String) {
+        let anchor = app.buttons["language-menu"]
+        tap(anchor, label: prefix + ": present language menu, first tap")
+        if !languageMenu().waitForExistence(timeout: 2) {
+            captureLanguage(prefix + "-first-tap-no-open-menu")
+            hold(anchor, label: prefix + ": native long-press opening after first tap did not keep menu open")
+        }
+        XCTAssertTrue(languageMenu().waitForExistence(timeout: 5))
+    }
+
+    private func staticOptics(background: String, style: String) {
+        settleDuration = 0.7
+        for scene in ["toggle", "segmented", "slider", "buttons", "presentations", "language"] {
+            launch(scene: scene, background: background, style: style, staticOptics: true)
+            let prefix = "optics-\(background)-\(style)-\(scene)"
+            captureLanguage(prefix + "-rest")
+            switch scene {
+            case "toggle":
+                for id in ["swiftui-toggle", "uikit-toggle"] {
+                    let control = app.switches[id]
+                    opticalHold(control, name: prefix + "-" + id + "-off-held")
+                    captureLanguage(prefix + "-" + id + "-on-rest")
+                    opticalHold(control, name: prefix + "-" + id + "-on-held")
+                }
+                opticalHold(app.tabBars["uikit-tabbar"].buttons["Settings"], name: prefix + "-dock-held")
+            case "segmented":
+                for id in ["swiftui-segmented", "uikit-segmented"] {
+                    opticalHold(app.segmentedControls[id].buttons["Third"], name: prefix + "-" + id + "-held")
+                }
+            case "slider":
+                for id in ["uikit-slider", "swiftui-slider"] {
+                    opticalHold(app.sliders[id], point: CGVector(dx: 0.25, dy: 0.5), name: prefix + "-" + id + "-held")
+                }
+            case "buttons":
+                for id in ["glass-button", "glass-prominent-button", "glass-circle-button"] {
+                    opticalHold(app.buttons[id], name: prefix + "-" + id + "-held")
+                }
+            case "presentations":
+                tap(app.buttons["show-sheet"], label: prefix + ": present native sheet")
+                XCTAssertTrue(app.staticTexts["sheet-title"].waitForExistence(timeout: 5))
+                captureLanguage(prefix + "-sheet-rest")
+                opticalHold(app.buttons["dismiss-sheet"], name: prefix + "-sheet-dismiss-held")
+                tap(app.buttons["show-menu"], label: prefix + ": present native menu")
+                let action = app.buttons["First action"]
+                XCTAssertTrue(action.waitForExistence(timeout: 5))
+                captureLanguage(prefix + "-menu-rest")
+                opticalHold(action, name: prefix + "-menu-row-held")
+            case "language":
+                openOpticalLanguageMenu(prefix: prefix)
+                let menu = languageMenu()
+                captureLanguage(prefix + "-menu-rest")
+                let english = menu.buttons.matching(NSPredicate(format: "label == %@", "English")).firstMatch
+                opticalHold(english, name: prefix + "-menu-row-held")
+            default: XCTFail("Unknown optics scene")
+            }
+            app.terminate()
+        }
+    }
+
+    /// A host observer reads this durable signal and takes a simctl display
+    /// screenshot while the synchronous public press is running. Its timestamp
+    /// bracket must later fall entirely within an actual delivered DOWN/UP pair.
+    /// The XCTAttachment immediately after press would be a released state, so
+    /// it is deliberately not named or used as a held-state reference.
+    private func opticalHold(_ target: XCUIElement, point: CGVector = CGVector(dx: 0.5, dy: 0.5),
+                             name: String, duration: TimeInterval = 2.6) {
+        XCTAssertTrue(target.exists)
+        let coordinate = target.coordinate(withNormalizedOffset: point)
+        request(name, kind: "opticalHeldCapture", target: target,
+                extra: ["pressDuration": duration, "point": xy(coordinate.screenPoint)])
+        let signal: [String: Any] = ["name": name, "run": app.launchEnvironment["REFERENCE_RUN_ID"] ?? "",
+                                     "requestedAtUnixSeconds": Date().timeIntervalSince1970,
+                                     "point": xy(coordinate.screenPoint), "pressDuration": duration,
+                                     "targetIdentifier": target.identifier, "targetLabel": target.label,
+                                     "targetValue": target.value as? String ?? "",
+                                     "targetFramePt": ["x": target.frame.minX, "y": target.frame.minY,
+                                                       "w": target.frame.width, "h": target.frame.height]]
+        let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("optics-capture-signals.jsonl")
+        var data = try! JSONSerialization.data(withJSONObject: signal, options: [.sortedKeys])
+        data.append(10)
+        if !FileManager.default.fileExists(atPath: url.path) { FileManager.default.createFile(atPath: url.path, contents: nil) }
+        let handle = try! FileHandle(forWritingTo: url)
+        try! handle.seekToEnd(); try! handle.write(contentsOf: data); try! handle.synchronize(); try! handle.close()
+        coordinate.press(forDuration: duration)
+        pause()
+    }
+
+    private func launch(scene: String, background: String, focused: Bool = false, tabCount: Int = 3,
+                        style: String = "light", staticOptics: Bool = false) {
         app = XCUIApplication()
-        app.launchArguments = ["-ReferenceScene", scene, "-ReferenceBackground", background]
+        app.launchArguments = ["-ReferenceScene", scene, "-ReferenceBackground", background,
+                               "-ReferenceInterfaceStyle", style]
+        if tabCount == 4 { app.launchArguments += ["-ReferenceTabCount", "4"] }
+        if focused { app.launchArguments.append("-ReferenceFocusedTrace") }
+        if staticOptics { app.launchArguments.append("-ReferenceStaticOptics") }
         app.launchEnvironment["REFERENCE_RUN_ID"] = "\(name)-\(UUID().uuidString)"
         app.launch()
         XCTAssertTrue(app.staticTexts["reference-title"].waitForExistence(timeout: 10))
@@ -156,6 +463,7 @@ final class NativeReferenceTests: XCTestCase {
     }
 
     private func tabBar(background: String) {
+        settleDuration = 1.65
         launch(scene: "toggle", background: background)
         let control = app.tabBars["uikit-tabbar"]
         XCTAssertTrue(control.waitForExistence(timeout: 5))

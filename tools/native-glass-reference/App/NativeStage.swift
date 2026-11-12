@@ -12,6 +12,11 @@ struct NativeStage: View {
     @State private var showSheet = false
     @State private var showAlert = false
     @State private var buttonCount = 0
+    @State private var language = "zh-CN"
+    private let languages = [
+        ("zh-CN", "简体中文"), ("zh-TW", "繁體中文"), ("en", "English"),
+        ("ja", "日本語"), ("es", "Español")
+    ]
 
     var body: some View {
         Group {
@@ -104,6 +109,14 @@ struct NativeStage: View {
                     .buttonStyle(GlassButtonStyle())
                     .accessibilityIdentifier("show-menu")
                 }
+            case .language:
+                VStack(alignment: .leading, spacing: 16) {
+                    nativeLanguageMenu
+                    Text("Selected: \(languageLabel)")
+                        .font(.system(size: 12, design: .monospaced))
+                        .accessibilityIdentifier("language-selection")
+                    Spacer()
+                }
             }
         }
         .font(.system(size: 16))
@@ -129,6 +142,52 @@ struct NativeStage: View {
         } message: {
             Text("System-provided alert, controls, material, and transition.")
         }
+    }
+
+    private var languageLabel: String { languages.first { $0.0 == language }?.1 ?? language }
+
+    // Same native composition and update scheduling as Sleepy's LanguageSection.
+    // The reference does not rebuild an app locale or replace system menu transitions.
+    private var nativeLanguageMenu: some View {
+        Menu {
+            Picker("语言", selection: Binding(
+                get: { language },
+                set: { code in
+                    ReferenceTrace.shared.add(["event": "language-selection", "phase": "binding-setter",
+                                               "previous": language, "value": code])
+                    guard code != language else { return }
+                    DispatchQueue.main.async {
+                        language = code
+                        ReferenceTrace.shared.add(["event": "language-selection", "phase": "async-state-commit",
+                                                   "value": code])
+                    }
+                }
+            )) {
+                ForEach(languages, id: \.0) { code, label in Text(label).tag(code) }
+            }
+            .pickerStyle(.inline)
+        } label: {
+            HStack(spacing: 12) {
+                Text("语言").font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color(uiColor: .label))
+                Spacer(minLength: 0)
+                HStack(spacing: 4) {
+                    Text(languageLabel).font(.system(size: 16)).lineLimit(1)
+                    Image(systemName: "chevron.down").font(.system(size: 12))
+                }
+                .foregroundColor(Color(uiColor: .secondaryLabel))
+                .frame(maxWidth: 180, alignment: .trailing)
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color(uiColor: .secondarySystemGroupedBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            .contentShape(Rectangle())
+        }
+        .menuStyle(.borderlessButton)
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("language-menu")
+        .accessibilityValue(languageLabel)
     }
 
     private func valueChanged(_ control: String, _ value: Any) {

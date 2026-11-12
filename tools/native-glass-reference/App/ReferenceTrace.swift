@@ -5,6 +5,7 @@ import UIKit
 final class ReferenceTrace {
     static let shared = ReferenceTrace()
     let origin = CACurrentMediaTime()
+    let originUnixSeconds = Date().timeIntervalSince1970
     let runID: String
     let directory: URL
     private let handle: FileHandle
@@ -50,7 +51,7 @@ final class ReferenceTrace {
     func beginSession(window: UIWindow) {
         let bounds = window.bounds
         let metadata: [String: Any] = [
-            "schema": 1,
+            "schema": 2,
             "run": runID,
             "os": ProcessInfo.processInfo.operatingSystemVersionString,
             "device": UIDevice.current.model,
@@ -59,7 +60,11 @@ final class ReferenceTrace {
             "screenScale": window.screen.scale,
             "maximumFramesPerSecond": window.screen.maximumFramesPerSecond,
             "captureFramesPerSecond": 60,
+            "focusedMenuObservation": ProcessInfo.processInfo.arguments.contains("-ReferenceFocusedTrace"),
             "originUptimeSeconds": origin,
+            "originUnixSeconds": originUnixSeconds,
+            "frameClock": "captureStartT...captureEndT bracket sequential presentation reads; t is row enqueue time",
+            "effectiveOpacityScope": "product of presentation opacity along UIView ancestors; excludes extra CALayer ancestors and material shader coverage",
             "coordinates": "window points; normalized coordinates divide by window bounds",
             "tintSRGB": [0.0, 0.65, 0.75, 1.0],
             "backgrounds": [
@@ -159,6 +164,82 @@ final class PresentationRecorder: NSObject {
     private var previousTimestamp: CFTimeInterval?
     private var frame = 0
 
+    // Read only public CALayer / CAAnimation properties. Private view class names
+    // merely select which native materials to observe; no private KVC is used.
+    private func animation(_ value: CAAnimation) -> [String: Any] {
+        var row: [String: Any] = [
+            "class": String(describing: type(of: value)), "duration": value.duration,
+            "beginTime": value.beginTime, "timeOffset": value.timeOffset, "speed": value.speed,
+            "repeatCount": value.repeatCount, "autoreverses": value.autoreverses,
+            "fillMode": value.fillMode.rawValue, "removedOnCompletion": value.isRemovedOnCompletion
+        ]
+        if let function = value.timingFunction {
+            var first: [Float] = [0, 0]
+            var second: [Float] = [0, 0]
+            function.getControlPoint(at: 1, values: &first)
+            function.getControlPoint(at: 2, values: &second)
+            row["timingControlPoints"] = [first, second]
+        }
+        if let basic = value as? CABasicAnimation {
+            row["keyPath"] = basic.keyPath ?? ""
+            row["from"] = basic.fromValue.map { String(describing: $0) } ?? ""
+            row["to"] = basic.toValue.map { String(describing: $0) } ?? ""
+            row["by"] = basic.byValue.map { String(describing: $0) } ?? ""
+        }
+        if let spring = value as? CASpringAnimation {
+            row["mass"] = spring.mass
+            row["stiffness"] = spring.stiffness
+            row["damping"] = spring.damping
+            row["initialVelocity"] = spring.initialVelocity
+            row["settlingDuration"] = spring.settlingDuration
+        }
+        if let keys = value as? CAKeyframeAnimation {
+            row["keyPath"] = keys.keyPath ?? ""
+            row["calculationMode"] = keys.calculationMode.rawValue
+            row["valueCount"] = keys.values?.count ?? 0
+            row["valuesPrefix"] = keys.values?.prefix(16).map { String(describing: $0) } ?? []
+            row["keyTimes"] = keys.keyTimes ?? []
+        }
+        if let group = value as? CAAnimationGroup {
+            row["animations"] = group.animations?.prefix(12).map(animation) ?? []
+        }
+        return row
+    }
+
+    private func layerAnimations(_ layer: CALayer) -> [[String: Any]] {
+        (layer.animationKeys() ?? []).compactMap { key in
+            guard let value = layer.animation(forKey: key) else { return nil }
+            var row = animation(value)
+            row["animationKey"] = key
+            return row
+        }
+    }
+
+    private func animatedSublayers(_ layer: CALayer) -> (rows: [[String: Any]], visited: Int, truncated: Bool) {
+        var rows: [[String: Any]] = []
+        var visited = 0
+        var truncated = false
+        func walk(_ candidate: CALayer, path: String, depth: Int) {
+            guard depth < 5, visited < 150 else { truncated = true; return }
+            visited += 1
+            let animations = layerAnimations(candidate)
+            if !animations.isEmpty {
+                let presented = candidate.presentation() ?? candidate
+                let rect = presented.convert(presented.bounds, to: nil)
+                rows.append(["path": path, "class": String(describing: type(of: candidate)),
+                             "x": rect.minX, "y": rect.minY, "w": rect.width, "h": rect.height,
+                             "opacity": presented.opacity, "animations": animations])
+            }
+            for (index, child) in (candidate.sublayers ?? []).enumerated() {
+                walk(child, path: path + "/\(index)", depth: depth + 1)
+            }
+        }
+        for (index, child) in (layer.sublayers ?? []).enumerated() {
+            walk(child, path: "layer/\(index)", depth: 0)
+        }
+        return (rows, visited, truncated)
+    }
+
     func start(window: UIWindow) {
         guard displayLink == nil else { return }
         self.window = window
@@ -180,7 +261,9 @@ final class PresentationRecorder: NSObject {
         var views: [[String: Any]] = []
         var visited = 0
         var truncated = false
-        func walk(_ view: UIView, path: String, depth: Int) {
+        let languageScene = (context()["scene"] as? String) == "language"
+        let focused = ProcessInfo.processInfo.arguments.contains("-ReferenceFocusedTrace")
+        func walk(_ view: UIView, path: String, depth: Int, inheritedOpacity: Float = 1, inheritedHidden: Bool = false) {
             guard depth <= 18, visited < 900 else { truncated = true; return }
             visited += 1
             let name = String(describing: type(of: view))
@@ -189,25 +272,42 @@ final class PresentationRecorder: NSObject {
             // Class-name inspection is observational only; no private methods,
             // properties, selectors, or animation keys are invoked or modified.
             let isMaterial = ["LiquidLens", "TabSelection", "TabBarPlatter", "SegmentLabel", "VisualEffect", "Glass"].contains { name.contains($0) }
-            if isControl || isMaterial || !identifier.isEmpty {
-                let layer = view.layer.presentation() ?? view.layer
+            let isMenuMotion = ["Portal", "SDF", "Transform", "ContextMenu"].contains { name.contains($0) }
+            let layer = view.layer.presentation() ?? view.layer
+            let effectiveOpacity = inheritedOpacity * layer.opacity
+            let effectiveHidden = inheritedHidden || view.isHidden
+            // Language runs retain every ancestor and menu descendant so an animated
+            // content child is not mistaken for its final, static outer container.
+            if (languageScene && !focused) || isControl || isMaterial || isMenuMotion || !identifier.isEmpty {
                 var rect = layer.convert(layer.bounds, to: nil)
                 if !rect.minX.isFinite || !rect.minY.isFinite || !rect.width.isFinite || !rect.height.isFinite {
                     rect = view.convert(view.bounds, to: window)
                 }
                 let transform = layer.transform
+                let sublayers = isMenuMotion ? animatedSublayers(view.layer) : (rows: [], visited: 0, truncated: false)
                 views.append([
                     "path": path, "class": name, "identifier": identifier,
                     "x": rect.minX, "y": rect.minY, "w": rect.width, "h": rect.height,
                     "boundsW": layer.bounds.width, "boundsH": layer.bounds.height,
                     "opacity": layer.opacity, "hidden": view.isHidden,
+                    "effectiveOpacity": effectiveOpacity, "effectiveHidden": effectiveHidden,
+                    "presentationAvailable": view.layer.presentation() != nil,
+                    "text": (view as? UILabel)?.text ?? "",
+                    "accessibilityLabel": view.accessibilityLabel ?? "",
                     "cornerRadius": layer.cornerRadius, "m11": transform.m11, "m22": transform.m22,
+                    "m12": transform.m12, "m21": transform.m21,
+                    "m41": transform.m41, "m42": transform.m42,
                     "background": layer.backgroundColor.map { String(describing: $0) } ?? "",
-                    "animationKeys": view.layer.animationKeys() ?? []
+                    "animationKeys": view.layer.animationKeys() ?? [],
+                    "animations": isMenuMotion ? layerAnimations(view.layer) : [],
+                    "animatedSublayers": sublayers.rows,
+                    "animatedSublayerVisits": sublayers.visited,
+                    "animatedSublayersTruncated": sublayers.truncated
                 ])
             }
             for (index, child) in view.subviews.enumerated() {
-                walk(child, path: path + "/\(index)", depth: depth + 1)
+                walk(child, path: path + "/\(index)", depth: depth + 1,
+                     inheritedOpacity: effectiveOpacity, inheritedHidden: effectiveHidden)
             }
         }
         // UIKit may host a native menu in another window; observe visible windows
@@ -226,7 +326,10 @@ final class PresentationRecorder: NSObject {
         row["displayTimestamp"] = link.timestamp
         row["targetTimestamp"] = link.targetTimestamp
         row["displayIntervalMs"] = previousTimestamp.map { (link.timestamp - $0) * 1_000 } ?? 0
-        row["captureCostMs"] = (CACurrentMediaTime() - startedAt) * 1_000
+        let endedAt = CACurrentMediaTime()
+        row["captureStartT"] = startedAt - ReferenceTrace.shared.origin
+        row["captureEndT"] = endedAt - ReferenceTrace.shared.origin
+        row["captureCostMs"] = (endedAt - startedAt) * 1_000
         row["visitedViews"] = visited
         row["truncated"] = truncated
         row["views"] = views
