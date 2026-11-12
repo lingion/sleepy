@@ -54,8 +54,8 @@ internal fun ScheduleToolbarLayout(
             }
         }
         if (mode == null) {
-            // A 48dp action stops at 32dp; its icon remains legible at 13.3dp.
-            // All side actions, including undo/redo, use the same scale.
+            // Scale the current appearance's actual action seats together,
+            // including undo/redo. Material retains 48dp; compact glass uses 36dp.
             for (scale in listOf(.95f, .9f, .85f, .8f, .75f, .7f, 2f / 3f)) {
                 side = ToolbarSideDensity(gap = 0.dp, scale = scale)
                 if (fits(WeekControlDensity.Full)) {

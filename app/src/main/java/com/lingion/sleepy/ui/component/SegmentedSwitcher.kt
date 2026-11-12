@@ -63,6 +63,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
@@ -129,6 +130,7 @@ fun <T> SegmentedSwitcher(
     // ui-ops 语义定位前缀：非空时每个可点击段注册 dbgTag("<prefix>#<index>")，
     // find/action 可按段号或 label 文本命中；默认 null 不打标，行为与旧版一致。
     dbgTagPrefix: String? = null,
+    occupiedHeight: Dp? = null,
 ) {
     SegmentedSwitcher(
         options = options.map { SegmentOption(it.first, it.second) },
@@ -137,6 +139,7 @@ fun <T> SegmentedSwitcher(
         modifier = modifier,
         containerColor = containerColor,
         dbgTagPrefix = dbgTagPrefix,
+        occupiedHeight = occupiedHeight,
     )
 }
 
@@ -149,6 +152,8 @@ fun <T> SegmentedSwitcher(
     modifier: Modifier = Modifier,
     containerColor: Color? = null,
     dbgTagPrefix: String? = null,
+    // Home may opt into its compact track height; other screens keep 48dp seats.
+    occupiedHeight: Dp? = null,
 ) {
     val colors = MaterialTheme.colorScheme
     val selectionColors = colors.selectionColors()
@@ -260,7 +265,7 @@ fun <T> SegmentedSwitcher(
 
     Box(
         modifier = modifier
-            .height(if (glassActive) maxOf(48.dp, visualHeight) else 42.dp)
+            .height(if (glassActive) maxOf(occupiedHeight ?: 48.dp, visualHeight) else 42.dp)
             .zIndex(if (glassActive && thumbLift > 0f) 1f else 0f)
             .onGloballyPositioned { coords ->
                 trackWidthPx = (coords.size.width - with(density) { horizontalInset.toPx() * 2 }).toInt().coerceAtLeast(0)

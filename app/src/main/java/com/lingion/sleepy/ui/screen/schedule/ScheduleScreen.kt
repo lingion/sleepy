@@ -322,14 +322,16 @@ fun ScheduleScreen(
             // Segmented Switcher — 选中态由调用方注入(会话级存活), 切换经回调上抛。
             // 隐藏时只释放这根 Bar 的空间, Pager 与当前 viewMode 不变。
             if (showViewSwitcher) {
+                val compactGlass = liquidGlassControlsEnabled()
                 SegmentedSwitcher(
                     options = ViewMode.entries.map { it to stringResource(it.labelRes) },
                     selected = viewMode,
                     onSelect = onViewModeChange,
                     dbgTagPrefix = "schedule_view_segment",
+                    occupiedHeight = if (compactGlass) 32.dp else null,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .padding(horizontal = 16.dp, vertical = if (compactGlass) 4.dp else 8.dp)
                 )
             }
 
@@ -680,6 +682,7 @@ internal fun TopBar(
     val fullTextWidth = with(density) { measurer.measure(weekLabel, labelStyle, softWrap = false).size.width.toDp() }
     val numberTextWidth = with(density) { measurer.measure(numberLabel, labelStyle, softWrap = false).size.width.toDp() }
     val groupedLabelWidth = maxOf(32.dp, numberTextWidth + 8.dp)
+    val actionSize = if (liquidGlassControlsEnabled()) 36.dp else 48.dp
     val openWeek = {
         if (isOnActual) menuOpen = true else onJumpToActual()
     }
@@ -689,17 +692,17 @@ internal fun TopBar(
             .padding(vertical = 6.dp),
         centerWidths = mapOf(
             WeekControlDensity.Full to with(density) {
-                (2 * 48.dp.roundToPx() + 2 * 8.dp.roundToPx() + 2 * 14.dp.roundToPx() + fullTextWidth.roundToPx()).toDp()
+                (2 * actionSize.roundToPx() + 2 * 8.dp.roundToPx() + 2 * 14.dp.roundToPx() + fullTextWidth.roundToPx()).toDp()
             },
             WeekControlDensity.Grouped to with(density) {
                 (2 * 32.dp.roundToPx() + 2 * 1.dp.roundToPx() + groupedLabelWidth.roundToPx()).toDp()
             },
         ),
         startWidths = ToolbarSideWidths(
-            48.dp + (if (historyPresent) 73.dp else 0.dp) + (if (scaleUncommitted) 56.dp else 0.dp),
-            48.dp + (if (historyPresent) 65.dp else 0.dp) + (if (scaleUncommitted) 48.dp else 0.dp),
+            actionSize + (if (historyPresent) 73.dp else 0.dp) + (if (scaleUncommitted) actionSize + 8.dp else 0.dp),
+            actionSize + (if (historyPresent) 65.dp else 0.dp) + (if (scaleUncommitted) actionSize else 0.dp),
         ),
-        endWidths = ToolbarSideWidths(104.dp, 96.dp),
+        endWidths = ToolbarSideWidths(actionSize * 2 + 8.dp, actionSize * 2),
         start = { side ->
             val gap = side.gap * side.scale
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -740,7 +743,7 @@ internal fun TopBar(
                 .clip(CircleShape).background(controlFill(colors.surfaceContainerHigh))
                 .dbgTag("schedule_week_group") else Modifier
             BoxWithConstraints {
-                val labelMaxWidth = (maxWidth - 96.dp - gap * 2).coerceAtLeast(0.dp)
+                val labelMaxWidth = (maxWidth - actionSize * 2 - gap * 2).coerceAtLeast(0.dp)
                 Row(groupModifier, verticalAlignment = Alignment.CenterVertically) {
                     if (grouped) {
                         GroupedWeekArrow(Icons.Outlined.ChevronLeft, "schedule_prev_week", interaction, onPrevWeek)
@@ -840,7 +843,7 @@ private fun WeekNavButton(
     }
     val interaction = remember { MutableInteractionSource() }
     Box(
-        Modifier.size(48.dp * scale).dbgTag(tag, role = "button")
+        Modifier.size(36.dp * scale).dbgTag(tag, role = "button")
             .clickable(interactionSource = interaction, indication = null, role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
