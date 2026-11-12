@@ -3,6 +3,7 @@ package com.lingion.sleepy.ui.screen.schedule
 import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
 import com.lingion.sleepy.ui.component.liquidglass.glassSurfaceBackground
+import com.lingion.sleepy.ui.component.liquidglass.rememberGlassMaterialScope
 import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.AnimatedVisibility
@@ -686,10 +687,12 @@ internal fun TopBar(
     val openWeek = {
         if (isOnActual) menuOpen = true else onJumpToActual()
     }
+    val toolbarBacking = rememberGlassMaterialScope(androidx.compose.ui.graphics.RectangleShape)
     ScheduleToolbarLayout(
         modifier = Modifier.fillMaxWidth()
-            .glassSurfaceBackground(colors.surface, androidx.compose.ui.graphics.RectangleShape)
+            .glassSurfaceBackground(colors.surface, androidx.compose.ui.graphics.RectangleShape, materialScope = toolbarBacking)
             .padding(vertical = 6.dp),
+        materialScope = toolbarBacking,
         centerWidths = mapOf(
             WeekControlDensity.Full to with(density) {
                 (2 * actionSize.roundToPx() + 2 * 8.dp.roundToPx() + 2 * 14.dp.roundToPx() + fullTextWidth.roundToPx()).toDp()

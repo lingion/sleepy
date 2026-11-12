@@ -11,6 +11,8 @@ import kotlin.math.ceil
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.ui.component.liquidglass.GlassMaterialContent
+import com.lingion.sleepy.ui.component.liquidglass.GlassMaterialScope
 
 internal enum class WeekControlDensity { Full, Grouped }
 /** Full spacing and zero internal spacing, before uniform scaling. */
@@ -24,6 +26,7 @@ internal fun ScheduleToolbarLayout(
     centerWidths: Map<WeekControlDensity, Dp>,
     startWidths: ToolbarSideWidths,
     endWidths: ToolbarSideWidths,
+    materialScope: GlassMaterialScope? = null,
     start: @Composable (ToolbarSideDensity) -> Unit,
     center: @Composable (WeekControlDensity) -> Unit,
     end: @Composable (ToolbarSideDensity) -> Unit,
@@ -67,10 +70,12 @@ internal fun ScheduleToolbarLayout(
         if (mode == null) {
             mode = WeekControlDensity.Grouped
         }
-        val left = subcompose("start") { Box { start(side) } }.single().measure(loose)
-        val right = subcompose("end") { Box { end(side) } }.single().measure(loose)
+        // All three custom slots share the toolbar's directly exported fill.
+        // Their icons/labels and optical layers never enter that source.
+        val left = subcompose("start") { GlassMaterialContent(materialScope) { Box { start(side) } } }.single().measure(loose)
+        val right = subcompose("end") { GlassMaterialContent(materialScope) { Box { end(side) } } }.single().measure(loose)
         val chosen = mode
-        val middle = subcompose("center-$chosen") { Box { center(chosen) } }.single().measure(
+        val middle = subcompose("center-$chosen") { GlassMaterialContent(materialScope) { Box { center(chosen) } } }.single().measure(
             loose.copy(maxWidth = centerWidths.getValue(chosen).roundToPx())
         )
         // Even an exceptionally narrow window stays on one row. Measure whole
