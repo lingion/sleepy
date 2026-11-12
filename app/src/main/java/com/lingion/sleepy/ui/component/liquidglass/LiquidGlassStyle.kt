@@ -294,6 +294,8 @@ data class LiquidGlassRim(
     val flat: Double,
     /** 增补的光而非盖上的白: iOS 深浅两种面板都被提亮。 */
     val shine: Double,
+    /** Empirical Sheet-only floor on the existing directional shine table, not an Apple parameter. */
+    val minimumShine: Double = 0.0,
 ) {
     fun scale(t: Double): LiquidGlassRim {
         val amount = t.coerceIn(0.0, 1.0)
@@ -302,13 +304,14 @@ data class LiquidGlassRim(
             corner = corner * amount,
             flat = flat * amount,
             shine = shine * amount,
+            minimumShine = minimumShine * amount,
         )
     }
 
     companion object {
-        /** A sheet retains its directional optical highlight without a menu's dark hairline. */
+        /** Empirical system-sheet edge fit through optical shine, without a painted hairline. */
         fun sheet(): LiquidGlassRim =
-            LiquidGlassRim(side = 0.0, corner = 0.0, flat = 0.0, shine = 0.16)
+            LiquidGlassRim(side = 0.0, corner = 0.0, flat = 0.0, shine = 0.24, minimumShine = 0.10)
 
         fun alert(dark: Boolean): LiquidGlassRim =
             if (dark) {

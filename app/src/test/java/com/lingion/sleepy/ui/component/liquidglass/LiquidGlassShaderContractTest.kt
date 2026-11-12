@@ -264,4 +264,23 @@ class LiquidGlassShaderContractTest {
         // side/corner/flat 是 CPU 画的渐变发丝线, 不进着色器。
         assertEquals(without.getValue("uRim").toList(), with.getValue("uRim").toList())
     }
+
+    @Test
+    fun sheetEdgeFitPreservesMenuAndAlertDirectionalCoefficients() {
+        // Independent reference values from the existing FLClash angular-light
+        // contract, including the unlit side endpoint. The Sheet-only floor
+        // must never brighten this endpoint for menus or alerts.
+        val referenceLight = floatArrayOf(.16f, .1088f, .0768f, .0608f, .0272f, .0112f, .0048f, 0f)
+        val referenceDark = floatArrayOf(.22f, .1496f, .1056f, .0836f, .0374f, .0154f, .0066f, 0f)
+        listOf(false, true).forEach { dark ->
+            listOf(LiquidGlassRim.menu(dark), LiquidGlassRim.alert(dark)).forEach { rim ->
+                assertEquals(0.0, rim.minimumShine, 0.0)
+                assertArrayEquals(
+                    if (dark) referenceDark else referenceLight,
+                    build(rim = rim).getValue("uShineLit"),
+                    1e-7f,
+                )
+            }
+        }
+    }
 }

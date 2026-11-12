@@ -211,7 +211,7 @@ internal object LiquidGlassShader {
      * @param outline pane 的轮廓路径; null = 圆角矩形
      * @param dualContours two convex contours in pane-local dp, with independent radial centers
      * @param goo goo 药丸布局; null = 无 goo
-     * @param rim 外圈; 只有 [LiquidGlassRim.shine] 进着色器(side/corner/flat 是 CPU 画的
+     * @param rim 外圈; [LiquidGlassRim.shine] 与方向亮度下限进入着色器(side/corner/flat 是 CPU 画的
      *   渐变发丝线, 不属 uniform)
      * @param veil 覆盖在纹理之上的均匀遮罩(直 alpha)
      */
@@ -328,6 +328,12 @@ internal object LiquidGlassShader {
             put("uShineShares", *FloatArray(12))
         } else {
             val shine = liquidGlassShineUniforms(size, rim.shine.toFloat(), corners.topLeft)
+            // A neutral system sheet retains an edge highlight along its long sides.
+            // This empirical floor reuses the existing angular interpolation, depth
+            // bands and per-pixel coverage. Other materials retain their exact table.
+            if (rim.minimumShine > 0.0) {
+                for (index in 8 until 16) shine[index] = max(shine[index], rim.minimumShine.toFloat())
+            }
             put("uShineTurns", *shine.copyOfRange(0, 8))
             put("uShineLit", *shine.copyOfRange(8, 16))
             put("uShineEnds", *shine.copyOfRange(16, 28))
