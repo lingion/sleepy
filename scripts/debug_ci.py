@@ -167,8 +167,10 @@ def prepare_source(source, plan):
     prepared = dict(plan)
     if plan.get("pr_head_sha"):
         verify_revision(revision, plan["pr_head_sha"])
-        git("fetch", "--no-tags", "--", plan["base_url"],
-            "+refs/heads/main:refs/remotes/debug-base/main")
+        # versionFromGit reads tags from this checkout. Replace the fork's tag
+        # namespace with the target's, including pruning fork-only version tags.
+        git("fetch", "--atomic", "--prune", "--no-tags", "--", plan["base_url"],
+            "+refs/heads/main:refs/remotes/debug-base/main", "+refs/tags/*:refs/tags/*")
         main_sha = git("rev-parse", "refs/remotes/debug-base/main")
         git("checkout", "--detach", main_sha)
         # 仅在 runner 创建临时提交，不推送或修改 PR 分支。
