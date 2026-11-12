@@ -26,9 +26,10 @@ internal class GlassDockMotion(initialPosition: Float) {
     val glow = SpringState(0f)
     val glowSpread = SpringState(0f)
     var dropping by mutableStateOf(false)
-    private val dragDeformation = NativeGlassDragDeformation(NativeGlassDragDeformation.Spec.Dock)
+    private val dragDeformation = NativeDockDeformation()
     private var deformationInteraction = false
     private var lastDeformationTarget = initialPosition
+    private var previouslyHeld = false
 
     /** Seat pitch in dp, supplied after the bar has been measured. */
     var distancePerPosition: Float = 0f
@@ -55,7 +56,9 @@ internal class GlassDockMotion(initialPosition: Float) {
             return
         }
         val scaledDelta = dt / scaleFactor
-        if (position.target != lastDeformationTarget && !held && !dragging && !dropping) {
+        if (held && !previouslyHeld && !dragging) dragDeformation.beginDirect()
+        previouslyHeld = held
+        if (position.target != lastDeformationTarget && !held && !dragging && !dropping && !deformationInteraction) {
             deformationInteraction = false
             dragDeformation.reset(position.target * distancePerPosition)
             jelly.jumpTo(0f)
@@ -73,7 +76,7 @@ internal class GlassDockMotion(initialPosition: Float) {
         glowSpread.tickDelta(scaledDelta)
 
         if (distancePerPosition != 0f && deformationInteraction) {
-            dragDeformation.advance(scaledDelta, position.target * distancePerPosition)
+            dragDeformation.advance(scaledDelta, position.target * distancePerPosition, dragging, lift.value)
             jelly.jumpTo(dragDeformation.x)
             jelly.velocity = dragDeformation.velocity
             jelly.isRunning = dragDeformation.isRunning
@@ -94,6 +97,7 @@ internal class GlassDockMotion(initialPosition: Float) {
     }
 
     private fun finish(held: Boolean) {
+        previouslyHeld = held
         position.jumpTo(position.target)
         lift.jumpTo(if (held) 1f else 0f)
         swell.jumpTo(if (held) 1f else 0f)
