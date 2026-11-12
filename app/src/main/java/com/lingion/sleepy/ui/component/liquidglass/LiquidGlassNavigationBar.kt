@@ -4,6 +4,7 @@ import android.os.Build
 import android.os.SystemClock
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,6 +39,7 @@ import androidx.compose.ui.MotionDurationScale
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -55,6 +57,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
@@ -65,7 +72,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsPropertyKey
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -222,6 +234,22 @@ fun LiquidGlassNavigationBar(
         glowSpring.springTo(0f, FlClashSprings.GlowOutSpring)
         glowSpreadSpring.springTo(1f, FlClashSprings.GlowOutSpring)
         swellSpring.springTo(0f, FlClashSprings.PressSpring)
+    }
+
+    fun commitDestination(index: Int) {
+        if (index != inputState.selected) {
+            inputState.selected = index
+            selectionRequest++
+            currentOnSelect(index)
+        }
+    }
+
+    fun activateDestination(index: Int) {
+        // A semantic/key action supersedes an unfinished pointer preview, while
+        // committing through the same controlled-selection guard as touch UP.
+        cancelInteraction()
+        lensSpring.springTo(index.toFloat(), FlClashSprings.TravelSpring)
+        commitDestination(index)
     }
 
     fun positionAt(xPx: Float): Float {
@@ -437,11 +465,7 @@ fun LiquidGlassNavigationBar(
                                         liftSpring.springTo(0f, FlClashSprings.LiftSpring)
                                     }
 
-                                    if (targetIndex != inputState.selected) {
-                                        inputState.selected = targetIndex
-                                        selectionRequest++
-                                        currentOnSelect(targetIndex)
-                                    }
+                                    commitDestination(targetIndex)
                                     change.consume()
                                 }
                             }
@@ -574,6 +598,8 @@ fun LiquidGlassNavigationBar(
                         tint = selectionColors.unselectedContent,
                         badgeTint = selectionColors.accent,
                         iconDrivers = iconDrivers,
+                        selectedIndex = clampedSelected,
+                        onActivate = ::activateDestination,
                     )
                 }
             }
@@ -895,7 +921,10 @@ fun LiquidGlassNavigationBar(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(barHeightDp)
-                            .padding(barPaddingDp),
+                            .padding(barPaddingDp)
+                            // This row is a second optical painting of the same
+                            // tabs. Only the outside row owns user-facing semantics.
+                            .clearAndSetSemantics {},
                     ) {
                         DestinationsRow(
                             items = items,
@@ -931,6 +960,8 @@ private fun DestinationsRow(
     tint: Color,
     badgeTint: Color,
     iconDrivers: List<NavIconDriver>,
+    selectedIndex: Int = -1,
+    onActivate: ((Int) -> Unit)? = null,
     itemTransform: (index: Int) -> DestinationTransform = { DestinationTransform.Identity },
 ) {
     Row(
@@ -940,10 +971,35 @@ private fun DestinationsRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         items.forEachIndexed { index, item ->
+            var heldKey by remember { mutableStateOf<Key?>(null) }
+            val accessibleTab = if (onActivate == null) Modifier else Modifier
+                .semantics(mergeDescendants = true) {
+                    role = Role.Tab
+                    selected = index == selectedIndex
+                    onClick { onActivate(index); true }
+                }
+                .onFocusChanged { if (!it.isFocused) heldKey = null }
+                .onKeyEvent { event ->
+                    val activationKey = event.key == Key.Enter || event.key == Key.NumPadEnter ||
+                        event.key == Key.Spacebar || event.key == Key.DirectionCenter
+                    if (!activationKey) false else {
+                        when (event.type) {
+                            KeyEventType.KeyDown -> heldKey = event.key
+                            KeyEventType.KeyUp -> {
+                                val activate = heldKey == event.key
+                                heldKey = null
+                                if (activate) onActivate(index)
+                            }
+                        }
+                        true
+                    }
+                }
+                .focusable()
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxHeight(),
+                    .fillMaxHeight()
+                    .then(accessibleTab),
                 contentAlignment = Alignment.Center,
             ) {
                 Column(
@@ -961,7 +1017,8 @@ private fun DestinationsRow(
                             fallback = item.icon,
                             tint = tint,
                             iconSize = 24.dp,
-                            contentDescription = item.label,
+                            // Text supplies the single label for the tab.
+                            contentDescription = null,
                         )
                         if (item.badge) {
                             Box(
