@@ -5,6 +5,9 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import kotlin.math.ceil
+import kotlin.math.max
+import kotlin.math.sqrt
 
 /**
  * FLClash 液态玻璃的 uniform 装配。
@@ -40,6 +43,64 @@ import androidx.compose.ui.graphics.Path
  * 显式给出, 默认全透明(= 不加 veil)。
  */
 internal object LiquidGlassShader {
+
+    /**
+     * Android exposes one RenderNode input per RuntimeShader RenderEffect. Pack two independent
+     * GPU branches into disjoint slots so the optical shader can read clear and Gaussian haze
+     * without blurring the clear branch. The packing itself never filters or rescales pixels.
+     */
+    const val HAZE_ATLAS_SHADER = """
+        uniform shader uTexture;
+        uniform float4 uSlot;
+
+        half4 main(float2 point) {
+            float2 local = point - uSlot.xy;
+            if (local.x < 0.0 || local.y < 0.0 ||
+                local.x >= uSlot.z || local.y >= uSlot.w) {
+                return half4(0.0);
+            }
+            return uTexture.eval(point);
+        }
+    """
+
+    data class HazeAtlas(
+        val paddingPx: Float,
+        val sizePx: Size,
+        val sourceOriginPx: Offset,
+        val clearBoundsPx: Rect,
+        val hazeBoundsPx: Rect,
+        val remainingBlurPx: Float,
+    )
+
+    /** Slots run along the short axis; a wide Dock does not need a second full-width margin. */
+    fun hazeAtlas(
+        sizePx: Size,
+        effectOriginPx: Offset,
+        hazeBlurPx: Float,
+        sampledBlurPx: Float,
+        minimumPaddingPx: Float = 0f,
+    ): HazeAtlas {
+        require(sizePx.width.isFinite() && sizePx.height.isFinite() && sizePx.minDimension > 0f)
+        require(hazeBlurPx.isFinite() && hazeBlurPx >= 0f)
+        require(sampledBlurPx.isFinite() && sampledBlurPx >= 0f)
+        val width = ceil(sizePx.width)
+        val height = ceil(sizePx.height)
+        val horizontal = width <= height
+        val shortSpan = if (horizontal) width else height
+        val remainingBlur = sqrt(max(hazeBlurPx * hazeBlurPx - sampledBlurPx * sampledBlurPx, 0f))
+        // kyant records the source with this symmetric margin. It both fits the second slot
+        // and gives the Gaussian its surrounding scene before either branch is packed.
+        val padding = ceil(max(max(shortSpan * 0.5f, remainingBlur * 3f), minimumPaddingPx))
+        return HazeAtlas(
+            paddingPx = padding,
+            sizePx = Size(ceil(sizePx.width + padding * 2f), ceil(sizePx.height + padding * 2f)),
+            sourceOriginPx = effectOriginPx + Offset(padding, padding),
+            clearBoundsPx = Rect(0f, 0f, width, height),
+            hazeBoundsPx = if (horizontal) Rect(width, 0f, width * 2f, height)
+                else Rect(0f, height, width, height * 2f),
+            remainingBlurPx = remainingBlur,
+        )
+    }
 
     /**
      * uniform 名 → float 个数。与 `assets/shaders/liquid_glass.agsl` 的声明一一对应。

@@ -2,6 +2,7 @@ package com.lingion.sleepy.ui.component.liquidglass
 
 import android.content.Context
 import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.ui.geometry.Offset
@@ -54,29 +55,43 @@ internal fun BackdropEffectScope.liquidGlass(
 
     try {
         val shaderSource = LiquidGlassShader.shaderSource(context)
-        val shader = obtainRuntimeShader("LiquidGlassShader", shaderSource)
-
         val currentSize = size
         if (currentSize.width <= 0f || currentSize.height <= 0f) return
 
         val corners = extractCornerRadii(currentSize)
         val sizeDp = Size(currentSize.width / density, currentSize.height / density)
+        val hazeAtlas = if (style.haze > 0.0) {
+            LiquidGlassShader.hazeAtlas(
+                sizePx = currentSize,
+                effectOriginPx = effectOffset,
+                hazeBlurPx = style.hazeBlur.toFloat() * density,
+                sampledBlurPx = sampledBlurPx,
+                minimumPaddingPx = padding,
+            ).also { padding = it.paddingPx }
+        } else null
+        val paneOrigin = hazeAtlas?.sourceOriginPx ?: effectOffset
 
         val sampling = LiquidGlassShader.sampling(
-            originPx = effectOffset,
+            originPx = if (hazeAtlas != null) Offset.Zero else effectOffset,
             texelsPerDp = density,
-            clampPx = Rect(0f, 0f, currentSize.width, currentSize.height),
+            clampPx = hazeAtlas?.clearBoundsPx ?: Rect(0f, 0f, currentSize.width, currentSize.height),
         )
-        val hazeSampling = if (style.haze > 0.0) sampling else null
+        val hazeSampling = hazeAtlas?.let {
+            LiquidGlassShader.sampling(
+                originPx = it.hazeBoundsPx.topLeft,
+                texelsPerDp = density,
+                clampPx = it.hazeBoundsPx,
+            )
+        }
 
         val uniforms = LiquidGlassShader.build(
             size = sizeDp,
             corners = corners,
             style = style,
-            originPx = effectOffset,
+            originPx = paneOrigin,
             density = density,
             stretch = 1f,
-            atlasSizePx = currentSize,
+            atlasSizePx = hazeAtlas?.sizePx ?: currentSize,
             sampling = sampling,
             heldFrostTexelPx = sampledBlurPx,
             hazeSampling = hazeSampling,
@@ -87,16 +102,24 @@ internal fun BackdropEffectScope.liquidGlass(
             glow = glow,
         )
 
+        val shader = obtainRuntimeShader("LiquidGlassShader", shaderSource)
         uniforms.forEach { (name, values) ->
             shader.setFloatUniform(name, values)
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val composeRenderEffect = android.graphics.RenderEffect.createRuntimeShaderEffect(
+            val materialEffect = android.graphics.RenderEffect.createRuntimeShaderEffect(
                 shader.asAndroidRuntimeShader(),
                 "uTexture",
-            ).asComposeRenderEffect()
-            effect(composeRenderEffect)
+            )
+            if (hazeAtlas != null) {
+                inputRenderEffect = createLiquidGlassHazeAtlasEffect(
+                    atlas = hazeAtlas,
+                    clearShader = obtainRuntimeShader("LiquidGlassClearAtlas", LiquidGlassShader.HAZE_ATLAS_SHADER).asAndroidRuntimeShader(),
+                    hazeShader = obtainRuntimeShader("LiquidGlassHazeAtlas", LiquidGlassShader.HAZE_ATLAS_SHADER).asAndroidRuntimeShader(),
+                ).asComposeRenderEffect()
+            }
+            effect(materialEffect.asComposeRenderEffect())
         }
     } catch (e: Throwable) {
         android.util.Log.w("LiquidGlassEffect", "RuntimeShader fallback to blur+vibrancy", e)
@@ -108,6 +131,38 @@ internal fun BackdropEffectScope.liquidGlass(
         }
         vibrancy()
     }
+}
+
+/** Two GPU branches over the same retained backdrop; no Bitmap readback or CPU blur. */
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+internal fun createLiquidGlassHazeAtlasEffect(
+    atlas: LiquidGlassShader.HazeAtlas,
+    clearShader: android.graphics.RuntimeShader,
+    hazeShader: android.graphics.RuntimeShader,
+): android.graphics.RenderEffect {
+    fun packed(
+        shader: android.graphics.RuntimeShader,
+        slot: Rect,
+        input: android.graphics.RenderEffect? = null,
+    ): android.graphics.RenderEffect {
+        shader.setFloatUniform("uSlot", slot.left, slot.top, slot.width, slot.height)
+        val dx = slot.left - atlas.sourceOriginPx.x
+        val dy = slot.top - atlas.sourceOriginPx.y
+        // Let the native Offset imagefilter track input bounds. A shader-only coordinate
+        // translation would hide the required source region from Skia's filter graph.
+        val positioned = if (input != null) android.graphics.RenderEffect.createOffsetEffect(dx, dy, input)
+            else android.graphics.RenderEffect.createOffsetEffect(dx, dy)
+        return android.graphics.RenderEffect.createChainEffect(
+            android.graphics.RenderEffect.createRuntimeShaderEffect(shader, "uTexture"), positioned,
+        )
+    }
+    val clear = packed(clearShader, atlas.clearBoundsPx)
+    val gaussian = if (atlas.remainingBlurPx > 0f) android.graphics.RenderEffect.createBlurEffect(
+        atlas.remainingBlurPx, atlas.remainingBlurPx, android.graphics.Shader.TileMode.CLAMP,
+    ) else null
+    val haze = packed(hazeShader, atlas.hazeBoundsPx, gaussian)
+    // The slots never overlap, so SRC_OVER preserves the clear texels without color mixing.
+    return android.graphics.RenderEffect.createBlendModeEffect(clear, haze, android.graphics.BlendMode.SRC_OVER)
 }
 
 private fun BackdropEffectScope.extractCornerRadii(size: Size): LiquidGlassCornerRadii {

@@ -44,7 +44,8 @@ uniform float4 uClamp;
 // already holds, as a capture is blurred before any pane reads it.
 uniform float2 uTexels;
 // As uSample and uClamp, for a capture blurred by the style's haze, and the
-// share of the backdrop seen through it.
+// share of the backdrop seen through it. Android packs a separate Gaussian
+// RenderEffect branch into this atlas slot; it must not alias the clear slot.
 uniform float4 uHazeSample;
 uniform float4 uHazeClamp;
 uniform float uHaze;
