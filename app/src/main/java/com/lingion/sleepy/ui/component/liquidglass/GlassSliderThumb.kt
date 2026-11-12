@@ -60,12 +60,7 @@ internal fun GlassSliderThumb(
     val lensStyle = LiquidGlassStyle.controlLens(scheme, dark).scale(lift.toDouble())
 
     // The ordinary track is a sibling, so the optical sampling graph cannot contain itself.
-    val samplingHost = if (LocalGlassOverlay.current) LocalGlassOverlaySamplingHost.current ?: host else host
-    val scene: Backdrop = if (LocalGlassOverlay.current) {
-        samplingHost.overlayBackdrop
-    } else {
-        samplingHost.backdropAt(maxOf(1f, LocalGlassDepth.current))
-    }
+    val scene = checkNotNull(rememberGlassSamplingBackdrop())
     val lensSource: Backdrop = if (trackBackdrop != null) {
         rememberCombinedBackdrop(scene, trackBackdrop)
     } else {

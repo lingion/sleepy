@@ -77,13 +77,11 @@ import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.ui.component.liquidglass.rememberGlassControlMotion
 import com.lingion.sleepy.ui.component.liquidglass.GlassControlMotionSpec
 import com.lingion.sleepy.ui.component.liquidglass.glassLensWidth
-import com.lingion.sleepy.ui.component.liquidglass.LocalGlassDepth
 import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
-import com.lingion.sleepy.ui.component.liquidglass.LocalGlassOverlay
-import com.lingion.sleepy.ui.component.liquidglass.LocalGlassOverlaySamplingHost
 import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassStyle
 import com.lingion.sleepy.ui.component.liquidglass.liquidGlass
 import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassHaptics
+import com.lingion.sleepy.ui.component.liquidglass.rememberGlassSamplingBackdrop
 import androidx.compose.ui.zIndex
 import kotlin.math.roundToInt
 
@@ -207,8 +205,7 @@ fun <T> SegmentedSwitcher(
 
     // 轨道像素宽(padding 后的可用宽) — thumb 像素位置与字符覆盖率共同的真值
 
-    val samplingHost = if (LocalGlassOverlay.current) LocalGlassOverlaySamplingHost.current ?: glassHost else glassHost
-    val scene = if (LocalGlassOverlay.current) samplingHost?.overlayBackdrop else samplingHost?.backdropAt(LocalGlassDepth.current)
+    val scene = rememberGlassSamplingBackdrop()
     // Only the ordinary sibling backing is recorded. It never contains this lens.
     val trackBackdrop = rememberLayerBackdrop()
     // Native UISegmentLabel keeps its 1× transform while the lens locally refracts

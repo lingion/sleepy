@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.backdrop.BackdropRenderOptions
+import com.kyant.backdrop.backdrops.LayerBackdrop
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
@@ -54,6 +55,7 @@ fun Modifier.glassControl(
     interactionSource: MutableInteractionSource? = null,
     placementLayer: Boolean = true,
     pressedContentAlpha: Float = 1f,
+    exportedBackdrop: LayerBackdrop? = null,
 ): Modifier {
     check(!LocalGlassSourceContent.current) { "An optical consumer cannot be recorded as an ordinary source" }
     val host = LocalGlassHost.current
@@ -75,10 +77,12 @@ fun Modifier.glassControl(
         GlassMaterialRole.Alert -> LiquidGlassRim.alert(dark)
     }
     val samplingHost = if (isOverlay) LocalGlassOverlaySamplingHost.current ?: host else host
-    val filterBand = samplingHost.filterBand(consumerDepth, isOverlay, material.blur.toFloat())
-    val backdrop = remember(samplingHost, consumerDepth, isOverlay, filterBand) {
-        filterBand?.backdrop(samplingHost) ?: if (isOverlay) samplingHost.overlayBackdrop else samplingHost.backdropAt(consumerDepth)
-    }
+    // A global filter contains only its host's prefix. Reusing it inside a
+    // material scope would skip that parent backing and expose the scene below.
+    val inheritedMaterial = LocalGlassMaterialBackdrop.current
+    val filterBand = if (inheritedMaterial == null) samplingHost.filterBand(consumerDepth, isOverlay, material.blur.toFloat()) else null
+    val scene = rememberGlassSamplingBackdrop()
+    val backdrop = remember(samplingHost, scene, filterBand) { filterBand?.backdrop(samplingHost) ?: checkNotNull(scene) }
     val contentPlacementLayer = placementLayer && LocalGlassPlacementLayer.current
     val renderOptions = remember(contentPlacementLayer) {
         if (contentPlacementLayer) BackdropRenderOptions.Default else BackdropRenderOptions(placementLayer = false)
@@ -155,6 +159,7 @@ fun Modifier.glassControl(
         .drawPlainBackdrop(
             renderOptions = renderOptions,
             backdrop = backdrop,
+            exportedBackdrop = exportedBackdrop,
             shape = { shape },
             effects = {
                 liquidGlass(

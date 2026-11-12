@@ -160,8 +160,7 @@ fun GlassSwitch(
         minimum = 24f + 13f * geometryLift)
     val thumbShape = androidx.compose.foundation.shape.RoundedCornerShape(50)
     val track = rememberLayerBackdrop()
-    val samplingHost = if (LocalGlassOverlay.current) LocalGlassOverlaySamplingHost.current ?: host else host
-    val scene = if (LocalGlassOverlay.current) samplingHost.overlayBackdrop else samplingHost.backdropAt(LocalGlassDepth.current)
+    val scene = checkNotNull(rememberGlassSamplingBackdrop())
     val trackBackdrop = rememberCombinedBackdrop(scene, track)
     val context = LocalContext.current
     val dark = LocalDarkTheme.current

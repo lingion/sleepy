@@ -80,21 +80,29 @@ fun GlassAlertDialog(
     val parentScene = LocalGlassPopupScene.current ?: LocalGlassHost.current
     val popupScene = rememberGlassHostState()
     val carrierShape = if (glass && shape == AlertDialogDefaults.shape) FlClashGlassShape(34f) else shape
+    val materialScope = rememberGlassMaterialScope(carrierShape, parentScene?.overlayBackdrop)
     CompositionLocalProvider(
         LocalGlassOverlay provides glass,
         LocalGlassOverlaySamplingHost provides parentScene,
         LocalGlassPopupScene provides popupScene,
+        LocalGlassMaterialBackdrop provides null,
     ) {
-        MaterialAlertDialog(
-            onDismissRequest = onDismissRequest,
-            confirmButton = { GlassDialogScrim(nativeLightScrim); confirmButton() },
-            modifier = modifier.recordGlassPopupScene(popupScene).glassControl(shape = carrierShape, enabled = false, registerPane = false, role = GlassMaterialRole.Alert),
-            dismissButton = dismissButton, icon = icon, title = title, text = text, shape = carrierShape,
-            containerColor = if (glass) Color.Transparent else containerColor,
-            iconContentColor = iconContentColor, titleContentColor = titleContentColor,
-            textContentColor = textContentColor, tonalElevation = if (glass) 0.dp else tonalElevation,
-            properties = properties,
+        val opticalModifier = modifier.recordGlassPopupScene(popupScene).trackGlassMaterial(materialScope).glassControl(
+            shape = carrierShape, enabled = false, registerPane = false, role = GlassMaterialRole.Alert,
+            exportedBackdrop = materialScope?.exported,
         )
+        GlassMaterialContent(materialScope) {
+            MaterialAlertDialog(
+                onDismissRequest = onDismissRequest,
+                confirmButton = { GlassDialogScrim(nativeLightScrim); confirmButton() },
+                modifier = opticalModifier,
+                dismissButton = dismissButton, icon = icon, title = title, text = text, shape = carrierShape,
+                containerColor = if (glass) Color.Transparent else containerColor,
+                iconContentColor = iconContentColor, titleContentColor = titleContentColor,
+                textContentColor = textContentColor, tonalElevation = if (glass) 0.dp else tonalElevation,
+                properties = properties,
+            )
+        }
     }
 }
 
@@ -117,25 +125,32 @@ fun GlassDropdownMenu(
     val parentScene = LocalGlassPopupScene.current ?: LocalGlassHost.current
     val popupScene = rememberGlassHostState()
     val carrierShape = if (glass && shape == MenuDefaults.shape) FlClashGlassShape(24f) else shape
+    val materialScope = rememberGlassMaterialScope(carrierShape, parentScene?.overlayBackdrop)
     CompositionLocalProvider(
         LocalGlassOverlay provides glass,
         LocalGlassOverlaySamplingHost provides parentScene,
         LocalGlassPopupScene provides popupScene,
         LocalGlassPlacementLayer provides false,
+        LocalGlassMaterialBackdrop provides null,
     ) {
-        MaterialDropdownMenu(
-            expanded, onDismissRequest,
-            // Material's dropdown owns the content layer. A second backdrop placement layer
-            // drops its foreground on API 33; the backdrop's draw-time outline clip remains.
-            modifier.recordGlassPopupScene(popupScene).glassControl(
-                shape = carrierShape, enabled = false, registerPane = false,
-                role = GlassMaterialRole.Menu, placementLayer = false,
-            ),
-            offset, scrollState, properties, carrierShape,
-            if (glass) Color.Transparent else containerColor,
-            if (glass) 0.dp else tonalElevation,
-            shadowElevation, border, content,
+        // Capture the shell's prefix before publishing its material to children.
+        val opticalModifier = modifier.recordGlassPopupScene(popupScene).trackGlassMaterial(materialScope).glassControl(
+            shape = carrierShape, enabled = false, registerPane = false,
+            role = GlassMaterialRole.Menu, placementLayer = false,
+            exportedBackdrop = materialScope?.exported,
         )
+        GlassMaterialContent(materialScope) {
+            MaterialDropdownMenu(
+                expanded, onDismissRequest,
+                // Material's dropdown owns the content layer. A second backdrop placement layer
+                // drops its foreground on API 33; the backdrop's draw-time outline clip remains.
+                opticalModifier,
+                offset, scrollState, properties, carrierShape,
+                if (glass) Color.Transparent else containerColor,
+                if (glass) 0.dp else tonalElevation,
+                shadowElevation, border, content,
+            )
+        }
     }
 }
 
@@ -153,6 +168,7 @@ fun GlassDialog(
         LocalGlassOverlay provides glass,
         LocalGlassOverlaySamplingHost provides parentScene,
         LocalGlassPopupScene provides popupScene,
+        LocalGlassMaterialBackdrop provides null,
     ) {
         androidx.compose.ui.window.Dialog(onDismissRequest, properties) {
             GlassDialogScrim(nativeLightScrim)
@@ -175,21 +191,29 @@ fun GlassDatePickerDialog(
     val parentScene = LocalGlassPopupScene.current ?: LocalGlassHost.current
     val popupScene = rememberGlassHostState()
     val carrierShape = if (glass) FlClashGlassShape(34f) else androidx.compose.material3.DatePickerDefaults.shape
+    val materialScope = rememberGlassMaterialScope(carrierShape, parentScene?.overlayBackdrop)
     CompositionLocalProvider(
         LocalGlassOverlay provides glass,
         LocalGlassOverlaySamplingHost provides parentScene,
         LocalGlassPopupScene provides popupScene,
+        LocalGlassMaterialBackdrop provides null,
     ) {
-        androidx.compose.material3.DatePickerDialog(
-            onDismissRequest, { GlassDialogScrim(nativeLightScrim); confirmButton() },
-            modifier.recordGlassPopupScene(popupScene).glassControl(shape = carrierShape, enabled = false, registerPane = false, role = GlassMaterialRole.Alert),
-            shape = carrierShape,
-            dismissButton = dismissButton,
-            colors = androidx.compose.material3.DatePickerDefaults.colors(
-                containerColor = if (glass) Color.Transparent else androidx.compose.material3.DatePickerDefaults.colors().containerColor,
-            ),
-            content = content,
+        val opticalModifier = modifier.recordGlassPopupScene(popupScene).trackGlassMaterial(materialScope).glassControl(
+            shape = carrierShape, enabled = false, registerPane = false, role = GlassMaterialRole.Alert,
+            exportedBackdrop = materialScope?.exported,
         )
+        GlassMaterialContent(materialScope) {
+            androidx.compose.material3.DatePickerDialog(
+                onDismissRequest, { GlassDialogScrim(nativeLightScrim); confirmButton() },
+                opticalModifier,
+                shape = carrierShape,
+                dismissButton = dismissButton,
+                colors = androidx.compose.material3.DatePickerDefaults.colors(
+                    containerColor = if (glass) Color.Transparent else androidx.compose.material3.DatePickerDefaults.colors().containerColor,
+                ),
+                content = content,
+            )
+        }
     }
 }
 
@@ -217,26 +241,33 @@ fun GlassModalBottomSheet(
     )
     val parentScene = LocalGlassPopupScene.current ?: LocalGlassHost.current
     val popupScene = rememberGlassHostState()
+    val materialScope = rememberGlassMaterialScope(shape, parentScene?.overlayBackdrop)
     CompositionLocalProvider(
         LocalGlassOverlay provides glass,
         LocalGlassOverlaySamplingHost provides parentScene,
         LocalGlassPopupScene provides popupScene,
+        LocalGlassMaterialBackdrop provides null,
     ) {
-        MaterialBottomSheet(
-            onDismissRequest = onDismissRequest,
-            // Material 在传入的 modifier 之后放置 draggableAnchors；将录制和玻璃裁切
-            // 移至 sheet 的实际位置，再抵消内部位移，避免半高 sheet 被原点处的 clip 裁掉。
-            // 两次 offset 不改变测量尺寸，Material 仍拥有高度、手柄、拖动与输入法 insets。
-            modifier = modifier
-                .offset { IntOffset(0, sheetState.requireOffset().roundToInt()) }
-                .recordGlassPopupScene(popupScene)
-                .glassControl(shape = shape, enabled = false, registerPane = false, role = GlassMaterialRole.Menu)
-                .offset { IntOffset(0, -sheetState.requireOffset().roundToInt()) },
-            sheetState = sheetState, sheetMaxWidth = sheetMaxWidth, shape = shape,
-            containerColor = if (glass) Color.Transparent else containerColor,
-            contentColor = contentColor, tonalElevation = if (glass) 0.dp else tonalElevation,
-            scrimColor = effectiveScrimColor, dragHandle = dragHandle, contentWindowInsets = contentWindowInsets,
-            properties = properties, content = content,
-        )
+        val opticalModifier = modifier
+            .offset { IntOffset(0, sheetState.requireOffset().roundToInt()) }
+            .recordGlassPopupScene(popupScene)
+            .trackGlassMaterial(materialScope)
+            .glassControl(shape = shape, enabled = false, registerPane = false, role = GlassMaterialRole.Menu,
+                exportedBackdrop = materialScope?.exported)
+            .offset { IntOffset(0, -sheetState.requireOffset().roundToInt()) }
+        GlassMaterialContent(materialScope) {
+            MaterialBottomSheet(
+                onDismissRequest = onDismissRequest,
+                // Material 在传入的 modifier 之后放置 draggableAnchors；将录制和玻璃裁切
+                // 移至 sheet 的实际位置，再抵消内部位移，避免半高 sheet 被原点处的 clip 裁掉。
+                // 两次 offset 不改变测量尺寸，Material 仍拥有高度、手柄、拖动与输入法 insets。
+                modifier = opticalModifier,
+                sheetState = sheetState, sheetMaxWidth = sheetMaxWidth, shape = shape,
+                containerColor = if (glass) Color.Transparent else containerColor,
+                contentColor = contentColor, tonalElevation = if (glass) 0.dp else tonalElevation,
+                scrimColor = effectiveScrimColor, dragHandle = dragHandle, contentWindowInsets = contentWindowInsets,
+                properties = properties, content = content,
+            )
+        }
     }
 }
