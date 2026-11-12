@@ -15,6 +15,7 @@ internal data class GlassControlMotionSpec(
     val rise: SpringDescription,
     val fall: SpringDescription,
     val release: Release = Release.NearDestination,
+    val activationRelease: Release = release,
 ) {
     enum class Release { NearDestination, FirstPeak, OnRelease }
 
@@ -35,6 +36,15 @@ internal data class GlassControlMotionSpec(
             SpringDescription.withDampingRatio(mass = 1.0, stiffness = 635.0, ratio = 1.0),
             FlClashSprings.LiftSpring,
             release = Release.OnRelease,
+            activationRelease = Release.NearDestination,
+        )
+
+        // Clean SwiftUI Slider held/release trace, 2026-11-12. Separate fits:
+        // rise k=713, zeta=.547; fall k=216, zeta=.779 (mass normalized to one).
+        val NativeSlider = GlassControlMotionSpec(
+            SpringDescription.withDampingRatio(mass = 1.0, stiffness = 713.0, ratio = .547),
+            SpringDescription.withDampingRatio(mass = 1.0, stiffness = 216.0, ratio = .779),
+            release = Release.OnRelease,
         )
     }
 }
@@ -43,6 +53,7 @@ internal data class GlassControlMotionSpec(
 internal class GlassControlMotion(
     initialPosition: Float,
     private val spec: GlassControlMotionSpec = GlassControlMotionSpec.Dock,
+    travelDistanceDp: Float = 0f,
 ) {
     val position = SpringState(initialPosition)
     val elevation = SpringState(0f)
@@ -51,24 +62,55 @@ internal class GlassControlMotion(
     private var dragging = false
     private var activation = 0
     private var riseHasPeaked = false
+    private var releasePhase = spec.release
     private var dropping by mutableStateOf(false)
+    private var deformationInteraction = false
+    private var distancePerPositionDp = travelDistanceDp.takeIf { it.isFinite() && it != 0f } ?: 0f
+    private val dragDeformation = NativeGlassDragDeformation(
+        if (spec == GlassControlMotionSpec.Dock) NativeGlassDragDeformation.Spec.Dock
+        else NativeGlassDragDeformation.Spec.Segment,
+        initialPosition * distancePerPositionDp,
+    )
 
     val lift: Float get() = elevation.value.coerceIn(0f, 1f)
-    val geometryLift: Float get() = elevation.value.coerceIn(0f, 1.14f)
-    val stretch: Float get() = jelly.value.coerceIn(-.18f, .3f) * lift
+    val geometryLift: Float get() = elevation.value.coerceIn(-.14f, 1.14f)
+    // Native deformation rebounds across touch-up while elevation contracts;
+    // multiplying by lift would erase the measured release-side rebound.
+    val stretch: Float get() = jelly.value
+    val stretchY: Float get() = dragDeformation.verticalDeformation(jelly.value)
     val isRunning: Boolean get() = dropping || position.isRunning || elevation.isRunning || jelly.isRunning
+
+    /** dp per logical position unit: full travel for 0..1, seat pitch for indices. */
+    fun updateMotionDistance(distanceDp: Float) {
+        val measured = distanceDp.takeIf { it.isFinite() && it != 0f } ?: 0f
+        if (measured == distancePerPositionDp) return
+        distancePerPositionDp = measured
+        dragDeformation.reset(position.target * measured)
+        jelly.jumpTo(0f)
+    }
 
     fun update(target: Float, pressed: Boolean, dragging: Boolean, activation: Int = 0) {
         val activated = activation > this.activation
+        val interactiveInput = pressed || dragging || activated
+        val silentExternalChange = target != position.target && !interactiveInput && !this.pressed && !this.dragging
+        if (silentExternalChange) {
+            deformationInteraction = false
+            dragDeformation.reset(target * distancePerPositionDp)
+            jelly.jumpTo(0f)
+        } else if (interactiveInput && !deformationInteraction) {
+            dragDeformation.reset(position.value * distancePerPositionDp)
+            deformationInteraction = true
+        }
         this.activation = activation
         if (pressed && !this.pressed || activated) {
+            releasePhase = if (activated) spec.activationRelease else spec.release
             if (elevation.target != 1f) riseHasPeaked = false
             elevation.springTo(1f, spec.rise)
             dropping = !pressed
         } else if (!pressed && this.pressed) {
             dropping = true
         }
-        if (spec.release == GlassControlMotionSpec.Release.OnRelease && !pressed && (this.pressed || activated)) {
+        if (releasePhase == GlassControlMotionSpec.Release.OnRelease && !pressed && (this.pressed || activated)) {
             // A down/up pair may coalesce before its first visual frame. Keep
             // a partial pulse in that case instead of cancelling it at zero.
             val coalescedTap = activated && elevation.value == 0f && elevation.velocity == 0f
@@ -85,18 +127,22 @@ internal class GlassControlMotion(
     fun tick(dt: Double) {
         position.tickDelta(dt)
         elevation.tickDelta(dt)
-        jelly.tickDelta(dt)
+        if (distancePerPositionDp != 0f && deformationInteraction) {
+            dragDeformation.advance(dt, position.target * distancePerPositionDp)
+            // Preserve the existing observable drawing state without another
+            // spring filtering an already integrated deformation trajectory.
+            jelly.jumpTo(dragDeformation.x)
+            jelly.velocity = dragDeformation.velocity
+            jelly.isRunning = dragDeformation.isRunning
+            if (!dragDeformation.isRunning && !pressed && !dragging) deformationInteraction = false
+        } else if (!deformationInteraction) {
+            dragDeformation.reset(position.target * distancePerPositionDp)
+            jelly.jumpTo(0f)
+        }
         if (elevation.target == 1f && lift >= FlClashDockPhysics.LIFT_SNAP && elevation.velocity <= 0f) {
             riseHasPeaked = true
         }
-        val wobble = when {
-            dragging -> FlClashDockPhysics.JELLY_STRETCH *
-                FlClashDockPhysics.saturate(abs(position.velocity) / FlClashDockPhysics.JELLY_SPEED)
-            position.isRunning -> FlClashDockPhysics.wobbleTarget(position.velocity, position.acceleration)
-            else -> 0f
-        }
-        if (abs(wobble - jelly.target) > 1e-3f) jelly.springTo(wobble, FlClashSprings.JellySpring)
-        val canLower = when (spec.release) {
+        val canLower = when (releasePhase) {
             GlassControlMotionSpec.Release.FirstPeak -> riseHasPeaked
             GlassControlMotionSpec.Release.OnRelease -> lift >= .35f
             GlassControlMotionSpec.Release.NearDestination ->
@@ -113,6 +159,8 @@ internal class GlassControlMotion(
         position.jumpTo(position.target)
         elevation.jumpTo(if (pressed) 1f else 0f)
         jelly.jumpTo(0f)
+        dragDeformation.reset(position.target * distancePerPositionDp)
+        deformationInteraction = false
         dropping = false
         riseHasPeaked = pressed
     }
@@ -126,9 +174,11 @@ internal fun rememberGlassControlMotion(
     activation: Int = 0,
     enabled: Boolean = true,
     spec: GlassControlMotionSpec = GlassControlMotionSpec.Dock,
+    travelDistanceDp: Float = 0f,
 ): GlassControlMotion {
-    val motion = remember(spec) { GlassControlMotion(target, spec) }
-    LaunchedEffect(target, pressed, dragging, activation, enabled) {
+    val motion = remember(spec) { GlassControlMotion(target, spec, travelDistanceDp) }
+    LaunchedEffect(motion, travelDistanceDp) { motion.updateMotionDistance(travelDistanceDp) }
+    LaunchedEffect(motion, target, pressed, dragging, activation, enabled) {
         motion.update(target, pressed && enabled, dragging && enabled, activation)
         if (!enabled) motion.finish()
     }

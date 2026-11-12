@@ -45,7 +45,7 @@ class GlassControlMotionTest {
     }
 
     @Test fun movementStretchesAndBrakingSquashesBeforeReturningToRest() {
-        val motion = GlassControlMotion(0f)
+        val motion = GlassControlMotion(0f, travelDistanceDp = 112f)
         motion.update(0f, pressed = true, dragging = false)
         advance(motion, 640)
         var maximum = 0f
@@ -83,6 +83,17 @@ class GlassControlMotionTest {
         motion.finish()
         assertEquals(1f, motion.position.value, 0f)
         assertEquals(0f, motion.lift, 0f)
+        assertFalse(motion.isRunning)
+    }
+
+    @Test fun selectingAnUnselectedNativeSegmentCompletesThePulseAfterTouchUp() {
+        val motion = GlassControlMotion(0f, GlassControlMotionSpec.NativeSegmented)
+        motion.update(1f, pressed = false, dragging = false, activation = 1)
+        var peak = 0f
+        repeat(200) { motion.tick(.008); peak = maxOf(peak, motion.geometryLift) }
+        assertTrue("native B commit reaches held geometry before lowering: $peak", peak >= .975f)
+        assertEquals(0f, motion.geometryLift, .001f)
+        assertEquals(1f, motion.position.value, .001f)
         assertFalse(motion.isRunning)
     }
 

@@ -425,10 +425,11 @@ object FlClashDockPhysics {
         width: Float,
         height: Float,
         lift: Float,
+        stretchY: Float = -stretch * JELLY_ASPECT,
     ): Rect {
         val growth = LENS_GROWTH * 2f * lift
         val lensWidth = (width + growth) * (1f + stretch)
-        val lensHeight = (height + growth) * (1f - stretch * JELLY_ASPECT)
+        val lensHeight = (height + growth) * (1f + stretchY)
         return Rect(
             left = (position + 0.5f) * pitch - lensWidth / 2f,
             top = (height - lensHeight) / 2f,
