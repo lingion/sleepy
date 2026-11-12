@@ -1,0 +1,43 @@
+name: GlassNativeReference
+options:
+  bundleIdPrefix: com.codex.reference
+  deploymentTarget:
+    iOS: '26.0'
+settings:
+  base:
+    SWIFT_VERSION: '5.0'
+    CODE_SIGNING_ALLOWED: NO
+    TARGETED_DEVICE_FAMILY: '1,2'
+targets:
+  GlassNativeReference:
+    type: application
+    platform: iOS
+    sources: [App]
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: Glass Native Reference
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.codex.reference.GlassNativeReference
+  GlassNativeReferenceUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [UITests]
+    dependencies:
+      - target: GlassNativeReference
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  GlassNativeReference:
+    build:
+      targets:
+        GlassNativeReference: all
+        GlassNativeReferenceUITests: [test]
+    test:
+      targets: [GlassNativeReferenceUITests]
