@@ -4,14 +4,9 @@ import android.app.Activity
 import android.content.ContextWrapper
 import android.graphics.Bitmap
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
-import android.view.PixelCopy
 import android.view.View
 import android.view.Window
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,6 +23,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
@@ -61,12 +57,11 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
 import java.io.Writer
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
 /**
  * Product controls only: committed API 36 HWUI output, without replacement drawing.
  * Opt in with instrumentation arguments sliderCapture=true and optional sliderRunId.
+ * Four fixed optical inputs × two styles × two themes × initial/changed values.
  * Outputs: target debug app external files / unified-slider-appearance / run ID.
  */
 @RunWith(AndroidJUnit4::class)
@@ -74,10 +69,12 @@ import java.util.concurrent.TimeUnit
 class UnifiedSliderAppearanceCaptureTest {
     @get:Rule val compose = createComposeRule()
 
-    private data class Scene(val style: UiStyle, val dark: Boolean, val changed: Boolean = false) {
+    private data class Scene(val style: UiStyle, val dark: Boolean, val changed: Boolean = false,
+                             val background: OpticalBackground = OpticalBackground.fine_grid,
+                             val showControls: Boolean = true) {
         val styleName get() = if (style == UiStyle.Classic) "Material Design" else "Liquid Glass"
-        val phase get() = if (changed) "changed-ghost" else "initial"
-        val name get() = "${style.key}-${if (dark) "dark" else "light"}-$phase"
+        val phase get() = if (!showControls) "background-baseline" else if (changed) "changed-ghost" else "initial"
+        val name get() = "${background.name}-${style.key}-${if (dark) "dark" else "light"}-$phase"
     }
 
     private lateinit var root: View
@@ -88,7 +85,7 @@ class UnifiedSliderAppearanceCaptureTest {
 
     @Test fun captureBothStylesAndThemesWithBaselineGhosts() {
         val arguments = InstrumentationRegistry.getArguments()
-        assumeTrue("Pass -e sliderCapture true to export the eight GPU reference screenshots",
+        assumeTrue("Pass -e sliderCapture true to export 32 control and 16 background GPU screenshots",
             arguments.getString("sliderCapture").equals("true", ignoreCase = true))
         assumeTrue("This fixture records the API 36 GPU reference", Build.VERSION.SDK_INT == 36)
         val instrumentation = InstrumentationRegistry.getInstrumentation()
@@ -105,14 +102,18 @@ class UnifiedSliderAppearanceCaptureTest {
         val captures = JSONArray()
         val geometryFailures = JSONArray()
         val manifest = JSONObject()
-            .put("schema", 2).put("run_id", runId).put("package", context.packageName)
+            .put("schema", 3).put("run_id", runId).put("package", context.packageName)
             .put("sdk", Build.VERSION.SDK_INT).put("model", Build.MODEL)
             .put("build_fingerprint", Build.FINGERPRINT).put("density", density)
             .put("theme_preset", ThemePresets.KEY_DEFAULT)
             .put("renderer", "Product Compose controls; wait for HWUI frame commit, then PixelCopy window")
+            .put("background_inputs", JSONArray(OpticalBackground.entries.map { it.metadata() }))
+            .put("matrix", "4 identical background inputs × 2 styles × 2 themes × 2 value states = 32 control PNGs; 16 same-window plain-background baselines")
+            .put("optics", "Center/edge/saturation/gradient statistics are observations, not visual-equivalence thresholds. Compare every background; a single background cannot establish acceptance.")
             .put("dimensions_source", "Unclipped semantics layout bounds, in dp and px; no inferred painted dimensions")
             .put("untagged_drawing", "Canvas-only track, dots or ghosts without product tags remain visible in PNG; they are not assigned invented bounds")
             .put("requested_thumb_dp", JSONObject()
+                .put("appearance", "Liquid Glass only; Material Design retains default M3 handles/tracks and its original hue strip")
                 .put("shape", "horizontal oval")
                 .put("single", JSONObject().put("width", 37).put("height", 24))
                 .put("range", JSONObject().put("width", 27.75).put("height", 18))
@@ -122,30 +123,38 @@ class UnifiedSliderAppearanceCaptureTest {
             .put("captures", captures).put("geometry_failures", geometryFailures)
 
         File(directory, "dimensions.csv").bufferedWriter().use { csv ->
-            csv.appendLine("scene,style,theme,phase,control,tag,progress,left_dp,top_dp,width_dp,height_dp,left_px,top_px,width_px,height_px,png")
+            csv.appendLine("scene,background,style,theme,phase,control,tag,progress,left_dp,top_dp,width_dp,height_dp,left_px,top_px,width_px,height_px,png")
             for (style in listOf(UiStyle.Classic, UiStyle.LiquidGlass)) {
-                for (dark in listOf(false, true)) {
-                    // Keep the same control composition between initial and changed so
-                    // the second capture exercises actual controlled-value updates.
-                    for (changed in listOf(false, true)) {
-                        val current = Scene(style, dark, changed)
-                        compose.runOnIdle { scene = current }
-                        compose.waitForIdle()
-                        capture(current, directory, csv, captures)
-                        // Preserve every screenshot even if one appearance assertion
-                        // fails, so the exported evidence describes the actual output.
-                        try {
-                            assertProductGeometry(current)
-                        } catch (failure: AssertionError) {
-                            geometryFailures.put("${current.name}: ${failure.message}")
+                for (dark in listOf(false, true)) for (background in OpticalBackground.entries) {
+                    val baselineScene = Scene(style, dark, background = background, showControls = false)
+                    compose.runOnIdle { scene = baselineScene }
+                    compose.waitForIdle()
+                    val baseline = OpticalCaptureWindow(contentView, root, window).capture()
+                    val baselinePng = "${baselineScene.name}.png"
+                    baseline.saveOpticalPng(File(directory, baselinePng))
+                    try {
+                        // Keep the composition between initial/changed so the second
+                        // capture exercises an actual controlled-value update.
+                        for (changed in listOf(false, true)) {
+                            val current = Scene(style, dark, changed, background)
+                            compose.runOnIdle { scene = current }
+                            compose.waitForIdle()
+                            capture(current, directory, csv, captures, baseline, baselinePng)
+                            // Export every appearance even when geometry differs.
+                            try {
+                                assertProductGeometry(current)
+                            } catch (failure: AssertionError) {
+                                geometryFailures.put("${current.name}: ${failure.message}")
+                            }
+                            csv.flush()
+                            File(directory, "dimensions.json").writeText(manifest.toString(2))
                         }
-                        csv.flush()
-                        File(directory, "dimensions.json").writeText(manifest.toString(2))
-                    }
+                    } finally { baseline.recycle() }
                 }
             }
         }
-        assertEquals("four style/theme scenes, each with baseline and changed values", 8, captures.length())
+        writeOpticalMetricsCsv(File(directory, "optical-metrics.csv"), captures)
+        assertEquals("four backgrounds, each with four style/theme scenes and two value states", 32, captures.length())
         assertEquals("Appearance mismatches are recorded alongside every capture: $geometryFailures", 0, geometryFailures.length())
     }
 
@@ -172,9 +181,9 @@ class UnifiedSliderAppearanceCaptureTest {
                 GlassHost(Modifier.fillMaxSize(), enabled = scene.style == UiStyle.LiquidGlass,
                     background = colors.background) {
                     GlassBackground(0f, Modifier.fillMaxSize()) {
-                        Box(Modifier.fillMaxSize().background(colors.background))
+                        OpticalCaptureBackground(scene.background)
                     }
-                    key(scene.style, scene.dark) {
+                    if (scene.showControls) key(scene.style, scene.dark, scene.background) {
                         Column(
                             Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 20.dp),
                             verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -224,6 +233,27 @@ class UnifiedSliderAppearanceCaptureTest {
         )) {
             val (expectedWidth, expectedHeight) = size
             val parent = hasAnyAncestor(hasTestTag("capture-$control"))
+            if (scene.style == UiStyle.Classic) {
+                for (tag in thumbs + listOf("slider-track", "slider-ticks")) {
+                    assertEquals("${scene.name}: Material must not contain the glass $tag",
+                        0, compose.onAllNodes(hasTestTag(tag) and parent, useUnmergedTree = true).fetchSemanticsNodes().size)
+                }
+                val controlNodes = compose.onAllNodes(hasTestTag("capture-$control") or parent, useUnmergedTree = true)
+                    .fetchSemanticsNodes()
+                val progress = controlNodes.filter { it.config.getOrNull(SemanticsProperties.ProgressBarRangeInfo) != null }
+                assertEquals("${scene.name}: Material retains native progress handles / original hue strip",
+                    when (control) { "single" -> 1; "range" -> 2; else -> 0 }, progress.size)
+                val ghostTag = when (control) {
+                    "single" -> "capture-single-ghost"; "range" -> "slider-ghost"; else -> "hue-ghost"
+                }
+                // Material's original-value decoration is a sibling of the native
+                // Slider, so it cannot be a descendant of the Slider's tag.
+                // Each control has a unique ghost tag in this fixture.
+                val ghosts = compose.onAllNodes(hasTestTag(ghostTag), useUnmergedTree = true).fetchSemanticsNodes()
+                assertEquals("${scene.name}: Material preserves original-value decoration",
+                    scene.changed, ghosts.isNotEmpty())
+                continue
+            }
             for (tag in thumbs) {
                 val nodes = compose.onAllNodes(hasTestTag(tag) and parent, useUnmergedTree = true)
                 assertEquals("${scene.name}: $control must expose one $tag", 1, nodes.fetchSemanticsNodes().size)
@@ -262,42 +292,32 @@ class UnifiedSliderAppearanceCaptureTest {
         }
     }
 
-    private fun capture(scene: Scene, directory: File, csv: Writer, captures: JSONArray) {
-        val origin = IntArray(2)
-        val committed = CountDownLatch(1)
-        compose.runOnUiThread {
-            contentView.getLocationInWindow(origin)
-            root.viewTreeObserver.registerFrameCommitCallback { committed.countDown() }
-            root.postInvalidateOnAnimation()
-        }
-        assertTrue("${scene.name}: HWUI frame did not commit", committed.await(5, TimeUnit.SECONDS))
-        val bitmap = Bitmap.createBitmap(root.width, root.height, Bitmap.Config.ARGB_8888)
+    private fun capture(scene: Scene, directory: File, csv: Writer, captures: JSONArray,
+                        baseline: Bitmap, baselinePng: String) {
+        val surface = OpticalCaptureWindow(contentView, root, window)
+        val origin = surface.origin()
+        val bitmap = surface.capture()
         try {
-            val copied = CountDownLatch(1)
-            var result = PixelCopy.ERROR_UNKNOWN
-            PixelCopy.request(window, bitmap, { result = it; copied.countDown() }, Handler(Looper.getMainLooper()))
-            assertTrue("${scene.name}: PixelCopy did not complete", copied.await(5, TimeUnit.SECONDS))
-            assertEquals("${scene.name}: PixelCopy failed", PixelCopy.SUCCESS, result)
             val png = "${scene.name}.png"
-            File(directory, png).outputStream().use {
-                assertTrue("${scene.name}: encode screenshot", bitmap.compress(Bitmap.CompressFormat.PNG, 100, it))
-            }
+            bitmap.saveOpticalPng(File(directory, png))
             val measurements = JSONArray()
             for (control in listOf("single", "range", "hue")) {
                 val tag = "capture-$control"
-                record(scene, control, tag, compose.onNodeWithTag(tag, true), png, measurements, csv)
+                record(scene, control, tag, compose.onNodeWithTag(tag, true), png, measurements, csv,
+                    bitmap, baseline, origin)
                 val descendants = compose.onAllNodes(hasAnyAncestor(hasTestTag(tag)), useUnmergedTree = true)
                 descendants.fetchSemanticsNodes().forEachIndexed { index, node ->
                     val childTag = node.config.getOrNull(SemanticsProperties.TestTag)
                     val progress = node.config.getOrNull(SemanticsProperties.ProgressBarRangeInfo)
                     if (childTag != null || progress != null) {
                         record(scene, control, childTag ?: "untagged-progress-$index",
-                            descendants[index], png, measurements, csv)
+                            descendants[index], png, measurements, csv, bitmap, baseline, origin)
                     }
                 }
             }
             captures.put(JSONObject().put("scene", scene.name).put("style", scene.styleName)
                 .put("theme", if (scene.dark) "dark" else "light").put("phase", scene.phase)
+                .put("background", scene.background.name).put("background_baseline_png", baselinePng)
                 .put("png", png).put("width_px", bitmap.width).put("height_px", bitmap.height)
                 .put("content_origin_in_window_px", JSONArray(origin.toList()))
                 .put("palette", JSONObject(palette.toString())).put("measurements", measurements))
@@ -307,14 +327,18 @@ class UnifiedSliderAppearanceCaptureTest {
     }
 
     private fun record(scene: Scene, control: String, tag: String, node: SemanticsNodeInteraction,
-                       png: String, measurements: JSONArray, csv: Writer) {
+                       png: String, measurements: JSONArray, csv: Writer,
+                       bitmap: Bitmap, baseline: Bitmap, origin: IntArray) {
         val bounds = node.getUnclippedBoundsInRoot()
         val values = listOf(bounds.left.value, bounds.top.value,
             (bounds.right - bounds.left).value, (bounds.bottom - bounds.top).value)
         val progress = node.fetchSemanticsNode().config.getOrNull(SemanticsProperties.ProgressBarRangeInfo)?.toString() ?: ""
+        val windowRect = Rect(bounds.left.value * density + origin[0], bounds.top.value * density + origin[1],
+            bounds.right.value * density + origin[0], bounds.bottom.value * density + origin[1])
         measurements.put(JSONObject().put("control", control).put("tag", tag).put("progress", progress)
-            .put("bounds_dp", JSONArray(values)).put("bounds_px", JSONArray(values.map { it * density })))
-        val cells = listOf(scene.name, scene.styleName, if (scene.dark) "dark" else "light", scene.phase,
+            .put("bounds_dp", JSONArray(values)).put("bounds_px", JSONArray(values.map { it * density }))
+            .put("optical_observations", opticalRegionMetrics(bitmap, baseline, windowRect)))
+        val cells = listOf(scene.name, scene.background.name, scene.styleName, if (scene.dark) "dark" else "light", scene.phase,
             control, tag, progress) + values + values.map { it * density } + png
         csv.appendLine(cells.joinToString(",") { "\"${it.toString().replace("\"", "\"\"")}\"" })
     }
