@@ -386,9 +386,9 @@ fun LiquidGlassNavigationBar(
                                         stretchSpring.springTo(targetStretch, FlClashSprings.TrackSpring)
 
                                         val pos = positionAt(change.position.x)
-                                        // 1:1 FLClash 跟手追踪 (FollowSpring, mass=1, k=1024, ratio=0.9):
-                                        // 保留微秒级连续速度与加速度微积分，驱动果冻弹簧根据拖拽快慢自适应剧烈拉长/扁平形变
-                                        lensSpring.springTo(pos, FlClashSprings.FollowSpring)
+                                        // The Dock follows the measured native center trajectory;
+                                        // other controls retain their own tracking springs.
+                                        lensSpring.springTo(pos, NativeDockPosition.FollowSpring)
 
                                         val idx = indexAt(pos)
                                         if (idx != pressedIndex) {

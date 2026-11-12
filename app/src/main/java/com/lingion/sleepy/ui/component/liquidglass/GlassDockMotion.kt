@@ -5,6 +5,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlin.math.abs
 
+/** Fit to all eight recorded three-tab drags; four-tab drags are held-out evidence. */
+internal object NativeDockPosition {
+    const val FOLLOW_STIFFNESS = 325.36
+    const val FOLLOW_DAMPING_RATIO = .78158
+    val FollowSpring = SpringDescription.withDampingRatio(
+        mass = 1.0,
+        stiffness = FOLLOW_STIFFNESS,
+        ratio = FOLLOW_DAMPING_RATIO,
+    )
+}
+
 /** The Dock's seven springs share one animation scale and release gate. */
 internal class GlassDockMotion(initialPosition: Float) {
     val position = SpringState(initialPosition)
