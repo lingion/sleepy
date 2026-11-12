@@ -12,13 +12,16 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.material3.AlertDialog as MaterialAlertDialog
 import androidx.compose.material3.DropdownMenu as MaterialDropdownMenu
@@ -26,11 +29,33 @@ import androidx.compose.material3.ModalBottomSheet as MaterialBottomSheet
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
 import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.UiStyle
 import kotlin.math.roundToInt
 
 @Composable
 private fun overlayGlass() = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
+
+// Visual fit to the recorded iOS 26.5 light alert/sheet backdrop: RGB 240 -> 192.
+// This only dims the surrounding scene; it is not an optical pane tint or blur value.
+internal const val NativeLightModalDimAmount = 0.2f
+
+/** Must run inside the actual dialog composition, whose parent owns its window. */
+@Composable
+internal fun GlassDialogScrim(enabled: Boolean) {
+    if (!enabled) return
+    val window = (LocalView.current.parent as? DialogWindowProvider)?.window ?: return
+    DisposableEffect(window) {
+        val originalDimAmount = window.attributes.dimAmount
+        window.setDimAmount(NativeLightModalDimAmount)
+        onDispose { window.setDimAmount(originalDimAmount) }
+    }
+}
+
+internal fun glassModalScrimColor(requested: Color, glass: Boolean, dark: Boolean, materialDefault: Color): Color =
+    if (requested != Color.Unspecified) requested
+    else if (glass && !dark) Color.Black.copy(alpha = NativeLightModalDimAmount)
+    else materialDefault
 
 /** Material owns window lifetime, focus, back and dismissal; optics are painted in that window. */
 @Composable
@@ -51,6 +76,7 @@ fun GlassAlertDialog(
     properties: DialogProperties = DialogProperties(),
 ) {
     val glass = overlayGlass()
+    val nativeLightScrim = glass && !LocalDarkTheme.current
     val parentScene = LocalGlassPopupScene.current ?: LocalGlassHost.current
     val popupScene = rememberGlassHostState()
     val carrierShape = if (glass && shape == AlertDialogDefaults.shape) FlClashGlassShape(34f) else shape
@@ -61,7 +87,7 @@ fun GlassAlertDialog(
     ) {
         MaterialAlertDialog(
             onDismissRequest = onDismissRequest,
-            confirmButton = confirmButton,
+            confirmButton = { GlassDialogScrim(nativeLightScrim); confirmButton() },
             modifier = modifier.recordGlassPopupScene(popupScene).glassControl(shape = carrierShape, enabled = false, registerPane = false, role = GlassMaterialRole.Alert),
             dismissButton = dismissButton, icon = icon, title = title, text = text, shape = carrierShape,
             containerColor = if (glass) Color.Transparent else containerColor,
@@ -120,6 +146,7 @@ fun GlassDialog(
     content: @Composable () -> Unit,
 ) {
     val glass = overlayGlass()
+    val nativeLightScrim = glass && !LocalDarkTheme.current
     val parentScene = LocalGlassPopupScene.current ?: LocalGlassHost.current
     val popupScene = rememberGlassHostState()
     CompositionLocalProvider(
@@ -128,6 +155,7 @@ fun GlassDialog(
         LocalGlassPopupScene provides popupScene,
     ) {
         androidx.compose.ui.window.Dialog(onDismissRequest, properties) {
+            GlassDialogScrim(nativeLightScrim)
             androidx.compose.foundation.layout.Box(Modifier.recordGlassPopupScene(popupScene)) { content() }
         }
     }
@@ -143,6 +171,7 @@ fun GlassDatePickerDialog(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val glass = overlayGlass()
+    val nativeLightScrim = glass && !LocalDarkTheme.current
     val parentScene = LocalGlassPopupScene.current ?: LocalGlassHost.current
     val popupScene = rememberGlassHostState()
     val carrierShape = if (glass) FlClashGlassShape(34f) else androidx.compose.material3.DatePickerDefaults.shape
@@ -152,7 +181,7 @@ fun GlassDatePickerDialog(
         LocalGlassPopupScene provides popupScene,
     ) {
         androidx.compose.material3.DatePickerDialog(
-            onDismissRequest, confirmButton,
+            onDismissRequest, { GlassDialogScrim(nativeLightScrim); confirmButton() },
             modifier.recordGlassPopupScene(popupScene).glassControl(shape = carrierShape, enabled = false, registerPane = false, role = GlassMaterialRole.Alert),
             shape = carrierShape,
             dismissButton = dismissButton,
@@ -175,13 +204,17 @@ fun GlassModalBottomSheet(
     containerColor: Color = BottomSheetDefaults.ContainerColor,
     contentColor: Color = androidx.compose.material3.contentColorFor(containerColor),
     tonalElevation: Dp = 0.dp,
-    scrimColor: Color = BottomSheetDefaults.ScrimColor,
+    // Unspecified selects this appearance's default; explicit caller colors always win.
+    scrimColor: Color = Color.Unspecified,
     dragHandle: (@Composable () -> Unit)? = { BottomSheetDefaults.DragHandle() },
     contentWindowInsets: @Composable () -> androidx.compose.foundation.layout.WindowInsets = { BottomSheetDefaults.modalWindowInsets },
     properties: ModalBottomSheetProperties = ModalBottomSheetProperties(),
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val glass = overlayGlass()
+    val effectiveScrimColor = glassModalScrimColor(
+        scrimColor, glass, LocalDarkTheme.current, BottomSheetDefaults.ScrimColor,
+    )
     val parentScene = LocalGlassPopupScene.current ?: LocalGlassHost.current
     val popupScene = rememberGlassHostState()
     CompositionLocalProvider(
@@ -202,7 +235,7 @@ fun GlassModalBottomSheet(
             sheetState = sheetState, sheetMaxWidth = sheetMaxWidth, shape = shape,
             containerColor = if (glass) Color.Transparent else containerColor,
             contentColor = contentColor, tonalElevation = if (glass) 0.dp else tonalElevation,
-            scrimColor = scrimColor, dragHandle = dragHandle, contentWindowInsets = contentWindowInsets,
+            scrimColor = effectiveScrimColor, dragHandle = dragHandle, contentWindowInsets = contentWindowInsets,
             properties = properties, content = content,
         )
     }
