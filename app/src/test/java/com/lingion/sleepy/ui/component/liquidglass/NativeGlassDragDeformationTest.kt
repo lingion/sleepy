@@ -8,6 +8,16 @@ import kotlin.math.abs
 import kotlin.math.sqrt
 
 class NativeGlassDragDeformationTest {
+    @Test fun zeroTimeFrameRetainsTheNewTargetWithoutAdvancingTheLens() {
+        val motion = NativeGlassDragDeformation()
+        motion.advance(0.0, 110f)
+        assertEquals(0f, motion.x, 0f)
+        assertEquals(0f, motion.velocity, 0f)
+        assertTrue("a new target is pending even before time advances", motion.isRunning)
+        repeat(12) { motion.advance(1.0 / 120.0, 110f) }
+        assertTrue("the zero-time origin cannot discard the later movement deformation", motion.x > .01f)
+    }
+
     private data class InputRow(
         val control: String, val touch: Int, val kind: String, val seconds: Double,
         val input: Float, val scaleX: Float, val scaleY: Float,

@@ -71,8 +71,12 @@ internal class NativeGlassDragDeformation(
         (-horizontal * if (horizontal >= 0f) spec.positiveXAspect else spec.negativeXAspect).toFloat()
 
     fun advance(seconds: Double, targetPositionDp: Float) {
-        if (!seconds.isFinite() || seconds <= 0.0 || !targetPositionDp.isFinite()) return
+        if (!seconds.isFinite() || seconds < 0.0 || !targetPositionDp.isFinite()) return
         input = targetPositionDp.toDouble()
+        // A fresh frame establishes its time origin without advancing physics.
+        // Retain the new target so that callers cannot mistake that zero-time
+        // frame for a settled deformation and discard the selection pulse.
+        if (seconds == 0.0) return
         // Bounded substeps keep 60/90/120Hz and dropped frames on the same ODE.
         // An app resumed after a long pause has no visible intermediate frames.
         if (seconds > 1.0) {

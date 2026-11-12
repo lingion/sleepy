@@ -58,6 +58,9 @@ class FloatingGlassControlTest {
         val thumb = compose.onNodeWithTag("segment-thumb", true)
         fun height() = thumb.getUnclippedBoundsInRoot().let { (it.bottom - it.top).value }
         tabs.performTouchInput { down(Offset(width / 4f, centerY)) }
+        // Deliver the state update before advancing the animation clock, so
+        // this interval measures the spring rather than composition startup.
+        compose.runOnIdle { }
         fun advance(ms: Int) {
             repeat(ms / 16) {
                 compose.mainClock.advanceTimeByFrame()

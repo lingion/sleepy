@@ -32,7 +32,7 @@ class ActiveFrameLoopTest {
             Snapshot.sendApplyNotifications()
             assertTrue(clock.hasAwaiters)
             clock.sendFrame(90_000_000_000L)
-            assertEquals(listOf(0.016, 0.016), deltas)
+            assertEquals(listOf(0.0, 0.0), deltas)
             assertFalse(clock.hasAwaiters)
         } finally {
             job.cancel()
@@ -49,7 +49,7 @@ class ActiveFrameLoopTest {
             clock.sendFrame(1_000_000_000L)
             clock.sendFrame(1_020_000_000L)
             clock.sendFrame(3_000_000_000L)
-            assertEquals(listOf(0.016, 0.02, 0.05), deltas)
+            assertEquals(listOf(0.0, 0.02, 0.05), deltas)
             assertTrue(clock.hasAwaiters)
         } finally {
             job.cancel()

@@ -17,7 +17,10 @@ internal suspend fun runActiveFrameLoop(
             snapshotFlow(needsFrame).first { it }
         }
         withFrameNanos { frameTimeNanos ->
-            val delta = if (lastFrameNanos == 0L) 0.016
+            // The first delivered frame establishes this animation's origin.
+            // Advancing a fabricated 16 ms here makes every cold interaction
+            // start partway through its spring, including on 90/120 Hz displays.
+            val delta = if (lastFrameNanos == 0L) 0.0
                 else ((frameTimeNanos - lastFrameNanos) / 1_000_000_000.0).coerceIn(0.001, 0.05)
             lastFrameNanos = frameTimeNanos
             onFrame(delta)
