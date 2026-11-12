@@ -9,20 +9,24 @@ on:
 permissions:
   contents: read
   actions: write
+  pull-requests: write
 
 jobs:
   sign-debug:
     if: >-
       github.repository == 'lingion/sleepy' &&
-      github.workflow_ref == 'lingion/sleepy/.github/workflows/debug-apk.yml@refs/heads/main'
+      (github.workflow_ref == 'lingion/sleepy/.github/workflows/debug-apk.yml@refs/heads/main' ||
+       (github.event_name == 'workflow_dispatch' &&
+        startsWith(github.workflow_ref, 'lingion/sleepy/.github/workflows/debug-apk.yml@refs/heads/')))
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      # 与调用方共享 run；工作流及工具来自官方 main，绝不 checkout PR head。
+      # 与调用方共享 run；workflow_sha 属于调用方，手动选择分支时不可信。
+      # 签名工具始终来自官方 main，绝不 checkout 调用方分支或 PR head。
       - uses: actions/checkout@v7
         with:
           repository: lingion/sleepy
-          ref: ${{ github.workflow_sha }}
+          ref: refs/heads/main
           persist-credentials: false
           path: tooling
       - name: Verify official signing context
@@ -30,7 +34,14 @@ jobs:
         run: |
           test "$GITHUB_REPOSITORY" = 'lingion/sleepy'
           case "$GITHUB_EVENT_NAME" in pull_request_target|push|workflow_dispatch) ;; *) exit 1 ;; esac
-          test "$GITHUB_WORKFLOW_REF" = 'lingion/sleepy/.github/workflows/debug-apk.yml@refs/heads/main'
+          case "$GITHUB_WORKFLOW_REF" in
+            lingion/sleepy/.github/workflows/debug-apk.yml@refs/heads/main) ;;
+            lingion/sleepy/.github/workflows/debug-apk.yml@refs/heads/?*)
+              test "$GITHUB_EVENT_NAME" = 'workflow_dispatch'
+              test "$GITHUB_WORKFLOW_REF" = "lingion/sleepy/.github/workflows/debug-apk.yml@$GITHUB_REF"
+              ;;
+            *) exit 1 ;;
+          esac
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
@@ -116,6 +127,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: >-
           python3 -I tooling/scripts/debug_sign.py cleanup
+          --destination "$RUNNER_TEMP/official-apks"
+      - name: Comment official APK downloads on PR
+        if: ${{ success() && github.event_name == 'pull_request_target' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          python3 -I tooling/scripts/debug_sign.py comment
           --destination "$RUNNER_TEMP/official-apks"
       - name: Remove signing key
         if: always()
