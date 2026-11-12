@@ -225,7 +225,9 @@ fun <T> SegmentedSwitcher(
                     // 按下瞬间即升镜 (2026-11-06 用户: 手按压瞬间浮起透射, 不等 slop,
                     // 落点是否在高亮块上也升 — 点其它段后滑块弹簧过去的全程戴镜片, 同 Toggle)。
                     pressing = true
-                    gesturePosition = thumbPosition
+                    // Input follows the current selection, even while its lens is travelling.
+                    val start = currentSelectedIndex.toFloat()
+                    gesturePosition = start
                     var lastHapticIndex = gesturePosition.roundToInt()
                     fun tickIfChanged() {
                         val index = gesturePosition.roundToInt()
@@ -236,7 +238,6 @@ fun <T> SegmentedSwitcher(
                     }
                     LiquidGlassHaptics.selectionClick(view)
                     val logicalX = (if (isRtl) size.width - down.position.x else down.position.x) - 4.dp.toPx()
-                    val start = thumbPosition
                     try {
                         val onThumb = logicalX in start * segmentWidth..(start + 1f) * segmentWidth
                         var moved = false

@@ -39,6 +39,8 @@ import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
 
+private class SwitchInputState(var checked: Boolean)
+
 /**
  * 实心轨道，按住时滑片渐变为采样轨道和宿主背景的玻璃镜片。
  * iOS 26.5 原生测量与 Android 对齐范围见 docs/native-glass-control-alignment.md。
@@ -69,7 +71,10 @@ fun GlassSwitch(
     var tapGeneration by remember { mutableIntStateOf(0) }
     var position by remember { mutableFloatStateOf(if (checked) 1f else 0f) }
     val update by rememberUpdatedState(onCheckedChange)
-    val currentChecked by rememberUpdatedState(checked)
+    // A second gesture can arrive before the parent recomposes after our callback.
+    // Keep that commit for input only; each composition confirms or rejects it.
+    val inputState = remember { SwitchInputState(checked) }
+    SideEffect { inputState.checked = checked }
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     // Geometry and drag use the same measured 22dp travel.
     val travel = with(LocalDensity.current) { 22.dp.toPx() }
@@ -88,28 +93,36 @@ fun GlassSwitch(
             onValueChange = {
                 tapGeneration++
                 gestureEnd++
+                inputState.checked = it
                 update?.invoke(it)
             },
         )
-        .pointerInput(checked, enabled, rtl, travel) {
+        .pointerInput(enabled, rtl, travel) {
             if (!enabled) return@pointerInput
             try {
                 awaitEachGesture {
-                    val down = awaitFirstDown(pass = PointerEventPass.Initial)
+                    val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
                     down.consume()
                     dragging = true
-                    val start = if (currentChecked) 1f else 0f
+                    val checkedAtStart = inputState.checked
+                    val start = if (checkedAtStart) 1f else 0f
                     var moved = false
                     try {
                         while (true) {
                             val event = awaitPointerEvent(PointerEventPass.Initial)
                             val pointer = event.changes.firstOrNull { it.id == down.id } ?: break
+                            // External updates invalidate this gesture; normal releases keep
+                            // the event loop alive for the next quick tap or drag.
+                            if (inputState.checked != checkedAtStart) break
                             if (!pointer.pressed) {
                                 if (pointer.isConsumed) break
                                 pointer.consume()
-                                val target = if (moved) position >= .5f else !currentChecked
+                                val target = if (moved) position >= .5f else !checkedAtStart
                                 tapGeneration++
-                                if (target != currentChecked) update?.invoke(target)
+                                if (target != checkedAtStart) {
+                                    inputState.checked = target
+                                    update?.invoke(target)
+                                }
                                 break
                             }
                             val dx = pointer.position.x - down.position.x
