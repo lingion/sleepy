@@ -33,6 +33,11 @@ class WidgetGalleryEmpiricalTest {
         "最近两天（多尺寸）"
     )
 
+    private val fixedWeekGridLabels = listOf(
+        "本周课表（竖向七天）· 4×2",
+        "本周课表（横向三天）· 4×2"
+    )
+
     // 展开标题与主尺寸卡片可能同名；预览图的无障碍描述只属于可添加的卡片。
     private fun variantNode(name: String) =
         compose.onNode(hasText(name) and hasContentDescription(name))
@@ -64,6 +69,9 @@ class WidgetGalleryEmpiricalTest {
         // 3. Verify secondary size variants are NOT displayed initially
         // 小尺寸标签不该出现（收起状态）
         compose.onNodeWithText("本周课表（网格）· 小").assertDoesNotExist()
+        for (label in fixedWeekGridLabels) {
+            compose.onNodeWithText(label).assertDoesNotExist()
+        }
         compose.onNodeWithText("今日课程 · 小").assertDoesNotExist()
         compose.onNodeWithText("本周课表（列表）· 小").assertDoesNotExist()
         compose.onNodeWithText("本周课表（周视图）· 小").assertDoesNotExist()
@@ -115,7 +123,9 @@ class WidgetGalleryEmpiricalTest {
         // WeekGrid variants appear
         variantNode("本周课表（网格）").performScrollTo().assertExists().assertIsDisplayed()
         compose.onNodeWithText("本周课表（网格）· 小").performScrollTo().assertExists().assertIsDisplayed()
-        compose.onNodeWithText("本周课表（网格）· 4×2").performScrollTo().assertExists().assertIsDisplayed()
+        for (label in fixedWeekGridLabels) {
+            compose.onNodeWithText(label).performScrollTo().assertExists().assertIsDisplayed()
+        }
 
         // Card B (Today) variants do NOT exist
         compose.onNodeWithText("今日课程 · 小").assertDoesNotExist()
@@ -126,7 +136,9 @@ class WidgetGalleryEmpiricalTest {
 
         // Card A variants must now be collapsed (gone)
         compose.onNodeWithText("本周课表（网格）· 小").assertDoesNotExist()
-        compose.onNodeWithText("本周课表（网格）· 4×2").assertDoesNotExist()
+        for (label in fixedWeekGridLabels) {
+            compose.onNodeWithText(label).assertDoesNotExist()
+        }
 
         // Card B variants must now appear
         variantNode("今日课程").performScrollTo().assertExists().assertIsDisplayed()
@@ -230,7 +242,9 @@ class WidgetGalleryEmpiricalTest {
         compose.onNodeWithText("本周课表（网格）· 小").performScrollTo().assert(hasClickAction().not())
 
         // Other variants in the same family should NOT be disabled!
-        compose.onNodeWithText("本周课表（网格）· 4×2").performScrollTo().assertHasClickAction()
+        for (label in fixedWeekGridLabels) {
+            compose.onNodeWithText(label).performScrollTo().assertHasClickAction()
+        }
         variantNode("本周课表（网格）").performScrollTo().assertHasClickAction()
 
         // Advance Compose main clock by 2100ms
