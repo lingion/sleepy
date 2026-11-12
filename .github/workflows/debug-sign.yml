@@ -9,6 +9,7 @@ on:
 permissions:
   contents: read
   actions: write
+  pull-requests: write
 
 jobs:
   sign-debug:
@@ -126,6 +127,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: >-
           python3 -I tooling/scripts/debug_sign.py cleanup
+          --destination "$RUNNER_TEMP/official-apks"
+      - name: Comment official APK downloads on PR
+        if: ${{ success() && github.event_name == 'pull_request_target' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          python3 -I tooling/scripts/debug_sign.py comment
           --destination "$RUNNER_TEMP/official-apks"
       - name: Remove signing key
         if: always()

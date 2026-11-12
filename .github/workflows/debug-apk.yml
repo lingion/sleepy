@@ -187,6 +187,7 @@ jobs:
     permissions:
       contents: read
       actions: write
+      pull-requests: write
     # Manual branch workflows must call the trusted signer, never their own copy.
     uses: lingion/sleepy/.github/workflows/debug-sign.yml@main
     secrets:

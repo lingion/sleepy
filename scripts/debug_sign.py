@@ -314,9 +314,78 @@ def cleanup_artifacts(destination, context):
                             f"repos/{REPOSITORY}/actions/artifacts/{artifact_id}"], check=True)
 
 
+def comment_pr(destination, event, context):
+    """同一 PR 更新一条机器人评论；仅发布当前 head 的完整官方下载。"""
+    if (context["repository"] != REPOSITORY or context["event_name"] != "pull_request_target"
+            or context["workflow_ref"] != f"{REPOSITORY}/.github/workflows/debug-apk.yml@refs/heads/main"):
+        raise ValueError("PR comments require the official PR target workflow")
+    pr = event["pull_request"]
+    number = pr["number"]
+    if type(number) is not int or number <= 0:
+        raise ValueError("Invalid PR number")
+    info = json.loads((destination / "summary-info.json").read_text())
+    if (any(info[field] != context[field] for field in ("run_id", "run_attempt"))
+            or info.get("signing") != "project" or info.get("pr_head_sha") != pr["head"]["sha"]
+            or any(not re.fullmatch(r"[0-9a-f]{40}", info.get(field, ""))
+                   for field in ("pr_head_sha", "source_sha"))
+            or any(not re.fullmatch(r"[1-9][0-9]*", info[field])
+                   for field in ("run_id", "run_number", "run_attempt"))):
+        raise ValueError("PR comment metadata differs from the signed current attempt")
+    run_id = int(context["run_id"])
+    items = artifacts(run_id)
+    links = []
+    seen_ids = set()
+    for abi in ci.selected_abis(info["abi"]):
+        metadata = json.loads((destination / abi / "build-info.json").read_text())
+        name = Path(metadata["apk"]).stem
+        matches = [item for item in items if item["name"] == name]
+        if len(matches) != 1:
+            raise ValueError("PR download inventory is incomplete or duplicated")
+        item = matches[0]
+        artifact_id = item["id"]
+        if (item["expired"] is not False or item["workflow_run"]["id"] != run_id
+                or type(artifact_id) is not int or artifact_id <= 0 or artifact_id in seen_ids):
+            raise ValueError("Invalid official PR artifact identity")
+        seen_ids.add(artifact_id)
+        links.append(f"| {abi} | [下载 APK ZIP](https://github.com/{REPOSITORY}/actions/runs/{run_id}/artifacts/{artifact_id}) |")
+    marker = "<!-- sleepy-official-debug-apks -->"
+    body = "\n".join([
+        marker, "## Debug APK 已就绪", "", "官方 debug 签名已校验，各架构可单独下载。", "",
+        f"[构建 #{info['run_number']} · attempt {info['run_attempt']}](https://github.com/{REPOSITORY}/actions/runs/{run_id})",
+        f"PR head：`{info['pr_head_sha']}`", f"实际构建（与 main 合并后）：`{info['source_sha']}`", "",
+        "| 架构 | 下载 |", "| --- | --- |", *links, "",
+        "需登录 GitHub，下载 ZIP 后解压安装；产物保留 7 天。",
+        "此评论仅确认 APK 构建与签名成功；测试、lint 状态请查看 PR Checks。", ""])
+    pages = json.loads(subprocess.check_output([
+        "gh", "api", "--paginate", "--slurp",
+        f"repos/{REPOSITORY}/issues/{number}/comments?per_page=100"], text=True))
+    owned = [comment for page in pages for comment in page
+             if (comment.get("body") or "").startswith(marker)
+             and comment.get("user", {}).get("login") == "github-actions[bot]"
+             and comment.get("user", {}).get("type") == "Bot"]
+    # Read the latest head immediately before writing, after artifact/comment pagination.
+    current = api(f"repos/{REPOSITORY}/pulls/{number}")
+    if current["state"] != "open" or current["head"]["sha"] != info["pr_head_sha"]:
+        print("Skipping APK comment: PR is closed or a newer head is available")
+        return False
+    if owned:
+        comment = owned[0]
+        if comment["body"] == body:
+            return True
+        comment_id = comment["id"]
+        if type(comment_id) is not int or comment_id <= 0:
+            raise ValueError("Invalid bot comment ID")
+        method, endpoint = "PATCH", f"repos/{REPOSITORY}/issues/comments/{comment_id}"
+    else:
+        method, endpoint = "POST", f"repos/{REPOSITORY}/issues/{number}/comments"
+    subprocess.run(["gh", "api", "--method", method, endpoint, "--input", "-"],
+                   input=json.dumps({"body": body}), text=True, stdout=subprocess.DEVNULL, check=True)
+    return True
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("download", "sign", "summary", "cleanup"))
+    parser.add_argument("command", choices=("download", "sign", "summary", "cleanup", "comment"))
     parser.add_argument("--source", type=Path)
     parser.add_argument("--destination", type=Path, required=True)
     args = parser.parse_args()
@@ -337,6 +406,9 @@ def main():
         ci.write_outputs({"abi": info["abi"], "certificate_sha256": certificate})
     elif args.command == "cleanup":
         cleanup_artifacts(args.destination, ci.context_from_env())
+    elif args.command == "comment":
+        event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
+        comment_pr(args.destination, event, ci.context_from_env())
     else:
         info_path = args.destination / "summary-info.json"
         info = json.loads(info_path.read_text()) if info_path.is_file() else {}

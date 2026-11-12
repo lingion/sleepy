@@ -83,6 +83,8 @@ gh workflow run "Debug APK Build" --repo lingion/sleepy --ref main -f abi=all
 
 官方 APK 和 artifact 名包含 `official`、PR 或分支上下文、源码短 SHA、架构、原构建运行编号和尝试编号，例如 `sleepy-debug-official-pr286-a1b2c3d4e5f6-armeabi-v7a-r20-a1`。完整 SHA、实际包名、版本、签名证书指纹和原构建地址记录在元数据中。转发 APK 时不要去掉文件名里的源码身份。
 
+PR 的全部官方签名包上传成功并清理中间产物后，`github-actions[bot]` 会在原 PR 评论各架构的下载链接、PR head、实际合并构建 SHA 和构建编号。后续成功构建更新同一条机器人评论，不重复刷屏；如果 PR 已关闭或已有更新的 head，旧构建不更新评论。签名、上传或清理失败不会发布新的下载评论，原评论中的 SHA 和运行编号仍对应上一次成功构建。评论仅表示 APK 可用，单元测试和 lint 以 PR Checks 为准。评论权限只授予可信签名任务，源码构建容器不获得写权限或 token。
+
 ```bash
 gh run list --repo lingion/sleepy --workflow "Debug APK Build" --limit 5
 gh run download RUN_ID --repo lingion/sleepy --pattern '*official*armeabi-v7a*' --dir ./debug-download
