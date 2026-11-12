@@ -55,8 +55,12 @@ internal class GlassDockMotion(initialPosition: Float) {
             finish(held)
             return
         }
-        val scaledDelta = dt / scaleFactor
-        if (held && !previouslyHeld && !dragging) dragDeformation.beginDirect()
+        val newDirectPress = held && !previouslyHeld && !dragging
+        // A warm frame's delta starts before this press. Establish the command's
+        // origin without spending that time on any spring or deformation axis.
+        // Recording held even for dt = 0 keeps the next frame advancing normally.
+        val scaledDelta = if (newDirectPress) 0.0 else dt / scaleFactor
+        if (newDirectPress) dragDeformation.beginDirect()
         previouslyHeld = held
         if (position.target != lastDeformationTarget && !held && !dragging && !dropping && !deformationInteraction) {
             deformationInteraction = false

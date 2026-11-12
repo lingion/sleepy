@@ -138,12 +138,107 @@ class GlassDockMotionTest {
         assertEquals(0f, motion.lift.value, 0f)
     }
 
+    @Test fun warmDirectPressEstablishesTheSameOriginForEveryMotionAxis() {
+        val motion = GlassDockMotion(0f)
+        motion.glow.springTo(1f, FlClashSprings.GlowInSpring)
+        motion.advance(.009, 1f, held = false, dragging = false)
+        assertTrue(motion.glow.velocity > 0f)
+        press(motion)
+        val values = springs(motion).map { it.value to it.velocity }
+        val vertical = motion.stretchY
+
+        motion.advance(.0123, 1f, held = true, dragging = false)
+
+        assertValuesRetained(values, vertical, motion)
+        assertTrue(motion.position.isRunning)
+        assertTrue(motion.lift.isRunning)
+        assertTrue(motion.jelly.isRunning)
+        motion.advance(.0071, 1f, held = true, dragging = false)
+        assertTrue(motion.position.value > 0f)
+        assertTrue(motion.lift.value > 0f)
+        assertTrue(motion.jelly.value > 0f)
+        val position = motion.position.value
+        motion.advance(.0071, 1f, held = true, dragging = false)
+        assertTrue(motion.position.value > position)
+    }
+
+    @Test fun coldZeroOriginDoesNotDiscardTheFollowingFrame() {
+        val cold = GlassDockMotion(0f)
+        val warm = GlassDockMotion(0f)
+        press(cold)
+        press(warm)
+
+        cold.advance(0.0, 1f, held = true, dragging = false)
+        warm.advance(.013, 1f, held = true, dragging = false)
+        assertEquivalent(cold, warm)
+        cold.advance(.009, 1f, held = true, dragging = false)
+        warm.advance(.009, 1f, held = true, dragging = false)
+
+        assertEquivalent(cold, warm)
+        assertTrue(cold.position.value > 0f)
+        assertTrue(cold.lift.value > 0f)
+        assertTrue(cold.jelly.value > 0f)
+    }
+
+    @Test fun interruptingDirectPressRetainsMovingStateAndVelocityAtItsOrigin() {
+        val motion = GlassDockMotion(0f)
+        press(motion)
+        motion.advance(0.0, 1f, held = true, dragging = false)
+        repeat(6) { motion.advance(.012, 1f, held = true, dragging = false) }
+        release(motion, target = 2f)
+        motion.advance(.011, 1f, held = false, dragging = false)
+        press(motion, target = 0f)
+        assertTrue(motion.position.velocity > 0f)
+        assertTrue(motion.lift.velocity > 0f)
+        assertTrue(motion.jelly.velocity != 0f)
+        assertTrue(motion.stretchY != 0f)
+        val values = springs(motion).map { it.value to it.velocity }
+        val vertical = motion.stretchY
+
+        motion.advance(.014, 1f, held = true, dragging = false)
+
+        assertValuesRetained(values, vertical, motion)
+        motion.advance(.008, 1f, held = true, dragging = false)
+        assertTrue(motion.position.value != values.first().first)
+        assertTrue(motion.jelly.value != values[4].first)
+    }
+
+    @Test fun dragRetargetsConsumeTheirFrameTimeWithoutRestartingTheOrigin() {
+        val motion = GlassDockMotion(0f)
+        val expectedPosition = SpringState(0f)
+        press(motion)
+        expectedPosition.springTo(2f, FlClashSprings.TravelSpring)
+        motion.advance(.009, 1f, held = true, dragging = true)
+        expectedPosition.tickDelta(.009)
+        assertTrue(motion.position.value > 0f)
+
+        repeat(8) { index ->
+            val target = 1.8f - index * .1f
+            val dt = .006 + index * .0007
+            motion.position.springTo(target, NativeDockPosition.FollowSpring)
+            expectedPosition.springTo(target, NativeDockPosition.FollowSpring)
+            motion.advance(dt, 1f, held = true, dragging = true)
+            expectedPosition.tickDelta(dt)
+            assertEquals(expectedPosition.value, motion.position.value, 1e-6f)
+            assertEquals(expectedPosition.velocity, motion.position.velocity, 1e-6f)
+        }
+    }
+
+    private fun assertValuesRetained(values: List<Pair<Float, Float>>, vertical: Float, motion: GlassDockMotion) {
+        values.zip(springs(motion)).forEach { (before, spring) ->
+            assertEquals(before.first, spring.value, 1e-6f)
+            assertEquals(before.second, spring.velocity, 1e-6f)
+        }
+        assertEquals(vertical, motion.stretchY, 1e-6f)
+    }
+
     private fun assertEquivalent(expected: GlassDockMotion, actual: GlassDockMotion) {
         springs(expected).zip(springs(actual)).forEach { (first, second) ->
             assertEquals(first.value, second.value, 1e-6f)
             assertEquals(first.velocity, second.velocity, 1e-6f)
             assertEquals(first.isRunning, second.isRunning)
         }
+        assertEquals(expected.stretchY, actual.stretchY, 1e-6f)
         assertEquals(expected.dropping, actual.dropping)
     }
 }
