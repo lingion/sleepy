@@ -95,9 +95,7 @@ object WidgetBoundaryScheduler {
             val candidates = mutableListOf<Long>()
             legacyTrigger?.let(candidates::add)
             // New receiver only: individual periods, not multi-period course-row ends.
-            for (id in awm.getAppWidgetIds(ComponentName(context, WeekGridWideWidgetProvider::class.java))) {
-                val settings = WeekGridWideSettingsStore.read(context, id)
-                if (settings.mode != WeekGridWideMode.VERTICAL) continue
+            for (id in awm.getAppWidgetIds(ComponentName(context, WeekGridVerticalWidgetProvider::class.java))) {
                 val source = kotlinx.coroutines.runBlocking { WidgetWeekDataLoader.resolve(id, now) } ?: continue
                 val periods = WeekGridWideRenderer.periods(source.table.timeJson)
                 val (_, height) = RemoteViewsWidgetHelper.computeSizeDp(awm.getAppWidgetOptions(id))

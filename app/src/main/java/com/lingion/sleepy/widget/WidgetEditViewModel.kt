@@ -101,10 +101,6 @@ class WidgetEditViewModel(
      * 设计 §6: 切换强制滚动(实验)。本实例一档 (per-widget, 写 WidgetScrollStore),
      * 写后 reload + 全量重推 (评审 #25: 否则「看着没生效」) — 与 setUseAlias 同管线。
      */
-    fun setWideGridMode(mode: WeekGridWideMode) {
-        setWideGridSettings(WeekGridWideSettingsStore.read(ctx, widgetId).copy(mode = mode))
-    }
-
     fun setWideGridLabelSide(side: WeekGridWideLabelSide) {
         setWideGridSettings(WeekGridWideSettingsStore.read(ctx, widgetId).copy(labelSide = side))
     }

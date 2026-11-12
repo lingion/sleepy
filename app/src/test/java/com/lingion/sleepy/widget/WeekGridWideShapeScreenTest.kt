@@ -8,7 +8,7 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import com.lingion.sleepy.ui.screen.widget.WidgetEditScope
 import com.lingion.sleepy.ui.screen.widget.WidgetEditWideGridSection
-import com.lingion.sleepy.ui.screen.widget.WideGridShapeOptions
+import com.lingion.sleepy.ui.screen.widget.WideGridPreviewContent
 import com.lingion.sleepy.ui.theme.SleepyThemeProvider
 import org.junit.Assert.*
 import org.junit.Rule
@@ -24,34 +24,29 @@ import org.robolectric.annotation.GraphicsMode
 class WeekGridWideShapeScreenTest {
     @get:Rule val compose = createComposeRule()
 
-    @Test fun threeImageOptionsStayInExactOrderAndSelectionStaysOnPage() {
-        var settings by mutableStateOf(WeekGridWideSettings())
-        val images = WideGridPreviews(WideGridPreviewStatus.READY, WeekGridWidePreviewLoader.displayOrder.map {
-            WideGridPreview(it, WeekData(emptyList(), true), Bitmap.createBitmap(300, 160, Bitmap.Config.ARGB_8888))
-        })
+    @Test fun fixedLayoutHasOnePreviewAndOnlyHorizontalLabelSideCanChange() {
+        var settings by mutableStateOf(WeekGridWideSettings(WeekGridWideMode.HORIZONTAL))
+        val images = WideGridPreviews(WideGridPreviewStatus.READY, listOf(
+            WideGridPreview(WeekGridWideMode.HORIZONTAL, WeekData(emptyList(), true), Bitmap.createBitmap(300, 160, Bitmap.Config.ARGB_8888))))
         compose.setContent {
             SleepyThemeProvider(darkTheme = false, themeKey = "default") {
-                WideGridShapeOptions(settings, images,
-                    onModeChange = { settings = settings.copy(mode = it) },
+                WideGridPreviewContent(settings, images,
                     onLabelSideChange = { settings = settings.copy(labelSide = it) })
             }
         }
-        val order = listOf("ORIGINAL", "VERTICAL", "HORIZONTAL")
-        val tops = order.map { name ->
-            compose.onNodeWithTag("wide-shape-$name").assertExists().fetchSemanticsNode().boundsInRoot.top
-        }
-        assertTrue(tops[0] < tops[1] && tops[1] < tops[2])
-        order.forEach { compose.onNodeWithTag("wide-preview-$it", useUnmergedTree = true).assertExists() }
-        compose.onNodeWithTag("wide-shape-VERTICAL").assertIsSelected()
-        compose.onNodeWithTag("wide-label-LEFT").assertDoesNotExist()
-        compose.onNodeWithTag("wide-shape-HORIZONTAL").performClick().assertIsSelected()
+        compose.onNodeWithTag("wide-preview-HORIZONTAL", useUnmergedTree = true).assertExists()
+        compose.onNodeWithTag("wide-preview-VERTICAL", useUnmergedTree = true).assertDoesNotExist()
+        for (mode in listOf("ORIGINAL", "VERTICAL", "HORIZONTAL"))
+            compose.onNodeWithTag("wide-shape-$mode").assertDoesNotExist()
         compose.onNodeWithTag("wide-label-RIGHT").performClick().assertIsSelected()
+        assertEquals(WeekGridWideMode.HORIZONTAL, settings.mode)
         assertEquals(WeekGridWideLabelSide.RIGHT, settings.labelSide)
-        compose.onNodeWithTag("wide-shape-ORIGINAL").performClick().assertIsSelected()
+        compose.runOnIdle { settings = settings.copy(mode = WeekGridWideMode.VERTICAL) }
         compose.onNodeWithTag("wide-label-LEFT").assertDoesNotExist()
+        compose.onNodeWithTag("wide-label-RIGHT").assertDoesNotExist()
     }
 
-    @Test fun instanceEditShowsLiveThreePreviewsInlineAndSelects() {
+    @Test fun instanceEditShowsOnlyItsOwnLivePreviewAndPersistsLabelSide() {
         val app = androidx.test.core.app.ApplicationProvider.getApplicationContext<com.lingion.sleepy.SleepyApp>()
         androidx.work.WorkManager.initialize(app, androidx.work.Configuration.Builder().build())
         com.lingion.sleepy.SleepyApp::class.java.getDeclaredField("instance").apply { isAccessible = true }.set(null, app)
@@ -61,7 +56,7 @@ class WeekGridWideShapeScreenTest {
         com.lingion.sleepy.SleepyApp::class.java.getDeclaredField("database\$delegate").apply { isAccessible = true }.set(app, lazyOf(db))
         com.lingion.sleepy.SleepyApp::class.java.getDeclaredField("repository\$delegate").apply { isAccessible = true }.set(app, lazyOf(repo))
         val info = android.appwidget.AppWidgetProviderInfo().apply {
-            provider = android.content.ComponentName(app, WeekGridWideWidgetProvider::class.java)
+            provider = android.content.ComponentName(app, WeekGridHorizontalWidgetProvider::class.java)
         }
         org.robolectric.Shadows.shadowOf(android.appwidget.AppWidgetManager.getInstance(app)).addBoundWidget(81, info)
         kotlinx.coroutines.runBlocking { repo.getAllTables() }
@@ -72,28 +67,19 @@ class WeekGridWideShapeScreenTest {
         }
         compose.waitUntil(10_000) {
             org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
-            compose.onAllNodesWithTag("wide-preview-ORIGINAL", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
+            compose.onAllNodesWithTag("wide-preview-HORIZONTAL", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
         }
-        for (mode in listOf("ORIGINAL", "VERTICAL", "HORIZONTAL")) {
-            compose.onNodeWithTag("wide-preview-$mode", useUnmergedTree = true).assertExists()
-        }
-        compose.onNodeWithTag("wide-shape-ORIGINAL").performScrollTo().performClick().assertIsSelected()
-        assertEquals(WeekGridWideMode.ORIGINAL, WeekGridWideSettingsStore.read(app, 81).mode)
+        compose.onNodeWithTag("wide-preview-VERTICAL", useUnmergedTree = true).assertDoesNotExist()
+        compose.onNodeWithTag("wide-shape-ORIGINAL").assertDoesNotExist()
+        compose.onNodeWithTag("wide-label-RIGHT").performScrollTo().performClick().assertIsSelected()
+        assertEquals(WeekGridWideLabelSide.RIGHT, WeekGridWideSettingsStore.read(app, 81).labelSide)
+        assertEquals(WeekGridWideMode.HORIZONTAL, WeekGridWideSettingsStore.read(app, 81).mode)
     }
 
-    @Test fun wideGridSectionOnlyAppearsForWideReceiver() {
-        var receiver by mutableStateOf<String?>(null)
-        compose.setContent {
-            SleepyThemeProvider(darkTheme = false, themeKey = "default") {
-                WidgetEditWideGridSection.Content(WidgetEditScope(1, null, emptyList(), {},
-                    receiverSimpleName = receiver))
-            }
-        }
-        for (name in listOf(null, "WeekGridWidgetProvider", "WeekGridSmallWidgetProvider")) {
-            compose.runOnIdle { receiver = name }
-            compose.onNodeWithTag("wide-shape-VERTICAL").assertDoesNotExist()
-        }
-        compose.runOnIdle { receiver = "WeekGridWideWidgetProvider" }
-        compose.onNodeWithTag("wide-shape-VERTICAL").assertExists()
+    @Test fun sectionOnlyAppliesToTheTwoNewComponents() {
+        for (name in listOf(null, "WeekGridWideWidgetProvider", "WeekGridWidgetProvider", "WeekGridSmallWidgetProvider"))
+            assertFalse(WidgetEditWideGridSection.appliesTo(name))
+        assertTrue(WidgetEditWideGridSection.appliesTo("WeekGridVerticalWidgetProvider"))
+        assertTrue(WidgetEditWideGridSection.appliesTo("WeekGridHorizontalWidgetProvider"))
     }
 }

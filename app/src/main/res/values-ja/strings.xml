@@ -1149,15 +1149,11 @@
     <string name="period_validation_invalid_data">時限設定が不完全か読み取れません。時限番号と開始・終了時刻を確認してください。</string>
     <string name="period_validation_invalid_format">第 %1$d 限の時刻形式が正しくありません (HH:mm)</string>
     <string name="period_validation_overlap">第 %1$d 限と第 %3$d 限で重複があります：第 %1$d 限の終了 (%2$s) が第 %3$d 限の開始 (%4$s) より後です</string>
-<string name="widget_week_grid_wide_label">週間時間割（グリッド）· 4×2</string>
     <string name="widget_wide_grid_empty">プレビュー期間に授業はありません</string>
     <string name="widget_wide_grid_horizontal">横向きの3日間・日ごとに移動</string>
-    <string name="widget_wide_grid_layout">4×2 グリッドの配置</string>
     <string name="widget_wide_grid_left">曜日ラベルを左側に表示</string>
-    <string name="widget_wide_grid_original">従来の全体グリッド</string>
     <string name="widget_wide_grid_preview_error">プレビューを読み込めませんでした。戻ってもう一度お試しください。</string>
     <string name="widget_wide_grid_right">曜日ラベルを右側に表示</string>
-    <string name="widget_wide_grid_shapes">表示形式を切り替え</string>
     <string name="widget_wide_grid_unavailable">このウィジェットは削除されたか利用できません</string>
     <string name="widget_wide_grid_vertical">縦向きの7日間・時限ごとに移動</string>
     <string name="jw_select_academic_adapter">教務システムを選択</string>
@@ -1167,4 +1163,7 @@
     <string name="jw_source_break_minutes">休憩時間：%1$s 分</string>
     <string name="jw_source_first_weekday">週の開始曜日：%1$s</string>
     <string name="jw_invalid_semester_weeks">総週数は %1$d から 366 の範囲で入力してください</string>
+    <string name="widget_week_grid_vertical_label">週間時間割・縦向き7日間・4×2</string>
+    <string name="widget_week_grid_horizontal_label">週間時間割・横向き3日間・4×2</string>
+    <string name="widget_wide_grid_preview">ウィジェットのプレビュー</string>
 </resources>

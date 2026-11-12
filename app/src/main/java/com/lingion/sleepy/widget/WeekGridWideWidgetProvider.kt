@@ -20,8 +20,9 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
-/** Dedicated 4x2 receiver. Original small and regular grid paths remain untouched. */
-class WeekGridWideWidgetProvider : AppWidgetProvider() {
+/** Shared rendering for the two fixed 4x2 components; this base is not registered. */
+abstract class WeekGridWideWidgetProvider : AppWidgetProvider() {
+    abstract val layoutMode: WeekGridWideMode
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
             WidgetVendorActions.XIAOMI_UPDATE_ACTION -> WidgetVendorActions.dispatchXiaomiUpdate(this, context, intent)
@@ -50,7 +51,7 @@ class WeekGridWideWidgetProvider : AppWidgetProvider() {
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try {
                 for (id in ids) try {
-                    val settings = WeekGridWideSettingsStore.read(context, id)
+                    val settings = WeekGridWideSettingsStore.read(context, id).copy(mode = layoutMode)
                     val now = LocalDateTime.now(AppClock)
                     val data = loadData(context, id, settings, now)
                     val (w, h) = RemoteViewsWidgetHelper.computeSizeDp(manager.getAppWidgetOptions(id))
@@ -81,6 +82,12 @@ class WeekGridWideWidgetProvider : AppWidgetProvider() {
     }
 
     companion object {
+        fun modeForReceiverName(name: String?): WeekGridWideMode? = when (name?.substringAfterLast('.')) {
+            "WeekGridVerticalWidgetProvider" -> WeekGridWideMode.VERTICAL
+            "WeekGridHorizontalWidgetProvider" -> WeekGridWideMode.HORIZONTAL
+            else -> null
+        }
+
         internal fun coursesForDate(source: WidgetWeekSource, date: java.time.LocalDate): List<com.lingion.sleepy.data.entity.CourseEntity> {
             val actual = com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(
                 date, source.table.startDate, source.table.maxWeek, source.courses, source.transfers)
@@ -102,7 +109,7 @@ class WeekGridWideWidgetProvider : AppWidgetProvider() {
             return dataForSource(context, source, settings.mode, now, dark, theme)
         }
 
-        /** Shared date/data policy for the receiver and all three instance previews. */
+        /** Shared date/data policy for the receivers and their instance previews. */
         internal suspend fun dataForSource(context: Context, source: WidgetWeekSource?, mode: WeekGridWideMode,
             now: LocalDateTime, dark: Boolean, theme: String): WeekData {
             if (source == null) return WeekData(emptyList(), false, isDark = dark, themeKey = theme)

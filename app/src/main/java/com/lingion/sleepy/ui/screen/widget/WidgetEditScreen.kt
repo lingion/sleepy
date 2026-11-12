@@ -73,7 +73,6 @@ fun WidgetEditScreen(
             compactTodayFirst = state.compactTodayFirst,
             onCompactTodayFirstChange = { vm.setCompactTodayFirst(it) },
             wideGridSettings = state.wideGridSettings,
-            onWideGridModeChange = { vm.setWideGridMode(it) },
             onWideGridLabelSideChange = { vm.setWideGridLabelSide(it) },
         )
     }

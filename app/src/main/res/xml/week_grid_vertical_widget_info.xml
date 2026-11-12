@@ -10,9 +10,9 @@
     android:targetCellHeight="2"
     android:updatePeriodMillis="0"
     android:initialLayout="@layout/widget_bitmap_container"
-    android:previewLayout="@layout/widget_preview_weekgrid_wide"
-    android:previewImage="@drawable/widget_preview_weekgrid_wide"
+    android:previewLayout="@layout/widget_preview_weekgrid_vertical"
+    android:previewImage="@drawable/widget_preview_weekgrid_vertical"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
-    android:description="@string/widget_week_grid_wide_label"
+    android:description="@string/widget_week_grid_vertical_label"
     android:widgetFeatures="reconfigurable" />

@@ -136,9 +136,6 @@ internal object WeekGridWideRenderer {
     }
 
     fun renderBitmap(context: Context, data: WeekData, settings: WeekGridWideSettings, now: LocalDateTime, widthPx: Int, heightPx: Int): Bitmap {
-        if (settings.mode == WeekGridWideMode.ORIGINAL) {
-            return WeekGridWidgetProvider.renderBitmap(context, data, widthPx, heightPx)
-        }
         val geometry = layout(context, data, settings, now, widthPx, heightPx)
         val bitmap = Bitmap.createBitmap(widthPx.coerceAtLeast(1), heightPx.coerceAtLeast(1), Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)

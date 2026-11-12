@@ -28,7 +28,6 @@ data class WidgetEditScope(
     val compactTodayFirst: Boolean = true,
     val onCompactTodayFirstChange: (Boolean) -> Unit = {},
     val wideGridSettings: com.lingion.sleepy.widget.WeekGridWideSettings = com.lingion.sleepy.widget.WeekGridWideSettings(),
-    val onWideGridModeChange: (com.lingion.sleepy.widget.WeekGridWideMode) -> Unit = {},
     val onWideGridLabelSideChange: (com.lingion.sleepy.widget.WeekGridWideLabelSide) -> Unit = {},
 )
 

@@ -2,7 +2,7 @@ package com.lingion.sleepy.widget
 
 import java.time.LocalDate
 
-enum class WeekGridWideMode { ORIGINAL, VERTICAL, HORIZONTAL }
+enum class WeekGridWideMode { VERTICAL, HORIZONTAL }
 enum class WeekGridWideLabelSide { LEFT, RIGHT }
 data class WeekGridWideSettings(
     val mode: WeekGridWideMode = WeekGridWideMode.VERTICAL,

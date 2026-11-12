@@ -1157,15 +1157,11 @@
     <string name="period_validation_invalid_data">The bell schedule is incomplete or unreadable. Check period IDs and start/end times.</string>
     <string name="period_validation_invalid_format">Period %1$d time format is invalid, must be HH:mm</string>
     <string name="period_validation_overlap">Period %1$d conflicts with period %3$d: period %1$d ends at %2$s, later than period %3$d start time %4$s</string>
-<string name="widget_week_grid_wide_label">Week grid · 4×2</string>
     <string name="widget_wide_grid_empty">No courses in the preview dates</string>
     <string name="widget_wide_grid_horizontal">Horizontal three days, advance daily</string>
-    <string name="widget_wide_grid_layout">4×2 grid layout</string>
     <string name="widget_wide_grid_left">Day labels on the left</string>
-    <string name="widget_wide_grid_original">Original full grid</string>
     <string name="widget_wide_grid_preview_error">Could not load previews. Go back and try again.</string>
     <string name="widget_wide_grid_right">Day labels on the right</string>
-    <string name="widget_wide_grid_shapes">Switch form</string>
     <string name="widget_wide_grid_unavailable">This widget was removed or is unavailable</string>
     <string name="widget_wide_grid_vertical">Vertical week, advance each period</string>
     <string name="jw_select_academic_adapter">Choose academic system</string>
@@ -1175,4 +1171,7 @@
     <string name="jw_source_break_minutes">Break duration: %1$s min</string>
     <string name="jw_source_first_weekday">First weekday: %1$s</string>
     <string name="jw_invalid_semester_weeks">Enter a semester week count in this range: %1$d–366.</string>
+    <string name="widget_week_grid_vertical_label">Week grid · Vertical 7 days · 4×2</string>
+    <string name="widget_week_grid_horizontal_label">Week grid · Horizontal 3 days · 4×2</string>
+    <string name="widget_wide_grid_preview">Widget preview</string>
 </resources>

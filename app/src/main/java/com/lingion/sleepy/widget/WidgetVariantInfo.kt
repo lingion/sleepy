@@ -30,7 +30,8 @@ private const val L_W = 300; private const val L_H = 250      // 4×4
 val ALL_WIDGET_VARIANTS: List<WidgetVariantInfo> = listOf(
     WidgetVariantInfo(WeekGridWidgetProvider::class.java,      R.string.widget_week_grid_label, R.drawable.widget_preview_weekgrid, L_W, L_H),
     WidgetVariantInfo(WeekGridSmallWidgetProvider::class.java, R.string.widget_week_grid_small_label, R.drawable.widget_preview_weekgrid_small, S_W, S_H),
-    WidgetVariantInfo(WeekGridWideWidgetProvider::class.java, R.string.widget_week_grid_wide_label, R.drawable.widget_preview_weekgrid_wide, M_W, M_H),
+    WidgetVariantInfo(WeekGridVerticalWidgetProvider::class.java, R.string.widget_week_grid_vertical_label, R.drawable.widget_preview_weekgrid_vertical, M_W, M_H),
+    WidgetVariantInfo(WeekGridHorizontalWidgetProvider::class.java, R.string.widget_week_grid_horizontal_label, R.drawable.widget_preview_weekgrid_horizontal, M_W, M_H),
     WidgetVariantInfo(TodayWidgetReceiver::class.java,        R.string.widget_today_label, R.drawable.widget_preview_today, L_W, L_H),
     WidgetVariantInfo(TodaySmallWidgetReceiver::class.java,   R.string.widget_today_small_label, R.drawable.widget_preview_today_small, S_W, S_H),
     WidgetVariantInfo(WeekListWidgetReceiver::class.java,     R.string.widget_week_list_label, R.drawable.widget_preview_weeklist, L_W, L_H),
