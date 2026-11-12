@@ -89,9 +89,13 @@ class IntRangeSliderGhostPipelineTest {
      *  轨道内缩一个半 thumb 宽, 非端点档位再按 corner (轨道高/2) 内缩。 */
     private fun endThumbX(nodeWidthPx: Float, endValue: Int): Float {
         val density = 2f // xhdpi (qualifiers)
-        val thumbW = 24f * density
+        val thumbW = 4f * density
         val frac = (endValue - 1) / 15f
-        return thumbW / 2f + (nodeWidthPx - thumbW) * frac
+        val trackWidth = nodeWidthPx - thumbW
+        val corner = 8f * density
+        return thumbW / 2f + if (frac != 0f && frac != 1f) {
+            kotlin.math.round((trackWidth - corner * 2) * frac) + corner
+        } else kotlin.math.round(trackWidth * frac)
     }
 
     private fun ghostExists(): Boolean =

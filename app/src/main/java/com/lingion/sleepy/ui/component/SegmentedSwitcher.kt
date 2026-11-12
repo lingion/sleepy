@@ -266,7 +266,7 @@ fun <T> SegmentedSwitcher(
                 trackWidthPx = (coords.size.width - with(density) { horizontalInset.toPx() * 2 }).toInt().coerceAtLeast(0)
             }
             .selectableGroup()
-            .glassGestureOwnership(count > 1)
+            .glassGestureOwnership(glassActive && count > 1)
             .pointerInput(options, isRtl, trackWidthPx, glassActive) {
                 // Classic 模式完全走原有 selectable 点击路径，不安装自定义拖动接管器。
                 if (!glassActive) return@pointerInput

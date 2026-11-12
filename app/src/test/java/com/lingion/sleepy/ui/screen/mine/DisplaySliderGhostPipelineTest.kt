@@ -77,12 +77,12 @@ class DisplaySliderGhostPipelineTest {
     private fun ghostExists(): Boolean =
         compose.onAllNodesWithTag("display-slider-ghost", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
 
-    /** 第 0 条仍是 gridScale, 抓取真实滑片并按 rail 的实际宽度分步横移。 */
+    /** 第 0 条仍是 Material gridScale，按默认4dp handle的真实行程分步横移。 */
     private fun dragTo(targetValue: Float) {
-        val railWidth = compose.onAllNodesWithTag("slider-track", useUnmergedTree = true)[0]
-            .fetchSemanticsNode().boundsInRoot.width
+        val slider = gridScaleSlider()
+        val railWidth = slider.fetchSemanticsNode().boundsInRoot.width - 4f * 2f
         val delta = (targetValue - currentGridScale()) / .6f * railWidth
-        compose.onAllNodesWithTag("glass-slider-end", useUnmergedTree = true)[0].performTouchInput {
+        slider.performTouchInput {
             down(center)
             repeat(6) { moveBy(Offset(delta / 6f, 0f)) }
             up()

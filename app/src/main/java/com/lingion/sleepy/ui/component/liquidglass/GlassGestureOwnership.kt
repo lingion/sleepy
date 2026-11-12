@@ -14,7 +14,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 
 /** Own touch input before Material's slop detector; retain its rendering and semantics.
- * SliderState performs discrete snapping; input uses the same inset as the shared thumb.
+ * SliderState performs discrete snapping; Material's default 4dp handle defines input travel.
  */
 @Composable
 internal fun Modifier.materialSliderGestureOwnership(
@@ -38,7 +38,7 @@ internal fun Modifier.materialSliderGestureOwnership(
             // Material's raw offset is initialized only by its internal onPress path.
             // Keep an unsnapped value here so small movements accumulate across steps.
             var dragValue = state.value
-            val inset = (GlassSliderThumbMetrics.SINGLE_WIDTH / 2f).dp.toPx()
+            val inset = 2.dp.toPx()
             val trackWidth = (size.width - 2 * inset).coerceAtLeast(1f)
             val range = state.trackRange.endInclusive - state.trackRange.start
             while (true) {

@@ -9,7 +9,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -36,8 +35,7 @@ import org.robolectric.annotation.GraphicsMode
  * 4. 拖动过程 onHueCommit 一次不触发 (每个 onHueChange 帧快照 commit 数, 全程须 0),
  *    松手恰一次 — 节流分工归调用点 (HueSlider 自身语义, 先例注释 :201-203)。
  *
- * Gesture distance comes from the actual rail. Material expands the slider's accessibility
- * bounds horizontally, so its semantic node width is not the visible thumb travel distance.
+ * Material keeps the original full-width rainbow strip and circular indicator.
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -45,6 +43,7 @@ import org.robolectric.annotation.GraphicsMode
 class HueSliderGhostPipelineTest {
 
     @get:Rule val compose = createComposeRule()
+    private lateinit var recorder: Recorder
 
     private class Recorder {
         var hue = 180f
@@ -53,6 +52,7 @@ class HueSliderGhostPipelineTest {
     }
 
     private fun page(rec: Recorder, initialHue: Float?) {
+        recorder = rec
         compose.setContent {
             SleepyThemeProvider(darkTheme = false, themeKey = "default") {
                 var hue by remember { mutableStateOf(rec.hue) }
@@ -72,23 +72,19 @@ class HueSliderGhostPipelineTest {
         compose.waitForIdle()
     }
 
-    /** 抓当前真实滑片, 按实际轨道分 6 步横移到目标 hue, 松手。 */
+    /** 从历史彩虹条的当前色相位置分 6 步横移，保留真实拖动/提交断言。 */
     private fun drag(fromHue: Float, toHue: Float) {
-        val railWidth = compose.onNodeWithTag("slider-track", useUnmergedTree = true)
-            .fetchSemanticsNode().boundsInRoot.width
-        val delta = (toHue - fromHue) / 360f * railWidth
-        compose.onNodeWithTag("glass-slider-end", useUnmergedTree = true).performTouchInput {
-            down(center)
+        compose.onNodeWithTag("hue").performTouchInput {
+            val delta = (toHue - fromHue) / 360f * width
+            down(Offset(width * fromHue / 360f, centerY))
             repeat(6) { moveBy(Offset(delta / 6f, 0f)) }
             up()
         }
         compose.waitForIdle()
-        val current = compose.onNodeWithTag("hue").fetchSemanticsNode()
-            .config[SemanticsProperties.ProgressBarRangeInfo].current
-        assertEquals("手势必须到达目标色相", toHue, current, .01f)
+        assertEquals("手势必须到达目标色相", toHue, recorder.hue, .01f)
     }
 
-    // Material's progressSemantics merges decorative descendants into the slider node.
+    // The historical rainbow decoration retains its original tagged ghost.
     private fun ghostExists(): Boolean =
         compose.onAllNodesWithTag("hue-ghost", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
 

@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.ui.component.liquidglass.GlassRangeSlider
 import com.lingion.sleepy.ui.component.liquidglass.drawSliderGhost
 import com.lingion.sleepy.ui.component.liquidglass.GlassSliderThumbMetrics
+import com.lingion.sleepy.ui.component.liquidglass.liquidGlassControlsEnabled
+import androidx.compose.ui.geometry.CornerRadius
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlinx.coroutines.coroutineScope
@@ -161,18 +163,45 @@ internal fun singleSliderGhostVisible(
 internal fun singleSliderGhostX(nodeWidthPx: Float, frac: Float, thumbWidthPx: Float): Float =
     com.lingion.sleepy.ui.component.liquidglass.sliderVisualX(nodeWidthPx, frac, thumbWidthPx / 2f, false)
 
-/** Noninteractive original-value marker, identical to the single-thumb resting silhouette. */
+/** Material3's original handle/track coordinate mapping, before glass controls were added. */
+internal fun materialSliderGhostX(
+    nodeWidthPx: Float,
+    frac: Float,
+    steps: Int,
+    thumbWidthPx: Float,
+    trackHeightPx: Float,
+): Float {
+    val f = frac.coerceIn(0f, 1f)
+    val trackWidth = nodeWidthPx - thumbWidthPx
+    val corner = trackHeightPx / 2f
+    val offset = if (steps > 0 && f != 0f && f != 1f) {
+        ((trackWidth - 2f * corner) * f).roundToInt() + corner
+    } else (trackWidth * f).roundToInt().toFloat()
+    return thumbWidthPx / 2f + offset
+}
+
+/** Noninteractive original-value marker, matching the selected appearance. */
 @Composable
 internal fun BoxScope.SingleSliderGhostMark(
     baselineFrac: Float,
     modifier: Modifier = Modifier,
     thumbWidthDp: Dp = GlassSliderThumbMetrics.SINGLE_WIDTH.dp,
+    steps: Int = 0,
 ) {
     val primary = MaterialTheme.colorScheme.primary
+    val glass = liquidGlassControlsEnabled()
     Canvas(modifier.matchParentSize()) {
+        val frac = if (layoutDirection == LayoutDirection.Rtl) 1f - baselineFrac else baselineFrac
+        if (!glass) {
+            val width = 4.dp.toPx()
+            val height = 44.dp.toPx()
+            val x = materialSliderGhostX(size.width, frac, steps, width, 16.dp.toPx())
+            drawRoundRect(primary.copy(alpha = .4f), Offset(x - width / 2, (size.height - height) / 2),
+                Size(width, height), CornerRadius(width / 2))
+            return@Canvas
+        }
         val thumbWidth = thumbWidthDp.toPx()
         val thumbHeight = thumbWidth * GlassSliderThumbMetrics.SINGLE_HEIGHT / GlassSliderThumbMetrics.SINGLE_WIDTH
-        val frac = if (layoutDirection == LayoutDirection.Rtl) 1f - baselineFrac else baselineFrac
         val x = singleSliderGhostX(size.width, frac, thumbWidth)
         drawSliderGhost(Offset(x, size.height / 2f), Size(thumbWidth, thumbHeight), primary)
     }

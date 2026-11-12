@@ -60,7 +60,7 @@ fun GlassSwitch(
     val glassEnabled = LocalUiStyle.current == UiStyle.LiquidGlass && host != null
     if (!glassEnabled) {
         androidx.compose.material3.Switch(checked, onCheckedChange,
-            modifier.glassGestureOwnership(enabled && onCheckedChange != null), thumbContent, enabled, colors, interactionSource)
+            modifier, thumbContent, enabled, colors, interactionSource)
         return
     }
     val interactions = interactionSource ?: remember { MutableInteractionSource() }

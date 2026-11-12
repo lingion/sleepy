@@ -22,8 +22,8 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
-/** Render actual app sliders and isolated original-value ovals, then compare their pixel centers.
- * The 32px sample row crosses the 37×24dp oval at density 2, above the 8dp rail.
+/** Render Material sliders and their original-value markers, comparing pixel centers.
+ * The 12px row crosses the 44dp Material handle above its 16dp rail at density 2.
  * Cases retain continuous/discrete values, endpoints and off-center values.
  */
 @RunWith(RobolectricTestRunner::class)
@@ -98,7 +98,7 @@ class SingleSliderGhostGeometryTest {
         compose.setContent {
             SleepyThemeProvider(darkTheme = false, themeKey = "default") {
                 Box(modifier = Modifier.size(width = 360.dp, height = 48.dp).testTag("gbox-${c.name}")) {
-                    SingleSliderGhostMark(baselineFrac = frac)
+                    SingleSliderGhostMark(baselineFrac = frac, steps = c.steps)
                 }
             }
         }
@@ -140,8 +140,8 @@ class SingleSliderGhostGeometryTest {
     @Test fun b7s11MidGhost() = assertCoincide(caseOf("s11-mid"))
 
     companion object {
-        /** Oval top is 24px; rail top is 40px, so 32px isolates the actual oval. */
-        private const val ROW_Y = 32
+        /** Material handle top is 4px; the default rail starts at 32px. */
+        private const val ROW_Y = 12
         /** 背景参考行 y: thumb 椭圆顶端之上, 全行无墨。 */
         private const val ROW_BG = 1
         val thumbCenters = mutableMapOf<String, Float>()

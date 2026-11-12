@@ -1,5 +1,7 @@
 package com.lingion.sleepy.ui.component.liquidglass
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -11,6 +13,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
@@ -27,6 +30,9 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
+import com.lingion.sleepy.ui.component.materialSliderGhostX
+import com.lingion.sleepy.ui.component.sleepyPopupEnter
+import com.lingion.sleepy.ui.component.sleepyPopupExit
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -63,7 +69,7 @@ internal class GlassSliderDragMapping(
     }
 }
 
-/** Shared horizontal slider silhouette; each appearance retains its existing input mechanics. */
+/** The glass appearance has its own rendering; Material retains platform defaults. */
 @Composable
 fun GlassSlider(
     value: Float,
@@ -89,22 +95,16 @@ fun GlassSlider(
         val baseline = initialValue?.takeIf { it.isFinite() }?.coerceIn(valueRange.start, valueRange.endInclusive)
         val ghost = baseline?.takeIf { abs(it - value) > ghostEpsilon }
             ?.let { 0f..((it - valueRange.start) / span).coerceIn(0f, 1f) }
-        androidx.compose.material3.Slider(
-            state = state, onValueChange = onValueChange,
-            modifier = modifier.height(GlassSliderThumbMetrics.TOUCH_HEIGHT.dp)
-                .materialSliderGestureOwnership(state, enabled, onValueChange, onValueChangeFinished),
-            enabled = enabled,
-            onValueChangeFinished = onValueChangeFinished,
-            thumb = { GlassSliderThumb(trackBackdrop = null, enabled = enabled,
-                modifier = Modifier.testTag("glass-slider-end")) },
-            track = {
-                AppSliderTrack(
-                    startFraction = { 0f }, endFraction = { ((state.value - valueRange.start) / span).coerceIn(0f, 1f) },
-                    tickCount = if (steps > 0) steps + 2 else 11,
-                    enabled = enabled, activeColor = thumbColor, trackBrush = trackBrush, ghost = ghost, ghostTag = ghostTag,
-                )
-            },
-        )
+        Box {
+            androidx.compose.material3.Slider(
+                state = state, onValueChange = onValueChange,
+                modifier = modifier
+                    .materialSliderGestureOwnership(state, enabled, onValueChange, onValueChangeFinished),
+                enabled = enabled,
+                onValueChangeFinished = onValueChangeFinished,
+            )
+            MaterialSliderGhost(ghost, steps, range = false, tag = ghostTag)
+        }
         return
     }
     GlassSliderBody(
@@ -140,25 +140,55 @@ internal fun GlassRangeSlider(
         }
         val ghost = baseline?.takeIf { it.start != state.startValue || it.endInclusive != state.endValue }
             ?.let { fraction(it.start)..fraction(it.endInclusive) }
-        androidx.compose.material3.RangeSlider(
-            state = state, onValueChange = onValueChange,
-            modifier = modifier.fillMaxWidth().height(GlassSliderThumbMetrics.TOUCH_HEIGHT.dp),
-            startThumb = { GlassSliderThumb(trackBackdrop = null, range = true,
-                modifier = Modifier.testTag("glass-slider-start")) },
-            endThumb = { GlassSliderThumb(trackBackdrop = null, range = true,
-                modifier = Modifier.testTag("glass-slider-end")) },
-            track = {
-                AppSliderTrack(
-                    startFraction = { fraction(state.startValue) },
-                    endFraction = { fraction(state.endValue) },
-                    tickCount = steps + 2, range = true, ghost = ghost,
-                )
-            },
-        )
+        Box {
+            androidx.compose.material3.RangeSlider(
+                state = state, onValueChange = onValueChange,
+                modifier = modifier.fillMaxWidth(),
+            )
+            MaterialSliderGhost(ghost, steps, range = true, tag = "slider-ghost")
+        }
         return
     }
     GlassSliderBody(value, onValueChange, modifier, true, valueRange, steps, null,
         true, initialValue, 0f, "slider-ghost", null, MaterialTheme.colorScheme.primary)
+}
+
+/** Baseline decoration is separate so it cannot replace Material's track or handles. */
+@Composable
+private fun BoxScope.MaterialSliderGhost(
+    value: ClosedFloatingPointRange<Float>?,
+    steps: Int,
+    range: Boolean,
+    tag: String,
+) {
+    var retained by remember { mutableStateOf<ClosedFloatingPointRange<Float>?>(null) }
+    if (value != null) retained = value
+    val primary = androidx.compose.material3.MaterialTheme.colorScheme.primary
+    AnimatedVisibility(
+        visible = value != null, enter = sleepyPopupEnter(), exit = sleepyPopupExit(),
+        modifier = Modifier.matchParentSize().testTag(tag),
+    ) {
+        val ghost = retained
+        if (ghost != null) Canvas(Modifier.fillMaxSize().testTag("$tag-canvas")) {
+            fun x(frac: Float) = materialSliderGhostX(
+                size.width, if (layoutDirection == LayoutDirection.Rtl) 1f - frac else frac,
+                steps, 4.dp.toPx(), 16.dp.toPx(),
+            )
+            val startX = x(ghost.start)
+            val endX = x(ghost.endInclusive)
+            val trackHeight = 16.dp.toPx()
+            if (range && abs(endX - startX) >= 1f) drawRoundRect(
+                primary.copy(alpha = .25f), Offset(minOf(startX, endX), (size.height - trackHeight) / 2),
+                androidx.compose.ui.geometry.Size(abs(endX - startX), trackHeight), CornerRadius(trackHeight / 2),
+            )
+            val handleWidth = 4.dp.toPx()
+            val handleHeight = 44.dp.toPx()
+            for (center in if (range) floatArrayOf(startX, endX) else floatArrayOf(endX)) drawRoundRect(
+                primary.copy(alpha = .40f), Offset(center - handleWidth / 2, (size.height - handleHeight) / 2),
+                androidx.compose.ui.geometry.Size(handleWidth, handleHeight), CornerRadius(handleWidth / 2),
+            )
+        }
+    }
 }
 
 @Composable
