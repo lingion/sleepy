@@ -22,9 +22,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -32,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.MotionDurationScale
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.shadow
@@ -61,6 +64,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsPropertyKey
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
@@ -77,19 +83,20 @@ import com.lingion.sleepy.ui.component.rememberNavIconDrivers
 import com.lingion.sleepy.ui.component.selectionColors
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import material.Hct
+import kotlin.coroutines.coroutineContext
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlin.math.sign
 
+/** Actual painted capsule bounds; the lens carrier itself spans the complete Dock. */
+internal val DockLensBoundsInRootPx = SemanticsPropertyKey<Rect>("DockLensBoundsInRootPx")
+
+private class DockInputState(var selected: Int)
+
 /**
- * 100% 逐字对齐 FLClash (FLASH) 的液态玻璃悬浮导航底栏。
- *
- * 覆盖四轴物理与视觉规范:
- * 1. 真实折射光学: 凸透镜外弯 (-4.3dp), 6.5dp 真实色散, 发丝高光, 径向触控光芒
- * 2. 动力学弹簧: Travel (400ms, b=0.15), Follow (k=1024), Jelly 速度与刹车形变, 橡皮筋超拖
- * 3. 极速触控: 即时膨胀, 平滑拖拽跟手, 100ms 甩手预测, 稳妥落锁后收镜
- * 4. 触觉微振: 跨越 tab 边界与松手确认触发系统级微震动 (CLOCK_TICK / SEGMENT_TICK)
+ * 悬浮导航栏。镜片起落与拖动形变按 iOS 26.5 原生控件的记录校准，
+ * 选中色复用 Material 模式。光学着色器及低版本回退仍是近似绘制。
  */
 @Composable
 fun LiquidGlassNavigationBar(
@@ -121,20 +128,21 @@ fun LiquidGlassNavigationBar(
     val clampedSelected = selectedIndex.coerceIn(0, lastIndex)
 
     // ── 动力学弹簧状态机 ──
-    val lensSpring = remember { SpringState(clampedSelected.toFloat()) }
-    val liftSpring = remember { SpringState(0f) }
-    val swellSpring = remember { SpringState(0f) }
-    val stretchSpring = remember { SpringState(0f) }
-    val jellySpring = remember { SpringState(0f, rest = FlClashDockPhysics.JELLY_REST) }
-    val glowSpring = remember { SpringState(0f) }
-    val glowSpreadSpring = remember { SpringState(0f) }
+    val motion = remember { GlassDockMotion(clampedSelected.toFloat()) }
+    val lensSpring = motion.position
+    val liftSpring = motion.lift
+    val swellSpring = motion.swell
+    val stretchSpring = motion.pull
+    val jellySpring = motion.jelly
+    val glowSpring = motion.glow
+    val glowSpreadSpring = motion.glowSpread
 
     var glowAt by remember { mutableStateOf(Offset.Zero) }
     var pressedIndex by remember { mutableStateOf<Int?>(null) }
     var pressX by remember { mutableFloatStateOf(0f) }
     var dragging by remember { mutableStateOf(false) }
-    var dropping by remember { mutableStateOf(false) }
     var pointerId by remember { mutableStateOf<Long?>(null) }
+    var selectionRequest by remember { mutableIntStateOf(0) }
 
     // 图标专属动效驱动表(NavIconMotion.kt): bar 层一份, 透镜内外双遍 DestinationsRow
     // 共享同一实例 → 两圈相位逐帧一致, 透镜像素不撕裂。pressed = 手指按住 bar 且
@@ -145,55 +153,18 @@ fun LiquidGlassNavigationBar(
     }
 
     // 外部 selectedIndex 改变时, 驱动镜头滑向目标
-    LaunchedEffect(clampedSelected) {
+    LaunchedEffect(clampedSelected, pressedIndex, selectionRequest) {
         if (pressedIndex == null && lensSpring.target.roundToInt() != clampedSelected) {
             lensSpring.springTo(clampedSelected.toFloat(), FlClashSprings.TravelSpring)
         }
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(motion) {
+        val durationScale = coroutineContext[MotionDurationScale]
         runActiveFrameLoop(
-            needsFrame = {
-                dragging || dropping || lensSpring.isRunning || liftSpring.isRunning ||
-                    swellSpring.isRunning || stretchSpring.isRunning || jellySpring.isRunning ||
-                    glowSpring.isRunning || glowSpreadSpring.isRunning
-            },
+            needsFrame = { motion.needsFrame(dragging, durationScale?.scaleFactor ?: 1f) },
         ) { dt ->
-            lensSpring.tickDelta(dt)
-            liftSpring.tickDelta(dt)
-            swellSpring.tickDelta(dt)
-            stretchSpring.tickDelta(dt)
-            jellySpring.tickDelta(dt)
-            glowSpring.tickDelta(dt)
-            glowSpreadSpring.tickDelta(dt)
-
-            // 果冻弹性 (wobble):
-            // 1. 手指拖拽中 (dragging): 受拖拽速度连续平滑驱动纯拉伸，彻底杜绝阻尼高频振颤引起的假性刹车相互抵消
-            // 2. 释放飞行/回弹阶段 (lensSpring.isRunning): 包含精准刹车拍扁 (braking squash) 与果冻回弹
-            val wobbleTarget = if (dragging) {
-                val vel = abs(lensSpring.velocity)
-                FlClashDockPhysics.JELLY_STRETCH * FlClashDockPhysics.saturate(vel / FlClashDockPhysics.JELLY_SPEED)
-            } else if (lensSpring.isRunning) {
-                FlClashDockPhysics.wobbleTarget(lensSpring.velocity, lensSpring.acceleration)
-            } else {
-                0f
-            }
-            if (abs(wobbleTarget - jellySpring.target) > 1e-3f) {
-                jellySpring.springTo(wobbleTarget, FlClashSprings.JellySpring)
-            }
-
-            // 稳妥落锁收镜 (dropLift): 当手指已松开且镜片升满时, 落回沉底底盘
-            if (dropping && pointerId == null) {
-                val nearTarget = abs(lensSpring.target - lensSpring.value) <= FlClashDockPhysics.LIFT_RELEASE
-                if (liftSpring.value >= FlClashDockPhysics.LIFT_SNAP && nearTarget) {
-                    dropping = false
-                    liftSpring.springTo(0f, FlClashSprings.LiftSpring)
-                } else if (!liftSpring.isRunning && liftSpring.value > 0f && nearTarget) {
-                    // 容错兜底: 若升镜已达峰停止且对准目标, 立即触发回弹落底
-                    dropping = false
-                    liftSpring.springTo(0f, FlClashSprings.LiftSpring)
-                }
-            }
+            motion.advance(dt, durationScale?.scaleFactor ?: 1f, pointerId != null, dragging)
         }
     }
 
@@ -210,6 +181,7 @@ fun LiquidGlassNavigationBar(
     var barWidthPx by remember { mutableFloatStateOf(0f) }
     var barHeightPx by remember { mutableFloatStateOf(0f) }
     var dockCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    var lensCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     val isLtr = layoutDirection == LayoutDirection.Ltr
 
     val layout = remember(barWidthPx, density.density, count) {
@@ -217,12 +189,40 @@ fun LiquidGlassNavigationBar(
         FlClashDockPhysics.dockLayout(max(1f, spanDp), count)
     }
 
-    val currentSelected by rememberUpdatedState(selectedIndex)
+    val inputState = remember { DockInputState(clampedSelected) }
+    SideEffect { inputState.selected = clampedSelected }
+    SideEffect { motion.distancePerPosition = if (isLtr) layout.pitch else -layout.pitch }
+    val currentSelected by rememberUpdatedState(clampedSelected)
     val currentOnSelect by rememberUpdatedState(onSelect)
     val currentLayout by rememberUpdatedState(layout)
     val currentDensity by rememberUpdatedState(density.density)
     val currentIsLtr by rememberUpdatedState(isLtr)
     val currentLastIndex by rememberUpdatedState(lastIndex)
+
+    // Rows place logical indices according to layout direction. Canvas geometry
+    // uses physical left-to-right coordinates, so mirror it exactly once here.
+    fun paintedLensRect(lift: Float): Rect = FlClashDockPhysics.lensRect(
+        position = if (currentIsLtr) lensSpring.value else currentLastIndex - lensSpring.value,
+        stretch = jellySpring.value,
+        stretchY = motion.stretchY,
+        pitch = currentLayout.pitch,
+        width = currentLayout.lens,
+        height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
+        lift = lift,
+    )
+
+    fun cancelInteraction() {
+        pointerId = null
+        pressedIndex = null
+        dragging = false
+        motion.dropping = false
+        lensSpring.springTo(currentSelected.toFloat(), FlClashSprings.TravelSpring)
+        liftSpring.springTo(0f, FlClashSprings.LiftSpring)
+        stretchSpring.springTo(0f, FlClashSprings.PressSpring)
+        glowSpring.springTo(0f, FlClashSprings.GlowOutSpring)
+        glowSpreadSpring.springTo(1f, FlClashSprings.GlowOutSpring)
+        swellSpring.springTo(0f, FlClashSprings.PressSpring)
+    }
 
     fun positionAt(xPx: Float): Float {
         val xDp = xPx / currentDensity
@@ -351,7 +351,7 @@ fun LiquidGlassNavigationBar(
                                 pressedIndex = idx
                                 pressX = change.position.x
                                 dragging = false
-                                dropping = false
+                                motion.dropping = false
 
                                 liftSpring.springTo(1f, FlClashSprings.LiftSpring)
                                 lensSpring.springTo(idx.toFloat(), FlClashSprings.TravelSpring)
@@ -380,7 +380,8 @@ fun LiquidGlassNavigationBar(
                                             else -> 0f
                                         }
                                         val pullLimit = barHeightPx * FlClashDockPhysics.PULL_LIMIT
-                                        val targetStretch = FlClashDockPhysics.rubberBand(overshootPx, pullLimit)
+                                        val physicalOvershootPx = overshootPx * if (currentIsLtr) 1f else -1f
+                                        val targetStretch = FlClashDockPhysics.rubberBand(physicalOvershootPx, pullLimit)
                                         // 顺着手的拉力整体牵引整个 Dock
                                         stretchSpring.springTo(targetStretch, FlClashSprings.TrackSpring)
 
@@ -400,10 +401,16 @@ fun LiquidGlassNavigationBar(
                             }
                             PointerEventType.Release -> {
                                 if (pointerId == change.id.value) {
+                                    // Compose represents pointer cancellation as an already
+                                    // consumed release. It must never commit a destination.
+                                    if (change.isConsumed) {
+                                        cancelInteraction()
+                                        continue
+                                    }
                                     pointerId = null
                                     val velocityXDp = velocityTracker.calculateVelocity().x / currentDensity
 
-                                    var targetIndex = pressedIndex ?: currentSelected
+                                    var targetIndex = pressedIndex ?: inputState.selected
                                     if (dragging) {
                                         val direction = if (currentIsLtr) 1f else -1f
                                         val lead = (velocityXDp / currentLayout.pitch) * direction * FlClashDockPhysics.FLING_PROJECTION_SEC.toFloat()
@@ -416,7 +423,7 @@ fun LiquidGlassNavigationBar(
 
                                     pressedIndex = null
                                     dragging = false
-                                    dropping = true
+                                    motion.dropping = true
 
                                     lensSpring.springTo(targetIndex.toFloat(), FlClashSprings.TravelSpring)
                                     stretchSpring.springTo(0f, FlClashSprings.PressSpring)
@@ -426,11 +433,13 @@ fun LiquidGlassNavigationBar(
 
                                     if (liftSpring.value >= FlClashDockPhysics.LIFT_SNAP &&
                                         abs(targetIndex.toFloat() - lensSpring.value) <= FlClashDockPhysics.LIFT_RELEASE) {
-                                        dropping = false
+                                        motion.dropping = false
                                         liftSpring.springTo(0f, FlClashSprings.LiftSpring)
                                     }
 
-                                    if (targetIndex != currentSelected) {
+                                    if (targetIndex != inputState.selected) {
+                                        inputState.selected = targetIndex
+                                        selectionRequest++
                                         currentOnSelect(targetIndex)
                                     }
                                     change.consume()
@@ -440,15 +449,7 @@ fun LiquidGlassNavigationBar(
                     }
                 }
                 } finally {
-                    pointerId = null
-                    pressedIndex = null
-                    dragging = false
-                    dropping = false
-                    lensSpring.springTo(currentSelected.toFloat(), FlClashSprings.TravelSpring)
-                    liftSpring.springTo(0f, FlClashSprings.LiftSpring)
-                    stretchSpring.springTo(0f, FlClashSprings.PressSpring)
-                    glowSpring.springTo(0f, FlClashSprings.GlowOutSpring)
-                    swellSpring.springTo(0f, FlClashSprings.PressSpring)
+                    cancelInteraction()
                 }
             },
         contentAlignment = Alignment.Center,
@@ -515,14 +516,7 @@ fun LiquidGlassNavigationBar(
                         .drawBehind {
                             val lift = liftSpring.value
                             if (lift < 1f) {
-                                val lensRect = FlClashDockPhysics.lensRect(
-                                    position = lensSpring.value,
-                                    stretch = jellySpring.value,
-                                    pitch = layout.pitch,
-                                    width = layout.lens,
-                                    height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
-                                    lift = lift,
-                                )
+                                val lensRect = paintedLensRect(lift)
                                 val leftPx = (layout.inset + lensRect.left) * density.density
                                 val topPx = lensRect.top * density.density
                                 val widthPx = lensRect.width * density.density
@@ -546,14 +540,7 @@ fun LiquidGlassNavigationBar(
                     .height(barHeightDp + shadowRoomDp * 2)
                     .drawWithContent {
                         val lift = liftSpring.value
-                        val lensRect = FlClashDockPhysics.lensRect(
-                            position = lensSpring.value,
-                            stretch = jellySpring.value,
-                            pitch = layout.pitch,
-                            width = layout.lens,
-                            height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
-                            lift = lift,
-                        )
+                        val lensRect = paintedLensRect(lift)
                         val dockContentTopPx = (shadowRoomDp + FlClashDockPhysics.BAR_PADDING.dp).toPx()
                         val dockContentLeftPx = FlClashDockPhysics.BAR_PADDING.dp.toPx()
                         val leftPx = dockContentLeftPx + (layout.inset + lensRect.left) * density.density
@@ -596,18 +583,32 @@ fun LiquidGlassNavigationBar(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(barHeightDp + shadowRoomDp * 2)
+                    .onGloballyPositioned { lensCoordinates = it }
+                    .testTag("dock-lens")
+                    .semantics {
+                        // This carrier must stay bar-sized for uncut optical
+                        // sampling. Export the painted rect instead of claiming
+                        // its semantics-node bounds describe the capsule.
+                        val coordinates = lensCoordinates
+                        // Observe the parent's transform springs here as well;
+                        // localToRoot includes their current graphics layer.
+                        val parentTransformIsFinite = swellSpring.value.isFinite() && stretchSpring.value.isFinite()
+                        if (coordinates != null && coordinates.isAttached && parentTransformIsFinite) {
+                            val rect = paintedLensRect(liftSpring.value)
+                            val left = (FlClashDockPhysics.BAR_PADDING + layout.inset + rect.left) * density.density
+                            val top = (shadowRoomDp.value + FlClashDockPhysics.BAR_PADDING + rect.top) * density.density
+                            val first = coordinates.localToRoot(Offset(left, top))
+                            val last = coordinates.localToRoot(Offset(left + rect.width * density.density,
+                                top + rect.height * density.density))
+                            this[DockLensBoundsInRootPx] = Rect(minOf(first.x, last.x), minOf(first.y, last.y),
+                                maxOf(first.x, last.x), maxOf(first.y, last.y))
+                        }
+                    }
                     .drawBehind {
                         // 1. FLClash 立体下沉投影: offset (0, 8.dp * lift), blur 8.dp
                         val lift = liftSpring.value
                         if (lift > 0.001f) {
-                            val lensRect = FlClashDockPhysics.lensRect(
-                                position = lensSpring.value,
-                                stretch = jellySpring.value,
-                                pitch = layout.pitch,
-                                width = layout.lens,
-                                height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
-                                lift = lift,
-                            )
+                            val lensRect = paintedLensRect(lift)
                             val dockContentTopPx = (shadowRoomDp + FlClashDockPhysics.BAR_PADDING.dp).toPx()
                             val dockContentLeftPx = FlClashDockPhysics.BAR_PADDING.dp.toPx()
                             val leftPx = dockContentLeftPx + (layout.inset + lensRect.left) * density.density
@@ -640,14 +641,7 @@ fun LiquidGlassNavigationBar(
                         // 3. 外部裁切：将着色器渲染后的光学生效画面精确裁切至透镜胶囊内
                         val lift = liftSpring.value
                         if (lift > 0.001f) {
-                            val lensRect = FlClashDockPhysics.lensRect(
-                                position = lensSpring.value,
-                                stretch = jellySpring.value,
-                                pitch = layout.pitch,
-                                width = layout.lens,
-                                height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
-                                lift = lift,
-                            )
+                            val lensRect = paintedLensRect(lift)
                             val dockContentTopPx = (shadowRoomDp + FlClashDockPhysics.BAR_PADDING.dp).toPx()
                             val dockContentLeftPx = FlClashDockPhysics.BAR_PADDING.dp.toPx()
                             val leftPx = dockContentLeftPx + (layout.inset + lensRect.left) * density.density
@@ -672,14 +666,7 @@ fun LiquidGlassNavigationBar(
                         // 2. 着色器滤镜处理层：接收未裁切的底图作为 uTexture 输入，执行真实光学曲率弯折与色散
                         val lift = liftSpring.value
                         if (lensShader != null && lift > 0.001f && size.width > 0f && size.height > 0f) {
-                            val lensRect = FlClashDockPhysics.lensRect(
-                                position = lensSpring.value,
-                                stretch = jellySpring.value,
-                                pitch = layout.pitch,
-                                width = layout.lens,
-                                height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
-                                lift = lift,
-                            )
+                            val lensRect = paintedLensRect(lift)
                             val dockContentTopPx = (shadowRoomDp + FlClashDockPhysics.BAR_PADDING.dp).toPx()
                             val dockContentLeftPx = FlClashDockPhysics.BAR_PADDING.dp.toPx()
                             val leftPx = dockContentLeftPx + (layout.inset + lensRect.left) * density.density
@@ -751,14 +738,7 @@ fun LiquidGlassNavigationBar(
                             )
                             // 3. 沉底槽位色块 (随起镜淡出)
                             if (lift < 1f) {
-                                val lensRect = FlClashDockPhysics.lensRect(
-                                    position = lensSpring.value,
-                                    stretch = jellySpring.value,
-                                    pitch = layout.pitch,
-                                    width = layout.lens,
-                                    height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
-                                    lift = lift,
-                                )
+                                val lensRect = paintedLensRect(lift)
                                 val dockContentTopPx = (shadowRoomDp + FlClashDockPhysics.BAR_PADDING.dp).toPx()
                                 val dockContentLeftPx = FlClashDockPhysics.BAR_PADDING.dp.toPx()
                                 val leftPx = dockContentLeftPx + (layout.inset + lensRect.left) * density.density
@@ -775,14 +755,7 @@ fun LiquidGlassNavigationBar(
                             }
                             // 4. 老设备 (API < 33) 1:1 FLClash 悬浮凸透镜微晶拟物质感
                             if (lensShader == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                                val lensRect = FlClashDockPhysics.lensRect(
-                                    position = lensSpring.value,
-                                    stretch = jellySpring.value,
-                                    pitch = layout.pitch,
-                                    width = layout.lens,
-                                    height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
-                                    lift = lift,
-                                )
+                                val lensRect = paintedLensRect(lift)
                                 val dockContentTopPx = (shadowRoomDp + FlClashDockPhysics.BAR_PADDING.dp).toPx()
                                 val dockContentLeftPx = FlClashDockPhysics.BAR_PADDING.dp.toPx()
                                 val leftPx = dockContentLeftPx + (layout.inset + lensRect.left) * density.density
@@ -845,14 +818,7 @@ fun LiquidGlassNavigationBar(
                     .height(barHeightDp + shadowRoomDp * 2)
                     .drawWithContent {
                         val lift = liftSpring.value
-                        val lensRect = FlClashDockPhysics.lensRect(
-                            position = lensSpring.value,
-                            stretch = jellySpring.value,
-                            pitch = layout.pitch,
-                            width = layout.lens,
-                            height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
-                            lift = lift,
-                        )
+                        val lensRect = paintedLensRect(lift)
                         val dockContentTopPx = (shadowRoomDp + FlClashDockPhysics.BAR_PADDING.dp).toPx()
                         val dockContentLeftPx = FlClashDockPhysics.BAR_PADDING.dp.toPx()
                         val leftPx = dockContentLeftPx + (layout.inset + lensRect.left) * density.density
@@ -881,14 +847,7 @@ fun LiquidGlassNavigationBar(
                         .graphicsLayer {
                             val lift = liftSpring.value
                             if (contentShader != null && lift > 0.001f && size.width > 0f && size.height > 0f) {
-                                val lensRect = FlClashDockPhysics.lensRect(
-                                    position = lensSpring.value,
-                                    stretch = jellySpring.value,
-                                    pitch = layout.pitch,
-                                    width = layout.lens,
-                                    height = FlClashDockPhysics.BAR_HEIGHT - FlClashDockPhysics.BAR_PADDING * 2f,
-                                    lift = lift,
-                                )
+                                val lensRect = paintedLensRect(lift)
                                 val dockContentTopPx = (shadowRoomDp + FlClashDockPhysics.BAR_PADDING.dp).toPx()
                                 val dockContentLeftPx = FlClashDockPhysics.BAR_PADDING.dp.toPx()
                                 val leftPx = dockContentLeftPx + (layout.inset + lensRect.left) * density.density
