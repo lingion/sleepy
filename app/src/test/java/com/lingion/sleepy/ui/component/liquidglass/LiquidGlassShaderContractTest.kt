@@ -130,7 +130,8 @@ class LiquidGlassShaderContractTest {
             "uHazeSample" to 4, "uHazeClamp" to 4, "uHaze" to 1, "uVeil" to 4,
             "uShape" to 4, "uCorners" to 4, "uCurves" to 48, "uOptics" to 3, "uTint" to 4,
             "uLight" to 3, "uGlow" to 4, "uGlowSpread" to 2, "uEdge" to 3, "uRim" to 4,
-            "uOutlined" to 1, "uProfile" to 64, "uShineTurns" to 8, "uShineLit" to 8,
+            "uOutlined" to 1, "uProfile" to 64, "uProfile2" to 64, "uProfileCenters" to 4,
+            "uShineTurns" to 8, "uShineLit" to 8,
             "uShineEnds" to 12, "uShineShares" to 12, "uPills" to 24, "uGoo" to 8,
             "uPillCurves" to 24, "uPillCenters" to 12,
         )

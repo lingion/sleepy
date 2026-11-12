@@ -130,6 +130,8 @@ internal object LiquidGlassShader {
         "uRim" to 4,
         "uOutlined" to 1,
         "uProfile" to 64,
+        "uProfile2" to 64,
+        "uProfileCenters" to 4,
         "uShineTurns" to 8,
         "uShineLit" to 8,
         "uShineEnds" to 12,
@@ -207,6 +209,7 @@ internal object LiquidGlassShader {
      * @param heldFrostTexelPx 纹理里已含的 frost sigma(纹理 px)
      * @param hazeSampling haze 槽位的 `uHazeSample` + `uHazeClamp`; null = 无 haze
      * @param outline pane 的轮廓路径; null = 圆角矩形
+     * @param dualContours two convex contours in pane-local dp, with independent radial centers
      * @param goo goo 药丸布局; null = 无 goo
      * @param rim 外圈; 只有 [LiquidGlassRim.shine] 进着色器(side/corner/flat 是 CPU 画的
      *   渐变发丝线, 不属 uniform)
@@ -225,6 +228,7 @@ internal object LiquidGlassShader {
         heldFrostTexelPx: Float = 0f,
         hazeSampling: FloatArray? = null,
         outline: Path? = null,
+        dualContours: Pair<Path, Path>? = null,
         goo: Goo? = null,
         rim: LiquidGlassRim? = null,
         veil: Color = Color.Transparent,
@@ -294,10 +298,13 @@ internal object LiquidGlassShader {
             style.rimTail.toFloat(), style.rimFocus.toFloat(), style.rimAdded.toFloat(),
             style.hairlineSideOrHairline.toFloat(),
         )
-        // uOutlined: 0 = 圆角矩形, 1 = 走 uProfile 轮廓, 2 = 走 uPills 轮廓。
+        val firstContour = dualContours?.first?.let(::liquidGlassContourProfile)
+        val secondContour = dualContours?.second?.let(::liquidGlassContourProfile)
+        // 0 = rounded rectangle, 1 = one radial profile, 2 = Goo, 3 = two independent profiles.
         put(
             "uOutlined",
             when {
+                dualContours != null -> 3f
                 outline == null -> 0f
                 goo == null -> 1f
                 else -> 2f
@@ -306,10 +313,14 @@ internal object LiquidGlassShader {
         put(
             "uProfile",
             *when {
+                firstContour != null -> firstContour.radii
                 outline == null -> FLAT_PROFILE
                 else -> liquidGlassProfile(outline, Offset(size.width / 2f, size.height / 2f))
             },
         )
+        put("uProfile2", *(secondContour?.radii ?: FLAT_PROFILE))
+        put("uProfileCenters", firstContour?.center?.x ?: 0f, firstContour?.center?.y ?: 0f,
+            secondContour?.center?.x ?: 0f, secondContour?.center?.y ?: 0f)
         if (rim == null) {
             put("uShineTurns", *FloatArray(8))
             put("uShineLit", *FloatArray(8))

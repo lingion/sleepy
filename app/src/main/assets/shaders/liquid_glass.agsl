@@ -30,6 +30,9 @@
 //
 // uniform 按**名字**绑定(AGSL 语义), 与 Flutter 侧的位置序无关; 每个数组
 // uniform 必须一次喂满 4N 个 float(float4[N] ⇒ sizeInBytes = 16N)。
+// Android language-menu morph extension: independent convex profiles preserve
+// its two CPU union contours while they separate. Existing profile/Goo paths
+// retain the upstream geometry; the extension is selected only by uOutlined=3.
 
 uniform float2 uSize;
 // Glass coordinates, in dp from its top left, of FlutterFragCoord: an origin,
@@ -84,11 +87,16 @@ uniform float3 uEdge;
 // share added as light rather than screened; then the line at the sides.
 uniform float4 uRim;
 // Above 0.5 the pane takes the outline of uProfile in place of its corners,
-// above 1.5 that of uPills.
+// above 1.5 that of uPills; above 2.5 the union of two independent profiles.
 uniform float uOutlined;
 // The outline's distance from the center along 64 even turns, the first
 // toward +x and the rest toward +y, four to a vector.
 uniform float4 uProfile[16];
+// Only the language morph uses the second profile. Each convex contour keeps
+// its own center, so their union may overlap or disconnect without a shared
+// star-shaped-outline assumption.
+uniform float4 uProfile2[16];
+uniform float4 uProfileCenters;
 // A menu's highlight (LiquidGlassRim): light added at eight turns from the
 // vertical through the center, rising from 0 to a right angle, and across
 // bands inward from the rim, where each ends in dp and its share.
@@ -355,6 +363,48 @@ void outlineGeometry(float2 p, out float inset, out float2 normal) {
   normal = gradient / stretch;
 }
 
+// A signed distance from one convex profile. Keep outside values negative
+// until after the union selection, or the other contour's edge would win at
+// every outside pixel and erase its material.
+void signedProfileGeometry(
+  float2 p,
+  bool second,
+  out float inset,
+  out float2 normal
+) {
+  float len = length(p);
+  float2 radial = len > 1e-3 ? p / len : float2(1.0, 0.0);
+  float turn = atan(radial.y, radial.x) / kTau;
+  float u = (turn - floor(turn)) * kTurns;
+  float2 sum = float2(0.0);
+  for (int i = 0; i < 16; i++) {
+    float4 radii = second ? uProfile2[i] : uProfile[i];
+    float index = float(i) * 4.0;
+    addTurn(u, index, radii.x, sum);
+    addTurn(u, index + 1.0, radii.y, sum);
+    addTurn(u, index + 2.0, radii.z, sum);
+    addTurn(u, index + 3.0, radii.w, sum);
+  }
+  float reach = max(sum.x, 1e-3);
+  float slope = sum.y * kTurns / kTau / reach;
+  float2 gradient = radial - slope * float2(-radial.y, radial.x);
+  float stretch = max(length(gradient), 1e-3);
+  inset = (reach - len) / stretch;
+  normal = gradient / stretch;
+}
+
+void dualOutlineGeometry(float2 point, out float inset, out float2 normal) {
+  float firstInset;
+  float secondInset;
+  float2 firstNormal;
+  float2 secondNormal;
+  signedProfileGeometry(point - uProfileCenters.xy, false, firstInset, firstNormal);
+  signedProfileGeometry(point - uProfileCenters.zw, true, secondInset, secondNormal);
+  bool first = firstInset >= secondInset;
+  inset = max(first ? firstInset : secondInset, 0.0);
+  normal = first ? firstNormal : secondNormal;
+}
+
 // How far inside a pill of the engine's superellipse a point lies, q taken
 // from its center and its long sides along x. Its ends are the circles an
 // octant whose side is its radius makes.
@@ -484,7 +534,10 @@ half4 main(float2 fragCoord) {
     lit ? kLine + uLight.y : 0.0,
     uShineLit[0].x > 0.0 ? uShineEnds[2].w : 0.0
   );
-  if (uOutlined > 1.5) {
+  if (uOutlined > 2.5) {
+    dualOutlineGeometry(point, inset, normal);
+    edge = inset;
+  } else if (uOutlined > 1.5) {
     gooGeometry(point, traced, inset, normal, edge);
   } else if (uOutlined > 0.5) {
     outlineGeometry(centered, inset, normal);

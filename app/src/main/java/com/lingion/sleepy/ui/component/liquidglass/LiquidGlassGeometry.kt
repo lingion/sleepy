@@ -266,6 +266,19 @@ internal fun liquidGlassProfile(outline: Path, center: Offset): FloatArray {
     return profile
 }
 
+/** A convex contour keeps its own center even when its carrier also holds another contour. */
+internal data class LiquidGlassContourProfile(val center: Offset, val radii: FloatArray)
+
+internal fun liquidGlassContourProfile(outline: Path): LiquidGlassContourProfile {
+    val bounds = outline.getBounds()
+    require(bounds.width > 0f && bounds.height > 0f &&
+        bounds.left.isFinite() && bounds.top.isFinite() && bounds.right.isFinite() && bounds.bottom.isFinite()) {
+        "An optical contour must have finite, nonempty bounds"
+    }
+    val center = bounds.center
+    return LiquidGlassContourProfile(center, liquidGlassProfile(outline, center))
+}
+
 /**
  * Compose 的 `Path.asAndroidPath()` 在源码里是 `DeprecationLevel.HIDDEN`, Kotlin 侧不可见;
  * `AndroidPath.internalPath` 是公开的等价物。

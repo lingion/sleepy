@@ -173,6 +173,15 @@ fun Modifier.glassControl(
                                 transform(androidx.compose.ui.graphics.Matrix().apply { scale(1f / density, 1f / density) })
                             }
                         } else null,
+                    dualContours = if (shape is LiquidGlassDualContourShape &&
+                        size.width > 0f && size.height > 0f && size.width.isFinite() && size.height.isFinite()) {
+                        val contours = shape.createOpticalContours(size, layoutDirection, this)
+                        fun inDp(path: androidx.compose.ui.graphics.Path) = androidx.compose.ui.graphics.Path().apply {
+                            addPath(path)
+                            transform(androidx.compose.ui.graphics.Matrix().apply { scale(1f / density, 1f / density) })
+                        }
+                        inDp(contours.first) to inDp(contours.second)
+                    } else null,
                     rim = rim,
                     glow = LiquidGlassGlow(
                         center = origin / density,
