@@ -220,7 +220,9 @@ def sign_bundle(source, destination, run, keystore, certificate, *, inspector=ci
                 "com.lingion.sleepy", "com.lingion.sleepy.debug")
                 or not set(identity["native_abis"]).issubset(allowed)
                 or any(identity[field] != metadata[field] for field in (
-                    "certificate_sha256", "application_id", "version_name"))):
+                    "certificate_sha256", "application_id", "version_name"))
+                # 历史 workflow 重跑仍用旧打包脚本；新增字段由真实 APK 补齐。
+                or ("version_code" in metadata and identity.get("version_code") != metadata["version_code"])):
             raise ValueError("Input APK does not match Sleepy debug identity")
         inventory[abi] = (apk, identity)
 
@@ -233,8 +235,8 @@ def sign_bundle(source, destination, run, keystore, certificate, *, inspector=ci
         target = directory / f"{stem}.apk"
         signer(apk, target, keystore)
         after = inspector(target)
-        if after["certificate_sha256"] != certificate or any(after[field] != before[field] for field in (
-                "application_id", "version_name", "debuggable", "native_abis")):
+        if after["certificate_sha256"] != certificate or any(after.get(field) != before.get(field) for field in (
+                "application_id", "version_name", "version_code", "debuggable", "native_abis")):
             raise ValueError("Official APK certificate or identity verification failed")
         metadata = {field: info[field] for field in IDENTITY_FIELDS if field in info}
         metadata.update(after, abi=abi, signing="project", apk=target.name, apk_sha256=ci.sha256(target),
