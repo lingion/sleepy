@@ -81,7 +81,7 @@ class GlassSelectionColorRegressionTest {
         languages.forEach { (code, _) -> compose.onNodeWithTag("general_language#$code").assertIsDisplayed() }
         val menu = compose.onNodeWithTag("general_language_menu").captureToImage().asAndroidBitmap()
         saveFrame("glass-five-language-menu.png", menu)
-        assertEquals("menu stays at its full content width", 280, menu.width)
+        assertEquals("menu uses the measured iOS 26.5 content width", 250, menu.width)
     }
 
     @Test
