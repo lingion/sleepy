@@ -44,6 +44,13 @@ internal fun BackdropEffectScope.liquidGlass(
     veil: Color = Color.Transparent,
     sampledBlurPx: Float = 0f,
 ) {
+    // Backdrop observes effects on attachment, before its first measured DrawScope.
+    // Wait for real geometry; Size.Unspecified would otherwise create NaN corners.
+    val currentSize = size
+    if (!currentSize.width.isFinite() || !currentSize.height.isFinite() ||
+        currentSize.width <= 0f || currentSize.height <= 0f ||
+        !density.isFinite() || density <= 0f) return
+
     if (!isRuntimeShaderSupported()) {
         val effectiveStyle = LiquidGlassStyle.standard(style)
         if (effectiveStyle.blur > 0.0) {
@@ -57,9 +64,6 @@ internal fun BackdropEffectScope.liquidGlass(
 
     try {
         val shaderSource = LiquidGlassShader.shaderSource(context)
-        val currentSize = size
-        if (currentSize.width <= 0f || currentSize.height <= 0f) return
-
         val circular = circularGlassCornerRadii(shape.createOutline(currentSize, layoutDirection, this), density)
         val corners = circular ?: extractCornerRadii(currentSize)
         val sizeDp = Size(currentSize.width / density, currentSize.height / density)
