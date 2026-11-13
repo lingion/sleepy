@@ -4,6 +4,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.Interaction
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,8 +32,11 @@ import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,22 +47,78 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ParentDataModifier
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.constrainHeight
+import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.UiStyle
+import kotlinx.coroutines.flow.collect
+import kotlin.math.ceil
 import androidx.compose.material3.Button as MaterialButton
 import androidx.compose.material3.DropdownMenuItem as MaterialDropdownMenuItem
 
 /** Scoped to the action slots of a glass alert, never to its arbitrary body content. */
 internal val LocalGlassAlertAction = staticCompositionLocalOf { false }
+
+/** One registration per enabled action, including distinct actions sharing a source. */
+internal class NativeGlassAlertPressState {
+    private val presses = mutableStateMapOf<Any, Set<PressInteraction.Press>>()
+    val isPressed: Boolean get() = presses.isNotEmpty()
+
+    fun interaction(action: Any, interaction: Interaction) {
+        when (interaction) {
+            is PressInteraction.Press -> presses[action] = presses[action].orEmpty() + interaction
+            is PressInteraction.Release -> release(action, interaction.press)
+            is PressInteraction.Cancel -> release(action, interaction.press)
+        }
+    }
+
+    private fun release(action: Any, press: PressInteraction.Press) {
+        val remaining = presses[action].orEmpty() - press
+        if (remaining.isEmpty()) presses.remove(action) else presses[action] = remaining
+    }
+
+    fun forget(action: Any) { presses.remove(action) }
+}
+
+internal val LocalGlassAlertPressState = staticCompositionLocalOf<NativeGlassAlertPressState?> { null }
+
+/**
+ * Real transparent window space outside the painted pane. The 2% envelope exceeds
+ * the measured 1.35% press peak and includes 1dp of antialiasing clearance. Reserve
+ * against the available viewport before measuring, then wrap the actual pane size;
+ * long content keeps a finite viewport and narrow windows remain within constraints.
+ */
+@Composable
+internal fun NativeGlassAlertDrawingSpace(content: @Composable () -> Unit) {
+    Layout(content = content) { measurables, constraints ->
+        fun halo(size: Int) = ceil(size * .01f + 1.dp.toPx()).toInt()
+        val reserveX = halo(if (constraints.hasBoundedWidth) constraints.maxWidth else 320.dp.roundToPx())
+        val reserveY = halo(if (constraints.hasBoundedHeight) constraints.maxHeight else 320.dp.roundToPx())
+        val maxWidth = if (constraints.hasBoundedWidth) (constraints.maxWidth - reserveX * 2).coerceAtLeast(0)
+            else Constraints.Infinity
+        val maxHeight = if (constraints.hasBoundedHeight) (constraints.maxHeight - reserveY * 2).coerceAtLeast(0)
+            else Constraints.Infinity
+        val child = measurables.single().measure(constraints.copy(
+            minWidth = constraints.minWidth.coerceAtMost(maxWidth), maxWidth = maxWidth,
+            minHeight = constraints.minHeight.coerceAtMost(maxHeight), maxHeight = maxHeight,
+        ))
+        val width = constraints.constrainWidth(child.width + halo(child.width) * 2)
+        val height = constraints.constrainHeight(child.height + halo(child.height) * 2)
+        layout(width, height) {
+            child.placeRelative((width - child.width) / 2, (height - child.height) / 2)
+        }
+    }
+}
 
 private object NativeAlertActionData : ParentDataModifier {
     override fun Density.modifyParentData(parentData: Any?): Any = NativeAlertActionData
@@ -198,6 +259,19 @@ internal fun NativeGlassAlertActionButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     val primary = MaterialTheme.colorScheme.primary
+    val interaction = interactionSource ?: remember { MutableInteractionSource() }
+    val panePress = LocalGlassAlertPressState.current
+    // A source/enable change retires the old registration. A late release from
+    // that source cannot clear a new action or another still-held action.
+    val action = remember(panePress, interaction, enabled) { Any() }
+    DisposableEffect(panePress, action) {
+        onDispose { panePress?.forget(action) }
+    }
+    LaunchedEffect(panePress, interaction, enabled, action) {
+        if (panePress != null && enabled) {
+            interaction.interactions.collect { panePress.interaction(action, it) }
+        }
+    }
     MaterialButton(
         onClick = onClick,
         modifier = modifier.then(NativeAlertActionData).fillMaxWidth().defaultMinSize(minHeight = 48.dp),
@@ -209,7 +283,7 @@ internal fun NativeGlassAlertActionButton(
         elevation = elevation,
         border = border,
         contentPadding = contentPadding ?: PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-        interactionSource = interactionSource,
+        interactionSource = interaction,
     ) {
         // Empirical visual fit, not an extracted native UIFont measurement.
         ProvideTextStyle(MaterialTheme.typography.labelLarge.copy(

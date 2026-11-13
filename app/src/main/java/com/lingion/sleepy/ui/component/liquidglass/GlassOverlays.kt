@@ -1,5 +1,7 @@
 package com.lingion.sleepy.ui.component.liquidglass
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.ColumnScope
@@ -9,7 +11,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.AlertDialogDefaults
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.ModalBottomSheetProperties
@@ -18,18 +19,22 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asComposePath
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.material3.AlertDialog as MaterialAlertDialog
@@ -65,6 +70,24 @@ internal fun glassModalScrimColor(requested: Color, glass: Boolean, dark: Boolea
     if (requested != Color.Unspecified) requested
     else if (glass && !dark) Color.Black.copy(alpha = NativeLightModalDimAmount)
     else materialDefault
+
+/**
+ * The platform's fixed dialog width limits the whole Window, including transparent
+ * drawing room. Give this optical Alert the available viewport instead; the pane
+ * still owns its 320dp default and caller size modifiers, inside its measured halo.
+ * All other caller window behavior remains intact, including an explicit opt-out.
+ */
+internal fun nativeGlassAlertDialogProperties(properties: DialogProperties): DialogProperties =
+    if (!properties.usePlatformDefaultWidth) properties else DialogProperties(
+        dismissOnBackPress = properties.dismissOnBackPress,
+        dismissOnClickOutside = properties.dismissOnClickOutside,
+        securePolicy = properties.securePolicy,
+        usePlatformDefaultWidth = false,
+        decorFitsSystemWindows = properties.decorFitsSystemWindows,
+        windowTitle = properties.windowTitle,
+        windowType = properties.windowType,
+        windowToken = properties.windowToken,
+    )
 
 /** The platform dialog owns window lifetime, focus, back and dismissal in both styles. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -105,24 +128,43 @@ fun GlassAlertDialog(
     val popupScene = rememberGlassHostState()
     val carrierShape = shape ?: FlClashGlassShape(34f)
     val materialScope = rememberGlassMaterialScope(carrierShape, parentScene?.overlayBackdrop)
+    val panePress = remember { NativeGlassAlertPressState() }
+    // Native DOWN traces support this small whole-pane lift. This zero-delay
+    // spring is an empirical fit; its release is not claimed as a native match.
+    // animateFloatAsState retains velocity when interrupted and never gates clicks.
+    val pressScale by animateFloatAsState(
+        targetValue = if (panePress.isPressed) 1.0125f else 1f,
+        animationSpec = spring(dampingRatio = .565f, stiffness = 256f, visibilityThreshold = .00001f),
+        label = "native-alert-press-scale",
+    )
     CompositionLocalProvider(
         LocalGlassOverlay provides true,
         LocalGlassOverlaySamplingHost provides parentScene,
         LocalGlassPopupScene provides popupScene,
         LocalGlassMaterialBackdrop provides null,
+        LocalGlassAlertPressState provides panePress,
     ) {
-        BasicAlertDialog(onDismissRequest = onDismissRequest, properties = properties) {
+        // BasicAlertDialog applies its width bounds to the pane plus drawing room.
+        // A platform fixed-width theme can then consume the halo by shrinking the
+        // pane. Dialog provides the same platform lifetime/focus/dismissal while
+        // our content measures the pane and its real outer drawing room separately.
+        Dialog(onDismissRequest = onDismissRequest, properties = nativeGlassAlertDialogProperties(properties)) {
             GlassDialogScrim(nativeLightScrim)
-            val opticalModifier = modifier.recordGlassPopupScene(popupScene).trackGlassMaterial(materialScope).glassControl(
+            val opticalModifier = modifier.graphicsLayer {
+                scaleX = pressScale
+                scaleY = pressScale
+            }.recordGlassPopupScene(popupScene).trackGlassMaterial(materialScope).glassControl(
                 shape = carrierShape, enabled = false, registerPane = false, role = GlassMaterialRole.Alert,
                 exportedBackdrop = materialScope?.exported,
             ).then(if (containerColor != Color.Unspecified) Modifier.background(containerColor, carrierShape) else Modifier)
-            GlassMaterialContent(materialScope) {
-                NativeGlassAlertContent(
-                    modifier = opticalModifier, icon = icon, title = title, text = text,
-                    iconContentColor = resolvedIconColor, titleContentColor = resolvedTitleColor,
-                    textContentColor = resolvedTextColor, dismissButton = dismissButton, confirmButton = confirmButton,
-                )
+            NativeGlassAlertDrawingSpace {
+                GlassMaterialContent(materialScope) {
+                    NativeGlassAlertContent(
+                        modifier = opticalModifier, icon = icon, title = title, text = text,
+                        iconContentColor = resolvedIconColor, titleContentColor = resolvedTitleColor,
+                        textContentColor = resolvedTextColor, dismissButton = dismissButton, confirmButton = confirmButton,
+                    )
+                }
             }
         }
     }
