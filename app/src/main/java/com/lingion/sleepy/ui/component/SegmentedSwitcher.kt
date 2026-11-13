@@ -77,6 +77,7 @@ import com.lingion.sleepy.ui.component.liquidglass.rememberTimedGlassControlMoti
 import com.lingion.sleepy.ui.component.liquidglass.LocalDockInputTimeNanos
 import com.lingion.sleepy.ui.component.liquidglass.GlassControlMotionSpec
 import com.lingion.sleepy.ui.component.liquidglass.glassLensWidth
+import com.lingion.sleepy.ui.component.liquidglass.nativeSegmentedDragPosition
 import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
 import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassStyle
 import com.lingion.sleepy.ui.component.liquidglass.liquidGlass
@@ -323,12 +324,14 @@ fun <T> SegmentedSwitcher(
                             val dx = pointer.position.x - down.position.x
                             if ((pointer.position - down.position).getDistance() > viewConfiguration.touchSlop) moved = true
                             if (onThumb && kotlin.math.abs(dx) > viewConfiguration.touchSlop) dragging = true
-                            if (dragging) {
-                                gesturePosition = (start + dx * direction / segmentWidth)
+                            val lensPosition = if (dragging) {
+                                val rawLogicalIndex = start + dx * direction / segmentWidth
+                                gesturePosition = rawLogicalIndex
                                     .coerceIn(0f, (count - 1).toFloat())
                                 tickIfChanged()
-                            }
-                            driver.move(epoch, gesturePosition, dragging,
+                                nativeSegmentedDragPosition(rawLogicalIndex, count, segmentWidth / density.density)
+                            } else gesturePosition
+                            driver.move(epoch, lensPosition, dragging,
                                 receivedNanos = receivedNanos, sampleUptimeMillis = pointer.uptimeMillis)
                             pointer.consume()
                             cancelReceipt = null

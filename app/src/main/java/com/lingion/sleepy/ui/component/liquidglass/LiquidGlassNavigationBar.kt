@@ -284,11 +284,7 @@ fun LiquidGlassNavigationBar(
         val barWidthDp = barWidthPx / currentDensity
         val dxDp = if (currentIsLtr) xDp else (barWidthDp - xDp)
         val pos = (dxDp - FlClashDockPhysics.BAR_PADDING - currentLayout.inset) / currentLayout.pitch - 0.5f
-        return when {
-            pos < 0f -> FlClashDockPhysics.rubberBand(pos, FlClashDockPhysics.OVERDRAG)
-            pos > currentLastIndex -> currentLastIndex + FlClashDockPhysics.rubberBand(pos - currentLastIndex, FlClashDockPhysics.OVERDRAG)
-            else -> pos
-        }
+        return nativeDockDragPosition(pos, currentLastIndex + 1, currentLayout.pitch)
     }
 
     fun indexAt(position: Float): Int = position.roundToInt().coerceIn(0, currentLastIndex)
