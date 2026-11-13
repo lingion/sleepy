@@ -6,7 +6,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 
-internal suspend fun runActiveFrameLoop(
+suspend fun runActiveFrameLoop(
     needsFrame: () -> Boolean,
     onFrame: (Double) -> Unit,
 ) = runTimestampedActiveFrameLoop(needsFrame) { frame ->
@@ -16,12 +16,12 @@ internal suspend fun runActiveFrameLoop(
         else ((frame.frameTimeNanos - previous) / 1_000_000_000.0).coerceIn(0.001, 0.05))
 }
 
-internal data class ActiveFrame(
+data class ActiveFrame(
     val frameTimeNanos: Long,
     val previousFrameTimeNanos: Long?,
 )
 
-internal suspend fun runTimestampedActiveFrameLoop(
+suspend fun runTimestampedActiveFrameLoop(
     needsFrame: () -> Boolean,
     onFrame: (ActiveFrame) -> Unit,
 ) {

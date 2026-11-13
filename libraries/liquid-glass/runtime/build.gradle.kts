@@ -12,4 +12,11 @@ kotlin {
         minSdk = 26
         compilerOptions { jvmTarget = JvmTarget.JVM_17 }
     }
+    sourceSets {
+        androidMain.dependencies {
+            // Same runtime resolved by Sleepy's existing Compose BOM.
+            api("androidx.compose.runtime:runtime:1.12.1")
+            implementation(libs.coroutines.core)
+        }
+    }
 }

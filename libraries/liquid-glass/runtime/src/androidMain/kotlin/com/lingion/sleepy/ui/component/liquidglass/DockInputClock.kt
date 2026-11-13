@@ -6,10 +6,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 
 /** Tests provide the same virtual time domain as their MonotonicFrameClock. */
-internal val LocalDockInputTimeNanos = staticCompositionLocalOf<() -> Long> { System::nanoTime }
+val LocalDockInputTimeNanos = staticCompositionLocalOf<() -> Long> { System::nanoTime }
 
 /** Orders Dock input against actual frame timestamps, including late callbacks. */
-internal class DockInputClock<Command>(private val establishesOrigin: (Command) -> Boolean) {
+class DockInputClock<Command>(private val establishesOrigin: (Command) -> Boolean) {
     private data class Pending<Command>(
         val command: Command,
         val receivedNanos: Long,

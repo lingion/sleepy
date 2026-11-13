@@ -3,7 +3,7 @@
   "status": "partial-runtime-extraction-in-sleepy",
   "reference": "iOS 26.5 native controls",
   "independentlyBuildable": true,
-  "independentlyBuildableScope": "Only :liquid-glass-runtime M1 AAR with three pure-motion kernels; a complete independent controls/rendering library and sample do not exist.",
+  "independentlyBuildableScope": "Only :liquid-glass-runtime M1 + M2a AAR: three pure-motion kernels and two scheduling files. Complete controls/rendering library and independent sample do not exist.",
   "publishedRepository": null,
   "pathBase": "repository-root",
   "assets": [
@@ -40,8 +40,6 @@
       "role": "input-and-motion",
       "sourceDirectory": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass",
       "entryFiles": [
-        "ActiveFrameLoop.kt",
-        "DockInputClock.kt",
         "GlassControlMotion.kt",
         "GlassDockMotion.kt",
         "GlassPressMotion.kt",
@@ -133,6 +131,19 @@
       "runtimeDependency": false,
       "deviceTestsScope": "Containing directory also includes non-glass tests; migrate only relevant fixtures and tests after dependency review.",
       "fixtureRedistributionReview": "not-complete"
+    },
+    {
+      "role": "extracted-scheduling-runtime",
+      "sourceDirectory": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass",
+      "entryFiles": [
+        "ActiveFrameLoop.kt",
+        "DockInputClock.kt"
+      ],
+      "buildModule": ":liquid-glass-runtime",
+      "buildFile": "libraries/liquid-glass/runtime/build.gradle.kts",
+      "extractionStatus": "m2a-moved-and-consumed-by-sleepy",
+      "migrationRecord": "libraries/liquid-glass/validation/migrations/m2a.json",
+      "scope": "Actual frame loop, receipt queue and single injected/default clock local. Five necessary visibility changes only; private state and numerical behavior preserved. No drivers, geometry, optics or controls moved."
     }
   ],
   "excludedFromRuntimeLibrary": [
@@ -146,17 +157,19 @@
   "inventoryDate": "2026-11-14",
   "nativeCalibrationAccepted": false,
   "publicationReady": false,
-  "inventoryScope": "M1 contains a verified three-file pure-motion module; remaining glass-package Kotlin, mixed segmented implementation, shader, backdrop and validation entry points are indexed but their full extraction closure is pending.",
+  "inventoryScope": "M1 and M2a contain five verified single-owner runtime files; remaining drivers, glass-package Kotlin, mixed segmented implementation, shader, backdrop and validation entry points still need extraction.",
   "extractionPlan": {
     "path": "libraries/liquid-glass/extraction-plan.md",
-    "status": "m1-complete-m2-m4-pending",
+    "status": "m1-m2a-complete-m2b-m4-pending",
     "sourceOwnership": "Move each implementation once; Sleepy and the future sample consume the same runtime module and packaged shader.",
     "migrationValidation": "Keep existing fixture hashes, delivered inputs, measurement code and tolerances; record before/after results for each migrated closure.",
     "independentExampleGate": "A future sample must compile and run against the runtime without app sources, theme, assets or test helpers; it has not been created.",
     "runtimeModule": ":liquid-glass-runtime",
     "runtimeModuleDirectory": "libraries/liquid-glass/runtime",
     "m1MigrationRecord": "libraries/liquid-glass/validation/migrations/m1.json",
-    "m1Validation": "Runtime AAR and Sleepy Kotlin compilation passed; the same original Drag/Dock/Slider suites passed 19 tests before and after; original tests and both CSV fixture hashes are unchanged."
+    "m1Validation": "Runtime AAR and Sleepy Kotlin compilation passed; the same original Drag/Dock/Slider suites passed 19 tests before and after; original tests and both CSV fixture hashes are unchanged.",
+    "m2aMigrationRecord": "libraries/liquid-glass/validation/migrations/m2a.json",
+    "m2aValidation": "Runtime AAR, debug and androidTest builds passed; original four scheduling/consumer test classes passed33 before and after with unchanged source hashes; exactly five visibility changes, one clock-local declaration, sole runtime AAR ownership."
   },
   "sourceAndLicenseReviewComplete": false,
   "currentBuildWiring": {
@@ -167,7 +180,7 @@
     "supportContract": "SDK, Compose, GPU/fallback and accessibility requirements have not been independently established for an extracted library.",
     "libraryBuildFile": "libraries/liquid-glass/runtime/build.gradle.kts",
     "applicationDependency": "implementation(project(\":liquid-glass-runtime\"))",
-    "extractedScope": "M1 three-file pure-motion module only; complete runtime, adapters, assets and independent example remain pending."
+    "extractedScope": "M1 three pure-motion files + M2a two scheduling files; complete runtime, adapters, assets and independent example remain pending."
   },
   "provenance": {
     "inventory": "ACKNOWLEDGEMENTS.md",
@@ -245,10 +258,14 @@
     },
     {
       "id": "runtime-and-adapters",
-      "status": "partially-extracted-m1-only",
+      "status": "partially-extracted-m1-and-m2a",
       "requiredEvidence": "One Android runtime module with no Sleepy dependency; callers supply app content, theme, callbacks and policy; Material routing remains in the Sleepy adapter.",
       "implementationPlan": "libraries/liquid-glass/extraction-plan.md",
-      "progressRecord": "libraries/liquid-glass/validation/migrations/m1.json"
+      "progressRecord": "libraries/liquid-glass/validation/migrations/m1.json",
+      "progressRecords": [
+        "libraries/liquid-glass/validation/migrations/m1.json",
+        "libraries/liquid-glass/validation/migrations/m2a.json"
+      ]
     },
     {
       "id": "independent-consumer",

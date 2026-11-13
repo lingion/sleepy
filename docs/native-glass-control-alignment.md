@@ -544,3 +544,16 @@ Android新增显式启用的生产Range采集夹具：固定375×667dp世界、h
 现有9类48项滑杆/材质/Material隔离JVM原测试通过，0失败/错误/跳过（15s）；debug和androidTest构建12s。没有改测试预期、门限或共享lens的6.5色散断言。实际F主包SHA256为b9b9341427961192cc95536a82352bc52c9909fb95fbfd08e90b27032efce9f8，测试包a200d8db5d11e5d5bc74c0b9b24a6b97782322b7faaa50edb35654c5cb6d2325。生产选择是有限改善，未完成全控件/四角/动态/嵌套背板验收。
 
 证据在本会话android-native-range-77：原始参考、失败、四个完整Android臂、冻结方案、逐格误差和独立source/raw/optical复核分别留存。八份原生host trace已无损gzip并验证解压hash，核对后删除模拟器原始重复导出及未用ABI包，本轮已释放2,277,963,375bytes（约2.28GB）；截图、原视频、源码与失败资料保留。runtime仍是Sleepy实际消费的同一库实现，完整控件解耦、独立示例和来源/分发许可gate继续未完成，不作99.99%或独立发布声明。
+
+
+### 78：资产库继续提取帧调度与输入时钟
+
+在77材质修正后，将ActiveFrameLoop.kt和DockInputClock.kt移动到Sleepy实际依赖的:liquid-glass-runtime，同包保留单一实现。只去掉五处跨module必须的internal，队列/私有状态、first-zero/clamp、唤醒重置、sample/receipt区分、同帧事件顺序、实际withFrameNanos和默认System::nanoTime均逐字节保留。LocalDockInputTimeNanos只定义一次，不复制时钟key。独立source复核确认两份正文除五处可见性外与冻结before及ae30faec相同。
+
+运行库仅增加api Compose runtime1.12.1与implementation coroutines-core1.11.0，与app迁移前及runtime编译/运行实际解析一致；没有增加Compose compiler、UI、shapes或backdrop依赖。四类原测试（ActiveFrameLoop3、DockInputClock4、GlassControlTimedInput16、DockTimedInput10）迁移前后各33项通过，0失败/错误/跳过，测试文件哈希不变。before命令4s，迁移后runtime AAR、debug、androidTest与上述测试同轮34s构建成功；完整XML均在覆盖前分别留存。AAR包含八个调度相关编译类，app自己的production Kotlin输出中此类为0，源码也只有runtime一份。不是把同一文件登记给两个module。
+
+首次准备快照时误猜ActiveFrameLoopTest位于liquidglass子包，Python读取失败；未修改源码，随后按唯一实际路径重新冻结，原Gradle基线仍通过。该准备失败记录保留，不冒充首次全流程无失败。完整source/测试/依赖/归属记录在libraries/liquid-glass/validation/migrations/m2a.json及本会话android-library-motion-78。本次不改任何动画参数、光学或交互规则，也不重复宣称新原生对齐结论。
+
+现有库已实际承载M1三个纯运动文件及M2a两份调度文件，完整driver/几何、材质采样与shader、控件适配器和独立示例继续按extraction-plan提取。Physics下一批必须与两份driver/ParentMotion同迁以保留internal setter，原ParentMotion测试与其两份CSV届时进入标准runtime host test。独立仓库仍待逐控件校准和来源/分发gate完成。
+
+78正式debug及匹配测试包已安装到连接的API36设备，两包设备/host SHA256分别一致，MainActivity resumed且截图确认回到课表首页。主包为961352f0b4cec273b5d16ccf1d6e1795b5902309fd30b6428bcfbf786a9184dd；这次安装包含77的Range材质和78的模块迁移，不能把77旧包hash当成本次安装。
