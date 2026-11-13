@@ -31,4 +31,6 @@
 
 保留 Sleepy 现有 [GPL v3 LICENSE](../../LICENSE) 和[完整致谢清单](../../ACKNOWLEDGEMENTS.md)。FLClash 的 Kotlin/AGSL 移植保留 GPL-3.0 声明；Flutter 超椭圆移植保留 BSD-3-Clause 声明；Kyant 原始基线保留 Apache-2.0 声明。shader 运行资产、源码头和 notice 文件均需随实际提取范围迁移，不能只复制 Kotlin。
 
-[现有 backdrop 模块](../../third-party/kyant-backdrop/README.md)经 SleepDown 定制源码导入，SleepDown 自有修改另有非商业、源码可见声明。现有记录未固定该次导入修订，也未确认定制代码的分发许可兼容性；Kyant 的原始许可不能覆盖这个缺口。catalog 链接现存来源、许可证及待核对事项，当前不改授权、不宣称全部原创，也不将这些记录当作独立开源分发许可已解决的证明。原生截图、数值基线和示例素材的可分发范围同样需在迁出前核对。
+[现有 backdrop 模块](../../third-party/kyant-backdrop/README.md)经 SleepDown 定制源码导入，SleepDown 自有修改另有非商业、源码可见声明。2026-11-14 已逐字节确认：Sleepy 最初导入 `c2490785` 的 42 个 Android/common 运行文件和模块 README，与 [SleepDown 固定快照 `d02898140327796946f2b140cb3ca87390595810`](https://github.com/xiaomanjun233/SleepDown-Schedule/tree/d02898140327796946f2b140cb3ca87390595810/third-party/kyant-backdrop) 完全一致；保留的 SleepDown 许可与第三方声明也与该快照一致。该修订记录为 `verifiedEquivalentSourceRevision`，证明可复现的内容基线，不代替仍未知的历史取得/导入修订，也不代表取得定制代码的再分发授权。当前运行代码相对 Kyant 2.0.0 为 24 个仅多一个末尾换行的原文件、10 个修改原文件及 8 个新增文件；导入后的 Sleepy 修改另记于 [UPSTREAM.json](../../third-party/kyant-backdrop/UPSTREAM.json)。
+
+定制代码的分发许可兼容性仍未确认；Kyant 的原始许可不能覆盖这个缺口。catalog 链接现存来源、许可证及待核对事项，当前不改授权、不宣称全部原创，也不将这些记录当作独立开源分发许可已解决的证明。原生截图、数值基线和示例素材的可分发范围同样需在迁出前核对。

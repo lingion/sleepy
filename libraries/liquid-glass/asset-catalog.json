@@ -185,7 +185,14 @@
           "app/src/main/assets/third_party/notices/SleepDown-LICENSE.md",
           "app/src/main/assets/third_party/notices/SleepDown-THIRD_PARTY_NOTICES.md"
         ],
-        "redistributionCompatibilityConfirmed": false
+        "redistributionCompatibilityConfirmed": false,
+        "verifiedEquivalentSourceRevision": "d02898140327796946f2b140cb3ca87390595810",
+        "verifiedEquivalentSourceUrl": "https://github.com/xiaomanjun233/SleepDown-Schedule/tree/d02898140327796946f2b140cb3ca87390595810/third-party/kyant-backdrop",
+        "sourceEquivalenceVerifiedAgainstSleepyImportCommit": "c2490785c90ea57f6a06ab14c14386786f19b9d0",
+        "sourceEquivalenceVerificationDate": "2026-11-14",
+        "sourceEquivalenceEvidence": "third-party/kyant-backdrop/UPSTREAM.json:customizationProvenance",
+        "sourceEquivalenceScope": "All 42 Android/common runtime files and original module README exactly match the original Sleepy import; retained SleepDown license and third-party notices exactly match the pinned snapshot.",
+        "sourceEquivalenceLimitation": "The historical acquisition/import revision remains unknown; equivalent source content does not establish redistribution authorization. Later Sleepy runtime changes are recorded separately in UPSTREAM.json."
       },
       {
         "name": "NexioSchedule behavioral reference recorded by imported module",
@@ -198,7 +205,7 @@
       }
     ],
     "openIssues": [
-      "Identify the imported SleepDown customization revision and verify the redistribution basis for each extracted file; original Kyant licensing does not establish this.",
+      "The historical SleepDown acquisition/import revision remains unknown. A content-equivalent pinned source snapshot is verified; resolve redistribution authorization for each customization before extraction for publication.",
       "Retain applicable GPL, Apache and BSD notices plus original attribution; do not treat all implementations as original work.",
       "Verify the redistributable scope of native screenshots, numeric baselines, example materials and remaining dependencies before migration."
     ]
