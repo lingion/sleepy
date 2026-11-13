@@ -95,6 +95,162 @@ and `-ReferenceBackground grid|stripes`. Selector buttons also switch these live
 `-ReferenceTabCount 4` adds Courses between Home and Explore; the default remains
 three tabs so existing reference runs keep their original geometry.
 
+### Explicit SwiftUI TabView parent probe
+
+`-ReferenceDockParent swiftui-tabview` opts into a separate, four-item SwiftUI
+`TabView`. The independent `UITabBar` fixture remains the default. The opt-in
+hierarchy is an outer SwiftUI hosting controller, a `UINavigationController`
+with its navigation bar hidden, then a page hosting controller containing the
+four tabs. This mirrors the relevant containment in production
+`Sleepy/ui/nav/SleepyNavHost.swift`; it does not copy its routing coordinator.
+UIKit owns the bar frame, material and input. The tool never assigns the bar
+frame, fitting height, material, blur or animation in this context.
+
+The probe follows `/Users/kerrylee/sleepy-ios/Sleepy/SleepyApp.swift`'s native
+branch: four page roles, per-page and parent bottom `ignoresSafeArea`, keyboard
+bottom-safe-area policy, transparent ancestor backgrounds, and the public
+child-controller policy
+`additionalSafeAreaInsets.bottom = -max(baseBottom - 34, 0)`. The 34 pt constant
+is copied from production, not inferred from this device. Native appearances
+are copied before changing selection/icon/title color roles. The reference
+teal, white selected content and `secondaryLabel` unselected content occupy the
+production role slots; they are not Sleepy's theme database values.
+
+`-ReferenceDockContent placeholder|synthetic-scroll` selects the content. The
+manual default is the original non-scrolling placeholder. The focused tests
+below explicitly use `synthetic-scroll`: a real SwiftUI `ScrollView` on each
+page, 24 sparse text rows and 92 pt extra bottom padding, matching the production
+scroll-content allowance. The tests remain at the initial scroll position;
+they do not establish bottom-edge transitions or all four production pages.
+The root `ReferenceBackgroundView` optical canvas stays visible through the
+clear synthetic page. Production Schedule/Today/Management/Mine instead paint
+their own theme backgrounds and course/cards/text. The fixture also uses SF
+Symbols and English labels rather than Android vector templates/localized
+content. No production toolbar, business page, pushed route or sheet is copied.
+These are explicit remaining differences, not evidence of complete app parity.
+
+Both contexts log `tab-public-configuration`: public `UITabBar` getters,
+resolved sRGB colors, effective traits, standard/scroll-edge background-effect
+presence, frame, safe area and actual optical-canvas window rectangles. `before`
+means before the tool policy, not an unparented SwiftUI default; the separate
+`attachedToWindow` field describes actual attachment. `attached` is recorded on
+the next main queue turn after policy application.
+
+The SwiftUI context additionally emits deduplicated `tab-material-context`
+events at attachment and every 0.25 seconds when public values change. The timer
+uses common run-loop modes so held touch tracking can still be observed. Events
+contain probe/bar ancestor frames, backgrounds/opacity/clipping/safe areas,
+actual optical-canvas window rectangles, controller parents and hidden navigation state, selected-page `UIScrollView`
+offsets/sizes/content insets/adjusted insets/tracking state, and public
+`UIVisualEffectView` effect presence under the tab bar. They observe the native
+hierarchy without installing scroll delegates or recognizers. Class names are
+diagnostics obtained from public object types, not private API calls. Absent
+public effect views or nullable appearance fields do not prove absent rendered
+material, and scroll geometry does not identify an active material/shader.
+`reference-configuration` records the chosen content, navigation and palette
+scope. Compare these events with the actual REST and held display screenshots.
+
+Apple documents that a standalone tab bar ignores `scrollEdgeAppearance` unless
+managed by a `UITabBarController`, so standalone optics cannot stand in for the
+production SwiftUI parent. Public API references:
+
+- [UITabBar.scrollEdgeAppearance](https://developer.apple.com/documentation/uikit/uitabbar/scrolledgeappearance)
+- [UIView.safeAreaInsets](https://developer.apple.com/documentation/uikit/uiview/safeareainsets)
+- [UIViewController.additionalSafeAreaInsets](https://developer.apple.com/documentation/uikit/uiviewcontroller/additionalsafeareainsets)
+- [UIScrollView.adjustedContentInset](https://developer.apple.com/documentation/uikit/uiscrollview/adjustedcontentinset)
+- [UINavigationController.setNavigationBarHidden](https://developer.apple.com/documentation/uikit/uinavigationcontroller/setnavigationbarhidden(_:animated:))
+
+No private material state is read. The iOS 27-only
+`UIBarAppearance.overrideUserInterfaceStyle` and a nonexistent public
+`UIBlurEffect.style` getter are not used. Public context fields do not constitute
+an optical acceptance result.
+
+#### Focused build and static parent captures
+
+Use the same `DerivedData` directory as the central build above; no project
+regeneration is needed for these Swift-only changes. Run from this directory:
+
+```sh
+xcodebuild build-for-testing -project GlassNativeReference.xcodeproj \
+  -scheme GlassNativeReference \
+  -destination "platform=iOS Simulator,id=$NATIVE_GLASS_SIMULATOR_ID" \
+  -derivedDataPath DerivedData -parallel-testing-enabled NO
+```
+
+Before the tests, start the existing host observer in a separate terminal. The
+observer watches the UI test runner's durable
+`Documents/optics-capture-signals.jsonl`, waits for actual app touch DOWN and
+requests a display PNG during the six-second native hold:
+
+```sh
+python3 capture-static-optics.py --simulator "$NATIVE_GLASS_SIMULATOR_ID" \
+  --output exports/swiftui-tabview-dock
+```
+
+```sh
+xcodebuild test-without-building -project GlassNativeReference.xcodeproj \
+  -scheme GlassNativeReference \
+  -destination "platform=iOS Simulator,id=$NATIVE_GLASS_SIMULATOR_ID" \
+  -derivedDataPath DerivedData -parallel-testing-enabled NO \
+  -resultBundlePath SwiftUITabViewDock.xcresult \
+  -only-testing:GlassNativeReferenceUITests/NativeReferenceTests/testSwiftUITabViewDockFineGridDark \
+  -only-testing:GlassNativeReferenceUITests/NativeReferenceTests/testSwiftUITabViewDockTonalBlocksDark
+```
+
+Each method attaches its REST screenshot and accessibility hierarchy, checks a
+real four-button native tab bar and scroll view, then holds the initially
+selected `Schedule` tab for six seconds. Signal names are
+`swiftui-tabview-dock-fine_grid-dark-selected-first-held` and
+`swiftui-tabview-dock-tonal_blocks-dark-selected-first-held`. A screenshot after
+the public press returns is a released state. A held reference is only valid
+when the host capture's entire begin/end bracket lies within a delivered
+DOWN/UP pair in that run's `trace.jsonl`; use `verify-static-optics.py` as for the
+existing fixture. Source availability does not establish successful builds,
+captures, complete production context, or native parity.
+
+The helper also accepts `style: "light"` and names every REST attachment and
+held signal with that actual style. The remaining six static parent scenes can
+be captured with the same observer and DerivedData directory:
+
+```sh
+xcodebuild test-without-building -project GlassNativeReference.xcodeproj \
+  -scheme GlassNativeReference \
+  -destination "platform=iOS Simulator,id=$NATIVE_GLASS_SIMULATOR_ID" \
+  -derivedDataPath DerivedData -parallel-testing-enabled NO \
+  -resultBundlePath SwiftUITabViewDockMissingSix.xcresult \
+  -only-testing:GlassNativeReferenceUITests/NativeReferenceTests/testSwiftUITabViewDockFineGridLight \
+  -only-testing:GlassNativeReferenceUITests/NativeReferenceTests/testSwiftUITabViewDockTonalBlocksLight \
+  -only-testing:GlassNativeReferenceUITests/NativeReferenceTests/testSwiftUITabViewDockColorStripesLight \
+  -only-testing:GlassNativeReferenceUITests/NativeReferenceTests/testSwiftUITabViewDockColorStripesDark \
+  -only-testing:GlassNativeReferenceUITests/NativeReferenceTests/testSwiftUITabViewDockLandscapeLight \
+  -only-testing:GlassNativeReferenceUITests/NativeReferenceTests/testSwiftUITabViewDockLandscapeDark
+```
+
+These methods cover REST plus a six-second hold on the initially selected
+`Schedule` item, with a real four-item tab bar and the initial synthetic scroll
+position. They do not run a Dock motion or selection-transition suite. Export
+the complete xcresult attachments and test summary/log, copy the six uniquely
+named run directories, and validate the held PNGs against delivered DOWN/end
+brackets before treating them as held references; inspect whether the end is
+UP or CANCEL separately.
+
+The November 13, 2026 six-scene capture passed its native build and all six
+focused tests on the iPhone SE (3rd generation), iOS 26.5 / 23F77 simulator.
+Artifact-workspace-relative evidence is
+`artifacts/glass-optics-20261112/swiftui-dock-parent-62/native-parent-missing-six/`.
+Its `scene-index.json` links six REST/AX and verified HELD pairs to six unique
+session/trace directories. In these six scenes, the last sampled public
+`UITabBar` effective style matched the requested light/dark style. Each REST
+hierarchy reports a 375×83 pt outer bar at `(0,584)`, a 333×62 pt platter-sized
+AX container at `(21,584)`, and an 88.2×54 pt selected Schedule button at
+`(25,588)`. These observations establish this static fixture's captured context,
+not its material classifier, motion behavior, or production/native parity.
+Five primary scenes end their held touch in delivered UP. ColorStripesDark ends
+in delivered CANCEL in both its original run and one focused recapture. Both
+PNGs are verified active-touch evidence, but neither supplies a strict DOWN/UP
+reference. The additional test passed and its three attachments and separate
+session/trace are retained with that explicit scope.
+
 ### Dock geometry provenance
 
 The November 10 `work/native-motion-reference` observation allowed UIKit to

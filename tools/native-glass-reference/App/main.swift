@@ -167,6 +167,432 @@ final class ReferenceBackgroundView: UIView {
     }
 }
 
+/// Public configuration and effective traits, not inferred glass coefficients.
+/// In particular, UIBlurEffect has no public getter for its creation style.
+private enum ReferenceDockPublicSnapshot {
+    static func record(_ tabBar: UITabBar, phase: String, parent: String,
+                       controller: UITabBarController? = nil) {
+        let traits = tabBar.traitCollection
+        func color(_ value: UIColor?) -> Any {
+            value.flatMap { ReferencePalette.resolvedSRGB($0, traits: traits) }.map { $0 as Any } ?? NSNull()
+        }
+        func appearance(_ value: UITabBarAppearance?) -> Any {
+            guard let value else { return NSNull() }
+            return [
+                "backgroundEffectPresent": value.backgroundEffect != nil,
+                "backgroundColorSRGB": color(value.backgroundColor),
+                "backgroundImagePresent": value.backgroundImage != nil,
+                "shadowColorSRGB": color(value.shadowColor),
+                "shadowImagePresent": value.shadowImage != nil,
+                "selectionIndicatorTintSRGB": color(value.selectionIndicatorTintColor),
+                "selectionIndicatorImagePresent": value.selectionIndicatorImage != nil,
+                "stackedItemPositioning": value.stackedItemPositioning.rawValue,
+                "stackedItemWidth": value.stackedItemWidth,
+                "stackedItemSpacing": value.stackedItemSpacing,
+                "selectedIconSRGB": color(value.stackedLayoutAppearance.selected.iconColor),
+                "normalIconSRGB": color(value.stackedLayoutAppearance.normal.iconColor),
+            ] as [String: Any]
+        }
+        let frame = tabBar.convert(tabBar.bounds, to: tabBar.window)
+        var row: [String: Any] = [
+            "event": "tab-public-configuration", "phase": phase, "dockParent": parent,
+            "attachedToWindow": tabBar.window != nil,
+            "barStyle": tabBar.barStyle.rawValue, "isTranslucent": tabBar.isTranslucent,
+            "overrideInterfaceStyle": tabBar.overrideUserInterfaceStyle.rawValue,
+            "effectiveInterfaceStyle": traits.userInterfaceStyle.rawValue,
+            "windowInterfaceStyle": tabBar.window?.traitCollection.userInterfaceStyle.rawValue ?? -1,
+            "accessibilityContrast": traits.accessibilityContrast.rawValue,
+            "userInterfaceLevel": traits.userInterfaceLevel.rawValue,
+            "legibilityWeight": traits.legibilityWeight.rawValue,
+            "displayScale": traits.displayScale,
+            "horizontalSizeClass": traits.horizontalSizeClass.rawValue,
+            "verticalSizeClass": traits.verticalSizeClass.rawValue,
+            "preferredContentSizeCategory": traits.preferredContentSizeCategory.rawValue,
+            "tintSRGB": color(tabBar.tintColor), "barTintSRGB": color(tabBar.barTintColor),
+            "unselectedItemTintSRGB": color(tabBar.unselectedItemTintColor),
+            "backgroundColorSRGB": color(tabBar.backgroundColor),
+            "alpha": tabBar.alpha, "isOpaque": tabBar.isOpaque,
+            "frameInWindow": ["x": frame.minX, "y": frame.minY, "w": frame.width, "h": frame.height],
+            "safeAreaBottom": tabBar.safeAreaInsets.bottom,
+            "tabCount": tabBar.items?.count ?? 0,
+            "standardAppearance": appearance(tabBar.standardAppearance),
+            "scrollEdgeAppearance": appearance(tabBar.scrollEdgeAppearance),
+        ]
+        if let controller {
+            row["controllerInterfaceStyle"] = controller.traitCollection.userInterfaceStyle.rawValue
+            row["controllerBackgroundColorSRGB"] = color(controller.view.backgroundColor)
+            row["controllerSafeAreaBottom"] = controller.view.safeAreaInsets.bottom
+            row["children"] = controller.children.map { child in
+                ["safeAreaBottom": child.view.safeAreaInsets.bottom,
+                 "additionalSafeAreaBottom": child.additionalSafeAreaInsets.bottom]
+            }
+        }
+        if let window = tabBar.window {
+            func canvases(in view: UIView) -> [[String: CGFloat]] {
+                let own: [[String: CGFloat]]
+                if view is ReferenceBackgroundView {
+                    let frame = view.convert(view.bounds, to: window)
+                    own = [["x": frame.minX, "y": frame.minY, "w": frame.width, "h": frame.height]]
+                } else { own = [] }
+                return own + view.subviews.flatMap { canvases(in: $0) }
+            }
+            row["backgroundCanvasesInWindow"] = canvases(in: window)
+        }
+        ReferenceTrace.shared.add(row)
+    }
+}
+
+/// Read only public containment, backgrounds and scroll geometry. These values
+/// describe the material's context; they do not expose a shader or blur style.
+private enum ReferenceDockMaterialContext {
+    static func snapshot(_ controller: UITabBarController, probe: UIView?) -> [String: Any] {
+        let window = controller.view.window
+        func rect(_ value: CGRect) -> [String: CGFloat] {
+            ["x": value.minX, "y": value.minY, "w": value.width, "h": value.height]
+        }
+        func insets(_ value: UIEdgeInsets) -> [String: CGFloat] {
+            ["top": value.top, "left": value.left, "bottom": value.bottom, "right": value.right]
+        }
+        func view(_ value: UIView) -> [String: Any] {
+            ["class": String(describing: type(of: value)),
+             "frameInWindow": rect(value.convert(value.bounds, to: window)),
+             "backgroundColorSRGB": ReferencePalette.resolvedSRGB(value.backgroundColor ?? .clear,
+                                                                 traits: value.traitCollection).map { $0 as Any } ?? NSNull(),
+             "backgroundColorPresent": value.backgroundColor != nil,
+             "effectiveInterfaceStyle": value.traitCollection.userInterfaceStyle.rawValue,
+             "overrideInterfaceStyle": value.overrideUserInterfaceStyle.rawValue,
+             "safeAreaInsets": insets(value.safeAreaInsets), "alpha": value.alpha,
+             "isOpaque": value.isOpaque, "isHidden": value.isHidden,
+             "clipsToBounds": value.clipsToBounds]
+        }
+        func ancestors(_ start: UIView?) -> [[String: Any]] {
+            var rows: [[String: Any]] = [], current = start
+            while let candidate = current {
+                rows.append(view(candidate)); current = candidate.superview
+            }
+            return rows
+        }
+        func canvases(_ candidate: UIView) -> [[String: Any]] {
+            let own = candidate is ReferenceBackgroundView ? [view(candidate)] : []
+            return own + candidate.subviews.flatMap { canvases($0) }
+        }
+        var parents: [[String: Any]] = [], current: UIViewController? = controller
+        while let candidate = current {
+            var row: [String: Any] = ["class": String(describing: type(of: candidate)),
+                                      "additionalSafeAreaInsets": insets(candidate.additionalSafeAreaInsets)]
+            if let loaded = candidate.viewIfLoaded { row["view"] = view(loaded) }
+            if let navigation = candidate as? UINavigationController {
+                row["navigationBarHidden"] = navigation.isNavigationBarHidden
+                row["navigationBarTranslucent"] = navigation.navigationBar.isTranslucent
+            }
+            parents.append(row); current = candidate.parent
+        }
+        var scrolls: [[String: Any]] = [], effects: [[String: Any]] = []
+        func scan(_ candidate: UIView, path: String, forScrolls: Bool) {
+            if forScrolls, let scroll = candidate as? UIScrollView {
+                var row = view(scroll)
+                row["path"] = path
+                row["contentOffset"] = ["x": scroll.contentOffset.x, "y": scroll.contentOffset.y]
+                row["contentSize"] = ["w": scroll.contentSize.width, "h": scroll.contentSize.height]
+                row["contentInset"] = insets(scroll.contentInset)
+                row["adjustedContentInset"] = insets(scroll.adjustedContentInset)
+                row["contentInsetAdjustmentBehavior"] = scroll.contentInsetAdjustmentBehavior.rawValue
+                row["isTracking"] = scroll.isTracking; row["isDragging"] = scroll.isDragging
+                row["isDecelerating"] = scroll.isDecelerating
+                scrolls.append(row)
+            } else if !forScrolls, let effect = candidate as? UIVisualEffectView {
+                var row = view(effect)
+                row["path"] = path; row["effectPresent"] = effect.effect != nil
+                effects.append(row)
+            }
+            for (index, child) in candidate.subviews.enumerated() {
+                scan(child, path: path + "/\(index)", forScrolls: forScrolls)
+            }
+        }
+        if let selected = controller.selectedViewController?.viewIfLoaded { scan(selected, path: "selected", forScrolls: true) }
+        scan(controller.tabBar, path: "tabBar", forScrolls: false)
+        return ["event": "tab-material-context", "dockParent": "swiftui-tabview",
+                "sampleScope": "public view/controller/scroll state; not material coefficients or active appearance inference",
+                "selectedIndex": controller.selectedIndex,
+                "probeAncestors": ancestors(probe), "tabBarAncestors": ancestors(controller.tabBar),
+                "controllerParents": parents, "selectedPageScrollViews": scrolls,
+                "tabBarPublicEffectViews": effects,
+                "backgroundCanvasesInWindow": window.map { canvases($0) } ?? [],
+                "windowBounds": window.map { rect($0.bounds) } ?? [:],
+                "windowSafeAreaInsets": window.map { insets($0.safeAreaInsets) } ?? [:]]
+    }
+}
+
+/// Opt-in production-parent probe. UIKit owns the bar frame, material and input.
+/// The palette is the existing reference palette, not Sleepy's theme database.
+private final class ReferenceSwiftUIDockObservation {
+    private var observed = Set<ObjectIdentifier>()
+    private weak var controller: UITabBarController?
+    private weak var probe: UIView?
+    private var lastContext: Data?
+
+    func recordContextIfChanged(phase: String) {
+        guard let controller, controller.viewIfLoaded?.window != nil else { return }
+        var row = ReferenceDockMaterialContext.snapshot(controller, probe: probe)
+        guard let data = try? JSONSerialization.data(withJSONObject: row, options: [.sortedKeys]),
+              data != lastContext else { return }
+        lastContext = data
+        row["phase"] = phase
+        ReferenceTrace.shared.add(row)
+        ReferenceTrace.shared.flush()
+    }
+
+    func apply(from probe: UIView) {
+        var chain: [UIView] = []
+        var current = probe.superview
+        var controller: UITabBarController?
+        while let view = current, let window = view.window, view !== window {
+            chain.append(view)
+            if controller == nil { controller = view.next as? UITabBarController }
+            current = view.superview
+        }
+        guard let controller else { return }
+        self.controller = controller
+        self.probe = probe
+        let firstDiscovery = observed.insert(ObjectIdentifier(controller)).inserted
+        if firstDiscovery {
+            // SwiftUI created and attached this bar. "before" means before our
+            // production policy, not an observation of an unparented default.
+            ReferenceDockPublicSnapshot.record(controller.tabBar, phase: "before", parent: "swiftui-tabview", controller: controller)
+        }
+        // SleepyApp.TabBarTransparentProbe's public background/safe-area policy.
+        for view in chain where view.backgroundColor != .clear { view.backgroundColor = .clear }
+        let tabBar = controller.tabBar
+        tabBar.accessibilityIdentifier = "swiftui-tabbar"
+        func matches(_ appearance: UITabBarAppearance) -> Bool {
+            appearance.selectionIndicatorTintColor == ReferencePalette.uiTint &&
+            [appearance.stackedLayoutAppearance, appearance.inlineLayoutAppearance,
+             appearance.compactInlineLayoutAppearance].allSatisfy { item in
+                item.selected.iconColor == .white && item.normal.iconColor == .secondaryLabel &&
+                item.selected.titleTextAttributes[.foregroundColor] as? UIColor == .white &&
+                item.normal.titleTextAttributes[.foregroundColor] as? UIColor == .secondaryLabel
+            }
+        }
+        func themed(_ source: UITabBarAppearance) -> UITabBarAppearance {
+            let appearance = source.copy() as! UITabBarAppearance
+            appearance.selectionIndicatorTintColor = ReferencePalette.uiTint
+            for item in [appearance.stackedLayoutAppearance, appearance.inlineLayoutAppearance,
+                         appearance.compactInlineLayoutAppearance] {
+                item.selected.iconColor = .white
+                var selectedTitle = item.selected.titleTextAttributes
+                selectedTitle[.foregroundColor] = UIColor.white
+                item.selected.titleTextAttributes = selectedTitle
+                item.normal.iconColor = .secondaryLabel
+                var normalTitle = item.normal.titleTextAttributes
+                normalTitle[.foregroundColor] = UIColor.secondaryLabel
+                item.normal.titleTextAttributes = normalTitle
+            }
+            return appearance
+        }
+        if !matches(tabBar.standardAppearance) { tabBar.standardAppearance = themed(tabBar.standardAppearance) }
+        if tabBar.scrollEdgeAppearance.map(matches) != true {
+            tabBar.scrollEdgeAppearance = themed(tabBar.scrollEdgeAppearance ?? tabBar.standardAppearance)
+        }
+        if tabBar.tintColor != .white { tabBar.tintColor = .white }
+        if tabBar.unselectedItemTintColor != .secondaryLabel { tabBar.unselectedItemTintColor = .secondaryLabel }
+        for child in controller.children {
+            let base = child.view.safeAreaInsets.bottom - child.additionalSafeAreaInsets.bottom
+            let target = -max(base - 34, 0)
+            if abs(child.additionalSafeAreaInsets.bottom - target) > 0.5 {
+                var insets = child.additionalSafeAreaInsets
+                insets.bottom = target
+                child.additionalSafeAreaInsets = insets
+            }
+        }
+        if firstDiscovery {
+            DispatchQueue.main.async { [weak self, weak controller] in
+                guard let controller else { return }
+                ReferenceDockPublicSnapshot.record(controller.tabBar, phase: "attached", parent: "swiftui-tabview", controller: controller)
+                self?.recordContextIfChanged(phase: "attached")
+            }
+        }
+    }
+}
+
+private struct ReferenceDockParentProbe: UIViewRepresentable {
+    let observation: ReferenceSwiftUIDockObservation
+    func makeUIView(context: Context) -> ReferenceDockParentProbeView {
+        let view = ReferenceDockParentProbeView()
+        view.isUserInteractionEnabled = false
+        view.backgroundColor = .clear
+        view.applyToHierarchy = { observation.apply(from: $0) }
+        view.scheduleApply()
+        return view
+    }
+    func updateUIView(_ view: ReferenceDockParentProbeView, context: Context) { view.scheduleApply() }
+}
+
+private final class ReferenceDockParentProbeView: UIView {
+    var applyToHierarchy: ((UIView) -> Void)?
+    private var scheduled = false
+    override func didMoveToSuperview() { super.didMoveToSuperview(); scheduleApply() }
+    override func didMoveToWindow() { super.didMoveToWindow(); scheduleApply() }
+    func scheduleApply() {
+        guard !scheduled else { return }
+        scheduled = true
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.scheduled = false
+            guard self.window != nil else { return }
+            self.applyToHierarchy?(self)
+        }
+    }
+}
+
+private struct ReferenceDockCanvas: UIViewRepresentable {
+    let background: ReferenceBackground
+    func makeUIView(context: Context) -> ReferenceBackgroundView {
+        let view = ReferenceBackgroundView()
+        view.background = background
+        view.isOpaque = true
+        view.isUserInteractionEnabled = false
+        return view
+    }
+    func updateUIView(_ view: ReferenceBackgroundView, context: Context) { view.background = background }
+}
+
+private enum ReferenceDockContent: String {
+    case placeholder
+    case syntheticScroll = "synthetic-scroll"
+}
+
+private struct ReferenceDockTabs: View {
+    let background: ReferenceBackground
+    let observation: ReferenceSwiftUIDockObservation
+    let content: ReferenceDockContent
+    @State private var selection = 0
+    private let tabs = [("Schedule", "calendar"), ("Today", "sun.max"), ("Manage", "square.grid.2x2"), ("Mine", "person")]
+
+    var body: some View {
+        TabView(selection: $selection) {
+            ForEach(0..<tabs.count, id: \.self) { index in
+                Group {
+                    if content == .syntheticScroll {
+                        // A real SwiftUI ScrollView supplies native scroll-edge
+                        // context. Sparse synthetic text leaves the optical
+                        // canvas visible; it is not a production business page.
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 16) {
+                                title
+                                ForEach(0..<24, id: \.self) { row in
+                                    Text("Synthetic scroll row \(row + 1)")
+                                        .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
+                                }
+                            }
+                            .padding(16)
+                            .padding(.bottom, 92)
+                        }
+                        .accessibilityIdentifier("dock-synthetic-scroll-\(index)")
+                    } else {
+                        VStack { title.padding(.top, 10); Spacer() }
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .tint(ReferencePalette.tint)
+                .ignoresSafeArea(.container, edges: .bottom)
+                .overlay(ReferenceDockParentProbe(observation: observation).allowsHitTesting(false).ignoresSafeArea())
+                .tabItem { Image(systemName: tabs[index].1); Text(tabs[index].0) }
+                .tag(index)
+            }
+        }
+        .tint(.white)
+        .ignoresSafeArea(.container, edges: .bottom)
+        .background(ReferenceDockCanvas(background: background).ignoresSafeArea())
+        .ignoresSafeArea(.keyboard, edges: .bottom)
+        .onChange(of: selection) { value in
+            ReferenceTrace.shared.add(["event": "value", "control": "swiftui-tabbar", "value": value])
+        }
+    }
+
+    private var title: some View {
+        Text("iOS 26.5 · SwiftUI TabView Reference")
+            .font(.system(size: 16, weight: .semibold))
+            .accessibilityIdentifier("reference-title")
+    }
+}
+
+/// Mirrors the production outer hosting -> hidden navigation -> page hosting
+/// containment without importing its navigation state or business pages.
+private struct ReferenceDockNavigationParent: UIViewControllerRepresentable {
+    let background: ReferenceBackground
+    let content: ReferenceDockContent
+
+    func makeUIViewController(context: Context) -> UINavigationController {
+        let host = ReferenceDockHostingController(background: background, content: content)
+        let navigation = UINavigationController(rootViewController: host)
+        navigation.setNavigationBarHidden(true, animated: false)
+        navigation.view.backgroundColor = .systemBackground
+        host.view.backgroundColor = .systemBackground
+        return navigation
+    }
+    func updateUIViewController(_ controller: UINavigationController, context: Context) {}
+}
+
+private final class ReferenceDockHostingController: UIHostingController<ReferenceDockTabs> {
+    private let background: ReferenceBackground
+    private let content: ReferenceDockContent
+    private let observation: ReferenceSwiftUIDockObservation
+    private let recorder = PresentationRecorder()
+    private var recordingStarted = false
+    private var contextTimer: Timer?
+
+    init(background: ReferenceBackground, content: ReferenceDockContent) {
+        self.background = background
+        self.content = content
+        let observation = ReferenceSwiftUIDockObservation()
+        self.observation = observation
+        super.init(rootView: ReferenceDockTabs(background: background, observation: observation, content: content))
+    }
+    deinit { contextTimer?.invalidate() }
+    @MainActor required dynamic init?(coder aDecoder: NSCoder) { fatalError("init(coder:) is unavailable") }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        guard !recordingStarted, let window = view.window else { return }
+        recordingStarted = true
+        ReferenceTrace.shared.beginSession(window: window)
+        // Read-only, deduplicated sampling also runs for static optical captures.
+        // No delegate or gesture recognizer is installed on native controls.
+        let timer = Timer(timeInterval: 0.25, repeats: true) { [weak self] _ in
+            self?.observation.recordContextIfChanged(phase: "sampled")
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        contextTimer = timer
+        let staticOptics = ProcessInfo.processInfo.arguments.contains("-ReferenceStaticOptics")
+        ReferenceTrace.shared.add(["event": "reference-configuration", "scene": "dock-parent",
+                                   "dockParent": "swiftui-tabview", "tabCount": 4,
+                                   "background": background.metadata,
+                                   "interfaceStyle": window.traitCollection.userInterfaceStyle.rawValue,
+                                   "staticOptics": staticOptics,
+                                   "safeAreaPolicy": "Sleepy child.additionalSafeAreaInsets.bottom = -max(baseBottom - 34, 0)",
+                                   "paletteScope": "reference tint/white/secondaryLabel; production role slots",
+                                   "contentMode": content.rawValue,
+                                   "publicContextSamplingIntervalSeconds": 0.25,
+                                   "backgroundInputScope": "uncomposited full-window optical input; verify actual canvas window rectangles in context samples",
+                                   "navigationContext": "outer SwiftUI host -> hidden UINavigationController -> tab page host",
+                                   "scrollBottomPaddingPt": content == .syntheticScroll ? 92 : 0,
+                                   "contentScope": "four synthetic pages; SF Symbols; optical root canvas; no production business content"])
+        recorder.context = { [background] in
+            ["scene": "dock-parent", "dockParent": "swiftui-tabview", "background": background.rawValue, "tabCount": 4]
+        }
+        if staticOptics {
+            let canvas = ReferenceBackgroundView(frame: window.bounds)
+            canvas.background = background
+            let format = UIGraphicsImageRendererFormat()
+            format.scale = window.screen.scale
+            format.opaque = true
+            format.preferredRange = .standard
+            let input = UIGraphicsImageRenderer(bounds: canvas.bounds, format: format).image { _ in canvas.draw(canvas.bounds) }
+            try? input.pngData()?.write(to: ReferenceTrace.shared.directory.appendingPathComponent("background-input.png"))
+        } else { recorder.start(window: window) }
+    }
+}
+
 final class ReferenceViewController: UIViewController, UITabBarDelegate {
     private let background = ReferenceBackgroundView()
     private let scenePicker = UISegmentedControl(items: ReferenceScene.allCases.map(\.label))
@@ -217,6 +643,7 @@ final class ReferenceViewController: UIViewController, UITabBarDelegate {
         tabBar.selectedItem = tabBar.items?.first
         tabBar.delegate = self
         tabBar.accessibilityIdentifier = "uikit-tabbar"
+        ReferenceDockPublicSnapshot.record(tabBar, phase: "before", parent: "standalone")
         // Public appearance tint preserves the system-owned material and lens.
         let appearance = tabBar.standardAppearance.copy() as! UITabBarAppearance
         appearance.selectionIndicatorTintColor = ReferencePalette.uiTint
@@ -238,6 +665,7 @@ final class ReferenceViewController: UIViewController, UITabBarDelegate {
         guard !recordingStarted, let window = view.window else { return }
         recordingStarted = true
         ReferenceTrace.shared.beginSession(window: window)
+        ReferenceDockPublicSnapshot.record(tabBar, phase: "attached", parent: "standalone")
         ReferenceTrace.shared.add(["event": "reference-configuration", "scene": scene.rawValue,
                                    "background": background.background.metadata,
                                    "interfaceStyle": window.traitCollection.userInterfaceStyle.rawValue,
@@ -343,7 +771,17 @@ final class ReferenceAppDelegate: NSObject, UIApplicationDelegate {
         let styleIndex = arguments.firstIndex(of: "-ReferenceInterfaceStyle")
         let dark = styleIndex.map { $0 + 1 < arguments.count && arguments[$0 + 1] == "dark" } ?? false
         window.overrideUserInterfaceStyle = dark ? .dark : .light
-        window.rootViewController = ReferenceViewController()
+        let parentIndex = arguments.firstIndex(of: "-ReferenceDockParent")
+        let swiftUITabView = parentIndex.map { $0 + 1 < arguments.count && arguments[$0 + 1] == "swiftui-tabview" } ?? false
+        if swiftUITabView {
+            let backgroundIndex = arguments.firstIndex(of: "-ReferenceBackground")
+            let backgroundName = backgroundIndex.flatMap { $0 + 1 < arguments.count ? arguments[$0 + 1] : nil } ?? "grid"
+            let contentIndex = arguments.firstIndex(of: "-ReferenceDockContent")
+            let contentName = contentIndex.flatMap { $0 + 1 < arguments.count ? arguments[$0 + 1] : nil } ?? "placeholder"
+            let parent = ReferenceDockNavigationParent(background: ReferenceBackground(rawValue: backgroundName) ?? .grid,
+                                                       content: ReferenceDockContent(rawValue: contentName) ?? .placeholder)
+            window.rootViewController = UIHostingController(rootView: parent.ignoresSafeArea(.container))
+        } else { window.rootViewController = ReferenceViewController() }
         window.makeKeyAndVisible()
         self.window = window
         return true

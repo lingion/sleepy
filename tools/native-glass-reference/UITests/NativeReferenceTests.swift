@@ -325,6 +325,15 @@ final class NativeReferenceTests: XCTestCase {
     func testDockOpticsLandscapeLight() { dockOptics(background: "synthetic_landscape", style: "light") }
     func testDockOpticsLandscapeDark() { dockOptics(background: "synthetic_landscape", style: "dark") }
 
+    func testSwiftUITabViewDockFineGridLight() { swiftUITabViewDockOptics(background: "fine_grid", style: "light") }
+    func testSwiftUITabViewDockFineGridDark() { swiftUITabViewDockOptics(background: "fine_grid") }
+    func testSwiftUITabViewDockColorStripesLight() { swiftUITabViewDockOptics(background: "color_stripes", style: "light") }
+    func testSwiftUITabViewDockColorStripesDark() { swiftUITabViewDockOptics(background: "color_stripes") }
+    func testSwiftUITabViewDockTonalBlocksLight() { swiftUITabViewDockOptics(background: "tonal_blocks", style: "light") }
+    func testSwiftUITabViewDockTonalBlocksDark() { swiftUITabViewDockOptics(background: "tonal_blocks") }
+    func testSwiftUITabViewDockLandscapeLight() { swiftUITabViewDockOptics(background: "synthetic_landscape", style: "light") }
+    func testSwiftUITabViewDockLandscapeDark() { swiftUITabViewDockOptics(background: "synthetic_landscape") }
+
     func testAlertOpticsFineGridLight() { alertOptics(background: "fine_grid", style: "light") }
     func testAlertOpticsFineGridDark() { alertOptics(background: "fine_grid", style: "dark") }
     func testAlertOpticsColorStripesLight() { alertOptics(background: "color_stripes", style: "light") }
@@ -471,6 +480,26 @@ final class NativeReferenceTests: XCTestCase {
         app.terminate()
     }
 
+    /// A separate four-page parent context; its geometry is entirely native.
+    /// opticalHold keeps the existing host capture + delivered DOWN/UP contract.
+    private func swiftUITabViewDockOptics(background: String, style: String = "dark") {
+        settleDuration = 0.8
+        launch(scene: "toggle", background: background, style: style, staticOptics: true,
+               dockParent: "swiftui-tabview", dockContent: "synthetic-scroll")
+        XCTAssertTrue(app.scrollViews["dock-synthetic-scroll-0"].waitForExistence(timeout: 5))
+        let control = app.tabBars["swiftui-tabbar"]
+        XCTAssertTrue(control.waitForExistence(timeout: 5))
+        XCTAssertEqual(control.buttons.count, 4)
+        let first = control.buttons["Schedule"]
+        XCTAssertTrue(first.exists)
+        XCTAssertTrue(first.isSelected)
+        let prefix = "swiftui-tabview-dock-\(background)-\(style)"
+        captureLanguage(prefix + "-rest")
+        opticalHold(first, name: prefix + "-selected-first-held", duration: 6)
+        XCTAssertTrue(first.isSelected)
+        app.terminate()
+    }
+
     private func staticOptics(background: String, style: String) {
         settleDuration = 0.7
         for scene in ["toggle", "segmented", "slider", "buttons", "presentations", "language"] {
@@ -550,13 +579,16 @@ final class NativeReferenceTests: XCTestCase {
     }
 
     private func launch(scene: String, background: String, focused: Bool = false, tabCount: Int = 3,
-                        style: String = "light", staticOptics: Bool = false) {
+                        style: String = "light", staticOptics: Bool = false, dockParent: String? = nil,
+                        dockContent: String? = nil) {
         app = XCUIApplication()
         app.launchArguments = ["-ReferenceScene", scene, "-ReferenceBackground", background,
                                "-ReferenceInterfaceStyle", style]
         if tabCount == 4 { app.launchArguments += ["-ReferenceTabCount", "4"] }
         if focused { app.launchArguments.append("-ReferenceFocusedTrace") }
         if staticOptics { app.launchArguments.append("-ReferenceStaticOptics") }
+        if let dockParent { app.launchArguments += ["-ReferenceDockParent", dockParent] }
+        if let dockContent { app.launchArguments += ["-ReferenceDockContent", dockContent] }
         app.launchEnvironment["REFERENCE_RUN_ID"] = "\(name)-\(UUID().uuidString)"
         app.launch()
         XCTAssertTrue(app.staticTexts["reference-title"].waitForExistence(timeout: 10))
