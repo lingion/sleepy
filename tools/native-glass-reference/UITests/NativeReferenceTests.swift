@@ -26,6 +26,66 @@ final class NativeReferenceTests: XCTestCase {
 
     func testToggleGrid() { toggle(background: "grid") }
     func testToggleStripes() { toggle(background: "stripes") }
+    /// Supplement the Toggle-only input evidence. A scene named "toggle" can
+    /// also contain the tab bar; this method exclusively targets real switches.
+    func testToggleHeldDirectionAndRapidProbe() {
+        settleDuration = 1.1
+        for identifier in ["swiftui-toggle", "uikit-toggle"] {
+            launch(scene: "toggle", background: "grid", focused: true)
+            let control = app.switches[identifier]
+            XCTAssertTrue(control.waitForExistence(timeout: 5))
+
+            func setValue(_ desired: Bool, phase: String) {
+                let expected = desired ? "1" : "0"
+                let observed = control.value as? String
+                XCTAssertTrue(observed == "0" || observed == "1", "Expected a native switch value for \(identifier)")
+                if observed != expected {
+                    tap(control, label: "\(identifier): setup \(phase), value \(expected)")
+                }
+                XCTAssertEqual(control.value as? String, expected)
+            }
+
+            // Each public command holds, moves, holds at its destination, then
+            // releases. Reverse is a NEW gesture after UP, not a continuous
+            // out-and-back path. Keep that distinction in both labels and data.
+            for (velocity, phase) in [(45.0, "slow"), (650.0, "fast")] {
+                setValue(false, phase: phase + " horizontal pair")
+                drag(control, from: CGVector(dx: 0.15, dy: 0.5), to: CGVector(dx: 0.85, dy: 0.5),
+                     velocity: velocity, label: "\(identifier): \(phase), held off thumb then forward / release")
+                XCTAssertEqual(control.value as? String, "1")
+                drag(control, from: CGVector(dx: 0.85, dy: 0.5), to: CGVector(dx: 0.15, dy: 0.5),
+                     velocity: velocity, label: "\(identifier): \(phase), new held on thumb then reverse / release")
+                XCTAssertEqual(control.value as? String, "0")
+            }
+
+            // This ends in a real UP outside the switch. It probes tracking
+            // cancellation semantics, but is not a delivered touch CANCEL.
+            for initialOn in [false, true] {
+                setValue(initialOn, phase: "vertical outside probe")
+                let start = control.coordinate(withNormalizedOffset: CGVector(dx: initialOn ? 0.85 : 0.15, dy: 0.5))
+                drag(from: start, to: start.withOffset(CGVector(dx: 0, dy: -100)), velocity: 160,
+                     label: "\(identifier): value \(initialOn), hold thumb then leave vertically / release probe",
+                     target: control)
+                request("\(identifier): observed value after outside UP", kind: "observation", target: control,
+                        extra: ["observedValue": control.value as? String ?? "unavailable"])
+            }
+
+            setValue(false, phase: "consecutive taps")
+            // XCUITest may wait for quiescence between these commands. No
+            // explicit pause is added, but actual DOWN gaps, not this source
+            // order or the probe's name, decide whether a rapid burst occurred.
+            for index in 0..<6 {
+                request("\(identifier): consecutive tap probe \(index)", kind: "consecutiveTapProbe", target: control)
+                control.tap()
+            }
+            pause()
+            request("\(identifier): public double-tap probe", kind: "doubleTapProbe", target: control)
+            control.doubleTap()
+            pause()
+            captureLanguage(identifier + "-held-direction-and-rapid-result")
+            app.terminate()
+        }
+    }
     func testSegmentedGrid() { segmented(background: "grid") }
     func testSegmentedStripes() { segmented(background: "stripes") }
     func testSliderGrid() { slider(background: "grid") }

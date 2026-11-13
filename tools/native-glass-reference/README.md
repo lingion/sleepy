@@ -41,6 +41,19 @@ the `Stripes` suffix alternative. Each test launches one isolated run and stores
 the requested actions as a `requested-gestures` JSON xcresult attachment. Actual
 input delivery is in the app trace, not inferred from XCUITest's requested speed.
 
+`testToggleHeldDirectionAndRapidProbe` exclusively targets `swiftui-toggle` and
+`uikit-toggle`. It adds held forward/reverse pairs at requested 45 / 650 pt/s,
+vertical movement out of each switch from both values, six consecutive tap
+commands without an added pause, and a public double-tap probe. Each horizontal
+reverse begins a new touch after the prior UP. The outside probe also ends in UP;
+it does not synthesize a touch CANCEL. Requested commands and the actual trace
+must remain separate: XCUITest can insert quiescence waits, so the consecutive
+commands are only rapid-input evidence if the delivered DOWN gaps establish it.
+The checked public `XCUICoordinate` interface supplies one drag destination and no
+explicit cancel operation. This test therefore does not cover a continuously
+held multi-segment out-and-back touch or a system-delivered CANCEL. Those remain
+native evidence gaps; two separately released drags must not stand in for them.
+
 ## Runs, coordinates, and background
 
 Each launch writes `Documents/reference/<sanitized REFERENCE_RUN_ID>/session.json`
