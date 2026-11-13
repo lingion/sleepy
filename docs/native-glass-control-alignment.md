@@ -571,3 +571,17 @@ Android新增显式启用的生产Range采集夹具：固定375×667dp世界、h
 正式 debug 及匹配测试包已安装到 API36 设备，设备与 host SHA256 各自相同。主包为78e5a7f2dedc64193b00503648ef63afdf5a6ab4bb42ae788bf1de98580bd59f，测试包为a200d8db5d11e5d5bc74c0b9b24a6b97782322b7faaa50edb35654c5cb6d2325；MainActivity resumed，截图确认课表网格含课程和 Dock。此处只验证安装身份与首页启动，没有新增逐帧渲染或光学结论。
 
 本批只收口首个四文件运动闭包。其余 GlassPressMotion、Dock/Segment endpoint、几何、M3 材质/采样/shader、M4 控件适配器和独立示例仍待执行；没有新增原生光学、自然动态或性能验收。publicationReady、nativeCalibrationAccepted、sourceAndLicenseReviewComplete 保持 false，独立仓库和示例仍未创建。
+
+### 79：原生 Dock 局部/远端亮带保留序列
+
+2026-11-14（Asia/Shanghai）完成原生专用 A→B→C→D→C→B→A 保留序列，沿用 SwiftUI TabView/隐藏导航父层、375×667pt/2×、iOS26.5/23F77 SE3 和既有 DerivedData。修正后构建7.0545s，单次所选测试命令45.8969s通过，无超时、retry或repetition；app、runner、XCTest与Swift debug dylib四份manifest在构建/测试间一致。七次请求与七次实际source draw逐阶段对应，保留全部14份原始PNG/AX及截图前后getter括号，预算分别为实际draw结束后至少1s/3s。326/326项离线检查通过、0错误；必需result exports通过，optional build/console log不可用，其错误文件保留。
+
+每张图的前后公开上下文除phase外相同（共28份getter记录），bar/controller/window/canvas四个identity始终不变；Schedule保持选中、scroll为(0,−20)且无tracking/dragging/decelerating。canvas为(0,0,375,667)pt，tab bar为(0,584,375,83)pt；观察到的platter、lens和selection模型矩形/identity稳定，分别为(21,584,333,62)、(25,588,88.25,54)、(25,588,88,54)pt。optional presentation矩形单独保留root-layer基准，不与公开模型或可见alpha轮廓混同。窗口/canvas保持dark(2)，controller继承dark，bar override保持unspecified(0)，未赋值原生材质或几何。
+
+两档1s/3s及每图前后getter的实际公开bar trait均为 **A2→B2→C2→D1→C2→B2→A2**。固定无字形body探针为[196,592,208,596]及[244,592,256,596]pt，每窗192px；所有A/C重复阶段两窗均为192个RGB(37,37,37)，B/D两窗均为192个RGB(247,247,247)，原始精确分布与lossless crops保留。B的公开trait仍为2，最终body像素却亮；trait与渲染像素分别报告，不据其中一个代替另一个，也不据此识别内部material state。
+
+四份750×1334px输入PNG解码后与明确opaque sRGB RGBA源逐字节相符。B/C全图raw histogram相同：825000个(26,26,26,255)、175500个(230,230,230,255)；相同亮带分别位于y=1100..<1334px与400..<634px。两带外649500px均等于A，B/C恰有351000px不同。该单序列中raw histogram相同而B/C最终body像素不同是有限观察；固定合成前景仍在组成场景中，未由此推断全局亮度classifier、采样半径/范围、transfer model、opacity或物理材质系数。1s/3s只是实际draw后的最小观察预算，不是compositor时间、settled state或适应延迟。
+
+首次尝试的fixture未把B传入canvas：请求0/A、1/B而只应用0/A，1001条stage1记录canvas仍A、apply elapsed为−1，120s命令预算结束exit−15。原始源码、trace、日志及无Info.plist的不完整xcresult保存在79/failed-first-run，完整export不可用的错误也保留；该失败不作为14checkpoint比较。经明确授权，仅将immutable stageIndex/input传入既有canvas representable，保留UIView identity、draw callback、原测试/输入/预算及样式规则，再执行上述一次修正验证。最初20项静态检查没有证明SwiftUI运行时update传播。
+
+修正后main.swift冻结SHA256为caeb66e232eca683bf494db33602e8369d87f08cc6bdf32664663783930a84ee，UITest仍为e8970394b68d9ab939b67dc66fb48b7d4c58a8876afd3c8ae07552c62b4288ca。原图、root联系图、完整修正结果包、必需exports、source/binary/runtime回执与326项报告在本会话android-dock-local-appearance-79。此批只有原生夹具和证据文档变更，没有Android材质改动、拟合、preferred-style重试或新增native acceptance/parity；80的模块迁移结论与gate不变。

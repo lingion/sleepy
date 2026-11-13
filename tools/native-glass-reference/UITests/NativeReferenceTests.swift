@@ -735,6 +735,114 @@ final class NativeReferenceTests: XCTestCase {
         app.terminate()
     }
 
+    /// One retained spatial swap sequence. Effective bar style is observed,
+    /// never asserted to match a preferred result or used to trigger a retry.
+    func testSwiftUITabViewDockLocalAppearance() {
+        executionTimeAllowance = 110
+        continueAfterFailure = true
+        settleDuration = 0.1
+        var captures: [[String: Any]] = []
+        defer {
+            if let data = try? JSONSerialization.data(withJSONObject: captures, options: [.prettyPrinted, .sortedKeys]) {
+                let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+                attachment.name = "dock-local-appearance-capture-brackets"
+                attachment.lifetime = .keepAlways
+                add(attachment)
+            }
+            app.terminate()
+        }
+        launch(scene: "toggle", background: "gray_26", style: "dark", staticOptics: true,
+               dockParent: "swiftui-tabview", dockContent: "synthetic-scroll", localAppearance: true)
+        let control = app.tabBars["swiftui-tabbar"]
+        XCTAssertTrue(control.waitForExistence(timeout: 5))
+        XCTAssertEqual(control.buttons.count, 4)
+        XCTAssertTrue(control.buttons["Schedule"].isSelected)
+        XCTAssertTrue(app.scrollViews["dock-synthetic-scroll-0"].exists)
+        XCTAssertEqual(app.windows.firstMatch.frame.size, CGSize(width: 375, height: 667))
+        let state = app.staticTexts["dock-local-appearance-state"]
+        let next = app.buttons["dock-local-appearance-next"]
+        XCTAssertTrue(state.waitForExistence(timeout: 5))
+        XCTAssertTrue(next.exists)
+        let stages = ["A", "B", "C", "D", "C", "B", "A"]
+        var initialIdentities: [String]?
+        func decoded(_ text: String) -> [String: Any] {
+            guard let data = text.data(using: .utf8),
+                  let result = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return [:] }
+            return result
+        }
+        func clock() -> [String: Double] {
+            ["unixSeconds": Date().timeIntervalSince1970,
+             "testProcessUptimeSeconds": ProcessInfo.processInfo.systemUptime]
+        }
+        for (index, inputID) in stages.enumerated() {
+            for budget in [1.0, 3.0] {
+                let ready = NSPredicate { _, _ in
+                    let row = decoded(state.value as? String ?? "")
+                    return (row["started"] as? Bool) == true &&
+                        (row["stage"] as? NSNumber)?.intValue == index &&
+                        (row["inputID"] as? String) == inputID &&
+                        ((row["elapsedSinceSourceApplyEndSeconds"] as? Double) ?? -1) >= budget
+                }
+                let waitResult = XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: ready, object: nil)], timeout: 8)
+                XCTAssertEqual(waitResult, .completed, "Retain failed observation budget and image; do not retry this stage")
+                let beforeText = state.value as? String ?? ""
+                let before = decoded(beforeText)
+                let begin = clock()
+                let screenshot = app.screenshot()
+                let end = clock()
+                let afterText = state.value as? String ?? ""
+                let after = decoded(afterText)
+                let name = String(format: "dock-local-%02d-%@-%ds-rest", index, inputID, Int(budget))
+                captures.append(["stage": index, "inputID": inputID, "observationBudgetSeconds": budget,
+                                 "waitCompleted": waitResult == .completed, "attachmentName": name,
+                                 "captureBegin": begin, "captureEnd": end,
+                                 "stateBeforeCapture": before, "stateAfterCapture": after,
+                                 "rawStateBeforeCapture": beforeText, "rawStateAfterCapture": afterText,
+                                 "clockScope": "XCUITest wall/systemUptime brackets screenshot call; app source/getter brackets are separate; no compositor timestamp or settled-state claim"])
+                let image = XCTAttachment(screenshot: screenshot)
+                image.name = name; image.lifetime = .keepAlways; add(image)
+                let hierarchy = XCTAttachment(string: app.debugDescription)
+                hierarchy.name = name + "-accessibility"; hierarchy.lifetime = .keepAlways; add(hierarchy)
+                for snapshot in [before, after] {
+                    XCTAssertEqual((snapshot["stage"] as? NSNumber)?.intValue, index)
+                    XCTAssertEqual(snapshot["inputID"] as? String, inputID)
+                    XCTAssertGreaterThanOrEqual((snapshot["elapsedSinceSourceApplyEndSeconds"] as? Double) ?? -1, budget)
+                    XCTAssertEqual((snapshot["canvasInterfaceStyle"] as? NSNumber)?.intValue, 2)
+                    let publicState = snapshot["publicState"] as? [String: Any] ?? [:]
+                    let identities = ["barIdentity", "controllerIdentity", "windowIdentity"].compactMap { publicState[$0] as? String } +
+                        [snapshot["canvasIdentity"] as? String].compactMap { $0 }
+                    XCTAssertEqual(identities.count, 4)
+                    if let initialIdentities { XCTAssertEqual(identities, initialIdentities) } else { initialIdentities = identities }
+                    XCTAssertEqual((publicState["windowInterfaceStyle"] as? NSNumber)?.intValue, 2)
+                    XCTAssertEqual((publicState["windowOverrideInterfaceStyle"] as? NSNumber)?.intValue, 2)
+                    XCTAssertEqual((publicState["controllerInterfaceStyle"] as? NSNumber)?.intValue, 2)
+                    XCTAssertEqual((publicState["barOverrideInterfaceStyle"] as? NSNumber)?.intValue, 0)
+                    XCTAssertEqual((publicState["selectedIndex"] as? NSNumber)?.intValue, 0)
+                    XCTAssertEqual(publicState["screenScale"] as? Double, 2)
+                    XCTAssertEqual(publicState["barFrameInWindow"] as? [String: Double],
+                                   ["x": 0, "y": 584, "w": 375, "h": 83])
+                    let canvases = publicState["sourceCanvases"] as? [[String: Any]] ?? []
+                    XCTAssertEqual(canvases.count, 1)
+                    let frame = canvases.first?["frameInWindow"] as? [String: Double] ?? [:]
+                    XCTAssertEqual(frame, ["x": 0, "y": 0, "w": 375, "h": 667])
+                    let scrolls = publicState["selectedPageScrollViews"] as? [[String: Any]] ?? []
+                    XCTAssertFalse(scrolls.isEmpty)
+                    for scroll in scrolls {
+                        let offset = scroll["contentOffset"] as? [String: Double] ?? [:]
+                        XCTAssertEqual(offset, ["x": 0, "y": -20])
+                        XCTAssertEqual(scroll["isTracking"] as? Bool, false)
+                        XCTAssertEqual(scroll["isDragging"] as? Bool, false)
+                        XCTAssertEqual(scroll["isDecelerating"] as? Bool, false)
+                    }
+                }
+                XCTAssertTrue(control.buttons["Schedule"].isSelected)
+                XCTAssertTrue(next.isEnabled, "Final A keeps the same enabled foreground")
+            }
+            if index + 1 < stages.count { next.tap() }
+        }
+        XCTAssertEqual(captures.count, 14)
+    }
+
     func testAlertOpticsFineGridLight() { alertOptics(background: "fine_grid", style: "light") }
     func testAlertOpticsFineGridDark() { alertOptics(background: "fine_grid", style: "dark") }
     func testAlertOpticsColorStripesLight() { alertOptics(background: "color_stripes", style: "light") }
@@ -1051,7 +1159,8 @@ final class NativeReferenceTests: XCTestCase {
 
     private func launch(scene: String, background: String, focused: Bool = false, tabCount: Int = 3,
                         style: String = "light", staticOptics: Bool = false, dockParent: String? = nil,
-                        dockContent: String? = nil, appearanceControls: Bool = false, initialSlider: Double? = nil,
+                        dockContent: String? = nil, appearanceControls: Bool = false, localAppearance: Bool = false,
+                        initialSlider: Double? = nil,
                         sliderLayerProbe: Bool = false, rangeScale: Double? = nil, rangeLower: Double? = nil,
                         rangeUpper: Double? = nil, rangeGeometryProbe: Bool = false) {
         app = XCUIApplication()
@@ -1063,6 +1172,7 @@ final class NativeReferenceTests: XCTestCase {
         if let dockParent { app.launchArguments += ["-ReferenceDockParent", dockParent] }
         if let dockContent { app.launchArguments += ["-ReferenceDockContent", dockContent] }
         if appearanceControls { app.launchArguments.append("-ReferenceDockAppearanceControls") }
+        if localAppearance { app.launchArguments.append("-ReferenceDockLocalAppearance") }
         if let initialSlider { app.launchArguments += ["-ReferenceInitialSlider", String(initialSlider)] }
         if sliderLayerProbe { app.launchArguments.append("-ReferenceSliderLayerProbe") }
         if let rangeScale { app.launchArguments += ["-ReferenceRangeScale", String(rangeScale)] }

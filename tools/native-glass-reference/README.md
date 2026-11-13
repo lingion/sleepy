@@ -223,6 +223,115 @@ threshold, adaptation latency, sampling support or hysteresis. Raw evidence,
 complete result exports and the single contact sheet are retained under
 `artifacts/glass-optics-20261112/dock-appearance-controls-63/`.
 
+#### Retained local/remote appearance REST sequence
+
+
+Source history: the first November 14, 2026 attempt requested stage 1/B but
+retained stage 0/A in the same canvas, with no B source-application event and
+apply-relative elapsed time `-1`. The test command reached its unchanged
+120-second budget. Its trace, logs and original incomplete xcresult are
+preserved under `android-dock-local-appearance-79/failed-first-run/`; the hard
+interruption left no `Info.plist`, so complete result export was unavailable.
+That fixture failure supplies no native appearance comparison or fourteen
+completed-checkpoint claim. The correction passes immutable `stageIndex` and
+`input` values to the existing canvas representable so SwiftUI can update it
+when the observed stage changes. It retains the UIView, draw callback, timer
+rules, styles, inputs, test expectations and budgets. Initial static source
+checks did not establish SwiftUI runtime update behavior. The corrected source
+completed the single bounded verification recorded below.
+
+
+`-ReferenceDockLocalAppearance` with `-ReferenceStaticOptics` and the existing
+SwiftUI/synthetic-scroll parent selects a separate experiment. The existing
+ten-stage test and default fixtures retain their behavior. Run only
+`testSwiftUITabViewDockLocalAppearance` for this experiment, once, using the
+existing DerivedData and selected simulator. Use the same build command and
+single-run test command below, replace its result path, and set the test filter
+to `GlassNativeReferenceUITests/NativeReferenceTests/testSwiftUITabViewDockLocalAppearance`.
+Keep the 120-second command budget, with no retry or repetition flags, and do
+not start the held-capture observer.
+
+One process retains A → B → C → D → C → B → A. A is all byte26 gray; B adds an
+opaque byte230 band at `(0,550,375,117)` pt; C places that same band at
+`(0,200,375,117)` pt; D is all byte230. Source images are built directly from
+opaque RGBA bytes in sRGB at 750×1334 px and drawn at their fixed 375×667 pt,
+2× basis with interpolation disabled. Four `dock-local-input-{A,B,C,D}.png`
+files export those same CGImage bytes, without a screenshot or renderer resize.
+B/C each declare 175,500 bright and 825,000 dark pixels. Verify the exported
+PNG bytes, histograms and outside-band equality before interpretation. These
+histograms cover the raw input only; the synthetic foreground remains present.
+The 117 pt band does not identify a native sampling radius.
+
+The visible `REST spatial control` label and always-enabled `Next REST` button
+remain constant through final A. Stage, input, timing and public state appear
+only in AX/trace. Only the top button advances stages; the test never touches
+the Dock or scrolls. Window and canvas request dark, controller traits are
+observed, and the bar override remains unspecified. Native material and bar,
+platter and lens geometry are not assigned.
+
+`dock-local-stage-requested` records request clocks; `dock-local-source-applied`
+brackets the actual source `draw(_:)`. The two REST captures for each stage
+begin at or after 1 s and 3 s relative to that draw end. The public AX state
+getter forces full public appearance/context rows immediately before and after
+each image and returns their unique phase/snapshot ID and clock brackets.
+There are no extra capture-control taps. The existing 0.25 s sampling continues.
+The test attaches fourteen full PNG/AX pairs plus
+`dock-local-appearance-capture-brackets`, with both actual before/after states
+and XCUITest wall/monotonic screenshot brackets. Context includes canvas and
+bar/controller/window identities, effective/requested styles and overrides,
+appearance/traits, selected index, scroll geometry/flags, source basis and
+separate public model rectangles for observed native platter/lens views.
+Optional presentation rectangles retain their separate root-layer basis and
+availability. Class names select read-only UIView observations; no private
+getter is called.
+
+The test retains captures after assertion failures and does not assert a
+preferred effective bar style. Preserve the complete result bundle, source and
+binary hashes, simulator/runtime identity, all app run/session/trace files,
+input PNGs, attachments and result exports. Apply/draw and getter/command clocks
+are not compositor timestamps; 1 s/3 s are observation budgets, with no settled
+state or latency claim. Matching outcomes, anchor failures, drift and
+order-dependent repeats remain visible. Review unshifted full-Dock images and
+raw body probes `[196,592,208,596]` and `[244,592,256,596]` separately from public
+style. No classifier, opacity fit, Android material change or native parity
+claim follows from this harness alone.
+
+The corrected November 14, 2026 run (Asia/Shanghai) completed once on the
+existing iOS 26.5 / 23F77 SE3 simulator and DerivedData: build-for-testing
+7.0545 s, selected test command 45.8969 s, no timeout/retry/repetition. All seven
+requested and actual draw-applied stages and fourteen original screenshot/AX
+pairs were retained. The offline artifact validator passed 326/326 checks,
+0 errors, including exact attached AX-to-trace rows, draw/getter/capture clocks,
+apply-relative budgets, retained bar/controller/window/canvas identities,
+Schedule selection, stationary scroll `(0,-20)`, canvas `(0,0,375,667)` pt and
+tab bar `(0,584,375,83)` pt. Public before/after contexts agree apart from phase;
+observed platter/lens/selection model rectangles and identities remain stable.
+The unchanged native test has SHA256 `e8970394b68d9ab939b67dc66fb48b7d4c58a8876afd3c8ae07552c62b4288ca`;
+corrected app source is `caeb66e232eca683bf494db33602e8369d87f08cc6bdf32664663783930a84ee`.
+
+For both 1 s/3 s observations and both before/after getters, the effective
+public bar-trait sequence was **A2 → B2 → C2 → D1 → C2 → B2 → A2**. Window and
+canvas remained dark, controller inherited dark, and bar override stayed
+unspecified. The two fixed body probes above each contain 192 decoded pixels:
+A/C were uniformly RGB `(37,37,37)`, B/D uniformly `(247,247,247)` at both
+budgets and repeated stages. B therefore retains public trait 2 while its body
+probe is light. Effective public traits and final pixels are recorded
+separately, without inferring a hidden material state or classifying pixels
+from the trait.
+
+The fresh input PNGs match exact opaque sRGB RGBA bytes. B/C each contain
+825,000 byte26 and 175,500 byte230 pixels, alpha255; the identical band is
+relocated from y=1100..<1334 px to y=400..<634 px. Outside both bands 649,500
+pixels equal A; the two images differ at exactly 351,000 pixels. Equal raw
+histograms with differing B/C body pixels in this single sequence do not
+identify an internal classifier, sampling support/radius or transfer model.
+Required result exports passed; optional build/console logs were unavailable
+and their errors remain retained. The complete corrected result bundle, raw
+trace/inputs, fourteen image/AX pairs, exact probe distributions/crops and
+326-check report are under `android-dock-local-appearance-79/`. The preserved
+initial fixture failure is separate. No Android material change, fit, native
+acceptance, parity, settled state or adaptation-latency claim follows.
+
 #### Focused build and static parent captures
 
 Use the same `DerivedData` directory as the central build above; no project

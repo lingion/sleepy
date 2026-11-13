@@ -136,11 +136,70 @@ enum ReferenceBackground: String, CaseIterable {
     }()
 }
 
+/// Exact, uncomposited spatial inputs for the dedicated retained REST sequence.
+/// The 117pt band is an intervention, not a claimed material sampling radius.
+private enum ReferenceDockSpatialInput: String, CaseIterable {
+    case A, B, C, D
+    static let worldSize = CGSize(width: 375, height: 667)
+    static let scale: CGFloat = 2
+    private static let images = Dictionary(uniqueKeysWithValues: allCases.map { ($0, $0.makeImage()) })
+
+    var image: UIImage { Self.images[self]! }
+    var brightBandY: Int? { self == .B ? 550 : (self == .C ? 200 : nil) }
+    var metadata: [String: Any] {
+        ["id": rawValue, "colorSpace": "sRGB", "alphaByte": 255,
+         "baseRGBABytes": self == .D ? [230, 230, 230, 255] : [26, 26, 26, 255],
+         "brightRGBABytes": brightBandY.map { _ in [230, 230, 230, 255] as Any } ?? NSNull(),
+         "brightRectWorldXYWHpt": brightBandY.map { [0, $0, 375, 117] as Any } ?? NSNull(),
+         "brightRectNativeXYWHpx": brightBandY.map { [0, $0 * 2, 750, 234] as Any } ?? NSNull(),
+         "sourceSizePx": [750, 1334], "sourceWorldXYWHpt": [0, 0, 375, 667],
+         "sourceScale": Self.scale, "interpolation": "none", "boundary": "hard pixel-aligned",
+         "gray26PixelCount": self == .D ? 0 : (brightBandY == nil ? 1_000_500 : 825_000),
+         "gray230PixelCount": self == .D ? 1_000_500 : (brightBandY == nil ? 0 : 175_500),
+         "histogramScope": "raw canvas only; fixed synthetic foreground remains in composed scene"]
+    }
+
+    private func makeImage() -> UIImage {
+        let width = 750, height = 1334
+        var pixels = [UInt8](repeating: 255, count: width * height * 4)
+        for y in 0..<height {
+            let inBand = brightBandY.map { y >= $0 * 2 && y < ($0 + 117) * 2 } ?? false
+            let gray: UInt8 = self == .D || inBand ? 230 : 26
+            for x in 0..<width {
+                let offset = (y * width + x) * 4
+                pixels[offset] = gray; pixels[offset + 1] = gray; pixels[offset + 2] = gray
+            }
+        }
+        let image = CGImage(width: width, height: height, bitsPerComponent: 8, bitsPerPixel: 32,
+                            bytesPerRow: width * 4, space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                            bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.last.rawValue),
+                            provider: CGDataProvider(data: Data(pixels) as CFData)!, decode: nil,
+                            shouldInterpolate: false, intent: .defaultIntent)!
+        return UIImage(cgImage: image, scale: Self.scale, orientation: .up)
+    }
+}
+
 final class ReferenceBackgroundView: UIView {
     var background: ReferenceBackground = .grid { didSet { setNeedsDisplay() } }
+    fileprivate var spatialInput: ReferenceDockSpatialInput?
+    fileprivate var spatialStage: Int?
+    fileprivate var spatialDrawPending = false
+    fileprivate var spatialDidDraw: ((ReferenceBackgroundView, Int, [String: Double], [String: Double]) -> Void)?
+    var inputMetadata: [String: Any] { spatialInput?.metadata ?? background.metadata }
 
     override func draw(_ rect: CGRect) {
         guard let context = UIGraphicsGetCurrentContext() else { return }
+        if let spatialInput {
+            let begin = ReferenceDockLocalAppearance.clock()
+            context.setShouldAntialias(false)
+            context.interpolationQuality = .none
+            spatialInput.image.draw(in: CGRect(origin: .zero, size: ReferenceDockSpatialInput.worldSize))
+            if spatialDrawPending, let spatialStage, window != nil {
+                spatialDrawPending = false
+                spatialDidDraw?(self, spatialStage, begin, ReferenceDockLocalAppearance.clock())
+            }
+            return
+        }
         if let bytes = background.controlledGrayBytes {
             context.setShouldAntialias(false)
             for index in 0..<(bytes.count == 1 ? 1 : Int(ceil(bounds.width / 2.5))) {
@@ -283,7 +342,7 @@ private enum ReferenceDockPublicSnapshot {
 /// Read only public containment, backgrounds and scroll geometry. These values
 /// describe the material's context; they do not expose a shader or blur style.
 private enum ReferenceDockMaterialContext {
-    static func snapshot(_ controller: UITabBarController, probe: UIView?) -> [String: Any] {
+    static func snapshot(_ controller: UITabBarController, probe: UIView?, spatialDetails: Bool = false) -> [String: Any] {
         let window = controller.view.window
         func rect(_ value: CGRect) -> [String: CGFloat] {
             ["x": value.minX, "y": value.minY, "w": value.width, "h": value.height]
@@ -302,8 +361,13 @@ private enum ReferenceDockMaterialContext {
              "safeAreaInsets": insets(value.safeAreaInsets), "alpha": value.alpha,
              "isOpaque": value.isOpaque, "isHidden": value.isHidden,
              "clipsToBounds": value.clipsToBounds]
+            if spatialDetails {
+                row["identity"] = String(describing: ObjectIdentifier(value))
+                row["accessibilityTraits"] = value.accessibilityTraits.rawValue
+                row["accessibilityIdentifier"] = value.accessibilityIdentifier ?? ""
+            }
             if let canvas = value as? ReferenceBackgroundView {
-                row["input"] = canvas.background.metadata
+                row["input"] = canvas.inputMetadata
                 if let window {
                     let screenRect = canvas.convert(canvas.bounds, to: window.screen.coordinateSpace)
                     row["frameInScreen"] = rect(screenRect)
@@ -326,6 +390,11 @@ private enum ReferenceDockMaterialContext {
         while let candidate = current {
             var row: [String: Any] = ["class": String(describing: type(of: candidate)),
                                       "additionalSafeAreaInsets": insets(candidate.additionalSafeAreaInsets)]
+            if spatialDetails {
+                row["identity"] = String(describing: ObjectIdentifier(candidate))
+                row["effectiveInterfaceStyle"] = candidate.traitCollection.userInterfaceStyle.rawValue
+                row["overrideInterfaceStyle"] = candidate.overrideUserInterfaceStyle.rawValue
+            }
             if let loaded = candidate.viewIfLoaded { row["view"] = view(loaded) }
             if let navigation = candidate as? UINavigationController {
                 row["navigationBarHidden"] = navigation.isNavigationBarHidden
@@ -333,8 +402,21 @@ private enum ReferenceDockMaterialContext {
             }
             parents.append(row); current = candidate.parent
         }
-        var scrolls: [[String: Any]] = [], effects: [[String: Any]] = []
+        var scrolls: [[String: Any]] = [], effects: [[String: Any]] = [], dockGeometry: [[String: Any]] = []
         func scan(_ candidate: UIView, path: String, forScrolls: Bool) {
+            if spatialDetails, !forScrolls {
+                let name = String(describing: type(of: candidate))
+                if ["TabBarPlatter", "LiquidLens", "TabSelection"].contains(where: { name.contains($0) }) {
+                    var row = view(candidate)
+                    row["path"] = path
+                    row["geometryBasis"] = "model UIView bounds converted to window; optional presentation bounds converted to root layer; class names select observations only"
+                    let presentation = candidate.layer.presentation()
+                    row["presentationAvailable"] = presentation != nil
+                    row["presentationFrameInRootLayerPt"] = presentation.map { rect($0.convert($0.bounds, to: nil)) as Any } ?? NSNull()
+                    row["presentationOpacity"] = presentation.map { $0.opacity as Any } ?? NSNull()
+                    dockGeometry.append(row)
+                }
+            }
             if forScrolls, let scroll = candidate as? UIScrollView {
                 var row = view(scroll)
                 row["path"] = path
@@ -357,7 +439,7 @@ private enum ReferenceDockMaterialContext {
         }
         if let selected = controller.selectedViewController?.viewIfLoaded { scan(selected, path: "selected", forScrolls: true) }
         scan(controller.tabBar, path: "tabBar", forScrolls: false)
-        return ["event": "tab-material-context", "dockParent": "swiftui-tabview",
+        var result: [String: Any] = ["event": "tab-material-context", "dockParent": "swiftui-tabview",
                 "sampleScope": "public view/controller/scroll state; not material coefficients or active appearance inference",
                 "selectedIndex": controller.selectedIndex,
                 "probeAncestors": ancestors(probe), "tabBarAncestors": ancestors(controller.tabBar),
@@ -366,6 +448,12 @@ private enum ReferenceDockMaterialContext {
                 "backgroundCanvasesInWindow": window.map { canvases($0) } ?? [],
                 "windowBounds": window.map { rect($0.bounds) } ?? [:],
                 "windowSafeAreaInsets": window.map { insets($0.safeAreaInsets) } ?? [:]]
+        if spatialDetails {
+            result["observedDockViewGeometry"] = dockGeometry
+            result["dockGeometryScope"] = "all matching public UIView model rectangles; platter and lens are separate from UITabBar; no private getter, material inference or forced geometry"
+            result["windowFrameInScreenPt"] = window.map { rect($0.convert($0.bounds, to: $0.screen.coordinateSpace)) } ?? [:]
+        }
+        return result
     }
 }
 
@@ -377,16 +465,19 @@ private final class ReferenceSwiftUIDockObservation {
     private weak var probe: UIView?
     private var lastContext: Data?
 
-    func experimentState(phase: String, forceRecord: Bool = false) -> [String: Any]? {
+    func experimentState(phase: String, forceRecord: Bool = false, spatialDetails: Bool = false) -> [String: Any]? {
         guard let controller, let window = controller.viewIfLoaded?.window else { return nil }
+        var context: [String: Any]?
         if forceRecord {
             ReferenceDockPublicSnapshot.record(controller.tabBar, phase: phase, parent: "swiftui-tabview", controller: controller)
-            var context = ReferenceDockMaterialContext.snapshot(controller, probe: probe)
-            context["phase"] = phase
-            ReferenceTrace.shared.add(context)
-        }
+            context = ReferenceDockMaterialContext.snapshot(controller, probe: probe, spatialDetails: spatialDetails)
+            if var context {
+                context["phase"] = phase
+                ReferenceTrace.shared.add(context)
+            }
+        } else if spatialDetails { context = ReferenceDockMaterialContext.snapshot(controller, probe: probe, spatialDetails: true) }
         let frame = controller.tabBar.convert(controller.tabBar.bounds, to: window)
-        return ["barIdentity": String(describing: ObjectIdentifier(controller.tabBar)),
+        var result: [String: Any] = ["barIdentity": String(describing: ObjectIdentifier(controller.tabBar)),
                 "controllerIdentity": String(describing: ObjectIdentifier(controller)),
                 "windowIdentity": String(describing: ObjectIdentifier(window)),
                 "barInterfaceStyle": controller.tabBar.traitCollection.userInterfaceStyle.rawValue,
@@ -396,6 +487,16 @@ private final class ReferenceSwiftUIDockObservation {
                 "windowOverrideInterfaceStyle": window.overrideUserInterfaceStyle.rawValue,
                 "selectedIndex": controller.selectedIndex,
                 "barFrameInWindow": ["x": frame.minX, "y": frame.minY, "w": frame.width, "h": frame.height]]
+        if spatialDetails, let context {
+            result["controllerOverrideInterfaceStyle"] = controller.overrideUserInterfaceStyle.rawValue
+            result["sourceCanvases"] = context["backgroundCanvasesInWindow"]
+            result["selectedPageScrollViews"] = context["selectedPageScrollViews"]
+            result["observedDockViewGeometry"] = context["observedDockViewGeometry"]
+            result["windowBounds"] = context["windowBounds"]
+            result["screenScale"] = window.screen.scale
+            result["contextPhase"] = phase
+        }
+        return result
     }
 
     func recordContextIfChanged(phase: String) {
@@ -624,11 +725,205 @@ private final class ReferenceDockAppearanceControls: ObservableObject {
     }
 }
 
+/// Dedicated spatial intervention. Changing stage/status is AX/trace only;
+/// neither effective bar style nor native material/geometry is assigned.
+private final class ReferenceDockLocalAppearance: ObservableObject {
+    static let sequence: [ReferenceDockSpatialInput] = [.A, .B, .C, .D, .C, .B, .A]
+    let enabled = ProcessInfo.processInfo.arguments.contains("-ReferenceDockLocalAppearance") &&
+        ProcessInfo.processInfo.arguments.contains("-ReferenceStaticOptics")
+    @Published private(set) var stageIndex = 0
+    var input: ReferenceDockSpatialInput { Self.sequence[stageIndex] }
+    private let observation: ReferenceSwiftUIDockObservation
+    private weak var window: UIWindow?
+    private weak var canvas: ReferenceBackgroundView?
+    private var sourceApplication: [String: Any]?
+    private var sourceApplyEndUptime: Double?
+    private var stageRequestClock: [String: Double]?
+    private var snapshotID = 0
+
+    init(observation: ReferenceSwiftUIDockObservation) {
+        self.observation = observation
+        if enabled {
+            stageRequestClock = Self.clock()
+            ReferenceTrace.shared.add(["event": "dock-local-stage-requested", "stage": stageIndex,
+                                       "input": input.metadata, "requestClock": stageRequestClock!])
+        }
+    }
+
+    static func clock() -> [String: Double] {
+        let trace = ReferenceTrace.shared
+        let uptime = CACurrentMediaTime()
+        return ["uptimeSeconds": uptime, "traceT": uptime - trace.origin,
+                "unixSeconds": Date().timeIntervalSince1970]
+    }
+
+    func start(window: UIWindow) {
+        guard enabled else { return }
+        self.window = window
+        window.overrideUserInterfaceStyle = .dark
+        ReferenceTrace.shared.add([
+            "event": "dock-local-appearance-configuration", "sequence": Self.sequence.map(\.rawValue),
+            "startClock": Self.clock(),
+            "inputs": ReferenceDockSpatialInput.allCases.map(\.metadata),
+            "observationBudgetsSeconds": [1, 3], "requestedWindowStyle": UIUserInterfaceStyle.dark.rawValue,
+            "stylePolicy": ["windowOverride": "dark throughout", "controllerOverride": "unchanged; inherit dark window",
+                            "canvasOverride": "dark throughout", "barOverride": "unchanged/unspecified; observe effective style"],
+            "launchArguments": ProcessInfo.processInfo.arguments,
+            "visibleForeground": "fixed synthetic content, REST spatial control label and always-enabled Next REST button, including final A",
+            "clockScope": "source draw and public getter brackets; trace t is enqueue time, never compositor presentation time",
+            "scope": "one retained REST sequence; no Dock touches, scroll, style threshold, fit or material/geometry mutation"])
+        for input in ReferenceDockSpatialInput.allCases {
+            let name = "dock-local-input-\(input.rawValue).png"
+            do {
+                guard let data = input.image.pngData() else {
+                    throw NSError(domain: "ReferenceDockLocalAppearance", code: 1,
+                                  userInfo: [NSLocalizedDescriptionKey: "PNG encoding returned nil"])
+                }
+                try data.write(to: ReferenceTrace.shared.directory.appendingPathComponent(name), options: .atomic)
+                ReferenceTrace.shared.add(["event": "dock-local-input-export", "file": name,
+                                           "bytes": data.count, "input": input.metadata, "succeeded": true])
+            } catch {
+                ReferenceTrace.shared.add(["event": "dock-local-input-export", "file": name,
+                                           "succeeded": false, "error": String(describing: error)])
+            }
+        }
+        record(phase: "started", force: true)
+    }
+
+    func sourceDidDraw(_ canvas: ReferenceBackgroundView, stage: Int,
+                       begin: [String: Double], end: [String: Double]) {
+        guard enabled, stage == stageIndex else { return }
+        self.canvas = canvas
+        sourceApplyEndUptime = end["uptimeSeconds"]
+        let frame = canvas.convert(canvas.bounds, to: canvas.window)
+        sourceApplication = ["stage": stage, "inputID": input.rawValue,
+                             "canvasIdentity": String(describing: ObjectIdentifier(canvas)),
+                             "begin": begin, "end": end,
+                             "canvasFrameInWindowPt": Self.rectangle(frame),
+                             "canvasBoundsPt": Self.rectangle(canvas.bounds),
+                             "sourceWorldXYWHpt": [0, 0, 375, 667], "sourceSizePx": [750, 1334],
+                             "sourceScale": ReferenceDockSpatialInput.scale,
+                             "displayScale": canvas.window?.screen.scale ?? canvas.traitCollection.displayScale,
+                             "scope": "actual draw(_:) source application bracket; not compositor presentation"]
+        ReferenceTrace.shared.add(["event": "dock-local-source-applied", "application": sourceApplication!,
+                                   "input": input.metadata])
+        ReferenceTrace.shared.flush()
+    }
+
+    func sample() { if enabled { record(phase: "sampled") } }
+
+    func advance() {
+        guard enabled else { return }
+        let elapsed = sourceApplyEndUptime.map { CACurrentMediaTime() - $0 } ?? -1
+        guard elapsed >= 3, stageIndex + 1 < Self.sequence.count else {
+            ReferenceTrace.shared.add(["event": "dock-local-advance-not-applied", "stage": stageIndex,
+                                       "elapsedSinceSourceApplyEndSeconds": elapsed,
+                                       "reason": stageIndex + 1 == Self.sequence.count ? "final A retained" : "three-second observation budget not reached"])
+            return
+        }
+        record(phase: "leaving", force: true)
+        sourceApplication = nil
+        sourceApplyEndUptime = nil
+        stageRequestClock = Self.clock()
+        stageIndex += 1
+        ReferenceTrace.shared.add(["event": "dock-local-stage-requested", "stage": stageIndex,
+                                   "input": input.metadata, "requestClock": stageRequestClock!])
+    }
+
+    /// Reading this public AX value forces a fresh context snapshot. XCUITest
+    /// reads it immediately before/after each image without an additional tap.
+    func accessibilityState() -> String {
+        snapshotID += 1
+        let row = record(phase: "ax-\(snapshotID)", force: true)
+        ReferenceTrace.shared.flush()
+        guard let data = try? JSONSerialization.data(withJSONObject: row, options: [.sortedKeys]),
+              let text = String(data: data, encoding: .utf8) else { return "{\"snapshotEncodingFailed\":true}" }
+        return text
+    }
+
+    @discardableResult private func record(phase: String, force: Bool = false) -> [String: Any] {
+        let begin = Self.clock()
+        let contextPhase = "dock-local-\(stageIndex)-\(phase)"
+        let state = observation.experimentState(phase: contextPhase, forceRecord: force, spatialDetails: true)
+        let end = Self.clock()
+        var row: [String: Any] = ["event": "dock-local-appearance-state", "phase": phase,
+                                  "snapshotID": snapshotID, "stage": stageIndex, "inputID": input.rawValue,
+                                  "input": input.metadata, "started": window != nil,
+                                  "requestedWindowStyle": UIUserInterfaceStyle.dark.rawValue,
+                                  "snapshotBegin": begin, "snapshotEnd": end,
+                                  "publicState": state.map { $0 as Any } ?? NSNull(),
+                                  "sourceApplication": sourceApplication.map { $0 as Any } ?? NSNull(),
+                                  "stageRequestClock": stageRequestClock.map { $0 as Any } ?? NSNull(),
+                                  "elapsedSinceSourceApplyEndSeconds": sourceApplyEndUptime.map { begin["uptimeSeconds"]! - $0 } ?? -1]
+        if let canvas {
+            row["canvasIdentity"] = String(describing: ObjectIdentifier(canvas))
+            row["canvasInterfaceStyle"] = canvas.traitCollection.userInterfaceStyle.rawValue
+            row["canvasOverrideInterfaceStyle"] = canvas.overrideUserInterfaceStyle.rawValue
+        }
+        ReferenceTrace.shared.add(row)
+        return row
+    }
+
+    private static func rectangle(_ rect: CGRect) -> [String: CGFloat] {
+        ["x": rect.minX, "y": rect.minY, "w": rect.width, "h": rect.height]
+    }
+}
+
+private struct ReferenceDockLocalCanvas: UIViewRepresentable {
+    let stageIndex: Int
+    let input: ReferenceDockSpatialInput
+    let experiment: ReferenceDockLocalAppearance
+    func makeUIView(context: Context) -> ReferenceBackgroundView {
+        let view = ReferenceBackgroundView()
+        view.isOpaque = true
+        view.isUserInteractionEnabled = false
+        view.overrideUserInterfaceStyle = .dark
+        configure(view)
+        return view
+    }
+    func updateUIView(_ view: ReferenceBackgroundView, context: Context) { configure(view) }
+    private func configure(_ view: ReferenceBackgroundView) {
+        view.spatialDidDraw = { [weak experiment] canvas, stage, begin, end in
+            experiment?.sourceDidDraw(canvas, stage: stage, begin: begin, end: end)
+        }
+        guard view.spatialStage != stageIndex else { return }
+        view.spatialStage = stageIndex
+        view.spatialInput = input
+        view.spatialDrawPending = true
+        view.setNeedsDisplay()
+    }
+}
+
+private final class ReferenceDockLocalStateLabel: UILabel {
+    var readState: (() -> String)?
+    override var accessibilityValue: String? {
+        get { readState?() }
+        set { super.accessibilityValue = newValue }
+    }
+}
+
+private struct ReferenceDockLocalState: UIViewRepresentable {
+    let experiment: ReferenceDockLocalAppearance
+    func makeUIView(context: Context) -> ReferenceDockLocalStateLabel {
+        let label = ReferenceDockLocalStateLabel()
+        label.text = "REST spatial control"
+        label.textColor = .white
+        label.font = .monospacedSystemFont(ofSize: 10, weight: .regular)
+        label.isAccessibilityElement = true
+        label.accessibilityIdentifier = "dock-local-appearance-state"
+        return label
+    }
+    func updateUIView(_ label: ReferenceDockLocalStateLabel, context: Context) {
+        label.readState = { [weak experiment] in experiment?.accessibilityState() ?? "{}" }
+    }
+}
+
 private struct ReferenceDockTabs: View {
     let background: ReferenceBackground
     let observation: ReferenceSwiftUIDockObservation
     let content: ReferenceDockContent
     @ObservedObject var appearanceControls: ReferenceDockAppearanceControls
+    @ObservedObject var localAppearance: ReferenceDockLocalAppearance
     @State private var selection = 0
     private let tabs = [("Schedule", "calendar"), ("Today", "sun.max"), ("Manage", "square.grid.2x2"), ("Mine", "person")]
 
@@ -666,10 +961,29 @@ private struct ReferenceDockTabs: View {
         }
         .tint(.white)
         .ignoresSafeArea(.container, edges: .bottom)
-        .background(ReferenceDockCanvas(background: appearanceControls.background).ignoresSafeArea())
+        .background {
+            if localAppearance.enabled {
+                ReferenceDockLocalCanvas(
+                    stageIndex: localAppearance.stageIndex,
+                    input: localAppearance.input,
+                    experiment: localAppearance
+                ).ignoresSafeArea()
+            } else {
+                ReferenceDockCanvas(background: appearanceControls.background).ignoresSafeArea()
+            }
+        }
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .overlay(alignment: .topTrailing) {
-            if appearanceControls.enabled {
+            if localAppearance.enabled {
+                VStack(alignment: .trailing, spacing: 4) {
+                    ReferenceDockLocalState(experiment: localAppearance).frame(width: 150, height: 14)
+                    Button("Next REST") { localAppearance.advance() }
+                        .font(.system(size: 12)).buttonStyle(.plain).foregroundStyle(.white)
+                        .accessibilityIdentifier("dock-local-appearance-next")
+                }
+                .padding(8).background(Color.gray.opacity(0.25))
+                .padding(.top, 64).padding(.trailing, 16)
+            } else if appearanceControls.enabled {
                 VStack(alignment: .trailing, spacing: 4) {
                     Text("REST \(appearanceControls.stageIndex + 1)/10")
                         .font(.system(size: 10, design: .monospaced))
@@ -718,6 +1032,7 @@ private final class ReferenceDockHostingController: UIHostingController<Referenc
     private let content: ReferenceDockContent
     private let observation: ReferenceSwiftUIDockObservation
     private let appearanceControls: ReferenceDockAppearanceControls
+    private let localAppearance: ReferenceDockLocalAppearance
     private let recorder = PresentationRecorder()
     private var recordingStarted = false
     private var contextTimer: Timer?
@@ -729,7 +1044,10 @@ private final class ReferenceDockHostingController: UIHostingController<Referenc
         self.observation = observation
         let controls = ReferenceDockAppearanceControls(background: background, observation: observation)
         appearanceControls = controls
-        super.init(rootView: ReferenceDockTabs(background: background, observation: observation, content: content, appearanceControls: controls))
+        let local = ReferenceDockLocalAppearance(observation: observation)
+        localAppearance = local
+        super.init(rootView: ReferenceDockTabs(background: background, observation: observation, content: content,
+                                              appearanceControls: controls, localAppearance: local))
     }
     deinit { contextTimer?.invalidate() }
     @MainActor required dynamic init?(coder aDecoder: NSCoder) { fatalError("init(coder:) is unavailable") }
@@ -744,6 +1062,7 @@ private final class ReferenceDockHostingController: UIHostingController<Referenc
         let timer = Timer(timeInterval: 0.25, repeats: true) { [weak self] _ in
             self?.observation.recordContextIfChanged(phase: "sampled")
             self?.appearanceControls.sample()
+            self?.localAppearance.sample()
         }
         RunLoop.main.add(timer, forMode: .common)
         contextTimer = timer
@@ -764,7 +1083,9 @@ private final class ReferenceDockHostingController: UIHostingController<Referenc
         recorder.context = { [background] in
             ["scene": "dock-parent", "dockParent": "swiftui-tabview", "background": background.rawValue, "tabCount": 4]
         }
-        if appearanceControls.enabled {
+        if localAppearance.enabled {
+            localAppearance.start(window: window)
+        } else if appearanceControls.enabled {
             appearanceControls.start(window: window)
         } else if staticOptics {
             let canvas = ReferenceBackgroundView(frame: window.bounds)
