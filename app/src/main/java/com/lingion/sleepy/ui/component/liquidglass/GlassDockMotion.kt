@@ -1,8 +1,10 @@
 package com.lingion.sleepy.ui.component.liquidglass
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
 import kotlin.math.abs
 
 /** Fit to all eight recorded three-tab drags; four-tab drags are held-out evidence. */
@@ -30,6 +32,136 @@ internal class GlassDockMotion(initialPosition: Float) {
     private var deformationInteraction = false
     private var lastDeformationTarget = initialPosition
     private var previouslyHeld = false
+    private sealed interface Input {
+        data class Press(val epoch: Long, val target: Float, val glowAt: Offset) : Input
+        data class Drag(val epoch: Long, val target: Float, val pull: Float, val glowAt: Offset) : Input
+        data class Glow(val epoch: Long, val at: Offset) : Input
+        data class Release(val epoch: Long, val target: Float) : Input
+        data class Cancel(val target: Float) : Input
+        data class Selection(val target: Float) : Input
+    }
+    private val inputClock = DockInputClock<Input> { it is Input.Press }
+    private var nextEpoch = 0L
+    private var requestedEpoch: Long? = null
+    private var activeEpoch: Long? = null
+    private var inputHeld = false
+    private var inputDragging = false
+    var requestedPosition by mutableFloatStateOf(initialPosition)
+        private set
+    var glowAt by mutableStateOf(Offset.Zero)
+        private set
+    internal val appliedPressEpoch: Long? get() = activeEpoch
+
+    fun press(target: Float, receivedNanos: Long, sampleUptimeMillis: Long, glowAt: Offset = Offset.Zero): Long {
+        val epoch = ++nextEpoch
+        requestedEpoch = epoch
+        requestedPosition = target
+        inputClock.enqueue(Input.Press(epoch, target, glowAt), receivedNanos, sampleUptimeMillis)
+        return epoch
+    }
+
+    fun drag(epoch: Long, target: Float, pull: Float, receivedNanos: Long, sampleUptimeMillis: Long,
+        glowAt: Offset = Offset.Zero) {
+        if (requestedEpoch != epoch) return
+        requestedPosition = target
+        inputClock.enqueue(Input.Drag(epoch, target, pull, glowAt), receivedNanos, sampleUptimeMillis)
+    }
+
+    fun trackGlow(epoch: Long, at: Offset, receivedNanos: Long, sampleUptimeMillis: Long) {
+        if (requestedEpoch != epoch) return
+        inputClock.enqueue(Input.Glow(epoch, at), receivedNanos, sampleUptimeMillis)
+    }
+
+    fun release(epoch: Long, target: Float, receivedNanos: Long, sampleUptimeMillis: Long) {
+        if (requestedEpoch != epoch) return
+        requestedEpoch = null
+        requestedPosition = target
+        inputClock.enqueue(Input.Release(epoch, target), receivedNanos, sampleUptimeMillis)
+    }
+
+    fun cancel(target: Float, receivedNanos: Long, sampleUptimeMillis: Long? = null) {
+        requestedEpoch = null
+        requestedPosition = target
+        inputClock.enqueue(Input.Cancel(target), receivedNanos, sampleUptimeMillis)
+    }
+
+    fun select(target: Float, receivedNanos: Long) {
+        requestedEpoch = null
+        requestedPosition = target
+        inputClock.enqueue(Input.Selection(target), receivedNanos)
+    }
+
+    fun needsFrame(scaleFactor: Float): Boolean =
+        inputClock.hasPending || needsFrame(inputDragging, scaleFactor)
+
+    fun advanceFrame(frame: ActiveFrame, scaleFactor: Float) {
+        inputClock.advance(frame,
+            integrate = { advance(it, scaleFactor, inputHeld, inputDragging) },
+            apply = { applyInput(it, scaleFactor) },
+        )
+    }
+
+    private fun applyInput(input: Input, scaleFactor: Float) {
+        when (input) {
+            is Input.Press -> {
+                activeEpoch = input.epoch
+                inputHeld = true
+                inputDragging = false
+                dropping = false
+                // The clock already established this epoch's common origin.
+                previouslyHeld = true
+                dragDeformation.beginDirect()
+                glowAt = input.glowAt
+                position.springTo(input.target, FlClashSprings.TravelSpring)
+                lift.springTo(1f, FlClashSprings.LiftSpring)
+                swell.springTo(1f, FlClashSprings.PressSpring)
+                glowSpread.jumpTo(0f)
+                glow.springTo(1f, FlClashSprings.GlowInSpring)
+            }
+            is Input.Drag -> {
+                if (activeEpoch != input.epoch) return
+                inputDragging = true
+                glowAt = input.glowAt
+                pull.springTo(input.pull, FlClashSprings.TrackSpring)
+                position.springTo(input.target, NativeDockPosition.FollowSpring)
+            }
+            is Input.Glow -> {
+                if (activeEpoch != input.epoch) return
+                glowAt = input.at
+            }
+            is Input.Release -> {
+                if (activeEpoch != input.epoch) return
+                activeEpoch = null
+                inputHeld = false
+                inputDragging = false
+                dropping = true
+                position.springTo(input.target, FlClashSprings.TravelSpring)
+                lowerAccessories()
+            }
+            is Input.Cancel -> cancelPhysicalInput(input.target)
+            is Input.Selection -> cancelPhysicalInput(input.target)
+        }
+        // Register zero-duration DOWN/UP and mode switches before any next input.
+        // This also settles each complete transaction when animations are off.
+        advance(0.0, scaleFactor, inputHeld, inputDragging)
+    }
+
+    private fun lowerAccessories() {
+        pull.springTo(0f, FlClashSprings.PressSpring)
+        glow.springTo(0f, FlClashSprings.GlowOutSpring)
+        glowSpread.springTo(1f, FlClashSprings.GlowOutSpring)
+        swell.springTo(0f, FlClashSprings.PressSpring)
+    }
+
+    private fun cancelPhysicalInput(target: Float) {
+        activeEpoch = null
+        inputHeld = false
+        inputDragging = false
+        dropping = false
+        position.springTo(target, FlClashSprings.TravelSpring)
+        lift.springTo(0f, FlClashSprings.LiftSpring)
+        lowerAccessories()
+    }
 
     /** Seat pitch in dp, supplied after the bar has been measured. */
     var distancePerPosition: Float = 0f
@@ -50,6 +182,7 @@ internal class GlassDockMotion(initialPosition: Float) {
     fun needsFrame(dragging: Boolean, scaleFactor: Float): Boolean =
         isRunning || dragging && scaleFactor > 0f
 
+    /** Delta-only spring probe; runtime inputs use [advanceFrame] and explicit epochs. */
     fun advance(dt: Double, scaleFactor: Float, held: Boolean, dragging: Boolean) {
         if (scaleFactor <= 0f) {
             finish(held)

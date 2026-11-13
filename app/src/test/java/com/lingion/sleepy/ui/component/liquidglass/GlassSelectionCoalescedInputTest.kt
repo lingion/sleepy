@@ -39,7 +39,10 @@ class GlassSelectionCoalescedInputTest {
     private fun show(control: Control, acceptChanges: Boolean) {
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                CompositionLocalProvider(
+                    LocalUiStyle provides UiStyle.LiquidGlass,
+                    LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L },
+                ) {
                     GlassHost {
                         val onSelect: (Int) -> Unit = {
                             callbacks += it

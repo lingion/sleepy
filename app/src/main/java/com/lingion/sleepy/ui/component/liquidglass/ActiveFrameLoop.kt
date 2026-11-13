@@ -9,21 +9,32 @@ import kotlinx.coroutines.isActive
 internal suspend fun runActiveFrameLoop(
     needsFrame: () -> Boolean,
     onFrame: (Double) -> Unit,
+) = runTimestampedActiveFrameLoop(needsFrame) { frame ->
+    val previous = frame.previousFrameTimeNanos
+    // Preserve the existing delta-only contract for the other controls.
+    onFrame(if (previous == null) 0.0
+        else ((frame.frameTimeNanos - previous) / 1_000_000_000.0).coerceIn(0.001, 0.05))
+}
+
+internal data class ActiveFrame(
+    val frameTimeNanos: Long,
+    val previousFrameTimeNanos: Long?,
+)
+
+internal suspend fun runTimestampedActiveFrameLoop(
+    needsFrame: () -> Boolean,
+    onFrame: (ActiveFrame) -> Unit,
 ) {
-    var lastFrameNanos = 0L
+    var lastFrameNanos: Long? = null
     while (currentCoroutineContext().isActive) {
         if (!needsFrame()) {
-            lastFrameNanos = 0L
+            lastFrameNanos = null
             snapshotFlow(needsFrame).first { it }
         }
         withFrameNanos { frameTimeNanos ->
-            // The first delivered frame establishes this animation's origin.
-            // Advancing a fabricated 16 ms here makes every cold interaction
-            // start partway through its spring, including on 90/120 Hz displays.
-            val delta = if (lastFrameNanos == 0L) 0.0
-                else ((frameTimeNanos - lastFrameNanos) / 1_000_000_000.0).coerceIn(0.001, 0.05)
+            val frame = ActiveFrame(frameTimeNanos, lastFrameNanos)
             lastFrameNanos = frameTimeNanos
-            onFrame(delta)
+            onFrame(frame)
         }
     }
 }

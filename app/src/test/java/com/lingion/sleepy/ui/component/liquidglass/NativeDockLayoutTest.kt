@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -35,11 +36,15 @@ class NativeDockLayoutTest {
     private fun verify(count: Int, fill: Boolean) {
         compose.setContent {
             MaterialTheme {
-                Box(Modifier.width(351.dp)) {
-                    LiquidGlassNavigationBar(
-                        List(count) { PillNavItemSpec(Icons.Filled.Home, "Tab $it") },
-                        0, {}, if (fill) Modifier.fillMaxWidth() else Modifier.width(351.dp),
-                    )
+                CompositionLocalProvider(
+                    LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L },
+                ) {
+                    Box(Modifier.width(351.dp)) {
+                        LiquidGlassNavigationBar(
+                            List(count) { PillNavItemSpec(Icons.Filled.Home, "Tab $it") },
+                            0, {}, if (fill) Modifier.fillMaxWidth() else Modifier.width(351.dp),
+                        )
+                    }
                 }
             }
         }

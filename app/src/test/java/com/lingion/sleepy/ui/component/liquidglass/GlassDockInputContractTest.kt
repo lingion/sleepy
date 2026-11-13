@@ -41,6 +41,7 @@ class GlassDockInputContractTest {
             MaterialTheme {
                 CompositionLocalProvider(
                     LocalLayoutDirection provides if (rtl) LayoutDirection.Rtl else LayoutDirection.Ltr,
+                    LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L },
                 ) {
                     LiquidGlassNavigationBar(
                         listOf(

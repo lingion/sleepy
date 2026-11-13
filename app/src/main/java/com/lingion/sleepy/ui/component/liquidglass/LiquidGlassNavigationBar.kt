@@ -1,7 +1,6 @@
 package com.lingion.sleepy.ui.component.liquidglass
 
 import android.os.Build
-import android.os.SystemClock
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
@@ -29,11 +28,11 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.MotionDurationScale
@@ -142,6 +141,7 @@ fun LiquidGlassNavigationBar(
 
     // ── 动力学弹簧状态机 ──
     val motion = remember { GlassDockMotion(clampedSelected.toFloat()) }
+    val inputTimeNanos by rememberUpdatedState(LocalDockInputTimeNanos.current)
     val lensSpring = motion.position
     val liftSpring = motion.lift
     val swellSpring = motion.swell
@@ -150,11 +150,12 @@ fun LiquidGlassNavigationBar(
     val glowSpring = motion.glow
     val glowSpreadSpring = motion.glowSpread
 
-    var glowAt by remember { mutableStateOf(Offset.Zero) }
+    val glowAt = motion.glowAt
     var pressedIndex by remember { mutableStateOf<Int?>(null) }
     var pressX by remember { mutableFloatStateOf(0f) }
     var dragging by remember { mutableStateOf(false) }
     var pointerId by remember { mutableStateOf<Long?>(null) }
+    var pointerEpoch by remember { mutableLongStateOf(0L) }
     var selectionRequest by remember { mutableIntStateOf(0) }
 
     // 图标专属动效驱动表(NavIconMotion.kt): bar 层一份, 透镜内外双遍 DestinationsRow
@@ -167,17 +168,17 @@ fun LiquidGlassNavigationBar(
 
     // 外部 selectedIndex 改变时, 驱动镜头滑向目标
     LaunchedEffect(clampedSelected, pressedIndex, selectionRequest) {
-        if (pressedIndex == null && lensSpring.target.roundToInt() != clampedSelected) {
-            lensSpring.springTo(clampedSelected.toFloat(), FlClashSprings.TravelSpring)
+        if (pressedIndex == null && motion.requestedPosition.roundToInt() != clampedSelected) {
+            motion.select(clampedSelected.toFloat(), inputTimeNanos())
         }
     }
 
     LaunchedEffect(motion) {
         val durationScale = coroutineContext[MotionDurationScale]
-        runActiveFrameLoop(
-            needsFrame = { motion.needsFrame(dragging, durationScale?.scaleFactor ?: 1f) },
-        ) { dt ->
-            motion.advance(dt, durationScale?.scaleFactor ?: 1f, pointerId != null, dragging)
+        runTimestampedActiveFrameLoop(
+            needsFrame = { motion.needsFrame(durationScale?.scaleFactor ?: 1f) },
+        ) { frame ->
+            motion.advanceFrame(frame, durationScale?.scaleFactor ?: 1f)
         }
     }
 
@@ -224,17 +225,15 @@ fun LiquidGlassNavigationBar(
         lift = lift,
     )
 
-    fun cancelInteraction() {
+    fun clearPointerState() {
         pointerId = null
         pressedIndex = null
         dragging = false
-        motion.dropping = false
-        lensSpring.springTo(currentSelected.toFloat(), FlClashSprings.TravelSpring)
-        liftSpring.springTo(0f, FlClashSprings.LiftSpring)
-        stretchSpring.springTo(0f, FlClashSprings.PressSpring)
-        glowSpring.springTo(0f, FlClashSprings.GlowOutSpring)
-        glowSpreadSpring.springTo(1f, FlClashSprings.GlowOutSpring)
-        swellSpring.springTo(0f, FlClashSprings.PressSpring)
+    }
+
+    fun cancelInteraction(receivedNanos: Long = inputTimeNanos(), sampleUptimeMillis: Long? = null) {
+        clearPointerState()
+        motion.cancel(currentSelected.toFloat(), receivedNanos, sampleUptimeMillis)
     }
 
     fun commitDestination(index: Int) {
@@ -248,8 +247,8 @@ fun LiquidGlassNavigationBar(
     fun activateDestination(index: Int) {
         // A semantic/key action supersedes an unfinished pointer preview, while
         // committing through the same controlled-selection guard as touch UP.
-        cancelInteraction()
-        lensSpring.springTo(index.toFloat(), FlClashSprings.TravelSpring)
+        clearPointerState()
+        motion.select(index.toFloat(), inputTimeNanos())
         commitDestination(index)
     }
 
@@ -365,34 +364,27 @@ fun LiquidGlassNavigationBar(
                     while (true) {
                         val event = awaitPointerEvent()
                         val change = event.changes.firstOrNull() ?: continue
+                        // Same monotonic clock as withFrameNanos; event sample
+                        // uptime can predate actual delivery and is kept separately.
+                        val receivedNanos = inputTimeNanos()
 
                         when (event.type) {
                             PointerEventType.Press -> {
                                 pointerId = change.id.value
                                 velocityTracker.resetTracking()
                                 velocityTracker.addPosition(change.uptimeMillis, change.position)
-
-                                swellSpring.springTo(1f, FlClashSprings.PressSpring)
-                                glowAt = change.position
-                                glowSpreadSpring.jumpTo(0f)
-                                glowSpring.springTo(1f, FlClashSprings.GlowInSpring)
-
                                 val pos = positionAt(change.position.x)
                                 val idx = indexAt(pos)
 
                                 pressedIndex = idx
                                 pressX = change.position.x
                                 dragging = false
-                                motion.dropping = false
-
-                                liftSpring.springTo(1f, FlClashSprings.LiftSpring)
-                                lensSpring.springTo(idx.toFloat(), FlClashSprings.TravelSpring)
+                                pointerEpoch = motion.press(idx.toFloat(), receivedNanos, change.uptimeMillis, change.position)
                                 change.consume()
                             }
                             PointerEventType.Move -> {
                                 if (pointerId == change.id.value) {
                                     velocityTracker.addPosition(change.uptimeMillis, change.position)
-                                    glowAt = change.position
 
                                     val dx = change.position.x - pressX
                                     if (!dragging && abs(dx) > 4f) {
@@ -414,19 +406,18 @@ fun LiquidGlassNavigationBar(
                                         val pullLimit = barHeightPx * FlClashDockPhysics.PULL_LIMIT
                                         val physicalOvershootPx = overshootPx * if (currentIsLtr) 1f else -1f
                                         val targetStretch = FlClashDockPhysics.rubberBand(physicalOvershootPx, pullLimit)
-                                        // 顺着手的拉力整体牵引整个 Dock
-                                        stretchSpring.springTo(targetStretch, FlClashSprings.TrackSpring)
-
                                         val pos = positionAt(change.position.x)
                                         // The Dock follows the measured native center trajectory;
                                         // other controls retain their own tracking springs.
-                                        lensSpring.springTo(pos, NativeDockPosition.FollowSpring)
+                                        motion.drag(pointerEpoch, pos, targetStretch, receivedNanos, change.uptimeMillis, change.position)
 
                                         val idx = indexAt(pos)
                                         if (idx != pressedIndex) {
                                             LiquidGlassHaptics.selectionClick(view)
                                             pressedIndex = idx
                                         }
+                                    } else {
+                                        motion.trackGlow(pointerEpoch, change.position, receivedNanos, change.uptimeMillis)
                                     }
                                     change.consume()
                                 }
@@ -436,7 +427,7 @@ fun LiquidGlassNavigationBar(
                                     // Compose represents pointer cancellation as an already
                                     // consumed release. It must never commit a destination.
                                     if (change.isConsumed) {
-                                        cancelInteraction()
+                                        cancelInteraction(receivedNanos, change.uptimeMillis)
                                         continue
                                     }
                                     pointerId = null
@@ -446,7 +437,7 @@ fun LiquidGlassNavigationBar(
                                     if (dragging) {
                                         val direction = if (currentIsLtr) 1f else -1f
                                         val lead = (velocityXDp / currentLayout.pitch) * direction * FlClashDockPhysics.FLING_PROJECTION_SEC.toFloat()
-                                        val projected = (lensSpring.target + lead).roundToInt().coerceIn(targetIndex - 1, targetIndex + 1).coerceIn(0, currentLastIndex)
+                                        val projected = (motion.requestedPosition + lead).roundToInt().coerceIn(targetIndex - 1, targetIndex + 1).coerceIn(0, currentLastIndex)
                                         if (projected != targetIndex) {
                                             LiquidGlassHaptics.selectionClick(view)
                                             targetIndex = projected
@@ -455,19 +446,7 @@ fun LiquidGlassNavigationBar(
 
                                     pressedIndex = null
                                     dragging = false
-                                    motion.dropping = true
-
-                                    lensSpring.springTo(targetIndex.toFloat(), FlClashSprings.TravelSpring)
-                                    stretchSpring.springTo(0f, FlClashSprings.PressSpring)
-                                    glowSpring.springTo(0f, FlClashSprings.GlowOutSpring)
-                                    glowSpreadSpring.springTo(1f, FlClashSprings.GlowOutSpring)
-                                    swellSpring.springTo(0f, FlClashSprings.PressSpring)
-
-                                    if (liftSpring.value >= FlClashDockPhysics.LIFT_SNAP &&
-                                        abs(targetIndex.toFloat() - lensSpring.value) <= FlClashDockPhysics.LIFT_RELEASE) {
-                                        motion.dropping = false
-                                        liftSpring.springTo(0f, FlClashSprings.LiftSpring)
-                                    }
+                                    motion.release(pointerEpoch, targetIndex.toFloat(), receivedNanos, change.uptimeMillis)
 
                                     commitDestination(targetIndex)
                                     change.consume()

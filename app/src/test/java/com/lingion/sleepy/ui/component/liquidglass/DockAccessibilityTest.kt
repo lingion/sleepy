@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.testTag
@@ -34,12 +35,16 @@ class DockAccessibilityTest {
     private fun show() {
         compose.setContent {
             MaterialTheme {
-                LiquidGlassNavigationBar(
-                    labels.map { PillNavItemSpec(Icons.Filled.Home, it) },
-                    selected.intValue,
-                    { callbacks += it; selected.intValue = it },
-                    Modifier.width(316.dp).testTag("dock"),
-                )
+                CompositionLocalProvider(
+                    LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L },
+                ) {
+                    LiquidGlassNavigationBar(
+                        labels.map { PillNavItemSpec(Icons.Filled.Home, it) },
+                        selected.intValue,
+                        { callbacks += it; selected.intValue = it },
+                        Modifier.width(316.dp).testTag("dock"),
+                    )
+                }
             }
         }
     }
@@ -109,5 +114,17 @@ class DockAccessibilityTest {
         tab("Courses").assertIsSelected().performClick()
         tab("Settings").performClick().assertIsSelected()
         compose.runOnIdle { assertEquals(listOf(1, 3), callbacks) }
+    }
+
+    @Test fun semanticSelectionCancelsAHeldPointerBeforeItsLaterUp() {
+        show()
+        val dock = compose.onNodeWithTag("dock")
+        val point = tab("Courses").fetchSemanticsNode().boundsInRoot.center -
+            dock.fetchSemanticsNode().boundsInRoot.topLeft
+        dock.performTouchInput { down(point) }
+        tab("Settings").performSemanticsAction(SemanticsActions.OnClick) { it() }.assertIsSelected()
+        dock.performTouchInput { up() }
+        compose.waitForIdle()
+        compose.runOnIdle { assertEquals(listOf(3), callbacks); assertEquals(3, selected.intValue) }
     }
 }
