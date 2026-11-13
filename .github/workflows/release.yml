@@ -49,7 +49,7 @@ jobs:
         id: notes
 
       - name: Unit tests
-        run: ./gradlew :app:testDebugUnitTest --stacktrace
+        run: ./gradlew :app:testDebugUnitTest :liquid-glass-runtime:testAndroidHostTest --stacktrace
 
       - name: Decode release signing key
         env:
