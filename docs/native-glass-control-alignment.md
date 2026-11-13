@@ -607,3 +607,14 @@ androidTest构建9.8286s通过；主包仍为80的78e5a7f2dedc64193b00503648ef63
 正式debug及匹配测试包安装到API36设备，两包host/device SHA256分别一致；当前主包948441072ed34b301d7ab4690f34973b4920c43cc19f3637f340970c8bcec45f。MainActivity resumed，保留的首张启动图显示现有空课表卡片和Dock；仅验安装身份与启动，不宣称课程数据填充、光学、自然运动或性能通过。原源码/测试冻结、命令、XML、精确可见性diff、唯一归属和安装回执在本会话android-library-endpoints-82，便携记录见 [M2b按压/端部迁移](../libraries/liquid-glass/validation/migrations/m2b-endpoints.json)。
 
 本批不修改任何控件材质或已测运动行为。几何、采样/材质/shader、完整控件适配器及独立示例仍未提取；81记录的亮背景Dock差距和既有动态/四角残差继续保留。独立仓库待逐控件近原生、可运行示例与来源/分发gate完成后创建，三个发布gate继续为false。
+
+
+### 87：圆角、精确轮廓与缓存进入运行库
+
+先冻结六几何源、Shader、原测试、AGSL及构建输入，原五类26项测试14.0007s全部通过。随后将Superellipse、Geometry、ExactContour、DualContourShape、FlClashGlassShape和DockPlatterShape物理移入runtime，并把Shader中的583字节CachedOutlineProfile块原样抽出到LiquidGlassOutlineProfile.kt；只删除跨module必需的28次internal，公式、FMA分支、Float/Double运算、路径精度、lazy及两处identity判断不变。Shader块外字节不变，app原测试/调用者/AGSL不动，SpringState四个setter仍internal。
+
+runtime只新增既有shapes1.2.1 implementation。同轮AAR/debug/androidTest构建及相同五类26项测试43.9488s通过，全部测试字节与完整身份保持、0失败/错误/跳过。runtime累计19份生产Kotlin源、AAR102类，app实际built_in_kotlinc生产输出2253类，无交集；移动源在app原处不存在，AAR持有全部实现及CachedOutlineProfile。compile/runtime真实依赖图均解析shapes1.2.1和ui-graphics1.12.1，无未解析依赖；不增加CI作业或host图形测试接线。
+
+API36安装main/test的host/device哈希分别匹配；main为aeb5060ffddce0e17a3f93fb77ecf05c6ad556c4901a70235ae8b14afb86f9a0。原设备DockPlatterContour、DockPlatterOpticalCache与ExactContourPath三类8项1.2862s通过，覆盖原路径命令、方向/密度/尺寸、cache身份及失效。首次root命令误用未注册默认AndroidJUnitRunner，在任何测试启动前失败；原log/json保留，核对Gradle和设备注册后改用既有SleepyRenderTestRunner执行，未改测试或预期。最终MainActivity resumed，根查看实际启动后的第11周课程网格与Dock；即刻resume的splash帧单独保留，本批未写数据库，不据此宣称课程数据或光学验收。
+
+[便携迁移记录](../libraries/liquid-glass/validation/migrations/m2-geometry.json)保留命令、hash及边界；本会话android-library-geometry-87保留完整before/after、归属、依赖、设备和失败命令证据。删除实际生成而未使用的两个ABI安装包，释放60,122,842字节，保留实际arm64/test包及唯一参考/失败资料。几何迁移不校正任何现有光学或运动误差；完整材质/采样/shader、控件适配器、独立示例及发布条件仍待完成，三个发布gate保持false。

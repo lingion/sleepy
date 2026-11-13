@@ -40,7 +40,7 @@ internal const val LIQUID_GLASS_SHINE_SLOTS = 12
 internal const val LIQUID_GLASS_GOO_PILLS = 6
 
 /** 角的四个半径, 顺序为左上、右上、右下、左下。 */
-internal data class LiquidGlassCornerRadii(
+data class LiquidGlassCornerRadii(
     val topLeft: Float,
     val topRight: Float,
     val bottomRight: Float,
@@ -188,7 +188,7 @@ private fun cornerCurve(halfWidth: Double, halfHeight: Double, radius: Double): 
  * Dart 的 `liquidGlassCornerCurves`: 四个角各十二条参数, 合计 48 个 float,
  * 即着色器的 `uCurves[12]`。
  */
-internal fun liquidGlassCornerCurves(size: Size, radii: LiquidGlassCornerRadii): FloatArray {
+fun liquidGlassCornerCurves(size: Size, radii: LiquidGlassCornerRadii): FloatArray {
     val halfWidth = size.width / 2.0
     val halfHeight = size.height / 2.0
     return floatArrayOf(
@@ -211,7 +211,7 @@ internal fun liquidGlassCornerCurves(size: Size, radii: LiquidGlassCornerRadii):
  * @param outline 轮廓路径
  * @param center 轮廓的包围盒中心 (Flutter 里是 `rect.size.center(Offset.zero)`)
  */
-internal fun liquidGlassProfile(outline: Path, center: Offset): FloatArray {
+fun liquidGlassProfile(outline: Path, center: Offset): FloatArray {
     val step = 2.0 * PI / LIQUID_GLASS_PROFILE_TURNS
     val profile = FloatArray(LIQUID_GLASS_PROFILE_TURNS)
     val centerX = center.x.toDouble()
@@ -267,9 +267,9 @@ internal fun liquidGlassProfile(outline: Path, center: Offset): FloatArray {
 }
 
 /** A convex contour keeps its own center even when its carrier also holds another contour. */
-internal data class LiquidGlassContourProfile(val center: Offset, val radii: FloatArray)
+data class LiquidGlassContourProfile(val center: Offset, val radii: FloatArray)
 
-internal fun liquidGlassContourProfile(outline: Path): LiquidGlassContourProfile {
+fun liquidGlassContourProfile(outline: Path): LiquidGlassContourProfile {
     val bounds = outline.getBounds()
     require(bounds.width > 0f && bounds.height > 0f &&
         bounds.left.isFinite() && bounds.top.isFinite() && bounds.right.isFinite() && bounds.bottom.isFinite()) {
@@ -283,7 +283,7 @@ internal fun liquidGlassContourProfile(outline: Path): LiquidGlassContourProfile
  * Compose 的 `Path.asAndroidPath()` 在源码里是 `DeprecationLevel.HIDDEN`, Kotlin 侧不可见;
  * `AndroidPath.internalPath` 是公开的等价物。
  */
-internal fun Path.toAndroidPath(): android.graphics.Path {
+fun Path.toAndroidPath(): android.graphics.Path {
     val android = this as? AndroidPath
     checkNotNull(android) { "轮廓路径必须是 AndroidPath 才能度量" }
     return android.internalPath
@@ -342,7 +342,7 @@ internal fun liquidGlassShineTurns(size: Size, round: Float): List<Pair<Double, 
  * @param shine 高光强度
  * @param radius 圆角半径
  */
-internal fun liquidGlassShineUniforms(size: Size, shine: Float, radius: Float): FloatArray {
+fun liquidGlassShineUniforms(size: Size, shine: Float, radius: Float): FloatArray {
     val round = liquidGlassRoundOf(size, radius)
     val turns = liquidGlassShineTurns(size, round)
     val ends = SHINE_BANDS.map { (depth, width, _) -> depth + width }
@@ -366,7 +366,7 @@ internal fun liquidGlassShineUniforms(size: Size, shine: Float, radius: Float): 
  * @param blends 相邻药丸之间的融合度
  * @param firstRadius 首行是圆角矩形时的圆角半径
  */
-internal fun liquidGlassGooUniforms(
+fun liquidGlassGooUniforms(
     pills: List<Rect>,
     blends: List<Double>,
     firstRadius: Double?,

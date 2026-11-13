@@ -43,7 +43,7 @@ import kotlin.math.tan
  *
  * 引擎会为溢出的半径输出 NaN 坐标，本移植同样**不做**任何净化处理。
  */
-internal object LiquidGlassSuperellipse {
+object LiquidGlassSuperellipse {
 
     // ---------------------------------------------------------------------
     // 常量表
@@ -144,7 +144,7 @@ internal object LiquidGlassSuperellipse {
     // ---------------------------------------------------------------------
 
     /** 对应引擎的 `impeller::Point`。 */
-    internal data class Vec(val x: Float, val y: Float) {
+    data class Vec(val x: Float, val y: Float) {
         operator fun plus(other: Vec) = Vec(x + other.x, y + other.y)
 
         operator fun minus(other: Vec) = Vec(x - other.x, y - other.y)
@@ -202,7 +202,7 @@ internal object LiquidGlassSuperellipse {
     }
 
     /** 对应引擎的 `impeller::Size`。 */
-    internal data class Size2(val width: Float, val height: Float) {
+    data class Size2(val width: Float, val height: Float) {
         constructor(dimension: Float) : this(dimension, dimension)
 
         /** 对应引擎 `Size::width` / `Size::height` 的分量访问。 */
@@ -234,7 +234,7 @@ internal object LiquidGlassSuperellipse {
     }
 
     /** 对应引擎的 `impeller::Rect`。 */
-    internal data class Rect2(
+    data class Rect2(
         val left: Float,
         val top: Float,
         val right: Float,
@@ -368,7 +368,7 @@ internal object LiquidGlassSuperellipse {
     // ---------------------------------------------------------------------
 
     /** 对应引擎的 `impeller::RoundingRadii`。 */
-    internal data class Radii(
+    data class Radii(
         val topLeft: Size2,
         val topRight: Size2,
         val bottomRight: Size2,
@@ -469,7 +469,7 @@ internal object LiquidGlassSuperellipse {
     // ---------------------------------------------------------------------
 
     /** 对应引擎的 `RoundSuperellipseParam::Octant`。 */
-    internal data class Octant(
+    data class Octant(
         val offset: Vec,
         val seA: Float,
         val seN: Float,
@@ -480,7 +480,7 @@ internal object LiquidGlassSuperellipse {
     )
 
     /** 对应引擎的 `RoundSuperellipseParam::Quadrant`。 */
-    internal data class Quadrant(
+    data class Quadrant(
         val offset: Vec,
         val signedScale: Vec,
         val top: Octant,
@@ -488,7 +488,7 @@ internal object LiquidGlassSuperellipse {
     )
 
     /** 对应引擎的 `RoundSuperellipseParam`。 */
-    internal data class SuperellipseParam(
+    data class SuperellipseParam(
         val topRight: Quadrant,
         val bottomRight: Quadrant,
         val bottomLeft: Quadrant,
@@ -501,7 +501,7 @@ internal object LiquidGlassSuperellipse {
     // ---------------------------------------------------------------------
 
     /** 路径的一条指令，与引擎的 `PathReceiver` 一一对应。 */
-    internal sealed interface PathOp {
+    sealed interface PathOp {
         data class Move(val x: Float, val y: Float) : PathOp
 
         data class Line(val x: Float, val y: Float) : PathOp
@@ -933,7 +933,7 @@ internal object LiquidGlassSuperellipse {
  * 仅转发顶点，不做任何几何改动。声明为顶层扩展而非成员，方便来自另一
  * module 的调用方直导 `ops.toAndroidPath(path)`。
  */
-internal fun List<LiquidGlassSuperellipse.PathOp>.toAndroidPath(path: android.graphics.Path) {
+fun List<LiquidGlassSuperellipse.PathOp>.toAndroidPath(path: android.graphics.Path) {
     for (op in this) {
         when (op) {
             is LiquidGlassSuperellipse.PathOp.Move -> path.moveTo(op.x, op.y)

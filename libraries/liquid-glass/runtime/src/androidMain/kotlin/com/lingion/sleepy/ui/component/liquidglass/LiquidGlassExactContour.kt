@@ -12,19 +12,19 @@ import kotlin.math.atan2
 import kotlin.math.max
 
 /** Descriptors belong to the actual returned Outline, after Compose has resolved its corners. */
-internal interface LiquidGlassExactContourShape {
+interface LiquidGlassExactContourShape {
     fun exactContoursFor(outline: Outline): List<LiquidGlassExactContour>?
 }
 
-internal const val LIQUID_GLASS_EXACT_FLOATS = 144
+const val LIQUID_GLASS_EXACT_FLOATS = 144
 
 /**
  * Actual Float path commands, not a reconstruction from a nominal corner radius. Format 1 keeps
  * buildPath's 16 cubics and final closing line unchanged. Format 2 additionally preserves an actual
  * single closed Path with at most 17 mixed cubic/line segments, each monotone around its center.
  */
-internal class LiquidGlassExactContour private constructor(
-    internal val operations: List<LiquidGlassSuperellipse.PathOp>,
+class LiquidGlassExactContour private constructor(
+    val operations: List<LiquidGlassSuperellipse.PathOp>,
     val centerPx: Offset,
     private val pixels: FloatArray,
 ) {
@@ -227,7 +227,7 @@ internal class LiquidGlassExactContour private constructor(
 }
 
 /** One raw command list creates both the CPU path and its optional optical descriptor. */
-internal class LiquidGlassContourOutline(operations: List<LiquidGlassSuperellipse.PathOp>) {
+class LiquidGlassContourOutline(operations: List<LiquidGlassSuperellipse.PathOp>) {
     val operations: List<LiquidGlassSuperellipse.PathOp> = operations.toList()
     val path: Path = android.graphics.Path().also { this.operations.toAndroidPath(it) }.asComposePath()
     val outline: Outline.Generic = Outline.Generic(path)
@@ -235,7 +235,7 @@ internal class LiquidGlassContourOutline(operations: List<LiquidGlassSuperellips
 }
 
 /** Small per-shape cache; both layout and effect request the identical resolved geometry. */
-internal class LiquidGlassContourCache {
+class LiquidGlassContourCache {
     private data class Key(val bounds: LiquidGlassSuperellipse.Rect2, val radii: LiquidGlassSuperellipse.Radii)
     private val entries = mutableListOf<Pair<Key, LiquidGlassContourOutline>>()
 

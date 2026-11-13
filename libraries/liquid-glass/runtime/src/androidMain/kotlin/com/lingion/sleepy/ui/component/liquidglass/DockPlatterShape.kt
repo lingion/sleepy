@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import com.kyant.shapes.Capsule
 
 /** Keep Kyant's actual Continuous Capsule clip and optical commands tied to the same outline. */
-internal class DockPlatterShape private constructor(
+class DockPlatterShape private constructor(
     private val capsule: Capsule,
 ) : Shape, LiquidGlassExactContourShape {
     constructor() : this(Capsule())

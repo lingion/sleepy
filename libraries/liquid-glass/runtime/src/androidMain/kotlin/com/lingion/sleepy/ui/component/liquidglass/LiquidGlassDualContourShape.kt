@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.LayoutDirection
  * disconnect during a morph, so it cannot share one center/radial profile.
  * [Shape.createOutline] remains responsible for the exact combined CPU clip.
  */
-internal interface LiquidGlassDualContourShape : Shape {
+interface LiquidGlassDualContourShape : Shape {
     fun createOpticalContours(
         size: Size,
         layoutDirection: LayoutDirection,

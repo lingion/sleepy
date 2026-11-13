@@ -20,6 +20,7 @@ kotlin {
             api("androidx.compose.runtime:runtime:1.12.1")
             api("androidx.compose.ui:ui:1.12.1")
             implementation(libs.coroutines.core)
+            implementation("io.github.kyant0:shapes:1.2.1")
         }
         val androidHostTest by getting {
             dependencies {

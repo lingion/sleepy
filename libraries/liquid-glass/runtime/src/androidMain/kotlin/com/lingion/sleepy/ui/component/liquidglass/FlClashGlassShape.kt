@@ -7,7 +7,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 
 /** Reference AppRadius/RSuperellipse for menu and alert carriers, not an ordinary rounded box. */
-internal data class FlClashGlassShape(val radiusDp: Float) : Shape, LiquidGlassExactContourShape {
+data class FlClashGlassShape(val radiusDp: Float) : Shape, LiquidGlassExactContourShape {
     private val contours = LiquidGlassContourCache()
 
     override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
