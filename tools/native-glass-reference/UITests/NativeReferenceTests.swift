@@ -314,6 +314,41 @@ final class NativeReferenceTests: XCTestCase {
     func testSwiftUIEndpointToggle() { swiftUIEndpointMotion(kind: "toggle") }
     func testSwiftUIEndpointSlider() { swiftUIEndpointMotion(kind: "slider") }
 
+    func testSwiftUISaturatedSliderSlow() { saturatedSlider(velocity: 90, speed: "slow") }
+    func testSwiftUISaturatedSliderFast() { saturatedSlider(velocity: 900, speed: "fast") }
+
+    private func saturatedSlider(velocity: Double, speed: String) {
+        executionTimeAllowance = 80
+        settleDuration = 1.65
+        for forward in [true, false] {
+            // Starting near each destination leaves room to exceed the business
+            // endpoint within the real window, after native drag slop. The old
+            // 25%-to-window-edge run did not establish held saturation.
+            let initial = forward ? 0.75 : 0.25
+            launch(scene: "slider", background: "grid", initialSlider: initial)
+            let control = app.sliders["swiftui-slider"]
+            XCTAssertTrue(control.waitForExistence(timeout: 5))
+            XCTAssertEqual(control.value as? String, forward ? "75%" : "25%")
+            let frame = control.frame
+            XCTAssertEqual(frame.width, 335, accuracy: 0.5)
+            captureLanguage("saturated-slider-\(speed)-\(forward ? "forward" : "reverse")-rest")
+            // Fixed native REST geometry: 37pt thumb, 298pt travel. The original
+            // measured 25% center was local x=93.5; retain actual anchor offsets.
+            let origin = CGPoint(x: frame.minX + 19 + 298 * CGFloat(initial), y: frame.minY + 16)
+            let destination = CGPoint(x: forward ? 367 : 8, y: origin.y)
+            let label = "saturated-slider-\(speed)-\(forward ? "forward" : "reverse")"
+            endpointDrag(control, from: origin, to: destination, velocity: velocity, label: label,
+                         extra: ["control": "swiftui-slider", "initialValue": initial,
+                                 "direction": forward ? "forward" : "reverse",
+                                 "coordinateUnits": "actual window pt; no width normalization",
+                                 "initialThumbOriginScope": "fixed 37pt REST thumb / 298pt travel candidate; verify actual pre-DOWN presentation center",
+                                 "endpointScope": "candidate beyond business endpoint after native slop; held saturation must be established from actual trace"])
+            XCTAssertEqual(control.value as? String, forward ? "100%" : "0%")
+            captureLanguage(label + "-tail")
+            app.terminate()
+        }
+    }
+
     private func swiftUIEndpointMotion(kind: String) {
         executionTimeAllowance = 65
         settleDuration = 1.65
@@ -738,7 +773,7 @@ final class NativeReferenceTests: XCTestCase {
 
     private func launch(scene: String, background: String, focused: Bool = false, tabCount: Int = 3,
                         style: String = "light", staticOptics: Bool = false, dockParent: String? = nil,
-                        dockContent: String? = nil, appearanceControls: Bool = false) {
+                        dockContent: String? = nil, appearanceControls: Bool = false, initialSlider: Double? = nil) {
         app = XCUIApplication()
         app.launchArguments = ["-ReferenceScene", scene, "-ReferenceBackground", background,
                                "-ReferenceInterfaceStyle", style]
@@ -748,6 +783,7 @@ final class NativeReferenceTests: XCTestCase {
         if let dockParent { app.launchArguments += ["-ReferenceDockParent", dockParent] }
         if let dockContent { app.launchArguments += ["-ReferenceDockContent", dockContent] }
         if appearanceControls { app.launchArguments.append("-ReferenceDockAppearanceControls") }
+        if let initialSlider { app.launchArguments += ["-ReferenceInitialSlider", String(initialSlider)] }
         app.launchEnvironment["REFERENCE_RUN_ID"] = "\(name)-\(UUID().uuidString)"
         app.launch()
         XCTAssertTrue(app.staticTexts["reference-title"].waitForExistence(timeout: 10))

@@ -503,6 +503,26 @@ occur 86.192 / 92.815 ms after UP delivery. Fast Slider first emits `1` / `0`
 `0.9589552283` / `0.0492537320`. Thus none of these Slider held phases establishes
 business-endpoint saturation. Preserve this limitation when comparing overpull.
 
+`testSwiftUISaturatedSliderSlow` and `testSwiftUISaturatedSliderFast` add separate
+launches from .75 forward and .25 reverse. `-ReferenceInitialSlider` accepts a
+finite value in 0...1 for the reference SwiftUI/UIKit Slider states; its default
+remains .25 and it does not alter native control behavior. Each run verifies its
+configured initial value, requests a drag from the fixed measured REST anchor to
+x=367/8, and retains the original trace for checking actual saturation before UP.
+The November 13 batch68 passed both methods with four fresh runs. Every run
+reached its business endpoint before actual UP, with no subsequent value callback.
+
+The fixed 10pt-slop business mapping gives unequal raw terminal excesses,
+10.75pt forward and11.75pt reverse. Last150ms held center minus own m41 retains
++4.495645/−4.767461pt displacement from final REST; recorded Slider/stage ancestors
+remain fixed. Fast whole-window peaks about ±9pt occur at UP+67ms, not while held.
+Bounds, own transform and center displacement must remain separate. These two
+excess distances do not identify a general endpoint curve, and this recorder does
+not yet capture layer.position/anchorPoint/bounds.origin. Batch68 and the locked65
+profile holdout review are under
+`artifacts/glass-optics-20261112/native-slider-saturation-68/`; they do not establish
+range-Slider behavior, visible optical contours or millisecond parity.
+
 Touch observations include UIKit phase, touch ID, `UITouch.timestamp`, main-clock
 delivery time, window geometry, point and normalized coordinates, hit view, and
 coalesced samples. No predicted sample is used. Public `UIApplication.sendEvent`

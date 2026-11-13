@@ -18,6 +18,17 @@ struct NativeStage: View {
         ("ja", "日本語"), ("es", "Español")
     ]
 
+    init(scene: ReferenceScene) {
+        self.scene = scene
+        let arguments = ProcessInfo.processInfo.arguments
+        let supplied = arguments.firstIndex(of: "-ReferenceInitialSlider").flatMap { index in
+            index + 1 < arguments.count ? Double(arguments[index + 1]) : nil
+        }
+        let initial = supplied.flatMap { $0.isFinite && (0...1).contains($0) ? $0 : nil } ?? 0.25
+        _swiftUISlider = State(initialValue: initial)
+        _uiKitSlider = State(initialValue: Float(initial))
+    }
+
     var body: some View {
         Group {
             switch scene {
