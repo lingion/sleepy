@@ -396,3 +396,66 @@ REST胶囊大体相近，但本轮未测得原生实际可见alpha边界，31pt 
 
 
 提交前检查另发现新增CSV采用Python默认CRLF而被Git判作行尾空白；导出器改为显式LF并从同一原始证据重新生成，两份CSV的362/541条解析记录逐字段完全一致，仅行尾字节变化，说明与来源hash已同步。随后单独重跑15项`NativeDockParentMotionTest`全部通过，0失败/错误/跳过；该15项是格式修正后的独立补验，不拼成新的133项运行。`parent-lf-verification`和`csv-lf-normalization.json`保留回执，runtime及已安装APK未变。
+
+### 73：单头Slider材质消融与两窗口film假设
+
+本节先记录有界诊断，不据此选定最终生产材质。A、B、C及组合D均从完整冻结72的`GlassSliderThumb-baseline.kt`分别建立临时源码，并非逐轮累积修改：A只把单头dispersion置0；B只把深主题单头brightness置1；C只把单头rim置0；D同时把单头dispersion置0、brightness置1，保留原rim、refraction和其余字段。变更均在既有lift scaling前，Range分支、Dock和`controlLens`工厂未改。D是A+B的组合诊断，不能作为单参数因果臂，也不能用A/B分别改善推定组合效果可相加。C为看到A后增加的自适应后续诊断，扩展方案在独立检查C截图前保存，crop、mask、指标和阈值未改。
+
+四轮分别完成构建及同一`NativeSliderOpticalWorldRenderTest#captureNativeSliderOpticalWorld`：A/B/C/D构建约20/19/20/20s，仪器测试38.441/41.313/39.056/48.220s，各1项通过、capture exit0；D保存目录名为`variant-candidate`，不表示生产接受。每轮四背景×明暗8场景，16份REST/HELD控件和8份背景各保存Window/display，共48 PNG及result.json的49份设备/host hash全部一致。冻结源码hash与manifest一致，源码差异及当时安装APK回执支持各轮声明；被后续覆盖的历史APK路径没有重新冒充旧包复核。这是四次采集/构建记录，不是完整主机回归或自然动画验收。
+
+四轮复用72的375×667dp世界、335dp单头、25%值、普通背板、同一固定采样平移`(+.22270203,−.08401489)dp`及合成Compose时钟；没有再配准、缩放源图或另调HELD位置。原生仍是375×667pt世界、AX frame`(20,414,335,31)pt`和实际DOWN`(113.5,430)pt`的72参考。独立复核中，所审source crop相对冻结72的RGB3匹配率均1、RGB MAE均0；carrier四角变化0dp，每份控件120048个readiness样本匹配率1、最大通道差0。它们锁定本轮输入与载体，不能据此把载体当原生alpha轮廓或消除72保留的HELD位置残差。
+
+A/B/C共28份负对照控件crop逐像素不变：A的8份REST，B的8份REST及4份浅色HELD，C的8份REST。D另有8份REST负对照逐像素不变、flag为0，单独报告。三种诊断背景为细网格、彩条和明暗块；风景始终作为仅报告的留出场景，不用于选参数或改mask。以下为固定`lower_inner_haze_transmission_proxy`的HELD原生RGB MAE，单位为保存PNG的0–255码值；该窗口不覆盖完整内芯、rim、端帽或四角。
+
+| 场景/用途 | 冻结72 | A 色散0 | B 深色亮度1 | C rim0 | D 色散0＋亮度1 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 细网格浅色 / 诊断 | 6.875 | 5.500 | 6.875 | 6.875 | 5.500 |
+| 细网格深色 / 诊断 | 18.283 | 17.614 | 6.879 | 18.283 | 5.500 |
+| 彩条浅色 / 诊断 | 14.852 | 13.451 | 14.852 | 14.852 | 13.451 |
+| 彩条深色 / 诊断 | 8.554 | 5.648 | 14.851 | 8.554 | 13.451 |
+| 明暗块浅色 / 诊断 | 22.361 | 16.899 | 22.361 | 22.361 | 16.899 |
+| 明暗块深色 / 诊断 | 23.838 | 18.452 | 22.360 | 23.838 | 16.899 |
+| 风景浅色 / 仅报告留出 | 15.005 | 15.072 | 15.005 | 15.005 | 15.072 |
+| 风景深色 / 仅报告留出 | 11.860 | 11.876 | 15.004 | 11.860 | 15.072 |
+
+A支持色散对彩色带的贡献：浅色网格/明暗块下部窗口残余chroma均值由9.534/24.303降至1.015/.091，原生为.845/1.814；四个灰阶源场景中chroma≥24的面积均降为0。但深色网格/明暗块新出现的近白比例由51.89%/33.33%增至57.58%/38.64%，彩条浅/深左端帽MAE由18.546/19.502恶化为20.748/22.021。零色散不是已识别的原生系数，也不是最终材质结论。
+
+B支持深色亮度对泛白/裁切的贡献：深色网格下部近白比例87.12%降为0、新出现近白51.89%降为0；明暗块对应两项33.33%均降为0。彩色瓣和明暗块下部光学段仍在，彩条深色下部窗口MAE反而8.554→14.851。网格深色残余chroma由7.299增至9.523，说明原来的亮度裁切会遮住部分色差，亮度修正不能替代色散诊断。
+
+C支持rim对部分细外缘的贡献，却不支持用删rim修复持续下缘：全部预声明下部内窗、右上内窗、腐蚀内芯及外部shadow ring的HELD像素与72完全相同，明暗块下部白/彩虹段仍在。六个诊断场景的整圈rim MAE有5个恶化，左端帽6个全部恶化。D实际测得若干局部改善，同时保留相反结果：彩条深色下部窗口8.554→13.451、深色网格下直线rim16.768→19.519；风景深色下部11.860→15.072、整圈rim13.641→16.179、左端帽14.600→17.660。不能用一个均值覆盖这些退化，也不能从组合D反推唯一原因。完整逐区域误差和改善/恶化像素比例见本会话artifact的`android-slider-material-73/independent-optical-review/{findings.md,D_dispersion_zero_brightness_one-review.md}`及各轮comparison JSON；固定72胶囊mask只是采样模型，不是原生alpha、曲率或物理色散测量。
+
+另按提取前冻结的两窗口方案，只读取原生72的`tonal_blocks-light` HELD原PNG及其同世界`background-input.png`，不读取Android、深主题、风景或其他背景来拟合。375×667pt世界以2px/pt保存为750×1334px，原点为(0,0)；以下半开world矩形直接对应各12×6px，没有配准、重采样、过滤或修边。四份source/native窗口各72像素均为单一RGB、通道range和标准差为0、alpha255。
+
+| 固定窗口（world pt） | 源RGB | 原生HELD RGB | 原生−源 |
+| --- | --- | --- | --- |
+| 白区 `(102,439)–(108,442)` | (245,245,240) | (239,239,234) | (−6,−6,−6) |
+| 黑区 `(121,439)–(127,442)` | (16,16,24) | (39,39,46) | (+23,+23,+22) |
+
+保存PNG的归一化RGB码值仿射式`y=a*x+b`给出共享斜率`a=.8724412358616319`、`b=(25.1464187201,25.1464187201,24.8377568663)/255`，没有另拟brightness或各通道斜率。仅在brightness=1和`y=(1−alpha)*x+alpha*tint`假设下，对应有效`alpha=.12755876413836809`、`tint=(197.135954475,197.135954475,194.716192447)/255`，无需clamp；六个均值通道残差RMSE约.155212、最大约.223653码值。这是精确选定源图/两个窗口上的in-sample拟合，不是留出验证或Apple内部物理opacity；量化PNG也不赋予这些小数同等测量精度。窗口位置不同，空间光学项可模拟亮度响应，折射/模糊还可能读取窗外，局部恒色不证明有限采样支持或整片均匀film。
+
+`source-review/veil-fit-report.md`建议另行GPU试验：在brightness=1后使用现有`style.tint`，于既有lift scaling前局部供给单头；`uVeil`位于gain前且影响独立hairline采样，不是该建议的运算。默认sRGB Compose `Color`只储存8-bit RGBA，拟合值最近存储为`Color(0x21C5C5C3)`，实际RGB=(197,197,195)/255、alpha=33/255≈.1294117647。该量化表示没有第二次拟合，必须区分精确拟合系数和实际传入值；没有因此更换色空间或shader。方案hash、原PNG/session hash、窗口统计、构造器字节码与复现脚本均在该source-review目录。此拟合本身不作生产选择，也不接受完整材质、端帽、四角、自然时序或其他控件。
+
+E在组合D上只新增`style.tint=Color(0x21C5C5C3)`，保留D的零色散、brightness1及原rim/refraction/blur/hairline等字段，仍在原lift scaling前供给单头。独立E方法在读成功E图前冻结，明暗块浅色明确为拟合场景/in-sample，其余五个诊断场景不参与拟合，风景仍只报告。首次E在`synthetic_landscape-dark` REST的readiness失败：手机系统“已使用40分钟”浮层只出现在composited display，原非系统栏比较域内46251个RGB3差异像素全部在`[401,159,814,278)`，y≥400无差异。14份已完成控件图及失败调试图没有当成完整E；49份导出hash复核后清理手机重复文件，失败截图、分区分析与日志保留在`variant-film-readiness-failure`。没有调整capture阈值、掩膜、等待时限、源码或fixture。
+
+同一E APK完整重采通过（`variant-film`），16份控件和8份背景的48PNG＋result.json共49文件全部hash一致，原readiness各120048样本匹配率1、最大通道差0；8份REST相对72及D均逐像素不变，source crop相同、carrier几何变化0。E构建约21s；首轮失败和后续成功分别保留，不拼为一次无失败运行。固定下部窗口的结果如下，仍为0–255RGB MAE而非alpha或整体材质评分：
+
+| 场景 / 用途 | 冻结72 | E |
+| --- | ---: | ---: |
+| fine_grid-light / 未参与拟合的诊断 | 6.875 | 2.927 |
+| fine_grid-dark / 未参与拟合的诊断 | 18.283 | 2.927 |
+| color_stripes-light / 未参与拟合的诊断 | 14.852 | 9.069 |
+| color_stripes-dark / 未参与拟合的诊断 | 8.554 | 9.069 |
+| tonal_blocks-light / 拟合场景 / in-sample | 22.361 | 1.917 |
+| tonal_blocks-dark / 未参与拟合的诊断 | 23.838 | 1.917 |
+| synthetic_landscape-light / 仅报告留出 | 15.005 | 3.611 |
+| synthetic_landscape-dark / 仅报告留出 | 11.860 | 3.611 |
+
+E相对D在全部五个未参与拟合的诊断场景中，固定腐蚀内芯和整圈rim MAE均下降；这些局部结果支持单头材质的有界改善。腐蚀内芯网格浅/深由25.835/25.605降为21.767/21.501，彩条14.984/14.793降为13.604/13.553，明暗块深32.646降为19.809。拟合场景明暗块浅32.850→19.818单独列为in-sample。局部回退没有抹去：相对D，彩条右上内窗18.046→18.938（两主题），右上rim彩条16.217→16.791/13.943→14.426、明暗块15.234→16.077/11.510→11.628，明暗块下直线rim35.268→35.695/35.242→35.709。相对完整72，彩条浅/深左端帽18.546/19.502→20.735/20.306，网格深下直线rim16.768→19.569也更差；下部窗口彩条深8.554→9.069保留在表中。
+
+风景只作报告：E腐蚀内芯浅/深为4.780/4.872，整圈rim15.217/14.042；深色rim仍比72的13.641差，深色左端帽14.600→14.786也没有改善。这些场景没有用于改参数。E仍缺失原生部分细色边，网格过度变形、端帽映射和持续底部光学段仍明显，不接受完整边缘、四角、自然动态或“99.99%”结论。详表和全crop见`E_neutral_film-comparison.json`、`E_neutral_film-vs-D-comparison.json`及相应contact，不能用两个拟合窗口代替完整验证。
+
+正式实现把E同一材质放入独立`LiquidGlassStyle.sliderLens(dark)`，单头调用该工厂，Range继续原`controlLens`；Dock、Switch、Material Design、shader、尺寸、动态和采样图未改。该次整理不是再次调参。2026-11-14定向JVM过滤`*GlassSlider*Test`、`*LiquidGlassStyleReferenceTest`和`*MaterialSliderAppearanceIsolationTest`，9类48项全部通过，0失败/错误/跳过；debug与androidTest同轮构建成功约38s。它是本次正式材质变更后的48项，不与72的133项或LF后的15项拼接，也不是完整仓库suite。构建日志与9份XML hash见`production-regressions-build.log`和`production-focused-tests.json`。
+
+正式包`variant-production`完整8场景再次通过，16份控件＋8份背景各保存Window/display，共49文件hash核对成功；设备导出校验后清理，包回到debug首页。主APK设备/host SHA256为`9248bcc2f04c6ea30807c1f701684e968e21d7abbc24cceb624ccde3c225fa32`，测试APK仍为72的`794470570f2fcbbee11be8bdb3acbc80d7dae984bc600dad046c66f030c4027e`。`production-source-review`另检查19字段、构造默认值、未改scale及两主题各lift输入，104项源码/来源检查0失败，760次字段比较相同；这些是源码等价性检查，不能替代GPU。
+
+E→正式包在预声明严格48PNG解码像素比较中仅24/48逐像素相同：恰好全部24张Activity Window图。24张composited screen全图都有差异，因此严格全屏条件仍未通过，不能写“48/48保真”。独立定位沿用采集前既有的每场景实际系统栏排除域`[0,135,1216,2592)`，全部24张screen在该域内非零差异像素均为0，16个控件光学ROI也均为0；差异仅位于原先已排除的系统栏区域。网格浅色HELD全屏14715个差异像素、比REST多3493个，额外差异仍全部在该域外。没有重新配准、修改mask或把RGB3放宽成新验收；原screen差异和严格未通过结论均保留在`production-preservation`与`production-screen-delta-localization`报告。光学改善只限于本次单头普通背板稳定状态，不能外推到Range、Dock、嵌套背板、其他值、起落或自然运动；后续仍须逐项完成目标矩阵。
