@@ -1,0 +1,233 @@
+{
+  "schemaVersion": 1,
+  "status": "inventory-in-sleepy",
+  "reference": "iOS 26.5 native controls",
+  "independentlyBuildable": false,
+  "publishedRepository": null,
+  "pathBase": "repository-root",
+  "assets": [
+    {
+      "role": "rendering-and-sampling",
+      "sourceDirectory": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass",
+      "entryFiles": [
+        "LiquidGlassEffect.kt",
+        "LiquidGlassShader.kt",
+        "LiquidGlassStyle.kt",
+        "GlassHost.kt",
+        "GlassMaterialBackdrop.kt",
+        "GlassBackdropSource.kt",
+        "GlassLayerRecorder.kt",
+        "GlassAndroidViewSource.kt",
+        "GlassSurfaceSource.kt",
+        "GlassFilterBands.kt",
+        "GlassControlModifier.kt"
+      ]
+    },
+    {
+      "role": "geometry",
+      "sourceDirectory": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass",
+      "entryFiles": [
+        "LiquidGlassGeometry.kt",
+        "LiquidGlassExactContour.kt",
+        "LiquidGlassDualContourShape.kt",
+        "LiquidGlassSuperellipse.kt",
+        "DockPlatterShape.kt",
+        "FlClashGlassShape.kt"
+      ]
+    },
+    {
+      "role": "input-and-motion",
+      "sourceDirectory": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass",
+      "entryFiles": [
+        "ActiveFrameLoop.kt",
+        "DockInputClock.kt",
+        "GlassControlMotion.kt",
+        "GlassDockMotion.kt",
+        "GlassPressMotion.kt",
+        "LiquidGlassPhysics.kt",
+        "GlassGestureOwnership.kt",
+        "LiquidGlassHaptics.kt",
+        "LanguageMenuGestures.kt",
+        "LanguageMenuMotion.kt",
+        "NativeGlassDragDeformation.kt",
+        "NativeDockDeformation.kt",
+        "NativeDockEndpoint.kt",
+        "NativeSegmentedEndpoint.kt",
+        "NativeSliderEndpoint.kt"
+      ]
+    },
+    {
+      "role": "controls",
+      "sourceDirectory": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass",
+      "entryFiles": [
+        "GlassSwitch.kt",
+        "LiquidGlassNavigationBar.kt",
+        "GlassSlider.kt",
+        "GlassSliderThumb.kt",
+        "SliderVisuals.kt",
+        "GlassButtons.kt",
+        "GlassSelectionControls.kt",
+        "GlassLanguageMenu.kt",
+        "GlassOverlays.kt",
+        "GlassOverlayContent.kt",
+        "GlassSurface.kt",
+        "GlassTopAppBar.kt"
+      ],
+      "currentAdapterDependencies": [
+        "Sleepy LocalUiStyle, LocalDarkTheme and SleepyTheme",
+        "NavIconDriver, PillNavItemSpec and selectionColors",
+        "SettingsLayout, sleepyExpandSpecs and application debug tags",
+        "materialSliderGhostX and sleepyPopupEnter/sleepyPopupExit",
+        "Material routing, localized content, settings callers and haptic policy"
+      ],
+      "extractionStatus": "mixed-runtime-and-sleepy-integration"
+    },
+    {
+      "role": "segmented-control-and-sleepy-integration",
+      "sourceDirectory": "app/src/main/java/com/lingion/sleepy/ui/component",
+      "entryFiles": [
+        "SegmentedSwitcher.kt"
+      ],
+      "extractionStatus": "mixed-control-implementation-and-adapter",
+      "extractionRequired": "Extract the glass interaction and rendering implementation; keep Sleepy theme routing, content and debug semantics in its adapter."
+    },
+    {
+      "role": "runtime-shader-assets",
+      "sourceDirectory": "app/src/main/assets/shaders",
+      "entryFiles": [
+        "liquid_glass.agsl"
+      ],
+      "loadedBy": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassShader.kt",
+      "packagingRequired": true
+    },
+    {
+      "role": "third-party-runtime-dependency",
+      "sourceDirectory": "third-party/kyant-backdrop/src",
+      "currentBuildFile": "third-party/kyant-backdrop/build.gradle.kts",
+      "upstreamMetadata": "third-party/kyant-backdrop/UPSTREAM.json",
+      "currentAdditionalDependencyCoordinates": [
+        "io.github.kyant0:shapes:1.2.1"
+      ],
+      "customizedSourceRedistributionReview": "unresolved; see provenance"
+    },
+    {
+      "role": "native-reference-and-baselines",
+      "sourceDirectory": "tools/native-glass-reference",
+      "numericFixtures": "app/src/test/resources/native-glass",
+      "jvmTests": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass",
+      "deviceTests": "app/src/androidTest/java/com/lingion/sleepy/ui/component",
+      "acceptanceRecord": "docs/native-glass-control-alignment.md",
+      "runtimeDependency": false,
+      "deviceTestsScope": "Containing directory also includes non-glass tests; migrate only relevant fixtures and tests after dependency review.",
+      "fixtureRedistributionReview": "not-complete"
+    }
+  ],
+  "excludedFromRuntimeLibrary": [
+    "timetable and course models",
+    "application persistence",
+    "Material Design routing",
+    "native capture host tools",
+    "raw videos and temporary build outputs"
+  ],
+  "publicationPrerequisite": "Per-control visual, interaction, optical and performance evidence; source and license provenance; independent module and example; documented remaining limits",
+  "inventoryDate": "2026-11-13",
+  "nativeCalibrationAccepted": false,
+  "publicationReady": false,
+  "inventoryScope": "Current glass-package Kotlin files, mixed segmented implementation, runtime shader, backdrop dependency and validation entry points; not a resolved dependency closure.",
+  "sourceAndLicenseReviewComplete": false,
+  "currentBuildWiring": {
+    "applicationBuildFile": "app/build.gradle.kts",
+    "settingsFile": "settings.gradle.kts",
+    "independentLibraryModule": null,
+    "standaloneExample": null,
+    "supportContract": "SDK, Compose, GPU/fallback and accessibility requirements have not been independently established for an extracted library."
+  },
+  "provenance": {
+    "inventory": "ACKNOWLEDGEMENTS.md",
+    "researchRecord": "docs/attribution-audit/glass-research-sources.md",
+    "repositoryLicense": "LICENSE",
+    "existingRepositoryLicenseText": "GNU GPL version 3; unchanged",
+    "blanketRelicensingApproved": false,
+    "sources": [
+      {
+        "name": "FLClash Kotlin and AGSL port",
+        "recordedLicense": "GPL-3.0",
+        "noticeFiles": [
+          "app/src/main/assets/third_party/notices/FLClash-GPL-3.0.txt"
+        ],
+        "sourceEvidence": [
+          "app/src/main/assets/shaders/liquid_glass.agsl"
+        ],
+        "scope": "Shader, optics, geometry, style and navigation behavior; retain original headers and trace exact extraction history."
+      },
+      {
+        "name": "Flutter rounded-superellipse adaptation",
+        "recordedLicense": "BSD-3-Clause",
+        "recordedEngineRevision": "adc901062556672b4138e18a4dc62a4be8f4b3c2",
+        "noticeFiles": [
+          "app/src/main/assets/third_party/notices/Flutter-BSD-3-Clause.txt"
+        ],
+        "sourceEvidence": [
+          "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse.kt"
+        ]
+      },
+      {
+        "name": "Kyant baseline and SleepDown customizations",
+        "sourceRecord": "third-party/kyant-backdrop/README.md",
+        "upstreamMetadata": "third-party/kyant-backdrop/UPSTREAM.json",
+        "recordedBaselineLicense": "Apache-2.0",
+        "recordedCustomizationNotice": "SleepDown source-available non-commercial 1.1",
+        "customizedImportRevision": null,
+        "noticeFiles": [
+          "third-party/kyant-backdrop/LICENSE",
+          "app/src/main/assets/third_party/notices/Kyant-Backdrop-Apache-2.0.txt",
+          "app/src/main/assets/third_party/notices/SleepDown-LICENSE.md",
+          "app/src/main/assets/third_party/notices/SleepDown-THIRD_PARTY_NOTICES.md"
+        ],
+        "redistributionCompatibilityConfirmed": false
+      },
+      {
+        "name": "NexioSchedule behavioral reference recorded by imported module",
+        "sourceRecord": "third-party/kyant-backdrop/README.md",
+        "recordedLicense": "AGPL-3.0",
+        "noticeFiles": [
+          "app/src/main/assets/third_party/notices/NexioSchedule-AGPL-3.0.txt"
+        ],
+        "scope": "Behavioral reference only; not a claim of importing customized source."
+      }
+    ],
+    "openIssues": [
+      "Identify the imported SleepDown customization revision and verify the redistribution basis for each extracted file; original Kyant licensing does not establish this.",
+      "Retain applicable GPL, Apache and BSD notices plus original attribution; do not treat all implementations as original work.",
+      "Verify the redistributable scope of native screenshots, numeric baselines, example materials and remaining dependencies before migration."
+    ]
+  },
+  "publicationCriteria": [
+    {
+      "id": "near-native-per-control",
+      "status": "incomplete",
+      "requiredEvidence": "Freeze per-control and per-role measurement methods and error limits, then pass the applicable shape, motion, optics and multi-background matrix with recorded residuals.",
+      "record": "docs/native-glass-control-alignment.md"
+    },
+    {
+      "id": "runtime-and-adapters",
+      "status": "not-extracted",
+      "requiredEvidence": "One Android runtime module with no Sleepy dependency; callers supply app content, theme, callbacks and policy; Material routing remains in the Sleepy adapter."
+    },
+    {
+      "id": "independent-consumer",
+      "status": "not-created",
+      "requiredEvidence": "A standalone example and Sleepy consume the same module and packaged shader; extraction preserves the existing baselines."
+    },
+    {
+      "id": "support-and-performance",
+      "status": "not-accepted-for-library",
+      "requiredEvidence": "Declare SDK/Compose/GPU support and validate actual rendering, performance, fallback, cancellation and accessibility on the supported scope."
+    },
+    {
+      "id": "provenance-and-distribution",
+      "status": "unresolved",
+      "requiredEvidence": "Per-file source history and applicable notices retained; customized backdrop and fixture redistribution issues resolved before independent open-source publication."
+    }
+  ]
+}
