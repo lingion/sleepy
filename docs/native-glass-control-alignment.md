@@ -476,3 +476,14 @@ F从73正式E出发，只把独立`sliderLens`的`refraction=-4.3`改为`-2.15`�
 随后源码/元数据支持分析只给出条件结论：在实际导出的171×111px单位carrier变换、默认effectOffset0/sampleScale1及声明的PIL1px、合成/栅格1px和纹理1px支持范围下，主窗的显式clamp保守余量为正式73的4.251px、F的10.648px，rim-frost不足以形成Vogel扩张。没有GPU uniform、局部矩阵或kernel实测dump，不能推广为无条件GPU排除，也不覆盖端帽/下缘及完整上游采样支持。当前只建立depth/采样敏感性，没有识别唯一原因或原生物理深度。
 
 每次诊断结束均恢复正式源码、host与设备的原主/测试APK并核对hash；主包回到`9248bcc2f04c6ea30807c1f701684e968e21d7abbc24cceb624ccde3c225fa32`，测试包仍为`794470570f2fcbbee11be8bdb3acbc80d7dae984bc600dad046c66f030c4027e`，MainActivity已观察到resumed，临时恢复APK副本已清理。没有新增正式运行时变更，也没有重复宣称JVM全量通过。本会话artifact的`android-slider-refraction-74/independent-review`冻结162份评估文件及11份输入，`review-freeze.json` SHA256为`3e471370db7e90bd57cbcaeea06f6ffd101da9ac4418ec36eddb5c1cc5d61334`，root重核对0失败；原失败、所有退步、条件支持和未验收项均保留。局部光学与自然动态、Range及多层背板矩阵仍需继续，资产库仍为本地索引，未达到独立发布条件。
+
+
+### 75：单头下缘结构复核后采用半幅折射
+
+74的F当轮未采纳；本轮先复核已有原图中的结构，再作有限生产选择。`android-native-range-75/feature-audit`从原始完整截图精确重建72份诊断crop，未读取风景像素，未另作配准、调色或拟合。固定明暗块配对条带在原生仅于world y447.75–448.25发生强反向；E多出y443.75–444.25的内侧反向段，F消除此段，剩余反向为y447.25–447.75。网格的异常下内横段也减弱。彩条下部最强蓝/品红跳变由E的x92到F的90.5，原生为88.5；该原生跳变紧邻轮廓，不能当成已识别的源采样坐标。主红/黄边仍是E/F的125.5对原生126.0，没有证明主窗坐标改善。
+
+据此将单头`sliderLens.refraction`从−4.3改为−2.15，保留负lens分支及原lift scaling，其余材质字段、shader、采样图、形状和动态不变；Range、Dock、Switch、Material Design均未改。它是减少显著额外下缘结构的渐进修正，不是原生物理深度、完整warp/profile、四角或动态验收。74六诊断场景中的全部17项区域MAE增加继续保留：8项direct、9项own-source，最大分别+.178819444/+.175347222（网格深色左下端帽）；不是把退步全算成噪声。下端帽、细边、点状刻度和部分映射仍有差异。下一项辨别结构的候选是固定水平单阶跃及互补极性扫描，不再依赖平均RGB误差猜深度。
+
+本轮9类48项定向JVM通过，0失败/错误/跳过；过滤仍是`*GlassSlider*Test`、`*LiquidGlassStyleReferenceTest`和`*MaterialSliderAppearanceIsolationTest`，debug与androidTest同轮构建成功37s。正式F在API36设备完成四背景×明暗8场景的静态GPU重采，1项通过约40s，49份文件与设备hash一致；原合成时钟、readiness、坐标和判定未改。主APK设备/host SHA256为`fd89106ce31e539665f468016d34c0d9e2bfd81a1e23ecc9e517dc3882d95117`，测试包仍为`794470570f2fcbbee11be8bdb3acbc80d7dae984bc600dad046c66f030c4027e`，手机恢复debug MainActivity。
+
+正式75与成功诊断74F的48张完整PNG中严格相同24张，即全部24张App Window；24张display在原既定`[0,135,1216,2592)`域内无差异，完整display仍有系统栏差异。因此严格48/48完整PNG条件继续未通过，也不能以相同生产重采结果推成原生等价。独立复核和root逐图重算分别在75的`production-comparison`及`root-production-png-comparison.json`，保留原判定和全部残差。48项JVM、本次1项GPU与此前各轮分开报告，不拼为新全量结果。

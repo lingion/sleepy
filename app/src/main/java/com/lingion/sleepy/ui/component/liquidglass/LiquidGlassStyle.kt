@@ -260,14 +260,15 @@ data class LiquidGlassStyle(
          * Single-Slider stable-state body, measured separately from the Dock.
          * The tint is the 8-bit representation of the native26.5 tonal-light fit;
          * its multi-background GPU comparison is recorded in alignment notes73.
-         * Refraction/rim still retain the inherited model and its documented error.
+         * The half-depth comparison74/75 reduces the extra inward lower segment;
+         * it does not establish native depth or eliminate the documented rim error.
          * Range and the other controls keep their own unmodified lens profile.
          */
         fun sliderLens(dark: Boolean): LiquidGlassStyle =
             LiquidGlassStyle(
                 tint = Color(0x21C5C5C3),
                 blur = 0.0,
-                refraction = -4.3,
+                refraction = -2.15,
                 bevel = 5.5,
                 saturation = 1.0,
                 brightness = 1.0,

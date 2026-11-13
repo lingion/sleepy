@@ -768,7 +768,7 @@ installed APK hashes are in `installed-apk-receipt.json`. Independent same-world
 comparison found visible excess saturated rainbow bands, a bright lower edge,
 and excess dark-theme inner brightness. Source-baseline RGB MAE is.482–1.338/255;
 held lower-inner windows excluding the declared rail/title roles still differ
-by6.875–23.838/255. Slider currently aliases the Dock lens factory; that source
+by6.875–23.838/255. At the batch72 capture, Slider aliased the Dock lens factory; that source
 coupling is verified, but it is not proved the sole cause. No optical runtime was
 changed in this batch. Current31 pt AX bounds do not establish the visible
 ellipse/corner radius, and no alpha mask was invented. See batch72
@@ -776,6 +776,18 @@ ellipse/corner radius, and no alpha mask was invented. See batch72
 source hashes, theme response and single-variable followup experiments.
 Capture validity remains separate from material/shape acceptance and supplies
 no native optical equivalence or release-motion result.
+
+Production73 subsequently separated `sliderLens` from Dock. Production75 adopts
+the previously captured74 half-depth F (`refraction=-2.15`) as a bounded
+single-Slider correction after source-associated lower-feature review. The
+extra inward tonal/grid segment is reduced; the primary red/yellow edge still
+differs by one0.5pt sample bracket, and all17 diagnostic regional MAE increases
+remain recorded. This is not identification of native depth or a full optical
+acceptance. Range and the other control factories remain unchanged. The fresh75
+production capture matches all24 F App Window images and all24 original nonbar
+display domains. Strict complete-PNG equality remains24/48 because system-bar
+pixels differ. See alignment notes75 and this session's
+`android-native-range-75/{feature-audit,production-comparison}` evidence.
 
 The [local library inventory](../../libraries/liquid-glass/README.md) and
 [asset catalog](../../libraries/liquid-glass/asset-catalog.json) describe the
