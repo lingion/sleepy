@@ -325,6 +325,78 @@ final class NativeReferenceTests: XCTestCase {
     func testAlertOpticsLandscapeLight() { alertOptics(background: "synthetic_landscape", style: "light") }
     func testAlertOpticsLandscapeDark() { alertOptics(background: "synthetic_landscape", style: "dark") }
 
+    func testAlertHeldFineGridLight() { alertHeldOptics(style: "light") }
+    func testAlertHeldFineGridDark() { alertHeldOptics(style: "dark") }
+    func testAlertHeldColorStripesLight() { alertHeldOptics(background: "color_stripes", style: "light") }
+    func testAlertHeldColorStripesDark() { alertHeldOptics(background: "color_stripes", style: "dark") }
+    func testAlertHeldTonalBlocksLight() { alertHeldOptics(background: "tonal_blocks", style: "light") }
+    func testAlertHeldTonalBlocksDark() { alertHeldOptics(background: "tonal_blocks", style: "dark") }
+    func testAlertHeldLandscapeLight() { alertHeldOptics(background: "synthetic_landscape", style: "light") }
+    func testAlertHeldLandscapeDark() { alertHeldOptics(background: "synthetic_landscape", style: "dark") }
+    // The short-tap LandscapeLight probe remains unchanged and its cancelled
+    // deliveries remain failed evidence. This uses a distinct public input.
+    func testAlertHeldLandscapeLightLongPressProbe() {
+        alertHeldOptics(background: "synthetic_landscape", style: "light", triggerWithHold: true, heldDuration: 6)
+    }
+
+    // Only the missing dark Confirm sample is recaptured. Its original host
+    // screenshot crossed UP; a fixed larger budget still requires verification.
+    func testAlertHeldTonalBlocksDarkConfirmRecapture() {
+        settleDuration = 0.8
+        launch(scene: "presentations", background: "tonal_blocks", style: "dark", staticOptics: true)
+        let prefix = "alert-held-tonal_blocks-dark-recapture"
+        let trigger = app.buttons["show-alert"]
+        let alert = app.alerts["Native Alert"]
+        captureLanguage(prefix + "-before")
+        tap(trigger, label: prefix + ": present native alert for held confirm")
+        XCTAssertTrue(alert.waitForExistence(timeout: 5))
+        captureLanguage(prefix + "-confirm-rest")
+        opticalHold(alert.buttons["Confirm"], name: prefix + "-confirm-held", duration: 6)
+        XCTAssertFalse(alert.exists)
+        app.terminate()
+    }
+
+    // Keep the native display-link recorder running for these separate probes.
+    // Static held screenshots establish endpoints, not an animation waveform.
+    func testAlertMotionFineGridLight() { alertHeldOptics(style: "light", staticOptics: false) }
+    func testAlertMotionFineGridDark() { alertHeldOptics(style: "dark", staticOptics: false) }
+
+    private func alertHeldOptics(background: String = "fine_grid", style: String, staticOptics: Bool = true,
+                                 triggerWithHold: Bool = false, heldDuration: TimeInterval = 2.6) {
+        settleDuration = 0.8
+        launch(scene: "presentations", background: background, style: style, staticOptics: staticOptics)
+        let prefix = "alert-\(staticOptics ? "held" : "motion")-\(background)-\(style)" + (triggerWithHold ? "-long-press-trigger" : "")
+        let trigger = app.buttons["show-alert"]
+        let alert = app.alerts["Native Alert"]
+        captureLanguage(prefix + "-before")
+
+        if triggerWithHold {
+            hold(trigger, label: prefix + ": publicly hold/release native trigger for held confirm")
+        } else { tap(trigger, label: prefix + ": present native alert for held confirm") }
+        XCTAssertTrue(alert.waitForExistence(timeout: 5))
+        XCTAssertTrue(alert.buttons["Confirm"].exists)
+        XCTAssertTrue(alert.buttons["Cancel"].exists)
+        captureLanguage(prefix + "-confirm-rest")
+        opticalHold(alert.buttons["Confirm"], name: prefix + "-confirm-held", duration: heldDuration)
+        XCTAssertFalse(alert.exists)
+        captureLanguage(prefix + "-after-confirm")
+
+        if triggerWithHold {
+            hold(trigger, label: prefix + ": publicly hold/release native trigger for held cancel")
+        } else { tap(trigger, label: prefix + ": present native alert for held cancel") }
+        XCTAssertTrue(alert.waitForExistence(timeout: 5))
+        XCTAssertTrue(alert.buttons["Confirm"].exists)
+        XCTAssertTrue(alert.buttons["Cancel"].exists)
+        captureLanguage(prefix + "-cancel-rest")
+        opticalHold(alert.buttons["Cancel"], name: prefix + "-cancel-held", duration: heldDuration)
+        XCTAssertFalse(alert.exists)
+        captureLanguage(prefix + "-after-cancel")
+        // The unmodified native action handlers log confirmed/cancelled in
+        // trace.jsonl. Host validation must check one matching callback after
+        // each delivered UP, in addition to the visible dismissal above.
+        app.terminate()
+    }
+
     private func alertOptics(background: String, style: String) {
         settleDuration = 0.8
         launch(scene: "presentations", background: background, style: style, staticOptics: true)

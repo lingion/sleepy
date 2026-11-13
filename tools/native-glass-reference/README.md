@@ -202,6 +202,23 @@ The November 13 evidence is at artifact-workspace-relative
 and formal matrix remain separate. The alert uses the system's real material and
 layout. Menu and sheet screenshots are not substitutes for this reference.
 
+The eight `testAlertHeld{FineGrid,ColorStripes,TonalBlocks,Landscape}{Light,Dark}`
+tests add held-action probes for that same unmodified system alert across the
+four background inputs and both traits. The fine-grid entrypoints retain their
+original default background, action sequence and signal names. Each test
+captures the alert at rest, holds native Confirm using `opticalHold`, checks
+dismissal, then reopens, captures rest, holds native Cancel and checks dismissal
+again. Signal names include the actual background and trait. Run the host
+`capture-static-optics.py` observer before these tests and validate the sixteen
+held screenshots with `verify-static-optics.py`. A test's rest/after-action
+attachments are not substitutes for the host screenshots taken during DOWN/UP.
+The existing app handlers record `presentation` phases `confirmed` / `cancelled`;
+validate exactly one corresponding callback after each actual action UP in the
+trace. Dismissal alone does not prove those callbacks. Adding these entrypoints
+does not establish a verified capture matrix; only the actual captured and
+validated conditions count as evidence. The probes do not establish alert
+presentation/dismissal frame parity.
+
 ## Input and presentation evidence
 
 Touch observations include UIKit phase, touch ID, `UITouch.timestamp`, main-clock
@@ -285,3 +302,19 @@ SDF optical coverage and shader refraction remain visual-only evidence.
 The contact-sheet crop assumes the 402 pt reference layout; full frames retain
 the complete image. See ../../docs/glass-language-menu-reference.md for the
 November 12 measurements and invocation-dependent vertical motion.
+
+`testAlertMotionFineGridLight` / `Dark` repeat real Alert presentation, held
+Confirm/Cancel and dismissal with `staticOptics` disabled, so the display-link
+recorder retains actual presentation observations. The held screenshot endpoint
+alone supplies no animation timing. Inspect capture cost, frame gaps, touch
+receipt and presentation geometry before fitting any curve.
+`testAlertHeldTonalBlocksDarkConfirmRecapture` supplies a separate fixed 6-second
+hold for a host screenshot whose earlier 2.6-second press ended before screenshot
+completion. The original rejected capture remains rejected; the new capture
+still needs the same complete DOWN-to-UP timestamp-bracket validation.
+
+`testAlertHeldLandscapeLightLongPressProbe` is a separate 0.7-second public
+hold/release of the alert trigger, followed by fixed 6-second held action captures.
+It does not replace `testAlertHeldLandscapeLight` or turn its two cancelled
+short-tap deliveries into a pass. The probe can supply a background/material
+reference only if its own actual touch and capture brackets verify.
