@@ -514,6 +514,15 @@ final class NativeReferenceTests: XCTestCase {
     func testStaticOpticsLandscapeLight() { staticOptics(background: "synthetic_landscape", style: "light") }
     func testStaticOpticsLandscapeDark() { staticOptics(background: "synthetic_landscape", style: "dark") }
 
+    func testSwiftUISliderOpticsFineGridLight() { swiftUISliderOptics(background: "fine_grid", style: "light") }
+    func testSwiftUISliderOpticsFineGridDark() { swiftUISliderOptics(background: "fine_grid", style: "dark") }
+    func testSwiftUISliderOpticsColorStripesLight() { swiftUISliderOptics(background: "color_stripes", style: "light") }
+    func testSwiftUISliderOpticsColorStripesDark() { swiftUISliderOptics(background: "color_stripes", style: "dark") }
+    func testSwiftUISliderOpticsTonalBlocksLight() { swiftUISliderOptics(background: "tonal_blocks", style: "light") }
+    func testSwiftUISliderOpticsTonalBlocksDark() { swiftUISliderOptics(background: "tonal_blocks", style: "dark") }
+    func testSwiftUISliderOpticsLandscapeLight() { swiftUISliderOptics(background: "synthetic_landscape", style: "light") }
+    func testSwiftUISliderOpticsLandscapeDark() { swiftUISliderOptics(background: "synthetic_landscape", style: "dark") }
+
     func testDockOpticsFineGridLight() { dockOptics(background: "fine_grid", style: "light") }
     func testDockOpticsFineGridDark() { dockOptics(background: "fine_grid", style: "dark") }
     func testDockOpticsColorStripesLight() { dockOptics(background: "color_stripes", style: "light") }
@@ -705,6 +714,35 @@ final class NativeReferenceTests: XCTestCase {
             hold(anchor, label: prefix + ": native long-press opening after first tap did not keep menu open")
         }
         XCTAssertTrue(languageMenu().waitForExistence(timeout: 5))
+    }
+
+    /// A bounded single-Slider counterpart to the older six-scene static matrix.
+    /// The existing host observer must verify the entire screenshot subprocess
+    /// bracket against this run's actual delivered DOWN/UP; after-press attachments
+    /// are released states. Static mode intentionally omits presentation traversal.
+    private func swiftUISliderOptics(background: String, style: String) {
+        executionTimeAllowance = 45
+        settleDuration = 0.8
+        launch(scene: "slider", background: background, style: style, staticOptics: true,
+               initialSlider: 0.25)
+        let control = app.sliders["swiftui-slider"]
+        XCTAssertTrue(control.waitForExistence(timeout: 5))
+        XCTAssertEqual(control.value as? String, "25%")
+        XCTAssertEqual(app.windows.firstMatch.frame.width, 375, accuracy: 0.5)
+        XCTAssertEqual(app.windows.firstMatch.frame.height, 667, accuracy: 0.5)
+        let frame = control.frame
+        XCTAssertEqual(frame.width, 335, accuracy: 0.5)
+        XCTAssertGreaterThan(frame.height, 16)
+        let prefix = "swiftui-slider-optics-\(background)-\(style)"
+        captureLanguage(prefix + "-rest")
+        // Native65/70 measured quarter-value REST anchor: AX-local (93.5,16)pt.
+        // Unlike the old AX-normalized .25 press, this targets the measured lens
+        // center without changing the native control or its natural parent layout.
+        opticalHold(control, point: CGVector(dx: 93.5 / frame.width, dy: 16 / frame.height),
+                    name: prefix + "-swiftui-slider-held", duration: 6)
+        XCTAssertEqual(control.value as? String, "25%")
+        captureLanguage(prefix + "-released-rest")
+        app.terminate()
     }
 
     /// Isolate the initially selected native Dock item on each optical input.
