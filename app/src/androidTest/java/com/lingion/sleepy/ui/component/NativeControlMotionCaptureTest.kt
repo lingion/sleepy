@@ -429,6 +429,25 @@ class NativeControlMotionCaptureTest {
             case("press-cancel") { tap(center(), "toggle-cancel", 350, cancel = true) }
             assertEquals("Cancelled switch press does not commit", before, callbacks.size)
             assertChecked(oldValue)
+            for (initialValue in listOf(false, true)) {
+                if (readOnMain { checked } != initialValue) {
+                    case("setup-cancel-$initialValue") { tap(center(), "setup-cancel-$initialValue") }
+                    assertChecked(initialValue)
+                }
+                val beforeDrag = callbacks.size
+                val start = lens()
+                val destination = start + Offset((if (initialValue) -22f else 22f) * density, 0f)
+                case("drag-cancel-$initialValue") {
+                    drag(start, listOf(destination), 300, "toggle-drag-cancel-$initialValue", cancel = true)
+                }
+                assertEquals("Cancelled moving switch does not commit", beforeDrag, callbacks.size)
+                assertChecked(initialValue)
+                case("tap-after-drag-cancel-$initialValue") {
+                    tap(center(), "toggle-after-cancel-$initialValue")
+                }
+                assertChecked(!initialValue)
+                assertEquals("A new tap after cancellation commits exactly once", beforeDrag + 1, callbacks.size)
+            }
         }
         if ("rapid" in groups) {
             val before = callbacks.size
