@@ -128,7 +128,7 @@ class LiquidGlassShaderContractTest {
         val expected = mapOf(
             "uSize" to 2, "uFrame" to 4, "uSample" to 4, "uClamp" to 4, "uTexels" to 2,
             "uHazeSample" to 4, "uHazeClamp" to 4, "uHaze" to 1, "uVeil" to 4,
-            "uShape" to 4, "uCorners" to 4, "uCurves" to 48, "uOptics" to 3, "uTint" to 4,
+            "uShape" to 4, "uCorners" to 4, "uCircularCorners" to 1, "uCurves" to 48, "uOptics" to 3, "uTint" to 4,
             "uLight" to 3, "uGlow" to 4, "uGlowSpread" to 2, "uEdge" to 3, "uRim" to 4,
             "uOutlined" to 1, "uProfile" to 64, "uProfile2" to 64, "uProfileCenters" to 4,
             "uShineTurns" to 8, "uShineLit" to 8,

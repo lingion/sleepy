@@ -120,6 +120,7 @@ internal object LiquidGlassShader {
         "uVeil" to 4,
         "uShape" to 4,
         "uCorners" to 4,
+        "uCircularCorners" to 1,
         "uCurves" to 48,
         "uOptics" to 3,
         "uTint" to 4,
@@ -209,6 +210,7 @@ internal object LiquidGlassShader {
      * @param heldFrostTexelPx 纹理里已含的 frost sigma(纹理 px)
      * @param hazeSampling haze 槽位的 `uHazeSample` + `uHazeClamp`; null = 无 haze
      * @param outline pane 的轮廓路径; null = 圆角矩形
+     * @param circularCorners the CPU outline uses circular arcs, rather than a rounded superellipse
      * @param dualContours two convex contours in pane-local dp, with independent radial centers
      * @param goo goo 药丸布局; null = 无 goo
      * @param rim 外圈; [LiquidGlassRim.shine] 与方向亮度下限进入着色器(side/corner/flat 是 CPU 画的
@@ -232,6 +234,7 @@ internal object LiquidGlassShader {
         goo: Goo? = null,
         rim: LiquidGlassRim? = null,
         veil: Color = Color.Transparent,
+        circularCorners: Boolean = false,
     ): Map<String, FloatArray> {
         require(sampling.size == 8) { "sampling 须为 8 个 float, 实为 ${sampling.size}" }
         require(hazeSampling == null || hazeSampling.size == 8) {
@@ -279,6 +282,7 @@ internal object LiquidGlassShader {
             corners.topLeft, corners.topRight, corners.bottomRight, corners.bottomLeft,
         )
         put("uCurves", *liquidGlassCornerCurves(size, corners))
+        put("uCircularCorners", if (circularCorners) 1f else 0f)
         put(
             "uOptics",
             style.refraction.toFloat(), style.saturation.toFloat(), style.brightness.toFloat(),

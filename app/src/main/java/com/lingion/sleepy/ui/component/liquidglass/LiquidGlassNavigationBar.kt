@@ -703,6 +703,7 @@ fun LiquidGlassNavigationBar(
                                 atlasSizePx = atlasSizePx,
                                 sampling = sampling,
                                 glow = touchGlow,
+                                circularCorners = true,
                             )
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                 uniforms.forEach { (name, values) ->
@@ -884,6 +885,7 @@ fun LiquidGlassNavigationBar(
                                     atlasSizePx = atlasSizePx,
                                     sampling = sampling,
                                     glow = LiquidGlassGlow.None,
+                                    circularCorners = true,
                                 )
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                     uniforms.forEach { (name, values) ->

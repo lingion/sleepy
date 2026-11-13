@@ -10,6 +10,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.unit.LayoutDirection
 import com.kyant.backdrop.BackdropEffectScope
@@ -59,7 +60,8 @@ internal fun BackdropEffectScope.liquidGlass(
         val currentSize = size
         if (currentSize.width <= 0f || currentSize.height <= 0f) return
 
-        val corners = extractCornerRadii(currentSize)
+        val circular = circularGlassCornerRadii(shape.createOutline(currentSize, layoutDirection, this), density)
+        val corners = circular ?: extractCornerRadii(currentSize)
         val sizeDp = Size(currentSize.width / density, currentSize.height / density)
         val hazeAtlas = if (style.haze > 0.0) {
             LiquidGlassShader.hazeAtlas(
@@ -102,6 +104,7 @@ internal fun BackdropEffectScope.liquidGlass(
             rim = rim,
             veil = veil,
             glow = glow,
+            circularCorners = circular != null,
         )
 
         val shader = obtainRuntimeShader("LiquidGlassShader", shaderSource)
@@ -133,6 +136,20 @@ internal fun BackdropEffectScope.liquidGlass(
         }
         vibrancy()
     }
+}
+
+/** Exact circular capsules/discs; other contours retain their separate optical path. */
+internal fun circularGlassCornerRadii(outline: Outline, density: Float): LiquidGlassCornerRadii? {
+    val rect = (outline as? Outline.Rounded)?.roundRect ?: return null
+    val corners = listOf(rect.topLeftCornerRadius, rect.topRightCornerRadius,
+        rect.bottomRightCornerRadius, rect.bottomLeftCornerRadius)
+    val radius = corners.first().x
+    if (density <= 0f || !density.isFinite() || rect.width <= 0f || rect.height <= 0f ||
+        corners.any { !it.x.isFinite() || !it.y.isFinite() || it.x < 0f || it.x != it.y || it.x != radius }) return null
+    // The circular SDF represents uniform arcs exactly. An arbitrary asymmetric
+    // RoundRect can cross the center axes, and needs a different distance model.
+    val actual = minOf(radius, rect.width / 2f, rect.height / 2f) / density
+    return LiquidGlassCornerRadii(actual, actual, actual, actual)
 }
 
 /** Two GPU branches over the same retained backdrop; no Bitmap readback or CPU blur. */

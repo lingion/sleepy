@@ -60,6 +60,8 @@ uniform float4 uVeil;
 uniform float4 uShape;
 // Corner radii: top left, top right, bottom right, bottom left.
 uniform float4 uCorners;
+// The CPU clip may use exact circular arcs instead of a continuous superellipse.
+uniform float uCircularCorners;
 // The superellipse corners the pane is clipped to, three to a corner in the
 // order of uCorners: n, J and the arc's radius for the octant along the top or
 // bottom, the same for the one along the side, then both arcs' centers. A
@@ -523,11 +525,9 @@ half4 main(float2 fragCoord) {
   float2 centered = point - halfSize;
   float inset;
   float2 normal;
-  // The inset of the line and the highlight. A pane is clipped to the engine's
-  // superellipse, up to half a dp inside its circular corners where a long side
-  // runs into them, and they keep to it; the optics read deeper than its inset
-  // holds true, so they keep the circles. Only the band the line and the
-  // highlight can reach works it out.
+  // The line and highlight must follow the actual CPU contour. Circular
+  // capsules/discs use the exact circular inset and normal throughout; only
+  // continuous superellipses need their separate near-edge inset below.
   float edge;
   bool lit = uEdge.x > 0.0 || uRim.w > 0.0 || uLight.x > 0.0;
   float traced = max(
@@ -555,7 +555,7 @@ half4 main(float2 fragCoord) {
     inset = max(-roundedBoxDistance(centered, halfSize, radius), 0.0);
     normal = roundedBoxNormal(centered, halfSize, radius);
     edge = inset;
-    if (traced > 0.0 && inset < traced + uTexels.x + kCornerGap * radius) {
+    if (uCircularCorners < 0.5 && traced > 0.0 && inset < traced + uTexels.x + kCornerGap * radius) {
       edge = max(cornerInset(centered, halfSize), 0.0);
     }
   }
