@@ -211,4 +211,4 @@ Dock 镜片此前用原始场景加平色胶囊、假白边和重画选中色作
 
 另有独立几何错误：Generic单轮廓在精确中心点产生零径向向量和零梯度，导致距离/法线除零。复用既有双轮廓的中心方向与梯度下界后，同一测试APK在完整生产AGSL、仅替换最终输出为有限性诊断的硬件Canvas上由红变绿：251×147 Menu和321×173 Alert中心原本失败，四邻点及同实际path的双轮廓对照本已通过；修复后15点全过（红2.202s、绿1.954s）。这不验证材质、RenderEffect或原生可见alpha。原始APKs、shader、逐点RGBA、几何和SHA均保留在本会话artifact。
 
-本轮增量定向JVM27项通过（shader contract、圆弧、CPU superellipse精度、嵌套popup与scrim），assembleDebug成功。不要把此前425项与后续增量相加为一次全量执行。新的原生iOS26.5自然布局Dock专用8场测试通过（110.674s），四背景×明暗只按住初始已选Home；8张host截图均通过完整PNG及实际投递DOWN/UP时间区间校验。它们补足同输入采证，尚需与同位置同world的Android专用fixture比较，不等于原生光学验收。
+本轮增量定向JVM27项通过（shader contract、圆弧、CPU superellipse精度、嵌套popup与scrim），assembleDebug成功。不要把此前425项与后续增量相加为一次全量执行。新的原生iOS26.5自然布局Dock专用8场测试通过（110.674s），四背景×明暗只按住初始已选Home；8张host截图均通过完整PNG及实际投递DOWN/END时间区间校验；END按原始phase区分UP与CANCEL，不据此声称松手提交行为通过。它们补足同输入采证，尚需与同位置同world的Android专用fixture比较，不等于原生光学验收。
