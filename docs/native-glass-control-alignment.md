@@ -82,7 +82,7 @@ Switch 的实心滑片在升镜时连续淡出，回落时连续恢复。轨道�
 
 语言菜单的原生组成、内容 portal / SDF 轮廓区别、打开与关闭时间轴见 [iOS 原生语言菜单参考](glass-language-menu-reference.md)。本轮修正了五行菜单的完整 backing：光学 carrier 使用卡片与菜单材质轮廓的完整并集，按真实菜单测量高度覆盖五行；内容使用自己的缩放和透明度。自然时间的真实录像又发现独立问题：保留的 placement layer clip 仍停在源卡片的一行高度，静态 captureToImage 截图未能揭露。菜单 carrier 改为不保留该 placement layer、由当前双轮廓直接裁切；`language-natural-4` 真机自然录像五行背景完整，点击、长按、滑选、外部取消的回调检查通过。不能用内容 portal 的矩形替代材质轮廓。原生参考保留观察误差和未覆盖的早期取消，不据此宣称完整形变或 vibrancy 已复刻。
 
-原生菜单、alert、sheet 已保留视频参考。Sheet 主体材质本轮已按四背景 × 明暗主题完成独立实际 GPU 对照；8 个 ROI 平均 RGB RMSE 从 21–135/255 降至 0.23–1.38/255。同坐标彩条完整横向 profile 的 RMSE：浅色 32.01→3.58、暗色 112.23→2.40；before/after 背景 ROI 每像素一致。参数是经验拟合，不是 Apple 常量，主体接近也不能代替浮动边距、四角轮廓和边缘高光的验收。Menu 和 alert 尚未完成同等数值对齐。例如参考 alert 平坦区域约 235–236，menu 约 244–247，弹出后外背景约为原来的 .8；当前 Android alert 与 menu 主要仅模糊半径不同。深色外观、系统字体、不同系统缩放与圆按钮实际可见边界也未取得完整同条件对照。API 33 以下没有同等 RuntimeShader 折射能力，降级效果不作为 1:1 证据。
+原生菜单、alert、sheet 已保留视频参考。Sheet 主体材质本轮已按四背景 × 明暗主题完成独立实际 GPU 对照；8 个 ROI 平均 RGB RMSE 从 21–135/255 降至 0.23–1.38/255。同坐标彩条完整横向 profile 的 RMSE：浅色 32.01→3.58、暗色 112.23→2.40；before/after 背景 ROI 每像素一致。参数是经验拟合，不是 Apple 常量，主体接近也不能代替浮动边距、四角轮廓和边缘高光的验收。Menu 与 Alert 后续已分为四个独立的中性材质角色，实际多背景结果见文末；不再仅区别模糊半径。系统字体、不同系统缩放与圆按钮实际可见边界仍未取得完整同条件对照。API 33 以下没有同等 RuntimeShader 折射能力，降级效果不作为 1:1 证据。
 
 浅色玻璃 alert/dialog/日期弹窗及默认 sheet 的外围遮罩按 RGB 240 → 192 拟合为黑色 20%。Dialog 退出或切换外观时恢复原窗口 dim；sheet 的调用者显式颜色优先。菜单无模态遮罩。该调整只改变周围背景，不代表 alert 主体的 tint、blur 或 vibrancy 已对齐；深色与 Material Design 默认遮罩保留。
 
@@ -132,7 +132,13 @@ adb shell am instrument -w \
 
 当前入口升级为 schema 3：4 背景 × Material Design / Liquid Glass × 明暗主题 × 初值 / 改值，导出 32 张控件图及 16 张同窗口背景基线，记录语义几何、原值标记、中心/边缘光学观察和 `optical-metrics.csv`。Material Design 断言默认 M3 进度控件且不出现玻璃 thumb/track/tick；椭圆尺寸、8 dp 轨道和下方点只对 Liquid Glass 断言。升级后的 32 + 16 截图矩阵已在 API 36 执行通过，1 项测试耗时约 99.6 秒，覆盖全部四背景、明暗主题与两种外观。输出仍位于 `unified-slider-appearance/<sliderRunId>`；显式开启才运行，不加入日常 CI，也不能用于宣称完整运动过程逐帧相同。
 
-所有控件的点击、按住、拖动、快慢变化、反向、取消和连续切换由本会话自行验证，不转交用户。仅课表课程长按拖拽等需要 Xcode 测试的复杂业务流程保留此前另约定的验收范围。自然控件回放入口 `NativeControlMotionCaptureTest` 不推进测试时钟，记录实际输入派发、帧读取区间、HWUI commit 和回调；它们不能被当成显示器 presentation 时间或独立视频像素测量。
+当前 goal 的验收边界按用户 2026-11-13 的说明执行：Toggle、Tab、Dock、单头及双头滑杆、按钮、菜单和 Alert 的点击、按住、拖动、快慢变化、反向、取消和连续切换全部由本会话自行验证，不称为“复杂拖动”，也不转交用户。仅课表课程长按拖拽这类需要 Xcode 配合的操作保留此前另约定的验收范围。自然控件回放入口 `NativeControlMotionCaptureTest` 不推进测试时钟，记录实际输入派发、帧读取区间、HWUI commit 和回调；它们不能被当成显示器 presentation 时间或独立视频像素测量。
+
+用户同日补充的圆角要求也是当前 goal 的必验收项：逐一检查 Toggle、Tab、Dock、单双头滑杆、顶栏及分享按钮、语言菜单、Alert、分享及课程编辑半幅面板的外层背板、内部选中色块、滑块和内容裁切。静止、按住、拉伸、反向和回落期间，分别对照 iOS 26.5 实际可见四角曲线、直边到弧线的过渡、内外轮廓间距，以及高光和折射是否服从同一边界。holder 尺寸、包围盒、名义 radius 相同都不能代替轮廓验收；不把所有组件改成同一种半高胶囊，也不改动 Material Design 原有 shape。缺少原生可见 mask 或同条件边缘对照的组件须保留为未完成，不宣称圆角已 1:1。
+
+本轮圆角清单已区分实际实现：Toggle、Segment 和 Slider 主要为半高圆弧；Dock 底座为 Kyant Capsule、镜片为半高 RoundRect；普通按钮保留 caller/M3 shape；Menu24、Alert34、五语言26为独立超椭圆拟合；Sheet为上36/下20的独立超椭圆。不同 shape 的 CPU clip、shader edge/normal、rim 与 shadow 尚需实际像素核对，不由半径参数推定相同。Sheet geometry2 的四角局部 profile 排除首个栅格行后，顶角最大 inset 差1.092、底角1.429 logical units；当前 rim4 独立 neutral corner 审计为顶1.092、底1.618，首行敏感数据均保留；其余多数组件仍缺同条件四角完整 profile。五语言 English 原生直接按住图已明确显示胶囊，本轮将原矩形 hover 和默认 row ripple 合为同一胶囊高亮，保留独立公开输入 GPU 验证。
+
+既有静止截图的独立白体轮廓审计拒绝了细网格上白对白的失效分割；改在明暗大色块背景提取minRGB246/248/250的完整连通白体，八个Slider/Toggle/Range候选均未裁边。原生Slider/Toggle为37×24pt，Android为36.974789×23.865545dp。保留完整首行时，颜色级边界最大差6.727dp；深度≥1后最大差.6702dp。它们是阈值颜色岛，包含栅格、底轨和高光影响，不是真实alpha mask，不能用来反推另一种曲线原语。双头仍按用户规定的同比缩小验收，没有匹配的原生双头参考；自然Dock的selected lens和held完整可见轮廓仍未建立。
 
 2026-11-13 真机自然交互三轮全部通过：Dock3/Dock4（58.025s）、Toggle/分段（52.497s）、Slider/Range（49.686s）。每轮覆盖 direct/hold/drag/cancel/rapid，完整输入和回调存于 `native-control-motion`。这些序列验证输入行为与连续运动，光学/几何误差仍另行报告，不以测试通过代替视觉等价。五语言自然 GPU 回归另已通过（3.248s），同一 GPU 回归切回旧裁切路径真实失败（3.123s、第二行 delta=0）；恢复修复版后再次通过（3.196s）。
 
@@ -145,12 +151,49 @@ adb shell am instrument -w \
 
 Sheet 圆角现通过 `CornerBasedShape` 提供真实 36/20 dp 半径，保留原 superellipse 轮廓；独立 Sheet rim 移除菜单的 CPU 黑色发丝线。四组实际 GPU 对照中主体与背景 ROI 逐像素一致，不透明核心 mask 一致，抗锯齿边缘会随黑线移除而变化。浅色左侧 .5 dp 的暗槽由约 179.4 恢复为 231.7；四边完整 profile 误差降低，但侧边亮峰仍弱。后续 Sheet-only 方向高光候选继续单独验证，不覆盖 menu、alert 或 Material Design。
 
-2026-11-13 后续集中构建的当前记录为 358 项 JVM，失败、错误、跳过均为 0，debug/test APK 同轮构建成功（51s）。该轮包括 Dock 新按压首帧、滑杆取消与重合端点、Sheet 独立方向高光和菜单 GPU fixture；没有把后续尚未实施的弹窗布局列入覆盖范围。
+2026-11-13 较早一轮集中构建记录为 358 项 JVM，失败、错误、跳过均为 0，debug/test APK 同轮构建成功（51s）。该轮包括 Dock 新按压首帧、滑杆取消与重合端点、Sheet 独立方向高光和菜单 GPU fixture；没有把后续尚未实施的弹窗布局列入覆盖范围。
 
 单双头滑杆的新实际输入回放通过（55.981s）：34 次手势、325 次数值回调，单头 13 次正常松手各完成一次，两个控件各有一次取消。旧单头实现确实在 `ACTION_CANCEL` 后误发完成回调；修复后取消保留已发布的数值、不发 finish，后续点击正常。范围滑杆没有 finish API，且其后续重合端点用例主动重置数值，不能把该用例写成无重置的取消恢复证明。快速点选六次均实际改变同端数值，记录实际 DOWN 间隔和保持时间。
 
-自然尺寸 Dock 最新实际回放通过（66.679s），32 场景的回调计数正确。新按压首个观察帧统一零步长，避免暖帧把按下前的时间用于新目标；不能据此宣称解决全部调度相位。四项反向/正向按住/反向按住的中心最大残差从约 22.54/27.70/23.66 pt 降至 11.73/16.57/12.57 pt，仍未对齐。三项反向有一次回调的 vsync 时间早于实际 DOWN、执行晚于 DOWN，下一帧仍包含跨输入时间，最大残差约 7.84 pt。宽高局部最大残差仍约 2.09–5.71 dp。实际四项点击保持约 67.5ms，冷三项约 79.9ms，快速切换则约 45.6–59.7ms，不能泛称全部输入保持 67ms。原始视频、实际触点和逐帧时间保留，不拟合隐藏时间平移。
+自然尺寸 Dock 较早一轮实际回放通过（66.679s），32 场景的回调计数正确。新按压首个观察帧统一零步长，避免暖帧把按下前的时间用于新目标；不能据此宣称解决全部调度相位。四项反向/正向按住/反向按住的中心最大残差从约 22.54/27.70/23.66 pt 降至 11.73/16.57/12.57 pt，仍未对齐。三项反向有一次回调的 vsync 时间早于实际 DOWN、执行晚于 DOWN，下一帧仍包含跨输入时间，最大残差约 7.84 pt。宽高局部最大残差仍约 2.09–5.71 dp。实际四项点击保持约 67.5ms，冷三项约 79.9ms，快速切换则约 45.6–59.7ms，不能泛称全部输入保持 67ms。原始视频、实际触点和逐帧时间保留，不拟合隐藏时间平移。
 
 Sheet 方向高光当前使用独立经验下限，非 Sheet 的方向系数有隔离回归。四背景 × 明暗 8 个 rest 分两批实际通过（47.487s、57.333s），彩条背景下五控件 × 明暗 10 个 held 实际通过（110.295s）。正文 ROI、背景和不透明核心相对前轮逐像素不变。浅色中性背景四边 profile RMSE 为 2.00/6.10/3.99/4.89；深色边缘仍约 8–10 的残差。明暗色块和风景在两平台边缘的底图相位不总一致，已同时保存无面板输入 profile；不能把背景位置差全算作材质误差。详见会话 artifact 的 `sheet-comparison-rim-4/eight-rest`。
 
-菜单与 Alert 的当前实际 GPU 矩阵为四背景 × 明暗 × 两载体的 16 个 rest（76.078s）。每场均检查真实窗口材质覆盖、文字像素及公开动作关闭/单次回调，避免只有语义节点却截图全透明。旧透明预检原图和失败日志保留；补齐 Popup 首帧与静态时钟时序后预检通过（9.479s），据此不能声称修了产品关闭逻辑。它们的尺寸、内容排版和材质仍与原生有差异：菜单约 250×160dp 对 250×146pt，Alert 约 320×201dp 对 320×172pt。原生 Alert 另有 8 项真实静态系统测试通过，只作为 rest 和动作参考，不证明 held 或打开/关闭动画已匹配。
+菜单与 Alert 较早一轮 GPU 矩阵为四背景 × 明暗 × 两载体的 16 个 rest（76.078s）；旧透明预检与失败日志保留。之后按原生 AX frame 实现菜单 42dp 行和 Alert 等宽动作排布。Popup PixelCopy 改为使用实际窗口 sourceRect，排除 surfaceInsets 造成的图像挤压；每场另等到实际 Window 与最终屏幕合成收敛。不能从修正截图工具推断产品关闭逻辑被修复。
+
+完整字体/表面矩阵 `presentations-content-font-6` 实际通过（197.858s），覆盖四背景 × 明暗 × Menu/Alert 的 56 个 rest/held、8 个背景基线及 16 组公开动作记录。字体密度在实际 Popup 内容、Alert 的标题/正文/两个动作 slot 内单独提供和读取，共 128 条观测均为 fontScale=1；设备原设置仍为 .9。独立逐像素检查中，40 张 Window/屏幕的所有不透明像素完全一致，另 16 张菜单图各只有 1 像素相差 RGB1。菜单为 250.084×146.218dp、行约 42.017dp；Alert pane 为 320×172.773dp、标题约 21.176dp、双行正文约 38.319dp、动作约 140.168×48.067dp。先前 320×166.723dp 的 Alert 来自实际 slot 仍为 .9 的预检，不能用补高产品内容解决。17/16sp 与字重是视觉拟合，尚非 UIFont 内部值。该矩阵早于新的整块 Alert 按压缩放。
+
+2026-11-13 输入时钟后续修正：Dock、Toggle、Segment 按真实输入 receipt 时间排队；旧帧标记早于 receipt 时不消费新命令。Press 在第一个合资格帧建立起点，其他命令按 receipt 拆分积分，同帧保序；不添加固定等待，也不平移输入起点。Toggle/Segment 新自然回放 `controls-timed-3` 实际通过（59.652s）：28 场景、439 个实际投递事件（含5次 CANCEL），30 次选择回调均位于自己的 UP 派发内。两种初值的移动取消均不回调，下一次点击各提交一次。350 个原始样本位于 Android 批次历史，不能把重采样后的当前坐标当作输入丢失。取消后几何收稳时间仍单独报告，不能据回调正确宣称运动与原生相同。
+
+Dock 同时钟新回放 `dock-timed-5` 实际通过（66.726s），32 场景、34 回调。未平移实际 DOWN 的六组原生对照中，中心最大残差分别为三项正/反向12.028/3.797pt，四项正/反向4.758/13.351pt，四项正/反向按住19.941/12.700pt；宽高仍约1.3–4.7dp残差。Android约120Hz、原生60Hz的相位只能解释部分误差，过冲和峰值时间也有区别。现有共有 TravelSpring 保持原样，离线候选未写入生产；不能通过延迟或把观察标记当presentation时间消除误差。
+
+另一次 `dock-timed-60hz-6` 实际通过（24.446s），只对测试 Activity 请求60Hz，实际显示60.000004Hz，2416次观察、3549条trace和10次回调完整，原Window偏好已恢复。六组中心最大残差仍为10.671/3.055、6.260/4.710、12.030/6.986pt。独立审计在原生1.5–1.8%过冲范围扫描121055组常系数二阶弹簧，没有一组同时改善六组RMSE；早期上升与晚峰的无相位时间比例也不符。该记录不支持安装这些候选，不能把刷新率或时间平移作为修复。
+
+原生 Toggle 新补测分别保留 SwiftUI/UIKit 的14次真实手势；竖向移出100pt后UP依然切换，不能当作CANCEL。公开双击的实际UP→下一DOWN间隔约3.4–6.2ms，不能把顺序点击约1.6–1.9秒的间隔写成快速连点。公开XCUITest尚不能提供显式CANCEL或同指多段反向参考，Android对应行为测试仍由本会话负责。
+
+原生 Alert 自然motion两项通过（48.496s），2155条实际帧记录、4张按住截图均确认处于真实DOWN/UP之间。whole-pane稳定比例为1.0125，峰值约1.01351；零延迟经验弹簧ζ=.565/k256在完整DOWN样本的最大全宽误差约.45838pt，非Apple内部参数。跨背景最终接受16张held：LandscapeLight采用另一次明确的.7秒触发长按探针成功取得2张；两次原短点触发CANCEL的失败仍保留，原因未证明。暗色按住有空间和动作相关的材质变化，不用一个统一白色overlay冒充对齐；release、颜色波形和开关场动画仍待对照。
+
+较早一轮集中定向JVM与APK构建实际成功（1m22s）：423项，失败/错误/跳过均0，原XML、APK及SHA256存于会话artifact的`verified-build-423`。当时新增Alert 7项覆盖真实Material交互源、整块材质/内容缩放、UP即时回调、多Press token独立取消、禁用/换源/销毁、MD隔离和窄Window透明留白。初次集中423项中的1项失败为测试先推进时钟、后执行SubcomposeLayout布局，已保留红证据；先同步布局后，原断言和原1600ms时钟推进全部通过，产品逻辑未因此更改。JVM通过不代替真实GPU、自然时间或原生视觉验收。
+
+2026-11-13 后续集中构建 `verified-build-425` 实际成功（2m1s）：425项JVM，失败/错误/跳过均0，debug和androidTest APK均已安装。Alert现有9项产品JVM回归继续覆盖原断言；单独的“平台默认320dp cap”夹具无法在Robolectric可靠建立，三次红证据保留，私有framework style/XML已移除，不将错误夹具算作产品通过。该回归迁至真实API36 `GlassAlertWindowRenderTest` 后实际通过（2.897s）：默认Dialog请求340dp而真实Window为320dp；产品Window为MATCH_PARENT，实际pane为319.99997dp、按住323.99997dp、取消回到319.99997dp，PixelCopy opaque core四边有留白。此前的默认窗口会将pane连同halo压成约311.60dp，修复将玻璃pane和透明绘制空间分开测量；Material Design继续走原Material Alert。
+
+五语言行高亮的实际GPU测试 `language-row-corners-8` 通过（8.825s）：打开后直接按English、锚点按住后滑入English，两路径四角与未按住图差值均0、两侧中部差值16，整行差分逐像素相同；CANCEL不选择，之后外部dismissal为null。原生pane本身存在微小变化，独立分析只能提取无文字角区的强暗化候选，不能冒充alpha mask。密度换算后阈值8的平均横向轮廓差约.31–.32dp，顶部扫描线最大约4.17dp；没有拟合平移或拉伸，不能据此宣称四角已全部1:1。
+
+Menu/Alert中性材质 `presentations-native-material-8` 实际通过（198.517s），56rest/held、8背景基线和16公开动作记录完整。独立GPU审计16/16复现四组冻结候选，整体RMS最大1.030/255；每patch及固定4dp横纵profile另行保留。前后整张显示截图的差异仅在系统栏；应用场景、pane和扩展64dp输入邻域实际逐像素一致。该结果验证生产GPU确实执行候选，不等同于完整原生视觉验收。
+
+同世界画布 `presentations-native-canvas-9` 实际通过（85.293s）：固定375×667dp背景画布，导出每次实际localToScreen四角、原始float rect和Window placement。16个Menu/Alert rest覆盖四背景×明暗，Window opaque像素与最终屏幕误差均≤RGB1。Alert宽319.99997dp、top257.47898dp，目标位置残差[-.187492,+.062561]物理px；高度172.7731dp比原生172pt高.7731dp。字体和动作主题色仍分别核对，不能通过裁切或重定位隐藏尺寸差异。
+
+在相同背景坐标的无文字body probe中，四背景顺序为细网格/彩条/明暗色块/风景，Menu浅色RGB RMS为1.807/3.445/3.964/4.503，深色为2.700/2.888/4.252/7.404；Alert浅色为.855/4.963/2.522/3.259，深色为2.064/5.523/2.829/4.228。四背景逐项保留，彩条Alert局部尾部及深色风景Menu仍有明显误差。风景可用的低梯度probe像素较少，这些body数据不覆盖完整pane、glyph、四角、rim或运动。冻结旧公式在新背景输入上的结果仅是反事实，不能写成该画布中旧包的实际GPU截图。
+
+
+2026-11-13 圆弧裁切与 shader 高光边界的实际分支差异已修复：Toggle、Segment、Slider、通用圆按钮和 Dock 镜片的 CPU 使用圆弧，旧 shader 却在近边缘切到 Flutter 连续超椭圆 `cornerInset`。现在由实际 `Outline.Rounded` 识别四角均匀圆弧，按实际尺寸限制半径，并传入独立 `uCircularCorners`；Dock 两条直接 shader 路径显式使用圆弧。CPU clip、rim 与 shadow 继续使用实际 shape。Generic、双轮廓、goo 和 Dock 底座 Capsule 仍保留各自轮廓；Material Design 未改变。该识别器不宣称支持偏移、非对称或椭圆 RoundRect 的精确距离场。
+
+圆角增量构建 `circular-corner-green-12` 的41项定向JVM全部通过；最终恢复构建的 `CircularGlassCornerTest` 与 `LiquidGlassShaderContractTest` 共17项全部通过，debug APK构建成功（24s）。这两轮是独立增量验证，不能与前述425项相加后写成一次完整429项运行。
+
+真实API36 `LiquidGlassCornerRenderTest` 使用硬件Canvas运行完整生产AGSL，仅将最终输出替换为不透明RGB(edge/4)，绑定实际纹理child。使用真实CPU Outline和独立圆弧距离式，逐点检查四个肩部55–85°、向内.30–1.20dp，阈值固定.05dp。`circular-corner-direct-15`通过（2.101s）；同一测试APK仅将生产shader条件临时改为旧近边缘行为，`circular-corner-direct-red-17`真实失败（2.113s）；恢复后 `circular-corner-restored-18` 再次通过（2.095s），前后绿色APK的SHA256完全相同。三种尺寸的旧→新最大误差分别为Toggle静止.198901→.007853dp、Toggle按住.313949→.007495dp、Dock按住.484568→.008237dp。原始PNG、完整窗口、裁切坐标、逐点JSON、源码及APK哈希保留在会话artifact的`circular-corner-red-green-review`和各run目录。
+
+这个诊断只证明shader圆弧边缘与实际CPU轮廓计算一致，不验证生产RenderEffect调度、backdrop光学、可见alpha或iOS原生四角。此前RenderEffect诊断后端的零尺寸失败及两个小图全黑均保留，没有将它们计作小控件真实几何失败或通过，也没有放宽阈值。原生可见白体的颜色阈值审计与此内部几何诊断分别记录。
+
+修复版生产控件的四背景×明暗×静止/五项按住共48个首页Window状态，分两次获取：`circular-controls-backgrounds-14`保留30个实际Window，原整轮在深色彩条背景预检时受系统通知横幅遮挡而失败；`circular-controls-backgrounds-dark-16`补齐18个状态并通过（109.117s）。原失败保留，不能将该轮写成全矩阵通过。首页沿用legacy截图入口，未逐场保证display收敛；必须分别审计Window与最终屏幕合成，不以两者等同。该生产矩阵检查实际控件绘制，不是同世界原生完整角区对照，也不是动态轮廓验收。
+
+圆角后续验收仍逐角色保留：Toggle/Segment/单双头滑块的完整四角运动轮廓与内部间距；Dock连续底座、选中镜片和按住镜片分别对照；顶栏及分享按钮用匹配实际内容的原生参考；Menu、Alert、五语言外轮廓及过渡时源卡片/光学anchor裁切；分享与课程编辑Sheet四角、深色边缘、侧边亮峰和展开收起。现有body probe明确排除perimeter，不能作为Menu/Alert四角通过证据。普通控件的点击、按住、拖动与取消测试继续由本会话完成。
