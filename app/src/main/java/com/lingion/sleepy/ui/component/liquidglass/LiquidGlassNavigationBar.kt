@@ -89,7 +89,6 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberCombinedBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.drawPlainBackdrop
-import com.kyant.shapes.Capsule
 import com.lingion.sleepy.ui.component.NavIconDriver
 import com.lingion.sleepy.ui.component.NavIconDriverEffects
 import com.lingion.sleepy.ui.component.PillNavItemSpec
@@ -129,6 +128,7 @@ fun LiquidGlassNavigationBar(
     val layoutDirection = LocalLayoutDirection.current
     val colorScheme = MaterialTheme.colorScheme
     val selectionColors = colorScheme.selectionColors()
+    val platterShape = remember { DockPlatterShape() }
     // 主题实时订阅: LocalDarkTheme 用 compositionLocalOf 提供(见 Theme.kt),
     // 组合期直读即注册依赖; derivedStateOf 把 dark 收敛成单一快照状态,
     // 供着色器 uniform / 底盘色 / 阴影强度等价消费,
@@ -490,30 +490,33 @@ fun LiquidGlassNavigationBar(
                     .layerBackdrop(platterBackdrop)
                     .shadow(
                         elevation = (12 * shadowStrength).dp,
-                        shape = Capsule(),
+                        shape = platterShape,
                         clip = false,
                         ambientColor = colorScheme.scrim.copy(alpha = (if (dark) 0.25f else 0.16f) * shadowStrength),
                         spotColor = colorScheme.scrim.copy(alpha = (if (dark) 0.35f else 0.22f) * shadowStrength),
                     )
                     .background(
                         color = colorScheme.surfaceContainer.copy(alpha = if (dark) 0.72f else 0.88f),
-                        shape = Capsule(),
+                        shape = platterShape,
                     )
                     .border(
                         width = 1.dp,
                         color = if (dark) Color.White.copy(alpha = 0.12f) else Color(0x1F000000),
-                        shape = Capsule(),
+                        shape = platterShape,
                     )
                     .then(
                         if (backdrop != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                             Modifier.drawPlainBackdrop(
                                 backdrop = backdrop,
-                                shape = { Capsule() },
+                                shape = { platterShape },
                                 effects = {
+                                    val opticalProfile = platterShape.opticalProfile(size, layoutDirection, this)
                                     liquidGlass(
                                         context = context,
                                         style = LiquidGlassStyle.pill(colorScheme, dark),
                                         glow = touchGlow,
+                                        outline = opticalProfile?.path,
+                                        cachedOutlineProfile = opticalProfile,
                                     )
                                 },
                             )

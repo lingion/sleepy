@@ -27,6 +27,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.nativeCanvas
@@ -35,6 +36,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
@@ -63,8 +66,13 @@ class LiquidGlassExactContourRenderTest {
     private lateinit var contentView: View
     private lateinit var window: Window
 
+    private data class Source(val operations: List<LiquidGlassSuperellipse.PathOp>, val path: Path,
+        val exact: LiquidGlassExactContour?) {
+        constructor(source: LiquidGlassContourOutline) : this(source.operations, source.path, source.exact)
+    }
+
     private data class Fixture(val name: String, val width: Int, val height: Int, val density: Float,
-        val sources: List<LiquidGlassContourOutline>, val extraPixels: Set<Pair<Int, Int>> = emptySet()) {
+        val sources: List<Source>, val extraPixels: Set<Pair<Int, Int>> = emptySet()) {
         val oracles = sources.map { LiquidGlassRawPathOracle(it.operations, density, it.path.getBounds().center) }
         val sizeDp = Size(width / density, height / density)
         val pathDp: Path = Path().apply {
@@ -112,13 +120,16 @@ class LiquidGlassExactContourRenderTest {
                 : clamp((diagnosticInset + 4.0) / 8.0, 0.0, 1.0);
             return half4(diagnosticDepthChannel, normal * 0.5 + 0.5, 1.0);
         """.trimIndent())
-        val fixtures = fixtures()
+        val fixturePrefix = arguments.getString("glassExactFixturePrefix")
+        val fixtures = fixtures().filter { fixturePrefix == null || it.name.startsWith(fixturePrefix) }
+        check(fixtures.isNotEmpty()) { "No exact geometry fixture matches $fixturePrefix" }
         val selected = mutableStateOf(fixtures.first())
         val phase = mutableStateOf(0)
         val report = JSONObject().put("scope", "raw CPU cubic versus hardware AGSL geometry and independent CPU Path coverage; no native-appearance claim")
             .put("production_shader_sha256", sha(production))
             .put("diagnostic_shader_sha256", sha(diagnostic))
             .put("forced_legacy", forceLegacy)
+            .put("fixture_prefix", fixturePrefix)
             .put("diagnostic", "magenta=invalid exact helper or exact-dispatch fallback; helper frame R=(exactHelperSignedDepth+4)/8; dispatch frame R=actualMainDispatchInset/8; both GB=actualMainDispatchNormal/2+0.5")
             .put("legacy_contract", "glassExactForceLegacy changes only instrumentation setup: old mode1/3 and original profile packing; exact uniforms remain solely for the separately labelled helper buffer; expectations and tolerances are unchanged")
             .put("tolerance", "8-bit PixelCopy: signed depth 0.05dp, normal component 0.025; exact joints allow either actual one-sided CPU tangent")
@@ -252,10 +263,10 @@ class LiquidGlassExactContourRenderTest {
     }
 
     private fun fixtures(): List<Fixture> {
-        fun contour(rect: Rect, top: Float, bottom: Float = top) = LiquidGlassContourOutline(LiquidGlassSuperellipse.buildPath(
+        fun contour(rect: Rect, top: Float, bottom: Float = top) = Source(LiquidGlassContourOutline(LiquidGlassSuperellipse.buildPath(
             LiquidGlassSuperellipse.Rect2(rect.left, rect.top, rect.right, rect.bottom),
             LiquidGlassSuperellipse.Radii(LiquidGlassSuperellipse.Size2(top, top), LiquidGlassSuperellipse.Size2(top, top),
-                LiquidGlassSuperellipse.Size2(bottom, bottom), LiquidGlassSuperellipse.Size2(bottom, bottom))))
+                LiquidGlassSuperellipse.Size2(bottom, bottom), LiquidGlassSuperellipse.Size2(bottom, bottom)))))
         fun single(name: String, w: Int, h: Int, radius: Float, density: Float = 1f, bottom: Float = radius) =
             Fixture(name, w, h, density, listOf(contour(Rect(0f, 0f, w.toFloat(), h.toFloat()), radius * density, bottom * density)))
         val anchor = contour(Rect(10.5f, 10.5f, 380.5f, 61.833332f), 8f)
@@ -275,8 +286,15 @@ class LiquidGlassExactContourRenderTest {
         val rowProbePixels = (0..4).map { row ->
             floor(807.7f - carrier.left + 53.549988f / 2f).toInt() to floor(628.5f + 125f * row - carrier.top).toInt()
         }.toSet()
-        fun terminalFixture(name: String, sources: List<LiquidGlassContourOutline>) = Fixture(name,
+        fun terminalFixture(name: String, sources: List<Source>) = Fixture(name,
             kotlin.math.ceil(carrier.width.toDouble()).toInt(), kotlin.math.ceil(carrier.height.toDouble()).toInt(), actualDensity, sources, rowProbePixels)
+        fun dock(name: String, width: Int, height: Int, density: Float, direction: LayoutDirection) : Fixture {
+            val shape = DockPlatterShape()
+            val outline = shape.createOutline(Size(width.toFloat(), height.toFloat()), direction, Density(density)) as Outline.Generic
+            val exact = checkNotNull(shape.exactContoursFor(outline)).single()
+            // The independent CPU mask draws the original Kyant path, never a descriptor reconstruction.
+            return Fixture(name, width, height, density, listOf(Source(exact.operations, outline.path, exact)))
+        }
         return listOf(single("menu32-odd", 251, 147, 32f), single("menu32-even", 250, 146, 32f),
             single("alert34", 321, 173, 34f), single("sheet36-20", 343, 420, 36f, bottom = 20f),
             single("menu32-density275", 689, 403, 32f, 2.75f),
@@ -286,7 +304,10 @@ class LiquidGlassExactContourRenderTest {
             dual("language-closing", Rect(35.25f, 35.5f, 355.25f, 190.5f), 65f),
             terminalFixture("language-terminal-contained-density2975", listOf(tinyAnchor, actualMenu)),
             terminalFixture("language-terminal-tinyanchor-density2975", listOf(tinyAnchor)),
-            terminalFixture("language-terminal-menu-density2975", listOf(actualMenu)))
+            terminalFixture("language-terminal-menu-density2975", listOf(actualMenu)),
+            dock("dock-kyant-three", 274, 62, 1f, LayoutDirection.Ltr),
+            dock("dock-kyant-three-density275", 754, 171, 2.75f, LayoutDirection.Ltr),
+            dock("dock-kyant-four-density2975-rtl", 919, 184, 2.975f, LayoutDirection.Rtl))
     }
 
     private fun samplePixels(fixture: Fixture): Set<Pair<Int, Int>> {

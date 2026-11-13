@@ -43,6 +43,7 @@ internal fun BackdropEffectScope.liquidGlass(
     rim: LiquidGlassRim? = null,
     veil: Color = Color.Transparent,
     sampledBlurPx: Float = 0f,
+    cachedOutlineProfile: LiquidGlassCachedOutlineProfile? = null,
 ) {
     // Backdrop observes effects on attachment, before its first measured DrawScope.
     // Wait for real geometry; Size.Unspecified would otherwise create NaN corners.
@@ -112,6 +113,7 @@ internal fun BackdropEffectScope.liquidGlass(
             glow = glow,
             circularCorners = circular != null,
             exactContours = exactContours,
+            cachedOutlineProfile = cachedOutlineProfile,
         )
 
         val shader = obtainRuntimeShader("LiquidGlassShader", shaderSource)

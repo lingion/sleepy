@@ -9,6 +9,18 @@ import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.sqrt
 
+/** A retained shape entry owns this dp path; callers must not mutate it. */
+internal class LiquidGlassCachedOutlineProfile(
+    val path: Path,
+    private val exactContour: () -> LiquidGlassExactContour?,
+) {
+    private val profile by lazy { liquidGlassContourProfile(path) }
+
+    // Descriptor identity keeps a cached profile tied to the actual CPU outline that produced it.
+    fun matchingProfile(outline: Path, contour: LiquidGlassExactContour?): LiquidGlassContourProfile? =
+        if (outline === path && contour != null && contour === exactContour()) profile else null
+}
+
 /**
  * FLClash 液态玻璃的 uniform 装配。
  *
@@ -212,6 +224,7 @@ internal object LiquidGlassShader {
      * @param heldFrostTexelPx 纹理里已含的 frost sigma(纹理 px)
      * @param hazeSampling haze 槽位的 `uHazeSample` + `uHazeClamp`; null = 无 haze
      * @param outline pane 的轮廓路径; null = 圆角矩形
+     * @param cachedOutlineProfile retained fallback profile, used only for its matching single exact contour
      * @param circularCorners the CPU outline uses circular arcs, rather than a rounded superellipse
      * @param dualContours two convex contours in pane-local dp, with independent radial centers
      * @param goo goo 药丸布局; null = 无 goo
@@ -238,6 +251,7 @@ internal object LiquidGlassShader {
         veil: Color = Color.Transparent,
         circularCorners: Boolean = false,
         exactContours: List<LiquidGlassExactContour>? = null,
+        cachedOutlineProfile: LiquidGlassCachedOutlineProfile? = null,
     ): Map<String, FloatArray> {
         require(sampling.size == 8) { "sampling 须为 8 个 float, 实为 ${sampling.size}" }
         require(hazeSampling == null || hazeSampling.size == 8) {
@@ -315,7 +329,11 @@ internal object LiquidGlassShader {
         // Profiles remain available as an exceptional solver fallback. Exact mode and its
         // diagnostic found flag are separate, so a fallback is never reported as exact.
         val firstContour = (dualContours?.first ?: outline?.takeIf { exact?.size == 1 })
-            ?.let(::liquidGlassContourProfile)
+            ?.let { path ->
+                cachedOutlineProfile?.takeIf { dualContours == null && exact?.size == 1 }
+                    ?.matchingProfile(path, exactContours?.singleOrNull())
+                    ?: liquidGlassContourProfile(path)
+            }
         val secondContour = dualContours?.second?.let(::liquidGlassContourProfile)
         // 4/5 = one/two actual CPU cubic contours; 0/1/2/3 retain their previous meanings.
         put(
