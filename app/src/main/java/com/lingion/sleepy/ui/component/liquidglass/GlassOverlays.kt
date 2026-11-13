@@ -197,7 +197,9 @@ fun GlassDropdownMenu(
     }
     val parentScene = LocalGlassPopupScene.current ?: LocalGlassHost.current
     val popupScene = rememberGlassHostState()
-    val carrierShape = shape ?: FlClashGlassShape(24f)
+    // Menu-only visible-corner fit against iOS 26.5. Alert, language and
+    // sheet carriers have their own independently measured contours.
+    val carrierShape = shape ?: FlClashGlassShape(32f)
     val materialScope = rememberGlassMaterialScope(carrierShape, parentScene?.overlayBackdrop)
     CompositionLocalProvider(
         LocalGlassOverlay provides glass,
