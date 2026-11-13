@@ -738,8 +738,17 @@ final class NativeReferenceTests: XCTestCase {
     /// One retained spatial swap sequence. Effective bar style is observed,
     /// never asserted to match a preferred result or used to trigger a retry.
     func testSwiftUITabViewDockLocalAppearance() {
+        captureSwiftUITabViewDockSpatialResponse(horizontal: false)
+    }
+
+    /// Equal-area horizontal interventions keep the same retained native Dock.
+    func testSwiftUITabViewDockHorizontalResponse() {
+        captureSwiftUITabViewDockSpatialResponse(horizontal: true)
+    }
+
+    private func captureSwiftUITabViewDockSpatialResponse(horizontal: Bool) {
         executionTimeAllowance = 110
-        continueAfterFailure = true
+        continueAfterFailure = !horizontal
         settleDuration = 0.1
         var captures: [[String: Any]] = []
         defer {
@@ -752,7 +761,8 @@ final class NativeReferenceTests: XCTestCase {
             app.terminate()
         }
         launch(scene: "toggle", background: "gray_26", style: "dark", staticOptics: true,
-               dockParent: "swiftui-tabview", dockContent: "synthetic-scroll", localAppearance: true)
+               dockParent: "swiftui-tabview", dockContent: "synthetic-scroll", localAppearance: true,
+               horizontalLocalAppearance: horizontal)
         let control = app.tabBars["swiftui-tabbar"]
         XCTAssertTrue(control.waitForExistence(timeout: 5))
         XCTAssertEqual(control.buttons.count, 4)
@@ -763,7 +773,7 @@ final class NativeReferenceTests: XCTestCase {
         let next = app.buttons["dock-local-appearance-next"]
         XCTAssertTrue(state.waitForExistence(timeout: 5))
         XCTAssertTrue(next.exists)
-        let stages = ["A", "B", "C", "D", "C", "B", "A"]
+        let stages = horizontal ? ["A", "L", "R", "B", "R", "L", "A"] : ["A", "B", "C", "D", "C", "B", "A"]
         var initialIdentities: [String]?
         func decoded(_ text: String) -> [String: Any] {
             guard let data = text.data(using: .utf8),
@@ -1160,6 +1170,7 @@ final class NativeReferenceTests: XCTestCase {
     private func launch(scene: String, background: String, focused: Bool = false, tabCount: Int = 3,
                         style: String = "light", staticOptics: Bool = false, dockParent: String? = nil,
                         dockContent: String? = nil, appearanceControls: Bool = false, localAppearance: Bool = false,
+                        horizontalLocalAppearance: Bool = false,
                         initialSlider: Double? = nil,
                         sliderLayerProbe: Bool = false, rangeScale: Double? = nil, rangeLower: Double? = nil,
                         rangeUpper: Double? = nil, rangeGeometryProbe: Bool = false) {
@@ -1173,6 +1184,7 @@ final class NativeReferenceTests: XCTestCase {
         if let dockContent { app.launchArguments += ["-ReferenceDockContent", dockContent] }
         if appearanceControls { app.launchArguments.append("-ReferenceDockAppearanceControls") }
         if localAppearance { app.launchArguments.append("-ReferenceDockLocalAppearance") }
+        if horizontalLocalAppearance { app.launchArguments.append("-ReferenceDockHorizontalResponse") }
         if let initialSlider { app.launchArguments += ["-ReferenceInitialSlider", String(initialSlider)] }
         if sliderLayerProbe { app.launchArguments.append("-ReferenceSliderLayerProbe") }
         if let rangeScale { app.launchArguments += ["-ReferenceRangeScale", String(rangeScale)] }

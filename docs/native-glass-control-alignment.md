@@ -609,6 +609,17 @@ androidTest构建9.8286s通过；主包仍为80的78e5a7f2dedc64193b00503648ef63
 本批不修改任何控件材质或已测运动行为。几何、采样/材质/shader、完整控件适配器及独立示例仍未提取；81记录的亮背景Dock差距和既有动态/四角残差继续保留。独立仓库待逐控件近原生、可运行示例与来源/分发gate完成后创建，三个发布gate继续为false。
 
 
+### 85：原生 Dock 左右等面积亮块响应
+
+沿用79修正后的保留TabView/scroll/canvas上下文，新入口只切换A→L→R→B→R→L→A。L/R亮块为[125,550,225,667)及[225,550,325,667)pt，各46800个亮像素；B为原底部全宽亮带175500个亮像素。四份原始750×1334 opaque sRGB输入解码hash与运行前预声明逐字节一致，保留固定前景；默认79序列不变。iOS26.5/23F77 SE3一次构建10.3624s、一次所选测试54.5830s通过，无retry/repetition/超时，沿用既有DerivedData；四份binary manifest及source hash在build/test间相同。全部14原PNG/AX、source draw/getter/capture括号和完整必需exports保留；optional build/console log不可用的原错误保留。
+
+326/326离线artifact检查通过，四个主identity及观察到的Dock/scroll模型身份与几何保持、Schedule index0、scroll(0,-20)；前后publicState除phase外相同。bar有效trait全程为2。原两个固定body探针每窗192px，1s/3s均为中性RGB：A37/37、L182/55、R55/182、B247/247，回程R/L/A各自重复。根查看七张原生Dock上下文，L/R的亮暗分区及A/L/R浅色、B深色未选字形可见。Today/Mine预声明原生上下文裁片包含body与抗锯齿，不作为隔离后的字形颜色。 七个阶段各自的1s/3s完整原图及初末A逐像素相同；回程L/R完整原图仍分别有45,592/49,508像素差异，bbox均为[0,1055,750,1334]px，最大通道差42。两个body探针重复不代表整图重复，也不识别hysteresis或settled状态。
+
+该结果证明这两个位置的空间响应不同，不能用应用明暗主题或整屏直方图代替；不识别内部classifier、材质状态、采样范围/blur半径、opacity、transfer函数或适应延迟。观察预算不等于compositor/settled时间。原图与完整326项报告位于本会话android-dock-spatial-response-85；[便携记录](../libraries/liquid-glass/validation/observations/dock-horizontal-response-85.json)保留输入与原图hash和精确分布。本批没有Android生产材质或foreground变更，81的亮背景差距继续保留，不能把采集验证当作原生验收。
+
+86只读代码调查另发现：当前深色pill的主题tint(54,52,59)、alpha.48和contrast−.4，在opaque均匀源26/230、原五点behind与远离rim/glow等条件下，现有AGSL公式舍入得到39/38/42与117/115/120，吻合81实测。它说明材质公式已足以解释偏暗，不需假设源未更新；这仍是有条件静态推导，没有GPU中间uniform dump。生产compact Dock从MainTabs的LayerBackdrop取源，81夹具则用GlassHost深度前缀，两者不能混称。未选前景是固定sibling tint，不能假称当前body shader会自动改变文字。后续修正需保持Dock私有边界与多背景验证，不凭这四个灰度输入拟定阈值。
+
+
 ### 87：圆角、精确轮廓与缓存进入运行库
 
 先冻结六几何源、Shader、原测试、AGSL及构建输入，原五类26项测试14.0007s全部通过。随后将Superellipse、Geometry、ExactContour、DualContourShape、FlClashGlassShape和DockPlatterShape物理移入runtime，并把Shader中的583字节CachedOutlineProfile块原样抽出到LiquidGlassOutlineProfile.kt；只删除跨module必需的28次internal，公式、FMA分支、Float/Double运算、路径精度、lazy及两处identity判断不变。Shader块外字节不变，app原测试/调用者/AGSL不动，SpringState四个setter仍internal。

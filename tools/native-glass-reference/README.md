@@ -1147,3 +1147,43 @@ Choose a fresh run ID; outputs are `dock-local-appearance/<runId>` in the debug 
 Each stage latches its first Compose source draw, confirms it, then anchors real1s/3s minimum budgets at the subsequent HWUI-commit return. This path does not inject a synthetic input clock. Neither clock establishes presentation or adaptation latency. Each checkpoint saves its first full Window/display pair, then applies the unchanged opaque RGB3/99.5% comparison gate; all14 pairs are retained before aggregate readiness assertion. Preserve a failed run if a system overlay interrupts it rather than masking, replacing frames or weakening the gate.
 
 The November14 batch81 first run retained three failures from a visible system usage reminder; a separate complete run using unchanged source/APKs passed14/14 capture checks. Source/probe audits retain both outcomes. Android/native body RGB observations, density rounding, foreground and larger sampling-host differences are recorded in `docs/native-glass-control-alignment.md`; this REST fixture does not establish material, motion or whole-image parity.
+
+
+## Retained horizontal Dock response
+
+`testSwiftUITabViewDockHorizontalResponse` adds `-ReferenceDockHorizontalResponse`
+to the existing static/local-appearance entry and retains its actual draw-end
+clock, canvas, TabView, selection, geometry and scroll context. The default
+`testSwiftUITabViewDockLocalAppearance` sequence remains A→B→C→D→C→B→A.
+The horizontal experiment exports only A/L/R/B and applies
+**A→L→R→B→R→L→A**, with one ≥1s and one ≥3s screenshot/AX pair after each
+actual source draw. It stops on the first test assertion failure; do not add
+retry/repetition flags or replace a failed stage.
+
+All inputs are original opaque sRGB 750×1334 pixels, without interpolation,
+with dark RGBA(26,26,26,255). L has a bright RGBA(230,230,230,255) tile at
+[125,550,225,667)pt, R at [225,550,325,667)pt, B at [0,550,375,667)pt.
+L/R each have 46,800 bright pixels; B has 175,500. The fixed glyph-free body
+probes are [196,592,208,596)pt and [244,592,256,596)pt. Native-only Today
+[128,588,170,642)pt and Mine [282,588,324,642)pt context crops retain body
+and antialiasing; they are not isolated glyph colors.
+
+On iOS26.5/23F77 SE3, the one 2026-11-14 execution produced body RGB pairs
+A=(37,37), L=(182,55), R=(55,182), B=(247,247), then the same return-stage
+values, at both observation budgets. Each component denotes a neutral RGB
+triplet and all 192 pixels in its probe agree. Public bar trait remained2.
+The original screenshots show white unselected glyphs for A/L/R and dark
+glyphs for B; no foreground transfer function is inferred. Source arrays,
+14 complete capture pairs and retained context passed326 offline checks.
+These are artifact checks, not a visual acceptance score. Build10.36s and
+one test54.58s reused existing DerivedData, with no retry or repetition.
+Required result exports succeeded; optional build/console log exports were
+unavailable and their errors remain retained.
+
+[Portable observation](../../libraries/liquid-glass/validation/observations/dock-horizontal-response-85.json)
+keeps raw-array/frame hashes and exact probe histograms. Original evidence is
+in this task's `android-dock-spatial-response-85`. Spatially distinct outputs
+establish sensitivity at these locations; they do not identify a native
+classifier, sampling support, blur radius, opacity, adaptation latency or
+internal material state. No Android production optical change or parity
+acceptance follows from this native-only sequence.

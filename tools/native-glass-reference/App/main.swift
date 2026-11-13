@@ -139,33 +139,47 @@ enum ReferenceBackground: String, CaseIterable {
 /// Exact, uncomposited spatial inputs for the dedicated retained REST sequence.
 /// The 117pt band is an intervention, not a claimed material sampling radius.
 private enum ReferenceDockSpatialInput: String, CaseIterable {
-    case A, B, C, D
+    case A, B, C, D, L, R
     static let worldSize = CGSize(width: 375, height: 667)
     static let scale: CGFloat = 2
     private static let images = Dictionary(uniqueKeysWithValues: allCases.map { ($0, $0.makeImage()) })
 
     var image: UIImage { Self.images[self]! }
     var brightBandY: Int? { self == .B ? 550 : (self == .C ? 200 : nil) }
+    var brightRect: [Int]? {
+        if let y = brightBandY { return [0, y, 375, 117] }
+        if self == .L { return [125, 550, 100, 117] }
+        if self == .R { return [225, 550, 100, 117] }
+        return nil
+    }
+    var brightPixelCount: Int {
+        if self == .D { return 1_000_500 }
+        return brightRect.map { $0[2] * $0[3] * 4 } ?? 0
+    }
     var metadata: [String: Any] {
         ["id": rawValue, "colorSpace": "sRGB", "alphaByte": 255,
          "baseRGBABytes": self == .D ? [230, 230, 230, 255] : [26, 26, 26, 255],
-         "brightRGBABytes": brightBandY.map { _ in [230, 230, 230, 255] as Any } ?? NSNull(),
-         "brightRectWorldXYWHpt": brightBandY.map { [0, $0, 375, 117] as Any } ?? NSNull(),
-         "brightRectNativeXYWHpx": brightBandY.map { [0, $0 * 2, 750, 234] as Any } ?? NSNull(),
+         "brightRGBABytes": brightRect.map { _ in [230, 230, 230, 255] as Any } ?? NSNull(),
+         "brightRectWorldXYWHpt": brightRect.map { $0 as Any } ?? NSNull(),
+         "brightRectNativeXYWHpx": brightRect.map { $0.map { $0 * 2 } as Any } ?? NSNull(),
          "sourceSizePx": [750, 1334], "sourceWorldXYWHpt": [0, 0, 375, 667],
          "sourceScale": Self.scale, "interpolation": "none", "boundary": "hard pixel-aligned",
-         "gray26PixelCount": self == .D ? 0 : (brightBandY == nil ? 1_000_500 : 825_000),
-         "gray230PixelCount": self == .D ? 1_000_500 : (brightBandY == nil ? 0 : 175_500),
+         "gray26PixelCount": 1_000_500 - brightPixelCount,
+         "gray230PixelCount": brightPixelCount,
          "histogramScope": "raw canvas only; fixed synthetic foreground remains in composed scene"]
     }
 
     private func makeImage() -> UIImage {
         let width = 750, height = 1334
         var pixels = [UInt8](repeating: 255, count: width * height * 4)
+        let rectangle = brightRect
         for y in 0..<height {
-            let inBand = brightBandY.map { y >= $0 * 2 && y < ($0 + 117) * 2 } ?? false
-            let gray: UInt8 = self == .D || inBand ? 230 : 26
             for x in 0..<width {
+                let inBrightRect = rectangle.map {
+                    x >= $0[0] * 2 && x < ($0[0] + $0[2]) * 2 &&
+                    y >= $0[1] * 2 && y < ($0[1] + $0[3]) * 2
+                } ?? false
+                let gray: UInt8 = self == .D || inBrightRect ? 230 : 26
                 let offset = (y * width + x) * 4
                 pixels[offset] = gray; pixels[offset + 1] = gray; pixels[offset + 2] = gray
             }
@@ -729,10 +743,17 @@ private final class ReferenceDockAppearanceControls: ObservableObject {
 /// neither effective bar style nor native material/geometry is assigned.
 private final class ReferenceDockLocalAppearance: ObservableObject {
     static let sequence: [ReferenceDockSpatialInput] = [.A, .B, .C, .D, .C, .B, .A]
+    private let horizontalResponse = ProcessInfo.processInfo.arguments.contains("-ReferenceDockHorizontalResponse")
+    private var activeSequence: [ReferenceDockSpatialInput] {
+        horizontalResponse ? [.A, .L, .R, .B, .R, .L, .A] : Self.sequence
+    }
+    private var experimentInputs: [ReferenceDockSpatialInput] {
+        horizontalResponse ? [.A, .L, .R, .B] : [.A, .B, .C, .D]
+    }
     let enabled = ProcessInfo.processInfo.arguments.contains("-ReferenceDockLocalAppearance") &&
         ProcessInfo.processInfo.arguments.contains("-ReferenceStaticOptics")
     @Published private(set) var stageIndex = 0
-    var input: ReferenceDockSpatialInput { Self.sequence[stageIndex] }
+    var input: ReferenceDockSpatialInput { activeSequence[stageIndex] }
     private let observation: ReferenceSwiftUIDockObservation
     private weak var window: UIWindow?
     private weak var canvas: ReferenceBackgroundView?
@@ -762,9 +783,9 @@ private final class ReferenceDockLocalAppearance: ObservableObject {
         self.window = window
         window.overrideUserInterfaceStyle = .dark
         ReferenceTrace.shared.add([
-            "event": "dock-local-appearance-configuration", "sequence": Self.sequence.map(\.rawValue),
+            "event": "dock-local-appearance-configuration", "sequence": activeSequence.map(\.rawValue),
             "startClock": Self.clock(),
-            "inputs": ReferenceDockSpatialInput.allCases.map(\.metadata),
+            "inputs": experimentInputs.map(\.metadata),
             "observationBudgetsSeconds": [1, 3], "requestedWindowStyle": UIUserInterfaceStyle.dark.rawValue,
             "stylePolicy": ["windowOverride": "dark throughout", "controllerOverride": "unchanged; inherit dark window",
                             "canvasOverride": "dark throughout", "barOverride": "unchanged/unspecified; observe effective style"],
@@ -772,7 +793,7 @@ private final class ReferenceDockLocalAppearance: ObservableObject {
             "visibleForeground": "fixed synthetic content, REST spatial control label and always-enabled Next REST button, including final A",
             "clockScope": "source draw and public getter brackets; trace t is enqueue time, never compositor presentation time",
             "scope": "one retained REST sequence; no Dock touches, scroll, style threshold, fit or material/geometry mutation"])
-        for input in ReferenceDockSpatialInput.allCases {
+        for input in experimentInputs {
             let name = "dock-local-input-\(input.rawValue).png"
             do {
                 guard let data = input.image.pngData() else {
@@ -815,10 +836,10 @@ private final class ReferenceDockLocalAppearance: ObservableObject {
     func advance() {
         guard enabled else { return }
         let elapsed = sourceApplyEndUptime.map { CACurrentMediaTime() - $0 } ?? -1
-        guard elapsed >= 3, stageIndex + 1 < Self.sequence.count else {
+        guard elapsed >= 3, stageIndex + 1 < activeSequence.count else {
             ReferenceTrace.shared.add(["event": "dock-local-advance-not-applied", "stage": stageIndex,
                                        "elapsedSinceSourceApplyEndSeconds": elapsed,
-                                       "reason": stageIndex + 1 == Self.sequence.count ? "final A retained" : "three-second observation budget not reached"])
+                                       "reason": stageIndex + 1 == activeSequence.count ? "final A retained" : "three-second observation budget not reached"])
             return
         }
         record(phase: "leaving", force: true)
