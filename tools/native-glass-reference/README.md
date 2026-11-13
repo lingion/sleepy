@@ -1129,3 +1129,21 @@ adb shell am instrument -w -r \
 It exports `range-optical-world/<runId>` under the debug app's external files directory: four backgrounds × light/dark, plain background pairs and REST/lower-held/upper-held Window/display pairs, actual world/endpoint/rail geometry, callbacks and capture readiness. It uses the production Range/input path with a synthetic settled Compose clock; cleanup CANCEL differs from native UP. It is stable optical evidence, not a natural timing or release test. The fixed375×667dp world and holder placement are fixture context; no per-endpoint translation, shape or material override is applied.
 
 The default `glassRangeOpticalPalette=product` retains Sleepy's theme. Optional `-e glassRangeOpticalPalette native` changes only the fixture's primary role to the reference tint `(0,.65,.75,1)` and records the consumer's actual RGBA. This separate diagnostic reduces active-rail tint differences; inactive roles and the Android8dp/native-host6pt rail can still differ. Preserve both arms and the unmatched context when reporting errors. Neither the host-composed range nor a passing capture matrix establishes full native parity.
+
+### Retained Android Dock local-appearance companion
+
+The opt-in `NativeDockOpticalWorldRenderTest#captureRetainedDockLocalAppearance` uses the unchanged production Dock and sampling path for the native local-appearance sequence. Run on an API33+ hardware device with matching debug/test APKs:
+
+```sh
+adb shell am instrument -w -r \
+  -e class com.lingion.sleepy.ui.component.NativeDockOpticalWorldRenderTest#captureRetainedDockLocalAppearance \
+  -e glassDockLocalAppearance true \
+  -e glassDockOpticalRunId local-appearance \
+  com.lingion.sleepy.debug.test/com.lingion.sleepy.SleepyRenderTestRunner
+```
+
+Choose a fresh run ID; outputs are `dock-local-appearance/<runId>` in the debug app's external files directory. One retained Dock, selected index0 and fixed dark theme receive A→B→C→D→C→B→A opaque gray inputs: A26, B26 with230 at y550..<667dp, C26 with230 at y200..<317dp, D230. Four raw PNGs,14 full Window/display pairs and `result.json` retain actual density, rounded source/band geometry, identities and timing. The source bitmap is drawn at equal integer source/destination size with no filtering. The existing caller placement is(0,572)dp; measured base/lens geometry remains separate from that outer holder.
+
+Each stage latches its first Compose source draw, confirms it, then anchors real1s/3s minimum budgets at the subsequent HWUI-commit return. This path does not inject a synthetic input clock. Neither clock establishes presentation or adaptation latency. Each checkpoint saves its first full Window/display pair, then applies the unchanged opaque RGB3/99.5% comparison gate; all14 pairs are retained before aggregate readiness assertion. Preserve a failed run if a system overlay interrupts it rather than masking, replacing frames or weakening the gate.
+
+The November14 batch81 first run retained three failures from a visible system usage reminder; a separate complete run using unchanged source/APKs passed14/14 capture checks. Source/probe audits retain both outcomes. Android/native body RGB observations, density rounding, foreground and larger sampling-host differences are recorded in `docs/native-glass-control-alignment.md`; this REST fixture does not establish material, motion or whole-image parity.

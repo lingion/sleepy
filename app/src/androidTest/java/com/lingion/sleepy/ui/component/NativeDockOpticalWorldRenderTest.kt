@@ -3,6 +3,7 @@ package com.lingion.sleepy.ui.component
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.SystemClock
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -34,6 +36,9 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -46,6 +51,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
@@ -58,6 +64,7 @@ import com.lingion.sleepy.ui.component.liquidglass.LocalDockInputTimeNanos
 import com.lingion.sleepy.ui.component.liquidglass.LocalGlassDepth
 import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
 import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.SleepyThemeProvider
 import com.lingion.sleepy.ui.theme.ThemePresets
 import com.lingion.sleepy.ui.theme.UiStyle
@@ -70,6 +77,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
+import java.security.MessageDigest
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -101,8 +110,13 @@ class NativeDockOpticalWorldRenderTest {
 
     private lateinit var nativeParent: NativeParent
 
-    private data class Scene(val background: OpticalBackground, val dark: Boolean, val showDock: Boolean) {
-        val name get() = "${background.name}-${if (dark) "dark" else "light"}"
+    private enum class SpatialInput(val gray: Int, val bandTop: Int? = null, val bandBottom: Int? = null) {
+        A(26), B(26, 550, 667), C(26, 200, 317), D(230),
+    }
+
+    private data class Scene(val background: OpticalBackground, val dark: Boolean, val showDock: Boolean,
+                             val spatialInput: SpatialInput? = null, val spatialStage: Int = -1) {
+        val name get() = "${spatialInput?.name ?: background.name}-${if (dark) "dark" else "light"}"
     }
 
     private data class World(val source: OpticalLayoutGeometry, val host: OpticalLayoutGeometry) {
@@ -155,6 +169,159 @@ class NativeDockOpticalWorldRenderTest {
     private val inputEvents = JSONArray()
     private var heldDownComposeMs: Long? = null
     private var heldDownUptimeMs: Long? = null
+    private var spatialBitmaps: Map<SpatialInput, Bitmap> = emptyMap()
+    private var localAppearanceInstance: Any? = null
+    private var localAppearanceCreates = 0
+    private var localAppearanceDisposals = 0
+    private var localAppearanceTheme = JSONObject()
+    private var spatialDrawnInput: SpatialInput? = null
+    private var spatialDrawnStage = -1
+    private var spatialDrawnBitmap: Bitmap? = null
+    private var spatialDrawSerial = 0L
+    private var spatialDrawUptime = 0L
+    private val spatialFirstDraws = ConcurrentHashMap<Int, JSONObject>()
+
+    /** Retained REST sequence; deliberately separate from the legacy synthetic REST/HELD test. */
+    @Test fun captureRetainedDockLocalAppearance() {
+        val arguments = InstrumentationRegistry.getArguments()
+        assumeTrue("Enable with glassDockLocalAppearance=true", arguments.getString("glassDockLocalAppearance") == "true")
+        nativeParent = NativeParent.SwiftUI
+        val runId = (arguments.getString("glassDockOpticalRunId") ?: System.currentTimeMillis().toString())
+            .replace(Regex("[^A-Za-z0-9_-]"), "_")
+        val directory = File(InstrumentationRegistry.getInstrumentation().targetContext.getExternalFilesDir(null),
+            "dock-local-appearance/$runId").apply { check(isDirectory || mkdirs()) }
+        val captures = JSONArray()
+        val stages = JSONArray()
+        val result = JSONObject().put("schema", 1).put("status", "running").put("run_id", runId)
+            .put("sdk", Build.VERSION.SDK_INT).put("model", Build.MODEL).put("fingerprint", Build.FINGERPRINT)
+            .put("session_origin_uptime_ms", SystemClock.uptimeMillis()).put("session_origin_unix_ms", System.currentTimeMillis())
+            .put("scope", "Unchanged production LiquidGlassNavigationBar, GlassHost and GlassBackground; one retained four-item SwiftUI-placement Dock, selected index0; REST only. Capture validity and descriptive body transfer, not native material or motion parity.")
+            .put("native_reference", "dock-local-appearance-79;375x667pt at2px/pt; natural bar[0,584,375,83], visible platter[21,584,333,62], first lens[25,588,88.25,54]")
+            .put("source_policy", "Direct opaque sRGB ARGB_8888 bitmaps at the actual rounded375x667dp source layout size. Each declared world boundary is independently rounded once using actual density. ImageBitmap drawImage has equal integer source/destination pixel sizes,FilterQuality.None and Bitmap.DENSITY_NONE; no scaling, registration or fitted axes. B/C rounded counts and equality are reported, never forced to match. Outside the fixed world remains the existing opaque#F0F0F5 GlassBackground.")
+            .put("clock_policy", "Default production input clock and default Compose test autoAdvance; no LocalDockInputTimeNanos override and no1600ms synthetic settle. Each fixture stageID latches its first Compose draw invocation once, including repeated same-color stages. After confirming that draw, checkpoint budgets start conservatively at the subsequent HWUI-commit return and request >=1000ms and >=3000ms of actual uptime. Mutation, draw invocation and commit clocks are distinct; Compose draw invocation is not a compositor timestamp. Budgets do not establish settling time or adaptation latency.")
+            .put("capture_policy", "One committed full Window PixelCopy and one immediate full composited display per checkpoint; no readiness retry or state preference. The existing RGB3/99.5% sampled opaque-pixel criterion and observed systemBars/displayCutout exclusion are evaluated after saving both originals. Mismatches and deadline overshoot remain evidence; readiness failures are asserted only after all14 observations.")
+            .put("input_policy", "A→B→C→D→C→B→A; alpha255 throughout; A gray26; B gray230 at y550..667dp on gray26; C gray230 at y200..317dp on gray26; D gray230. No Dock touch, scroll, hold/release or renderer override; showDock true throughout.")
+            .put("foreground_limits", "Android Material icons/labels differ from native SF Symbols, synthetic scroll text and fixed top overlay. Native parent hierarchy and unknown material sampling support are not reproduced or inferred. Body probes exclude selected lens, glyphs, labels and rims; no whole-image RGB or classifier claim.")
+            .put("stages", stages).put("captures", captures)
+        val report = File(directory, "result.json")
+        fun save() { report.writeText(result.toString(2)) }
+        save()
+        val scene = mutableStateOf(Scene(OpticalBackground.fine_grid, dark = true, showDock = true,
+            spatialInput = SpatialInput.A))
+        try {
+            compose.setContent {
+                val actualDensity = LocalDensity.current
+                SideEffect { systemFontScale = actualDensity.fontScale }
+                CompositionLocalProvider(LocalDensity provides Density(actualDensity.density, fontScale = 1f),
+                    LocalLayoutDirection provides LayoutDirection.Ltr) { Fixture(scene.value) }
+            }
+            compose.waitForIdle()
+            val activity = checkNotNull(surface)
+            assertTrue("Hardware accelerated capture required", activity.root.isHardwareAccelerated)
+            val initialGeometry = observeDock(activity)
+            validateDock(initialGeometry, rest = true)
+            val inputs = exportSpatialInputs(directory, initialGeometry.world.source)
+            result.put("density", density).put("font_scale", fontScale).put("system_font_scale", systemFontScale)
+                .put("initial_geometry", initialGeometry.json()).put("raw_inputs", inputs)
+                .put("raw_B_C_histograms_equal", inputs.getJSONObject(1).getJSONArray("rgba_histogram").toString() ==
+                    inputs.getJSONObject(2).getJSONArray("rgba_histogram").toString())
+            val identity = localAppearanceState(activity).getJSONObject("identities")
+            result.put("retained_identities", identity)
+            save()
+            val sequence = listOf(SpatialInput.A, SpatialInput.B, SpatialInput.C, SpatialInput.D,
+                SpatialInput.C, SpatialInput.B, SpatialInput.A)
+            for ((ordinal, input) in sequence.withIndex()) {
+                val stage = JSONObject().put("stage", ordinal).put("input", input.name)
+                    .put("apply_requested_uptime_ms", SystemClock.uptimeMillis())
+                stages.put(stage)
+                var appliedUptime = 0L
+                compose.runOnIdle {
+                    scene.value = scene.value.copy(spatialInput = input, spatialStage = ordinal)
+                    appliedUptime = SystemClock.uptimeMillis()
+                }
+                stage.put("input_mutated_uptime_ms", appliedUptime)
+                compose.waitForIdle()
+                stage.put("source_commit_requested_uptime_ms", SystemClock.uptimeMillis())
+                activity.awaitHwuiCommit()
+                val budgetAnchor = SystemClock.uptimeMillis()
+                val firstDraw = checkNotNull(spatialFirstDraws[ordinal]) { "Stage$ordinal must draw its raw source before its HWUI commit returns" }
+                assertEquals("First source invocation stage input", input.name, firstDraw.getString("input"))
+                assertTrue("Confirmed Compose source invocation precedes committed-stage budget anchor",
+                    firstDraw.getLong("invocation_returned_uptime_ms") <= budgetAnchor)
+                stage.put("source_commit_returned_uptime_ms", budgetAnchor).put("first_source_draw_invocation", firstDraw)
+                    .put("budget_anchor_uptime_ms", budgetAnchor)
+                    .put("budget_anchor_policy", "HWUI commit return after confirming this stageID's first Compose source draw invocation; no ongoing redraw resets this anchor")
+                save()
+                for (budgetMs in listOf(1000L, 3000L)) {
+                    val remaining = budgetAnchor + budgetMs - SystemClock.uptimeMillis()
+                    if (remaining > 0) SystemClock.sleep(remaining)
+                    val stem = "%02d-%s-%dms-rest".format(ordinal, input.name, budgetMs)
+                    val capture = JSONObject().put("stage", ordinal).put("input", input.name).put("phase", "rest")
+                        .put("budget_ms", budgetMs).put("input_mutated_uptime_ms", appliedUptime)
+                        .put("budget_anchor_uptime_ms", budgetAnchor).put("deadline_uptime_ms", budgetAnchor + budgetMs)
+                    captures.put(capture)
+                    capture.put("state_before", localAppearanceState(activity))
+                    val requested = SystemClock.uptimeMillis()
+                    capture.put("window_capture_requested_uptime_ms", requested)
+                        .put("actual_request_elapsed_ms", requested - budgetAnchor)
+                        .put("request_elapsed_since_mutation_ms", requested - appliedUptime)
+                        .put("request_deadline_overshoot_ms", requested - budgetAnchor - budgetMs)
+                    val window = activity.capture()
+                    try {
+                        capture.put("window_capture_returned_uptime_ms", SystemClock.uptimeMillis())
+                            .put("screen_capture_requested_uptime_ms", SystemClock.uptimeMillis())
+                        val screen = opticalScreenCapture()
+                        try {
+                            capture.put("screen_capture_returned_uptime_ms", SystemClock.uptimeMillis())
+                            window.saveOpticalPng(File(directory, "$stem-window.png"))
+                            screen.saveOpticalPng(File(directory, "$stem-screen.png"))
+                            capture.put("window_png", "$stem-window.png").put("screen_png", "$stem-screen.png")
+                                .put("state_after", localAppearanceState(activity))
+                            val geometry = observeDock(activity)
+                            capture.put("geometry", geometry.json()).put("window_geometry", activity.geometry())
+                                .put("display_readiness", localAppearanceReadiness(activity, window, screen))
+                                .put("body_probes", localAppearanceBodyProbes(window, screen, geometry))
+                            save()
+                            validateDock(geometry, rest = true)
+                            assertBitmapContains("Fixed source in Window", window,
+                                geometry.world.source.screenRect.translate(geometry.windowOrigin - geometry.screenOrigin))
+                            assertBitmapContains("Fixed source on display", screen, geometry.world.source.screenRect)
+                            val compared = capture.getJSONObject("display_readiness").getJSONArray("compared_screen_rect_px")
+                            val holder = geometry.holder.screenRect
+                            assertTrue("Observed system-bar exclusion keeps the complete Dock holder/shadow room",
+                                holder.left >= compared.getDouble(0) && holder.top >= compared.getDouble(1) &&
+                                    holder.right <= compared.getDouble(2) && holder.bottom <= compared.getDouble(3))
+                            for (field in listOf("state_before", "state_after")) {
+                                val state = capture.getJSONObject(field)
+                                val observed = state.getJSONObject("identities")
+                                for (name in identity.keys()) assertEquals("Retained $name", identity.get(name), observed.get(name))
+                                assertEquals("Single retained Dock composition", 1, state.getInt("composition_creates"))
+                                assertEquals("Dock has not been disposed", 0, state.getInt("composition_disposals"))
+                                assertEquals("Schedule remains selected", 0, state.getInt("selected_index"))
+                                assertEquals("Actual drawn source matches this stage", input.name, state.getString("drawn_input"))
+                                assertEquals("Actual drawn stageID matches this checkpoint", ordinal, state.getInt("drawn_stage"))
+                                assertEquals("Actual drawn bitmap is the exported raw source",
+                                    System.identityHashCode(spatialBitmaps.getValue(input)), state.getInt("drawn_bitmap_identity"))
+                            }
+                        } finally { screen.recycle() }
+                    } finally {
+                        if (!File(directory, "$stem-window.png").isFile) window.saveOpticalPng(File(directory, "$stem-window.png"))
+                        window.recycle()
+                    }
+                }
+                stage.put("leaving_uptime_ms", SystemClock.uptimeMillis())
+                save()
+            }
+            assertEquals("Seven stages with two REST checkpoints", 14, captures.length())
+            assertTrue("No input or selection callbacks", !pointerDown && selectionEvents.isEmpty() && inputEvents.length() == 0)
+            assertTrue("All retained full Window/display pairs satisfy the unchanged readiness criterion",
+                (0 until captures.length()).all { captures.getJSONObject(it).getJSONObject("display_readiness").getBoolean("passed") })
+            result.put("status", "passed").put("acceptance", "14 REST observations retain one selected-first Dock and pass actual geometry and Window/display readiness; no appearance-parity conclusion.")
+        } catch (failure: Throwable) {
+            result.put("status", "failed").put("exception", "${failure.javaClass.name}: ${failure.message}")
+            throw failure
+        } finally { save() }
+    }
 
     @Test fun captureNativeDockOpticalWorld() {
         val arguments = InstrumentationRegistry.getArguments()
@@ -327,15 +494,34 @@ class NativeDockOpticalWorldRenderTest {
         }
         SleepyThemeProvider(darkTheme = scene.dark, themeKey = ThemePresets.KEY_DEFAULT) {
             CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                if (scene.spatialInput != null) {
+                    val isAppDark = LocalDarkTheme.current
+                    val scheme = MaterialTheme.colorScheme
+                    SideEffect {
+                        localAppearanceTheme = JSONObject().put("requested_dark", scene.dark)
+                            .put("local_dark_theme", isAppDark).put("surface_luminance", scheme.surface.luminance())
+                            .put("production_dark_policy_result", isAppDark || scheme.surface.luminance() < .5f)
+                    }
+                }
                 GlassHost(Modifier.fillMaxSize(), background = MaterialTheme.colorScheme.background) {
                     GlassBackground(0f, Modifier.fillMaxSize().onGloballyPositioned { hostCoordinates = it }) {
                         Box(Modifier.fillMaxSize().background(Color(0xFFF0F0F5))) {
-                            OpticalCaptureBackground(scene.background, Modifier.align(Alignment.TopStart)
+                            val sourceModifier = Modifier.align(Alignment.TopStart)
                                 .requiredSize(375.dp, 667.dp).clipToBounds()
-                                .onGloballyPositioned { sourceCoordinates = it })
+                                .onGloballyPositioned { sourceCoordinates = it }
+                            if (scene.spatialInput != null) SpatialBackground(scene.spatialInput, scene.spatialStage, sourceModifier)
+                            else OpticalCaptureBackground(scene.background, sourceModifier)
                         }
                     }
                     if (scene.showDock) key(scene.background, scene.dark) {
+                        if (scene.spatialInput != null) {
+                            val retainedInstance = remember { Any() }
+                            DisposableEffect(retainedInstance) {
+                                localAppearanceInstance = retainedInstance
+                                localAppearanceCreates++
+                                onDispose { localAppearanceDisposals++ }
+                            }
+                        }
                         var selection by remember { mutableIntStateOf(0) }
                         SideEffect { selectedIndex = selection }
                         val host = LocalGlassHost.current
@@ -365,6 +551,187 @@ class NativeDockOpticalWorldRenderTest {
             }
         }
     }
+
+    @Composable private fun SpatialBackground(input: SpatialInput, stage: Int, modifier: Modifier) {
+        val actualDensity = LocalDensity.current.density
+        val size = IntSize((375f * actualDensity).roundToInt(), (667f * actualDensity).roundToInt())
+        val inputs = remember(size, actualDensity) {
+            SpatialInput.entries.associateWith { stage ->
+                val pixels = IntArray(size.width * size.height) { android.graphics.Color.rgb(stage.gray, stage.gray, stage.gray) }
+                if (stage.bandTop != null && stage.bandBottom != null) {
+                    val top = (stage.bandTop * actualDensity).roundToInt()
+                    val bottom = (stage.bandBottom * actualDensity).roundToInt()
+                    for (y in top until bottom) pixels.fill(android.graphics.Color.rgb(230, 230, 230),
+                        y * size.width, (y + 1) * size.width)
+                }
+                Bitmap.createBitmap(pixels, size.width, size.height, Bitmap.Config.ARGB_8888)
+                    .apply { density = Bitmap.DENSITY_NONE }
+            }
+        }
+        SideEffect { spatialBitmaps = inputs }
+        val bitmap = inputs.getValue(input)
+        val image = remember(bitmap) { bitmap.asImageBitmap() }
+        Canvas(modifier) {
+            val invoked = SystemClock.uptimeMillis()
+            check(this.size.width == bitmap.width.toFloat() && this.size.height == bitmap.height.toFloat()) {
+                "Direct input pixels must equal the actual source layout; no scaling is allowed"
+            }
+            drawImage(image, srcSize = IntSize(bitmap.width, bitmap.height),
+                dstSize = IntSize(bitmap.width, bitmap.height), filterQuality = FilterQuality.None)
+            val returned = SystemClock.uptimeMillis()
+            spatialDrawnInput = input
+            spatialDrawnStage = stage
+            spatialDrawnBitmap = bitmap
+            spatialDrawSerial++
+            spatialDrawUptime = returned
+            spatialFirstDraws.putIfAbsent(stage, JSONObject().put("stage", stage).put("input", input.name)
+                .put("bitmap_identity", System.identityHashCode(bitmap))
+                .put("size_px", JSONArray(listOf(bitmap.width, bitmap.height)))
+                .put("invocation_requested_uptime_ms", invoked).put("invocation_returned_uptime_ms", returned)
+                .put("clock_scope", "Compose Canvas drawImage invocation only; not GPU completion, actual presentation time or compositor evidence"))
+        }
+    }
+
+    private fun exportSpatialInputs(directory: File, source: OpticalLayoutGeometry): JSONArray {
+        val reports = JSONArray()
+        for (input in SpatialInput.entries) {
+            val bitmap = spatialBitmaps.getValue(input)
+            assertEquals("Raw source width", source.size.width, bitmap.width)
+            assertEquals("Raw source height", source.size.height, bitmap.height)
+            val pixels = IntArray(bitmap.width * bitmap.height)
+            bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+            val histogram = mutableMapOf<Int, Int>()
+            for (pixel in pixels) histogram[pixel] = (histogram[pixel] ?: 0) + 1
+            assertTrue("Raw input is exactly opaque gray26/230", histogram.keys.all {
+                it == android.graphics.Color.rgb(26, 26, 26) || it == android.graphics.Color.rgb(230, 230, 230)
+            })
+            val brightPixels = if (input.bandTop != null && input.bandBottom != null)
+                bitmap.width * ((input.bandBottom * source.density).roundToInt() - (input.bandTop * source.density).roundToInt())
+                else if (input == SpatialInput.D) pixels.size else 0
+            assertEquals("Exact independently rounded bright-band pixel count", brightPixels,
+                histogram[android.graphics.Color.rgb(230, 230, 230)] ?: 0)
+            val file = File(directory, "input-${input.name}.png")
+            bitmap.saveOpticalPng(file)
+            val report = JSONObject().put("input", input.name).put("png", file.name).put("sha256", sha256(file))
+                .put("size_px", JSONArray(listOf(bitmap.width, bitmap.height))).put("density", source.density)
+                .put("logical_size_dp", JSONArray(listOf(bitmap.width / source.density, bitmap.height / source.density)))
+                .put("size_residual_dp", JSONArray(listOf(bitmap.width / source.density - 375f, bitmap.height / source.density - 667f)))
+                .put("color_space", bitmap.colorSpace?.name).put("is_srgb", bitmap.colorSpace?.isSrgb)
+                .put("rgba_histogram", JSONArray(histogram.entries.sortedBy { it.key }.map {
+                    JSONObject().put("rgba", JSONArray(listOf(android.graphics.Color.red(it.key),
+                        android.graphics.Color.green(it.key), android.graphics.Color.blue(it.key), android.graphics.Color.alpha(it.key))))
+                        .put("pixels", it.value)
+                }))
+            if (input.bandTop != null && input.bandBottom != null) {
+                val top = (input.bandTop * source.density).roundToInt()
+                val bottom = (input.bandBottom * source.density).roundToInt()
+                report.put("requested_bright_band_world_ltrb_dp", JSONArray(listOf(0, input.bandTop, 375, input.bandBottom)))
+                    .put("bright_band_ltrb_px", JSONArray(listOf(0, top, bitmap.width, bottom)))
+                    .put("actual_bright_band_world_ltrb_dp", JSONArray(listOf(0f, top / source.density,
+                        bitmap.width / source.density, bottom / source.density)))
+                    .put("bright_band_edge_residual_dp", JSONArray(listOf(0f, top / source.density - input.bandTop,
+                        bitmap.width / source.density - 375f, bottom / source.density - input.bandBottom)))
+            }
+            reports.put(report)
+        }
+        return reports
+    }
+
+    private fun localAppearanceState(activity: OpticalCaptureWindow): JSONObject {
+        val holder = compose.onNodeWithTag("native-dock-optical-holder", useUnmergedTree = true).fetchSemanticsNode()
+        val carrier = compose.onNodeWithTag("dock-lens", useUnmergedTree = true).fetchSemanticsNode()
+        return compose.runOnIdle {
+            JSONObject().put("uptime_ms", SystemClock.uptimeMillis()).put("compose_ms", compose.mainClock.currentTime)
+                .put("selected_index", selectedIndex).put("pointer_down", pointerDown)
+                .put("selection_event_count", selectionEvents.size).put("composition_creates", localAppearanceCreates)
+                .put("composition_disposals", localAppearanceDisposals).put("theme", localAppearanceTheme)
+                .put("drawn_input", spatialDrawnInput?.name).put("drawn_stage", spatialDrawnStage)
+                .put("drawn_bitmap_identity", System.identityHashCode(spatialDrawnBitmap))
+                .put("source_draw_serial", spatialDrawSerial).put("source_last_draw_uptime_ms", spatialDrawUptime)
+                .put("source_geometry", OpticalLayoutGeometry.read(checkNotNull(sourceCoordinates), density).json())
+                .put("holder_geometry", OpticalLayoutGeometry.read(holder.layoutInfo.coordinates, density).json())
+                .put("carrier_geometry", OpticalLayoutGeometry.read(carrier.layoutInfo.coordinates, density).json())
+                .put("painted_lens_root_rect_px", carrier.config[DockLensBoundsInRootPx].json())
+                .put("identities", JSONObject().put("retained_composition", System.identityHashCode(checkNotNull(localAppearanceInstance)))
+                    .put("view", System.identityHashCode(activity.view)).put("root", System.identityHashCode(activity.root))
+                    .put("window", System.identityHashCode(checkNotNull(activity.window)))
+                    .put("source_coordinates", System.identityHashCode(checkNotNull(sourceCoordinates)))
+                    .put("host_coordinates", System.identityHashCode(checkNotNull(hostCoordinates)))
+                    .put("holder_semantics", holder.id).put("holder_coordinates", System.identityHashCode(holder.layoutInfo.coordinates))
+                    .put("carrier_semantics", carrier.id).put("carrier_coordinates", System.identityHashCode(carrier.layoutInfo.coordinates)))
+        }
+    }
+
+    /** The old helper retries for frame readiness; these timed observations retain their first display frame. */
+    private fun localAppearanceReadiness(activity: OpticalCaptureWindow, window: Bitmap, screen: Bitmap): JSONObject {
+        val geometry = activity.geometry()
+        val insets = geometry.getJSONObject("root_window_insets_px").getJSONArray("system_bars_and_cutout")
+        val rootWindow = geometry.getJSONArray("root_window_origin_px")
+        val rootScreen = geometry.getJSONArray("root_screen_origin_px")
+        assertEquals("Full Activity Window origin x", 0, rootWindow.getInt(0))
+        assertEquals("Full Activity Window origin y", 0, rootWindow.getInt(1))
+        val left = insets.getInt(0)
+        val top = insets.getInt(1)
+        val right = window.width - insets.getInt(2)
+        val bottom = window.height - insets.getInt(3)
+        val dx = rootScreen.getInt(0) - rootWindow.getInt(0)
+        val dy = rootScreen.getInt(1) - rootWindow.getInt(1)
+        assertBitmapContains("Entire readiness domain on display", screen,
+            Rect((left + dx).toFloat(), (top + dy).toFloat(), (right + dx).toFloat(), (bottom + dy).toFloat()))
+        val step = (2 * density).toInt().coerceAtLeast(1)
+        var samples = 0
+        var matched = 0
+        var maxError = 0
+        for (y in top until bottom step step) for (x in left until right step step) {
+            val a = window.getPixel(x, y)
+            if ((a ushr 24) < 254) continue
+            val b = screen.getPixel(x + dx, y + dy)
+            val error = (0..2).maxOf { abs(((a ushr (it * 8)) and 255) - ((b ushr (it * 8)) and 255)) }
+            samples++
+            if (error <= 3) matched++
+            maxError = maxOf(maxError, error)
+        }
+        val fraction = if (samples == 0) 0.0 else matched.toDouble() / samples
+        return JSONObject().put("passed", samples > 0 && fraction >= .995).put("samples", samples)
+            .put("matched_fraction_rgb_tolerance3", fraction).put("max_channel_error", maxError)
+            .put("sample_step_px", step).put("exclude_system_bars", true)
+            .put("observed_excluded_system_insets_px", insets)
+            .put("compared_window_rect_px", JSONArray(listOf(left, top, right, bottom)))
+            .put("compared_screen_rect_px", JSONArray(listOf(left + dx, top + dy, right + dx, bottom + dy)))
+            .put("policy", "Same opaque alpha>=254,RGB3,>=99.5% criterion and sampled grid as awaitOpticalSurfaceScreen; first full display observation retained without retries. Only observed systemBars/displayCutout excluded.")
+    }
+
+    private fun localAppearanceBodyProbes(window: Bitmap, screen: Bitmap, geometry: DockGeometry): JSONArray {
+        val probes = JSONArray()
+        for (world in listOf(Rect(196f, 592f, 208f, 596f), Rect(244f, 592f, 256f, 596f))) {
+            val source = geometry.world.source
+            val screenRect = Rect(source.screenOrigin.x + world.left * source.density,
+                source.screenOrigin.y + world.top * source.density, source.screenOrigin.x + world.right * source.density,
+                source.screenOrigin.y + world.bottom * source.density)
+            val probe = JSONObject().put("world_ltrb_dp", world.json())
+            for ((name, bitmap, rect) in listOf(Triple("window", window,
+                screenRect.translate(geometry.windowOrigin - geometry.screenOrigin)), Triple("composited_display", screen, screenRect))) {
+                val box = Rect(rect.left.roundToInt().toFloat(), rect.top.roundToInt().toFloat(),
+                    rect.right.roundToInt().toFloat(), rect.bottom.roundToInt().toFloat())
+                assertBitmapContains("Raw glyph-free body probe", bitmap, box)
+                val colors = mutableMapOf<Int, Int>()
+                for (y in box.top.toInt() until box.bottom.toInt()) for (x in box.left.toInt() until box.right.toInt()) {
+                    val rgb = bitmap.getPixel(x, y) and 0xFFFFFF
+                    colors[rgb] = (colors[rgb] ?: 0) + 1
+                }
+                probe.put(name, JSONObject().put("box_ltrb_px", box.json()).put("sample_count", colors.values.sum())
+                    .put("rgb_histogram", JSONArray(colors.entries.sortedBy { it.key }.map {
+                        JSONObject().put("rgb", JSONArray(listOf((it.key ushr 16) and 255, (it.key ushr 8) and 255, it.key and 255)))
+                            .put("pixels", it.value)
+                    })))
+            }
+            probes.put(probe)
+        }
+        return probes
+    }
+
+    private fun sha256(file: File): String = MessageDigest.getInstance("SHA-256").digest(file.readBytes())
+        .joinToString("") { "%02x".format(it.toInt() and 255) }
 
     private fun settle() {
         compose.mainClock.advanceTimeBy(1600)

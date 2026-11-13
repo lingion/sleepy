@@ -585,3 +585,15 @@ Android新增显式启用的生产Range采集夹具：固定375×667dp世界、h
 首次尝试的fixture未把B传入canvas：请求0/A、1/B而只应用0/A，1001条stage1记录canvas仍A、apply elapsed为−1，120s命令预算结束exit−15。原始源码、trace、日志及无Info.plist的不完整xcresult保存在79/failed-first-run，完整export不可用的错误也保留；该失败不作为14checkpoint比较。经明确授权，仅将immutable stageIndex/input传入既有canvas representable，保留UIView identity、draw callback、原测试/输入/预算及样式规则，再执行上述一次修正验证。最初20项静态检查没有证明SwiftUI运行时update传播。
 
 修正后main.swift冻结SHA256为caeb66e232eca683bf494db33602e8369d87f08cc6bdf32664663783930a84ee，UITest仍为e8970394b68d9ab939b67dc66fb48b7d4c58a8876afd3c8ae07552c62b4288ca。原图、root联系图、完整修正结果包、必需exports、source/binary/runtime回执与326项报告在本会话android-dock-local-appearance-79。此批只有原生夹具和证据文档变更，没有Android材质改动、拟合、preferred-style重试或新增native acceptance/parity；80的模块迁移结论与gate不变。
+
+### 81：Android 保留 Dock 局部背景基线
+
+新增显式启用的 captureRetainedDockLocalAppearance，使用未改的生产 Dock、GlassHost 和 GlassBackground；旧 captureNativeDockOpticalWorld 方法正文逐字节不变。一次保留组合接收与79相同的 A→B→C→D→C→B→A 输入，selected index0、固定dark与背景key、无Dock输入；只用stageID促发新source draw，不重建Dock。位图按实际密度独立取整边界，整数source/destination同尺寸、FilterQuality.None、DENSITY_NONE；B/C实际raw histogram相同。各阶段确认首次Compose source draw后，以随后HWUI commit返回为保守实时间锚，分别至少1s/3s请求首个完整Window/display对；无合成时钟、readiness重选或材质偏好。15项独立source检查通过，生产材质和参数未改。
+
+androidTest构建9.8286s通过；主包仍为80的78e5a7f2dedc64193b00503648ef63afdf5a6ab4bb42ae788bf1de98580bd59f，仅安装新测试包2792dc6c8d43bdf32fab4851bdb546a9a6f22aebc017eb4f1a7fec5d1dc6a455，两包设备hash各自匹配host。首轮29.2566s保留14对图后在原完整域readiness汇总断言失败，ADB exit0不当作JUnit通过。3项为stage2 C/3s和stage3 D/1s、3s；可见系统“已使用4小时30分钟”提醒。各失败差异均为57,449个RGB>3像素，bbox[354,159,861,278)，既定5px采样bad2316/120048，matched=.9807077169；实际Dock holder[0,1702,1116,1958)内bad0、max0。原RGB3/99.5%门槛与比较域不变，局部一致不豁免全域失败。
+
+提醒消失后，仅换全新输出ID local-baseline81-confirmation，以相同source/APKs/阈值执行一次完整序列，28.7421s单项通过、无超时或retry flag。两轮各33文件均与设备SHA256逐一相同。离线独立原像素审计首轮456项通过/3失败/0读取错误，确认轮459/459项通过、14/14完整域readiness；这里的检查数不是视觉通过分数。实际source draw、各14预算、28组前后状态、保留身份与geometry均复核；两轮不拼接。
+
+实际Android密度2.9750001px/dp，source1116×1984px、逻辑375.12604×666.89075dp；base world LTRB[20.840336,584.10077,354.2857,646.1008]dp，首lens[24.840336,588.1008,113.09033,642.1008]dp。固定两body探针[196,592,208,596]、[244,592,256,596]均为每窗432个Android像素：A/C全部RGB(39,38,42)，B/D全部(117,115,120)，两轮Window/display一致。79原生每窗192像素对应A/C(37,37,37)、B/D(247,247,247)。根查看完整B及原生联系图，亮带下Android仍灰体/浅色未选字形，原生可见亮体/黑色未选字形；此处明确保留外观差距，不将capture readiness当作材质验收。
+
+双方密度/取整、Android Material图标与原生SF Symbols/scroll前景、Android较大采样host中的世界外#F0F0F5均不同；没有缩放、配准、拟合或逐像素跨平台评分。body分布、公开bar trait、直接source draw与capture时钟分别记录，不据此推断内部material state、classifier、采样范围、opacity或适应延迟。REST与两预算不能覆盖动态、release、四角和完整光学验收。冻结source SHA256 fa23de029583d931d528d5b85189c917603cd856cdea1e465677329708c1627f、首轮失败、确认轮、逐文件导出回执和完整脚本/分布/限制均在本会话android-dock-local-baseline-81；资产库和发布gate不变。
