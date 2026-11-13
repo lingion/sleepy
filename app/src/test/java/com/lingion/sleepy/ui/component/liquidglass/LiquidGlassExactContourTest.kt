@@ -56,6 +56,8 @@ class LiquidGlassExactContourTest {
                 assertEquals(source.path.getBounds().center.y / density, packed[3], 0f)
                 assertEquals(17f, packed[4], 0f)
                 assertEquals(16f, packed[5], 0f)
+                assertEquals(1f, packed[6], 0f)
+                assertEquals(0f, packed[7], 0f)
                 for (index in 0 until 16) {
                     val op = operations[index + 1] as LiquidGlassSuperellipse.PathOp.Cubic
                     assertArrayEquals(floatArrayOf(op.c1x / density, op.c1y / density, op.c2x / density,

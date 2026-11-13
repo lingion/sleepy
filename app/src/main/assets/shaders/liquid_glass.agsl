@@ -99,8 +99,9 @@ uniform float4 uProfile[16];
 // star-shaped-outline assumption.
 uniform float4 uProfile2[16];
 uniform float4 uProfileCenters;
-// Known CPU buildPath contours, kept separate from the legacy radial profiles.
-// Header: P0.xy/center.xy; count/closing-line-index/version/reserved.
+// Actual CPU contours, kept separate from the legacy radial profiles.
+// Header: P0.xy/center.xy; count/closing-line-index/version/line-mask.
+// Version 1 retains its single closing line; version 2 uses one exact bit per Line.
 // Each segment: P1.xy/P2.xy, then P3.xy/start-angle/end-angle.
 uniform float4 uExact1[36];
 uniform float4 uExact2[36];
@@ -444,6 +445,7 @@ bool signedExactGeometry(float2 point, bool second, out float inset, out float2 
   float2 p0 = origin.xy - center;
   float bestReach = -1.0;
   float2 bestNormal = float2(1.0, 0.0);
+  float remainingLineMask = header.w;
   // Literal bounds and induction-variable indices also work on restricted AGSL backends.
   for (int i = 2; i < 36; i += 2) {
     float4 controls = second ? uExact2[i] : uExact1[i];
@@ -452,6 +454,9 @@ bool signedExactGeometry(float2 point, bool second, out float inset, out float2 
     float2 p2 = controls.zw - center;
     float2 p3 = end.xy - center;
     float segment = float((i - 2) / 2);
+    // All 17 mask bits are exact float integers; consume one bit for every segment.
+    bool line = header.z > 1.5 ? mod(remainingLineMask, 2.0) > 0.5 : segment == header.y;
+    remainingLineMask = floor(remainingLineMask * 0.5);
     float span = end.w - end.z;
     float delta = angle - end.z;
     delta -= kTau * floor(delta / kTau + 0.5);
@@ -462,7 +467,6 @@ bool signedExactGeometry(float2 point, bool second, out float inset, out float2 
       float highCross = exactCross(p3, radial);
       float t = 0.5;
       bool valid = true;
-      bool line = segment == header.y;
       if (abs(lowCross) <= 1e-6) {
         t = 0.0;
       } else if (abs(highCross) <= 1e-6) {

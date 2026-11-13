@@ -3,6 +3,8 @@ package com.lingion.sleepy.ui.component.liquidglass
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathIterator
+import androidx.compose.ui.graphics.PathSegment
 import androidx.compose.ui.graphics.asComposePath
 import kotlin.math.PI
 import kotlin.math.abs
@@ -17,9 +19,9 @@ internal interface LiquidGlassExactContourShape {
 internal const val LIQUID_GLASS_EXACT_FLOATS = 144
 
 /**
- * Actual Float path commands, not a reconstruction from a nominal corner radius. The narrow
- * supported pattern is buildPath's 16 cubics and its final (possibly zero length) closing line.
- * Other Generic paths keep the existing profile implementation.
+ * Actual Float path commands, not a reconstruction from a nominal corner radius. Format 1 keeps
+ * buildPath's 16 cubics and final closing line unchanged. Format 2 additionally preserves an actual
+ * single closed Path with at most 17 mixed cubic/line segments, each monotone around its center.
  */
 internal class LiquidGlassExactContour private constructor(
     internal val operations: List<LiquidGlassSuperellipse.PathOp>,
@@ -43,6 +45,109 @@ internal class LiquidGlassExactContour private constructor(
     }
 
     companion object {
+        /** Read the actual path, retaining conics as unsupported verbs rather than approximating them. */
+        fun fromPath(path: Path): LiquidGlassExactContour? {
+            val operations = mutableListOf<LiquidGlassSuperellipse.PathOp>()
+            val iterator = PathIterator(path, PathIterator.ConicEvaluation.AsConic)
+            val points = FloatArray(8)
+            var move: Offset? = null
+            var previous: Offset? = null
+            var closed = false
+            while (iterator.hasNext()) {
+                when (iterator.next(points)) {
+                    PathSegment.Type.Move -> {
+                        if (move != null || closed) return null
+                        move = Offset(points[0], points[1])
+                        previous = move
+                        operations += LiquidGlassSuperellipse.PathOp.Move(points[0], points[1])
+                    }
+                    PathSegment.Type.Line -> {
+                        if (previous == null || closed || previous != Offset(points[0], points[1])) return null
+                        previous = Offset(points[2], points[3])
+                        operations += LiquidGlassSuperellipse.PathOp.Line(points[2], points[3])
+                    }
+                    PathSegment.Type.Cubic -> {
+                        if (previous == null || closed || previous != Offset(points[0], points[1])) return null
+                        previous = Offset(points[6], points[7])
+                        operations += LiquidGlassSuperellipse.PathOp.Cubic(
+                            points[2], points[3], points[4], points[5], points[6], points[7])
+                    }
+                    PathSegment.Type.Close -> {
+                        val start = move ?: return null
+                        if (previous == null || closed) return null
+                        // Close has a real straight edge when the final endpoint differs from Move.
+                        if (previous != start) operations += LiquidGlassSuperellipse.PathOp.Line(start.x, start.y)
+                        operations += LiquidGlassSuperellipse.PathOp.Close
+                        closed = true
+                    }
+                    PathSegment.Type.Done -> break
+                    else -> return null
+                }
+                if (operations.size > 19) return null
+            }
+            if (!closed) return null
+            return fromMixedOperations(operations, path.getBounds().center)
+        }
+
+        private fun fromMixedOperations(
+            operations: List<LiquidGlassSuperellipse.PathOp>,
+            center: Offset,
+        ): LiquidGlassExactContour? {
+            val move = operations.firstOrNull() as? LiquidGlassSuperellipse.PathOp.Move ?: return null
+            val segments = operations.drop(1).dropLast(1)
+            if (operations.lastOrNull() != LiquidGlassSuperellipse.PathOp.Close || segments.size !in 1..17 ||
+                !center.x.isFinite() || !center.y.isFinite()) return null
+            val packed = FloatArray(LIQUID_GLASS_EXACT_FLOATS)
+            packed[0] = move.x; packed[1] = move.y
+            packed[2] = center.x; packed[3] = center.y
+            packed[4] = segments.size.toFloat()
+            packed[5] = -1f // v1's single closing-line index is unused by mixed-segment v2.
+            packed[6] = 2f
+            var lineMask = 0
+            var previous = Offset(move.x, move.y)
+            var totalSpan = 0.0
+            segments.forEachIndexed { index, operation ->
+                val end: Offset
+                val controls: List<Offset>
+                when (operation) {
+                    is LiquidGlassSuperellipse.PathOp.Cubic -> {
+                        end = Offset(operation.x, operation.y)
+                        controls = listOf(previous, Offset(operation.c1x, operation.c1y),
+                            Offset(operation.c2x, operation.c2y), end)
+                        if (!monotoneRay(controls, center)) return null
+                    }
+                    is LiquidGlassSuperellipse.PathOp.Line -> {
+                        end = Offset(operation.x, operation.y)
+                        controls = listOf(previous, previous, end, end)
+                        lineMask = lineMask or (1 shl index)
+                        if (previous != end) {
+                            val x = previous.x.toDouble() - center.x
+                            val y = previous.y.toDouble() - center.y
+                            val cross = x * (end.y.toDouble() - previous.y) - y * (end.x.toDouble() - previous.x)
+                            if (!cross.isFinite() || cross <= 0.0) return null
+                        }
+                    }
+                    else -> return null
+                }
+                val startAngle = atan2(previous.y - center.y, previous.x - center.x)
+                var span = atan2(end.y - center.y, end.x - center.x) - startAngle
+                if (span > PI.toFloat()) span -= (2.0 * PI).toFloat()
+                if (span < -PI.toFloat()) span += (2.0 * PI).toFloat()
+                if (!span.isFinite() || span < -1e-6f || span > PI.toFloat()) return null
+                totalSpan += span
+                val base = 8 + index * 8
+                packed[base] = controls[1].x; packed[base + 1] = controls[1].y
+                packed[base + 2] = controls[2].x; packed[base + 3] = controls[2].y
+                packed[base + 4] = end.x; packed[base + 5] = end.y
+                packed[base + 6] = startAngle; packed[base + 7] = startAngle + span
+                previous = end
+            }
+            if (previous != Offset(move.x, move.y) || abs(totalSpan - 2.0 * PI) > 1e-4) return null
+            packed[7] = lineMask.toFloat() // All 17 mask bits are exactly representable by Float.
+            if (packed.any { !it.isFinite() }) return null
+            return LiquidGlassExactContour(operations.toList(), center, packed)
+        }
+
         fun from(operations: List<LiquidGlassSuperellipse.PathOp>, center: Offset): LiquidGlassExactContour? {
             val move = operations.firstOrNull() as? LiquidGlassSuperellipse.PathOp.Move ?: return null
             if (operations.size != 19 || operations.last() != LiquidGlassSuperellipse.PathOp.Close ||
