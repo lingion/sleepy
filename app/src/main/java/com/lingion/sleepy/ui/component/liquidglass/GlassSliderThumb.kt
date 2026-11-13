@@ -6,7 +6,6 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,7 +52,6 @@ internal fun GlassSliderThumb(
     }
 
     var pressed by remember { mutableStateOf(false) }
-    val scheme = MaterialTheme.colorScheme
     val context = LocalContext.current
     val motion = motionOverride ?: rememberGlassControlMotion(0f, enabled && (pressedOverride ?: pressed), enabled = enabled,
         spec = GlassControlMotionSpec.NativeSlider)
@@ -62,7 +60,7 @@ internal fun GlassSliderThumb(
     // Single-Slider carrier transforms were measured separately from isotropic lift.
     // RangeSlider keeps its existing geometry until it has independent native evidence.
     val dark = LocalDarkTheme.current
-    val lensStyle = (if (range) LiquidGlassStyle.controlLens(scheme, dark)
+    val lensStyle = (if (range) LiquidGlassStyle.rangeSliderLens(dark)
         else LiquidGlassStyle.sliderLens(dark)).scale(lift.toDouble())
 
     // The ordinary track is a sibling, so the optical sampling graph cannot contain itself.

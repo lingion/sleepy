@@ -262,7 +262,7 @@ data class LiquidGlassStyle(
          * its multi-background GPU comparison is recorded in alignment notes73.
          * The half-depth comparison74/75 reduces the extra inward lower segment;
          * it does not establish native depth or eliminate the documented rim error.
-         * Range and the other controls keep their own unmodified lens profile.
+         * Other controls retain their separate lens profiles.
          */
         fun sliderLens(dark: Boolean): LiquidGlassStyle =
             LiquidGlassStyle(
@@ -279,6 +279,14 @@ data class LiquidGlassStyle(
                 rimBlur = 1.5,
                 hairline = 0.42,
             )
+
+        /**
+         * Range candidate reuses the existing Single F material without changing
+         * its own geometry or input policy. This is a provisional combined profile,
+         * not an independently fitted native Range material; validate both roles
+         * before changing their shared body.
+         */
+        fun rangeSliderLens(dark: Boolean): LiquidGlassStyle = sliderLens(dark)
 
         /** Glyph refraction retains the Dock's independent content dispersion. */
         fun controlLensContent(colorScheme: ColorScheme, dark: Boolean): LiquidGlassStyle =
