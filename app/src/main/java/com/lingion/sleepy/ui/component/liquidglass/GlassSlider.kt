@@ -18,6 +18,7 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
@@ -214,17 +215,35 @@ private fun GlassSliderBody(
     val currentValue by rememberUpdatedState(start..end)
     val update by rememberUpdatedState(onValueChange)
     val finish by rememberUpdatedState(onFinished)
+    val inputTimeNanos by rememberUpdatedState(LocalDockInputTimeNanos.current)
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val density = LocalDensity.current
     val view = LocalView.current
     val backdrop = rememberLayerBackdrop()
     var active by remember { mutableIntStateOf(-1) }
-    var startActivation by remember { mutableIntStateOf(0) }
-    var endActivation by remember { mutableIntStateOf(0) }
-    // Both thumb sizes share the same silhouette and isotropic lift.
-    val startMotion = rememberGlassControlMotion(fraction(start), active == 0, active == 0, startActivation, enabled, GlassControlMotionSpec.NativeSlider)
-    val endMotion = rememberGlassControlMotion(fraction(end), active == 1, active == 1, endActivation, enabled, GlassControlMotionSpec.NativeSlider)
+    var measuredWidthPx by remember { mutableIntStateOf(0) }
     val restingWidth = GlassSliderThumbMetrics.width(range)
+    val travelDistanceDp = (measuredWidthPx / density.density - restingWidth).coerceAtLeast(0f) *
+        (if (rtl) -1f else 1f)
+    // Both thumb sizes share the same silhouette and isotropic lift.
+    val startDriver = rememberTimedGlassControlMotion(fraction(start), enabled, GlassControlMotionSpec.NativeSlider, travelDistanceDp)
+    val endDriver = rememberTimedGlassControlMotion(fraction(end), enabled, GlassControlMotionSpec.NativeSlider, travelDistanceDp)
+    val startMotion = startDriver.motion
+    val endMotion = endDriver.motion
+    val startRevision = startDriver.requestRevision
+    val endRevision = endDriver.requestRevision
+    val controlledValueChanged = fraction(start) != startDriver.requestedPosition ||
+        fraction(end) != endDriver.requestedPosition
+    SideEffect {
+        // A range is one controlled value. An external update to its other
+        // handle must also end the current pointer, while matching echoes do not.
+        if (controlledValueChanged && startRevision == startDriver.requestRevision &&
+            endRevision == endDriver.requestRevision) {
+            val receivedNanos = inputTimeNanos()
+            startDriver.cancelPointerInput(receivedNanos)
+            endDriver.cancelPointerInput(receivedNanos)
+        }
+    }
     val inset = with(density) { (restingWidth / 2).dp.toPx() }
     val baseline = initialValue?.takeIf { it.start.isFinite() && it.endInclusive.isFinite() }?.let {
         val first = if (range) it.start.coerceIn(valueRange.start, valueRange.endInclusive) else valueRange.start
@@ -247,30 +266,42 @@ private fun GlassSliderBody(
     }
     Layout(
         modifier = modifier.fillMaxWidth().height(GlassSliderThumbMetrics.TOUCH_HEIGHT.dp).alpha(if (enabled) 1f else .38f)
+            .onSizeChanged { measuredWidthPx = it.width }
             .glassGestureOwnership(enabled)
             .pointerInput(enabled, rtl, valueRange, steps, range) {
                 if (!enabled) return@pointerInput
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-                    down.consume()
+                    val downReceipt = inputTimeNanos()
                     fun at(x: Float): Float {
                         val physical = ((x - inset) / (size.width - 2 * inset).coerceAtLeast(1f)).coerceIn(0f, 1f)
                         return valueRange.start + (if (rtl) 1f - physical else physical) * span
                     }
                     val downValue = at(down.position.x)
-                    val now = currentValue
-                    active = if (range && (
+                    fun requestedValues(): ClosedFloatingPointRange<Float> {
+                        val controlled = currentValue
+                        fun requested(driver: TimedGlassControlMotion, value: Float) =
+                            if (driver.requestedPosition == fraction(value)) value
+                            else valueRange.start + driver.requestedPosition * span
+                        return requested(startDriver, controlled.start)..requested(endDriver, controlled.endInclusive)
+                    }
+                    val now = requestedValues()
+                    var selectedIndex = if (range && (
                         abs(downValue - now.start) < abs(downValue - now.endInclusive) ||
                             // Coincident thumbs have equal distance on either side.
                             // A rail tap must reopen the range toward that side.
                             (now.start == now.endInclusive && downValue < now.start)
                         )) 0 else 1
-                    if (active == 0) startActivation++ else endActivation++
-                    var lastTick = (fraction(if (active == 0) now.start else now.endInclusive) * (if (steps > 0) steps + 1 else 40)).roundToInt()
-                    LiquidGlassHaptics.selectionClick(view)
+                    var driver = if (selectedIndex == 0) startDriver else endDriver
+                    var epoch = driver.begin(pressed = true, dragging = true,
+                        receivedNanos = downReceipt, sampleUptimeMillis = down.uptimeMillis)
+                        ?: return@awaitEachGesture
+                    active = selectedIndex
+                    down.consume()
+                    var lastTick = (fraction(if (selectedIndex == 0) now.start else now.endInclusive) * (if (steps > 0) steps + 1 else 40)).roundToInt()
                     // Track taps retain their absolute mapping; thumb drags start from the
                     // actual value, consume the measured slop once, then use full width.
-                    val selectedValue = if (active == 0) now.start else now.endInclusive
+                    val selectedValue = if (selectedIndex == 0) now.start else now.endInclusive
                     val onThumb = abs(downValue - selectedValue) / span * size.width <= 24.dp.toPx()
                     val dragMapping = if (onThumb) GlassSliderDragMapping(
                         downX = down.position.x,
@@ -280,26 +311,59 @@ private fun GlassSliderBody(
                         slop = GlassSliderDragMapping.START_SLOP_DP.dp.toPx(),
                         rtl = rtl,
                     ) else null
-                    change(active, if (onThumb) selectedValue else downValue)
+                    fun publish(target: Float, receivedNanos: Long, sampleUptimeMillis: Long) {
+                        val requested = requestedValues()
+                        val next = snap(target)
+                        val changed = if (selectedIndex == 0) next.coerceAtMost(requested.endInclusive)..requested.endInclusive
+                            else requested.start..next.coerceAtLeast(if (range) requested.start else valueRange.start)
+                        val selected = if (selectedIndex == 0) changed.start else changed.endInclusive
+                        if (driver.moveContinuously(epoch, fraction(selected), receivedNanos, sampleUptimeMillis) &&
+                            changed != requested) update(changed)
+                    }
                     var released = false
+                    var cancelReceipt: Long? = null
+                    var cancelSample: Long? = null
                     try {
+                        LiquidGlassHaptics.selectionClick(view)
+                        publish(if (onThumb) selectedValue else downValue, downReceipt, down.uptimeMillis)
                         while (true) {
                             val event = awaitPointerEvent(PointerEventPass.Initial)
-                            val pointer = event.changes.firstOrNull { it.id == down.id } ?: break
+                            val receivedNanos = inputTimeNanos()
+                            val pointer = event.changes.firstOrNull { it.id == down.id }
+                            cancelReceipt = receivedNanos
+                            cancelSample = pointer?.uptimeMillis
+                            if (pointer == null || !driver.isCurrent(epoch)) break
                             // Compose represents platform cancellation as an
                             // already-consumed synthetic up. It must not commit.
                             if (pointer.isConsumed) break
-                            if (!pointer.pressed) { released = true; break }
+                            if (!pointer.pressed) {
+                                pointer.consume()
+                                released = driver.release(epoch, driver.requestedPosition, activate = true,
+                                    receivedNanos = receivedNanos, sampleUptimeMillis = pointer.uptimeMillis)
+                                break
+                            }
                             val target = dragMapping?.valueAt(pointer.position.x) ?: at(pointer.position.x)
                             if (range && now.start == now.endInclusive && target != now.start) {
-                                active = if (target < now.start) 0 else 1
+                                val nextIndex = if (target < now.start) 0 else 1
+                                if (nextIndex != selectedIndex) {
+                                    driver.cancel(epoch, receivedNanos, pointer.uptimeMillis)
+                                    selectedIndex = nextIndex
+                                    driver = if (selectedIndex == 0) startDriver else endDriver
+                                    epoch = driver.begin(pressed = true, dragging = true,
+                                        receivedNanos = receivedNanos, sampleUptimeMillis = pointer.uptimeMillis) ?: break
+                                    active = selectedIndex
+                                }
                             }
-                            change(active, target)
+                            publish(target, receivedNanos, pointer.uptimeMillis)
                             val tick = (fraction(snap(target)) * (if (steps > 0) steps + 1 else 40)).roundToInt()
                             if (tick != lastTick) { LiquidGlassHaptics.selectionClick(view); lastTick = tick }
                             pointer.consume()
+                            // A pointerInput restart has no delivered cancel sample.
+                            cancelReceipt = null
+                            cancelSample = null
                         }
                     } finally {
+                        if (!released) driver.cancel(epoch, cancelReceipt ?: inputTimeNanos(), cancelSample)
                         active = -1
                         if (released) finish?.invoke()
                     }

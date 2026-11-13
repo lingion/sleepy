@@ -56,6 +56,10 @@ internal fun GlassSliderThumb(
         spec = GlassControlMotionSpec.NativeSlider)
     val lift = motion.lift
     val scale = 1f + (GlassSliderThumbMetrics.LIFT_SCALE - 1f) * motion.geometryLift
+    // Single-Slider carrier transforms were measured separately from isotropic lift.
+    // RangeSlider keeps its existing geometry until it has independent native evidence.
+    val stretchX = if (range) 0f else motion.stretch
+    val stretchY = if (range) 0f else motion.stretchY
     val dark = LocalDarkTheme.current
     val lensStyle = LiquidGlassStyle.controlLens(scheme, dark).scale(lift.toDouble())
 
@@ -69,7 +73,8 @@ internal fun GlassSliderThumb(
 
     Box(
         modifier
-            .size((restingWidth * scale).dp, (restingHeight * scale).dp)
+            .size((restingWidth * scale * (1f + stretchX)).dp,
+                (restingHeight * scale * (1f + stretchY)).dp)
             .shadow(2.dp, shape, clip = false)
             .pointerInput(enabled) {
                 if (!enabled) return@pointerInput

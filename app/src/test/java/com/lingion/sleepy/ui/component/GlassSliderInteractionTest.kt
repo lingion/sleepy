@@ -37,7 +37,8 @@ class GlassSliderInteractionTest {
     private fun show(enabled: Boolean = true, rtl: Boolean = false, style: UiStyle = UiStyle.LiquidGlass) {
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides style,
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L },
+                    LocalUiStyle provides style,
                     LocalLayoutDirection provides if (rtl) LayoutDirection.Rtl else LayoutDirection.Ltr) {
                     GlassHost {
                         Box(Modifier.padding(32.dp)) {
@@ -146,7 +147,8 @@ class GlassSliderInteractionTest {
         val range = mutableStateOf(2f..7f)
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L },
+                    LocalUiStyle provides UiStyle.LiquidGlass) {
                     GlassHost {
                         GlassRangeSlider(range.value, { range.value = it }, Modifier.width(280.dp), 1f..10f, 8)
                     }
@@ -164,7 +166,8 @@ class GlassSliderInteractionTest {
         var updates = 0
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L },
+                    LocalUiStyle provides UiStyle.LiquidGlass) {
                     GlassHost {
                         GlassRangeSlider(range.value, { range.value = it; updates++ },
                             Modifier.width(280.dp), 1f..20f, 18)
@@ -195,7 +198,8 @@ class GlassSliderInteractionTest {
         var committed = -1f
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L },
+                    LocalUiStyle provides UiStyle.LiquidGlass) {
                     GlassHost {
                         HueSlider(0f, { delivered = it }, Modifier.width(280.dp).testTag("hue"),
                             onHueCommit = { committed = it })
@@ -214,7 +218,8 @@ class GlassSliderInteractionTest {
         val range = mutableStateOf(5f..5f)
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L },
+                    LocalUiStyle provides UiStyle.LiquidGlass) {
                     GlassHost {
                         GlassRangeSlider(range.value, { range.value = it },
                             Modifier.width(280.dp).testTag("range"), 1f..10f, 8)
@@ -246,7 +251,8 @@ class GlassSliderInteractionTest {
         var updates = 0
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass,
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L },
+                    LocalUiStyle provides UiStyle.LiquidGlass,
                     LocalLayoutDirection provides if (rtl) LayoutDirection.Rtl else LayoutDirection.Ltr) {
                     GlassHost {
                         GlassRangeSlider(range.value, { range.value = it; updates++ },

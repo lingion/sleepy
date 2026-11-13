@@ -71,8 +71,11 @@ internal class GlassControlMotion(
     private var deformationInteraction = false
     private var distancePerPositionDp = travelDistanceDp.takeIf { it.isFinite() && it != 0f } ?: 0f
     private val dragDeformation = NativeGlassDragDeformation(
-        if (spec == GlassControlMotionSpec.Dock) NativeGlassDragDeformation.Spec.Dock
-        else NativeGlassDragDeformation.Spec.Segment,
+        when (spec) {
+            GlassControlMotionSpec.Dock -> NativeGlassDragDeformation.Spec.Dock
+            GlassControlMotionSpec.NativeSlider -> NativeGlassDragDeformation.Spec.Slider
+            else -> NativeGlassDragDeformation.Spec.Segment
+        },
         initialPosition * distancePerPositionDp,
     )
 
@@ -178,7 +181,7 @@ internal class GlassControlMotion(
 }
 
 /**
- * Input-owned driver for switches and segmented pickers. Receipt and hardware
+ * Input-owned driver for glass controls. Receipt and hardware
  * sample clocks remain separate, and every delivered transition survives even
  * when Compose has not recomposed between DOWN and UP.
  */
@@ -225,6 +228,17 @@ internal class TimedGlassControlMotion(
         if (isCurrent(epoch)) clock.enqueue(Input.Move(epoch, target, dragging), receivedNanos, sampleUptimeMillis)
     }
 
+    /** A slider publishes during its drag; matching parent echoes retain this epoch. */
+    fun moveContinuously(epoch: Long, target: Float, receivedNanos: Long, sampleUptimeMillis: Long): Boolean {
+        if (!isCurrent(epoch)) return false
+        if (requestedPosition != target) {
+            requestedPosition = target
+            requestRevision++
+        }
+        clock.enqueue(Input.Move(epoch, target, dragging = true), receivedNanos, sampleUptimeMillis)
+        return true
+    }
+
     fun release(epoch: Long, target: Float, activate: Boolean, receivedNanos: Long, sampleUptimeMillis: Long): Boolean {
         if (!isCurrent(epoch)) return false
         requestedEpoch = null
@@ -238,6 +252,11 @@ internal class TimedGlassControlMotion(
         if (requestedEpoch != epoch) return
         requestedEpoch = null
         clock.enqueue(Input.Cancel(epoch, requestedPosition), receivedNanos, sampleUptimeMillis)
+    }
+
+    /** A controlled range update can invalidate the pointer on either handle. */
+    fun cancelPointerInput(receivedNanos: Long) {
+        requestedEpoch?.let { cancel(it, receivedNanos) }
     }
 
     /** Semantic and keyboard activation supersedes any pending pointer gesture. */

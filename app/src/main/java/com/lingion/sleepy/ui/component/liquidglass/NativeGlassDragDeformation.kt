@@ -18,10 +18,10 @@ import kotlin.math.sqrt
  * Constant-speed motion tends to zero deformation; starting and braking carry
  * signed energy through both springs. The held lens can therefore reach its
  * first peak after the finger stops, then rebound without an up-event timer.
- * The acceleration follower is critically damped. Parameters were fitted to
- * both repetitions of all four matrix directions / speeds, not read from a
- * private native implementation. Width RMSE was about .004 (segment) / .006
- * (dock); this is an approximation, not an exact replica.
+ * The acceleration follower is critically damped. Segment/Dock parameters were
+ * fitted to both repetitions of their direction/speed matrix; Slider uses its
+ * own forward training and reverse holdouts. Parameters are empirical, not read
+ * from a private native implementation. This is an approximation, not an exact replica.
  */
 internal class NativeGlassDragDeformation(
     private val spec: Spec = Spec.Segment,
@@ -43,6 +43,15 @@ internal class NativeGlassDragDeformation(
                 .01127168, .01202510, 1.17)
             val Dock = Spec(136.97630, .615304, 117.35327, 234.98117, .463322,
                 .01151552, .01313549, 1.41)
+
+            // Slider65: forward slow/fast train, complete reverse gestures held out.
+            // Independent empirical fit, not native constants. At the existing 240Hz
+            // integration limit, held-out fast carrier width/height RMSE is .461/.300pt
+            // given native lift, versus 3.191/2.075pt for isotropic geometry. See the
+            // native-glass/slider-endpoint-65 fixture provenance. Keep this stage order:
+            // exchanging springs is equivalent continuously, but not numerically.
+            val Slider = Spec(1752.03562712, 3.0, 458.09850777, 207.20738710, .3278919171,
+                .008486517928, .009023585816, 1.0054241240, 1.0009013734)
         }
     }
 
