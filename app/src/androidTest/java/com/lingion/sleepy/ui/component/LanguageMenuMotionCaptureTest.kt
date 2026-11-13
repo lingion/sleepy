@@ -54,6 +54,7 @@ import com.lingion.sleepy.ui.component.liquidglass.GlassBackground
 import com.lingion.sleepy.ui.component.liquidglass.GlassHost
 import com.lingion.sleepy.ui.component.liquidglass.GlassLanguageMenu
 import com.lingion.sleepy.ui.component.liquidglass.LanguageMenuVisualStateKey
+import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShader
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
@@ -98,7 +99,7 @@ class LanguageMenuMotionCaptureTest {
         "zh-CN" to "简体中文", "zh-TW" to "繁體中文", "en" to "English",
         "ja" to "日本語", "es" to "Español",
     )
-    private val neutral = Color(.94f, .94f, .96f)
+    private var neutral = Color(.94f, .94f, .96f)
     private var selected by mutableStateOf("zh-CN")
     private var syncMarker by mutableIntStateOf(0)
     private lateinit var activity: Activity
@@ -317,8 +318,19 @@ class LanguageMenuMotionCaptureTest {
             .put("maximum_mean_rgb_distance_from_first_row_8bit", 5.0)
         var baseline: Bitmap? = null
         var expanded: Bitmap? = null
-        installRealtimeFixture()
+        val gpuBackground = args.getString("languageGpuBackground") ?: "neutral"
+        when (gpuBackground) {
+            "neutral" -> Unit
+            // Explicit coverage fixture: retain existing RGB thresholds as the material evolves.
+            "contrast" -> neutral = Color(.65f, .65f, .67f)
+            else -> error("Unknown languageGpuBackground: $gpuBackground")
+        }
+        report.put("fixture_background", gpuBackground)
+        val shaderDiagnostic = args.getString("languageShaderDiagnostic")
+        val restoreShader = installNaturalShaderDiagnostic(shaderDiagnostic, directory)
+        report.put("shader_diagnostic", shaderDiagnostic ?: "none")
         try {
+            installRealtimeFixture()
             scenario = "natural-gpu-baseline"
             waitFor("Language card laid out") { findTag("general_language_card")?.bounds?.width?.let { it > 0f } == true }
             SystemClock.sleep(400)
@@ -379,10 +391,51 @@ class LanguageMenuMotionCaptureTest {
                 realView?.disposeComposition()
                 realRecomposer?.cancel()
             }
+            restoreShader()
             File(directory, "trace.jsonl").bufferedWriter().use { writer -> trace.forEach { writer.appendLine(it.toString()) } }
             baseline?.recycle()
             expanded?.recycle()
         }
+    }
+
+    /** Instrumentation-only source substitution; every production uniform and popup path stays live. */
+    private fun installNaturalShaderDiagnostic(mode: String?, directory: File): () -> Unit {
+        if (mode == null) return {}
+        val original = LiquidGlassShader.shaderSource(instrumentation.targetContext)
+        val finalReturn = "return half4(min(glass, float3(coverage)), coverage);"
+        check(original.split(finalReturn).size == 2)
+        val modified = when (mode) {
+            "coordinates" -> original.replace(finalReturn, """
+                if (uOutlined > 4.5) {
+                    return half4(clamp(float3(point.x / 300.0, point.y / 300.0, uShape.y / 300.0), 0.0, 1.0), 1.0);
+                }
+                $finalReturn
+            """.trimIndent())
+            "contour-centers" -> original.replace(finalReturn, """
+                if (uOutlined > 4.5) {
+                    float bottom = uExact2[0].y;
+                    for (int i = 3; i < 36; i += 2) bottom = max(bottom, uExact2[i].y);
+                    return half4(clamp(float3(uExact1[0].w, uExact2[0].w, bottom) / 300.0, 0.0, 1.0), 1.0);
+                }
+                $finalReturn
+            """.trimIndent())
+            "mixed-geometry" -> original.replace(finalReturn, """
+                if (uOutlined > 4.5) {
+                    if (!exactFound) return half4(1.0, 0.0, 1.0, 1.0);
+                    float3 code = float3(clamp(inset / 128.0, 0.0, 1.0), normal * 0.5 + 0.5);
+                    return half4(0.5 * min(glass, float3(coverage)) + 0.5 * code, coverage);
+                }
+                $finalReturn
+            """.trimIndent())
+            "legacy-dispatch" -> original.replace("if (uOutlined > 3.5) {", "if (false) {")
+            else -> error("Unknown languageShaderDiagnostic: $mode")
+        }
+        check(modified != original)
+        File(directory, "instrumentation-source-$mode.agsl").writeText(modified)
+        val field = LiquidGlassShader::class.java.getDeclaredField("cachedSource").apply { isAccessible = true }
+        val previous = field.get(LiquidGlassShader)
+        field.set(LiquidGlassShader, modified)
+        return { field.set(LiquidGlassShader, previous) }
     }
 
     /**
