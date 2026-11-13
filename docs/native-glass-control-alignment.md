@@ -639,3 +639,11 @@ API36安装main/test的host/device哈希分别匹配；main为aeb5060ffddce0e17a
 API36原HazeRender三项以已注册SleepyRenderTestRunner在5.3395s通过，初始主包3b4c85aa236a6e7a3241d43ed11810893b51c0b49ba6b3715bcc3e06b366f30e和测试包dca9e55ac4a868be16befe1aa55e529d5aeebbc1cd5639c61b943a56e3f4689a的host/device哈希分别匹配。之后只纠正ATTRIBUTIONS中shader、Style及前批Superellipse的三条依据路径，并用原generator重生成ACKNOWLEDGEMENTS；署名、来源及许可字段均保持。仅assembleDebug重打包2.4462s，未重复原单测/GPU测试；最终主包448a5b67bbc970b96485bd0d7f0a7c7c3bb8f010058e737f4237bf419eddf190已重装且设备哈希一致，AAR和shader不变。根查看最终截图，MainActivity resumed且可见第11周有课程网格和Dock；不新增数据、光学或运动结论。
 
 [M3a便携记录](../libraries/liquid-glass/validation/migrations/m3a-rendering.json)保留39份证据哈希、原测试身份和两次主包身份。完整源码快照、原失败诊断、XML、日志及截图在本会话android-library-render-primitives-89。删除实际未用的三个ABI主包，释放90,324,317字节；保留实际arm64/test包和唯一资料。此批只是同一实现的库提取，81/85的Dock残差及既有动态误差均未解决；Host/控件/独立示例、来源及分发核对继续待办，三个发布gate保持false。独立公开仓库仍按用户要求留待近原生校准后创建。
+
+### 90：Dock 底座负 contrast 的单变量诊断
+
+按86预声明方案，仅临时把Dock底座调用的pill style覆盖为contrast=0，其余8份冻结输入、原测试、原AGSL、几何及取源保持。仍是81的GlassHost保留A→B→C→D→C→B→A，不改生产MainTabs的LayerBackdrop或前景；既有fixture内“unchanged production”旧文案不能代替本次明确的ablation范围。仅构建app debug一次9.1958s，复用未改测试包，所选单项instrumentation28.9513s通过，无retry/repetition；原14组完整Window/display均保留。33份导出逐文件host/device哈希相同，原81离线核验器逐字节复用，459项核对通过、0失败/读取错误，14/14原完整域readiness通过。这些是采集及完整性检查，不是视觉验收。
+
+两处原定无字形探针各432px，在Window/display、1s/3s和回程都分别为：A/C保持RGB(39,38,42)，B/D变为(146,145,148)。相对81原亮区(117,115,120)增加(29,30,28)，符合先验有条件公式；说明已实现负contrast确实贡献了亮区压暗，不需用丢失source来解释这些探针。仍未dump中间uniform或识别唯一完整机制；81是提取前历史包，本次只保证相对当前HEAD的单调用变化，未额外重跑一份同build基线。原生B/D探针仍为(247,247,247)，关contrast远不足以修复；未选字形仍是独立固定tint，本次没有校准前景、彩色/纹理背景、动态或生产取源差异。
+
+诊断后所有冻结源码逐字节恢复，正式主包448a5b67bbc970b96485bd0d7f0a7c7c3bb8f010058e737f4237bf419eddf190及原测试包重新核对host/device身份，MainActivity resumed，根查看恢复截图为第11周有课网格与Dock；诊断参数未留在app或手机。删除三个实际不用ABI包90,283,952字节及临时主包备份30,078,637字节，保留原PNG和唯一证据。[便携诊断记录](../libraries/liquid-glass/validation/observations/dock-contrast-diagnostic-90.json)保留先验、精确分布、50份证据哈希和范围；原始资料在本会话android-dock-contrast-diagnostic-90。本批不提交材质候选，也不改变原生校准或发布gate。
