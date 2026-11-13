@@ -2,6 +2,7 @@ package com.lingion.sleepy.ui.component.liquidglass
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.semantics.SemanticsPropertyKey
@@ -20,6 +21,50 @@ internal data class LanguageMenuVisualState(
 
 internal val LanguageMenuVisualStateKey = SemanticsPropertyKey<LanguageMenuVisualState>("LanguageMenuVisualState")
 internal var SemanticsPropertyReceiver.languageMenuVisualState by LanguageMenuVisualStateKey
+
+internal data class LanguageMenuHandoffState(val sessionId: Int, val phase: String, val sourceCardAlpha: Float)
+internal val LanguageMenuHandoffStateKey = SemanticsPropertyKey<LanguageMenuHandoffState>("LanguageMenuHandoffState")
+internal var SemanticsPropertyReceiver.languageMenuHandoffState by LanguageMenuHandoffStateKey
+
+/** Window submission is a handoff fence, not proof of compositor presentation. */
+internal class LanguageMenuHandoff {
+    private enum class Phase { Popup, Source, Motion, Disposed }
+    private var phase by mutableStateOf(Phase.Popup)
+    val sessionId = System.identityHashCode(this)
+    val sourceCardAlpha: Float get() = if (phase == Phase.Popup || phase == Phase.Disposed) 1f else 0f
+    val awaitingSourceFrame: Boolean get() = phase == Phase.Source
+    val canAnimate: Boolean get() = phase == Phase.Motion
+    val isDisposed: Boolean get() = phase == Phase.Disposed
+    val state: LanguageMenuHandoffState get() = LanguageMenuHandoffState(sessionId, when (phase) {
+        Phase.Popup -> "waiting-popup-frame"
+        Phase.Source -> "waiting-source-hidden-frame"
+        Phase.Motion -> "motion"
+        Phase.Disposed -> "disposed"
+    }, sourceCardAlpha)
+
+    fun popupFrameSubmitted(): Boolean {
+        if (phase != Phase.Popup) return false
+        phase = Phase.Source
+        return true
+    }
+
+    fun sourceHiddenFrameSubmitted(): Boolean {
+        if (phase != Phase.Source) return false
+        phase = Phase.Motion
+        return true
+    }
+
+    fun dispose() { phase = Phase.Disposed }
+}
+
+/** Opt-in capture observer; no logging or frame traversal when unset. */
+internal object LanguageMenuPresentationDiagnostics {
+    var observer: ((sessionId: Int, event: String, frameTimeNanos: Long?, windowIdentity: Int?, windowClass: String?) -> Unit)? = null
+    fun event(handoff: LanguageMenuHandoff, event: String, frameTimeNanos: Long? = null,
+        windowIdentity: Int? = null, windowClass: String? = null) {
+        observer?.invoke(handoff.sessionId, event, frameTimeNanos, windowIdentity, windowClass)
+    }
+}
 
 /**
  * Fit to the iOS 26.5 Menu + inline Picker presentation samples, not Apple internals.

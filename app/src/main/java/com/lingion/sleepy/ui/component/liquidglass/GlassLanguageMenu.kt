@@ -1,5 +1,8 @@
 package com.lingion.sleepy.ui.component.liquidglass
 
+import android.os.Build
+import android.view.View
+import android.view.ViewTreeObserver
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.MotionDurationScale
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -40,6 +44,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.*
@@ -53,6 +58,7 @@ import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.UiStyle
 import kotlin.coroutines.coroutineContext
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.launch
 import kotlin.math.max
 
@@ -78,6 +84,13 @@ fun GlassLanguageMenu(
     val dismissed by rememberUpdatedState(onDismissed)
     val dragSlop = with(LocalDensity.current) { 8.dp.toPx() }
     val currentLabel = languages.firstOrNull { it.first == selectedCode }?.second ?: selectedCode
+    val sourceFrame = session?.let { active ->
+        rememberLanguageMenuSubmittedFrame(active, LocalView.current, "source_hidden") {
+            active.handoff.sourceHiddenFrameSubmitted().also { submitted ->
+                if (submitted) active.motionReady.complete(Unit)
+            }
+        }
+    }
     fun open() {
         if (session == null && !completing && coordinates?.isAttached == true) session = LanguageMenuSession(dragSlop)
     }
@@ -118,16 +131,31 @@ fun GlassLanguageMenu(
             },
             onCancel = { session?.let { it.holdingAnchor = false; it.hoveredCode = null } },
         )
-        .semantics(mergeDescendants = true) { role = Role.Button; onClick { open(); true } }
+        .semantics(mergeDescendants = true) {
+            role = Role.Button
+            onClick { open(); true }
+            languageMenuHandoffState = session?.handoff?.state ?: LanguageMenuHandoffState(0, "idle", 1f)
+        }
         .dbgTag("general_language_card", text = currentLabel, role = "button"),
     ) {
         LanguageCardContent(title, currentLabel,
-            Modifier.graphicsLayer { alpha = if (session == null) 1f else 0f }, tagged = true)
+            Modifier.drawWithContent {
+                drawContent()
+                if (session?.handoff?.awaitingSourceFrame == true) sourceFrame?.drawn()
+            }.graphicsLayer { alpha = session?.handoff?.sourceCardAlpha ?: 1f }, tagged = true)
     }
     session?.let { active ->
+        DisposableEffect(active) {
+            onDispose {
+                active.handoff.dispose()
+                active.motionReady.cancel()
+                LanguageMenuPresentationDiagnostics.event(active.handoff, "disposed")
+            }
+        }
         LanguagePopup(title, selectedCode, languages, coordinates, active,
             onSelect = select,
             onClosed = { code ->
+                active.handoff.dispose()
                 completing = true
                 session = null
                 completionScope.launch {
@@ -143,6 +171,9 @@ private class LanguageMenuSession(val dragSlopPx: Float) {
     var pointerOrigin: Offset? = null
     var pointerMoved = false
     val motion = LanguageMenuMotion()
+    val handoff = LanguageMenuHandoff()
+    val motionReady = CompletableDeferred<Unit>()
+    var popupPositioned = false
     val rows = mutableMapOf<String, LayoutCoordinates>()
     var viewport: LayoutCoordinates? = null
     var holdingAnchor by mutableStateOf(false)
@@ -150,6 +181,7 @@ private class LanguageMenuSession(val dragSlopPx: Float) {
     var closing by mutableStateOf(false)
     var pickedCode by mutableStateOf<String?>(null)
     var enteredMenu = false
+    init { LanguageMenuPresentationDiagnostics.event(handoff, "prepared") }
     fun close(code: String?, onSelect: (String) -> Unit) {
         if (closing) return
         pickedCode = code
@@ -158,6 +190,71 @@ private class LanguageMenuSession(val dragSlopPx: Float) {
         // Native Picker commits the binding before its context menu finishes closing.
         if (code != null) onSelect(code)
     }
+}
+
+/** Applied layer inputs, kept out of snapshot state to avoid writes during layer updates. */
+private class LanguageMenuReplacementLayer {
+    var origin: Offset? = null
+    var alpha = 0f
+    fun isVisibleAt(position: Offset?) = position != null && origin == position && alpha > 0f
+}
+
+/** Registered by the actual content draw in its owning window, never by a host-window proxy. */
+private class LanguageMenuSubmittedFrame(
+    private val session: LanguageMenuSession,
+    private val view: View,
+    private val label: String,
+    private val onSubmitted: () -> Boolean,
+) {
+    private var requested = false
+    private var disposed = false
+    private var hardwareSubmission = false
+    private var registeredObserver: ViewTreeObserver? = null
+    private val submitted = Runnable {
+        if (!disposed && !session.closing && !session.handoff.isDisposed && view.isAttachedToWindow) {
+            event(if (hardwareSubmission) "${label}_frame_committed" else "${label}_draw_posted_legacy_or_software")
+            if (onSubmitted()) event("handoff_${session.handoff.state.phase}")
+        }
+    }
+
+    private fun event(name: String) = LanguageMenuPresentationDiagnostics.event(session.handoff, name,
+        windowIdentity = System.identityHashCode(view.rootView), windowClass = view.rootView.javaClass.name)
+
+    fun drawn() {
+        if (requested || disposed || session.closing || session.handoff.isDisposed) return
+        requested = true
+        event("${label}_first_content_draw")
+        if (Build.VERSION.SDK_INT >= 29 && view.isHardwareAccelerated) {
+            hardwareSubmission = true
+            registeredObserver = view.viewTreeObserver.also { it.registerFrameCommitCallback(submitted) }
+            // Registration during recording can miss this traversal's callback capture.
+            // Request another real draw of this same window, rather than a timed delay.
+            view.postInvalidateOnAnimation()
+        } else {
+            // API 26–28/software rendering has no HWUI submission callback. Keep this
+            // explicitly distinct in diagnostic traces; it is not a display fence.
+            view.post(submitted)
+        }
+    }
+
+    fun dispose() {
+        disposed = true
+        view.removeCallbacks(submitted)
+        if (Build.VERSION.SDK_INT >= 29) registeredObserver?.takeIf { it.isAlive }?.unregisterFrameCommitCallback(submitted)
+        registeredObserver = null
+    }
+}
+
+@Composable
+private fun rememberLanguageMenuSubmittedFrame(
+    session: LanguageMenuSession,
+    view: View,
+    label: String,
+    onSubmitted: () -> Boolean,
+): LanguageMenuSubmittedFrame {
+    val frame = remember(session, view, label) { LanguageMenuSubmittedFrame(session, view, label, onSubmitted) }
+    DisposableEffect(frame) { onDispose { frame.dispose() } }
+    return frame
 }
 
 @Composable
@@ -256,10 +353,22 @@ private fun LanguagePopup(
     val closed by rememberUpdatedState(onClosed)
     val select by rememberUpdatedState(onSelect)
     LaunchedEffect(session, session.closing) {
+        if (!session.handoff.canAnimate) {
+            // A popup cancelled before its handoff never started a visible morph.
+            if (session.closing) {
+                closed(session.pickedCode)
+                return@LaunchedEffect
+            }
+            // Subscribe before the source-hidden submission. Restarting this effect
+            // through composition after that callback costs an extra frame.
+            session.motionReady.await()
+        }
         val durationScale = coroutineContext[MotionDurationScale]?.scaleFactor ?: 1f
         if (durationScale <= 0f) motion.finish()
         else {
             var previous = withFrameNanos { it }
+            LanguageMenuPresentationDiagnostics.event(session.handoff,
+                if (session.closing) "close_motion_origin" else "open_motion_origin", previous)
             while (motion.isRunning) {
                 val now = withFrameNanos { it }
                 // Use actual elapsed time: a missed frame must not slow the spring down.
@@ -281,15 +390,25 @@ private fun LanguagePopup(
         properties = PopupProperties(focusable = !session.holdingAnchor,
             dismissOnBackPress = true, dismissOnClickOutside = true, clippingEnabled = false),
     ) {
+        val replacementLayer = remember(session) { LanguageMenuReplacementLayer() }
+        val popupFrame = rememberLanguageMenuSubmittedFrame(session, LocalView.current, "popup") {
+            session.handoff.popupFrameSubmitted()
+        }
         CompositionLocalProvider(LocalGlassOverlay provides glass, LocalGlassOverlaySamplingHost provides parentScene,
             LocalGlassPopupScene provides popupScene, LocalGlassMaterialBackdrop provides null) {
             Box(Modifier.size(with(density) { windowSize.width.toDp() }, with(density) { windowSize.height.toDp() })
-                .onGloballyPositioned { popupOrigin = it.localToScreen(Offset.Zero) }
+                .onGloballyPositioned {
+                    popupOrigin = it.localToScreen(Offset.Zero)
+                    if (!session.popupPositioned) {
+                        session.popupPositioned = true
+                        LanguageMenuPresentationDiagnostics.event(session.handoff, "popup_positioned")
+                    }
+                }
                 .recordGlassPopupScene(popupScene)
                 .pointerInput(session, menu) { detectTapGestures { point ->
                     if (!menu.contains(point)) session.close(null, select)
                 } }) {
-                if (popupOrigin != null && anchor.width > 0f) {
+                if (anchor.width > 0f) {
                     // Bound the optical pass to the card/menu region rather than shading the whole window.
                     val carrier = Rect(minOf(geometry.anchor.left, geometry.material.left), minOf(geometry.anchor.top, geometry.material.top),
                         maxOf(geometry.anchor.right, geometry.material.right), maxOf(geometry.anchor.bottom, geometry.material.bottom))
@@ -297,19 +416,35 @@ private fun LanguagePopup(
                         geometry.material.translate(-carrier.topLeft), motion.alpha, density.density)
                     // A retained placement clip keeps the source card's first-frame height
                     // during natural playback. Clip the current contours directly instead.
+                    // While the two windows overlap, draw only the opaque replacement card.
+                    // The parent scene still contains its original card until the second
+                    // fence; sampling it here would refract the card back into itself.
                     Box(Modifier.align(AbsoluteAlignment.TopLeft).absoluteOffset { IntOffset(carrier.left.toInt(), carrier.top.toInt()) }
                         .requiredSize(with(density) { carrier.width.toDp() }, with(density) { carrier.height.toDp() })
+                        // Allocate the optical node during the first popup layout,
+                        // but never sample the source while its card is still present.
+                        .drawWithContent { if (session.handoff.canAnimate) drawContent() }
                         .glassControl(shape, enabled = false, registerPane = false, role = GlassMaterialRole.Menu,
                             placementLayer = false)
                         .clip(shape).then(if (glass) Modifier else Modifier.background(colors.surfaceContainerHigh)))
                     Box(Modifier.align(AbsoluteAlignment.TopLeft).requiredSize(with(density) { anchor.width.toDp() }, with(density) { anchor.height.toDp() })
+                        .drawWithContent {
+                            drawContent()
+                            if (replacementLayer.isVisibleAt(popupOrigin)) popupFrame.drawn()
+                        }
                         .graphicsLayer {
+                            // Position is known by the first draw after layout. Read
+                            // it here rather than waiting to compose a replacement card.
+                            val card = if (session.handoff.canAnimate) geometry.anchor
+                                else anchorScreen.translate(-(popupOrigin ?: Offset.Zero))
                             transformOrigin = TransformOrigin.Center
-                            translationX = geometry.anchor.center.x - anchor.width / 2f
-                            translationY = geometry.anchor.center.y - anchor.height / 2f
+                            translationX = card.center.x - anchor.width / 2f
+                            translationY = card.center.y - anchor.height / 2f
                             scaleX = geometry.anchorContentScale
                             scaleY = geometry.anchorContentScale
-                            alpha = motion.anchorContentAlpha
+                            alpha = if (popupOrigin == null) 0f else motion.anchorContentAlpha
+                            replacementLayer.origin = popupOrigin
+                            replacementLayer.alpha = alpha
                         }.clearAndSetSemantics {}) {
                         LanguageCardContent(title, languages.firstOrNull { it.first == (session.pickedCode ?: selectedCode) }?.second ?: selectedCode,
                             Modifier.background(androidx.compose.ui.graphics.Color.Transparent))
@@ -328,6 +463,7 @@ private fun LanguagePopup(
                     .clip(FlClashGlassShape(26f))
                     .dbgTag("general_language_menu", clickable = false)
                     .semantics {
+                        languageMenuHandoffState = session.handoff.state
                         paneTitle = title
                         dismiss { session.close(null, select); true }
                         languageMenuVisualState = LanguageMenuVisualState(

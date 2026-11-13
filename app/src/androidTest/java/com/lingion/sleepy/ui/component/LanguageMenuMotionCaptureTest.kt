@@ -53,6 +53,8 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.lingion.sleepy.ui.component.liquidglass.GlassBackground
 import com.lingion.sleepy.ui.component.liquidglass.GlassHost
 import com.lingion.sleepy.ui.component.liquidglass.GlassLanguageMenu
+import com.lingion.sleepy.ui.component.liquidglass.LanguageMenuHandoffStateKey
+import com.lingion.sleepy.ui.component.liquidglass.LanguageMenuPresentationDiagnostics
 import com.lingion.sleepy.ui.component.liquidglass.LanguageMenuVisualStateKey
 import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShader
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
@@ -150,6 +152,13 @@ class LanguageMenuMotionCaptureTest {
         startUptimeMs = SystemClock.uptimeMillis()
 
         installRealtimeFixture()
+        val priorPresentationObserver = LanguageMenuPresentationDiagnostics.observer
+        LanguageMenuPresentationDiagnostics.observer = { sessionId, event, frameTimeNanos, windowIdentity, windowClass ->
+            add("presentation_event").put("session_id", sessionId).put("stage", event)
+                .put("frame_time_nanos", frameTimeNanos ?: JSONObject.NULL)
+                .put("window_identity", windowIdentity ?: JSONObject.NULL)
+                .put("window_class", windowClass ?: JSONObject.NULL)
+        }
         val priorOpticalObserver = BackdropDiagnostics.observer
         if (recordOpticalDiagnostics) BackdropDiagnostics.observer = { name, value ->
             if (name.startsWith("Sample.") && (name.contains("Geometry") || name.contains("EffectRebuilt"))) {
@@ -170,6 +179,7 @@ class LanguageMenuMotionCaptureTest {
             scenario = "open-select-english"
             mark(scenario)
             open(tapHoldMs, settleMs)
+            assertFirstOpenPresentationHandoff()
             tap(tagCenter("general_language#en"), tapHoldMs, "select-en")
             waitFor("English selection is accepted") { selected == "en" }
             waitFor("English popup exit completes") { !menuPresent() && dismissals.lastOrNull()?.optString("code") == "en" }
@@ -280,6 +290,7 @@ class LanguageMenuMotionCaptureTest {
                 realView?.disposeComposition()
                 realRecomposer?.cancel()
             }
+            LanguageMenuPresentationDiagnostics.observer = priorPresentationObserver
             File(directory, "trace.jsonl").bufferedWriter().use { writer ->
                 trace.forEach { writer.appendLine(it.toString()) }
             }
@@ -739,6 +750,10 @@ class LanguageMenuMotionCaptureTest {
                         .put("alpha", state.alpha).put("content_alpha", state.contentAlpha)
                         .put("translation_x_dp", state.translationXDp).put("translation_y_dp", state.translationYDp))
                 }
+                tagged.node.config.getOrNull(LanguageMenuHandoffStateKey)?.let { state ->
+                    node.put("handoff_state", JSONObject().put("session_id", state.sessionId)
+                        .put("phase", state.phase).put("source_card_alpha", state.sourceCardAlpha))
+                }
             }
         }))
     }
@@ -892,6 +907,25 @@ class LanguageMenuMotionCaptureTest {
         .put("scenario", scenario).put("uptime_ms", SystemClock.uptimeMillis())
         .put("elapsed_realtime_nanos", SystemClock.elapsedRealtimeNanos()).also(trace::add)
 
+    private fun assertFirstOpenPresentationHandoff() {
+        val rows = trace.filter { it.optString("event") == "presentation_event" && it.optString("scenario") == "open-select-english" }
+            .sortedBy { it.getInt("sequence") }
+        val prepared = rows.first { it.optString("stage") == "prepared" }
+        val sessionId = prepared.getInt("session_id")
+        val stages = rows.filter { it.getInt("session_id") == sessionId }
+        val expected = listOf("prepared", "popup_positioned", "popup_first_content_draw", "popup_frame_committed",
+            "handoff_waiting-source-hidden-frame", "source_hidden_first_content_draw", "source_hidden_frame_committed", "handoff_motion")
+        val positions = expected.map { stage -> stages.indexOfFirst { it.optString("stage") == stage }.also {
+            assertTrue("First natural open records $stage: ${stages.map { row -> row.optString("stage") }}", it >= 0)
+        } }
+        assertTrue("Popup submission precedes hiding the source and starting motion", positions.zipWithNext().all { (a, b) -> a < b })
+        val popup = stages.first { it.optString("stage") == "popup_frame_committed" }
+        val source = stages.first { it.optString("stage") == "source_hidden_frame_committed" }
+        assertTrue("Popup and source fences belong to separate content windows", popup.getInt("window_identity") != source.getInt("window_identity"))
+        assertTrue("Popup fence is registered by the Popup content window", popup.getString("window_class").endsWith("PopupLayout"))
+        add("presentation_handoff_asserted").put("session_id", sessionId).put("ordered_stages", JSONArray(expected))
+    }
+
     private fun rect(bounds: Rect) = JSONArray(listOf(bounds.left, bounds.top, bounds.width, bounds.height))
 
     private fun writeSession(directory: File, holdMs: Long, longPressHoldMs: Long, settleMs: Long) {
@@ -912,6 +946,7 @@ class LanguageMenuMotionCaptureTest {
                 .put("clock", "Lifecycle-aware AndroidUiDispatcher/Choreographer Recomposer; no Compose mainClock advances after bootstrap")
                 .put("pixels", "Externally started adb screenrecord only; no screenshot or capture wait in motion path")
                 .put("frame_observation", "vsync_sample is a Choreographer callback, not proof of a displayed buffer. window_draw snapshots semantics on OnDraw; frame_commit observes HWUI submission, not compositor present time. Video PTS plus visible corner marker is the independent display evidence.")
+                .put("presentation_handoff", "presentation_event records per-session preparation, Popup positioning, replacement-card draw, the owning Popup window's HWUI submission, source-hidden draw/submission, and motion origin. The original card stays visible until the Popup submission. Optical sampling and motion wait for source-hidden submission. Window identities prove separate content windows. These submission fences do not prove compositor presentation; API 26–28/software fallback is explicitly named draw_posted_legacy_or_software.")
                 .put("geometry", "screen_bounds_px is transformed public semantics geometry, not a segmented visible contour. draw_state is the product graphicsLayer input, not a material-alpha measurement. Host view alpha is separate. Extract visible menu/text edges from video for independent validation.")
                 .put("input_observation", "Public UiAutomation MotionEvent injection records actual eventTime, blocking and lateness. Activity FrameLayout dispatch and nonconsuming Compose-root listeners record delivered uptime; PopupLayout may handle ACTION_OUTSIDE before its Compose child, so absence of a delivery row for an outside event is not fabricated as delivery.")
                 .put("scope", "Real GlassLanguageMenu and all five labels; onSelect immediately updates local selected code, onDismissed records completion after popup removal. Preference persistence and Activity recreation are not emulated.")

@@ -16,7 +16,6 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
-import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -38,7 +37,7 @@ import java.io.File
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [35], qualifiers = "w360dp-h640dp-mdpi")
 class GlassSelectionColorRegressionTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule val compose = createSoftwareWindowComposeRule()
 
     private val languages = listOf(
         "zh-CN" to "简体中文", "zh-TW" to "繁體中文", "en" to "English",

@@ -10,6 +10,36 @@ class LanguageMenuMotionTest {
     private val anchor = Rect(20f, 208f, 382f, 208f + 154f / 3f)
     private val menu = Rect(76f, 208f, 326f, 438f)
 
+    @Test fun coldPopupKeepsSourceUntilItsOwnFrameThenWaitsForCardlessBackdrop() {
+        val handoff = LanguageMenuHandoff()
+        assertEquals(1f, handoff.sourceCardAlpha, 0f)
+        assertFalse(handoff.canAnimate)
+        assertFalse("a host frame cannot stand in for the missing popup", handoff.sourceHiddenFrameSubmitted())
+        assertEquals(1f, handoff.sourceCardAlpha, 0f)
+        assertTrue(handoff.popupFrameSubmitted())
+        assertEquals(0f, handoff.sourceCardAlpha, 0f)
+        assertTrue(handoff.awaitingSourceFrame)
+        assertFalse("do not sample the still-visible source card into the popup", handoff.canAnimate)
+        assertTrue(handoff.sourceHiddenFrameSubmitted())
+        assertTrue(handoff.canAnimate)
+        assertFalse(handoff.popupFrameSubmitted())
+    }
+
+    @Test fun disposedOrReplacedSessionIgnoresLateWindowCallbacks() {
+        listOf(false, true).forEach { popupWasSubmitted ->
+            val old = LanguageMenuHandoff()
+            if (popupWasSubmitted) old.popupFrameSubmitted()
+            old.dispose()
+            val reopened = LanguageMenuHandoff()
+            assertFalse(old.popupFrameSubmitted())
+            assertFalse(old.sourceHiddenFrameSubmitted())
+            assertFalse(old.canAnimate)
+            assertEquals(1f, old.sourceCardAlpha, 0f)
+            assertEquals("late callbacks cannot hide a freshly reopened card", 1f, reopened.sourceCardAlpha, 0f)
+            assertFalse(reopened.canAnimate)
+        }
+    }
+
     @Test fun captureStartClockPreservesTheNativeIrregularIntervals() {
         samples().groupBy { it.scene }.values.forEach { rows ->
             val first = rows.first()
