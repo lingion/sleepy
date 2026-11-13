@@ -99,6 +99,11 @@ uniform float4 uProfile[16];
 // star-shaped-outline assumption.
 uniform float4 uProfile2[16];
 uniform float4 uProfileCenters;
+// Known CPU buildPath contours, kept separate from the legacy radial profiles.
+// Header: P0.xy/center.xy; count/closing-line-index/version/reserved.
+// Each segment: P1.xy/P2.xy, then P3.xy/start-angle/end-angle.
+uniform float4 uExact1[36];
+uniform float4 uExact2[36];
 // A menu's highlight (LiquidGlassRim): light added at eight turns from the
 // vertical through the center, rising from 0 to a right angle, and across
 // bands inward from the rim, where each ends in dp and its share.
@@ -409,6 +414,135 @@ void dualOutlineGeometry(float2 point, out float inset, out float2 normal) {
   normal = first ? firstNormal : secondNormal;
 }
 
+float exactCross(float2 a, float2 b) {
+  return a.x * b.y - a.y * b.x;
+}
+
+// De Casteljau uses the actual CPU Float controls, including one-sided joint tangents.
+void exactCubic(float2 p0, float2 p1, float2 p2, float2 p3, float t,
+  out float2 position, out float2 tangent) {
+  float2 a = mix(p0, p1, t);
+  float2 b = mix(p1, p2, t);
+  float2 c = mix(p2, p3, t);
+  float2 d = mix(a, b, t);
+  float2 e = mix(b, c, t);
+  position = mix(d, e, t);
+  tangent = 3.0 * (e - d);
+}
+
+// This is signed radial normal-projection depth, not a deep Euclidean SDF. Its zero
+// boundary and normal come from the actual cubic/Line, rather than a resampled profile.
+// Return false explicitly on a missing/invalid solve; the caller retains a finite fallback.
+bool signedExactGeometry(float2 point, bool second, out float inset, out float2 normal) {
+  float4 origin = second ? uExact2[0] : uExact1[0];
+  float4 header = second ? uExact2[1] : uExact1[1];
+  float2 center = origin.zw;
+  float2 p = point - center;
+  float len = length(p);
+  float2 radial = len > 1e-3 ? p / len : float2(1.0, 0.0);
+  float angle = atan(radial.y, radial.x);
+  float2 p0 = origin.xy - center;
+  float bestReach = -1.0;
+  float2 bestNormal = float2(1.0, 0.0);
+  // Literal bounds and induction-variable indices also work on restricted AGSL backends.
+  for (int i = 2; i < 36; i += 2) {
+    float4 controls = second ? uExact2[i] : uExact1[i];
+    float4 end = second ? uExact2[i + 1] : uExact1[i + 1];
+    float2 p1 = controls.xy - center;
+    float2 p2 = controls.zw - center;
+    float2 p3 = end.xy - center;
+    float segment = float((i - 2) / 2);
+    float span = end.w - end.z;
+    float delta = angle - end.z;
+    delta -= kTau * floor(delta / kTau + 0.5);
+    bool candidate = segment < header.x && delta >= min(0.0, span) - 1e-5
+        && delta <= max(0.0, span) + 1e-5;
+    if (candidate) {
+      float lowCross = exactCross(p0, radial);
+      float highCross = exactCross(p3, radial);
+      float t = 0.5;
+      bool valid = true;
+      bool line = segment == header.y;
+      if (abs(lowCross) <= 1e-6) {
+        t = 0.0;
+      } else if (abs(highCross) <= 1e-6) {
+        t = 1.0;
+      } else if ((lowCross < 0.0) == (highCross < 0.0)) {
+        valid = false;
+      } else if (line) {
+        t = lowCross / (lowCross - highCross);
+      } else {
+        float low = 0.0;
+        float high = 1.0;
+        // Bounded baseline; GPU Float precision and cost are checked independently.
+        for (int step = 0; step < 16; step++) {
+          float2 at;
+          float2 derivative;
+          exactCubic(p0, p1, p2, p3, t, at, derivative);
+          float value = exactCross(at, radial);
+          if ((value < 0.0) == (lowCross < 0.0)) {
+            low = t;
+            lowCross = value;
+          } else {
+            high = t;
+          }
+          t = (low + high) * 0.5;
+        }
+      }
+      if (valid) {
+        float2 at;
+        float2 tangent;
+        if (line) {
+          at = mix(p0, p3, t);
+          tangent = p3 - p0;
+        } else {
+          exactCubic(p0, p1, p2, p3, t, at, tangent);
+        }
+        float tangentLength = length(tangent);
+        float reach = dot(at, radial);
+        if (tangentLength > 1e-6 && tangentLength < 1e6 && reach >= 0.0
+            && abs(exactCross(at, radial)) < 0.01) {
+          float2 candidateNormal = float2(tangent.y, -tangent.x) / tangentLength;
+          // Degenerate/reversed microscopic closing corrections cannot define radial depth.
+          // Keep the real Line data, and prefer a valid adjacent CPU side or report fallback.
+          if (dot(candidateNormal, radial) > 1e-5 && reach > bestReach) {
+            bestReach = reach;
+            bestNormal = candidateNormal;
+          }
+        }
+      }
+    }
+    p0 = p3;
+  }
+  normal = bestNormal;
+  inset = (bestReach - len) * dot(bestNormal, radial);
+  return bestReach >= 0.0;
+}
+
+bool exactOutlineGeometry(float2 point, bool dual, out float inset, out float2 normal) {
+  float firstInset;
+  float2 firstNormal;
+  bool firstFound = signedExactGeometry(point, false, firstInset, firstNormal);
+  if (!firstFound) {
+    signedProfileGeometry(point - uProfileCenters.xy, false, firstInset, firstNormal);
+  }
+  if (!dual) {
+    inset = max(firstInset, 0.0);
+    normal = firstNormal;
+    return firstFound;
+  }
+  float secondInset;
+  float2 secondNormal;
+  bool secondFound = signedExactGeometry(point, true, secondInset, secondNormal);
+  if (!secondFound) {
+    signedProfileGeometry(point - uProfileCenters.zw, true, secondInset, secondNormal);
+  }
+  bool first = firstInset >= secondInset;
+  inset = max(first ? firstInset : secondInset, 0.0);
+  normal = first ? firstNormal : secondNormal;
+  return firstFound && secondFound;
+}
+
 // How far inside a pill of the engine's superellipse a point lies, q taken
 // from its center and its long sides along x. Its ends are the circles an
 // octant whose side is its radius makes.
@@ -531,12 +665,17 @@ half4 main(float2 fragCoord) {
   // capsules/discs use the exact circular inset and normal throughout; only
   // continuous superellipses need their separate near-edge inset below.
   float edge;
+  // Geometry diagnostics assert this independently; a finite fallback is not an exact solve.
+  bool exactFound = true;
   bool lit = uEdge.x > 0.0 || uRim.w > 0.0 || uLight.x > 0.0;
   float traced = max(
     lit ? kLine + uLight.y : 0.0,
     uShineLit[0].x > 0.0 ? uShineEnds[2].w : 0.0
   );
-  if (uOutlined > 2.5) {
+  if (uOutlined > 3.5) {
+    exactFound = exactOutlineGeometry(point, uOutlined > 4.5, inset, normal);
+    edge = inset;
+  } else if (uOutlined > 2.5) {
     dualOutlineGeometry(point, inset, normal);
     edge = inset;
   } else if (uOutlined > 1.5) {

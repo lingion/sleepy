@@ -32,7 +32,6 @@ import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -367,23 +366,28 @@ private fun LanguagePopup(
     }
 }
 
-/** Two measured contours; optical smoothing/radius remain an approximation, documented with the reference. */
-private data class LanguageMenuMorphShape(val anchor: Rect, val menu: Rect, val progress: Float, val scale: Float) : LiquidGlassDualContourShape {
-    private val contours: Pair<Path, Path> by lazy {
-        fun path(rect: Rect, radius: Float): Path {
-            val native = android.graphics.Path()
-            LiquidGlassSuperellipse.buildPath(LiquidGlassSuperellipse.Rect2(rect.left, rect.top, rect.right, rect.bottom),
+/** Same two actual CPU contours; inward material depth remains a radial projection approximation. */
+private data class LanguageMenuMorphShape(val anchor: Rect, val menu: Rect, val progress: Float, val scale: Float) :
+    LiquidGlassDualContourShape, LiquidGlassExactContourShape {
+    private val sources: Pair<LiquidGlassContourOutline, LiquidGlassContourOutline> by lazy {
+        fun path(rect: Rect, radius: Float): LiquidGlassContourOutline =
+            LiquidGlassContourOutline(LiquidGlassSuperellipse.buildPath(LiquidGlassSuperellipse.Rect2(rect.left, rect.top, rect.right, rect.bottom),
                 LiquidGlassSuperellipse.Radii.makeRadius(radius.coerceIn(0f, minOf(rect.width, rect.height) / 2f)))
-                .toAndroidPath(native)
-            return native.asComposePath()
-        }
+            )
         path(anchor, 8f * scale) to
             path(menu, minOf(menu.width, menu.height) / 2f * (1f - progress) + 26f * scale * progress)
     }
+    private val contours: Pair<Path, Path> by lazy { sources.first.path to sources.second.path }
     private val outline: Outline by lazy {
         Outline.Generic(Path.combine(PathOperation.Union, contours.first, contours.second))
     }
 
     override fun createOpticalContours(size: Size, layoutDirection: LayoutDirection, density: Density): Pair<Path, Path> = contours
     override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline = outline
+    override fun exactContoursFor(outline: Outline): List<LiquidGlassExactContour>? {
+        if (this.outline !== outline) return null
+        val first = sources.first.exact ?: return null
+        val second = sources.second.exact ?: return null
+        return listOf(first, second)
+    }
 }

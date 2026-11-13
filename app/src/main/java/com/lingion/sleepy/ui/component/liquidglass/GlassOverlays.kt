@@ -26,7 +26,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
@@ -373,7 +372,9 @@ private class NativeGlassSheetContour(
     topEnd: CornerSize,
     bottomEnd: CornerSize,
     bottomStart: CornerSize,
-) : CornerBasedShape(topStart, topEnd, bottomEnd, bottomStart) {
+) : CornerBasedShape(topStart, topEnd, bottomEnd, bottomStart), LiquidGlassExactContourShape {
+    private val contours = LiquidGlassContourCache()
+
     override fun createOutline(
         size: Size,
         topStart: Float,
@@ -387,8 +388,7 @@ private class NativeGlassSheetContour(
         val topRight = if (leftToRight) topEnd else topStart
         val bottomRight = if (leftToRight) bottomEnd else bottomStart
         val bottomLeft = if (leftToRight) bottomStart else bottomEnd
-        val path = android.graphics.Path()
-        LiquidGlassSuperellipse.buildPath(
+        return contours.obtain(
             LiquidGlassSuperellipse.Rect2(0f, 0f, size.width, size.height),
             LiquidGlassSuperellipse.Radii(
                 topLeft = LiquidGlassSuperellipse.Size2(topLeft, topLeft),
@@ -396,9 +396,10 @@ private class NativeGlassSheetContour(
                 bottomRight = LiquidGlassSuperellipse.Size2(bottomRight, bottomRight),
                 bottomLeft = LiquidGlassSuperellipse.Size2(bottomLeft, bottomLeft),
             ),
-        ).toAndroidPath(path)
-        return Outline.Generic(path.asComposePath())
+        ).outline
     }
+
+    override fun exactContoursFor(outline: Outline): List<LiquidGlassExactContour>? = contours.exactContoursFor(outline)
 
     override fun copy(
         topStart: CornerSize,

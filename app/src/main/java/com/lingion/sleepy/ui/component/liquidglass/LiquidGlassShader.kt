@@ -133,6 +133,8 @@ internal object LiquidGlassShader {
         "uProfile" to 64,
         "uProfile2" to 64,
         "uProfileCenters" to 4,
+        "uExact1" to LIQUID_GLASS_EXACT_FLOATS,
+        "uExact2" to LIQUID_GLASS_EXACT_FLOATS,
         "uShineTurns" to 8,
         "uShineLit" to 8,
         "uShineEnds" to 12,
@@ -235,6 +237,7 @@ internal object LiquidGlassShader {
         rim: LiquidGlassRim? = null,
         veil: Color = Color.Transparent,
         circularCorners: Boolean = false,
+        exactContours: List<LiquidGlassExactContour>? = null,
     ): Map<String, FloatArray> {
         require(sampling.size == 8) { "sampling 须为 8 个 float, 实为 ${sampling.size}" }
         require(hazeSampling == null || hazeSampling.size == 8) {
@@ -302,12 +305,24 @@ internal object LiquidGlassShader {
             style.rimTail.toFloat(), style.rimFocus.toFloat(), style.rimAdded.toFloat(),
             style.hairlineSideOrHairline.toFloat(),
         )
-        val firstContour = dualContours?.first?.let(::liquidGlassContourProfile)
+        val exact = exactContours?.let { contours ->
+            contours.mapNotNull { it.pack(density) }.takeIf { packed ->
+                packed.size == contours.size && goo == null &&
+                    ((packed.size == 1 && dualContours == null && outline != null) ||
+                        (packed.size == 2 && dualContours != null))
+            }
+        }
+        // Profiles remain available as an exceptional solver fallback. Exact mode and its
+        // diagnostic found flag are separate, so a fallback is never reported as exact.
+        val firstContour = (dualContours?.first ?: outline?.takeIf { exact?.size == 1 })
+            ?.let(::liquidGlassContourProfile)
         val secondContour = dualContours?.second?.let(::liquidGlassContourProfile)
-        // 0 = rounded rectangle, 1 = one radial profile, 2 = Goo, 3 = two independent profiles.
+        // 4/5 = one/two actual CPU cubic contours; 0/1/2/3 retain their previous meanings.
         put(
             "uOutlined",
             when {
+                exact?.size == 2 -> 5f
+                exact?.size == 1 -> 4f
                 dualContours != null -> 3f
                 outline == null -> 0f
                 goo == null -> 1f
@@ -325,6 +340,8 @@ internal object LiquidGlassShader {
         put("uProfile2", *(secondContour?.radii ?: FLAT_PROFILE))
         put("uProfileCenters", firstContour?.center?.x ?: 0f, firstContour?.center?.y ?: 0f,
             secondContour?.center?.x ?: 0f, secondContour?.center?.y ?: 0f)
+        put("uExact1", *(exact?.firstOrNull() ?: FloatArray(LIQUID_GLASS_EXACT_FLOATS)))
+        put("uExact2", *(exact?.getOrNull(1) ?: FloatArray(LIQUID_GLASS_EXACT_FLOATS)))
         if (rim == null) {
             put("uShineTurns", *FloatArray(8))
             put("uShineLit", *FloatArray(8))

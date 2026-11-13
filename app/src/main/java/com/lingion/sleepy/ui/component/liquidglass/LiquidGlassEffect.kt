@@ -64,7 +64,9 @@ internal fun BackdropEffectScope.liquidGlass(
 
     try {
         val shaderSource = LiquidGlassShader.shaderSource(context)
-        val circular = circularGlassCornerRadii(shape.createOutline(currentSize, layoutDirection, this), density)
+        val actualOutline = shape.createOutline(currentSize, layoutDirection, this)
+        val circular = circularGlassCornerRadii(actualOutline, density)
+        val exactContours = (shape as? LiquidGlassExactContourShape)?.exactContoursFor(actualOutline)
         val corners = circular ?: extractCornerRadii(currentSize)
         val sizeDp = Size(currentSize.width / density, currentSize.height / density)
         val hazeAtlas = if (style.haze > 0.0) {
@@ -109,6 +111,7 @@ internal fun BackdropEffectScope.liquidGlass(
             veil = veil,
             glow = glow,
             circularCorners = circular != null,
+            exactContours = exactContours,
         )
 
         val shader = obtainRuntimeShader("LiquidGlassShader", shaderSource)

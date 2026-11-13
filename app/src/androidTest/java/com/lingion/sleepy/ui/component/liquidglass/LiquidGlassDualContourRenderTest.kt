@@ -97,7 +97,8 @@ class LiquidGlassDualContourRenderTest {
     private fun geometry(contours: Pair<Path, Path>): Bitmap {
         val source = InstrumentationRegistry.getInstrumentation().targetContext.assets.open("shaders/liquid_glass.agsl")
             .reader().use { it.readText() }
-        val functions = source.substring(source.indexOf("void addTurn("), source.indexOf("// How far inside a pill"))
+        // This fixture exercises the legacy dual-profile branch, not the later exact helpers.
+        val functions = source.substring(source.indexOf("void addTurn("), source.indexOf("float exactCross("))
         val geometryShader = RuntimeShader("""
             uniform float4 uProfile[16];
             uniform float4 uProfile2[16];
