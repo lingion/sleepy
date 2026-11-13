@@ -399,6 +399,37 @@ final class NativeReferenceTests: XCTestCase {
         }
     }
 
+    /// A narrow public-layer probe of the unresolved release excursion. It
+    /// repeats the existing equal-excess slow/fast forward pair, adding model
+    /// geometry and public animations without modifying the native Slider.
+    func testSwiftUISliderReleaseLayerProbe() {
+        executionTimeAllowance = 90
+        settleDuration = 1.65
+        for (speed, velocity) in [("slow", 90.0), ("fast", 900.0)] {
+            launch(scene: "slider", background: "grid", initialSlider: 0.75, sliderLayerProbe: true)
+            let control = app.sliders["swiftui-slider"]
+            XCTAssertTrue(control.waitForExistence(timeout: 5))
+            XCTAssertEqual(control.value as? String, "75%")
+            let frame = control.frame
+            XCTAssertEqual(app.windows.firstMatch.frame.width, 375, accuracy: 0.5)
+            XCTAssertEqual(frame.width, 335, accuracy: 0.5)
+            let origin = CGPoint(x: frame.minX + 19 + 298 * 0.75, y: frame.minY + 16)
+            let thresholdX = origin.x + 10 + 335 * 0.25
+            let destination = CGPoint(x: thresholdX + 10, y: origin.y)
+            let label = "slider-release-layer-\(speed)-forward-excess-10pt"
+            captureLanguage(label + "-rest")
+            endpointDrag(control, from: origin, to: destination, velocity: velocity, label: label,
+                         endHoldDuration: 1.35, postCommandTailSeconds: 1.2,
+                         extra: ["control": "swiftui-slider", "initialValue": 0.75,
+                                 "direction": "forward", "requestedRawExcessPt": 10,
+                                 "nominalBusinessThresholdXPt": thresholdX,
+                                 "observation": "opt-in public model-layer geometry and CAAnimation; no native control mutation"])
+            XCTAssertEqual(control.value as? String, "100%")
+            captureLanguage(label + "-tail")
+            app.terminate()
+        }
+    }
+
     private func swiftUIEndpointMotion(kind: String) {
         executionTimeAllowance = 65
         settleDuration = 1.65
@@ -862,7 +893,8 @@ final class NativeReferenceTests: XCTestCase {
 
     private func launch(scene: String, background: String, focused: Bool = false, tabCount: Int = 3,
                         style: String = "light", staticOptics: Bool = false, dockParent: String? = nil,
-                        dockContent: String? = nil, appearanceControls: Bool = false, initialSlider: Double? = nil) {
+                        dockContent: String? = nil, appearanceControls: Bool = false, initialSlider: Double? = nil,
+                        sliderLayerProbe: Bool = false) {
         app = XCUIApplication()
         app.launchArguments = ["-ReferenceScene", scene, "-ReferenceBackground", background,
                                "-ReferenceInterfaceStyle", style]
@@ -873,6 +905,7 @@ final class NativeReferenceTests: XCTestCase {
         if let dockContent { app.launchArguments += ["-ReferenceDockContent", dockContent] }
         if appearanceControls { app.launchArguments.append("-ReferenceDockAppearanceControls") }
         if let initialSlider { app.launchArguments += ["-ReferenceInitialSlider", String(initialSlider)] }
+        if sliderLayerProbe { app.launchArguments.append("-ReferenceSliderLayerProbe") }
         app.launchEnvironment["REFERENCE_RUN_ID"] = "\(name)-\(UUID().uuidString)"
         app.launch()
         XCTAssertTrue(app.staticTexts["reference-title"].waitForExistence(timeout: 10))

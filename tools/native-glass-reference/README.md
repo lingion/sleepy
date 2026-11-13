@@ -892,3 +892,37 @@ hold/release of the alert trigger, followed by fixed 6-second held action captur
 It does not replace `testAlertHeldLandscapeLight` or turn its two cancelled
 short-tap deliveries into a pass. The probe can supply a background/material
 reference only if its own actual touch and capture brackets verify.
+
+
+### Opt-in single-Slider public model-layer probe75
+
+`testSwiftUISliderReleaseLayerProbe` repeats the existing slow90/fast900 forward
+nominal10pt-excess pair, with1.35s destination hold and1.2s post-command tail.
+Only these launches pass `-ReferenceSliderLayerProbe`. In Slider scenes this
+flag records every UIView-backed ancestor, public model-layer geometry under
+`modelGeometry`, and existing public CAAnimation fields. Ordinary captures keep
+their previous traversal scope. No native layer, animation or tracking state is
+changed. Session metadata declares the flag and its sequential-read scope.
+
+The November14 batch75 built in5.854s and completed the selected test with exit0
+(29.400s test case;65.081s whole xcodebuild command). Both fresh sessions confirm
+iOS26.5/23F77 and375x667pt. Named log activities plus session chronology identify
+the requested speeds; actual MOVE sample spans are1166.667/100ms. Both delivered
+terminal x366.5, corresponding to10.25pt beyond the nominal356.25 threshold.
+
+Both final-held public model/presentation positions are4.353380581pt beyond
+final REST. Fast reaches +8pt in both position channels at the complete getter
+bracket UP+83.103..85.307ms; slow never exceeds its held presentation position,
+and its post-UP model maximum is+4pt. No post-UP business callback was observed.
+The lens and eight recorded view-backed ancestors have empty animation keys,
+and those ancestors stay fixed. This supports an empirical changing model-state
+position response; it does not identify a private native mechanism, target,
+retained velocity law, or the absence of animations in unrecorded CALayer nodes.
+
+All9 manifest file hashes/sizes pass independent checks. Neither run truncates
+traversal. Median capture cost is2.018/2.232ms (slow/fast), with early maxima
+29.385/26.010ms. Getter brackets, actual input and observer overhead are retained.
+The raw video is contextual; no synchronized video contour acceptance is claimed.
+Evidence and independent reproduction live in this session's
+`android-native-range-75/release-probe`. Android motion was not changed by this
+probe, and the release excursions remain an open alignment item.

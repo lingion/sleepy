@@ -66,6 +66,8 @@ final class ReferenceTrace {
             "frameClock": "captureStartT...captureEndT bracket sequential presentation reads; t is row enqueue time",
             "layerGeometryFieldsVersion": 1,
             "layerGeometryCoordinates": "positionX/Y are superlayer points; anchorPointX/Y are unit bounds coordinates; boundsX/Y are local bounds origin points; presentation layer when available",
+            "sliderLayerProbe": ProcessInfo.processInfo.arguments.contains("-ReferenceSliderLayerProbe"),
+            "sliderLayerProbeScope": "opt-in public model geometry and CAAnimation reads; no control mutation; sequential reads use the enclosing capture bracket",
             "effectiveOpacityScope": "product of presentation opacity along UIView ancestors; excludes extra CALayer ancestors and material shader coverage",
             "coordinates": "window points; normalized coordinates divide by window bounds",
             "tintSRGB": [0.0, 0.65, 0.75, 1.0],
@@ -264,6 +266,8 @@ final class PresentationRecorder: NSObject {
         var visited = 0
         var truncated = false
         let languageScene = (context()["scene"] as? String) == "language"
+        let sliderLayerProbe = (context()["scene"] as? String) == "slider" &&
+            ProcessInfo.processInfo.arguments.contains("-ReferenceSliderLayerProbe")
         let focused = ProcessInfo.processInfo.arguments.contains("-ReferenceFocusedTrace")
         func walk(_ view: UIView, path: String, depth: Int, inheritedOpacity: Float = 1, inheritedHidden: Bool = false) {
             guard depth <= 18, visited < 900 else { truncated = true; return }
@@ -281,7 +285,7 @@ final class PresentationRecorder: NSObject {
             let effectiveHidden = inheritedHidden || view.isHidden
             // Language runs retain every ancestor and menu descendant so an animated
             // content child is not mistaken for its final, static outer container.
-            if (languageScene && !focused) || isControl || isMaterial || isMenuMotion || !identifier.isEmpty {
+            if (languageScene && !focused) || sliderLayerProbe || isControl || isMaterial || isMenuMotion || !identifier.isEmpty {
                 let bounds = layer.bounds
                 let position = layer.position
                 let anchorPoint = layer.anchorPoint
@@ -291,7 +295,7 @@ final class PresentationRecorder: NSObject {
                 }
                 let transform = layer.transform
                 let sublayers = isMenuMotion ? animatedSublayers(view.layer) : (rows: [], visited: 0, truncated: false)
-                views.append([
+                var record: [String: Any] = [
                     "path": path, "class": name, "identifier": identifier,
                     "x": rect.minX, "y": rect.minY, "w": rect.width, "h": rect.height,
                     "boundsW": bounds.width, "boundsH": bounds.height,
@@ -308,11 +312,26 @@ final class PresentationRecorder: NSObject {
                     "m41": transform.m41, "m42": transform.m42,
                     "background": layer.backgroundColor.map { String(describing: $0) } ?? "",
                     "animationKeys": view.layer.animationKeys() ?? [],
-                    "animations": isMenuMotion ? layerAnimations(view.layer) : [],
+                    "animations": (isMenuMotion || sliderLayerProbe) ? layerAnimations(view.layer) : [],
                     "animatedSublayers": sublayers.rows,
                     "animatedSublayerVisits": sublayers.visited,
                     "animatedSublayersTruncated": sublayers.truncated
-                ])
+                ]
+                if sliderLayerProbe {
+                    let model = view.layer
+                    let modelTransform = model.transform
+                    record["modelGeometry"] = [
+                        "positionX": model.position.x, "positionY": model.position.y,
+                        "boundsX": model.bounds.origin.x, "boundsY": model.bounds.origin.y,
+                        "boundsW": model.bounds.width, "boundsH": model.bounds.height,
+                        "anchorPointX": model.anchorPoint.x, "anchorPointY": model.anchorPoint.y,
+                        "opacity": model.opacity,
+                        "m11": modelTransform.m11, "m22": modelTransform.m22,
+                        "m12": modelTransform.m12, "m21": modelTransform.m21,
+                        "m41": modelTransform.m41, "m42": modelTransform.m42
+                    ]
+                }
+                views.append(record)
             }
             for (index, child) in view.subviews.enumerated() {
                 walk(child, path: path + "/\(index)", depth: depth + 1,

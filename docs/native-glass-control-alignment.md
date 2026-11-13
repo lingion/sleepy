@@ -487,3 +487,14 @@ F从73正式E出发，只把独立`sliderLens`的`refraction=-4.3`改为`-2.15`�
 本轮9类48项定向JVM通过，0失败/错误/跳过；过滤仍是`*GlassSlider*Test`、`*LiquidGlassStyleReferenceTest`和`*MaterialSliderAppearanceIsolationTest`，debug与androidTest同轮构建成功37s。正式F在API36设备完成四背景×明暗8场景的静态GPU重采，1项通过约40s，49份文件与设备hash一致；原合成时钟、readiness、坐标和判定未改。主APK设备/host SHA256为`fd89106ce31e539665f468016d34c0d9e2bfd81a1e23ecc9e517dc3882d95117`，测试包仍为`794470570f2fcbbee11be8bdb3acbc80d7dae984bc600dad046c66f030c4027e`，手机恢复debug MainActivity。
 
 正式75与成功诊断74F的48张完整PNG中严格相同24张，即全部24张App Window；24张display在原既定`[0,135,1216,2592)`域内无差异，完整display仍有系统栏差异。因此严格48/48完整PNG条件继续未通过，也不能以相同生产重采结果推成原生等价。独立复核和root逐图重算分别在75的`production-comparison`及`root-production-png-comparison.json`，保留原判定和全部残差。48项JVM、本次1项GPU与此前各轮分开报告，不拼为新全量结果。
+
+
+### 75补充：公开模型层的释放外冲与双头参考缺口
+
+原生参考新增仅显式启用的`testSwiftUISliderReleaseLayerProbe`，对相同10pt名义excess的慢90/快900正向各重新launch一次，末端保持1.35s，保留1.2s命令后尾部。只在带`-ReferenceSliderLayerProbe`的Slider场景读取公开model geometry及CAAnimation，记录所有UIView节点以保留祖先；不修改原生控件的图层、动画或交互。正常参考采集不扩大遍历范围。
+
+iOS26.5/23F77、375×667pt两会话均完成。构建5.854s、所选测试29.400s通过（整个xcodebuild命令65.081s），9份manifest文件hash/size通过独立核对。日志命名活动及session时间建立请求身份，实际MOVE sample跨度1166.667/100ms；两者末端实际x366.5，相对名义阈值356.25为10.25pt，实际输入不同于请求速度本身。两者稳定held模型/显示position相对最终REST均为+4.353380581pt；快手势在UP后完整getter括号83.103–85.307ms同时出现model与presentation position的+8pt峰值，慢手势不超过held位置，post-UP模型最大+4pt。两者UP后无业务值回调。
+
+镜片及8个已记录UIView背书祖先的animation keys均为空，祖先几何固定；因此新证据支持外冲包含逐帧改变的公开model位置，而非仅由已有presentation变换或bounds收缩解释。没有据此识别私有动画机制、目标、释放速度规则，或排除未记录CALayer节点的动画。遍历均0截断，慢/快capture cost中位数2.018/2.232ms，早期最大29.385/26.010ms；顺序getter和observer成本保留。视频仅作上下文，没有同步视频轮廓验收。本次不更改Android动态规则。原始及独立复核在75的`release-probe`。
+
+另核对双头参考：现有原生参考工程只有单值SwiftUI Slider/UISlider；当前iOS业务`IntRangeSlider`自绘22×22圆形，不能作为用户要求的原生椭圆玻璃对照。旧Android `sliders-cancel-green-3`确有15个已完成range场景，另一个命名为`sliders-collapsed-range-2`的会话实际只有单头，不能凭目录名宣称双头已测。它们均早于当前runtime，不替代当前双头验收。下一项可行性参考是同轨道的两个公开UISlider原生thumb，先证明独立tracking/材质，再测等比缩小；重叠端点的方向路由须单独设计，尚未建立原生双头等价性。完整源位置、trace计数与hash见75的`range-audit`。
