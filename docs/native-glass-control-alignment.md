@@ -345,3 +345,54 @@ Segment端部视觉目标改为物理12dp限幅的既有.55橡皮筋公式，业
 本轮仅补足单头held外移及仿射绘制的部分证据；原生长按后8/7pt释放峰值、完整可见轮廓/四角、材质与折射、其他宽度和双头独立动态参考仍未完成。输入/几何独立审计均在`slider-endpoint-affine-71/independent-input-audit`，保留完整观测和不一致项，不称动态1:1。
 
 供后续抽离的[本地Liquid Glass库清单](../libraries/liquid-glass/README.md)与[资产目录](../libraries/liquid-glass/asset-catalog.json)已登记当前资源。现阶段仅为清单，尚非可独立构建的库，也未发布；保留原有来源说明和待核实的来源问题，未更改许可证。后续抽离须另处理依赖边界与来源核对，本次主机测试不构成独立库验证。
+
+### 72：四项Dock父层接收时钟与单头Slider同世界光学采证
+
+四项Dock父层平移现使用独立的`NativeDockParentMotion`，由实际DOWN后的物理手指位移驱动，不再用逻辑选项、夹住后的镜片位置或仅越界的pull代替。候选来自65的333×62pt SwiftUI四项父层：`u=.010287932530511721×(fingerX−downX)`，`x''+2ζωx'+ω²x=ω²u`，`ω=9.488283178142856/s`、`ζ=.6099720458279732`、单位质量刚度`90.0275176686287`。仅慢正向gesture0用于拟合，慢反向及两个快拖为冻结后的留出计算；这些轨迹曾用于机制观察，不是前瞻盲验。该线性候选没有新增通用端部限幅。
+
+原生实测及候选误差保持如下，没有用Kotlin数值容差代替原生验收：
+
+| 原生手势 | 用途/观测数 | 全active RMSE（pt） | 最大绝对残差（pt） | UP前150ms RMSE（pt） |
+| --- | --- | ---: | ---: | ---: |
+| 慢正向 | train / 209 | .044699370 | .156530395 | .150339528 |
+| 慢反向 | holdout / 214 | .044642326 | .156119182 | .148561294 |
+| 快正向 | holdout / 57 | .291415316 | .586557971 | .212318315 |
+| 快反向 | holdout / 61 | .294340323 | .598668836 | .249824567 |
+
+证据只覆盖该父层尺寸、从静止开始的四次单向手势、相同293pt最终DOWN位移幅度及约250ms末端保持。它没有识别任意宽度的原生规律、快速反转、打断或释放机制，也没有修正共同lift、父层横纵缩放、完整可见轮廓或光学。其他Android四项宽度明确外推相同物理dp响应；UP/CANCEL/外部选择使用既有Android `PressSpring`回零，打断DOWN保留当前位置/速度并重设手指anchor，这些是实现政策。
+
+`GlassDockMotion`在命令入队时转交可选物理坐标，父层有独立receipt队列。冷帧从首个合资格的实际receipt开始，MOVE按receipt拆分积分，保留首帧从实际输入到帧尾的elapsed；硬件sample时间没有代替receipt，也没有拟合延时。既有七弹簧的Press仍在首个合资格帧尾建立起点。动画倍率只除一次，倍率0立即结算当前held目标或返回0；epoch阻止取消/新DOWN后的旧MOVE和release，收稳后不保留父层空转。
+
+生产四项在移动层外的pointer owner上以`LayoutCoordinates.localToWindow(position).x/density`取得DOWN和每个MOVE，包含≤4px、仍走`trackGlow`的输入；RTL保持物理屏幕+X。输出将期望window向量通过同一owner的`windowToLocal`逆映射后写入父层`translationX/Y`，避免caller scale再次放大响应。这是静态可逆caller仿射的坐标处理政策；已回归的caller条件为水平scale .8/1.2，旋转、剪切及动态祖先变化没有新增原生实测验收。density改变会重建pointer handler，防止旧物理dp anchor跨密度存活。三项继续原pull平移，父层scale公式也保持原样。
+
+新增`dock-parent`标记位于包住底座、外部内容、镜片及内部内容的整块移动carrier。当前参考布局为333×86dp，含62dp底座上下各12dp阴影留白；它不是可见plume或alpha轮廓。实际中心平移可独立读取这个carrier，`DockLensBoundsInRootPx`仍描述绘制镜片，并显式订阅新父层平移以更新held/return期间的`localToRoot`。仓库的`dock-parent-input-65.csv`和`dock-parent-reference-65.csv`保留362个实际main delivery和541个原生观测，附source/frame/raw行号、getter括号、实际手指及冻结候选残差。helper的`rest=1e−9`与回归`1e−4dp`分别是数值停止和Float/纳秒舍入容差，不是原生等价容差。
+
+72主机红绿严格分开记录：最早的SDK路径基础设施失败未执行测试，单独保留；配置环境后由API兼容no-op helper运行15项，出现12个真实断言失败、0错误/跳过，编译和资源发现成功。实现后首次定向133项为132通过、1断言失败、0错误/跳过，15项helper全部通过，命令在单测处停止、尚未产出该轮APK。单独诊断仍是同一项断言失败，记录Explore两份实际文字bounds、正确touch root点、carrier和镜片均完全静止；原因是手工时钟在snapshotFlow唤醒前一次推进2500ms，七弹簧直到末帧才建立Press起点。只将夹具改为先`waitForIdle`、显式首帧并同步，再推进原2500ms，保留所有原断言和诊断，没有为该失败改runtime。
+
+随后同一命令重新执行133项定向测试，失败/错误/跳过均0，debug和androidTest APK也构建成功（约32s）。过滤范围为`*Dock*Test`、`*GlassSlider*Test`、`*NativeSlider*Test`、`*TimedGlassControl*Test`，这不是全仓完整suite。新增15项helper和7项Compose契约覆盖真实receipt首帧、固定手指继续演化、正负方向/anchor、epoch、倍率0、Android返回政策，以及四项范围内移动、阈值内移动、三项既有路径、静止未选中项按住、RTL和静态caller scale。红绿、诊断XML和APK安装hash分别在`android-dock-parent-response-72/{parent-red,parent-green-first,parent-direct-diagnostic,parent-green}`及`installed-apk-receipt.json`；源参考和数值推导在`helper-reference`，不能把这些JVM结果当作设备动态或视觉对齐。
+
+Slider另新增八个`testSwiftUISliderOptics{FineGrid,ColorStripes,TonalBlocks,Landscape}{Light,Dark}`公开方法，四背景×明暗各独立launch，保留原生SwiftUI Slider自然父层和25%值。每次保存REST、对准实测AX-local `(93.5,16)pt`保持6s，再保存released REST；实际窗口375×667pt、Slider AX frame为`(20,414,335,31)pt`，实际DOWN均为`(113.5,430)pt`。这组不能与旧AX归一化`.25/.5`按住记录混称同一几何。原生构建5.159s、测试170.879s均exit0，8/8 held PNG经实际DOWN/UP括号及文件完整性核对，截图起始在实际DOWN后约651.945–661.943ms，图像hash逐项保留。
+
+Android72的`NativeSliderOpticalWorldRenderTest#captureNativeSliderOpticalWorld`也已实际exit0：四背景×明暗8场景、16份REST/HELD控件图与8份背景基线，Window/display分别保存，共48 PNG及result.json的49份设备/host hash全部一致。它使用生产单头、335dp宽和完整375×667dp背景世界，导出实际四角、单位basis、holder/carrier、DOWN/CANCEL注入记录、active held状态和HWUI readiness（无独立Android平台receipt trace）；用合成Compose时钟结算光学状态，不能拿来说明自然时间节奏。首次REST残差只允许每轴≤1dp的一次固定光学采样平移，本次为`(+.22270203,−.08401489)dp`，跨背景/主题/REST/HELD及清理CANCEL复用；不缩放或移动背景世界，也不能用该平移证明生产几何相同。值始终.25且没有value/finish回调。
+
+Dock72实际四手势回放exit0，5份trace与唯一原始MP4均核对设备/host SHA。独立比较按各自实际DOWN receipt为原点，只选最近真实window draw，没有延时拟合、插值或重拟合。严格使用两版本都完整held的同一540个原生raw行：
+
+| 手势 | 共同held观测数 | Android69中心RMSE（dp） | Android72中心RMSE（dp） | Android72最大绝对差（dp） |
+| --- | ---: | ---: | ---: | ---: |
+| 慢正向 | 209 | 3.579757 | .046427 | .162079 |
+| 慢反向 | 214 | 3.587388 | .047706 | .153100 |
+| 快正向 | 57 | 4.666596 | .198231 | .390251 |
+| 快反向 | 60 | 4.245231 | .212943 | .423614 |
+
+全部541个原生合资格观测仍保留。快反向frame1628/raw2419最近的Android72 draw835已在UP之后，因此不计入共同held表，也没有换成更远的帧。实际输入分发数量和时刻仍不同，快正/反向同时间手指差最大约42.552/22.410dp，最近draw相位差最大25.711ms；较低的快拖总误差不能反过来证明候选模型比原生冻结残差更准。原生全部541帧tree层truncated=true，但目标parent每帧存在且presentationAvailable=true。载体几何不是光学像素；当前结果只支持此父层平移实验，不验收共同起落/缩放、其他宽度、反转、释放或打断规律。独立parent比较及最终LF参考的raw/解析审计31,150项检查通过，完整输入差、getter括号、重复配对及缺失项见`independent-dock-parent-review/device-parent-comparison`。
+
+Slider独立比较确认8份背景、16份控件及全部hash有效。16份控件各120048个readiness样本的RGB3匹配率均1、最大误差0；同世界背景crop的RGB MAE仅.482–1.338/255。排除轨道和保守标题源区域后，HELD下部内芯RGB MAE仍为6.875–23.838/255。安卓在网格与明暗块上出现重复高饱和彩虹边和亮白下缘；风景内部更明显地扭成带状，深主题内芯也偏亮。明暗块下缘窗口差38.83/41.78；原生明暗角色排除crop差.109–.243，Android差4.192–7.336。不能用背景的小差异或readiness通过代替材质验收。
+
+源码确认单头`GlassSliderThumb`复用`controlLens`，该工厂直接返回Dock的同一lens，包括dispersion6.5、深/浅brightness1.33/1及rim.3/.6。这是已确认的耦合和待验证原因，不是已证明的唯一原因；本轮没有修改光学runtime。下一步应分别做Slider独立分支的单变量诊断：仅取消色散、仅将深色brightness置1，分别复用这组固定世界与预声明窗口，保持Dock和其他系数不变；不能同时改多项后把变化唯一归因于某项。
+
+REST胶囊大体相近，但本轮未测得原生实际可见alpha边界，31pt AX高度不能当圆角半径；HELD端帽的源色瓣、色边、强度与直线交接明显不同，也不能由受材质污染的窗口直接拟合半径。实际HELD中心还保留生产取整导致的−.16806dp偏移，没有第二次校准。原生staticOptics省略presentation遍历，Android使用合成时钟，两者不构成自然动画/四角等价性。独立原图、窗口方法、来源与全部未通过项见`independent-slider-optical-review/findings.md`及`comparison.json`。
+
+本轮主包`fc8f0596dd3c4a68517857ede3a122eb80d077fb6a40a77f03a2d3884d091727`和测试包`794470570f2fcbbee11be8bdb3acbc80d7dae984bc600dad046c66f030c4027e`已安装且与设备SHA一致。已删除约90MB无用架构APK，以及新鲜hash再核对后的55个手机重复导出文件共39,746,940bytes；Dock设备视频/pid由controller核对后删除，host唯一原片和失败证据保留。手机已恢复MainActivity。当前资产清单已登记新增父层helper，仍只有一份运行实现，尚未抽离或独立发布。
+
+
+提交前检查另发现新增CSV采用Python默认CRLF而被Git判作行尾空白；导出器改为显式LF并从同一原始证据重新生成，两份CSV的362/541条解析记录逐字段完全一致，仅行尾字节变化，说明与来源hash已同步。随后单独重跑15项`NativeDockParentMotionTest`全部通过，0失败/错误/跳过；该15项是格式修正后的独立补验，不拼成新的133项运行。`parent-lf-verification`和`csv-lf-normalization.json`保留回执，runtime及已安装APK未变。

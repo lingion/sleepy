@@ -628,6 +628,155 @@ the unshifted raw comparison. Unexplained native 8/7 pt release excursions,
 full visible contours/corners, optics, other widths and independent RangeSlider
 motion remain open. See the alignment document for implementation scope.
 
+### Batch72 receipt-timed four-item Dock parent translation
+
+Android now has a separate `NativeDockParentMotion` for whole-parent translation.
+The frozen native65 candidate is `u=.010287932530511721*(fingerX-downX)` and
+`x''+2*zeta*omega*x'+omega^2*x=omega^2*u`, with omega=9.488283178142856/s,
+zeta=.6099720458279732 and unit-mass stiffness=90.0275176686287. Only slow-forward
+gesture 0 trained the candidate. Slow reverse and both fast gestures are frozen
+holdout calculations; they had already been inspected for mechanism witnesses
+and are not prospectively blind. No parent scale/anisotropy fit was installed.
+
+| Native65 gesture | Split / observations | Active RMSE pt | Max absolute pt | Last 150 ms RMSE pt |
+| --- | --- | ---: | ---: | ---: |
+| Slow forward | train / 209 | .044699370 | .156530395 | .150339528 |
+| Slow reverse | holdout / 214 | .044642326 | .156119182 | .148561294 |
+| Fast forward | holdout / 57 | .291415316 | .586557971 | .212318315 |
+| Fast reverse | holdout / 61 | .294340323 | .598668836 | .249824567 |
+
+Evidence is bounded to a 333 x 62 pt SwiftUI four-tab parent, resting starts,
+monotonic gestures ending at |DOWN displacement| = 293 pt and about 250 ms endpoint
+holds. The linear candidate has no new endpoint clamp. Other Android four-tab
+widths explicitly extrapolate the same physical-dp response, rather than a
+measured native width law. Existing Android PressSpring return on UP/CANCEL or
+external selection and x/v continuity on interrupted DOWN are implementation
+policies. Rapid reversals, native interruption/release mechanisms, parent scale,
+visible contours and optics remain unestablished by this fit.
+
+Production input is actual window X divided by density, obtained through the
+outer pointer owner's `localToWindow` for DOWN and every delivered MOVE,
+including moves below the 4 px lens-drag threshold. Physical +X stays +X in RTL.
+The parent queue integrates receipt segments, including receipt-to-first-frame
+elapsed time, without replacing receipt by hardware sample time or fitting a
+delay. The original seven Dock springs retain their first-eligible-frame-end
+Press origin. Animation scale is applied once; scale 0 settles the current
+transaction and epoch checks reject stale input after cancellation/new DOWN.
+
+Output inverse-maps the desired window vector through the same owner's
+`windowToLocal` before assigning the moving layer's translationX/Y. This implements
+a static invertible caller affine mapping. Exercised caller cases are horizontal
+scales 0.8/1.2; rotation, shear and dynamic ancestor changes have no new native
+validation. Density is a
+pointer-handler key so anchors cannot survive a metric change. The three-tab
+pull translation and original parent scale expressions remain unchanged.
+`dock-parent` tags the whole 333 x 86 dp reference carrier, including 12 dp shadow room
+above/below its 62 dp base. Its rectangle center measures translation, not visible
+alpha/plume support. Painted lens semantics also observe the new parent state.
+
+The bounded `app/src/test/resources/native-glass/dock-parent-{input,reference}-65.csv`
+fixtures retain 362 main deliveries and 541 observations with raw source lines,
+frames, getter brackets, actual finger coordinates, native translation and frozen
+residuals. `dock-parent-65.md` and batch72 `helper-reference/manifest.json` retain
+source hashes and derivation. The helper rest=1e-9 and replay tolerance 1e-4 dp are
+numerical stopping/Float-and-clock checks, never native parity tolerances.
+
+Host verification is one fresh focused 133-test run, not the complete suite:
+
+- An initial SDK-path infrastructure failure executed no tests and is retained
+  separately. After environment setup, API-compatible no-op RED ran 15 tests:
+  12 actual assertion failures, 0 errors/skips; compilation/resource discovery passed.
+- First focused implementation run: 133 tests, 132 passed, 1 assertion failure,
+  0 errors/skips. All 15 helper cases passed; APK assembly had not run yet.
+- Single-test diagnostic: the same assertion failed. Correct Explore/root touch
+  coordinates and wholly resting press geometry identified a manual-clock wake
+  issue. The fixture now drains snapshotFlow, delivers/synchronizes the first
+  Press-origin frame, then advances the original 2500 ms hold. Assertions and
+  diagnostic data were retained; no runtime change was made for that failure.
+- Fresh rerun: 133/133 passed, 0 failures/errors/skips; debug and androidTest APKs
+  built in the same approximately 32-second command. Filters were `*Dock*Test`,
+  `*GlassSlider*Test`, `*NativeSlider*Test`, `*TimedGlassControl*Test`.
+
+Logs/XML are under batch72 `parent-red`, `parent-green-first`,
+`parent-direct-diagnostic`, and `parent-green`; installed package hash receipts
+are separate in `installed-apk-receipt.json`. The 15 helper and 7 new Compose
+contracts cover timing, lifecycle, production four-tab/three-tab input paths,
+RTL and static caller scale. A precommit CRLF-to-LF normalization regenerated
+both CSVs with every parsed value unchanged; the exporter now fixes LF. A separate
+15-case helper rerun after that format change passed in 10 s, with no runtime or
+installed APK change. It is not combined into another 133-case result.
+
+Dock72 actually replayed all four gestures, exit 0, with all five trace-file
+and unique video hashes matching the recorded device hashes. On the same 540
+native rows whose nearest Android draw is wholly held in both versions, center-X
+RMSE for slow forward/reverse and fast forward/reverse changed from Android69
+3.579757/3.587388/4.666596/4.245231 dp to .046427/.047706/.198231/.212943 dp.
+One native fast-reverse row has a nearest72 draw after UP and remains separate
+in the complete541-row report; no farther draw was substituted. Pairing uses
+actual DOWN receipts and nearest actual getter midpoints, without interpolation,
+delay fitting or parameter refitting. Dispatch histories differ, and real draw
+phase gaps reach25.711 ms. These carrier-center improvements do not validate
+native optics, parent scale, release/interruption or a general width law. Exact
+brackets, forcing differences, repeated matches and independent raw audit are in
+batch72 `independent-dock-parent-review/device-parent-comparison/`.
+
+### Measured-center SwiftUI Slider optical captures (batch72)
+
+Eight focused methods retain the native SwiftUI Slider's natural parent and
+initial 25% value on four backgrounds in both traits:
+
+| Background | Light method | Dark method |
+| --- | --- | --- |
+| Fine grid | `testSwiftUISliderOpticsFineGridLight` | `testSwiftUISliderOpticsFineGridDark` |
+| Color stripes | `testSwiftUISliderOpticsColorStripesLight` | `testSwiftUISliderOpticsColorStripesDark` |
+| Tonal blocks | `testSwiftUISliderOpticsTonalBlocksLight` | `testSwiftUISliderOpticsTonalBlocksDark` |
+| Synthetic landscape | `testSwiftUISliderOpticsLandscapeLight` | `testSwiftUISliderOpticsLandscapeDark` |
+
+Each fresh launch asserts 375 x 667 pt and 335 pt control width, captures REST,
+requests a 6-second press at the measured AX-local `(93.5,16) pt` lens anchor,
+checks the value remains 25%, and captures released REST. Actual source72 target
+frames are `(20,414,335,31) pt` and DOWNs are `(113.5,430) pt`. These measured-center captures
+are distinct from older generic AX-normalized `.25/.5` Slider holds; do not
+silently substitute those older coordinates or images.
+
+The November 13, 2026 native batch built in 5.159 s and ran all eight methods in
+170.879 s, both exit 0. Host observer PNGs were verified against actual delivery
+DOWN/UP brackets: 8/8 held captures valid, no unverified/missing runs; capture
+began 651.945–661.943 ms after actual DOWN. Complete sessions/traces, xcresult
+attachments, image hashes, capture signals and held verification are under
+`artifacts/glass-optics-20261112/android-dock-parent-response-72/native-slider-optics/`.
+
+The Android companion
+`NativeSliderOpticalWorldRenderTest#captureNativeSliderOpticalWorld` has also
+actually completed with exit 0: 8 background/theme cases, 16 REST/HELD control
+captures plus 8 background baselines, Window/display PNGs stored independently.
+All 49 exported files (48 PNGs and result.json) match their device hashes.
+The production 335 dp single Slider uses a 375 x 667 dp source world on ordinary
+backing, with actual holder/carrier/world corners and unit basis exported.
+This fixture uses a synthetic Compose clock to settle optical states, not a
+natural-time motion measurement. A single sampling-only translation, bounded
+to 1 dp per axis from the first raw REST center, is reused unchanged across all
+backgrounds/themes/states; the actual correction was (+.22270203,-.08401489) dp.
+It moves neither the backing world nor production dimensions and cannot serve
+as a native geometry match. Input is stationary center DOWN, capture while held,
+then cleanup CANCEL; value remains .25 with zero value/finish callbacks. Android
+records injection times and active held state, not an independent raw platform
+receipt trace.
+
+Android capture data and hash receipts are under batch72 `android-slider-optics/`;
+installed APK hashes are in `installed-apk-receipt.json`. Independent same-world
+comparison found visible excess saturated rainbow bands, a bright lower edge,
+and excess dark-theme inner brightness. Source-baseline RGB MAE is.482–1.338/255;
+held lower-inner windows excluding the declared rail/title roles still differ
+by6.875–23.838/255. Slider currently aliases the Dock lens factory; that source
+coupling is verified, but it is not proved the sole cause. No optical runtime was
+changed in this batch. Current31 pt AX bounds do not establish the visible
+ellipse/corner radius, and no alpha mask was invented. See batch72
+`independent-slider-optical-review/findings.md` for frozen windows, all8 cases,
+source hashes, theme response and single-variable followup experiments.
+Capture validity remains separate from material/shape acceptance and supplies
+no native optical equivalence or release-motion result.
+
 The [local library inventory](../../libraries/liquid-glass/README.md) and
 [asset catalog](../../libraries/liquid-glass/asset-catalog.json) describe the
 current candidates for future extraction. They are inventory only, not an
