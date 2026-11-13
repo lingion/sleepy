@@ -31,8 +31,30 @@ enum ReferenceScene: String, CaseIterable {
 
 enum ReferenceBackground: String, CaseIterable {
     case grid, stripes, fine_grid, color_stripes, tonal_blocks, synthetic_landscape
+    case gray_26, gray_77, gray_128, gray_179, gray_230, contrast_low, contrast_high
+
+    var controlledGrayBytes: [Int]? {
+        switch self {
+        case .gray_26: return [26]
+        case .gray_77: return [77]
+        case .gray_128: return [128]
+        case .gray_179: return [179]
+        case .gray_230: return [230]
+        case .contrast_low: return [102, 154]
+        case .contrast_high: return [26, 230]
+        default: return nil
+        }
+    }
 
     var metadata: [String: Any] {
+        if let bytes = controlledGrayBytes {
+            return ["id": rawValue, "colorSpace": "sRGB", "grayBytes": bytes,
+                    "inputRGBA": bytes.map { [Double($0) / 255, Double($0) / 255, Double($0) / 255, 1.0] },
+                    "stripeWidthPt": bytes.count == 2 ? 2.5 : 0,
+                    "stripePeriodPt": bytes.count == 2 ? 5.0 : 0,
+                    "stripeOriginInCanvasPt": ["x": 0, "y": 0],
+                    "meanScope": "full canvas; contrast means equal only over complete 5pt stripe periods; native material sampling support is unknown"]
+        }
         switch self {
         case .grid: return ["id": rawValue, "input": "Legacy opaque (0.94,0.94,0.96), 20pt grid, black alpha 0.13, 0.5pt stroke"]
         case .stripes: return ["id": rawValue, "input": "Legacy 28pt system-color stripes at alpha 0.52 over legacy base"]
@@ -40,6 +62,8 @@ enum ReferenceBackground: String, CaseIterable {
         case .color_stripes: return ["id": rawValue, "input": "Opaque 18pt #F51D39/#FFD51C/#00CB69/#00DCED/#1552F3/#F218DD stripes"]
         case .tonal_blocks: return ["id": rawValue, "input": "Opaque 112pt alternating #101018/#F5F5F0 large blocks"]
         case .synthetic_landscape: return ["id": rawValue, "input": "Procedural 720x1280 landscape v1, seed 0x51EE9; synthetic, not a photograph"]
+        case .gray_26, .gray_77, .gray_128, .gray_179, .gray_230, .contrast_low, .contrast_high:
+            preconditionFailure("Controlled inputs return metadata above")
         }
     }
 
@@ -113,6 +137,16 @@ final class ReferenceBackgroundView: UIView {
 
     override func draw(_ rect: CGRect) {
         guard let context = UIGraphicsGetCurrentContext() else { return }
+        if let bytes = background.controlledGrayBytes {
+            context.setShouldAntialias(false)
+            for index in 0..<(bytes.count == 1 ? 1 : Int(ceil(bounds.width / 2.5))) {
+                let gray = CGFloat(bytes[index % bytes.count]) / 255
+                UIColor(red: gray, green: gray, blue: gray, alpha: 1).setFill()
+                context.fill(bytes.count == 1 ? bounds : CGRect(x: CGFloat(index) * 2.5, y: 0,
+                                                                width: 2.5, height: bounds.height))
+            }
+            return
+        }
         UIColor(red: 0.94, green: 0.94, blue: 0.96, alpha: 1).setFill()
         context.fill(bounds)
         if background == .stripes {
@@ -161,7 +195,7 @@ final class ReferenceBackgroundView: UIView {
             case .synthetic_landscape:
                 context.interpolationQuality = .low
                 ReferenceBackground.landscape.draw(in: bounds)
-            case .grid, .stripes: break
+            case .grid, .stripes, .gray_26, .gray_77, .gray_128, .gray_179, .gray_230, .contrast_low, .contrast_high: break
             }
         }
     }
@@ -254,7 +288,7 @@ private enum ReferenceDockMaterialContext {
             ["top": value.top, "left": value.left, "bottom": value.bottom, "right": value.right]
         }
         func view(_ value: UIView) -> [String: Any] {
-            ["class": String(describing: type(of: value)),
+            var row: [String: Any] = ["class": String(describing: type(of: value)),
              "frameInWindow": rect(value.convert(value.bounds, to: window)),
              "backgroundColorSRGB": ReferencePalette.resolvedSRGB(value.backgroundColor ?? .clear,
                                                                  traits: value.traitCollection).map { $0 as Any } ?? NSNull(),
@@ -264,6 +298,14 @@ private enum ReferenceDockMaterialContext {
              "safeAreaInsets": insets(value.safeAreaInsets), "alpha": value.alpha,
              "isOpaque": value.isOpaque, "isHidden": value.isHidden,
              "clipsToBounds": value.clipsToBounds]
+            if let canvas = value as? ReferenceBackgroundView {
+                row["input"] = canvas.background.metadata
+                if let window {
+                    let screenRect = canvas.convert(canvas.bounds, to: window.screen.coordinateSpace)
+                    row["frameInScreen"] = rect(screenRect)
+                }
+            }
+            return row
         }
         func ancestors(_ start: UIView?) -> [[String: Any]] {
             var rows: [[String: Any]] = [], current = start
@@ -330,6 +372,27 @@ private final class ReferenceSwiftUIDockObservation {
     private weak var controller: UITabBarController?
     private weak var probe: UIView?
     private var lastContext: Data?
+
+    func experimentState(phase: String, forceRecord: Bool = false) -> [String: Any]? {
+        guard let controller, let window = controller.viewIfLoaded?.window else { return nil }
+        if forceRecord {
+            ReferenceDockPublicSnapshot.record(controller.tabBar, phase: phase, parent: "swiftui-tabview", controller: controller)
+            var context = ReferenceDockMaterialContext.snapshot(controller, probe: probe)
+            context["phase"] = phase
+            ReferenceTrace.shared.add(context)
+        }
+        let frame = controller.tabBar.convert(controller.tabBar.bounds, to: window)
+        return ["barIdentity": String(describing: ObjectIdentifier(controller.tabBar)),
+                "controllerIdentity": String(describing: ObjectIdentifier(controller)),
+                "windowIdentity": String(describing: ObjectIdentifier(window)),
+                "barInterfaceStyle": controller.tabBar.traitCollection.userInterfaceStyle.rawValue,
+                "barOverrideInterfaceStyle": controller.tabBar.overrideUserInterfaceStyle.rawValue,
+                "controllerInterfaceStyle": controller.traitCollection.userInterfaceStyle.rawValue,
+                "windowInterfaceStyle": window.traitCollection.userInterfaceStyle.rawValue,
+                "windowOverrideInterfaceStyle": window.overrideUserInterfaceStyle.rawValue,
+                "selectedIndex": controller.selectedIndex,
+                "barFrameInWindow": ["x": frame.minX, "y": frame.minY, "w": frame.width, "h": frame.height]]
+    }
 
     func recordContextIfChanged(phase: String) {
         guard let controller, controller.viewIfLoaded?.window != nil else { return }
@@ -461,10 +524,107 @@ private enum ReferenceDockContent: String {
     case syntheticScroll = "synthetic-scroll"
 }
 
+/// A fixed observation window is an experiment budget, not a native settling
+/// time or classifier threshold. Advancing changes inputs in the existing host.
+private final class ReferenceDockAppearanceControls: ObservableObject {
+    struct Stage {
+        let background: ReferenceBackground
+        let style: UIUserInterfaceStyle
+        var metadata: [String: Any] { ["background": background.metadata, "requestedInterfaceStyle": style.rawValue] }
+    }
+    static let stages: [Stage] = [
+        .init(background: .gray_26, style: .dark), .init(background: .gray_77, style: .dark),
+        .init(background: .gray_128, style: .dark), .init(background: .gray_179, style: .dark),
+        .init(background: .gray_230, style: .dark), .init(background: .contrast_low, style: .dark),
+        .init(background: .contrast_high, style: .dark), .init(background: .contrast_high, style: .light),
+        .init(background: .contrast_high, style: .dark), .init(background: .gray_26, style: .dark)
+    ]
+    let enabled = ProcessInfo.processInfo.arguments.contains("-ReferenceDockAppearanceControls") &&
+        ProcessInfo.processInfo.arguments.contains("-ReferenceStaticOptics")
+    let observation: ReferenceSwiftUIDockObservation
+    private let initialBackground: ReferenceBackground
+    private weak var window: UIWindow?
+    @Published private(set) var stageIndex = 0
+    @Published private(set) var ready = false
+    @Published private(set) var publicState = "unattached"
+    var background: ReferenceBackground { enabled ? Self.stages[stageIndex].background : initialBackground }
+    var status: String { "\(stageIndex)|\(ready ? "ready" : "settling")|\(background.rawValue)|\(publicState)" }
+
+    init(background: ReferenceBackground, observation: ReferenceSwiftUIDockObservation) {
+        initialBackground = background
+        self.observation = observation
+    }
+
+    func start(window: UIWindow) {
+        guard enabled else { return }
+        self.window = window
+        ReferenceTrace.shared.add(["event": "appearance-controls-configuration", "stages": Self.stages.map(\.metadata),
+                                   "minimumObservationWindowSeconds": 1.0,
+                                   "continuity": "same app run, hosting controller, TabView selection, bar and tab controller; identities observed per sample",
+                                   "scope": "REST only; top overlay next button; no Dock input, motion traversal or inferred classifier thresholds"])
+        applyStage()
+    }
+
+    func advance() {
+        guard enabled, ready, stageIndex + 1 < Self.stages.count else { return }
+        record(phase: "leaving", force: true)
+        ready = false
+        stageIndex += 1
+        applyStage()
+    }
+
+    func sample() {
+        guard enabled else { return }
+        record(phase: "sampled")
+    }
+
+    private func applyStage() {
+        guard let window else { return }
+        let stage = Self.stages[stageIndex]
+        window.overrideUserInterfaceStyle = stage.style
+        ReferenceTrace.shared.add(["event": "appearance-stage-applied", "stage": stageIndex,
+                                   "input": stage.metadata, "windowBoundsPt": rectangle(window.bounds),
+                                   "windowFrameInScreenPt": rectangle(window.convert(window.bounds, to: window.screen.coordinateSpace)),
+                                   "screenScale": window.screen.scale])
+        let inputURL = ReferenceTrace.shared.directory.appendingPathComponent("appearance-input-\(background.rawValue).png")
+        if !FileManager.default.fileExists(atPath: inputURL.path) {
+            let canvas = ReferenceBackgroundView(frame: window.bounds)
+            canvas.background = background
+            let format = UIGraphicsImageRendererFormat()
+            format.scale = window.screen.scale
+            format.opaque = true
+            format.preferredRange = .standard
+            let input = UIGraphicsImageRenderer(bounds: canvas.bounds, format: format).image { _ in canvas.draw(canvas.bounds) }
+            try? input.pngData()?.write(to: inputURL)
+        }
+        let expectedStage = stageIndex
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self, self.stageIndex == expectedStage,
+                  self.observation.experimentState(phase: "ready-check") != nil else { return }
+            self.record(phase: "ready", force: true)
+            self.ready = true
+            ReferenceTrace.shared.flush()
+        }
+    }
+
+    private func record(phase: String, force: Bool = false) {
+        guard let state = observation.experimentState(phase: "appearance-\(stageIndex)-\(phase)", forceRecord: force) else { return }
+        let text = "requested=\(Self.stages[stageIndex].style.rawValue)|bar=\(state["barInterfaceStyle"]!)|window=\(state["windowInterfaceStyle"]!)|barId=\(state["barIdentity"]!)|controllerId=\(state["controllerIdentity"]!)|windowId=\(state["windowIdentity"]!)"
+        if publicState != text { publicState = text }
+        ReferenceTrace.shared.add(["event": "appearance-stage-state", "phase": phase, "stage": stageIndex,
+                                   "input": Self.stages[stageIndex].metadata, "publicState": state])
+    }
+
+    private func rectangle(_ rect: CGRect) -> [String: CGFloat] {
+        ["x": rect.minX, "y": rect.minY, "w": rect.width, "h": rect.height]
+    }
+}
+
 private struct ReferenceDockTabs: View {
     let background: ReferenceBackground
     let observation: ReferenceSwiftUIDockObservation
     let content: ReferenceDockContent
+    @ObservedObject var appearanceControls: ReferenceDockAppearanceControls
     @State private var selection = 0
     private let tabs = [("Schedule", "calendar"), ("Today", "sun.max"), ("Manage", "square.grid.2x2"), ("Mine", "person")]
 
@@ -502,8 +662,24 @@ private struct ReferenceDockTabs: View {
         }
         .tint(.white)
         .ignoresSafeArea(.container, edges: .bottom)
-        .background(ReferenceDockCanvas(background: background).ignoresSafeArea())
+        .background(ReferenceDockCanvas(background: appearanceControls.background).ignoresSafeArea())
         .ignoresSafeArea(.keyboard, edges: .bottom)
+        .overlay(alignment: .topTrailing) {
+            if appearanceControls.enabled {
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text("REST \(appearanceControls.stageIndex + 1)/10")
+                        .font(.system(size: 10, design: .monospaced))
+                        .accessibilityIdentifier("appearance-controls-state")
+                        .accessibilityValue(appearanceControls.status)
+                    Button("Next REST") { appearanceControls.advance() }
+                        .font(.system(size: 12))
+                        .accessibilityIdentifier("appearance-controls-next")
+                        .disabled(!appearanceControls.ready || appearanceControls.stageIndex == 9)
+                }
+                .padding(8).background(Color.gray.opacity(0.25))
+                .padding(.top, 64).padding(.trailing, 16)
+            }
+        }
         .onChange(of: selection) { value in
             ReferenceTrace.shared.add(["event": "value", "control": "swiftui-tabbar", "value": value])
         }
@@ -537,6 +713,7 @@ private final class ReferenceDockHostingController: UIHostingController<Referenc
     private let background: ReferenceBackground
     private let content: ReferenceDockContent
     private let observation: ReferenceSwiftUIDockObservation
+    private let appearanceControls: ReferenceDockAppearanceControls
     private let recorder = PresentationRecorder()
     private var recordingStarted = false
     private var contextTimer: Timer?
@@ -546,7 +723,9 @@ private final class ReferenceDockHostingController: UIHostingController<Referenc
         self.content = content
         let observation = ReferenceSwiftUIDockObservation()
         self.observation = observation
-        super.init(rootView: ReferenceDockTabs(background: background, observation: observation, content: content))
+        let controls = ReferenceDockAppearanceControls(background: background, observation: observation)
+        appearanceControls = controls
+        super.init(rootView: ReferenceDockTabs(background: background, observation: observation, content: content, appearanceControls: controls))
     }
     deinit { contextTimer?.invalidate() }
     @MainActor required dynamic init?(coder aDecoder: NSCoder) { fatalError("init(coder:) is unavailable") }
@@ -560,6 +739,7 @@ private final class ReferenceDockHostingController: UIHostingController<Referenc
         // No delegate or gesture recognizer is installed on native controls.
         let timer = Timer(timeInterval: 0.25, repeats: true) { [weak self] _ in
             self?.observation.recordContextIfChanged(phase: "sampled")
+            self?.appearanceControls.sample()
         }
         RunLoop.main.add(timer, forMode: .common)
         contextTimer = timer
@@ -580,7 +760,9 @@ private final class ReferenceDockHostingController: UIHostingController<Referenc
         recorder.context = { [background] in
             ["scene": "dock-parent", "dockParent": "swiftui-tabview", "background": background.rawValue, "tabCount": 4]
         }
-        if staticOptics {
+        if appearanceControls.enabled {
+            appearanceControls.start(window: window)
+        } else if staticOptics {
             let canvas = ReferenceBackgroundView(frame: window.bounds)
             canvas.background = background
             let format = UIGraphicsImageRendererFormat()

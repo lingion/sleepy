@@ -165,6 +165,64 @@ No private material state is read. The iOS 27-only
 `UIBlurEffect.style` getter are not used. Public context fields do not constitute
 an optical acceptance result.
 
+#### Controlled appearance REST sequence
+
+`-ReferenceDockAppearanceControls` plus `-ReferenceStaticOptics` opts into a
+ten-stage sequence inside the existing SwiftUI four-tab parent. It retains the
+same app process, hosting controller, native tab controller, tab bar and initial
+Schedule selection. A small top overlay advances stages after each REST
+screenshot; its taps do not target the Dock. Existing material and appearance
+policies remain system owned.
+
+`testSwiftUITabViewDockAppearanceControls` visits these stages once:
+
+1. Dark window, opaque sRGB grayscale bytes 26, 77, 128, 179 and 230.
+2. Dark window, alternating 2.5 pt vertical stripes of bytes 102/154, then 26/230.
+3. The same 26/230 input with light window, then dark window.
+4. The initial gray 26 input again with dark window.
+
+Every gray byte is supplied as `(byte/255, byte/255, byte/255, 1)` RGBA.
+Both stripe inputs start with their darker stripe at canvas x=0, have a 5 pt
+period and a mean of 128/255 over complete periods. The 375 pt reference canvas
+contains complete periods. This mean describes the uncomposited input canvas;
+the native material's sampling support is unknown. Synthetic text, selected
+content and the top experiment overlay remain part of the displayed scene.
+
+Each stage waits a fixed minimum one-second observation window before becoming
+ready for XCUITest capture. That budget is neither a measured adaptation time
+nor a proven settled state. The next stage begins only after the screenshot and
+AX attachment complete. `appearance-stage-applied` and `appearance-stage-state`
+events retain the same trace clock across the full sequence. Public bar,
+controller and window identities/styles are recorded every 0.25 seconds and at
+ready/leaving checkpoints; forced context rows include actual canvas input and
+window/screen rectangles. The test asserts identity continuity and requested
+window style, while preserving the observed bar style without requiring it to
+match the request. Capture time brackets and before/after public state are
+attached as `appearance-rest-capture-brackets`.
+
+The run retains ten REST PNG/AX pairs, seven unique raw input PNGs, one session
+and trace, and a combined contact sheet. Static mode disables presentation-layer
+recording. Do not run the held-capture observer for this test. Use existing
+DerivedData and the existing iOS 26.5 simulator, run only this test with the
+ordinary single-run command (omit retry/repetition flags), and bound the
+xcodebuild test command to 120 seconds.
+Export and audit the complete xcresult before deleting it. This sequence is an
+observation of controlled inputs and public traits, not a classifier threshold,
+material coefficient, motion result or parity claim.
+
+The November 13, 2026 run completed once: one test passed in 35.800 seconds,
+with 55.633 seconds for the complete test command. All ten stages retained the
+same bar/controller/window identities, initial Schedule selection, tab-bar
+frame `(0,584,375,83)` and full-window canvas `(0,0,375,667)`. Screenshot
+before/after public state matched in every stage. Gray 230 under the dark window
+reported a light effective tab-bar style; the other dark stages reported dark.
+The high-contrast input followed light and then dark window changes within that
+same run. Both contrast input PNGs contained equal pixel counts of their two
+colors and exact full-canvas byte mean 128. This ordering does not establish a
+threshold, adaptation latency, sampling support or hysteresis. Raw evidence,
+complete result exports and the single contact sheet are retained under
+`artifacts/glass-optics-20261112/dock-appearance-controls-63/`.
+
 #### Focused build and static parent captures
 
 Use the same `DerivedData` directory as the central build above; no project

@@ -334,6 +334,52 @@ final class NativeReferenceTests: XCTestCase {
     func testSwiftUITabViewDockLandscapeLight() { swiftUITabViewDockOptics(background: "synthetic_landscape", style: "light") }
     func testSwiftUITabViewDockLandscapeDark() { swiftUITabViewDockOptics(background: "synthetic_landscape") }
 
+    /// One process and one native bar; short top-overlay taps only advance the
+    /// controlled input. No tab press, drag, held capture or motion suite.
+    func testSwiftUITabViewDockAppearanceControls() {
+        executionTimeAllowance = 110
+        settleDuration = 0.1
+        launch(scene: "toggle", background: "gray_26", style: "dark", staticOptics: true,
+               dockParent: "swiftui-tabview", dockContent: "synthetic-scroll", appearanceControls: true)
+        let control = app.tabBars["swiftui-tabbar"]
+        XCTAssertTrue(control.waitForExistence(timeout: 5))
+        XCTAssertEqual(control.buttons.count, 4)
+        XCTAssertTrue(control.buttons["Schedule"].isSelected)
+        XCTAssertTrue(app.scrollViews["dock-synthetic-scroll-0"].exists)
+        let state = app.staticTexts["appearance-controls-state"]
+        let next = app.buttons["appearance-controls-next"]
+        let stages = ["gray_26-dark", "gray_77-dark", "gray_128-dark", "gray_179-dark", "gray_230-dark",
+                      "contrast_low-dark", "contrast_high-dark", "contrast_high-light", "contrast_high-dark", "gray_26-dark"]
+        var initialIdentities: [String]?
+        var captures: [[String: Any]] = []
+        for (index, name) in stages.enumerated() {
+            let expectedPrefix = "\(index)|ready|"
+            let ready = NSPredicate { _, _ in (state.value as? String)?.hasPrefix(expectedPrefix) == true }
+            XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: ready, object: nil)], timeout: 5), .completed)
+            let before = state.value as? String ?? ""
+            let identities = before.split(separator: "|").map(String.init).filter {
+                $0.hasPrefix("barId=") || $0.hasPrefix("controllerId=") || $0.hasPrefix("windowId=")
+            }
+            XCTAssertEqual(identities.count, 3)
+            if let initialIdentities { XCTAssertEqual(identities, initialIdentities) } else { initialIdentities = identities }
+            let requested = index == 7 ? 1 : 2
+            XCTAssertTrue(before.contains("requested=\(requested)|"))
+            XCTAssertTrue(before.contains("window=\(requested)|"))
+            let begin = Date().timeIntervalSince1970
+            captureLanguage(String(format: "appearance-%02d-", index) + name + "-rest")
+            captures.append(["stage": index, "name": name, "captureBeginUnixSeconds": begin,
+                             "captureEndUnixSeconds": Date().timeIntervalSince1970,
+                             "stateBeforeCapture": before, "stateAfterCapture": state.value as? String ?? ""])
+            if index + 1 < stages.count { next.tap() }
+        }
+        let data = try! JSONSerialization.data(withJSONObject: captures, options: [.prettyPrinted, .sortedKeys])
+        let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+        attachment.name = "appearance-rest-capture-brackets"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+        app.terminate()
+    }
+
     func testAlertOpticsFineGridLight() { alertOptics(background: "fine_grid", style: "light") }
     func testAlertOpticsFineGridDark() { alertOptics(background: "fine_grid", style: "dark") }
     func testAlertOpticsColorStripesLight() { alertOptics(background: "color_stripes", style: "light") }
@@ -580,7 +626,7 @@ final class NativeReferenceTests: XCTestCase {
 
     private func launch(scene: String, background: String, focused: Bool = false, tabCount: Int = 3,
                         style: String = "light", staticOptics: Bool = false, dockParent: String? = nil,
-                        dockContent: String? = nil) {
+                        dockContent: String? = nil, appearanceControls: Bool = false) {
         app = XCUIApplication()
         app.launchArguments = ["-ReferenceScene", scene, "-ReferenceBackground", background,
                                "-ReferenceInterfaceStyle", style]
@@ -589,6 +635,7 @@ final class NativeReferenceTests: XCTestCase {
         if staticOptics { app.launchArguments.append("-ReferenceStaticOptics") }
         if let dockParent { app.launchArguments += ["-ReferenceDockParent", dockParent] }
         if let dockContent { app.launchArguments += ["-ReferenceDockContent", dockContent] }
+        if appearanceControls { app.launchArguments.append("-ReferenceDockAppearanceControls") }
         app.launchEnvironment["REFERENCE_RUN_ID"] = "\(name)-\(UUID().uuidString)"
         app.launch()
         XCTAssertTrue(app.staticTexts["reference-title"].waitForExistence(timeout: 10))
