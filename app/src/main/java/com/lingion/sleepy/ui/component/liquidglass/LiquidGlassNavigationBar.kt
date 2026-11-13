@@ -85,6 +85,9 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyant.backdrop.Backdrop
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberCombinedBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.shapes.Capsule
 import com.lingion.sleepy.ui.component.NavIconDriver
@@ -134,6 +137,11 @@ fun LiquidGlassNavigationBar(
     val dark by remember(isAppDark, colorScheme) {
         derivedStateOf { isAppDark || colorScheme.surface.luminance() < 0.5f }
     }
+    // Retain only the actual sibling backing. The raised lens must include
+    // its haze, continuous corners, border and fading selection, not a second
+    // approximation of the platter. Glyphs and the lens are separate siblings.
+    val platterBackdrop = rememberLayerBackdrop()
+    val lensBackdrop = if (backdrop != null) rememberCombinedBackdrop(backdrop, platterBackdrop) else platterBackdrop
 
     val count = items.size
     val lastIndex = max(0, count - 1)
@@ -194,7 +202,6 @@ fun LiquidGlassNavigationBar(
 
     var barWidthPx by remember { mutableFloatStateOf(0f) }
     var barHeightPx by remember { mutableFloatStateOf(0f) }
-    var dockCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     var lensCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     val isLtr = layoutDirection == LayoutDirection.Ltr
 
@@ -355,7 +362,6 @@ fun LiquidGlassNavigationBar(
             .onGloballyPositioned { coords ->
                 barWidthPx = coords.size.width.toFloat()
                 barHeightPx = coords.size.height.toFloat()
-                dockCoordinates = coords
             }
             .glassGestureOwnership()
             .pointerInput(count, isLtr) {
@@ -481,6 +487,7 @@ fun LiquidGlassNavigationBar(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(barHeightDp)
+                    .layerBackdrop(platterBackdrop)
                     .shadow(
                         elevation = (12 * shadowStrength).dp,
                         shape = Capsule(),
@@ -719,49 +726,16 @@ fun LiquidGlassNavigationBar(
                         }
                     }
                     .drawBehind {
-                        // 1. 内部绘制层：向 uTexture 提供完整的未裁切背景（Backdrop 与完整 Dock 胶囊条），使透镜向外折射能采到真实边缘
+                        // Sample the completed backing before the foreground
+                        // and lens are drawn. Both source and consumer live
+                        // under the same parent swell/stretch transform.
                         val lift = liftSpring.value
                         if (lift > 0.001f) {
-                            // 1. 实时背景图层 (Backdrop)
-                            val coords = dockCoordinates
-                            if (backdrop != null && coords != null) {
-                                with(backdrop) {
+                            val coords = lensCoordinates
+                            if (coords != null) {
+                                with(lensBackdrop) {
                                     drawBackdrop(density, coords, null)
                                 }
-                            }
-                            // 2. 底层完整 Dock 胶囊背景底盘
-                            val dockTopPx = shadowRoomDp.toPx()
-                            val dockHeightPx = barHeightDp.toPx()
-                            drawRoundRect(
-                                color = colorScheme.surfaceContainer.copy(alpha = if (dark) 0.72f else 0.88f),
-                                topLeft = Offset(0f, dockTopPx),
-                                size = Size(size.width, dockHeightPx),
-                                cornerRadius = CornerRadius(dockHeightPx / 2f, dockHeightPx / 2f),
-                            )
-                            // Dock 胶囊顶底微光边缘 (对齐 LiquidGlassStyle.pill rim: 0.35, 为 AGSL 透镜折射提供高反差边缘发生真实棱镜色散)
-                            drawRoundRect(
-                                color = Color.White.copy(alpha = if (dark) 0.28f else 0.40f),
-                                topLeft = Offset(0f, dockTopPx),
-                                size = Size(size.width, dockHeightPx),
-                                cornerRadius = CornerRadius(dockHeightPx / 2f, dockHeightPx / 2f),
-                                style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.dp.toPx()),
-                            )
-                            // 3. 沉底槽位色块 (随起镜淡出)
-                            if (lift < 1f) {
-                                val lensRect = paintedLensRect(lift)
-                                val dockContentTopPx = (shadowRoomDp + FlClashDockPhysics.BAR_PADDING.dp).toPx()
-                                val dockContentLeftPx = FlClashDockPhysics.BAR_PADDING.dp.toPx()
-                                val leftPx = dockContentLeftPx + (layout.inset + lensRect.left) * density.density
-                                val topPx = dockContentTopPx + lensRect.top * density.density
-                                val widthPx = lensRect.width * density.density
-                                val heightPx = lensRect.height * density.density
-                                val radiusPx = heightPx / 2f
-                                drawRoundRect(
-                                    color = restingPlatterColor.copy(alpha = restingPlatterColor.alpha * (1f - lift.coerceIn(0f, 1f))),
-                                    topLeft = Offset(leftPx, topPx),
-                                    size = Size(widthPx, heightPx),
-                                    cornerRadius = CornerRadius(radiusPx, radiusPx),
-                                )
                             }
                             // 4. 老设备 (API < 33) 1:1 FLClash 悬浮凸透镜微晶拟物质感
                             if (lensShader == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
