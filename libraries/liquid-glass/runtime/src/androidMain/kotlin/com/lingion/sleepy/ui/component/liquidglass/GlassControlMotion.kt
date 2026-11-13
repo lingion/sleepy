@@ -15,7 +15,7 @@ import kotlin.coroutines.coroutineContext
 import kotlin.math.abs
 import kotlin.math.max
 
-internal data class GlassControlMotionSpec(
+data class GlassControlMotionSpec(
     val rise: SpringDescription,
     val fall: SpringDescription,
     val release: Release = Release.NearDestination,
@@ -54,7 +54,7 @@ internal data class GlassControlMotionSpec(
 }
 
 /** Velocity-continuous lift, follow and braking in logical travel units. */
-internal class GlassControlMotion(
+class GlassControlMotion(
     initialPosition: Float,
     private val spec: GlassControlMotionSpec = GlassControlMotionSpec.Dock,
     travelDistanceDp: Float = 0f,
@@ -194,7 +194,7 @@ internal class GlassControlMotion(
  * sample clocks remain separate, and every delivered transition survives even
  * when Compose has not recomposed between DOWN and UP.
  */
-internal class TimedGlassControlMotion(
+class TimedGlassControlMotion(
     initialPosition: Float,
     spec: GlassControlMotionSpec,
     travelDistanceDp: Float = 0f,
@@ -221,7 +221,7 @@ internal class TimedGlassControlMotion(
         private set
     var requestRevision by mutableIntStateOf(0)
         private set
-    internal val appliedPressEpoch: Long? get() = activeEpoch
+    val appliedPressEpoch: Long? get() = activeEpoch
 
     fun isCurrent(epoch: Long): Boolean = inputEnabled && requestedEpoch == epoch
 
@@ -346,7 +346,7 @@ internal class TimedGlassControlMotion(
 }
 
 @Composable
-internal fun rememberTimedGlassControlMotion(
+fun rememberTimedGlassControlMotion(
     target: Float,
     enabled: Boolean,
     spec: GlassControlMotionSpec,
@@ -372,7 +372,7 @@ internal fun rememberTimedGlassControlMotion(
 }
 
 @Composable
-internal fun rememberGlassControlMotion(
+fun rememberGlassControlMotion(
     target: Float,
     pressed: Boolean,
     dragging: Boolean = false,
@@ -398,7 +398,7 @@ internal fun rememberGlassControlMotion(
 }
 
 /** Deform the measured lens, keeping its sampling texture at the scene's original scale. */
-internal fun glassLensWidth(width: Float, stretch: Float): Float = width * (1f + stretch)
+fun glassLensWidth(width: Float, stretch: Float): Float = width * (1f + stretch)
 
-internal fun glassLensHeight(height: Float, stretch: Float, minimum: Float = 0f): Float =
+fun glassLensHeight(height: Float, stretch: Float, minimum: Float = 0f): Float =
     max(minimum, height * (1f - stretch * FlClashDockPhysics.JELLY_ASPECT))

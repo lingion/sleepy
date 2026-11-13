@@ -1,16 +1,18 @@
 # Liquid Glass 资产库
 
-本目录是 Liquid Glass 资产索引和独立库的整理入口。M1/M2a 已将三个纯运动实现和两份帧调度/输入时钟实现移动到可构建的 `:liquid-glass-runtime`，Sleepy 通过项目依赖实际消费；完整控件、几何、材质采样和 shader 仍在 app，独立示例尚未建立。校准及来源/分发许可核对尚未完成，当前不具备独立开源发布条件。
+本目录是 Liquid Glass 资产索引和独立库的整理入口。M1、M2a 和 M2b 首批已将九份运动/调度实现移动到可构建的 `:liquid-glass-runtime`，Sleepy 通过项目依赖实际消费；构建、原基线与 AAR 唯一归属均已验证。完整控件、其余几何、材质采样和 shader 仍在 app，独立示例尚未建立。校准及来源/分发许可核对尚未完成，当前不具备独立开源发布条件。
 
 用户要求：先以 iOS 26.5 原生控件打磨到接近一致，再作为独立仓库开源。Sleepy 将作为首个使用方。现阶段优先校准控件，源码索引见 [asset-catalog.json](asset-catalog.json)，实际进度和残差见 [对照记录](../../docs/native-glass-control-alignment.md)。
 
-[可执行提取路线](extraction-plan.md)按实际源码闭包安排纯运动/几何、材质采样、控件和 Sleepy 适配器。2026-11-14 已完成 M1：`NativeGlassDragDeformation.kt`、`NativeDockDeformation.kt`、`NativeSliderEndpoint.kt` 只有 runtime 中的一份实现；module AAR 与 Sleepy 编译通过，三类原测试在迁移前后均为 19 项通过，测试与两份 CSV 哈希不变。实际命令、首次 SDK 环境缺失及重跑结果见 [M1 迁移记录](validation/migrations/m1.json)。M2a 随后移动 `ActiveFrameLoop.kt` 和 `DockInputClock.kt`，只开放五处必要可见性；四类原测试迁移前后各 33/33 通过，计算和时钟行为不变，AAR 是唯一实现归属，debug/androidTest 同轮构建通过。依赖解析保持 Compose runtime 1.12.1 和 coroutines-core 1.11.0，详见 [M2a 记录](validation/migrations/m2a.json)。M2 其余运动/几何、M3–M4 和独立示例仍待执行。
+[可执行提取路线](extraction-plan.md)按实际源码闭包安排纯运动/几何、材质采样、控件和 Sleepy 适配器。2026-11-14 已完成 M1：`NativeGlassDragDeformation.kt`、`NativeDockDeformation.kt`、`NativeSliderEndpoint.kt` 只有 runtime 中的一份实现；module AAR 与 Sleepy 编译通过，三类原测试在迁移前后均为 19 项通过，测试与两份 CSV 哈希不变。实际命令、首次 SDK 环境缺失及重跑结果见 [M1 迁移记录](validation/migrations/m1.json)。M2a 随后移动 `ActiveFrameLoop.kt` 和 `DockInputClock.kt`，只开放五处必要可见性；四类原测试迁移前后各 33/33 通过，计算和时钟行为不变，AAR 是唯一实现归属，debug/androidTest 同轮构建通过。依赖解析保持 Compose runtime 1.12.1 和 coroutines-core 1.11.0，详见 [M2a 记录](validation/migrations/m2a.json)。M2b 首批记录见下；其余 press/endpoint、几何、M3–M4 和独立示例仍待执行。
 
 ## 提取边界
 
+M2b 首批仅移动 `LiquidGlassPhysics.kt`、`GlassControlMotion.kt`、`GlassDockMotion.kt`、`NativeDockParentMotion.kt`。Physics/parent-motion 正文逐字节一致，两个 driver 仅开放 11 处跨 module 必需的声明和只读 getter；`SpringState` 的四个 setter 与 parent driver 仍为 internal。原 `NativeDockParentMotionTest` 和两份独占 CSV 原样进入标准 `runtime/src/androidHostTest`，其余 18 类测试留 app。runtime 复用现有 Compose compiler 2.4.21、UI 1.12.1 与 JUnit 4.13.2，接入正常 host test；不加 friend-path。原 19 类 124 项迁移前后均通过，after 分为 app 109 项及 host 15 项；21 份测试/资源哈希及全部测试身份不变。AAR 与 app 生产输出无重复实现，实际依赖解析保持原版本，API36 debug/test 安装身份匹配且首页启动可见。该安装只验证身份与启动，不新增光学或自然动态验收。完整命令、哈希、证据修正及边界见 [M2b 首批运动记录](validation/migrations/m2b-motion.json)。
+
 目标 Android/Compose 运行库包含玻璃材质、背板采样与分层、轮廓、输入时钟、各控件自己的动态参数，以及 Toggle、分段 Tab、Dock、单双头滑杆、按钮、菜单和面板。主题色、文案、图标、选项数据、选择回调和触觉策略由调用方注入；课表、课程、数据库、设置持久化及 Material Design 路由继续归 Sleepy。原生采集和离线拟合工具不成为 Android 运行时依赖。
 
-完整运行库仍未完成解耦。同一个 `liquidglass` 包目前仍混有 `LocalUiStyle` 等主题判断、导航图标驱动、设置布局、调试语义和 Material 分支；滑杆还引用包外的弹窗动画及 Material 辅助函数。`SegmentedSwitcher.kt` 同时承载玻璃控件实现和 Sleepy 适配，不能整文件归为已分离的适配器。语言菜单也需先拆出通用菜单行为，再把语言选项、设置入口和调试标签留在 Sleepy。M1/M2a 目前只建立五个运动/调度文件的模块边界，catalog 继续保留其余提取阻碍。
+完整运行库仍未完成解耦。同一个 `liquidglass` 包目前仍混有 `LocalUiStyle` 等主题判断、导航图标驱动、设置布局、调试语义和 Material 分支；滑杆还引用包外的弹窗动画及 Material 辅助函数。`SegmentedSwitcher.kt` 同时承载玻璃控件实现和 Sleepy 适配，不能整文件归为已分离的适配器。语言菜单也需先拆出通用菜单行为，再把语言选项、设置入口和调试标签留在 Sleepy。M1/M2a 与本批四文件共九份实现，仍只覆盖运动和调度；catalog 继续保留其余提取阻碍。
 
 原生采集工具、可分发的数值基线、回放和示例属于独立验证目录。原始长视频、临时 APK、DerivedData 和设备导出缓存不进入库或日常 CI。CI 保留正常贡献所需的编译、针对性回归和可复现示例；多背景 GPU 采证显式运行。
 

@@ -8,7 +8,7 @@ import androidx.compose.ui.geometry.Offset
 import kotlin.math.abs
 
 /** Fit to all eight recorded three-tab drags; four-tab drags are held-out evidence. */
-internal object NativeDockPosition {
+object NativeDockPosition {
     const val FOLLOW_STIFFNESS = 325.36
     const val FOLLOW_DAMPING_RATIO = .78158
     val FollowSpring = SpringDescription.withDampingRatio(
@@ -19,7 +19,7 @@ internal object NativeDockPosition {
 }
 
 /** The Dock's seven springs share one animation scale and release gate. */
-internal class GlassDockMotion(initialPosition: Float) {
+class GlassDockMotion(initialPosition: Float) {
     val position = SpringState(initialPosition)
     val lift = SpringState(0f)
     val swell = SpringState(0f)
@@ -52,7 +52,7 @@ internal class GlassDockMotion(initialPosition: Float) {
         private set
     var glowAt by mutableStateOf(Offset.Zero)
         private set
-    internal val appliedPressEpoch: Long? get() = activeEpoch
+    val appliedPressEpoch: Long? get() = activeEpoch
 
     fun press(target: Float, receivedNanos: Long, sampleUptimeMillis: Long, glowAt: Offset = Offset.Zero,
         fingerXDp: Float? = null): Long {

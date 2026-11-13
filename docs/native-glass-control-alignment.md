@@ -557,3 +557,17 @@ Android新增显式启用的生产Range采集夹具：固定375×667dp世界、h
 现有库已实际承载M1三个纯运动文件及M2a两份调度文件，完整driver/几何、材质采样与shader、控件适配器和独立示例继续按extraction-plan提取。Physics下一批必须与两份driver/ParentMotion同迁以保留internal setter，原ParentMotion测试与其两份CSV届时进入标准runtime host test。独立仓库仍待逐控件校准和来源/分发gate完成。
 
 78正式debug及匹配测试包已安装到连接的API36设备，两包设备/host SHA256分别一致，MainActivity resumed且截图确认回到课表首页。主包为961352f0b4cec273b5d16ccf1d6e1795b5902309fd30b6428bcfbf786a9184dd；这次安装包含77的Range材质和78的模块迁移，不能把77旧包hash当成本次安装。
+
+### 80：M2b 首批 Physics 与 motion driver 迁移
+
+本批只将 LiquidGlassPhysics.kt、GlassControlMotion.kt、GlassDockMotion.kt 和 NativeDockParentMotion.kt 移动到 :liquid-glass-runtime 的 androidMain。Physics 和 ParentMotion 正文逐字节保留；两个 driver 仅去掉 11 处跨 module 必需的 internal（九个顶层声明及两个 appliedPressEpoch 只读 getter），没有改数值、事件顺序、输入时间、拟合范围或释放/取消策略。四个 SpringState setter 与 ParentMotion class 继续为 internal。
+
+原 NativeDockParentMotionTest 及其独占的 dock-parent-input-65.csv、dock-parent-reference-65.csv 逐字节移至标准 runtime androidHostTest；保留直接写 velocity 的测试与全部预期，通过正常同 module 测试访问，无 friend-path 或 app 源码重复登记。runtime 接入现有 Compose compiler2.4.21、api UI1.12.1 和 JUnit4.13.2，原 runtime1.12.1/coroutines1.11.0 声明不变。
+
+迁移前冻结 26 份源码/测试/资源/build 输入，原 19 类 124 项测试通过（13.8703s）。迁移后同轮 runtime AAR、app debug、androidTest 构建及 app18类109项、同名 ParentMotion host15项均通过，0失败/错误/跳过（67.3926s）。21份测试/资源哈希不变，38份前后XML的124项测试身份完全保留；源码核对确认五份原样文件逐字节一致，另两份仅可见性变化。AAR 含本批48个运动类、累计63个实现类；app 实际 built_in_kotlinc 生产输出2292类及两个锚点均存在，与全部AAR类无交集。两份独立 compile/runtime 依赖图确认 runtime/UI1.12.1、coroutines1.11.0，compiler图确认2.4.21，与既有版本一致。
+
+初次归属检查误用旧版 app/build/tmp/kotlin-classes/debug 路径，该不完整记录另存且未作为验收；随后检查实际 built_in_kotlinc 输出。一次命令里重复 dependencyInsight 选择器只保留末个 coroutines，原日志保留，再分别解析完整 compile/runtime 图。这两项证据修正没有改源码、预期或重跑构建/测试。完整记录见 [M2b 首批运动迁移](../libraries/liquid-glass/validation/migrations/m2b-motion.json)，原始资料位于本会话 android-library-motion-80。
+
+正式 debug 及匹配测试包已安装到 API36 设备，设备与 host SHA256 各自相同。主包为78e5a7f2dedc64193b00503648ef63afdf5a6ab4bb42ae788bf1de98580bd59f，测试包为a200d8db5d11e5d5bc74c0b9b24a6b97782322b7faaa50edb35654c5cb6d2325；MainActivity resumed，截图确认课表网格含课程和 Dock。此处只验证安装身份与首页启动，没有新增逐帧渲染或光学结论。
+
+本批只收口首个四文件运动闭包。其余 GlassPressMotion、Dock/Segment endpoint、几何、M3 材质/采样/shader、M4 控件适配器和独立示例仍待执行；没有新增原生光学、自然动态或性能验收。publicationReady、nativeCalibrationAccepted、sourceAndLicenseReviewComplete 保持 false，独立仓库和示例仍未创建。
