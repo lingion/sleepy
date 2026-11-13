@@ -106,6 +106,26 @@ import kotlin.math.sign
 /** Actual painted capsule bounds; the lens carrier itself spans the complete Dock. */
 internal val DockLensBoundsInRootPx = SemanticsPropertyKey<Rect>("DockLensBoundsInRootPx")
 
+/**
+ * Production four-tab sizing uses the SwiftUI TabView parent reference, whose
+ * 375pt holder has a 333pt platter and an 88.25pt resting lens (iOS 26.5,
+ * swiftui-dock-parent-61). The independent UITabBar's 94pt lens is a different
+ * intrinsic layout. Other counts retain that existing policy until measured.
+ *
+ * Only the four-tab minimum is calibrated here. Available content span still
+ * determines pitch, and a wider intrinsic seat can grow the lens. Values at
+ * other widths are Android's responsive policy, not measured UIKit geometry.
+ */
+internal fun tabViewDockLayout(span: Float, count: Int): FlClashDockPhysics.DockLayout {
+    if (count != 4) return FlClashDockPhysics.dockLayout(span, count)
+    val measuredFourTabLensWidth = 88.25f
+    val padding = FlClashDockPhysics.BAR_PADDING
+    val naturalPitch = (span - padding * 2f) / count
+    val lens = max(measuredFourTabLensWidth, naturalPitch + padding * 2f).coerceAtMost(span)
+    val pitch = (span - lens) / (count - 1)
+    return FlClashDockPhysics.DockLayout(pitch = pitch, lens = lens, inset = (lens - pitch) / 2f)
+}
+
 private class DockInputState(var selected: Int)
 
 /**
@@ -207,7 +227,7 @@ fun LiquidGlassNavigationBar(
 
     val layout = remember(barWidthPx, density.density, count) {
         val spanDp = (barWidthPx / density.density) - FlClashDockPhysics.BAR_PADDING * 2f
-        FlClashDockPhysics.dockLayout(max(1f, spanDp), count)
+        tabViewDockLayout(max(1f, spanDp), count)
     }
 
     val inputState = remember { DockInputState(clampedSelected) }
