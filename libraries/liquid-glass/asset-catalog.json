@@ -3,7 +3,7 @@
   "status": "partial-runtime-extraction-in-sleepy",
   "reference": "iOS 26.5 native controls",
   "independentlyBuildable": true,
-  "independentlyBuildableScope": "Only :liquid-glass-runtime M1 + M2a + M2b motion/press/endpoints + M2 geometry/cache AAR: nineteen production sources. Builds, original unit-test closures and single AAR ownership are verified. Geometry focused instrumentation, installation identity, actual launch visibility and independent compile/runtime dependency graphs are verified within their recorded scope. Complete controls/rendering library and independent sample do not exist.",
+  "independentlyBuildableScope": "Only :liquid-glass-runtime M1/M2a/M2b motion/press/endpoints, M2 geometry/cache and M3a render primitives plus the original AGSL are extracted: twenty-two production Kotlin sources. Builds, original unit-test closures, single AAR ownership and single byte-identical shader ownership in AAR/APK are verified. M3a independent dependency resolution and original HazeRender3 on API36 are verified within their recorded scope. Host/theme context, complete controls and the independent sample remain incomplete; this is not complete library or optical acceptance.",
   "publishedRepository": null,
   "pathBase": "repository-root",
   "assets": [
@@ -11,9 +11,6 @@
       "role": "rendering-and-sampling",
       "sourceDirectory": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass",
       "entryFiles": [
-        "LiquidGlassEffect.kt",
-        "LiquidGlassShader.kt",
-        "LiquidGlassStyle.kt",
         "GlassHost.kt",
         "GlassMaterialBackdrop.kt",
         "GlassBackdropSource.kt",
@@ -22,7 +19,27 @@
         "GlassSurfaceSource.kt",
         "GlassFilterBands.kt",
         "GlassControlModifier.kt"
-      ]
+      ],
+      "scope": "Host/sampling/theme context remains in app; extracted render primitives are indexed separately. Same-package locals and MaterialTheme/UiStyle gates still require an explicit context/strategy boundary."
+    },
+    {
+      "role": "extracted-render-primitives-runtime",
+      "sourceDirectory": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass",
+      "entryFiles": [
+        "LiquidGlassStyle.kt",
+        "LiquidGlassShader.kt",
+        "LiquidGlassEffect.kt"
+      ],
+      "buildModule": ":liquid-glass-runtime",
+      "buildFile": "libraries/liquid-glass/runtime/build.gradle.kts",
+      "extractionStatus": "m3a-render-primitives-moved-and-consumed-by-sleepy",
+      "migrationRecord": "libraries/liquid-glass/validation/migrations/m3a-rendering.json",
+      "scope": "Three render primitive sources and the original AGSL physically moved into runtime. Exactly six necessary internal removals (including nested Shader.Goo); all other source bytes, formulas, package names, callers, arguments and original tests are unchanged. Existing customized backdrop and Material3 public types remain API dependencies; Foundation1.12.1 and HCT1.10.0 are implementation dependencies. Host/sampling/theme context and controls were not migrated.",
+      "validation": "Original seven app unit classes pass 34 before in 11.8416s and after in 50.9080s with zero failures/errors/skips and unchanged method identities/test-source hashes; the after command also builds runtime AAR, app debug and androidTest. Runtime has 22 production Kotlin sources; 113 AAR classes and 2242 actual app production classes have zero intersection. Original app three sources/asset and stale generated shader are absent. AAR/APK each contain exactly one byte-identical original AGSL at assets/shaders/liquid_glass.agsl, using standard src/androidMain/assets with androidResources enabled. API36 original HazeRender 3 pass in 5.3395s with registered SleepyRenderTestRunner; that run's main/test installed hashes match host. Week11 populated timetable/Dock visibility is installation/launch scope only. Independent resolutionResult compile 67/runtime 121 components have no unresolved entries and actual compileAndroidMain.libraries includes the backdrop compile jar; the two original read-only diagnostic errors are retained. After attribution-path metadata fixes, only the main APK was repackaged in 2.4462s and reinstalled; its host/device hashes match and MainActivity resumed. The final main APK identity is recorded separately from the original GPU-run APK in the migration record; unit 34/GPU 3 were not rerun.",
+      "pendingValidation": [],
+      "publicApiReviewDeferred": true,
+      "material3IndependentCore": false,
+      "productionHostSamplingMigrated": false
     },
     {
       "role": "geometry",
@@ -105,12 +122,16 @@
     },
     {
       "role": "runtime-shader-assets",
-      "sourceDirectory": "app/src/main/assets/shaders",
+      "sourceDirectory": "libraries/liquid-glass/runtime/src/androidMain/assets/shaders",
       "entryFiles": [
         "liquid_glass.agsl"
       ],
-      "loadedBy": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassShader.kt",
-      "packagingRequired": true
+      "loadedBy": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassShader.kt",
+      "packagingRequired": true,
+      "packagingVerified": true,
+      "extractionStatus": "m3a-original-agsl-moved-single-runtime-owner",
+      "migrationRecord": "libraries/liquid-glass/validation/migrations/m3a-rendering.json",
+      "packagingContract": "Standard src/androidMain/assets with androidResources { enable = true }; original lookup key shaders/liquid_glass.agsl. Actual AAR/APK each contain one byte-identical entry; original app and stale generated shader are absent. Independent sample and notice distribution are still pending."
     },
     {
       "role": "third-party-runtime-dependency",
@@ -196,10 +217,10 @@
   "inventoryDate": "2026-11-14",
   "nativeCalibrationAccepted": false,
   "publicationReady": false,
-  "inventoryScope": "Nineteen verified production sources have a single runtime owner: M1 three kernels, M2a two scheduling files, M2b four motion drivers plus press and two endpoints, M2 six geometry sources and one extracted outline cache. Geometry build/original unit/AAR ownership, original focused device8, installation identity and independent dependency resolution checks passed; the initial wrong-runner zero-test command failure remains retained. A later retained screenshot shows the existing week11 populated timetable and Dock; the initial empty-timetable/Dock frame and the immediate post-test resume splash frame remain retained separately. This verifies installation/launch visibility only. Mixed controls, shader, backdrop and independent validation/sample extraction remain pending.",
+  "inventoryScope": "Twenty-two production Kotlin sources now have a single runtime owner: M1 three kernels, M2a two scheduling files, M2b four motion drivers plus press/two endpoints, M2 six geometry sources/extracted outline cache, and M3a Style/Shader/Effect. The original AGSL is a unique runtime androidMain asset and is byte-identical in the actual AAR/APK. Original M3a unit34, builds, class ownership, original API36 HazeRender3 and independent dependency resolution passed; original diagnostic errors remain retained. Week11 timetable/Dock visibility verifies installation/launch only. Original GPU-run and metadata-fixed final main package identities are distinguished in m3a-rendering.json. Host/theme context, mixed controls, independent validation/sample, optical/native-calibration and publication/license gates remain incomplete.",
   "extractionPlan": {
     "path": "libraries/liquid-glass/extraction-plan.md",
-    "status": "m1-m2a-m2b-and-m2-geometry-build-unit-aar-complete-m3-m4-pending",
+    "status": "m1-m2a-m2b-m2-geometry-and-m3a-render-primitives-verified-host-m4-sample-pending",
     "sourceOwnership": "Move each implementation once; Sleepy and the future sample consume the same runtime module and packaged shader.",
     "migrationValidation": "Keep existing fixture hashes, delivered inputs, measurement code and tolerances; record before/after results for each migrated closure.",
     "independentExampleGate": "A future sample must compile and run against the runtime without app sources, theme, assets or test helpers; it has not been created.",
@@ -215,7 +236,34 @@
     "m2bEndpointsValidation": "Original three-class/17-test closure passed before and after (app Press3 plus standard runtime Endpoint14), all test bytes and identities unchanged. Runtime AAR, app debug/androidTest builds passed; 66 AAR classes and 2289 app production classes have zero intersection. At that stage, twelve runtime production sources each had a single owner. No build configuration changes. Installed main/test hashes match host; launch scope only.",
     "m2GeometryMigrationRecord": "libraries/liquid-glass/validation/migrations/m2-geometry.json",
     "m2GeometryValidation": "Original five-class/26-test app closure passed before and after, with zero failures/errors/skips and unchanged test hashes/identities. Runtime AAR, app debug and androidTest builds plus after unit tests passed in 43.9488s. Nineteen runtime sources have a single owner; all 102 AAR classes are absent from 2253 actual app production classes. Six original app geometry sources are absent; the cached outline profile also belongs to the AAR. Exactly 28 visibility removals and one shapes 1.2.1 implementation line; no formula, caller, asset or test changes. Independent compile/runtime graphs confirm shapes1.2.1/ui-graphics1.12.1 with no unresolved entries. API36 main/test host-device hashes match; MainActivity resumed. Original focused device8 pass in 1.286s using registered SleepyRenderTestRunner; the first unregistered default-runner command failed with zero tests started and is retained separately. Root confirmed actual post-startup week11 populated timetable/Dock visibility with retained screenshot/hierarchy/resumed evidence; the initial empty-timetable/Dock frame and the immediate post-test resume splash frame remain separate. Install/launch scope only, no data/UI/optical acceptance.",
-    "m2GeometryPendingValidation": []
+    "m2GeometryPendingValidation": [],
+    "m3aRenderingMigrationRecord": "libraries/liquid-glass/validation/migrations/m3a-rendering.json",
+    "m3aRenderingValidation": "Original seven app unit classes pass 34 before in 11.8416s and after in 50.9080s with zero failures/errors/skips and unchanged method identities/test-source hashes; the after command also builds runtime AAR, app debug and androidTest. Runtime has 22 production Kotlin sources; 113 AAR classes and 2242 actual app production classes have zero intersection. Original app three sources/asset and stale generated shader are absent. AAR/APK each contain exactly one byte-identical original AGSL at assets/shaders/liquid_glass.agsl, using standard src/androidMain/assets with androidResources enabled. API36 original HazeRender 3 pass in 5.3395s with registered SleepyRenderTestRunner; that run's main/test installed hashes match host. Week11 populated timetable/Dock visibility is installation/launch scope only. Independent resolutionResult compile 67/runtime 121 components have no unresolved entries and actual compileAndroidMain.libraries includes the backdrop compile jar; the two original read-only diagnostic errors are retained. After attribution-path metadata fixes, only the main APK was repackaged in 2.4462s and reinstalled; its host/device hashes match and MainActivity resumed. The final main APK identity is recorded separately from the original GPU-run APK in the migration record; unit 34/GPU 3 were not rerun.",
+    "m3aRenderingPendingValidation": [],
+    "m3aDependencyResolution": {
+      "status": "verified",
+      "compileComponents": 67,
+      "runtimeComponents": 121,
+      "unresolved": [],
+      "actualBackdropCompileJarPresent": true,
+      "resolvedVersions": {
+        "Material3": "1.5.0-rc01",
+        "Foundation": "1.12.1",
+        "HCT": "1.10.0",
+        "shapes": "1.2.1",
+        "UI": "1.12.1"
+      },
+      "originalReadOnlyDiagnosticErrorsRetained": 2
+    },
+    "m3aPackageIdentity": {
+      "status": "verified-final-main-install-after-metadata-only-repackage",
+      "record": "libraries/liquid-glass/validation/migrations/m3a-rendering.json",
+      "metadataOnlyRepackageWallSeconds": 2.4462,
+      "finalMainHostDeviceHashesMatch": true,
+      "mainActivityResumed": true,
+      "originalGpuRunIdentityRecordedSeparately": true,
+      "unitAndGpuTestsRepeated": false
+    }
   },
   "sourceAndLicenseReviewComplete": false,
   "currentBuildWiring": {
@@ -226,7 +274,10 @@
     "supportContract": "SDK, Compose, GPU/fallback and accessibility requirements have not been independently established for an extracted library.",
     "libraryBuildFile": "libraries/liquid-glass/runtime/build.gradle.kts",
     "applicationDependency": "implementation(project(\":liquid-glass-runtime\"))",
-    "extractedScope": "M1 three kernels + M2a two scheduling files + M2b four motion drivers, press and two endpoints + M2 six geometry sources and extracted outline cache verified for build/original unit/AAR ownership: nineteen production sources. Geometry device8, install identity and dependency graphs are verified; first wrong-runner zero-test command failure and initial empty-timetable/Dock and immediate post-test resume splash screenshots retained separately; later actual timetable/Dock launch visibility verified without data/UI/optical acceptance. Controls/adapters, material assets and independent example remain pending."
+    "extractedScope": "M1/M2a/M2b, M2 geometry/cache and M3a render primitives are verified for build/original unit/AAR ownership: twenty-two production Kotlin sources plus one original AGSL in runtime. M3a unit34, actual AAR/APK single shader, API36 original HazeRender3, installation/launch and independent dependency resolution are verified within recorded scope. Final metadata-only main APK repack/reinstall completed with host/device hash agreement and MainActivity resumed; its identity is separately recorded from the original GPU-run package, whose unit/GPU tests were not repeated. Host/theme context, controls/adapters, independent sample and complete optical/support/distribution acceptance remain pending.",
+    "runtimeProductionKotlinSourceCount": 22,
+    "shaderAsset": "libraries/liquid-glass/runtime/src/androidMain/assets/shaders/liquid_glass.agsl",
+    "androidResourcesEnabled": true
   },
   "provenance": {
     "inventory": "ACKNOWLEDGEMENTS.md",
@@ -242,7 +293,7 @@
           "app/src/main/assets/third_party/notices/FLClash-GPL-3.0.txt"
         ],
         "sourceEvidence": [
-          "app/src/main/assets/shaders/liquid_glass.agsl"
+          "libraries/liquid-glass/runtime/src/androidMain/assets/shaders/liquid_glass.agsl"
         ],
         "scope": "Shader, optics, geometry, style and navigation behavior; retain original headers and trace exact extraction history."
       },
@@ -304,7 +355,7 @@
     },
     {
       "id": "runtime-and-adapters",
-      "status": "partially-extracted-m1-m2a-m2b-and-m2-geometry",
+      "status": "partially-extracted-through-m3a-render-primitives-host-controls-and-adapters-pending",
       "requiredEvidence": "One Android runtime module with no Sleepy dependency; callers supply app content, theme, callbacks and policy; Material routing remains in the Sleepy adapter.",
       "implementationPlan": "libraries/liquid-glass/extraction-plan.md",
       "progressRecord": "libraries/liquid-glass/validation/migrations/m1.json",
@@ -313,7 +364,8 @@
         "libraries/liquid-glass/validation/migrations/m2a.json",
         "libraries/liquid-glass/validation/migrations/m2b-motion.json",
         "libraries/liquid-glass/validation/migrations/m2b-endpoints.json",
-        "libraries/liquid-glass/validation/migrations/m2-geometry.json"
+        "libraries/liquid-glass/validation/migrations/m2-geometry.json",
+        "libraries/liquid-glass/validation/migrations/m3a-rendering.json"
       ]
     },
     {

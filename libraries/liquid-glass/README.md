@@ -1,10 +1,10 @@
 # Liquid Glass 资产库
 
-本目录是 Liquid Glass 资产索引和独立库的整理入口。M1、M2a、M2b 和 M2 几何已将十九份运动/调度/几何实现移动到可构建的 `:liquid-glass-runtime`，Sleepy 通过项目依赖实际消费；构建、原基线与 AAR 唯一归属均已验证。完整控件、材质采样和 shader 仍在 app，独立示例尚未建立。校准及来源/分发许可核对尚未完成，当前不具备独立开源发布条件。
+本目录是 Liquid Glass 资产索引和独立库的整理入口。M1、M2a、M2b、M2 几何及 M3a 渲染原语已将二十二份 Kotlin 实现和原 AGSL 移入可构建的 `:liquid-glass-runtime`，Sleepy 通过项目依赖实际消费；构建、原基线、AAR 唯一归属及 shader 打包均已验证。Host 材质采样、主题上下文和完整控件仍待解耦，独立示例尚未建立。校准及来源/分发许可核对尚未完成，当前不具备独立开源发布条件。
 
 用户要求：先以 iOS 26.5 原生控件打磨到接近一致，再作为独立仓库开源。Sleepy 将作为首个使用方。现阶段优先校准控件，源码索引见 [asset-catalog.json](asset-catalog.json)，实际进度和残差见 [对照记录](../../docs/native-glass-control-alignment.md)。
 
-[可执行提取路线](extraction-plan.md)按实际源码闭包安排纯运动/几何、材质采样、控件和 Sleepy 适配器。2026-11-14 已完成 M1：`NativeGlassDragDeformation.kt`、`NativeDockDeformation.kt`、`NativeSliderEndpoint.kt` 只有 runtime 中的一份实现；module AAR 与 Sleepy 编译通过，三类原测试在迁移前后均为 19 项通过，测试与两份 CSV 哈希不变。实际命令、首次 SDK 环境缺失及重跑结果见 [M1 迁移记录](validation/migrations/m1.json)。M2a 随后移动 `ActiveFrameLoop.kt` 和 `DockInputClock.kt`，只开放五处必要可见性；四类原测试迁移前后各 33/33 通过，计算和时钟行为不变，AAR 是唯一实现归属，debug/androidTest 同轮构建通过。依赖解析保持 Compose runtime 1.12.1 和 coroutines-core 1.11.0，详见 [M2a 记录](validation/migrations/m2a.json)。M2b 首批、后续按压/端部及 M2 几何记录见下；M3–M4 和独立示例仍待执行。
+[可执行提取路线](extraction-plan.md)按实际源码闭包安排纯运动/几何、材质采样、控件和 Sleepy 适配器。2026-11-14 已完成 M1：`NativeGlassDragDeformation.kt`、`NativeDockDeformation.kt`、`NativeSliderEndpoint.kt` 只有 runtime 中的一份实现；module AAR 与 Sleepy 编译通过，三类原测试在迁移前后均为 19 项通过，测试与两份 CSV 哈希不变。实际命令、首次 SDK 环境缺失及重跑结果见 [M1 迁移记录](validation/migrations/m1.json)。M2a 随后移动 `ActiveFrameLoop.kt` 和 `DockInputClock.kt`，只开放五处必要可见性；四类原测试迁移前后各 33/33 通过，计算和时钟行为不变，AAR 是唯一实现归属，debug/androidTest 同轮构建通过。依赖解析保持 Compose runtime 1.12.1 和 coroutines-core 1.11.0，详见 [M2a 记录](validation/migrations/m2a.json)。M2b、M2 几何和 M3a 渲染原语记录见下；M3 Host/主题上下文、M4 控件及独立示例仍待执行。
 
 ## 提取边界
 
@@ -14,9 +14,15 @@ M2b 首批仅移动 `LiquidGlassPhysics.kt`、`GlassControlMotion.kt`、`GlassDo
 
 M2b 后续将 `GlassPressMotion.kt`、`NativeDockEndpoint.kt` 和 `NativeSegmentedEndpoint.kt` 移入同一 runtime，各仅移除一次顶层 internal。两份 Endpoint 原测试逐字节移至标准 host test，依赖 app alpha helper 的 Press 原测试留 app；迁移前后均为17项通过，全部测试身份与字节保持。runtime AAR、debug/androidTest 同轮29.31s构建通过，66个AAR类与app实际2289个生产类无交集，未改构建配置、调用者、参数或内部setter。安装身份与MainActivity启动已核对；首张截图为现有空课表卡片与Dock，不据此增加原生验收。详见 [M2b 按压/端部记录](validation/migrations/m2b-endpoints.json)。
 
-M2 几何已移动六份几何源码，并把原 Shader 中的 `LiquidGlassCachedOutlineProfile` 提取到 runtime 的 `LiquidGlassOutlineProfile.kt`；只移除 28 处跨 module 必需的 internal，保留公式、FMA/精度分支和 lazy/path/descriptor 身份判断，仅增加 shapes `1.2.1` implementation 依赖。五类原 app 单测迁移前后各26/26通过，测试身份与哈希不变；AAR、debug/androidTest 和 after 单测同轮43.9488s通过。runtime现有19源，102个AAR类与实际2253个app生产类无交集，六份原app源已不存在。compile/runtime 独立依赖图均确认 shapes `1.2.1`、UI graphics `1.12.1` 且无未解析项，API36 main/test 安装哈希匹配并已 resumed MainActivity。原三类8项设备测试使用注册的 `SleepyRenderTestRunner` 在1.286s通过；首次误用未注册默认 runner 的命令在0项测试启动时失败，原错误单独保留，未改源码、测试或预期。root逐张核对三份截图：android-module-launch.png显示现有空课表卡片和Dock，android-after-geometry-tests.png为测试后即刻resume的splash，后续android-launched-home.png可见第11周课程网格和Dock，三者分开保留且不推断瞬态数据差异；仅验证本批真实安装/启动可见，不新增数据内容、UI/光学或自然动态验收。详见 [M2 几何记录](validation/migrations/m2-geometry.json)。
+M2 几何已移动六份几何源码，并把原 Shader 中的 `LiquidGlassCachedOutlineProfile` 提取到 runtime 的 `LiquidGlassOutlineProfile.kt`；只移除 28 处跨 module 必需的 internal，保留公式、FMA/精度分支和 lazy/path/descriptor 身份判断，仅增加 shapes `1.2.1` implementation 依赖。五类原 app 单测迁移前后各26/26通过，测试身份与哈希不变；AAR、debug/androidTest 和 after 单测同轮43.9488s通过。该批runtime共19源，102个AAR类与实际2253个app生产类无交集，六份原app源已不存在。compile/runtime 独立依赖图均确认 shapes `1.2.1`、UI graphics `1.12.1` 且无未解析项，API36 main/test 安装哈希匹配并已 resumed MainActivity。原三类8项设备测试使用注册的 `SleepyRenderTestRunner` 在1.286s通过；首次误用未注册默认 runner 的命令在0项测试启动时失败，原错误单独保留，未改源码、测试或预期。root逐张核对三份截图：android-module-launch.png显示现有空课表卡片和Dock，android-after-geometry-tests.png为测试后即刻resume的splash，后续android-launched-home.png可见第11周课程网格和Dock，三者分开保留且不推断瞬态数据差异；仅验证本批真实安装/启动可见，不新增数据内容、UI/光学或自然动态验收。详见 [M2 几何记录](validation/migrations/m2-geometry.json)。
 
-完整运行库仍未完成解耦。同一个 `liquidglass` 包目前仍混有 `LocalUiStyle` 等主题判断、导航图标驱动、设置布局、调试语义和 Material 分支；滑杆还引用包外的弹窗动画及 Material 辅助函数。`SegmentedSwitcher.kt` 同时承载玻璃控件实现和 Sleepy 适配，不能整文件归为已分离的适配器。语言菜单也需先拆出通用菜单行为，再把语言选项、设置入口和调试标签留在 Sleepy。M1/M2a/M2b/M2 几何共十九份实现，覆盖运动、调度及几何/轮廓缓存；catalog 继续保留其余提取阻碍。
+M3a 已把 `LiquidGlassStyle.kt`、`LiquidGlassShader.kt`、`LiquidGlassEffect.kt` 和原 AGSL 移入 runtime；只移除六处跨 module 必需的 internal，其余源码和 AGSL 字节不变，包名、调用者、实参及原测试未改。七类原 app 单测 before 34/34 用时11.8416s，after AAR/debug/androidTest 与同34项用时50.9080s通过，测试身份与源码哈希不变。runtime 共22源，113个AAR类与实际2242个app生产类无交集；AAR/APK各有唯一、字节相同的 shader，原 app 三源、资产与旧 generated shader 已不存在。
+
+标准 `runtime/src/androidMain/assets/shaders` 配合 `androidResources { enable = true }` 已由实际包验证。现有 backdrop/Material3 以 api 暴露公开类型，Foundation `1.12.1` 和 HCT `1.10.0` 为 implementation；这不是无 Material3 依赖的 core。
+
+API36 使用注册的 `SleepyRenderTestRunner` 运行原 HazeRender 三项，5.3395s通过；该次安装主包/测试包与 host 哈希匹配，第11周网格首页和 Dock 可见，仅作安装/启动验证。独立 resolutionResult 的 compile67/runtime121组件无未解析项，backdrop、Material3、Foundation、HCT、shapes/UI 均解析到现有版本，真实编译输入含 backdrop jar；最初两个只读诊断错误保留。署名证据路径元数据修正后仅重打包主包，2.4462s通过；最终主包已重装、host-device哈希一致且MainActivity resumed。该身份与原 GPU 运行包分开记录，未重复原34项单测或三项GPU测试，本页不固定主包哈希。完整证据见 [M3a 渲染原语记录](validation/migrations/m3a-rendering.json)。
+
+完整运行库仍未完成解耦。同一个 `liquidglass` 包目前仍混有 `LocalUiStyle` 等主题判断、导航图标驱动、设置布局、调试语义和 Material 分支；滑杆还引用包外的弹窗动画及 Material 辅助函数。`SegmentedSwitcher.kt` 同时承载玻璃控件实现和 Sleepy 适配，不能整文件归为已分离的适配器。语言菜单也需先拆出通用菜单行为，再把语言选项、设置入口和调试标签留在 Sleepy。现有二十二份 runtime 实现覆盖运动、调度、几何/轮廓缓存和渲染原语；Host 采样闭包、主题注入、完整控件及独立示例仍待完成，catalog 保留相应阻碍。本批未新增完整光学、自然动态、近原生或发布验收。
 
 原生采集工具、可分发的数值基线、回放和示例属于独立验证目录。原始长视频、临时 APK、DerivedData 和设备导出缓存不进入库或日常 CI。CI 保留正常贡献所需的编译、针对性回归和可复现示例；多背景 GPU 采证显式运行。
 
@@ -41,7 +47,7 @@ M2 几何已移动六份几何源码，并把原 Shader 中的 `LiquidGlassCache
 
 ## 来源
 
-保留 Sleepy 现有 [GPL v3 LICENSE](../../LICENSE) 和[完整致谢清单](../../ACKNOWLEDGEMENTS.md)。FLClash 的 Kotlin/AGSL 移植保留 GPL-3.0 声明；Flutter 超椭圆移植保留 BSD-3-Clause 声明；Kyant 原始基线保留 Apache-2.0 声明。shader 运行资产、源码头和 notice 文件均需随实际提取范围迁移，不能只复制 Kotlin。
+保留 Sleepy 现有 [GPL v3 LICENSE](../../LICENSE) 和[完整致谢清单](../../ACKNOWLEDGEMENTS.md)。FLClash 的 Kotlin/AGSL 移植保留 GPL-3.0 声明；Flutter 超椭圆移植保留 BSD-3-Clause 声明；Kyant 原始基线保留 Apache-2.0 声明。AGSL 运行资产已迁入 runtime，原源码头保留；适用 notice 的独立库分发安排仍需按实际提取范围完成，不能把 shader 打包通过当作许可门禁通过。
 
 [现有 backdrop 模块](../../third-party/kyant-backdrop/README.md)经 SleepDown 定制源码导入，SleepDown 自有修改另有非商业、源码可见声明。2026-11-14 已逐字节确认：Sleepy 最初导入 `c2490785` 的 42 个 Android/common 运行文件和模块 README，与 [SleepDown 固定快照 `d02898140327796946f2b140cb3ca87390595810`](https://github.com/xiaomanjun233/SleepDown-Schedule/tree/d02898140327796946f2b140cb3ca87390595810/third-party/kyant-backdrop) 完全一致；保留的 SleepDown 许可与第三方声明也与该快照一致。该修订记录为 `verifiedEquivalentSourceRevision`，证明可复现的内容基线，不代替仍未知的历史取得/导入修订，也不代表取得定制代码的再分发授权。当前运行代码相对 Kyant 2.0.0 为 24 个仅多一个末尾换行的原文件、10 个修改原文件及 8 个新增文件；导入后的 Sleepy 修改另记于 [UPSTREAM.json](../../third-party/kyant-backdrop/UPSTREAM.json)。
 

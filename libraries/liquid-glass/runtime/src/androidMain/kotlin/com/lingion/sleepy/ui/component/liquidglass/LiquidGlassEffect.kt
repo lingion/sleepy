@@ -33,7 +33,7 @@ import com.kyant.shapes.RoundedRectangularShape
  *
  * 在不支持 RuntimeShader 的设备上, 优雅降级为高保真高斯模糊与鲜艳度滤镜。
  */
-internal fun BackdropEffectScope.liquidGlass(
+fun BackdropEffectScope.liquidGlass(
     context: Context,
     style: LiquidGlassStyle,
     glow: LiquidGlassGlow = LiquidGlassGlow.None,
@@ -148,7 +148,7 @@ internal fun BackdropEffectScope.liquidGlass(
 }
 
 /** Exact circular capsules/discs; other contours retain their separate optical path. */
-internal fun circularGlassCornerRadii(outline: Outline, density: Float): LiquidGlassCornerRadii? {
+fun circularGlassCornerRadii(outline: Outline, density: Float): LiquidGlassCornerRadii? {
     val rect = (outline as? Outline.Rounded)?.roundRect ?: return null
     val corners = listOf(rect.topLeftCornerRadius, rect.topRightCornerRadius,
         rect.bottomRightCornerRadius, rect.bottomLeftCornerRadius)
@@ -163,7 +163,7 @@ internal fun circularGlassCornerRadii(outline: Outline, density: Float): LiquidG
 
 /** Two GPU branches over the same retained backdrop; no Bitmap readback or CPU blur. */
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-internal fun createLiquidGlassHazeAtlasEffect(
+fun createLiquidGlassHazeAtlasEffect(
     atlas: LiquidGlassShader.HazeAtlas,
     clearShader: android.graphics.RuntimeShader,
     hazeShader: android.graphics.RuntimeShader,

@@ -42,7 +42,7 @@ import kotlin.math.sqrt
  * `_liesEvenly` / `_encloses` / `Color.alphaBlend`), Android 侧没有等价物, 故由调用方
  * 显式给出, 默认全透明(= 不加 veil)。
  */
-internal object LiquidGlassShader {
+object LiquidGlassShader {
 
     /**
      * Android exposes one RenderNode input per RuntimeShader RenderEffect. Pack two independent
@@ -168,7 +168,7 @@ internal object LiquidGlassShader {
     private val FLAT_PROFILE = FloatArray(64)
 
     /** Flutter `GooSurface` 的药丸布局, 对应 `uPills` / `uGoo` / `uPillCurves` / `uPillCenters`。 */
-    internal data class Goo(
+    data class Goo(
         val pills: List<Rect>,
         val blends: List<Double>,
         val firstRadius: Double?,

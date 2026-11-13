@@ -393,7 +393,7 @@ data class LiquidGlassGlow(
  * `com.google.android.material:material-color-utilities` 不存在于任何 Maven 仓库,
  * 故用 API 等价的 `studio.lunabee.compose:material-color-utilities`。
  */
-internal fun Color.shiftTone(delta: Double): Color {
+fun Color.shiftTone(delta: Double): Color {
     val hct = Hct.fromInt(toArgb())
     val shifted = Hct.from(hct.hue, hct.chroma, (hct.tone + delta).coerceIn(0.0, 100.0))
     return Color(shifted.toInt())

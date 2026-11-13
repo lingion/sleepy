@@ -11,6 +11,7 @@ kotlin {
         namespace = "com.lingion.liquidglass"
         compileSdk = 37
         minSdk = 26
+        androidResources { enable = true }
         compilerOptions { jvmTarget = JvmTarget.JVM_17 }
         withHostTestBuilder {}.configure {}
     }
@@ -21,6 +22,10 @@ kotlin {
             api("androidx.compose.ui:ui:1.12.1")
             implementation(libs.coroutines.core)
             implementation("io.github.kyant0:shapes:1.2.1")
+            api(project(":kyant-backdrop"))
+            api(libs.compose.material3.core)
+            implementation("androidx.compose.foundation:foundation:1.12.1")
+            implementation(libs.material.color.utilities)
         }
         val androidHostTest by getting {
             dependencies {
