@@ -999,3 +999,24 @@ callback after UP each. Drag releases continued value/tracking observations
 after UP, including fast upper values reaching1; no general release law or
 Android range calibration is inferred. See the batch76 section in
 ../../docs/native-glass-control-alignment.md for values, failed attempts and limits.
+
+
+### Paired native range optical matrix
+
+The eight explicit `testPairedNativeSliderOptics{FineGrid,ColorStripes,TonalBlocks,Landscape}{Light,Dark}` tests each launch a fresh range scene at whole-control scale `.75` with `.25/.75` endpoints. Each endpoint receives one six-second center hold. Run the host optical observer together with these selected tests; only complete host PNG brackets inside delivered DOWN/UP establish held images. Normal presentation traversal and the range geometry probe remain enabled. The ordinary six-item scene selector and existing test bodies are unchanged. These eight methods are XCTest-discovered: an unfiltered reference suite includes all eight; use `-only-testing` for a bounded capture run.
+
+Record actual pre-touch REST and held model/presentation centers separately: UIKit may move the native center slightly when tracking begins. Do not replace either with ideal rail fractions or use these carrier rectangles as visible alpha contours. This non-static capture path does not export a fresh `background-input.png`; retain the source/world metadata and limit background comparisons to independently justified regions.
+
+The Android counterpart is the opt-in `NativeRangeOpticalWorldRenderTest#captureNativeRangeOpticalWorld`. After building/installing the debug and androidTest APKs on an API33+ hardware device, run:
+
+```sh
+adb shell am instrument -w -r \
+  -e class com.lingion.sleepy.ui.component.NativeRangeOpticalWorldRenderTest#captureNativeRangeOpticalWorld \
+  -e glassRangeOpticalWorld true \
+  -e glassRangeOpticalRunId range-optics \
+  com.lingion.sleepy.debug.test/com.lingion.sleepy.SleepyRenderTestRunner
+```
+
+It exports `range-optical-world/<runId>` under the debug app's external files directory: four backgrounds × light/dark, plain background pairs and REST/lower-held/upper-held Window/display pairs, actual world/endpoint/rail geometry, callbacks and capture readiness. It uses the production Range/input path with a synthetic settled Compose clock; cleanup CANCEL differs from native UP. It is stable optical evidence, not a natural timing or release test. The fixed375×667dp world and holder placement are fixture context; no per-endpoint translation, shape or material override is applied.
+
+The default `glassRangeOpticalPalette=product` retains Sleepy's theme. Optional `-e glassRangeOpticalPalette native` changes only the fixture's primary role to the reference tint `(0,.65,.75,1)` and records the consumer's actual RGBA. This separate diagnostic reduces active-rail tint differences; inactive roles and the Android8dp/native-host6pt rail can still differ. Preserve both arms and the unmatched context when reporting errors. Neither the host-composed range nor a passing capture matrix establishes full native parity.

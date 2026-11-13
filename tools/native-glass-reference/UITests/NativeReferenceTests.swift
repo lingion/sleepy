@@ -662,6 +662,15 @@ final class NativeReferenceTests: XCTestCase {
     func testSwiftUISliderOpticsLandscapeLight() { swiftUISliderOptics(background: "synthetic_landscape", style: "light") }
     func testSwiftUISliderOpticsLandscapeDark() { swiftUISliderOptics(background: "synthetic_landscape", style: "dark") }
 
+    func testPairedNativeSliderOpticsFineGridLight() { pairedNativeSliderOptics(background: "fine_grid", style: "light") }
+    func testPairedNativeSliderOpticsFineGridDark() { pairedNativeSliderOptics(background: "fine_grid", style: "dark") }
+    func testPairedNativeSliderOpticsColorStripesLight() { pairedNativeSliderOptics(background: "color_stripes", style: "light") }
+    func testPairedNativeSliderOpticsColorStripesDark() { pairedNativeSliderOptics(background: "color_stripes", style: "dark") }
+    func testPairedNativeSliderOpticsTonalBlocksLight() { pairedNativeSliderOptics(background: "tonal_blocks", style: "light") }
+    func testPairedNativeSliderOpticsTonalBlocksDark() { pairedNativeSliderOptics(background: "tonal_blocks", style: "dark") }
+    func testPairedNativeSliderOpticsLandscapeLight() { pairedNativeSliderOptics(background: "synthetic_landscape", style: "light") }
+    func testPairedNativeSliderOpticsLandscapeDark() { pairedNativeSliderOptics(background: "synthetic_landscape", style: "dark") }
+
     func testDockOpticsFineGridLight() { dockOptics(background: "fine_grid", style: "light") }
     func testDockOpticsFineGridDark() { dockOptics(background: "fine_grid", style: "dark") }
     func testDockOpticsColorStripesLight() { dockOptics(background: "color_stripes", style: "light") }
@@ -880,6 +889,47 @@ final class NativeReferenceTests: XCTestCase {
         opticalHold(control, point: CGVector(dx: 93.5 / frame.width, dy: 16 / frame.height),
                     name: prefix + "-swiftui-slider-held", duration: 6)
         XCTAssertEqual(control.value as? String, "25%")
+        captureLanguage(prefix + "-released-rest")
+        app.terminate()
+    }
+
+    /// Each explicit entry owns one fresh paired-range session. Presentation
+    /// traversal stays active so native tracking and child ancestry are retained.
+    /// The host observer must verify each complete PNG bracket inside this run's
+    /// delivered DOWN/UP; the XCTAttachments are REST / released states only.
+    private func pairedNativeSliderOptics(background: String, style: String) {
+        executionTimeAllowance = 60
+        settleDuration = 1.2
+        launch(scene: "range", background: background, style: style, staticOptics: false,
+               rangeScale: 0.75, rangeLower: 0.25, rangeUpper: 0.75, rangeGeometryProbe: true)
+        let lower = app.sliders["native-range-lower"]
+        let upper = app.sliders["native-range-upper"]
+        XCTAssertTrue(lower.waitForExistence(timeout: 5))
+        XCTAssertTrue(upper.waitForExistence(timeout: 5))
+        for control in [lower, upper] {
+            XCTAssertTrue(control.isEnabled)
+            XCTAssertGreaterThan(control.frame.width, 10)
+            XCTAssertLessThan(control.frame.width, 90, "Missing native model thumb geometry")
+        }
+        XCTAssertEqual(app.windows.firstMatch.frame.width, 375, accuracy: 0.5)
+        XCTAssertEqual(app.windows.firstMatch.frame.height, 667, accuracy: 0.5)
+        XCTAssertEqual(app.segmentedControls["scene-selector"].buttons.count, 6)
+        XCTAssertLessThan(lower.frame.midX, upper.frame.midX)
+        XCTAssertEqual(lower.frame.midY, upper.frame.midY, accuracy: 0.5)
+        XCTAssertEqual(rangeValue(lower), 0.25, accuracy: 0.01)
+        XCTAssertEqual(rangeValue(upper), 0.75, accuracy: 0.01)
+        let initialLower = lower.value as? String
+        let initialUpper = upper.value as? String
+        let prefix = "range-optics-scale-0_75-\(background)-\(style)"
+        captureLanguage(prefix + "-rest")
+        // The real UISlider AX frames follow public cached model thumb rects.
+        // A normalized center here targets that observed frame at either end.
+        opticalHold(lower, name: prefix + "-lower-held", duration: 6)
+        XCTAssertEqual(lower.value as? String, initialLower)
+        XCTAssertEqual(upper.value as? String, initialUpper)
+        opticalHold(upper, name: prefix + "-upper-held", duration: 6)
+        XCTAssertEqual(lower.value as? String, initialLower)
+        XCTAssertEqual(upper.value as? String, initialUpper)
         captureLanguage(prefix + "-released-rest")
         app.terminate()
     }
