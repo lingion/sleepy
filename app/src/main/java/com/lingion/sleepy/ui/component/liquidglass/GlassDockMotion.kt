@@ -27,6 +27,8 @@ internal class GlassDockMotion(initialPosition: Float) {
     val jelly = SpringState(0f, rest = FlClashDockPhysics.JELLY_REST)
     val glow = SpringState(0f)
     val glowSpread = SpringState(0f)
+    private val parentMotion = NativeDockParentMotion()
+    val parentTranslation: SpringState get() = parentMotion.translation
     var dropping by mutableStateOf(false)
     private val dragDeformation = NativeDockDeformation()
     private var deformationInteraction = false
@@ -52,24 +54,29 @@ internal class GlassDockMotion(initialPosition: Float) {
         private set
     internal val appliedPressEpoch: Long? get() = activeEpoch
 
-    fun press(target: Float, receivedNanos: Long, sampleUptimeMillis: Long, glowAt: Offset = Offset.Zero): Long {
+    fun press(target: Float, receivedNanos: Long, sampleUptimeMillis: Long, glowAt: Offset = Offset.Zero,
+        fingerXDp: Float? = null): Long {
         val epoch = ++nextEpoch
         requestedEpoch = epoch
         requestedPosition = target
         inputClock.enqueue(Input.Press(epoch, target, glowAt), receivedNanos, sampleUptimeMillis)
+        parentMotion.press(epoch, fingerXDp, receivedNanos)
         return epoch
     }
 
     fun drag(epoch: Long, target: Float, pull: Float, receivedNanos: Long, sampleUptimeMillis: Long,
-        glowAt: Offset = Offset.Zero) {
+        glowAt: Offset = Offset.Zero, fingerXDp: Float? = null) {
         if (requestedEpoch != epoch) return
         requestedPosition = target
         inputClock.enqueue(Input.Drag(epoch, target, pull, glowAt), receivedNanos, sampleUptimeMillis)
+        parentMotion.move(epoch, fingerXDp, receivedNanos)
     }
 
-    fun trackGlow(epoch: Long, at: Offset, receivedNanos: Long, sampleUptimeMillis: Long) {
+    fun trackGlow(epoch: Long, at: Offset, receivedNanos: Long, sampleUptimeMillis: Long,
+        fingerXDp: Float? = null) {
         if (requestedEpoch != epoch) return
         inputClock.enqueue(Input.Glow(epoch, at), receivedNanos, sampleUptimeMillis)
+        parentMotion.move(epoch, fingerXDp, receivedNanos)
     }
 
     fun release(epoch: Long, target: Float, receivedNanos: Long, sampleUptimeMillis: Long) {
@@ -77,24 +84,28 @@ internal class GlassDockMotion(initialPosition: Float) {
         requestedEpoch = null
         requestedPosition = target
         inputClock.enqueue(Input.Release(epoch, target), receivedNanos, sampleUptimeMillis)
+        parentMotion.release(epoch, receivedNanos)
     }
 
     fun cancel(target: Float, receivedNanos: Long, sampleUptimeMillis: Long? = null) {
         requestedEpoch = null
         requestedPosition = target
         inputClock.enqueue(Input.Cancel(target), receivedNanos, sampleUptimeMillis)
+        parentMotion.cancel(receivedNanos)
     }
 
     fun select(target: Float, receivedNanos: Long) {
         requestedEpoch = null
         requestedPosition = target
         inputClock.enqueue(Input.Selection(target), receivedNanos)
+        parentMotion.cancel(receivedNanos)
     }
 
     fun needsFrame(scaleFactor: Float): Boolean =
-        inputClock.hasPending || needsFrame(inputDragging, scaleFactor)
+        inputClock.hasPending || parentMotion.needsFrame() || needsFrame(inputDragging, scaleFactor)
 
     fun advanceFrame(frame: ActiveFrame, scaleFactor: Float) {
+        parentMotion.advanceFrame(frame, scaleFactor)
         inputClock.advance(frame,
             integrate = { advance(it, scaleFactor, inputHeld, inputDragging) },
             apply = { applyInput(it, scaleFactor) },
@@ -177,7 +188,7 @@ internal class GlassDockMotion(initialPosition: Float) {
 
     val isRunning: Boolean
         get() = dropping || position.isRunning || lift.isRunning || swell.isRunning ||
-            pull.isRunning || jelly.isRunning || glow.isRunning || glowSpread.isRunning
+            pull.isRunning || jelly.isRunning || glow.isRunning || glowSpread.isRunning || parentTranslation.isRunning
 
     fun needsFrame(dragging: Boolean, scaleFactor: Float): Boolean =
         isRunning || dragging && scaleFactor > 0f

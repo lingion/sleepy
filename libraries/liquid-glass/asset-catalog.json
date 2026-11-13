@@ -51,6 +51,7 @@
         "LanguageMenuMotion.kt",
         "NativeGlassDragDeformation.kt",
         "NativeDockDeformation.kt",
+        "NativeDockParentMotion.kt",
         "NativeDockEndpoint.kt",
         "NativeSegmentedEndpoint.kt",
         "NativeSliderEndpoint.kt"

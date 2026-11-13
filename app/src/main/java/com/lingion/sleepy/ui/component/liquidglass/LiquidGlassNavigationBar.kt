@@ -222,6 +222,7 @@ fun LiquidGlassNavigationBar(
 
     var barWidthPx by remember { mutableFloatStateOf(0f) }
     var barHeightPx by remember { mutableFloatStateOf(0f) }
+    var inputCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     var lensCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     val isLtr = layoutDirection == LayoutDirection.Ltr
 
@@ -288,6 +289,15 @@ fun LiquidGlassNavigationBar(
     }
 
     fun indexAt(position: Float): Int = position.roundToInt().coerceIn(0, currentLastIndex)
+
+    fun physicalFingerXDp(position: Offset): Float? {
+        if (count != 4) return null
+        val coordinates = inputCoordinates ?: return null
+        if (!coordinates.isAttached) return null
+        // This owner is outside the moving parent layer. Window coordinates
+        // retain physical +X in RTL and include static caller transforms.
+        return (coordinates.localToWindow(position).x / currentDensity).takeIf { it.isFinite() }
+    }
 
     val velocityTracker = remember { VelocityTracker() }
 
@@ -378,9 +388,10 @@ fun LiquidGlassNavigationBar(
             .onGloballyPositioned { coords ->
                 barWidthPx = coords.size.width.toFloat()
                 barHeightPx = coords.size.height.toFloat()
+                inputCoordinates = coords
             }
             .glassGestureOwnership()
-            .pointerInput(count, isLtr) {
+            .pointerInput(count, isLtr, density.density) {
                 try {
                 awaitPointerEventScope {
                     while (true) {
@@ -401,7 +412,8 @@ fun LiquidGlassNavigationBar(
                                 pressedIndex = idx
                                 pressX = change.position.x
                                 dragging = false
-                                pointerEpoch = motion.press(idx.toFloat(), receivedNanos, change.uptimeMillis, change.position)
+                                pointerEpoch = motion.press(idx.toFloat(), receivedNanos, change.uptimeMillis,
+                                    change.position, physicalFingerXDp(change.position))
                                 change.consume()
                             }
                             PointerEventType.Move -> {
@@ -431,7 +443,8 @@ fun LiquidGlassNavigationBar(
                                         val pos = positionAt(change.position.x)
                                         // The Dock follows the measured native center trajectory;
                                         // other controls retain their own tracking springs.
-                                        motion.drag(pointerEpoch, pos, targetStretch, receivedNanos, change.uptimeMillis, change.position)
+                                        motion.drag(pointerEpoch, pos, targetStretch, receivedNanos, change.uptimeMillis,
+                                            change.position, physicalFingerXDp(change.position))
 
                                         val idx = indexAt(pos)
                                         if (idx != pressedIndex) {
@@ -439,7 +452,8 @@ fun LiquidGlassNavigationBar(
                                             pressedIndex = idx
                                         }
                                     } else {
-                                        motion.trackGlow(pointerEpoch, change.position, receivedNanos, change.uptimeMillis)
+                                        motion.trackGlow(pointerEpoch, change.position, receivedNanos, change.uptimeMillis,
+                                            physicalFingerXDp(change.position))
                                     }
                                     change.consume()
                                 }
@@ -483,7 +497,8 @@ fun LiquidGlassNavigationBar(
             },
         contentAlignment = Alignment.Center,
     ) {
-        // ── 全 Dock 弹簧物理形变层 (包裹所有 4 个子层，随 stretchSpring 整体弹性位移与拉伸) ──
+        // Whole moving carrier, including shadow room; these bounds are not
+        // the visible plume/contour. Every painted sibling shares this layer.
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -494,8 +509,23 @@ fun LiquidGlassNavigationBar(
                     val stretchVal = stretchSpring.value
                     scaleX = swellScale * (1f + abs(stretchVal) / max(1f, size.width) * FlClashDockPhysics.PULL_STRETCH)
                     scaleY = swellScale
-                    translationX = stretchVal
-                },
+                    if (count == 4) {
+                        val coordinates = inputCoordinates
+                        val physicalX = motion.parentTranslation.value * density.density
+                        val localDelta = if (coordinates != null && coordinates.isAttached && physicalX.isFinite()) {
+                            val origin = coordinates.localToWindow(Offset.Zero)
+                            coordinates.windowToLocal(origin + Offset(physicalX, 0f)) - coordinates.windowToLocal(origin)
+                        } else Offset.Zero
+                        // Translation is a window-space vector. Undo caller
+                        // transforms once; the press scale above is unchanged.
+                        translationX = localDelta.x
+                        translationY = localDelta.y
+                    } else {
+                        translationX = stretchVal
+                        translationY = 0f
+                    }
+                }
+                .testTag("dock-parent"),
             contentAlignment = Alignment.Center,
         ) {
             // ── 层1: Dock 胶囊底座 (62dp) ──
@@ -627,7 +657,8 @@ fun LiquidGlassNavigationBar(
                         val coordinates = lensCoordinates
                         // Observe the parent's transform springs here as well;
                         // localToRoot includes their current graphics layer.
-                        val parentTransformIsFinite = swellSpring.value.isFinite() && stretchSpring.value.isFinite()
+                        val parentTransformIsFinite = swellSpring.value.isFinite() && stretchSpring.value.isFinite() &&
+                            motion.parentTranslation.value.isFinite()
                         if (coordinates != null && coordinates.isAttached && parentTransformIsFinite) {
                             val rect = paintedLensRect(liftSpring.value)
                             val left = (FlClashDockPhysics.BAR_PADDING + layout.inset + rect.left) * density.density
