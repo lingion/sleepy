@@ -316,6 +316,15 @@ final class NativeReferenceTests: XCTestCase {
     func testStaticOpticsLandscapeLight() { staticOptics(background: "synthetic_landscape", style: "light") }
     func testStaticOpticsLandscapeDark() { staticOptics(background: "synthetic_landscape", style: "dark") }
 
+    func testDockOpticsFineGridLight() { dockOptics(background: "fine_grid", style: "light") }
+    func testDockOpticsFineGridDark() { dockOptics(background: "fine_grid", style: "dark") }
+    func testDockOpticsColorStripesLight() { dockOptics(background: "color_stripes", style: "light") }
+    func testDockOpticsColorStripesDark() { dockOptics(background: "color_stripes", style: "dark") }
+    func testDockOpticsTonalBlocksLight() { dockOptics(background: "tonal_blocks", style: "light") }
+    func testDockOpticsTonalBlocksDark() { dockOptics(background: "tonal_blocks", style: "dark") }
+    func testDockOpticsLandscapeLight() { dockOptics(background: "synthetic_landscape", style: "light") }
+    func testDockOpticsLandscapeDark() { dockOptics(background: "synthetic_landscape", style: "dark") }
+
     func testAlertOpticsFineGridLight() { alertOptics(background: "fine_grid", style: "light") }
     func testAlertOpticsFineGridDark() { alertOptics(background: "fine_grid", style: "dark") }
     func testAlertOpticsColorStripesLight() { alertOptics(background: "color_stripes", style: "light") }
@@ -443,6 +452,23 @@ final class NativeReferenceTests: XCTestCase {
             hold(anchor, label: prefix + ": native long-press opening after first tap did not keep menu open")
         }
         XCTAssertTrue(languageMenu().waitForExistence(timeout: 5))
+    }
+
+    /// Isolate the initially selected native Dock item on each optical input.
+    /// The host still verifies the held PNG against delivered DOWN/UP times.
+    private func dockOptics(background: String, style: String) {
+        settleDuration = 0.7
+        launch(scene: "toggle", background: background, style: style, staticOptics: true)
+        let control = app.tabBars["uikit-tabbar"]
+        XCTAssertTrue(control.waitForExistence(timeout: 5))
+        let first = control.buttons["Home"]
+        XCTAssertTrue(first.exists)
+        XCTAssertTrue(first.isSelected)
+        let prefix = "dock-optics-\(background)-\(style)"
+        captureLanguage(prefix + "-rest")
+        opticalHold(first, name: prefix + "-dock-selected-first-held")
+        XCTAssertTrue(first.isSelected)
+        app.terminate()
     }
 
     private func staticOptics(background: String, style: String) {
