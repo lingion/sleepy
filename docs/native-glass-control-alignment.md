@@ -459,3 +459,20 @@ E相对D在全部五个未参与拟合的诊断场景中，固定腐蚀内芯和
 正式包`variant-production`完整8场景再次通过，16份控件＋8份背景各保存Window/display，共49文件hash核对成功；设备导出校验后清理，包回到debug首页。主APK设备/host SHA256为`9248bcc2f04c6ea30807c1f701684e968e21d7abbc24cceb624ccde3c225fa32`，测试APK仍为72的`794470570f2fcbbee11be8bdb3acbc80d7dae984bc600dad046c66f030c4027e`。`production-source-review`另检查19字段、构造默认值、未改scale及两主题各lift输入，104项源码/来源检查0失败，760次字段比较相同；这些是源码等价性检查，不能替代GPU。
 
 E→正式包在预声明严格48PNG解码像素比较中仅24/48逐像素相同：恰好全部24张Activity Window图。24张composited screen全图都有差异，因此严格全屏条件仍未通过，不能写“48/48保真”。独立定位沿用采集前既有的每场景实际系统栏排除域`[0,135,1216,2592)`，全部24张screen在该域内非零差异像素均为0，16个控件光学ROI也均为0；差异仅位于原先已排除的系统栏区域。网格浅色HELD全屏14715个差异像素、比REST多3493个，额外差异仍全部在该域外。没有重新配准、修改mask或把RGB3放宽成新验收；原screen差异和严格未通过结论均保留在`production-preservation`与`production-screen-delta-localization`报告。光学改善只限于本次单头普通背板稳定状态，不能外推到Range、Dock、嵌套背板、其他值、起落或自然运动；后续仍须逐项完成目标矩阵。
+
+
+### 74：单头Slider折射幅度的半幅诊断（未采纳）
+
+F从73正式E出发，只把独立`sliderLens`的`refraction=-4.3`改为`-2.15`，原bevel5.5、film、rim、frost、hairline、lift scaling、shader、采样图及Range/Dock/MD不变。保留负号是必要控制：精确0会同时把`lens`布尔分支及rim方向函数切换，不能作为单纯幅度消融。半幅是预先固定的诊断端点，不是原生参数估计。root方案在采集前保存，独立光学方法在读取F像素前冻结；沿用72固定世界、25%值、原registration/mask及合成时钟，不作二次拟合。
+
+首次F在第五场景`fine_grid-dark`的纯背景readiness失败（24.505s）：display中可见系统“已使用55分钟”浮层，Activity Window没有该浮层。原纯背景比较域`[47,190,1169,2450)`内34682个RGB3差异像素，bbox为`[402,190,813,278)`；另在既有control非系统栏域中46126个差异全部位于`[402,159,813,278)`，y≥400无差异。8份已完成控件及失败调试资料共29文件保留，设备/host hash重核对后仅删除设备重复导出。没有把半批结果当完整矩阵，也没有放宽readiness或改mask。
+
+同源码、同APK身份完整重采通过（40.299s，1项instrumentation），四背景×明暗8场景的16份REST/HELD及8份背景各保留Window/display，共49文件hash一致。首次与重采构建分别约20.35/10.12s；诊断主APK SHA256为`43e0c3675ed8620a547e09254095bb7edc1c0d78f1045b4b3a8bc436b0afb48d`。两轮的源码与安装包hash相同。8个REST完整world crop相对正式73逐像素相同，16个source crop相对73及72也相同，carrier角点最大差0，16份control readiness均为120048样本、匹配率1、最大通道差0。这些只支持静态诊断隔离，不是动态验收。
+
+主要固定窗`upper_right_inner_source_sensitive=(125,418)-(130,422)`的HELD直接RGB MAE（0–255）为：网格浅/深25.208333→24.170833；条纹浅/深18.937500→15.662500；明暗块浅/深2.020833不变。own-source-effect MAE分别25.683333→24.662500、18.237500→14.795833及2.020833不变。六个诊断场景84个region cell中，direct有52改善、24不变、8恶化；own-source有51改善、24不变、9恶化，所有17项严格增加（包括极小增加）完整保留。root从原始整屏图及原72 mask独立重算336个MAE，与独立报告差0；没有把区域计数汇总成验收分数。风景只报告，不参与判断或参数选择。
+
+固定坐标完整图确认网格/明暗块的下缘异常内横段减弱，条纹左端蓝色内侵缩小；网格固定左右下端窗却小幅恶化，部分model cap壳改善。主窗及左右端部的原生对应特征坐标仍未识别，缺失细色边、线条剖面、端部和下缘残差仍在，因此不能从RGB误差下降声称位移或完整结构已经对齐。F不自动采纳，正式材质继续73的E。
+
+随后源码/元数据支持分析只给出条件结论：在实际导出的171×111px单位carrier变换、默认effectOffset0/sampleScale1及声明的PIL1px、合成/栅格1px和纹理1px支持范围下，主窗的显式clamp保守余量为正式73的4.251px、F的10.648px，rim-frost不足以形成Vogel扩张。没有GPU uniform、局部矩阵或kernel实测dump，不能推广为无条件GPU排除，也不覆盖端帽/下缘及完整上游采样支持。当前只建立depth/采样敏感性，没有识别唯一原因或原生物理深度。
+
+每次诊断结束均恢复正式源码、host与设备的原主/测试APK并核对hash；主包回到`9248bcc2f04c6ea30807c1f701684e968e21d7abbc24cceb624ccde3c225fa32`，测试包仍为`794470570f2fcbbee11be8bdb3acbc80d7dae984bc600dad046c66f030c4027e`，MainActivity已观察到resumed，临时恢复APK副本已清理。没有新增正式运行时变更，也没有重复宣称JVM全量通过。本会话artifact的`android-slider-refraction-74/independent-review`冻结162份评估文件及11份输入，`review-freeze.json` SHA256为`3e471370db7e90bd57cbcaeea06f6ffd101da9ac4418ec36eddb5c1cc5d61334`，root重核对0失败；原失败、所有退步、条件支持和未验收项均保留。局部光学与自然动态、Range及多层背板矩阵仍需继续，资产库仍为本地索引，未达到独立发布条件。
