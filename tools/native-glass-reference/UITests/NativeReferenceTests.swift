@@ -307,6 +307,118 @@ final class NativeReferenceTests: XCTestCase {
         pause()
     }
 
+    // Endpoint evidence uses actual window points. These methods intentionally
+    // avoid the older standalone tab bar and width-normalized drag helpers.
+    func testSwiftUIEndpointDock() { swiftUIEndpointMotion(kind: "dock") }
+    func testSwiftUIEndpointSegmented() { swiftUIEndpointMotion(kind: "segmented") }
+    func testSwiftUIEndpointToggle() { swiftUIEndpointMotion(kind: "toggle") }
+    func testSwiftUIEndpointSlider() { swiftUIEndpointMotion(kind: "slider") }
+
+    private func swiftUIEndpointMotion(kind: String) {
+        executionTimeAllowance = 65
+        settleDuration = 1.65
+        let isDock = kind == "dock"
+        launch(scene: isDock ? "toggle" : kind, background: "grid", style: "light",
+               dockParent: isDock ? "swiftui-tabview" : nil,
+               dockContent: isDock ? "synthetic-scroll" : nil)
+        let identifier = isDock ? "swiftui-tabbar" : "swiftui-\(kind)"
+        let control: XCUIElement
+        switch kind {
+        case "dock": control = app.tabBars[identifier]
+        case "segmented": control = app.segmentedControls[identifier]
+        case "toggle": control = app.switches[identifier]
+        default: control = app.sliders[identifier]
+        }
+        XCTAssertTrue(control.waitForExistence(timeout: 5))
+        XCTAssertEqual(app.windows.firstMatch.frame.width, 375, accuracy: 0.5)
+        if isDock {
+            XCTAssertEqual(control.buttons.count, 4)
+            XCTAssertTrue(control.buttons["Schedule"].isSelected)
+            XCTAssertTrue(app.scrollViews["dock-synthetic-scroll-0"].exists)
+        } else if kind == "segmented" {
+            XCTAssertTrue(control.buttons["First"].isSelected)
+        } else if kind == "toggle" {
+            XCTAssertEqual(control.value as? String, "0")
+            XCTAssertEqual(control.frame.width, 61, accuracy: 0.5)
+        } else {
+            XCTAssertEqual(control.value as? String, "25%")
+            XCTAssertEqual(control.frame.width, 335, accuracy: 0.5)
+        }
+        captureLanguage("endpoint-\(kind)-initial-rest")
+        let initialValue: Any = isDock || kind == "segmented" ? 0 : (kind == "toggle" ? false : 0.25)
+        let speeds: [(Double, String)] = kind == "toggle" ? [(45, "slow"), (650, "fast")] :
+            (kind == "slider" ? [(90, "slow"), (900, "fast")] : [(100, "slow"), (900, "fast")])
+        var gestureIndex = 0
+        for (velocity, speed) in speeds {
+            for forward in [true, false] {
+                let frame = control.frame
+                let origin: CGPoint
+                let originScope: String
+                if isDock || kind == "segmented" {
+                    let selected = control.buttons.allElementsBoundByIndex.filter(\.isSelected)
+                    XCTAssertEqual(selected.count, 1)
+                    guard let thumb = selected.first else { return }
+                    origin = CGPoint(x: thumb.frame.midX, y: thumb.frame.midY)
+                    originScope = "current selected AX button center; verify against this run's last REST presentation lens"
+                } else if kind == "toggle" {
+                    let isOn = control.value as? String == "1"
+                    // Existing native REST observations: AX hot zone is 61pt,
+                    // visual switch 63pt; the 37x24 lens centers are 20.5/42.5
+                    // from its minX. Never use .15/.85 of the AX hot zone.
+                    origin = CGPoint(x: frame.minX + (isOn ? 42.5 : 20.5), y: frame.midY)
+                    originScope = "measured native REST lens offset from AX minX, off=20.5pt/on=42.5pt; verify current trace"
+                } else {
+                    let text = control.value as? String ?? ""
+                    let percentage = Double(text.replacingOccurrences(of: "%", with: "")) ?? -1
+                    XCTAssertTrue((0...100).contains(percentage))
+                    // First DOWN uses the measured initial 25% lens center,
+                    // not normalized .25 of the 335pt accessibility wrapper.
+                    // Endpoint follow-up requests use a conservative 18.5pt
+                    // half-thumb inset; actual offsets remain in the evidence.
+                    let x = gestureIndex == 0 ? frame.minX + 93.5 :
+                        frame.minX + 18.5 + (frame.width - 37) * CGFloat(percentage / 100)
+                    origin = CGPoint(x: x, y: frame.minY + 16)
+                    originScope = gestureIndex == 0 ? "measured 25% native REST lens center local=(93.5,16)pt; verify current trace" :
+                        "endpoint candidate from current AX percentage and measured 37pt thumb width; actual center offset must be retained"
+                }
+                let endpointX: CGFloat = isDock ? (forward ? 362 : 13) :
+                    (forward ? min(367, frame.maxX + 12) : max(8, frame.minX - 12))
+                let destination = CGPoint(x: endpointX, y: origin.y)
+                let label = "endpoint-\(kind)-\(gestureIndex)-\(speed)-\(forward ? "forward" : "reverse")"
+                endpointDrag(control, from: origin, to: destination, velocity: velocity, label: label,
+                             extra: ["control": identifier, "initialValue": initialValue,
+                                     "gestureIndex": gestureIndex, "initialThumbOriginScope": originScope,
+                                     "observedValueBefore": control.value as? String ?? "",
+                                     "direction": forward ? "forward" : "reverse",
+                                     "coordinateUnits": "actual window pt; Android replay 1pt=1dp plus one fixed translation; no width normalization",
+                                     "endpointScope": isDock ? "outside measured native platter x=21...354, inside app" : "outside AX control frame, inside app"])
+                gestureIndex += 1
+            }
+        }
+        captureLanguage("endpoint-\(kind)-final-tail")
+        app.terminate()
+    }
+
+    private func endpointDrag(_ target: XCUIElement, from: CGPoint, to: CGPoint,
+                              velocity: Double, label: String, extra: [String: Any]) {
+        let root = app.coordinate(withNormalizedOffset: .zero)
+        let start = root.withOffset(CGVector(dx: from.x, dy: from.y))
+        let end = root.withOffset(CGVector(dx: to.x, dy: to.y))
+        var metadata = extra
+        metadata.merge(["from": xy(from), "to": xy(to), "pressDuration": 0.45,
+                        "requestedRawVelocity": velocity, "endHoldDuration": 0.25,
+                        "minimumPostCommandTailSeconds": 1.65,
+                        "velocityScope": "XCUIGestureVelocity request; actual sampleT waveform determines delivered velocity; not acceleration"]) { _, new in new }
+        request(label, kind: "endpointStraightDrag", target: target, extra: metadata)
+        XCTContext.runActivity(named: label) { _ in
+            start.press(forDuration: 0.45, thenDragTo: end,
+                        withVelocity: XCUIGestureVelocity(rawValue: CGFloat(velocity)), thenHoldForDuration: 0.25)
+        }
+        // XCUITest's quiescence wait is part of the real intergesture gap. The
+        // extra tail is a lower bound; exports preserve every actual sampleT.
+        Thread.sleep(forTimeInterval: 1.65)
+    }
+
     func testStaticOpticsFineGridLight() { staticOptics(background: "fine_grid", style: "light") }
     func testStaticOpticsFineGridDark() { staticOptics(background: "fine_grid", style: "dark") }
     func testStaticOpticsColorStripesLight() { staticOptics(background: "color_stripes", style: "light") }

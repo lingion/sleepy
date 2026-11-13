@@ -435,6 +435,74 @@ presentation/dismissal frame parity.
 
 ## Input and presentation evidence
 
+### Focused SwiftUI endpoint motion
+
+`testSwiftUIEndpointDock`, `testSwiftUIEndpointSegmented`,
+`testSwiftUIEndpointToggle` and `testSwiftUIEndpointSlider` capture four
+independent native controls. The Dock uses the real four-item SwiftUI TabView
+parent with synthetic scroll content, retaining its production-like native
+containment and default material. The other three use the existing SwiftUI
+Picker/Toggle/Slider fixture. This suite does not use the older standalone Dock
+as the four-item reference and does not modify NativeStage or system animation.
+
+Each method starts from its native default value without a setup touch, then
+requests slow forward, slow reverse, fast forward and fast reverse as separate
+straight-line drags. DOWN holds for 0.45 seconds, the destination holds for
+0.25 seconds, then the public command releases. Every command is followed by at
+least 1.65 seconds of additional tail. Actual quiescence/intergesture waits remain
+in the trace. Raw velocity requests are 100/900 for Dock and Picker, 45/650 for
+Toggle, and 90/900 for Slider; these are velocity requests, not acceleration.
+Actual touch sample timestamps determine the requested replay waveform;
+`deliveredT` independently records when the native app received those samples.
+An outside-end CANCEL is preserved as observed and is not retried.
+
+All drag positions are absolute window points. Dock destinations x=13/362 lie
+outside the measured platter x=21...354 while remaining in the app. Other
+destinations lie 12 pt beyond the AX frame, capped within x=8...367. No path is
+scaled by control width. Android replay uses the raw samples with 1 pt = 1 dp
+and a single fixed translation, preserving original sampleT intergesture gaps.
+
+The initial Dock/Picker origin is its selected AX button center. Native REST
+observations establish Toggle lens centers 20.5/42.5 pt from the 61 pt AX hot-zone
+minX (the visual switch is 63 pt wide), and initial 25% Slider lens center
+`(93.5,16)` pt inside its 335 pt AX frame. The suite uses these measured offsets,
+not normalized .15/.85/.25 coordinates. Follow-up Slider origins use a
+conservative measured-thumb-inset candidate. After capture, verify each actual
+DOWN against the last pre-DOWN presentation lens and report actual lens center,
+AX geometry and DOWN-minus-center offset. A requested center alone is not proof
+of delivered centering. Enriched replay metadata must explicitly supply
+`control`, `initialValue`, and `anchorNativePt`; retain the raw exported samples
+unchanged, including any nonzero first-DOWN offset from that anchor.
+
+Run only these four methods once with the existing DerivedData and iOS 26.5
+simulator, in non-static mode, under one 300-second build/test command budget.
+Keep one simulator video covering the four tests, each actual session/trace,
+initial/final REST PNG/AX and requested gesture metadata. Export all available
+xcresult content before removing the unique temporary result bundle. No UIKit
+endpoint matrix or static patch experiment is part of this focused run.
+
+The November 13, 2026 run passed all four tests in one invocation: build 4.799 s,
+test command 135.643 s, combined budget use 141.703 s. All 16 delivered gestures
+ended with UP (phase 3) beyond the native control/platter boundary. The initial
+REST lens anchors were Dock `(69.125,615)`, Picker `(75.5,332)`, Slider
+`(113.5,430)` and Toggle `(314.5,329)` pt. Actual first DOWN minus anchor was
+`(-0.125,0)` pt for Dock and zero for the other three. Later Slider candidate
+origins differed from their observed REST lens centers by `+1`, `-1`, and `0` pt;
+the original coordinates remain unchanged. Final UP-to-last-frame tails were
+4.213/3.069/3.036/3.069 s respectively. The Dock pre-DOWN traversal was truncated
+but retained its platter, lens, selection and four buttons; the other three
+pre-DOWN frames were untruncated. Raw evidence and complete exports are under
+`artifacts/glass-optics-20261112/native-endpoint-motion-65/`, with per-gesture
+geometry and timing in `endpoint-observation-audit.json`. These observations do
+not establish acceleration, optical equivalence or native motion parity.
+
+The slow Slider runs finish at `0.9768656492` / `0.0440298505`, not their
+directional value endpoints. The observed extrema `0.9804266095` / `0.0402547009`
+occur 86.192 / 92.815 ms after UP delivery. Fast Slider first emits `1` / `0`
+105.419 / 93.136 ms after UP delivery; held-phase extrema remain
+`0.9589552283` / `0.0492537320`. Thus none of these Slider held phases establishes
+business-endpoint saturation. Preserve this limitation when comparing overpull.
+
 Touch observations include UIKit phase, touch ID, `UITouch.timestamp`, main-clock
 delivery time, window geometry, point and normalized coordinates, hit view, and
 coalesced samples. No predicted sample is used. Public `UIApplication.sendEvent`

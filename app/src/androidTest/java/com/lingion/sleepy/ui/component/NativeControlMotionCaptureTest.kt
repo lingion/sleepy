@@ -130,6 +130,7 @@ class NativeControlMotionCaptureTest {
     private var lastDeliveredMonotonicNs: Long? = null
     private var lastDeliveredUptimeMs: Long? = null
     private var lastDeliveredEventMs: Long? = null
+    private var lastDeliveredDownTimeMs: Long? = null
     private var lastDeliveredAction: Int? = null
     @Volatile private var scenario = "setup"
     @Volatile private var activePointer = false
@@ -139,6 +140,8 @@ class NativeControlMotionCaptureTest {
     private var settleMs = 1_100L
     private var rapidGapMs = 40L
     private var requestedRefreshRate: Float? = null
+    private var swiftUIDockParent = false
+    private var replaySource: JSONObject? = null
     private var originalWindowAttributes: WindowManager.LayoutParams? = null
     private var displayManager: DisplayManager? = null
     private var observingDisplayChanges = false
@@ -160,6 +163,40 @@ class NativeControlMotionCaptureTest {
         val controls = (args.getString("controlMotionControls") ?: "dock3,dock4")
             .split(',').map { Control.valueOf(it.trim()) }.distinct()
         require(controls.isNotEmpty())
+        swiftUIDockParent = when (args.getString("controlMotionDockParent")) {
+            null, "standalone" -> false
+            "swiftui" -> true
+            else -> error("controlMotionDockParent must be standalone or swiftui")
+        }
+        replaySource = args.getString("controlMotionReplay")?.let { path ->
+            val file = File(path)
+            require(file.isAbsolute && file.isFile) { "controlMotionReplay must name an existing absolute JSON file" }
+            JSONObject(file.readText()).also { source ->
+                require(source.getInt("schema") == 1) { "Expected export-touches schema 1" }
+                require(controls.size == 1) { "A replay targets exactly one control" }
+                require(controls.single() != Control.range) { "A native single-thumb replay is not a native range reference" }
+                require(source.getString("control") == controls.single().name) { "Replay must identify its Android target control" }
+                if (controls.single() == Control.dock4) {
+                    require(source.getString("nativeParent") == if (swiftUIDockParent) "swiftui-tabview" else "standalone") {
+                        "Native Dock parent must match the Android caller fixture"
+                    }
+                    val callerWidth = if (swiftUIDockParent) 375.0 else 351.0
+                    require(kotlin.math.abs(source.getDouble("callerWidthPt") - callerWidth) < .01) {
+                        "Replay must retain the native Dock caller width"
+                    }
+                }
+                val anchor = source.getJSONObject("anchorNativePt")
+                require(anchor.getDouble("x").isFinite() && anchor.getDouble("y").isFinite())
+                val initial = source.getDouble("initialValue")
+                require(initial.isFinite() && when (controls.single()) {
+                    Control.slider -> initial in 0.0..1.0
+                    Control.toggle -> initial == 0.0 || initial == 1.0
+                    Control.segmented, Control.dock3 -> initial in 0.0..2.0 && initial % 1.0 == 0.0
+                    Control.dock4 -> initial in 0.0..3.0 && initial % 1.0 == 0.0
+                    Control.range -> false
+                }) { "Replay initialValue must describe a valid observed native starting state" }
+            }
+        }
         requestedHoldMs = argumentLong("controlMotionTapHoldMs", 67, 1L..1_000L)
         settleMs = argumentLong("controlMotionSettleMs", 1_100, 300L..5_000L)
         rapidGapMs = argumentLong("controlMotionRapidGapMs", 40, 0L..1_000L)
@@ -169,6 +206,7 @@ class NativeControlMotionCaptureTest {
         groups = (args.getString("controlMotionScenarios") ?: "direct,hold,drag,cancel,rapid")
             .split(',').map(String::trim).toSet()
         require(groups.all { it in setOf("direct", "hold", "drag", "cancel", "rapid", "interrupt") })
+        if (replaySource != null) groups = setOf("native-replay")
         val runId = (args.getString("controlMotionRunId") ?: "controls-${System.currentTimeMillis()}")
             .replace(Regex("[^A-Za-z0-9_-]"), "_")
         val directory = File(instrumentation.targetContext.getExternalFilesDir(null), "native-control-motion/$runId")
@@ -240,6 +278,7 @@ class NativeControlMotionCaptureTest {
                 Choreographer.getInstance().postFrameCallback(frameObserver)
             }
             writeSession(directory, controls)
+            replaySource?.let { File(directory, "source-replay-touches.json").writeText(it.toString(2)) }
             for (next in controls) {
                 readOnMain {
                     control = next
@@ -248,12 +287,20 @@ class NativeControlMotionCaptureTest {
                     value = .25f
                     rangeStart = .25f
                     rangeEnd = .75f
+                    replaySource?.getDouble("initialValue")?.toFloat()?.let { initial ->
+                        when (next) {
+                            Control.toggle -> checked = initial == 1f
+                            Control.slider -> value = initial
+                            Control.dock3, Control.dock4, Control.segmented -> selected = initial.toInt()
+                            Control.range -> error("No native range reference")
+                        }
+                    }
                     marker++
                 }
                 scenario = "${next.name}:setup"
                 SystemClock.sleep(settleMs)
                 mark("control-ready")
-                when (next) {
+                if (replaySource != null) replayNativeInput(checkNotNull(replaySource)) else when (next) {
                     Control.dock3, Control.dock4, Control.segmented -> selectionScript()
                     Control.toggle -> toggleScript()
                     Control.slider, Control.range -> sliderScript()
@@ -348,7 +395,8 @@ class NativeControlMotionCaptureTest {
                                         PillNavItemSpec(Icons.Filled.Search, "Explore")) +
                                         (if (control == Control.dock4) listOf(PillNavItemSpec(Icons.Filled.Star, "Favorites")) else emptyList()) +
                                         PillNavItemSpec(Icons.Filled.Settings, "Settings"),
-                                    selected, { recordCallback(it.toString()); selected = it }, modifier.width(351.dp),
+                                    selected, { recordCallback(it.toString()); selected = it },
+                                    modifier.width(if (control == Control.dock4 && swiftUIDockParent) 375.dp else 351.dp),
                                 )
                                 Control.segmented -> SegmentedSwitcher(
                                     listOf(0 to "First", 1 to "Second", 2 to "Third"), selected,
@@ -374,6 +422,94 @@ class NativeControlMotionCaptureTest {
         }
         SideEffect { add("composition_observed").put("selected", selected).put("checked", checked)
             .put("value", value).put("range_start", rangeStart).put("range_end", rangeEnd).put("marker", marker) }
+    }
+
+    /** Replays observed native samples, including their actual inter-gesture gaps.
+     * One explicit native thumb center anchors the matching Android resting center.
+     * Nothing rescales the trajectory to fit the Android control or clamps an overpull.
+     */
+    private fun replayNativeInput(source: JSONObject) {
+        data class Sample(val action: Int, val t: Double, val nativePoint: Offset)
+        data class Gesture(val index: Int, val id: String, val samples: List<Sample>)
+        val sourceGestures = source.getJSONArray("gestures")
+        require(sourceGestures.length() in 1..64)
+        var precedingTime = Double.NEGATIVE_INFINITY
+        val gestures = (0 until sourceGestures.length()).map { index ->
+            val row = sourceGestures.getJSONObject(index)
+            require(row.getBoolean("complete")) { "Native gesture $index is incomplete" }
+            val samples = row.getJSONArray("samples")
+            require(samples.length() in 2..20_000)
+            val points = (0 until samples.length()).map { sampleIndex ->
+                val sample = samples.getJSONObject(sampleIndex)
+                val phase = sample.getInt("phase")
+                val t = sample.getDouble("sampleT")
+                val x = sample.getDouble("x").toFloat()
+                val y = sample.getDouble("y").toFloat()
+                require(t.isFinite() && t >= precedingTime && x.isFinite() && y.isFinite()) {
+                    "Native sample clocks/positions must be finite and ordered"
+                }
+                precedingTime = t
+                require(when (sampleIndex) {
+                    0 -> phase == 0
+                    samples.length() - 1 -> phase == 3 || phase == 4
+                    else -> phase == 1 || phase == 2
+                }) { "Expected one DOWN, observed MOVE/stationary samples, then UP/CANCEL" }
+                Sample(when (phase) {
+                    0 -> MotionEvent.ACTION_DOWN
+                    1, 2 -> MotionEvent.ACTION_MOVE
+                    3 -> MotionEvent.ACTION_UP
+                    4 -> MotionEvent.ACTION_CANCEL
+                    else -> error("Unsupported native touch phase")
+                }, t, Offset(x, y))
+            }
+            Gesture(index, row.get("touchID").toString(), points)
+        }
+        val first = gestures.first().samples.first()
+        require(gestures.last().samples.last().t - first.t <= 180.0) { "Keep one replay within the video capture budget" }
+        val nativeAnchor = source.getJSONObject("anchorNativePt").let {
+            Offset(it.getDouble("x").toFloat(), it.getDouble("y").toFloat()).also { point ->
+                require(point.x.isFinite() && point.y.isFinite()) { "Native anchor must be finite" }
+            }
+        }
+        val anchor = readOnMain {
+            when (control) {
+                Control.dock3, Control.dock4 -> observedNodes()
+                    .filter { it.node.config.getOrNull(SemanticsProperties.Role) == Role.Tab }
+                    .sortedBy { it.bounds.center.x }[selected].bounds.center
+                Control.segmented -> checkNotNull(tagged("segment-thumb")).bounds.center
+                Control.toggle -> checkNotNull(tagged("motion-switch-lens")).bounds.center
+                Control.slider -> checkNotNull(tagged("glass-slider-end")).bounds.center
+                Control.range -> error("No native two-thumb source in this fixture")
+            }
+        }
+        val controlName = readOnMain { control.name }
+        mark("native-replay-start")
+        val began = SystemClock.uptimeMillis() + 250L
+        readOnMain {
+            snapshot(add("native_replay_mapping").put("source_touch_id", gestures.first().id)
+                .put("native_origin_pt", point(nativeAnchor)).put("first_native_down_pt", point(first.nativePoint))
+                .put("native_anchor_definition", "Explicit source anchorNativePt; source provenance must establish the initial resting thumb center")
+                .put("android_anchor_screen_px", point(anchor))
+                .put("native_origin_sample_t", first.t).put("planned_origin_uptime_ms", began)
+                .put("mapping", "One translation, 1 UIKit point = 1 Android dp; no normalization, interpolation, clamping, or per-gesture reanchoring"))
+        }
+        var lastInjectedEventMs = -1L
+        for (gesture in gestures) {
+            scenario = "$controlName:native-${gesture.index}-${gesture.id}"
+            add("native_replay_gesture_requested").put("gesture_index", gesture.index).put("source_touch_id", gesture.id)
+            for ((index, sample) in gesture.samples.withIndex()) {
+                val point = anchor + (sample.nativePoint - nativeAnchor) * density
+                val deadline = began + ((sample.t - first.t) * 1_000.0).roundToLong()
+                lastInjectedEventMs = inject(sample.action, point, deadline, "native-${gesture.index}-sample-$index")
+            }
+        }
+        waitFor("last native replay end delivery") {
+            lastDeliveredAction == gestures.last().samples.last().action &&
+                lastDeliveredEventMs == lastInjectedEventMs &&
+                lastDeliveredDownTimeMs == downTime
+        }
+        SystemClock.sleep(settleMs)
+        readOnMain { snapshot(add("native_replay_complete")) }
     }
 
     private fun selectionScript() {
@@ -675,7 +811,7 @@ class NativeControlMotionCaptureTest {
             began + holdMs + destinations.size * durationPerLegMs + endHoldMs, "$label-end")
     }
 
-    private fun inject(action: Int, point: Offset, deadline: Long, label: String) {
+    private fun inject(action: Int, point: Offset, deadline: Long, label: String): Long {
         sleepUntil(deadline)
         val beforeNs = SystemClock.elapsedRealtimeNanos()
         val beforeMs = SystemClock.uptimeMillis()
@@ -692,6 +828,7 @@ class NativeControlMotionCaptureTest {
             .put("lateness_ms", beforeMs - deadline).put("x_screen_px", point.x).put("y_screen_px", point.y)
             .put("sync", false).put("accepted", accepted)
         assertTrue("Public input accepted: $label", accepted)
+        return beforeMs
     }
 
     private fun delivery(event: MotionEvent, phase: String): JSONObject {
@@ -702,6 +839,7 @@ class NativeControlMotionCaptureTest {
             lastDeliveredMonotonicNs = monotonic
             lastDeliveredUptimeMs = SystemClock.uptimeMillis()
             lastDeliveredEventMs = event.eventTime
+            lastDeliveredDownTimeMs = event.downTime
             lastDeliveredAction = event.actionMasked
         }
         return add("pointer_delivered").put("phase", phase).put("action", event.actionMasked)
@@ -828,6 +966,8 @@ class NativeControlMotionCaptureTest {
             JSONObject().put("schema", 1).put("sdk", Build.VERSION.SDK_INT).put("model", Build.MODEL)
                 .put("fingerprint", Build.FINGERPRINT).put("density", density).put("font_scale", fontScale)
                 .put("controls", JSONArray(controls.map { it.name })).put("scenarios", JSONArray(groups.toList()))
+                .put("dock_parent", if (swiftUIDockParent) "swiftui-four-item-375dp-caller" else "standalone-351dp-caller")
+                .put("native_replay", replaySource != null)
                 .put("tap_hold_ms_requested", requestedHoldMs).put("settle_ms_requested", settleMs)
                 .put("rapid_gap_ms_requested", rapidGapMs).put("composition_clock", "Lifecycle AndroidUiDispatcher/Choreographer; no test clock after bootstrap")
                 .put("refresh_rate_hz_requested", requestedRefreshRate ?: JSONObject.NULL)
@@ -840,7 +980,9 @@ class NativeControlMotionCaptureTest {
                 .put("sampling", "vsync_sample and window_draw bracket public semantics reads. Observer callback order is not product withFrame callback order; this fixture does not expose or infer the latter. frame_commit is HWUI submission, not display presentation.")
                 .put("geometry", "screen_bounds_px is transformed public semantics geometry, not segmented video pixels. Dock's custom painted rectangle includes its parent transform; carrier bounds cover whole Dock. Both root/screen origins and tab bounds are exported to remove parent motion. Other lens nodes expose layout geometry.")
                 .put("display_evidence", "Record the hardware display externally with adb screenrecord; the 8dp corner marker links requested scene transitions to committed draws and video frames. Capture alone does not prove native parity.")
-                .put("gestures", "Synthetic public trajectories: direct first/last taps, selected/unselected 700ms holds, slow/fast drags both ways, same-stream reverse, pointer cancel, and six direct toggles with short gaps. These are Android acceptance inputs, not asserted native waveforms.")
+                .put("gestures", if (replaySource != null)
+                    "Observed UIKit export-touches samples with original sampleT intervals and inter-gesture gaps. One translation and 1pt=1dp mapping; actual Android injection and dispatch may be late and are recorded independently. Matching requested trajectories is not matching delivered acceleration."
+                    else "Synthetic public trajectories: direct first/last taps, selected/unselected 700ms holds, slow/fast drags both ways, same-stream reverse, pointer cancel, and six direct toggles with short gaps. These are Android acceptance inputs, not asserted native waveforms.")
                 .put("scope", "Actual product controls/handlers/shaders. Fixture callback immediately updates controlled state; no app navigation/persistence. Sliders emit while moving and cancellation does not imply rollback.")
                 .also(::snapshot)
         }
