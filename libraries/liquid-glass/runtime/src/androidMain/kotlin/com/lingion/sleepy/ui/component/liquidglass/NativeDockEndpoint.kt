@@ -7,7 +7,7 @@ import kotlin.math.abs
  * Bound only its spring target: the spring output retains its transient.
  * Parent pull/scaling is separate, and unmeasured tab counts keep their policy.
  */
-internal fun nativeDockDragPosition(rawLogicalIndex: Float, count: Int, pitchDp: Float): Float {
+fun nativeDockDragPosition(rawLogicalIndex: Float, count: Int, pitchDp: Float): Float {
     if (count <= 1) return 0f
     val lastIndex = (count - 1).toFloat()
     if (count == 4) {

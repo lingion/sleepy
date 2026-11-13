@@ -3,7 +3,7 @@ package com.lingion.sleepy.ui.component.liquidglass
 import androidx.compose.ui.geometry.Offset
 
 /** Fits the iOS 26.5 button presentation trace; rubber-band tracking stays independent. */
-internal class GlassPressMotion(prominent: Boolean = false) {
+class GlassPressMotion(prominent: Boolean = false) {
     private val rise = SpringDescription.withDampingRatio(
         mass = 1.0, stiffness = if (prominent) 427.0 else 570.0, ratio = .625,
     )

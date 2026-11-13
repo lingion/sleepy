@@ -7,7 +7,7 @@ import kotlin.math.abs
  * 12 dp limit matches held and late moving centers, not the whole transient
  * response or UIKit's internal algorithm. Selection remains bounded separately.
  */
-internal fun nativeSegmentedDragPosition(rawLogicalIndex: Float, count: Int, pitchDp: Float): Float {
+fun nativeSegmentedDragPosition(rawLogicalIndex: Float, count: Int, pitchDp: Float): Float {
     val bounded = rawLogicalIndex.coerceIn(0f, (count - 1).coerceAtLeast(0).toFloat())
     val pitch = abs(pitchDp)
     if (count < 2 || pitch <= 0f || !pitch.isFinite() || rawLogicalIndex == bounded) return bounded

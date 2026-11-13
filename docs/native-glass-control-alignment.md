@@ -597,3 +597,13 @@ androidTest构建9.8286s通过；主包仍为80的78e5a7f2dedc64193b00503648ef63
 实际Android密度2.9750001px/dp，source1116×1984px、逻辑375.12604×666.89075dp；base world LTRB[20.840336,584.10077,354.2857,646.1008]dp，首lens[24.840336,588.1008,113.09033,642.1008]dp。固定两body探针[196,592,208,596]、[244,592,256,596]均为每窗432个Android像素：A/C全部RGB(39,38,42)，B/D全部(117,115,120)，两轮Window/display一致。79原生每窗192像素对应A/C(37,37,37)、B/D(247,247,247)。根查看完整B及原生联系图，亮带下Android仍灰体/浅色未选字形，原生可见亮体/黑色未选字形；此处明确保留外观差距，不将capture readiness当作材质验收。
 
 双方密度/取整、Android Material图标与原生SF Symbols/scroll前景、Android较大采样host中的世界外#F0F0F5均不同；没有缩放、配准、拟合或逐像素跨平台评分。body分布、公开bar trait、直接source draw与capture时钟分别记录，不据此推断内部material state、classifier、采样范围、opacity或适应延迟。REST与两预算不能覆盖动态、release、四角和完整光学验收。冻结source SHA256 fa23de029583d931d528d5b85189c917603cd856cdea1e465677329708c1627f、首轮失败、确认轮、逐文件导出回执和完整脚本/分布/限制均在本会话android-dock-local-baseline-81；资产库和发布gate不变。
+
+### 82：M2b 按压与 Dock/分段端部迁入资产库
+
+将 GlassPressMotion.kt、NativeDockEndpoint.kt、NativeSegmentedEndpoint.kt 移入现有 runtime androidMain，每份仅移除一次顶层 internal；函数正文、弹簧参数、short-tap重定向、各控件独立端部策略、包名与三个生产调用者保持。SpringState四个setter仍internal，既有runtime源和所有构建配置不变，不加依赖或friend-path。两份Endpoint原测试逐字节迁入标准androidHostTest，GlassPressMotionTest因调用app的glassPressedContentAlpha而完整留app；不把该helper反向拉入库。
+
+原三类17项基线在移动前3.5265s通过；移动后同轮runtime AAR、app debug/androidTest构建及同名17项测试29.3098s通过，after分为app Press3与runtime Endpoint14，0失败/错误/跳过。三份原测试字节和17项完整测试身份不变。runtime累计12份生产Kotlin源，AAR66个类与app实际built_in_kotlinc生产输出2289个类无交集；本批三类的生产声明均只有runtime一份。现有CI/nightly/release及PR模板已经运行app+runtime host，故本批不新增CI任务。
+
+正式debug及匹配测试包安装到API36设备，两包host/device SHA256分别一致；当前主包948441072ed34b301d7ab4690f34973b4920c43cc19f3637f340970c8bcec45f。MainActivity resumed，保留的首张启动图显示现有空课表卡片和Dock；仅验安装身份与启动，不宣称课程数据填充、光学、自然运动或性能通过。原源码/测试冻结、命令、XML、精确可见性diff、唯一归属和安装回执在本会话android-library-endpoints-82，便携记录见 [M2b按压/端部迁移](../libraries/liquid-glass/validation/migrations/m2b-endpoints.json)。
+
+本批不修改任何控件材质或已测运动行为。几何、采样/材质/shader、完整控件适配器及独立示例仍未提取；81记录的亮背景Dock差距和既有动态/四角残差继续保留。独立仓库待逐控件近原生、可运行示例与来源/分发gate完成后创建，三个发布gate继续为false。
