@@ -79,6 +79,8 @@ struct NativeStage: View {
                             .accessibilityIdentifier("swiftui-slider")
                     }
                 }
+            case .range:
+                NativeRangeReference()
             case .buttons:
                 VStack(spacing: 24) {
                     Button("Glass") { didPress("glass-button") }

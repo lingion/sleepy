@@ -90,6 +90,114 @@ final class NativeReferenceTests: XCTestCase {
     func testSegmentedStripes() { segmented(background: "stripes") }
     func testSliderGrid() { slider(background: "grid") }
     func testSliderStripes() { slider(background: "stripes") }
+
+    /// Two fresh range sessions, one at each whole-UISlider scale. Held host
+    /// screenshots must come from opticalHeldCapture signals during real DOWN;
+    /// the ordinary XCTAttachments below are explicitly REST / released tails.
+    func testPairedNativeSliderSeparatedReference() {
+        executionTimeAllowance = 150
+        settleDuration = 1.2
+        for scale in [1.0, 0.75] {
+            let scaleName = scale == 1 ? "1" : "0_75"
+            let prefix = "range-scale-\(scaleName)"
+            launch(scene: "range", background: "grid", rangeScale: scale, rangeGeometryProbe: true)
+            let lower = app.sliders["native-range-lower"]
+            let upper = app.sliders["native-range-upper"]
+            XCTAssertTrue(lower.waitForExistence(timeout: 5))
+            XCTAssertTrue(upper.waitForExistence(timeout: 5))
+            // These are actual UISlider AX nodes with public accessibility frames
+            // following cached system thumb model rects, not synthetic thumbs.
+            for control in [lower, upper] {
+                XCTAssertTrue(control.isEnabled)
+                XCTAssertGreaterThan(control.frame.width, 10)
+                XCTAssertLessThan(control.frame.width, 90, "Missing native model thumb geometry")
+            }
+            XCTAssertLessThan(lower.frame.midX, upper.frame.midX)
+            XCTAssertEqual(lower.frame.midY, upper.frame.midY, accuracy: 0.5)
+            XCTAssertEqual(app.segmentedControls["scene-selector"].buttons.count, 6)
+            XCTAssertEqual(rangeValue(lower), 0.25, accuracy: 0.01)
+            XCTAssertEqual(rangeValue(upper), 0.75, accuracy: 0.01)
+            let initialLower = lower.value as? String
+            let initialUpper = upper.value as? String
+            captureLanguage(prefix + "-separated-rest")
+            opticalHold(lower, name: prefix + "-lower-held", duration: 6)
+            XCTAssertEqual(lower.value as? String, initialLower)
+            XCTAssertEqual(upper.value as? String, initialUpper)
+            opticalHold(upper, name: prefix + "-upper-held", duration: 6)
+            XCTAssertEqual(lower.value as? String, initialLower)
+            XCTAssertEqual(upper.value as? String, initialUpper)
+            captureLanguage(prefix + "-both-holds-released-rest")
+
+            let lowerStart = CGPoint(x: lower.frame.midX, y: lower.frame.midY)
+            endpointDrag(lower, from: lowerStart, to: CGPoint(x: lowerStart.x - 48, y: lowerStart.y),
+                         velocity: 90, label: prefix + "-lower-slow-left-release", endHoldDuration: 0.7,
+                         postCommandTailSeconds: 1.2,
+                         extra: ["scene": "range", "endpoint": "lower", "wholeControlScale": scale,
+                                 "sourceAnchor": "real UISlider AX frame from cached public thumbRect model geometry",
+                                 "ownership": "DOWN on separated lower; only lower may change"])
+            XCTAssertLessThan(rangeValue(lower), 0.25)
+            XCTAssertEqual(upper.value as? String, initialUpper)
+            let lowerAfterDrag = lower.value as? String
+            let upperStart = CGPoint(x: upper.frame.midX, y: upper.frame.midY)
+            endpointDrag(upper, from: upperStart, to: CGPoint(x: upperStart.x + 48, y: upperStart.y),
+                         velocity: 900, label: prefix + "-upper-fast-right-release", endHoldDuration: 0.7,
+                         postCommandTailSeconds: 1.2,
+                         extra: ["scene": "range", "endpoint": "upper", "wholeControlScale": scale,
+                                 "sourceAnchor": "real UISlider AX frame from cached public thumbRect model geometry",
+                                 "ownership": "DOWN on separated upper; only upper may change"])
+            XCTAssertGreaterThan(rangeValue(upper), 0.75)
+            XCTAssertEqual(lower.value as? String, lowerAfterDrag)
+            XCTAssertLessThan(rangeValue(lower), rangeValue(upper))
+            captureLanguage(prefix + "-drag-release-tail")
+            app.terminate()
+        }
+    }
+
+    /// Separate, deliberately opt-in coverage of the host's collapsed policy.
+    /// The chosen endpoint is fixed at DOWN; this does not claim UIKit can
+    /// select by a future drag direction or transfer a live touch between sliders.
+    func testPairedNativeSliderCollapsedRoutingReference() {
+        executionTimeAllowance = 90
+        settleDuration = 1.2
+        for endpoint in ["lower", "upper"] {
+            launch(scene: "range", background: "grid", rangeScale: 1,
+                   rangeLower: 0.5, rangeUpper: 0.5, rangeGeometryProbe: true)
+            let lower = app.sliders["native-range-lower"]
+            let upper = app.sliders["native-range-upper"]
+            XCTAssertTrue(lower.waitForExistence(timeout: 5))
+            XCTAssertTrue(upper.waitForExistence(timeout: 5))
+            XCTAssertLessThan(lower.frame.width, 90)
+            XCTAssertEqual(lower.frame.midX, upper.frame.midX, accuracy: 0.5)
+            let direction: CGFloat = endpoint == "lower" ? -1 : 1
+            let target = endpoint == "lower" ? lower : upper
+            let peer = endpoint == "lower" ? upper : lower
+            let peerValue = peer.value as? String
+            let origin = CGPoint(x: target.frame.midX + direction * 3, y: target.frame.midY)
+            captureLanguage("range-collapsed-\(endpoint)-rest")
+            endpointDrag(target, from: origin, to: CGPoint(x: origin.x + direction * 48, y: origin.y),
+                         velocity: 90, label: "range-collapsed-down-side-\(endpoint)-outward-release",
+                         endHoldDuration: 0.7, postCommandTailSeconds: 1.2,
+                         extra: ["scene": "range", "expectedEndpoint": endpoint,
+                                 "routing": "3pt left DOWN lower; 3pt right DOWN upper; later direction cannot retarget",
+                                 "exactCenterTie": "lower; not exercised by this side-of-contact probe"])
+            XCTAssertEqual(peer.value as? String, peerValue)
+            if endpoint == "lower" { XCTAssertLessThan(rangeValue(lower), 0.5) }
+            else { XCTAssertGreaterThan(rangeValue(upper), 0.5) }
+            captureLanguage("range-collapsed-\(endpoint)-release-tail")
+            app.terminate()
+        }
+    }
+
+    private func rangeValue(_ control: XCUIElement) -> Double {
+        let source = (control.value as? String ?? "").replacingOccurrences(of: "%", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let percentage = Double(source) else {
+            XCTFail("Expected native UISlider percentage, received \(String(describing: control.value))")
+            return .nan
+        }
+        return percentage / 100
+    }
+
     func testButtonsGrid() { buttons(background: "grid") }
     func testButtonsStripes() { buttons(background: "stripes") }
     func testTabBarGrid() { tabBar(background: "grid") }
@@ -894,7 +1002,8 @@ final class NativeReferenceTests: XCTestCase {
     private func launch(scene: String, background: String, focused: Bool = false, tabCount: Int = 3,
                         style: String = "light", staticOptics: Bool = false, dockParent: String? = nil,
                         dockContent: String? = nil, appearanceControls: Bool = false, initialSlider: Double? = nil,
-                        sliderLayerProbe: Bool = false) {
+                        sliderLayerProbe: Bool = false, rangeScale: Double? = nil, rangeLower: Double? = nil,
+                        rangeUpper: Double? = nil, rangeGeometryProbe: Bool = false) {
         app = XCUIApplication()
         app.launchArguments = ["-ReferenceScene", scene, "-ReferenceBackground", background,
                                "-ReferenceInterfaceStyle", style]
@@ -906,6 +1015,10 @@ final class NativeReferenceTests: XCTestCase {
         if appearanceControls { app.launchArguments.append("-ReferenceDockAppearanceControls") }
         if let initialSlider { app.launchArguments += ["-ReferenceInitialSlider", String(initialSlider)] }
         if sliderLayerProbe { app.launchArguments.append("-ReferenceSliderLayerProbe") }
+        if let rangeScale { app.launchArguments += ["-ReferenceRangeScale", String(rangeScale)] }
+        if let rangeLower { app.launchArguments += ["-ReferenceRangeLower", String(rangeLower)] }
+        if let rangeUpper { app.launchArguments += ["-ReferenceRangeUpper", String(rangeUpper)] }
+        if rangeGeometryProbe { app.launchArguments.append("-ReferenceRangeGeometryProbe") }
         app.launchEnvironment["REFERENCE_RUN_ID"] = "\(name)-\(UUID().uuidString)"
         app.launch()
         XCTAssertTrue(app.staticTexts["reference-title"].waitForExistence(timeout: 10))

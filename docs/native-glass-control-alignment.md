@@ -498,3 +498,17 @@ iOS26.5/23F77、375×667pt两会话均完成。构建5.854s、所选测试29.400
 镜片及8个已记录UIView背书祖先的animation keys均为空，祖先几何固定；因此新证据支持外冲包含逐帧改变的公开model位置，而非仅由已有presentation变换或bounds收缩解释。没有据此识别私有动画机制、目标、释放速度规则，或排除未记录CALayer节点的动画。遍历均0截断，慢/快capture cost中位数2.018/2.232ms，早期最大29.385/26.010ms；顺序getter和observer成本保留。视频仅作上下文，没有同步视频轮廓验收。本次不更改Android动态规则。原始及独立复核在75的`release-probe`。
 
 另核对双头参考：现有原生参考工程只有单值SwiftUI Slider/UISlider；当前iOS业务`IntRangeSlider`自绘22×22圆形，不能作为用户要求的原生椭圆玻璃对照。旧Android `sliders-cancel-green-3`确有15个已完成range场景，另一个命名为`sliders-collapsed-range-2`的会话实际只有单头，不能凭目录名宣称双头已测。它们均早于当前runtime，不替代当前双头验收。下一项可行性参考是同轨道的两个公开UISlider原生thumb，先证明独立tracking/材质，再测等比缩小；重叠端点的方向路由须单独设计，尚未建立原生双头等价性。完整源位置、trace计数与hash见75的`range-audit`。
+
+### 76：同轨道双 UISlider 的原生参考可行性
+
+新增显式启用的 `range` 场景：两个真实公开 `UISlider` 保留系统 thumb 绘制和 tracking，通过公开 tint 属性清除各自轨道，host 绘制共用轨道并约束端点顺序。这是 host 组合的实验参考，不是 Apple 原生双头 API。常规六项场景选择器不变；尺寸 1 / .75 作用于整只 UISlider，不能描述成只缩放私有 thumb。选端后继续调用该 slider 自身的 `hitTest`，保留真实子视图结果和 nil；只读的 touch superview 链记录归属，不给原生子视图写别名。当前值的公开 `thumbRect` 模型矩形还用于真实 UISlider 的公开 AX frame，不创建代理滑块。
+
+最初构建因误用 UIView 不具备的 AX 属性失败；修正后第二次运行仅 scale1 完成，.75 的理想轨道精确收敛门槛使其在输入前被关闭。两次失败及当时源码保留在 76 的 `range-reference/build-failure`、`calibration-failure`。最终实现用两次 fresh UIKit 端点布局、一次宽度补偿，以第二次实测跨度和精确缩放建立居中轨道，保留期望与实际差值，不猜 anchor。旧 direct-target 输入结果也不作为当前原生 child 路径的证据。
+
+最终采集确认 iOS26.5/23F77、SE3 375×667pt，两次 fresh launch，grid/light、分离 .25/.75 端点。构建4.697s，所选1项测试71.247s通过（整条 xcodebuild77.388s）。四张 host PNG 的完整截图子进程括号均在实际 DOWN→UP 内；DOWN 实际命中 `_UILiquidLensView`，完整公开祖先链各只归属目标 UISlider。scale1 lower/upper 的36/20、scale.75 的34/18个完整截图括号内帧均目标 tracking、peer idle，且缓存模型 thumb 可用。四次 stationary hold 无数值变化，各在 UP 后出现一次同值回调，不能写成“无回调”。根检查和独立 raw 复算分别保存，不以 AX 值或测试通过代替真实触摸归属。
+
+scale1 最终原生 bounds332×34pt，实测轨道295pt；scale.75 原生 bounds430×34pt、整控件精确 .75 变换，实际轨道294.75pt，比期望295pt少.25pt，此残差保留。原生模型 thumb 均为37×24pt，公开模型矩形不等于 pressed presentation 或可见 alpha 轮廓。两会话保留1893/1896帧，遍历0截断；capture cost 中位2.290/2.295ms、最大24.394/24.454ms，顺序 getter 成本不忽略。四张按住原图人工核对可见横向椭圆玻璃，peer 保持白色静止体；未据此接受光学系数或每帧轮廓。
+
+实际慢拖/快拖还保留各自释放尾部：lower 在 UP 后有18次值变化，最大回摆相对 UP 前值为 .004226/.004413，最终回到 UP 前值；upper 在 UP 后有19次值变化，分别从 .864458/.867829 继续到1，净增加 .135542/.132171。两者末尾另有一次同值回调。lower 的公开 endTracking 在 UP 后335.89/335.70ms，upper 在385.98/369.24ms；UIKit 给该回调的 touch 为 nil，不能补造 endTracking 触点。所有真实 delivery 坐标、sample/delivery 时钟与 peer 不变均保留，hostClamped 为 false。这些是本次实际输入下的观察，不能据请求速度、净变化或单一尾部推成任意原生释放规律，也不能写成“UP 立即结束 tracking / 无后续值变化”。
+
+本次只证明分离端点、两档整控件缩放的参考可用。重叠方向路由、cross-over、取消、多背景/深色材质和释放规律仍需单独验证；现有独立 collapsed 测试没有在本轮运行。Android Range 已有共用 timed input 引擎，但材质、独立轴变形和端部策略仍有各自分支，本次没有改生产参数，也不把单头73–75的结论转记为双头验收。完整原图、原始视频、会话、源快照、hash 和独立报告在本会话76的 `range-reference` 与 `range-runtime-audit`。

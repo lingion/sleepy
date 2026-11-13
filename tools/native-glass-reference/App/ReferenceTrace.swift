@@ -68,6 +68,8 @@ final class ReferenceTrace {
             "layerGeometryCoordinates": "positionX/Y are superlayer points; anchorPointX/Y are unit bounds coordinates; boundsX/Y are local bounds origin points; presentation layer when available",
             "sliderLayerProbe": ProcessInfo.processInfo.arguments.contains("-ReferenceSliderLayerProbe"),
             "sliderLayerProbeScope": "opt-in public model geometry and CAAnimation reads; no control mutation; sequential reads use the enclosing capture bracket",
+            "rangeGeometryProbe": ProcessInfo.processInfo.arguments.contains("-ReferenceRangeGeometryProbe"),
+            "rangeGeometryProbeScope": "only the opt-in range scene retains all UIView model geometry and cached public UISlider layout results; sequential reads use captureStartT...captureEndT",
             "effectiveOpacityScope": "product of presentation opacity along UIView ancestors; excludes extra CALayer ancestors and material shader coverage",
             "coordinates": "window points; normalized coordinates divide by window bounds",
             "tintSRGB": [0.0, 0.65, 0.75, 1.0],
@@ -124,7 +126,7 @@ final class ReferenceTrace {
                           source: String, window: UIWindow) -> [String: Any] {
         let point = touch.location(in: window)
         let hit = touch.view
-        return [
+        var row: [String: Any] = [
             "event": "touch", "touchID": identifier, "source": source,
             "phase": touch.phase.rawValue, "touchType": touch.type.rawValue,
             "timestampUptimeSeconds": touch.timestamp,
@@ -140,6 +142,27 @@ final class ReferenceTrace {
             "windowWidthPt": window.bounds.width, "windowHeightPt": window.bounds.height,
             "windowFrameX": window.frame.minX, "windowFrameY": window.frame.minY
         ]
+        let arguments = ProcessInfo.processInfo.arguments
+        let rangeScene = arguments.firstIndex(of: "-ReferenceScene").map {
+            $0 + 1 < arguments.count && arguments[$0 + 1] == "range"
+        } ?? false
+        if rangeScene {
+            var ancestors: [[String: String]] = []
+            var candidate = hit
+            while let view = candidate, ancestors.count < 32 {
+                ancestors.append(["class": String(describing: type(of: view)),
+                                  "identifier": view.accessibilityIdentifier ?? ""])
+                if let slider = view as? NativeRangeSlider {
+                    row["rangeControlIdentifier"] = slider.accessibilityIdentifier ?? ""
+                    row["rangeEndpoint"] = slider.endpoint
+                }
+                candidate = view.superview
+            }
+            row["hitAncestors"] = ancestors
+            row["hitAncestorsTruncated"] = candidate != nil
+            row["hitAncestorsScope"] = "actual touch.view through public UIView.superview chain; native child identifiers are unchanged"
+        }
+        return row
     }
 
     private static func sanitize(_ value: Any) -> Any {
@@ -268,6 +291,8 @@ final class PresentationRecorder: NSObject {
         let languageScene = (context()["scene"] as? String) == "language"
         let sliderLayerProbe = (context()["scene"] as? String) == "slider" &&
             ProcessInfo.processInfo.arguments.contains("-ReferenceSliderLayerProbe")
+        let rangeGeometryProbe = (context()["scene"] as? String) == "range" &&
+            ProcessInfo.processInfo.arguments.contains("-ReferenceRangeGeometryProbe")
         let focused = ProcessInfo.processInfo.arguments.contains("-ReferenceFocusedTrace")
         func walk(_ view: UIView, path: String, depth: Int, inheritedOpacity: Float = 1, inheritedHidden: Bool = false) {
             guard depth <= 18, visited < 900 else { truncated = true; return }
@@ -285,7 +310,7 @@ final class PresentationRecorder: NSObject {
             let effectiveHidden = inheritedHidden || view.isHidden
             // Language runs retain every ancestor and menu descendant so an animated
             // content child is not mistaken for its final, static outer container.
-            if (languageScene && !focused) || sliderLayerProbe || isControl || isMaterial || isMenuMotion || !identifier.isEmpty {
+            if (languageScene && !focused) || sliderLayerProbe || rangeGeometryProbe || isControl || isMaterial || isMenuMotion || !identifier.isEmpty {
                 let bounds = layer.bounds
                 let position = layer.position
                 let anchorPoint = layer.anchorPoint
@@ -317,10 +342,12 @@ final class PresentationRecorder: NSObject {
                     "animatedSublayerVisits": sublayers.visited,
                     "animatedSublayersTruncated": sublayers.truncated
                 ]
-                if sliderLayerProbe {
+                if sliderLayerProbe || rangeGeometryProbe {
                     let model = view.layer
                     let modelTransform = model.transform
+                    let modelRect = model.convert(model.bounds, to: nil)
                     record["modelGeometry"] = [
+                        "x": modelRect.minX, "y": modelRect.minY, "w": modelRect.width, "h": modelRect.height,
                         "positionX": model.position.x, "positionY": model.position.y,
                         "boundsX": model.bounds.origin.x, "boundsY": model.bounds.origin.y,
                         "boundsW": model.bounds.width, "boundsH": model.bounds.height,
@@ -330,6 +357,12 @@ final class PresentationRecorder: NSObject {
                         "m12": modelTransform.m12, "m21": modelTransform.m21,
                         "m41": modelTransform.m41, "m42": modelTransform.m42
                     ]
+                }
+                if rangeGeometryProbe, let slider = view as? NativeRangeSlider {
+                    record["rangeSliderGeometry"] = slider.geometrySnapshot()
+                }
+                if rangeGeometryProbe, let host = view as? NativeRangeHostView {
+                    record["rangeHostGeometry"] = host.geometrySnapshot()
                 }
                 views.append(record)
             }

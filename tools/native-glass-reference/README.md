@@ -926,3 +926,76 @@ The raw video is contextual; no synchronized video contour acceptance is claimed
 Evidence and independent reproduction live in this session's
 `android-native-range-75/release-probe`. Android motion was not changed by this
 probe, and the release excursions remain an open alignment item.
+
+### Opt-in host-composed paired UISlider reference
+
+`-ReferenceScene range` launches two genuine public `UISlider` controls over
+one host-painted rail. The ordinary six-item scene selector stays unchanged;
+the range scene has no selected segment. Each slider keeps its system thumb
+drawing and native tracking, with its own track tints set clear through public
+properties. The host supplies the common rail, endpoint ordering and touch
+routing. This composition is an experimental reference, not an Apple range API.
+
+| Launch argument | Behavior |
+| --- | --- |
+| `-ReferenceScene range` | Enables the paired scene explicitly. |
+| `-ReferenceRangeScale 1` or `0.75` | Uniformly transforms the entire UISlider, including its thumb and tracking coordinate space; default `1`. |
+| `-ReferenceRangeLower <value>` | Initial lower value; default `0.25`. |
+| `-ReferenceRangeUpper <value>` | Initial upper value; default `0.75`. |
+| `-ReferenceRangeGeometryProbe` | In range scenes, retains every visited UIView's public model geometry plus cached slider/host layout snapshots, within the existing traversal bounds and capture brackets. |
+
+Initial values are clamped to `0...1` and ordered. Both native slider domains
+remain `0...1`; the host clamps value callbacks to preserve `lower <= upper`.
+Inside the rail interaction band, host `hitTest` selects the nearest model
+thumb center, then returns that slider's own public `hitTest` result, including
+nil. The selected slider decides whether to hit itself, a native child or
+nothing. At collapsed endpoints, contact left of center selects lower, contact
+right selects upper, and an exact-center tie selects lower. Later movement
+does not transfer the live touch to the other slider. Range touch rows retain
+`hitAncestors` from actual `touch.view` through the public `superview` chain,
+plus `rangeControlIdentifier` / `rangeEndpoint` when a slider ancestor exists.
+Native child identifiers are unchanged; ownership must be checked through
+ancestry rather than requiring the child's own identifier to equal the slider ID.
+
+Initial or resized idle layout performs two fresh endpoint measurements. Public
+values are temporarily set to 0 and 1 so UIKit requests native layout; a
+read-only `thumbRect` override caches and returns `super` unchanged. One width
+compensation occurs between the measurements. The final observed endpoint span,
+multiplied by the exact requested scale, defines the shared rail centered on the
+desired rail. Desired span is `stageWidth - 40` pt; it is not a convergence
+requirement. `calibration.measurements` retains each pass, and `desiredSpanPt`,
+`actualSpanPt` and signed `spanDeltaPt` report the realized residual. Missing or
+invalid fresh anchors disable the controls. Values are restored before display;
+calibration does not run during tracking.
+
+Use the central build/test commands with
+`-only-testing:GlassNativeReferenceUITests/NativeReferenceTests/testPairedNativeSliderSeparatedReference`.
+This method requests two fresh launches, scale 1 then .75, each with .25/.75
+endpoints, lower/upper six-second held-capture signals, a lower slow outward
+drag and an upper fast outward drag. The existing host optical observer is
+needed for held PNGs; REST and released XCTAttachments do not establish held
+capture timing. The separate
+`testPairedNativeSliderCollapsedRoutingReference` probes left/right DOWN
+selection in fresh collapsed sessions and is not part of that focused run.
+
+The real sliders use `native-range-lower` / `native-range-upper` accessibility
+identifiers. Their public screen-coordinate accessibility frames follow the
+cached model thumb rectangles. Those rectangles, UIView model/presentation
+geometry and stage/window coordinates are public layout observations, not
+visible alpha contours or material coefficients. Source availability alone
+does not establish calibration, native child ownership, held screenshot
+validity, optical parity, cancellation, crossover or release behavior on a
+particular OS build.
+
+The November14 batch76 used iOS26.5/23F77, SE3 375x667pt, light/grid.
+Build passed in4.697s; the selected test passed in71.247s (77.388s command).
+All four complete host screenshot brackets fell inside genuine DOWN-to-UP
+intervals. Actual hits were native lens children with the correct slider
+ancestor; target tracking and peer idle held throughout all complete bracket
+frames. Independent saved-raw and source/file hash audits passed. Observed
+shared spans were295pt at scale1 and294.75pt at scale.75, retaining the latter's
+-.25pt residual. Stationary holds had zero value changes and one unchanged
+callback after UP each. Drag releases continued value/tracking observations
+after UP, including fast upper values reaching1; no general release law or
+Android range calibration is inferred. See the batch76 section in
+../../docs/native-glass-control-alignment.md for values, failed attempts and limits.

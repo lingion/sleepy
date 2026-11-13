@@ -16,7 +16,10 @@ enum ReferencePalette {
 }
 
 enum ReferenceScene: String, CaseIterable {
-    case toggle, segmented, slider, buttons, presentations, language
+    case toggle, segmented, slider, buttons, presentations, language, range
+    // The paired reference is launch-only so existing six-scene fixtures retain
+    // exactly the same selector items and layout.
+    static let visibleCases: [ReferenceScene] = [.toggle, .segmented, .slider, .buttons, .presentations, .language]
     var label: String {
         switch self {
         case .toggle: return "Toggle"
@@ -25,6 +28,7 @@ enum ReferenceScene: String, CaseIterable {
         case .buttons: return "Button"
         case .presentations: return "Present"
         case .language: return "Lang"
+        case .range: return "Range"
         }
     }
 }
@@ -777,7 +781,7 @@ private final class ReferenceDockHostingController: UIHostingController<Referenc
 
 final class ReferenceViewController: UIViewController, UITabBarDelegate {
     private let background = ReferenceBackgroundView()
-    private let scenePicker = UISegmentedControl(items: ReferenceScene.allCases.map(\.label))
+    private let scenePicker = UISegmentedControl(items: ReferenceScene.visibleCases.map(\.label))
     private let backgroundPicker = UISegmentedControl(items: ["Grid", "Stripes"])
     private let heading = UILabel()
     private let tabBar = UITabBar()
@@ -838,7 +842,7 @@ final class ReferenceViewController: UIViewController, UITabBarDelegate {
         background.background = ReferenceBackground(rawValue: argument("-ReferenceBackground") ?? "grid") ?? .grid
         backgroundName = background.background.rawValue
         backgroundPicker.selectedSegmentIndex = backgroundName == "grid" ? 0 : (backgroundName == "stripes" ? 1 : UISegmentedControl.noSegment)
-        scenePicker.selectedSegmentIndex = ReferenceScene.allCases.firstIndex(of: scene) ?? 0
+        scenePicker.selectedSegmentIndex = ReferenceScene.visibleCases.firstIndex(of: scene) ?? UISegmentedControl.noSegment
         installScene()
     }
 
@@ -853,8 +857,16 @@ final class ReferenceViewController: UIViewController, UITabBarDelegate {
                                    "interfaceStyle": window.traitCollection.userInterfaceStyle.rawValue,
                                    "staticOptics": ProcessInfo.processInfo.arguments.contains("-ReferenceStaticOptics")])
         recorder.context = { [weak self] in
-            ["scene": self?.scene.rawValue ?? "", "background": self?.backgroundName ?? "",
-             "tabCount": self?.tabBar.items?.count ?? 0]
+            var row: [String: Any] = ["scene": self?.scene.rawValue ?? "", "background": self?.backgroundName ?? "",
+                                      "tabCount": self?.tabBar.items?.count ?? 0]
+            if let self, self.scene == .range, let stage = self.host?.view {
+                let rect = stage.convert(stage.bounds, to: stage.window)
+                row["stageRectInWindowPt"] = ["x": rect.minX, "y": rect.minY, "w": rect.width, "h": rect.height]
+                row["stageBoundsPt"] = ["x": stage.bounds.minX, "y": stage.bounds.minY,
+                                         "w": stage.bounds.width, "h": stage.bounds.height]
+                row["rangeReference"] = ReferenceRangeConfiguration.current.metadata
+            }
+            return row
         }
         if ProcessInfo.processInfo.arguments.contains("-ReferenceStaticOptics") {
             let format = UIGraphicsImageRendererFormat()
@@ -916,8 +928,8 @@ final class ReferenceViewController: UIViewController, UITabBarDelegate {
     }
 
     @objc private func changeScene() {
-        guard ReferenceScene.allCases.indices.contains(scenePicker.selectedSegmentIndex) else { return }
-        scene = ReferenceScene.allCases[scenePicker.selectedSegmentIndex]
+        guard ReferenceScene.visibleCases.indices.contains(scenePicker.selectedSegmentIndex) else { return }
+        scene = ReferenceScene.visibleCases[scenePicker.selectedSegmentIndex]
         installScene()
     }
 

@@ -10,6 +10,7 @@
 		62C7F8C96ADF4C4389A33947 /* NativeReferenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DC39DC07BFE603EA52C1B5C /* NativeReferenceTests.swift */; };
 		8C667B8105B5C5B27073E0B5 /* ReferenceTrace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69387DDE03EE113DA71D7E31 /* ReferenceTrace.swift */; };
 		9050832296E3A34231AF62AB /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC98CD288976565D6168ABBE /* main.swift */; };
+		AA88A3EB35CD7BD69CE12684 /* NativeRangeReference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87BDC3F04EB15ACAFC7792A5 /* NativeRangeReference.swift */; };
 		F225B4A7AFA94282DB5130C2 /* NativeStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE39A75ADFE5C281DF35E36 /* NativeStage.swift */; };
 /* End PBXBuildFile section */
 
@@ -28,6 +29,7 @@
 		3DC39DC07BFE603EA52C1B5C /* NativeReferenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeReferenceTests.swift; sourceTree = "<group>"; };
 		5AE39A75ADFE5C281DF35E36 /* NativeStage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeStage.swift; sourceTree = "<group>"; };
 		69387DDE03EE113DA71D7E31 /* ReferenceTrace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferenceTrace.swift; sourceTree = "<group>"; };
+		87BDC3F04EB15ACAFC7792A5 /* NativeRangeReference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeRangeReference.swift; sourceTree = "<group>"; };
 		8E0C225B1DFD59BCBF7ED0A0 /* GlassNativeReference.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = GlassNativeReference.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAF70DB95625261648F20249 /* GlassNativeReferenceUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = GlassNativeReferenceUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC98CD288976565D6168ABBE /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
@@ -47,6 +49,7 @@
 			children = (
 				223781E59D2C15843A9BBD17 /* Info.plist */,
 				DC98CD288976565D6168ABBE /* main.swift */,
+				87BDC3F04EB15ACAFC7792A5 /* NativeRangeReference.swift */,
 				5AE39A75ADFE5C281DF35E36 /* NativeStage.swift */,
 				69387DDE03EE113DA71D7E31 /* ReferenceTrace.swift */,
 			);
@@ -156,6 +159,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA88A3EB35CD7BD69CE12684 /* NativeRangeReference.swift in Sources */,
 				F225B4A7AFA94282DB5130C2 /* NativeStage.swift in Sources */,
 				8C667B8105B5C5B27073E0B5 /* ReferenceTrace.swift in Sources */,
 				9050832296E3A34231AF62AB /* main.swift in Sources */,
