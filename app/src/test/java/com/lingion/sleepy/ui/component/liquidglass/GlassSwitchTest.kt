@@ -51,7 +51,7 @@ class GlassSwitchTest {
     ) {
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L },
                     LocalUiStyle provides style,
                     LocalLayoutDirection provides if (rtl) LayoutDirection.Rtl else LayoutDirection.Ltr,
                 ) {

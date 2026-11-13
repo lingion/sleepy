@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component
 
+import com.lingion.sleepy.ui.component.liquidglass.LocalDockInputTimeNanos
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
@@ -34,7 +35,7 @@ class SmartPeriodLayoutTest {
     @Test fun narrowGridReservesReadableCellsAndSeparatesDeleteFromInput() {
         compose.setContent {
             MaterialTheme(typography = com.lingion.sleepy.ui.theme.SleepyTypography) {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass, LocalDensity provides Density(1f, 1.5f)) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass, LocalDensity provides Density(1f, 1.5f)) {
                     GlassHost {
                         Box(Modifier.width(264.dp)) {
                             SmartPeriodEditor(
@@ -61,7 +62,7 @@ class SmartPeriodLayoutTest {
     @Test fun narrowInputsKeepLabelsAndValuesWhole() {
         compose.setContent {
             MaterialTheme(typography = com.lingion.sleepy.ui.theme.SleepyTypography) {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass, LocalDensity provides Density(1f, 1.5f)) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass, LocalDensity provides Density(1f, 1.5f)) {
                     GlassHost { Box(Modifier.width(216.dp)) {
                         SmartPeriodEditor(SmartPeriodConfig(), {}, dbgTagPrefix = "smart")
                     } }
@@ -84,7 +85,7 @@ class SmartPeriodLayoutTest {
     @Test fun narrowManualRowsDisplayCompleteTimes() {
         compose.setContent {
             MaterialTheme(typography = com.lingion.sleepy.ui.theme.SleepyTypography) {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass, LocalDensity provides Density(1f, 1.5f)) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass, LocalDensity provides Density(1f, 1.5f)) {
                     GlassHost { Box(Modifier.width(216.dp)) {
                         TimeSlotEditor(
                             rows = listOf(com.lingion.sleepy.util.TimeTableUtils.TimeSlotRow(1, "08:00", "08:45")),
@@ -105,7 +106,7 @@ class SmartPeriodLayoutTest {
         var changed = 0
         compose.setContent {
             MaterialTheme(typography = com.lingion.sleepy.ui.theme.SleepyTypography) {
-                CompositionLocalProvider(LocalDensity provides Density(1f, 1.5f)) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalDensity provides Density(1f, 1.5f)) {
                     Box(Modifier.width(216.dp)) {
                         SmartPeriodEditor(SmartPeriodConfig(), { changed = it.periodMinutes }, dbgTagPrefix = "smart")
                     }

@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component
 
+import com.lingion.sleepy.ui.component.liquidglass.LocalDockInputTimeNanos
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.CompositionLocalProvider
@@ -33,7 +34,7 @@ class SegmentedSwitcherQuickInputTest {
         selected.intValue = initial
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass) {
                     GlassHost {
                         SegmentedSwitcher(
                             options = listOf(0 to "First", 1 to "Second"),

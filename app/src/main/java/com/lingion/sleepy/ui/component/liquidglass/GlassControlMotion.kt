@@ -2,9 +2,13 @@ package com.lingion.sleepy.ui.component.liquidglass
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.MotionDurationScale
 import kotlin.coroutines.coroutineContext
@@ -164,6 +168,175 @@ internal class GlassControlMotion(
         dropping = false
         riseHasPeaked = pressed
     }
+
+    /** Cancellation lowers the existing lens without synthesizing a tap pulse. */
+    fun cancel(target: Float) {
+        update(target, pressed = false, dragging = false, activation = activation)
+        dropping = false
+        elevation.springTo(0f, spec.fall)
+    }
+}
+
+/**
+ * Input-owned driver for switches and segmented pickers. Receipt and hardware
+ * sample clocks remain separate, and every delivered transition survives even
+ * when Compose has not recomposed between DOWN and UP.
+ */
+internal class TimedGlassControlMotion(
+    initialPosition: Float,
+    spec: GlassControlMotionSpec,
+    travelDistanceDp: Float = 0f,
+    initiallyEnabled: Boolean = true,
+) {
+    val motion = GlassControlMotion(initialPosition, spec, travelDistanceDp)
+    private sealed interface Input {
+        data class Begin(val epoch: Long, val target: Float, val pressed: Boolean, val dragging: Boolean) : Input
+        data class Move(val epoch: Long, val target: Float, val dragging: Boolean) : Input
+        data class Release(val epoch: Long, val target: Float, val activate: Boolean) : Input
+        data class Cancel(val epoch: Long, val target: Float) : Input
+        data class Selection(val target: Float, val activate: Boolean, val enabled: Boolean) : Input
+    }
+
+    private val clock = DockInputClock<Input> { it is Input.Begin }
+    private var nextEpoch = 0L
+    private var requestedEpoch: Long? = null
+    private var activeEpoch: Long? = null
+    private var held = false
+    private var activation = 0
+    private var inputEnabled = initiallyEnabled
+    private var appliedEnabled = initiallyEnabled
+    var requestedPosition by mutableFloatStateOf(initialPosition)
+        private set
+    var requestRevision by mutableIntStateOf(0)
+        private set
+    internal val appliedPressEpoch: Long? get() = activeEpoch
+
+    fun isCurrent(epoch: Long): Boolean = inputEnabled && requestedEpoch == epoch
+
+    fun begin(pressed: Boolean, dragging: Boolean, receivedNanos: Long, sampleUptimeMillis: Long): Long? {
+        if (!inputEnabled) return null
+        val epoch = ++nextEpoch
+        requestedEpoch = epoch
+        clock.enqueue(Input.Begin(epoch, requestedPosition, pressed, dragging), receivedNanos, sampleUptimeMillis)
+        return epoch
+    }
+
+    fun move(epoch: Long, target: Float, dragging: Boolean, receivedNanos: Long, sampleUptimeMillis: Long) {
+        if (isCurrent(epoch)) clock.enqueue(Input.Move(epoch, target, dragging), receivedNanos, sampleUptimeMillis)
+    }
+
+    fun release(epoch: Long, target: Float, activate: Boolean, receivedNanos: Long, sampleUptimeMillis: Long): Boolean {
+        if (!isCurrent(epoch)) return false
+        requestedEpoch = null
+        requestedPosition = target
+        requestRevision++
+        clock.enqueue(Input.Release(epoch, target, activate), receivedNanos, sampleUptimeMillis)
+        return true
+    }
+
+    fun cancel(epoch: Long, receivedNanos: Long, sampleUptimeMillis: Long? = null) {
+        if (requestedEpoch != epoch) return
+        requestedEpoch = null
+        clock.enqueue(Input.Cancel(epoch, requestedPosition), receivedNanos, sampleUptimeMillis)
+    }
+
+    /** Semantic and keyboard activation supersedes any pending pointer gesture. */
+    fun select(target: Float, receivedNanos: Long): Boolean {
+        if (!inputEnabled) return false
+        val changed = target != requestedPosition
+        requestedEpoch = null
+        requestedPosition = target
+        requestRevision++
+        clock.enqueue(Input.Selection(target, activate = changed, enabled = true), receivedNanos)
+        return changed
+    }
+
+    /** A matching controlled-value echo must not cancel a newer pointer epoch. */
+    fun synchronize(target: Float, enabled: Boolean, receivedNanos: Long, observedRevision: Int = requestRevision) {
+        if (observedRevision != requestRevision) return
+        if (target == requestedPosition && enabled == inputEnabled) return
+        requestedEpoch = null
+        requestedPosition = target
+        inputEnabled = enabled
+        clock.enqueue(Input.Selection(target, activate = false, enabled = enabled), receivedNanos)
+    }
+
+    fun needsFrame(): Boolean = clock.hasPending || motion.isRunning
+
+    fun advanceFrame(frame: ActiveFrame, scaleFactor: Float) {
+        clock.advance(frame,
+            integrate = { dt ->
+                if (scaleFactor <= 0f || !appliedEnabled) motion.finish()
+                else motion.tick(dt / scaleFactor)
+            },
+            apply = { input ->
+                when (input) {
+                    is Input.Begin -> {
+                        activeEpoch = input.epoch
+                        held = input.pressed
+                        motion.update(input.target, held, input.dragging, activation)
+                    }
+                    is Input.Move -> if (activeEpoch == input.epoch) {
+                        motion.update(input.target, held, input.dragging, activation)
+                    }
+                    is Input.Release -> if (activeEpoch == input.epoch) {
+                        activeEpoch = null
+                        held = false
+                        if (input.activate) activation++
+                        motion.update(input.target, pressed = false, dragging = false, activation = activation)
+                    }
+                    is Input.Cancel -> if (activeEpoch == input.epoch) {
+                        activeEpoch = null
+                        val ownedLens = held
+                        held = false
+                        // An unselected seat never lifted the lens. Cancelling
+                        // that press must not truncate an earlier valid pulse.
+                        if (ownedLens) motion.cancel(input.target)
+                        else motion.update(input.target, pressed = false, dragging = false, activation = activation)
+                    }
+                    is Input.Selection -> {
+                        activeEpoch = null
+                        held = false
+                        appliedEnabled = input.enabled
+                        motion.cancel(input.target)
+                        if (input.activate) {
+                            activation++
+                            motion.update(input.target, pressed = false, dragging = false, activation = activation)
+                        }
+                    }
+                }
+                // Process each complete transaction at scale zero, including
+                // held drags that wake an otherwise idle frame loop.
+                if (scaleFactor <= 0f || !appliedEnabled) motion.finish()
+            },
+        )
+    }
+}
+
+@Composable
+internal fun rememberTimedGlassControlMotion(
+    target: Float,
+    enabled: Boolean,
+    spec: GlassControlMotionSpec,
+    travelDistanceDp: Float = 0f,
+): TimedGlassControlMotion {
+    val driver = remember(spec) { TimedGlassControlMotion(target, spec, travelDistanceDp, enabled) }
+    val inputTimeNanos by rememberUpdatedState(LocalDockInputTimeNanos.current)
+    // Reading the revision schedules confirmation even when a parent rejects a
+    // callback without changing its controlled value. An older composition is
+    // not allowed to reject a more recent request.
+    val observedRevision = driver.requestRevision
+    SideEffect {
+        driver.motion.updateMotionDistance(travelDistanceDp)
+        driver.synchronize(target, enabled, inputTimeNanos(), observedRevision)
+    }
+    LaunchedEffect(driver) {
+        val durationScale = coroutineContext[MotionDurationScale]
+        runTimestampedActiveFrameLoop(driver::needsFrame) { frame ->
+            driver.advanceFrame(frame, durationScale?.scaleFactor ?: 1f)
+        }
+    }
+    return driver
 }
 
 @Composable

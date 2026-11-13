@@ -26,7 +26,6 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
@@ -74,7 +73,8 @@ import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.UiStyle
-import com.lingion.sleepy.ui.component.liquidglass.rememberGlassControlMotion
+import com.lingion.sleepy.ui.component.liquidglass.rememberTimedGlassControlMotion
+import com.lingion.sleepy.ui.component.liquidglass.LocalDockInputTimeNanos
 import com.lingion.sleepy.ui.component.liquidglass.GlassControlMotionSpec
 import com.lingion.sleepy.ui.component.liquidglass.glassLensWidth
 import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
@@ -163,19 +163,16 @@ fun <T> SegmentedSwitcher(
     val glassActive = LocalUiStyle.current == UiStyle.LiquidGlass && glassHost != null
     val thumbX = remember { Animatable(selectedIndex.toFloat()) }
     var classicPosition by remember { mutableFloatStateOf(selectedIndex.toFloat()) }
-    var gesturePosition by remember { mutableFloatStateOf(selectedIndex.toFloat()) }
-    var dragging by remember { mutableStateOf(false) }
-    var pressing by remember { mutableStateOf(false) }
-    var tapGeneration by remember { mutableIntStateOf(0) }
     val density = LocalDensity.current
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     var trackWidthPx by remember { mutableIntStateOf(0) }
-    val motion = rememberGlassControlMotion(
-        if (dragging) gesturePosition else selectedIndex.toFloat(), pressing || dragging,
-        dragging, tapGeneration, glassActive,
+    val inputTimeNanos by rememberUpdatedState(LocalDockInputTimeNanos.current)
+    val driver = rememberTimedGlassControlMotion(
+        selectedIndex.toFloat(), glassActive,
         spec = GlassControlMotionSpec.NativeSegmented,
         travelDistanceDp = trackWidthPx / density.density / count * if (isRtl) -1f else 1f,
     )
+    val motion = driver.motion
     val thumbPosition = if (glassActive) motion.position.value else classicPosition
     val thumbLift = if (glassActive) motion.lift else 0f
     val geometryLift = if (glassActive) motion.geometryLift else 0f
@@ -187,9 +184,10 @@ fun <T> SegmentedSwitcher(
     val inputState = remember { SegmentInputState(selectedIndex) }
     SideEffect { inputState.selected = selectedIndex }
     fun select(index: Int) {
-        if (index != inputState.selected) {
+        if (glassActive) {
+            if (driver.select(index.toFloat(), inputTimeNanos())) currentOnSelect(options[index].value)
+        } else if (index != inputState.selected) {
             inputState.selected = index
-            tapGeneration++
             currentOnSelect(options[index].value)
         }
     }
@@ -269,19 +267,25 @@ fun <T> SegmentedSwitcher(
             }
             .selectableGroup()
             .glassGestureOwnership(glassActive && count > 1)
-            .pointerInput(options, isRtl, trackWidthPx, glassActive) {
+            .pointerInput(options, isRtl, trackWidthPx, glassActive, driver) {
                 // Classic 模式完全走原有 selectable 点击路径，不安装自定义拖动接管器。
                 if (!glassActive) return@pointerInput
                 if (count < 2 || trackWidthPx <= 0) return@pointerInput
                 val segmentWidth = trackWidthPx.toFloat() / count
                 val direction = if (isRtl) -1f else 1f
-                try {
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-                    down.consume()
+                    val downReceipt = inputTimeNanos()
                     // Input follows the current selection, even while its lens is travelling.
-                    val start = inputState.selected.toFloat()
-                    gesturePosition = start
+                    val start = driver.requestedPosition
+                    var gesturePosition = start
+                    var dragging = false
+                    val logicalX = (if (isRtl) size.width - down.position.x else down.position.x) - horizontalInset.toPx()
+                    val onThumb = logicalX in start * segmentWidth..(start + 1f) * segmentWidth
+                    val epoch = driver.begin(onThumb, dragging = false,
+                        receivedNanos = downReceipt, sampleUptimeMillis = down.uptimeMillis)
+                        ?: return@awaitEachGesture
+                    down.consume()
                     var lastHapticIndex = gesturePosition.roundToInt()
                     fun tickIfChanged() {
                         val index = gesturePosition.roundToInt()
@@ -291,23 +295,29 @@ fun <T> SegmentedSwitcher(
                         }
                     }
                     LiquidGlassHaptics.selectionClick(view)
-                    val logicalX = (if (isRtl) size.width - down.position.x else down.position.x) - horizontalInset.toPx()
-                    val onThumb = logicalX in start * segmentWidth..(start + 1f) * segmentWidth
                     // Native iOS 26.5: holding an unselected B leaves A at rest.
                     // B's selection pulse starts only when the valid touch is released.
-                    pressing = onThumb
+                    var released = false
+                    var cancelReceipt: Long? = null
+                    var cancelSample: Long? = null
                     try {
                         var moved = false
                         while (true) {
                             val event = awaitPointerEvent(PointerEventPass.Initial)
-                            val pointer = event.changes.firstOrNull { it.id == down.id } ?: break
+                            val receivedNanos = inputTimeNanos()
+                            val pointer = event.changes.firstOrNull { it.id == down.id }
+                            cancelReceipt = receivedNanos
+                            cancelSample = pointer?.uptimeMillis
+                            if (pointer == null || !driver.isCurrent(epoch)) break
                             if (!pointer.pressed) {
                                 if (pointer.isConsumed || (!onThumb && moved)) break
                                 pointer.consume()
                                 val target = if (dragging) gesturePosition.roundToInt()
                                     else (logicalX / segmentWidth).toInt()
                                 val index = target.coerceIn(0, count - 1)
-                                select(index)
+                                val changed = index.toFloat() != driver.requestedPosition
+                                released = driver.release(epoch, index.toFloat(), changed, receivedNanos, pointer.uptimeMillis)
+                                if (released && changed) currentOnSelect(options[index].value)
                                 break
                             }
                             val dx = pointer.position.x - down.position.x
@@ -318,17 +328,15 @@ fun <T> SegmentedSwitcher(
                                     .coerceIn(0f, (count - 1).toFloat())
                                 tickIfChanged()
                             }
+                            driver.move(epoch, gesturePosition, dragging,
+                                receivedNanos = receivedNanos, sampleUptimeMillis = pointer.uptimeMillis)
                             pointer.consume()
+                            cancelReceipt = null
+                            cancelSample = null
                         }
                     } finally {
-                        pressing = false
-                        dragging = false
+                        if (!released) driver.cancel(epoch, cancelReceipt ?: inputTimeNanos(), cancelSample)
                     }
-                }
-                } finally {
-                    // pointerInput 重启或离开组合时也必须收回镜片。
-                    pressing = false
-                    dragging = false
                 }
             }
     ) {

@@ -41,7 +41,7 @@ class GlassGestureOwnershipTest {
     private fun show(kind: String) {
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides style, androidx.compose.ui.platform.LocalLayoutDirection provides direction) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides style, androidx.compose.ui.platform.LocalLayoutDirection provides direction) {
                     GlassHost {
                         scroll = rememberScrollState()
                         Column(Modifier.size(320.dp, 400.dp).testTag("page").verticalScroll(scroll)) {

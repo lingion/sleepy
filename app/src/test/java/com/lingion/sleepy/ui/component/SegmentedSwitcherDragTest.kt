@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component
 
+import com.lingion.sleepy.ui.component.liquidglass.LocalDockInputTimeNanos
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.CompositionLocalProvider
@@ -32,7 +33,7 @@ class SegmentedSwitcherDragTest {
     private fun show(rtl: Boolean = false, accept: Boolean = true) {
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L },
                     LocalUiStyle provides UiStyle.LiquidGlass,
                     LocalLayoutDirection provides if (rtl) LayoutDirection.Rtl else LayoutDirection.Ltr,
                 ) {
@@ -53,7 +54,7 @@ class SegmentedSwitcherDragTest {
         val classicChanges = mutableListOf<Int>()
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L },
                     LocalUiStyle provides UiStyle.Classic,
                 ) {
                     SegmentedSwitcher(

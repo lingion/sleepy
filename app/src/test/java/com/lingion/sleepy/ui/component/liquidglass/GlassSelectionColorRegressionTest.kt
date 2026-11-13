@@ -48,7 +48,7 @@ class GlassSelectionColorRegressionTest {
     @Test fun glassSelectionsRetainTheirMaterialThemeFill() {
         compose.setContent {
             MaterialTheme(colorScheme = lightColorScheme(secondaryContainer = Color.Magenta)) {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass) {
                     GlassHost {
                         Column {
                             SegmentedSwitcher(
@@ -96,7 +96,7 @@ class GlassSelectionColorRegressionTest {
     @Test fun toggleThumbCrossfadesDuringBothRiseAndFall() {
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass) {
                     GlassHost(Modifier.fillMaxSize(), background = Color.Red) {
                         GlassSwitch(
                             checked = false, onCheckedChange = {}, modifier = Modifier.testTag("toggle"),
@@ -137,7 +137,7 @@ class GlassSelectionColorRegressionTest {
     private fun showLanguages() {
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass) {
                     GlassHost { GlassLanguageMenu("Language", "en", languages, {}) }
                 }
             }

@@ -1,5 +1,7 @@
 package com.lingion.sleepy.ui.screen.mine
 
+import com.lingion.sleepy.ui.component.liquidglass.LocalDockInputTimeNanos
+import androidx.compose.runtime.CompositionLocalProvider
 import android.content.Context
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -28,8 +30,10 @@ class GeneralSettingsInteractionTest {
         AppPrefs.setUndoDepth(context, 7)
         UndoManager.applyMaxDepth(7)
         compose.setContent {
-            SleepyThemeProvider(darkTheme = false, themeKey = "default") {
-                GeneralSettingsScreen(onBack = {})
+            CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }) {
+                SleepyThemeProvider(darkTheme = false, themeKey = "default") {
+                    GeneralSettingsScreen(onBack = {})
+                }
             }
         }
     }

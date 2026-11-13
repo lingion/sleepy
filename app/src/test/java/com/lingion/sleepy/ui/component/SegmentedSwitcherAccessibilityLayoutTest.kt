@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component
 
+import com.lingion.sleepy.ui.component.liquidglass.LocalDockInputTimeNanos
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
@@ -61,7 +62,7 @@ class SegmentedSwitcherAccessibilityLayoutTest {
     @Test fun ordinaryFontsKeepTheNativeTrackAndRestingLensSizes() {
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass, LocalDensity provides Density(1f, 1f)) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass, LocalDensity provides Density(1f, 1f)) {
                     GlassHost {
                         SegmentedSwitcher(listOf(0 to "One", 1 to "Two"), 0, {},
                             Modifier.width(320.dp).testTag("tabs"))
@@ -78,7 +79,7 @@ class SegmentedSwitcherAccessibilityLayoutTest {
     @Test fun largeLabelsAndMultilineBadgesExpandTheTrackAndRestingLensTogether() {
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass, LocalDensity provides Density(1f, 2f)) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass, LocalDensity provides Density(1f, 2f)) {
                     GlassHost {
                         SegmentedSwitcher(
                             listOf(SegmentOption(0, "Time", "New\nPreview\nMode"), SegmentOption(1, "Week")),
@@ -100,7 +101,7 @@ class SegmentedSwitcherAccessibilityLayoutTest {
     @Test fun aTallerCallerKeepsItsInteractionAreaAndCentersTheMeasuredTrack() {
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass, LocalDensity provides Density(1f, 2f)) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass, LocalDensity provides Density(1f, 2f)) {
                     GlassHost {
                         SegmentedSwitcher(listOf(0 to "Time", 1 to "Week"), 0, {},
                             Modifier.width(320.dp).height(80.dp).testTag("tabs"))

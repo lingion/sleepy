@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component
 
+import com.lingion.sleepy.ui.component.liquidglass.LocalDockInputTimeNanos
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -43,7 +44,7 @@ class FloatingGlassControlTest {
     @Test fun tabRisesProgressivelyAndStartsLoweringWithoutAFixedReleaseDelay() {
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass) {
                     GlassHost {
                         Box(Modifier.padding(40.dp)) {
                             SegmentedSwitcher(listOf(0 to "For You", 1 to "Library"), 0, {},
@@ -84,7 +85,7 @@ class FloatingGlassControlTest {
     @Test fun heldTabOverflowsBothTrackEdgesAndKeepsItsCenter() {
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass) {
                     GlassHost {
                         Box(Modifier.padding(40.dp)) {
                             SegmentedSwitcher(
@@ -141,7 +142,7 @@ class FloatingGlassControlTest {
                 }
             }
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass, LocalView provides feedbackView) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass, LocalView provides feedbackView) {
                     GlassHost {
                         SegmentedSwitcher(listOf(0 to "One", 1 to "Two", 2 to "Three"), 0, {},
                             Modifier.width(300.dp).testTag("tabs"))

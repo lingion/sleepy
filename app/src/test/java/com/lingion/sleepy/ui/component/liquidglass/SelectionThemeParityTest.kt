@@ -264,7 +264,7 @@ class SelectionThemeParityTest {
             val case = theme.value
             key(case.name) {
                 MaterialTheme(colorScheme = case.scheme) {
-                    CompositionLocalProvider(LocalDarkTheme provides case.dark) {
+                    CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalDarkTheme provides case.dark) {
                         GlassHost(Modifier.fillMaxSize(), background = case.scheme.background) {
                             Column(Modifier.fillMaxSize().background(case.scheme.background)) { content() }
                         }
@@ -275,7 +275,7 @@ class SelectionThemeParityTest {
     }
 
     @Composable private fun styled(style: UiStyle, content: @Composable () -> Unit) {
-        CompositionLocalProvider(LocalUiStyle provides style, content = content)
+        CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides style, content = content)
     }
 
     private fun image(tag: String): Bitmap = compose.onNodeWithTag(tag, useUnmergedTree = true).captureToImage().asAndroidBitmap()

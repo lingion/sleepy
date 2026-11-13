@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component
 
+import com.lingion.sleepy.ui.component.liquidglass.LocalDockInputTimeNanos
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -43,7 +44,7 @@ class SettingsFlatCardOverflowTest {
     @Test fun fastDragKeepsTheRealSettingsCardsOverflowingLensUnclipped() {
         compose.setContent {
             MaterialTheme(typography = SleepyTypography) {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass) {
                     GlassHost(Modifier.fillMaxSize()) {
                         // Match this 400dp window: a 368dp card and 336dp track.
                         // The native-sized lens still crosses this card during a drag.

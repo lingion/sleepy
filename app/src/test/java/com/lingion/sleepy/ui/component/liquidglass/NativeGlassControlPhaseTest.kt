@@ -40,7 +40,7 @@ class NativeGlassControlPhaseTest {
         val selected = mutableStateOf(0)
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides style) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides style) {
                     GlassHost(Modifier.fillMaxSize()) {
                         Column {
                             GlassSwitch(
