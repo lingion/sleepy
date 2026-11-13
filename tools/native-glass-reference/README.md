@@ -517,11 +517,122 @@ The fixed 10pt-slop business mapping gives unequal raw terminal excesses,
 +4.495645/−4.767461pt displacement from final REST; recorded Slider/stage ancestors
 remain fixed. Fast whole-window peaks about ±9pt occur at UP+67ms, not while held.
 Bounds, own transform and center displacement must remain separate. These two
-excess distances do not identify a general endpoint curve, and this recorder does
-not yet capture layer.position/anchorPoint/bounds.origin. Batch68 and the locked65
+excess distances do not identify a general endpoint curve. The batch68 recorder
+did not capture layer.position/anchorPoint/bounds.origin; batch70 adds them below.
+Batch68 and the locked65
 profile holdout review are under
 `artifacts/glass-optics-20261112/native-slider-saturation-68/`; they do not establish
 range-Slider behavior, visible optical contours or millisecond parity.
+
+### Long-held single-Slider overdrive
+
+`testSwiftUISliderOverdriveLongHold` launches ten independent native Slider
+sessions, alternating .75 forward / .25 reverse. It requests slow nominal
+0/2/5/10 pt excess and a fast nominal 10 pt repeat in both directions, holds the
+destination for 1.35 s, then leaves at least 1.2 s of post-command tail. Origins use
+the measured quarter-value anchors; the 10 pt startup mapping and 335 pt control
+width define nominal business boundaries. Preserve actual delivered coordinates:
+a nominal zero request can fall on either side of the fractional boundary.
+Only positive-excess requests assert a displayed 100%/0% endpoint in the test.
+
+The November 13 batch70 passed this one method (build 5.773 s, test 152.550 s) on
+the same iOS 26.5/23F77 SE 3 simulator. Its ten delivered gestures all ended with
+UP. Actual terminal positions were unchanged for at least 1.350 s. The held reference
+uses only frames whose complete `captureStartT...captureEndT` bracket falls in
+the final 300 ms before actual UP delivery, yielding 17 frames per run. Current
+native forcing is `source=delivery`; coalesced samples are retained separately.
+Do not fit a timing shift, interpolate observations, or replace actual speed
+with the requested XCUITest velocity.
+
+The recorder now emits six public presentation-layer geometry fields:
+`positionX`/`positionY` in immediate-superlayer points,
+`anchorPointX`/`anchorPointY` in unit bounds coordinates, and `boundsX`/`boundsY`
+as local bounds origins. Session metadata declares
+`layerGeometryFieldsVersion=1` and `layerGeometryCoordinates`. These fields allow
+a public center/position/anchor/transform decomposition; they do not reveal a
+private native animation target. Sampled stage, UISlider and glass visual-element
+geometry stayed fixed in this batch. Unrecorded wrappers and extra CALayer
+ancestors are outside that claim.
+
+Actual saturated excesses were forward .25/2.25/5.25/10.25 pt and reverse
+1.75/4.75/9.75 pt. Corresponding final-held public position shifts from each run's
+final REST were +.154295/+1.273258/+2.641662/+4.353381 pt and
+−1.011321/−2.435056/−4.206609 pt. Same-excess fast/slow terminal baselines were
+identical. The nominal zero reverse instead had actual excess −.25 pt and held
+fraction .000746268663; its +.222388 pt offset is ordinary remaining business
+travel, not endpoint overdrive. Its three post-UP callbacks were 0,
+.000114750030 and .000746268663, while final carrier center was 38.5 pt. Retain both
+observations without inferring an internal rounding or snapping mechanism.
+
+A retrospectively selected rubber family with gain .62425 and limit 13.62 pt,
+`shift=limit*(1-1/(1+gain*positiveExcess/limit))`, derives from forward .25/10.25 pt
+and agrees with the remaining eligible batch70/batch68 held baselines to
+2.043e−13 pt. Those checks are not blind holdouts. Scope is native 335 pt width and
+298 pt resting-thumb travel; other-width behavior needs its own evidence. The
+long-held fast runs still peak at +8/−7 pt after UP, near 84.607/48.781 ms bracket
+midpoints. The held rule does not explain these release excursions or identify a
+release-velocity law.
+
+Evidence lives under `artifacts/glass-optics-20261112/native-slider-overdrive-70/`:
+`independent-overdrive-review` retains 232/232 invariant checks, actual deliveries,
+carrier frames and final 300 ms rows; `independent-endpoint-family-review` verifies
+the retrospective family directly from raw public positions and trace hashes.
+Outer carrier bounds/matrices do not establish the visible alpha contour or
+optical equivalence. Android batch71 separates business and visual endpoint
+targets and uses an affine visual child. Its base-capsule contour remains a
+hypothesis, not proven native material clipping.
+
+Batch71 host verification is recorded separately: the old endpoint behavior
+produced 3 assertion failures in 10 tests, and a same-bounding-box circular-resize
+counterfactual produced a real shoulder-pixel assertion failure in one test.
+The first focused run executed 434 tests: 433 passed, one geometry-read failure,
+zero errors/skips. That helper used transformed position plus untransformed
+layout size. After changing only the geometry reader to actual semantic
+`boundsInRoot` normalized by actual density, all three Thumb tests passed with
+unchanged expectations/tolerances. Debug and androidTest APKs built in the same
+26-second command. This is not a fresh passing 434-test run. Host XML, logs and
+restored-source hashes are in `slider-endpoint-affine-71/{endpoint-red,green-first,affine-green}`
+and the adjacent `affine-red-receipt.json` / `affine-green-build.log` artifacts.
+These native-graphics Robolectric regressions do not establish device GPU optics
+or native frame parity.
+
+Android71 subsequently replayed all ten native70 sources on the API36 phone:
+ten instrumentation tests passed, and all 50 trace-file hashes plus the single
+raw-video hash matched host/device copies. The installed main APK SHA256 is
+`6e20a77fcf8c926bda77f960d5b238bad5688c829bf294574e1b04ba33bd6d66`;
+the test APK remains `50c6fa1b864d980e7e7c872743b613746822da8ad00d3fd7c8d05d510d39d97c`.
+Independent source and Android audits passed 192/192 and 152/152 checks. The ten
+sources contain 568 unique actual samples (538 main deliveries, 30 unique
+coalesced samples); every injection is recovered in app current/history. Fixed
+anchor translation, 1 pt = 1 dp and original sample intervals are preserved.
+Actual current coordinates and receipt timing differ across systems; source
+integrity is not proof of an identical received waveform.
+
+For the nine saturated cases, stable held-minus-final-REST center displacement
+differs by at most .170985 dp/pt. The separate unshifted whole-window real-frame
+comparison still has center-X RMSE 1.642–5.498 dp. Neither metric measures native
+visible corners or material parity. The nominal-zero reverse case remains a
+separate forcing mismatch: native held value is nonzero, while Android's last
+pressed CURRENT lies .649414 px (.218290 dp) beyond its mechanically reconstructed
+zero threshold; its HISTORY and later UP lie inside. Independent Float
+reconstruction gives raw fractions −.0006513595581 versus +.0008404105902 and
+matches business callbacks within about 1.77e−8. Internal raw target is not logged.
+No later pressed MOVE corrects it during the final 1.356 s; the source releases
+the existing target before reevaluating/publishing UP, and Android has no post-UP
+business callback. The trace does not prove which platform mechanism produced
+the CURRENT/HISTORY difference, and this is not an equal-input regression claim.
+
+See `slider-endpoint-affine-71/independent-input-audit` for the device observations
+and its 10/10 zero-reverse input/source reconstruction, and `geometry-review` for
+the unshifted raw comparison. Unexplained native 8/7 pt release excursions,
+full visible contours/corners, optics, other widths and independent RangeSlider
+motion remain open. See the alignment document for implementation scope.
+
+The [local library inventory](../../libraries/liquid-glass/README.md) and
+[asset catalog](../../libraries/liquid-glass/asset-catalog.json) describe the
+current candidates for future extraction. They are inventory only, not an
+independently buildable or published library. Existing source attribution and
+unresolved provenance remain preserved; no license change is implied.
 
 Touch observations include UIKit phase, touch ID, `UITouch.timestamp`, main-clock
 delivery time, window geometry, point and normalized coordinates, hit view, and

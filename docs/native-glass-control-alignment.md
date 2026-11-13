@@ -8,7 +8,7 @@
 
 Material Design 与 Liquid Glass 严格分流。Material Design 的单头、双头滑杆恢复默认 M3 的 handle、track、tick 和尺寸，不安装玻璃绘制；保留历史细拖输入修复与原值标记。Material Design 色相条保留原来的满幅彩虹、圆形指示器、双描原值标记及既有输入行为。Switch 使用 M3，分段选项使用原点击路径，Dock 也不会因残留的玻璃 Dock 偏好绕过当前外观。
 
-仅 Liquid Glass 滑杆采用用户指定的 Device Hub 轨道和下方点状刻度：单头及色相滑块 37 × 24 dp，双头按 0.75 等比缩小为 27.75 × 18 dp；两者和原值标记共用横向圆角椭圆轮廓、白色与轻阴影。轨道 8 dp，刻度点 2 dp、位于轨道中心下方 14 dp，交互高度 48 dp。玻璃升降两轴共同缩放，宽高比不变。色相条保留彩虹含义，密集业务档位的刻度按最少 12 dp 间距抽样展示，不改变吸附档数。此前把玻璃几何套到 Material Design 的实现已撤回。
+仅 Liquid Glass 滑杆采用用户指定的 Device Hub 轨道和下方点状刻度：单头及色相滑块 37 × 24 dp，双头按 0.75 等比缩小为 27.75 × 18 dp；两者和原值标记共用横向圆角椭圆轮廓、白色与轻阴影。轨道 8 dp，刻度点 2 dp、位于轨道中心下方 14 dp，交互高度 48 dp。玻璃升降本身两轴共同缩放，单头另叠加独立横纵拖动形变；双头暂保留等比起落。色相条保留彩虹含义，密集业务档位的刻度按最少 12 dp 间距抽样展示，不改变吸附档数。此前把玻璃几何套到 Material Design 的实现已撤回。
 
 Slider 的原生轨迹另证明：视觉镜片中心行程为 `width − 37`，拖值增量却按完整控件宽度计算，首次起拖消耗实测 10 pt。335 pt 的正向与反向共 123 个触点/value 样本可由该映射复现，误差低于 3e−8；该阈值不能认定为 UIKit 内部 touchSlop。新的椭圆玻璃 Slider 保留此已验证的相对拖值映射，视觉 inset 改为当前滑块半宽。原生快反向抬手后的额外 value 漂移机制未证明，未模拟。
 
@@ -293,10 +293,55 @@ Segment端部视觉目标改为物理12dp限幅的既有.55橡皮筋公式，业
 
 68补采使用原生Slider从.75正向、.25反向起步，慢/快共四次独立运行，全部在实际UP前达到1/0，UP后没有业务数值回调。iOS26.5（23F77）、375×667pt、2×；两项原生测试通过，build8.255s、test109.155s。最终手指超过实际业务饱和阈值分别10.75/11.75pt。最后150ms完整held观测中，中心减自身m41后的端部位移在两种速度均为+4.495645/−4.767461pt；采样到的整条Slider及祖先矩形不动。快速约+8.912/−9.006pt的最大外移出现在UP后约67ms，属于释放过程，不能写成held极值。现有记录缺少layer.position、anchorPoint及bounds.origin；该分解也不能命名为已恢复的原生内部target。
 
-冻结65单头参数在68新手势上没有调参、位移缩放或拟合延时。慢正/反全窗口宽高RMSE为.126/.082与.115/.075pt，快正/反为.432/.281与.456/.298pt（同样以原生lift为条件）；快拖最后150ms仍有约.970/.628及1.062/.697pt残差。当前Android视觉目标仍与业务值一起夹住，尚缺上述Slider端部外移。只有两种不相等的excess不足以识别通用端部曲线；下一轮需分开测0/2/5/10pt等实际excess及至少1.2s的稳定按住，不能照搬Segment的12dp参数。
+冻结65单头参数在68新手势上没有调参、位移缩放或拟合延时。慢正/反全窗口宽高RMSE为.126/.082与.115/.075pt，快正/反为.432/.281与.456/.298pt（同样以原生lift为条件）；快拖最后150ms仍有约.970/.628及1.062/.697pt残差。68时Android视觉目标仍与业务值一起夹住，尚缺上述Slider端部外移。只有两种不相等的excess不足以识别通用端部曲线；下一轮需分开测0/2/5/10pt等实际excess及至少1.2s的稳定按住，不能照搬Segment的12dp参数。
 
 69在API36实机原样回放65四控件与68四个饱和Slider轨迹，8项执行通过；40个导出文件及唯一原始视频均核对设备/host SHA。主包SHA256为`611e6653d39aba081d2594c341a7d0c22fdaedb8a491d5ca6bc64087dcb11f0d`，测试包为`50c6fa1b864d980e7e7c872743b613746822da8ad00d3fd7c8d05d510d39d97c`，实际安装hash一致。固定anchor平移、1pt=1dp，保留源时间与路径；实际current重采样和派发仍按系统记录，执行通过不等于逐帧对齐。
 
 同一无拟合延时的真实帧比较，四手势顺序仍为慢正/慢反/快正/快反：Dock中心RMSE从66的7.61/7.36/7.71/7.45降为4.46/4.28/5.12/5.14dp；原Slider为.93/3.66/17.57/8.17dp，快拖宽高误差减小。Segment为2.57/1.36/6.54/9.96dp，快拖中心较66更差，必须保留。两系统实际越界输入和绘制时刻不同，Android重采样current可先于原始outside样本越界；不能仅按原始样本断言端部helper与该误差无关。Toggle本轮未修改，中心误差仍约3.61/3.88/2.18/2.04dp。所有误差均混合实际派发、刷新相位、读取时段与模型残差，不是纯参数误差或可见光学轮廓。
 
-原始证据分别保存在会话artifact的`slider-input-time-67`、`native-slider-saturation-68`和`android-endpoint-fixes-69`，包括独立审计、红绿日志、真实输入、原始视频和逐帧比较；不向日常CI加入采证矩阵。Dock父底座、快速Tab、Slider端部外移和双头独立参考仍待完成，当前不宣称动态1:1验收。
+原始证据分别保存在会话artifact的`slider-input-time-67`、`native-slider-saturation-68`和`android-endpoint-fixes-69`，包括独立审计、红绿日志、真实输入、原始视频和逐帧比较；不向日常CI加入采证矩阵。69当轮的Dock父底座、快速Tab、Slider端部外移和双头独立参考仍待完成，后续Slider工作见下文；当前不宣称动态1:1验收。
+
+69的Segment另有离线观察相位诊断，保存在`android-endpoint-fixes-69/independent-center-model-review`。独立按原方程、实际current delivery及receipt前后括号重放，未修改生产参数或原始比较。固定使用Android前一次实际vsync时，四手势中心RMSE约.05–.39dp；原生公开displayTimestamp下快拖RMSE为1.178/1.228pt，最大3.586/4.607pt。原生getter中点比该timestamp晚约19ms，在getter中点强制模型的快拖RMSE为5.388/5.276pt。两种时钟只是分开报告的诊断，不是已测得的物理显示相位；不能以它们抹去上文真实最近getter配对的大误差，也不能把约20pt峰值唯一归因于弹簧。42/42离线不变量通过，不构成新的设备或光学验收。
+
+### 70：单头Slider持续顶住后的公开位置
+
+`testSwiftUISliderOverdriveLongHold`在同一iOS26.5原生Slider上完成10次独立launch：.75正向/.25反向，名义0/2/5/10pt慢拖及10pt快拖重复，目的地按住1.35s，再保留至少1.2s尾段。构建5.773s、测试152.550s，1项原生测试通过。实际输入以`source=delivery`为准，排除coalesced，不用请求速度代替实际速度；末段位置不变至少1.350s。稳定值只取完整getter括号落在UP前300ms的帧，每次17帧；公开position不能命名为私有动画target。
+
+记录器新增六个公开presentation字段：`positionX`/`positionY`为直接父layer坐标，`anchorPointX`/`anchorPointY`为bounds归一化锚点，`boundsX`/`boundsY`为本地bounds原点；session以`layerGeometryFieldsVersion=1`声明坐标。70中所采stage、UISlider和glass visual element的全部公开几何保持不变，镜片锚点为(.5,.5)，最后300ms的m41为0、bounds为57.35×37.2pt。中心与公开position/锚点/变换的分解逐帧核对通过；未重建缺失wrapper或额外CALayer祖先。
+
+以下excess从实际终点坐标及既有10pt起拖/335pt业务映射计算，位移相对各自最终REST，不是名义请求：
+
+| 方向 | 实际饱和excess（pt） | 稳定held位置偏移（pt） |
+| --- | --- | --- |
+| 正向 | .25 / 2.25 / 5.25 / 10.25 | +.154295 / +1.273258 / +2.641662 / +4.353381 |
+| 反向 | 1.75 / 4.75 / 9.75 | −1.011321 / −2.435056 / −4.206609 |
+
+正反向10pt请求的快慢重复具有相同的实际excess，稳定held位置完全一致。名义零反向实际excess为−.25pt，held fraction为.000746268663，尚未饱和，+.222388pt只是剩余业务行程。该次UP后有0、.000114750030、.000746268663三个数值回调，最后又恢复非零值；最终载体中心同时为38.5pt。两种观察均保留，不能据此推断内部取整或吸附。独立交付/载体审计232/232检查通过。
+
+在看过数据后选定的rubber family `shift=13.62×(1−1/(1+.62425×positiveExcess/13.62))`，以正向.25和10.25pt两点推导，其余70及68的合格饱和held样本也符合，最大绝对残差2.043e−13pt。这是335pt宽、298pt静止镜片行程下的回顾性核对，其他样本不是盲验，也没有证明其他宽度的原生规则。持续按住后，快正/反向释放仍在UP后约84.607/48.781ms出现+8/−7pt中心峰值；末300ms已经静止不能解释这些峰值，现有held公式不构成释放速度模型。
+
+证据在会话artifact的`native-slider-overdrive-70/independent-overdrive-review`及`independent-endpoint-family-review`，包括实际输入、完整载体帧、末300ms、公开位置分解和原始trace哈希。载体bounds与matrix不等于可见alpha轮廓、折射支持域或最终像素。
+
+### 71：端点视觉位置与仿射载体，主机红绿及设备对照
+
+当前工作集将单头thumb拖动的未夹住相对值与已发布业务值分开：只有thumb拖动的视觉目标可以增加上述held外移，业务数值仍夹住；轨道点选和双头沿用原规则。同值父组件回写保留视觉外移，继续外拉不重复发布同一业务值；松手/取消或父值拒绝撤回外移。既有单头加速度形变仍由业务位置驱动，避免用新增端部外移重新激发冻结的形变模型。335dp以外保持相同物理dp响应及13.62dp上限，是响应式实现政策，尚无其他宽度原生证据。这里未模拟未解释的8/7pt释放峰值。
+
+单头绘制工作集保留等比lift的外层触摸/语义盒，将阴影、玻璃和白体放在居中仿射子层，分别应用X/Y形变，零lift释放尾段也继续变形；轨道采样使用完整矩阵补偿。动态可见几何应读取`glass-slider-thumb-carrier`，不能再用刻意保持等比的外层`glass-slider-end`代替。双头和Material Design不采用该单头变换。
+
+原生公开bounds加matrix支持这样的载体分解，但“等比基础胶囊再仿射变换”只是可见轮廓假设，未证明原生内部clip或光学边缘。新增测试分别检查载体轴向/外层稳定、白体肩部像素是否按椭圆变换，以及轨道world纹理补偿；通过这些内部回归也不能据理论曲线声称原生可见四角已对齐。
+
+71主机验证实际记录：旧端点行为在10项测试中真实触发3个断言失败；保留相同最终包围盒而改回圆弧重绘的counterfactual，在白体肩部像素测试真实触发1次断言失败，失败是实际白色像素而非节点缺失或编译错误。首轮集中运行434项，433通过、1失败、0错误/跳过；唯一失败来自测试使用`getUnclippedBoundsInRoot`将变换后位置与未变换layout size拼成矩形，误把57.25dp等比宽当作期望65.9525dp仿射宽。随后只改测试几何读取为实际`boundsInRoot`并按实际density转dp，所有尺寸/中心/owner断言及1dp容差保持原样；补跑3项Thumb测试全部通过、0错误/跳过。同一26s命令成功生成debug和androidTest APK。没有再运行一轮434项全绿，不把两轮拼成新的完整运行。
+
+主机红绿日志、XML及源码恢复哈希保存在会话artifact的`slider-endpoint-affine-71/endpoint-red`、`affine-red-receipt.json`、`green-first`、`affine-green`及`affine-green-build.log`。肩部像素和轨道纹理是在Robolectric native graphics下的内部实现回归，不能代替真实GPU光学或设备逐帧对照。
+
+71在API36手机回放native70全部10份输入，10项仪器测试通过，50份trace文件及唯一原始视频的设备/host哈希一致。实际安装主包SHA256为`6e20a77fcf8c926bda77f960d5b238bad5688c829bf294574e1b04ba33bd6d66`，测试包仍为`50c6fa1b864d980e7e7c872743b613746822da8ad00d3fd7c8d05d510d39d97c`。源独立审计192/192、Android完整性/观测审计152/152通过：10份源共568个去重实际样本（538 main delivery、30 unique coalesced），保持各自原采样间隔、固定anchor平移及1pt=1dp，每次注入均在Android current/history找回。实际current还有额外观察，两系统receipt时刻与current输入不同，不能称为相同实际波形。
+
+以各自最后300ms完整held getter括号相对最终REST比较，9个已饱和样本的中心位移差最大.170985dp/pt；快慢两组10pt请求的Android稳定外移约±4.20168dp。这里减掉各自REST只是独立的端部位移指标，没有改写整条运动。无拟合时间平移的整窗口真实帧比较仍有1.642–5.498dp中心X RMSE，见`slider-endpoint-affine-71/geometry-review/report.json`；读取区间、实际派发和刷新相位的限制保留。这些载体矩形不是独立显示像素、可见四角或材质等价性。
+
+名义零反向须另列：原生held仍未饱和，Android最后pressed CURRENT的实测x为107.350586px，超过按源码机械重建的业务零阈值108px约.649414px（.218290dp）；同一末事件的HISTORY与后续UP均为108.83789px、位于阈值内。独立Float重建的raw fraction分别为−.0006513595581与+.0008404105902，全部pressed current业务回调重建最大误差约1.77e−8；这不是直接记录到的内部raw target。其后约1.356s没有新的pressed MOVE纠正，源码UP分支在重新计算/发布坐标前释放现有目标，Android没有UP后业务回调，最终保留0。原生末delivery为x20pt、held fraction仍.000746268663，UP后另有三次回调。CURRENT与HISTORY差异的具体平台机制尚未证明；不能把这次真实forcing差异写成相同输入下的回归或验收通过。该项10/10源码/输入核对及全部实际输入保存在`independent-input-audit/zero-reverse-causality.json`。
+
+71另对70释放阶段逐帧拆分：快正/反的+8/−7pt峰值来自公开presentation `positionX`，峰值括号内m41为0、变换为单位矩阵，锚点居中，已采父层几何不动，不能由bounds收缩解释。相同excess的快慢手势具有相同稳定held位置，末段约1.36s没有touch delivery，但释放后的公开位置轨迹不同。140/140离线检查及24个输入哈希通过；模型层位置、额外layer祖先和私有交互状态未采集，不能识别唯一速度规律。证据见`slider-endpoint-affine-71/independent-release-mechanism-review`。
+
+本轮仅补足单头held外移及仿射绘制的部分证据；原生长按后8/7pt释放峰值、完整可见轮廓/四角、材质与折射、其他宽度和双头独立动态参考仍未完成。输入/几何独立审计均在`slider-endpoint-affine-71/independent-input-audit`，保留完整观测和不一致项，不称动态1:1。
+
+供后续抽离的[本地Liquid Glass库清单](../libraries/liquid-glass/README.md)与[资产目录](../libraries/liquid-glass/asset-catalog.json)已登记当前资源。现阶段仅为清单，尚非可独立构建的库，也未发布；保留原有来源说明和待核实的来源问题，未更改许可证。后续抽离须另处理依赖边界与来源核对，本次主机测试不构成独立库验证。

@@ -270,6 +270,7 @@ private fun GlassSliderBody(
             .glassGestureOwnership(enabled)
             .pointerInput(enabled, rtl, valueRange, steps, range) {
                 if (!enabled) return@pointerInput
+                val pointerPixelsPerDp = this.density
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
                     val downReceipt = inputTimeNanos()
@@ -317,7 +318,19 @@ private fun GlassSliderBody(
                         val changed = if (selectedIndex == 0) next.coerceAtMost(requested.endInclusive)..requested.endInclusive
                             else requested.start..next.coerceAtLeast(if (range) requested.start else valueRange.start)
                         val selected = if (selectedIndex == 0) changed.start else changed.endInclusive
-                        if (driver.moveContinuously(epoch, fraction(selected), receivedNanos, sampleUptimeMillis) &&
+                        val businessFraction = fraction(selected)
+                        // The raw relative value retains excess after the same
+                        // one-time slop. Only a single-thumb drag may pull its
+                        // lens past the clamped business endpoint; track taps
+                        // and RangeSlider keep their existing value geometry.
+                        val visualFraction = if (!range && dragMapping != null) nativeSliderVisualPosition(
+                            rawFraction = (target - valueRange.start) / span,
+                            businessFraction = businessFraction,
+                            controlWidthDp = size.width / pointerPixelsPerDp,
+                            thumbTravelDp = (size.width - 2 * inset) / pointerPixelsPerDp,
+                        ) else businessFraction
+                        if (driver.moveContinuously(epoch, businessFraction, receivedNanos, sampleUptimeMillis,
+                                visualTarget = visualFraction) &&
                             changed != requested) update(changed)
                     }
                     var released = false

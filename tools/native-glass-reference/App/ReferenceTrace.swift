@@ -64,6 +64,8 @@ final class ReferenceTrace {
             "originUptimeSeconds": origin,
             "originUnixSeconds": originUnixSeconds,
             "frameClock": "captureStartT...captureEndT bracket sequential presentation reads; t is row enqueue time",
+            "layerGeometryFieldsVersion": 1,
+            "layerGeometryCoordinates": "positionX/Y are superlayer points; anchorPointX/Y are unit bounds coordinates; boundsX/Y are local bounds origin points; presentation layer when available",
             "effectiveOpacityScope": "product of presentation opacity along UIView ancestors; excludes extra CALayer ancestors and material shader coverage",
             "coordinates": "window points; normalized coordinates divide by window bounds",
             "tintSRGB": [0.0, 0.65, 0.75, 1.0],
@@ -273,13 +275,17 @@ final class PresentationRecorder: NSObject {
             // properties, selectors, or animation keys are invoked or modified.
             let isMaterial = ["LiquidLens", "TabSelection", "TabBarPlatter", "SegmentLabel", "VisualEffect", "Glass"].contains { name.contains($0) }
             let isMenuMotion = ["Portal", "SDF", "Transform", "ContextMenu"].contains { name.contains($0) }
-            let layer = view.layer.presentation() ?? view.layer
+            let presentationLayer = view.layer.presentation()
+            let layer = presentationLayer ?? view.layer
             let effectiveOpacity = inheritedOpacity * layer.opacity
             let effectiveHidden = inheritedHidden || view.isHidden
             // Language runs retain every ancestor and menu descendant so an animated
             // content child is not mistaken for its final, static outer container.
             if (languageScene && !focused) || isControl || isMaterial || isMenuMotion || !identifier.isEmpty {
-                var rect = layer.convert(layer.bounds, to: nil)
+                let bounds = layer.bounds
+                let position = layer.position
+                let anchorPoint = layer.anchorPoint
+                var rect = layer.convert(bounds, to: nil)
                 if !rect.minX.isFinite || !rect.minY.isFinite || !rect.width.isFinite || !rect.height.isFinite {
                     rect = view.convert(view.bounds, to: window)
                 }
@@ -288,10 +294,13 @@ final class PresentationRecorder: NSObject {
                 views.append([
                     "path": path, "class": name, "identifier": identifier,
                     "x": rect.minX, "y": rect.minY, "w": rect.width, "h": rect.height,
-                    "boundsW": layer.bounds.width, "boundsH": layer.bounds.height,
+                    "boundsW": bounds.width, "boundsH": bounds.height,
+                    "boundsX": bounds.origin.x, "boundsY": bounds.origin.y,
+                    "positionX": position.x, "positionY": position.y,
+                    "anchorPointX": anchorPoint.x, "anchorPointY": anchorPoint.y,
                     "opacity": layer.opacity, "hidden": view.isHidden,
                     "effectiveOpacity": effectiveOpacity, "effectiveHidden": effectiveHidden,
-                    "presentationAvailable": view.layer.presentation() != nil,
+                    "presentationAvailable": presentationLayer != nil,
                     "text": (view as? UILabel)?.text ?? "",
                     "accessibilityLabel": view.accessibilityLabel ?? "",
                     "cornerRadius": layer.cornerRadius, "m11": transform.m11, "m22": transform.m22,

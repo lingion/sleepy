@@ -349,6 +349,56 @@ final class NativeReferenceTests: XCTestCase {
         }
     }
 
+    func testSwiftUISliderOverdriveLongHold() {
+        executionTimeAllowance = 300
+        settleDuration = 1.65
+        // Eight slow terminal samples isolate held position from the deformation
+        // ripple. Two fast repeats test approach-speed dependence at equal excess.
+        let cases: [(speed: String, velocity: Double, excess: CGFloat)] = [
+            ("slow", 90, 0), ("slow", 90, 2), ("slow", 90, 5), ("slow", 90, 10),
+            ("fast", 900, 10)
+        ]
+        for sample in cases {
+            for forward in [true, false] {
+                let initial = forward ? 0.75 : 0.25
+                launch(scene: "slider", background: "grid", initialSlider: initial)
+                let control = app.sliders["swiftui-slider"]
+                XCTAssertTrue(control.waitForExistence(timeout: 5))
+                XCTAssertEqual(control.value as? String, forward ? "75%" : "25%")
+                let window = app.windows.firstMatch.frame
+                let frame = control.frame
+                XCTAssertEqual(window.width, 375, accuracy: 0.5)
+                XCTAssertEqual(frame.width, 335, accuracy: 0.5)
+                let origin = CGPoint(x: frame.minX + 19 + 298 * CGFloat(initial), y: frame.minY + 16)
+                let direction: CGFloat = forward ? 1 : -1
+                // Measured quarter-value anchors plus one-time 10pt slop give
+                // nominal thresholds x=356.25/19.75. Actual delivered coordinates
+                // decide which side of this fractional boundary was reached.
+                let thresholdX = origin.x + direction * (10 + 335 * 0.25)
+                let destination = CGPoint(x: thresholdX + direction * sample.excess, y: origin.y)
+                XCTAssertGreaterThanOrEqual(destination.x, window.minX)
+                XCTAssertLessThanOrEqual(destination.x, window.maxX)
+                let excessLabel = String(format: "%.0f", Double(sample.excess))
+                let label = "slider-overdrive-\(sample.speed)-\(forward ? "forward" : "reverse")-excess-\(excessLabel)pt"
+                captureLanguage(label + "-rest")
+                endpointDrag(control, from: origin, to: destination, velocity: sample.velocity, label: label,
+                             endHoldDuration: 1.35, postCommandTailSeconds: 1.2,
+                             extra: ["control": "swiftui-slider", "initialValue": initial,
+                                     "direction": forward ? "forward" : "reverse",
+                                     "requestedRawExcessPt": sample.excess,
+                                     "nominalBusinessThresholdXPt": thresholdX,
+                                     "coordinateUnits": "actual window pt; no width normalization",
+                                     "initialThumbOriginScope": "68 measured quarter-value REST anchors; verify actual pre-DOWN presentation center",
+                                     "endpointScope": "nominal 0pt boundary may quantize to either side; held value=1/0 and actual excess must be established from delivery trace"])
+                if sample.excess > 0 {
+                    XCTAssertEqual(control.value as? String, forward ? "100%" : "0%")
+                }
+                captureLanguage(label + "-tail")
+                app.terminate()
+            }
+        }
+    }
+
     private func swiftUIEndpointMotion(kind: String) {
         executionTimeAllowance = 65
         settleDuration = 1.65
@@ -435,23 +485,24 @@ final class NativeReferenceTests: XCTestCase {
     }
 
     private func endpointDrag(_ target: XCUIElement, from: CGPoint, to: CGPoint,
-                              velocity: Double, label: String, extra: [String: Any]) {
+                              velocity: Double, label: String, endHoldDuration: TimeInterval = 0.25,
+                              postCommandTailSeconds: TimeInterval = 1.65, extra: [String: Any]) {
         let root = app.coordinate(withNormalizedOffset: .zero)
         let start = root.withOffset(CGVector(dx: from.x, dy: from.y))
         let end = root.withOffset(CGVector(dx: to.x, dy: to.y))
         var metadata = extra
         metadata.merge(["from": xy(from), "to": xy(to), "pressDuration": 0.45,
-                        "requestedRawVelocity": velocity, "endHoldDuration": 0.25,
-                        "minimumPostCommandTailSeconds": 1.65,
+                        "requestedRawVelocity": velocity, "endHoldDuration": endHoldDuration,
+                        "minimumPostCommandTailSeconds": postCommandTailSeconds,
                         "velocityScope": "XCUIGestureVelocity request; actual sampleT waveform determines delivered velocity; not acceleration"]) { _, new in new }
         request(label, kind: "endpointStraightDrag", target: target, extra: metadata)
         XCTContext.runActivity(named: label) { _ in
             start.press(forDuration: 0.45, thenDragTo: end,
-                        withVelocity: XCUIGestureVelocity(rawValue: CGFloat(velocity)), thenHoldForDuration: 0.25)
+                        withVelocity: XCUIGestureVelocity(rawValue: CGFloat(velocity)), thenHoldForDuration: endHoldDuration)
         }
         // XCUITest's quiescence wait is part of the real intergesture gap. The
         // extra tail is a lower bound; exports preserve every actual sampleT.
-        Thread.sleep(forTimeInterval: 1.65)
+        Thread.sleep(forTimeInterval: postCommandTailSeconds)
     }
 
     func testStaticOpticsFineGridLight() { staticOptics(background: "fine_grid", style: "light") }

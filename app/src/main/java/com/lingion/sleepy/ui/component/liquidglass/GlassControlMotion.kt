@@ -70,6 +70,9 @@ internal class GlassControlMotion(
     private var dropping by mutableStateOf(false)
     private var deformationInteraction = false
     private var distancePerPositionDp = travelDistanceDp.takeIf { it.isFinite() && it != 0f } ?: 0f
+    // The locked native deformation profile was driven by business travel.
+    // A separate visual endpoint target must not add forcing to that profile.
+    private var deformationTargetPosition = initialPosition
     private val dragDeformation = NativeGlassDragDeformation(
         when (spec) {
             GlassControlMotionSpec.Dock -> NativeGlassDragDeformation.Spec.Dock
@@ -92,22 +95,28 @@ internal class GlassControlMotion(
         val measured = distanceDp.takeIf { it.isFinite() && it != 0f } ?: 0f
         if (measured == distancePerPositionDp) return
         distancePerPositionDp = measured
-        dragDeformation.reset(position.target * measured)
+        dragDeformation.reset(deformationTargetPosition * measured)
         jelly.jumpTo(0f)
     }
 
-    fun update(target: Float, pressed: Boolean, dragging: Boolean, activation: Int = 0) {
+    /** [target] drives business deformation; [visualTarget] only drives lens follow. */
+    fun update(target: Float, pressed: Boolean, dragging: Boolean, activation: Int = 0, visualTarget: Float = target) {
         val activated = activation > this.activation
         val interactiveInput = pressed || dragging || activated
-        val silentExternalChange = target != position.target && !interactiveInput && !this.pressed && !this.dragging
+        val silentExternalChange = target != deformationTargetPosition && !interactiveInput && !this.pressed && !this.dragging
         if (silentExternalChange) {
             deformationInteraction = false
             dragDeformation.reset(target * distancePerPositionDp)
             jelly.jumpTo(0f)
         } else if (interactiveInput && !deformationInteraction) {
-            dragDeformation.reset(position.value * distancePerPositionDp)
+            // Normally the existing visual position is also the interaction
+            // baseline. An explicitly separated endpoint target can sit beyond
+            // business travel, including after a scale-zero held frame.
+            val baseline = if (position.target != deformationTargetPosition) deformationTargetPosition else position.value
+            dragDeformation.reset(baseline * distancePerPositionDp)
             deformationInteraction = true
         }
+        deformationTargetPosition = target
         this.activation = activation
         if (pressed && !this.pressed || activated) {
             releasePhase = if (activated) spec.activationRelease else spec.release
@@ -124,8 +133,8 @@ internal class GlassControlMotion(
             dropping = coalescedTap
             if (!coalescedTap) elevation.springTo(0f, spec.fall)
         }
-        if (position.target != target || this.dragging != dragging && position.isRunning) {
-            position.springTo(target, if (dragging) FlClashSprings.FollowSpring else FlClashSprings.TravelSpring)
+        if (position.target != visualTarget || this.dragging != dragging && position.isRunning) {
+            position.springTo(visualTarget, if (dragging) FlClashSprings.FollowSpring else FlClashSprings.TravelSpring)
         }
         this.pressed = pressed
         this.dragging = dragging
@@ -135,7 +144,7 @@ internal class GlassControlMotion(
         position.tickDelta(dt)
         elevation.tickDelta(dt)
         if (distancePerPositionDp != 0f && deformationInteraction) {
-            dragDeformation.advance(dt, position.target * distancePerPositionDp)
+            dragDeformation.advance(dt, deformationTargetPosition * distancePerPositionDp)
             // Preserve the existing observable drawing state without another
             // spring filtering an already integrated deformation trajectory.
             jelly.jumpTo(dragDeformation.x)
@@ -143,7 +152,7 @@ internal class GlassControlMotion(
             jelly.isRunning = dragDeformation.isRunning
             if (!dragDeformation.isRunning && !pressed && !dragging) deformationInteraction = false
         } else if (!deformationInteraction) {
-            dragDeformation.reset(position.target * distancePerPositionDp)
+            dragDeformation.reset(deformationTargetPosition * distancePerPositionDp)
             jelly.jumpTo(0f)
         }
         if (elevation.target == 1f && lift >= FlClashDockPhysics.LIFT_SNAP && elevation.velocity <= 0f) {
@@ -166,7 +175,7 @@ internal class GlassControlMotion(
         position.jumpTo(position.target)
         elevation.jumpTo(if (pressed) 1f else 0f)
         jelly.jumpTo(0f)
-        dragDeformation.reset(position.target * distancePerPositionDp)
+        dragDeformation.reset(deformationTargetPosition * distancePerPositionDp)
         deformationInteraction = false
         dropping = false
         riseHasPeaked = pressed
@@ -194,7 +203,7 @@ internal class TimedGlassControlMotion(
     val motion = GlassControlMotion(initialPosition, spec, travelDistanceDp)
     private sealed interface Input {
         data class Begin(val epoch: Long, val target: Float, val pressed: Boolean, val dragging: Boolean) : Input
-        data class Move(val epoch: Long, val target: Float, val dragging: Boolean) : Input
+        data class Move(val epoch: Long, val target: Float, val dragging: Boolean, val visualTarget: Float = target) : Input
         data class Release(val epoch: Long, val target: Float, val activate: Boolean) : Input
         data class Cancel(val epoch: Long, val target: Float) : Input
         data class Selection(val target: Float, val activate: Boolean, val enabled: Boolean) : Input
@@ -228,14 +237,18 @@ internal class TimedGlassControlMotion(
         if (isCurrent(epoch)) clock.enqueue(Input.Move(epoch, target, dragging), receivedNanos, sampleUptimeMillis)
     }
 
-    /** A slider publishes during its drag; matching parent echoes retain this epoch. */
-    fun moveContinuously(epoch: Long, target: Float, receivedNanos: Long, sampleUptimeMillis: Long): Boolean {
+    /**
+     * A Slider publishes [target] during its drag; matching parent echoes retain
+     * this epoch and its independent [visualTarget]. Only business changes alter
+     * the requested value/revision, while every visual move still reaches input.
+     */
+    fun moveContinuously(epoch: Long, target: Float, receivedNanos: Long, sampleUptimeMillis: Long, visualTarget: Float = target): Boolean {
         if (!isCurrent(epoch)) return false
         if (requestedPosition != target) {
             requestedPosition = target
             requestRevision++
         }
-        clock.enqueue(Input.Move(epoch, target, dragging = true), receivedNanos, sampleUptimeMillis)
+        clock.enqueue(Input.Move(epoch, target, dragging = true, visualTarget = visualTarget), receivedNanos, sampleUptimeMillis)
         return true
     }
 
@@ -296,7 +309,7 @@ internal class TimedGlassControlMotion(
                         motion.update(input.target, held, input.dragging, activation)
                     }
                     is Input.Move -> if (activeEpoch == input.epoch) {
-                        motion.update(input.target, held, input.dragging, activation)
+                        motion.update(input.target, held, input.dragging, activation, visualTarget = input.visualTarget)
                     }
                     is Input.Release -> if (activeEpoch == input.epoch) {
                         activeEpoch = null
