@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.view.PixelCopy
 import android.view.View
 import android.view.Window
@@ -182,7 +183,15 @@ internal data class OpticalCaptureWindow(val view: View, val root: View, val win
         } else {
             check(Build.VERSION.SDK_INT >= 34) { "Actual Popup PixelCopy requires API 34" }
             // Public API uses this attached View's own ViewRoot surface, never its Activity surface.
-            val request = PixelCopy.Request.Builder.ofWindow(root).setDestinationBitmap(bitmap).build()
+            // ofWindow(View) otherwise copies surfaceInsets too, squeezing its
+            // shadow-bearing surface into the root-sized destination. Supply
+            // window coordinates; PixelCopy itself applies the surface insets.
+            val rootLocation = IntArray(2)
+            InstrumentationRegistry.getInstrumentation().runOnMainSync { root.getLocationInWindow(rootLocation) }
+            val sourceRect = android.graphics.Rect(rootLocation[0], rootLocation[1],
+                rootLocation[0] + root.width, rootLocation[1] + root.height)
+            val request = PixelCopy.Request.Builder.ofWindow(root).setSourceRect(sourceRect)
+                .setDestinationBitmap(bitmap).build()
             PixelCopy.request(request, { command -> Handler(Looper.getMainLooper()).post(command) }) {
                 result = it.status
                 copied.countDown()
@@ -200,6 +209,102 @@ internal fun Bitmap.saveOpticalPng(file: java.io.File) {
 internal fun opticalScreenCapture(): Bitmap = checkNotNull(
     InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot(),
 ) { "Composited display screenshot unavailable" }
+
+internal data class OpticalBackgroundScreen(val bitmap: Bitmap, val verification: JSONObject)
+
+/** A committed Activity frame does not fence a disappearing Dialog's display surface. */
+internal fun awaitOpticalBackgroundScreen(
+    activity: OpticalCaptureWindow,
+    expected: Bitmap,
+    density: Float,
+    directory: java.io.File,
+    stem: String,
+): OpticalBackgroundScreen = awaitOpticalCommittedScreen(activity, expected, density, directory, stem, plainBackground = true)
+
+/** A committed Window and the composited display must describe the same static scene. */
+internal fun awaitOpticalSurfaceScreen(
+    surface: OpticalCaptureWindow,
+    expected: Bitmap,
+    density: Float,
+    directory: java.io.File,
+    stem: String,
+): OpticalBackgroundScreen = awaitOpticalCommittedScreen(surface, expected, density, directory, stem, plainBackground = false)
+
+private fun awaitOpticalCommittedScreen(
+    activity: OpticalCaptureWindow,
+    expected: Bitmap,
+    density: Float,
+    directory: java.io.File,
+    stem: String,
+    plainBackground: Boolean,
+): OpticalBackgroundScreen {
+    val rootOnScreen = IntArray(2)
+    val rootInWindow = IntArray(2)
+    InstrumentationRegistry.getInstrumentation().runOnMainSync {
+        activity.root.getLocationOnScreen(rootOnScreen)
+        activity.root.getLocationInWindow(rootInWindow)
+    }
+    // Avoid status/navigation icons while covering the center where an outgoing
+    // dialog or its dim layer would otherwise contaminate a plain-background ROI.
+    val insetX = if (plainBackground) (16 * density).toInt().coerceAtMost(expected.width / 4) else 0
+    val insetY = if (plainBackground) (64 * density).toInt().coerceAtMost(expected.height / 4) else 0
+    val step = (2 * density).toInt().coerceAtLeast(1)
+    val attempts = JSONArray()
+    val started = SystemClock.uptimeMillis()
+    var savedRejected = false
+    while (true) {
+        val screen = opticalScreenCapture()
+        var samples = 0
+        var matched = 0
+        var maxError = 0
+        var totalError = 0L
+        for (y in insetY until expected.height - insetY step step) {
+            val sy = y + rootOnScreen[1] - rootInWindow[1]
+            if (sy !in 0 until screen.height) continue
+            for (x in insetX until expected.width - insetX step step) {
+                val sx = x + rootOnScreen[0] - rootInWindow[0]
+                if (sx !in 0 until screen.width) continue
+                val a = expected.getPixel(x, y)
+                // Transparent rounded edges depend on the window below and its
+                // dim layer; only opaque surface pixels have a direct match.
+                if (!plainBackground && (a ushr 24) < 254) continue
+                val b = screen.getPixel(sx, sy)
+                val error = (0..2).maxOf { channel ->
+                    abs(((a ushr (channel * 8)) and 255) - ((b ushr (channel * 8)) and 255))
+                }
+                samples++
+                if (error <= 3) matched++
+                maxError = max(maxError, error)
+                totalError += error
+            }
+        }
+        val fraction = if (samples == 0) 0.0 else matched.toDouble() / samples
+        attempts.put(JSONObject().put("uptime_ms", SystemClock.uptimeMillis())
+            .put("samples", samples).put("matched_fraction_rgb_tolerance3", fraction)
+            .put("max_channel_error", maxError)
+            .put("mean_max_channel_error", if (samples == 0) JSONObject.NULL else totalError.toDouble() / samples))
+        val verification = JSONObject().put("policy", if (plainBackground)
+            "Activity PixelCopy vs composited display at actual root screen origin; >=99.5% sampled interior pixels within RGB3; display readiness only, not material parity"
+            else "Committed surface PixelCopy vs composited display at actual root screen origin; >=99.5% sampled alpha>=254 pixels within RGB3; transparent edges excluded; frame readiness only, not material parity")
+            .put("root_screen_origin_px", JSONArray(rootOnScreen.toList()))
+            .put("root_window_origin_px", JSONArray(rootInWindow.toList()))
+            .put("interior_insets_px", JSONArray(listOf(insetX, insetY))).put("sample_step_px", step)
+            .put("attempts", attempts)
+        if (samples > 0 && fraction >= .995) return OpticalBackgroundScreen(screen, verification)
+        if (!savedRejected) {
+            screen.saveOpticalPng(java.io.File(directory, "$stem-rejected-display.png"))
+            savedRejected = true
+        }
+        if (SystemClock.uptimeMillis() - started >= 3_000) {
+            screen.saveOpticalPng(java.io.File(directory, "$stem-timeout-display.png"))
+            java.io.File(directory, "$stem-display-readiness.json").writeText(verification.toString(2))
+            screen.recycle()
+            error("$stem: composited display did not reach the committed ${if (plainBackground) "plain Activity background" else "opaque surface pixels"}")
+        }
+        screen.recycle()
+        SystemClock.sleep(32)
+    }
+}
 
 internal fun writeOpticalMetricsCsv(file: java.io.File, captures: JSONArray) {
     file.bufferedWriter().use { csv ->

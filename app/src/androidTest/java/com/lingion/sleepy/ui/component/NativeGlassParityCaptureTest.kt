@@ -32,7 +32,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.DropdownMenuItem
+import com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
@@ -62,6 +62,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
@@ -79,6 +80,7 @@ import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
 import com.lingion.sleepy.ui.component.liquidglass.GlassBackground
 import com.lingion.sleepy.ui.component.liquidglass.DockLensBoundsInRootPx
+import com.lingion.sleepy.ui.component.liquidglass.LocalDockInputTimeNanos
 import com.lingion.sleepy.ui.component.liquidglass.GlassHost
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton
 import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog
@@ -139,6 +141,8 @@ class NativeGlassParityCaptureTest {
     private lateinit var window: Window
     private lateinit var fixtureActivity: Activity
     private var density = 1f
+    private var opticalFontScale = 1f
+    private var opticalSystemFontScale = 1f
     private var valueDescription = ""
     private var pointer = Offset.Zero
     private var pointerDown = false
@@ -172,8 +176,19 @@ class NativeGlassParityCaptureTest {
                                     val showControls: Boolean = true) {
         val name get() = "${background.name}-${if (dark) "dark" else "light"}-${surface.name}"
     }
+    private data class OpticalContentDensityObservation(
+        val scene: OpticalScene, val slot: String, val density: Float, val fontScale: Float,
+        val view: View, val root: View, val uptimeMs: Long,
+    ) {
+        fun json() = JSONObject().put("scene", scene.name).put("surface", scene.surface.name)
+            .put("slot", slot).put("density", density).put("font_scale", fontScale)
+            .put("view_class", view.javaClass.name).put("view_identity", System.identityHashCode(view))
+            .put("root_class", root.javaClass.name).put("root_identity", System.identityHashCode(root))
+            .put("wall_uptime_ms", uptimeMs)
+    }
     private var opticalActivity: OpticalCaptureWindow? = null
     private var opticalDialog: OpticalCaptureWindow? = null
+    private val opticalContentDensityObservations = ConcurrentLinkedQueue<OpticalContentDensityObservation>()
     private val opticalPresentationEvents = ArrayList<String>()
     private val opticalPresentationTrace = ConcurrentLinkedQueue<JSONObject>()
     private var opticalPresentationTextColors: Map<String, Int> = emptyMap()
@@ -214,13 +229,25 @@ class NativeGlassParityCaptureTest {
             .put("selected_surfaces", JSONArray(surfaces.map { it.name })).put("selected_states", JSONArray(states))
             .put("fixture_scope", "Actual product GlassTopAppBar/buttons/Dock/common controls, GlassModalBottomSheet share/edit carriers, and opt-in GlassDropdownMenu/GlassAlertDialog; not a full screen data-flow test")
             .put("capture_sources", "PixelCopy of actual Activity/Dialog Window or API34+ attached Popup ViewRoot after HWUI commit, plus UiAutomation composited-display screenshot; both are saved separately")
+            .put("content_density_policy", "Fixture-only fontScale1 is explicitly provided inside actual Popup content, each Alert slot and Sheet content; SideEffect reads are asserted against the captured root and exported per capture")
             .put("baseline_policy", "Plain background before any optical controls. Home window metrics use same-window baseline. Popup/Dialog surface metrics have no comparable surface baseline; display metrics compare the same full display background at measured screen coordinates, including any product scrim.")
             .put("acceptance", "No single background or scalar metric proves parity. Review every input, theme and carrier. Center/edge RGB, luminance, saturation and channel gradients are descriptive, not inferred opacity/dispersion or pass thresholds.")
             .put("clock", "Compose mainClock static snapshots; presentation taps wait for recomposition, advance one frame to start popup animation, then settle640ms. Held after640ms without movement; not natural-time motion evidence or a product-fix assertion.")
-            .put("presentation_fixture", "Menu anchor [126.5,411.5,122.5,33.5]dp and public offset [-63.5,-146]dp align its top-left with native [63,299]pt on the larger Android display; actual Material row/pane dimensions are unmodified. Content follows observed native above-anchor display order Delete/Second action/First action. Alert title/message/actions match native. Actual root/screen rectangles are exported; dimensions and backing controls differ from iOS.")
+            .put("presentation_fixture", "Menu anchor [126.5,411.5,122.5,33.5]dp and public offset [-63.5,-146]dp align its top-left with native [63,299]pt on the larger Android display. Liquid Glass uses measured 42dp rows plus 10dp top/bottom insets; Material Design retains M3 dimensions. Content follows observed native above-anchor display order Delete/Second action/First action. Alert title/message/actions use the measured native layout. Actual root/screen rectangles are exported; backing controls and font rasterization differ from iOS.")
             .put("baselines", baselines).put("captures", captures).put("presentation_actions", presentationActions)
         val scene = mutableStateOf(OpticalScene(OpticalBackground.fine_grid, false, showControls = false))
-        compose.setContent { OpticalFixture(scene.value) }
+        compose.setContent {
+            val systemDensity = LocalDensity.current
+            SideEffect { opticalSystemFontScale = systemDensity.fontScale }
+            // The native optical reference uses its default content-size category.
+            // Normalize only this measuring fixture, preserving the user's setting.
+            CompositionLocalProvider(
+                LocalDensity provides Density(systemDensity.density, fontScale = 1f),
+                LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L },
+            ) {
+                OpticalFixture(scene.value)
+            }
+        }
         compose.waitForIdle()
         compose.mainClock.autoAdvance = false
         try {
@@ -231,13 +258,20 @@ class NativeGlassParityCaptureTest {
                 val activity = checkNotNull(opticalActivity)
                 assertTrue("Static optics require hardware acceleration", activity.root.isHardwareAccelerated)
                 val baselineWindow = activity.capture()
-                val baselineScreen = opticalScreenCapture()
                 val baselineName = "${background.name}-${if (dark) "dark" else "light"}-background"
+                baselineWindow.saveOpticalPng(File(directory, "$baselineName-window.png"))
+                val readyScreen = try {
+                    awaitOpticalBackgroundScreen(activity, baselineWindow, density, directory, baselineName)
+                } catch (failure: Throwable) {
+                    baselineWindow.recycle()
+                    throw failure
+                }
+                val baselineScreen = readyScreen.bitmap
                 try {
-                    baselineWindow.saveOpticalPng(File(directory, "$baselineName-window.png"))
                     baselineScreen.saveOpticalPng(File(directory, "$baselineName-screen.png"))
                     baselines.put(JSONObject().put("background", background.name).put("dark", dark)
-                        .put("window_png", "$baselineName-window.png").put("screen_png", "$baselineName-screen.png"))
+                        .put("window_png", "$baselineName-window.png").put("screen_png", "$baselineName-screen.png")
+                        .put("display_readiness", readyScreen.verification))
                     for (surface in surfaces) {
                         val current = OpticalScene(background, dark, surface)
                         compose.runOnIdle { opticalPresentationEvents.clear(); scene.value = current }
@@ -270,6 +304,8 @@ class NativeGlassParityCaptureTest {
         } finally {
             compose.mainClock.autoAdvance = true
             File(directory, "matrix.json").writeText(manifest.put("density", density)
+                .put("font_scale", opticalFontScale).put("system_font_scale", opticalSystemFontScale)
+                .put("content_density_observations", JSONArray(opticalContentDensityObservations.map { it.json() }))
                 .put("presentation_trace", JSONArray(opticalPresentationTrace.toList())).toString(2))
             writeOpticalMetricsCsv(File(directory, "optical-metrics.csv"), captures)
         }
@@ -342,10 +378,11 @@ class NativeGlassParityCaptureTest {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable private fun OpticalFixture(scene: OpticalScene) {
         val view = LocalView.current
-        val currentDensity = LocalDensity.current.density
+        val currentDensity = LocalDensity.current
         SideEffect {
             opticalActivity = OpticalCaptureWindow.from(view)
-            density = currentDensity
+            density = currentDensity.density
+            opticalFontScale = currentDensity.fontScale
             if (!scene.showControls || scene.surface == OpticalSurface.home) opticalDialog = null
         }
         SleepyThemeProvider(darkTheme = scene.dark, themeKey = ThemePresets.KEY_DEFAULT) {
@@ -374,25 +411,27 @@ class NativeGlassParityCaptureTest {
                                 )
                             }
                         } else if (scene.surface.presentation) {
-                            OpticalPresentation(scene.surface)
+                            OpticalPresentation(scene, currentDensity)
                         } else {
                             val state = rememberBottomSheetState(initialValue = SheetValue.Expanded,
                                 enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
                             GlassModalBottomSheet(onDismissRequest = {}, sheetState = state,
                                 modifier = Modifier.testTag("static-sheet-carrier")) {
-                                val dialogView = LocalView.current
-                                SideEffect { opticalDialog = OpticalCaptureWindow.from(dialogView) }
-                                Column(Modifier.fillMaxWidth().height(420.dp).padding(24.dp).testTag("static-sheet-content"),
-                                    verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically) {
-                                        Text(if (scene.surface == OpticalSurface.share_sheet) "Share schedule" else "Adjust course",
-                                            style = MaterialTheme.typography.titleLarge)
-                                        GlassIconButton({}, Modifier.testTag("static-sheet-icon")) {
-                                            Icon(if (scene.surface == OpticalSurface.share_sheet) Icons.Filled.Share else Icons.Filled.Edit, "Action")
+                                OpticalMeasuredContent(scene, "sheet-content", currentDensity) {
+                                    val dialogView = LocalView.current
+                                    SideEffect { opticalDialog = OpticalCaptureWindow.from(dialogView) }
+                                    Column(Modifier.fillMaxWidth().height(420.dp).padding(24.dp).testTag("static-sheet-content"),
+                                        verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically) {
+                                            Text(if (scene.surface == OpticalSurface.share_sheet) "Share schedule" else "Adjust course",
+                                                style = MaterialTheme.typography.titleLarge)
+                                            GlassIconButton({}, Modifier.testTag("static-sheet-icon")) {
+                                                Icon(if (scene.surface == OpticalSurface.share_sheet) Icons.Filled.Share else Icons.Filled.Edit, "Action")
+                                            }
                                         }
+                                        OpticalCommonControls()
                                     }
-                                    OpticalCommonControls()
                                 }
                             }
                         }
@@ -402,7 +441,8 @@ class NativeGlassParityCaptureTest {
         }
     }
 
-    @Composable private fun OpticalPresentation(surface: OpticalSurface) {
+    @Composable private fun OpticalPresentation(scene: OpticalScene, measuringDensity: Density) {
+        val surface = scene.surface
         var visible by remember { mutableStateOf(false) }
         val colors = MaterialTheme.colorScheme
         SideEffect {
@@ -428,13 +468,15 @@ class NativeGlassParityCaptureTest {
                     GlassDropdownMenu(visible, { dismiss("dismissed") },
                         modifier = Modifier.width(250.dp).testTag(surface.carrierTag),
                         offset = DpOffset((-63.5).dp, (-146).dp)) {
-                        val popupView = LocalView.current
-                        SideEffect { opticalDialog = OpticalCaptureWindow.fromPopup(popupView) }
-                        for ((action, label) in listOf("delete" to "Delete", "second" to "Second action", "first" to "First action")) {
-                            DropdownMenuItem(text = { Text(label,
-                                color = if (action == "delete") MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface) },
-                                onClick = { dismiss(action) }, modifier = Modifier.testTag("static-menu-$action")
-                                    .observeOpticalPointer("static-menu-$action"))
+                        OpticalMeasuredContent(scene, "menu-content", measuringDensity) {
+                            val popupView = LocalView.current
+                            SideEffect { opticalDialog = OpticalCaptureWindow.fromPopup(popupView) }
+                            for ((action, label) in listOf("delete" to "Delete", "second" to "Second action", "first" to "First action")) {
+                                GlassDropdownMenuItem(text = { Text(label,
+                                    color = if (action == "delete") MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface) },
+                                    onClick = { dismiss(action) }, modifier = Modifier.testTag("static-menu-$action")
+                                        .observeOpticalPointer("static-menu-$action"))
+                            }
                         }
                     }
                 }
@@ -442,21 +484,70 @@ class NativeGlassParityCaptureTest {
             if (surface == OpticalSurface.alert && visible) {
                 GlassAlertDialog({ dismiss("dismissed") },
                     modifier = Modifier.testTag(surface.carrierTag),
-                    title = { Text("Native Alert") },
-                    text = { Text("System-provided alert, controls, material, and transition.") },
+                    title = {
+                        OpticalMeasuredContent(scene, "alert-title", measuringDensity) {
+                            Text("Native Alert", Modifier.testTag("static-alert-title"))
+                        }
+                    },
+                    text = {
+                        OpticalMeasuredContent(scene, "alert-body", measuringDensity) {
+                            Text("System-provided alert, controls, material, and transition.", Modifier.testTag("static-alert-body"))
+                        }
+                    },
                     confirmButton = {
-                        val dialogView = LocalView.current
-                        SideEffect { opticalDialog = OpticalCaptureWindow.from(dialogView) }
-                        GlassTextButton({ dismiss("confirm") }, Modifier.testTag("static-alert-confirm")
-                            .observeOpticalPointer("static-alert-confirm")) { Text("Confirm") }
+                        OpticalMeasuredContent(scene, "alert-confirm", measuringDensity) {
+                            val dialogView = LocalView.current
+                            SideEffect { opticalDialog = OpticalCaptureWindow.from(dialogView) }
+                            GlassTextButton({ dismiss("confirm") }, Modifier.testTag("static-alert-confirm")
+                                .observeOpticalPointer("static-alert-confirm")) { Text("Confirm") }
+                        }
                     },
                     dismissButton = {
-                        GlassTextButton({ dismiss("cancel") }, Modifier.testTag("static-alert-cancel")
-                            .observeOpticalPointer("static-alert-cancel")) { Text("Cancel") }
+                        OpticalMeasuredContent(scene, "alert-cancel", measuringDensity) {
+                            GlassTextButton({ dismiss("cancel") }, Modifier.testTag("static-alert-cancel")
+                                .observeOpticalPointer("static-alert-cancel")) { Text("Cancel") }
+                        }
                     })
             }
         }
     }
+
+    /** New Android windows provide density again; normalize inside their actual content. */
+    @Composable private fun OpticalMeasuredContent(
+        scene: OpticalScene, slot: String, measuringDensity: Density, content: @Composable () -> Unit,
+    ) {
+        // No layout node is added, preserving action-row parent data and product geometry.
+        CompositionLocalProvider(LocalDensity provides measuringDensity) {
+            val actualDensity = LocalDensity.current
+            val actualView = LocalView.current
+            SideEffect {
+                opticalContentDensityObservations.add(OpticalContentDensityObservation(
+                    scene, slot, actualDensity.density, actualDensity.fontScale,
+                    actualView, actualView.rootView, SystemClock.uptimeMillis(),
+                ))
+            }
+            content()
+        }
+    }
+
+    private fun verifiedOpticalContentDensity(scene: OpticalScene, surface: OpticalCaptureWindow): JSONArray =
+        compose.runOnIdle {
+            val requiredSlots = when (scene.surface) {
+                OpticalSurface.home -> emptyList()
+                OpticalSurface.menu -> listOf("menu-content")
+                OpticalSurface.alert -> listOf("alert-title", "alert-body", "alert-confirm", "alert-cancel")
+                OpticalSurface.share_sheet, OpticalSurface.edit_sheet -> listOf("sheet-content")
+            }
+            val actual = opticalContentDensityObservations.filter { it.scene == scene }.associateBy { it.slot }
+            JSONArray(requiredSlots.map { slot ->
+                val observed = checkNotNull(actual[slot]) { "${scene.name}: missing actual $slot density observation" }
+                assertTrue("${scene.name}: $slot belongs to captured surface", observed.root === surface.root)
+                assertTrue("${scene.name}: $slot is attached", observed.view.isAttachedToWindow)
+                assertEquals("${scene.name}: $slot actual font scale", 1f, observed.fontScale, 0f)
+                assertEquals("${scene.name}: $slot actual density", density, observed.density, .0001f)
+                observed.json()
+            })
+        }
 
     @Composable private fun OpticalCommonControls() {
         var checked by remember { mutableStateOf(true) }
@@ -532,18 +623,28 @@ class NativeGlassParityCaptureTest {
                                baselineName: String, baselineWindow: Bitmap, baselineScreen: Bitmap) {
         compose.waitForIdle()
         val surface = if (scene.surface == OpticalSurface.home) checkNotNull(opticalActivity) else checkNotNull(opticalDialog)
+        val contentDensity = verifiedOpticalContentDensity(scene, surface)
         val origin = surface.origin()
         val screenOrigin = surface.screenOrigin()
         val windowBitmap = surface.capture()
-        val screenBitmap = opticalScreenCapture()
         val stem = "${scene.name}-$phase"
+        val readyScreen = try {
+            if (scene.surface.presentation) awaitOpticalSurfaceScreen(surface, windowBitmap, density, directory, stem)
+            else OpticalBackgroundScreen(opticalScreenCapture(), JSONObject().put("policy", "Legacy non-presentation capture; no per-surface display convergence checked"))
+        } catch (failure: Throwable) {
+            windowBitmap.saveOpticalPng(File(directory, "$stem-window.png"))
+            windowBitmap.recycle()
+            throw failure
+        }
+        val screenBitmap = readyScreen.bitmap
         try {
             windowBitmap.saveOpticalPng(File(directory, "$stem-window.png"))
             screenBitmap.saveOpticalPng(File(directory, "$stem-screen.png"))
             val gpuVisibility = if (scene.surface.presentation)
                 verifyOpticalPresentationGpu(scene, phase, windowBitmap, origin) else JSONArray()
             val measurements = JSONArray()
-            val tags = if (scene.surface.presentation) listOf(scene.surface.carrierTag) + scene.surface.heldTags
+            val tags = if (scene.surface.presentation) listOf(scene.surface.carrierTag) + scene.surface.heldTags +
+                (if (scene.surface == OpticalSurface.alert) listOf("static-alert-title", "static-alert-body") else emptyList())
             else (if (scene.surface == OpticalSurface.home) listOf(
                 "static-toolbar", "static-icon-share", "static-icon-edit", "static-dock", "dock-lens",
             ) else listOf("static-sheet-carrier", "static-sheet-content", "static-sheet-icon")) +
@@ -575,6 +676,8 @@ class NativeGlassParityCaptureTest {
                 })
                 .put("window_png", "$stem-window.png").put("screen_png", "$stem-screen.png")
                 .put("window_size_px", JSONArray(listOf(windowBitmap.width, windowBitmap.height)))
+                .put("display_readiness", readyScreen.verification)
+                .put("content_density_observations", contentDensity)
                 .put("gpu_visibility", gpuVisibility)
                 .put("presentation_anchor_screen_rect_px", anchorRect?.let {
                     JSONArray(listOf(it.left, it.top, it.right, it.bottom))
@@ -617,7 +720,11 @@ class NativeGlassParityCaptureTest {
         frames.appendLine("background,control,scenario,phase,frame,compose_ms,gesture_compose_ms,declared_injected_ms,wall_elapsed_ms,pointer_down,input_x_dp,input_y_dp,control_x_dp,control_y_dp,control_w_dp,control_h_dp,lens_x_dp,lens_y_dp,lens_w_dp,lens_h_dp,lens_geometry_source,value,png,crop_png")
         inputs.appendLine("background,control,scenario,event,declared_injected_ms,compose_ms,x_dp,y_dp,requested_delta_ms,value,observation,wall_elapsed_ms")
         wallStartNs = SystemClock.elapsedRealtimeNanos()
-        compose.setContent { ReferenceFixture(scene.value) }
+        compose.setContent {
+            CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }) {
+                ReferenceFixture(scene.value)
+            }
+        }
         compose.waitForIdle()
         compose.mainClock.autoAdvance = false
         writeMetadata(directory, backgrounds, controls)
