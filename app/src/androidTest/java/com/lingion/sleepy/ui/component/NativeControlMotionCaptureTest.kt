@@ -2,14 +2,19 @@ package com.lingion.sleepy.ui.component
 
 import android.app.Activity
 import android.content.ContextWrapper
+import android.hardware.display.DisplayManager
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
+import android.provider.Settings
 import android.view.Choreographer
 import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import android.view.WindowManager
 import android.widget.FrameLayout
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -116,7 +121,7 @@ class NativeControlMotionCaptureTest {
     private var marker by mutableIntStateOf(0)
     private var density = 1f
     private var fontScale = 1f
-    private var running = false
+    @Volatile private var running = false
     private var vsyncCount = 0
     private var drawCount = 0
     private var lastVsyncNs: Long? = null
@@ -133,6 +138,19 @@ class NativeControlMotionCaptureTest {
     private var requestedHoldMs = 67L
     private var settleMs = 1_100L
     private var rapidGapMs = 40L
+    private var requestedRefreshRate: Float? = null
+    private var originalWindowAttributes: WindowManager.LayoutParams? = null
+    private var displayManager: DisplayManager? = null
+    private var observingDisplayChanges = false
+    private val displayListener = object : DisplayManager.DisplayListener {
+        override fun onDisplayAdded(displayId: Int) = Unit
+        override fun onDisplayRemoved(displayId: Int) = Unit
+        override fun onDisplayChanged(displayId: Int) {
+            if (observingDisplayChanges && displayId == dispatchObserver.display?.displayId) {
+                add("display_mode_changed").put("display_mode", displayObservation())
+            }
+        }
+    }
     private var groups = setOf("direct", "hold", "drag", "cancel", "rapid")
 
     @Test fun recordControlsNaturalMotion() {
@@ -145,6 +163,9 @@ class NativeControlMotionCaptureTest {
         requestedHoldMs = argumentLong("controlMotionTapHoldMs", 67, 1L..1_000L)
         settleMs = argumentLong("controlMotionSettleMs", 1_100, 300L..5_000L)
         rapidGapMs = argumentLong("controlMotionRapidGapMs", 40, 0L..1_000L)
+        requestedRefreshRate = args.getString("controlMotionRefreshRateHz")?.toFloat()?.also {
+            require(it.isFinite() && it in 30f..240f) { "Refresh rate must be finite and between 30 and 240 Hz" }
+        }
         groups = (args.getString("controlMotionScenarios") ?: "direct,hold,drag,cancel,rapid")
             .split(',').map(String::trim).toSet()
         require(groups.all { it in setOf("direct", "hold", "drag", "cancel", "rapid", "interrupt") })
@@ -183,6 +204,34 @@ class NativeControlMotionCaptureTest {
         }
         assertTrue("Natural-time composition initialized", ready.await(5, TimeUnit.SECONDS))
         try {
+            readOnMain {
+                requestedRefreshRate?.let { rate ->
+                    originalWindowAttributes = WindowManager.LayoutParams().also { it.copyFrom(activity.window.attributes) }
+                    val requested = WindowManager.LayoutParams().also { it.copyFrom(activity.window.attributes) }
+                    val before = displayObservation()
+                    val mode = dispatchObserver.display?.mode
+                    val supported = dispatchObserver.display?.supportedModes.orEmpty()
+                    val matching = supported.filter {
+                        it.physicalWidth == mode?.physicalWidth && it.physicalHeight == mode?.physicalHeight &&
+                            kotlin.math.abs(it.refreshRate - rate) < 1f
+                    }.minByOrNull { kotlin.math.abs(it.refreshRate - rate) }
+                    displayManager = activity.getSystemService(DisplayManager::class.java)
+                    observingDisplayChanges = true
+                    displayManager?.registerDisplayListener(displayListener, Handler(Looper.getMainLooper()))
+                    requested.preferredDisplayModeId = matching?.modeId ?: 0
+                    requested.preferredRefreshRate = rate
+                    activity.window.attributes = requested
+                    add("window_refresh_requested").put("requested_hz", rate)
+                        .put("requested_mode_id", matching?.modeId ?: JSONObject.NULL)
+                        .put("original_preferred_refresh_rate_hz", originalWindowAttributes!!.preferredRefreshRate)
+                        .put("original_preferred_display_mode_id", originalWindowAttributes!!.preferredDisplayModeId)
+                        .put("display_mode_before", before)
+                        .put("supported_modes", JSONArray(supported.map { candidate ->
+                            JSONObject().put("mode_id", candidate.modeId).put("refresh_rate_hz", candidate.refreshRate)
+                                .put("physical_width_px", candidate.physicalWidth).put("physical_height_px", candidate.physicalHeight)
+                        })).put("display_mode", displayObservation())
+                }
+            }
             waitFor("product control layout") { tagged("motion-control")?.bounds?.width?.let { it > 0 } == true }
             readOnMain {
                 assertTrue("GPU capture requires hardware acceleration", dispatchObserver.isHardwareAccelerated)
@@ -213,36 +262,61 @@ class NativeControlMotionCaptureTest {
                 readOnMain { snapshot(add("control_complete")) }
             }
         } finally {
-            if (activePointer) runCatching {
-                inject(MotionEvent.ACTION_CANCEL, lastPointer, SystemClock.uptimeMillis(), "cleanup-cancel")
-            }
-            readOnMain {
-                add("teardown_begin").also(::snapshot)
-                // Make the lifecycle boundary explicit in the video and trace;
-                // post-disposal pixels are not part of control acceptance.
-                marker++
-            }
-            SystemClock.sleep(150)
-            readOnMain {
-                add("composition_dispose_begin")
-                running = false
-                Choreographer.getInstance().removeFrameCallback(frameObserver)
-                drawListener?.let {
-                    if (dispatchObserver.viewTreeObserver.isAlive) dispatchObserver.viewTreeObserver.removeOnDrawListener(it)
+            try {
+                if (activePointer) runCatching {
+                    inject(MotionEvent.ACTION_CANCEL, lastPointer, SystemClock.uptimeMillis(), "cleanup-cancel")
                 }
-                realView?.disposeComposition()
-                recomposer?.cancel()
-                add("composition_dispose_end")
+                readOnMain {
+                    add("teardown_begin").also(::snapshot)
+                    // Post-disposal pixels are outside the accepted control lifetime.
+                    marker++
+                }
+                SystemClock.sleep(150)
+                readOnMain {
+                    add("composition_dispose_begin")
+                    running = false
+                    Choreographer.getInstance().removeFrameCallback(frameObserver)
+                    drawListener?.let {
+                        if (dispatchObserver.viewTreeObserver.isAlive) dispatchObserver.viewTreeObserver.removeOnDrawListener(it)
+                    }
+                    realView?.disposeComposition()
+                    recomposer?.cancel()
+                    add("composition_dispose_end")
+                }
+            } finally {
+                try {
+                    readOnMain {
+                        running = false
+                        Choreographer.getInstance().removeFrameCallback(frameObserver)
+                        observingDisplayChanges = false
+                        try { displayManager?.unregisterDisplayListener(displayListener) }
+                        finally {
+                            originalWindowAttributes?.let { original ->
+                                activity.window.attributes = WindowManager.LayoutParams().also { it.copyFrom(original) }
+                                add("window_refresh_restored")
+                                    .put("preferred_refresh_rate_hz", activity.window.attributes.preferredRefreshRate)
+                                    .put("preferred_display_mode_id", activity.window.attributes.preferredDisplayModeId)
+                                    .put("display_mode", displayObservation())
+                            }
+                        }
+                    }
+                } finally {
+                    // Freeze serialized rows on the main thread; late notifications
+                    // cannot mutate exported JSON or its matching row counts.
+                    val (recordedTrace, recordedCallbacks) = readOnMain {
+                        trace.sortedBy { it.getInt("sequence") }.map { it.toString() } to callbacks.map { it.toString() }
+                    }
+                    File(directory, "trace.jsonl").bufferedWriter().use { writer ->
+                        recordedTrace.forEach { writer.appendLine(it) }
+                    }
+                    File(directory, "callbacks.jsonl").bufferedWriter().use { writer ->
+                        recordedCallbacks.forEach { writer.appendLine(it) }
+                    }
+                    File(directory, "result.json").writeText(JSONObject().put("trace_rows", recordedTrace.size)
+                        .put("callback_rows", recordedCallbacks.size).put("controls", JSONArray(controls.map { it.name }))
+                        .put("scenarios", JSONArray(groups.toList())).toString(2))
+                }
             }
-            File(directory, "trace.jsonl").bufferedWriter().use { writer ->
-                trace.sortedBy { it.getInt("sequence") }.forEach { writer.appendLine(it.toString()) }
-            }
-            File(directory, "callbacks.jsonl").bufferedWriter().use { writer ->
-                callbacks.forEach { writer.appendLine(it.toString()) }
-            }
-            File(directory, "result.json").writeText(JSONObject().put("trace_rows", trace.size)
-                .put("callback_rows", callbacks.size).put("controls", JSONArray(controls.map { it.name }))
-                .put("scenarios", JSONArray(groups.toList())).toString(2))
         }
     }
 
@@ -687,6 +761,7 @@ class NativeControlMotionCaptureTest {
             .put("last_delivery_monotonic_ns", lastDeliveredMonotonicNs ?: JSONObject.NULL)
             .put("last_delivery_event_ms", lastDeliveredEventMs ?: JSONObject.NULL)
             .put("last_delivery_action", lastDeliveredAction ?: JSONObject.NULL)
+            .put("display_mode", displayObservation())
         row.put("nodes", JSONArray(observedNodes().map { observed ->
             val node = observed.node
             JSONObject().put("tag", observed.tag ?: JSONObject.NULL).put("screen_bounds_px", rect(observed.bounds))
@@ -727,7 +802,9 @@ class NativeControlMotionCaptureTest {
                     .put("vsync_frame_time_nanos", lastVsyncNs ?: JSONObject.NULL)
                     .put("hardware_accelerated", dispatchObserver.isHardwareAccelerated))
                 dispatchObserver.viewTreeObserver.registerFrameCommitCallback {
-                    add("frame_commit").put("draw_id", drawId).put("draw_vsync_frame", frame).put("draw_marker", drawMarker)
+                    if (running) add("frame_commit") { row ->
+                        row.put("draw_id", drawId).put("draw_vsync_frame", frame).put("draw_marker", drawMarker)
+                    }
                 }
             }
         }
@@ -740,9 +817,11 @@ class NativeControlMotionCaptureTest {
         add("visual_sync_requested").put("label", label).put("marker", marker)
     }
 
-    private fun add(event: String) = JSONObject().put("event", event).put("sequence", sequence.incrementAndGet())
-        .put("control", control.name).put("scenario", scenario).put("uptime_ms", SystemClock.uptimeMillis())
-        .put("elapsed_realtime_nanos", SystemClock.elapsedRealtimeNanos()).put("monotonic_nanos", System.nanoTime()).also(trace::add)
+    private fun add(event: String, beforePublish: (JSONObject) -> Unit = {}): JSONObject =
+        JSONObject().put("event", event).put("sequence", sequence.incrementAndGet())
+            .put("control", control.name).put("scenario", scenario).put("uptime_ms", SystemClock.uptimeMillis())
+            .put("elapsed_realtime_nanos", SystemClock.elapsedRealtimeNanos()).put("monotonic_nanos", System.nanoTime())
+            .also(beforePublish).also(trace::add)
 
     private fun writeSession(directory: File, controls: List<Control>) {
         val row = readOnMain {
@@ -751,6 +830,11 @@ class NativeControlMotionCaptureTest {
                 .put("controls", JSONArray(controls.map { it.name })).put("scenarios", JSONArray(groups.toList()))
                 .put("tap_hold_ms_requested", requestedHoldMs).put("settle_ms_requested", settleMs)
                 .put("rapid_gap_ms_requested", rapidGapMs).put("composition_clock", "Lifecycle AndroidUiDispatcher/Choreographer; no test clock after bootstrap")
+                .put("refresh_rate_hz_requested", requestedRefreshRate ?: JSONObject.NULL)
+                .put("system_animator_duration_scale", Settings.Global.getFloat(activity.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f))
+                .put("system_transition_animation_scale", Settings.Global.getFloat(activity.contentResolver, Settings.Global.TRANSITION_ANIMATION_SCALE, 1f))
+                .put("system_window_animation_scale", Settings.Global.getFloat(activity.contentResolver, Settings.Global.WINDOW_ANIMATION_SCALE, 1f))
+                .put("refresh_request_policy", "Optional test-Activity Window preference only; matching mode keeps physical resolution. Preference may be ignored or change dynamically. Judge actual mode changes and unique Choreographer cadence; restore copied original attributes in finally. No system setting or product refresh policy is changed.")
                 .put("input", "Public UiAutomation injectInputEvent(sync=false), actual eventTime and injection start/end exported; real FrameLayout dispatch_before/after records delivered time and callback order. Actual deadlines may be late and are never fabricated.")
                 .put("clock_domains", "frame_time_nanos is Choreographer's monotonic clock; each row and read interval also exports System.nanoTime for that domain. elapsed_realtime_nanos includes device sleep, and MotionEvent eventTime/uptime_ms are millisecond uptime; their offsets are observed, never assumed interchangeable.")
                 .put("sampling", "vsync_sample and window_draw bracket public semantics reads. Observer callback order is not product withFrame callback order; this fixture does not expose or infer the latter. frame_commit is HWUI submission, not display presentation.")
@@ -761,6 +845,17 @@ class NativeControlMotionCaptureTest {
                 .also(::snapshot)
         }
         File(directory, "session.json").writeText(row.toString(2))
+    }
+
+    private fun displayObservation(): JSONObject {
+        val display = dispatchObserver.display
+        val mode = display?.mode
+        return JSONObject().put("display_id", display?.displayId ?: JSONObject.NULL)
+            .put("mode_id", mode?.modeId ?: JSONObject.NULL)
+            .put("refresh_rate_hz", mode?.refreshRate ?: JSONObject.NULL)
+            .put("physical_width_px", mode?.physicalWidth ?: JSONObject.NULL)
+            .put("physical_height_px", mode?.physicalHeight ?: JSONObject.NULL)
+            .put("reported_refresh_rate_hz", display?.refreshRate ?: JSONObject.NULL)
     }
 
     private fun rect(rect: Rect) = JSONArray(listOf(rect.left, rect.top, rect.width, rect.height))
