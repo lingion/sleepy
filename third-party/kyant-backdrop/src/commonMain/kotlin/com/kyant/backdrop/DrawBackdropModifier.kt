@@ -175,7 +175,7 @@ private class DrawBackdropElement(
     override fun create(): DrawBackdropNode {
         return DrawBackdropNode(
             backdrop = backdrop,
-            shapeProvider = shapeProvider,
+            initialShapeProvider = shapeProvider,
             effects = effects,
             layerBlock = layerBlock,
             exportedBackdrop = exportedBackdrop,
@@ -251,7 +251,7 @@ private class DrawBackdropElement(
 
 private class DrawBackdropNode(
     var backdrop: Backdrop,
-    shapeProvider: ShapeProvider,
+    initialShapeProvider: ShapeProvider,
     var effects: BackdropEffectScope.() -> Unit,
     var layerBlock: (GraphicsLayerScope.() -> Unit)?,
     var exportedBackdrop: LayerBackdrop?,
@@ -263,7 +263,8 @@ private class DrawBackdropNode(
 
     // The placement layer retains its callback after a pager reuses a card host. Observe a
     // replacement provider so its clip follows the current outline at unchanged size.
-    var shapeProvider: ShapeProvider by mutableStateOf(shapeProvider)
+    // Keep the constructor parameter distinct: property closures must observe the current provider.
+    var shapeProvider: ShapeProvider by mutableStateOf(initialShapeProvider)
 
     private val effectScope =
         object : BackdropEffectScopeImpl() {
