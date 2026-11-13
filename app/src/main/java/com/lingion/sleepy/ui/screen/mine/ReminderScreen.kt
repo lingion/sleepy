@@ -54,7 +54,7 @@ import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenu as DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenuItem as DropdownMenuItem
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable

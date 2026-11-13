@@ -15,7 +15,7 @@ import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenu as DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenuItem as DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton

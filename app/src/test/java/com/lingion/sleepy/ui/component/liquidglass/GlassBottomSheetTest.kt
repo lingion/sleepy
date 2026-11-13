@@ -223,6 +223,7 @@ class GlassBottomSheetTest {
         val open = mutableStateOf(true)
         val menuOpen = mutableStateOf(false)
         var sheetScene: GlassHostState? = null
+        var inheritedSampling: GlassHostState? = null
         var menuSource: GlassHostState? = null
         var dismissals = 0
         compose.setContent {
@@ -239,6 +240,7 @@ class GlassBottomSheetTest {
                                 modifier = Modifier.testTag("sheet"),
                             ) {
                                 sheetScene = LocalGlassPopupScene.current
+                                inheritedSampling = LocalGlassOverlaySamplingHost.current
                                 Box(Modifier.fillMaxWidth().height(300.dp).testTag("sheet-content")) {
                                     Box(Modifier.size(80.dp).background(Color.Magenta).testTag("visible-marker"))
                                     if (menuOpen.value) {
@@ -271,7 +273,12 @@ class GlassBottomSheetTest {
             compose.onNodeWithText("Nested sheet menu").assertIsDisplayed()
             compose.runOnIdle {
                 assertNotNull(sheetScene)
-                assertSame("nested menu samples the sheet, not the route", sheetScene, menuSource)
+                if (style == UiStyle.LiquidGlass) {
+                    assertSame("nested glass menu samples the sheet, not the route", sheetScene, menuSource)
+                } else {
+                    assertSame("Material menu preserves its inherited context without adding an optical scope",
+                        inheritedSampling, menuSource)
+                }
                 menuOpen.value = false
             }
             compose.onNodeWithTag("sheet").performTouchInput { swipeDown(durationMillis = 150) }

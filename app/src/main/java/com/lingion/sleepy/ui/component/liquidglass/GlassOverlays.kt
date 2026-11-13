@@ -1,6 +1,7 @@
 package com.lingion.sleepy.ui.component.liquidglass
 
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -8,6 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.ModalBottomSheetProperties
@@ -64,7 +66,8 @@ internal fun glassModalScrimColor(requested: Color, glass: Boolean, dark: Boolea
     else if (glass && !dark) Color.Black.copy(alpha = NativeLightModalDimAmount)
     else materialDefault
 
-/** Material owns window lifetime, focus, back and dismissal; optics are painted in that window. */
+/** The platform dialog owns window lifetime, focus, back and dismissal in both styles. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GlassAlertDialog(
     onDismissRequest: () -> Unit,
@@ -74,41 +77,53 @@ fun GlassAlertDialog(
     icon: (@Composable () -> Unit)? = null,
     title: (@Composable () -> Unit)? = null,
     text: (@Composable () -> Unit)? = null,
-    shape: Shape = AlertDialogDefaults.shape,
-    containerColor: Color = AlertDialogDefaults.containerColor,
-    iconContentColor: Color = AlertDialogDefaults.iconContentColor,
-    titleContentColor: Color = AlertDialogDefaults.titleContentColor,
-    textContentColor: Color = AlertDialogDefaults.textContentColor,
+    // Sentinels distinguish appearance defaults from explicit caller overrides.
+    shape: Shape? = null,
+    containerColor: Color = Color.Unspecified,
+    iconContentColor: Color = Color.Unspecified,
+    titleContentColor: Color = Color.Unspecified,
+    textContentColor: Color = Color.Unspecified,
     tonalElevation: Dp = AlertDialogDefaults.TonalElevation,
     properties: DialogProperties = DialogProperties(),
 ) {
-    val glass = overlayGlass()
-    val nativeLightScrim = glass && !LocalDarkTheme.current
+    val resolvedIconColor = if (iconContentColor != Color.Unspecified) iconContentColor else AlertDialogDefaults.iconContentColor
+    val resolvedTitleColor = if (titleContentColor != Color.Unspecified) titleContentColor else AlertDialogDefaults.titleContentColor
+    val resolvedTextColor = if (textContentColor != Color.Unspecified) textContentColor else AlertDialogDefaults.textContentColor
+    if (!overlayGlass()) {
+        MaterialAlertDialog(
+            onDismissRequest = onDismissRequest, confirmButton = confirmButton, modifier = modifier,
+            dismissButton = dismissButton, icon = icon, title = title, text = text,
+            shape = shape ?: AlertDialogDefaults.shape,
+            containerColor = if (containerColor != Color.Unspecified) containerColor else AlertDialogDefaults.containerColor,
+            iconContentColor = resolvedIconColor, titleContentColor = resolvedTitleColor,
+            textContentColor = resolvedTextColor, tonalElevation = tonalElevation, properties = properties,
+        )
+        return
+    }
+    val nativeLightScrim = !LocalDarkTheme.current
     val parentScene = LocalGlassPopupScene.current ?: LocalGlassHost.current
     val popupScene = rememberGlassHostState()
-    val carrierShape = if (glass && shape == AlertDialogDefaults.shape) FlClashGlassShape(34f) else shape
+    val carrierShape = shape ?: FlClashGlassShape(34f)
     val materialScope = rememberGlassMaterialScope(carrierShape, parentScene?.overlayBackdrop)
     CompositionLocalProvider(
-        LocalGlassOverlay provides glass,
+        LocalGlassOverlay provides true,
         LocalGlassOverlaySamplingHost provides parentScene,
         LocalGlassPopupScene provides popupScene,
         LocalGlassMaterialBackdrop provides null,
     ) {
-        val opticalModifier = modifier.recordGlassPopupScene(popupScene).trackGlassMaterial(materialScope).glassControl(
-            shape = carrierShape, enabled = false, registerPane = false, role = GlassMaterialRole.Alert,
-            exportedBackdrop = materialScope?.exported,
-        )
-        GlassMaterialContent(materialScope) {
-            MaterialAlertDialog(
-                onDismissRequest = onDismissRequest,
-                confirmButton = { GlassDialogScrim(nativeLightScrim); confirmButton() },
-                modifier = opticalModifier,
-                dismissButton = dismissButton, icon = icon, title = title, text = text, shape = carrierShape,
-                containerColor = if (glass) Color.Transparent else containerColor,
-                iconContentColor = iconContentColor, titleContentColor = titleContentColor,
-                textContentColor = textContentColor, tonalElevation = if (glass) 0.dp else tonalElevation,
-                properties = properties,
-            )
+        BasicAlertDialog(onDismissRequest = onDismissRequest, properties = properties) {
+            GlassDialogScrim(nativeLightScrim)
+            val opticalModifier = modifier.recordGlassPopupScene(popupScene).trackGlassMaterial(materialScope).glassControl(
+                shape = carrierShape, enabled = false, registerPane = false, role = GlassMaterialRole.Alert,
+                exportedBackdrop = materialScope?.exported,
+            ).then(if (containerColor != Color.Unspecified) Modifier.background(containerColor, carrierShape) else Modifier)
+            GlassMaterialContent(materialScope) {
+                NativeGlassAlertContent(
+                    modifier = opticalModifier, icon = icon, title = title, text = text,
+                    iconContentColor = resolvedIconColor, titleContentColor = resolvedTitleColor,
+                    textContentColor = resolvedTextColor, dismissButton = dismissButton, confirmButton = confirmButton,
+                )
+            }
         }
     }
 }
@@ -121,17 +136,26 @@ fun GlassDropdownMenu(
     offset: androidx.compose.ui.unit.DpOffset = androidx.compose.ui.unit.DpOffset(0.dp, 0.dp),
     scrollState: ScrollState = rememberScrollState(),
     properties: PopupProperties = PopupProperties(focusable = true),
-    shape: Shape = MenuDefaults.shape,
-    containerColor: Color = MenuDefaults.containerColor,
+    shape: Shape? = null,
+    containerColor: Color = Color.Unspecified,
     tonalElevation: Dp = MenuDefaults.TonalElevation,
     shadowElevation: Dp = MenuDefaults.ShadowElevation,
     border: androidx.compose.foundation.BorderStroke? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val glass = overlayGlass()
+    if (!glass) {
+        MaterialDropdownMenu(
+            expanded, onDismissRequest, modifier, offset, scrollState, properties,
+            shape ?: MenuDefaults.shape,
+            if (containerColor != Color.Unspecified) containerColor else MenuDefaults.containerColor,
+            tonalElevation, shadowElevation, border, content,
+        )
+        return
+    }
     val parentScene = LocalGlassPopupScene.current ?: LocalGlassHost.current
     val popupScene = rememberGlassHostState()
-    val carrierShape = if (glass && shape == MenuDefaults.shape) FlClashGlassShape(24f) else shape
+    val carrierShape = shape ?: FlClashGlassShape(24f)
     val materialScope = rememberGlassMaterialScope(carrierShape, parentScene?.overlayBackdrop)
     CompositionLocalProvider(
         LocalGlassOverlay provides glass,
@@ -153,9 +177,13 @@ fun GlassDropdownMenu(
                 // drops its foreground on API 33; the backdrop's draw-time outline clip remains.
                 opticalModifier,
                 offset, scrollState, properties, carrierShape,
-                if (glass) Color.Transparent else containerColor,
+                if (containerColor != Color.Unspecified) containerColor else Color.Transparent,
                 if (glass) 0.dp else tonalElevation,
-                shadowElevation, border, content,
+                shadowElevation, border,
+                // Material supplies 8dp at each edge. Native menu AX frames show 10dp.
+                content = {
+                    androidx.compose.foundation.layout.Column(Modifier.padding(vertical = 2.dp), content = content)
+                },
             )
         }
     }
