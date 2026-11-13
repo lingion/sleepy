@@ -344,8 +344,11 @@ void addTurn(float u, float index, float radius, inout float2 sum) {
 // both taken at the outline where the point's direction from the center
 // meets it, so they hold steady all the way in.
 void outlineGeometry(float2 p, out float inset, out float2 normal) {
-  float len = max(length(p), 1e-3);
-  float turn = atan(p.y, p.x) / kTau;
+  float len = length(p);
+  // An odd-sized pane can put a fragment exactly at its center. Use the
+  // same defined radial direction as signedProfileGeometry at that point.
+  float2 radial = len > 1e-3 ? p / len : float2(1.0, 0.0);
+  float turn = atan(radial.y, radial.x) / kTau;
   float u = (turn - floor(turn)) * kTurns;
   float2 sum = float2(0.0);
   for (int i = 0; i < 16; i++) {
@@ -358,9 +361,8 @@ void outlineGeometry(float2 p, out float inset, out float2 normal) {
   }
   float reach = max(sum.x, 1e-3);
   float slope = sum.y * kTurns / kTau / reach;
-  float2 radial = p / len;
   float2 gradient = radial - slope * float2(-radial.y, radial.x);
-  float stretch = length(gradient);
+  float stretch = max(length(gradient), 1e-3);
   inset = max((reach - len) / stretch, 0.0);
   normal = gradient / stretch;
 }
