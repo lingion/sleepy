@@ -10,6 +10,7 @@ import android.os.SystemClock
 import android.view.PixelCopy
 import android.view.View
 import android.view.Window
+import android.view.WindowManager
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +23,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.test.platform.app.InstrumentationRegistry
@@ -53,13 +56,13 @@ internal enum class OpticalBackground {
 }
 
 @Composable
-internal fun OpticalCaptureBackground(background: OpticalBackground) {
+internal fun OpticalCaptureBackground(background: OpticalBackground, modifier: Modifier = Modifier) {
     if (background == OpticalBackground.synthetic_landscape) {
         val bitmap = remember { landscapeBitmap.asImageBitmap() }
-        Image(bitmap, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.FillBounds)
+        Image(bitmap, contentDescription = null, modifier = modifier.fillMaxSize(), contentScale = ContentScale.FillBounds)
         return
     }
-    Canvas(Modifier.fillMaxSize()) {
+    Canvas(modifier.fillMaxSize()) {
         drawRect(Color(0xFFF0F0F5))
         when (background) {
             OpticalBackground.fine_grid -> {
@@ -86,6 +89,60 @@ internal fun OpticalCaptureBackground(background: OpticalBackground) {
             }
             OpticalBackground.synthetic_landscape -> Unit
         }
+    }
+}
+
+/** Read on the real UI thread; retain the observed transform, never a presumed status-bar origin. */
+internal data class OpticalLayoutGeometry(
+    val size: IntSize,
+    val screenCorners: List<Offset>,
+    val screenBasis: List<Offset>,
+    val density: Float,
+) {
+    val screenOrigin get() = screenCorners.first()
+    val screenRect get() = Rect(screenCorners.minOf { it.x }, screenCorners.minOf { it.y },
+        screenCorners.maxOf { it.x }, screenCorners.maxOf { it.y })
+
+    fun json(): JSONObject {
+        val localCorners = listOf(Offset.Zero, Offset(size.width.toFloat(), 0f),
+            Offset(0f, size.height.toFloat()), Offset(size.width.toFloat(), size.height.toFloat()))
+        return JSONObject().put("layout_size_px", JSONArray(listOf(size.width, size.height)))
+            .put("logical_size_dp", JSONArray(listOf(size.width / density, size.height / density)))
+            .put("density", density)
+            .put("screen_origin_px", JSONArray(listOf(screenOrigin.x, screenOrigin.y)))
+            .put("screen_rect_px", JSONArray(listOf(screenRect.left, screenRect.top, screenRect.right, screenRect.bottom)))
+            .put("local_to_screen_corners_px", JSONArray(localCorners.indices.map { index ->
+                JSONObject().put("local_px", JSONArray(listOf(localCorners[index].x, localCorners[index].y)))
+                    .put("screen_px", JSONArray(listOf(screenCorners[index].x, screenCorners[index].y)))
+            }))
+            .put("local_to_screen_unit_basis_px", JSONArray(screenBasis.map { JSONArray(listOf(it.x, it.y)) }))
+            .put("geometry_source", "actual attached LayoutCoordinates.localToScreen at all four layout corners and local unit basis")
+    }
+
+    companion object {
+        fun read(coordinates: LayoutCoordinates, density: Float): OpticalLayoutGeometry {
+            check(coordinates.isAttached) { "Optical geometry requires attached layout coordinates" }
+            val size = coordinates.size
+            val corners = listOf(Offset.Zero, Offset(size.width.toFloat(), 0f),
+                Offset(0f, size.height.toFloat()), Offset(size.width.toFloat(), size.height.toFloat()))
+                .map(coordinates::localToScreen)
+            val basis = listOf(Offset.Zero, Offset(1f, 0f), Offset(0f, 1f)).map(coordinates::localToScreen)
+            check((corners + basis).all { it.x.isFinite() && it.y.isFinite() }) { "Non-finite optical screen transform" }
+            return OpticalLayoutGeometry(size, corners, basis, density)
+        }
+    }
+}
+
+/** Only placement fields are locked; the fixture never rewrites product window flags. */
+internal data class OpticalWindowPlacement(val width: Int, val height: Int, val x: Int, val y: Int,
+                                          val gravity: Int, val horizontalMargin: Float, val verticalMargin: Float) {
+    fun json() = JSONObject().put("width", width).put("height", height).put("x", x).put("y", y)
+        .put("gravity", gravity).put("horizontal_margin", horizontalMargin).put("vertical_margin", verticalMargin)
+
+    companion object {
+        fun read(attributes: WindowManager.LayoutParams) = OpticalWindowPlacement(attributes.width,
+            attributes.height, attributes.x, attributes.y, attributes.gravity,
+            attributes.horizontalMargin, attributes.verticalMargin)
     }
 }
 
@@ -168,13 +225,53 @@ internal data class OpticalCaptureWindow(val view: View, val root: View, val win
         InstrumentationRegistry.getInstrumentation().runOnMainSync { view.getLocationOnScreen(result) }
     }
 
-    fun capture(): Bitmap {
+    /** Includes platform insets and the actual surface origin for every positioning request. */
+    fun geometry(): JSONObject {
+        var result: JSONObject? = null
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val rootScreen = IntArray(2).also(root::getLocationOnScreen)
+            val rootWindow = IntArray(2).also(root::getLocationInWindow)
+            val viewScreen = IntArray(2).also(view::getLocationOnScreen)
+            val viewWindow = IntArray(2).also(view::getLocationInWindow)
+            fun insets(value: android.graphics.Insets) = JSONArray(listOf(value.left, value.top, value.right, value.bottom))
+            val observedInsets = root.rootWindowInsets
+            val types = android.view.WindowInsets.Type.systemBars() or android.view.WindowInsets.Type.displayCutout()
+            val metricsBounds = window?.windowManager?.currentWindowMetrics?.bounds
+            result = JSONObject().put("window_identity", window?.let { System.identityHashCode(it) } ?: JSONObject.NULL)
+                .put("placement_attributes", window?.let { OpticalWindowPlacement.read(it.attributes).json() } ?: JSONObject.NULL)
+                .put("window_screen_origin_px", JSONArray(listOf(rootScreen[0] - rootWindow[0], rootScreen[1] - rootWindow[1])))
+                .put("root_screen_origin_px", JSONArray(rootScreen.toList())).put("root_window_origin_px", JSONArray(rootWindow.toList()))
+                .put("root_screen_rect_px", JSONArray(listOf(rootScreen[0], rootScreen[1], rootScreen[0] + root.width, rootScreen[1] + root.height)))
+                .put("captured_surface_screen_rect_px", JSONArray(listOf(rootScreen[0] - rootWindow[0], rootScreen[1] - rootWindow[1],
+                    rootScreen[0] - rootWindow[0] + root.width, rootScreen[1] - rootWindow[1] + root.height)))
+                .put("view_screen_origin_px", JSONArray(viewScreen.toList())).put("view_window_origin_px", JSONArray(viewWindow.toList()))
+                .put("root_size_px", JSONArray(listOf(root.width, root.height)))
+                .put("view_size_px", JSONArray(listOf(view.width, view.height)))
+                .put("current_window_metrics_bounds_px", metricsBounds?.let { JSONArray(listOf(it.left, it.top, it.right, it.bottom)) } ?: JSONObject.NULL)
+                .put("root_window_insets_px", observedInsets?.let {
+                    JSONObject().put("system_bars_and_cutout", insets(it.getInsets(types)))
+                        .put("system_bars_and_cutout_ignoring_visibility", insets(it.getInsetsIgnoringVisibility(types)))
+                        .put("status_bars", insets(it.getInsets(android.view.WindowInsets.Type.statusBars())))
+                        .put("navigation_bars", insets(it.getInsets(android.view.WindowInsets.Type.navigationBars())))
+                        .put("display_cutout", insets(it.getInsets(android.view.WindowInsets.Type.displayCutout())))
+                        .put("ime", insets(it.getInsets(android.view.WindowInsets.Type.ime())))
+                } ?: JSONObject.NULL)
+                .put("origin_policy", "observed root screen minus root in-window location; no status-bar origin assumed")
+        }
+        return checkNotNull(result)
+    }
+
+    fun awaitHwuiCommit() {
         val committed = CountDownLatch(1)
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             root.viewTreeObserver.registerFrameCommitCallback { committed.countDown() }
             root.postInvalidateOnAnimation()
         }
         check(committed.await(5, TimeUnit.SECONDS)) { "HWUI did not commit the optical capture" }
+    }
+
+    fun capture(): Bitmap {
+        awaitHwuiCommit()
         val bitmap = Bitmap.createBitmap(root.width, root.height, Bitmap.Config.ARGB_8888)
         val copied = CountDownLatch(1)
         var result = PixelCopy.ERROR_UNKNOWN

@@ -8,10 +8,12 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.view.PixelCopy
+import android.view.Gravity
 import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.View
 import android.view.Window
+import android.view.WindowManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
@@ -54,6 +57,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -61,6 +65,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.platform.LocalView
@@ -94,6 +100,8 @@ import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton
 import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassNavigationBar
 import com.lingion.sleepy.ui.component.liquidglass.LocalGlassDepth
 import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.component.liquidglass.GlassMaterialScope
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassMaterialBackdrop
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
@@ -111,6 +119,8 @@ import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
+import java.util.IdentityHashMap
+import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.roundToLong
@@ -188,6 +198,20 @@ class NativeGlassParityCaptureTest {
     }
     private var opticalActivity: OpticalCaptureWindow? = null
     private var opticalDialog: OpticalCaptureWindow? = null
+    private var opticalAlertPane: GlassMaterialScope? = null
+    private var opticalNativeCanvas = false
+    private var opticalBackgroundCoordinates: LayoutCoordinates? = null
+    private var opticalBackgroundHostCoordinates: LayoutCoordinates? = null
+    private var opticalCurrentScene: OpticalScene? = null
+    private data class OpticalAlertLayout(val pane: OpticalLayoutGeometry, val drawingSpace: OpticalLayoutGeometry,
+                                         val paneOriginInDrawingSpace: Offset) {
+        fun json() = JSONObject().put("pane", pane.json()).put("drawing_space_parent", drawingSpace.json())
+            .put("pane_origin_in_drawing_space_px", JSONArray(listOf(paneOriginInDrawingSpace.x, paneOriginInDrawingSpace.y)))
+            .put("drawing_space_source", "actual pane LayoutCoordinates.parentLayoutCoordinates, the product NativeGlassAlertDrawingSpace")
+    }
+    private data class OpticalNativeAlertAlignment(val placement: OpticalWindowPlacement, val report: JSONObject)
+    private val opticalNativeAlertAlignments = IdentityHashMap<Window, OpticalNativeAlertAlignment>()
+    private val opticalNativeAlertAlignmentReports = ArrayList<JSONObject>()
     private val opticalContentDensityObservations = ConcurrentLinkedQueue<OpticalContentDensityObservation>()
     private val opticalPresentationEvents = ArrayList<String>()
     private val opticalPresentationTrace = ConcurrentLinkedQueue<JSONObject>()
@@ -198,6 +222,9 @@ class NativeGlassParityCaptureTest {
         val arguments = InstrumentationRegistry.getArguments()
         assumeTrue("Pass glassStaticCapture=true for the multi-background GPU matrix",
             arguments.getString("glassStaticCapture") == "true")
+        val nativeCanvasArgument = arguments.getString("glassStaticNativeCanvas") ?: "false"
+        require(nativeCanvasArgument in listOf("true", "false")) { "glassStaticNativeCanvas must be true or false" }
+        opticalNativeCanvas = nativeCanvasArgument == "true"
         fun selected(name: String, allowed: List<String>, defaults: List<String> = allowed): List<String> {
             val values = arguments.getString(name)?.split(',')?.map(String::trim)?.distinct() ?: defaults
             require(values.isNotEmpty() && values.all { it in allowed }) { "$name must select from $allowed" }
@@ -220,6 +247,11 @@ class NativeGlassParityCaptureTest {
         val baselines = JSONArray()
         val presentationActions = JSONArray()
         val manifest = JSONObject().put("schema", 1).put("run_id", runId)
+            .put("glass_static_native_canvas", opticalNativeCanvas)
+            .put("background_canvas_policy", if (opticalNativeCanvas)
+                "Opt-in glassStaticNativeCanvas=true: actual fixed 375x667dp source world at the existing GlassBackground top-left, clipped to that world with neutral #F0F0F5 outside; never stretched to the Activity. Geometry is observed with localToScreen."
+                else "Default glassStaticNativeCanvas=false: preserve the original Activity-sized background reproduction; geometry is observed with localToScreen.")
+            .put("native_canvas_limits", "Android font rasterization and menu/alert row shapes still differ from iOS. This is a static GPU fixture, not motion proof. Opt-in canvas captures do not establish an old-product GPU before image in that world; such comparisons need a separately captured old-product canvas or an explicitly labelled counterfactual proxy.")
             .put("sdk", Build.VERSION.SDK_INT).put("model", Build.MODEL).put("fingerprint", Build.FINGERPRINT)
             .put("inputs", JSONArray(OpticalBackground.entries.map { it.metadata() }))
             .put("theme_preset", ThemePresets.KEY_DEFAULT)
@@ -271,6 +303,8 @@ class NativeGlassParityCaptureTest {
                     baselineScreen.saveOpticalPng(File(directory, "$baselineName-screen.png"))
                     baselines.put(JSONObject().put("background", background.name).put("dark", dark)
                         .put("window_png", "$baselineName-window.png").put("screen_png", "$baselineName-screen.png")
+                        .put("background_canvas", opticalBackgroundWorld())
+                        .put("window_geometry", activity.geometry())
                         .put("display_readiness", readyScreen.verification))
                     for (surface in surfaces) {
                         val current = OpticalScene(background, dark, surface)
@@ -306,6 +340,7 @@ class NativeGlassParityCaptureTest {
             File(directory, "matrix.json").writeText(manifest.put("density", density)
                 .put("font_scale", opticalFontScale).put("system_font_scale", opticalSystemFontScale)
                 .put("content_density_observations", JSONArray(opticalContentDensityObservations.map { it.json() }))
+                .put("native_alert_window_alignments", JSONArray(opticalNativeAlertAlignmentReports))
                 .put("presentation_trace", JSONArray(opticalPresentationTrace.toList())).toString(2))
             writeOpticalMetricsCsv(File(directory, "optical-metrics.csv"), captures)
         }
@@ -314,6 +349,153 @@ class NativeGlassParityCaptureTest {
     private fun settleOptical() {
         compose.mainClock.advanceTimeBy(640)
         compose.waitForIdle()
+    }
+
+    private fun opticalBackgroundWorld(): JSONObject = compose.runOnIdle {
+        val world = OpticalLayoutGeometry.read(checkNotNull(opticalBackgroundCoordinates), density)
+        val host = OpticalLayoutGeometry.read(checkNotNull(opticalBackgroundHostCoordinates), density)
+        if (opticalNativeCanvas) {
+            assertEquals("Native canvas actual width", 375.0 * density, world.size.width.toDouble(), .5)
+            assertEquals("Native canvas actual height", 667.0 * density, world.size.height.toDouble(), .5)
+            assertTrue("Native canvas actual top-left is the real GlassBackground top-left",
+                abs(world.screenOrigin.x - host.screenOrigin.x) <= .5f &&
+                    abs(world.screenOrigin.y - host.screenOrigin.y) <= .5f)
+        }
+        world.json().put("native_canvas", opticalNativeCanvas)
+            .put("requested_logical_size_dp", if (opticalNativeCanvas) JSONArray(listOf(375, 667)) else JSONObject.NULL)
+            .put("glass_background_host", host.json())
+            .put("outside_world", if (opticalNativeCanvas) "opaque neutral #F0F0F5, recorded in the real GlassBackground source" else JSONObject.NULL)
+    }
+
+    private fun opticalAlertLayout(): OpticalAlertLayout = compose.runOnIdle {
+        val pane = checkNotNull(checkNotNull(opticalAlertPane).coordinates)
+        check(pane.isAttached) { "Actual Alert material coordinates must be attached" }
+        val drawingSpace = checkNotNull(pane.parentLayoutCoordinates) { "Actual Alert drawing-space parent is required" }
+        OpticalAlertLayout(OpticalLayoutGeometry.read(pane, density),
+            OpticalLayoutGeometry.read(drawingSpace, density), drawingSpace.localPositionOf(pane, Offset.Zero))
+    }
+
+    private fun assertNativeAlertWidth(scene: OpticalScene, layout: OpticalAlertLayout) {
+        assertEquals("${scene.name}: actual native Alert layout width is 320dp", 320.0 * density,
+            layout.pane.size.width.toDouble(), .5)
+        assertEquals("${scene.name}: REST visible pane width is 320dp", 320.0 * density,
+            layout.pane.screenRect.width.toDouble(), .5)
+    }
+
+    private fun assertAlertDrawingSpace(scene: OpticalScene, layout: OpticalAlertLayout) {
+        val pane = layout.pane.size
+        val outer = layout.drawingSpace.size
+        val inset = layout.paneOriginInDrawingSpace
+        assertTrue("${scene.name}: direct drawing-space parent includes real halo on both axes",
+            outer.width > pane.width && outer.height > pane.height)
+        assertTrue("${scene.name}: direct parent wraps pane and halo, rather than a full-window root",
+            outer.width < pane.width * 1.1f && outer.height < pane.height * 1.1f)
+        assertEquals("${scene.name}: pane centered within actual drawing-space width",
+            (outer.width - pane.width) / 2.0, inset.x.toDouble(), .5)
+        assertEquals("${scene.name}: pane centered within actual drawing-space height",
+            (outer.height - pane.height) / 2.0, inset.y.toDouble(), .5)
+        assertTrue("${scene.name}: REST pane is contained by actual drawing-space parent",
+            inset.x >= 0f && inset.y >= 0f && inset.x + pane.width <= outer.width && inset.y + pane.height <= outer.height)
+    }
+
+    /** Resize the actual Dialog surface once at REST; never compensate its later press transform. */
+    private fun alignOpticalNativeAlertOnce(scene: OpticalScene) {
+        val surface = checkNotNull(opticalDialog)
+        val dialog = checkNotNull(surface.window) { "Native Alert alignment requires its actual platform Window" }
+        if (opticalNativeAlertAlignments.containsKey(dialog)) {
+            assertOpticalNativeAlertPlacement(scene, surface)
+            return
+        }
+        val before = opticalAlertLayout()
+        assertNativeAlertWidth(scene, before)
+        assertAlertDrawingSpace(scene, before)
+        val background = compose.runOnIdle {
+            OpticalLayoutGeometry.read(checkNotNull(opticalBackgroundCoordinates), density)
+        }
+        val target = background.screenOrigin + Offset(27.5f * density, 257.5f * density)
+        val steps = JSONArray()
+        val report = JSONObject().put("scene", scene.name).put("window_identity", System.identityHashCode(dialog))
+            .put("target_pane_origin_in_world_dp", JSONArray(listOf(27.5, 257.5)))
+            .put("target_pane_screen_origin_px", JSONArray(listOf(target.x, target.y)))
+            .put("background_canvas", opticalBackgroundWorld()).put("before_layout", before.json())
+            .put("before_window_geometry", surface.geometry()).put("requests", steps)
+            .put("sizing_policy", "Public Window.setLayout to the actual DrawingSpace parent's measured WRAP_CONTENT pane-plus-halo size, then TOP|LEFT; at most three observed-delta public attributes relayouts")
+            .put("held_policy", "Align this actual Window once after opening at REST; lock placement attributes thereafter so the product 1.0125 center scale remains visible")
+        opticalNativeAlertAlignmentReports.add(report)
+
+        fun committedLayout(): OpticalAlertLayout {
+            compose.waitForIdle()
+            surface.awaitHwuiCommit()
+            return opticalAlertLayout()
+        }
+        val resizeRequest = JSONObject().put("operation", "setLayout-measured-wrap-content-and-top-left")
+            .put("measured_drawing_space_size_px", JSONArray(listOf(before.drawingSpace.size.width, before.drawingSpace.size.height)))
+            .put("requested_window_screen_origin_px", JSONObject.NULL)
+            .put("request_origin_policy", "Initial gravity/inset origin is platform-defined and is observed after commit, never assumed zero")
+        steps.put(resizeRequest)
+        compose.runOnIdle {
+            dialog.setLayout(before.drawingSpace.size.width, before.drawingSpace.size.height)
+            val attributes = WindowManager.LayoutParams().apply {
+                copyFrom(dialog.attributes)
+                gravity = Gravity.TOP or Gravity.LEFT
+                x = 0
+                y = 0
+                horizontalMargin = 0f
+                verticalMargin = 0f
+            }
+            resizeRequest.put("requested_placement_attributes", OpticalWindowPlacement.read(attributes).json())
+            dialog.attributes = attributes
+        }
+        var actual = committedLayout()
+        resizeRequest.put("actual_layout_after_commit", actual.json()).put("actual_window_after_commit", surface.geometry())
+        for (attempt in 1..3) {
+            val delta = target - actual.pane.screenOrigin
+            if (abs(delta.x) <= .5f && abs(delta.y) <= .5f) break
+            val correction = Offset(delta.x.roundToInt().toFloat(), delta.y.roundToInt().toFloat())
+            val previousWindow = surface.geometry()
+            val previousOrigin = previousWindow.getJSONArray("window_screen_origin_px")
+            val request = JSONObject().put("operation", "observed-delta-attributes-relayout").put("attempt", attempt)
+                .put("observed_pane_screen_origin_px", JSONArray(listOf(actual.pane.screenOrigin.x, actual.pane.screenOrigin.y)))
+                .put("observed_delta_to_target_px", JSONArray(listOf(delta.x, delta.y)))
+                .put("integer_attributes_delta_px", JSONArray(listOf(correction.x, correction.y)))
+                .put("requested_window_screen_origin_px", JSONArray(listOf(previousOrigin.getDouble(0) + correction.x,
+                    previousOrigin.getDouble(1) + correction.y)))
+                .put("request_origin_policy", "Prediction from previous observed window origin plus requested integer attributes delta; actual origin and insets are measured after commit")
+                .put("window_before_request", previousWindow)
+            steps.put(request)
+            compose.runOnIdle {
+                val attributes = WindowManager.LayoutParams().apply {
+                    copyFrom(dialog.attributes)
+                    x += correction.x.toInt()
+                    y += correction.y.toInt()
+                }
+                check(attributes.x >= 0) { "Native fixture must not request a negative-x full-width dialog shift" }
+                request.put("requested_placement_attributes", OpticalWindowPlacement.read(attributes).json())
+                dialog.attributes = attributes
+            }
+            actual = committedLayout()
+            request.put("actual_layout_after_commit", actual.json()).put("actual_window_after_commit", surface.geometry())
+        }
+        val residual = target - actual.pane.screenOrigin
+        report.put("final_residual_px", JSONArray(listOf(residual.x, residual.y)))
+            .put("final_layout", actual.json()).put("final_window_geometry", surface.geometry())
+        assertNativeAlertWidth(scene, actual)
+        assertAlertDrawingSpace(scene, actual)
+        assertTrue("${scene.name}: actual native Alert top-left residual must be <=0.5 physical pixel: $residual",
+            abs(residual.x) <= .5f && abs(residual.y) <= .5f)
+        val placement = compose.runOnIdle { OpticalWindowPlacement.read(dialog.attributes) }
+        report.put("locked_placement_attributes", placement.json()).put("verified", true)
+        opticalNativeAlertAlignments[dialog] = OpticalNativeAlertAlignment(placement, report)
+    }
+
+    private fun assertOpticalNativeAlertPlacement(scene: OpticalScene, surface: OpticalCaptureWindow): JSONObject? {
+        if (!opticalNativeCanvas || scene.surface != OpticalSurface.alert) return null
+        val dialog = checkNotNull(surface.window)
+        val aligned = checkNotNull(opticalNativeAlertAlignments[dialog]) { "${scene.name}: actual Alert Window must align once before capture" }
+        val actual = compose.runOnIdle { OpticalWindowPlacement.read(dialog.attributes) }
+        assertEquals("${scene.name}: Window placement remains locked after REST alignment, including held frames", aligned.placement, actual)
+        return JSONObject().put("alignment", aligned.report).put("placement_unchanged", true)
+            .put("actual_placement_attributes", actual.json())
     }
 
     private fun tapOptical(tag: String) {
@@ -333,6 +515,10 @@ class NativeGlassParityCaptureTest {
         compose.mainClock.advanceTimeByFrame()
         compose.waitForIdle()
         settleOptical()
+        val openedScene = compose.runOnIdle { opticalCurrentScene }
+        if (opticalNativeCanvas && openedScene != null && openedScene.surface == OpticalSurface.alert && tag == openedScene.surface.triggerTag) {
+            alignOpticalNativeAlertOnce(openedScene)
+        }
         compose.runOnIdle {
             opticalPresentationTrace.add(JSONObject().put("event", "tap_settled").put("tag", tag)
                 .put("compose_ms", compose.mainClock.currentTime).put("wall_uptime_ms", SystemClock.uptimeMillis())
@@ -383,13 +569,25 @@ class NativeGlassParityCaptureTest {
             opticalActivity = OpticalCaptureWindow.from(view)
             density = currentDensity.density
             opticalFontScale = currentDensity.fontScale
+            opticalCurrentScene = scene
             if (!scene.showControls || scene.surface == OpticalSurface.home) opticalDialog = null
         }
         SleepyThemeProvider(darkTheme = scene.dark, themeKey = ThemePresets.KEY_DEFAULT) {
             CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
                 val colors = MaterialTheme.colorScheme
                 GlassHost(Modifier.fillMaxSize(), background = colors.background) {
-                    GlassBackground(0f, Modifier.fillMaxSize()) { OpticalCaptureBackground(scene.background) }
+                    GlassBackground(0f, Modifier.fillMaxSize().onGloballyPositioned { opticalBackgroundHostCoordinates = it }) {
+                        if (opticalNativeCanvas) {
+                            Box(Modifier.fillMaxSize().background(Color(0xFFF0F0F5))) {
+                                OpticalCaptureBackground(scene.background,
+                                    Modifier.align(Alignment.TopStart).requiredSize(375.dp, 667.dp).clipToBounds()
+                                        .onGloballyPositioned { opticalBackgroundCoordinates = it })
+                            }
+                        } else {
+                            OpticalCaptureBackground(scene.background,
+                                Modifier.onGloballyPositioned { opticalBackgroundCoordinates = it })
+                        }
+                    }
                     if (scene.showControls) key(scene.background, scene.dark, scene.surface) {
                         if (scene.surface == OpticalSurface.home) {
                             Box(Modifier.fillMaxSize()) {
@@ -486,6 +684,8 @@ class NativeGlassParityCaptureTest {
                     modifier = Modifier.testTag(surface.carrierTag),
                     title = {
                         OpticalMeasuredContent(scene, "alert-title", measuringDensity) {
+                            val material = LocalGlassMaterialBackdrop.current as? GlassMaterialScope
+                            SideEffect { opticalAlertPane = material }
                             Text("Native Alert", Modifier.testTag("static-alert-title"))
                         }
                     },
@@ -568,7 +768,7 @@ class NativeGlassParityCaptureTest {
     private fun verifyOpticalPresentationGpu(scene: OpticalScene, phase: String, bitmap: Bitmap,
                                              origin: IntArray): JSONArray {
         val observations = JSONArray()
-        fun windowRect(tag: String) = bounds(compose.onNodeWithTag(tag, useUnmergedTree = true))
+        fun windowRect(tag: String) = opticalBounds(scene, tag, compose.onNodeWithTag(tag, useUnmergedTree = true))
             .translate(Offset(origin[0].toFloat(), origin[1].toFloat()))
         fun inspect(tag: String, region: Rect, expectedText: Int? = null) {
             val left = floor(region.left).toInt(); val top = floor(region.top).toInt()
@@ -623,6 +823,7 @@ class NativeGlassParityCaptureTest {
                                baselineName: String, baselineWindow: Bitmap, baselineScreen: Bitmap) {
         compose.waitForIdle()
         val surface = if (scene.surface == OpticalSurface.home) checkNotNull(opticalActivity) else checkNotNull(opticalDialog)
+        val nativeAlignment = assertOpticalNativeAlertPlacement(scene, surface)
         val contentDensity = verifiedOpticalContentDensity(scene, surface)
         val origin = surface.origin()
         val screenOrigin = surface.screenOrigin()
@@ -654,11 +855,19 @@ class NativeGlassParityCaptureTest {
                 val nodes = compose.onAllNodes(hasTestTag(tag), useUnmergedTree = true)
                 assertEquals("${scene.name}: one $tag", 1, nodes.fetchSemanticsNodes().size)
                 val node = nodes[0]
-                val rect = if (tag == "dock-lens") node.fetchSemanticsNode().config[DockLensBoundsInRootPx] else bounds(node)
+                val rect = if (tag == "dock-lens") node.fetchSemanticsNode().config[DockLensBoundsInRootPx]
+                    else opticalBounds(scene, tag, node)
                 val localWindowRect = rect.translate(Offset(origin[0].toFloat(), origin[1].toFloat()))
                 val screenRect = rect.translate(Offset(screenOrigin[0].toFloat(), screenOrigin[1].toFloat()))
                 measurements.put(JSONObject().put("tag", tag)
-                    .put("geometry_source", if (tag == "dock-lens") "product painted capsule mapped to root" else "unclipped semantics layout bounds")
+                    .put("actual_root_rect_px", JSONArray(listOf(rect.left, rect.top, rect.right, rect.bottom)))
+                    .put("actual_window_rect_px", JSONArray(listOf(localWindowRect.left, localWindowRect.top, localWindowRect.right, localWindowRect.bottom)))
+                    .put("actual_screen_rect_px", JSONArray(listOf(screenRect.left, screenRect.top, screenRect.right, screenRect.bottom)))
+                    .put("geometry_source", when {
+                        tag == "dock-lens" -> "product painted capsule mapped to root"
+                        scene.surface == OpticalSurface.alert -> "actual pane/slot layout coordinates; four transformed corners mapped to root, without clipping"
+                        else -> "unclipped semantics layout bounds"
+                    })
                     .put("window", opticalRegionMetrics(windowBitmap, if (scene.surface == OpticalSurface.home) baselineWindow else null, localWindowRect))
                     .put("composited_display", opticalRegionMetrics(screenBitmap, baselineScreen, screenRect)))
             }
@@ -676,6 +885,10 @@ class NativeGlassParityCaptureTest {
                 })
                 .put("window_png", "$stem-window.png").put("screen_png", "$stem-screen.png")
                 .put("window_size_px", JSONArray(listOf(windowBitmap.width, windowBitmap.height)))
+                .put("background_canvas", opticalBackgroundWorld())
+                .put("window_geometry", surface.geometry())
+                .put("actual_alert_layout", if (scene.surface == OpticalSurface.alert) opticalAlertLayout().json() else JSONObject.NULL)
+                .put("native_alert_alignment", nativeAlignment ?: JSONObject.NULL)
                 .put("display_readiness", readyScreen.verification)
                 .put("content_density_observations", contentDensity)
                 .put("gpu_visibility", gpuVisibility)
@@ -686,7 +899,26 @@ class NativeGlassParityCaptureTest {
                 .put("display_baseline_png", "$baselineName-screen.png")
                 .put("content_origin_in_window_px", JSONArray(origin.toList()))
                 .put("content_origin_on_screen_px", JSONArray(screenOrigin.toList())).put("measurements", measurements))
+            assertOpticalNativeAlertPlacement(scene, surface)
         } finally { windowBitmap.recycle(); screenBitmap.recycle() }
+    }
+
+    /** Layout size alone omits the Alert's outer graphicsLayer press transform. */
+    private fun opticalBounds(scene: OpticalScene, tag: String, node: SemanticsNodeInteraction): Rect {
+        if (scene.surface != OpticalSurface.alert) return bounds(node)
+        val slotCoordinates = if (tag == scene.surface.carrierTag) null
+            else node.fetchSemanticsNode().layoutInfo.coordinates
+        return compose.runOnIdle {
+            val coordinates = if (tag == scene.surface.carrierTag)
+                checkNotNull(checkNotNull(opticalAlertPane).coordinates)
+            else checkNotNull(slotCoordinates)
+            check(coordinates.isAttached) { "${scene.name}: $tag coordinates must belong to the attached pane" }
+            val w = coordinates.size.width.toFloat()
+            val h = coordinates.size.height.toFloat()
+            val corners = listOf(Offset.Zero, Offset(w, 0f), Offset(0f, h), Offset(w, h))
+                .map(coordinates::localToRoot)
+            Rect(corners.minOf { it.x }, corners.minOf { it.y }, corners.maxOf { it.x }, corners.maxOf { it.y })
+        }
     }
 
     private val tint = Color(0f, .65f, .75f, 1f)
