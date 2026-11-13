@@ -746,15 +746,20 @@ final class NativeReferenceTests: XCTestCase {
         captureSwiftUITabViewDockSpatialResponse(horizontal: true)
     }
 
-    private func captureSwiftUITabViewDockSpatialResponse(horizontal: Bool) {
+    /// Explicit foreground-property observation; retain only the existing A/B inputs.
+    func testSwiftUITabViewDockForegroundProperties() {
+        captureSwiftUITabViewDockSpatialResponse(horizontal: false, foregroundProperties: true)
+    }
+
+    private func captureSwiftUITabViewDockSpatialResponse(horizontal: Bool, foregroundProperties: Bool = false) {
         executionTimeAllowance = 110
-        continueAfterFailure = !horizontal
+        continueAfterFailure = foregroundProperties || !horizontal
         settleDuration = 0.1
         var captures: [[String: Any]] = []
         defer {
             if let data = try? JSONSerialization.data(withJSONObject: captures, options: [.prettyPrinted, .sortedKeys]) {
                 let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
-                attachment.name = "dock-local-appearance-capture-brackets"
+                attachment.name = foregroundProperties ? "dock-foreground-properties-capture-brackets" : "dock-local-appearance-capture-brackets"
                 attachment.lifetime = .keepAlways
                 add(attachment)
             }
@@ -762,7 +767,7 @@ final class NativeReferenceTests: XCTestCase {
         }
         launch(scene: "toggle", background: "gray_26", style: "dark", staticOptics: true,
                dockParent: "swiftui-tabview", dockContent: "synthetic-scroll", localAppearance: true,
-               horizontalLocalAppearance: horizontal)
+               horizontalLocalAppearance: horizontal, foregroundProperties: foregroundProperties)
         let control = app.tabBars["swiftui-tabbar"]
         XCTAssertTrue(control.waitForExistence(timeout: 5))
         XCTAssertEqual(control.buttons.count, 4)
@@ -773,7 +778,7 @@ final class NativeReferenceTests: XCTestCase {
         let next = app.buttons["dock-local-appearance-next"]
         XCTAssertTrue(state.waitForExistence(timeout: 5))
         XCTAssertTrue(next.exists)
-        let stages = horizontal ? ["A", "L", "R", "B", "R", "L", "A"] : ["A", "B", "C", "D", "C", "B", "A"]
+        let stages = foregroundProperties ? ["A", "B"] : (horizontal ? ["A", "L", "R", "B", "R", "L", "A"] : ["A", "B", "C", "D", "C", "B", "A"])
         var initialIdentities: [String]?
         func decoded(_ text: String) -> [String: Any] {
             guard let data = text.data(using: .utf8),
@@ -802,7 +807,8 @@ final class NativeReferenceTests: XCTestCase {
                 let end = clock()
                 let afterText = state.value as? String ?? ""
                 let after = decoded(afterText)
-                let name = String(format: "dock-local-%02d-%@-%ds-rest", index, inputID, Int(budget))
+                let prefix = foregroundProperties ? "dock-foreground" : "dock-local"
+                let name = String(format: prefix + "-%02d-%@-%ds-rest", index, inputID, Int(budget))
                 captures.append(["stage": index, "inputID": inputID, "observationBudgetSeconds": budget,
                                  "waitCompleted": waitResult == .completed, "attachmentName": name,
                                  "captureBegin": begin, "captureEnd": end,
@@ -819,6 +825,22 @@ final class NativeReferenceTests: XCTestCase {
                     XCTAssertGreaterThanOrEqual((snapshot["elapsedSinceSourceApplyEndSeconds"] as? Double) ?? -1, budget)
                     XCTAssertEqual((snapshot["canvasInterfaceStyle"] as? NSNumber)?.intValue, 2)
                     let publicState = snapshot["publicState"] as? [String: Any] ?? [:]
+                    if foregroundProperties {
+                        let foreground = publicState["foregroundProperties"] as? [String: Any] ?? [:]
+                        XCTAssertEqual((foreground["schemaVersion"] as? NSNumber)?.intValue, 1)
+                        XCTAssertEqual(foreground["enabled"] as? Bool, true)
+                        XCTAssertEqual(foreground["coverageAvailable"] as? Bool, false)
+                        // Absence remains a failed property observation, never a reason to restyle/retry.
+                        XCTAssertGreaterThan((foreground["labelCount"] as? NSNumber)?.intValue ?? 0, 0)
+                        XCTAssertGreaterThan((foreground["imageViewCount"] as? NSNumber)?.intValue ?? 0, 0)
+                        let rows = foreground["views"] as? [[String: Any]] ?? []
+                        for row in rows {
+                            XCTAssertNotNil(row["identity"] as? String)
+                            XCTAssertNotNil(row["ancestorAlphaChain"] as? [[String: Any]])
+                            XCTAssertNotNil(row["traits"] as? [String: Any])
+                            XCTAssertNotNil(row["ownAlpha"] as? NSNumber)
+                        }
+                    }
                     let identities = ["barIdentity", "controllerIdentity", "windowIdentity"].compactMap { publicState[$0] as? String } +
                         [snapshot["canvasIdentity"] as? String].compactMap { $0 }
                     XCTAssertEqual(identities.count, 4)
@@ -846,11 +868,11 @@ final class NativeReferenceTests: XCTestCase {
                     }
                 }
                 XCTAssertTrue(control.buttons["Schedule"].isSelected)
-                XCTAssertTrue(next.isEnabled, "Final A keeps the same enabled foreground")
+                XCTAssertTrue(next.isEnabled, foregroundProperties ? "Final B keeps the same enabled foreground" : "Final A keeps the same enabled foreground")
             }
             if index + 1 < stages.count { next.tap() }
         }
-        XCTAssertEqual(captures.count, 14)
+        XCTAssertEqual(captures.count, foregroundProperties ? 4 : 14)
     }
 
     func testAlertOpticsFineGridLight() { alertOptics(background: "fine_grid", style: "light") }
@@ -1170,7 +1192,7 @@ final class NativeReferenceTests: XCTestCase {
     private func launch(scene: String, background: String, focused: Bool = false, tabCount: Int = 3,
                         style: String = "light", staticOptics: Bool = false, dockParent: String? = nil,
                         dockContent: String? = nil, appearanceControls: Bool = false, localAppearance: Bool = false,
-                        horizontalLocalAppearance: Bool = false,
+                        horizontalLocalAppearance: Bool = false, foregroundProperties: Bool = false,
                         initialSlider: Double? = nil,
                         sliderLayerProbe: Bool = false, rangeScale: Double? = nil, rangeLower: Double? = nil,
                         rangeUpper: Double? = nil, rangeGeometryProbe: Bool = false) {
@@ -1185,6 +1207,7 @@ final class NativeReferenceTests: XCTestCase {
         if appearanceControls { app.launchArguments.append("-ReferenceDockAppearanceControls") }
         if localAppearance { app.launchArguments.append("-ReferenceDockLocalAppearance") }
         if horizontalLocalAppearance { app.launchArguments.append("-ReferenceDockHorizontalResponse") }
+        if foregroundProperties { app.launchArguments.append("-ReferenceDockForegroundProperties") }
         if let initialSlider { app.launchArguments += ["-ReferenceInitialSlider", String(initialSlider)] }
         if sliderLayerProbe { app.launchArguments.append("-ReferenceSliderLayerProbe") }
         if let rangeScale { app.launchArguments += ["-ReferenceRangeScale", String(rangeScale)] }

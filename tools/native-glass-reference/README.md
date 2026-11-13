@@ -1187,3 +1187,29 @@ establish sensitivity at these locations; they do not identify a native
 classifier, sampling support, blur radius, opacity, adaptation latency or
 internal material state. No Android production optical change or parity
 acceptance follows from this native-only sequence.
+
+
+## Retained Dock public foreground properties
+
+Select `NativeReferenceTests/testSwiftUITabViewDockForegroundProperties` for the
+explicit `-ReferenceDockForegroundProperties` experiment. It also requires the
+existing static/local-appearance flags and keeps only A→B, with four original
+screenshot/AX pairs at minimum1s/3s after actual source draw. Default79/85
+sequences are unchanged. An unfiltered XCTest suite discovers this new method;
+use `-only-testing` for a bounded observation.
+
+Actual UILabel/UIImageView descendants contribute public per-view traits,
+resolved RGBA, font/attributed-run and image metadata, geometry and UIView alpha
+ancestry. Symbol configurations expose presence/equality only; missing public
+numeric getters stay unavailable. No styling setter, native view replacement,
+private selector/KVC, coverage inference or capture retry is added.
+
+The iOS26.5/23F77 SE3 run passed one build9.6601s/test33.0458s and121 offline
+artifact checks. Across the eight formal getters, each retained child view
+changed its effective interface style2→1 while the bar stayed2. The regular
+content subtree changed tint and label textColor; both actual subtrees, fonts,
+geometry and formal image identities are retained in the
+[portable observation](../../libraries/liquid-glass/validation/observations/dock-foreground-properties-91.json).
+Early trace image replacements remain explicitly recorded. Public model
+properties and their alpha chains do not identify final composited glyph colors,
+visible ownership, masks, native material rules or Android parity.

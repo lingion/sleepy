@@ -647,3 +647,16 @@ API36原HazeRender三项以已注册SleepyRenderTestRunner在5.3395s通过，初
 两处原定无字形探针各432px，在Window/display、1s/3s和回程都分别为：A/C保持RGB(39,38,42)，B/D变为(146,145,148)。相对81原亮区(117,115,120)增加(29,30,28)，符合先验有条件公式；说明已实现负contrast确实贡献了亮区压暗，不需用丢失source来解释这些探针。仍未dump中间uniform或识别唯一完整机制；81是提取前历史包，本次只保证相对当前HEAD的单调用变化，未额外重跑一份同build基线。原生B/D探针仍为(247,247,247)，关contrast远不足以修复；未选字形仍是独立固定tint，本次没有校准前景、彩色/纹理背景、动态或生产取源差异。
 
 诊断后所有冻结源码逐字节恢复，正式主包448a5b67bbc970b96485bd0d7f0a7c7c3bb8f010058e737f4237bf419eddf190及原测试包重新核对host/device身份，MainActivity resumed，根查看恢复截图为第11周有课网格与Dock；诊断参数未留在app或手机。删除三个实际不用ABI包90,283,952字节及临时主包备份30,078,637字节，保留原PNG和唯一证据。[便携诊断记录](../libraries/liquid-glass/validation/observations/dock-contrast-diagnostic-90.json)保留先验、精确分布、50份证据哈希和范围；原始资料在本会话android-dock-contrast-diagnostic-90。本批不提交材质候选，也不改变原生校准或发布gate。
+
+
+### 91：原生 Dock 实际前景对象的公开属性
+
+新增显式 `-ReferenceDockForegroundProperties` 与单独所选 `testSwiftUITabViewDockForegroundProperties`，只保留既有 A→B 两种输入、每阶段 draw 后至少1s/3s的四张截图/AX及八个前后getter。默认79/85序列、输入生成、样式与父层路径不变。只扫描实际 UILabel/UIImageView，按每个对象自身trait解析RGBA，保留font/attributed UTF-16 run、image元数据、opaque symbol configuration的公开presence/equality、model transform与UIView祖先alpha；没有私有getter、样式赋值或数值symbol配置推测。作者27项及独立13项静态审核均通过。
+
+复用既有DerivedData，一次build-for-testing9.6601s、一次所选test-without-building33.0458s通过；四份binary manifest和源码哈希前后一致，无retry/repetition。必需result exports通过，可选build/console log不可用及其错误保留。121项离线源数组、draw、截图/getter时序及属性完整性核对通过，0失败/读取错误；这些是采集核对，不是视觉验收。正式getter实际最小观察时刻约为A5.97/7.47s、B2.19/3.60s，公开getter括号1.31–3.50ms，不能把预算名称当成精确延迟或无开销观测。
+
+八个正式getter各有8个UILabel和8个UIImageView；两条实际对象子树均包含四份图标/标签，不能当作16份独立可见coverage。window/controller/bar的effective style始终2，bar override为0；16个实际前景view自身effective style却从A2变成B1。`tabBar/0/2`对象的tint从(235/255,235/255,245/255,.6)变成(60/255,60/255,67/255,.6)，四个label的textColor从白色变为黑色；`tabBar/0/0`对象的白色tint/NSColor及semibold字体保持。两支分别为10pt Medium/Semibold，正式截图前后及同阶段1s/3s的完整属性数组一致；view identity、geometry、字体、image元数据和alpha链保持。这个结果补足了先前只用bar traits解析颜色的缺口，尚不能恢复最终合成字形颜色、mask或coverage，也没有识别驱动这些变化的内部规则。
+
+97个trace state中，早期A的9条使用另外四个UIImage identity；之后正式截图的四种UIImage在A/B间保持。因此不宣称整run的image identity不变或getter完全没有观察影响。全部原记录保留。原始750×1334px输入与预定RGBA数组相符；两处既定body探针各192px，四张图分别为A全部RGB(37,37,37)、B全部(247,247,247)。根查看原Dock联系图，未选文字/图标随背景由浅变深，选中前景保持浅色；未从图像极值、UIImage大小或model alpha推算独立字形颜色。
+
+[便携公开属性记录](../libraries/liquid-glass/validation/observations/dock-foreground-properties-91.json)保留输入/源码与原始证据哈希、分支属性、正式观察及限制；完整资料在本会话android-dock-foreground-properties-91。此次仅增加原生参考与证据，没有修改Android生产光学或固定前景色。90的材质压暗残差、彩色/纹理背景与自然动态仍待校准，三个发布gate保持false；独立公开仓库仍留待逐控件校准及来源/分发核对完成后创建。

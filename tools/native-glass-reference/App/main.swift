@@ -353,6 +353,143 @@ private enum ReferenceDockPublicSnapshot {
     }
 }
 
+/// Explicit opt-in property observations of actual public UILabel/UIImageView objects.
+/// These getters expose model/configuration state, not composited glyph color or coverage.
+/// API sources: https://developer.apple.com/documentation/uikit/uilabel
+/// https://developer.apple.com/documentation/uikit/uiimageview
+/// https://developer.apple.com/documentation/uikit/uiimage/symbolconfiguration-swift.class
+private enum ReferenceDockForegroundProperties {
+    static let enabled = ProcessInfo.processInfo.arguments.contains("-ReferenceDockForegroundProperties") &&
+        ProcessInfo.processInfo.arguments.contains("-ReferenceDockLocalAppearance") &&
+        ProcessInfo.processInfo.arguments.contains("-ReferenceStaticOptics")
+
+    private static func rectangle(_ value: CGRect) -> [String: CGFloat] {
+        ["x": value.minX, "y": value.minY, "w": value.width, "h": value.height]
+    }
+    private static func transform(_ value: CGAffineTransform) -> [String: CGFloat] {
+        ["a": value.a, "b": value.b, "c": value.c, "d": value.d, "tx": value.tx, "ty": value.ty]
+    }
+    private static func color(_ value: UIColor?, traits: UITraitCollection) -> [String: Any] {
+        let resolved = value.flatMap { ReferencePalette.resolvedSRGB($0, traits: traits) }
+        return ["present": value != nil, "resolutionSucceeded": resolved != nil,
+                "resolvedSRGBA": resolved.map { $0 as Any } ?? NSNull(),
+                "resolutionScope": "this observed view's own traitCollection; not final composited glyph color"]
+    }
+    private static func font(_ value: UIFont?) -> Any {
+        guard let value else { return NSNull() }
+        let descriptor = value.fontDescriptor
+        let traits = descriptor.object(forKey: .traits) as? [UIFontDescriptor.TraitKey: Any] ?? [:]
+        func number(_ key: UIFontDescriptor.TraitKey) -> Any {
+            (traits[key] as? NSNumber).map { $0 as Any } ?? NSNull()
+        }
+        return ["fontName": value.fontName, "familyName": value.familyName, "pointSize": value.pointSize,
+                "symbolicTraitsRawValue": descriptor.symbolicTraits.rawValue,
+                "weightTrait": number(.weight), "widthTrait": number(.width), "slantTrait": number(.slant),
+                "textStyle": (descriptor.object(forKey: .textStyle) as? String).map { $0 as Any } ?? NSNull(),
+                "ascender": value.ascender, "descender": value.descender, "leading": value.leading,
+                "capHeight": value.capHeight, "xHeight": value.xHeight, "lineHeight": value.lineHeight,
+                "scope": "actual UIFont getters; no inferred post-layout shrink factor or glyph coverage"] as [String: Any]
+    }
+    private static func symbolConfiguration(_ value: UIImage.SymbolConfiguration?) -> [String: Any] {
+        // Public equality is available; numeric attribute getters are not. Never parse description/KVC.
+        ["present": value != nil,
+         "equalsUnspecified": value.map { $0.isEqual(to: .unspecified) as Any } ?? NSNull(),
+         "numericFieldsAvailable": false,
+         "numericFieldsUnavailable": ["pointSize", "weight", "scale", "textStyle"],
+         "scope": "opaque public configuration; presence/equality only, no description parsing"]
+    }
+    private static func image(_ value: UIImage?) -> Any {
+        guard let value else { return NSNull() }
+        return ["identity": String(describing: ObjectIdentifier(value)),
+                "sizePt": ["w": value.size.width, "h": value.size.height], "scale": value.scale,
+                "renderingModeRawValue": value.renderingMode.rawValue,
+                "imageOrientationRawValue": value.imageOrientation.rawValue,
+                "isSymbolImage": value.isSymbolImage,
+                "symbolConfiguration": symbolConfiguration(value.symbolConfiguration),
+                "cgImagePresent": value.cgImage != nil,
+                "cgImageWidthPx": value.cgImage.map { $0.width as Any } ?? NSNull(),
+                "cgImageHeightPx": value.cgImage.map { $0.height as Any } ?? NSNull(),
+                "cgImageAlphaInfoRawValue": value.cgImage.map { $0.alphaInfo.rawValue as Any } ?? NSNull(),
+                "scope": "actual UIImage properties; no raster export or independent screen-space coverage"] as [String: Any]
+    }
+
+    static func snapshot(_ value: UIView, path: String, window: UIWindow?) -> [String: Any]? {
+        guard value is UILabel || value is UIImageView else { return nil }
+        let traits = value.traitCollection
+        var ancestors: [[String: Any]] = []
+        var ancestor = value.superview
+        while let current = ancestor {
+            ancestors.append(["identity": String(describing: ObjectIdentifier(current)),
+                              "class": String(describing: type(of: current)),
+                              "alpha": current.alpha, "isHidden": current.isHidden])
+            ancestor = current.superview
+        }
+        var row: [String: Any] = [
+            "identity": String(describing: ObjectIdentifier(value)), "path": path,
+            "class": String(describing: type(of: value)),
+            "frameInWindow": rectangle(value.convert(value.bounds, to: window)),
+            "bounds": rectangle(value.bounds),
+            "centerInSuperview": ["x": value.center.x, "y": value.center.y],
+            "transform": transform(value.transform), "contentModeRawValue": value.contentMode.rawValue,
+            "isHidden": value.isHidden, "ownAlpha": value.alpha, "ancestorAlphaChain": ancestors,
+            "alphaScope": "UIView model alpha only; excludes presentation, CALayer-only ancestors, glyph coverage and compositor effects",
+            "tintColor": color(value.tintColor, traits: traits),
+            "tintAdjustmentModeRawValue": value.tintAdjustmentMode.rawValue,
+            "traits": ["effectiveInterfaceStyle": traits.userInterfaceStyle.rawValue,
+                       "overrideInterfaceStyle": value.overrideUserInterfaceStyle.rawValue,
+                       "accessibilityContrast": traits.accessibilityContrast.rawValue,
+                       "userInterfaceLevel": traits.userInterfaceLevel.rawValue,
+                       "legibilityWeight": traits.legibilityWeight.rawValue,
+                       "displayScale": traits.displayScale,
+                       "preferredContentSizeCategory": traits.preferredContentSizeCategory.rawValue],
+        ]
+        if let label = value as? UILabel {
+            var runs: [[String: Any]] = []
+            if let attributed = label.attributedText {
+                attributed.enumerateAttributes(in: NSRange(location: 0, length: attributed.length), options: []) { attributes, range, _ in
+                    var colors: [String: Any] = [:]
+                    let colorKeys: [NSAttributedString.Key] = [.foregroundColor, .backgroundColor, .strokeColor, .underlineColor, .strikethroughColor]
+                    for key in colorKeys {
+                        var entry = color(attributes[key] as? UIColor, traits: traits)
+                        entry["attributePresent"] = attributes[key] != nil
+                        entry["isUIColor"] = attributes[key] is UIColor
+                        colors[key.rawValue] = entry
+                    }
+                    runs.append(["rangeUTF16": ["location": range.location, "length": range.length],
+                                 "attributeKeys": attributes.keys.map(\.rawValue).sorted(),
+                                 "colors": colors, "fontAttributePresent": attributes[.font] != nil,
+                                 "fontAttributeIsUIFont": attributes[.font] is UIFont,
+                                 "font": font(attributes[.font] as? UIFont)])
+                }
+            }
+            row["publicType"] = "UILabel"
+            row["label"] = ["text": label.text.map { $0 as Any } ?? NSNull(),
+                            "textColor": color(label.textColor, traits: traits), "font": font(label.font),
+                            "highlightedTextColor": color(label.highlightedTextColor, traits: traits),
+                            "isHighlighted": label.isHighlighted, "isEnabled": label.isEnabled,
+                            "numberOfLines": label.numberOfLines,
+                            "textAlignmentRawValue": label.textAlignment.rawValue,
+                            "lineBreakModeRawValue": label.lineBreakMode.rawValue,
+                            "baselineAdjustmentRawValue": label.baselineAdjustment.rawValue,
+                            "adjustsFontSizeToFitWidth": label.adjustsFontSizeToFitWidth,
+                            "minimumScaleFactor": label.minimumScaleFactor,
+                            "adjustsFontForContentSizeCategory": label.adjustsFontForContentSizeCategory,
+                            "attributedTextPresent": label.attributedText != nil,
+                            "attributedTextUTF16Length": label.attributedText?.length ?? 0,
+                            "attributedTextRuns": runs,
+                            "attributedTextScope": "exact effective attribute runs; missing attributes remain absent; no assumed fallback or coverage"]
+        } else if let imageView = value as? UIImageView {
+            row["publicType"] = "UIImageView"
+            row["imageView"] = ["image": image(imageView.image), "highlightedImage": image(imageView.highlightedImage),
+                                "isHighlighted": imageView.isHighlighted, "isAnimating": imageView.isAnimating,
+                                "animationImageCount": imageView.animationImages?.count ?? 0,
+                                "highlightedAnimationImageCount": imageView.highlightedAnimationImages?.count ?? 0,
+                                "preferredSymbolConfiguration": symbolConfiguration(imageView.preferredSymbolConfiguration)]
+        }
+        return row
+    }
+}
+
 /// Read only public containment, backgrounds and scroll geometry. These values
 /// describe the material's context; they do not expose a shader or blur style.
 private enum ReferenceDockMaterialContext {
@@ -417,7 +554,13 @@ private enum ReferenceDockMaterialContext {
             parents.append(row); current = candidate.parent
         }
         var scrolls: [[String: Any]] = [], effects: [[String: Any]] = [], dockGeometry: [[String: Any]] = []
+        var foreground: [[String: Any]] = []
+        let includeForeground = spatialDetails && ReferenceDockForegroundProperties.enabled
         func scan(_ candidate: UIView, path: String, forScrolls: Bool) {
+            if includeForeground, !forScrolls,
+               let row = ReferenceDockForegroundProperties.snapshot(candidate, path: path, window: window) {
+                foreground.append(row)
+            }
             if spatialDetails, !forScrolls {
                 let name = String(describing: type(of: candidate))
                 if ["TabBarPlatter", "LiquidLens", "TabSelection"].contains(where: { name.contains($0) }) {
@@ -462,6 +605,13 @@ private enum ReferenceDockMaterialContext {
                 "backgroundCanvasesInWindow": window.map { canvases($0) } ?? [],
                 "windowBounds": window.map { rect($0.bounds) } ?? [:],
                 "windowSafeAreaInsets": window.map { insets($0.safeAreaInsets) } ?? [:]]
+        if includeForeground {
+            result["foregroundProperties"] = ["schemaVersion": 1, "enabled": true, "views": foreground,
+                "labelCount": foreground.filter { $0["publicType"] as? String == "UILabel" }.count,
+                "imageViewCount": foreground.filter { $0["publicType"] as? String == "UIImageView" }.count,
+                "coverageAvailable": false,
+                "scope": "actual typed UILabel/UIImageView public properties from retained TabBar descendants; no private selector/KVC, forced style, composited glyph-color or coverage inference"] as [String: Any]
+        }
         if spatialDetails {
             result["observedDockViewGeometry"] = dockGeometry
             result["dockGeometryScope"] = "all matching public UIView model rectangles; platter and lens are separate from UITabBar; no private getter, material inference or forced geometry"
@@ -509,6 +659,7 @@ private final class ReferenceSwiftUIDockObservation {
             result["windowBounds"] = context["windowBounds"]
             result["screenScale"] = window.screen.scale
             result["contextPhase"] = phase
+            if let foreground = context["foregroundProperties"] { result["foregroundProperties"] = foreground }
         }
         return result
     }
@@ -744,11 +895,14 @@ private final class ReferenceDockAppearanceControls: ObservableObject {
 private final class ReferenceDockLocalAppearance: ObservableObject {
     static let sequence: [ReferenceDockSpatialInput] = [.A, .B, .C, .D, .C, .B, .A]
     private let horizontalResponse = ProcessInfo.processInfo.arguments.contains("-ReferenceDockHorizontalResponse")
+    private let foregroundProperties = ReferenceDockForegroundProperties.enabled
     private var activeSequence: [ReferenceDockSpatialInput] {
-        horizontalResponse ? [.A, .L, .R, .B, .R, .L, .A] : Self.sequence
+        if foregroundProperties { return [.A, .B] }
+        return horizontalResponse ? [.A, .L, .R, .B, .R, .L, .A] : Self.sequence
     }
     private var experimentInputs: [ReferenceDockSpatialInput] {
-        horizontalResponse ? [.A, .L, .R, .B] : [.A, .B, .C, .D]
+        if foregroundProperties { return [.A, .B] }
+        return horizontalResponse ? [.A, .L, .R, .B] : [.A, .B, .C, .D]
     }
     let enabled = ProcessInfo.processInfo.arguments.contains("-ReferenceDockLocalAppearance") &&
         ProcessInfo.processInfo.arguments.contains("-ReferenceStaticOptics")
@@ -790,9 +944,14 @@ private final class ReferenceDockLocalAppearance: ObservableObject {
             "stylePolicy": ["windowOverride": "dark throughout", "controllerOverride": "unchanged; inherit dark window",
                             "canvasOverride": "dark throughout", "barOverride": "unchanged/unspecified; observe effective style"],
             "launchArguments": ProcessInfo.processInfo.arguments,
-            "visibleForeground": "fixed synthetic content, REST spatial control label and always-enabled Next REST button, including final A",
+            "visibleForeground": "fixed synthetic content, REST spatial control label and always-enabled Next REST button, including final " + (foregroundProperties ? "B" : "A"),
             "clockScope": "source draw and public getter brackets; trace t is enqueue time, never compositor presentation time",
             "scope": "one retained REST sequence; no Dock touches, scroll, style threshold, fit or material/geometry mutation"])
+        if foregroundProperties {
+            ReferenceTrace.shared.add(["event": "dock-foreground-properties-configuration", "enabled": true,
+                                       "sequence": activeSequence.map(\.rawValue), "observationBudgetsSeconds": [1, 3],
+                                       "scope": "two retained A/B stages only; public properties are distinct from final composited glyph colors and coverage"])
+        }
         for input in experimentInputs {
             let name = "dock-local-input-\(input.rawValue).png"
             do {
@@ -839,7 +998,7 @@ private final class ReferenceDockLocalAppearance: ObservableObject {
         guard elapsed >= 3, stageIndex + 1 < activeSequence.count else {
             ReferenceTrace.shared.add(["event": "dock-local-advance-not-applied", "stage": stageIndex,
                                        "elapsedSinceSourceApplyEndSeconds": elapsed,
-                                       "reason": stageIndex + 1 == activeSequence.count ? "final A retained" : "three-second observation budget not reached"])
+                                       "reason": stageIndex + 1 == activeSequence.count ? (foregroundProperties ? "final B retained" : "final A retained") : "three-second observation budget not reached"])
             return
         }
         record(phase: "leaving", force: true)
