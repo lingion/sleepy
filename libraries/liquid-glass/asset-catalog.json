@@ -1,8 +1,9 @@
 {
   "schemaVersion": 1,
-  "status": "inventory-in-sleepy",
+  "status": "partial-runtime-extraction-in-sleepy",
   "reference": "iOS 26.5 native controls",
-  "independentlyBuildable": false,
+  "independentlyBuildable": true,
+  "independentlyBuildableScope": "Only :liquid-glass-runtime M1 AAR with three pure-motion kernels; a complete independent controls/rendering library and sample do not exist.",
   "publishedRepository": null,
   "pathBase": "repository-root",
   "assets": [
@@ -49,13 +50,24 @@
         "LiquidGlassHaptics.kt",
         "LanguageMenuGestures.kt",
         "LanguageMenuMotion.kt",
-        "NativeGlassDragDeformation.kt",
-        "NativeDockDeformation.kt",
         "NativeDockParentMotion.kt",
         "NativeDockEndpoint.kt",
-        "NativeSegmentedEndpoint.kt",
-        "NativeSliderEndpoint.kt"
+        "NativeSegmentedEndpoint.kt"
       ]
+    },
+    {
+      "role": "extracted-pure-motion-runtime",
+      "sourceDirectory": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass",
+      "entryFiles": [
+        "NativeGlassDragDeformation.kt",
+        "NativeDockDeformation.kt",
+        "NativeSliderEndpoint.kt"
+      ],
+      "buildModule": ":liquid-glass-runtime",
+      "buildFile": "libraries/liquid-glass/runtime/build.gradle.kts",
+      "extractionStatus": "m1-moved-and-consumed-by-sleepy",
+      "migrationRecord": "libraries/liquid-glass/validation/migrations/m1.json",
+      "scope": "Only three pure-motion kernels; package retained and four required internal modifiers removed. No controls, geometry, optics, sampling or shader assets have moved."
     },
     {
       "role": "controls",
@@ -131,17 +143,31 @@
     "raw videos and temporary build outputs"
   ],
   "publicationPrerequisite": "Per-control visual, interaction, optical and performance evidence; source and license provenance; independent module and example; documented remaining limits",
-  "inventoryDate": "2026-11-13",
+  "inventoryDate": "2026-11-14",
   "nativeCalibrationAccepted": false,
   "publicationReady": false,
-  "inventoryScope": "Current glass-package Kotlin files, mixed segmented implementation, runtime shader, backdrop dependency and validation entry points; not a resolved dependency closure.",
+  "inventoryScope": "M1 contains a verified three-file pure-motion module; remaining glass-package Kotlin, mixed segmented implementation, shader, backdrop and validation entry points are indexed but their full extraction closure is pending.",
+  "extractionPlan": {
+    "path": "libraries/liquid-glass/extraction-plan.md",
+    "status": "m1-complete-m2-m4-pending",
+    "sourceOwnership": "Move each implementation once; Sleepy and the future sample consume the same runtime module and packaged shader.",
+    "migrationValidation": "Keep existing fixture hashes, delivered inputs, measurement code and tolerances; record before/after results for each migrated closure.",
+    "independentExampleGate": "A future sample must compile and run against the runtime without app sources, theme, assets or test helpers; it has not been created.",
+    "runtimeModule": ":liquid-glass-runtime",
+    "runtimeModuleDirectory": "libraries/liquid-glass/runtime",
+    "m1MigrationRecord": "libraries/liquid-glass/validation/migrations/m1.json",
+    "m1Validation": "Runtime AAR and Sleepy Kotlin compilation passed; the same original Drag/Dock/Slider suites passed 19 tests before and after; original tests and both CSV fixture hashes are unchanged."
+  },
   "sourceAndLicenseReviewComplete": false,
   "currentBuildWiring": {
     "applicationBuildFile": "app/build.gradle.kts",
     "settingsFile": "settings.gradle.kts",
-    "independentLibraryModule": null,
+    "independentLibraryModule": ":liquid-glass-runtime",
     "standaloneExample": null,
-    "supportContract": "SDK, Compose, GPU/fallback and accessibility requirements have not been independently established for an extracted library."
+    "supportContract": "SDK, Compose, GPU/fallback and accessibility requirements have not been independently established for an extracted library.",
+    "libraryBuildFile": "libraries/liquid-glass/runtime/build.gradle.kts",
+    "applicationDependency": "implementation(project(\":liquid-glass-runtime\"))",
+    "extractedScope": "M1 three-file pure-motion module only; complete runtime, adapters, assets and independent example remain pending."
   },
   "provenance": {
     "inventory": "ACKNOWLEDGEMENTS.md",
@@ -219,13 +245,16 @@
     },
     {
       "id": "runtime-and-adapters",
-      "status": "not-extracted",
-      "requiredEvidence": "One Android runtime module with no Sleepy dependency; callers supply app content, theme, callbacks and policy; Material routing remains in the Sleepy adapter."
+      "status": "partially-extracted-m1-only",
+      "requiredEvidence": "One Android runtime module with no Sleepy dependency; callers supply app content, theme, callbacks and policy; Material routing remains in the Sleepy adapter.",
+      "implementationPlan": "libraries/liquid-glass/extraction-plan.md",
+      "progressRecord": "libraries/liquid-glass/validation/migrations/m1.json"
     },
     {
       "id": "independent-consumer",
-      "status": "not-created",
-      "requiredEvidence": "A standalone example and Sleepy consume the same module and packaged shader; extraction preserves the existing baselines."
+      "status": "sleepy-integrated-sample-not-created",
+      "requiredEvidence": "A standalone example and Sleepy consume the same module and packaged shader; extraction preserves the existing baselines.",
+      "implementationPlan": "libraries/liquid-glass/extraction-plan.md"
     },
     {
       "id": "support-and-performance",

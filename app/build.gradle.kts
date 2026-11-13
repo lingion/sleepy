@@ -257,6 +257,7 @@ dependencies {
 
     // 液态玻璃引擎 (Kyant0/AndroidLiquidGlass 2.0.0, third-party/kyant-backdrop)
     implementation(project(":kyant-backdrop"))
+    implementation(project(":liquid-glass-runtime"))
     implementation("io.github.kyant0:shapes:1.2.1")
 
     // Room

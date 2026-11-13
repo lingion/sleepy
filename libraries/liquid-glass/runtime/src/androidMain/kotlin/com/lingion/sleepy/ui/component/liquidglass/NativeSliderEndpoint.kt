@@ -11,7 +11,7 @@ import kotlin.math.abs
  * widths our responsive policy keeps the same physical dp response and 13.62dp
  * bound; those widths have not been independently measured on native Slider.
  */
-internal fun nativeSliderVisualPosition(
+fun nativeSliderVisualPosition(
     rawFraction: Float,
     businessFraction: Float,
     controlWidthDp: Float,

@@ -16,7 +16,7 @@ import kotlin.math.tanh
  * bounded displacement energy, and actual lift descent adds a release force;
  * the drag mode retains [NativeGlassDragDeformation.Spec.Dock] verbatim.
  */
-internal class NativeDockDeformation(initialPositionDp: Float = 0f) {
+class NativeDockDeformation(initialPositionDp: Float = 0f) {
     private enum class Mode { Direct, Drag }
 
     private companion object {

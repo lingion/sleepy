@@ -23,11 +23,11 @@ import kotlin.math.sqrt
  * own forward training and reverse holdouts. Parameters are empirical, not read
  * from a private native implementation. This is an approximation, not an exact replica.
  */
-internal class NativeGlassDragDeformation(
+class NativeGlassDragDeformation(
     private val spec: Spec = Spec.Segment,
     initialPositionDp: Float = 0f,
 ) {
-    internal data class Spec(
+    data class Spec(
         val followerStiffness: Double,
         val followerDampingRatio: Double,
         val accelerationFilterStiffness: Double,
