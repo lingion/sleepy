@@ -256,6 +256,29 @@ data class LiquidGlassStyle(
         fun controlLens(colorScheme: ColorScheme, dark: Boolean): LiquidGlassStyle =
             lens(colorScheme, dark)
 
+        /**
+         * Single-Slider stable-state body, measured separately from the Dock.
+         * The tint is the 8-bit representation of the native26.5 tonal-light fit;
+         * its multi-background GPU comparison is recorded in alignment notes73.
+         * Refraction/rim still retain the inherited model and its documented error.
+         * Range and the other controls keep their own unmodified lens profile.
+         */
+        fun sliderLens(dark: Boolean): LiquidGlassStyle =
+            LiquidGlassStyle(
+                tint = Color(0x21C5C5C3),
+                blur = 0.0,
+                refraction = -4.3,
+                bevel = 5.5,
+                saturation = 1.0,
+                brightness = 1.0,
+                rim = if (dark) 0.3 else 0.6,
+                rimWidth = 1.1,
+                endShade = 0.045,
+                dispersion = 0.0,
+                rimBlur = 1.5,
+                hairline = 0.42,
+            )
+
         /** Glyph refraction retains the Dock's independent content dispersion. */
         fun controlLensContent(colorScheme: ColorScheme, dark: Boolean): LiquidGlassStyle =
             lensContent(colorScheme, dark)

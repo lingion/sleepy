@@ -62,7 +62,8 @@ internal fun GlassSliderThumb(
     // Single-Slider carrier transforms were measured separately from isotropic lift.
     // RangeSlider keeps its existing geometry until it has independent native evidence.
     val dark = LocalDarkTheme.current
-    val lensStyle = LiquidGlassStyle.controlLens(scheme, dark).scale(lift.toDouble())
+    val lensStyle = (if (range) LiquidGlassStyle.controlLens(scheme, dark)
+        else LiquidGlassStyle.sliderLens(dark)).scale(lift.toDouble())
 
     // The ordinary track is a sibling, so the optical sampling graph cannot contain itself.
     val scene = checkNotNull(rememberGlassSamplingBackdrop())
