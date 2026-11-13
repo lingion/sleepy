@@ -4,6 +4,8 @@
 
 本次实机是 OPPO PKX110，Android 16 / API 36。安装包为 `com.lingion.sleepy.debug`，与正式版数据隔离。下面区分原生测量、实现和仍存在的差异；通过测试不等于每帧像素相同。
 
+2026-11-13 已按用户要求清理历史构建、下载和可再生解码缓存。下文历史 APK 哈希是当轮观测，不代表每份旧 APK 仍保留；当前仅保留现用 debug/test 各一份，稳定入口链接到同一构建输出。未决问题的原始视频、trace、测量及必要关键帧保留，重复导出通过相对链接去重。
+
 Material Design 与 Liquid Glass 严格分流。Material Design 的单头、双头滑杆恢复默认 M3 的 handle、track、tick 和尺寸，不安装玻璃绘制；保留历史细拖输入修复与原值标记。Material Design 色相条保留原来的满幅彩虹、圆形指示器、双描原值标记及既有输入行为。Switch 使用 M3，分段选项使用原点击路径，Dock 也不会因残留的玻璃 Dock 偏好绕过当前外观。
 
 仅 Liquid Glass 滑杆采用用户指定的 Device Hub 轨道和下方点状刻度：单头及色相滑块 37 × 24 dp，双头按 0.75 等比缩小为 27.75 × 18 dp；两者和原值标记共用横向圆角椭圆轮廓、白色与轻阴影。轨道 8 dp，刻度点 2 dp、位于轨道中心下方 14 dp，交互高度 48 dp。玻璃升降两轴共同缩放，宽高比不变。色相条保留彩虹含义，密集业务档位的刻度按最少 12 dp 间距抽样展示，不改变吸附档数。此前把玻璃几何套到 Material Design 的实现已撤回。
@@ -136,7 +138,7 @@ adb shell am instrument -w \
 
 用户同日补充的圆角要求也是当前 goal 的必验收项：逐一检查 Toggle、Tab、Dock、单双头滑杆、顶栏及分享按钮、语言菜单、Alert、分享及课程编辑半幅面板的外层背板、内部选中色块、滑块和内容裁切。静止、按住、拉伸、反向和回落期间，分别对照 iOS 26.5 实际可见四角曲线、直边到弧线的过渡、内外轮廓间距，以及高光和折射是否服从同一边界。holder 尺寸、包围盒、名义 radius 相同都不能代替轮廓验收；不把所有组件改成同一种半高胶囊，也不改动 Material Design 原有 shape。缺少原生可见 mask 或同条件边缘对照的组件须保留为未完成，不宣称圆角已 1:1。
 
-本轮圆角清单已区分实际实现：Toggle、Segment 和 Slider 主要为半高圆弧；Dock 底座为 Kyant Capsule、镜片为半高 RoundRect；普通按钮保留 caller/M3 shape；Menu24、Alert34、五语言26为独立超椭圆拟合；Sheet为上36/下20的独立超椭圆。不同 shape 的 CPU clip、shader edge/normal、rim 与 shadow 尚需实际像素核对，不由半径参数推定相同。Sheet geometry2 的四角局部 profile 排除首个栅格行后，顶角最大 inset 差1.092、底角1.429 logical units；当前 rim4 独立 neutral corner 审计为顶1.092、底1.618，首行敏感数据均保留；其余多数组件仍缺同条件四角完整 profile。五语言 English 原生直接按住图已明确显示胶囊，本轮将原矩形 hover 和默认 row ripple 合为同一胶囊高亮，保留独立公开输入 GPU 验证。
+本轮圆角清单已区分实际实现：Toggle、Segment 和 Slider 主要为半高圆弧；Dock 底座为 Kyant Capsule、镜片为半高 RoundRect；普通按钮保留 caller/M3 shape；Menu32（此前24）、Alert34、五语言26为独立超椭圆拟合；Sheet为上36/下20的独立超椭圆。不同 shape 的 CPU clip、shader edge/normal、rim 与 shadow 尚需实际像素核对，不由半径参数推定相同。Sheet geometry2 的四角局部 profile 排除首个栅格行后，顶角最大 inset 差1.092、底角1.429 logical units；当前 rim4 独立 neutral corner 审计为顶1.092、底1.618，首行敏感数据均保留；其余多数组件仍缺同条件四角完整 profile。五语言 English 原生直接按住图已明确显示胶囊，本轮将原矩形 hover 和默认 row ripple 合为同一胶囊高亮，保留独立公开输入 GPU 验证。
 
 既有静止截图的独立白体轮廓审计拒绝了细网格上白对白的失效分割；改在明暗大色块背景提取minRGB246/248/250的完整连通白体，八个Slider/Toggle/Range候选均未裁边。原生Slider/Toggle为37×24pt，Android为36.974789×23.865545dp。保留完整首行时，颜色级边界最大差6.727dp；深度≥1后最大差.6702dp。它们是阈值颜色岛，包含栅格、底轨和高光影响，不是真实alpha mask，不能用来反推另一种曲线原语。双头仍按用户规定的同比缩小验收，没有匹配的原生双头参考；自然Dock的selected lens和held完整可见轮廓仍未建立。
 
@@ -212,3 +214,53 @@ Dock 镜片此前用原始场景加平色胶囊、假白边和重画选中色作
 另有独立几何错误：Generic单轮廓在精确中心点产生零径向向量和零梯度，导致距离/法线除零。复用既有双轮廓的中心方向与梯度下界后，同一测试APK在完整生产AGSL、仅替换最终输出为有限性诊断的硬件Canvas上由红变绿：251×147 Menu和321×173 Alert中心原本失败，四邻点及同实际path的双轮廓对照本已通过；修复后15点全过（红2.202s、绿1.954s）。这不验证材质、RenderEffect或原生可见alpha。原始APKs、shader、逐点RGBA、几何和SHA均保留在本会话artifact。
 
 本轮增量定向JVM27项通过（shader contract、圆弧、CPU superellipse精度、嵌套popup与scrim），assembleDebug成功。不要把此前425项与后续增量相加为一次全量执行。新的原生iOS26.5自然布局Dock专用8场测试通过（110.674s），四背景×明暗只按住初始已选Home；8张host截图均通过完整PNG及实际投递DOWN/END时间区间校验；END按原始phase区分UP与CANCEL，不据此声称松手提交行为通过。它们补足同输入采证，尚需与同位置同world的Android专用fixture比较，不等于原生光学验收。
+
+## 2026-11-13：精确轮廓与保留节点的生产回归修复
+
+Menu/Alert/Sheet/语言菜单已知 CPU cubic 指令现直接传给 GPU；未知 Generic path 继续沿用原 profile。新模式保留实际 Float 控制点、平移中心、closing line 和曲线切线，求解失败显式回退。深处的深度仍是径向法向投影，不宣称欧氏距离场。硬件几何42覆盖12个fixture、5613个采样点；实际语言菜单终态含tiny anchor、density=2.975和五行探针。单/双轮廓终态诊断buffer一致；深度编码在8dp饱和，不能从该图推断更深处数值相等。这些仅证明几何传输，不证明完整材质或原生四角。
+
+完整生产语言弹窗曾出现下四行泛白至约253–255。CPU、GPU编码与编译字节码确认根因：DrawBackdropNode构造参数与可变成员同名，初始化闭包永久捕获初始shapeProvider，效果在尺寸更新后仍使用展开前的形状；clip、采样scale和options的另外三处闭包也存在同类捕获。将构造参数改名后，四处均读取当前节点成员。没有降阈值或移除高光来遮盖错误。主效果入口另行拦截attach时Size.Unspecified/NaN，待实际尺寸到达再创建效果。
+
+自然contrast生产夹具51/52用同一测试APK、同一6/5 RGB阈值完成红绿：红版后四行距第一行平均RGB差为12.714/7.517/12.717/15.821；绿版五行共12455个采样像素全部225/225/227，距离0，实际通过3.171s。contrast背景是显式覆盖测试输入；旧neutral的独立delta<6阈值失效原样保留，不与泛白根因混同。编码诊断53读取到已展开的48.235/115.294/230.588dp，8bit量化误差另记，不把编码测试称为视觉验收。
+
+保留节点回归55/56固定128×96dp、同一个consumer和effects receiver执行4→40→4dp。红版仅phase1的scope.shape仍是初始对象，绿版全部观测为当前形状。两次共54个GPU探针本来都通过，三张对应PNG完全相同；不能把这个引用回归测试称为GPU像素红绿改善。自然生产51/52才提供另外的真实材质红绿证据。最新定向JVM57为四类25项零失败/错误/跳过，debug和androidTest构建同轮成功33s；不是六类或47项。实际圆弧及haze补测59显式启用后4项通过6.462s，58的错误haze类名和未启用圆角的skip原日志保留。
+
+完整未修改shader的mode-only压力采集54通过45.078s，共1032个可归属FrameMetrics；每模式172帧来自两个各86帧的真实source重绘块。driver隔次才发生source重绘，原因未证明。Menu/Sheet/Language的GPU中位数差为+.033/+.838/+.723ms，但Sheet同模式块漂移3.284ms，不能把pool差精确归因于算法。该夹具sampledBlurPx=0走64tap frost，不能作为实页ready共享预模糊成本；共享CPU/profile/descriptor和旧shader asset增量也未测。deadline miss和约33ms提交间隔仍存在，采集PASS不是性能通过。
+
+自然尺寸同背景Dock40的16个Window/display fence、REST定位和DOWN→HELD→CANCEL输入独立通过；磨砂底座、边缘和四角响应仍有明显光学差异。旧原生参考为独立UITabBar，生产却是四项SwiftUI TabView/UITabBarController，父容器上下文需单独补齐后才据此调光学参数。主题选中色保留MD同一颜色，不把这一用户要求的差异当成shader错误。普通控件全部点击、按住、滑动和快速切换继续由本会话测试，完整四角动态仍未验收。
+
+2026-11-13 新增四项 SwiftUI 父容器参考 `swiftui-dock-parent-61`：原生定向测试2/2通过，host截图2/2通过实际投递DOWN/UP时间包围及PNG完整性检查。依据保存在会话artifact工作区 `artifacts/glass-optics-20261112/swiftui-dock-parent-61/{reference,attachments,verification}` 与 `native-test-summary.json`；REST PNG和AX来自完整导出的6个附件，HELD来自 `captures`。包围的是截图子进程的起止时间，不是每个像素的扫描输出时间，也不构成原生材质一致通过。
+
+该参考为iOS26.5、375×667pt、2×，四个原生Tab沿用生产角色，父链为外层SwiftUI host→隐藏UINavigationController→Tab页面host。公开context确认背景canvas和真实HostingScrollView均为window内(0,0,375,667)pt，祖先背景透明；ScrollView内容375×1871.5pt、offset(0,-20)pt、adjusted top inset20pt，实际未滚动，内容底部padding92pt。child bottom safe-area策略沿用生产实现，将初始83pt通过additional bottom inset−49pt保留34pt。它补齐了本次父链与铺满背景条件，内容仍为合成文字行，并非完整业务页面。
+
+两场REST的原生UITabBar holder均为(0,584,375,83)pt；可见底座约(21,584,333,62)pt，首个选中片AX为(25,588,88.25,54)pt，可见栅格约88×54pt。像素强边缘测量排除外阴影，REST边界约有0.5pt选边误差。两场HELD首片可见色散rim约x9.5–118.5、y578.5–651.5pt，即约109×73pt，rim/栅格选边误差约0.5–1pt；这不是真实alpha或公开layout包围盒。HELD底座中央上/下边约582.5/647.5pt、右边约361pt，左边被抬起镜片遮挡，不能将按对称推算的约347pt宽写成完整实测。holder、底座和镜片分别记录，不能互换。
+
+FineGrid的window始终为dark；t=.390517s时UITabBar及其container/wrapper的effective style实际转为light，override仍为unspecified，外层controller/window仍dark。对应REST/HELD图片确为亮底和黑色未选前景。TonalBlocks的记录仍为dark，材质随明暗块背景变化、未选前景为白色。因此“dark样本却有亮bar”是本次原生局部适应的实测结果，不能按文件名强制改成固定暗色；两场静态/按住观察也不能证明完整自适应算法或光学系数。
+
+取得61参考时，Android `NativeDockOpticalWorldRenderTest`仍为3项、316dp caller、274dp底座和94dp镜片的独立UITabBar旧参考，当时不能直接与61整图比较。当时推算的最小fixture调整为4项、375dp caller、offset(0,572)dp并保留生产21dp侧距和12dp阴影空间，使REST底座成为(21,584,333,62)dp；但修复前生产 `MIN_LENS_WIDTH=94` 会给出首片(25,588,94,54)dp、中心72dp，较新原生88.25pt宽多5.75、中心69.125pt偏右2.875。这是实际布局差异，不能只换目标数字消除。本段保留修复前的历史观察，后续四项fixture与生产布局改动见文末进展。原生holder(0,584,375,83)与Android carrier(21,572,333,86)也应分别记录。两端底层图案规格/原点可对照，但原生背后还有可折射的白色合成文字（含row8），旧Android仅有图案；SF Symbols、文字与Material图标、固定teal/white/secondaryLabel与产品主题角色也不同。现有证据支持几何和排除前景后的局部材质核对，不支持完整像素一致或动态阶段等价；产品选中色继续复用Material Design同一主题色。
+
+61 后续实际修复将 Kyant 底座的原始 12 条 cubic 和 4 条 Line 直接传入精确轮廓，CPU clip 未改。`DockPlatterShape` 采用普通 Compose `Shape`，避免实现外模块 sealed 接口；actual-path 测试迁至 Android instrumentation，因 AndroidX PathIterator 的 JNI 库无法在本机 Robolectric 加载。设备上三项 Dock 加一项路径读取测试全部通过。首次 GPU 验证实际发现 AGSL 不支持位移运算，已改为逐段 `mod`/`floor` 解码 17 位精确整数掩码；保留 144-float 协议、v1 分派及原 solver。修复后 3 个 Dock fixture 的 1043 点与 1 个既有 v1 Menu fixture 的 317 点全部通过原深度/法线/coverage 阈值。完整 APK 与 androidTest 打包成功，设备安装文件与 host SHA256 一致。这些是实际轮廓传输验证，不是原生 Dock 材质验收。
+
+语言菜单首开现在保留源卡片，直到 Popup 自己的替代卡片内容绘制并提交；光学采样与原 spring 时钟进一步等待源窗口隐藏卡片后的独立提交。61 自然时间采集通过六种交互，回调为 `en/en/ja`，首开八阶段及 Popup/DecorView 不同窗口身份断言通过。独立原片的首开连续 25 个编码样本、基线和稳定态共 27 张已逐张复核，未再出现 57 中只剩背景网格的空档。原始 MP4/trace、接触表及六张代表帧保留，其余解码图已删。该轮 motion-origin 回调距实际 UP 仍为 254ms，且 HWUI commit 不等于 compositor present；不能据此宣称原生节奏或每帧 alpha 一致。34 项纯逻辑 JVM 检查通过，但原有六个菜单 JVM 测试仍停在绘制/提交交接；无效的测试专用 shadow 与遍历改动已撤回，未放松原断言或修改生产 fence，也未将该轮写成全量 JVM 通过。
+
+## 2026-11-13：四项 Dock 校准、缓存与菜单 JVM 后续进展
+
+Android 专用 Dock fixture 现已增加与61父容器对应的四项 SwiftUI 参考，保留三项独立 UITabBar 分支。生产四项布局只依据375pt原生caller的实测参考校准；在匹配61的375×667dp fixture世界坐标中，底座333×62dp，首片(25,588,88.25,54)dp、中心x69.125dp，相邻中心间距78.916667dp。375dp之外仍按可用空间计算，宽容器的镜片可增长，不宣称其他宽度已获原生测量。三项274dp底座/94dp镜片及其他项数沿用原策略，Material Design 路由和主题选中色未改。
+
+一次全量 JVM 尝试暴露了 eager exact 解析的问题：普通 CPU `createOutline` 也加载 AndroidX PathIterator，触发本机 Robolectric 无法加载 JNI 的错误。`DockPlatterShape.Entry.exact` 已改为 lazy，仅光学描述符请求才解析实际指令，CPU clip、background 和 shadow 不再主动解析。原失败证据保留，不能用此前的设备路径测试代替本轮全量 JVM 结果。底座的dp Path与径向fallback profile另按尺寸、density和布局方向保留在同一Entry内；只有Path及single exact descriptor身份都对应时才复用profile，双轮廓等模式保留原行为。`touchGlow`仍逐帧生成实时uniform，缓存不冻结按压光晕；当前没有据此记录新的实测性能结论。
+
+此前六个菜单 JVM 停在绘制/提交交接的状态已有后续修复。共享 `SoftwareWindowComposeRule` 只对已附着、有实际尺寸且需要绘制的窗口根节点执行软件Canvas绘制，让绘制后post的工作在后续空闲轮询中完成；不手动调用应用handoff，不代替生产回调，也不额外推进Compose时钟。`GlassLanguageMenuTest`与`GlassSelectionColorRegressionTest`继续使用原断言，本会话主验证流程已实际运行这16项JVM并全部通过。旧shadow、遍历尝试及其失败记录保留；这16项定向通过不等于全量JVM或设备GPU验收。
+
+原生六场补采中，五场取得实际UP；`ColorStripesDark`两次尝试均以CANCEL结束，仍缺该场正常松手证据，不能算作六场UP提交通过。原生局部effective appearance变化及其材质差异尚未在Android实现，不能由文件名强制归为固定明暗，也不能用现有几何或输入测试替代外观验收。
+
+截至本次记录，新的62自然时间录制、完整JVM复跑和本轮设备测试仍在进行中，尚无最终通过结论；结果在完成并核对原始输出后另行补记。前述历史失败、未收敛截图和CANCEL证据继续保留。
+
+
+62 集中验证后续：`:app:testDebugUnitTest` 完整运行615个suite、4578项，0 failure/error、3 skipped，1m59s结束；两组共享窗口夹具16项亦先单独通过。两次全量失败（eager PathIterator/JNI 22项失败、另一组菜单未绘制导致内存耗尽）仍保留。debug与androidTest打包通过；API36实际路径及缓存8项通过，Dock v2三fixture和Menu v1一fixture的GPU深度、法线、coverage原阈值复验通过。缓存本身尚无新的独立性能归因。
+
+62自然菜单六交互通过22.871s，selection仍为`en/en/ja`。首开源/Popup提交顺序由不同window identity记录；独立视频审查42个连续首开编码样本、基线与稳定/选择态，源/替代卡片保持到展开，未见只剩网格的空档。首次有效场景marker为sample55，不能误用前期同为黑色的marker0；保存原片、时序、接触表和9张关键图，其余47张重复解码图已删。该轮UP→motion-origin回调259ms，帧时钟origin237.219ms；相较61的254ms没有证明首开速度改善。HWUI commit不是compositor present，视频也不证明每毫秒一致。
+
+四项Dock设备矩阵的首轮因fixture将独立dp取整误算成一次比例而失败：density2.975时`round(375*d)-2*round(21*d)=992px`，并非`333*d=990.675px`。现改为断言生产准确取整合同，native-world边缘仍保留一物理像素原容差。第二轮几何已过，display readiness为.994675、未达原.995；完整Window/display差图仅在系统状态栏52–106px和底部手势条2607–2618px，Dock1700–2020px逐像素RGB差为0。新fixture只显式排除实际systemBars/displayCutout inset（本机0/135/0/48），保留完整PNG及99.5%/RGB3原阈值，并断言整个Dock holder及阴影空间仍在比较域内。前两次失败与原图保留；新一轮矩阵结论待核对后补记。
+
+
+62修正比较域后的四项矩阵通过37.062s：四背景×明暗，共8baseline、16REST/HELD；49个原始导出文件全部与设备SHA一致。系统栏排除域由实际Insets形成，Dock holder与阴影空间完整保留，阈值未放松。深主题局部材质仍服从应用主题，与FineGrid原生局部变亮的残差仍存在；此PASS只确认世界坐标、选中状态和Window/display收敛。当前主APK与测试APK实际安装hash核对一致；重复架构APK和自然视频多余解码图已清理，唯一原始证据保留。
