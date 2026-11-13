@@ -12,8 +12,12 @@ import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -68,6 +72,7 @@ import org.junit.runner.RunWith
 import java.io.File
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 /**
  * Opt-in hardware optical evidence in the native reference's fixed source world.
@@ -78,6 +83,23 @@ import kotlin.math.abs
 @SdkSuppress(minSdkVersion = 33)
 class NativeDockOpticalWorldRenderTest {
     @get:Rule val compose = createComposeRule()
+
+    /** Keep the older independent UITabBar evidence distinct from the app's SwiftUI parent. */
+    private enum class NativeParent(
+        val argument: String,
+        val callerOrigin: Offset,
+        val callerWidth: Float,
+        val nativeHolder: List<Int>,
+        val base: Rect,
+        val lens: Rect,
+    ) {
+        UIKit("uikit", Offset(30f, 560f), 316f, listOf(12, 572, 351, 83),
+            Rect(51f, 572f, 325f, 634f), Rect(55f, 576f, 149f, 630f)),
+        SwiftUI("swiftui", Offset(0f, 572f), 375f, listOf(0, 584, 375, 83),
+            Rect(21f, 584f, 354f, 646f), Rect(25f, 588f, 113.25f, 642f)),
+    }
+
+    private lateinit var nativeParent: NativeParent
 
     private data class Scene(val background: OpticalBackground, val dark: Boolean, val showDock: Boolean) {
         val name get() = "${background.name}-${if (dark) "dark" else "light"}"
@@ -145,6 +167,9 @@ class NativeDockOpticalWorldRenderTest {
         val backgrounds = selected("glassDockOpticalBackgrounds", OpticalBackground.entries.map { it.name })
             .map(OpticalBackground::valueOf)
         val themes = selected("glassDockOpticalThemes", listOf("light", "dark")).map { it == "dark" }
+        val parentArgument = arguments.getString("glassDockOpticalParent") ?: "uikit"
+        nativeParent = NativeParent.entries.firstOrNull { it.argument == parentArgument }
+            ?: error("glassDockOpticalParent must be uikit or swiftui")
         val runId = (arguments.getString("glassDockOpticalRunId") ?: System.currentTimeMillis().toString())
             .replace(Regex("[^A-Za-z0-9_-]"), "_")
         val directory = File(InstrumentationRegistry.getInstrumentation().targetContext.getExternalFilesDir(null),
@@ -154,18 +179,27 @@ class NativeDockOpticalWorldRenderTest {
         val observations = JSONArray()
         val result = JSONObject().put("schema", 1).put("status", "running").put("run_id", runId)
             .put("sdk", Build.VERSION.SDK_INT).put("model", Build.MODEL).put("fingerprint", Build.FINGERPRINT)
-            .put("scope", "Production LiquidGlassNavigationBar + GlassHost/GlassBackground; fixed 375x667dp source world; initially selected Home; REST and settled HELD before END. Capture/coordinate validity only, not an appearance or motion parity verdict.")
-            .put("native_reference", "dock-optics-natural-20261113, eight background/theme REST and selected-first HELD scenes; 375x667pt at 2px/pt")
-            .put("native_holder_world_xywh_pt", JSONArray(listOf(12, 572, 351, 83)))
-            .put("native_rest_base_world_xywh_pt", JSONArray(listOf(51, 572, 274, 62)))
-            .put("native_rest_lens_world_xywh_pt", JSONArray(listOf(55, 576, 94, 54)))
-            .put("native_target_limits", "Painted base body bright rim and selected lens gray fill from original fine_grid-light REST pixels; excludes outer shadow and does not claim complete alpha support. Holder remains distinct. Base local maximum-jump checks agree29/32 (three neighboring highlight/texture peaks); lens32/32 and both fine-grid four-edge pixel checks agree.")
-            .put("placement_policy", "Only translate caller316dp holder to world[30,560]dp; preserve product21dp side margins, actual274dp base,62dp height and12dp shadow room. Runtime carrier/base/lens coordinates must validate the target. Never resize/stretch the source or product geometry to fit screenshots.")
+            .put("scope", "Production LiquidGlassNavigationBar + GlassHost/GlassBackground; fixed 375x667dp source world; initially selected first destination; REST and settled HELD before END. Capture/coordinate validity only, not an appearance or motion parity verdict.")
+            .put("native_parent", nativeParent.argument)
+            .put("native_reference", if (nativeParent == NativeParent.SwiftUI)
+                "swiftui-dock-parent-61; four-item SwiftUI TabView in the production-like navigation parent;375x667pt at2px/pt"
+                else "dock-optics-natural-20261113; independent three-item UITabBar;375x667pt at2px/pt")
+            .put("native_holder_world_xywh_pt", JSONArray(nativeParent.nativeHolder))
+            .put("native_rest_base_world_xywh_pt", JSONArray(listOf(nativeParent.base.left, nativeParent.base.top,
+                nativeParent.base.width, nativeParent.base.height)))
+            .put("native_rest_lens_world_xywh_pt", JSONArray(listOf(nativeParent.lens.left, nativeParent.lens.top,
+                nativeParent.lens.width, nativeParent.lens.height)))
+            .put("native_rest_base_world_rect_pt", nativeParent.base.json())
+            .put("native_rest_lens_world_rect_pt", nativeParent.lens.json())
+            .put("native_target_limits", if (nativeParent == NativeParent.SwiftUI)
+                "REST visible base body and first-lens AX bounds from the native four-tab parent. No alpha-mask claim. Native synthetic scroll text and SF Symbols differ; optical comparisons must exclude their influence. Native local material style adapts to background independently of the dark window; this fixture still uses the requested app theme."
+                else "Painted base body bright rim and selected lens gray fill from original fine_grid-light REST pixels; excludes outer shadow and does not claim complete alpha support. Holder remains distinct. Base local maximum-jump checks agree29/32; lens32/32.")
+            .put("placement_policy", "Translate the declared caller only; retain product21dp side margins,62dp base height and12dp shadow room. Native holder and Android caller are distinct. Runtime carrier width must equal round(caller*density)-2*round(21*density); native-world edges independently retain the existing one-physical-pixel tolerance. Never stretch the source or product to fit screenshots.")
             .put("source_world_policy", "Required375x667dp at the observed GlassBackground top-left; unit local-to-screen axes, no stretch, and fully visible in the real host are required. Font scale1 and LTR are fixture-only native defaults.")
             .put("theme_preset", ThemePresets.KEY_DEFAULT).put("inputs", JSONArray(backgrounds.map { it.metadata() }))
             .put("selected_themes", JSONArray(themes.map { if (it) "dark" else "light" }))
             .put("clock_policy", "Compose clock supplied to production Dock input;1600ms settle before REST/HELD. Clock time and real uptime exported separately. No synthetic clock is claimed to be native real-time motion.")
-            .put("capture_policy", "Actual Activity PixelCopy after HWUI commit plus composited display; existing >=99.5% RGB3 readiness helpers unchanged. Window and display PNGs are saved independently.")
+            .put("capture_policy", "Actual Activity PixelCopy after HWUI commit plus composited display; >=99.5% RGB3 thresholds unchanged. This full-Activity fixture explicitly excludes only actual visible systemBars/displayCutout insets from display readiness and asserts that the complete Dock holder remains inside the compared region. Full Window and display PNGs are saved independently.")
             .put("input_policy", "DOWN at measured REST painted Home lens center, no move, held capture before cleanup CANCEL. No UP is injected and selected-first wrapper state does not prove UP commit.")
             .put("baselines", baselines).put("captures", captures).put("geometry_observations", observations)
             .put("input_events", inputEvents)
@@ -305,10 +339,16 @@ class NativeDockOpticalWorldRenderTest {
                         var selection by remember { mutableIntStateOf(0) }
                         SideEffect { selectedIndex = selection }
                         val host = LocalGlassHost.current
-                        Box(Modifier.offset(30.dp, 560.dp).width(316.dp)
+                        Box(Modifier.offset(nativeParent.callerOrigin.x.dp, nativeParent.callerOrigin.y.dp)
+                            .width(nativeParent.callerWidth.dp)
                             .testTag("native-dock-optical-holder")) {
                             LiquidGlassNavigationBar(
-                                listOf(PillNavItemSpec(Icons.Filled.Home, "Home"),
+                                if (nativeParent == NativeParent.SwiftUI) listOf(
+                                    PillNavItemSpec(Icons.Filled.CalendarToday, "Schedule"),
+                                    PillNavItemSpec(Icons.Filled.WbSunny, "Today"),
+                                    PillNavItemSpec(Icons.Filled.GridView, "Manage"),
+                                    PillNavItemSpec(Icons.Filled.Person, "Mine"),
+                                ) else listOf(PillNavItemSpec(Icons.Filled.Home, "Home"),
                                     PillNavItemSpec(Icons.Filled.Search, "Explore"),
                                     PillNavItemSpec(Icons.Filled.Settings, "Settings")),
                                 selection,
@@ -374,10 +414,15 @@ class NativeDockOpticalWorldRenderTest {
 
     private fun validateDock(geometry: DockGeometry, rest: Boolean) {
         validateWorld(geometry.world)
-        assertEquals("Caller provides316dp including product21dp side margins", 316.0 * density,
+        assertEquals("Caller includes the unchanged product21dp side margins", nativeParent.callerWidth.toDouble() * density,
             geometry.holder.size.width.toDouble(), .5)
-        assertEquals("Production shader carrier retains274dp base width", 274.0 * density,
-            geometry.carrier.size.width.toDouble(), .5)
+        // Compose rounds the caller and each padding edge separately. At density2.975,
+        // round(375*d)-2*round(21*d)=992px, while 333*d=990.675px.
+        // Assert that exact product layout contract; keep native-world edge checks below.
+        val callerWidthPx = (nativeParent.callerWidth * density).roundToInt()
+        val sideMarginPx = (21f * density).roundToInt()
+        assertEquals("Production carrier equals the rounded caller minus both rounded21dp margins",
+            callerWidthPx - 2 * sideMarginPx, geometry.carrier.size.width)
         assertEquals("Production carrier retains62dp base plus12dp top/bottom room", 86.0 * density,
             geometry.carrier.size.height.toDouble(), .5)
         val lens = geometry.lensWorld
@@ -394,8 +439,8 @@ class NativeDockOpticalWorldRenderTest {
             assertUnitAxes("REST Dock carrier", geometry.carrier)
             // At most one physical pixel for accumulated dp-to-pixel placement rounding.
             val tolerance = 1f / density + .01f
-            assertRect("REST production base in native world", Rect(51f, 572f, 325f, 634f), geometry.baseWorld, tolerance)
-            assertRect("REST painted Home lens in native world", Rect(55f, 576f, 149f, 630f), geometry.lensWorld, tolerance)
+            assertRect("REST production base in native world", nativeParent.base, geometry.baseWorld, tolerance)
+            assertRect("REST painted first lens in native world", nativeParent.lens, geometry.lensWorld, tolerance)
         } else {
             assertTrue("HELD capture occurs during active DOWN before cleanup END", pointerDown)
             assertTrue("HELD has completed1600ms of the declared synthetic clock",
@@ -410,8 +455,13 @@ class NativeDockOpticalWorldRenderTest {
         val window = activity.capture()
         window.saveOpticalPng(File(directory, "$stem-window.png"))
         try {
-            val ready = awaitOpticalSurfaceScreen(activity, window, density, directory, stem)
+            val ready = awaitOpticalSurfaceScreen(activity, window, density, directory, stem, excludeSystemBars = true)
             try {
+                val compared = ready.verification.getJSONArray("compared_screen_rect_px")
+                val holder = geometry.holder.screenRect
+                assertTrue("System-owned insets must not exclude any Dock holder or its shadow room",
+                    holder.left >= compared.getDouble(0) && holder.top >= compared.getDouble(1) &&
+                        holder.right <= compared.getDouble(2) && holder.bottom <= compared.getDouble(3))
                 ready.bitmap.saveOpticalPng(File(directory, "$stem-screen.png"))
                 assertBitmapContains("Fixed world in actual Window", window,
                     geometry.world.source.screenRect.translate(geometry.windowOrigin - geometry.screenOrigin))

@@ -325,7 +325,9 @@ internal fun awaitOpticalSurfaceScreen(
     density: Float,
     directory: java.io.File,
     stem: String,
-): OpticalBackgroundScreen = awaitOpticalCommittedScreen(surface, expected, density, directory, stem, plainBackground = false)
+    excludeSystemBars: Boolean = false,
+): OpticalBackgroundScreen = awaitOpticalCommittedScreen(surface, expected, density, directory, stem,
+    plainBackground = false, excludeSystemBars = excludeSystemBars)
 
 private fun awaitOpticalCommittedScreen(
     activity: OpticalCaptureWindow,
@@ -334,17 +336,32 @@ private fun awaitOpticalCommittedScreen(
     directory: java.io.File,
     stem: String,
     plainBackground: Boolean,
+    excludeSystemBars: Boolean = false,
 ): OpticalBackgroundScreen {
     val rootOnScreen = IntArray(2)
     val rootInWindow = IntArray(2)
+    var systemBarInsets = android.graphics.Insets.NONE
     InstrumentationRegistry.getInstrumentation().runOnMainSync {
         activity.root.getLocationOnScreen(rootOnScreen)
         activity.root.getLocationInWindow(rootInWindow)
+        if (excludeSystemBars) {
+            check(activity.window != null && rootInWindow.contentEquals(intArrayOf(0, 0)) &&
+                expected.width == activity.root.width && expected.height == activity.root.height) {
+                "System-bar exclusion requires a full Activity surface at window origin"
+            }
+            systemBarInsets = checkNotNull(activity.root.rootWindowInsets).getInsets(
+                android.view.WindowInsets.Type.systemBars() or android.view.WindowInsets.Type.displayCutout())
+        }
     }
     // Avoid status/navigation icons while covering the center where an outgoing
     // dialog or its dim layer would otherwise contaminate a plain-background ROI.
     val insetX = if (plainBackground) (16 * density).toInt().coerceAtMost(expected.width / 4) else 0
     val insetY = if (plainBackground) (64 * density).toInt().coerceAtMost(expected.height / 4) else 0
+    val comparedLeft = maxOf(insetX, systemBarInsets.left)
+    val comparedTop = maxOf(insetY, systemBarInsets.top)
+    val comparedRight = expected.width - maxOf(insetX, systemBarInsets.right)
+    val comparedBottom = expected.height - maxOf(insetY, systemBarInsets.bottom)
+    check(comparedRight > comparedLeft && comparedBottom > comparedTop) { "Empty optical comparison domain" }
     val step = (2 * density).toInt().coerceAtLeast(1)
     val attempts = JSONArray()
     val started = SystemClock.uptimeMillis()
@@ -355,10 +372,10 @@ private fun awaitOpticalCommittedScreen(
         var matched = 0
         var maxError = 0
         var totalError = 0L
-        for (y in insetY until expected.height - insetY step step) {
+        for (y in comparedTop until comparedBottom step step) {
             val sy = y + rootOnScreen[1] - rootInWindow[1]
             if (sy !in 0 until screen.height) continue
-            for (x in insetX until expected.width - insetX step step) {
+            for (x in comparedLeft until comparedRight step step) {
                 val sx = x + rootOnScreen[0] - rootInWindow[0]
                 if (sx !in 0 until screen.width) continue
                 val a = expected.getPixel(x, y)
@@ -385,7 +402,18 @@ private fun awaitOpticalCommittedScreen(
             else "Committed surface PixelCopy vs composited display at actual root screen origin; >=99.5% sampled alpha>=254 pixels within RGB3; transparent edges excluded; frame readiness only, not material parity")
             .put("root_screen_origin_px", JSONArray(rootOnScreen.toList()))
             .put("root_window_origin_px", JSONArray(rootInWindow.toList()))
-            .put("interior_insets_px", JSONArray(listOf(insetX, insetY))).put("sample_step_px", step)
+            .put("interior_insets_px", JSONArray(listOf(insetX, insetY)))
+            .put("exclude_system_bars", excludeSystemBars)
+            .put("observed_excluded_system_insets_px", JSONArray(listOf(systemBarInsets.left, systemBarInsets.top,
+                systemBarInsets.right, systemBarInsets.bottom)))
+            .put("compared_window_rect_px", JSONArray(listOf(comparedLeft, comparedTop, comparedRight, comparedBottom)))
+            .put("compared_screen_rect_px", JSONArray(listOf(
+                comparedLeft + rootOnScreen[0] - rootInWindow[0], comparedTop + rootOnScreen[1] - rootInWindow[1],
+                comparedRight + rootOnScreen[0] - rootInWindow[0], comparedBottom + rootOnScreen[1] - rootInWindow[1])))
+            .put("comparison_domain", if (excludeSystemBars)
+                "Full Activity surface excluding only actual visible systemBars/displayCutout insets; system-owned status/navigation pixels are outside the app surface. RGB3/99.5% thresholds unchanged."
+                else "Existing opaque-surface/interior policy; no system-bar exclusion")
+            .put("sample_step_px", step)
             .put("attempts", attempts)
         if (samples > 0 && fraction >= .995) return OpticalBackgroundScreen(screen, verification)
         if (!savedRejected) {
