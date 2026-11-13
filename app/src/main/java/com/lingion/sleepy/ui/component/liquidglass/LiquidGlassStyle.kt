@@ -172,29 +172,40 @@ data class LiquidGlassStyle(
                 )
             }
 
-        /** 比 [regular] 更厚, 用于压在任意内容之上的行。它的 rim 来自 [LiquidGlassRim]。 */
+        /**
+         * Neutral presentation materials fitted against iOS 26.5 background
+         * captures. Keep their backing independent of the app's selected color;
+         * tinted controls continue to use [tinted]. These are empirical shader
+         * coefficients, not UIKit material constants. Rims remain separate.
+         */
         fun menu(colorScheme: ColorScheme, dark: Boolean): LiquidGlassStyle =
             if (dark) {
                 LiquidGlassStyle(
-                    tint = colorScheme.surfaceContainerHighest.copy(alpha = 0.63f),
-                    contrast = -0.53,
+                    tint = Color(0xFF313131).copy(alpha = .747f),
                     blur = 12.0,
-                    saturation = 1.75,
-                    brightness = 1.8,
+                    saturation = 2.16,
+                    brightness = .82,
                     rim = 0.0,
                 )
             } else {
                 LiquidGlassStyle(
-                    tint = colorScheme.surfaceBright.copy(alpha = 0.55f),
+                    tint = Color(0xFFF2F2F2).copy(alpha = .743f),
                     blur = 12.0,
-                    saturation = 2.0,
-                    brightness = 1.1,
+                    saturation = 1.67,
+                    brightness = 1.07,
                     rim = 0.0,
                 )
             }
 
+        /** Alert retains much less background light than a context menu. */
         fun alert(colorScheme: ColorScheme, dark: Boolean): LiquidGlassStyle =
-            menu(colorScheme, dark).copy(blur = 16.0)
+            if (dark) LiquidGlassStyle(
+                tint = Color(0xFF313131).copy(alpha = .556f),
+                blur = 16.0, brightness = .281, saturation = 1.67, rim = 0.0,
+            ) else LiquidGlassStyle(
+                tint = Color(0xFFF2F2F2).copy(alpha = .743f),
+                blur = 16.0, brightness = .915, saturation = 1.69, rim = 0.0,
+            )
 
         /**
          * Separate from context menus: measured iOS 26.5 system sheets have a
