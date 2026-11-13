@@ -4,10 +4,13 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
@@ -336,9 +339,15 @@ private fun LanguagePopup(
                     .onGloballyPositioned { session.viewport = it }
                     .verticalScroll(rememberScrollState()).selectableGroup().padding(10.dp)) {
                     languages.forEach { (code, label) ->
+                        val interaction = remember(code) { MutableInteractionSource() }
+                        val pressed by interaction.collectIsPressedAsState()
                         Row(Modifier.fillMaxWidth().heightIn(min = 42.dp)
-                            .background(if (session.hoveredCode == code) colors.onSurface.copy(alpha = .08f) else androidx.compose.ui.graphics.Color.Transparent)
+                            .background(
+                                if (session.hoveredCode == code || pressed) colors.onSurface.copy(alpha = .08f) else androidx.compose.ui.graphics.Color.Transparent,
+                                CircleShape,
+                            )
                             .selectable(code == (session.pickedCode ?: selectedCode), enabled = !session.closing,
+                                interactionSource = interaction, indication = null,
                                 role = Role.RadioButton, onClick = { session.close(code, select) })
                             .dbgTag("general_language#$code", text = label, role = "radio", clickable = !session.closing)
                             .onGloballyPositioned { coords ->

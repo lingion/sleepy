@@ -385,6 +385,105 @@ class LanguageMenuMotionCaptureTest {
         }
     }
 
+    /**
+     * Separate static held-state diagnostic: never inserted into the motion recording.
+     * Native English-row held pixels show a capsule, including unchanged outside corners.
+     * Exercise both a new pointer on an open row and the anchor's original drag stream.
+     */
+    @Test fun heldLanguageRowKeepsItsFourCornersOutsideTheHighlight() {
+        val args = InstrumentationRegistry.getArguments()
+        assumeTrue("Held GPU fixture: pass languageGpuCornerCheck=true",
+            args.getString("languageGpuCornerCheck") == "true")
+        cardWidthDp = 362f
+        cardTopDp = 180f
+        val runId = (args.getString("languageRunId") ?: "language-corners-${System.currentTimeMillis()}")
+            .replace(Regex("[^A-Za-z0-9_-]"), "_")
+        val directory = File(instrumentation.targetContext.getExternalFilesDir(null), "language-menu-motion/$runId")
+        assertTrue("Create held GPU output", directory.isDirectory || directory.mkdirs())
+        val results = JSONArray()
+        val report = JSONObject().put("scope", "Actual settled GPU row highlight corners only; no natural motion or whole-menu/native material equivalence")
+            .put("input", "Public direct row DOWN and original anchor long-press/drag; CANCEL must preserve selection")
+            .put("rows", results)
+        startUptimeMs = SystemClock.uptimeMillis()
+        installRealtimeFixture()
+        try {
+            waitFor("Language card laid out") { findTag("general_language_card") != null }
+            writeSession(directory, 67L, 450L, 850L)
+            for (mode in listOf("direct-row", "anchor-drag")) {
+                scenario = mode
+                val anchor = if (mode == "anchor-drag") longPressOpen(450L, 850L, mode) else {
+                    open(67L, 850L)
+                    null
+                }
+                val before = captureSettledGpu(directory, "$mode-before", heldSnapshot = anchor != null)
+                try {
+                    val row = readOnMain { requireNotNull(findTag("general_language#en")).bounds }
+                    if (anchor == null) {
+                        inject(MotionEvent.ACTION_DOWN, row.center, SystemClock.uptimeMillis(), "$mode-down")
+                    } else {
+                        val beganAt = SystemClock.uptimeMillis()
+                        repeat(12) { index ->
+                            inject(MotionEvent.ACTION_MOVE, anchor + (row.center - anchor) * ((index + 1) / 12f),
+                                beganAt + (index + 1) * 16L, "$mode-move")
+                        }
+                    }
+                    SystemClock.sleep(700)
+                    val held = captureSettledGpu(directory, "$mode-held", heldSnapshot = true)
+                    try {
+                        val probes = JSONArray()
+                        fun probe(name: String, x: Float, y: Float, corner: Boolean) {
+                            val px = x.roundToInt(); val py = y.roundToInt()
+                            var total = 0.0
+                            for (dy in -1..1) for (dx in -1..1) {
+                                val prior = before.getPixel(px + dx, py + dy)
+                                val actual = held.getPixel(px + dx, py + dy)
+                                for (shift in listOf(16, 8, 0))
+                                    total += abs(((actual ushr shift) and 255) - ((prior ushr shift) and 255))
+                            }
+                            probes.put(JSONObject().put("name", name).put("corner", corner)
+                                .put("screen_center_px", JSONArray(listOf(px, py)))
+                                .put("mean_abs_rgb_delta_8bit", total / 27.0))
+                        }
+                        val insetX = 4f * density
+                        val insetY = 3f * density
+                        probe("top-left", row.left + insetX, row.top + insetY, true)
+                        probe("top-right", row.right - insetX, row.top + insetY, true)
+                        probe("bottom-left", row.left + insetX, row.bottom - insetY, true)
+                        probe("bottom-right", row.right - insetX, row.bottom - insetY, true)
+                        probe("left-interior", row.left + insetX, row.center.y, false)
+                        probe("right-interior", row.right - insetX, row.center.y, false)
+                        results.put(JSONObject().put("mode", mode).put("row_screen_xywh_px", rect(row)).put("probes", probes))
+                    } finally { held.recycle() }
+                } finally {
+                    before.recycle()
+                    if (activePointer) inject(MotionEvent.ACTION_CANCEL, lastPointer, SystemClock.uptimeMillis(), "$mode-cancel")
+                }
+                SystemClock.sleep(250)
+                assertEquals("Cancelled held row must not select", emptyList<String>(), selections.toList())
+                assertTrue("Cancelled held row leaves menu available", readOnMain { menuPresent() })
+                tap(outsidePoint(), 67L, "$mode-dismiss")
+                waitFor("Held diagnostic cleanup removes menu") { !menuPresent() }
+            }
+            File(directory, "gpu-corner-check.json").writeText(report.put("density", density).toString(2))
+            for (i in 0 until results.length()) {
+                val result = results.getJSONObject(i)
+                val probes = result.getJSONArray("probes")
+                for (j in 0 until probes.length()) {
+                    val probe = probes.getJSONObject(j)
+                    val delta = probe.getDouble("mean_abs_rgb_delta_8bit")
+                    if (probe.getBoolean("corner")) assertTrue("${result.getString("mode")}: ${probe.getString("name")} must remain outside highlight, delta=$delta", delta <= 1.5)
+                    else assertTrue("${result.getString("mode")}: ${probe.getString("name")} must contain a visible highlight, delta=$delta", delta >= 5.0)
+                }
+            }
+            report.put("passed", true)
+        } finally {
+            File(directory, "gpu-corner-check.json").writeText(report.put("passed", report.optBoolean("passed", false)).toString(2))
+            if (activePointer) runCatching { inject(MotionEvent.ACTION_CANCEL, lastPointer, SystemClock.uptimeMillis(), "held-gpu-cleanup-cancel") }
+            instrumentation.runOnMainSync { realView?.disposeComposition(); realRecomposer?.cancel() }
+            File(directory, "trace.jsonl").bufferedWriter().use { writer -> trace.forEach { writer.appendLine(it.toString()) } }
+        }
+    }
+
     /** The rule only bootstraps an Activity; product animation owns a real-time recomposer. */
     private fun installRealtimeFixture() {
         compose.setContent {
@@ -416,8 +515,9 @@ class LanguageMenuMotionCaptureTest {
         assertTrue("Real-time composition initializes", ready.await(5, TimeUnit.SECONDS))
     }
 
-    private fun captureSettledGpu(directory: File, name: String): Bitmap {
-        assertTrue("Do not interrupt an input stream with a screenshot", !activePointer)
+    private fun captureSettledGpu(directory: File, name: String, heldSnapshot: Boolean = false): Bitmap {
+        assertTrue("Only the separate held GPU diagnostic may capture an active pointer", !activePointer || heldSnapshot)
+        assertEquals("Held snapshot must have a real active pointer", heldSnapshot, activePointer)
         val roots = readOnMain {
             WindowInspector.getGlobalWindowViews().filter { it.isAttachedToWindow && it.isHardwareAccelerated && it.width > 0 && it.height > 0 }
         }
@@ -430,14 +530,15 @@ class LanguageMenuMotionCaptureTest {
             }
         }
         assertTrue("HWUI commits all fixture windows before $name", committed.await(5, TimeUnit.SECONDS))
-        // Submission precedes compositor presentation; wait real time after the complete input stream.
+        // Submission precedes compositor presentation. This is a settled GPU diagnostic,
+        // and its optional held snapshots are never used as motion-timing evidence.
         SystemClock.sleep(80)
         val begin = SystemClock.uptimeMillis()
         val bitmap = requireNotNull(instrumentation.uiAutomation.takeScreenshot()) { "Composited display unavailable" }
         add("gpu_screenshot").put("name", name).put("begin_uptime_ms", begin)
             .put("end_uptime_ms", SystemClock.uptimeMillis()).put("active_pointer", activePointer)
             .put("width_px", bitmap.width).put("height_px", bitmap.height)
-        assertTrue("Capture finished outside an input stream", !activePointer)
+        assertEquals("Pointer state stays unchanged throughout the static GPU snapshot", heldSnapshot, activePointer)
         File(directory, "$name.png").outputStream().use {
             assertTrue("Encode fixture GPU pixels: $name", bitmap.compress(Bitmap.CompressFormat.PNG, 100, it))
         }
