@@ -102,6 +102,9 @@
     <string name="default_table_name">デフォルト</string>
     <string name="import_paste">テキストを貼り付け</string>
     <string name="import_paste_hint">時間割テキストを貼り付け…</string>
+    <string name="import_ai_title">AI でスクリーンショット変換</string>
+    <string name="import_ai_subtitle">プロンプトをコピーし、AI に時間割の画像を sleepy-v1 テキストに変換してもらいます</string>
+    <string name="import_ai_copied">プロンプトをコピーしました。時間割のスクリーンショットと一緒に AI へ送り、返答を「テキストを貼り付け」に貼ってプレビューしてください。</string>
     <string name="import_file">ファイルから</string>
     <string name="import_qr">QRスキャン</string>
     <string name="import_jw">学校システムへ接続</string>
@@ -147,7 +150,7 @@
     <string name="format_html">HTMLテーブル</string>
     <string name="format_html_desc">&lt;table&gt;形式、ヘッダー検出後に行ごとに解析</string>
     <string name="format_plain">プレーンテキスト</string>
-    <string name="format_plain_desc">Sleepyネイティブ形式、1行1科目、縦棒区切り</string>
+    <string name="format_plain_desc">Sleepyネイティブ形式、1行1科目、縦棒区切り。スクリーンショットからAIで生成も可能</string>
 
     <!-- フォーマット詳細ダイアログ: 文言は ScheduleParser の実際の識別動作と一致させること -->
     <string name="format_help_spec">識別条件</string>
@@ -158,7 +161,7 @@
     <string name="copied">コピーしました</string>
     <string name="ai_prompt_title">AIにスクショを変換させる（Sleepyネイティブ形式）</string>
     <string name="ai_prompt_hint">下のプロンプトをコピーして Doubao・ChatGPT などの AI に送り、時間割のスクリーンショットも一緒に送ってください。AI は #sleepy-v1 形式のテキストを出力するので、全体をコピーして上の入力欄に貼り付けるとインポートできます。</string>
-    <string name="ai_prompt_text">タスク：これから送る時間割のスクリーンショット（またはファイル内容）を、sleepy-v1 プレーンテキスト形式に変換して出力してください。変換結果以外は一切出力しないこと（説明・挨拶・Markdownコードフェンス禁止）。出力の1行目は必ず #sleepy-v1。\n\n========== 一、書式ルール ==========\n\n1行目は必ず：#sleepy-v1\n\n2行目以降は1行1レコード、列は縦棒 | で区切る。行は3種類：\n\n1. T 行（テーブル情報、省略可、最大1行）：\nTテーブル名|学期開始日|総週数|1日のコマ数\n· 開始日の形式は YYYY-MM-DD、第1週の月曜日であること\n· 時間割に明記されている項目のみ記入し、無い項目は空のまま。値がある列まで書けばOK（例：T|2026-03-02）\n· 時間割に全く言及がなければ T 行自体を出力しない。推測禁止\n\n2. N 行（各コマの開始・終了時刻、省略可、1コマ1行）：\nN番号|開始時刻|終了時刻\n· 例：N3|10:00|10:45\n· 時間割に時限表が明記されている場合のみ出力。時刻は24時間制 HH:mm（8:00 は 08:00 と書く）\n· 時限表がなければ N 行は一切出力しない\n\n3. C 行（科目、本体、1時限1行）：\nC科目名|曜日|コマ|週|教員|教室|色|備考|時刻|グループ\n常に10列・縦棒9個。空の列は空のまま、ただし縦棒は省略しない。各列の規則：\n  第1列 科目名：時間割の原文を一字一句そのまま写す（言語不問）\n  第2列 曜日：月〜日 = 1 2 3 4 5 6 7\n  第3列 コマ：3-4時限なら 3-4、単一時限は 6\n  第4列 週：「二、週のルール」参照\n  第5列 教員：時間割にあればそのまま、無ければ空\n  第6列 教室：同上\n  第7列 色：常に空\n  第8列 備考：時間割に備考があれば記入、無ければ空\n  第9列 時刻：時間割が科目ごとに具体的時刻（夜間授業などの非標準時刻）を明記する場合のみ HH:mm-HH:mm。この時刻は科目固有の開始・終了時刻であり、共通の N 行にはしません。無ければ空\n  第10列 グループ：常に空\n\n========== 二、週のルール ==========\n\n各科目の開催週集合を抽出し、順に判定：\n1. 連続範囲かつ奇数・偶数の制約なし → S-E（例：1-16）\n2. 範囲内すべて奇数週（「奇数週」の表記）→ S-E单（例：1-15单）\n3. 範囲内すべて偶数週（「偶数週」の表記）→ S-E双（例：2-16双）\n4. 飛び飛びの週（例：1-8週、10週、12-16週）→ 連続する区間ごとに分割し、それぞれ独立した C 行に。他の列はそのままコピー：\n   · 全週の連続区間 → S-E（例：1-8、12-16）\n   · 孤立した単週 → S定（例：10定）\n   · 純奇数の連続 → S-E单、純偶数の連続 → S-E双\n   · 連続でなく純奇偶でもない → S-E定（例：6,7週 → 6-7定）\n5. 週の記載がなければ 1-16\n\n========== 三、抽出ルール ==========\n\n· 同じ科目が1週間に複数回（別日・別コマ）→ 複数の C 行、1時限1行。1行にまとめない\n· コマ番号は時間割の「X時限」から読む。時限がなく時刻のみなら、重複しない時間帯を朝から 1, 2, 3… と採番し、対応する N 行も出力\n· 科目名・教員・教室は原文のまま。テキストに | \\ \" &amp;lt; { ( が含まれる場合は各文字の前に \\ を付ける。文中の改行は \n の2文字、タブは \t\n· 時間割に無い情報はすべて空。教員・教室・時刻・週を捏造しないこと\n\n========== 四、出力セルフチェック（心中で確認。出力しない） ==========\n\n· 1行目が #sleepy-v1 で、他に余計な文字が一切ない\n· 各 C 行は正確に縦棒9個・10列\n· 曜日は 1-7 の数字。時刻は時が2桁（8:00 でなく 08:00）\n· 週の列は S-E、S-E单、S-E双、S-E定、S定 の5形態のみ\n· 科目名は時間割の原文と一致。捏造なし\n\n========== 五、出力例 ==========\n\n#sleepy-v1\nT|2026-03-02\nN1|08:00|08:45\nN2|08:55|09:40\nN3|10:00|10:45\nN4|10:55|11:40\nN5|14:00|14:45\nN6|14:55|15:40\nN7|16:00|16:45\nN8|16:55|17:40\nN9|19:00|19:45\nN10|19:55|20:40\nC高等数学A|1|1-2|1-16|张三|A101||||\nC高等数学A|3|3-4|1-16|张三|A101||||\nC大学英语|2|3-4|1-15单|李四|C301||||\nC数据结构|4|3-4|2-16双|王五|C302||||\nC体育|4|5-6|3-4定||||||\nCJava实战|3|9-10|1-16||机房|||19:00-21:30|\nC影视鉴赏|7|6|10-16双||||||\nC形势与政策|5|8-9|1-8||||||\nC形势与政策|5|8-9|12-16||||||</string>
+    <string name="ai_prompt_text">タスク：これから送る時間割のスクリーンショット（またはファイル内容）を、sleepy-v1 プレーンテキスト形式に変換して出力してください。変換結果以外は一切出力しないこと（説明・挨拶・Markdownコードフェンス禁止）。出力の1行目は必ず #sleepy-v1。\n\n========== 一、書式ルール ==========\n\n1行目は必ず：#sleepy-v1\n\n2行目以降は1行1レコード、列は縦棒 | で区切る。行は3種類：\n\n1. T 行（テーブル情報、省略可、最大1行）：\nTテーブル名|学期開始日|総週数|1日のコマ数\n· 開始日の形式は YYYY-MM-DD、第1週の月曜日であること\n· 時間割に明記されている項目のみ記入し、無い項目は空のまま。値がある列まで書けばOK（例：T|2026-03-02）\n· 時間割に全く言及がなければ T 行自体を出力しない。推測禁止\n\n2. N 行（各コマの開始・終了時刻、省略可、1コマ1行）：\nN番号|開始時刻|終了時刻\n· 例：N3|10:00|10:45\n· 時間割に時限表が明記されている場合のみ出力。時刻は24時間制 HH:mm（8:00 は 08:00 と書く）\n· 時限表がなければ N 行は一切出力しない\n\n3. C 行（科目、本体、1時限1行）：\nC科目名|曜日|コマ|週|教員|教室|色|備考|時刻|グループ\n常に10列・縦棒9個。空の列は空のまま、ただし縦棒は省略しない。各列の規則：\n  第1列 科目名：時間割の原文を一字一句そのまま写す（言語不問）\n  第2列 曜日：月〜日 = 1 2 3 4 5 6 7\n  第3列 コマ：3-4時限なら 3-4、単一時限は 6\n  第4列 週：「二、週のルール」参照\n  第5列 教員：時間割にあればそのまま、無ければ空\n  第6列 教室：同上\n  第7列 色：常に空\n  第8列 備考：時間割に備考があれば記入、無ければ空\n  第9列 時刻：時間割が科目ごとに具体的時刻（夜間授業などの非標準時刻）を明記する場合のみ HH:mm-HH:mm。この時刻は科目固有の開始・終了時刻であり、共通の N 行にはしません。無ければ空\n  第10列 グループ：常に空\n\n========== 二、週のルール ==========\n\n各科目の開催週集合を抽出し、順に判定：\n1. 連続範囲かつ奇数・偶数の制約なし → S-E（例：1-16）\n2. 範囲内すべて奇数週（「奇数週」の表記）→ S-E单（例：1-15单）\n3. 範囲内すべて偶数週（「偶数週」の表記）→ S-E双（例：2-16双）\n4. 飛び飛びの週（例：1-8週、10週、12-16週）→ 連続する区間ごとに分割し、それぞれ独立した C 行に。他の列はそのままコピー：\n   · 全週の連続区間 → S-E（例：1-8、12-16）\n   · 孤立した単週 → S定（例：10定）\n   · 純奇数の連続 → S-E单、純偶数の連続 → S-E双\n   · 連続でなく純奇偶でもない → S-E定（例：6,7週 → 6-7定）\n5. 週の記載がなければ 1-16\n\n========== 三、抽出ルール ==========\n\n· 同じ科目が1週間に複数回（別日・別コマ）→ 複数の C 行、1時限1行。1行にまとめない\n· コマ番号は時間割の「X時限」から読む。時限がなく時刻のみなら、重複しない時間帯を朝から 1, 2, 3… と採番し、対応する N 行も出力\n· 科目名・教員・教室は原文のまま。テキストに | \\ \" &lt; { ( が含まれる場合は各文字の前に \\ を付ける。文中の改行は \\n の2文字、タブは \\t\n· 時間割に無い情報はすべて空。教員・教室・時刻・週を捏造しないこと\n\n========== 四、出力セルフチェック（心中で確認。出力しない） ==========\n\n· 1行目が #sleepy-v1 で、他に余計な文字が一切ない\n· 各 C 行は正確に縦棒9個・10列\n· 曜日は 1-7 の数字。時刻は時が2桁（8:00 でなく 08:00）\n· 週の列は S-E、S-E单、S-E双、S-E定、S定 の5形態のみ\n· 科目名は時間割の原文と一致。捏造なし\n\n========== 五、出力例 ==========\n\n#sleepy-v1\nT|2026-03-02\nN1|08:00|08:45\nN2|08:55|09:40\nN3|10:00|10:45\nN4|10:55|11:40\nN5|14:00|14:45\nN6|14:55|15:40\nN7|16:00|16:45\nN8|16:55|17:40\nN9|19:00|19:45\nN10|19:55|20:40\nC高等数学A|1|1-2|1-16|张三|A101||||\nC高等数学A|3|3-4|1-16|张三|A101||||\nC大学英语|2|3-4|1-15单|李四|C301||||\nC数据结构|4|3-4|2-16双|王五|C302||||\nC体育|4|5-6|3-4定||||||\nCJava实战|3|9-10|1-16||机房|||19:00-21:30|\nC影视鉴赏|7|6|10-16双||||||\nC形势与政策|5|8-9|1-8||||||\nC形势与政策|5|8-9|12-16||||||</string>
 
     <string name="format_wakeup_share_when">WakeUp アプリからの乗り換え。WakeUp の「コース共有」で生成されたテキスト全体をそのまま貼り付け。新バージョンの「共有コード」の直接貼り付けも可能です。</string>
     <string-array name="format_wakeup_share_spec">
@@ -361,6 +364,49 @@
     <string name="settings_migration_import_dialog_text">上書きは端末の全時間割と設定を消してからバックアップから復元します。統合は端末のデータを残し、バックアップの内容を追加するだけです。</string>
     <string name="settings_migration_import_overwrite">上書き</string>
     <string name="settings_migration_import_merge">統合</string>
+    <string name="webdav_section_title">WebDAV バックアップ</string>
+    <string name="webdav_section_sub">任意：自分の WebDAV サーバーにバックアップできます</string>
+    <string name="webdav_configured_sub">サーバー：%1$s</string>
+    <string name="webdav_upload">すべてのデータをバックアップ</string>
+    <string name="webdav_upload_confirm_title">完全バックアップをアップロードしますか？</string>
+    <string name="webdav_upload_confirm_target">バックアップの送信先：%1$s/%2$s</string>
+    <string name="webdav_confirm_upload">アップロードを確認</string>
+    <string name="webdav_restore">サーバー上のバックアップから復元</string>
+    <string name="webdav_working">処理中</string>
+    <string name="webdav_config_title">WebDAV の設定</string>
+    <string name="webdav_server_url">HTTPS WebDAV アドレス</string>
+    <string name="webdav_directory">バックアップフォルダー</string>
+    <string name="webdav_directory_hint">上記の WebDAV アドレスからの相対パスです。複数階層を指定できます</string>
+    <string name="webdav_username">ユーザー名（任意）</string>
+    <string name="webdav_password">パスワード（任意）</string>
+    <string name="webdav_password_keep_hint">空欄の場合、保存済みのパスワードを保持します。消去するには設定を削除してください。</string>
+    <string name="webdav_password_optional_hint">認証が不要なサーバーでは空欄にできます</string>
+    <string name="webdav_password_show">パスワードを表示</string>
+    <string name="webdav_password_hide">パスワードを隠す</string>
+    <string name="webdav_privacy_notice">アップロードを押したときだけ HTTPS で送信します。バックアップファイル自体は暗号化されていないため、サーバー管理者が内容を読める場合があります。パスワードはこの端末の Android Keystore で暗号化して保存し、バックアップには含めません。</string>
+    <string name="webdav_directory_create_notice">接続テスト時に、このアカウント内へ指定したフォルダーを作成することがあります。</string>
+    <string name="webdav_password_reentry_notice">保存済みのパスワードを復号できませんでした。再入力してから接続をテストしてください。</string>
+    <string name="webdav_test_and_save">接続をテストして保存</string>
+    <string name="webdav_testing">テスト中</string>
+    <string name="webdav_config_saved">WebDAV 接続を確認し、設定を保存しました</string>
+    <string name="webdav_upload_done">アップロード済み：%1$s</string>
+    <string name="webdav_remote_title">リモートバックアップを選択</string>
+    <string name="webdav_remote_empty">このサーバーフォルダーに .sleepybackup ファイルはありません</string>
+    <string name="webdav_remote_file_detail">更新日時：%1$s · サイズ：%2$s</string>
+    <string name="webdav_date_unknown">不明</string>
+    <string name="webdav_forget_configuration">この端末から設定を削除</string>
+    <string name="webdav_forget_title">WebDAV 設定を削除しますか？</string>
+    <string name="webdav_forget_warning">サーバーアドレスと保存済みパスワードをこの端末から削除します。サーバー上のバックアップは削除されません。</string>
+    <string name="webdav_config_forgotten">この端末から WebDAV 設定を削除しました</string>
+    <string name="webdav_error_configuration">サーバーアドレス、バックアップフォルダー、ユーザー名を確認してください。</string>
+    <string name="webdav_error_https">サーバーアドレスには HTTPS が必要です。</string>
+    <string name="webdav_error_authentication">サーバーがユーザー名またはパスワードを拒否しました。確認して再試行してください。</string>
+    <string name="webdav_error_forbidden">このフォルダーへのアクセスが拒否されました。アカウントの権限を確認してください。</string>
+    <string name="webdav_error_http_status">サーバーでエラーが発生しました（HTTP %1$d）。</string>
+    <string name="webdav_error_too_large">バックアップが 100 MB の上限を超えています。</string>
+    <string name="webdav_error_response">サーバーから認識できない WebDAV 応答がありました。</string>
+    <string name="webdav_error_network">接続できません。ネットワークと HTTPS 証明書を確認してください。</string>
+    <string name="webdav_error_generic">WebDAV に失敗しました。設定を確認して再試行してください。</string>
     <string name="settings_grid_show_separators">グリッド区切り線を表示</string>
     <string name="settings_grid_show_separators_sub">時間割グリッドに追加の行と列の区切り線を表示します</string>
     <string name="settings_grid_long_break_spacing">長い休み時間の余白</string>

@@ -17,9 +17,11 @@ import com.lingion.sleepy.data.entity.ImportDraftEntity
 import com.lingion.sleepy.data.entity.PeriodTableEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 
+internal const val APP_DATABASE_VERSION = 18
+
 @Database(
     entities = [CourseEntity::class, TimeTableEntity::class, PeriodTableEntity::class, ImportDraftEntity::class, CalendarImportRecordEntity::class, CourseColorEntity::class],
-    version = 16,
+    version = APP_DATABASE_VERSION,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {

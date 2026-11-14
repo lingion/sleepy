@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 16,
-    "identityHash": "e79d29234aef7f0830b6fe412f178f78",
+    "identityHash": "5375fc4aaefe19deb8398d5a27aba356",
     "entities": [
       {
         "tableName": "courses",
@@ -209,7 +209,7 @@
       },
       {
         "tableName": "time_tables",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `startDate` TEXT NOT NULL, `maxWeek` INTEGER NOT NULL, `nodesPerDay` INTEGER NOT NULL, `timeJson` TEXT NOT NULL, `color` TEXT NOT NULL, `isDefault` INTEGER NOT NULL, `smartConfigJson` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `periodTableId` INTEGER, `preBindSnapshotJson` TEXT NOT NULL DEFAULT '', `reminderEnabled` INTEGER NOT NULL DEFAULT 1, `reminderOverride` INTEGER DEFAULT NULL, `importSourceJson` TEXT NOT NULL DEFAULT '')",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `startDate` TEXT NOT NULL, `maxWeek` INTEGER NOT NULL, `nodesPerDay` INTEGER NOT NULL, `timeJson` TEXT NOT NULL, `color` TEXT NOT NULL, `isDefault` INTEGER NOT NULL, `smartConfigJson` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `periodTableId` INTEGER, `preBindSnapshotJson` TEXT NOT NULL DEFAULT '', `reminderEnabled` INTEGER NOT NULL DEFAULT 1, `reminderOverride` INTEGER DEFAULT NULL, `importSourceJson` TEXT NOT NULL DEFAULT '', `jwSchoolSourceJson` TEXT NOT NULL DEFAULT '')",
         "fields": [
           {
             "fieldPath": "id",
@@ -302,6 +302,13 @@
             "affinity": "TEXT",
             "notNull": true,
             "defaultValue": "''"
+          },
+          {
+            "fieldPath": "jwSchoolSourceJson",
+            "columnName": "jwSchoolSourceJson",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
           }
         ],
         "primaryKey": {
@@ -313,7 +320,7 @@
       },
       {
         "tableName": "period_tables",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `nodesPerDay` INTEGER NOT NULL, `timeJson` TEXT NOT NULL, `smartConfigJson` TEXT NOT NULL, `comboScheduleJson` TEXT NOT NULL DEFAULT '', `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `nodesPerDay` INTEGER NOT NULL, `timeJson` TEXT NOT NULL, `smartConfigJson` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -344,13 +351,6 @@
             "columnName": "smartConfigJson",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "comboScheduleJson",
-            "columnName": "comboScheduleJson",
-            "affinity": "TEXT",
-            "notNull": true,
-            "defaultValue": "''"
           },
           {
             "fieldPath": "createdAt",
@@ -571,7 +571,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e79d29234aef7f0830b6fe412f178f78')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5375fc4aaefe19deb8398d5a27aba356')"
     ]
   }
 }

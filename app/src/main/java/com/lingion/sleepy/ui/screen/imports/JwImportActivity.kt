@@ -45,6 +45,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.CancellationException
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.data.entity.CourseEntity
@@ -127,6 +128,8 @@ class JwImportActivity : ComponentActivity() {
                 .collectAsState(initial = AppPrefs.getThemeKey(this@JwImportActivity))
             SleepyThemeProvider(darkTheme = dark, themeKey = themeKey) {
                 val jwViewModel: JwImportViewModel = viewModel()
+                val jwSchools by jwViewModel.schools.collectAsState()
+                val jwImportState by jwViewModel.importState.collectAsState()
                 val scheduleViewModel: ScheduleViewModel = viewModel()
                 // v1.0.56 T6: 第三 Tab「作息表」数据源 — 绑定现有作息表直接用
                 val allPeriodTables by scheduleViewModel.allPeriodTables.collectAsState(initial = emptyList())
@@ -135,16 +138,60 @@ class JwImportActivity : ComponentActivity() {
                 val incomingDraftId = intent.getStringExtra(EXTRA_DRAFT_ID)
                 val targetTableId = intent.getLongExtra(EXTRA_TARGET_TABLE_ID, 0L)
                 val updateMode = intent.getBooleanExtra(EXTRA_UPDATE_TABLE, false)
+                var authorizedUpdateSourceJson by remember { mutableStateOf<String?>(null) }
+                var updateSourceChecked by remember(updateMode) { mutableStateOf(!updateMode) }
+                LaunchedEffect(updateMode, targetTableId, jwSchools, jwImportState) {
+                    if (!updateMode) return@LaunchedEffect
+                    if (jwSchools.isEmpty()) {
+                        if (jwImportState is JwImportViewModel.ImportState.Error) {
+                            updateSourceChecked = true
+                            finish()
+                        }
+                        return@LaunchedEffect
+                    }
+                    val source = try {
+                        val target = SleepyApp.get().repository.getTable(targetTableId)
+                        target?.takeIf { it.jwSchoolSourceVerified }?.let {
+                            com.lingion.sleepy.data.jw.JwImportDraftCodec.schoolFromSourceJson(
+                                it.jwSchoolSourceJson, jwSchools, sourceVerified = true,
+                            )
+                        }
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (_: Exception) {
+                        null
+                    }
+                    authorizedUpdateSourceJson = source?.let {
+                        com.lingion.sleepy.data.jw.JwImportDraftCodec.toSchoolSourceJson(it)
+                    }
+                    updateSourceChecked = true
+                    if (source == null) finish()
+                }
+                val initialSourceJson = authorizedUpdateSourceJson
+                val initialSourceSchool = remember(initialSourceJson, jwSchools) {
+                    initialSourceJson?.let {
+                        com.lingion.sleepy.data.jw.JwImportDraftCodec.schoolFromSourceJson(
+                            it, jwSchools, sourceVerified = true,
+                        )
+                    }
+                }
                 // 组合树, 滚动位置/搜索词全部销毁。各 stage 分支内容包独立 key 的
                 // SaveableStateProvider(key = stage 类名), WebView 登录返回学校列表时
                 // 列表滚动位置与 rememberSaveable 态原样恢复。
                 val saveableStateHolder: SaveableStateHolder = rememberSaveableStateHolder()
 
-                var selectedSchool by remember { mutableStateOf<JwSchoolInfo?>(null) }
-                var catalogNotice by remember { mutableStateOf<JwSchoolInfo?>(null) }
+                var selectedSchool by remember(initialSourceSchool) { mutableStateOf(initialSourceSchool) }
+                var catalogNotice by remember(updateMode) {
+                    mutableStateOf(initialSourceSchool?.takeIf { !updateMode && it.isUnverified })
+                }
                 // 2026-10-18 离线回路: 未验证学校导入成功后弹报告弹窗(复制+加QQ群), 已验证学校维持静默 finish
                 var reportDialogSchool by remember { mutableStateOf<JwSchoolInfo?>(null) }
-                var stage by remember { mutableStateOf<Stage>(Stage.SelectSchool) }
+                var stage by remember(updateMode, initialSourceSchool) {
+                    mutableStateOf<Stage>(
+                        if (updateMode && initialSourceSchool != null) Stage.WebViewLogin
+                        else Stage.SelectSchool
+                    )
+                }
                 var errorMsg by remember { mutableStateOf<String?>(null) }
                 var statusMsg by remember { mutableStateOf<String?>(null) }
                 val statusSnackbarHostState = remember { SnackbarHostState() }
@@ -548,6 +595,12 @@ class JwImportActivity : ComponentActivity() {
                 }
 
                 when {
+                    updateMode && !updateSourceChecked -> {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            LinearProgressIndicator()
+                        }
+                    }
+
                     importFinished -> {
                         LaunchedEffect(Unit) { finish() }
                     }
@@ -850,6 +903,7 @@ class JwImportActivity : ComponentActivity() {
                                                 maxWeek = maxOf(configTermWeekCount, confirmedCourses.maxOf { it.endWeek }),
                                                 importSourceJson = importSourceJson,
                                                 comboScheduleJson = configComboScheduleJson,
+                                                jwSchoolSourceJson = com.lingion.sleepy.data.jw.JwImportDraftCodec.toSchoolSourceJson(school),
                                                 periodTable = if (configBindPeriodTableId == -1L) {
                                                     ScheduleParser.ParsedPeriodTable(
                                                         sourceId = 0L,
@@ -870,6 +924,7 @@ class JwImportActivity : ComponentActivity() {
                                                 context = this@JwImportActivity,
                                                 onImported = { imported = true },
                                                 bindPeriodTableId = configBindPeriodTableId?.takeIf { it > 0 },
+                                                fromConfirmedJwImport = true,
                                             )
                                             if (imported) finishOrReport(school)
                                         } catch (e: Exception) {
