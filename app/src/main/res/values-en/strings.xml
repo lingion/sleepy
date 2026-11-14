@@ -523,6 +523,7 @@
     <string name="jw_err_empty_semester">No courses this semester. Please confirm the correct semester is selected; image-based timetables cannot be imported</string>
     <string name="jw_import_success">Successfully imported %1$d courses</string>
     <string name="jw_parse_failed">Parse failed: %1$s</string>
+    <string name="jw_combo_schedule_skipped">The seasonal period schedule was skipped because its format is not recognized. Courses were imported normally.</string>
     <string name="jw_parse_failed_hint">\n\nTip: For HEU, log in via browser then navigate to "My Schedule" page before clicking import</string>
     <string name="jw_webview_not_ready">WebView not ready</string>
     <string name="jw_fetching">Fetching schedule…</string>

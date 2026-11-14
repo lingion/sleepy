@@ -1,5 +1,6 @@
 package com.lingion.sleepy.util
 
+import com.lingion.sleepy.data.entity.PeriodTableEntity
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -36,14 +37,18 @@ class ImportedPeriodTableDraftTest {
         assertEquals(confirmed, draft.effectiveTimeJson(java.time.LocalDate.of(2026, 1, 1)))
     }
 
-    @Test fun invalidCombinationFailsAtImportInsteadOfSilentlyDropping() {
+    @Test fun unusableCombinationIsSkippedAndCoursesStillImportOnBaseSchedule() {
         val broken = validCombo.replace("2026-09-30", "2026-04-01") // endDate before startDate
-        val failed = try {
-            importedPeriodTableDraft(null, "Imported", confirmed, broken)
-            false
-        } catch (expected: IllegalArgumentException) {
-            true
-        }
-        assertTrue("an unusable combination must be rejected at import time", failed)
+        val draft = requireNotNull(importedPeriodTableDraft(null, "Imported", confirmed, broken))
+        assertEquals("an unusable combination must not be stored", "", draft.comboScheduleJson)
+        assertEquals("courses still get the confirmed base schedule", confirmed, draft.timeJson)
+        assertEquals(confirmed, draft.effectiveTimeJson(java.time.LocalDate.of(2026, 6, 1)))
+    }
+
+    @Test fun corruptStoredCombinationFallsBackToBaseScheduleOnEveryDate() {
+        // Legacy or damaged rows must not crash rendering; the base schedule is the safe answer.
+        val stored = PeriodTableEntity(name = "stored", nodesPerDay = 2, timeJson = confirmed, comboScheduleJson = "{not json")
+        assertEquals(confirmed, stored.effectiveTimeJson(java.time.LocalDate.of(2026, 6, 1)))
+        assertEquals(confirmed, stored.effectiveTimeJson(java.time.LocalDate.of(2026, 1, 1)))
     }
 }

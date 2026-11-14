@@ -77,6 +77,7 @@ import android.webkit.WebView
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.QqJoin
 import com.lingion.sleepy.util.TimeTableUtils
+import com.lingion.sleepy.util.usableComboScheduleJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -926,6 +927,15 @@ class JwImportActivity : ComponentActivity() {
                                                 bindPeriodTableId = configBindPeriodTableId?.takeIf { it > 0 },
                                                 fromConfirmedJwImport = true,
                                             )
+                                            if (imported && configComboScheduleJson.isNotBlank() &&
+                                                usableComboScheduleJson(configTimeJson, configComboScheduleJson).isBlank()
+                                            ) {
+                                                android.widget.Toast.makeText(
+                                                    this@JwImportActivity,
+                                                    getString(R.string.jw_combo_schedule_skipped),
+                                                    android.widget.Toast.LENGTH_LONG,
+                                                ).show()
+                                            }
                                             if (imported) finishOrReport(school)
                                         } catch (e: Exception) {
                                             Log.e("JwImport", "import failed", e)
