@@ -702,3 +702,17 @@ Toggle 普通点按保留完整镜片至接近目的地，再按原生局部轮�
 Glass 通用展开菜单改为同一 Popup 持有弹簧及生命周期，材质、裁切、边框和内容同步变换，透明退场尾段停止持有焦点窗口并禁用旧动作。覆盖日历选择、提醒字段、调休课表/目标映射及课程调整/删除菜单；Material 仍走原控件。通用菜单并未逐入口测得原生等效时序。
 
 18 类共 125 个唯一测试的最终结果均通过：保留首轮 125 项中一项课程 fixture 失败，再仅用最终该类 2/2 替换其结果。问题是暂停时钟未驱动宿主布局，测试修复后撤回猜测性生产修改；不是一次全新 125 项运行。最终课程回归与 debug/androidTest 构建同轮 24s 成功。API36 Toggle、单双头、语言自然输入和语言五行 GPU 四项检查分别通过，录像与最终包身份分开记录。最终已安装主包 SHA256 为 `cad2d8c9014961a075ff5912fe22b45fc15c169c6253897af0dd0834d35acf4e`，真实页面验证使用此包；自然录像包只含后来撤回的课程菜单试验差异，相关三类控件实现相同。详见[本批便携记录](../libraries/liquid-glass/validation/observations/control-regressions-95.json)。失败、原视频与大 trace 留在本会话 artifacts，未复制进库；26 份 runtime 源码、原 AGSL、默认关闭的 Dock 候选和未通过的发布门禁保持。
+
+### 96：五处单选下拉统一与 Material Expressive 菜单
+
+通用语言、流体云胶囊主显示内容、导入日历目标、调休课表及调休目标日期共五处锚点单选统一使用 `SingleChoiceDropdown`。有效选择立即更新原 binding，原有持久化时机保持，取消不提交；语言重建仍等菜单关闭，调休“无”清除映射，“其他日期”先关闭菜单再打开日期框，候选外日期的显示保持。页内单选组、原生 WebView 桥接弹窗及 action menu 不在此次迁移范围。
+
+Material 分支改用已有 Material3 `1.5.0-rc01` 的 `FilledTonalButton` 形变、`DropdownMenuPopup`、分组及可选菜单项；菜单跟随锚点宽度，受可见窗口高度约束并可滚动。语言选项不再在页面内展开推挤后续设置。项目原有 `MaterialExpressiveTheme`、`MotionScheme.expressive()` 与依赖版本未改。Glass 分支复用语言菜单的源卡片形变和真实窗口绘制交接，泛化选项 ID、显示标签、禁用和回调；`LanguageMenuMotion`、26 份 runtime 源码、AGSL、Toggle、滑杆、Dialog 与 Dock 行为没有在本批修改。共享菜单仍在 app 侧，完整控件解耦及全应用 Material 现代化尚未完成。
+
+最终两类定向测试 23 项（语言菜单 14、共享单选 9）均通过，0 失败/错误/跳过；与 debug/androidTest 构建同轮 28.88765575s 完成。六类汇总为 52 个唯一通过项：首轮 51 项，以最终两类 23 项替换此前 22 项，不能称作一次新跑 52 项。中间一轮保留了一项读取已 detach Modifier 的测试失败，改为有效附着动作后 pre-Expressive 22 项及最终 23 项通过。覆盖取消、重复选择、旧会话动作、禁用/空选项、长列表、窄屏/RTL/大字和 Dialog 内交接。
+
+API36 PKX110 的 Glass 自然输入夹具使用 pre-Expressive 主包 `f20838e8…`，六场景共 4443 行 trace，选择回调为 `[en,en,ja]`，六次关闭回调时 Popup 均已移除；夹具只更新本地选择，不模拟偏好写入或 `Activity.recreate`。最终 Expressive 主包 `6b822b15…` 的生产“通用／语言”检查另行验证五项可见、Back 取消、重开、选择已选 zh-CN 并回源，没有验证更换语言后的重建。默认紫色最终截图由 root 复核；最终偏好证据确认 `theme_key=default`、`ui_style=liquid_glass`，已恢复原外观。两轮完整主包/测试包哈希分别记录，不能把前轮 Glass 夹具计为最终包设备复测。
+
+同一最终主包另检查 Glass 生产调休 2026 元旦 1/1：默认折叠后展开，菜单显示六个官方日期加“无／其他日期”共八项；选“其他日期”后菜单消失并打开 Material 日期框，Back 取消后原锚点仍为“—”，映射未改。root 查看了菜单及取消返回原图。首次取消断言误把值当作语义节点后代；同一份原 XML 按锚点 bounds 检查通过，没有重跑 UI 或修改生产。该结果是实际点击与稳定截图检查，不是逐帧时序或光学验收；提醒、日历及调休课表切换仍未做生产设备检查。
+
+本批证明限定范围的功能与交接回归，不新增完整 1:1、原生五语言几何/透明度容差、全背景光学、其他设备/API 或性能验收。HWUI 提交不等于 compositor present，语义 bounds 和绘制输入也不代替可见轮廓与实测 alpha。详见[本批便携记录](../libraries/liquid-glass/validation/observations/single-choice-unification-96.json)；选定原始截图、视频及元数据保留哈希，大 trace 单列留在会话 artifacts，独立库与公开发布门禁继续未通过。

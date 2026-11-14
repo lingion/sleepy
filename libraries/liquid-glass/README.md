@@ -108,7 +108,7 @@ M3a 已把 `LiquidGlassStyle.kt`、`LiquidGlassShader.kt`、`LiquidGlassEffect.k
 
 API36 使用注册的 `SleepyRenderTestRunner` 运行原 HazeRender 三项，5.3395s通过；该次安装主包/测试包与 host 哈希匹配，第11周网格首页和 Dock 可见，仅作安装/启动验证。独立 resolutionResult 的 compile67/runtime121组件无未解析项，backdrop、Material3、Foundation、HCT、shapes/UI 均解析到现有版本，真实编译输入含 backdrop jar；最初两个只读诊断错误保留。署名证据路径元数据修正后仅重打包主包，2.4462s通过；最终主包已重装、host-device哈希一致且MainActivity resumed。该身份与原 GPU 运行包分开记录，未重复原34项单测或三项GPU测试，本页不固定主包哈希。完整证据见 [M3a 渲染原语记录](validation/migrations/m3a-rendering.json)。
 
-完整运行库仍未完成解耦。同一个 `liquidglass` 包目前仍混有 `LocalUiStyle` 等主题判断、导航图标驱动、设置布局、调试语义和 Material 分支；滑杆还引用包外的弹窗动画及 Material 辅助函数。`SegmentedSwitcher.kt` 同时承载玻璃控件实现和 Sleepy 适配，不能整文件归为已分离的适配器。语言菜单也需先拆出通用菜单行为，再把语言选项、设置入口和调试标签留在 Sleepy。当前二十六份 runtime 实现还包含通用源亮度采样、显式内容通知和迟滞策略；完整 Host 采样闭包、主题注入、控件及独立示例仍待完成，catalog 保留相应阻碍。本批未新增完整光学、自然动态、近原生或发布验收。
+完整运行库仍未完成解耦。同一个 `liquidglass` 包目前仍混有 `LocalUiStyle` 等主题判断、导航图标驱动、设置布局、调试语义和 Material 分支；滑杆还引用包外的弹窗动画及 Material 辅助函数。`SegmentedSwitcher.kt` 同时承载玻璃控件实现和 Sleepy 适配，不能整文件归为已分离的适配器。语言菜单已泛化为 app 侧共享 `SingleChoiceDropdown` / `GlassChoiceMenu`，语言选项及入口留在 Sleepy；Host、主题与调试依赖仍未迁出。当前二十六份 runtime 实现还包含通用源亮度采样、显式内容通知和迟滞策略；完整 Host 采样闭包、主题注入、控件及独立示例仍待完成，catalog 保留相应阻碍。本批未新增完整光学、自然动态、近原生或发布验收。
 
 原生采集工具、可分发的数值基线、回放和示例属于独立验证目录。原始长视频、临时 APK、DerivedData 和设备导出缓存不进入库或日常 CI。CI 保留正常贡献所需的编译、针对性回归和可复现示例；多背景 GPU 采证显式运行。
 
@@ -124,6 +124,8 @@ API36 使用注册的 `SleepyRenderTestRunner` 运行原 HazeRender 三项，5.3
 ## 验收依据
 
 [控件回归记录 95](validation/observations/control-regressions-95.json)保留 Toggle 点按回落、真实设置/课程单双头滑杆和菜单收尾修复的测试、包身份与残差。该批未完成逐控件原生验收；Toggle 的中心位移、后段宽度和异步父行路径仍有差距。
+
+[单选统一记录 96](validation/observations/single-choice-unification-96.json)记录五处单选入口、Material Expressive 菜单及 Glass 共享交接。最终定向 23 项通过，跨轮按类汇总为 52 项；pre-Expressive Glass 夹具与最终包的 Material 语言、Glass 调休生产检查分列身份和范围。运行库、既有运动参数及其他控件未改，完整 1:1、全应用 Material 现代化和发布验收仍未完成。
 
 不能用一个平均分把某个控件的明显误差覆盖掉，也不能把当前状态标成“99.99%”。发布前需逐控件、逐角色先固定测量方法和可接受误差，再保留实测结果及未通过项；目前没有完整通过的发布验收矩阵。每类控件分别保留点击、按住已选/未选项、慢快拖动、加速减速、反向、端部拉伸、持续顶住、松手回弹、取消及连续首尾切换的适用证据。形状与四角、位置、宽高形变、透明度、磨砂、折射、色散和分层分别记录。
 
