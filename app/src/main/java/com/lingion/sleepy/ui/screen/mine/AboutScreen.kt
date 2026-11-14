@@ -6,13 +6,11 @@ import android.os.Build as AndroidBuild
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -26,6 +24,7 @@ import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.NewReleases
@@ -566,84 +565,17 @@ fun AboutScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Source code card
-            InfoCard {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Outlined.Code,
-                        contentDescription = null,
-                        tint = colors.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
-                        Text(
-                            text = stringResource(R.string.about_source),
-                            style = SettingsLayout.headingStyle,
-                            color = colors.onSurface
-                        )
-                        Text(
-                            text = stringResource(R.string.about_source_url),
-                            style = SettingsLayout.descriptionStyle,
-                            color = colors.primary,
-                            textDecoration = TextDecoration.Underline
-                        )
-                    }
-                    IconButton(modifier = Modifier.dbgTag("about_source_link", role = "button"), onClick = {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/lingion/sleepy")))
-                    }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
-                            contentDescription = null,
-                            tint = colors.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            AboutPrivacyCard(onOpenPrivacy = {
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(PrivacyPolicyUrl)))
-            })
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // The website hosts the complete inventory; original notices remain bundled.
-            InfoCard {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .noRippleClickable {
-                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(
-                                "https://sleepy.is-my.app/licenses/"
-                            )))
-                        }
-                        .dbgTag("about_license_entry", role = "button")
-                ) {
-                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
-                        Text(
-                            text = stringResource(R.string.about_license_title),
-                            style = SettingsLayout.headingStyle,
-                            color = colors.onSurface
-                        )
-                        Text(
-                            text = stringResource(R.string.about_license_detail),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = colors.onSurfaceVariant
-                        )
-                    }
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
-                        contentDescription = null,
-                        tint = colors.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-
+            AboutExternalLinks(
+                onOpenSource = {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(SourceCodeUrl)))
+                },
+                onOpenPrivacy = {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(PrivacyPolicyUrl)))
+                },
+                onOpenLicenses = {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OpenSourceNoticesUrl)))
+                },
+            )
 
             Spacer(modifier = Modifier.height(32.dp))
         }
@@ -684,82 +616,116 @@ private fun InfoCard(modifier: Modifier = Modifier, content: @Composable () -> U
     }
 }
 
+private const val SourceCodeUrl = "https://github.com/lingion/sleepy"
 private const val PrivacyPolicyUrl = "https://sleepy.qdp.qzz.io/privacy"
+private const val OpenSourceNoticesUrl = "https://sleepy.is-my.app/licenses/"
 
+/** The source-code row defines the geometry for all three external destinations. */
 @Composable
-internal fun AboutPrivacyCard(onOpenPrivacy: () -> Unit, modifier: Modifier = Modifier) {
-    val colors = MaterialTheme.colorScheme
-    val title = stringResource(R.string.about_privacy)
-    val urlLabel = stringResource(R.string.about_privacy_url)
+internal fun AboutExternalLinks(
+    onOpenSource: () -> Unit,
+    onOpenPrivacy: () -> Unit,
+    onOpenLicenses: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val glass = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
-    InfoCard(modifier) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = Icons.Outlined.Shield,
-                contentDescription = null,
-                tint = colors.primary,
-                modifier = Modifier.size(24.dp)
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        AboutExternalLinkCard(
+            title = stringResource(R.string.about_source),
+            detail = stringResource(R.string.about_source_url),
+            destination = SourceCodeUrl,
+            leadingIcon = Icons.Outlined.Code,
+            actionTag = "about_source_link",
+            onOpen = onOpenSource,
+        )
+        AboutPrivacyCard(onOpenPrivacy)
+        if (glass) {
+            AboutExternalLinkCard(
+                title = stringResource(R.string.about_license_title),
+                detail = stringResource(R.string.about_license_detail),
+                destination = OpenSourceNoticesUrl,
+                leadingIcon = Icons.Outlined.Description,
+                actionTag = "about_license_entry",
+                onOpen = onOpenLicenses,
             )
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(if (glass) SettingsLayout.headerGap else SettingsLayout.descriptionGap),
-            ) {
-                Text(
-                    text = title,
-                    modifier = if (glass) Modifier.fillMaxWidth() else Modifier,
-                    style = SettingsLayout.headingStyle,
-                    color = colors.onSurface,
-                )
-                if (glass) {
-                    // One optical action owns both the wrapping URL and its icon;
-                    // a nested text link would dispatch a second click handler.
-                    TextButton(
-                        onClick = onOpenPrivacy,
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
-                            .dbgTag("about_privacy_link", text = title, role = "button"),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+        } else {
+            // Preserve the established Material Design license row.
+            val colors = MaterialTheme.colorScheme
+            InfoCard {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().noRippleClickable(onOpenLicenses)
+                        .dbgTag("about_license_entry", role = "button"),
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap),
                     ) {
-                        Text(
-                            text = urlLabel,
-                            modifier = Modifier.weight(1f),
-                            style = SettingsLayout.descriptionStyle,
-                            color = colors.primary,
-                            textDecoration = TextDecoration.Underline,
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
-                            contentDescription = title,
-                            tint = colors.primary,
-                            modifier = Modifier.size(20.dp),
-                        )
+                        Text(stringResource(R.string.about_license_title), style = SettingsLayout.headingStyle, color = colors.onSurface)
+                        Text(stringResource(R.string.about_license_detail), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
                     }
-                } else {
-                    Text(
-                        text = buildAnnotatedString {
-                            withLink(LinkAnnotation.Url(PrivacyPolicyUrl, linkInteractionListener = { onOpenPrivacy() })) {
-                                append(urlLabel)
-                            }
-                        },
-                        style = SettingsLayout.descriptionStyle,
-                        color = colors.primary,
-                        textDecoration = TextDecoration.Underline
+                    Icon(
+                        Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = null,
+                        tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp),
                     )
                 }
             }
-            if (!glass) {
-                IconButton(
-                    modifier = Modifier.dbgTag("about_privacy_link", text = title, role = "button"),
-                    onClick = onOpenPrivacy,
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
-                        contentDescription = title,
-                        tint = colors.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+        }
+    }
+}
+
+@Composable
+internal fun AboutPrivacyCard(onOpenPrivacy: () -> Unit, modifier: Modifier = Modifier) {
+    AboutExternalLinkCard(
+        title = stringResource(R.string.about_privacy),
+        detail = stringResource(R.string.about_privacy_url),
+        destination = PrivacyPolicyUrl,
+        leadingIcon = Icons.Outlined.Shield,
+        actionTag = "about_privacy_link",
+        onOpen = onOpenPrivacy,
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun AboutExternalLinkCard(
+    title: String,
+    detail: String,
+    destination: String,
+    leadingIcon: androidx.compose.ui.graphics.vector.ImageVector,
+    actionTag: String,
+    onOpen: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = MaterialTheme.colorScheme
+    InfoCard(modifier) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(leadingIcon, contentDescription = null, tint = colors.primary, modifier = Modifier.size(24.dp))
+            Spacer(Modifier.width(12.dp))
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap),
+            ) {
+                Text(title, style = SettingsLayout.headingStyle, color = colors.onSurface)
+                Text(
+                    text = buildAnnotatedString {
+                        withLink(LinkAnnotation.Url(destination, linkInteractionListener = { onOpen() })) {
+                            append(detail)
+                        }
+                    },
+                    style = SettingsLayout.descriptionStyle,
+                    color = colors.primary,
+                    textDecoration = TextDecoration.Underline,
+                )
+            }
+            IconButton(
+                modifier = Modifier.dbgTag(actionTag, text = title, role = "button"),
+                onClick = onOpen,
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = title,
+                    tint = colors.primary, modifier = Modifier.size(20.dp),
+                )
             }
         }
     }
