@@ -31,6 +31,7 @@ internal object SleepyNativeParser {
         var nodesPerDayRaw: Int? = null
         var declaredCount: Int? = null
         var importSourceJson = ""
+        var jwSchoolSourceJson = ""
         var bodyStart = 0
         var foundMagic = false
 
@@ -66,6 +67,10 @@ internal object SleepyNativeParser {
                                 // Do not apply forgiving course-text normalization to provenance.
                                 val originalKv = originalCols?.getOrNull(column) ?: kv
                                 importSourceJson = unescapeCol(originalKv.substringAfter('=')).orEmpty()
+                            }
+                            if (k == "jw") {
+                                val originalKv = originalCols?.getOrNull(column) ?: kv
+                                jwSchoolSourceJson = unescapeCol(originalKv.substringAfter('=')).orEmpty()
                             }
                             // 未知键静默忽略(v2 契约)
                         }
@@ -270,6 +275,7 @@ internal object SleepyNativeParser {
             groupIdsAuthoritative = true,
             periodTable = periodTable,
             importSourceJson = importSourceJson,
+            jwSchoolSourceJson = jwSchoolSourceJson,
         )
     }
 

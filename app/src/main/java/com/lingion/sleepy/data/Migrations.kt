@@ -209,10 +209,36 @@ val ALL_MIGRATIONS: Array<Migration> = arrayOf(
     },
     object : Migration(15, 16) {
         override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL("ALTER TABLE period_tables ADD COLUMN comboScheduleJson TEXT NOT NULL DEFAULT ''")
+            db.execSQL(MIGRATION_15_16_SQL)
+        }
+    },
+    object : Migration(16, 17) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            if (!hasColumn(db, "time_tables", "jwSchoolSourceJson")) {
+                db.execSQL("ALTER TABLE time_tables ADD COLUMN jwSchoolSourceJson TEXT NOT NULL DEFAULT ''")
+            }
+            if (!hasColumn(db, "time_tables", "jwSchoolSourceVerified")) {
+                db.execSQL(MIGRATION_16_17_SQL)
+            }
+            if (!hasColumn(db, "period_tables", "comboScheduleJson")) {
+                db.execSQL("ALTER TABLE period_tables ADD COLUMN comboScheduleJson TEXT NOT NULL DEFAULT ''")
+            }
         }
     }
 )
+
+private fun hasColumn(db: SupportSQLiteDatabase, table: String, column: String): Boolean =
+    db.query("PRAGMA table_info($table)").use { cursor ->
+        val nameColumn = cursor.getColumnIndex("name")
+        while (cursor.moveToNext()) {
+            if (nameColumn >= 0 && cursor.getString(nameColumn) == column) return@use true
+        }
+        false
+    }
+
+internal const val MIGRATION_15_16_SQL = "ALTER TABLE time_tables ADD COLUMN jwSchoolSourceJson TEXT NOT NULL DEFAULT ''"
+
+internal const val MIGRATION_16_17_SQL = "ALTER TABLE time_tables ADD COLUMN jwSchoolSourceVerified INTEGER NOT NULL DEFAULT 0"
 
 internal const val MIGRATION_14_15_SQL = "ALTER TABLE time_tables ADD COLUMN importSourceJson TEXT NOT NULL DEFAULT ''"
 

@@ -5,8 +5,8 @@
 <h1 align="center">Sleepy · 轻课表</h1>
 
 <p align="center">
-  A clean Android timetable app built with Kotlin + Jetpack Compose, Material 3 Expressive motion, and optional Liquid Glass.<br>
-  Material You / Material 3 Expressive 设计的纯净 Android 课程表 App — 多视图 · 教务导入 · 单次调课 · 桌面小组件 · 液态玻璃
+  A clean, open-source timetable app for Android and iOS — both native. This repo builds the Android version with Kotlin + Jetpack Compose, Material 3 Expressive motion, and optional Liquid Glass.<br>
+  纯净开源课程表,Android 与 iOS 均为原生实现 — 本仓库是 Android 版,Material You / Material 3 Expressive 设计,多视图 · 教务导入 · 单次调课 · 桌面小组件 · 液态玻璃
 </p>
 
 <p align="center">
@@ -14,6 +14,7 @@
   <img src="https://img.shields.io/github/stars/lingion/sleepy?style=flat-square&logo=github" alt="Stars">
   <img src="https://img.shields.io/github/downloads/lingion/sleepy/total?style=flat-square" alt="Downloads">
   <img src="https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white" alt="Android">
+  <a href="https://github.com/lingion/sleepy-ios"><img src="https://img.shields.io/badge/platform-iOS-000000?style=flat-square&logo=apple&logoColor=white" alt="iOS"></a>
   <img src="https://img.shields.io/badge/lang-Kotlin-7F52FF?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin">
   <img src="https://img.shields.io/badge/UI-Jetpack%20Compose-4285F4?style=flat-square" alt="Compose">
   <img src="https://img.shields.io/badge/license-GPL--3.0-blue?style=flat-square" alt="License">
@@ -27,7 +28,7 @@
 
 ---
 
-> **Keywords (SEO):** Android schedule app, 课程表, 课表, timetable, university schedule, Jetpack Compose, Material You, Chinese university academic system import, wisedu, 强智教务, 正方教务, URP, home screen widget, HSV color picker, 开源课表, 开源课程表, 离线课表, 无广告课表, 隐私课表, 国产课表, 大学课表, 高校课表, 教务导入, 教务直连, 课表导入导出, iCalendar, ICS 课表, WakeUp 替代, 课程格子 替代, 超级课程表 替代, class timetable, school timetable, university timetable, course schedule
+> **Keywords (SEO):** Android schedule app, iOS schedule app, iPhone 课程表, 开源 iPhone 课表, SwiftUI, WidgetKit, iOS 桌面小组件, App Store 课表, 课程表, 课表, timetable, university schedule, cross-platform timetable, Jetpack Compose, Material You, Chinese university academic system import, wisedu, 强智教务, 正方教务, URP, home screen widget, HSV color picker, 开源课表, 开源课程表, 离线课表, 无广告课表, 隐私课表, 国产课表, 大学课表, 高校课表, 教务导入, 教务直连, 课表导入导出, iCalendar, ICS 课表, WakeUp 替代, 课程格子 替代, 超级课程表 替代, AI 课表截图转换, 截图转课表, class timetable, school timetable, university timetable, course schedule
 
 ---
 
@@ -61,7 +62,7 @@ Android 可在[官网下载页](https://sleepy.is-my.app/download/)选择项目�
 
 **学校教务系统在维护？** **WakeUp / 课程格子要登录云端？** **想看下一节课却要点开 App？**
 
-Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务导入会访问学校站点，WakeUp 分享口令导入会访问 WakeUp 服务，节假日数据和版本更新检查也需要联网；项目未集成 Firebase / Crashlytics / Sentry / Bugsnag 等第三方分析 SDK。[学校目录](docs/schools-list.md)按已有导入配置、待验证可尝试和待适配区分，收录不等于支持导入；[来源说明](docs/catalog/README.md)与生成清单记录当前范围。另支持 iCalendar（ICS）、WakeUp 课程包、CSV、HTML 和原生文本导入；导出的 ICS 文件可导入 Apple Calendar、Google Calendar、Outlook 等日历应用。
+Sleepy 默认将课表保存在本地，日常查看和编辑可离线使用；也提供由用户手动触发的 WebDAV 完整备份。教务导入会访问学校站点，WakeUp 分享口令导入会访问 WakeUp 服务，节假日数据和版本更新检查也需要联网；项目未集成 Firebase / Crashlytics / Sentry / Bugsnag 等第三方分析 SDK。[学校目录](docs/schools-list.md)按已有导入配置、待验证可尝试和待适配区分，收录不等于支持导入；[来源说明](docs/catalog/README.md)与生成清单记录当前范围。另支持 iCalendar（ICS）、WakeUp 课程包、CSV、HTML 和原生文本导入；导出的 ICS 文件可导入 Apple Calendar、Google Calendar、Outlook 等日历应用。
 
 桌面提供 5 种小组件、14 个固定尺寸变体（Today / TwoDay / WeekList / WeekView / WeekGrid），跨厂商兼容，放在首屏不用点开 App。GPL-3.0 开源，谁都能审计，谁都能 fork。
 
@@ -159,7 +160,18 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 |---|---|
 | **教务直连** | 选择已收录学校，或在搜索框输入教务 URL → WebView 登录 → 自动抓取课表 → 预览 → 导入 |
 | **粘贴课表文本** | 粘贴任意格式文本 → 自动识别格式 → 预览 → 导入 |
+| **AI 截图转换** | 复制提示词，连同课表截图交给你选择的识图 AI，把回复粘贴到「粘贴课表文本」，预览后导入 |
 | **从文件导入** | 选择 `.json` / `.ics` / `.csv` / `.html` 文件 → 预览 → 导入 |
+
+### AI 截图转换
+
+手打课表太慢、又没有可用的教务入口时，可以让 AI 把课表截图转成 sleepy-v1 文本：
+
+1. 在「导入课表」弹窗点「AI 截图转换」，提示词会复制到剪贴板。也可以在「纯文本」行的信息图标详情里复制。
+2. 把提示词和课表截图（或课程文件内容）一起发给你选择的识图 AI，例如豆包、ChatGPT。
+3. 把 AI 回复的文本（第一行是 `#sleepy-v1`）粘贴到「粘贴课表文本」，点「预览」，确认后导入。
+
+Sleepy 不会自动上传截图，也不调用任何 AI 服务。截图发给了哪个 AI，就由那个服务处理。AI 可能识别出错，导入前请在预览里核对课程、周次和节次。
 
 ### 教务协议示例
 
@@ -218,7 +230,7 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 | **ICS 日历** | 标准 iCalendar，可从学校教务处导出 |
 | **CSV 文件** | 含表头的 `.csv`，逗号分隔 |
 | **HTML 表格** | `<table>` 形式，识别表头后逐行解析 |
-| **纯文本** | 一行一课，制表符分隔 |
+| **纯文本** | 一行一课，竖线分列（旧的制表符格式仍可导入）；可由 AI 从课表截图生成，见上方「AI 截图转换」 |
 | **sleepy-v1** | Sleepy 原生纯文本格式，带 `chk` 完整性字段和确定性记录 |
 
 > 所有导入路径都先生成预览，确认后才写入课表。
@@ -532,6 +544,10 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 
 「我的 → 备份恢复」可将全部课表、作息表、偏好和小组件配置打包为 `.sleepybackup`。恢复前可选**合并导入**（保留本机课表并追加，备份中的同名偏好会覆盖本机值）或**覆盖导入**（替换备份包含的课表与设置模块）。换机备份与单张课表的 JSON/ICS/文本导出用途不同。
 
+也可以自愿配置 WebDAV，将完整备份手动上传到自己的 HTTPS 服务器，或查看服务器目录中的备份并选择恢复。连接测试会验证服务器，并在目录尚不存在时尝试创建目录；上传会生成带时间戳的新文件，不覆盖旧备份，也没有后台自动同步或远端删除功能。恢复仍须确认合并或覆盖。
+
+备份包含课表与课程内容、作息表、偏好和自定义主题、小组件配置及导入草稿；它是普通 ZIP 文件，文件本身没有加密。服务器管理员或有目录访问权限的人可能读取内容，请只上传到可信服务器。WebDAV 地址仅接受 HTTPS；用户名和目录保存在本机应用私有设置中，密码由 Android Keystore 加密保存。WebDAV 连接设置和密码不进入 `.sleepybackup` 或 Android 系统备份；移除本机配置不会删除服务器上的文件。
+
 ---
 
 ## 技术栈
@@ -546,6 +562,7 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 | 偏好设置 | SharedPreferences（`AppPrefs`）；DataStore Preferences 1.3.0 已声明，尚未使用 |
 | 协程 | kotlinx-coroutines 1.11.0 |
 | 序列化 | kotlinx-serialization-json 1.12.0 |
+| 网络传输 | OkHttp 5.5.1（WebDAV 备份与恢复） |
 | HTML 解析 | jsoup 1.23.2 |
 | 桌面小组件 | RemoteViews + Canvas，同步渲染 |
 | 后台任务 | WorkManager 2.12.0 |
@@ -587,6 +604,7 @@ sleepy/
 │       │   │   │   ├── Migrations.kt                          # 数据库版本迁移
 │       │   │   │   ├── CustomThemeStore.kt                    # 自定义主题存储
 │       │   │   │   ├── calendar/                              # 系统日历导入与本机日历
+│       │   │   │   ├── backup/                                # 用户手动触发的 WebDAV 备份传输与本地凭据
 │       │   │   │   ├── dao/                                   # 课程、课表、作息表等数据访问
 │       │   │   │   ├── diff/                                  # 课表记录差异比较
 │       │   │   │   ├── entity/                                # Room 实体与节次配置
