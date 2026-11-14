@@ -13,12 +13,12 @@ import com.lingion.sleepy.console.ui.dbgTag
 import org.json.JSONArray
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,8 +37,6 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Description
-import androidx.compose.material.icons.outlined.ExpandLess
-import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.FileUpload
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.QrCode2
@@ -51,6 +49,7 @@ import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.TextField
@@ -94,11 +93,18 @@ import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.data.parser.ScheduleParser
 import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.liquidglass.GlassControlLayout
+import com.lingion.sleepy.ui.component.liquidglass.GlassAlertActionScope
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.component.liquidglass.NativeGlassAlertActionMetrics
+import com.lingion.sleepy.ui.component.liquidglass.nativeGlassAlertActionGroupLayout
 import com.lingion.sleepy.ui.component.TimeSlotEditor
 import com.lingion.sleepy.ui.component.resolveAutoPeriodConfig
-import com.lingion.sleepy.ui.component.sleepyExpandSpecs
+import com.lingion.sleepy.ui.component.AccordionHeader
+import com.lingion.sleepy.ui.component.AccordionContent
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import kotlinx.coroutines.launch
 import com.lingion.sleepy.util.AppClock
@@ -117,6 +123,7 @@ fun AddTableScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val colors = MaterialTheme.colorScheme
+    val nativeActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val cannotReadFileMessage = stringResource(R.string.cannot_read_file)
@@ -336,19 +343,12 @@ fun AddTableScreen(
             ImportMethodRow(
                 icon = Icons.Outlined.Description,
                 label = stringResource(R.string.import_paste),
-                trailing = if (textExpanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                expanded = textExpanded,
                 enabled = canImport,
                 dbgTag = "import_paste",
                 onClick = { textExpanded = !textExpanded }
             )
-            // MD3E (Task 7a): 走展开家族 (尺寸 fastSpatial + 淡入淡出 motionScheme);
-            // 旧版无 fadeIn, 工厂补齐 — 与全应用折叠一致性优先
-            val expandSpecs = sleepyExpandSpecs()
-            AnimatedVisibility(
-                visible = textExpanded,
-                enter = expandSpecs.enter,
-                exit = expandSpecs.exit,
-            ) {
+            AccordionContent(expanded = textExpanded) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -513,6 +513,31 @@ fun AddTableScreen(
                 state.tables.map { it.name },
                 allPeriodTables.map { it.name }
             )
+            val purePeriodActions: @Composable () -> Unit = {
+                com.lingion.sleepy.ui.component.DialogActionButtons(
+                    confirmText = stringResource(R.string.period_table_import_confirm),
+                    onConfirm = {
+                        if (isLoading) return@DialogActionButtons
+                        isLoading = true
+                        scope.launch {
+                            try {
+                                applyPurePeriodImport(
+                                    name = candidate,
+                                    parsed = pt,
+                                    onImported = { preview = null; importJustApplied = true; onImported() },
+                                    onError = { msg -> errorMsg = msg }
+                                )
+                            } finally {
+                                isLoading = false
+                            }
+                        }
+                    },
+                    dismissText = stringResource(R.string.cancel),
+                    onDismiss = { if (!isLoading) preview = null },
+                    dbgTagPrefix = "import_pure_period",
+                    confirmEnabled = !isLoading && candidate.isNotBlank() && !nameTaken
+                )
+            }
             AlertDialog(
                 onDismissRequest = { if (!isLoading) preview = null },
                 title = { Text(stringResource(R.string.period_table_import_title), color = colors.onSurface) },
@@ -537,34 +562,13 @@ fun AddTableScreen(
                             shape = SleepyTheme.fieldShape,
                             colors = SleepyTheme.fieldColors()
                         )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 统一色块按钮行
-                        com.lingion.sleepy.ui.component.DialogActionButtons(
-                            confirmText = stringResource(R.string.period_table_import_confirm),
-                            onConfirm = {
-                                if (isLoading) return@DialogActionButtons
-                                isLoading = true
-                                scope.launch {
-                                    try {
-                                        applyPurePeriodImport(
-                                            name = candidate,
-                                            parsed = pt,
-                                            onImported = { preview = null; importJustApplied = true; onImported() },
-                                            onError = { msg -> errorMsg = msg }
-                                        )
-                                    } finally {
-                                        isLoading = false
-                                    }
-                                }
-                            },
-                            dismissText = stringResource(R.string.cancel),
-                            onDismiss = { if (!isLoading) preview = null },
-                            dbgTagPrefix = "import_pure_period",
-                            confirmEnabled = !isLoading && candidate.isNotBlank() && !nameTaken
-                        )
+                        if (!nativeActions) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            purePeriodActions()
+                        }
                     }
                 },
-                confirmButton = {},
+                confirmButton = { if (nativeActions) purePeriodActions() },
                 dismissButton = {}
             )
             return@let
@@ -725,12 +729,33 @@ fun AddTableScreen(
 private fun ImportMethodRow(
     icon: ImageVector,
     label: String,
-    trailing: ImageVector? = null,
+    expanded: Boolean? = null,
     enabled: Boolean = true,
     dbgTag: String? = null,
     onClick: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
+    if (expanded != null) {
+        AccordionHeader(
+            expanded = expanded,
+            onToggle = onClick,
+            enabled = enabled,
+            modifier = Modifier.clip(SleepyTheme.shapes.medium)
+                .then(dbgTag?.let { Modifier.dbgTag(it, text = label, role = "button") } ?: Modifier),
+            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                ImportMethodIcon(icon)
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+                    color = colors.onSurface,
+                    modifier = Modifier.padding(start = 14.dp),
+                )
+            }
+        }
+        return
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -740,20 +765,7 @@ private fun ImportMethodRow(
             .padding(vertical = 14.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(SleepyTheme.shapes.medium)
-                .background(colors.primaryContainer),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = colors.onPrimaryContainer,
-                modifier = Modifier.size(20.dp)
-            )
-        }
+        ImportMethodIcon(icon)
         Text(
             text = label,
             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
@@ -762,13 +774,17 @@ private fun ImportMethodRow(
                 .weight(1f)
                 .padding(start = 14.dp)
         )
-        if (trailing != null) {
-            Icon(
-                imageVector = trailing,
-                contentDescription = null,
-                tint = colors.onSurfaceVariant
-            )
-        }
+    }
+}
+
+@Composable
+private fun ImportMethodIcon(icon: ImageVector) {
+    val colors = MaterialTheme.colorScheme
+    Box(
+        modifier = Modifier.size(40.dp).clip(SleepyTheme.shapes.medium).background(colors.primaryContainer),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(icon, contentDescription = null, tint = colors.onPrimaryContainer, modifier = Modifier.size(20.dp))
     }
 }
 
@@ -864,6 +880,7 @@ private enum class ImportFormat {
  */
 @Composable
 private fun FormatDetailDialog(format: ImportFormat, onDismiss: () -> Unit) {
+    val nativeActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val aiPromptText = stringResource(R.string.ai_prompt_text)
@@ -988,39 +1005,41 @@ private fun FormatDetailDialog(format: ImportFormat, onDismiss: () -> Unit) {
                                 .background(colors.surfaceContainer)
                                 .padding(10.dp)
                         )
-                        // 2026-08-25 用户指令: 全 app 纯色块禁描线 — 用 surface 色块按钮, 非 OutlinedButton
-                        Button(
-                            onClick = {
-                                val cm = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-                                cm.setPrimaryClip(
-                                    ClipData.newPlainText(
-                                        "prompt",
-                                        aiPromptText
-                                            .replace("\\n", "\n")
-                                            .replace("\\t", "\t")
-                                            .replace("&lt;", "<")
-                                            .replace("&gt;", ">")
-                                            .replace("&amp;", "&")
+                        GlassAlertActionScope {
+                            Button(
+                                onClick = {
+                                    val cm = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+                                    cm.setPrimaryClip(
+                                        ClipData.newPlainText(
+                                            "prompt",
+                                            aiPromptText
+                                                .replace("\\n", "\n")
+                                                .replace("\\t", "\t")
+                                                .replace("&lt;", "<")
+                                                .replace("&gt;", ">")
+                                                .replace("&amp;", "&")
+                                        )
                                     )
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                                    .then(if (nativeActions) Modifier.heightIn(min = SleepyTheme.Buttons.regularHeight)
+                                        else Modifier.height(SleepyTheme.Buttons.regularHeight))
+                                    .dbgTag("import_copy_prompt", role = "button"),
+                                shape = if (nativeActions) null else SleepyTheme.Buttons.shape,
+                                colors = if (nativeActions) null else ButtonDefaults.buttonColors(
+                                    containerColor = colors.primaryContainer,
+                                    contentColor = colors.onPrimaryContainer
                                 )
-                            },
-                            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight)
-                                .dbgTag("import_copy_prompt", role = "button"),
-                            shape = SleepyTheme.Buttons.shape,
-                            colors = ButtonDefaults.buttonColors(
-                                // 纯文字伪按钮不可接受：用 primaryContainer 色块和背景拉开层级，仍不加描边
-                                containerColor = colors.primaryContainer,
-                                contentColor = colors.onPrimaryContainer
-                            )
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.ContentCopy,
-                                contentDescription = null,
-                                tint = colors.onPrimaryContainer,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(stringResource(R.string.copy_prompt), color = colors.onPrimaryContainer)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.ContentCopy,
+                                    contentDescription = null,
+                                    tint = if (nativeActions) LocalContentColor.current else colors.onPrimaryContainer,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(stringResource(R.string.copy_prompt), color = if (nativeActions) Color.Unspecified else colors.onPrimaryContainer)
+                            }
                         }
                     }
                 }
@@ -1075,6 +1094,7 @@ internal fun ImportPreviewDialog(
     // 调试台语义身份前缀: <prefix>_backup/_append/_dismiss/_apply; null = 不打标
     dbgTagPrefix: String? = null
 ) {
+    val nativeActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
     // Prevent repeated submissions while the selected import is being saved.
     var backupOriginal by rememberSaveable(preview.targetTableId) { mutableStateOf(true) }
     var appendConflicts by rememberSaveable(preview.targetTableId) { mutableStateOf(false) }
@@ -1296,7 +1316,47 @@ internal fun ImportPreviewDialog(
         confirmButton = {
             // AlertDialog reserves its action area before measuring the scrollable details.
             // Keep import choices here so conflicts and warnings cannot scroll them out of view.
-            Column(
+            if (nativeActions) {
+                Column(Modifier.nativeGlassAlertActionGroupLayout().fillMaxWidth()) {
+                    if (preview.targetTableId != 0L) {
+                        Column(
+                            Modifier.padding(
+                                start = NativeGlassAlertActionMetrics.inset,
+                                end = NativeGlassAlertActionMetrics.inset,
+                                top = NativeGlassAlertActionMetrics.inset,
+                            ),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            ImportOptionSwitch(
+                                title = stringResource(R.string.import_backup_original),
+                                subtitle = stringResource(R.string.import_backup_original_sub),
+                                checked = backupOriginal,
+                                enabled = !isApplying,
+                                dbgTag = dbgTagPrefix?.let { "${it}_backup" },
+                                onCheckedChange = { backupOriginal = it },
+                            )
+                            ImportOptionSwitch(
+                                title = stringResource(R.string.import_append_conflicts_option),
+                                subtitle = stringResource(R.string.import_append_conflicts_option_sub),
+                                checked = appendConflicts,
+                                enabled = !isApplying,
+                                dbgTag = dbgTagPrefix?.let { "${it}_append" },
+                                onCheckedChange = { appendConflicts = it },
+                            )
+                        }
+                    }
+                    com.lingion.sleepy.ui.component.DialogActionButtons(
+                        confirmText = stringResource(R.string.import_confirm),
+                        onConfirm = apply,
+                        confirmEnabled = !isApplying,
+                        dismissText = stringResource(R.string.cancel),
+                        onDismiss = onDismiss,
+                        dismissEnabled = !isApplying,
+                        dbgTagPrefix = dbgTagPrefix,
+                        confirmDbgTag = dbgTagPrefix?.let { "${it}_apply" },
+                    )
+                }
+            } else Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -1327,7 +1387,7 @@ internal fun ImportPreviewDialog(
                         modifier = Modifier.weight(1f)
                             .then(dbgTagPrefix?.let { Modifier.dbgTag("${it}_dismiss", text = cancelLabel, role = "button") } ?: Modifier)
                     ) {
-                        Text(cancelLabel, color = colors.onSurfaceVariant)
+                        Text(cancelLabel, color = if (nativeActions) Color.Unspecified else colors.onSurfaceVariant)
                     }
                     Button(
                         enabled = !isApplying,
@@ -1421,6 +1481,7 @@ private fun ImportConfirmDialog(
     periodTableTimeJsonById: Map<Long, String> = emptyMap()
 ) {
     val colors = MaterialTheme.colorScheme
+    val nativeActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
     val context = LocalContext.current
     val fieldColors = SleepyTheme.fieldColors()
     val startDateRequiredMessage = stringResource(R.string.import_start_date_required)
@@ -1445,6 +1506,56 @@ private fun ImportConfirmDialog(
         )
     }
     var errorMsg by remember { mutableStateOf<String?>(null) }
+    val actions: @Composable () -> Unit = {
+        com.lingion.sleepy.ui.component.DialogActionButtons(
+            confirmText = stringResource(R.string.import_confirm),
+            confirmEnabled = !isApplying,
+            onConfirm = {
+                if (isApplying) return@DialogActionButtons
+                if (startDate.isBlank()) {
+                    errorMsg = startDateRequiredMessage
+                    return@DialogActionButtons
+                }
+                val dateRegex = Regex("""^\d{4}-\d{2}-\d{2}$""")
+                if (!dateRegex.matches(startDate) || runCatching { java.time.LocalDate.parse(startDate) }.isFailure) {
+                    errorMsg = startDateFormatMessage
+                    return@DialogActionButtons
+                }
+                // v1.0.56 T6 修正: 绑了作息表(id>0)时以表的 timeJson 为真源;
+                // 旧代码无条件校验手动 rows, 解析源没回节次时间 → 误报「第 X 节时间不能为空」(用户反馈 2026-09-20)
+                val effectiveRows = TimeTableUtils.effectiveRowsForConfirm(
+                    manualRows = rows,
+                    bindId = selectedPeriodTableId,
+                    tables = periodTableTimeJsonById.map { it.key to it.value }
+                )
+                val missingNode = TimeTableUtils.firstMissingCourseNode(parseResult.courses, effectiveRows)
+                if (missingNode != null) {
+                    errorMsg = slotTimeRequiredFormat.format(missingNode)
+                    return@DialogActionButtons
+                }
+                val emptyRows = effectiveRows.filter { it.start.isBlank() || it.end.isBlank() }
+                if (emptyRows.isNotEmpty()) {
+                    errorMsg = slotTimeRequiredFormat.format(emptyRows.first().node)
+                    return@DialogActionButtons
+                }
+                val timeRegex = Regex("""^\d{2}:\d{2}$""")
+                val invalidRows = effectiveRows.filter {
+                    !timeRegex.matches(it.start) || !timeRegex.matches(it.end) ||
+                    it.start >= it.end
+                }
+                if (invalidRows.isNotEmpty()) {
+                    errorMsg = slotTimeInvalidFormat.format(invalidRows.first().node)
+                    return@DialogActionButtons
+                }
+                errorMsg = null
+                onTimeJsonChange(TimeTableUtils.buildTimeJsonFromRows(effectiveRows))
+                onConfirm()
+            },
+            dismissText = stringResource(R.string.cancel),
+            onDismiss = { if (!isApplying) onDismiss() },
+            dbgTagPrefix = "import_confirm_dialog"
+        )
+    }
     AlertDialog(
         onDismissRequest = { if (!isApplying) onDismiss() },
         title = { Text(stringResource(R.string.import_confirm_title), color = colors.onSurface) },
@@ -1512,59 +1623,13 @@ private fun ImportConfirmDialog(
                         dbgTagPrefix = "import_confirm_slot"
                     )
                 }
-                Spacer(modifier = Modifier.height(12.dp))
-                // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 统一色块按钮行
-                com.lingion.sleepy.ui.component.DialogActionButtons(
-                    confirmText = stringResource(R.string.import_confirm),
-                    confirmEnabled = !isApplying,
-                    onConfirm = {
-                        if (isApplying) return@DialogActionButtons
-                        if (startDate.isBlank()) {
-                            errorMsg = startDateRequiredMessage
-                            return@DialogActionButtons
-                        }
-                        val dateRegex = Regex("""^\d{4}-\d{2}-\d{2}$""")
-                        if (!dateRegex.matches(startDate) || runCatching { java.time.LocalDate.parse(startDate) }.isFailure) {
-                            errorMsg = startDateFormatMessage
-                            return@DialogActionButtons
-                        }
-                        // v1.0.56 T6 修正: 绑了作息表(id>0)时以表的 timeJson 为真源;
-                        // 旧代码无条件校验手动 rows, 解析源没回节次时间 → 误报「第 X 节时间不能为空」(用户反馈 2026-09-20)
-                        val effectiveRows = TimeTableUtils.effectiveRowsForConfirm(
-                            manualRows = rows,
-                            bindId = selectedPeriodTableId,
-                            tables = periodTableTimeJsonById.map { it.key to it.value }
-                        )
-                        val missingNode = TimeTableUtils.firstMissingCourseNode(parseResult.courses, effectiveRows)
-                        if (missingNode != null) {
-                            errorMsg = slotTimeRequiredFormat.format(missingNode)
-                            return@DialogActionButtons
-                        }
-                        val emptyRows = effectiveRows.filter { it.start.isBlank() || it.end.isBlank() }
-                        if (emptyRows.isNotEmpty()) {
-                            errorMsg = slotTimeRequiredFormat.format(emptyRows.first().node)
-                            return@DialogActionButtons
-                        }
-                        val timeRegex = Regex("""^\d{2}:\d{2}$""")
-                        val invalidRows = effectiveRows.filter {
-                            !timeRegex.matches(it.start) || !timeRegex.matches(it.end) ||
-                            it.start >= it.end
-                        }
-                        if (invalidRows.isNotEmpty()) {
-                            errorMsg = slotTimeInvalidFormat.format(invalidRows.first().node)
-                            return@DialogActionButtons
-                        }
-                        errorMsg = null
-                        onTimeJsonChange(TimeTableUtils.buildTimeJsonFromRows(effectiveRows))
-                        onConfirm()
-                    },
-                    dismissText = stringResource(R.string.cancel),
-                    onDismiss = { if (!isApplying) onDismiss() },
-                    dbgTagPrefix = "import_confirm_dialog"
-                )
+                if (!nativeActions) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    actions()
+                }
             }
         },
-        confirmButton = {},
+        confirmButton = { if (nativeActions) actions() },
         dismissButton = {}
     )
 }

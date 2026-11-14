@@ -76,6 +76,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.lingion.sleepy.ui.component.SettingsLayout
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
 import androidx.compose.foundation.layout.heightIn
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
@@ -1198,8 +1201,8 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                     ReminderRescheduler.request()
                                 }
                             )
-                            // 假期规则 = 二级设置页跳转入口 (2026-11-04 用户三裁: 大导航入口保持扁平)
-                            androidx.compose.material3.FilledTonalButton(
+                            // 假期规则仍是二级设置页入口；共享包装器按当前样式呈现。
+                            FilledTonalButton(
                                 onClick = onOpenHoliday,
                                 modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
                             ) {
@@ -1254,6 +1257,22 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
     // 流体云三查闸门拦截弹窗: 列出未满足项, 「去设置」走厂商候选链,
     // 「仍要投放」= 用户明知降级继续 (不静默)。
     if (showFluidGateDialog) {
+        val nativeDialogActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
+        val actions: @Composable () -> Unit = {
+            com.lingion.sleepy.ui.component.DialogActionButtons(
+                confirmText = stringResource(R.string.reminder_fluid_gate_cast_anyway),
+                onConfirm = {
+                    showFluidGateDialog = false
+                    startFluidTestCast()
+                },
+                dismissText = stringResource(R.string.reminder_fluid_gate_go_settings),
+                onDismiss = {
+                    showFluidGateDialog = false
+                    openVendorSettings()
+                },
+                destructive = false
+            )
+        }
         AlertDialog(
             onDismissRequest = { showFluidGateDialog = false },
             title = { Text(stringResource(R.string.reminder_fluid_gate_title)) },
@@ -1268,23 +1287,13 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
-                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(12.dp))
-                    com.lingion.sleepy.ui.component.DialogActionButtons(
-                        confirmText = stringResource(R.string.reminder_fluid_gate_cast_anyway),
-                        onConfirm = {
-                            showFluidGateDialog = false
-                            startFluidTestCast()
-                        },
-                        dismissText = stringResource(R.string.reminder_fluid_gate_go_settings),
-                        onDismiss = {
-                            showFluidGateDialog = false
-                            openVendorSettings()
-                        },
-                        destructive = false
-                    )
+                    if (!nativeDialogActions) {
+                        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(12.dp))
+                        actions()
+                    }
                 }
             },
-            confirmButton = {},
+            confirmButton = { if (nativeDialogActions) actions() },
             dismissButton = {}
         )
     }
@@ -1311,6 +1320,31 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
             initialMinute = parts.getOrNull(1)?.toIntOrNull() ?: 0,
             is24Hour = true
         )
+        val nativeDialogActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
+        val actions: @Composable () -> Unit = {
+            com.lingion.sleepy.ui.component.DialogActionButtons(
+                confirmText = stringResource(R.string.action_confirm),
+                onConfirm = {
+                    val h = String.format("%02d", timeState.hour)
+                    val m = String.format("%02d", timeState.minute)
+                    val newTime = "$h:$m"
+                    when (target) {
+                        DailyReminderTimeTarget.Today -> {
+                            dailyTime = newTime
+                            AppPrefs.setDailyReminderTime(context, newTime)
+                        }
+                        DailyReminderTimeTarget.Tomorrow -> {
+                            tomorrowTime = newTime
+                            AppPrefs.setTomorrowReminderTime(context, newTime)
+                        }
+                    }
+                    ReminderRescheduler.request()
+                    timePickerTarget = null
+                },
+                dismissText = stringResource(R.string.action_cancel),
+                onDismiss = { timePickerTarget = null }
+            )
+        }
         AlertDialog(
             onDismissRequest = { timePickerTarget = null },
             title = { Text(stringResource(R.string.reminder_pick_time)) },
@@ -1318,33 +1352,14 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                 androidx.compose.foundation.layout.Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
                     // 默认 TimePicker 配色 — 与 TimePickerField 弹窗一致, 不再单独覆写表盘色
                     TimePicker(state = timeState)
-                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(12.dp))
-                    // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 统一色块按钮行
-                    com.lingion.sleepy.ui.component.DialogActionButtons(
-                        confirmText = stringResource(R.string.action_confirm),
-                        onConfirm = {
-                            val h = String.format("%02d", timeState.hour)
-                            val m = String.format("%02d", timeState.minute)
-                            val newTime = "$h:$m"
-                            when (target) {
-                                DailyReminderTimeTarget.Today -> {
-                                    dailyTime = newTime
-                                    AppPrefs.setDailyReminderTime(context, newTime)
-                                }
-                                DailyReminderTimeTarget.Tomorrow -> {
-                                    tomorrowTime = newTime
-                                    AppPrefs.setTomorrowReminderTime(context, newTime)
-                                }
-                            }
-                            ReminderRescheduler.request()
-                            timePickerTarget = null
-                        },
-                        dismissText = stringResource(R.string.action_cancel),
-                        onDismiss = { timePickerTarget = null }
-                    )
+                    if (!nativeDialogActions) {
+                        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(12.dp))
+                        // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 统一色块按钮行
+                        actions()
+                    }
                 }
             },
-            confirmButton = {},
+            confirmButton = { if (nativeDialogActions) actions() },
             dismissButton = {},
             titleContentColor = colors.onSurface,
             textContentColor = colors.onSurfaceVariant

@@ -1,5 +1,7 @@
 # Android 玻璃控件与 iOS 26.5 原生对照
 
+2026-11-14 发布范围更新：按用户要求，先公开独立实验性 runtime 与 sample，完整控件提取、iOS 26.5 原生校准和支持/性能验收继续进行。[Kerry1020/sleepy-liquid-glass](https://github.com/Kerry1020/sleepy-liquid-glass) 已公开实验性 runtime 与 sample，`main` 为 `ac9254c6e36312c6ef35c99ed28a881818bbd097`，Git 与 API 核对一致。下文历史批次中“近原生验收后才创建仓库”的政策已被本条替代，历史测试结果与未通过项保持原范围。独立后端采用官方 Kyant 2.0.0，排除 SleepDown 定制 fork；Sleepy 当前后端未切换。
+
 2026-11-12 使用 iPhone SE 3 模拟器、iOS 26.5（23F77）、375 × 667 pt、2×，观察系统 SwiftUI / UIKit 控件。Android 按 1 pt = 1 dp 对照控件局部尺寸，不拉伸整张屏幕截图。参考程序见 `tools/native-glass-reference`；Android 设备截图与真实触摸回放入口为 `NativeGlassParityCaptureTest`。
 
 本次实机是 OPPO PKX110，Android 16 / API 36。安装包为 `com.lingion.sleepy.debug`，与正式版数据隔离。下面区分原生测量、实现和仍存在的差异；通过测试不等于每帧像素相同。
@@ -716,3 +718,16 @@ API36 PKX110 的 Glass 自然输入夹具使用 pre-Expressive 主包 `f20838e8�
 同一最终主包另检查 Glass 生产调休 2026 元旦 1/1：默认折叠后展开，菜单显示六个官方日期加“无／其他日期”共八项；选“其他日期”后菜单消失并打开 Material 日期框，Back 取消后原锚点仍为“—”，映射未改。root 查看了菜单及取消返回原图。首次取消断言误把值当作语义节点后代；同一份原 XML 按锚点 bounds 检查通过，没有重跑 UI 或修改生产。该结果是实际点击与稳定截图检查，不是逐帧时序或光学验收；提醒、日历及调休课表切换仍未做生产设备检查。
 
 本批证明限定范围的功能与交接回归，不新增完整 1:1、原生五语言几何/透明度容差、全背景光学、其他设备/API 或性能验收。HWUI 提交不等于 compositor present，语义 bounds 和绘制输入也不代替可见轮廓与实测 alpha。详见[本批便携记录](../libraries/liquid-glass/validation/observations/single-choice-unification-96.json)；选定原始截图、视频及元数据保留哈希，大 trace 单列留在会话 artifacts，独立库与公开发布门禁继续未通过。
+
+### 独立实验性公开准备（2026-11-14）
+
+独立库先发布已提取的 runtime 和最小 sample，以实际分发文件的来源、许可证、独立构建及运行范围为依据；完整 Toggle、Tab、Dock、单双头滑杆、按钮、菜单和面板的提取与逐控件光学/自然动态验收继续推进。创建实验性仓库不再等待近原生完整矩阵，公开状态与 `nativeCalibrationAccepted` 等完整资产库验收标志分开记录，也不据此宣称“99.99%”或稳定 API。
+
+实验性内容已公开，远程 `main` 为 `ac9254c6e36312c6ef35c99ed28a881818bbd097`，Git 与 GitHub API 身份一致。独立 38 项 host 测试通过，sample 四种背景 × 明暗主题已在真机查看；远程全新 clone 的 `:runtime:assemble :runtime:testAndroidHostTest :sample:assembleDebug` 在 34.99 秒通过，未创建 `local.properties`，使用既有 Gradle 9.8.2/SDK 环境且未修改用户配置。独立 backend 采用官方 Kyant 2.0.0，不分发本应用的 SleepDown 定制 fork，不改变本应用后端或此前来源事实。独立源码中适用的 GPL/BSD/Apache 声明和素材可分发范围仍按实际导出清单核对。本仓库旧迁移回执不代替独立 sample 的验证结果；完整控件示例、支持/性能和逐控件原生矩阵仍待完成。
+
+
+## 2026-11-14 暂停交接检查点
+
+用户要求暂停 goal 并把全部源码、测量、截图、录像和现存工作资产上传云端，供另一台设备继续。当前分支仅作 WIP 保存，不作为发布或原生对齐验收。暂停前的 30 类 / 192 项定向检查与 APK 构建通过，但其后新改的弹窗 footer、重复 inset 清理、调休三动作组和 raw 长标签 intrinsic 适配 **尚未重新构建、测试或安装**，不能沿用此前通过结果。
+
+完整恢复入口见 `docs/handoffs/2026-11-14-paused-glass-parity.md`。素材保存在私有 `Kerry1020/sleepy-ui-parity-handoff` 的 `handoff-20261114` release，按分卷 SHA-256、逐文件 manifest 和恢复脚本检查；公开运行库只收录可开源源码及无用户数据的示例配图。未完成项、失败证据与旧包截图均保留。

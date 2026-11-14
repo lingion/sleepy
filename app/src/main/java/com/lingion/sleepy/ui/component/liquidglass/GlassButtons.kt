@@ -77,9 +77,10 @@ fun GlassIconButton(
     }
     MaterialIconButton(
         onClick = onClick,
-        modifier = modifier.glassControl(enabled = enabled),
+        shapes = IconButtonDefaults.shapes(),
+        modifier = modifier,
         enabled = enabled,
-        colors = if (hasGlass()) colors.copy(containerColor = Color.Transparent, disabledContainerColor = Color.Transparent) else colors,
+        colors = colors,
         interactionSource = interactionSource,
         content = content,
     )
@@ -92,12 +93,28 @@ fun GlassButton(
     enabled: Boolean = true,
     shape: Shape? = null,
     colors: ButtonColors? = null,
-    elevation: ButtonElevation? = ButtonDefaults.buttonElevation(),
+    elevation: ButtonElevation? = if (hasGlass() && LocalGlassAlertAction.current) null
+        else ButtonDefaults.buttonElevation(),
     border: BorderStroke? = null,
     contentPadding: PaddingValues? = null,
     interactionSource: MutableInteractionSource? = null,
     content: @Composable RowScope.() -> Unit,
 ) {
+    if (!hasGlass()) {
+        MaterialButton(
+            onClick = onClick,
+            shapes = if (shape == null) ButtonDefaults.shapes() else ButtonDefaults.shapes(shape, shape),
+            modifier = modifier,
+            enabled = enabled,
+            colors = colors ?: ButtonDefaults.buttonColors(),
+            elevation = elevation,
+            border = border,
+            contentPadding = contentPadding ?: ButtonDefaults.contentPaddingFor(ButtonDefaults.MinHeight),
+            interactionSource = interactionSource,
+            content = content,
+        )
+        return
+    }
     if (hasGlass() && LocalGlassAlertAction.current) {
         NativeGlassAlertActionButton(
             onClick = onClick, modifier = modifier, enabled = enabled,
@@ -123,12 +140,28 @@ fun GlassTonalButton(
     enabled: Boolean = true,
     shape: Shape? = null,
     colors: ButtonColors? = null,
-    elevation: ButtonElevation? = ButtonDefaults.filledTonalButtonElevation(),
+    elevation: ButtonElevation? = if (hasGlass() && LocalGlassAlertAction.current) null
+        else ButtonDefaults.filledTonalButtonElevation(),
     border: BorderStroke? = null,
     contentPadding: PaddingValues? = null,
     interactionSource: MutableInteractionSource? = null,
     content: @Composable RowScope.() -> Unit,
 ) {
+    if (!hasGlass()) {
+        MaterialTonalButton(
+            onClick = onClick,
+            shapes = if (shape == null) ButtonDefaults.shapes() else ButtonDefaults.shapes(shape, shape),
+            modifier = modifier,
+            enabled = enabled,
+            colors = colors ?: ButtonDefaults.filledTonalButtonColors(),
+            elevation = elevation,
+            border = border,
+            contentPadding = contentPadding ?: ButtonDefaults.contentPaddingFor(ButtonDefaults.MinHeight),
+            interactionSource = interactionSource,
+            content = content,
+        )
+        return
+    }
     if (hasGlass() && LocalGlassAlertAction.current) {
         NativeGlassAlertActionButton(
             onClick = onClick, modifier = modifier, enabled = enabled,
@@ -160,6 +193,21 @@ fun GlassTextButton(
     interactionSource: MutableInteractionSource? = null,
     content: @Composable RowScope.() -> Unit,
 ) {
+    if (!hasGlass()) {
+        MaterialTextButton(
+            onClick = onClick,
+            shapes = if (shape == null) ButtonDefaults.shapes() else ButtonDefaults.shapes(shape, shape),
+            modifier = modifier,
+            enabled = enabled,
+            colors = colors ?: ButtonDefaults.textButtonColors(),
+            elevation = elevation,
+            border = border,
+            contentPadding = contentPadding ?: ButtonDefaults.contentPaddingFor(ButtonDefaults.MinHeight),
+            interactionSource = interactionSource,
+            content = content,
+        )
+        return
+    }
     if (hasGlass() && LocalGlassAlertAction.current) {
         NativeGlassAlertActionButton(
             onClick = onClick, modifier = modifier, enabled = enabled,
@@ -186,11 +234,27 @@ fun GlassOutlinedButton(
     shape: Shape? = null,
     colors: ButtonColors? = null,
     elevation: ButtonElevation? = null,
-    border: BorderStroke? = ButtonDefaults.outlinedButtonBorder(enabled),
+    border: BorderStroke? = if (hasGlass() && LocalGlassAlertAction.current) null
+        else ButtonDefaults.outlinedButtonBorder(enabled),
     contentPadding: PaddingValues? = null,
     interactionSource: MutableInteractionSource? = null,
     content: @Composable RowScope.() -> Unit,
 ) {
+    if (!hasGlass()) {
+        MaterialOutlinedButton(
+            onClick = onClick,
+            shapes = if (shape == null) ButtonDefaults.shapes() else ButtonDefaults.shapes(shape, shape),
+            modifier = modifier,
+            enabled = enabled,
+            colors = colors ?: ButtonDefaults.outlinedButtonColors(),
+            elevation = elevation,
+            border = border,
+            contentPadding = contentPadding ?: ButtonDefaults.contentPaddingFor(ButtonDefaults.MinHeight),
+            interactionSource = interactionSource,
+            content = content,
+        )
+        return
+    }
     if (hasGlass() && LocalGlassAlertAction.current) {
         NativeGlassAlertActionButton(
             onClick = onClick, modifier = modifier, enabled = enabled,

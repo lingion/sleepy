@@ -238,6 +238,8 @@
     <string name="slot_time_invalid">第%1$d時限の時間が無効です（開始は終了より前である必要があります）</string>
     <string name="expand">タップして展開</string>
     <string name="collapse">タップして閉じる</string>
+    <string name="accordion_expanded">展開済み</string>
+    <string name="accordion_collapsed">折りたたみ済み</string>
     <string name="n_periods">%1$d時限</string>
 
     <string name="course_detail_title">授業詳細</string>

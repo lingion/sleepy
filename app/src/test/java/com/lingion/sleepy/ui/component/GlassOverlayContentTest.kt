@@ -1,6 +1,8 @@
 package com.lingion.sleepy.ui.component
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.Interaction
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -11,6 +13,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -19,6 +23,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
@@ -26,6 +31,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.captureToImage
@@ -35,24 +41,30 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog
+import com.lingion.sleepy.ui.component.liquidglass.GlassDatePickerDialog
 import com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenu
 import com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenuItem
 import com.lingion.sleepy.ui.component.liquidglass.GlassHost
 import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton
 import com.lingion.sleepy.ui.component.liquidglass.LocalGlassAlertAction
+import com.lingion.sleepy.ui.component.liquidglass.NativeGlassAlertActionGroup
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.UiStyle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.After
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import kotlinx.coroutines.flow.collect
@@ -66,6 +78,8 @@ import androidx.compose.material3.TextButton as MaterialTextButton
 @Config(sdk = [35], qualifiers = "w600dp-h800dp-mdpi")
 class GlassOverlayContentTest {
     @get:Rule val compose = createComposeRule()
+
+    @After fun restoreFontScale() { RuntimeEnvironment.setFontScale(1f) }
 
     @Test fun nativeAlertUsesMeasuredHeaderAndEqualActionCellsWithoutChangingCallbacks() {
         var confirmations = 0
@@ -113,6 +127,237 @@ class GlassOverlayContentTest {
             }
         }
         close(4f, bounds("alert").bottom - bounds("message").bottom)
+    }
+
+    @Test fun longRawActionSlotsStackWithEqualWidthAndHeight() = checkLongRawActions(fontScale = 1f)
+
+    @Test fun longRawActionSlotsUseRealDialogFontScaleAndKeepEqualCells() = checkLongRawActions(fontScale = 2f)
+
+    private fun checkLongRawActions(fontScale: Float) {
+        val label = "Save every change to this timetable before closing"
+        var confirmations = 0
+        RuntimeEnvironment.setFontScale(fontScale)
+        compose.setContent {
+            Theme(UiStyle.LiquidGlass) {
+                GlassAlertDialog(
+                    {}, modifier = Modifier.testTag("alert"),
+                    dismissButton = {
+                        GlassTextButton({}, Modifier.testTag("cancel"), enabled = false) { Text("Cancel") }
+                    },
+                    confirmButton = {
+                        GlassTextButton({ confirmations++ }, Modifier.testTag("confirm")) { Text(label) }
+                    },
+                )
+            }
+        }
+        val pane = bounds("alert")
+        val cancel = bounds("cancel")
+        val confirm = bounds("confirm")
+        close(320f, pane.width)
+        close(288f, cancel.width)
+        close(cancel.width, confirm.width)
+        close(cancel.height, confirm.height)
+        assertTrue("the long label must grow both cells beyond the native minimum", confirm.height > 48f)
+        close(16f, cancel.left - pane.left)
+        close(cancel.left, confirm.left)
+        close(16f, cancel.top - pane.top)
+        close(8f, confirm.top - cancel.bottom)
+        close(16f, pane.bottom - confirm.bottom)
+        var layout: TextLayoutResult? = null
+        compose.onNodeWithText(label).performSemanticsAction(SemanticsActions.GetTextLayoutResult) { action ->
+            val results = mutableListOf<TextLayoutResult>()
+            action(results)
+            layout = results.single()
+        }
+        val text = requireNotNull(layout)
+        assertEquals(fontScale, text.layoutInput.density.fontScale, 0f)
+        assertTrue("the full-width action must really contain wrapped text", text.lineCount > 1)
+        assertEquals(label.length, text.getLineEnd(text.lineCount - 1, visibleEnd = true))
+        assertFalse(text.isLineEllipsized(text.lineCount - 1))
+        assertTrue(text.size.height <= confirm.height)
+        compose.onNodeWithTag("cancel").assertIsNotEnabled()
+        compose.onNodeWithTag("confirm").performClick()
+        assertEquals(1, confirmations)
+    }
+
+    @Test fun subcomposedRawActionContentKeepsItsSingleCompositionAndExistingLayout() {
+        var cancelCompositions = 0
+        var confirmCompositions = 0
+        val calls = mutableListOf<String>()
+        compose.setContent {
+            Theme(UiStyle.LiquidGlass) {
+                GlassAlertDialog(
+                    {}, modifier = Modifier.testTag("alert"),
+                    dismissButton = {
+                        DisposableEffect(Unit) {
+                            cancelCompositions++
+                            onDispose { }
+                        }
+                        GlassTextButton({ calls += "cancel" }, Modifier.testTag("cancel")) {
+                            BoxWithConstraints { Text("Cancel") }
+                        }
+                    },
+                    confirmButton = {
+                        DisposableEffect(Unit) {
+                            confirmCompositions++
+                            onDispose { }
+                        }
+                        GlassTextButton({ calls += "confirm" }, Modifier.testTag("confirm")) { Text("Confirm") }
+                    },
+                )
+            }
+        }
+        val pane = bounds("alert")
+        val cancel = bounds("cancel")
+        val confirm = bounds("confirm")
+        close(140f, cancel.width)
+        close(140f, confirm.width)
+        close(48f, cancel.height)
+        close(48f, confirm.height)
+        close(16f, cancel.left - pane.left)
+        close(8f, confirm.left - cancel.right)
+        compose.onNodeWithTag("cancel").performClick()
+        compose.onNodeWithTag("confirm").performClick()
+        assertEquals(listOf("cancel", "confirm"), calls)
+        assertEquals(1, cancelCompositions)
+        assertEquals(1, confirmCompositions)
+    }
+
+    @Test fun glassDatePickerUsesTheSameFullWidthNativeActionGroupWithoutAdaptingItsBody() {
+        var bodyWasAction = true
+        var cancellations = 0
+        var confirmations = 0
+        compose.setContent {
+            Theme(UiStyle.LiquidGlass) {
+                GlassDatePickerDialog(
+                    onDismissRequest = {}, modifier = Modifier.testTag("date-alert"),
+                    dismissButton = {
+                        GlassTextButton({ cancellations++ }, Modifier.testTag("cancel")) { Text("Cancel") }
+                    },
+                    confirmButton = {
+                        GlassTextButton({ confirmations++ }, Modifier.testTag("confirm")) { Text("Confirm") }
+                    },
+                ) {
+                    bodyWasAction = LocalGlassAlertAction.current
+                    Box(Modifier.fillMaxWidth().height(100.dp).testTag("calendar"))
+                }
+            }
+        }
+        val pane = bounds("date-alert")
+        val cancel = bounds("cancel")
+        val confirm = bounds("confirm")
+        close(360f, pane.width)
+        close(160f, cancel.width)
+        close(160f, confirm.width)
+        close(16f, cancel.left - pane.left)
+        close(8f, confirm.left - cancel.right)
+        close(16f, pane.bottom - confirm.bottom)
+        close(48f, confirm.height)
+        assertFalse(bodyWasAction)
+        compose.onNodeWithTag("cancel").performClick()
+        compose.onNodeWithTag("confirm").performClick()
+        assertEquals(1, cancellations)
+        assertEquals(1, confirmations)
+    }
+
+    @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+    @Test fun realDatePickerKeepsMultipleBodyNodesVerticalAndACompleteConfirmGroupOwnsOneInset() {
+        val calls = mutableListOf<String>()
+        var bodyWasAction = true
+        compose.setContent {
+            Theme(UiStyle.LiquidGlass) {
+                GlassDatePickerDialog(
+                    {}, modifier = Modifier.testTag("date-alert"),
+                    confirmButton = {
+                        DialogActionButtons(
+                            "Confirm", { calls += "confirm" }, dismissText = "Cancel",
+                            onDismiss = { calls += "cancel" }, dbgTagPrefix = "date-actions",
+                        )
+                    },
+                ) {
+                    bodyWasAction = LocalGlassAlertAction.current
+                    DatePicker(
+                        state = rememberDatePickerState(initialDisplayedMonthMillis = 1767225600000L),
+                        modifier = Modifier.fillMaxWidth().testTag("calendar"), showModeToggle = false,
+                    )
+                    Box(Modifier.fillMaxWidth().height(24.dp).testTag("calendar-footer"))
+                }
+            }
+        }
+        val pane = bounds("date-alert")
+        val calendar = bounds("calendar")
+        val footer = bounds("calendar-footer")
+        val cancel = bounds("date-actions_dismiss")
+        val confirm = bounds("date-actions_confirm")
+        close(360f, pane.width)
+        close(calendar.bottom, footer.top)
+        close(24f, footer.height)
+        close(16f, cancel.top - footer.bottom)
+        close(16f, cancel.left - pane.left)
+        close(160f, cancel.width)
+        close(160f, confirm.width)
+        close(8f, confirm.left - cancel.right)
+        close(16f, pane.bottom - confirm.bottom)
+        assertFalse(bodyWasAction)
+        compose.onNodeWithTag("date-actions_dismiss").performClick()
+        compose.onNodeWithTag("date-actions_confirm").performClick()
+        assertEquals(listOf("cancel", "confirm"), calls)
+    }
+
+    @Test fun completeStackedGroupInAlertConfirmSlotOwnsItsOnlyInsets() {
+        compose.setContent {
+            Theme(UiStyle.LiquidGlass) {
+                GlassAlertDialog(
+                    {}, modifier = Modifier.testTag("alert"),
+                    confirmButton = {
+                        NativeGlassAlertActionGroup(
+                            stacked = true,
+                            dismissButton = { GlassTextButton({}, Modifier.testTag("cancel")) { Text("Cancel") } },
+                            confirmButton = { GlassTextButton({}, Modifier.testTag("confirm")) { Text("Confirm") } },
+                        )
+                    },
+                )
+            }
+        }
+        val pane = bounds("alert")
+        val cancel = bounds("cancel")
+        val confirm = bounds("confirm")
+        close(16f, cancel.left - pane.left)
+        close(16f, cancel.top - pane.top)
+        close(288f, cancel.width)
+        close(288f, confirm.width)
+        close(8f, confirm.top - cancel.bottom)
+        close(16f, pane.bottom - confirm.bottom)
+    }
+
+    @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+    @Test fun materialDatePickerStillMatchesDirectOfficialLayout() {
+        val wrapped = mutableStateOf(false)
+        compose.setContent {
+            Theme(UiStyle.Classic) {
+                if (wrapped.value) {
+                    GlassDatePickerDialog(
+                        {}, modifier = Modifier.testTag("date-alert"),
+                        dismissButton = { GlassTextButton({}, Modifier.testTag("cancel")) { Text("Cancel") } },
+                        confirmButton = { GlassTextButton({}, Modifier.testTag("confirm")) { Text("Confirm") } },
+                    ) { Box(Modifier.fillMaxWidth().height(100.dp).testTag("calendar")) }
+                } else {
+                    androidx.compose.material3.DatePickerDialog(
+                        {}, modifier = Modifier.testTag("date-alert"),
+                        dismissButton = {
+                            MaterialTextButton({}, shapes = ButtonDefaults.shapes(), modifier = Modifier.testTag("cancel")) { Text("Cancel") }
+                        },
+                        confirmButton = {
+                            MaterialTextButton({}, shapes = ButtonDefaults.shapes(), modifier = Modifier.testTag("confirm")) { Text("Confirm") }
+                        },
+                    ) { Box(Modifier.fillMaxWidth().height(100.dp).testTag("calendar")) }
+                }
+            }
+        }
+        val tags = listOf("date-alert", "calendar", "cancel", "confirm")
+        val direct = tags.map(::bounds)
+        compose.runOnIdle { wrapped.value = true }
+        assertEquals(direct, tags.map(::bounds))
     }
 
     @Test fun nativeAlertDefaultsToLeadingTextWithoutExpandingCallerSlots() {
@@ -222,8 +467,8 @@ class GlassOverlayContentTest {
                         onDismissRequest = {}, modifier = Modifier.testTag("alert"),
                         title = { Text("Title", Modifier.testTag("title")) },
                         text = { Text("Message", Modifier.testTag("message")) },
-                        dismissButton = { MaterialTextButton({}, Modifier.testTag("cancel")) { Text("Cancel") } },
-                        confirmButton = { MaterialTextButton({}, Modifier.testTag("confirm")) { Text("Confirm") } },
+                        dismissButton = { MaterialTextButton({}, shapes = ButtonDefaults.shapes(), modifier = Modifier.testTag("cancel")) { Text("Cancel") } },
+                        confirmButton = { MaterialTextButton({}, shapes = ButtonDefaults.shapes(), modifier = Modifier.testTag("confirm")) { Text("Confirm") } },
                     )
                 }
             }

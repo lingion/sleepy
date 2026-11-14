@@ -1,5 +1,8 @@
 package com.lingion.sleepy.ui.screen.mine
 
+import com.lingion.sleepy.ui.component.AccordionHeader
+import com.lingion.sleepy.ui.component.AccordionContent
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,11 +29,9 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.ExpandLess
-import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Refresh
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button as MaterialButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
+import com.lingion.sleepy.ui.component.liquidglass.GlassDatePickerDialog as DatePickerDialog
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -47,7 +48,6 @@ import androidx.compose.material3.Text
 import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -68,10 +68,13 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.ui.component.SettingsLayout
+import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.DatePickerField
+import com.lingion.sleepy.ui.component.DialogActionButtons
 import com.lingion.sleepy.ui.component.SectionHeader
 import com.lingion.sleepy.ui.component.liquidglass.SingleChoiceDropdown
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.UiStyle
@@ -410,42 +413,45 @@ fun HolidaySettingsScreen(
                     }
                 }
                 item(key = "holiday_dates_header") {
-                    HolidayGroupHeader(
-                        title = stringResource(R.string.settings_holiday_dates),
-                        subtitle = stringResource(R.string.settings_holiday_dates_scope),
-                        expanded = "dates" in expandedGroups,
-                        onToggle = { toggleGroup("dates") },
-                        modifier = Modifier.clip(SleepyTheme.shapes.large)
-                            .background(colors.surfaceContainer),
-                    )
-                }
-                if ("dates" in expandedGroups) {
-                    merged.active.forEach { seg ->
-                        item {
-                            HolidayDateManagementRow(
-                                segment = seg,
-                                onEdit = { editing = resolveEditTarget(seg, userRangeIds) }
-                            )
+                    Column {
+                        HolidayGroupHeader(
+                            title = stringResource(R.string.settings_holiday_dates),
+                            subtitle = stringResource(R.string.settings_holiday_dates_scope),
+                            expanded = "dates" in expandedGroups,
+                            onToggle = { toggleGroup("dates") },
+                            modifier = Modifier.clip(SleepyTheme.shapes.large)
+                                .background(colors.surfaceContainer),
+                        )
+                        AccordionContent(expanded = "dates" in expandedGroups) {
+                            Column(
+                                modifier = Modifier.padding(top = SettingsLayout.cardGap),
+                                verticalArrangement = Arrangement.spacedBy(SettingsLayout.cardGap),
+                            ) {
+                                merged.active.forEach { seg ->
+                                    HolidayDateManagementRow(
+                                        segment = seg,
+                                        onEdit = { editing = resolveEditTarget(seg, userRangeIds) }
+                                    )
+                                }
+                                FilledTonalButton(
+                                    onClick = {
+                                        editing = EditingTarget(
+                                            HolidayRange(
+                                                id = HolidayRangeOps.newId(),
+                                                name = "",
+                                                startDate = LocalDate.of(year, 1, 1),
+                                                endDate = LocalDate.of(year, 1, 1),
+                                                type = HolidayManager.TYPE_PUBLIC_HOLIDAY,
+                                                sourceKey = null
+                                            ),
+                                            isNew = true
+                                        )
+                                    },
+                                    modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
+                                    shape = SleepyTheme.Buttons.shape
+                                ) { Text(stringResource(R.string.holiday_add_entry)) }
+                            }
                         }
-                    }
-                    item {
-                        FilledTonalButton(
-                            onClick = {
-                                editing = EditingTarget(
-                                    HolidayRange(
-                                        id = HolidayRangeOps.newId(),
-                                        name = "",
-                                        startDate = LocalDate.of(year, 1, 1),
-                                        endDate = LocalDate.of(year, 1, 1),
-                                        type = HolidayManager.TYPE_PUBLIC_HOLIDAY,
-                                        sourceKey = null
-                                    ),
-                                    isNew = true
-                                )
-                            },
-                            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
-                            shape = SleepyTheme.Buttons.shape
-                        ) { Text(stringResource(R.string.holiday_add_entry)) }
                     }
                 }
                 // 孤儿映射: sourceDate 已不在今年任何放假日段里(改年份/换数据源后残留)。
@@ -457,30 +463,32 @@ fun HolidaySettingsScreen(
 
                 if (orphanEntries.isNotEmpty() || merged.removed.isNotEmpty()) {
                     item(key = "holiday_maintenance_header") {
-                        HolidayGroupHeader(
-                            title = stringResource(R.string.settings_holiday_maintenance),
-                            expanded = "maintenance" in expandedGroups,
-                            onToggle = { toggleGroup("maintenance") },
-                            modifier = Modifier.clip(SleepyTheme.shapes.large)
-                                .background(colors.surfaceContainer),
-                        )
-                    }
-                    if ("maintenance" in expandedGroups) item {
-                        Column(verticalArrangement = Arrangement.spacedBy(SettingsLayout.cardGap)) {
-                            if (orphanEntries.isNotEmpty()) {
-                                HolidayOrphanCard(
-                                    entries = orphanEntries,
-                                    dayNames = dayNames,
-                                    onClear = { source -> saveTransfer(source, null, "orphan") },
-                                )
-                            }
-                            if (merged.removed.isNotEmpty()) {
-                                Column(verticalArrangement = Arrangement.spacedBy(SettingsLayout.headerGap)) {
-                                    SectionHeader(stringResource(R.string.holiday_removed_section))
-                                    HolidayRemovedCard(
-                                        segments = merged.removed,
-                                        onRestore = { restoreRange(it) },
-                                    )
+                        Column {
+                            HolidayGroupHeader(
+                                title = stringResource(R.string.settings_holiday_maintenance),
+                                expanded = "maintenance" in expandedGroups,
+                                onToggle = { toggleGroup("maintenance") },
+                                modifier = Modifier.clip(SleepyTheme.shapes.large)
+                                    .background(colors.surfaceContainer),
+                            )
+                            AccordionContent(expanded = "maintenance" in expandedGroups) {
+                                Column(Modifier.padding(top = SettingsLayout.cardGap), verticalArrangement = Arrangement.spacedBy(SettingsLayout.cardGap)) {
+                                    if (orphanEntries.isNotEmpty()) {
+                                        HolidayOrphanCard(
+                                            entries = orphanEntries,
+                                            dayNames = dayNames,
+                                            onClear = { source -> saveTransfer(source, null, "orphan") },
+                                        )
+                                    }
+                                    if (merged.removed.isNotEmpty()) {
+                                        Column(verticalArrangement = Arrangement.spacedBy(SettingsLayout.headerGap)) {
+                                            SectionHeader(stringResource(R.string.holiday_removed_section))
+                                            HolidayRemovedCard(
+                                                segments = merged.removed,
+                                                onRestore = { restoreRange(it) },
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -623,7 +631,7 @@ internal fun HolidayTransferCard(
             .background(colors.surfaceContainer),
     ) {
         HolidayGroupHeader(title, subtitle, expanded, onToggle)
-        if (expanded) {
+        AccordionContent(expanded = expanded) {
             Column(
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -651,30 +659,13 @@ private fun HolidayGroupHeader(
     modifier: Modifier = Modifier,
 ) {
     val colors = MaterialTheme.colorScheme
-    val toggleLabel = stringResource(if (expanded) R.string.collapse else R.string.expand)
-    Row(
-        modifier = modifier.fillMaxWidth()
-            .heightIn(min = 48.dp)
-            .semantics { stateDescription = toggleLabel }
-            .clickable(role = Role.Button, onClickLabel = toggleLabel, onClick = onToggle)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap),
-        ) {
+    AccordionHeader(expanded = expanded, onToggle = onToggle, modifier = modifier) {
+        Column(verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
             Text(title, style = SettingsLayout.headingStyle, color = colors.onSurface)
             if (subtitle != null) {
                 Text(subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
             }
         }
-        Icon(
-            if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
-            contentDescription = null,
-            tint = colors.onSurfaceVariant,
-            modifier = Modifier.padding(start = 12.dp).size(24.dp),
-        )
     }
 }
 
@@ -743,6 +734,7 @@ private fun HolidayTransferRow(
 ) {
     // Candidates stay complete: official workdays, clear mapping, or another date.
     val colors = MaterialTheme.colorScheme
+    val nativeDialogActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
     val leftLabel = remember(date, dayNames) {
         "${DateUtils.shortDateSlash(date)} (${dayNames[date.dayOfWeek.value - 1]})"
     }
@@ -796,10 +788,10 @@ private fun HolidayTransferRow(
         )
     }
     if (showDatePicker) {
-        androidx.compose.material3.DatePickerDialog(
+        DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
-                MaterialButton(
+                Button(
                     onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
                             val picked = java.time.Instant.ofEpochMilli(millis)
@@ -809,18 +801,18 @@ private fun HolidayTransferRow(
                         }
                         showDatePicker = false
                     },
-                    shape = SleepyTheme.shapes.medium
-                ) { Text(stringResource(R.string.ok), maxLines = 1) }
+                    shape = if (nativeDialogActions) null else SleepyTheme.shapes.medium
+                ) { Text(stringResource(R.string.ok), maxLines = if (nativeDialogActions) Int.MAX_VALUE else 1) }
             },
             dismissButton = {
-                MaterialButton(
+                Button(
                     onClick = { showDatePicker = false },
-                    shape = SleepyTheme.shapes.medium,
-                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    shape = if (nativeDialogActions) null else SleepyTheme.shapes.medium,
+                    colors = if (nativeDialogActions) null else androidx.compose.material3.ButtonDefaults.buttonColors(
                         containerColor = colors.secondaryContainer,
                         contentColor = colors.onSecondaryContainer
                     )
-                ) { Text(stringResource(R.string.cancel), maxLines = 1) }
+                ) { Text(stringResource(R.string.cancel), maxLines = if (nativeDialogActions) Int.MAX_VALUE else 1) }
             }
         ) {
             androidx.compose.material3.DatePicker(state = datePickerState)
@@ -878,7 +870,7 @@ private fun HolidayRemovedCard(
  * target 为网络段时, 保存时补 sourceKey="holiday|workday:<首日>" 挂接替换该网络段。
  * 校验: start/end 均有效且 end >= start, 否则禁用保存并提示 holiday_date_invalid。
  * 输入框全走项目 token(TextField + fieldShape + fieldColors, 色块无描线);
- * 编辑器及其日期选择器始终使用 Material 控件，独立于全局液态玻璃样式。
+ * 弹窗与日期选择器跟随当前样式，Material Design 使用各包装器的原生回退。
  */
 @Composable
 internal fun HolidayRangeEditDialog(
@@ -897,97 +889,105 @@ internal fun HolidayRangeEditDialog(
     val endDate = try { LocalDate.parse(endText) } catch (_: Exception) { null }
     val datesValid = startDate != null && endDate != null && !endDate.isBefore(startDate)
 
-    // DatePickerField is shared with glass screens; this local scope makes its nested
-    // calendar dialog and icon/button wrappers use their ordinary Material branch.
-    CompositionLocalProvider(LocalUiStyle provides UiStyle.Classic) {
-        AlertDialog(
-            onDismissRequest = onDismiss,
-            titleContentColor = colors.onSurface,
-            textContentColor = colors.onSurfaceVariant,
-            title = { Text(stringResource(if (isNew) R.string.holiday_add_title else R.string.holiday_edit_title)) },
-            text = {
-                Column(
-                    modifier = Modifier.verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Text(stringResource(R.string.settings_holiday_dates_scope),
-                        style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
-                    DatePickerField(
-                        value = startText,
-                        onValueChange = { startText = it },
-                        label = stringResource(R.string.holiday_name_label_date),
-                        modifier = Modifier.fillMaxWidth(),
-                        isError = startText.isNotBlank() && startDate == null
-                    )
-                    DatePickerField(
-                        value = endText,
-                        onValueChange = { endText = it },
-                        label = stringResource(R.string.holiday_name_label_end),
-                        modifier = Modifier.fillMaxWidth(),
-                        isError = endText.isNotBlank() && (endDate == null || (startDate != null && endDate.isBefore(startDate)))
-                    )
-                    TextField(
-                        value = name,
-                        onValueChange = { name = it },
-                        label = { Text(stringResource(R.string.holiday_name_label)) },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = SleepyTheme.fieldShape,
-                        colors = SleepyTheme.fieldColors()
-                    )
-                    Column(Modifier.fillMaxWidth().selectableGroup()) {
-                        listOf(
-                            HolidayManager.TYPE_PUBLIC_HOLIDAY to stringResource(R.string.holiday_type_holiday),
-                            HolidayManager.TYPE_TRANSFER_WORKDAY to stringResource(R.string.holiday_type_workday)
-                        ).forEach { (value, label) ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
-                                    .selectable(selected = type == value, role = Role.RadioButton, onClick = { type = value }),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                RadioButton(selected = type == value, onClick = null)
-                                Text(label, modifier = Modifier.padding(start = 12.dp))
-                            }
+    val nativeActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
+    val saveRange: () -> Unit = save@ {
+        val start = startDate ?: return@save
+        val end = endDate ?: return@save
+        onSave(HolidayRange(target.id, name.trim(), start, end, type, target.sourceKey))
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        modifier = Modifier.dbgTag("holiday_edit_dialog"),
+        titleContentColor = colors.onSurface,
+        textContentColor = colors.onSurfaceVariant,
+        title = { Text(stringResource(if (isNew) R.string.holiday_add_title else R.string.holiday_edit_title)) },
+        text = {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Text(stringResource(R.string.settings_holiday_dates_scope),
+                    style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+                DatePickerField(
+                    value = startText,
+                    onValueChange = { startText = it },
+                    label = stringResource(R.string.holiday_name_label_date),
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = startText.isNotBlank() && startDate == null
+                )
+                DatePickerField(
+                    value = endText,
+                    onValueChange = { endText = it },
+                    label = stringResource(R.string.holiday_name_label_end),
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = endText.isNotBlank() && (endDate == null || (startDate != null && endDate.isBefore(startDate)))
+                )
+                TextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text(stringResource(R.string.holiday_name_label)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = SleepyTheme.fieldShape,
+                    colors = SleepyTheme.fieldColors()
+                )
+                Column(Modifier.fillMaxWidth().selectableGroup()) {
+                    listOf(
+                        HolidayManager.TYPE_PUBLIC_HOLIDAY to stringResource(R.string.holiday_type_holiday),
+                        HolidayManager.TYPE_TRANSFER_WORKDAY to stringResource(R.string.holiday_type_workday)
+                    ).forEach { (value, label) ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                                .selectable(selected = type == value, role = Role.RadioButton, onClick = { type = value }),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(selected = type == value, onClick = null)
+                            Text(label, modifier = Modifier.padding(start = 12.dp))
                         }
                     }
-                    if (!datesValid && (startText.isNotBlank() || endText.isNotBlank())) {
-                        Text(
-                            stringResource(R.string.holiday_date_invalid),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = colors.error
-                        )
-                    }
-                    if (!isNew) {
-                        // 删除走 errorContainer 色块 — 纯色块禁描边规则。
-                        // 弹窗不设"恢复": 已保存段删除=移除覆盖(可从已删除区恢复), 网络段删除=REMOVED 覆盖(同入口恢复);
-                        // 弹窗内两个按钮会做同一件事, 恢复入口统一收敛到"已删除"区块。
-                        MaterialButton(
-                            onClick = { onDelete(target) },
-                            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
-                            shape = SleepyTheme.Buttons.shape,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colors.errorContainer,
-                                contentColor = colors.onErrorContainer
-                            )
-                        ) { Text(stringResource(R.string.holiday_delete_range)) }
-                    }
                 }
-            },
-            confirmButton = {
-                MaterialButton(
-                    enabled = datesValid,
-                    onClick = {
-                        val start = startDate ?: return@MaterialButton
-                        val end = endDate ?: return@MaterialButton
-                        onSave(HolidayRange(target.id, name.trim(), start, end, type, target.sourceKey))
-                    },
-                ) { Text(stringResource(R.string.save)) }
-            },
-            dismissButton = {
-                androidx.compose.material3.FilledTonalButton(onClick = onDismiss) {
+                if (!datesValid && (startText.isNotBlank() || endText.isNotBlank())) {
+                    Text(
+                        stringResource(R.string.holiday_date_invalid),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.error
+                    )
+                }
+                if (!isNew && !nativeActions) {
+                    // 弹窗不设"恢复": 已保存段删除=移除覆盖(可从已删除区恢复), 网络段删除=REMOVED 覆盖(同入口恢复);
+                    // 弹窗内两个按钮会做同一件事, 恢复入口统一收敛到"已删除"区块。
+                    DialogActionButtons(
+                        confirmText = stringResource(R.string.holiday_delete_range),
+                        onConfirm = { onDelete(target) },
+                        destructive = true,
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            if (nativeActions) {
+                DialogActionButtons(
+                    confirmText = stringResource(R.string.save),
+                    onConfirm = saveRange,
+                    confirmEnabled = datesValid,
+                    dismissText = stringResource(R.string.cancel),
+                    onDismiss = onDismiss,
+                    thirdText = if (isNew) null else stringResource(R.string.holiday_delete_range),
+                    onThird = { onDelete(target) },
+                    thirdDestructive = true,
+                    dbgTagPrefix = "holiday_edit",
+                )
+            } else {
+                Button(enabled = datesValid, onClick = saveRange) { Text(stringResource(R.string.save)) }
+            }
+        },
+        dismissButton = {
+            if (!nativeActions) {
+                FilledTonalButton(onClick = onDismiss) {
                     Text(stringResource(R.string.cancel))
                 }
-            },
-        )
-    }
+            }
+        },
+    )
 }

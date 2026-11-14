@@ -1,7 +1,5 @@
 package com.lingion.sleepy.ui.screen.mine
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,7 +16,6 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Share
 import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
@@ -41,21 +38,24 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.ui.component.SettingsLayout
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
+import com.lingion.sleepy.ui.component.CopyNameDialog
+import com.lingion.sleepy.ui.component.AccordionHeader
+import com.lingion.sleepy.ui.component.AccordionContent
 import androidx.compose.foundation.layout.PaddingValues
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.PeriodTableEntity
 import com.lingion.sleepy.data.entity.SmartPeriodConfig
 import com.lingion.sleepy.ui.component.TimeSlotEditor
-import com.lingion.sleepy.ui.component.sleepyExpandSpecs
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
-import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.TimeTableUtils
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
@@ -213,13 +213,9 @@ fun PeriodTableEditScreen(
                         .clip(SleepyTheme.shapes.extraLarge)
                         .background(colors.surfaceContainer)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .noRippleClickable { timeSlotsExpanded = !timeSlotsExpanded }
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                    AccordionHeader(
+                        expanded = timeSlotsExpanded,
+                        onToggle = { timeSlotsExpanded = !timeSlotsExpanded },
                     ) {
                         Column {
                             Text(
@@ -234,27 +230,9 @@ fun PeriodTableEditScreen(
                                 color = colors.onSurfaceVariant
                             )
                         }
-                        // MD3E (Task 7a): chevron 旋转走 defaultSpatial (收稳不弹, 与展开家族同拍)
-                        val slotsArrowRotation by animateFloatAsState(
-                            targetValue = if (timeSlotsExpanded) 180f else 0f,
-                            animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>(),
-                            label = "time-slots-arrow"
-                        )
-                        Icon(
-                            Icons.Outlined.ExpandMore,
-                            contentDescription = null,
-                            tint = colors.onSurfaceVariant,
-                            modifier = Modifier.rotate(slotsArrowRotation)
-                        )
                     }
 
-                    // MD3E (Task 7a): 展开家族 — 尺寸 fastSpatial + 淡入淡出 motionScheme
-                    val expandSpecs = sleepyExpandSpecs()
-                    AnimatedVisibility(
-                        visible = timeSlotsExpanded,
-                        enter = expandSpecs.enter,
-                        exit = expandSpecs.exit,
-                    ) {
+                    AccordionContent(expanded = timeSlotsExpanded) {
                         Column(
                             modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                         ) {
@@ -356,6 +334,25 @@ fun PeriodTableEditScreen(
     // 保存前预览确认弹窗(§9 决策 3): 取消 = 零写库零快照
     if (pendingPreview != null && pendingSave != null) {
         val boundCount = scheduleState.tables.count { it.periodTableId == periodTable.id }
+        val nativeDialogActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
+        val actions: @Composable () -> Unit = {
+            com.lingion.sleepy.ui.component.DialogActionButtons(
+                confirmText = stringResource(R.string.period_table_preview_confirm),
+                onConfirm = {
+                    val toSave = pendingSave!!
+                    pendingPreview = null
+                    pendingSave = null
+                    // issue#40: 已确认保存 — 新建行的丢弃标记解除, 返回不再清行
+                    unsavedNew = false
+                    scope.launch {
+                        viewModel.updatePeriodTableContent(toSave)
+                        onBack()
+                    }
+                },
+                dismissText = stringResource(R.string.cancel),
+                onDismiss = { pendingPreview = null; pendingSave = null }
+            )
+        }
         AlertDialog(
             onDismissRequest = { pendingPreview = null; pendingSave = null },
             title = { Text(stringResource(R.string.period_table_save_preview_title), color = colors.onSurface) },
@@ -393,27 +390,14 @@ fun PeriodTableEditScreen(
                             color = colors.onSurfaceVariant
                         )
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 统一色块按钮行
-                    com.lingion.sleepy.ui.component.DialogActionButtons(
-                        confirmText = stringResource(R.string.period_table_preview_confirm),
-                        onConfirm = {
-                            val toSave = pendingSave!!
-                            pendingPreview = null
-                            pendingSave = null
-                            // issue#40: 已确认保存 — 新建行的丢弃标记解除, 返回不再清行
-                            unsavedNew = false
-                            scope.launch {
-                                viewModel.updatePeriodTableContent(toSave)
-                                onBack()
-                            }
-                        },
-                        dismissText = stringResource(R.string.cancel),
-                        onDismiss = { pendingPreview = null; pendingSave = null }
-                    )
+                    if (!nativeDialogActions) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 统一色块按钮行
+                        actions()
+                    }
                 }
             },
-            confirmButton = {},
+            confirmButton = { if (nativeDialogActions) actions() },
             dismissButton = {}
         )
     }
@@ -421,6 +405,22 @@ fun PeriodTableEditScreen(
     // 删除确认同时说明绑定课表的作息保留方式。
     if (showDeleteConfirm) {
         val boundCount = scheduleState.tables.count { it.periodTableId == periodTable.id }
+        val nativeDialogActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
+        val actions: @Composable () -> Unit = {
+            com.lingion.sleepy.ui.component.DialogActionButtons(
+                confirmText = stringResource(R.string.delete),
+                onConfirm = {
+                    showDeleteConfirm = false
+                    scope.launch {
+                        viewModel.deletePeriodTable(periodTable.id)
+                        onBack()
+                    }
+                },
+                dismissText = stringResource(R.string.cancel),
+                onDismiss = { showDeleteConfirm = false },
+                destructive = true
+            )
+        }
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
             title = { Text(stringResource(R.string.period_table_delete_confirm), color = colors.onSurface) },
@@ -433,23 +433,13 @@ fun PeriodTableEditScreen(
                             color = colors.onSurfaceVariant
                         )
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    com.lingion.sleepy.ui.component.DialogActionButtons(
-                        confirmText = stringResource(R.string.delete),
-                        onConfirm = {
-                            showDeleteConfirm = false
-                            scope.launch {
-                                viewModel.deletePeriodTable(periodTable.id)
-                                onBack()
-                            }
-                        },
-                        dismissText = stringResource(R.string.cancel),
-                        onDismiss = { showDeleteConfirm = false },
-                        destructive = true
-                    )
+                    if (!nativeDialogActions) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        actions()
+                    }
                 }
             },
-            confirmButton = {},
+            confirmButton = { if (nativeDialogActions) actions() },
             dismissButton = {}
         )
     }
@@ -469,44 +459,23 @@ fun PeriodTableEditScreen(
             scheduleState.tables.map { it.name },
             periodTables.map { it.name }
         )
-        AlertDialog(
-            onDismissRequest = { showCopyDialog = false },
-            title = { Text(stringResource(R.string.period_table_copy_dialog_title), color = colors.onSurface) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    androidx.compose.material3.TextField(
-                        value = copyName,
-                        onValueChange = { copyName = it },
-                        label = { Text(stringResource(R.string.period_table_name_label)) },
-                        singleLine = true,
-                        isError = nameTaken,
-                        supportingText = if (nameTaken) {
-                            { Text(stringResource(R.string.period_table_name_taken)) }
-                        } else null,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = SleepyTheme.fieldShape,
-                        colors = fieldColors
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    com.lingion.sleepy.ui.component.DialogActionButtons(
-                        confirmText = stringResource(R.string.ok),
-                        onConfirm = {
-                            scope.launch {
-                                val newId = viewModel.copyPeriodTableAs(periodTable.id, candidate)
-                                if (newId > 0) {
-                                    showCopyDialog = false
-                                    onBack()
-                                }
-                            }
-                        },
-                        dismissText = stringResource(R.string.cancel),
-                        onDismiss = { showCopyDialog = false },
-                        confirmEnabled = candidate.isNotBlank() && !nameTaken
-                    )
+        CopyNameDialog(
+            title = stringResource(R.string.period_table_copy_dialog_title),
+            name = copyName,
+            onNameChange = { copyName = it },
+            nameLabel = stringResource(R.string.period_table_name_label),
+            nameTaken = nameTaken,
+            onDismiss = { showCopyDialog = false },
+            onConfirm = {
+                scope.launch {
+                    val newId = viewModel.copyPeriodTableAs(periodTable.id, candidate)
+                    if (newId > 0) {
+                        showCopyDialog = false
+                        onBack()
+                    }
                 }
             },
-            confirmButton = {},
-            dismissButton = {}
+            tagPrefix = "period_edit_copy",
         )
     }
 }

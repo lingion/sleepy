@@ -11,6 +11,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -91,6 +92,19 @@ class HolidayGroupInteractionTest {
                 }
             }
         }
+        val pane = compose.onNodeWithTag("holiday_edit_dialog").fetchSemanticsNode().boundsInRoot
+        val cancel = compose.onNodeWithTag("holiday_edit_dismiss").fetchSemanticsNode().boundsInRoot
+        val delete = compose.onNodeWithTag("holiday_edit_third").fetchSemanticsNode().boundsInRoot
+        val save = compose.onNodeWithTag("holiday_edit_confirm").fetchSemanticsNode().boundsInRoot
+        listOf(cancel, delete, save).forEach { button ->
+            assertEquals("all footer actions share the pane's sole horizontal inset", 16f,
+                button.left - pane.left, .5f)
+            assertEquals(16f, pane.right - button.right, .5f)
+            assertEquals(cancel.height, button.height, .5f)
+        }
+        assertEquals(8f, delete.top - cancel.bottom, .5f)
+        assertEquals(8f, save.top - delete.bottom, .5f)
+        assertEquals(16f, pane.bottom - save.bottom, .5f)
         val startLabel = context.getString(R.string.holiday_name_label_date)
         val endLabel = context.getString(R.string.holiday_name_label_end)
         val saveLabel = context.getString(R.string.save)

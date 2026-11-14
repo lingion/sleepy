@@ -6,17 +6,26 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.inspector.WindowInspector
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialExpressiveTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -86,6 +95,36 @@ class SingleChoiceDropdownTest {
         compose.onNodeWithTag("choice#table:42").assertIsSelected()
         compose.onNodeWithTag("choice#none").assertIsNotSelected()
         compose.runOnIdle { assertEquals(1, popups().size) }
+    }
+
+    @Test fun glassTitlelessAnchorHasASeparateContainerAndTrailingValue() {
+        var container = Color.Unspecified
+        compose.setContent {
+            MaterialExpressiveTheme {
+                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                    GlassHost {
+                        val colors = MaterialTheme.colorScheme
+                        container = colors.surfaceContainerHighest
+                        Row(Modifier.fillMaxWidth().background(colors.surfaceContainer).padding(16.dp)) {
+                            Text("1/1 (周四)", Modifier.weight(1f))
+                            SingleChoiceDropdown(
+                                title = "", selectedId = "none", selectedLabel = "—",
+                                options = options, onSelect = {},
+                                modifier = Modifier.weight(1f), tagPrefix = "target",
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        val anchor = compose.onNodeWithTag("target_card").fetchSemanticsNode().boundsInRoot
+        val value = compose.onNodeWithTag("target_value", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+        val label = compose.onNodeWithText("—", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+        assertEquals("the trailing group retains its 12dp inset", anchor.right - 12f, value.right, .1f)
+        assertTrue("a short selected value must be on the trailing side", label.left > anchor.center.x)
+        assertTrue("the compact entry keeps a full touch target", anchor.height >= 48f)
+        val image = compose.onNodeWithTag("target_card").captureToImage().asAndroidBitmap()
+        assertEquals("the entry has its own visible container", container.toArgb(), image.getPixel(image.width / 2, 3))
     }
 
     @Test fun materialLongListMatchesItsAnchorAndScrollsToTheLastChoice() {

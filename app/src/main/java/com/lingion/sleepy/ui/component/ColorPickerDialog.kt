@@ -36,6 +36,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import com.lingion.sleepy.R
 import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
 
 /**
@@ -72,6 +75,15 @@ fun ColorPickerDialog(
     val currentColor = Color(android.graphics.Color.HSVToColor(floatArrayOf(hue, saturation, value)))
     val currentHex = String.format("#%08X", android.graphics.Color.HSVToColor(floatArrayOf(hue, saturation, value)))
 
+    val nativeActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
+    val actions: @Composable () -> Unit = {
+            DialogActionButtons(
+                confirmText = stringResource(R.string.ok),
+                onConfirm = { onConfirm(currentHex) },
+                dismissText = stringResource(R.string.cancel),
+                onDismiss = onDismiss
+            )
+    }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -128,15 +140,10 @@ fun ColorPickerDialog(
                 }
 
                 // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 统一色块按钮行
-                DialogActionButtons(
-                    confirmText = stringResource(R.string.ok),
-                    onConfirm = { onConfirm(currentHex) },
-                    dismissText = stringResource(R.string.cancel),
-                    onDismiss = onDismiss
-                )
+                if (!nativeActions) actions()
             }
         },
-        confirmButton = {},
+        confirmButton = { if (nativeActions) actions() },
         dismissButton = {}
     )
 }

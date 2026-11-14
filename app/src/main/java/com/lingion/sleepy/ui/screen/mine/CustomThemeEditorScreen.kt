@@ -50,6 +50,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.ui.component.SettingsLayout
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
+import com.lingion.sleepy.ui.component.AccordionHeader
+import com.lingion.sleepy.ui.component.AccordionContent
 import com.lingion.sleepy.ui.component.settingsSection
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.CustomTheme
@@ -163,43 +168,42 @@ fun CustomThemeEditorScreen(
                         desc = stringResource(R.string.theme_editor_random_desc),
                         onClick = { draft = randomDraft(draft) }
                     )
-                    ActionEntry(
-                        icon = { Icon(Icons.Outlined.Tune, null, tint = colors.primary, modifier = Modifier.size(24.dp)) },
-                        title = stringResource(R.string.theme_editor_manual),
-                        desc = stringResource(R.string.theme_editor_manual_desc),
-                        onClick = { manualExpanded = !manualExpanded }
-                    )
-                }
-            }
-
-            // ── 逐角色手选(展开后四个角色行) ──
-            if (manualExpanded) {
-                item {
-                    Column(verticalArrangement = Arrangement.spacedBy(SettingsLayout.cardGap)) {
-                        RoleRow(
-                            title = stringResource(R.string.theme_role_primary),
-                            desc = stringResource(R.string.theme_role_primary_desc),
-                            swatchHex = draft.primary,
-                            onClick = { pickingRole = ROLE_PRIMARY }
+                    Column {
+                        ActionEntry(
+                            icon = { Icon(Icons.Outlined.Tune, null, tint = colors.primary, modifier = Modifier.size(24.dp)) },
+                            title = stringResource(R.string.theme_editor_manual),
+                            desc = stringResource(R.string.theme_editor_manual_desc),
+                            expanded = manualExpanded,
+                            onClick = { manualExpanded = !manualExpanded }
                         )
-                        RoleRow(
-                            title = stringResource(R.string.theme_role_secondary),
-                            desc = stringResource(R.string.theme_role_secondary_desc),
-                            swatchHex = draft.secondary,
-                            onClick = { pickingRole = ROLE_SECONDARY }
-                        )
-                        RoleRow(
-                            title = stringResource(R.string.theme_role_tertiary),
-                            desc = stringResource(R.string.theme_role_tertiary_desc),
-                            swatchHex = draft.tertiary,
-                            onClick = { pickingRole = ROLE_TERTIARY }
-                        )
-                        RoleRow(
-                            title = stringResource(R.string.theme_role_surface),
-                            desc = stringResource(R.string.theme_role_surface_desc),
-                            swatchHex = surfacePreviewHex(draft.surfaceHue, draft.surfaceChroma),
-                            onClick = { pickingRole = ROLE_SURFACE }
-                        )
+                        AccordionContent(expanded = manualExpanded) {
+                            Column(Modifier.padding(top = SettingsLayout.cardGap), verticalArrangement = Arrangement.spacedBy(SettingsLayout.cardGap)) {
+                                RoleRow(
+                                    title = stringResource(R.string.theme_role_primary),
+                                    desc = stringResource(R.string.theme_role_primary_desc),
+                                    swatchHex = draft.primary,
+                                    onClick = { pickingRole = ROLE_PRIMARY }
+                                )
+                                RoleRow(
+                                    title = stringResource(R.string.theme_role_secondary),
+                                    desc = stringResource(R.string.theme_role_secondary_desc),
+                                    swatchHex = draft.secondary,
+                                    onClick = { pickingRole = ROLE_SECONDARY }
+                                )
+                                RoleRow(
+                                    title = stringResource(R.string.theme_role_tertiary),
+                                    desc = stringResource(R.string.theme_role_tertiary_desc),
+                                    swatchHex = draft.tertiary,
+                                    onClick = { pickingRole = ROLE_TERTIARY }
+                                )
+                                RoleRow(
+                                    title = stringResource(R.string.theme_role_surface),
+                                    desc = stringResource(R.string.theme_role_surface_desc),
+                                    swatchHex = surfacePreviewHex(draft.surfaceHue, draft.surfaceChroma),
+                                    onClick = { pickingRole = ROLE_SURFACE }
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -288,24 +292,30 @@ fun CustomThemeEditorScreen(
     // 返回分层: 弹层开着时返回先关弹层(后组合的 BackHandler 优先), 都没开才退出编辑器
     if (showDeleteConfirm) {
         BackHandler { showDeleteConfirm = false }
+        val nativeDialogActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
+        val actions: @Composable () -> Unit = {
+            com.lingion.sleepy.ui.component.DialogActionButtons(
+                confirmText = stringResource(R.string.delete),
+                onConfirm = { editing?.let { onDeleted(it.id) } },
+                dismissText = stringResource(R.string.cancel),
+                onDismiss = { showDeleteConfirm = false },
+                destructive = true
+            )
+        }
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
             title = { Text(stringResource(R.string.theme_editor_delete_confirm), color = colors.onSurface) },
             text = {
                 androidx.compose.foundation.layout.Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(R.string.theme_editor_delete_confirm_body), color = colors.onSurfaceVariant)
-                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(12.dp))
-                    // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 统一色块按钮行
-                    com.lingion.sleepy.ui.component.DialogActionButtons(
-                        confirmText = stringResource(R.string.delete),
-                        onConfirm = { editing?.let { onDeleted(it.id) } },
-                        dismissText = stringResource(R.string.cancel),
-                        onDismiss = { showDeleteConfirm = false },
-                        destructive = true
-                    )
+                    if (!nativeDialogActions) {
+                        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(12.dp))
+                        // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 统一色块按钮行
+                        actions()
+                    }
                 }
             },
-            confirmButton = {},
+            confirmButton = { if (nativeDialogActions) actions() },
             dismissButton = {}
         )
     }
@@ -325,20 +335,29 @@ private fun ActionEntry(
     icon: @Composable () -> Unit,
     title: String,
     desc: String,
+    expanded: Boolean? = null,
     onClick: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
     Surface(
-        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).noRippleClickable(onClick),
+        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large)
+            .then(if (expanded == null) Modifier.noRippleClickable(onClick) else Modifier),
         color = colors.surfaceContainer, shape = SleepyTheme.shapes.large
     ) {
-        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) { icon() }
-            Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
-                Text(title, style = SettingsLayout.headingStyle, color = colors.onSurface)
-                Text(desc, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+        val label: @Composable () -> Unit = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) { icon() }
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
+                    Text(title, style = SettingsLayout.headingStyle, color = colors.onSurface)
+                    Text(desc, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+                }
             }
+        }
+        if (expanded != null) {
+            AccordionHeader(expanded = expanded, onToggle = onClick, content = label)
+        } else {
+            Box(Modifier.padding(16.dp)) { label() }
         }
     }
 }

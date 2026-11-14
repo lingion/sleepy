@@ -238,6 +238,8 @@
     <string name="slot_time_invalid">Período %1$d tiempo inválido (el inicio debe ser anterior al final)</string>
     <string name="expand">Tocar para expandir</string>
     <string name="collapse">Tocar para colapsar</string>
+    <string name="accordion_expanded">Expandido</string>
+    <string name="accordion_collapsed">Contraído</string>
     <string name="n_periods">%1$d períodos</string>
 
     <string name="course_detail_title">Detalles del curso</string>

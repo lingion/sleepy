@@ -1,6 +1,8 @@
 # Liquid Glass 提取实施计划
 
-目标是先把资产库变成 Sleepy 实际消费的单一 Android 运行模块，继续用同一实现校准，逐控件接近原生且满足现有发布条件后，再迁入独立公开仓库。2026-11-14 已完成 M1：三个纯运动文件进入 runtime，AAR 和 Sleepy 编译通过，三类原测试迁移前后均为 19 项通过；命令和哈希见 [M1 记录](validation/migrations/m1.json)。M2a 随后迁入两份帧调度/输入时钟文件，四类原测试迁移前后各 33/33 通过、AAR 唯一归属，详见 [M2a 记录](validation/migrations/m2a.json)。M2b 首批四文件及其独立 host 测试已完成构建、原 124 项回归、AAR 归属、依赖解析和安装身份核对，详见 [M2b 首批运动记录](validation/migrations/m2b-motion.json)。随后按压/端部三源及原17项回归、唯一归属和安装身份也已核对，见 [M2b 按压/端部记录](validation/migrations/m2b-endpoints.json)。M2 几何六源及新轮廓缓存文件已完成构建、原26项单测和AAR唯一归属，该阶段runtime共19源；设备8项、安装身份及独立依赖解析也已核对，见 [M2 几何记录](validation/migrations/m2-geometry.json)。M3a 渲染原语随后迁入三源和原 AGSL，该阶段runtime共22源，原34项单测、构建、归属、资产及依赖解析已验证，原HazeRender三项与启动范围另记于 [M3a 记录](validation/migrations/m3a-rendering.json)。M3 Host/主题上下文、M4 控件、独立示例及发布 gate 仍待执行。来源事实沿用 [catalog](asset-catalog.json)，不在本计划重复取证。
+目标是让 Sleepy 和独立库共享单一 Android 运行实现，并继续逐控件校准。按更新后的用户要求，已先公开 [Kerry1020/sleepy-liquid-glass](https://github.com/Kerry1020/sleepy-liquid-glass) 的实验性 runtime 与 sample；完整控件、原生验收和稳定 API 继续按阶段推进。2026-11-14 已完成 M1：三个纯运动文件进入 runtime，AAR 和 Sleepy 编译通过，三类原测试迁移前后均为 19 项通过；命令和哈希见 [M1 记录](validation/migrations/m1.json)。M2a 随后迁入两份帧调度/输入时钟文件，四类原测试迁移前后各 33/33 通过、AAR 唯一归属，详见 [M2a 记录](validation/migrations/m2a.json)。M2b 首批四文件及其独立 host 测试已完成构建、原 124 项回归、AAR 归属、依赖解析和安装身份核对，详见 [M2b 首批运动记录](validation/migrations/m2b-motion.json)。随后按压/端部三源及原17项回归、唯一归属和安装身份也已核对，见 [M2b 按压/端部记录](validation/migrations/m2b-endpoints.json)。M2 几何六源及新轮廓缓存文件已完成构建、原26项单测和AAR唯一归属，该阶段runtime共19源；设备8项、安装身份及独立依赖解析也已核对，见 [M2 几何记录](validation/migrations/m2-geometry.json)。M3a 渲染原语随后迁入三源和原 AGSL，该阶段runtime共22源，原34项单测、构建、归属、资产及依赖解析已验证，原HazeRender三项与启动范围另记于 [M3a 记录](validation/migrations/m3a-rendering.json)。M3 Host/主题上下文、M4 完整控件和支持/性能验收仍待执行。来源事实沿用 [catalog](asset-catalog.json)，不在本计划重复取证。
+
+实验性独立发行采用官方 Kyant 2.0.0，不包含本应用的 SleepDown 定制 fork，也不切换 Sleepy 当前后端。该范围须单独核对来源/声明、独立构建和 sample；完整近原生门槛不再阻挡明确标注限制的实验性公开。公开 `main` 已通过 Git 与 API 核对为 `ac9254c6e36312c6ef35c99ed28a881818bbd097`；独立 38 项 host 测试通过，sample 四背景 × 明暗主题已在真机查看；远程全新 clone 的 `:runtime:assemble :runtime:testAndroidHostTest :sample:assembleDebug` 在 34.99 秒通过，未创建 `local.properties`，复用既有 SDK 环境且未修改用户配置。该实验性发布不完成下面的完整控件示例和原生验收。
 
 93 批次新增通用 `BackdropAwareForeground.kt`，当时 runtime 共23源；它通过显式响应参数重绘中性 alpha mask，不迁移 Host、不提供原生分类器或默认门限，也尚未接入生产 Dock。构建、5项 host 和API36两项GPU检查通过；37个独立像素检查最大通道误差1（原容差3）。本批AAR119类与app实际2242个生产类无交集，原AGSL仍唯一且字节不变；完整记录和未覆盖范围见 [93 通用前景验证](validation/observations/backdrop-aware-foreground-gpu-93.json)。这项新增原语不完成 M3b/M4 或独立示例 gate。
 
@@ -8,7 +10,7 @@
 
 无显式通知的94 retained-diagnostic已实测：A→B→C→D→C→B→A的14个REST观察中，source draw serial从3增至9，但`source_host_version`保持2、`luma_sample_count`保持2、亮度保持26/255。父层版本未覆盖retained叶后续更新；原捕获/坐标检查通过不等于采样持续更新通过。新signal测试、retained/光学结果和安装身份待补入`validation/observations/source-aware-sampling-94.json`，不能用这份旧观察或93结果提前声明新API通过。
 
-现已建立 `:liquid-glass-runtime`，目录 `libraries/liquid-glass/runtime`；后续示例放 `libraries/liquid-glass/sample`。M1 使用现有 Kotlin Multiplatform + Android library 插件的 Android target，未同时引入平台迁移。首轮保留现 Kotlin 包名，减小调用变动；适配器落位时统一迁到 `com.lingion.liquidglass`，Sleepy 旧入口作为转调适配器保留。每个源文件只属于一个 module；不复制实现，不把 app 源目录同时登记给两个编译单元。
+现已建立 `:liquid-glass-runtime`，目录 `libraries/liquid-glass/runtime`；初版 runtime/material sample 已在独立仓库提供，完整控件示例后续在该仓库扩展。M1 使用现有 Kotlin Multiplatform + Android library 插件的 Android target，未同时引入平台迁移。首轮保留现 Kotlin 包名，减小调用变动；适配器落位时统一迁到 `com.lingion.liquidglass`，Sleepy 旧入口作为转调适配器保留。每个源文件只属于一个 module；不复制实现，不把 app 源目录同时登记给两个编译单元。
 
 文中 `G/` 指 `app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/`，`R/` 指 `libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/`，`T/` 指对应的 `app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/`。阶段表列的是同包符号依赖与 imports 的静态闭包；最终以各阶段实际编译和原基线验证为准。
 
@@ -114,9 +116,10 @@ M2a 已增加匹配实际解析的 runtime `1.12.1` 和 coroutines `1.11.0`；M2
 - [ ] 每个控件完成上述注入后，才将实现迁入 runtime；Sleepy 旧入口在原命名空间转调，新库命名空间统一为 `com.lingion.liquidglass`。同一阶段同步正常调用、测试和 example imports，避免旧包又生成一份实现。以 `rg` 检查 runtime 不再 import `com.lingion.sleepy`，且 Gradle 不依赖 `:app`；同包隐藏调用也须通过编译暴露。
 - [ ] 控件回归使用原 `GlassSwitchQuickInputTest`、`GlassSelectionCoalescedInputTest`、`GlassSliderTimestampInteractionTest`、`GlassSliderEndpointInteractionTest`、`GlassDockInputContractTest`、`GlassDockParentTranslationContractTest`、`DockAccessibilityTest`、`GlassNestedPopupTest`、`GlassLanguageMenuTest`、`LanguageMenuMotionTest` 的对应场景。保留实际 receipt/sample/frame 时间、取消、disabled、RTL 和 reduced motion 语义，不改测量门限来通过迁移。
 
-## 独立示例与公开仓库 gate
+## 独立示例与实验性公开
 
-- [ ] 新建 `:liquid-glass-sample`（`libraries/liquid-glass/sample`），使用根构建已有 Android application/Compose 插件；只依赖 `:liquid-glass-runtime` 及自身 Activity/Compose 引导，不依赖 `:app` 或 app 的 theme、资源、测试 helper。由 sample 自己提供颜色、item 内容、回调和触觉策略。Sleepy 与 sample 必须消费同一份 runtime 和 shader。
+- [ ] 在已公开的独立 sample 中继续接入完整控件，只依赖库 runtime 及自身 Activity/Compose 引导，不依赖 Sleepy 的 `:app`、theme、资源或测试 helper。由 sample 自己提供颜色、item 内容、回调和触觉策略。待 Sleepy 切换独立库时，核对应用与 sample 消费同一份 runtime 和 shader。
 - [ ] 示例展示 Toggle、分段、Dock、单双 Slider、按钮、menu/dialog/sheet 在网格、彩条、明暗色块和纹理背景下的相同输入回放。编译 sample/AAR 通过后，独立运行验证首次加载 shader、降级、取消、焦点/无障碍与动态选项变化。不能仅用“最小模块 assemble 通过”替代此 gate。
 - [ ] 对每次迁移保留同一控件、输入脚本、背景、fixture 哈希、测量代码、误差门限及 before/after 结果；可分发数值基线最终移动到唯一的 `libraries/liquid-glass/validation/baselines/native-glass`，相关测试通过资源接线消费，避免复制成多套。设备原视频和离线采集工具仍不属于 Android runtime。
-- [ ] 逐控件近原生验收、实际支持范围/性能、独立示例和现有来源/分发许可 gate 全部完成后，才创建独立公开仓库。迁出时带入 runtime、sample、必要基线与声明；Sleepy 切换为消费库，不维护平行实现。当前 catalog 的 `publicationReady`、`nativeCalibrationAccepted` 和 `sourceAndLicenseReviewComplete` 继续为 false。
+- [x] 独立实验性 runtime 与 sample 已公开至 `Kerry1020/sleepy-liquid-glass`，`main` 为 `ac9254c6e36312c6ef35c99ed28a881818bbd097`，Git 与 API 身份一致。采用官方 Kyant 2.0.0 并排除 SleepDown 定制源码；独立 38 项 host 测试通过，sample 四背景 × 明暗主题已在真机查看。远程全新 clone 的 runtime AAR、host test 和 sample debug 构建也已通过，不把本项等同于完整控件或近原生验收。
+- [ ] 继续完成完整控件、逐控件近原生、实际支持范围/性能和稳定 API 验收。catalog 的 `publicationReady`、`nativeCalibrationAccepted` 和 `sourceAndLicenseReviewComplete` 保留为完整资产库验收状态，与实验性公开状态分别记录。Sleepy 后续切换到独立库时才验证后端和调用适配，不用一次实验性发布宣称应用已完成切换。

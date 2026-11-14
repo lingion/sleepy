@@ -17,10 +17,13 @@ import android.view.ViewTreeObserver
 import android.view.WindowManager
 import android.widget.FrameLayout
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
@@ -35,6 +38,8 @@ import androidx.compose.runtime.Recomposer
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -71,6 +76,8 @@ import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassNavigationBar
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
@@ -99,6 +106,7 @@ class NativeControlMotionCaptureTest {
     @get:Rule val compose = createComposeRule()
 
     private enum class Control { dock3, dock4, toggle, segmented, slider, range }
+    private enum class ToggleOwner { direct, row, rowPending }
     private data class ObservedNode(val node: SemanticsNode, val screenOffset: Offset, val rootOrigin: Offset) {
         val tag get() = node.config.getOrNull(SemanticsProperties.TestTag)
         val bounds get() = node.boundsInWindow.translate(screenOffset)
@@ -115,6 +123,8 @@ class NativeControlMotionCaptureTest {
     private var control by mutableStateOf(Control.dock3)
     private var selected by mutableIntStateOf(0)
     private var checked by mutableStateOf(false)
+    private var togglePending by mutableStateOf(false)
+    private var toggleOwner = ToggleOwner.direct
     private var value by mutableFloatStateOf(.25f)
     private var rangeStart by mutableFloatStateOf(.25f)
     private var rangeEnd by mutableFloatStateOf(.75f)
@@ -163,6 +173,15 @@ class NativeControlMotionCaptureTest {
         val controls = (args.getString("controlMotionControls") ?: "dock3,dock4")
             .split(',').map { Control.valueOf(it.trim()) }.distinct()
         require(controls.isNotEmpty())
+        toggleOwner = when (args.getString("controlMotionToggleOwner")) {
+            null, "direct" -> ToggleOwner.direct
+            "row" -> ToggleOwner.row
+            "row-pending" -> ToggleOwner.rowPending
+            else -> error("controlMotionToggleOwner must be direct, row or row-pending")
+        }
+        require(toggleOwner == ToggleOwner.direct || controls == listOf(Control.toggle)) {
+            "A parent-owned Toggle run targets only toggle"
+        }
         swiftUIDockParent = when (args.getString("controlMotionDockParent")) {
             null, "standalone" -> false
             "swiftui" -> true
@@ -284,6 +303,7 @@ class NativeControlMotionCaptureTest {
                     control = next
                     selected = 0
                     checked = false
+                    togglePending = false
                     value = .25f
                     rangeStart = .25f
                     rangeEnd = .75f
@@ -402,10 +422,7 @@ class NativeControlMotionCaptureTest {
                                     listOf(0 to "First", 1 to "Second", 2 to "Third"), selected,
                                     { recordCallback(it.toString()); selected = it }, modifier.width(335.dp),
                                 )
-                                Control.toggle -> GlassSwitch(checked, { recordCallback(it.toString()); checked = it },
-                                    modifier, thumbContent = { Box(Modifier.fillMaxSize().testTag("motion-switch-lens")) },
-                                    colors = SwitchDefaults.colors(checkedTrackColor = tint,
-                                        checkedThumbColor = Color.White, uncheckedThumbColor = Color.White))
+                                Control.toggle -> ToggleFixture(modifier, tint)
                                 Control.slider -> GlassSlider(value, { recordCallback(it.toString()); value = it },
                                     modifier.width(335.dp), onValueChangeFinished = { add("value_change_finished") })
                                 Control.range -> GlassRangeSlider(rangeStart..rangeEnd, {
@@ -421,7 +438,45 @@ class NativeControlMotionCaptureTest {
             }
         }
         SideEffect { add("composition_observed").put("selected", selected).put("checked", checked)
+            .put("toggle_pending", togglePending)
             .put("value", value).put("range_start", rangeStart).put("range_end", rangeEnd).put("marker", marker) }
+    }
+
+    /** Parent-owned variants retain the production null-callback contract.
+     * Write/cleanup delays are controlled fixture inputs, not measured DB latency.
+     */
+    @Composable private fun ToggleFixture(modifier: Modifier, tint: Color) {
+        val interactions = remember { MutableInteractionSource() }
+        val scope = rememberCoroutineScope()
+        val commit: (Boolean) -> Unit = { next ->
+            if (!togglePending) {
+                recordCallback(next.toString())
+                if (toggleOwner == ToggleOwner.rowPending) {
+                    togglePending = true
+                    add("toggle_pending_requested").put("target", next).put("fixture_delay_ms", 120)
+                    scope.launch {
+                        delay(120)
+                        checked = next
+                        add("toggle_pending_value_echo").put("checked", checked).put("still_disabled", togglePending)
+                        delay(32)
+                        togglePending = false
+                        add("toggle_pending_applied").put("checked", checked)
+                    }
+                } else checked = next
+            }
+        }
+        @Composable fun Switch() {
+            GlassSwitch(checked, if (toggleOwner == ToggleOwner.direct) commit else null,
+                modifier, enabled = !togglePending, interactionSource = interactions,
+                thumbContent = { Box(Modifier.fillMaxSize().testTag("motion-switch-lens")) },
+                colors = SwitchDefaults.colors(checkedTrackColor = tint,
+                    checkedThumbColor = Color.White, uncheckedThumbColor = Color.White))
+        }
+        if (toggleOwner == ToggleOwner.direct) Switch()
+        else Box(Modifier.width(335.dp).height(64.dp).toggleable(
+            value = checked, enabled = !togglePending, role = Role.Switch,
+            interactionSource = interactions, indication = null, onValueChange = commit,
+        ), contentAlignment = Alignment.Center) { Switch() }
     }
 
     /** Replays observed native samples, including their actual inter-gesture gaps.
@@ -618,6 +673,13 @@ class NativeControlMotionCaptureTest {
             assertChecked(true)
             case("held-toggle-off") { tap(center(), "hold-off", 700) }
             assertChecked(false)
+            if (toggleOwner != ToggleOwner.direct) {
+                val rowPoint = center() - Offset(80f * density, 0f)
+                case("held-parent-row-on") { tap(rowPoint, "hold-parent-on", 700) }
+                assertChecked(true)
+                case("held-parent-row-off") { tap(rowPoint, "hold-parent-off", 700) }
+                assertChecked(false)
+            }
         }
         if ("drag" in groups) {
             if (readOnMain { checked }) case("setup-off") { tap(center(), "setup-off") }
@@ -967,6 +1029,10 @@ class NativeControlMotionCaptureTest {
                 .put("fingerprint", Build.FINGERPRINT).put("density", density).put("font_scale", fontScale)
                 .put("controls", JSONArray(controls.map { it.name })).put("scenarios", JSONArray(groups.toList()))
                 .put("dock_parent", if (swiftUIDockParent) "swiftui-four-item-375dp-caller" else "standalone-351dp-caller")
+                .put("toggle_owner", toggleOwner.name)
+                .put("toggle_parent_interaction_source", if (toggleOwner == ToggleOwner.direct) "standalone switch" else "shared with null-callback switch")
+                .put("toggle_pending_write_delay_ms", if (toggleOwner == ToggleOwner.rowPending) 120 else 0)
+                .put("toggle_pending_cleanup_delay_ms", if (toggleOwner == ToggleOwner.rowPending) 32 else 0)
                 .put("native_replay", replaySource != null)
                 .put("tap_hold_ms_requested", requestedHoldMs).put("settle_ms_requested", settleMs)
                 .put("rapid_gap_ms_requested", rapidGapMs).put("composition_clock", "Lifecycle AndroidUiDispatcher/Choreographer; no test clock after bootstrap")
@@ -983,7 +1049,9 @@ class NativeControlMotionCaptureTest {
                 .put("gestures", if (replaySource != null)
                     "Observed UIKit export-touches samples with original sampleT intervals and inter-gesture gaps. One translation and 1pt=1dp mapping; actual Android injection and dispatch may be late and are recorded independently. Matching requested trajectories is not matching delivered acceleration."
                     else "Synthetic public trajectories: direct first/last taps, selected/unselected 700ms holds, slow/fast drags both ways, same-stream reverse, pointer cancel, and six direct toggles with short gaps. These are Android acceptance inputs, not asserted native waveforms.")
-                .put("scope", "Actual product controls/handlers/shaders. Fixture callback immediately updates controlled state; no app navigation/persistence. Sliders emit while moving and cancellation does not imply rollback.")
+                .put("scope", if (toggleOwner == ToggleOwner.rowPending)
+                    "Actual product switch/handlers/shaders with parent-owned input. Controlled fixture disables during a 120ms simulated write, echoes checked while disabled, then clears pending after 32ms; these delays are test inputs, not measured database latency. No app navigation/persistence."
+                    else "Actual product controls/handlers/shaders. Fixture callback immediately updates controlled state; no app navigation/persistence. Sliders emit while moving and cancellation does not imply rollback.")
                 .also(::snapshot)
         }
         File(directory, "session.json").writeText(row.toString(2))

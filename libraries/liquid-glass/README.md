@@ -1,8 +1,20 @@
 # Liquid Glass 资产库
 
-本目录是 Android/Compose Liquid Glass 运行模块和资产索引。当前 `:liquid-glass-runtime` 有 26 份生产 Kotlin 源码及原 AGSL：运动、帧调度、几何/轮廓缓存、渲染原语、背景自适应前景、外部源亮度采样、显式源内容通知和调用方配置的迟滞状态策略。Sleepy 已消费同一模块；Host/主题上下文、完整控件与独立示例仍待提取，公开 API 尚未收口。
+本目录是 Android/Compose Liquid Glass 运行模块和资产索引。当前 `:liquid-glass-runtime` 有 26 份生产 Kotlin 源码及原 AGSL：运动、帧调度、几何/轮廓缓存、渲染原语、背景自适应前景、外部源亮度采样、显式源内容通知和调用方配置的迟滞状态策略。Sleepy 已消费同一模块；Host/主题上下文和完整控件仍待提取，完整控件示例与公开 API 尚未收口。
 
-以 iOS 26.5 原生控件为参照，逐控件校准后再作为独立仓库开源，Sleepy 作为首个使用方。当前近原生验收与来源/分发许可核对均未完成，不宣称“99.99%”或具备独立开源发布条件。源码范围见 [asset-catalog.json](asset-catalog.json)，提取步骤见 [extraction-plan.md](extraction-plan.md)，残差见 [对照记录](../../docs/native-glass-control-alignment.md)。
+以 iOS 26.5 原生控件为参照继续逐控件校准，Sleepy 作为首个使用方。按用户更新后的发布要求，已公开独立仓库 [Kerry1020/sleepy-liquid-glass](https://github.com/Kerry1020/sleepy-liquid-glass) 的实验性 runtime 与 sample；完整控件提取、原生对齐和支持/性能验收继续进行，不再以“99.99%”作为创建实验性仓库的前提。远程 `main` 已通过 Git 与 GitHub API 核对为 `ac9254c6e36312c6ef35c99ed28a881818bbd097`。独立 38 项 host 测试通过，sample 的四种背景 × 明暗主题已在真机查看；远程全新 clone 的 `:runtime:assemble :runtime:testAndroidHostTest :sample:assembleDebug` 在 34.99 秒通过，未创建 `local.properties`，复用既有 SDK 环境且未修改用户配置。这些结果不构成完整原生等效或稳定 API 验收。源码范围见 [asset-catalog.json](asset-catalog.json)，提取步骤见 [extraction-plan.md](extraction-plan.md)，残差见 [对照记录](../../docs/native-glass-control-alignment.md)。
+
+独立发行使用官方 Kyant 2.0.0 后端，排除 Sleepy 当前的 SleepDown 定制 fork；Sleepy 的后端接线本批保持原样。实验性公开范围仍须保留实际迁出源码的来源、许可证和适用限制，不能借上游 Apache-2.0 声明覆盖其他移植代码。本文的迁移/测试历史描述本仓库内的 runtime，不代替独立仓库的构建和发布凭据。
+
+## 独立示例预览
+
+公开运行库的 Sleepy Glass Lab 示例；四背景依次为细网格、彩条、明暗色块和合成山景。
+
+![独立运行库浅色四背景示例](docs/images/sample-backgrounds-light.png)
+
+![独立运行库深色四背景示例](docs/images/sample-backgrounds-dark.png)
+
+截图展示运行原语，完整应用控件仍待提取；不代表 iOS 26.5 的完整光学或动态等效。图片来源与处理记录见 [sources.json](docs/images/sources.json)。
 
 ## 当前接入入口
 
@@ -14,7 +26,7 @@ dependencies {
 }
 ```
 
-根工程已在 [settings.gradle.kts](../../settings.gradle.kts) 登记模块；`:kyant-backdrop`、插件及版本目录仍由本仓库提供。运行模块目前沿用 `com.lingion.sleepy.ui.component.liquidglass` 包名，独立仓库与 sample 的构建入口尚待建立。复用本机已有 Android SDK，在仓库根目录运行：
+根工程已在 [settings.gradle.kts](../../settings.gradle.kts) 登记模块；`:kyant-backdrop`、插件及版本目录仍由本仓库提供。本仓库运行模块目前沿用 `com.lingion.sleepy.ui.component.liquidglass` 包名；独立实验性仓库另有 runtime/sample 构建入口，尚未替换本应用依赖。复用本机已有 Android SDK，在仓库根目录运行：
 
 ```sh
 ./gradlew :liquid-glass-runtime:assemble
@@ -90,7 +102,7 @@ Sleepy 的 [Dock 消费者](../../app/src/main/java/com/lingion/sleepy/ui/compon
 
 ## 已完成的迁移
 
-[可执行提取路线](extraction-plan.md)按实际源码闭包安排纯运动/几何、材质采样、控件和 Sleepy 适配器。2026-11-14 已完成 M1：`NativeGlassDragDeformation.kt`、`NativeDockDeformation.kt`、`NativeSliderEndpoint.kt` 只有 runtime 中的一份实现；module AAR 与 Sleepy 编译通过，三类原测试在迁移前后均为 19 项通过，测试与两份 CSV 哈希不变。实际命令、首次 SDK 环境缺失及重跑结果见 [M1 迁移记录](validation/migrations/m1.json)。M2a 随后移动 `ActiveFrameLoop.kt` 和 `DockInputClock.kt`，只开放五处必要可见性；四类原测试迁移前后各 33/33 通过，计算和时钟行为不变，AAR 是唯一实现归属，debug/androidTest 同轮构建通过。依赖解析保持 Compose runtime 1.12.1 和 coroutines-core 1.11.0，详见 [M2a 记录](validation/migrations/m2a.json)。M2b、M2 几何和 M3a 渲染原语记录见下；M3 Host/主题上下文、M4 控件及独立示例仍待执行。
+[可执行提取路线](extraction-plan.md)按实际源码闭包安排纯运动/几何、材质采样、控件和 Sleepy 适配器。2026-11-14 已完成 M1：`NativeGlassDragDeformation.kt`、`NativeDockDeformation.kt`、`NativeSliderEndpoint.kt` 只有 runtime 中的一份实现；module AAR 与 Sleepy 编译通过，三类原测试在迁移前后均为 19 项通过，测试与两份 CSV 哈希不变。实际命令、首次 SDK 环境缺失及重跑结果见 [M1 迁移记录](validation/migrations/m1.json)。M2a 随后移动 `ActiveFrameLoop.kt` 和 `DockInputClock.kt`，只开放五处必要可见性；四类原测试迁移前后各 33/33 通过，计算和时钟行为不变，AAR 是唯一实现归属，debug/androidTest 同轮构建通过。依赖解析保持 Compose runtime 1.12.1 和 coroutines-core 1.11.0，详见 [M2a 记录](validation/migrations/m2a.json)。M2b、M2 几何和 M3a 渲染原语记录见下；M3 Host/主题上下文、M4 控件及完整控件示例仍待执行。
 
 ## 提取边界
 
@@ -108,7 +120,7 @@ M3a 已把 `LiquidGlassStyle.kt`、`LiquidGlassShader.kt`、`LiquidGlassEffect.k
 
 API36 使用注册的 `SleepyRenderTestRunner` 运行原 HazeRender 三项，5.3395s通过；该次安装主包/测试包与 host 哈希匹配，第11周网格首页和 Dock 可见，仅作安装/启动验证。独立 resolutionResult 的 compile67/runtime121组件无未解析项，backdrop、Material3、Foundation、HCT、shapes/UI 均解析到现有版本，真实编译输入含 backdrop jar；最初两个只读诊断错误保留。署名证据路径元数据修正后仅重打包主包，2.4462s通过；最终主包已重装、host-device哈希一致且MainActivity resumed。该身份与原 GPU 运行包分开记录，未重复原34项单测或三项GPU测试，本页不固定主包哈希。完整证据见 [M3a 渲染原语记录](validation/migrations/m3a-rendering.json)。
 
-完整运行库仍未完成解耦。同一个 `liquidglass` 包目前仍混有 `LocalUiStyle` 等主题判断、导航图标驱动、设置布局、调试语义和 Material 分支；滑杆还引用包外的弹窗动画及 Material 辅助函数。`SegmentedSwitcher.kt` 同时承载玻璃控件实现和 Sleepy 适配，不能整文件归为已分离的适配器。语言菜单已泛化为 app 侧共享 `SingleChoiceDropdown` / `GlassChoiceMenu`，语言选项及入口留在 Sleepy；Host、主题与调试依赖仍未迁出。当前二十六份 runtime 实现还包含通用源亮度采样、显式内容通知和迟滞策略；完整 Host 采样闭包、主题注入、控件及独立示例仍待完成，catalog 保留相应阻碍。本批未新增完整光学、自然动态、近原生或发布验收。
+完整运行库仍未完成解耦。同一个 `liquidglass` 包目前仍混有 `LocalUiStyle` 等主题判断、导航图标驱动、设置布局、调试语义和 Material 分支；滑杆还引用包外的弹窗动画及 Material 辅助函数。`SegmentedSwitcher.kt` 同时承载玻璃控件实现和 Sleepy 适配，不能整文件归为已分离的适配器。语言菜单已泛化为 app 侧共享 `SingleChoiceDropdown` / `GlassChoiceMenu`，语言选项及入口留在 Sleepy；Host、主题与调试依赖仍未迁出。当前二十六份 runtime 实现还包含通用源亮度采样、显式内容通知和迟滞策略；完整 Host 采样闭包、主题注入、控件及完整控件示例仍待完成，catalog 保留相应阻碍。本批未新增完整光学、自然动态、近原生或发布验收。
 
 原生采集工具、可分发的数值基线、回放和示例属于独立验证目录。原始长视频、临时 APK、DerivedData 和设备导出缓存不进入库或日常 CI。CI 保留正常贡献所需的编译、针对性回归和可复现示例；多背景 GPU 采证显式运行。
 
@@ -117,7 +129,7 @@ API36 使用注册的 `SleepyRenderTestRunner` 运行原 HazeRender 三项，5.3
 1. 用同一份运行代码继续修复，集中记录每个控件、每类输入和每种背景的误差。
 2. 逐项移除 Sleepy 业务依赖，提取 Android library 模块；用 Sleepy 适配器注入配色、文案、图标、回调及策略。运行模块不反向依赖 Sleepy；提取前后复用相同基线，避免整理代码时改变行为。
 3. 建立可独立运行的示例和验证入口，保留参考版本、设备、实际输入、帧时间及全部适用范围；独立声明 SDK、Compose、backdrop 和 shader 资产依赖，验证降级路径、取消和无障碍行为。
-4. 逐控件达到预先固定的接近原生验收要求，并完成逐文件来源和分发许可核对后，再创建独立公开仓库，迁入来源记录、许可证声明、使用示例和贡献流程。当前两个条件均未完成，不因目录和文档齐备提前发布。
+4. 先按实际可分发范围准备独立实验性 runtime、sample、来源记录、许可证声明与贡献流程，并核对独立构建。独立后端采用官方 Kyant 2.0.0，不迁入本应用的 SleepDown 定制 fork；本次独立实验性发布身份见本页开头；后续迁移继续按实际提交记录。完整控件、逐项原生校准、支持/性能与稳定 API 仍为后续验收，不阻挡明确标注范围的实验性公开。
 
 每次校准只保留一个真实实现。模块按依赖闭包逐步迁移，Sleepy 继续消费同一份代码，逐阶段核对行为和基线。
 
@@ -127,7 +139,7 @@ API36 使用注册的 `SleepyRenderTestRunner` 运行原 HazeRender 三项，5.3
 
 [单选统一记录 96](validation/observations/single-choice-unification-96.json)记录五处单选入口、Material Expressive 菜单及 Glass 共享交接。最终定向 23 项通过，跨轮按类汇总为 52 项；pre-Expressive Glass 夹具与最终包的 Material 语言、Glass 调休生产检查分列身份和范围。运行库、既有运动参数及其他控件未改，完整 1:1、全应用 Material 现代化和发布验收仍未完成。
 
-不能用一个平均分把某个控件的明显误差覆盖掉，也不能把当前状态标成“99.99%”。发布前需逐控件、逐角色先固定测量方法和可接受误差，再保留实测结果及未通过项；目前没有完整通过的发布验收矩阵。每类控件分别保留点击、按住已选/未选项、慢快拖动、加速减速、反向、端部拉伸、持续顶住、松手回弹、取消及连续首尾切换的适用证据。形状与四角、位置、宽高形变、透明度、磨砂、折射、色散和分层分别记录。
+不能用一个平均分把某个控件的明显误差覆盖掉，也不能把当前状态标成“99.99%”。宣称逐控件近原生或完成稳定版验收前，需逐控件、逐角色先固定测量方法和可接受误差，再保留实测结果及未通过项；目前没有完整通过的原生验收矩阵。实验性公开同时披露这些未通过项。每类控件分别保留点击、按住已选/未选项、慢快拖动、加速减速、反向、端部拉伸、持续顶住、松手回弹、取消及连续首尾切换的适用证据。形状与四角、位置、宽高形变、透明度、磨砂、折射、色散和分层分别记录。
 
 视觉验证覆盖细网格、高反差彩条、明暗色块和纹理风景，以及明暗主题、普通背板、磨砂背板和弹窗。对照须匹配控件和父容器上下文、背景坐标及实际投递输入；输入、模型和实际绘制结果分开记录。公开 presentation 载体矩形不能代替可见轮廓或最终屏幕，内部几何或单个 probe 通过也不能覆盖整个控件。未测项目、帧相位不确定性和保留残差必须随参考一起发布；当前光学、快速动态和完整四角等残差仍见对照记录。
 
@@ -137,7 +149,7 @@ API36 使用注册的 `SleepyRenderTestRunner` 运行原 HazeRender 三项，5.3
 
 ## 双头参考与验证入口
 
-现有 [原生参考工具](../../tools/native-glass-reference/README.md#paired-native-range-optical-matrix)已增加四种背景、明暗主题的独立双 UISlider 按住参考；[Android 光学夹具](../../app/src/androidTest/java/com/lingion/sleepy/ui/component/NativeRangeOpticalWorldRenderTest.kt)直接使用生产 Range/input，在相同逻辑世界导出两端和轨道的实际坐标。原生是 host 组合两个真实 UISlider，不能称为 Apple 原生双头 API；Android 稳态使用合成时钟，不能据此验收自然动态。原生按下前与按住中心分别记录，不隐藏取整、主题色及轨道上下文差异。夹具和其 Sleepy 主题依赖目前仍属于应用侧验证，尚未迁入独立示例，也不改变发布 gate。 77 批次已用同 primary 及实际产品主题比较独立 Range 材质入口，减少多余彩纹与深色白化；它暂复用 Single F，保留独立角色入口、四处诊断区域退步及暗上沿/端帽残差。该有限修正不代表完整原生双头验收，数据与限制见对照记录。
+现有 [原生参考工具](../../tools/native-glass-reference/README.md#paired-native-range-optical-matrix)已增加四种背景、明暗主题的独立双 UISlider 按住参考；[Android 光学夹具](../../app/src/androidTest/java/com/lingion/sleepy/ui/component/NativeRangeOpticalWorldRenderTest.kt)直接使用生产 Range/input，在相同逻辑世界导出两端和轨道的实际坐标。原生是 host 组合两个真实 UISlider，不能称为 Apple 原生双头 API；Android 稳态使用合成时钟，不能据此验收自然动态。原生按下前与按住中心分别记录，不隐藏取整、主题色及轨道上下文差异。夹具和其 Sleepy 主题依赖目前仍属于应用侧验证，尚未迁入独立示例，不构成实验性库的完整控件验收。77 批次已用同 primary 及实际产品主题比较独立 Range 材质入口，减少多余彩纹与深色白化；它暂复用 Single F，保留独立角色入口、四处诊断区域退步及暗上沿/端帽残差。该有限修正不代表完整原生双头验收，数据与限制见对照记录。
 
 ## 来源
 
@@ -145,4 +157,4 @@ API36 使用注册的 `SleepyRenderTestRunner` 运行原 HazeRender 三项，5.3
 
 [现有 backdrop 模块](../../third-party/kyant-backdrop/README.md)经 SleepDown 定制源码导入，SleepDown 自有修改另有非商业、源码可见声明。2026-11-14 已逐字节确认：Sleepy 最初导入 `c2490785` 的 42 个 Android/common 运行文件和模块 README，与 [SleepDown 固定快照 `d02898140327796946f2b140cb3ca87390595810`](https://github.com/xiaomanjun233/SleepDown-Schedule/tree/d02898140327796946f2b140cb3ca87390595810/third-party/kyant-backdrop) 完全一致；保留的 SleepDown 许可与第三方声明也与该快照一致。该修订记录为 `verifiedEquivalentSourceRevision`，证明可复现的内容基线，不代替仍未知的历史取得/导入修订，也不代表取得定制代码的再分发授权。当前运行代码相对 Kyant 2.0.0 为 24 个仅多一个末尾换行的原文件、10 个修改原文件及 8 个新增文件；导入后的 Sleepy 修改另记于 [UPSTREAM.json](../../third-party/kyant-backdrop/UPSTREAM.json)。
 
-定制代码的分发许可兼容性仍未确认；Kyant 的原始许可不能覆盖这个缺口。catalog 链接现存来源、许可证及待核对事项，当前不改授权、不宣称全部原创，也不将这些记录当作独立开源分发许可已解决的证明。原生截图、数值基线和示例素材的可分发范围同样需在迁出前核对。
+定制代码的分发许可兼容性仍未确认；Kyant 的原始许可不能覆盖这个缺口。因此独立实验性发行排除该定制 fork，采用官方 Kyant 2.0.0；本仓库保留现有定制来源和接线的真实记录。catalog 链接现存来源、许可证及待核对事项，当前不改授权、不宣称全部原创；独立发行仍须按实际迁出文件核对 GPL/BSD 等适用声明。原生截图、数值基线和示例素材的可分发范围同样需在迁出前核对。

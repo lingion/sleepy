@@ -11,7 +11,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.DialogActionButtons
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.UiStyle
 
 /** The user's choice when leaving an import that may contain recoverable work. */
 enum class ExitDraftChoice {
@@ -77,28 +80,34 @@ fun ExitDraftConfirmationDialog(
     onKeepDraft: () -> Unit,
     onDeleteDraft: () -> Unit,
 ) {
+    val nativeActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
+    val actions: @Composable () -> Unit = {
+        // 继续(第三位 secondary) / 留草稿(dismiss 位 secondary) / 退出并删除(confirm 位 destructive)
+        DialogActionButtons(
+            confirmText = stringResource(R.string.jw_import_exit_delete_draft),
+            onConfirm = onDeleteDraft,
+            dismissText = stringResource(R.string.jw_import_exit_continue),
+            onDismiss = onContinue,
+            thirdText = stringResource(R.string.jw_import_exit_keep_draft),
+            onThird = onKeepDraft,
+            thirdDestructive = false,
+            destructive = true,
+            dbgTagPrefix = "exit_draft"
+        )
+    }
     AlertDialog(
         onDismissRequest = onContinue,
         title = { Text(stringResource(R.string.jw_import_exit_title)) },
         text = {
             Column {
                 Text(stringResource(R.string.jw_import_exit_message))
-                Spacer(Modifier.height(20.dp))
-                // 继续(第三位 secondary) / 留草稿(dismiss 位 secondary) / 退出并删除(confirm 位 destructive)
-                DialogActionButtons(
-                    confirmText = stringResource(R.string.jw_import_exit_delete_draft),
-                    onConfirm = onDeleteDraft,
-                    dismissText = stringResource(R.string.jw_import_exit_continue),
-                    onDismiss = onContinue,
-                    thirdText = stringResource(R.string.jw_import_exit_keep_draft),
-                    onThird = onKeepDraft,
-                    thirdDestructive = false,
-                    destructive = true,
-                    dbgTagPrefix = "exit_draft"
-                )
+                if (!nativeActions) {
+                    Spacer(Modifier.height(20.dp))
+                    actions()
+                }
             }
         },
-        confirmButton = {},
+        confirmButton = { if (nativeActions) actions() },
         dismissButton = {}
     )
 }

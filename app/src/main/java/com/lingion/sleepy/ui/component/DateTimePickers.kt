@@ -43,7 +43,10 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
 import com.lingion.sleepy.console.ui.dbgTag
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import java.time.Instant
 import java.time.LocalTime
@@ -67,6 +70,7 @@ fun DatePickerField(
     dbgTag: String? = null,
 ) {
     val colors = MaterialTheme.colorScheme
+    val nativeDialogActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
     var showPicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
     val fieldColors = SleepyTheme.fieldColors()
@@ -105,7 +109,7 @@ fun DatePickerField(
         DatePickerDialog(
             onDismissRequest = { showPicker = false },
             confirmButton = {
-                // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 色块按钮
+                // Material Design 保留原色块；玻璃动作采用日期弹窗的统一默认样式。
                 Button(
                     onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
@@ -117,19 +121,19 @@ fun DatePickerField(
                         showPicker = false
                     },
                     modifier = dbgTag?.let { Modifier.dbgTag("${it}_pick_confirm", role = "button") } ?: Modifier,
-                    shape = SleepyTheme.shapes.medium
-                ) { Text(stringResource(R.string.ok), maxLines = 1) }
+                    shape = if (nativeDialogActions) null else SleepyTheme.shapes.medium
+                ) { Text(stringResource(R.string.ok), maxLines = if (nativeDialogActions) Int.MAX_VALUE else 1) }
             },
             dismissButton = {
                 Button(
                     onClick = { showPicker = false },
                     modifier = dbgTag?.let { Modifier.dbgTag("${it}_pick_dismiss", role = "button") } ?: Modifier,
-                    shape = SleepyTheme.shapes.medium,
-                    colors = ButtonDefaults.buttonColors(
+                    shape = if (nativeDialogActions) null else SleepyTheme.shapes.medium,
+                    colors = if (nativeDialogActions) null else ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                     )
-                ) { Text(stringResource(R.string.cancel), maxLines = 1) }
+                ) { Text(stringResource(R.string.cancel), maxLines = if (nativeDialogActions) Int.MAX_VALUE else 1) }
             }
         ) {
             DatePicker(state = datePickerState)
@@ -201,6 +205,21 @@ fun TimePickerField(
     }
 
     if (showPicker) {
+        val nativeActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
+        val actions: @Composable () -> Unit = {
+            DialogActionButtons(
+                confirmText = stringResource(R.string.ok),
+                onConfirm = {
+                    val h = timePickerState.hour.toString().padStart(2, '0')
+                    val m = timePickerState.minute.toString().padStart(2, '0')
+                    onValueChange("$h:$m")
+                    showPicker = false
+                },
+                dismissText = stringResource(R.string.cancel),
+                onDismiss = { showPicker = false },
+                dbgTagPrefix = dbgTag?.let { "${it}_pick" }
+            )
+        }
         AlertDialog(
             onDismissRequest = { showPicker = false },
             title = { Text(stringResource(R.string.select_time), color = colors.onSurface) },
@@ -208,23 +227,13 @@ fun TimePickerField(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     // 默认 TimePicker 配色 — 与 ReminderScreen 时间弹窗一致, 不再单独覆写表盘色
                     TimePicker(state = timePickerState)
-                    Spacer(modifier = Modifier.height(12.dp))
-                    // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 统一色块按钮行
-                    DialogActionButtons(
-                        confirmText = stringResource(R.string.ok),
-                        onConfirm = {
-                            val h = timePickerState.hour.toString().padStart(2, '0')
-                            val m = timePickerState.minute.toString().padStart(2, '0')
-                            onValueChange("$h:$m")
-                            showPicker = false
-                        },
-                        dismissText = stringResource(R.string.cancel),
-                        onDismiss = { showPicker = false },
-                        dbgTagPrefix = dbgTag?.let { "${it}_pick" }
-                    )
+                    if (!nativeActions) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        actions()
+                    }
                 }
             },
-            confirmButton = {},
+            confirmButton = { if (nativeActions) actions() },
             dismissButton = {}
         )
     }

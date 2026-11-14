@@ -283,13 +283,18 @@ private fun rememberLanguageMenuSubmittedFrame(
 @Composable
 private fun ChoiceCardContent(title: String, label: String, modifier: Modifier = Modifier, tagPrefix: String? = null) {
     val colors = MaterialTheme.colorScheme
-    FlowRow(modifier.fillMaxWidth().heightIn(min = (154f / 3f).dp).clip(LanguageCardShape).background(colors.surfaceContainer).padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    val compact = title.isEmpty()
+    FlowRow(modifier.fillMaxWidth().heightIn(min = if (compact) GlassControlLayout.touchTarget else (154f / 3f).dp)
+        .clip(LanguageCardShape).background(if (compact) colors.surfaceContainerHighest else colors.surfaceContainer)
+        .padding(horizontal = if (compact) 12.dp else 16.dp, vertical = if (compact) 10.dp else 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalArrangement = if (compact) Arrangement.Center else Arrangement.spacedBy(8.dp)) {
         if (title.isNotEmpty()) Text(title, Modifier.padding(end = 12.dp), style = MaterialTheme.typography.titleSmall.copy(lineHeight = (50f / 3f).sp),
             color = colors.onSurface, maxLines = 1)
-        Row(Modifier.widthIn(max = 180.dp).then(if (tagPrefix != null)
+        Row((if (compact) Modifier.fillMaxWidth() else Modifier.widthIn(max = 180.dp)).then(if (tagPrefix != null)
             Modifier.dbgTag("${tagPrefix}_value", text = label, clickable = false) else Modifier),
-            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.End)) {
             Text(label, Modifier.weight(1f, fill = false), style = MaterialTheme.typography.bodyLarge.copy(lineHeight = (58f / 3f).sp),
                 color = colors.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Icon(Icons.Outlined.ExpandMore, null, Modifier.size(16.dp), tint = colors.onSurfaceVariant)

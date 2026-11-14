@@ -22,6 +22,9 @@ import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.ui.component.DialogActionButtons
 import com.lingion.sleepy.ui.component.IntRangeSlider
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.util.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -35,6 +38,7 @@ import java.time.format.FormatStyle
 @Composable
 internal fun OccurrenceEditor(occurrence: CourseOccurrence, table: TimeTableEntity, onDismiss: () -> Unit, startInEdit: Boolean = false) {
     val course = occurrence.course
+    val glass = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val dialogs = remember(context) { OccurrenceSaveDialogs(context) }
@@ -131,10 +135,22 @@ internal fun OccurrenceEditor(occurrence: CourseOccurrence, table: TimeTableEnti
             Text(course.courseName, style = MaterialTheme.typography.titleLarge)
             Text("${occurrence.displayDate} · ${course.nodeString(context)}")
             if (!editing) {
-                FilledTonalButton(onClick = { editing = true }, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(context.getString(R.string.occurrence_adjust)) }
-                FilledTonalButton(onClick = { save(true) }, enabled = !busy, modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.filledTonalButtonColors(containerColor = MaterialTheme.colorScheme.errorContainer,
-                        contentColor = MaterialTheme.colorScheme.onErrorContainer)) { Text(context.getString(R.string.occurrence_delete)) }
+                if (glass) {
+                    DialogActionButtons(
+                        confirmText = context.getString(R.string.occurrence_delete),
+                        onConfirm = { save(true) },
+                        destructive = true,
+                        confirmEnabled = !busy,
+                        dismissText = context.getString(R.string.occurrence_adjust),
+                        dismissEnabled = !busy,
+                        onDismiss = { if (!busy) editing = true },
+                    )
+                } else {
+                    FilledTonalButton(onClick = { editing = true }, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(context.getString(R.string.occurrence_adjust)) }
+                    FilledTonalButton(onClick = { save(true) }, enabled = !busy, modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.filledTonalButtonColors(containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer)) { Text(context.getString(R.string.occurrence_delete)) }
+                }
             } else {
                 OutlinedCard(onClick = { showDatePicker = true }, enabled = !busy,
                     modifier = Modifier.fillMaxWidth().testTag("occurrence-date")) {
@@ -200,7 +216,15 @@ internal fun OccurrenceEditor(occurrence: CourseOccurrence, table: TimeTableEnti
                 // 标签复用整组编辑器/添加单次课同一字段键 (course_room), 同功能同措辞。
                 OutlinedTextField(room, { room = it }, label = { Text(context.getString(R.string.course_room)) },
                     enabled = !busy, singleLine = true, modifier = Modifier.fillMaxWidth().testTag("occurrence-room"))
-                Button(onClick = { save(false) }, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(if (busy) context.getString(R.string.occurrence_busy) else context.getString(R.string.occurrence_save)) }
+                if (glass) {
+                    DialogActionButtons(
+                        confirmText = context.getString(if (busy) R.string.occurrence_busy else R.string.occurrence_save),
+                        onConfirm = { save(false) },
+                        confirmEnabled = !busy,
+                    )
+                } else {
+                    Button(onClick = { save(false) }, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(if (busy) context.getString(R.string.occurrence_busy) else context.getString(R.string.occurrence_save)) }
+                }
             }
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             Spacer(Modifier.height(16.dp))
@@ -233,7 +257,7 @@ internal fun OccurrenceEditor(occurrence: CourseOccurrence, table: TimeTableEnti
                 },
                 dismissText = context.getString(R.string.cancel),
                 onDismiss = { showDatePicker = false },
-                modifier = Modifier.padding(horizontal = 12.dp)
+                modifier = if (glass) Modifier else Modifier.padding(horizontal = 12.dp)
             )
         }) {
             DatePicker(state = pickerState, showModeToggle = false)

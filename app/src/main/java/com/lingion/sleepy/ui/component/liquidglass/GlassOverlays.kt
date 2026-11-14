@@ -5,8 +5,12 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.CornerSize
@@ -142,6 +146,7 @@ fun GlassAlertDialog(
         LocalGlassPopupScene provides popupScene,
         LocalGlassMaterialBackdrop provides null,
         LocalGlassAlertPressState provides panePress,
+        LocalGlassAlertAction provides false,
     ) {
         // BasicAlertDialog applies its width bounds to the pane plus drawing room.
         // A platform fixed-width theme can then consume the halo by shrinking the
@@ -258,32 +263,53 @@ fun GlassDatePickerDialog(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val glass = overlayGlass()
-    val nativeLightScrim = glass && !LocalDarkTheme.current
+    if (!glass) {
+        androidx.compose.material3.DatePickerDialog(
+            onDismissRequest = onDismissRequest, confirmButton = confirmButton,
+            modifier = modifier, dismissButton = dismissButton, content = content,
+        )
+        return
+    }
+    val nativeLightScrim = !LocalDarkTheme.current
     val parentScene = LocalGlassPopupScene.current ?: LocalGlassHost.current
     val popupScene = rememberGlassHostState()
-    val carrierShape = if (glass) FlClashGlassShape(34f) else androidx.compose.material3.DatePickerDefaults.shape
+    val carrierShape = FlClashGlassShape(34f)
     val materialScope = rememberGlassMaterialScope(carrierShape, parentScene?.overlayBackdrop)
+    val panePress = remember { NativeGlassAlertPressState() }
+    val pressScale by animateFloatAsState(
+        targetValue = if (panePress.isPressed) 1.0125f else 1f,
+        animationSpec = spring(dampingRatio = .565f, stiffness = 256f, visibilityThreshold = .00001f),
+        label = "native-date-alert-press-scale",
+    )
     CompositionLocalProvider(
         LocalGlassOverlay provides glass,
         LocalGlassOverlaySamplingHost provides parentScene,
         LocalGlassPopupScene provides popupScene,
         LocalGlassMaterialBackdrop provides null,
+        LocalGlassAlertPressState provides panePress,
+        LocalGlassAlertAction provides false,
     ) {
-        val opticalModifier = modifier.recordGlassPopupScene(popupScene).trackGlassMaterial(materialScope).glassControl(
+        val opticalModifier = modifier.graphicsLayer {
+            scaleX = pressScale
+            scaleY = pressScale
+        }.recordGlassPopupScene(popupScene).trackGlassMaterial(materialScope).glassControl(
             shape = carrierShape, enabled = false, registerPane = false, role = GlassMaterialRole.Alert,
             exportedBackdrop = materialScope?.exported,
         )
-        GlassMaterialContent(materialScope) {
-            androidx.compose.material3.DatePickerDialog(
-                onDismissRequest, { GlassDialogScrim(nativeLightScrim); confirmButton() },
-                opticalModifier,
-                shape = carrierShape,
-                dismissButton = dismissButton,
-                colors = androidx.compose.material3.DatePickerDefaults.colors(
-                    containerColor = if (glass) Color.Transparent else androidx.compose.material3.DatePickerDefaults.colors().containerColor,
-                ),
-                content = content,
-            )
+        Dialog(onDismissRequest, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+            GlassDialogScrim(nativeLightScrim)
+            NativeGlassAlertDrawingSpace {
+                GlassMaterialContent(materialScope) {
+                    // Keep the Material calendar body at its 360dp width; the native
+                    // action group owns its full pane width and finite footer viewport.
+                    Column(opticalModifier.widthIn(max = 360.dp).fillMaxWidth()) {
+                        Column(Modifier.weight(1f, fill = false)) { content() }
+                        NativeGlassAlertActionGroup(
+                            dismissButton = dismissButton, confirmButton = confirmButton, scrollable = true,
+                        )
+                    }
+                }
+            }
         }
     }
 }

@@ -3,7 +3,6 @@ package com.lingion.sleepy.ui.component
 import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import com.lingion.sleepy.ui.component.liquidglass.GlassSwitch as Switch
@@ -28,7 +26,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
@@ -42,7 +39,6 @@ import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.ui.component.liquidglass.glassSurfaceBackground
 import com.lingion.sleepy.ui.component.liquidglass.GlassMaterialContent
 import com.lingion.sleepy.ui.component.liquidglass.rememberGlassMaterialScope
-import com.lingion.sleepy.ui.theme.noRippleClickable
 
 /**
  * [intentional custom] 官方 M3 无「分组标题+折叠卡+单选行+开关行」组合件;
@@ -77,44 +73,28 @@ fun SettingsCard(
 ) {
     val colors = MaterialTheme.colorScheme
     val backing = rememberGlassMaterialScope(SleepyTheme.shapes.large)
-    // MD3E (Task 7a): chevron 旋转走 defaultSpatial (收稳不弹, 与展开家族同拍)
-    val arrowRotation by animateFloatAsState(
-        targetValue = if (expanded) 180f else 0f,
-        animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>(),
-        label = "settings-arrow"
-    )
     Column(
-        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).glassSurfaceBackground(colors.surfaceContainer, SleepyTheme.shapes.large, materialScope = backing).noRippleClickable(onToggle)
-            .then(dbg?.let { Modifier.dbgTag(it, text = title, role = "button") } ?: Modifier)
-            .padding(horizontal = SettingsLayout.cardInset),
+        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large)
+            .glassSurfaceBackground(colors.surfaceContainer, SleepyTheme.shapes.large, materialScope = backing),
         verticalArrangement = Arrangement.Top
     ) {
         GlassMaterialContent(backing) {
-            Row(
-                modifier = Modifier.fillMaxWidth().heightIn(min = SettingsLayout.minRowHeight).padding(vertical = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap),
-                verticalAlignment = Alignment.CenterVertically,
+            AccordionHeader(
+                expanded = expanded,
+                onToggle = onToggle,
+                modifier = dbg?.let { Modifier.dbgTag(it, text = title, role = "button") } ?: Modifier,
             ) {
-                Text(text = title, style = SettingsLayout.headingStyle, color = colors.onSurface, modifier = Modifier.weight(1f))
-                // 箭头随展开旋转, 与内容动画同拍
-                Icon(
-                    imageVector = Icons.Outlined.ExpandMore,
-                    contentDescription = null,
-                    tint = colors.onSurfaceVariant,
-                    modifier = Modifier
-                        .size(20.dp)
-                        .rotate(arrowRotation)
-                )
+                Text(text = title, style = SettingsLayout.headingStyle, color = colors.onSurface)
             }
-            // 展开动画 (MD3E Task 7a): 尺寸 fastSpatial + 淡入淡出走 motionScheme,
-            // 工厂先行取值再进 enter/exit 槽 (T5 rowExpand 先例)
-            val expandSpecs = sleepyExpandSpecs()
-            AnimatedVisibility(
-                visible = expanded,
-                enter = expandSpecs.enter,
-                exit = expandSpecs.exit,
-            ) {
-                Column(Modifier.padding(top = SettingsLayout.headerGap, bottom = SettingsLayout.cardInset)) {
+            AccordionContent(expanded) {
+                Column(
+                    Modifier.padding(
+                        start = SettingsLayout.cardInset,
+                        end = SettingsLayout.cardInset,
+                        top = SettingsLayout.headerGap,
+                        bottom = SettingsLayout.cardInset,
+                    )
+                ) {
                     content()
                 }
             }

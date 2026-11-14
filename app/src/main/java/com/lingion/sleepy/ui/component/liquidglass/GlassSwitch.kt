@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
@@ -67,9 +68,8 @@ fun GlassSwitch(
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     // Geometry and drag use the same measured 22dp travel.
     val travel = with(LocalDensity.current) { 22.dp.toPx() }
-    val driver = rememberTimedGlassControlMotion(if (checked) 1f else 0f, enabled,
-        spec = GlassControlMotionSpec.Native, travelDistanceDp = if (rtl) -22f else 22f,
-        animateExternalChanges = onCheckedChange == null)
+    val driver = rememberGlassSwitchMotion(checked, enabled, interactions,
+        parentOwnsInput = onCheckedChange == null, travelDistanceDp = if (rtl) -22f else 22f)
     val motion = driver.motion
     val lift = motion.lift
     val geometryLift = motion.geometryLift
@@ -190,4 +190,98 @@ fun GlassSwitch(
             }
         }
     }
+}
+
+private data class ParentSwitchPress(
+    val interaction: PressInteraction.Press,
+    val epoch: Long,
+    val checked: Boolean,
+)
+
+private data class ParentSwitchSelection(val epoch: Long, val checked: Boolean)
+
+/** A parent-owned switch observes input without adding a second click action. */
+@Composable
+private fun rememberGlassSwitchMotion(
+    checked: Boolean,
+    enabled: Boolean,
+    interactions: MutableInteractionSource,
+    parentOwnsInput: Boolean,
+    travelDistanceDp: Float,
+): TimedGlassControlMotion {
+    if (!parentOwnsInput) {
+        return rememberTimedGlassControlMotion(if (checked) 1f else 0f, enabled,
+            spec = GlassControlMotionSpec.Native, travelDistanceDp = travelDistanceDp)
+    }
+    var press by remember(interactions) { mutableStateOf<ParentSwitchPress?>(null) }
+    var selection by remember(interactions) { mutableStateOf<ParentSwitchSelection?>(null) }
+    val currentChecked by rememberUpdatedState(checked)
+    val currentEnabled by rememberUpdatedState(enabled)
+    val inputTimeNanos by rememberUpdatedState(LocalDockInputTimeNanos.current)
+    val driver = rememberTimedGlassControlMotion(
+        if (selection?.checked ?: checked) 1f else 0f,
+        // Only an input transaction already accepted by the parent may finish
+        // its presentation while that parent temporarily disables new input.
+        enabled || press != null || selection != null,
+        spec = GlassControlMotionSpec.Native,
+        travelDistanceDp = travelDistanceDp,
+        animateExternalChanges = true,
+    )
+    LaunchedEffect(interactions, driver) {
+        try {
+            interactions.interactions.collect { interaction ->
+                val received = inputTimeNanos()
+                // PressInteraction carries no hardware sample timestamp. Use
+                // its delivery clock instead of inventing an earlier sample.
+                val sample = received / 1_000_000L
+                when (interaction) {
+                    is PressInteraction.Press -> if (currentEnabled) {
+                        press?.let { driver.cancel(it.epoch, received) }
+                        val epoch = driver.begin(pressed = true, dragging = false,
+                            receivedNanos = received, sampleUptimeMillis = sample)
+                        press = epoch?.let { ParentSwitchPress(interaction, it, currentChecked) }
+                    }
+                    is PressInteraction.Release -> {
+                        val owned = press?.takeIf { it.interaction === interaction.press } ?: return@collect
+                        press = null
+                        if (currentChecked != owned.checked) {
+                            driver.cancel(owned.epoch, received)
+                        } else {
+                            val target = !owned.checked
+                            if (driver.release(owned.epoch, if (target) 1f else 0f, activate = true,
+                                    receivedNanos = received, sampleUptimeMillis = sample)) {
+                                // A database-backed row can retain its old checked value
+                                // while pending disables it. Keep this accepted target
+                                // until the parent finishes that controlled update.
+                                selection = ParentSwitchSelection(owned.epoch, target)
+                            }
+                        }
+                    }
+                    is PressInteraction.Cancel -> {
+                        val owned = press?.takeIf { it.interaction === interaction.press } ?: return@collect
+                        press = null
+                        driver.cancel(owned.epoch, received)
+                    }
+                }
+            }
+        } finally {
+            press?.let { driver.cancel(it.epoch, inputTimeNanos()) }
+            press = null
+        }
+    }
+    LaunchedEffect(selection, checked, enabled) {
+        val accepted = selection ?: return@LaunchedEffect
+        if (!enabled) return@LaunchedEffect
+        // Give the parent's click callback/recomposition one frame to expose
+        // either its new controlled value or a synchronous pending disable.
+        withFrameNanos { }
+        if (selection != accepted || !currentEnabled) return@LaunchedEffect
+        if (currentChecked != accepted.checked) {
+            // A failed/rejected write rolls back without synthesizing a new tap.
+            driver.synchronize(if (currentChecked) 1f else 0f, enabled = true,
+                receivedNanos = inputTimeNanos(), animateSelection = false)
+        }
+        selection = null
+    }
+    return driver
 }

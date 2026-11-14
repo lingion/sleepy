@@ -62,6 +62,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.BuildConfig
 import com.lingion.sleepy.ui.component.SettingsLayout
+import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
 import com.lingion.sleepy.R
 import com.lingion.sleepy.console.ConsoleBootstrap
 import com.lingion.sleepy.console.DebugGate
@@ -343,7 +344,7 @@ fun AboutScreen(
 
             if (debugStatus.active) {
                 Text(stringResource(R.string.debug_unlock_active))
-                androidx.compose.material3.TextButton(onClick = { ConsoleBootstrap.stop() }) {
+                TextButton(onClick = { ConsoleBootstrap.stop() }) {
                     Text(stringResource(R.string.debug_unlock_stop))
                 }
             }

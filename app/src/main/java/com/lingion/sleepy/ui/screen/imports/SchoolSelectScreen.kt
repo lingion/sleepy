@@ -1,5 +1,8 @@
 package com.lingion.sleepy.ui.screen.imports
 
+import com.lingion.sleepy.ui.component.AccordionTextButton
+import com.lingion.sleepy.ui.component.accordionContentSize
+
 import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import android.Manifest
 import android.content.ActivityNotFoundException
@@ -46,6 +49,7 @@ import androidx.compose.material3.Text
 import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -500,6 +504,10 @@ private fun PossibleSchoolsCard(
     val colors = MaterialTheme.colorScheme
     val city = (state as? SchoolLocationState.Ready)?.city
     var expanded by rememberSaveable(city) { mutableStateOf(false) }
+    val schoolsState = rememberLazyListState()
+    LaunchedEffect(expanded, city) {
+        if (!expanded) schoolsState.scrollToItem(0)
+    }
     OutlinedCard(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -543,16 +551,11 @@ private fun PossibleSchoolsCard(
                     Text(stringResource(R.string.school_location_city_hint),
                         style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant,
                         modifier = Modifier.padding(top = 8.dp))
-                    if (expanded) {
-                        LazyColumn(modifier = Modifier.heightIn(max = 360.dp)) {
-                            items(schools, key = { it.stableKey }) { school ->
-                                SchoolRow(school = school, onClick = { onSchoolSelected(school) })
-                                HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                            }
+                    LazyColumn(state = schoolsState, modifier = Modifier.accordionContentSize().heightIn(max = 360.dp)) {
+                        items(if (expanded) schools else schools.take(5), key = { it.stableKey }) { school ->
+                            SchoolRow(school = school, onClick = { onSchoolSelected(school) })
+                            HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                         }
-                    } else schools.take(5).forEach { school ->
-                        SchoolRow(school = school, onClick = { onSchoolSelected(school) })
-                        HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     }
                 }
             }
@@ -562,11 +565,12 @@ private fun PossibleSchoolsCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     if (state is SchoolLocationState.Ready && schools.size > 5) {
-                        TextButton(
+                        AccordionTextButton(
+                            expanded = expanded,
                             modifier = Modifier.dbgTag("school_recommended_expand", role = "button"),
-                            onClick = { expanded = !expanded }) {
-                            Text(stringResource(if (expanded) R.string.school_location_collapse else R.string.school_location_show_all))
-                        }
+                            onToggle = { expanded = !expanded },
+                            label = stringResource(if (expanded) R.string.school_location_collapse else R.string.school_location_show_all),
+                        )
                     }
                     TextButton(
                         modifier = Modifier.dbgTag("school_permission_settings", role = "button"),

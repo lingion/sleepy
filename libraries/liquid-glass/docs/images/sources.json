@@ -1,0 +1,183 @@
+{
+  "artifact": "standalone-publication-98",
+  "captureScope": "Existing API 36 Sleepy Glass Lab sample captures. Synthetic backgrounds only; no timetable or photo data. These are sample runtime previews, not native iOS parity evidence.",
+  "imageProcessing": "Crop only Android status/navigation bars; resize to 320 px per panel with Lanczos; combine panels left to right: grid, stripes, blocks, hills. No visual retouching. Dark grid uses the final A98 title capture.",
+  "images": [
+    {
+      "file": "sample-backgrounds-light.png",
+      "theme": "light",
+      "pixels": [
+        1280,
+        642
+      ],
+      "bytes": 149102,
+      "sha256": "85143105302b97d8540bdef4adfa6a0dedb74925884032dbafe78bf65bb4064e",
+      "sources": [
+        {
+          "background": "grid",
+          "file": "sample-grid-light.png",
+          "sha256": "6216f5c7a2b368e9523d42eae43c425b1cbe069d1060e86f3da6f5e009fa6398",
+          "originalPixels": [
+            1216,
+            2640
+          ],
+          "cropPixels": [
+            0,
+            140,
+            1216,
+            2580
+          ],
+          "outputPanelPixels": [
+            320,
+            642
+          ]
+        },
+        {
+          "background": "stripes",
+          "file": "sample-stripes-light.png",
+          "sha256": "add0f86ef5463e8bf516ee2374864261742d8b5325d1c55ebac0ad210ed3d9c4",
+          "originalPixels": [
+            1216,
+            2640
+          ],
+          "cropPixels": [
+            0,
+            140,
+            1216,
+            2580
+          ],
+          "outputPanelPixels": [
+            320,
+            642
+          ]
+        },
+        {
+          "background": "blocks",
+          "file": "sample-blocks-light.png",
+          "sha256": "42e548a789cc7113cd753d2d841d69ef178f68c1a31c242e4dced1dcaa999bab",
+          "originalPixels": [
+            1216,
+            2640
+          ],
+          "cropPixels": [
+            0,
+            140,
+            1216,
+            2580
+          ],
+          "outputPanelPixels": [
+            320,
+            642
+          ]
+        },
+        {
+          "background": "hills",
+          "file": "sample-hills-light.png",
+          "sha256": "6f1c8c964d33a5ca76195654ba6557500660482b5aa3858e0c824d91293d9c9a",
+          "originalPixels": [
+            1216,
+            2640
+          ],
+          "cropPixels": [
+            0,
+            140,
+            1216,
+            2580
+          ],
+          "outputPanelPixels": [
+            320,
+            642
+          ]
+        }
+      ]
+    },
+    {
+      "file": "sample-backgrounds-dark.png",
+      "theme": "dark",
+      "pixels": [
+        1280,
+        642
+      ],
+      "bytes": 143974,
+      "sha256": "35836579c25dba67bbf380316156087d702ce501b758273c5ae013beac49d686",
+      "sources": [
+        {
+          "background": "grid",
+          "file": "sample-dark-title-final.png",
+          "sha256": "33f400f91acbb42f57d7693380876ef8afcbb146778010206983aa853cf7770c",
+          "originalPixels": [
+            1216,
+            2640
+          ],
+          "cropPixels": [
+            0,
+            140,
+            1216,
+            2580
+          ],
+          "outputPanelPixels": [
+            320,
+            642
+          ]
+        },
+        {
+          "background": "stripes",
+          "file": "sample-stripes-dark.png",
+          "sha256": "63a553ddefe0d82ce347b2690591cedddc6d96d14467d7a0fb973c4a65633999",
+          "originalPixels": [
+            1216,
+            2640
+          ],
+          "cropPixels": [
+            0,
+            140,
+            1216,
+            2580
+          ],
+          "outputPanelPixels": [
+            320,
+            642
+          ]
+        },
+        {
+          "background": "blocks",
+          "file": "sample-blocks-dark.png",
+          "sha256": "be2b003cc5c37be60c03d4a4cf80f71fb6ec60a95545fdf512282be81f385feb",
+          "originalPixels": [
+            1216,
+            2640
+          ],
+          "cropPixels": [
+            0,
+            140,
+            1216,
+            2580
+          ],
+          "outputPanelPixels": [
+            320,
+            642
+          ]
+        },
+        {
+          "background": "hills",
+          "file": "sample-hills-dark.png",
+          "sha256": "bd3c206e55a60a1e91a30ffa6724e2b2e77355ca6be136db169304ce46c5e9f6",
+          "originalPixels": [
+            1216,
+            2640
+          ],
+          "cropPixels": [
+            0,
+            140,
+            1216,
+            2580
+          ],
+          "outputPanelPixels": [
+            320,
+            642
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -53,6 +53,7 @@ import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.constrainHeight
@@ -69,6 +70,31 @@ import androidx.compose.material3.DropdownMenuItem as MaterialDropdownMenuItem
 
 /** Scoped to the action slots of a glass alert, never to its arbitrary body content. */
 internal val LocalGlassAlertAction = staticCompositionLocalOf { false }
+
+/** Opt in only the dialog's actions; unrelated controls in its body keep their own style. */
+@Composable
+internal fun GlassAlertActionScope(content: @Composable () -> Unit) {
+    if (LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null) {
+        CompositionLocalProvider(LocalGlassAlertAction provides true, content = content)
+    } else {
+        content()
+    }
+}
+
+/** Existing iOS 26.5 two-action alert fits, shared by footer and inline action groups. */
+internal object NativeGlassAlertActionMetrics {
+    val inset = 16.dp
+    val gap = 8.dp
+    val minHeight = 48.dp
+    val horizontalContentPadding = 12.dp
+    val verticalContentPadding = 8.dp
+}
+
+@Composable
+internal fun nativeGlassAlertActionTextStyle(): TextStyle = MaterialTheme.typography.labelLarge.copy(
+    fontSize = 17.sp, lineHeight = 21.sp, fontWeight = FontWeight.Medium,
+    textAlign = TextAlign.Center,
+)
 
 /** One registration per enabled action, including distinct actions sharing a source. */
 internal class NativeGlassAlertPressState {
@@ -125,6 +151,13 @@ private object NativeAlertActionData : ParentDataModifier {
     override fun Density.modifyParentData(parentData: Any?): Any = NativeAlertActionData
 }
 
+private object NativeAlertActionGroupData : ParentDataModifier {
+    override fun Density.modifyParentData(parentData: Any?): Any = NativeAlertActionGroupData
+}
+
+/** Complete groups own their insets even when supplied through another alert's action slot. */
+internal fun Modifier.nativeGlassAlertActionGroupLayout(): Modifier = then(NativeAlertActionGroupData)
+
 /**
  * Dimensions come from the recorded iOS 26.5 alert's accessibility frames. The 17/16sp
  * type sizes and weights are visual fits: accessibility does not expose UIFont sizes.
@@ -177,36 +210,80 @@ internal fun NativeGlassAlertContent(
                 }
             }
         }
-        NativeGlassAlertActions(dismissButton, confirmButton)
+        NativeGlassAlertActionGroup(
+            dismissButton = dismissButton, confirmButton = confirmButton, scrollable = true,
+        )
     }
 }
 
-private enum class AlertActionSlot { Dismiss, Confirm }
+private enum class AlertActionSlot { Dismiss, Third, Confirm }
+
+private data class NativeActionPairLayout(val stacked: Boolean, val height: Int)
+
+/** Subcomposed custom button content has no intrinsic contract; keep its existing layout. */
+private inline fun <T> nativeActionIntrinsicsOrNull(query: () -> T): T? = try {
+    query()
+} catch (unsupported: IllegalStateException) {
+    if (unsupported.message?.startsWith(
+            "Asking for intrinsic measurements of SubcomposeLayout layouts is not supported."
+        ) != true) throw unsupported
+    null
+}
 
 /** Equal native cells for our buttons; custom multi-node slots retain their own sizes. */
 @Composable
-private fun NativeGlassAlertActions(
-    dismissButton: (@Composable () -> Unit)?,
+internal fun NativeGlassAlertActionGroup(
+    modifier: Modifier = Modifier,
+    dismissButton: (@Composable () -> Unit)? = null,
+    thirdButton: (@Composable () -> Unit)? = null,
+    stacked: Boolean = false,
+    scrollable: Boolean = false,
     confirmButton: @Composable () -> Unit,
 ) {
-    SubcomposeLayout(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) { constraints ->
+    val scroll = if (scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier
+    SubcomposeLayout(modifier.nativeGlassAlertActionGroupLayout().fillMaxWidth().then(scroll)) { constraints ->
         val dismiss = subcompose(AlertActionSlot.Dismiss) {
             CompositionLocalProvider(LocalGlassAlertAction provides true) { dismissButton?.invoke() }
+        }
+        val third = subcompose(AlertActionSlot.Third) {
+            CompositionLocalProvider(LocalGlassAlertAction provides true) { thirdButton?.invoke() }
         }
         val confirm = subcompose(AlertActionSlot.Confirm) {
             CompositionLocalProvider(LocalGlassAlertAction provides true) { confirmButton() }
         }
-        val nodes = dismiss + confirm
+        val nodes = dismiss + third + confirm
         val width = constraints.maxWidth
         if (nodes.isEmpty()) return@SubcomposeLayout layout(width, 0) {}
-        val inset = 16.dp.roundToPx()
-        val gap = 8.dp.roundToPx()
+        if (nodes.size == 1 && nodes.single().parentData === NativeAlertActionGroupData) {
+            // A date picker/alert can receive DialogActionButtons (or a complete
+            // native group) as its confirm slot. Let that one group own the sole
+            // inset rather than narrowing and padding it a second time.
+            val child = nodes.single().measure(constraints.copy(minWidth = width, minHeight = 0))
+            return@SubcomposeLayout layout(width, child.height) { child.placeRelative(0, 0) }
+        }
+        val inset = NativeGlassAlertActionMetrics.inset.roundToPx()
+        val gap = NativeGlassAlertActionMetrics.gap.roundToPx()
         val available = (width - inset * 2).coerceAtLeast(0)
-        val equalCells = dismiss.size <= 1 && confirm.size <= 1 &&
+        val nativeSlots = dismiss.size <= 1 && third.size <= 1 && confirm.size <= 1 &&
             nodes.all { it.parentData === NativeAlertActionData }
+        val cellWidth = ((available - gap * (nodes.size - 1)) / nodes.size).coerceAtLeast(0)
+        val pairLayout = if (nativeSlots && nodes.size == 2) nativeActionIntrinsicsOrNull {
+            // Ask the existing Material buttons, including their real text style,
+            // font scale and caller padding. No second composition or measurement
+            // of caller content is needed to choose a row or equal-height column.
+            val pairStacked = stacked || nodes.any { it.maxIntrinsicWidth(Constraints.Infinity) > cellWidth }
+            val actionWidth = if (pairStacked) available else cellWidth
+            NativeActionPairLayout(
+                stacked = pairStacked,
+                height = nodes.maxOf { it.maxIntrinsicHeight(actionWidth) }
+                    .coerceAtLeast(NativeGlassAlertActionMetrics.minHeight.roundToPx()),
+            )
+        } else null
+        val equalCells = !(pairLayout?.stacked ?: stacked) && nodes.size <= 2 && nativeSlots
         if (equalCells) {
-            val cellWidth = ((available - gap * (nodes.size - 1)) / nodes.size).coerceAtLeast(0)
-            val children = nodes.map { it.measure(Constraints(maxWidth = cellWidth)) }
+            val children = nodes.map { it.measure(Constraints(
+                minHeight = pairLayout?.height ?: 0, maxWidth = cellWidth,
+            )) }
             val rowHeight = children.maxOf { it.height }
             layout(width, inset * 2 + rowHeight) {
                 children.forEachIndexed { index, child ->
@@ -214,9 +291,13 @@ private fun NativeGlassAlertActions(
                 }
             }
         } else {
+            // Three actions and long-label groups use full-width native cells as a
+            // usability extension; the native reference measures only two short actions.
             // Measure once, then wrap complete custom nodes. The surrounding scroll
             // viewport also keeps very tall custom actions accessible on small displays.
-            val children = nodes.map { it.measure(Constraints(maxWidth = available)) }
+            val children = nodes.map { it.measure(Constraints(
+                minHeight = pairLayout?.height ?: 0, maxWidth = available,
+            )) }
             val rows = mutableListOf<MutableList<Int>>()
             var occupied = 0
             children.forEachIndexed { index, child ->
@@ -251,15 +332,16 @@ internal fun NativeGlassAlertActionButton(
     onClick: () -> Unit,
     modifier: Modifier,
     enabled: Boolean,
-    shape: Shape?,
-    colors: ButtonColors?,
-    elevation: ButtonElevation?,
-    border: BorderStroke?,
-    contentPadding: PaddingValues?,
-    interactionSource: MutableInteractionSource?,
+    shape: Shape? = null,
+    colors: ButtonColors? = null,
+    elevation: ButtonElevation? = null,
+    border: BorderStroke? = null,
+    contentPadding: PaddingValues? = null,
+    interactionSource: MutableInteractionSource? = null,
+    destructive: Boolean = false,
     content: @Composable RowScope.() -> Unit,
 ) {
-    val primary = MaterialTheme.colorScheme.primary
+    val actionColor = if (destructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
     val interaction = interactionSource ?: remember { MutableInteractionSource() }
     val panePress = LocalGlassAlertPressState.current
     // A source/enable change retires the old registration. A late release from
@@ -275,22 +357,23 @@ internal fun NativeGlassAlertActionButton(
     }
     MaterialButton(
         onClick = onClick,
-        modifier = modifier.then(NativeAlertActionData).fillMaxWidth().defaultMinSize(minHeight = 48.dp),
+        modifier = modifier.then(NativeAlertActionData).fillMaxWidth()
+            .defaultMinSize(minHeight = NativeGlassAlertActionMetrics.minHeight),
         enabled = enabled,
         shape = shape ?: CircleShape,
         colors = colors ?: ButtonDefaults.buttonColors(
-            containerColor = primary.copy(alpha = .12f), contentColor = primary,
+            containerColor = actionColor.copy(alpha = .12f), contentColor = actionColor,
         ),
         elevation = elevation,
         border = border,
-        contentPadding = contentPadding ?: PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+        contentPadding = contentPadding ?: PaddingValues(
+            horizontal = NativeGlassAlertActionMetrics.horizontalContentPadding,
+            vertical = NativeGlassAlertActionMetrics.verticalContentPadding,
+        ),
         interactionSource = interaction,
     ) {
         // Empirical visual fit, not an extracted native UIFont measurement.
-        ProvideTextStyle(MaterialTheme.typography.labelLarge.copy(
-            fontSize = 17.sp, lineHeight = 21.sp, fontWeight = FontWeight.Medium,
-            textAlign = TextAlign.Center,
-        )) { content() }
+        ProvideTextStyle(nativeGlassAlertActionTextStyle()) { content() }
     }
 }
 

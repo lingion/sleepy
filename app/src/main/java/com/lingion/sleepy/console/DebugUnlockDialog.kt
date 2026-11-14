@@ -6,10 +6,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.AlertDialog
+import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -21,6 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.lingion.sleepy.R
 import com.lingion.sleepy.console.handlers.EnableFlow
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,6 +38,7 @@ fun DebugUnlockDialog(
     unlock: suspend (String) -> EnableFlow.Result = { ConsoleBootstrap.unlock(it) },
 ) {
     val app = LocalContext.current.applicationContext as Application
+    val nativeActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
     val scope = rememberCoroutineScope()
     var passphrase by remember { mutableStateOf("") }
     var ready by remember { mutableStateOf(false) }
@@ -52,7 +56,8 @@ fun DebugUnlockDialog(
     }
     AlertDialog(
         // 由 Compose 约束宽度，避免平台 Dialog 和输入框最小宽度互相触发重新测量。
-        modifier = Modifier.testTag("debug_unlock_dialog").widthIn(max = 560.dp).padding(horizontal = 24.dp),
+        modifier = Modifier.testTag("debug_unlock_dialog").widthIn(max = 560.dp)
+            .then(if (nativeActions) Modifier else Modifier.padding(horizontal = 24.dp)),
         properties = DialogProperties(usePlatformDefaultWidth = false),
         onDismissRequest = { if (!busy) onDismiss() },
         title = { Text(stringResource(R.string.debug_unlock_title)) },
