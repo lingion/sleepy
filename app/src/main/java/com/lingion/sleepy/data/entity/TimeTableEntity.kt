@@ -70,6 +70,9 @@ data class TimeTableEntity(
 
     /** Original selected academic entry and source suggestions; confirmed schedule fields stay authoritative. */
     @ColumnInfo(name = "importSourceJson", defaultValue = "") val importSourceJson: String = "",
+
+    /** Exact JW school entry used to create this table; empty for manual and file imports. */
+    @ColumnInfo(name = "jwSchoolSourceJson", defaultValue = "") val jwSchoolSourceJson: String = "",
 ) {
     /**
      * issue#40 有效时间表水合(设计 §5.1): 绑定存在 → 节次时间/智慧节次/节次数
