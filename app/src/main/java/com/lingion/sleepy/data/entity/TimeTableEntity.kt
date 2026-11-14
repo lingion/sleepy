@@ -73,6 +73,9 @@ data class TimeTableEntity(
 
     /** Exact JW school entry used to create this table; empty for manual and file imports. */
     @ColumnInfo(name = "jwSchoolSourceJson", defaultValue = "") val jwSchoolSourceJson: String = "",
+
+    /** Set only after a timetable is created through the in-app JW import flow. */
+    @ColumnInfo(name = "jwSchoolSourceVerified", defaultValue = "0") val jwSchoolSourceVerified: Boolean = false,
 ) {
     /**
      * issue#40 有效时间表水合(设计 §5.1): 绑定存在 → 节次时间/智慧节次/节次数
