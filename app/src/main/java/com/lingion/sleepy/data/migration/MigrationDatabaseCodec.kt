@@ -65,7 +65,6 @@ object MigrationDatabaseCodec {
         val reminderOverride: Boolean? = null,
         val importSourceJson: String = "",
         val jwSchoolSourceJson: String = "",
-        val jwSchoolSourceVerified: Boolean = false,
     )
 
     @Serializable
@@ -125,7 +124,6 @@ object MigrationDatabaseCodec {
         reminderEnabled = reminderEnabled, reminderOverride = reminderOverride,
         importSourceJson = importSourceJson,
         jwSchoolSourceJson = jwSchoolSourceJson,
-        jwSchoolSourceVerified = jwSchoolSourceVerified,
     )
 
     fun PeriodTableEntity.toRow() = PeriodTableRow(
@@ -156,7 +154,6 @@ object MigrationDatabaseCodec {
         reminderEnabled = reminderEnabled, reminderOverride = reminderOverride,
         importSourceJson = importSourceJson,
         jwSchoolSourceJson = jwSchoolSourceJson,
-        jwSchoolSourceVerified = jwSchoolSourceVerified,
     )
 
     fun PeriodTableRow.toEntity() = PeriodTableEntity(

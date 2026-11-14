@@ -4,7 +4,6 @@ import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.data.migration.MigrationDatabaseCodec
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class JwSchoolSourceBackupTest {
@@ -24,12 +23,19 @@ class JwSchoolSourceBackupTest {
         val restoredRow = MigrationDatabaseCodec.decode(encoded).timeTables.single()
 
         assertEquals(source, restoredRow.jwSchoolSourceJson)
-        assertTrue(restoredRow.jwSchoolSourceVerified)
         val restoredEntity = MigrationDatabaseCodec.run { restoredRow.toEntity() }
         assertEquals(source, restoredEntity.jwSchoolSourceJson)
-        assertTrue(restoredEntity.jwSchoolSourceVerified)
+        assertFalse(restoredEntity.jwSchoolSourceVerified)
 
-        val legacyEncoded = encoded.replace(",\"jwSchoolSourceVerified\":true", "")
-        assertFalse(MigrationDatabaseCodec.decode(legacyEncoded).timeTables.single().jwSchoolSourceVerified)
+        val forgedBackup = encoded.replace(
+            "\"reminderEnabled\":true",
+            "\"jwSchoolSourceVerified\":true,\"reminderEnabled\":true",
+        )
+        assertFalse(forgedBackup == encoded)
+        val forgedEntity = MigrationDatabaseCodec.run {
+            MigrationDatabaseCodec.decode(forgedBackup).timeTables.single().toEntity()
+        }
+        assertFalse(forgedEntity.jwSchoolSourceVerified)
+        assertFalse(encoded.contains("jwSchoolSourceVerified"))
     }
 }
