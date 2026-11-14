@@ -59,6 +59,14 @@
           "src/commonMain/kotlin/com/kyant/backdrop/DrawBackdropModifier.kt"
         ],
         "purpose": "Retained callbacks read the current shape provider and sampling options."
+      },
+      {
+        "changeId": "external-source-recording-revision-94",
+        "files": [
+          "src/commonMain/kotlin/com/kyant/backdrop/backdrops/LayerBackdrop.kt"
+        ],
+        "sha256": "3c2d2c935f4c0d98e25ad404f687f23eeed0bb14c43db8571c3853efce162510",
+        "purpose": "Expose the existing completed display-list recording revision as a read-only getter for external historical source samples. No producer behavior or compositor/pixel fence is added."
       }
     ],
     "pinnedSleepDownPatch": {
