@@ -34,13 +34,7 @@ import androidx.compose.material3.Button as MaterialButton
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenuItem as DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenu
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuBoxScope
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import com.lingion.sleepy.ui.component.liquidglass.GlassTonalButton as FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -68,15 +62,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.ui.component.SettingsLayout
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.SectionHeader
+import com.lingion.sleepy.ui.component.liquidglass.SingleChoiceDropdown
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.UiStyle
@@ -93,28 +88,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import com.lingion.sleepy.util.AppClock
-
-/** Keep Material's exposed-field behavior while sharing the glass menu lifetime. */
-@Composable
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
-private fun ExposedDropdownMenuBoxScope.HolidayDropdownMenu(
-    expanded: Boolean,
-    onDismissRequest: () -> Unit,
-    shape: androidx.compose.ui.graphics.Shape,
-    containerColor: androidx.compose.ui.graphics.Color,
-    content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit,
-) {
-    if (LocalUiStyle.current == UiStyle.LiquidGlass &&
-        com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost.current != null
-    ) {
-        com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenu(
-            expanded = expanded, onDismissRequest = onDismissRequest, content = content,
-        )
-    } else {
-        ExposedDropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest,
-            shape = shape, containerColor = containerColor, content = content)
-    }
-}
 
 private sealed interface HolidayUiState {
     data object Loading : HolidayUiState
@@ -396,43 +369,17 @@ fun HolidaySettingsScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = colors.onSurfaceVariant
                     )
-                    if (activeTableId != null && vmState.tables.size > 1) {
+                    val currentTableId = activeTableId
+                    if (currentTableId != null && vmState.tables.size > 1) {
                         Spacer(Modifier.height(4.dp))
-                        var tableMenuOpen by remember { mutableStateOf(false) }
-                        ExposedDropdownMenuBox(
-                            expanded = tableMenuOpen,
-                            onExpandedChange = { tableMenuOpen = it },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            TextField(
-                                value = vmState.tables.firstOrNull { it.id == activeTableId }?.name.orEmpty(),
-                                onValueChange = {},
-                                readOnly = true,
-                                singleLine = true,
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = tableMenuOpen) },
-                                modifier = Modifier
-                                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                                    .fillMaxWidth(),
-                                shape = SleepyTheme.fieldShape,
-                                colors = SleepyTheme.fieldColors()
-                            )
-                            HolidayDropdownMenu(
-                                expanded = tableMenuOpen,
-                                onDismissRequest = { tableMenuOpen = false },
-                                shape = SleepyTheme.fieldShape,
-                                containerColor = colors.surfaceContainerHighest
-                            ) {
-                                vmState.tables.forEach { table ->
-                                    DropdownMenuItem(
-                                        text = { Text(table.name) },
-                                        onClick = {
-                                            activeTableId = table.id
-                                            tableMenuOpen = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
+                        SingleChoiceDropdown(
+                            title = stringResource(R.string.schedule_switch_table),
+                            selectedId = currentTableId.toString(),
+                            options = vmState.tables.map { it.id.toString() to it.name },
+                            onSelect = { activeTableId = it.toLong() },
+                            modifier = Modifier.fillMaxWidth(),
+                            tagPrefix = "holiday_table",
+                        )
                     }
                 }
             }
@@ -794,7 +741,6 @@ private fun HolidayTransferRow(
     dayNames: Array<String>,
     onPick: (LocalDate?) -> Unit
 ) {
-    // The anchor, menu and calendar deliberately use Material controls in both styles.
     // Candidates stay complete: official workdays, clear mapping, or another date.
     val colors = MaterialTheme.colorScheme
     val leftLabel = remember(date, dayNames) {
@@ -806,7 +752,6 @@ private fun HolidayTransferRow(
     }
     val pickOtherLabel = stringResource(R.string.holiday_transfer_pick_other)
     val noMappingLabel = stringResource(R.string.holiday_makeup_unset)
-    var menuOpen by remember(date) { mutableStateOf(false) }
     var showDatePicker by remember(date) { mutableStateOf(false) }
     val datePickerState = androidx.compose.material3.rememberDatePickerState()
 
@@ -829,64 +774,26 @@ private fun HolidayTransferRow(
             modifier = Modifier.size(18.dp)
         )
         Spacer(Modifier.width(10.dp))
-        // Material owns the menu anchor, popup position and dismissal.
-        val targetColor = if (targetDate == null) colors.surfaceContainerHighest else colors.primaryContainer
-        val targetContentColor = if (targetDate == null) colors.onSurfaceVariant else colors.onPrimaryContainer
-        ExposedDropdownMenuBox(
-            expanded = menuOpen,
-            onExpandedChange = { menuOpen = it },
-            modifier = Modifier.weight(1f)
-        ) {
-            // anchor 字段: 右格圆角矩形 (text + 向下箭头)
-            Row(
-                modifier = Modifier
-                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                    .fillMaxWidth()
-                    .clip(SleepyTheme.shapes.medium)
-                    .background(targetColor)
-                    .padding(horizontal = 14.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = rightLabel,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-                    color = targetContentColor,
-                    modifier = Modifier.weight(1f)
-                )
-                // ExposedDropdownMenuDefaults.TrailingIcon(expanded) 自动随菜单开合旋转箭头;
-                // 无 tint 参数, 色取 LocalContentColor → 用 CompositionLocalProvider 着色
-                androidx.compose.runtime.CompositionLocalProvider(
-                    androidx.compose.material3.LocalContentColor provides targetContentColor
-                ) {
-                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = menuOpen)
+        SingleChoiceDropdown(
+            title = "",
+            selectedId = targetDate?.toString() ?: "none",
+            options = workdayDates.map { workday ->
+                workday.toString() to "${DateUtils.shortDateSlash(workday)} (${dayNames[workday.dayOfWeek.value - 1]})"
+            } + listOf("none" to noMappingLabel, "other" to pickOtherLabel),
+            onSelect = { selectedId ->
+                when (selectedId) {
+                    "none" -> onPick(null)
+                    "other" -> Unit
+                    else -> onPick(LocalDate.parse(selectedId))
                 }
-            }
-            HolidayDropdownMenu(
-                expanded = menuOpen,
-                onDismissRequest = { menuOpen = false },
-                shape = SleepyTheme.shapes.medium,
-                containerColor = targetColor
-            ) {
-                // ① 当年所有官方补班日(扁平全量, 升序, 不分组/不禁用/不猜)
-                workdayDates.forEach { wd ->
-                    DropdownMenuItem(
-                        text = { Text("${DateUtils.shortDateSlash(wd)} (${dayNames[wd.dayOfWeek.value - 1]})") },
-                        onClick = { onPick(wd); menuOpen = false }
-                    )
-                }
-                HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                // ② 无: 清除该日映射
-                DropdownMenuItem(
-                    text = { Text(noMappingLabel) },
-                    onClick = { onPick(null); menuOpen = false }
-                )
-                // ③ 其他日期: 弹系统 DatePickerDialog
-                DropdownMenuItem(
-                    text = { Text(pickOtherLabel) },
-                    onClick = { menuOpen = false; showDatePicker = true }
-                )
-            }
-        }
+            },
+            modifier = Modifier.weight(1f).semantics { contentDescription = leftLabel },
+            selectedLabel = rightLabel,
+            tagPrefix = "holiday_target_$date",
+            onDismissed = { selectedId ->
+                if (selectedId == "other") showDatePicker = true
+            },
+        )
     }
     if (showDatePicker) {
         androidx.compose.material3.DatePickerDialog(

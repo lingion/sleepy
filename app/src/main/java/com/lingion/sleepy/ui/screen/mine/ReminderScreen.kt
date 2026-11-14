@@ -34,7 +34,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.AccessTime
-import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.School
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
@@ -53,9 +52,7 @@ import androidx.compose.material3.TimePicker
 import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
-import com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenu as DropdownMenu
-import com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenuItem as DropdownMenuItem
-import androidx.compose.material3.RadioButton
+import com.lingion.sleepy.ui.component.liquidglass.SingleChoiceDropdown
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -276,7 +273,6 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
     // 课前提醒形态互斥 tab: banner(普通可划横幅, 手环/手表友好) ⇄ fluid(实况卡片, 实验)
     var beforeClassMode by remember { mutableStateOf(AppPrefs.getBeforeClassMode(context)) }
     var fluidPrimary by remember { mutableStateOf(AppPrefs.getBeforeClassFluidPrimary(context)) }
-    var fieldsMenuExpanded by remember { mutableStateOf(false) }
     // 流体云测试按钮两态: 投放中显示「投放中 | 结束投放」。提升到顶层供授权回调置位。
     var fluidTesting by remember { mutableStateOf(false) }
     var liveCardCapability by remember {
@@ -821,56 +817,24 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                         color = colors.onSurface
                                     )
                                     Spacer(modifier = Modifier.height(6.dp))
-                                    androidx.compose.foundation.layout.Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clip(SleepyTheme.fieldShape)
-                                            .noRippleClickable { fieldsMenuExpanded = true }
-                                    ) {
-                                        TextField(
-                                            value = fluidPrimaryLabel(context, fluidPrimary),
-                                            onValueChange = {},
-                                            readOnly = true,
-                                            enabled = false,
-                                            modifier = Modifier.fillMaxWidth(),
-                                            label = { Text(stringResource(R.string.reminder_fluid_fields_hint)) },
-                                            trailingIcon = {
-                                                Icon(Icons.Outlined.ExpandMore, contentDescription = null, tint = colors.onSurfaceVariant)
-                                            },
-                                            shape = SleepyTheme.fieldShape,
-                                            colors = SleepyTheme.fieldColors()
-                                        )
-                                        DropdownMenu(
-                                            expanded = fieldsMenuExpanded,
-                                            onDismissRequest = { fieldsMenuExpanded = false },
-                                            // 菜单浮在 surfaceContainer 卡片上, 用 Highest 拉开对比(默认 High 与卡片几乎同色=隐形)
-                                            containerColor = if (com.lingion.sleepy.ui.theme.LocalUiStyle.current == com.lingion.sleepy.ui.theme.UiStyle.LiquidGlass)
-                                                androidx.compose.ui.graphics.Color.Unspecified else colors.surfaceContainerHighest
-                                        ) {
-                                            listOf(
-                                                "name" to R.string.reminder_fluid_field_name,
-                                                "time" to R.string.reminder_fluid_field_time,
-                                                "room" to R.string.reminder_fluid_field_room,
-                                                "countdown" to R.string.reminder_fluid_field_countdown
-                                            ).forEach { (key, labelRes) ->
-                                                DropdownMenuItem(
-                                                    text = { Text(stringResource(labelRes)) },
-                                                    onClick = {
-                                                        fluidPrimary = key
-                                                        AppPrefs.setBeforeClassFluidPrimary(context, key)
-                                                        ReminderRescheduler.request()
-                                                        fieldsMenuExpanded = false
-                                                    },
-                                                    leadingIcon = {
-                                                        RadioButton(
-                                                            selected = key == fluidPrimary,
-                                                            onClick = null
-                                                        )
-                                                    }
-                                                )
-                                            }
-                                        }
-                                    }
+                                    SingleChoiceDropdown(
+                                        title = stringResource(R.string.reminder_fluid_fields_hint),
+                                        selectedId = fluidPrimary,
+                                        options = listOf(
+                                            "name" to stringResource(R.string.reminder_fluid_field_name),
+                                            "time" to stringResource(R.string.reminder_fluid_field_time),
+                                            "room" to stringResource(R.string.reminder_fluid_field_room),
+                                            "countdown" to stringResource(R.string.reminder_fluid_field_countdown)
+                                        ),
+                                        onSelect = { key ->
+                                            fluidPrimary = key
+                                            AppPrefs.setBeforeClassFluidPrimary(context, key)
+                                            ReminderRescheduler.request()
+                                        },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        selectedLabel = fluidPrimaryLabel(context, fluidPrimary),
+                                        tagPrefix = "reminder_fluid_field"
+                                    )
                                     Text(
                                         text = stringResource(R.string.reminder_fluid_note),
                                         style = MaterialTheme.typography.bodySmall,

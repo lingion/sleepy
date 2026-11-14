@@ -136,27 +136,91 @@ class GlassLanguageMenuTest {
         assertEquals(before, compose.onNodeWithTag("following_setting").fetchSemanticsNode().boundsInWindow)
     }
 
-    @Test fun materialDesignLanguageCardExpandsInlineAndCollapsesWithoutPopup() {
-        showMenu(style = UiStyle.Classic, alignment = Alignment.TopCenter)
+    @Test fun materialDesignUsesAnchoredSingleChoiceMenuWithoutMovingFollowingSettings() {
+        val selected = mutableListOf<String>()
+        val dismissed = mutableListOf<String?>()
+        showMenu(style = UiStyle.Classic, alignment = Alignment.TopCenter,
+            onSelect = { selected += it }, onDismissed = {
+                assertTrue("completion follows official popup removal",
+                    WindowInspector.getGlobalWindowViews().none { view -> view.javaClass.simpleName == "PopupLayout" })
+                dismissed += it
+            })
         val before = compose.onNodeWithTag("following_setting").fetchSemanticsNode().boundsInWindow
-        compose.runOnIdle {
-            assertTrue(WindowInspector.getGlobalWindowViews().none { it.javaClass.simpleName == "PopupLayout" })
-        }
-        languages.forEach { (code, _) -> compose.onNodeWithTag("general_language#$code").assertDoesNotExist() }
         compose.onNodeWithTag("general_language_card").performClick()
         assertLanguageOptionsDisplayed()
-        val expanded = compose.onNodeWithTag("following_setting").fetchSemanticsNode().boundsInWindow
-        assertTrue("inline language options push the following setting down", expanded.top > before.top)
-        compose.runOnIdle {
-            assertTrue("Material Design language settings never create a popup window",
-                WindowInspector.getGlobalWindowViews().none { it.javaClass.simpleName == "PopupLayout" })
-        }
-        compose.onNodeWithTag("general_language_card").performClick()
-        languages.forEach { (code, _) -> compose.onNodeWithTag("general_language#$code").assertDoesNotExist() }
         assertEquals(before, compose.onNodeWithTag("following_setting").fetchSemanticsNode().boundsInWindow)
         compose.runOnIdle {
-            assertTrue(WindowInspector.getGlobalWindowViews().none { it.javaClass.simpleName == "PopupLayout" })
+            assertTrue("Material owns an anchored popup window",
+                WindowInspector.getGlobalWindowViews().any { it.javaClass.simpleName == "PopupLayout" })
         }
+        compose.onNodeWithTag("general_language#ja").performClick()
+        compose.waitForIdle()
+        assertEquals(listOf("ja"), selected)
+        assertEquals(listOf("ja"), dismissed)
+        assertEquals(before, compose.onNodeWithTag("following_setting").fetchSemanticsNode().boundsInWindow)
+    }
+
+    @Test fun nonLanguageChoicesUseSameGlassHandoffAndDistinguishClearFromCancel() {
+        val selected = mutableListOf<String>()
+        val dismissed = mutableListOf<String?>()
+        compose.setContent {
+            MaterialTheme {
+                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                    GlassHost {
+                        Box(Modifier.fillMaxSize().padding(24.dp)) {
+                            SingleChoiceDropdown("Target", "2026-12-01",
+                                listOf("2026-11-14" to "11/14", "none" to "No mapping", "other" to "Other date"),
+                                onSelect = { selected += it }, selectedLabel = "12/01",
+                                tagPrefix = "holiday_test", onDismissed = {
+                                    assertTrue("handoff completes before the next modal may open",
+                                        WindowInspector.getGlobalWindowViews().none { view -> view.javaClass.simpleName == "PopupLayout" })
+                                    dismissed += it
+                                })
+                        }
+                    }
+                }
+            }
+        }
+        compose.onNodeWithTag("holiday_test_value", true).assertIsDisplayed()
+        compose.onNodeWithTag("holiday_test_card").performClick()
+        compose.onNodeWithTag("holiday_test#none").performClick()
+        compose.waitForIdle()
+        assertEquals(listOf("none"), selected)
+        assertEquals(listOf("none"), dismissed)
+        compose.onNodeWithTag("holiday_test_card").performClick()
+        compose.onNodeWithTag("holiday_test_menu").performSemanticsAction(SemanticsActions.Dismiss) { it() }
+        compose.waitForIdle()
+        assertEquals(listOf("none"), selected)
+        assertEquals(listOf("none", null), dismissed)
+    }
+
+    @Test fun choiceInsideDialogRestoresItsDialogSourceBeforeDismissal() {
+        val dismissed = mutableListOf<String?>()
+        compose.setContent {
+            MaterialTheme {
+                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                    GlassHost {
+                        GlassAlertDialog(onDismissRequest = {}, confirmButton = {},
+                            title = { Text("Calendar import") },
+                            text = {
+                                GlassLanguageMenu("Calendar", "en", languages, {}, onDismissed = {
+                                    assertTrue("only the owning dialog remains after the choice popup closes",
+                                        WindowInspector.getGlobalWindowViews().none { view -> view.javaClass.simpleName == "PopupLayout" })
+                                    dismissed += it
+                                })
+                            })
+                    }
+                }
+            }
+        }
+        compose.onNodeWithTag("general_language_card").performClick()
+        assertLanguageOptionsDisplayed()
+        val menu = menuScreenBounds()
+        assertTrue("the nested menu stays within display width", menu.left >= 15f && menu.right <= 345f)
+        compose.onNodeWithTag("general_language#ja").performClick()
+        compose.waitForIdle()
+        assertEquals(listOf("ja"), dismissed)
+        compose.onNodeWithTag("general_language_card").assertIsDisplayed()
     }
 
     @Test fun selectionCommitsImmediatelyAndDismissalWaitsForExit() {

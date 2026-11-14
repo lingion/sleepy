@@ -87,11 +87,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
             contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(SettingsLayout.cardGap)
         ) {
-            // Each appearance owns its language presentation: Material inline, Liquid Glass menu.
-            item {
-                SectionHeader(title = stringResource(R.string.settings_language))
-            }
-
+            // Language uses the shared single-choice dropdown for the selected design system.
             item {
                 com.lingion.sleepy.ui.component.liquidglass.GlassLanguageMenu(
                     title = stringResource(R.string.settings_language),

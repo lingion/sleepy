@@ -14,8 +14,7 @@ import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDial
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
-import com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenu as DropdownMenu
-import com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenuItem as DropdownMenuItem
+import com.lingion.sleepy.ui.component.liquidglass.SingleChoiceDropdown
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -26,7 +25,6 @@ import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
 import androidx.compose.runtime.Composable
 import com.lingion.sleepy.ui.component.DialogActionButtons
 import com.lingion.sleepy.ui.component.SettingToggleRow
-import com.lingion.sleepy.ui.component.SettingsFlatCard
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -79,7 +77,6 @@ fun CalendarImportDialog(
     var reminderMinutes by remember { mutableStateOf((AppPrefs.getCalendarReminderMinutes(context) ?: 15).toString()) }
     var alarmEnabled by remember { mutableStateOf(AppPrefs.isCalendarFirstAlarmEnabled(context)) }
     var alarmMinutes by remember { mutableStateOf(AppPrefs.getCalendarFirstAlarmMinutes(context).toString()) }
-    var calendarMenu by remember { mutableStateOf(false) }
     var preview by remember { mutableStateOf<CalendarImportPreview?>(null) }
     var result by remember { mutableStateOf<CalendarImportResult?>(null) }
     var managedCount by remember { mutableIntStateOf(0) }
@@ -129,29 +126,30 @@ fun CalendarImportDialog(
                         )
                     }
                 } else {
-                    SettingsFlatCard(
+                    SingleChoiceDropdown(
                         title = stringResource(R.string.calendar_target_label),
-                        subtitle = stringResource(R.string.calendar_choose_target)
-                    ) {
-                        TextButton(onClick = { calendarMenu = true }) {
-                            Text(calendars.firstOrNull { it.id == selectedCalendarId }?.let {
-                                "${it.displayName} · ${it.accountName}"
-                            } ?: stringResource(R.string.calendar_choose_target))
-                        }
-                        DropdownMenu(expanded = calendarMenu, onDismissRequest = { calendarMenu = false }) {
-                            calendars.forEach { calendar ->
-                                DropdownMenuItem(
-                                    text = { Text("${calendar.displayName} · ${calendar.accountName}") },
-                                    onClick = {
-                                        selectedCalendarId = calendar.id
-                                        AppPrefs.setCalendarTargetId(context, calendar.id)
-                                        calendarMenu = false
-                                        preview = null
-                                    }
-                                )
+                        selectedId = selectedCalendarId.toString(),
+                        options = calendars.map { calendar ->
+                            calendar.id.toString() to "${calendar.displayName} · ${calendar.accountName}"
+                        },
+                        onSelect = { key ->
+                            calendars.firstOrNull { it.id.toString() == key }?.let { calendar ->
+                                selectedCalendarId = calendar.id
+                                AppPrefs.setCalendarTargetId(context, calendar.id)
+                                preview = null
                             }
-                        }
-                    }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        selectedLabel = calendars.firstOrNull { it.id == selectedCalendarId }?.let {
+                            "${it.displayName} · ${it.accountName}"
+                        } ?: stringResource(R.string.calendar_choose_target),
+                        tagPrefix = "calendar_target"
+                    )
+                    Text(
+                        stringResource(R.string.calendar_choose_target),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
 
                     Surface(color = MaterialTheme.colorScheme.surfaceContainer, shape = SleepyTheme.shapes.large) {
                         Column(
