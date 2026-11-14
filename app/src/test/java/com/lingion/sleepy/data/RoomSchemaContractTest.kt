@@ -55,6 +55,13 @@ class RoomSchemaContractTest {
         assertTrue("v15 import provenance must be exported", "importSourceJson" in timeColumns)
         assertTrue("v16 JW school source must be exported", "jwSchoolSourceJson" in timeColumns)
 
+        val periodFields = byName.getValue("period_tables").getJSONArray("fields")
+        val comboSchedule = (0 until periodFields.length()).map(periodFields::getJSONObject)
+            .single { it.getString("columnName") == "comboScheduleJson" }
+        assertEquals("TEXT", comboSchedule.getString("affinity"))
+        assertEquals(true, comboSchedule.optBoolean("notNull", false))
+        assertEquals("''", comboSchedule.getString("defaultValue"))
+
         val calendar = byName.getValue("calendar_import_records")
         val calendarColumns = buildSet {
             val fields = calendar.getJSONArray("fields")
