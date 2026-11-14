@@ -5,8 +5,8 @@
 <h1 align="center">Sleepy · 轻课表</h1>
 
 <p align="center">
-  A clean Android timetable app built with Kotlin + Jetpack Compose, Material 3 Expressive motion, and optional Liquid Glass.<br>
-  Material You / Material 3 Expressive 设计的纯净 Android 课程表 App — 多视图 · 教务导入 · 单次调课 · 桌面小组件 · 液态玻璃
+  A clean, open-source timetable app for Android and iOS — both native. This repo builds the Android version with Kotlin + Jetpack Compose, Material 3 Expressive motion, and optional Liquid Glass.<br>
+  纯净开源课程表,Android 与 iOS 均为原生实现 — 本仓库是 Android 版,Material You / Material 3 Expressive 设计,多视图 · 教务导入 · 单次调课 · 桌面小组件 · 液态玻璃
 </p>
 
 <p align="center">
@@ -14,6 +14,7 @@
   <img src="https://img.shields.io/github/stars/lingion/sleepy?style=flat-square&logo=github" alt="Stars">
   <img src="https://img.shields.io/github/downloads/lingion/sleepy/total?style=flat-square" alt="Downloads">
   <img src="https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white" alt="Android">
+  <a href="https://github.com/lingion/sleepy-ios"><img src="https://img.shields.io/badge/platform-iOS-000000?style=flat-square&logo=apple&logoColor=white" alt="iOS"></a>
   <img src="https://img.shields.io/badge/lang-Kotlin-7F52FF?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin">
   <img src="https://img.shields.io/badge/UI-Jetpack%20Compose-4285F4?style=flat-square" alt="Compose">
   <img src="https://img.shields.io/badge/license-GPL--3.0-blue?style=flat-square" alt="License">
@@ -27,7 +28,7 @@
 
 ---
 
-> **Keywords (SEO):** Android schedule app, 课程表, 课表, timetable, university schedule, Jetpack Compose, Material You, Chinese university academic system import, wisedu, 强智教务, 正方教务, URP, home screen widget, HSV color picker, 开源课表, 开源课程表, 离线课表, 无广告课表, 隐私课表, 国产课表, 大学课表, 高校课表, 教务导入, 教务直连, 课表导入导出, iCalendar, ICS 课表, WakeUp 替代, 课程格子 替代, 超级课程表 替代, class timetable, school timetable, university timetable, course schedule
+> **Keywords (SEO):** Android schedule app, iOS schedule app, iPhone 课程表, 开源 iPhone 课表, SwiftUI, WidgetKit, iOS 桌面小组件, App Store 课表, 课程表, 课表, timetable, university schedule, cross-platform timetable, Jetpack Compose, Material You, Chinese university academic system import, wisedu, 强智教务, 正方教务, URP, home screen widget, HSV color picker, 开源课表, 开源课程表, 离线课表, 无广告课表, 隐私课表, 国产课表, 大学课表, 高校课表, 教务导入, 教务直连, 课表导入导出, iCalendar, ICS 课表, WakeUp 替代, 课程格子 替代, 超级课程表 替代, class timetable, school timetable, university timetable, course schedule
 
 ---
 
