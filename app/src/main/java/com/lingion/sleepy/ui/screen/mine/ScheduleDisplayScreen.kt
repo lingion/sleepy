@@ -16,6 +16,7 @@ import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import com.lingion.sleepy.ui.component.liquidglass.GlassSlider
+import com.lingion.sleepy.ui.component.liquidglass.liquidGlassControlsEnabled
 import androidx.compose.material3.Text
 import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -45,6 +46,9 @@ fun ScheduleDisplayContent(
     section: DisplayStyleSection = DisplayStyleSection.ALL,
 ) {
     val context = LocalContext.current
+    // A glass drag retains its continuous controlled echo. Quantizing that
+    // echo mid-gesture is an external correction and cancels its input epoch.
+    val continuousGlassInput = liquidGlassControlsEnabled()
     // 幽灵基线 (需求 2026-10-29 用户定义原话语义, spec §1 裁决 2): 进页时刻一次性
     // 捕获, 现值态从基线初始化。基线绝不接 setter — 这六个滑杆松手即落 AppPrefs,
     // "最近一次落库"会被拖动自身追着改; 锚进页时刻才满足"拖回原刻度点才消失、
@@ -69,8 +73,11 @@ fun ScheduleDisplayContent(
                 label = stringResource(R.string.settings_pill_scale), value = gridScale,
                 valueText = "${(gridScale * 100).toInt()}%", range = 0.7f..1.3f,
                 initial = gridScaleBaseline, epsilon = 0.025f,
-                onValueChange = { gridScale = (it * 20).toInt() / 20f },
-                onFinished = { AppPrefs.setGridScale(context, gridScale) },
+                onValueChange = { gridScale = if (continuousGlassInput) it else (it * 20).toInt() / 20f },
+                onFinished = {
+                    if (continuousGlassInput) gridScale = (gridScale * 20).toInt() / 20f
+                    AppPrefs.setGridScale(context, gridScale)
+                },
             )
         }
         if (section == DisplayStyleSection.ALL || section == DisplayStyleSection.WEEK) {
@@ -78,8 +85,11 @@ fun ScheduleDisplayContent(
                 label = stringResource(R.string.settings_pill_week_scale), value = weekScale,
                 valueText = "${(weekScale * 100).toInt()}%", range = 0.7f..1.3f,
                 initial = weekScaleBaseline, epsilon = 0.025f,
-                onValueChange = { weekScale = (it * 20).toInt() / 20f },
-                onFinished = { AppPrefs.setWeekScale(context, weekScale) },
+                onValueChange = { weekScale = if (continuousGlassInput) it else (it * 20).toInt() / 20f },
+                onFinished = {
+                    if (continuousGlassInput) weekScale = (weekScale * 20).toInt() / 20f
+                    AppPrefs.setWeekScale(context, weekScale)
+                },
             )
         }
         if (section == DisplayStyleSection.ALL || section == DisplayStyleSection.GRID) {
@@ -87,8 +97,11 @@ fun ScheduleDisplayContent(
                 label = stringResource(R.string.settings_pill_corner), value = cornerRatio,
                 valueText = "${(cornerRatio * 100).toInt()}%", range = 0f..2f,
                 initial = cornerRatioBaseline, epsilon = 0.025f,
-                onValueChange = { cornerRatio = (it * 20).toInt() / 20f },
-                onFinished = { AppPrefs.setGridCornerRatio(context, cornerRatio) },
+                onValueChange = { cornerRatio = if (continuousGlassInput) it else (it * 20).toInt() / 20f },
+                onFinished = {
+                    if (continuousGlassInput) cornerRatio = (cornerRatio * 20).toInt() / 20f
+                    AppPrefs.setGridCornerRatio(context, cornerRatio)
+                },
             )
         }
         if (section == DisplayStyleSection.ALL || section == DisplayStyleSection.CONFLICT) {
@@ -125,24 +138,33 @@ fun ScheduleDisplayContent(
                     valueText = "${conflictStackInset.toInt()}dp",
                     range = AppPrefs.CONFLICT_TOP_INSET_RANGE.start..AppPrefs.CONFLICT_TOP_INSET_RANGE.endInclusive,
                     initial = conflictStackInsetBaseline, epsilon = 0.5f,
-                    onValueChange = { conflictStackInset = it.roundToInt().toFloat() },
-                    onFinished = { AppPrefs.setConflictStackInset(context, conflictStackInset) },
+                    onValueChange = { conflictStackInset = if (continuousGlassInput) it else it.roundToInt().toFloat() },
+                    onFinished = {
+                        if (continuousGlassInput) conflictStackInset = conflictStackInset.roundToInt().toFloat()
+                        AppPrefs.setConflictStackInset(context, conflictStackInset)
+                    },
                 )
                 "rail" -> DisplaySlider(
                     label = stringResource(R.string.settings_conflict_rail_inset), value = conflictRailInset,
                     valueText = "${conflictRailInset.toInt()}dp",
                     range = AppPrefs.CONFLICT_TOP_INSET_RANGE.start..AppPrefs.CONFLICT_TOP_INSET_RANGE.endInclusive,
                     initial = conflictRailInsetBaseline, epsilon = 0.5f,
-                    onValueChange = { conflictRailInset = it.roundToInt().toFloat() },
-                    onFinished = { AppPrefs.setConflictRailInset(context, conflictRailInset) },
+                    onValueChange = { conflictRailInset = if (continuousGlassInput) it else it.roundToInt().toFloat() },
+                    onFinished = {
+                        if (continuousGlassInput) conflictRailInset = conflictRailInset.roundToInt().toFloat()
+                        AppPrefs.setConflictRailInset(context, conflictRailInset)
+                    },
                 )
                 "fold" -> DisplaySlider(
                     label = stringResource(R.string.settings_conflict_fold_size), value = conflictFoldSize,
                     valueText = "${conflictFoldSize.toInt()}dp",
                     range = AppPrefs.CONFLICT_FOLD_SIZE_RANGE.start..AppPrefs.CONFLICT_FOLD_SIZE_RANGE.endInclusive,
                     initial = conflictFoldSizeBaseline, epsilon = 0.5f,
-                    onValueChange = { conflictFoldSize = it.roundToInt().toFloat() },
-                    onFinished = { AppPrefs.setConflictFoldSize(context, conflictFoldSize) },
+                    onValueChange = { conflictFoldSize = if (continuousGlassInput) it else it.roundToInt().toFloat() },
+                    onFinished = {
+                        if (continuousGlassInput) conflictFoldSize = conflictFoldSize.roundToInt().toFloat()
+                        AppPrefs.setConflictFoldSize(context, conflictFoldSize)
+                    },
                 )
             }
         }

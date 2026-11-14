@@ -75,10 +75,13 @@ fun IntRangeSlider(
     // 只有一个可选档位 (maxStd=1 的作息表) — 滑杆两端点重合无意义, 退化成静态读数;
     // 退化域只是普通文本, 拖它应当照常滚页面, 不加纵向拦截
     val hasTwoStops = maxValue >= minValue + 1
+    // GlassSlider owns input from Initial pass. The Material-only filter below
+    // would pre-consume a vertical frame and cancel that same glass pointer.
+    val glassOwnsInput = liquidGlassControlsEnabled()
     val displayStart = startValue.coerceIn(minValue, maxValue)
     val displayEnd = endValue.coerceIn(displayStart, maxValue)
     Column(
-        modifier = (if (hasTwoStops) modifier.sliderFreezePageScroll() else modifier)
+        modifier = (if (hasTwoStops && !glassOwnsInput) modifier.sliderFreezePageScroll() else modifier)
             .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {

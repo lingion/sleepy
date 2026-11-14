@@ -2,6 +2,7 @@ package com.lingion.sleepy.ui.screen.mine
 
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
 import com.lingion.sleepy.ui.component.liquidglass.GlassControlLayout
+import com.lingion.sleepy.ui.component.liquidglass.liquidGlassControlsEnabled
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -601,7 +602,7 @@ internal fun CustomThemeCard(
  * anchor 取当前 Compose primary(所见即所算, 动态取色主题也正确)。
  */
 @Composable
-private fun CourseColorSection(
+internal fun CourseColorSection(
     mode: Int,
     seed: Float,
     colorless: Boolean,
@@ -612,6 +613,7 @@ private fun CourseColorSection(
     previewGids: List<Pair<String, String>>,
 ) {
     val colors = MaterialTheme.colorScheme
+    val continuousGlassInput = liquidGlassControlsEnabled()
     // 与主页/课表格/小组件同一 isDark 判定（isPaletteDark(palette)）— 保证 S/L 档逐位同源
     val isDark = CourseColorUtil.isPaletteDark(SleepyTheme.palette)
     val placeholder = stringResource(R.string.format_help_example)
@@ -682,8 +684,12 @@ private fun CourseColorSection(
                 // 替换裸 material3.Slider。拖动只动本地值, 松手/点按经 onHueCommit 落库重算。
                 HueSlider(
                     hue = sliderHue,
-                    onHueChange = { sliderHue = it.roundToInt().toFloat() },
-                    onHueCommit = { onSeedCommit(it.roundToInt().toFloat()) },
+                    onHueChange = { sliderHue = if (continuousGlassInput) it else it.roundToInt().toFloat() },
+                    onHueCommit = {
+                        val accepted = it.roundToInt().toFloat()
+                        if (continuousGlassInput) sliderHue = accepted
+                        onSeedCommit(accepted)
+                    },
                     initialHue = hueBaseline,
                     modifier = Modifier
                         .fillMaxWidth()

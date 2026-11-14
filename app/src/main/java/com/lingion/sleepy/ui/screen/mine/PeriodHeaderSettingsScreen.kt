@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import com.lingion.sleepy.ui.component.liquidglass.GlassSlider
+import com.lingion.sleepy.ui.component.liquidglass.liquidGlassControlsEnabled
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -62,6 +63,7 @@ import com.lingion.sleepy.util.AppPrefs
 @Composable
 fun PeriodHeaderSettingsScreen(onBack: () -> Unit) {
     val context = LocalContext.current
+    val continuousGlassInput = liquidGlassControlsEnabled()
     var layout by remember { mutableStateOf(AppPrefs.getPeriodHeaderLayout(context)) }
     var style by remember { mutableStateOf(AppPrefs.getPeriodHeaderStyle(context)) }
     // 幽灵基线 (需求 2026-10-29 用户定义原话语义, spec §3.1 第七站点): 进页时刻
@@ -142,8 +144,11 @@ fun PeriodHeaderSettingsScreen(onBack: () -> Unit) {
                         // 纯装饰零手势零语义, testTag 仅供管线定位; 落库节奏一克不动。
                         GlassSlider(
                             value = hangingUnits,
-                            onValueChange = { hangingUnits = (it * 10f).roundToInt() / 10f },
-                            onValueChangeFinished = { AppPrefs.setPeriodHeaderHanging(context, hangingUnits) },
+                            onValueChange = { hangingUnits = if (continuousGlassInput) it else (it * 10f).roundToInt() / 10f },
+                            onValueChangeFinished = {
+                                if (continuousGlassInput) hangingUnits = (hangingUnits * 10f).roundToInt() / 10f
+                                AppPrefs.setPeriodHeaderHanging(context, hangingUnits)
+                            },
                             valueRange = -1f..1f, steps = 19,
                             initialValue = hangingBaseline, ghostEpsilon = .05f,
                             ghostTag = "header-hanging-ghost",
