@@ -35,10 +35,8 @@ import com.lingion.sleepy.ui.theme.SleepyTheme
 import kotlinx.coroutines.launch
 
 /**
- * 顶栏分享按钮的格式选择底部弹窗(v7.10.7) — 从下而上弹出,沿用导出页三种格式:
- * WakeUp JSON / WakeUp 分享文本 / ICS 日历。条目视觉与导出操作全部复用
- * ExportScreen 的现成实现,选中即走系统分享,弹窗保持展开(与导出页行为一致,
- * 由用户返回键/点外部关闭)。
+ * 顶栏分享按钮的格式选择底部弹窗 — Sleepy 原生格式与分享文本优先，其次是 WakeUp JSON、ICS。
+ * 条目视觉与导出操作复用 ExportScreen 的现成实现，选中即走系统分享，弹窗保持展开。
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,17 +65,19 @@ fun ShareScheduleSheet(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
             )
             ExportItem(
-                icon = Icons.Outlined.Code,
-                title = stringResource(R.string.export_json_title),
-                subtitle = stringResource(R.string.export_json_subtitle),
+                icon = Icons.Outlined.Star,
+                title = stringResource(R.string.export_native_title),
+                subtitle = stringResource(R.string.export_native_subtitle),
                 onClick = {
                     scope.launch {
-                        exportAndShare(
+                        // 分享形态: marker 包裹 + 无 chk(IM 场景最小体积), 接收方粘贴导入
+                        shareText(
                             ctx = ctx,
-                            fileName = "sleepy_${table.name}_${stamp()}.json",
-                            mime = "application/json",
-                            content = ScheduleExporter.exportWakeUpJson(table, courses),
-                            displayName = table.name,
+                            content = SleepyNativeExporter.exportShareText(
+                                table.name, table.startDate, table.maxWeek, table.nodesPerDay,
+                                table.timeJson, courses, importSourceJson = table.importSourceJson,
+                            ),
+                            subject = table.name,
                             onResult = { }
                         )
                     }
@@ -112,16 +112,16 @@ fun ShareScheduleSheet(
                 color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline)
             )
             ExportItem(
-                icon = Icons.Outlined.CalendarMonth,
-                title = stringResource(R.string.export_ics_title),
-                subtitle = stringResource(R.string.export_ics_subtitle),
+                icon = Icons.Outlined.Code,
+                title = stringResource(R.string.export_json_title),
+                subtitle = stringResource(R.string.export_json_subtitle),
                 onClick = {
                     scope.launch {
                         exportAndShare(
                             ctx = ctx,
-                            fileName = "sleepy_${table.name}_${stamp()}.ics",
-                            mime = "text/calendar",
-                            content = ScheduleExporter.exportIcs(table, courses, com.lingion.sleepy.util.AppPrefs.getHolidayTransfers(ctx, table.id)),
+                            fileName = "sleepy_${table.name}_${stamp()}.json",
+                            mime = "application/json",
+                            content = ScheduleExporter.exportWakeUpJson(table, courses),
                             displayName = table.name,
                             onResult = { }
                         )
@@ -134,19 +134,17 @@ fun ShareScheduleSheet(
                 color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline)
             )
             ExportItem(
-                icon = Icons.Outlined.Star,
-                title = stringResource(R.string.export_native_title),
-                subtitle = stringResource(R.string.export_native_subtitle),
+                icon = Icons.Outlined.CalendarMonth,
+                title = stringResource(R.string.export_ics_title),
+                subtitle = stringResource(R.string.export_ics_subtitle),
                 onClick = {
                     scope.launch {
-                        // 分享形态: marker 包裹 + 无 chk(IM 场景最小体积), 接收方粘贴导入
-                        shareText(
+                        exportAndShare(
                             ctx = ctx,
-                            content = SleepyNativeExporter.exportShareText(
-                                table.name, table.startDate, table.maxWeek, table.nodesPerDay,
-                                table.timeJson, courses, importSourceJson = table.importSourceJson,
-                            ),
-                            subject = table.name,
+                            fileName = "sleepy_${table.name}_${stamp()}.ics",
+                            mime = "text/calendar",
+                            content = ScheduleExporter.exportIcs(table, courses, com.lingion.sleepy.util.AppPrefs.getHolidayTransfers(ctx, table.id)),
+                            displayName = table.name,
                             onResult = { }
                         )
                     }
