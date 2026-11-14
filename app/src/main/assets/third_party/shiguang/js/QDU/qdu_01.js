@@ -414,111 +414,34 @@ async function saveAppConfig(semesterStartDate, totalWeeks) {
  * 统一作息
  */
 async function saveAppTimeSlots(semesterId) {
-    // 基础时间段
+    const [, , semester] = semesterId.split("-");
+    const isAutumnSemester = semester === "1";
+
+    // 青岛大学上午作息全年一致，下午和晚间按学期对应季节切换。
+    // 当前桥接层不支持按日期切换的组合作息，因此只写入本学期实际使用的一套。
     const baseTimeSlots = [
         { "number": 1, "startTime": "08:00", "endTime": "08:50" },
         { "number": 2, "startTime": "09:00", "endTime": "09:50" },
         { "number": 3, "startTime": "10:10", "endTime": "11:00" },
         { "number": 4, "startTime": "11:10", "endTime": "12:00" },
-        { "number": 5, "startTime": "13:10", "endTime": "14:00" },
-        { "number": 6, "startTime": "14:00", "endTime": "14:50" },
-        { "number": 7, "startTime": "15:00", "endTime": "15:50" },
-        { "number": 8, "startTime": "16:00", "endTime": "16:50" },
-        { "number": 9, "startTime": "17:00", "endTime": "17:50" },
-        { "number": 10, "startTime": "17:50", "endTime": "18:30" },
-        { "number": 11, "startTime": "19:00", "endTime": "19:50" },
-        { "number": 12, "startTime": "20:00", "endTime": "20:50" },
-        { "number": 13, "startTime": "21:00", "endTime": "21:50" }
+        ...(isAutumnSemester ? [
+            { "number": 5, "startTime": "13:30", "endTime": "14:20" },
+            { "number": 6, "startTime": "14:30", "endTime": "15:20" },
+            { "number": 7, "startTime": "15:30", "endTime": "16:20" },
+            { "number": 8, "startTime": "16:30", "endTime": "17:20" },
+            { "number": 9, "startTime": "18:30", "endTime": "19:20" }
+        ] : [
+            { "number": 5, "startTime": "14:00", "endTime": "14:50" },
+            { "number": 6, "startTime": "15:00", "endTime": "15:50" },
+            { "number": 7, "startTime": "16:00", "endTime": "16:50" },
+            { "number": 8, "startTime": "17:00", "endTime": "17:50" },
+            { "number": 9, "startTime": "19:00", "endTime": "19:50" }
+        ])
     ];
-
-    // 创建当前学期的组合作息方案。注：T2时段（第10节）仅供参考（因为我没上过且没找到官方具体时间）
-    // 根据semesterId获取此学期的信息
-    const [startYear, endYear, semester] = semesterId.split("-");
-    let comboSchedule = null;
-    if (semester === "1") {
-        // 秋冬学期
-        comboSchedule = {
-            name: `${startYear}秋组合作息方案`,
-            publicSchedules: [
-                {
-                    name: `${startYear}春夏作息`,
-                    startDate: `${startYear}-05-01`,
-                    endDate: `${startYear}-09-30`,
-                    timeSlots: [
-                        { "number": 5, "startTime": "13:10", "endTime": "14:00" },
-                        { "number": 6, "startTime": "14:00", "endTime": "14:50" },
-                        { "number": 7, "startTime": "15:00", "endTime": "15:50" },
-                        { "number": 8, "startTime": "16:00", "endTime": "16:50" },
-                        { "number": 9, "startTime": "17:00", "endTime": "17:50" },
-                        { "number": 10, "startTime": "17:50", "endTime": "18:30" },
-                        { "number": 11, "startTime": "19:00", "endTime": "19:50" },
-                        { "number": 12, "startTime": "20:00", "endTime": "20:50" },
-                        { "number": 13, "startTime": "21:00", "endTime": "21:50" }
-                    ]
-                },
-                {
-                    name: `${startYear}秋冬作息`,
-                    startDate: `${startYear}-10-01`,
-                    endDate: `${endYear}-04-30`,
-                    timeSlots: [
-                        { "number": 5, "startTime": "12:40", "endTime": "13:30" },
-                        { "number": 6, "startTime": "13:30", "endTime": "14:20" },
-                        { "number": 7, "startTime": "14:30", "endTime": "15:20" },
-                        { "number": 8, "startTime": "15:30", "endTime": "16:20" },
-                        { "number": 9, "startTime": "16:30", "endTime": "17:20" },
-                        { "number": 10, "startTime": "17:20", "endTime": "18:00" },
-                        { "number": 11, "startTime": "18:30", "endTime": "19:20" },
-                        { "number": 12, "startTime": "19:30", "endTime": "20:20" },
-                        { "number": 13, "startTime": "20:30", "endTime": "21:20" }
-                    ]
-                }
-            ]
-        };
-    } else if (semester === "2") {
-        // 春夏学期
-        comboSchedule = {
-            name: `${endYear}春组合作息方案`,
-            publicSchedules: [
-                {
-                    name: `${startYear}秋冬作息`,
-                    startDate: `${startYear}-10-01`,
-                    endDate: `${endYear}-04-30`,
-                    timeSlots: [
-                        { "number": 5, "startTime": "12:40", "endTime": "13:30" },
-                        { "number": 6, "startTime": "13:30", "endTime": "14:20" },
-                        { "number": 7, "startTime": "14:30", "endTime": "15:20" },
-                        { "number": 8, "startTime": "15:30", "endTime": "16:20" },
-                        { "number": 9, "startTime": "16:30", "endTime": "17:20" },
-                        { "number": 10, "startTime": "17:20", "endTime": "18:00" },
-                        { "number": 11, "startTime": "18:30", "endTime": "19:20" },
-                        { "number": 12, "startTime": "19:30", "endTime": "20:20" },
-                        { "number": 13, "startTime": "20:30", "endTime": "21:20" }
-                    ]
-                },
-                {
-                    name: `${endYear}春夏作息`,
-                    startDate: `${endYear}-05-01`,
-                    endDate: `${endYear}-09-30`,
-                    timeSlots: [
-                        { "number": 5, "startTime": "13:10", "endTime": "14:00" },
-                        { "number": 6, "startTime": "14:00", "endTime": "14:50" },
-                        { "number": 7, "startTime": "15:00", "endTime": "15:50" },
-                        { "number": 8, "startTime": "16:00", "endTime": "16:50" },
-                        { "number": 9, "startTime": "17:00", "endTime": "17:50" },
-                        { "number": 10, "startTime": "17:50", "endTime": "18:30" },
-                        { "number": 11, "startTime": "19:00", "endTime": "19:50" },
-                        { "number": 12, "startTime": "20:00", "endTime": "20:50" },
-                        { "number": 13, "startTime": "21:00", "endTime": "21:50" }
-                    ]
-                }
-            ]
-        };
-    }
 
     // 保存作息方案
     try {
         await window.shiguangBridgePromise.savePresetTimeSlots(JSON.stringify(baseTimeSlots));
-        await window.shiguangBridgePromise.saveComboSchedule(JSON.stringify(comboSchedule));
         return true;
     } catch (error) {
         window.shiguangBridge.showToast("作息方案导入失败: " + error.message);
