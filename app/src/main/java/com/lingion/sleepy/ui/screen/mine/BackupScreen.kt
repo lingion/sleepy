@@ -43,6 +43,12 @@ import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.component.SettingsLayout
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.AppDatabase
+import com.lingion.sleepy.data.backup.WebDavClient
+import com.lingion.sleepy.data.backup.WebDavConfig
+import com.lingion.sleepy.data.backup.WebDavCredentialStore
+import com.lingion.sleepy.data.backup.WebDavFailure
+import com.lingion.sleepy.data.backup.WebDavFailureKind
+import com.lingion.sleepy.data.backup.WebDavRemoteBackup
 import com.lingion.sleepy.data.migration.MigrationExecutor
 import com.lingion.sleepy.data.migration.MigrationModule
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -74,9 +80,45 @@ fun BackupScreen(onBack: () -> Unit) {
     var pendingExportBytes by remember { mutableStateOf<ByteArray?>(null) }
     var pendingImportBytes by remember { mutableStateOf<ByteArray?>(null) }
     var showImportDialog by remember { mutableStateOf(false) }
+    val webDavClient = remember { WebDavClient() }
+    var webDavSettings by remember { mutableStateOf(WebDavCredentialStore.load(context)) }
+    var showWebDavSettings by remember { mutableStateOf(false) }
+    var webDavBusy by remember { mutableStateOf(false) }
+    var showWebDavUploadConfirm by remember { mutableStateOf(false) }
+    var webDavDialogError by remember { mutableStateOf<String?>(null) }
+    var remoteBackups by remember { mutableStateOf<List<WebDavRemoteBackup>>(emptyList()) }
+    var showRemoteBackups by remember { mutableStateOf(false) }
+
+    fun showWebDavError(error: Throwable) {
+        val message = when (error) {
+            is WebDavFailure -> when (error.kind) {
+                WebDavFailureKind.INVALID_CONFIGURATION -> context.getString(R.string.webdav_error_configuration)
+                WebDavFailureKind.HTTPS_REQUIRED -> context.getString(R.string.webdav_error_https)
+                WebDavFailureKind.AUTHENTICATION -> context.getString(R.string.webdav_error_authentication)
+                WebDavFailureKind.FORBIDDEN -> context.getString(R.string.webdav_error_forbidden)
+                WebDavFailureKind.HTTP_STATUS -> context.getString(
+                    R.string.webdav_error_http_status,
+                    error.statusCode ?: 0,
+                )
+                WebDavFailureKind.FILE_TOO_LARGE -> context.getString(R.string.webdav_error_too_large)
+                WebDavFailureKind.INVALID_RESPONSE -> context.getString(R.string.webdav_error_response)
+                WebDavFailureKind.NETWORK -> context.getString(R.string.webdav_error_network)
+            }
+            else -> context.getString(R.string.webdav_error_generic)
+        }
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+    }
+
+    suspend fun exportCompleteBackup(): ByteArray = MigrationExecutor.export(
+        setOf(MigrationModule.DATABASE, MigrationModule.PREFERENCES, MigrationModule.WIDGETS),
+        migrationPrefsStore,
+        migrationDb.courseDao(), migrationDb.timeTableDao(),
+        migrationDb.periodTableDao(), migrationDb.importDraftDao(),
+    ).bytes
 
     fun runMigrationImport(mode: MigrationExecutor.ImportMode) {
         val bytes = pendingImportBytes ?: return
+        if (webDavBusy) return
         migrationBusy = true
         migrationScope.launch {
             try {
@@ -148,25 +190,105 @@ fun BackupScreen(onBack: () -> Unit) {
     }
 
     fun onMigrationExportClick() {
-        if (migrationBusy) return
+        if (migrationBusy || webDavBusy) return
         migrationBusy = true
         migrationScope.launch {
             try {
-                val result = withContext(Dispatchers.IO) {
-                    MigrationExecutor.export(
-                        setOf(MigrationModule.DATABASE, MigrationModule.PREFERENCES, MigrationModule.WIDGETS),
-                        migrationPrefsStore,
-                        migrationDb.courseDao(), migrationDb.timeTableDao(),
-                        migrationDb.periodTableDao(), migrationDb.importDraftDao(),
-                    )
-                }
-                pendingExportBytes = result.bytes
+                pendingExportBytes = withContext(Dispatchers.IO) { exportCompleteBackup() }
                 val stamp = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
                 withContext(Dispatchers.Main) { exportLauncher.launch("sleepy-backup-$stamp.sleepybackup") }
             } catch (e: Exception) {
                 Log.e("SleepyMigration", "collect failed", e)
                 Toast.makeText(context, R.string.settings_migration_export_fail, Toast.LENGTH_LONG).show()
                 migrationBusy = false
+            }
+        }
+    }
+
+    fun configureWebDav(config: WebDavConfig, passwordForTest: String, passwordToSave: String?) {
+        if (migrationBusy || webDavBusy) return
+        webDavBusy = true
+        webDavDialogError = null
+        migrationScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    webDavClient.testConnection(config, passwordForTest)
+                    WebDavCredentialStore.save(context, config, passwordToSave)
+                }.also { saved -> webDavSettings = saved }
+                showWebDavSettings = false
+                Toast.makeText(context, R.string.webdav_config_saved, Toast.LENGTH_SHORT).show()
+            } catch (error: Exception) {
+                webDavDialogError = when (error) {
+                    is WebDavFailure -> when (error.kind) {
+                        WebDavFailureKind.INVALID_CONFIGURATION -> context.getString(R.string.webdav_error_configuration)
+                        WebDavFailureKind.HTTPS_REQUIRED -> context.getString(R.string.webdav_error_https)
+                        WebDavFailureKind.AUTHENTICATION -> context.getString(R.string.webdav_error_authentication)
+                        WebDavFailureKind.FORBIDDEN -> context.getString(R.string.webdav_error_forbidden)
+                        WebDavFailureKind.HTTP_STATUS -> context.getString(R.string.webdav_error_http_status, error.statusCode ?: 0)
+                        WebDavFailureKind.FILE_TOO_LARGE -> context.getString(R.string.webdav_error_too_large)
+                        WebDavFailureKind.INVALID_RESPONSE -> context.getString(R.string.webdav_error_response)
+                        WebDavFailureKind.NETWORK -> context.getString(R.string.webdav_error_network)
+                    }
+                    else -> context.getString(R.string.webdav_error_generic)
+                }
+            } finally {
+                webDavBusy = false
+            }
+        }
+    }
+
+    fun uploadToWebDav() {
+        val settings = webDavSettings ?: return
+        if (migrationBusy || webDavBusy) return
+        webDavBusy = true
+        migrationScope.launch {
+            try {
+                val bytes = withContext(Dispatchers.IO) { exportCompleteBackup() }
+                val fileName = "sleepy-backup-${SimpleDateFormat("yyyyMMdd-HHmmss-SSS", Locale.US).format(Date())}.sleepybackup"
+                withContext(Dispatchers.IO) { webDavClient.upload(settings.config, settings.password, fileName, bytes) }
+                Toast.makeText(context, context.getString(R.string.webdav_upload_done, fileName), Toast.LENGTH_LONG).show()
+            } catch (error: Exception) {
+                showWebDavError(error)
+            } finally {
+                webDavBusy = false
+            }
+        }
+    }
+
+    fun loadRemoteBackups() {
+        val settings = webDavSettings ?: return
+        if (migrationBusy || webDavBusy) return
+        webDavBusy = true
+        migrationScope.launch {
+            try {
+                remoteBackups = withContext(Dispatchers.IO) {
+                    webDavClient.listBackups(settings.config, settings.password)
+                }
+                showRemoteBackups = true
+            } catch (error: Exception) {
+                showWebDavError(error)
+            } finally {
+                webDavBusy = false
+            }
+        }
+    }
+
+    fun downloadRemoteBackup(backup: WebDavRemoteBackup) {
+        val settings = webDavSettings ?: return
+        if (migrationBusy || webDavBusy) return
+        webDavBusy = true
+        showRemoteBackups = false
+        migrationScope.launch {
+            try {
+                val bytes = withContext(Dispatchers.IO) {
+                    webDavClient.download(settings.config, settings.password, backup.fileName)
+                }
+                pendingImportBytes = bytes
+                showImportDialog = true
+            } catch (error: Exception) {
+                showWebDavError(error)
+            } finally {
+                webDavBusy = false
             }
         }
     }
@@ -210,7 +332,7 @@ fun BackupScreen(onBack: () -> Unit) {
                         modifier = Modifier.fillMaxWidth()
                             .noRippleClickable { onMigrationExportClick() }
                             .dbgTag("general_migration_export", text = stringResource(R.string.settings_backup_create), role = "button")
-                            .alpha(if (migrationBusy) 0.5f else 1f)
+                            .alpha(if (migrationBusy || webDavBusy) 0.5f else 1f)
                             .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap)
@@ -237,10 +359,10 @@ fun BackupScreen(onBack: () -> Unit) {
                     Row(
                         modifier = Modifier.fillMaxWidth()
                             .noRippleClickable {
-                                if (!migrationBusy) importLauncher.launch(arrayOf("application/zip", "application/octet-stream"))
+                                if (!migrationBusy && !webDavBusy) importLauncher.launch(arrayOf("application/zip", "application/octet-stream"))
                             }
                             .dbgTag("general_migration_import", text = stringResource(R.string.settings_backup_restore), role = "button")
-                            .alpha(if (migrationBusy) 0.5f else 1f)
+                            .alpha(if (migrationBusy || webDavBusy) 0.5f else 1f)
                             .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap)
@@ -265,7 +387,69 @@ fun BackupScreen(onBack: () -> Unit) {
                     }
                 }
             }
+            item {
+                WebDavBackupCard(
+                    settings = webDavSettings,
+                    busy = migrationBusy || webDavBusy,
+                    onConfigure = { webDavDialogError = null; showWebDavSettings = true },
+                    onUpload = { showWebDavUploadConfirm = true },
+                    onRestore = ::loadRemoteBackups,
+                )
+            }
         }
+    }
+
+    if (showWebDavUploadConfirm) {
+        val settings = webDavSettings
+        if (settings != null) {
+            WebDavUploadConfirmationDialog(
+                serverUrl = settings.config.serverUrl,
+                directory = settings.config.directory,
+                onDismiss = { showWebDavUploadConfirm = false },
+                onConfirm = {
+                    showWebDavUploadConfirm = false
+                    uploadToWebDav()
+                },
+            )
+        } else {
+            showWebDavUploadConfirm = false
+        }
+    }
+
+    if (showWebDavSettings) {
+        WebDavSettingsDialog(
+            initial = webDavSettings,
+            busy = webDavBusy,
+            errorMessage = webDavDialogError,
+            onDismiss = { showWebDavSettings = false },
+            onTestAndSave = ::configureWebDav,
+            onForget = {
+                if (!migrationBusy && !webDavBusy) {
+                    webDavBusy = true
+                    migrationScope.launch {
+                        try {
+                            withContext(Dispatchers.IO) { WebDavCredentialStore.clear(context) }
+                            webDavSettings = null
+                            showWebDavSettings = false
+                            Toast.makeText(context, R.string.webdav_config_forgotten, Toast.LENGTH_SHORT).show()
+                        } catch (error: Exception) {
+                            showWebDavError(error)
+                        } finally {
+                            webDavBusy = false
+                        }
+                    }
+                }
+            },
+        )
+    }
+
+    if (showRemoteBackups) {
+        WebDavRemoteBackupDialog(
+            backups = remoteBackups,
+            busy = webDavBusy,
+            onDismiss = { showRemoteBackups = false },
+            onSelect = ::downloadRemoteBackup,
+        )
     }
 
     if (showImportDialog) {

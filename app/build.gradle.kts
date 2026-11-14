@@ -268,6 +268,7 @@ dependencies {
     implementation(libs.coroutines.android)
     implementation(libs.serialization.json)
     implementation(libs.jsoup)
+    implementation(libs.okhttp)
     implementation(libs.work.runtime)
     // Agent Debug Console HTTP 服务器 (SPEC §4 用户预授权的唯一新增依赖)
     implementation("org.nanohttpd:nanohttpd:2.3.1")
@@ -286,6 +287,8 @@ dependencies {
     // renderer, no emulator/device). Baselines live in app/src/test/golden/.
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
+    testImplementation(libs.okhttp.mockwebserver)
+    testImplementation(libs.okhttp.tls)
     testImplementation(composeBom)
     testImplementation(libs.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.test.junit)
