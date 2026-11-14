@@ -1788,6 +1788,7 @@ internal suspend fun applyNewTableImport(
             timeJson = confirmedTimeJson,
             smartConfigJson = confirmedSmartConfigJson,
             importSourceJson = preview.parseResult.importSourceJson,
+            jwSchoolSourceJson = preview.parseResult.jwSchoolSourceJson,
             periodTableId = bindPeriodTableId,
         ),
         courses = preview.parseResult.courses,
