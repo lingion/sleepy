@@ -23,6 +23,6 @@ class CourseOccurrenceMigrationTest {
                 }
             }
         }
-        assertEquals(15, ALL_MIGRATIONS.last().endVersion)
+        assertEquals(APP_DATABASE_VERSION, ALL_MIGRATIONS.last().endVersion)
     }
 }
