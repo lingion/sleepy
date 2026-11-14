@@ -285,10 +285,11 @@ internal fun SleepyNavHost(
                 onBack = { navigator.pop() },
                 onCreateNewTable = onCreateNewTable,
                 onOpenEditTable = { tableId -> navigator.openEditTable(tableId = tableId) },
-                onUpdateFromJw = { tableId ->
+                onUpdateFromJw = { table ->
                     context.startActivity(android.content.Intent(context, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java)
-                        .putExtra(com.lingion.sleepy.ui.screen.imports.JwImportActivity.EXTRA_TARGET_TABLE_ID, tableId)
-                        .putExtra(com.lingion.sleepy.ui.screen.imports.JwImportActivity.EXTRA_UPDATE_TABLE, true))
+                        .putExtra(com.lingion.sleepy.ui.screen.imports.JwImportActivity.EXTRA_TARGET_TABLE_ID, table.id)
+                        .putExtra(com.lingion.sleepy.ui.screen.imports.JwImportActivity.EXTRA_UPDATE_TABLE, true)
+                        .putExtra(com.lingion.sleepy.ui.screen.imports.JwImportActivity.EXTRA_JW_SCHOOL_SOURCE_JSON, table.jwSchoolSourceJson))
                 },
             )
         }

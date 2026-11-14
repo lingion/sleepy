@@ -47,6 +47,7 @@ enum class JwImportDraftPhase {
 /** Versioned JSON boundary for [JwImportDraftSnapshot]. */
 object JwImportDraftCodec {
     const val SCHEMA_VERSION: Int = 1
+    private const val SCHOOL_SOURCE_SCHEMA_VERSION: Int = 1
 
     fun toJson(snapshot: JwImportDraftSnapshot): String = JSONObject().apply {
         put("schemaVersion", SCHEMA_VERSION)
@@ -115,6 +116,23 @@ object JwImportDraftCodec {
             },
             selectedSgAdapterId = root.optString("selectedSgAdapterId", ""),
         )
+    }.getOrNull()
+
+    /** Stable snapshot of the exact school entry used to create a timetable. */
+    fun toSchoolSourceJson(school: JwSchoolInfo): String = JSONObject().apply {
+        put("schemaVersion", SCHOOL_SOURCE_SCHEMA_VERSION)
+        put("sourceType", "jw")
+        put("school", schoolToJson(school))
+    }.toString()
+
+    /** Invalid, unsupported, or non-JW payloads cannot enable a timetable update action. */
+    fun schoolFromSourceJson(json: String): JwSchoolInfo? = runCatching {
+        val root = JSONObject(json)
+        if (root.optInt("schemaVersion", -1) != SCHOOL_SOURCE_SCHEMA_VERSION ||
+            root.optString("sourceType") != "jw"
+        ) return null
+        schoolFromJson(root.optJSONObject("school") ?: return null)
+            ?.takeIf { it.canImport }
     }.getOrNull()
 
     private fun schoolToJson(school: JwSchoolInfo): JSONObject = JSONObject().apply {

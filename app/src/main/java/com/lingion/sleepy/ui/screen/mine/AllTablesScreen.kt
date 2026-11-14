@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.TimeTableEntity
+import com.lingion.sleepy.data.jw.JwImportDraftCodec
 import com.lingion.sleepy.ui.component.DialogActionButtons
 import com.lingion.sleepy.ui.component.liquidglass.GlassControlLayout
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
@@ -64,7 +65,7 @@ fun AllTablesScreen(
     onBack: () -> Unit,
     onCreateNewTable: () -> Unit,
     onOpenEditTable: (Long) -> Unit,
-    onUpdateFromJw: (Long) -> Unit,
+    onUpdateFromJw: (TimeTableEntity) -> Unit,
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -103,6 +104,9 @@ fun AllTablesScreen(
 
             itemsIndexed(state.tables, key = { _, table -> table.id }) { _, table ->
                 val isCurrent = table.id == state.selectedTableId
+                val jwSourceSchool = remember(table.jwSchoolSourceJson) {
+                    JwImportDraftCodec.schoolFromSourceJson(table.jwSchoolSourceJson)
+                }
                 BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -187,8 +191,10 @@ fun AllTablesScreen(
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
-                            IconButton(onClick = { onUpdateFromJw(table.id) }) {
-                                Icon(Icons.Outlined.Refresh, contentDescription = stringResource(R.string.update_from_jw), tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                            if (jwSourceSchool != null) {
+                                IconButton(onClick = { onUpdateFromJw(table) }) {
+                                    Icon(Icons.Outlined.Refresh, contentDescription = stringResource(R.string.update_from_jw), tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                                }
                             }
                             IconButton(onClick = { onOpenEditTable(table.id) }) {
                                 Icon(

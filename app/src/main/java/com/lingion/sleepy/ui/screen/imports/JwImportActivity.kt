@@ -99,6 +99,7 @@ class JwImportActivity : ComponentActivity() {
     companion object {
         const val EXTRA_TARGET_TABLE_ID = "extra_target_table_id"
         const val EXTRA_UPDATE_TABLE = "extra_update_table"
+        const val EXTRA_JW_SCHOOL_SOURCE_JSON = "extra_jw_school_source_json"
         const val EXTRA_DRAFT_ID = "extra_import_draft_id"
     }
 
@@ -135,16 +136,24 @@ class JwImportActivity : ComponentActivity() {
                 val incomingDraftId = intent.getStringExtra(EXTRA_DRAFT_ID)
                 val targetTableId = intent.getLongExtra(EXTRA_TARGET_TABLE_ID, 0L)
                 val updateMode = intent.getBooleanExtra(EXTRA_UPDATE_TABLE, false)
+                val initialSourceSchool = remember {
+                    intent.getStringExtra(EXTRA_JW_SCHOOL_SOURCE_JSON)
+                        ?.let(com.lingion.sleepy.data.jw.JwImportDraftCodec::schoolFromSourceJson)
+                }
                 // 组合树, 滚动位置/搜索词全部销毁。各 stage 分支内容包独立 key 的
                 // SaveableStateProvider(key = stage 类名), WebView 登录返回学校列表时
                 // 列表滚动位置与 rememberSaveable 态原样恢复。
                 val saveableStateHolder: SaveableStateHolder = rememberSaveableStateHolder()
 
-                var selectedSchool by remember { mutableStateOf<JwSchoolInfo?>(null) }
+                var selectedSchool by remember { mutableStateOf(initialSourceSchool) }
                 var catalogNotice by remember { mutableStateOf<JwSchoolInfo?>(null) }
                 // 2026-10-18 离线回路: 未验证学校导入成功后弹报告弹窗(复制+加QQ群), 已验证学校维持静默 finish
                 var reportDialogSchool by remember { mutableStateOf<JwSchoolInfo?>(null) }
-                var stage by remember { mutableStateOf<Stage>(Stage.SelectSchool) }
+                var stage by remember {
+                    mutableStateOf<Stage>(
+                        if (updateMode && initialSourceSchool != null) Stage.WebViewLogin else Stage.SelectSchool
+                    )
+                }
                 var errorMsg by remember { mutableStateOf<String?>(null) }
                 var statusMsg by remember { mutableStateOf<String?>(null) }
                 val statusSnackbarHostState = remember { SnackbarHostState() }
@@ -845,6 +854,7 @@ class JwImportActivity : ComponentActivity() {
                                                 nodesPerDay = effectiveRows.maxOfOrNull { it.node } ?: 1,
                                                 maxWeek = maxOf(configTermWeekCount, confirmedCourses.maxOf { it.endWeek }),
                                                 importSourceJson = importSourceJson,
+                                                jwSchoolSourceJson = com.lingion.sleepy.data.jw.JwImportDraftCodec.toSchoolSourceJson(school),
                                                 periodTable = if (configBindPeriodTableId == -1L) {
                                                     ScheduleParser.ParsedPeriodTable(
                                                         sourceId = 0L,
