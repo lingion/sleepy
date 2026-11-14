@@ -20,8 +20,9 @@ object SleepyNativeExporter {
         courses: List<CourseEntity>,
         periodTable: PeriodTableExport? = null,
         importSourceJson: String = "",
+        jwSchoolSourceJson: String = "",
     ): String {
-        val body = buildBody(tableName, startDate, maxWeek, nodesPerDay, timeJson, courses, periodTable, importSourceJson)
+        val body = buildBody(tableName, startDate, maxWeek, nodesPerDay, timeJson, courses, periodTable, importSourceJson, jwSchoolSourceJson)
         val withChk = body + "\nz|chk=crc32:" + SleepyNativeFormat.crc32(body.toByteArray(Charsets.UTF_8))
         return withChk
     }
@@ -36,8 +37,9 @@ object SleepyNativeExporter {
         courses: List<CourseEntity>,
         periodTable: PeriodTableExport? = null,
         importSourceJson: String = "",
+        jwSchoolSourceJson: String = "",
     ): String {
-        val body = buildBody(tableName, startDate, maxWeek, nodesPerDay, timeJson, courses, periodTable, importSourceJson)
+        val body = buildBody(tableName, startDate, maxWeek, nodesPerDay, timeJson, courses, periodTable, importSourceJson, jwSchoolSourceJson)
         return "【来自Sleepy】\n课程分享：\n\n<<<SLEEPY-BEGIN>>>\n$body\n<<<SLEEPY-END>>>"
     }
 
@@ -50,6 +52,7 @@ object SleepyNativeExporter {
         courses: List<CourseEntity>,
         periodTable: PeriodTableExport? = null,
         importSourceJson: String = "",
+        jwSchoolSourceJson: String = "",
     ): String {
         val sb = StringBuilder()
         sb.append("#sleepy-v1\n")
@@ -67,6 +70,7 @@ object SleepyNativeExporter {
         val partitionedCount = countAfterPartition(courses)
         sb.append('|').append("n=").append(partitionedCount)
         if (importSourceJson.isNotEmpty()) sb.append("|source=").append(SleepyNativeFormat.escape(importSourceJson))
+        if (jwSchoolSourceJson.isNotEmpty()) sb.append("|jw=").append(SleepyNativeFormat.escape(jwSchoolSourceJson))
         sb.append('\n')
 
         // ---- issue#40: P 行(独立时间节次表, §6 新格式可选区块) ----

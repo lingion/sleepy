@@ -58,6 +58,7 @@ object ScheduleExporter {
                 put("nodesPerDay", table.nodesPerDay)
                 put("time", table.timeJson)
                 put("importSourceJson", table.importSourceJson)
+                put("jwSchoolSourceJson", table.jwSchoolSourceJson)
             })
             put("courses", courseArr)
         }
@@ -96,7 +97,10 @@ object ScheduleExporter {
             put("name", table.name)
             put("startDate", table.startDate)
             put("courseDetailJson", encoded)
-            put("tableInfo", buildJsonObject { put("importSourceJson", table.importSourceJson) })
+            put("tableInfo", buildJsonObject {
+                put("importSourceJson", table.importSourceJson)
+                put("jwSchoolSourceJson", table.jwSchoolSourceJson)
+            })
         }
 
         return "【来自Sleepy】\n课程分享：\n\n" +

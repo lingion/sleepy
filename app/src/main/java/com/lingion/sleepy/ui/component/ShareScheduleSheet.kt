@@ -76,6 +76,7 @@ fun ShareScheduleSheet(
                             content = SleepyNativeExporter.exportShareText(
                                 table.name, table.startDate, table.maxWeek, table.nodesPerDay,
                                 table.timeJson, courses, importSourceJson = table.importSourceJson,
+                                jwSchoolSourceJson = table.jwSchoolSourceJson,
                             ),
                             subject = table.name,
                             onResult = { }
@@ -99,6 +100,7 @@ fun ShareScheduleSheet(
                             content = SleepyNativeExporter.exportShareText(
                                 table.name, table.startDate, table.maxWeek, table.nodesPerDay,
                                 table.timeJson, courses, importSourceJson = table.importSourceJson,
+                                jwSchoolSourceJson = table.jwSchoolSourceJson,
                             ),
                             subject = table.name,
                             onResult = { }
