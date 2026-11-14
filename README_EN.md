@@ -152,6 +152,19 @@ Entry: bottom bar "Timetables" → "Import". Import paths preview first and only
 | **Paste text** | Paste any format → auto-detect → preview → import |
 | **From file** | Pick `.json` / `.ics` / `.csv` / `.html` → preview → import |
 
+| **Paste text** | Paste any format → auto-detect → preview → import |
+| **AI screenshot conversion** | Copy a prompt, send it with your timetable screenshot to an image-capable AI of your choice, paste the reply under "Paste Text", then preview and import |
+
+### AI screenshot conversion
+
+If you would rather not type the timetable by hand and have no JW entry to use, an AI can turn a timetable screenshot into sleepy-v1 text:
+
+1. In the import sheet, tap "AI screenshot conversion". The prompt is copied to the clipboard. You can also copy it from the info icon on the "Plain text" row.
+2. Send the prompt together with your timetable screenshot or file contents to an image-capable AI of your choice.
+3. Paste the reply, whose first line is `#sleepy-v1`, into "Paste Text", tap Preview, then import after checking.
+
+Sleepy does not upload screenshots or call any AI service. Whichever AI you send the screenshot to processes it under that service's terms. AI can misread content, so check courses, weeks and periods in the preview before importing.
+
 ### JW Protocol Examples
 
 The protocol catalogue grows with school integrations. The table below shows protocol families and representative variants in the code; it is not a replacement for the current in-app school catalogue:
@@ -204,7 +217,7 @@ If URL detection or parsing does not work, file an adaptation request with the J
 | **ICS calendar** | Standard iCalendar, often exportable from university systems |
 | **CSV file** | `.csv` with header row, comma-separated |
 | **HTML table** | `<table>` markup, parsed header-first |
-| **Plain text** | One course per line, tab-separated |
+| **Plain text** | One course per line, pipe-separated (legacy tab-separated text still imports); AI can generate it from a screenshot, see "AI screenshot conversion" above |
 | **sleepy-v1** | Sleepy's native plain-text format with a `chk` integrity field and deterministic records |
 
 ---

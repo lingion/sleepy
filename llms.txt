@@ -58,6 +58,8 @@ Jiamusi's supported configuration and Kingo parser corrections were already pres
 
 Supported offline inputs: WakeUp share text beginning with 【来自WakeUp课程表】, WakeUp JSON, iCalendar/ICS, CSV, HTML tables, tab-separated text and native sleepy-v1 text with a chk integrity field. Content detection does not require selecting an internal parser name.
 
+AI-assisted timetable conversion: the import sheet has an "AI screenshot conversion" row that copies a built-in prompt. The user sends that prompt with a timetable screenshot or file contents to an image-capable AI of their own choice; the AI replies with sleepy-v1 text, which the user pastes into the paste-text entry for preview. Sleepy does not upload screenshots or call any AI service itself, and the preview must be checked before import.
+
 Online WakeUP share tokens are a separate input path. Resolution makes two POST requests to api.wakeup.fun, using /pluto/app/antispam and /share_schedule/getv2. It requires internet and a valid token and depends on the third-party service; expiration or protocol changes can fail independently of offline import.
 
 Exports include WakeUp-compatible JSON, ICS and native sleepy-v1. The visible text-sharing entries use native sleepy-v1, not WakeUp's URL-encoded sharing format. Period tables have a narrower JSON/native export set. Android 10+ uses Download/Sleepy for applicable files; Android 8–9 uses app cache/FileProvider, while text sharing uses the Android share sheet.
