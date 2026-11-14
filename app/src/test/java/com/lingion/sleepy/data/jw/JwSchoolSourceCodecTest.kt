@@ -19,6 +19,7 @@ class JwSchoolSourceCodecTest {
         val decoded = JwImportDraftCodec.schoolFromSourceJson(
             JwImportDraftCodec.toSchoolSourceJson(school),
             listOf(school),
+            sourceVerified = true,
         )
 
         assertNotNull(decoded)
@@ -30,9 +31,13 @@ class JwSchoolSourceCodecTest {
 
     @Test
     fun `non-JW and malformed snapshots are not eligible for update`() {
-        assertNull(JwImportDraftCodec.schoolFromSourceJson("", emptyList()))
-        assertNull(JwImportDraftCodec.schoolFromSourceJson("""{"schemaVersion":1,"sourceType":"file"}""", emptyList()))
-        assertNull(JwImportDraftCodec.schoolFromSourceJson("not json", emptyList()))
+        assertNull(JwImportDraftCodec.schoolFromSourceJson("", emptyList(), sourceVerified = true))
+        assertNull(JwImportDraftCodec.schoolFromSourceJson("""{"schemaVersion":1,"sourceType":"file"}""", emptyList(), sourceVerified = true))
+        assertNull(JwImportDraftCodec.schoolFromSourceJson("not json", emptyList(), sourceVerified = true))
+        val snapshot = JwImportDraftCodec.toSchoolSourceJson(
+            JwSchoolInfo("H", "学校", "https://jw.example.edu", "wisedu")
+        )
+        assertNull(JwImportDraftCodec.schoolFromSourceJson(snapshot, emptyList(), sourceVerified = false))
     }
 
     @Test
@@ -48,7 +53,9 @@ class JwSchoolSourceCodecTest {
             school.copy(url = "https://attacker.example/login")
         )
 
-        val resolved = JwImportDraftCodec.schoolFromSourceJson(forgedSnapshot, listOf(school))
+        val resolved = JwImportDraftCodec.schoolFromSourceJson(
+            forgedSnapshot, listOf(school), sourceVerified = true,
+        )
 
         assertEquals(school.url, resolved?.url)
         assertEquals(school.catalogId, resolved?.catalogId)
@@ -67,7 +74,9 @@ class JwSchoolSourceCodecTest {
             school.copy(url = "https://attacker.example/login", catalogId = "unknown-school")
         )
 
-        assertNull(JwImportDraftCodec.schoolFromSourceJson(forgedSnapshot, listOf(school)))
+        assertNull(JwImportDraftCodec.schoolFromSourceJson(
+            forgedSnapshot, listOf(school), sourceVerified = true,
+        ))
     }
 
     @Test
@@ -83,6 +92,44 @@ class JwSchoolSourceCodecTest {
             school.copy(name = "另一所学校", type = "newzf")
         )
 
-        assertNull(JwImportDraftCodec.schoolFromSourceJson(forgedSnapshot, listOf(school)))
+        assertNull(JwImportDraftCodec.schoolFromSourceJson(
+            forgedSnapshot, listOf(school), sourceVerified = true,
+        ))
+    }
+
+    @Test
+    fun `verified custom school outside catalog keeps its exact URL`() {
+        val school = JwSchoolInfo(
+            sortKey = "",
+            name = "自定义教务",
+            url = "https://jw.custom.example/login",
+            type = "wisedu",
+        )
+
+        val resolved = JwImportDraftCodec.schoolFromSourceJson(
+            JwImportDraftCodec.toSchoolSourceJson(school),
+            emptyList(),
+            sourceVerified = true,
+        )
+
+        assertEquals(school.url, resolved?.url)
+        assertEquals(school.name, resolved?.name)
+    }
+
+    @Test
+    fun `custom source cannot use unsafe URL or missing trust marker`() {
+        val custom = JwSchoolInfo("", "自定义教务", "https://user:pass@jw.example/login", "wisedu")
+
+        assertNull(JwImportDraftCodec.schoolFromSourceJson(
+            JwImportDraftCodec.toSchoolSourceJson(custom), emptyList(), sourceVerified = true,
+        ))
+        assertNull(JwImportDraftCodec.schoolFromSourceJson(
+            JwImportDraftCodec.toSchoolSourceJson(custom.copy(url = "javascript:alert(1)")),
+            emptyList(), sourceVerified = true,
+        ))
+        assertNull(JwImportDraftCodec.schoolFromSourceJson(
+            JwImportDraftCodec.toSchoolSourceJson(custom.copy(url = "https://jw.example/login")),
+            emptyList(), sourceVerified = false,
+        ))
     }
 }

@@ -67,7 +67,7 @@ fun AllTablesScreen(
     onBack: () -> Unit,
     onCreateNewTable: () -> Unit,
     onOpenEditTable: (Long) -> Unit,
-    onUpdateFromJw: (Long, JwSchoolInfo) -> Unit,
+    onUpdateFromJw: (Long) -> Unit,
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -108,8 +108,10 @@ fun AllTablesScreen(
 
             itemsIndexed(state.tables, key = { _, table -> table.id }) { _, table ->
                 val isCurrent = table.id == state.selectedTableId
-                val jwSourceSchool = remember(table.jwSchoolSourceJson, jwSchools) {
-                    JwImportDraftCodec.schoolFromSourceJson(table.jwSchoolSourceJson, jwSchools)
+                val jwSourceSchool = remember(table.jwSchoolSourceJson, table.jwSchoolSourceVerified, jwSchools) {
+                    JwImportDraftCodec.schoolFromSourceJson(
+                        table.jwSchoolSourceJson, jwSchools, table.jwSchoolSourceVerified,
+                    )
                 }
                 BoxWithConstraints(
                     modifier = Modifier
@@ -196,7 +198,7 @@ fun AllTablesScreen(
                                 )
                             }
                             if (jwSourceSchool != null) {
-                                IconButton(onClick = { onUpdateFromJw(table.id, jwSourceSchool) }) {
+                                IconButton(onClick = { onUpdateFromJw(table.id) }) {
                                     Icon(Icons.Outlined.Refresh, contentDescription = stringResource(R.string.update_from_jw), tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
                                 }
                             }

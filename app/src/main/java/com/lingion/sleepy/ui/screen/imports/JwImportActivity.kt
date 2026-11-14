@@ -99,7 +99,6 @@ class JwImportActivity : ComponentActivity() {
     companion object {
         const val EXTRA_TARGET_TABLE_ID = "extra_target_table_id"
         const val EXTRA_UPDATE_TABLE = "extra_update_table"
-        const val EXTRA_JW_SCHOOL_SOURCE_JSON = "extra_jw_school_source_json"
         const val EXTRA_DRAFT_ID = "extra_import_draft_id"
     }
 
@@ -137,12 +136,28 @@ class JwImportActivity : ComponentActivity() {
                 val incomingDraftId = intent.getStringExtra(EXTRA_DRAFT_ID)
                 val targetTableId = intent.getLongExtra(EXTRA_TARGET_TABLE_ID, 0L)
                 val updateMode = intent.getBooleanExtra(EXTRA_UPDATE_TABLE, false)
-                val initialSourceJson = remember {
-                    intent.getStringExtra(EXTRA_JW_SCHOOL_SOURCE_JSON)
+                var authorizedUpdateSourceJson by remember { mutableStateOf<String?>(null) }
+                var updateSourceChecked by remember(updateMode) { mutableStateOf(!updateMode) }
+                LaunchedEffect(updateMode, targetTableId, jwSchools) {
+                    if (!updateMode || jwSchools.isEmpty()) return@LaunchedEffect
+                    val target = SleepyApp.get().repository.getTable(targetTableId)
+                    val source = target?.takeIf { it.jwSchoolSourceVerified }?.let {
+                        com.lingion.sleepy.data.jw.JwImportDraftCodec.schoolFromSourceJson(
+                            it.jwSchoolSourceJson, jwSchools, sourceVerified = true,
+                        )
+                    }
+                    authorizedUpdateSourceJson = source?.let {
+                        com.lingion.sleepy.data.jw.JwImportDraftCodec.toSchoolSourceJson(it)
+                    }
+                    updateSourceChecked = true
+                    if (source == null) finish()
                 }
+                val initialSourceJson = authorizedUpdateSourceJson
                 val initialSourceSchool = remember(initialSourceJson, jwSchools) {
                     initialSourceJson?.let {
-                        com.lingion.sleepy.data.jw.JwImportDraftCodec.schoolFromSourceJson(it, jwSchools)
+                        com.lingion.sleepy.data.jw.JwImportDraftCodec.schoolFromSourceJson(
+                            it, jwSchools, sourceVerified = true,
+                        )
                     }
                 }
                 // 组合树, 滚动位置/搜索词全部销毁。各 stage 分支内容包独立 key 的
@@ -151,14 +166,14 @@ class JwImportActivity : ComponentActivity() {
                 val saveableStateHolder: SaveableStateHolder = rememberSaveableStateHolder()
 
                 var selectedSchool by remember(initialSourceSchool) { mutableStateOf(initialSourceSchool) }
-                var catalogNotice by remember {
-                    mutableStateOf(initialSourceSchool?.takeIf { it.isUnverified })
+                var catalogNotice by remember(updateMode) {
+                    mutableStateOf(initialSourceSchool?.takeIf { !updateMode && it.isUnverified })
                 }
                 // 2026-10-18 离线回路: 未验证学校导入成功后弹报告弹窗(复制+加QQ群), 已验证学校维持静默 finish
                 var reportDialogSchool by remember { mutableStateOf<JwSchoolInfo?>(null) }
                 var stage by remember(updateMode, initialSourceSchool) {
                     mutableStateOf<Stage>(
-                        if (updateMode && initialSourceSchool?.isSupported == true) Stage.WebViewLogin
+                        if (updateMode && initialSourceSchool != null) Stage.WebViewLogin
                         else Stage.SelectSchool
                     )
                 }
@@ -562,6 +577,12 @@ class JwImportActivity : ComponentActivity() {
                 }
 
                 when {
+                    updateMode && !updateSourceChecked -> {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            LinearProgressIndicator()
+                        }
+                    }
+
                     importFinished -> {
                         LaunchedEffect(Unit) { finish() }
                     }
@@ -882,6 +903,7 @@ class JwImportActivity : ComponentActivity() {
                                                 context = this@JwImportActivity,
                                                 onImported = { imported = true },
                                                 bindPeriodTableId = configBindPeriodTableId?.takeIf { it > 0 },
+                                                fromConfirmedJwImport = true,
                                             )
                                             if (imported) finishOrReport(school)
                                         } catch (e: Exception) {
