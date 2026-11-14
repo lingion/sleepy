@@ -660,3 +660,19 @@ API36原HazeRender三项以已注册SleepyRenderTestRunner在5.3395s通过，初
 97个trace state中，早期A的9条使用另外四个UIImage identity；之后正式截图的四种UIImage在A/B间保持。因此不宣称整run的image identity不变或getter完全没有观察影响。全部原记录保留。原始750×1334px输入与预定RGBA数组相符；两处既定body探针各192px，四张图分别为A全部RGB(37,37,37)、B全部(247,247,247)。根查看原Dock联系图，未选文字/图标随背景由浅变深，选中前景保持浅色；未从图像极值、UIImage大小或model alpha推算独立字形颜色。
 
 [便携公开属性记录](../libraries/liquid-glass/validation/observations/dock-foreground-properties-91.json)保留输入/源码与原始证据哈希、分支属性、正式观察及限制；完整资料在本会话android-dock-foreground-properties-91。此次仅增加原生参考与证据，没有修改Android生产光学或固定前景色。90的材质压暗残差、彩色/纹理背景与自然动态仍待校准，三个发布gate保持false；独立公开仓库仍留待逐控件校准及来源/分发核对完成后创建。
+
+### 93：通用 GPU 前景原语与原生路径依赖
+
+runtime 新增 `BackdropAwareForeground.kt`，现为23份生产Kotlin源。调用者明确提供外部Backdrop、低/高背景端点色、响应区间、透明源的实心底色及局部物理像素取样矩形；原尺寸alpha mask、互不重叠的scene/mask atlas和独立output层完成GPU合成，无像素回读。徽标、选中主题色等独立accent放在mask之外。相对缩放/旋转需调用方传入现有变换补偿Backdrop；三层离屏面积约为内容的五倍，当前只验证受控小型前景区域，未作内存/性能或大内容验收。
+
+新host5项及debug/androidTest同轮14.9961s通过；初次负尺寸case失败后，仅修正生产尺寸校验，测试未改，原失败log保留。API36使用现有注册runner的2项HWUI/PixelCopy测试通过，覆盖局部非零取样、同一源变更、透明源、mask透明度、独立badge、平移/resize/卸载重挂；37个probe均满足预设RGB3容差，最大通道差1。没有覆盖半透明source/endpoint、中间响应值或相对旋转；也不称真正首compositor帧、原生glyph mask或全生命周期资源验收。
+
+runtime AAR构建通过，119类与app实际2242个生产类无交集；原33,561字节AGSL在HEAD/AAR/APK逐字节一致，既有Style/Shader/Effect未改。构建后只补KDoc边界，源码hash与构建时hash分开记录。此原语是显式参数的通用能力，**没有接入生产Dock，也不包含原生classifier或默认阈值**。[便携GPU记录](../libraries/liquid-glass/validation/observations/backdrop-aware-foreground-gpu-93.json)保留检查范围，完整日志、成功XML、设备导出、独立审查及打包核对在本会话android-dock-adaptation-93。
+
+同批原生工具增加两个显式单次实验，均保留iOS26.5/23F77 SE3的SwiftUI TabView/hidden-navigation/synthetic-scroll上下文、固定dark window及同一run内的view身份。底色26、局部band y550..<667pt；固定P1/P2仍为[196,592,208,596)及[244,592,256,596)pt，每窗192px。第一组179→204→217→230→204→179保留12PNG/AX，build7.4970s/test51.8236s；第二组独立launch的230→179→128→77→26保留10PNG/AX，build7.6505s/test35.4363s。必需exports均成功，可选build/console不可用记录保留，无retry/repetition。
+
+第一组初次179的两窗均值约158，204为173，230为247；回到204已为约234/235，179为223。16个实际前景view自身trait2→1并在回程保持1，普通label的model textColor白→黑，选中分支保持白，外层bar始终trait2。第二组两窗均值依次247、223、126、约78、37，前景自身trait依次1、1、2、2、2，普通label黑→白。每阶段两预算的完整PNG字节相同；字体、图像身份、alpha和几何在各自正式getter内保留，精确RGB分布、52处typed属性差异与实际时钟见[便携原生历史记录](../libraries/liquid-glass/validation/observations/dock-tonal-history-93.json)。
+
+1s/3s是观察下限，不能写成精确时刻或已稳定：首正式getter实际分别在draw后约6.05/7.55s和6.50/7.91s，第二组启动230的早期getter仍先观察到trait2，随后才为1。第一组已排除本次观察的一条无记忆亮度曲线；第二组仅将这次下降路径的已观测dark返回范围限定在179与128阶段之间。采样support、状态粒度、阈值、时间常数及丢帧语义均未识别。85约束空间传递，尚不能排除整pane共享状态或参数再叠加局部source透射；也不能把整pane五点分类当作已识别的原生机制。不得把通用smoothstep原语当作原生状态模型接进产品。
+
+当前main/test包已核对host/device SHA256并回到MainActivity；实际main为`52548587665cd3e9c9c237a5820e06fea2fbb9e6170691dd034d706961de34e7`，test为`54ac9f599be5ff92e7b71621fefd494f85076fafe36bd2e6fdb5f932fd972e86`。首张task返回过渡图与之后稳定首页图分开保留，后者可见第11周有课网格及Dock，仅验安装/启动。删除三个未用ABI包90,283,952字节，保留实际arm64/test包及唯一证据。完整控件/Host解耦、独立示例、逐控件光学/动态及来源分发审查仍未完成；本批不改变三个发布gate，不创建独立公开仓库，不作99.99%声明。

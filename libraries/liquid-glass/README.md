@@ -111,6 +111,8 @@ API36 使用注册的 `SleepyRenderTestRunner` 运行原 HazeRender 三项，5.3
 
 原生 Dock 的[实际前景属性记录](validation/observations/dock-foreground-properties-91.json)区分外层 bar 与每个图标/标签自身的 traits、RGBA 和字体。它补充参考证据；Android 背景自适应前景及完整光学仍待校准。
 
+[灰阶历史记录](validation/observations/dock-tonal-history-93.json)另保留两次独立原生序列：相同179/204输入在升程和回程有不同前景及body响应，下降路径在179仍为light、128已返回dark。这约束后续状态策略，不识别原生阈值或状态粒度；通用前景原语未因此接入生产Dock。
+
 ## 双头参考与验证入口
 
 现有 [原生参考工具](../../tools/native-glass-reference/README.md#paired-native-range-optical-matrix)已增加四种背景、明暗主题的独立双 UISlider 按住参考；[Android 光学夹具](../../app/src/androidTest/java/com/lingion/sleepy/ui/component/NativeRangeOpticalWorldRenderTest.kt)直接使用生产 Range/input，在相同逻辑世界导出两端和轨道的实际坐标。原生是 host 组合两个真实 UISlider，不能称为 Apple 原生双头 API；Android 稳态使用合成时钟，不能据此验收自然动态。原生按下前与按住中心分别记录，不隐藏取整、主题色及轨道上下文差异。夹具和其 Sleepy 主题依赖目前仍属于应用侧验证，尚未迁入独立示例，也不改变发布 gate。 77 批次已用同 primary 及实际产品主题比较独立 Range 材质入口，减少多余彩纹与深色白化；它暂复用 Single F，保留独立角色入口、四处诊断区域退步及暗上沿/端帽残差。该有限修正不代表完整原生双头验收，数据与限制见对照记录。

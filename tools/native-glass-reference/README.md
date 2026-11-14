@@ -1213,3 +1213,47 @@ geometry and formal image identities are retained in the
 Early trace image replacements remain explicitly recorded. Public model
 properties and their alpha chains do not identify final composited glyph colors,
 visible ownership, masks, native material rules or Android parity.
+
+## Retained Dock tonal history
+
+Two independently selected experiments extend the same retained SwiftUI parent,
+fixed dark window and typed foreground getters:
+
+- `testSwiftUITabViewDockTonalResponse` / `-ReferenceDockTonalResponse` visits
+  local band bytes 179→204→217→230→204→179, retaining twelve PNG/AX pairs.
+- `testSwiftUITabViewDockTonalReturn` / `-ReferenceDockTonalReturn` launches
+  separately and visits 230→179→128→77→26, retaining ten PNG/AX pairs.
+
+Both use `-ReferenceStaticOptics`, `-ReferenceDockLocalAppearance`,
+`-ReferenceDockParent swiftui-tabview` and `-ReferenceDockContent synthetic-scroll`.
+The selected XCTest methods supply these flags. The band occupies y550..<667pt
+over gray26 in the 375×667pt, 2× sRGB canvas. Gray26 merges into one actual
+1,000,500-pixel histogram rather than duplicating a dictionary key. Default
+79/85/91 paths and material/geometry policies remain unchanged. An unfiltered
+suite discovers both methods; select one with `-only-testing` and bound each
+test command to120s, without retries or repeated launches.
+
+Each stage retains draw-end, before/after getter and screenshot-call brackets.
+The1s/3s budgets are minimum observation windows, not exact sample times or
+compositor completion. On November14,2026, the rise/return command passed once
+in51.8236s and the separate descent once in35.4363s, reusing DerivedData. Required
+exports succeeded; unavailable optional build/console logs remain recorded.
+
+The fixed body probes at [196,592,208,596) and [244,592,256,596)pt each contain
+192pixels. In the first run, initial179 yielded approximately158 and204 yielded
+173; after230, returning204 yielded approximately234/235 and179 yielded223.
+All sixteen foreground views changed own effective style2→1 while the enclosing
+bar stayed2. In the separate descent, body means were247,223,126,approximately78,
+37, and foreground own styles were1,1,2,2,2. Ordinary label model textColor
+followed black→white on return; selected content stayed white. Each stage's
+two PNG files were byte-identical. Exact distributions, source hashes, actual
+getter timing and differing initial-run startup behavior are retained in the
+[portable history observation](../../libraries/liquid-glass/validation/observations/dock-tonal-history-93.json).
+
+The first run rules out a single memoryless mapping of current input for these
+observations. The second bounds the observed dark return between its179 and128
+stages; it does not identify native hysteresis thresholds, sampling support,
+state granularity, decay constants or transition completion. The85 spatial
+response also remains a separate constraint. These measurements do not justify
+wiring a stateless five-tap response into the production Dock or accepting
+native optical parity.

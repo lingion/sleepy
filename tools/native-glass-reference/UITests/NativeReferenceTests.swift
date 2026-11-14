@@ -751,15 +751,27 @@ final class NativeReferenceTests: XCTestCase {
         captureSwiftUITabViewDockSpatialResponse(horizontal: false, foregroundProperties: true)
     }
 
-    private func captureSwiftUITabViewDockSpatialResponse(horizontal: Bool, foregroundProperties: Bool = false) {
+    /// A single local-band rise/return sequence, with the same typed getters as A/B.
+    func testSwiftUITabViewDockTonalResponse() {
+        captureSwiftUITabViewDockSpatialResponse(horizontal: false, tonalResponse: true)
+    }
+
+    /// A separate descending reference; observe return without an expected classifier.
+    func testSwiftUITabViewDockTonalReturn() {
+        captureSwiftUITabViewDockSpatialResponse(horizontal: false, tonalReturn: true)
+    }
+
+    private func captureSwiftUITabViewDockSpatialResponse(horizontal: Bool, foregroundProperties: Bool = false,
+                                                        tonalResponse: Bool = false, tonalReturn: Bool = false) {
         executionTimeAllowance = 110
-        continueAfterFailure = foregroundProperties || !horizontal
+        let observeForeground = foregroundProperties || tonalResponse || tonalReturn
+        continueAfterFailure = observeForeground || !horizontal
         settleDuration = 0.1
         var captures: [[String: Any]] = []
         defer {
             if let data = try? JSONSerialization.data(withJSONObject: captures, options: [.prettyPrinted, .sortedKeys]) {
                 let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
-                attachment.name = foregroundProperties ? "dock-foreground-properties-capture-brackets" : "dock-local-appearance-capture-brackets"
+                attachment.name = tonalReturn ? "dock-tonal-return-capture-brackets" : (tonalResponse ? "dock-tonal-response-capture-brackets" : (foregroundProperties ? "dock-foreground-properties-capture-brackets" : "dock-local-appearance-capture-brackets"))
                 attachment.lifetime = .keepAlways
                 add(attachment)
             }
@@ -767,7 +779,8 @@ final class NativeReferenceTests: XCTestCase {
         }
         launch(scene: "toggle", background: "gray_26", style: "dark", staticOptics: true,
                dockParent: "swiftui-tabview", dockContent: "synthetic-scroll", localAppearance: true,
-               horizontalLocalAppearance: horizontal, foregroundProperties: foregroundProperties)
+               horizontalLocalAppearance: horizontal, foregroundProperties: foregroundProperties,
+               tonalResponse: tonalResponse, tonalReturn: tonalReturn)
         let control = app.tabBars["swiftui-tabbar"]
         XCTAssertTrue(control.waitForExistence(timeout: 5))
         XCTAssertEqual(control.buttons.count, 4)
@@ -778,7 +791,8 @@ final class NativeReferenceTests: XCTestCase {
         let next = app.buttons["dock-local-appearance-next"]
         XCTAssertTrue(state.waitForExistence(timeout: 5))
         XCTAssertTrue(next.exists)
-        let stages = foregroundProperties ? ["A", "B"] : (horizontal ? ["A", "L", "R", "B", "R", "L", "A"] : ["A", "B", "C", "D", "C", "B", "A"])
+        let tonalGrayBytes = tonalReturn ? [230, 179, 128, 77, 26] : [179, 204, 217, 230, 204, 179]
+        let stages = (tonalResponse || tonalReturn) ? tonalGrayBytes.map { "band_gray_\($0)" } : (foregroundProperties ? ["A", "B"] : (horizontal ? ["A", "L", "R", "B", "R", "L", "A"] : ["A", "B", "C", "D", "C", "B", "A"]))
         var initialIdentities: [String]?
         func decoded(_ text: String) -> [String: Any] {
             guard let data = text.data(using: .utf8),
@@ -807,7 +821,7 @@ final class NativeReferenceTests: XCTestCase {
                 let end = clock()
                 let afterText = state.value as? String ?? ""
                 let after = decoded(afterText)
-                let prefix = foregroundProperties ? "dock-foreground" : "dock-local"
+                let prefix = tonalReturn ? "dock-tonal-return" : (tonalResponse ? "dock-tonal" : (foregroundProperties ? "dock-foreground" : "dock-local"))
                 let name = String(format: prefix + "-%02d-%@-%ds-rest", index, inputID, Int(budget))
                 captures.append(["stage": index, "inputID": inputID, "observationBudgetSeconds": budget,
                                  "waitCompleted": waitResult == .completed, "attachmentName": name,
@@ -824,8 +838,33 @@ final class NativeReferenceTests: XCTestCase {
                     XCTAssertEqual(snapshot["inputID"] as? String, inputID)
                     XCTAssertGreaterThanOrEqual((snapshot["elapsedSinceSourceApplyEndSeconds"] as? Double) ?? -1, budget)
                     XCTAssertEqual((snapshot["canvasInterfaceStyle"] as? NSNumber)?.intValue, 2)
+                    if tonalResponse || tonalReturn {
+                        let gray = tonalGrayBytes[index]
+                        let input = snapshot["input"] as? [String: Any] ?? [:]
+                        XCTAssertEqual(input["id"] as? String, inputID)
+                        XCTAssertEqual(input["baseRGBABytes"] as? [Int], [26, 26, 26, 255])
+                        XCTAssertEqual(input["bandRGBABytes"] as? [Int], [gray, gray, gray, 255])
+                        XCTAssertEqual(input["bandRectWorldXYWHpt"] as? [Int], [0, 550, 375, 117])
+                        XCTAssertEqual(input["bandRectNativeXYWHpx"] as? [Int], [0, 1100, 750, 234])
+                        XCTAssertEqual(input["sourceSizePx"] as? [Int], [750, 1334])
+                        let expectedHistogram = gray == 26 ? ["26": 1_000_500] : ["26": 825_000, String(gray): 175_500]
+                        XCTAssertEqual(input["rawGrayByteHistogram"] as? [String: Int], expectedHistogram)
+                        let source = snapshot["sourceApplication"] as? [String: Any] ?? [:]
+                        XCTAssertEqual(source["inputID"] as? String, inputID)
+                        XCTAssertEqual((source["stage"] as? NSNumber)?.intValue, index)
+                        for bracket in ["snapshotBegin", "snapshotEnd"] {
+                            let timing = snapshot[bracket] as? [String: Double] ?? [:]
+                            XCTAssertNotNil(timing["uptimeSeconds"])
+                            XCTAssertNotNil(timing["unixSeconds"])
+                        }
+                        for bracket in ["begin", "end"] {
+                            let timing = source[bracket] as? [String: Double] ?? [:]
+                            XCTAssertNotNil(timing["uptimeSeconds"])
+                            XCTAssertNotNil(timing["unixSeconds"])
+                        }
+                    }
                     let publicState = snapshot["publicState"] as? [String: Any] ?? [:]
-                    if foregroundProperties {
+                    if observeForeground {
                         let foreground = publicState["foregroundProperties"] as? [String: Any] ?? [:]
                         XCTAssertEqual((foreground["schemaVersion"] as? NSNumber)?.intValue, 1)
                         XCTAssertEqual(foreground["enabled"] as? Bool, true)
@@ -868,11 +907,11 @@ final class NativeReferenceTests: XCTestCase {
                     }
                 }
                 XCTAssertTrue(control.buttons["Schedule"].isSelected)
-                XCTAssertTrue(next.isEnabled, foregroundProperties ? "Final B keeps the same enabled foreground" : "Final A keeps the same enabled foreground")
+                XCTAssertTrue(next.isEnabled, "Final \(stages.last!) keeps the same enabled foreground")
             }
             if index + 1 < stages.count { next.tap() }
         }
-        XCTAssertEqual(captures.count, foregroundProperties ? 4 : 14)
+        XCTAssertEqual(captures.count, tonalReturn ? 10 : (tonalResponse ? 12 : (foregroundProperties ? 4 : 14)))
     }
 
     func testAlertOpticsFineGridLight() { alertOptics(background: "fine_grid", style: "light") }
@@ -1193,6 +1232,7 @@ final class NativeReferenceTests: XCTestCase {
                         style: String = "light", staticOptics: Bool = false, dockParent: String? = nil,
                         dockContent: String? = nil, appearanceControls: Bool = false, localAppearance: Bool = false,
                         horizontalLocalAppearance: Bool = false, foregroundProperties: Bool = false,
+                        tonalResponse: Bool = false, tonalReturn: Bool = false,
                         initialSlider: Double? = nil,
                         sliderLayerProbe: Bool = false, rangeScale: Double? = nil, rangeLower: Double? = nil,
                         rangeUpper: Double? = nil, rangeGeometryProbe: Bool = false) {
@@ -1208,6 +1248,8 @@ final class NativeReferenceTests: XCTestCase {
         if localAppearance { app.launchArguments.append("-ReferenceDockLocalAppearance") }
         if horizontalLocalAppearance { app.launchArguments.append("-ReferenceDockHorizontalResponse") }
         if foregroundProperties { app.launchArguments.append("-ReferenceDockForegroundProperties") }
+        if tonalResponse { app.launchArguments.append("-ReferenceDockTonalResponse") }
+        if tonalReturn { app.launchArguments.append("-ReferenceDockTonalReturn") }
         if let initialSlider { app.launchArguments += ["-ReferenceInitialSlider", String(initialSlider)] }
         if sliderLayerProbe { app.launchArguments.append("-ReferenceSliderLayerProbe") }
         if let rangeScale { app.launchArguments += ["-ReferenceRangeScale", String(rangeScale)] }

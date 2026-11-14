@@ -140,13 +140,33 @@ enum ReferenceBackground: String, CaseIterable {
 /// The 117pt band is an intervention, not a claimed material sampling radius.
 private enum ReferenceDockSpatialInput: String, CaseIterable {
     case A, B, C, D, L, R
+    case band_gray_179, band_gray_204, band_gray_217, band_gray_230
+    case band_gray_128, band_gray_77, band_gray_26
     static let worldSize = CGSize(width: 375, height: 667)
     static let scale: CGFloat = 2
-    private static let images = Dictionary(uniqueKeysWithValues: allCases.map { ($0, $0.makeImage()) })
+    private static let images = Dictionary(uniqueKeysWithValues: [Self.A, .B, .C, .D, .L, .R].map { ($0, $0.makeImage()) })
+    private static let tonalImages = Dictionary(uniqueKeysWithValues: [Self.band_gray_179, .band_gray_204, .band_gray_217, .band_gray_230].map { ($0, $0.makeImage()) })
+    private static let tonalReturnImages = Dictionary(uniqueKeysWithValues: [Self.band_gray_128, .band_gray_77, .band_gray_26].map { ($0, $0.makeImage()) })
 
-    var image: UIImage { Self.images[self]! }
+    var image: UIImage {
+        if self == .band_gray_128 || self == .band_gray_77 || self == .band_gray_26 { return Self.tonalReturnImages[self]! }
+        return tonalBandGrayByte == nil ? Self.images[self]! : Self.tonalImages[self]!
+    }
+    var tonalBandGrayByte: Int? {
+        switch self {
+        case .band_gray_179: return 179
+        case .band_gray_204: return 204
+        case .band_gray_217: return 217
+        case .band_gray_230: return 230
+        case .band_gray_128: return 128
+        case .band_gray_77: return 77
+        case .band_gray_26: return 26
+        default: return nil
+        }
+    }
     var brightBandY: Int? { self == .B ? 550 : (self == .C ? 200 : nil) }
     var brightRect: [Int]? {
+        if tonalBandGrayByte != nil { return [0, 550, 375, 117] }
         if let y = brightBandY { return [0, y, 375, 117] }
         if self == .L { return [125, 550, 100, 117] }
         if self == .R { return [225, 550, 100, 117] }
@@ -157,7 +177,33 @@ private enum ReferenceDockSpatialInput: String, CaseIterable {
         return brightRect.map { $0[2] * $0[3] * 4 } ?? 0
     }
     var metadata: [String: Any] {
-        ["id": rawValue, "colorSpace": "sRGB", "alphaByte": 255,
+        if self == .band_gray_26, let rectangle = brightRect {
+            // The intervention still has a recorded band, but both regions are
+            // gray26. Merge the actual histogram instead of repeating its key.
+            return ["id": rawValue, "colorSpace": "sRGB", "alphaByte": 255,
+                    "baseRGBABytes": [26, 26, 26, 255], "bandRGBABytes": [26, 26, 26, 255],
+                    "bandRectWorldXYWHpt": rectangle, "bandWorldYHalfOpenPt": [550, 667],
+                    "bandRectNativeXYWHpx": rectangle.map { $0 * 2 }, "bandNativeYHalfOpenPx": [1100, 1334],
+                    "sourceSizePx": [750, 1334], "sourceWorldXYWHpt": [0, 0, 375, 667],
+                    "sourceScale": Self.scale, "interpolation": "none", "boundary": "hard pixel-aligned",
+                    "gray26PixelCount": 1_000_500, "rawGrayByteHistogram": ["26": 1_000_500],
+                    "histogramScope": "raw canvas only; fixed synthetic foreground remains in composed scene",
+                    "bandScope": "pure gray intervention over gray26 at world y550..<667; not a claimed native material sampling support"]
+        }
+        if let gray = tonalBandGrayByte, let rectangle = brightRect {
+            let bandPixelCount = rectangle[2] * rectangle[3] * 4
+            return ["id": rawValue, "colorSpace": "sRGB", "alphaByte": 255,
+                    "baseRGBABytes": [26, 26, 26, 255], "bandRGBABytes": [gray, gray, gray, 255],
+                    "bandRectWorldXYWHpt": rectangle, "bandWorldYHalfOpenPt": [550, 667],
+                    "bandRectNativeXYWHpx": rectangle.map { $0 * 2 }, "bandNativeYHalfOpenPx": [1100, 1334],
+                    "sourceSizePx": [750, 1334], "sourceWorldXYWHpt": [0, 0, 375, 667],
+                    "sourceScale": Self.scale, "interpolation": "none", "boundary": "hard pixel-aligned",
+                    "gray26PixelCount": 1_000_500 - bandPixelCount, "gray\(gray)PixelCount": bandPixelCount,
+                    "rawGrayByteHistogram": ["26": 1_000_500 - bandPixelCount, String(gray): bandPixelCount],
+                    "histogramScope": "raw canvas only; fixed synthetic foreground remains in composed scene",
+                    "bandScope": "pure gray intervention over gray26 at world y550..<667; not a claimed native material sampling support"]
+        }
+        return ["id": rawValue, "colorSpace": "sRGB", "alphaByte": 255,
          "baseRGBABytes": self == .D ? [230, 230, 230, 255] : [26, 26, 26, 255],
          "brightRGBABytes": brightRect.map { _ in [230, 230, 230, 255] as Any } ?? NSNull(),
          "brightRectWorldXYWHpt": brightRect.map { $0 as Any } ?? NSNull(),
@@ -173,13 +219,14 @@ private enum ReferenceDockSpatialInput: String, CaseIterable {
         let width = 750, height = 1334
         var pixels = [UInt8](repeating: 255, count: width * height * 4)
         let rectangle = brightRect
+        let rectangleGray = UInt8(tonalBandGrayByte ?? 230)
         for y in 0..<height {
             for x in 0..<width {
                 let inBrightRect = rectangle.map {
                     x >= $0[0] * 2 && x < ($0[0] + $0[2]) * 2 &&
                     y >= $0[1] * 2 && y < ($0[1] + $0[3]) * 2
                 } ?? false
-                let gray: UInt8 = self == .D || inBrightRect ? 230 : 26
+                let gray: UInt8 = self == .D ? 230 : (inBrightRect ? rectangleGray : 26)
                 let offset = (y * width + x) * 4
                 pixels[offset] = gray; pixels[offset + 1] = gray; pixels[offset + 2] = gray
             }
@@ -359,7 +406,9 @@ private enum ReferenceDockPublicSnapshot {
 /// https://developer.apple.com/documentation/uikit/uiimageview
 /// https://developer.apple.com/documentation/uikit/uiimage/symbolconfiguration-swift.class
 private enum ReferenceDockForegroundProperties {
-    static let enabled = ProcessInfo.processInfo.arguments.contains("-ReferenceDockForegroundProperties") &&
+    static let enabled = (ProcessInfo.processInfo.arguments.contains("-ReferenceDockForegroundProperties") ||
+        ProcessInfo.processInfo.arguments.contains("-ReferenceDockTonalResponse") ||
+        ProcessInfo.processInfo.arguments.contains("-ReferenceDockTonalReturn")) &&
         ProcessInfo.processInfo.arguments.contains("-ReferenceDockLocalAppearance") &&
         ProcessInfo.processInfo.arguments.contains("-ReferenceStaticOptics")
 
@@ -894,13 +943,19 @@ private final class ReferenceDockAppearanceControls: ObservableObject {
 /// neither effective bar style nor native material/geometry is assigned.
 private final class ReferenceDockLocalAppearance: ObservableObject {
     static let sequence: [ReferenceDockSpatialInput] = [.A, .B, .C, .D, .C, .B, .A]
+    private let tonalReturn = ProcessInfo.processInfo.arguments.contains("-ReferenceDockTonalReturn")
+    private let tonalResponse = ProcessInfo.processInfo.arguments.contains("-ReferenceDockTonalResponse")
     private let horizontalResponse = ProcessInfo.processInfo.arguments.contains("-ReferenceDockHorizontalResponse")
     private let foregroundProperties = ReferenceDockForegroundProperties.enabled
     private var activeSequence: [ReferenceDockSpatialInput] {
+        if tonalReturn { return [.band_gray_230, .band_gray_179, .band_gray_128, .band_gray_77, .band_gray_26] }
+        if tonalResponse { return [.band_gray_179, .band_gray_204, .band_gray_217, .band_gray_230, .band_gray_204, .band_gray_179] }
         if foregroundProperties { return [.A, .B] }
         return horizontalResponse ? [.A, .L, .R, .B, .R, .L, .A] : Self.sequence
     }
     private var experimentInputs: [ReferenceDockSpatialInput] {
+        if tonalReturn { return [.band_gray_230, .band_gray_179, .band_gray_128, .band_gray_77, .band_gray_26] }
+        if tonalResponse { return [.band_gray_179, .band_gray_204, .band_gray_217, .band_gray_230] }
         if foregroundProperties { return [.A, .B] }
         return horizontalResponse ? [.A, .L, .R, .B] : [.A, .B, .C, .D]
     }
@@ -944,13 +999,29 @@ private final class ReferenceDockLocalAppearance: ObservableObject {
             "stylePolicy": ["windowOverride": "dark throughout", "controllerOverride": "unchanged; inherit dark window",
                             "canvasOverride": "dark throughout", "barOverride": "unchanged/unspecified; observe effective style"],
             "launchArguments": ProcessInfo.processInfo.arguments,
-            "visibleForeground": "fixed synthetic content, REST spatial control label and always-enabled Next REST button, including final " + (foregroundProperties ? "B" : "A"),
+            "visibleForeground": "fixed synthetic content, REST spatial control label and always-enabled Next REST button, including final " + activeSequence.last!.rawValue,
             "clockScope": "source draw and public getter brackets; trace t is enqueue time, never compositor presentation time",
             "scope": "one retained REST sequence; no Dock touches, scroll, style threshold, fit or material/geometry mutation"])
         if foregroundProperties {
             ReferenceTrace.shared.add(["event": "dock-foreground-properties-configuration", "enabled": true,
                                        "sequence": activeSequence.map(\.rawValue), "observationBudgetsSeconds": [1, 3],
-                                       "scope": "two retained A/B stages only; public properties are distinct from final composited glyph colors and coverage"])
+                                       "scope": tonalReturn ? "five retained local gray-band return stages; public properties are distinct from final composited glyph colors and coverage" : (tonalResponse ? "six retained local gray-band stages; public properties are distinct from final composited glyph colors and coverage" : "two retained A/B stages only; public properties are distinct from final composited glyph colors and coverage")])
+        }
+        if tonalResponse {
+            ReferenceTrace.shared.add(["event": "dock-tonal-response-configuration", "enabled": true,
+                                       "sequence": activeSequence.map(\.rawValue),
+                                       "bandGrayBytes": [179, 204, 217, 230, 204, 179],
+                                       "bandWorldYHalfOpenPt": [550, 667], "baseGrayByte": 26,
+                                       "observationBudgetsSeconds": [1, 3], "foregroundPropertiesEnabled": foregroundProperties,
+                                       "scope": "one retained SwiftUI TabView synthetic-scroll sequence in a fixed dark window; observe native material return and same-stage typed glyph properties without asserting a classifier result, restyling or retrying"])
+        }
+        if tonalReturn {
+            ReferenceTrace.shared.add(["event": "dock-tonal-return-configuration", "enabled": true,
+                                       "sequence": activeSequence.map(\.rawValue),
+                                       "bandGrayBytes": [230, 179, 128, 77, 26],
+                                       "bandWorldYHalfOpenPt": [550, 667], "baseGrayByte": 26,
+                                       "observationBudgetsSeconds": [1, 3], "foregroundPropertiesEnabled": foregroundProperties,
+                                       "scope": "one retained SwiftUI TabView synthetic-scroll descent in a fixed dark window; observe the return range and same-stage typed glyph properties without claiming a native classifier threshold, restyling or retrying"])
         }
         for input in experimentInputs {
             let name = "dock-local-input-\(input.rawValue).png"
@@ -998,7 +1069,7 @@ private final class ReferenceDockLocalAppearance: ObservableObject {
         guard elapsed >= 3, stageIndex + 1 < activeSequence.count else {
             ReferenceTrace.shared.add(["event": "dock-local-advance-not-applied", "stage": stageIndex,
                                        "elapsedSinceSourceApplyEndSeconds": elapsed,
-                                       "reason": stageIndex + 1 == activeSequence.count ? (foregroundProperties ? "final B retained" : "final A retained") : "three-second observation budget not reached"])
+                                       "reason": stageIndex + 1 == activeSequence.count ? "final \(activeSequence.last!.rawValue) retained" : "three-second observation budget not reached"])
             return
         }
         record(phase: "leaving", force: true)
