@@ -45,6 +45,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.CancellationException
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.data.entity.CourseEntity
@@ -128,6 +129,7 @@ class JwImportActivity : ComponentActivity() {
             SleepyThemeProvider(darkTheme = dark, themeKey = themeKey) {
                 val jwViewModel: JwImportViewModel = viewModel()
                 val jwSchools by jwViewModel.schools.collectAsState()
+                val jwImportState by jwViewModel.importState.collectAsState()
                 val scheduleViewModel: ScheduleViewModel = viewModel()
                 // v1.0.56 T6: 第三 Tab「作息表」数据源 — 绑定现有作息表直接用
                 val allPeriodTables by scheduleViewModel.allPeriodTables.collectAsState(initial = emptyList())
@@ -138,13 +140,26 @@ class JwImportActivity : ComponentActivity() {
                 val updateMode = intent.getBooleanExtra(EXTRA_UPDATE_TABLE, false)
                 var authorizedUpdateSourceJson by remember { mutableStateOf<String?>(null) }
                 var updateSourceChecked by remember(updateMode) { mutableStateOf(!updateMode) }
-                LaunchedEffect(updateMode, targetTableId, jwSchools) {
-                    if (!updateMode || jwSchools.isEmpty()) return@LaunchedEffect
-                    val target = SleepyApp.get().repository.getTable(targetTableId)
-                    val source = target?.takeIf { it.jwSchoolSourceVerified }?.let {
-                        com.lingion.sleepy.data.jw.JwImportDraftCodec.schoolFromSourceJson(
-                            it.jwSchoolSourceJson, jwSchools, sourceVerified = true,
-                        )
+                LaunchedEffect(updateMode, targetTableId, jwSchools, jwImportState) {
+                    if (!updateMode) return@LaunchedEffect
+                    if (jwSchools.isEmpty()) {
+                        if (jwImportState is JwImportViewModel.ImportState.Error) {
+                            updateSourceChecked = true
+                            finish()
+                        }
+                        return@LaunchedEffect
+                    }
+                    val source = try {
+                        val target = SleepyApp.get().repository.getTable(targetTableId)
+                        target?.takeIf { it.jwSchoolSourceVerified }?.let {
+                            com.lingion.sleepy.data.jw.JwImportDraftCodec.schoolFromSourceJson(
+                                it.jwSchoolSourceJson, jwSchools, sourceVerified = true,
+                            )
+                        }
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (_: Exception) {
+                        null
                     }
                     authorizedUpdateSourceJson = source?.let {
                         com.lingion.sleepy.data.jw.JwImportDraftCodec.toSchoolSourceJson(it)
