@@ -579,7 +579,7 @@ fun ScheduleScreen(
  * 列出全部课表, 当前行 primaryContainer 高亮 + 对勾, 点击即切换。
  */
 @Composable
-private fun TableSwitcherDialog(
+internal fun TableSwitcherDialog(
     tables: List<TimeTableEntity>,
     selectedTableId: Long?,
     onSelect: (Long) -> Unit,
@@ -588,6 +588,8 @@ private fun TableSwitcherDialog(
     val colors = MaterialTheme.colorScheme
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.dbgTag("schedule_table_dialog", clickable = false),
+        matchMaterialLayout = true,
         titleContentColor = colors.onSurface,
         textContentColor = colors.onSurfaceVariant,
         title = { Text(stringResource(R.string.schedule_switch_table)) },

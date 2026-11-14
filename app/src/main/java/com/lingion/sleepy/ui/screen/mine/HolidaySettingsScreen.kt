@@ -815,7 +815,7 @@ private fun HolidayTransferRow(
                 ) { Text(stringResource(R.string.cancel), maxLines = if (nativeDialogActions) Int.MAX_VALUE else 1) }
             }
         ) {
-            androidx.compose.material3.DatePicker(state = datePickerState)
+            com.lingion.sleepy.ui.component.SleepyDatePicker(state = datePickerState)
         }
     }
 }

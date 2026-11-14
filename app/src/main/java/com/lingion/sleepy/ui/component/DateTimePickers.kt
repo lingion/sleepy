@@ -18,7 +18,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarMonth
 import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePicker as MaterialDatePicker
+import androidx.compose.material3.DatePickerState
+import androidx.compose.material3.DisplayMode
 import com.lingion.sleepy.ui.component.liquidglass.GlassDatePickerDialog as DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -31,6 +33,7 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +42,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
@@ -52,6 +57,54 @@ import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+
+/** Material owns the calendar and its animation; the app owns the input focus lifetime. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SleepyDatePicker(
+    state: DatePickerState,
+    modifier: Modifier = Modifier,
+    showModeToggle: Boolean = true,
+) {
+    val focusManager = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
+    val pickerState = remember(state, focusManager, keyboard) {
+        object : DatePickerState by state {
+            override var displayMode: DisplayMode
+                get() = state.displayMode
+                set(value) {
+                    if (state.displayMode != value && value == DisplayMode.Picker) {
+                        // Release the outgoing text field before Material starts expanding
+                        // the calendar, rather than when AnimatedContent finally disposes it.
+                        focusManager.clearFocus(force = true)
+                        keyboard?.hide()
+                    }
+                    state.displayMode = value
+                }
+        }
+    }
+    val displayMode = state.displayMode
+    val previousDisplayMode = remember(state) { mutableStateOf(displayMode) }
+    SideEffect {
+        // A caller can change its original state without going through the proxy.
+        // Clean up in that composition's apply phase, before its expanding frame
+        // is drawn; a launched coroutine may run after that frame has started.
+        if (previousDisplayMode.value != displayMode && displayMode == DisplayMode.Picker) {
+            focusManager.clearFocus(force = true)
+            keyboard?.hide()
+        }
+        previousDisplayMode.value = displayMode
+    }
+    MaterialDatePicker(
+        state = pickerState,
+        modifier = modifier,
+        showModeToggle = showModeToggle,
+        // Material's delayed auto-focus survives in the outgoing AnimatedContent.
+        // Explicit input taps still focus normally; no late request may reopen IME
+        // after the user has already returned to the calendar.
+        focusRequester = null,
+    )
+}
 
 /**
  * 日期输入字段 — 手动输入 + 点击图标弹出原生日期选择器
@@ -136,7 +189,7 @@ fun DatePickerField(
                 ) { Text(stringResource(R.string.cancel), maxLines = if (nativeDialogActions) Int.MAX_VALUE else 1) }
             }
         ) {
-            DatePicker(state = datePickerState)
+            SleepyDatePicker(state = datePickerState)
         }
     }
 }

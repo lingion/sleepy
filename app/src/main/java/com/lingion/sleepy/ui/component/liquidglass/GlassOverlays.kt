@@ -111,6 +111,9 @@ fun GlassAlertDialog(
     textContentColor: Color = Color.Unspecified,
     tonalElevation: Dp = AlertDialogDefaults.TonalElevation,
     properties: DialogProperties = DialogProperties(),
+    // List selectors keep the official Material window and content geometry in
+    // both styles; native confirmation-alert metrics do not fit list content.
+    matchMaterialLayout: Boolean = false,
 ) {
     val resolvedIconColor = if (iconContentColor != Color.Unspecified) iconContentColor else AlertDialogDefaults.iconContentColor
     val resolvedTitleColor = if (titleContentColor != Color.Unspecified) titleContentColor else AlertDialogDefaults.titleContentColor
@@ -148,6 +151,26 @@ fun GlassAlertDialog(
         LocalGlassAlertPressState provides panePress,
         LocalGlassAlertAction provides false,
     ) {
+        if (matchMaterialLayout) {
+            MaterialAlertDialog(
+                onDismissRequest = onDismissRequest,
+                confirmButton = {
+                    GlassDialogScrim(nativeLightScrim)
+                    confirmButton()
+                },
+                modifier = modifier.recordGlassPopupScene(popupScene)
+                    .trackGlassMaterial(materialScope).glassControl(
+                        shape = carrierShape, enabled = false, registerPane = false,
+                        role = GlassMaterialRole.Alert, exportedBackdrop = materialScope?.exported,
+                    ),
+                dismissButton = dismissButton, icon = icon, title = title, text = text,
+                shape = carrierShape,
+                containerColor = if (containerColor != Color.Unspecified) containerColor else Color.Transparent,
+                iconContentColor = resolvedIconColor, titleContentColor = resolvedTitleColor,
+                textContentColor = resolvedTextColor, tonalElevation = 0.dp, properties = properties,
+            )
+            return@CompositionLocalProvider
+        }
         // BasicAlertDialog applies its width bounds to the pane plus drawing room.
         // A platform fixed-width theme can then consume the halo by shrinking the
         // pane. Dialog provides the same platform lifetime/focus/dismissal while
@@ -266,7 +289,10 @@ fun GlassDatePickerDialog(
     if (!glass) {
         androidx.compose.material3.DatePickerDialog(
             onDismissRequest = onDismissRequest, confirmButton = confirmButton,
-            modifier = modifier, dismissButton = dismissButton, content = content,
+            modifier = modifier, dismissButton = dismissButton, content = {
+                DatePickerDialogWindowViewport()
+                content()
+            },
         )
         return
     }
@@ -297,6 +323,7 @@ fun GlassDatePickerDialog(
             exportedBackdrop = materialScope?.exported,
         )
         Dialog(onDismissRequest, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+            DatePickerDialogWindowViewport()
             GlassDialogScrim(nativeLightScrim)
             NativeGlassAlertDrawingSpace {
                 GlassMaterialContent(materialScope) {
