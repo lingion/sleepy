@@ -34,6 +34,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Description
@@ -151,6 +152,8 @@ fun AddTableScreen(
     // 2026-10-26 用户定令: 加课模式每条导入路径解析后先进入逐组勾选界面。
     var pendingSelection by remember { mutableStateOf<ImportPreview?>(null) }
     val canImport = !isLoading && (!addingCourses || state.tables.any { it.id == targetTableId })
+    val aiPromptText = stringResource(R.string.ai_prompt_text)
+    val aiPromptCopiedMsg = stringResource(R.string.import_ai_copied)
 
     // 从 JwImportActivity 外部导入返回时: 若成功新建课表/加课则自动关闭当前添加页; 若中途返回则停留在当前添加页
     var jwImportLaunched by rememberSaveable { mutableStateOf(false) }
@@ -398,6 +401,19 @@ fun AddTableScreen(
                 }
             }
 
+            // AI 截图转换: 复制提示词 → 用户自选识图 AI 连同截图发送 → 把回复粘贴到上方「粘贴课表文本」
+            ImportMethodRow(
+                icon = Icons.Outlined.AutoAwesome,
+                label = stringResource(R.string.import_ai_title),
+                subtitle = stringResource(R.string.import_ai_subtitle),
+                enabled = canImport,
+                dbgTag = "import_ai",
+                onClick = {
+                    copyAiPrompt(context, aiPromptText)
+                    scope.launch { snackbar.showSnackbar(aiPromptCopiedMsg) }
+                }
+            )
+
             // 手动入口行(2026-10-26 用户定令): 由底部通栏大按钮改为与其他路径一致的方法行,
             // 位置固定在「粘贴课表文本」折叠块之后、「从文件导入」之前。
             // 加课模式 = 手动添加课程(跳课程录入页); 新建模式 = 新建空白课表。
@@ -438,6 +454,12 @@ fun AddTableScreen(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 FormatRow(
+                    name = stringResource(R.string.format_plain),
+                    desc = stringResource(R.string.format_plain_desc),
+                    dbgTag = "import_format#PLAIN",
+                    onDetail = { detailFormat = ImportFormat.PLAIN }
+                )
+                FormatRow(
                     name = stringResource(R.string.format_wakeup_share),
                     desc = stringResource(R.string.format_wakeup_desc),
                     dbgTag = "import_format#WAKEUP_SHARE",
@@ -466,12 +488,6 @@ fun AddTableScreen(
                     desc = stringResource(R.string.format_html_desc),
                     dbgTag = "import_format#HTML",
                     onDetail = { detailFormat = ImportFormat.HTML }
-                )
-                FormatRow(
-                    name = stringResource(R.string.format_plain),
-                    desc = stringResource(R.string.format_plain_desc),
-                    dbgTag = "import_format#PLAIN",
-                    onDetail = { detailFormat = ImportFormat.PLAIN }
                 )
             }
 
@@ -730,6 +746,8 @@ private fun ImportMethodRow(
     icon: ImageVector,
     label: String,
     expanded: Boolean? = null,
+    subtitle: String? = null,
+    trailing: ImageVector? = null,
     enabled: Boolean = true,
     dbgTag: String? = null,
     onClick: () -> Unit
@@ -766,14 +784,25 @@ private fun ImportMethodRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         ImportMethodIcon(icon)
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-            color = colors.onSurface,
-            modifier = Modifier
-                .weight(1f)
-                .padding(start = 14.dp)
-        )
+        Column(
+            modifier = Modifier.weight(1f).padding(start = 14.dp)
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+                color = colors.onSurface,
+            )
+            if (subtitle != null) {
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant,
+                )
+            }
+        }
+        if (trailing != null) {
+            Icon(trailing, contentDescription = null, tint = colors.onSurfaceVariant)
+        }
     }
 }
 
@@ -786,6 +815,12 @@ private fun ImportMethodIcon(icon: ImageVector) {
     ) {
         Icon(icon, contentDescription = null, tint = colors.onPrimaryContainer, modifier = Modifier.size(20.dp))
     }
+}
+
+/** 把 AI 截图转换提示词放进系统剪贴板。转义已在 strings.xml 原文中处理, 这里不做二次替换。 */
+private fun copyAiPrompt(context: Context, prompt: String) {
+    val cm = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+    cm.setPrimaryClip(ClipData.newPlainText("prompt", prompt))
 }
 
 @Composable
@@ -996,7 +1031,7 @@ private fun FormatDetailDialog(format: ImportFormat, onDismiss: () -> Unit) {
                             color = colors.onPrimaryContainer
                         )
                         Text(
-                            text = stringResource(R.string.ai_prompt_text).replace("\\n", "\n"),
+                            text = aiPromptText,
                             style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontSize = MaterialTheme.typography.labelSmall.fontSize),
                             color = colors.onPrimaryContainer,
                             modifier = Modifier
@@ -1007,20 +1042,7 @@ private fun FormatDetailDialog(format: ImportFormat, onDismiss: () -> Unit) {
                         )
                         GlassAlertActionScope {
                             Button(
-                                onClick = {
-                                    val cm = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-                                    cm.setPrimaryClip(
-                                        ClipData.newPlainText(
-                                            "prompt",
-                                            aiPromptText
-                                                .replace("\\n", "\n")
-                                                .replace("\\t", "\t")
-                                                .replace("&lt;", "<")
-                                                .replace("&gt;", ">")
-                                                .replace("&amp;", "&")
-                                        )
-                                    )
-                                },
+                                onClick = { copyAiPrompt(context, aiPromptText) },
                                 modifier = Modifier.fillMaxWidth()
                                     .then(if (nativeActions) Modifier.heightIn(min = SleepyTheme.Buttons.regularHeight)
                                         else Modifier.height(SleepyTheme.Buttons.regularHeight))
@@ -1833,6 +1855,7 @@ internal suspend fun applyNewTableImport(
             timeJson = confirmedTimeJson,
             smartConfigJson = confirmedSmartConfigJson,
             importSourceJson = preview.parseResult.importSourceJson,
+            jwSchoolSourceJson = preview.parseResult.jwSchoolSourceJson,
             periodTableId = bindPeriodTableId,
         ),
         courses = preview.parseResult.courses,

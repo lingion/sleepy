@@ -272,7 +272,10 @@ object ScheduleParser {
         val harvested = harvestTimeFromTableInfo(root, name)
 
         return lossless(name, startDate, courses, harvested.timeJson, harvested.nodesPerDay, harvested.periodTable)
-            .copy(importSourceJson = originalImportSource(sourceText))
+            .copy(
+                importSourceJson = originalImportSource(sourceText),
+                jwSchoolSourceJson = originalJwSchoolSource(sourceText),
+            )
     }
 
     /**
@@ -365,6 +368,12 @@ object ScheduleParser {
             ?.get("importSourceJson")?.jsonPrimitive?.contentOrNull.orEmpty()
     }.getOrDefault("")
 
+    private fun originalJwSchoolSource(text: String): String = runCatching {
+        val root = json.parseToJsonElement(text).jsonObject
+        root["tableInfo"]?.jsonObject?.get("jwSchoolSourceJson")?.jsonPrimitive?.contentOrNull
+            ?: root["jwSchoolSourceJson"]?.jsonPrimitive?.contentOrNull.orEmpty()
+    }.getOrDefault("")
+
     private fun parseWakeUpJson(text: String, defaultTableId: Long, defaultColor: String, sourceText: String = text): ParseResult {
         val root = json.parseToJsonElement(text).jsonObject
         val name = root["name"]?.jsonPrimitive?.content ?: "导入的课表"
@@ -417,7 +426,10 @@ object ScheduleParser {
         // v1.0.56 T10: 同时收割独立作息表(混合导入自动建表+绑定)
         val harvested = harvestTimeFromTableInfo(root, name)
         return lossless(name, startDate, courses, harvested.timeJson, harvested.nodesPerDay, harvested.periodTable)
-            .copy(importSourceJson = originalImportSource(sourceText))
+            .copy(
+                importSourceJson = originalImportSource(sourceText),
+                jwSchoolSourceJson = originalJwSchoolSource(sourceText),
+            )
     }
 
     private fun parseCourseJsonArray(jsonStr: String, tableId: Long): List<CourseEntity> {
@@ -1453,6 +1465,7 @@ object ScheduleParser {
          */
         val periodTable: ParsedPeriodTable? = null,
         val importSourceJson: String = "",
+        val jwSchoolSourceJson: String = "",
     )
 
     /** P 区块解析产物: sourceId = 导出时的 period_tables.id(恢复共享关系的键) */

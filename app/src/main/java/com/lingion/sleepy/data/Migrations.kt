@@ -206,8 +206,15 @@ val ALL_MIGRATIONS: Array<Migration> = arrayOf(
         override fun migrate(db: SupportSQLiteDatabase) {
             db.execSQL(MIGRATION_14_15_SQL)
         }
+    },
+    object : Migration(15, 16) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(MIGRATION_15_16_SQL)
+        }
     }
 )
+
+internal const val MIGRATION_15_16_SQL = "ALTER TABLE time_tables ADD COLUMN jwSchoolSourceJson TEXT NOT NULL DEFAULT ''"
 
 internal const val MIGRATION_14_15_SQL = "ALTER TABLE time_tables ADD COLUMN importSourceJson TEXT NOT NULL DEFAULT ''"
 

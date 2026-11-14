@@ -28,7 +28,7 @@
 
 ---
 
-> **Keywords (SEO):** Android schedule app, iOS schedule app, iPhone 课程表, 开源 iPhone 课表, SwiftUI, WidgetKit, iOS 桌面小组件, App Store 课表, 课程表, 课表, timetable, university schedule, cross-platform timetable, Jetpack Compose, Material You, Chinese university academic system import, wisedu, 强智教务, 正方教务, URP, home screen widget, HSV color picker, 开源课表, 开源课程表, 离线课表, 无广告课表, 隐私课表, 国产课表, 大学课表, 高校课表, 教务导入, 教务直连, 课表导入导出, iCalendar, ICS 课表, WakeUp 替代, 课程格子 替代, 超级课程表 替代, class timetable, school timetable, university timetable, course schedule
+> **Keywords (SEO):** Android schedule app, iOS schedule app, iPhone 课程表, 开源 iPhone 课表, SwiftUI, WidgetKit, iOS 桌面小组件, App Store 课表, 课程表, 课表, timetable, university schedule, cross-platform timetable, Jetpack Compose, Material You, Chinese university academic system import, wisedu, 强智教务, 正方教务, URP, home screen widget, HSV color picker, 开源课表, 开源课程表, 离线课表, 无广告课表, 隐私课表, 国产课表, 大学课表, 高校课表, 教务导入, 教务直连, 课表导入导出, iCalendar, ICS 课表, WakeUp 替代, 课程格子 替代, 超级课程表 替代, AI 课表截图转换, 截图转课表, class timetable, school timetable, university timetable, course schedule
 
 ---
 
@@ -160,7 +160,18 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 |---|---|
 | **教务直连** | 选择已收录学校，或在搜索框输入教务 URL → WebView 登录 → 自动抓取课表 → 预览 → 导入 |
 | **粘贴课表文本** | 粘贴任意格式文本 → 自动识别格式 → 预览 → 导入 |
+| **AI 截图转换** | 复制提示词，连同课表截图交给你选择的识图 AI，把回复粘贴到「粘贴课表文本」，预览后导入 |
 | **从文件导入** | 选择 `.json` / `.ics` / `.csv` / `.html` 文件 → 预览 → 导入 |
+
+### AI 截图转换
+
+手打课表太慢、又没有可用的教务入口时，可以让 AI 把课表截图转成 sleepy-v1 文本：
+
+1. 在「导入课表」弹窗点「AI 截图转换」，提示词会复制到剪贴板。也可以在「纯文本」行的信息图标详情里复制。
+2. 把提示词和课表截图（或课程文件内容）一起发给你选择的识图 AI，例如豆包、ChatGPT。
+3. 把 AI 回复的文本（第一行是 `#sleepy-v1`）粘贴到「粘贴课表文本」，点「预览」，确认后导入。
+
+Sleepy 不会自动上传截图，也不调用任何 AI 服务。截图发给了哪个 AI，就由那个服务处理。AI 可能识别出错，导入前请在预览里核对课程、周次和节次。
 
 ### 教务协议示例
 
@@ -219,7 +230,7 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 | **ICS 日历** | 标准 iCalendar，可从学校教务处导出 |
 | **CSV 文件** | 含表头的 `.csv`，逗号分隔 |
 | **HTML 表格** | `<table>` 形式，识别表头后逐行解析 |
-| **纯文本** | 一行一课，制表符分隔 |
+| **纯文本** | 一行一课，竖线分列（旧的制表符格式仍可导入）；可由 AI 从课表截图生成，见上方「AI 截图转换」 |
 | **sleepy-v1** | Sleepy 原生纯文本格式，带 `chk` 完整性字段和确定性记录 |
 
 > 所有导入路径都先生成预览，确认后才写入课表。
