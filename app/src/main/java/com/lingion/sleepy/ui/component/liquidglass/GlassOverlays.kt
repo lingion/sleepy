@@ -208,25 +208,18 @@ fun GlassDropdownMenu(
         LocalGlassMaterialBackdrop provides null,
     ) {
         // Capture the shell's prefix before publishing its material to children.
-        val opticalModifier = modifier.recordGlassPopupScene(popupScene).trackGlassMaterial(materialScope).glassControl(
+        val opticalModifier = Modifier.recordGlassPopupScene(popupScene).trackGlassMaterial(materialScope).glassControl(
             shape = carrierShape, enabled = false, registerPane = false,
             role = GlassMaterialRole.Menu, placementLayer = false,
             exportedBackdrop = materialScope?.exported,
         )
         GlassMaterialContent(materialScope) {
-            MaterialDropdownMenu(
-                expanded, onDismissRequest,
-                // Material's dropdown owns the content layer. A second backdrop placement layer
-                // drops its foreground on API 33; the backdrop's draw-time outline clip remains.
-                opticalModifier,
-                offset, scrollState, properties, carrierShape,
-                if (containerColor != Color.Unspecified) containerColor else Color.Transparent,
-                if (glass) 0.dp else tonalElevation,
-                shadowElevation, border,
-                // Material supplies 8dp at each edge. Native menu AX frames show 10dp.
-                content = {
-                    androidx.compose.foundation.layout.Column(Modifier.padding(vertical = 2.dp), content = content)
-                },
+            GlassPopupMenu(
+                expanded = expanded, onDismissRequest = onDismissRequest,
+                modifier = modifier, materialModifier = opticalModifier,
+                offset = offset, scrollState = scrollState, properties = properties,
+                shape = carrierShape, containerColor = containerColor, border = border,
+                content = content,
             )
         }
     }

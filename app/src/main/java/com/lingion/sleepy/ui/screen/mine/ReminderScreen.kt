@@ -844,7 +844,8 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                             expanded = fieldsMenuExpanded,
                                             onDismissRequest = { fieldsMenuExpanded = false },
                                             // 菜单浮在 surfaceContainer 卡片上, 用 Highest 拉开对比(默认 High 与卡片几乎同色=隐形)
-                                            containerColor = colors.surfaceContainerHighest
+                                            containerColor = if (com.lingion.sleepy.ui.theme.LocalUiStyle.current == com.lingion.sleepy.ui.theme.UiStyle.LiquidGlass)
+                                                androidx.compose.ui.graphics.Color.Unspecified else colors.surfaceContainerHighest
                                         ) {
                                             listOf(
                                                 "name" to R.string.reminder_fluid_field_name,

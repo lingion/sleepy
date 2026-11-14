@@ -36,6 +36,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
@@ -320,12 +321,15 @@ fun GlassDropdownMenuItem(
     // onSurface alphas are visual fits, not Apple constants. Dark held captures
     // also change the whole carrier; this local fill does not reproduce that.
     val highlight = MaterialTheme.colorScheme.onSurface.copy(alpha = if (LocalDarkTheme.current) .20f else .08f)
+    val acceptsInput = enabled && LocalGlassMenuAcceptsInput.current
+    val currentAcceptsInput by rememberUpdatedState(acceptsInput)
+    val currentOnClick by rememberUpdatedState(onClick)
     val container = if (enabled) colors.containerColor else colors.disabledContainerColor
     Row(
         modifier.fillMaxWidth().defaultMinSize(minHeight = 42.dp)
             .background(if (container == Color.Unspecified) Color.Transparent else container)
             .drawBehind {
-                if (enabled && pressed) {
+                if (acceptsInput && pressed) {
                     val inset = 10.dp.toPx().coerceAtMost(size.width / 2)
                     drawRoundRect(
                         color = highlight, topLeft = Offset(inset, 0f),
@@ -334,7 +338,8 @@ fun GlassDropdownMenuItem(
                     )
                 }
             }
-            .clickable(enabled = enabled, role = Role.Button, interactionSource = interaction, indication = null, onClick = onClick)
+            .clickable(enabled = acceptsInput, role = Role.Button, interactionSource = interaction, indication = null,
+                onClick = { if (currentAcceptsInput) currentOnClick() })
             .padding(contentPadding ?: PaddingValues(horizontal = 28.dp, vertical = 8.dp)),
         verticalAlignment = Alignment.CenterVertically,
     ) {

@@ -8,6 +8,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.semantics.SemanticsPropertyKey
 import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 import kotlin.math.exp
+import kotlin.math.abs
 
 /** Actual drawing parameters, observable by explicitly enabled device captures. */
 internal data class LanguageMenuVisualState(
@@ -28,17 +29,21 @@ internal var SemanticsPropertyReceiver.languageMenuHandoffState by LanguageMenuH
 
 /** Window submission is a handoff fence, not proof of compositor presentation. */
 internal class LanguageMenuHandoff {
-    private enum class Phase { Popup, Source, Motion, Disposed }
+    private enum class Phase { Popup, Source, Motion, RestoringSource, Restored, Disposed }
     private var phase by mutableStateOf(Phase.Popup)
     val sessionId = System.identityHashCode(this)
-    val sourceCardAlpha: Float get() = if (phase == Phase.Popup || phase == Phase.Disposed) 1f else 0f
+    val sourceCardAlpha: Float get() = if (phase == Phase.Popup || phase == Phase.RestoringSource || phase == Phase.Restored || phase == Phase.Disposed) 1f else 0f
     val awaitingSourceFrame: Boolean get() = phase == Phase.Source
-    val canAnimate: Boolean get() = phase == Phase.Motion
+    val awaitingRestoredSourceFrame: Boolean get() = phase == Phase.RestoringSource
+    val canAnimate: Boolean get() = phase == Phase.Motion || phase == Phase.RestoringSource || phase == Phase.Restored
+    val returningSource: Boolean get() = phase == Phase.RestoringSource || phase == Phase.Restored
     val isDisposed: Boolean get() = phase == Phase.Disposed
     val state: LanguageMenuHandoffState get() = LanguageMenuHandoffState(sessionId, when (phase) {
         Phase.Popup -> "waiting-popup-frame"
         Phase.Source -> "waiting-source-hidden-frame"
         Phase.Motion -> "motion"
+        Phase.RestoringSource -> "waiting-source-restored-frame"
+        Phase.Restored -> "source-restored"
         Phase.Disposed -> "disposed"
     }, sourceCardAlpha)
 
@@ -51,6 +56,19 @@ internal class LanguageMenuHandoff {
     fun sourceHiddenFrameSubmitted(): Boolean {
         if (phase != Phase.Source) return false
         phase = Phase.Motion
+        return true
+    }
+
+    /** Keep the matching popup card until the original window has drawn its replacement. */
+    fun restoreSource(): Boolean {
+        if (phase != Phase.Motion) return false
+        phase = Phase.RestoringSource
+        return true
+    }
+
+    fun sourceRestoredFrameSubmitted(): Boolean {
+        if (phase != Phase.RestoringSource) return false
+        phase = Phase.Restored
         return true
     }
 
@@ -88,11 +106,14 @@ internal class LanguageMenuMotion {
         get() = if (closing) maxOf(CloseMenuY[CloseMenuY.size - 2], CloseAnchorY[CloseAnchorY.size - 2])
         else OpenMenuY[OpenMenuY.size - 2]
     val isRunning: Boolean get() = progress.isRunning || elapsed < pathEnd
-    // At 650 ms the measured returning anchor is still about 0.8 pt wider than
-    // its source. Keep the overlay until both the spring and the Y path settle.
+    // Full mathematical rest remains available to fixtures. Production uses the
+    // painted-source tolerance below instead of retaining an invisible tail.
     val canRemove: Boolean get() = closing && !isRunning
     val alpha: Float get() = progress.value.coerceIn(0f, 1f)
     val anchorContentAlpha: Float get() = ((1f - progress.value) / .65f).coerceIn(0f, 1f)
+    // Once the opaque source card has returned, its rim must not retain a second
+    // glass rectangle until the hidden spring's tiny residual reaches rest.
+    val sourceMaterialAlpha: Float get() = if (closing) 1f - anchorContentAlpha else 1f
     private fun correction(value: Double, velocity: Double): Double =
         (value * (1.0 + 20.0 * elapsed) + velocity * elapsed) * exp(-20.0 * elapsed)
     private fun residual(menu: Boolean): Double {
@@ -161,6 +182,24 @@ internal class LanguageMenuMotion {
             anchor = anchorRect,
             anchorContentScale = anchorWidth / anchor.width,
         )
+    }
+
+    /**
+     * A window handoff should follow visible output, not an invisible spring tail.
+     * The opaque replacement card is uniformly scaled around the optical anchor's
+     * center; its painted height differs from that optical contour while moving.
+     */
+    fun sourceReadyForHandoff(anchor: Rect, menu: Rect, onePixelInCoordinates: Float): Boolean {
+        if (!closing || !onePixelInCoordinates.isFinite() || onePixelInCoordinates <= 0f ||
+            anchorContentAlpha < 254f / 255f || sourceMaterialAlpha > 1f / 255f
+        ) return false
+        val geometry = geometry(anchor, menu)
+        val halfWidth = anchor.width * geometry.anchorContentScale / 2f
+        val halfHeight = anchor.height * geometry.anchorContentScale / 2f
+        val painted = Rect(geometry.anchor.center.x - halfWidth, geometry.anchor.center.y - halfHeight,
+            geometry.anchor.center.x + halfWidth, geometry.anchor.center.y + halfHeight)
+        return listOf(abs(painted.left - anchor.left), abs(painted.top - anchor.top),
+            abs(painted.right - anchor.right), abs(painted.bottom - anchor.bottom)).all { it <= onePixelInCoordinates }
     }
 
     companion object {

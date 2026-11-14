@@ -84,10 +84,28 @@ fun GlassLanguageMenu(
     val dismissed by rememberUpdatedState(onDismissed)
     val dragSlop = with(LocalDensity.current) { 8.dp.toPx() }
     val currentLabel = languages.firstOrNull { it.first == selectedCode }?.second ?: selectedCode
+    fun complete(active: LanguageMenuSession, code: String?) {
+        if (session !== active) return
+        active.handoff.dispose()
+        completing = true
+        session = null
+        completionScope.launch {
+            withFrameNanos { }
+            completing = false
+            dismissed(code)
+        }
+    }
     val sourceFrame = session?.let { active ->
         rememberLanguageMenuSubmittedFrame(active, LocalView.current, "source_hidden") {
             active.handoff.sourceHiddenFrameSubmitted().also { submitted ->
                 if (submitted) active.motionReady.complete(Unit)
+            }
+        }
+    }
+    val restoredFrame = session?.let { active ->
+        rememberLanguageMenuSubmittedFrame(active, LocalView.current, "source_restored", allowClosing = true) {
+            active.handoff.sourceRestoredFrameSubmitted().also { submitted ->
+                if (submitted) complete(active, active.pickedCode)
             }
         }
     }
@@ -142,6 +160,7 @@ fun GlassLanguageMenu(
             Modifier.drawWithContent {
                 drawContent()
                 if (session?.handoff?.awaitingSourceFrame == true) sourceFrame?.drawn()
+                if (session?.handoff?.awaitingRestoredSourceFrame == true) restoredFrame?.drawn()
             }.graphicsLayer { alpha = session?.handoff?.sourceCardAlpha ?: 1f }, tagged = true)
     }
     session?.let { active ->
@@ -154,16 +173,7 @@ fun GlassLanguageMenu(
         }
         LanguagePopup(title, selectedCode, languages, coordinates, active,
             onSelect = select,
-            onClosed = { code ->
-                active.handoff.dispose()
-                completing = true
-                session = null
-                completionScope.launch {
-                    withFrameNanos { }
-                    completing = false
-                    dismissed(code)
-                }
-            })
+            onClosed = { code -> complete(active, code) })
     }
 }
 
@@ -204,6 +214,7 @@ private class LanguageMenuSubmittedFrame(
     private val session: LanguageMenuSession,
     private val view: View,
     private val label: String,
+    private val allowClosing: Boolean,
     private val onSubmitted: () -> Boolean,
 ) {
     private var requested = false
@@ -211,7 +222,7 @@ private class LanguageMenuSubmittedFrame(
     private var hardwareSubmission = false
     private var registeredObserver: ViewTreeObserver? = null
     private val submitted = Runnable {
-        if (!disposed && !session.closing && !session.handoff.isDisposed && view.isAttachedToWindow) {
+        if (!disposed && (allowClosing || !session.closing) && !session.handoff.isDisposed && view.isAttachedToWindow) {
             event(if (hardwareSubmission) "${label}_frame_committed" else "${label}_draw_posted_legacy_or_software")
             if (onSubmitted()) event("handoff_${session.handoff.state.phase}")
         }
@@ -221,7 +232,7 @@ private class LanguageMenuSubmittedFrame(
         windowIdentity = System.identityHashCode(view.rootView), windowClass = view.rootView.javaClass.name)
 
     fun drawn() {
-        if (requested || disposed || session.closing || session.handoff.isDisposed) return
+        if (requested || disposed || (session.closing && !allowClosing) || session.handoff.isDisposed) return
         requested = true
         event("${label}_first_content_draw")
         if (Build.VERSION.SDK_INT >= 29 && view.isHardwareAccelerated) {
@@ -250,9 +261,10 @@ private fun rememberLanguageMenuSubmittedFrame(
     session: LanguageMenuSession,
     view: View,
     label: String,
+    allowClosing: Boolean = false,
     onSubmitted: () -> Boolean,
 ): LanguageMenuSubmittedFrame {
-    val frame = remember(session, view, label) { LanguageMenuSubmittedFrame(session, view, label, onSubmitted) }
+    val frame = remember(session, view, label, allowClosing) { LanguageMenuSubmittedFrame(session, view, label, allowClosing, onSubmitted) }
     DisposableEffect(frame) { onDispose { frame.dispose() } }
     return frame
 }
@@ -260,7 +272,7 @@ private fun rememberLanguageMenuSubmittedFrame(
 @Composable
 private fun LanguageCardContent(title: String, label: String, modifier: Modifier = Modifier, tagged: Boolean = false) {
     val colors = MaterialTheme.colorScheme
-    FlowRow(modifier.fillMaxWidth().heightIn(min = (154f / 3f).dp).clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).padding(16.dp),
+    FlowRow(modifier.fillMaxWidth().heightIn(min = (154f / 3f).dp).clip(LanguageCardShape).background(colors.surfaceContainer).padding(16.dp),
         horizontalArrangement = Arrangement.SpaceBetween, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(title, Modifier.padding(end = 12.dp), style = MaterialTheme.typography.titleSmall.copy(lineHeight = (50f / 3f).sp),
             color = colors.onSurface, maxLines = 1)
@@ -350,6 +362,8 @@ private fun LanguagePopup(
     val menu = Rect(menuX, menuY, menuX + menuSize.width, menuY + menuSize.height)
     val motion = session.motion
     val geometry = motion.geometry(anchor, menu)
+    val currentAnchor by rememberUpdatedState(anchor)
+    val currentMenu by rememberUpdatedState(menu)
     val closed by rememberUpdatedState(onClosed)
     val select by rememberUpdatedState(onSelect)
     LaunchedEffect(session, session.closing) {
@@ -374,10 +388,14 @@ private fun LanguagePopup(
                 // Use actual elapsed time: a missed frame must not slow the spring down.
                 motion.tick((now - previous) / 1_000_000_000.0 / durationScale)
                 previous = now
+                // bounds/localToScreen and both morph rectangles are in physical pixels.
+                if (session.closing && motion.sourceReadyForHandoff(currentAnchor, currentMenu, 1f)) break
             }
         }
         if (session.closing) {
-            closed(session.pickedCode)
+            // Reverse the opening window handoff: reveal the source first and
+            // remove the popup only after that actual host-window frame submits.
+            if (!session.handoff.restoreSource()) closed(session.pickedCode)
         }
     }
     // The full window preserves overshoot and the source-card morph outside final menu bounds.
@@ -424,6 +442,7 @@ private fun LanguagePopup(
                         // Allocate the optical node during the first popup layout,
                         // but never sample the source while its card is still present.
                         .drawWithContent { if (session.handoff.canAnimate) drawContent() }
+                        .graphicsLayer { alpha = if (session.handoff.returningSource) 0f else motion.sourceMaterialAlpha }
                         .glassControl(shape, enabled = false, registerPane = false, role = GlassMaterialRole.Menu,
                             placementLayer = false)
                         .clip(shape).then(if (glass) Modifier else Modifier.background(colors.surfaceContainerHigh)))
@@ -503,14 +522,17 @@ private fun LanguagePopup(
 }
 
 /** Same two actual CPU contours; inward material depth remains a radial projection approximation. */
-private data class LanguageMenuMorphShape(val anchor: Rect, val menu: Rect, val progress: Float, val scale: Float) :
+internal const val LanguageCardCornerDp = 16f
+private val LanguageCardShape = FlClashGlassShape(LanguageCardCornerDp)
+
+internal data class LanguageMenuMorphShape(val anchor: Rect, val menu: Rect, val progress: Float, val scale: Float) :
     LiquidGlassDualContourShape, LiquidGlassExactContourShape {
     private val sources: Pair<LiquidGlassContourOutline, LiquidGlassContourOutline> by lazy {
         fun path(rect: Rect, radius: Float): LiquidGlassContourOutline =
             LiquidGlassContourOutline(LiquidGlassSuperellipse.buildPath(LiquidGlassSuperellipse.Rect2(rect.left, rect.top, rect.right, rect.bottom),
                 LiquidGlassSuperellipse.Radii.makeRadius(radius.coerceIn(0f, minOf(rect.width, rect.height) / 2f)))
             )
-        path(anchor, 8f * scale) to
+        path(anchor, LanguageCardCornerDp * scale) to
             path(menu, minOf(menu.width, menu.height) / 2f * (1f - progress) + 26f * scale * progress)
     }
     private val contours: Pair<Path, Path> by lazy { sources.first.path to sources.second.path }

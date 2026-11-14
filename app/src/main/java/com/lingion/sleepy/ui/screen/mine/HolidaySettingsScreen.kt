@@ -34,11 +34,12 @@ import androidx.compose.material3.Button as MaterialButton
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenuItem
+import com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenuItem as DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenu
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuBoxScope
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import com.lingion.sleepy.ui.component.liquidglass.GlassTonalButton as FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
@@ -92,6 +93,28 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import com.lingion.sleepy.util.AppClock
+
+/** Keep Material's exposed-field behavior while sharing the glass menu lifetime. */
+@Composable
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+private fun ExposedDropdownMenuBoxScope.HolidayDropdownMenu(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    shape: androidx.compose.ui.graphics.Shape,
+    containerColor: androidx.compose.ui.graphics.Color,
+    content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit,
+) {
+    if (LocalUiStyle.current == UiStyle.LiquidGlass &&
+        com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost.current != null
+    ) {
+        com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenu(
+            expanded = expanded, onDismissRequest = onDismissRequest, content = content,
+        )
+    } else {
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest,
+            shape = shape, containerColor = containerColor, content = content)
+    }
+}
 
 private sealed interface HolidayUiState {
     data object Loading : HolidayUiState
@@ -393,7 +416,7 @@ fun HolidaySettingsScreen(
                                 shape = SleepyTheme.fieldShape,
                                 colors = SleepyTheme.fieldColors()
                             )
-                            ExposedDropdownMenu(
+                            HolidayDropdownMenu(
                                 expanded = tableMenuOpen,
                                 onDismissRequest = { tableMenuOpen = false },
                                 shape = SleepyTheme.fieldShape,
@@ -838,7 +861,7 @@ private fun HolidayTransferRow(
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = menuOpen)
                 }
             }
-            ExposedDropdownMenu(
+            HolidayDropdownMenu(
                 expanded = menuOpen,
                 onDismissRequest = { menuOpen = false },
                 shape = SleepyTheme.shapes.medium,

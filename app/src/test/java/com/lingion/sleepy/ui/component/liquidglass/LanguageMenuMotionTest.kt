@@ -40,6 +40,97 @@ class LanguageMenuMotionTest {
         }
     }
 
+    @Test fun closingRetainsReplacementUntilRestoredSourceWindowSubmits() {
+        val handoff = LanguageMenuHandoff()
+        assertFalse(handoff.restoreSource())
+        handoff.popupFrameSubmitted()
+        handoff.sourceHiddenFrameSubmitted()
+        assertEquals(0f, handoff.sourceCardAlpha, 0f)
+        assertFalse("an unrelated early frame cannot finish dismissal", handoff.sourceRestoredFrameSubmitted())
+        assertTrue(handoff.restoreSource())
+        assertEquals(1f, handoff.sourceCardAlpha, 0f)
+        assertTrue(handoff.awaitingRestoredSourceFrame)
+        assertTrue("the matching popup is retained during the reverse handoff", handoff.canAnimate)
+        assertFalse(handoff.restoreSource())
+        assertTrue(handoff.sourceRestoredFrameSubmitted())
+        assertFalse(handoff.awaitingRestoredSourceFrame)
+        assertFalse("only one owner may finish dismissal", handoff.sourceRestoredFrameSubmitted())
+        handoff.dispose()
+        assertFalse(handoff.sourceRestoredFrameSubmitted())
+    }
+
+    @Test fun closingOpaqueSourceDoesNotRetainAnIndependentGlassRim() {
+        val motion = LanguageMenuMotion().apply { finish() }
+        assertEquals(1f, motion.sourceMaterialAlpha, 0f)
+        motion.close()
+        var previous = 1f
+        repeat(80) {
+            motion.tick(.01)
+            val material = motion.sourceMaterialAlpha
+            assertEquals("source and glass exchange opacity instead of leaving a rim",
+                1f, motion.anchorContentAlpha + material, .00001f)
+            if (motion.anchorContentAlpha >= 1f) assertEquals(0f, material, 0f)
+            if (it < 30) assertTrue(material <= previous + .00001f)
+            previous = material
+        }
+        assertEquals(0f, motion.sourceMaterialAlpha, 0f)
+    }
+
+    @Test fun visibleSourceHandoffDoesNotWaitForTheHidden850MillisecondPathTail() {
+        listOf(1f, 2.975f, 4f).forEach { density ->
+            val motion = LanguageMenuMotion().apply { finish(); close() }
+            var age = 0.0
+            while (!motion.sourceReadyForHandoff(anchor, menu, 1f / density) && age < 2.0) {
+                motion.tick(.001)
+                age += .001
+            }
+            assertTrue("density $density must return before the unpainted path tail, got $age", age < .85)
+            assertTrue("the tail still exists; visible completion is a separate contract", motion.isRunning)
+            val geometry = motion.geometry(anchor, menu)
+            val scale = geometry.anchorContentScale
+            val actualTop = geometry.anchor.center.y - anchor.height * scale / 2f
+            val actualBottom = geometry.anchor.center.y + anchor.height * scale / 2f
+            assertEquals(anchor.left, geometry.anchor.left, 1f / density)
+            assertEquals(anchor.right, geometry.anchor.right, 1f / density)
+            assertEquals(anchor.top, actualTop, 1f / density)
+            assertEquals(anchor.bottom, actualBottom, 1f / density)
+            assertTrue(motion.anchorContentAlpha >= 254f / 255f)
+            assertTrue(motion.sourceMaterialAlpha <= 1f / 255f)
+        }
+        assertFalse(LanguageMenuMotion().sourceReadyForHandoff(anchor, menu, 1f))
+        val closing = LanguageMenuMotion().apply { finish(); close(); finish() }
+        assertFalse(closing.sourceReadyForHandoff(anchor, menu, Float.NaN))
+        assertFalse(closing.sourceReadyForHandoff(anchor, menu, 0f))
+    }
+
+    @Test fun invisibleGenericMenuCanLeaveOnlyOnItsDescendingBranch() {
+        assertFalse(glassMenuExitOutputGone(.1f, -1f))
+        assertFalse(glassMenuExitOutputGone(0f, 1f))
+        assertFalse(glassMenuExitOutputGone(Float.NaN, -1f))
+        assertTrue(glassMenuExitOutputGone(1f / 255f, -.1f))
+        assertTrue(glassMenuExitOutputGone(-.01f, -.1f))
+    }
+
+    @Test fun physicalPixelHandoffMatchesTheEquivalentNormalizedGeometry() {
+        fun scaled(rect: Rect, density: Float) = Rect(rect.left * density, rect.top * density,
+            rect.right * density, rect.bottom * density)
+        fun firstReadyMillis(source: Rect, target: Rect, tolerance: Float): Int {
+            val motion = LanguageMenuMotion().apply { finish(); close() }
+            repeat(1_500) { millis ->
+                if (motion.sourceReadyForHandoff(source, target, tolerance)) return millis
+                motion.tick(.001)
+            }
+            error("source never reached the one-pixel handoff")
+        }
+        listOf(1f, 2.975f, 4f).forEach { density ->
+            val normalized = firstReadyMillis(anchor, menu, 1f / density)
+            val physical = firstReadyMillis(scaled(anchor, density), scaled(menu, density), 1f)
+            assertEquals("density $density uses one physical pixel in either coordinate space",
+                normalized.toDouble(), physical.toDouble(), 1.0)
+            assertTrue(physical < 850)
+        }
+    }
+
     @Test fun captureStartClockPreservesTheNativeIrregularIntervals() {
         samples().groupBy { it.scene }.values.forEach { rows ->
             val first = rows.first()
