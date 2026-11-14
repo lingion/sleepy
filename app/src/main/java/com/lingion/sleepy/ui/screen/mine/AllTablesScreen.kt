@@ -65,7 +65,8 @@ fun AllTablesScreen(
     onUpdateFromJw: (Long) -> Unit,
     viewModel: ScheduleViewModel = viewModel()
 ) {
-    val state by viewModel.state.collectAsState()
+    val liveState by viewModel.state.collectAsState()
+    val state = com.lingion.sleepy.ui.nav.rememberNavigationEntrySnapshot(liveState)
     val periodTables by viewModel.allPeriodTables.collectAsState()
     val colors = MaterialTheme.colorScheme
     val density = LocalDensity.current

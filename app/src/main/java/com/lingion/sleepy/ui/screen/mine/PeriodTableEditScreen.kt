@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
 import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -76,6 +77,11 @@ fun PeriodTableEditScreen(
     /** issue#40: 本表是否为"新建后直接进入"的未保存表 — 返回(未保存)时整行丢弃, 管理页不留空壳 */
     isNewUnsaved: Boolean = false,
     onBack: () -> Unit,
+    onSaved: () -> Unit = onBack,
+    onCopied: () -> Unit = onBack,
+    onDiscardPending: (() -> Unit)? = null,
+    onSaveStarted: () -> Boolean = { true },
+    onSaveJob: (kotlinx.coroutines.Job) -> Unit = {},
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val colors = MaterialTheme.colorScheme
@@ -86,8 +92,17 @@ fun PeriodTableEditScreen(
     val periodTables by viewModel.allPeriodTables.collectAsState()
     val scheduleState by viewModel.state.collectAsState()
 
-    val periodTable = periodTables.find { it.id == periodTableId }
+    val livePeriodTable = periodTables.find { it.id == periodTableId }
+    var lastTable by remember(periodTableId) { mutableStateOf<PeriodTableEntity?>(null) }
+    SideEffect { livePeriodTable?.let { lastTable = it } }
+    val periodTable = livePeriodTable ?: lastTable.takeIf { isNewUnsaved }
     if (periodTable == null) {
+        if (isNewUnsaved) {
+            com.lingion.sleepy.ui.nav.EditorInitializingPage(
+                R.string.period_tables_title, onDiscardPending ?: onBack
+            )
+            return
+        }
         Scaffold(containerColor = colors.background) { padding ->
             Column(
                 modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp),
@@ -107,6 +122,7 @@ fun PeriodTableEditScreen(
     var pendingSave by remember { mutableStateOf<PeriodTableEntity?>(null) }
     // issue#40: 新建未保存表的丢弃标记 — 用户确认保存后翻 false, 返回不再删行
     var unsavedNew by remember { mutableStateOf(isNewUnsaved) }
+    var saving by remember { mutableStateOf(false) }
     // 2026-09-20 用户拍板(issue#40 反馈, aa23a443): 作息表编辑页不再有「作息表」第三 Tab。
     // 绑定只存在于课表→作息表单向; 作息表之间禁绑定/取入, 防循环改写。复制走管理页按钮。
     // 删除前提示绑定课表将保留相同的内置作息。
@@ -145,8 +161,13 @@ fun PeriodTableEditScreen(
                     IconButton(onClick = {
                         // issue#40: 未保存的新表返回 = 放弃 — 清掉建表残留行, 与
                         // 课表侧 discardNewTable 同语义(§4.2 新建取消不遗留空壳)
-                        if (unsavedNew) viewModel.discardNewPeriodTable(periodTableId)
-                        onBack()
+                        if (saving) return@IconButton
+                        if (unsavedNew && onDiscardPending != null) {
+                            onDiscardPending()
+                        } else {
+                            if (unsavedNew) viewModel.discardNewPeriodTable(periodTableId)
+                            onBack()
+                        }
                     }) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
@@ -299,6 +320,7 @@ fun PeriodTableEditScreen(
                             pendingPreview = TimeTableUtils.previewPeriodTableChange(oldJson, newTimeJson, allCourses)
                         }
                     },
+                    enabled = !saving,
                     modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
                     shape = SleepyTheme.Buttons.shape
                 ) {
@@ -338,15 +360,17 @@ fun PeriodTableEditScreen(
         val actions: @Composable () -> Unit = {
             com.lingion.sleepy.ui.component.DialogActionButtons(
                 confirmText = stringResource(R.string.period_table_preview_confirm),
-                onConfirm = {
+                onConfirm = confirm@{
+                    if (saving || !onSaveStarted()) return@confirm
+                    saving = true
                     val toSave = pendingSave!!
                     pendingPreview = null
                     pendingSave = null
                     // issue#40: 已确认保存 — 新建行的丢弃标记解除, 返回不再清行
-                    unsavedNew = false
                     scope.launch {
-                        viewModel.updatePeriodTableContent(toSave)
-                        onBack()
+                        viewModel.updatePeriodTableContent(toSave).also(onSaveJob).join()
+                        unsavedNew = false
+                        onSaved()
                     }
                 },
                 dismissText = stringResource(R.string.cancel),
@@ -471,7 +495,7 @@ fun PeriodTableEditScreen(
                     val newId = viewModel.copyPeriodTableAs(periodTable.id, candidate)
                     if (newId > 0) {
                         showCopyDialog = false
-                        onBack()
+                        onCopied()
                     }
                 }
             },

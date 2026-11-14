@@ -311,11 +311,7 @@ private fun AppRoot(
         currentTableId = currentTableId,
         mainScope = mainScope,
         onCreateNewTable = {
-            mainScope.launch {
-                val previousId = mainVm.state.value.currentTable?.id ?: NavSession.NO_ID
-                val newId = mainVm.createEmptyTable(commitSelection = false)
-                navigator.openEditTable(tableId = newId, pendingNew = newId, prevDefault = previousId)
-            }
+            navigator.createTableAndEdit(mainVm.state.value.currentTable?.id ?: NavSession.NO_ID)
         },
         pillBarState = pillBarState,
     )

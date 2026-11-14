@@ -53,23 +53,23 @@ import kotlinx.coroutines.launch
  * 不混入课程编辑。列表显示各时间表 + "已绑定 N 张课表"(§4.1 树形图)。
  *
  * @param onOpenEdit 进入某张时间表的编辑页(编辑/复制既有表)
- * @param onCreateNew 新建后进入编辑页 — 由调用方以 pendingNewPeriodTableId 标记,
- *   编辑页未保存返回时丢弃残留行(与课表侧 pendingNewTableId 同款 §4.2 语义)
+ * @param onCreateNew 立即进入新建编辑页；数据库初始化由目的地负责。
  */
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun PeriodTablesScreen(
     onBack: () -> Unit,
     onOpenEdit: (Long) -> Unit,
-    onCreateNew: (Long) -> Unit = onOpenEdit,
+    onCreateNew: () -> Unit,
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val colors = MaterialTheme.colorScheme
     val scope = rememberCoroutineScope()
     val context = androidx.compose.ui.platform.LocalContext.current
-    val newPeriodTableName = stringResource(R.string.period_table_new)
-    val periodTables by viewModel.allPeriodTables.collectAsState()
-    val tables by viewModel.state.collectAsState()
+    val livePeriodTables by viewModel.allPeriodTables.collectAsState()
+    val liveTables by viewModel.state.collectAsState()
+    val periodTables = com.lingion.sleepy.ui.nav.rememberNavigationEntrySnapshot(livePeriodTables)
+    val tables = com.lingion.sleepy.ui.nav.rememberNavigationEntrySnapshot(liveTables)
 
     // v1.0.56 T7: 删除入口迁至编辑页底部 — 本页不再持有删除弹窗/绑定拦截状态
     // v1.0.56 T8: 复制先命名, 确认后才落库; 复制成功留在管理页
@@ -144,16 +144,7 @@ fun PeriodTablesScreen(
                 item { Spacer(modifier = Modifier.height(80.dp)) }
             }
             Button(
-                onClick = {
-                    scope.launch {
-                        val newId = viewModel.insertPeriodTable(
-                            name = newPeriodTableName
-                        )
-                        // issue#40: 创建即落库(自增 id), 编辑页把它当"未保存新表" —
-                        // 未保存返回时由 onCreateNew 调用方/编辑页清掉残留行
-                        if (newId > 0) onCreateNew(newId)
-                    }
-                },
+                onClick = onCreateNew,
                 modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp).height(SleepyTheme.Buttons.ctaHeight),
                 shape = SleepyTheme.Buttons.shape
             ) {

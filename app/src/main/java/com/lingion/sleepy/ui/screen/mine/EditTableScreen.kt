@@ -28,6 +28,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -79,6 +80,8 @@ fun EditTableScreen(
     onSaved: () -> Unit,
     onDeleted: () -> Unit,
     onOpenHoliday: (Long) -> Unit = {},
+    onSaveStarted: () -> Boolean = { true },
+    onSaveJob: (kotlinx.coroutines.Job) -> Unit = {},
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -90,9 +93,17 @@ fun EditTableScreen(
     val validationErrorMessage = stringResource(R.string.edit_table_validation_error)
 
     // tableId == null means edit current table
-    val table = if (tableId != null) state.tables.find { it.id == tableId } else state.currentTable
+    val liveTable = if (tableId != null) state.tables.find { it.id == tableId } else state.currentTable
+    var lastTable by remember(tableId) { mutableStateOf<TimeTableEntity?>(null) }
+    SideEffect { liveTable?.let { lastTable = it } }
+    // Deletion can publish before the return animation; keep the pending editor intact.
+    val table = liveTable ?: lastTable.takeIf { pendingNewTableId != null }
 
     if (table == null) {
+        if (pendingNewTableId != null) {
+            com.lingion.sleepy.ui.nav.EditorInitializingPage(R.string.edit_table_title, onDiscardPending)
+            return
+        }
         Scaffold(containerColor = colors.background) { padding ->
             Column(
                 modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp),
@@ -101,6 +112,18 @@ fun EditTableScreen(
                 Text(stringResource(R.string.edit_table_not_found), color = colors.onBackground)
             }
         }
+        return
+    }
+
+    val editorContent by remember(table.id) {
+        viewModel.observeTableEditorContent(table.id)
+    }.collectAsState()
+    val loadedContent = editorContent?.takeIf { it.tableId == table.id }
+    if (loadedContent == null) {
+        com.lingion.sleepy.ui.nav.EditorInitializingPage(
+            R.string.edit_table_title,
+            if (pendingNewTableId != null) onDiscardPending else onBack,
+        )
         return
     }
 
@@ -132,7 +155,9 @@ fun EditTableScreen(
     // A child-page round trip belongs to the same editing session.
     var editSessionStarted by rememberSaveable(table.id) { mutableStateOf(false) }
     val editState = remember(table.id) {
-        val original = state.effectivePeriodTable?.takeIf { table.periodTableId != null }
+        // The editor can target a different table from the one selected on the home screen.
+        // Wait for that table's own data before taking the session's immutable baseline.
+        val original = loadedContent.effectivePeriodTable
         if (editSessionStarted) {
             viewModel.editStateFor(table.id, original)
         } else {
@@ -147,7 +172,7 @@ fun EditTableScreen(
     // 未绑定时行为不变(编辑本表兼容列)。
     // 换绑修复: 有效表跟随 pendingBind(用户在下拉里改选时立即切换编辑区来源),
     // 否则已绑定的表 effectivePeriodTable 恒非空, 保存永远走"写回旧表"分支, 换绑成死代码。
-    val effectivePeriodTable = state.effectivePeriodTable?.takeIf {
+    val effectivePeriodTable = loadedContent.effectivePeriodTable?.takeIf {
         pendingBind != null && it.id == pendingBind
     } ?: allPeriodTables.find { it.id == pendingBind }
     // 2b(用户 2026-10-05): 草稿载体三入口统一 — 未绑定课表用本表兼容列合成载体,
@@ -189,8 +214,14 @@ fun EditTableScreen(
 
     val fieldColors = SleepyTheme.fieldColors()
 
+    var saving by remember { mutableStateOf(false) }
+    val beginSave = {
+        if (!saving && onSaveStarted()) { saving = true; true } else false
+    }
     val handleBack = {
-        if (pendingNewTableId != null) onDiscardPending() else onBack()
+        if (!saving) {
+            if (pendingNewTableId != null) onDiscardPending() else onBack()
+        }
     }
 
     Scaffold(
@@ -439,6 +470,7 @@ fun EditTableScreen(
                                 return@Button
                             }
                             if (policyForSave != SchedulePolicy.NONE) {
+                                if (!beginSave()) return@Button
                                 viewModel.executePolicyAndSave(
                                     tableId = table.id,
                                     editedTable = updated,
@@ -446,15 +478,16 @@ fun EditTableScreen(
                                     smartConfigJson = smartConfigJson,
                                     nodesPerDay = slotRows.size.coerceAtLeast(1),
                                     onFinish = onSaved
-                                )
+                                )?.let(onSaveJob)
                                 return@Button
                             }
                         }
+                        if (!beginSave()) return@Button
                         scope.launch {
                             if (bindChanged) {
                                 // 解绑: 元数据+时间域(解绑后兼容列是真值)+periodTableId=null,
                                 // 单事务原子完成 — 课程行零改动(issue#40 §5.3)
-                                viewModel.updateTableMetadataAndBind(updated, null)
+                                viewModel.updateTableMetadataAndBind(updated, null).also(onSaveJob).join()
                             } else if (effectivePeriodTable != null) {
                                 // 未改作息时保留元数据 + 共享作息表的单事务原子双写。
                                 // 改了作息的路径已在上面的三选项闸门处理; 走到这里的
@@ -466,15 +499,16 @@ fun EditTableScreen(
                                         smartConfigJson = smartConfigJson,
                                         nodesPerDay = slotRows.size.coerceAtLeast(1)
                                     )
-                                )
+                                ).also(onSaveJob).join()
                             } else {
                                 // issue#28 P3: timeJson 变了课程节次必须自适应(16→12 节后
                                 // 课程不能再停在 13-16 节)
-                                viewModel.updateTableRemappingCourses(updated)
+                                viewModel.updateTableRemappingCourses(updated).also(onSaveJob).join()
                             }
                             onSaved()
                         }
                     },
+                    enabled = !saving,
                     modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
                     shape = SleepyTheme.Buttons.shape
                 ) {
@@ -533,10 +567,10 @@ fun EditTableScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         stringResource(
-                            if (state.courses.isNotEmpty()) R.string.edit_table_delete_msg_count
+                            if (loadedContent.courseCount > 0) R.string.edit_table_delete_msg_count
                             else R.string.edit_table_delete_msg,
                             table.name,
-                            state.courses.size
+                            loadedContent.courseCount
                         ),
                         color = colors.onSurfaceVariant
                     )
@@ -556,7 +590,8 @@ fun EditTableScreen(
         val actions: @Composable () -> Unit = {
             com.lingion.sleepy.ui.component.DialogActionButtons(
                 confirmText = stringResource(R.string.period_table_preview_confirm),
-                onConfirm = {
+                onConfirm = confirm@{
+                    if (!beginSave()) return@confirm
                     pendingRebind = null
                     val metadata = pendingRebindTable
                     val periodContent = pendingRebindPeriod
@@ -564,7 +599,7 @@ fun EditTableScreen(
                     pendingRebindPeriod = null
                     scope.launch {
                         if (metadata != null) {
-                            viewModel.updateTableMetadataAndBind(metadata, targetId, periodContent)
+                            viewModel.updateTableMetadataAndBind(metadata, targetId, periodContent).also(onSaveJob).join()
                         } else {
                             viewModel.bindPeriodTable(table.id, targetId)
                         }
