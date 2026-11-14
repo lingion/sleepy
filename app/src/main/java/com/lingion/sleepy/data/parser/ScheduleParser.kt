@@ -1475,7 +1475,6 @@ object ScheduleParser {
         val sourceId: Long,
         val name: String,
         val nodesPerDay: Int,
-        val timeJson: String,
-        val comboScheduleJson: String = ""
+        val timeJson: String
     )
 }

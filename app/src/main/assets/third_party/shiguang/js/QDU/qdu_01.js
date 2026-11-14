@@ -444,9 +444,9 @@ async function saveAppTimeSlots(semesterStartDate) {
     const comboSchedule = {
         name: "青岛大学春夏秋冬作息",
         publicSchedules: [
-            { name: "秋冬季作息", startDate: `${year - 1}-10-01`, endDate: `${year}-04-30`, timeSlots: autumnWinter },
-            { name: "春夏季作息", startDate: `${year}-05-01`, endDate: `${year}-09-30`, timeSlots: baseTimeSlots },
-            { name: "秋冬季作息", startDate: `${year}-10-01`, endDate: `${year + 1}-04-30`, timeSlots: autumnWinter }
+            { name: "秋冬季作息", startDate: `${year - 1}-10-01`, endDate: `${year}-04-30`, timeSlots: autumnWinter.slice(4) },
+            { name: "春夏季作息", startDate: `${year}-05-01`, endDate: `${year}-09-30`, timeSlots: [] },
+            { name: "秋冬季作息", startDate: `${year}-10-01`, endDate: `${year + 1}-04-30`, timeSlots: autumnWinter.slice(4) }
         ]
     };
 

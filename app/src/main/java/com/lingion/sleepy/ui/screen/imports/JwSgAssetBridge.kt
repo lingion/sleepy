@@ -202,10 +202,12 @@ object JwSgAssetBridge {
         combo.publicSchedules.forEach(function(schedule){
           if (!schedule || typeof schedule !== 'object' || !validDate(schedule.startDate) ||
               !validDate(schedule.endDate) || schedule.startDate > schedule.endDate ||
-              !Array.isArray(schedule.timeSlots) || !schedule.timeSlots.length) throw new Error('组合方案日期或作息无效');
+              !Array.isArray(schedule.timeSlots)) throw new Error('组合方案日期或作息无效');
           schedule.timeSlots.forEach(function(slot,index){
-            if (!slot || slot.number !== index + 1 || !clock(slot.startTime) || !clock(slot.endTime) ||
-                slot.startTime >= slot.endTime || index > 0 && schedule.timeSlots[index - 1].endTime > slot.startTime) {
+            if (!slot || !Number.isInteger(slot.number) || slot.number < 1 ||
+                !clock(slot.startTime) || !clock(slot.endTime) || slot.startTime >= slot.endTime ||
+                index > 0 && (schedule.timeSlots[index - 1].number >= slot.number ||
+                    schedule.timeSlots[index - 1].endTime > slot.startTime)) {
               throw new Error('组合方案节次无效');
             }
           });

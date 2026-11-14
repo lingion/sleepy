@@ -507,6 +507,7 @@
     <string name="jw_import_success">%1$d cursos importados exitosamente</string>
     <string name="jw_parse_failed">Error de análisis: %1$s</string>
     <string name="jw_combo_schedule_skipped">Se omitió el horario por temporadas porque su formato no es reconocido. Los cursos se importaron normalmente.</string>
+    <string name="jw_combo_schedule_bind_conflict">Esta importación incluye un horario por temporadas según la fecha y no se puede vincular a un horario compartido existente. Crea un horario nuevo para esta importación.</string>
     <string name="jw_parse_failed_hint">\n\nSugerencia: Para HEU, inicia sesión en el navegador y navega a "Mi horario" antes de importar</string>
     <string name="jw_webview_not_ready">WebView no está listo</string>
     <string name="jw_fetching">Obteniendo horario…</string>

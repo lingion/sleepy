@@ -75,6 +75,7 @@ import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.SleepyThemeProvider
 import android.webkit.WebView
 import com.lingion.sleepy.util.AppPrefs
+import com.lingion.sleepy.util.EffectivePeriodResolver
 import com.lingion.sleepy.util.QqJoin
 import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.util.usableComboScheduleJson
@@ -254,8 +255,8 @@ class JwImportActivity : ComponentActivity() {
                         termWeekCount = configTermWeekCount.takeIf { it in 0..366 } ?: 0,
                         termWeekText = configTermWeekText,
                         importSourceJson = importSourceJson,
-                        selectedSgAdapterId = selectedSgAdapterId,
                         comboScheduleJson = configComboScheduleJson,
+                        selectedSgAdapterId = selectedSgAdapterId,
                         tableName = configTableName,
                         smartConfigJson = Json.encodeToString(configSmartConfig),
                         phase = if (parsedCourses.isEmpty()) {
@@ -888,8 +889,21 @@ class JwImportActivity : ComponentActivity() {
                                         confirmError = getString(R.string.slot_time_invalid, invalidRows.first().node)
                                         return@TextButton
                                     }
+                                    if (configBindPeriodTableId != null && configBindPeriodTableId!! > 0L && configComboScheduleJson.isNotBlank()) {
+                                        confirmError = getString(R.string.jw_combo_schedule_bind_conflict)
+                                        return@TextButton
+                                    }
+                                    val confirmedBaseJson = TimeTableUtils.buildTimeJsonFromRows(effectiveRows)
+                                    if (configComboScheduleJson.isNotBlank()) {
+                                        try {
+                                            EffectivePeriodResolver.validate(confirmedBaseJson, configComboScheduleJson)
+                                        } catch (e: IllegalArgumentException) {
+                                            confirmError = "组合作息无效：${e.message ?: "请重新导入"}"
+                                            return@TextButton
+                                        }
+                                    }
                                     confirmError = null
-                                    configTimeJson = TimeTableUtils.buildTimeJsonFromRows(effectiveRows)
+                                    configTimeJson = confirmedBaseJson
                                     // 落库
                                     statusMsg = getString(R.string.import_parsing)
                                     isApplying = true
@@ -921,11 +935,11 @@ class JwImportActivity : ComponentActivity() {
                                                 confirmedTableName = configTableName,
                                                 confirmedTimeJson = configTimeJson,
                                                 confirmedSmartConfigJson = Json.encodeToString(configSmartConfig),
-                                                confirmedComboScheduleJson = configComboScheduleJson,
                                                 context = this@JwImportActivity,
                                                 onImported = { imported = true },
                                                 bindPeriodTableId = configBindPeriodTableId?.takeIf { it > 0 },
                                                 fromConfirmedJwImport = true,
+                                                confirmedComboScheduleJson = configComboScheduleJson,
                                             )
                                             if (imported && configComboScheduleJson.isNotBlank() &&
                                                 usableComboScheduleJson(configTimeJson, configComboScheduleJson).isBlank()
