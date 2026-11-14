@@ -1,6 +1,6 @@
 # Liquid Glass 资产库
 
-本目录是 Android/Compose Liquid Glass 运行模块和资产索引。当前 `:liquid-glass-runtime` 有 23 份 Kotlin 源码及原 AGSL：运动、帧调度、几何/轮廓缓存、渲染原语，以及可显式配置的背景自适应前景原语。Sleepy 已消费同一模块；Host/主题上下文、完整控件与独立示例仍待提取，公开 API 尚未收口。
+本目录是 Android/Compose Liquid Glass 运行模块和资产索引。当前 `:liquid-glass-runtime` 有 26 份生产 Kotlin 源码及原 AGSL：运动、帧调度、几何/轮廓缓存、渲染原语、背景自适应前景、外部源亮度采样、显式源内容通知和调用方配置的迟滞状态策略。Sleepy 已消费同一模块；Host/主题上下文、完整控件与独立示例仍待提取，公开 API 尚未收口。
 
 以 iOS 26.5 原生控件为参照，逐控件校准后再作为独立仓库开源，Sleepy 作为首个使用方。当前近原生验收与来源/分发许可核对均未完成，不宣称“99.99%”或具备独立开源发布条件。源码范围见 [asset-catalog.json](asset-catalog.json)，提取步骤见 [extraction-plan.md](extraction-plan.md)，残差见 [对照记录](../../docs/native-glass-control-alignment.md)。
 
@@ -25,7 +25,7 @@ dependencies {
 
 ## 背景自适应前景
 
-[backdropAwareForeground](runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/BackdropAwareForeground.kt) 只按内容的 alpha mask 重绘中性前景，所有响应参数由调用方给出。`BackdropForegroundResponse` 必须显式提供 `lowBackground`、`highBackground`、`lowerLuma`、`upperLuma` 与完全不透明的 `transparentBackground`；区间满足 `0 ≤ lowerLuma < upperLuma ≤ 1`。库不提供 iOS 分类器、默认门限、选中主题色或时间平滑策略。
+[backdropAwareForeground](runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/BackdropAwareForeground.kt) 只按内容的 alpha mask 重绘中性前景，所有响应参数由调用方给出。`BackdropForegroundResponse` 必须显式提供 `lowBackground`、`highBackground`、`lowerLuma`、`upperLuma` 与完全不透明的 `transparentBackground`；区间满足 `0 ≤ lowerLuma < upperLuma ≤ 1`。此 GPU 前景原语不提供 iOS 分类器、默认门限、选中主题色或时间平滑策略；独立的调用方配置状态策略见下文。
 
 下面的 slot 接收调用方已确定的尺寸和响应；整个 slot 是显式采样区域，也可改为其中一个有效子矩形：
 
@@ -68,7 +68,25 @@ fun AdaptiveNeutralSlot(
 
 普通 `LayerBackdrop` 处理相对平移。若消费者相对 source 有缩放或旋转，调用方需先用现有 `LayerBackdrop.withTransformCompensation()` 包装，再传入；该路径未在本批硬件测试中验证。API 低于 33、消费者坐标不可用或采样矩形无效时绘制原内容；source 为空时按显式 `transparentBackground` 测量亮度。此原语为小面积前景保留三层 GPU recording，总记录面积约为内容面积的五倍，实际内存和性能尚未测量。
 
-[93 验证记录](validation/observations/backdrop-aware-foreground-gpu-93.json)保留构建、5 项 host 检查、API36 两项 GPU 测试、8 张原图及 37 个独立像素检查的哈希链。验证范围是合成与生命周期；当前没有生产 Dock 接入、原生分类器、默认响应参数或完整原生外观验收。真实 glyph 边缘、透明端点/部分透明 source、中间亮度、source 替换、scale/rotation、低 API 硬件及性能仍不在本批结论内。
+[93 验证记录](validation/observations/backdrop-aware-foreground-gpu-93.json)保留构建、5 项 host 检查、API36 两项 GPU 测试、8 张原图及 37 个独立像素检查的哈希链。验证范围是合成与生命周期；该 GPU 前景原语未接入生产 Dock，也未提供原生分类器、默认响应参数或完整原生外观验收。真实 glyph 边缘、透明端点/部分透明 source、中间亮度、source 替换、scale/rotation、低 API 硬件及性能仍不在本批结论内。
+
+## 外部源采样与迟滞状态
+
+[sampleBackdropLuma](runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/BackdropLumaSampler.kt) 从调用方已经录制的外部 `Backdrop` 取得五个一像素区域，录入一个 `5×1` layer 后异步读取。调用方显式提供不透明的 `transparentBackground`、局部物理像素 `sampleBoundsPx` 和接收 `BackdropLumaSample` 的 `onSample`。矩形须在 modifier 尺寸内且有限、正面积；点位为中心和 `(20%,30%)`、`(80%,30%)`、`(20%,70%)`、`(80%,70%)`。source 须先完成 recording，并排除消费者及自身自适应 backing；普通内容仍绘制一次。
+
+`meanLuma` 直接按捕获的 sRGB 通道值和 `.2126/.7152/.0722` 权重计算并归一化，不是线性光亮度或原生分类器。直接传入 `LayerBackdrop` 时，样本可带其录制 revision；包装后的 `Backdrop`（包括 `withContentSignal`）不再通过该直接类型检查，`sourceRevision` 为 null。其他 `Backdrop` 须在 `drawBackdrop` 中暴露 snapshot invalidation，或由调用方显式通知内容变化；静默更新 retained 子层不会自动成为父层 revision。source 内容在读取期间更新时，已冻结样本仍按历史观察交付，然后请求较新内容；source 身份、几何或配置变化会使不兼容结果失效。中间版本可能跳过，回调不保证对应当前帧。调用方应保留快照/完成时间、revision、generation 和计数的范围，不能把它们当作 compositor 或 settling 时钟。
+
+[BackdropContentSignal](runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/BackdropContentSignal.kt) 为这种外部源提供显式通知。调用方为同一场景的源叶持有一个 signal，并用 `remember(source, signal) { source.withContentSignal(signal) }` 保留包装对象；sampler 绘制该 wrapper 时观察通知。每次调用 `withContentSignal` 都创建新对象，不能在重组中反复替换 source 身份。signal 只请求重新采样，不记录像素，也不是源完成录制的 revision 或 presentation 时间。
+
+调用方必须覆盖每个独立 retained 的、排除光学消费者的源叶。在该叶自身的 `graphicsLayer`/clip 边界内、绘制 modifier 之前放置 `notifyBackdropDraw(signal)`，由它在 `drawContent()` 返回后通知；含其他 retained 子层的父节点无法观察这些子层后续单独重绘。此 modifier 不创建源/消费者隔离，也不递归检测任意子树。`graphicsLayer` 属性变化和 native 绘制更新须由源的拥有方在 UI 线程显式调用 `signal.notifyContentChanged()`。通知必须在对应源更新已可供绘制后发生；不能只在状态赋值时提前通知，否则 sampler 可能读取旧内容而收不到后续变化。禁止从光学消费者通知，避免反馈。
+
+recording 与 `toImageBitmap()` 留在 UI 线程，worker 只对返回的独立 bitmap 做 CPU 读回，硬件 bitmap 先复制为 `ARGB_8888`；source layer、`DrawScope` 和 `LayoutCoordinates` 不传给 worker。modifier 内部保留 consumer `graphicsLayer`，将观察失效与同层的 source 生产者隔离，避免共享层重绘使 source 再录制、revision 回灌而持续触发采样。同一 sampler 至多一个请求在途，未变化的 draw 不轮询。`5×1` 目标不保证总 GPU 工作或主线程延迟很小，实际支持和性能尚未验收。API<28、坐标不可用或无效矩形不产生样本；调用方保留自己的 fallback。相对 scale/rotation 仍需现有 `LayerBackdrop.withTransformCompensation()`，本说明不增加其硬件验收结论。
+
+[BackdropAppearanceHysteresis](runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/BackdropAppearanceHysteresis.kt) 是独立的状态策略，不负责采样或配色。构造时必须给出 `initialDark`、`enterLightLuma`、`enterDarkLuma`，满足 `0 ≤ enterDarkLuma < enterLightLuma ≤ 1`；dark 状态在 `luma ≥ enterLightLuma` 转 light，light 状态在 `luma ≤ enterDarkLuma` 转 dark，其余保持。非有限或越界输入保持上次状态。调用方持有同一实例，在 source 或外观上下文替换时重建，并将 `accept()` 返回值写入自己的 UI state；类自身不提供 Compose 状态、默认门限、动画、debounce 或原生时间模型。
+
+Sleepy 的 [Dock 消费者](../../app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassNavigationBar.kt) 保留采样/迟滞的应用侧工程候选接线，`LocalDockBackdropAppearanceEnabled` 默认 false；光学和外观验证 fixture 显式 opt in。启用后的受支持采样路径联动材质分支和普通前景，selected/accent 继续由应用 token 提供。五点策略及 `223.5/255`、`153.5/255` 门限属于应用侧工程候选，未作为库默认值；原有主题 fallback 与具体控件仍在 Sleepy。源码接线不代表生产默认启用，也不说明 body transfer、glyph RGBA/coverage 或原生时序已经匹配。
+
+94 的无显式通知 retained 诊断已记录局限：A→B→C→D→C→B→A 的 14 个 REST 观察中，源 draw serial 从3增至9，`source_host_version` 始终为2，亮度样本数始终为2、亮度保持 `26/255`。这说明该路径的父层版本未覆盖 retained 叶更新；原捕获/坐标检查通过不等于采样持续更新通过。该旧观察不能作为新 signal 的通过结果。原 [93 通用 GPU 前景验证](validation/observations/backdrop-aware-foreground-gpu-93.json)只覆盖旧 `BackdropAwareForeground`；Batch94 results and package identities are archived in the [94 validation record](validation/observations/source-aware-sampling-94.json): builds,18 host checks and two API36 real-Activity tests pass, covering direct-source sampling, explicitly notified retained leaves and unchanged-source idle. Fourteen retained Dock observations and sixteen multi-background captures pass their declared state/geometry/readiness checks. Production adaptation remains default-disabled; arbitrary subtree updates, complete lifecycle/fallback, performance and native optics/timing remain unaccepted.
 
 ## 已完成的迁移
 
@@ -90,7 +108,7 @@ M3a 已把 `LiquidGlassStyle.kt`、`LiquidGlassShader.kt`、`LiquidGlassEffect.k
 
 API36 使用注册的 `SleepyRenderTestRunner` 运行原 HazeRender 三项，5.3395s通过；该次安装主包/测试包与 host 哈希匹配，第11周网格首页和 Dock 可见，仅作安装/启动验证。独立 resolutionResult 的 compile67/runtime121组件无未解析项，backdrop、Material3、Foundation、HCT、shapes/UI 均解析到现有版本，真实编译输入含 backdrop jar；最初两个只读诊断错误保留。署名证据路径元数据修正后仅重打包主包，2.4462s通过；最终主包已重装、host-device哈希一致且MainActivity resumed。该身份与原 GPU 运行包分开记录，未重复原34项单测或三项GPU测试，本页不固定主包哈希。完整证据见 [M3a 渲染原语记录](validation/migrations/m3a-rendering.json)。
 
-完整运行库仍未完成解耦。同一个 `liquidglass` 包目前仍混有 `LocalUiStyle` 等主题判断、导航图标驱动、设置布局、调试语义和 Material 分支；滑杆还引用包外的弹窗动画及 Material 辅助函数。`SegmentedSwitcher.kt` 同时承载玻璃控件实现和 Sleepy 适配，不能整文件归为已分离的适配器。语言菜单也需先拆出通用菜单行为，再把语言选项、设置入口和调试标签留在 Sleepy。当前二十三份 runtime 实现覆盖运动、调度、几何/轮廓缓存、渲染原语和通用背景自适应前景；Host 采样闭包、主题注入、完整控件及独立示例仍待完成，catalog 保留相应阻碍。本批未新增完整光学、自然动态、近原生或发布验收。
+完整运行库仍未完成解耦。同一个 `liquidglass` 包目前仍混有 `LocalUiStyle` 等主题判断、导航图标驱动、设置布局、调试语义和 Material 分支；滑杆还引用包外的弹窗动画及 Material 辅助函数。`SegmentedSwitcher.kt` 同时承载玻璃控件实现和 Sleepy 适配，不能整文件归为已分离的适配器。语言菜单也需先拆出通用菜单行为，再把语言选项、设置入口和调试标签留在 Sleepy。当前二十六份 runtime 实现还包含通用源亮度采样、显式内容通知和迟滞策略；完整 Host 采样闭包、主题注入、控件及独立示例仍待完成，catalog 保留相应阻碍。本批未新增完整光学、自然动态、近原生或发布验收。
 
 原生采集工具、可分发的数值基线、回放和示例属于独立验证目录。原始长视频、临时 APK、DerivedData 和设备导出缓存不进入库或日常 CI。CI 保留正常贡献所需的编译、针对性回归和可复现示例；多背景 GPU 采证显式运行。
 
@@ -111,7 +129,7 @@ API36 使用注册的 `SleepyRenderTestRunner` 运行原 HazeRender 三项，5.3
 
 原生 Dock 的[实际前景属性记录](validation/observations/dock-foreground-properties-91.json)区分外层 bar 与每个图标/标签自身的 traits、RGBA 和字体。它补充参考证据；Android 背景自适应前景及完整光学仍待校准。
 
-[灰阶历史记录](validation/observations/dock-tonal-history-93.json)另保留两次独立原生序列：相同179/204输入在升程和回程有不同前景及body响应，下降路径在179仍为light、128已返回dark。这约束后续状态策略，不识别原生阈值或状态粒度；通用前景原语未因此接入生产Dock。
+[灰阶历史记录](validation/observations/dock-tonal-history-93.json)另保留两次独立原生序列：相同179/204输入在升程和回程有不同前景及body响应，下降路径在179仍为light、128已返回dark。这约束状态策略，不识别原生阈值或状态粒度。Dock 的源亮度采样/迟滞候选默认关闭，仅在验证 fixture 中显式启用；通用 GPU alpha-mask 前景原语仍未接入该控件，完整光学尚待校准。
 
 ## 双头参考与验证入口
 

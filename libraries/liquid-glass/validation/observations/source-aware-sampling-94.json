@@ -1,0 +1,1332 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-14",
+  "kind": "external-source-sampling-explicit-retained-notifications-94",
+  "sourceBaseHead": "a514f09a696ff3c6164429cf7f3e74a25c4ebd76",
+  "scope": "Reusable external-source sampling, caller-configured hysteresis and explicit retained-leaf notification primitives. Dock candidate is opt-in only and default-disabled. No native classifier, full Host migration, performance or native-parity acceptance.",
+  "sourceSnapshot": [
+    {
+      "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/BackdropLumaSampler.kt",
+      "bytes": 16864,
+      "sha256": "6d77550b984982032b2d916e5f0aee1c797e6290266c1a2059068a88b3b19d50"
+    },
+    {
+      "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/BackdropContentSignal.kt",
+      "bytes": 3598,
+      "sha256": "4ac97fbe226fb0abdd1b20a7b3e788e74b05b2e6672246bb4ac5a574109ba0c0"
+    },
+    {
+      "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/BackdropAppearanceHysteresis.kt",
+      "bytes": 953,
+      "sha256": "6ecc4392248539cee14fea6df4db3c107308fdf13f05cc71da39c7f33572c0d3"
+    },
+    {
+      "path": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassNavigationBar.kt",
+      "bytes": 57399,
+      "sha256": "4f3aeeec09d417e1b7208612bb2cd2fa7fa73645a67cc5de1b7b4ef8588d7f1d"
+    },
+    {
+      "path": "app/src/androidTest/java/com/lingion/sleepy/ui/component/BackdropLumaReadbackRenderTest.kt",
+      "bytes": 14224,
+      "sha256": "ae904a7a68ef17d4e8ac27e9bf2ba676f19e77026f3da29abae3e2157e9e7f3d"
+    },
+    {
+      "path": "app/src/androidTest/java/com/lingion/sleepy/ui/component/DockBackdropAppearanceRenderTest.kt",
+      "bytes": 8131,
+      "sha256": "8087156bf1dd689452c4618d6651606f41240e2396052715c65c073cb50d18e4"
+    },
+    {
+      "path": "app/src/androidTest/java/com/lingion/sleepy/ui/component/NativeDockOpticalWorldRenderTest.kt",
+      "bytes": 68516,
+      "sha256": "cd03243e2331eafaf8f9229efaad195d23cce42d0b547a28f718ccd57400fd3c"
+    },
+    {
+      "path": "third-party/kyant-backdrop/src/commonMain/kotlin/com/kyant/backdrop/backdrops/LayerBackdrop.kt",
+      "bytes": 3247,
+      "sha256": "3c2d2c935f4c0d98e25ad404f687f23eeed0bb14c43db8571c3853efce162510"
+    }
+  ],
+  "contract": {
+    "sample": "Five historical external-source pixels over explicit opaque fallback; UI-thread recording/toImageBitmap, standalone bitmap CPU readback on worker, UI callback, one request in flight, explicit sample times. Not compositor/current-frame luma.",
+    "consumerIsolation": "Sampler graphicsLayer keeps consumer invalidation from re-recording a shared sibling source indefinitely.",
+    "retainedNotifications": "BackdropContentSignal is an explicit UI-thread notification after actual source drawing/property/native update is available. notifyBackdropDraw belongs inside the nearest independent pane-free leaf layer, before drawing modifiers. Wrapper retained by source+signal identity; epoch is not completed recording/presentation revision; wrapped sourceRevision=null. No transparent arbitrary subtree/layer-property/native detection.",
+    "hysteresis": "Caller provides initial state and finite ordered thresholds. Dock uses engineering midpoints223.5/255 and153.5/255; not measured UIKit constants.",
+    "production": "LocalDockBackdropAppearanceEnabled defaults false. Production MainTabs root LayerBackdrop lacks complete retained descendant source notifications. GlassHost source/scoped material epochs also require separation before general integration."
+  },
+  "build": {
+    "primitiveAndAppBuild": {
+      "path": "explicit-source-build.log",
+      "bytes": 7913,
+      "sha256": "18f721fcc556a81fd9cd5ce4247c49aa88a1d361de51575e7e920eaeb5d1e236"
+    },
+    "finalAppBuild": {
+      "path": "notified-dock-build.log",
+      "bytes": 7131,
+      "sha256": "4c5c26e978b4828f6cb265583d865b93c3936b1f11865ec90425ed6a235009dd"
+    },
+    "targetedHostCommand": {
+      "seconds": 15.537975208,
+      "exitCode": 0,
+      "command": [
+        "./gradlew",
+        ":liquid-glass-runtime:assemble",
+        ":liquid-glass-runtime:testAndroidHostTest",
+        "--tests",
+        "com.lingion.sleepy.ui.component.liquidglass.BackdropAppearanceHysteresisTest",
+        ":app:testDebugUnitTest",
+        "--tests",
+        "com.lingion.sleepy.ui.component.liquidglass.DockAccessibilityTest",
+        "--tests",
+        "com.lingion.sleepy.ui.component.liquidglass.NativeDockLayoutTest",
+        "--tests",
+        "com.lingion.sleepy.ui.component.liquidglass.SelectionThemeParityTest",
+        "--console=plain"
+      ]
+    },
+    "targetedHostLog": {
+      "path": "notified-targeted-build.log",
+      "bytes": 6338,
+      "sha256": "c9e9915714a075e05783aa1f20b1ba7794cfc4b3541acada11591e76ec4c289f"
+    },
+    "tests": 18,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "xml": [
+      {
+        "file": "notified-TEST-com.lingion.sleepy.ui.component.liquidglass.BackdropAppearanceHysteresisTest.xml",
+        "sha256": "391584ed541791ac227827c784720d6159e4bf54f1a48f66e1d84ff6ffb49ade",
+        "tests": "4",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "time": "0.011"
+      },
+      {
+        "file": "notified-TEST-com.lingion.sleepy.ui.component.liquidglass.DockAccessibilityTest.xml",
+        "sha256": "aedfdebdae5668ff9dfdc98e3f84e8211955467a55c3af87f67d138bb095b883",
+        "tests": "6",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "time": "6.038"
+      },
+      {
+        "file": "notified-TEST-com.lingion.sleepy.ui.component.liquidglass.NativeDockLayoutTest.xml",
+        "sha256": "1eee662fde633424e7ec645a71ff39fd99abdbcbd94d8cebf071020ed5d356ed",
+        "tests": "4",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "time": "0.176"
+      },
+      {
+        "file": "notified-TEST-com.lingion.sleepy.ui.component.liquidglass.SelectionThemeParityTest.xml",
+        "sha256": "883f92a042e9b725e400e821fb87695e8b1d421a0eeca38efeb3725da971bfe2",
+        "tests": "4",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "time": "5.241"
+      }
+    ]
+  },
+  "device": {
+    "api": 36,
+    "serial": "d3efcd6a",
+    "realActivityTest": {
+      "seconds": 3.8685898749999996,
+      "exitCode": 0,
+      "command": [
+        "/Users/kerrylee/Library/Android/sdk/platform-tools/adb",
+        "-s",
+        "d3efcd6a",
+        "shell",
+        "am",
+        "instrument",
+        "-w",
+        "-r",
+        "-e",
+        "class",
+        "com.lingion.sleepy.ui.component.BackdropLumaReadbackRenderTest",
+        "com.lingion.sleepy.debug.test/com.lingion.sleepy.SleepyRenderTestRunner"
+      ]
+    },
+    "realActivityLog": {
+      "path": "explicit-source-test.log",
+      "bytes": 1610,
+      "sha256": "e641a782af9b972c765a4a21171f371a539bcb213211e297acdbf59b27f664d7"
+    },
+    "realActivityTestsPassed": 2,
+    "testCaseSeconds": 2.667,
+    "realActivityInstalledApks": [
+      {
+        "apk": "app/build/outputs/apk/debug/app-arm64-v8a-debug.apk",
+        "sha256": "4cb253af985ede9b28df559c0af3a733c84431eecb300038bbdd4bdb5e441585",
+        "install": "Performing Streamed Install\nSuccess\n"
+      },
+      {
+        "apk": "app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+        "sha256": "7dbe7b8124fb081ed4d56be0305bb57c371355a36b7944ce737ed14e28adfba6",
+        "install": "Performing Streamed Install\nSuccess\n"
+      }
+    ],
+    "finalDockInstalledApks": [
+      {
+        "apk": "app/build/outputs/apk/debug/app-arm64-v8a-debug.apk",
+        "sha256": "8174aab753553d786997d408cd0b056578ddbf5dc1941cb54165c723596191d0",
+        "install": "Performing Streamed Install\nSuccess\n"
+      },
+      {
+        "apk": "app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+        "sha256": "d790f59173b95496f11977e6a496dfc5383addfa11fa04ba3f954b91c432a6cd",
+        "install": "Performing Streamed Install\nSuccess\n"
+      }
+    ],
+    "directStages": [
+      {
+        "name": "opaque64",
+        "arrived": true,
+        "expected": 0.2509804,
+        "observed": 0.2509804
+      },
+      {
+        "name": "opaque230",
+        "arrived": true,
+        "expected": 0.9019608,
+        "observed": 0.90196073
+      },
+      {
+        "name": "half-black-over-white",
+        "arrived": true,
+        "expected": 0.49803922,
+        "observed": 0.4980392
+      },
+      {
+        "name": "transparent-over-white",
+        "arrived": true,
+        "expected": 1,
+        "observed": 1
+      },
+      {
+        "name": "five-external-spatial-taps",
+        "arrived": true,
+        "expected": 0.4,
+        "observed": 0.4
+      },
+      {
+        "name": "translated-consumer",
+        "arrived": true,
+        "expected": 1,
+        "observed": 1
+      },
+      {
+        "name": "source-replacement",
+        "arrived": true,
+        "expected": 0.3019608,
+        "observed": 0.3019608
+      },
+      {
+        "name": "fallback-replacement",
+        "arrived": true,
+        "expected": 0,
+        "observed": 0
+      },
+      {
+        "name": "unchanged-source-idle",
+        "duration_ms": 250,
+        "samples_before": 16,
+        "samples_after": 16,
+        "source_draws_before": 24,
+        "source_draws_after": 24
+      }
+    ],
+    "directAcceptedSamples": 16,
+    "directTimingMs": {
+      "snapshot_main_ns": {
+        "min": 2.312188,
+        "median": 2.726172,
+        "max": 8.325313
+      },
+      "readback_ns": {
+        "min": 0.696198,
+        "median": 1.125391,
+        "max": 4.765312
+      },
+      "end_to_end_ns": {
+        "min": 3.526146,
+        "median": 5.1118235,
+        "max": 15.62026
+      }
+    },
+    "notifiedLeafStages": [
+      {
+        "name": "initial26",
+        "arrived": true,
+        "expected": 0.101960786,
+        "observed": 0.10196078,
+        "parent_recording_revision": 1,
+        "leaf_draws": 1
+      },
+      {
+        "name": "retained230",
+        "arrived": true,
+        "expected": 0.9019608,
+        "observed": 0.90196073,
+        "parent_recording_revision": 1,
+        "leaf_draws": 3
+      },
+      {
+        "name": "retained77",
+        "arrived": true,
+        "expected": 0.3019608,
+        "observed": 0.3019608,
+        "parent_recording_revision": 1,
+        "leaf_draws": 4
+      },
+      {
+        "name": "retained217",
+        "arrived": true,
+        "expected": 0.8509804,
+        "observed": 0.8509804,
+        "parent_recording_revision": 1,
+        "leaf_draws": 5
+      },
+      {
+        "name": "retained26",
+        "arrived": true,
+        "expected": 0.101960786,
+        "observed": 0.10196078,
+        "parent_recording_revision": 1,
+        "leaf_draws": 6
+      },
+      {
+        "name": "unchanged-retained-source-idle",
+        "duration_ms": 250,
+        "samples_before": 7,
+        "samples_after": 7,
+        "source_draws_before": 6,
+        "source_draws_after": 6
+      }
+    ],
+    "notifiedLeafAcceptedSamples": 7,
+    "notifiedLeafTimingMs": {
+      "snapshot_main_ns": {
+        "min": 2.170052,
+        "median": 2.287968,
+        "max": 3.576719
+      },
+      "readback_ns": {
+        "min": 0.649479,
+        "median": 0.76026,
+        "max": 1.047969
+      },
+      "end_to_end_ns": {
+        "min": 3.303177,
+        "median": 3.547968,
+        "max": 4.700469
+      }
+    },
+    "timingLimits": "Tiny fixture diagnostics only; no app jank, native response/settling delay or performance acceptance. The later sampler KDoc addition mentions explicit notifications; executable sampler code is unchanged from this two-test run.",
+    "finalInstallVerification": {
+      "packages": [
+        {
+          "package": "com.lingion.sleepy.debug",
+          "hostApk": "app/build/outputs/apk/debug/app-arm64-v8a-debug.apk",
+          "deviceApk": "/data/app/~~mvHukLpWE2mRc-OTXGLrfA==/com.lingion.sleepy.debug-A_rAbYghgKam2Fck-fzZPA==/base.apk",
+          "sha256": "8174aab753553d786997d408cd0b056578ddbf5dc1941cb54165c723596191d0",
+          "hostDeviceMatch": true
+        },
+        {
+          "package": "com.lingion.sleepy.debug.test",
+          "hostApk": "app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+          "deviceApk": "/data/app/~~IqvaVKHbB6M4xA-BFzY37w==/com.lingion.sleepy.debug.test-vZH2ew5QwqPM00kgzVfduA==/base.apk",
+          "sha256": "d790f59173b95496f11977e6a496dfc5383addfa11fa04ba3f954b91c432a6cd",
+          "hostDeviceMatch": true
+        }
+      ],
+      "launch": "Starting: Intent { cmp=com.lingion.sleepy.debug/com.lingion.sleepy.MainActivity }\n",
+      "resumed": [
+        "topResumedActivity=ActivityRecord{255915375 u0 com.lingion.sleepy.debug/com.lingion.sleepy.MainActivity t41725}"
+      ],
+      "screenshot": "final-main-home.png",
+      "scope": "Installation identity and launch only; experimental Dock adaptation defaults false."
+    }
+  },
+  "reproducedFailures": [
+    {
+      "kind": "producer-consumer-redraw-feedback",
+      "evidence": {
+        "path": "watchdog-real-activity-watchdog.json",
+        "bytes": 245437,
+        "sha256": "2579a33ad4ae7aa1156b6f50779fc942370a0cdb6c453b8a4ee148281f4f5a83"
+      },
+      "sourceDrawsInEightSeconds": 876,
+      "samplesInEightSeconds": 438,
+      "fix": "Retained consumer layer inside sampling modifier. No constant polling."
+    },
+    {
+      "kind": "retained-parent-revision-stale",
+      "evidence": {
+        "path": "retained-diagnostic/result.json",
+        "bytes": 405950,
+        "sha256": "87570c499eb840bd619da9d7665c0abc6c963b09f6c43922218be5a47404d432"
+      },
+      "observations": 14,
+      "sourceDrawSerialRange": [
+        3,
+        9
+      ],
+      "hostVersionAlways": 2,
+      "sampleCountAlways": 2,
+      "sourceLumaAlways": 0.10196078431372549,
+      "reason": "clipToBounds retains an independent child layer; its drawing can change without re-recording parent GlassBackground or incrementing host.version. Passing capture-validity test did not mean source freshness passed."
+    },
+    {
+      "kind": "system-usage-overlay",
+      "evidence": {
+        "path": "notified-retained/result.json",
+        "bytes": 407157,
+        "sha256": "6c23c4677f4ea55398d6d921baf6548186ded258ce51675e3d7ee8d18e33493b"
+      },
+      "failedDisplayObservations": 3,
+      "appearanceStateObservationsCorrect": 14,
+      "reason": "Original composited display02-C-1000ms shows Android usage reminder 已使用8小时55分钟. Overlay gone on later run; no criterion relaxed or system setting changed."
+    },
+    {
+      "kind": "prior-optical-environment",
+      "evidence": [
+        {
+          "path": "optical-world/result.json",
+          "bytes": 7556,
+          "sha256": "eb8410fdfb9119f53cecf3cafa2a8aded3375be84469522a58666ee5b1d1239c"
+        },
+        {
+          "path": "optical-world-clean/result.json",
+          "bytes": 7562,
+          "sha256": "2164b008af1e779c67ab642ee052d0fba03fb191540aea91fde1d6d1922a8225"
+        }
+      ],
+      "captures": 0,
+      "reason": "Quick Share visibility toast interrupted baseline readiness; Home returned before successful original run. Originals preserved."
+    },
+    {
+      "kind": "artifact-export-path",
+      "evidence": {
+        "path": "notified-optical-export.json",
+        "bytes": 789,
+        "sha256": "025728c7f4dad65cf69ebd123ebcaa114b1c4702d59692b70f0bdc67e5edec1b"
+      },
+      "reason": "First pull used assumed native-dock-optical-world path; correct dock-optical-world path pulled without rerunning successful test."
+    }
+  ],
+  "notifiedRetainedDock": {
+    "command": {
+      "seconds": 29.299565166999997,
+      "exitCode": 0,
+      "command": [
+        "/Users/kerrylee/Library/Android/sdk/platform-tools/adb",
+        "-s",
+        "d3efcd6a",
+        "shell",
+        "am",
+        "instrument",
+        "-w",
+        "-r",
+        "-e",
+        "class",
+        "com.lingion.sleepy.ui.component.NativeDockOpticalWorldRenderTest#captureRetainedDockLocalAppearance",
+        "-e",
+        "glassDockLocalAppearance",
+        "true",
+        "-e",
+        "glassDockSourceNotifications",
+        "true",
+        "-e",
+        "glassDockOpticalRunId",
+        "adaptation-94-notified-retained-clean",
+        "com.lingion.sleepy.debug.test/com.lingion.sleepy.SleepyRenderTestRunner"
+      ]
+    },
+    "log": {
+      "path": "notified-retained-clean.log",
+      "bytes": 826,
+      "sha256": "1075d7cef651a113b3c73be6bf11a285439106c0f6acc1dfd03686fd14785798"
+    },
+    "result": {
+      "path": "notified-retained-clean/result.json",
+      "bytes": 407137,
+      "sha256": "d0fdfdcc463f4a087eec065c706b0864899c9a9edec5df0e524d312bcb6d1785"
+    },
+    "status": "passed",
+    "testCaseSeconds": 28.16,
+    "checkpoints": [
+      {
+        "stage": 0,
+        "input": "A",
+        "budgetMs": 1000,
+        "sourceDraws": 3,
+        "hostVersion": 2,
+        "sampleCount": 3,
+        "appearance": {
+          "material_dark": true,
+          "source_luma": 0.10196078,
+          "ordinary_tint_argb": -1
+        },
+        "windowDisplayReadinessPassed": true,
+        "bodyProbe1Window": [
+          {
+            "rgb": [
+              39,
+              38,
+              42
+            ],
+            "pixels": 432
+          }
+        ]
+      },
+      {
+        "stage": 0,
+        "input": "A",
+        "budgetMs": 3000,
+        "sourceDraws": 3,
+        "hostVersion": 2,
+        "sampleCount": 3,
+        "appearance": {
+          "material_dark": true,
+          "source_luma": 0.10196078,
+          "ordinary_tint_argb": -1
+        },
+        "windowDisplayReadinessPassed": true,
+        "bodyProbe1Window": [
+          {
+            "rgb": [
+              39,
+              38,
+              42
+            ],
+            "pixels": 432
+          }
+        ]
+      },
+      {
+        "stage": 1,
+        "input": "B",
+        "budgetMs": 1000,
+        "sourceDraws": 4,
+        "hostVersion": 2,
+        "sampleCount": 4,
+        "appearance": {
+          "material_dark": false,
+          "source_luma": 0.90196073,
+          "ordinary_tint_argb": -16777216
+        },
+        "windowDisplayReadinessPassed": true,
+        "bodyProbe1Window": [
+          {
+            "rgb": [
+              238,
+              238,
+              238
+            ],
+            "pixels": 432
+          }
+        ]
+      },
+      {
+        "stage": 1,
+        "input": "B",
+        "budgetMs": 3000,
+        "sourceDraws": 4,
+        "hostVersion": 2,
+        "sampleCount": 4,
+        "appearance": {
+          "material_dark": false,
+          "source_luma": 0.90196073,
+          "ordinary_tint_argb": -16777216
+        },
+        "windowDisplayReadinessPassed": true,
+        "bodyProbe1Window": [
+          {
+            "rgb": [
+              238,
+              238,
+              238
+            ],
+            "pixels": 432
+          }
+        ]
+      },
+      {
+        "stage": 2,
+        "input": "C",
+        "budgetMs": 1000,
+        "sourceDraws": 5,
+        "hostVersion": 2,
+        "sampleCount": 5,
+        "appearance": {
+          "material_dark": true,
+          "source_luma": 0.10196078,
+          "ordinary_tint_argb": -1
+        },
+        "windowDisplayReadinessPassed": true,
+        "bodyProbe1Window": [
+          {
+            "rgb": [
+              39,
+              38,
+              42
+            ],
+            "pixels": 432
+          }
+        ]
+      },
+      {
+        "stage": 2,
+        "input": "C",
+        "budgetMs": 3000,
+        "sourceDraws": 5,
+        "hostVersion": 2,
+        "sampleCount": 5,
+        "appearance": {
+          "material_dark": true,
+          "source_luma": 0.10196078,
+          "ordinary_tint_argb": -1
+        },
+        "windowDisplayReadinessPassed": true,
+        "bodyProbe1Window": [
+          {
+            "rgb": [
+              39,
+              38,
+              42
+            ],
+            "pixels": 432
+          }
+        ]
+      },
+      {
+        "stage": 3,
+        "input": "D",
+        "budgetMs": 1000,
+        "sourceDraws": 6,
+        "hostVersion": 2,
+        "sampleCount": 6,
+        "appearance": {
+          "material_dark": false,
+          "source_luma": 0.90196073,
+          "ordinary_tint_argb": -16777216
+        },
+        "windowDisplayReadinessPassed": true,
+        "bodyProbe1Window": [
+          {
+            "rgb": [
+              238,
+              238,
+              238
+            ],
+            "pixels": 432
+          }
+        ]
+      },
+      {
+        "stage": 3,
+        "input": "D",
+        "budgetMs": 3000,
+        "sourceDraws": 6,
+        "hostVersion": 2,
+        "sampleCount": 6,
+        "appearance": {
+          "material_dark": false,
+          "source_luma": 0.90196073,
+          "ordinary_tint_argb": -16777216
+        },
+        "windowDisplayReadinessPassed": true,
+        "bodyProbe1Window": [
+          {
+            "rgb": [
+              238,
+              238,
+              238
+            ],
+            "pixels": 432
+          }
+        ]
+      },
+      {
+        "stage": 4,
+        "input": "C",
+        "budgetMs": 1000,
+        "sourceDraws": 7,
+        "hostVersion": 2,
+        "sampleCount": 7,
+        "appearance": {
+          "material_dark": true,
+          "source_luma": 0.10196078,
+          "ordinary_tint_argb": -1
+        },
+        "windowDisplayReadinessPassed": true,
+        "bodyProbe1Window": [
+          {
+            "rgb": [
+              39,
+              38,
+              42
+            ],
+            "pixels": 432
+          }
+        ]
+      },
+      {
+        "stage": 4,
+        "input": "C",
+        "budgetMs": 3000,
+        "sourceDraws": 7,
+        "hostVersion": 2,
+        "sampleCount": 7,
+        "appearance": {
+          "material_dark": true,
+          "source_luma": 0.10196078,
+          "ordinary_tint_argb": -1
+        },
+        "windowDisplayReadinessPassed": true,
+        "bodyProbe1Window": [
+          {
+            "rgb": [
+              39,
+              38,
+              42
+            ],
+            "pixels": 432
+          }
+        ]
+      },
+      {
+        "stage": 5,
+        "input": "B",
+        "budgetMs": 1000,
+        "sourceDraws": 8,
+        "hostVersion": 2,
+        "sampleCount": 8,
+        "appearance": {
+          "material_dark": false,
+          "source_luma": 0.90196073,
+          "ordinary_tint_argb": -16777216
+        },
+        "windowDisplayReadinessPassed": true,
+        "bodyProbe1Window": [
+          {
+            "rgb": [
+              238,
+              238,
+              238
+            ],
+            "pixels": 432
+          }
+        ]
+      },
+      {
+        "stage": 5,
+        "input": "B",
+        "budgetMs": 3000,
+        "sourceDraws": 8,
+        "hostVersion": 2,
+        "sampleCount": 8,
+        "appearance": {
+          "material_dark": false,
+          "source_luma": 0.90196073,
+          "ordinary_tint_argb": -16777216
+        },
+        "windowDisplayReadinessPassed": true,
+        "bodyProbe1Window": [
+          {
+            "rgb": [
+              238,
+              238,
+              238
+            ],
+            "pixels": 432
+          }
+        ]
+      },
+      {
+        "stage": 6,
+        "input": "A",
+        "budgetMs": 1000,
+        "sourceDraws": 9,
+        "hostVersion": 2,
+        "sampleCount": 9,
+        "appearance": {
+          "material_dark": true,
+          "source_luma": 0.10196078,
+          "ordinary_tint_argb": -1
+        },
+        "windowDisplayReadinessPassed": true,
+        "bodyProbe1Window": [
+          {
+            "rgb": [
+              39,
+              38,
+              42
+            ],
+            "pixels": 432
+          }
+        ]
+      },
+      {
+        "stage": 6,
+        "input": "A",
+        "budgetMs": 3000,
+        "sourceDraws": 9,
+        "hostVersion": 2,
+        "sampleCount": 9,
+        "appearance": {
+          "material_dark": true,
+          "source_luma": 0.10196078,
+          "ordinary_tint_argb": -1
+        },
+        "windowDisplayReadinessPassed": true,
+        "bodyProbe1Window": [
+          {
+            "rgb": [
+              39,
+              38,
+              42
+            ],
+            "pixels": 432
+          }
+        ]
+      }
+    ],
+    "meaning": "Fourteen retained REST observations use ordinary autoAdvance clock and fixed>=1s/3s budgets; state/luma/composed foreground and unchanged full Window/display readiness pass. Source hostVersion stays2 while explicit leaf signal updates sampler. No target-state waiting was added to this timed sequence.",
+    "opticalResidual": "Fixed bodyP1/P2 are39/38/42 onA/C and238/238/238 onB/D. Native prior reference is approximately37 and247 gray, respectively. No native body match claimed."
+  },
+  "notifiedOpticalWorld": {
+    "command": {
+      "seconds": 50.393886792,
+      "exitCode": 0,
+      "command": [
+        "/Users/kerrylee/Library/Android/sdk/platform-tools/adb",
+        "-s",
+        "d3efcd6a",
+        "shell",
+        "am",
+        "instrument",
+        "-w",
+        "-r",
+        "-e",
+        "class",
+        "com.lingion.sleepy.ui.component.NativeDockOpticalWorldRenderTest#captureNativeDockOpticalWorld",
+        "-e",
+        "glassDockOpticalWorld",
+        "true",
+        "-e",
+        "glassDockOpticalParent",
+        "swiftui",
+        "-e",
+        "glassDockSourceNotifications",
+        "true",
+        "-e",
+        "glassDockOpticalRunId",
+        "adaptation-94-notified-optical",
+        "com.lingion.sleepy.debug.test/com.lingion.sleepy.SleepyRenderTestRunner"
+      ]
+    },
+    "log": {
+      "path": "notified-optical.log",
+      "bytes": 817,
+      "sha256": "673804d384b712cdc23dabcedfcbcd2863965ad57be6928a1532dfea0ec85927"
+    },
+    "result": {
+      "path": "notified-optical/result.json",
+      "bytes": 581180,
+      "sha256": "f6d1f2147b33e441e6391f29fea1f187d4c3bd86a9ca79737091e0c7a964249e"
+    },
+    "status": "passed",
+    "testCaseSeconds": 49.127,
+    "baselines": 8,
+    "captures": 16,
+    "pngs": 48,
+    "scenes": [
+      {
+        "scene": "fine_grid-light",
+        "phase": "rest",
+        "before": {
+          "material_dark": false,
+          "source_luma": 0.93318033,
+          "ordinary_tint_argb": -16777216
+        },
+        "after": {
+          "material_dark": false,
+          "source_luma": 0.93318033,
+          "ordinary_tint_argb": -16777216
+        }
+      },
+      {
+        "scene": "fine_grid-light",
+        "phase": "held",
+        "before": {
+          "material_dark": false,
+          "source_luma": 0.94259214,
+          "ordinary_tint_argb": -16777216
+        },
+        "after": {
+          "material_dark": false,
+          "source_luma": 0.94259214,
+          "ordinary_tint_argb": -16777216
+        }
+      },
+      {
+        "scene": "color_stripes-light",
+        "phase": "rest",
+        "before": {
+          "material_dark": true,
+          "source_luma": 0.4634334,
+          "ordinary_tint_argb": -1
+        },
+        "after": {
+          "material_dark": true,
+          "source_luma": 0.4634334,
+          "ordinary_tint_argb": -1
+        }
+      },
+      {
+        "scene": "color_stripes-light",
+        "phase": "held",
+        "before": {
+          "material_dark": true,
+          "source_luma": 0.3162965,
+          "ordinary_tint_argb": -1
+        },
+        "after": {
+          "material_dark": true,
+          "source_luma": 0.3162965,
+          "ordinary_tint_argb": -1
+        }
+      },
+      {
+        "scene": "tonal_blocks-light",
+        "phase": "rest",
+        "before": {
+          "material_dark": false,
+          "source_luma": 0.78049695,
+          "ordinary_tint_argb": -16777216
+        },
+        "after": {
+          "material_dark": false,
+          "source_luma": 0.78049695,
+          "ordinary_tint_argb": -16777216
+        }
+      },
+      {
+        "scene": "tonal_blocks-light",
+        "phase": "held",
+        "before": {
+          "material_dark": false,
+          "source_luma": 0.78049695,
+          "ordinary_tint_argb": -16777216
+        },
+        "after": {
+          "material_dark": false,
+          "source_luma": 0.78049695,
+          "ordinary_tint_argb": -16777216
+        }
+      },
+      {
+        "scene": "synthetic_landscape-light",
+        "phase": "rest",
+        "before": {
+          "material_dark": true,
+          "source_luma": 0.23419137,
+          "ordinary_tint_argb": -1
+        },
+        "after": {
+          "material_dark": true,
+          "source_luma": 0.23419137,
+          "ordinary_tint_argb": -1
+        }
+      },
+      {
+        "scene": "synthetic_landscape-light",
+        "phase": "held",
+        "before": {
+          "material_dark": true,
+          "source_luma": 0.2528985,
+          "ordinary_tint_argb": -1
+        },
+        "after": {
+          "material_dark": true,
+          "source_luma": 0.2528985,
+          "ordinary_tint_argb": -1
+        }
+      },
+      {
+        "scene": "fine_grid-dark",
+        "phase": "rest",
+        "before": {
+          "material_dark": false,
+          "source_luma": 0.93318033,
+          "ordinary_tint_argb": -16777216
+        },
+        "after": {
+          "material_dark": false,
+          "source_luma": 0.93318033,
+          "ordinary_tint_argb": -16777216
+        }
+      },
+      {
+        "scene": "fine_grid-dark",
+        "phase": "held",
+        "before": {
+          "material_dark": false,
+          "source_luma": 0.94259214,
+          "ordinary_tint_argb": -16777216
+        },
+        "after": {
+          "material_dark": false,
+          "source_luma": 0.94259214,
+          "ordinary_tint_argb": -16777216
+        }
+      },
+      {
+        "scene": "color_stripes-dark",
+        "phase": "rest",
+        "before": {
+          "material_dark": true,
+          "source_luma": 0.4634334,
+          "ordinary_tint_argb": -1
+        },
+        "after": {
+          "material_dark": true,
+          "source_luma": 0.4634334,
+          "ordinary_tint_argb": -1
+        }
+      },
+      {
+        "scene": "color_stripes-dark",
+        "phase": "held",
+        "before": {
+          "material_dark": true,
+          "source_luma": 0.3162965,
+          "ordinary_tint_argb": -1
+        },
+        "after": {
+          "material_dark": true,
+          "source_luma": 0.3162965,
+          "ordinary_tint_argb": -1
+        }
+      },
+      {
+        "scene": "tonal_blocks-dark",
+        "phase": "rest",
+        "before": {
+          "material_dark": true,
+          "source_luma": 0.78049695,
+          "ordinary_tint_argb": -1
+        },
+        "after": {
+          "material_dark": true,
+          "source_luma": 0.78049695,
+          "ordinary_tint_argb": -1
+        }
+      },
+      {
+        "scene": "tonal_blocks-dark",
+        "phase": "held",
+        "before": {
+          "material_dark": true,
+          "source_luma": 0.78049695,
+          "ordinary_tint_argb": -1
+        },
+        "after": {
+          "material_dark": true,
+          "source_luma": 0.78049695,
+          "ordinary_tint_argb": -1
+        }
+      },
+      {
+        "scene": "synthetic_landscape-dark",
+        "phase": "rest",
+        "before": {
+          "material_dark": true,
+          "source_luma": 0.23419137,
+          "ordinary_tint_argb": -1
+        },
+        "after": {
+          "material_dark": true,
+          "source_luma": 0.23419137,
+          "ordinary_tint_argb": -1
+        }
+      },
+      {
+        "scene": "synthetic_landscape-dark",
+        "phase": "held",
+        "before": {
+          "material_dark": true,
+          "source_luma": 0.2528985,
+          "ordinary_tint_argb": -1
+        },
+        "after": {
+          "material_dark": true,
+          "source_luma": 0.2528985,
+          "ordinary_tint_argb": -1
+        }
+      }
+    ],
+    "clockPolicy": "Original1600ms synthetic animation settle plus explicit frame advancement until asynchronous source appearance and composed tint agree. This test-only readiness wait is not a latency/native timing verdict and does not alter retained fixed-budget test.",
+    "foregroundLimit": "Matching composed tint/state plus screenshots do not prove native glyph RGBA/coverage. Candidate ordinary icons are opaque white/black; native measured icons use235/235/245@.6 or60/60/67@.6, while labels usewhite/black."
+  },
+  "packaging": {
+    "runtimeSourceCount": 26,
+    "aar": {
+      "path": "libraries/liquid-glass/runtime/build/outputs/aar/liquid-glass-runtime.aar",
+      "bytes": 333396,
+      "sha256": "de6a1004796b83bc6c05c8a805205e87d09d8959d932faf27e2b3c5f8b840fee",
+      "classes": 133,
+      "newClasses": [
+        "com/lingion/sleepy/ui/component/liquidglass/BackdropAppearanceHysteresis.class",
+        "com/lingion/sleepy/ui/component/liquidglass/BackdropContentSignal.class",
+        "com/lingion/sleepy/ui/component/liquidglass/BackdropContentSignalKt$withContentSignal$1.class",
+        "com/lingion/sleepy/ui/component/liquidglass/BackdropContentSignalKt.class",
+        "com/lingion/sleepy/ui/component/liquidglass/BackdropDrawSignalElement.class",
+        "com/lingion/sleepy/ui/component/liquidglass/BackdropDrawSignalNode.class",
+        "com/lingion/sleepy/ui/component/liquidglass/BackdropLumaSample.class",
+        "com/lingion/sleepy/ui/component/liquidglass/BackdropLumaSamplerElement.class",
+        "com/lingion/sleepy/ui/component/liquidglass/BackdropLumaSamplerKt.class",
+        "com/lingion/sleepy/ui/component/liquidglass/BackdropLumaSamplerNode$draw$launched$1$readback$1.class",
+        "com/lingion/sleepy/ui/component/liquidglass/BackdropLumaSamplerNode$draw$launched$1.class",
+        "com/lingion/sleepy/ui/component/liquidglass/BackdropLumaSamplerNode.class"
+      ]
+    },
+    "appProductionClassCount": 2242,
+    "duplicateClasses": [],
+    "shader": {
+      "bytes": 33561,
+      "sha256": "2b45241e8c640d996e1ebfbe4eceff3d0fcdfc55a84e428f7fcd215560247f19",
+      "aarCount": 1,
+      "apkCount": 1,
+      "aarApkHeadIdentical": true
+    },
+    "hostXml": [
+      {
+        "file": "notified-TEST-com.lingion.sleepy.ui.component.liquidglass.BackdropAppearanceHysteresisTest.xml",
+        "sha256": "391584ed541791ac227827c784720d6159e4bf54f1a48f66e1d84ff6ffb49ade",
+        "tests": "4",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "time": "0.011"
+      },
+      {
+        "file": "notified-TEST-com.lingion.sleepy.ui.component.liquidglass.DockAccessibilityTest.xml",
+        "sha256": "aedfdebdae5668ff9dfdc98e3f84e8211955467a55c3af87f67d138bb095b883",
+        "tests": "6",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "time": "6.038"
+      },
+      {
+        "file": "notified-TEST-com.lingion.sleepy.ui.component.liquidglass.NativeDockLayoutTest.xml",
+        "sha256": "1eee662fde633424e7ec645a71ff39fd99abdbcbd94d8cebf071020ed5d356ed",
+        "tests": "4",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "time": "0.176"
+      },
+      {
+        "file": "notified-TEST-com.lingion.sleepy.ui.component.liquidglass.SelectionThemeParityTest.xml",
+        "sha256": "883f92a042e9b725e400e821fb87695e8b1d421a0eeca38efeb3725da971bfe2",
+        "tests": "4",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "time": "5.241"
+      }
+    ],
+    "sources": [
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/ActiveFrameLoop.kt",
+        "sha256": "98546593879cf56f574d55d0ae8cd2f5233495deef407eebee363172329d3475"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/BackdropAppearanceHysteresis.kt",
+        "sha256": "6ecc4392248539cee14fea6df4db3c107308fdf13f05cc71da39c7f33572c0d3"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/BackdropAwareForeground.kt",
+        "sha256": "874a6fabfdcd3f8efba696118f20920e9b17095ba2fc3ccf1943b11a5d6807f2"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/BackdropContentSignal.kt",
+        "sha256": "4ac97fbe226fb0abdd1b20a7b3e788e74b05b2e6672246bb4ac5a574109ba0c0"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/BackdropLumaSampler.kt",
+        "sha256": "6d77550b984982032b2d916e5f0aee1c797e6290266c1a2059068a88b3b19d50"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/DockInputClock.kt",
+        "sha256": "ff3a1526442c1c98d9a82dfd8a1676e4e708d8bb5939d22d7dba2603f335c4c5"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/DockPlatterShape.kt",
+        "sha256": "5dd86599853fdeaf57485b2e64d80e5f2618ee7b53aef3e4c90eab6c43f04575"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/FlClashGlassShape.kt",
+        "sha256": "4b09bde2a6d2dab9ae35920152a5d2055452d7656802f83d8782945f1e463f72"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/GlassControlMotion.kt",
+        "sha256": "771af0b3ba37ca77d4ccb33dbf6271b891b773a050825b8fc6311dff23134d0f"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/GlassDockMotion.kt",
+        "sha256": "0c9933e29ad995653052a7eadc4941e18247387a733f9c420b5284aa1e699164"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/GlassPressMotion.kt",
+        "sha256": "2412b20ee20f82039082dfa7165ac9abe8c64a79c4f595336cb3697c20debfdd"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassDualContourShape.kt",
+        "sha256": "8aa4e19264ebf8f31cb2687cf8a2d7cdc3ed151394dbe666fb5edecf2146946a"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassEffect.kt",
+        "sha256": "17bcec74d13faee03c1c6f16f4c02e3db735253bdf716adc687c0564e58a376a"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassExactContour.kt",
+        "sha256": "f420db2bcc43a8c332594f4b276e9b27768ff77b301b149ab363e513412bd670"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassGeometry.kt",
+        "sha256": "2d7e1b79440149cffb9c71151e0a557a2a6ec14cb184bd78492d5b10fae9cff4"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassOutlineProfile.kt",
+        "sha256": "6e6d22c59ec41e2ea36ee671be185d4dc96af6491437080ff31971c76813949b"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassPhysics.kt",
+        "sha256": "20a9d90d15eb26d4be3a225523424e424533e5d52b0e3a96772615cf82cbfc4c"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassShader.kt",
+        "sha256": "068b2e8d83d499f0a36d9167ab6bef2f5b6af16d3460c4b3ce0b0a5654c477d4"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassStyle.kt",
+        "sha256": "a755c6125dee7f885a38800f3c79b0941ed63c07e870a76533546c860a8f808e"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse.kt",
+        "sha256": "9cc0362f917d99eaa6f6afb38c14b9eb7ec8bf360075ece001bd64af790f739b"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeDockDeformation.kt",
+        "sha256": "7836138f47cde63ed68fd4f3808a7f9651ebb088c427b493bc625127ecdd7b73"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeDockEndpoint.kt",
+        "sha256": "ce0ca9a8da1b3273f423b128da3b0cce29b6b20eba62ccfa0be491e41304351f"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeDockParentMotion.kt",
+        "sha256": "866ace235e07e7fb4f99776f985bd0915862f048d121f5acdcf559bea2b4f167"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeGlassDragDeformation.kt",
+        "sha256": "b49db084e67163921cd3bd7a8139ca9eafe6a17a827b6bf53d875ebe054e795c"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeSegmentedEndpoint.kt",
+        "sha256": "42e5941f2550735e43c470b001500256f3e55fe45437fb60816d13a3ce1ca607"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeSliderEndpoint.kt",
+        "sha256": "c6e10e1decb60296007d64213b748fa8431f7a07de28f325d3b354f94b177ffb"
+      }
+    ]
+  },
+  "coverageLimits": [
+    "One API36 device; no scale/rotation, unsupported API, wide-color or cross-window acceptance in this batch.",
+    "No arbitrary source subtree auto-invalidation, native/layer-property or multiple source leaf hardware coverage.",
+    "No signal replacement, incorrect-thread callback or continuous high-speed source stress result.",
+    "No new natural-input motion traces; synthetic held captures cannot establish acceleration/stretch/release parity.",
+    "Host/context and complete controls still app-coupled; standalone sample and public API support contract incomplete.",
+    "Open-source publication remains pending native calibration and existing provenance/distribution checks."
+  ],
+  "evidence": {
+    "localArtifactDirectory": "/Users/kerrylee/Documents/Codex/2026-11-10/1-sleepy-2-26-3-1/artifacts/glass-optics-20261112/android-dock-adaptation-94",
+    "selectedRaw": [
+      {
+        "path": "notified-real-activity-samples.json",
+        "bytes": 10917,
+        "sha256": "3fe4903aad126e06f57bc251371f992be8e7cb122a494cd2e9b90b46f3a62f07"
+      },
+      {
+        "path": "notified-explicit-source-samples.json",
+        "bytes": 5373,
+        "sha256": "f4d0c6d711da9e0c9e1747543a2b1368ba42bf7fc861eadd852ffd28fb76ef51"
+      },
+      {
+        "path": "notified-packaging.json",
+        "bytes": 8977,
+        "sha256": "1c4dc3adb5811e2b722834f480f2fddfd00a16dba37aa266e25b671b05728b64"
+      },
+      {
+        "path": "source-sampling-threading.md",
+        "bytes": 6522,
+        "sha256": "b53e68e7860c052110be283b58605ba64bf84d0f169a51569462d032a6b3ffab"
+      },
+      {
+        "path": "optical-independent-review.json",
+        "bytes": 101015,
+        "sha256": "ee3f025d1981d01ff6d6f4f9ef7dee7434c9abb1c1620a98b5a04a563691a6d5"
+      }
+    ],
+    "nativeCalibrationAccepted": false,
+    "performanceAccepted": false,
+    "publicationReady": false
+  },
+  "cleanup": {
+    "removedUnusedApks": [
+      {
+        "path": "app/build/outputs/apk/debug/app-armeabi-v7a-debug.apk",
+        "bytes": 30492736
+      },
+      {
+        "path": "app/build/outputs/apk/debug/app-x86_64-debug.apk",
+        "bytes": 30494286
+      },
+      {
+        "path": "app/build/outputs/apk/debug/app-universal-debug.apk",
+        "bytes": 30593116
+      }
+    ],
+    "freedBytes": 91580138,
+    "kept": [
+      "app/build/outputs/apk/debug/app-arm64-v8a-debug.apk",
+      "app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"
+    ],
+    "scope": "Generated unused ABI APKs only; reusable build outputs and unique validation evidence retained."
+  },
+  "postBuildFormatting": [
+    {
+      "path": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassNavigationBar.kt",
+      "builtSHA256": "09d29c95d33fca293159f16dd40b20731fa0f487060992a87505bca966af1bff",
+      "currentSHA256": "4f3aeeec09d417e1b7208612bb2cd2fa7fa73645a67cc5de1b7b4ef8588d7f1d",
+      "scope": "Whitespace indentation only; executable code unchanged. No repeated build/test."
+    },
+    {
+      "path": "app/src/androidTest/java/com/lingion/sleepy/ui/component/NativeDockOpticalWorldRenderTest.kt",
+      "builtSHA256": "08b0036b81105834909000099edbd6a98188bdfea0f7b26ffe5658d9d944c967",
+      "currentSHA256": "cd03243e2331eafaf8f9229efaad195d23cce42d0b547a28f718ccd57400fd3c",
+      "scope": "Indent child control inside new provider; whitespace only. No repeated build/test."
+    }
+  ]
+}

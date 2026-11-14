@@ -676,3 +676,17 @@ runtime AAR构建通过，119类与app实际2242个生产类无交集；原33,56
 1s/3s是观察下限，不能写成精确时刻或已稳定：首正式getter实际分别在draw后约6.05/7.55s和6.50/7.91s，第二组启动230的早期getter仍先观察到trait2，随后才为1。第一组已排除本次观察的一条无记忆亮度曲线；第二组仅将这次下降路径的已观测dark返回范围限定在179与128阶段之间。采样support、状态粒度、阈值、时间常数及丢帧语义均未识别。85约束空间传递，尚不能排除整pane共享状态或参数再叠加局部source透射；也不能把整pane五点分类当作已识别的原生机制。不得把通用smoothstep原语当作原生状态模型接进产品。
 
 当前main/test包已核对host/device SHA256并回到MainActivity；实际main为`52548587665cd3e9c9c237a5820e06fea2fbb9e6170691dd034d706961de34e7`，test为`54ac9f599be5ff92e7b71621fefd494f85076fafe36bd2e6fdb5f932fd972e86`。首张task返回过渡图与之后稳定首页图分开保留，后者可见第11周有课网格及Dock，仅验安装/启动。删除三个未用ABI包90,283,952字节，保留实际arm64/test包及唯一证据。完整控件/Host解耦、独立示例、逐控件光学/动态及来源分发审查仍未完成；本批不改变三个发布gate，不创建独立公开仓库，不作99.99%声明。
+
+### 94：显式源通知、异步取样与默认关闭的 Dock 候选
+
+运行库现有 26 份生产 Kotlin 源码。新增五点外部源 `sampleBackdropLuma`、调用方配置的 `BackdropAppearanceHysteresis` 和 `BackdropContentSignal`，保持材质/控件与 Sleepy 业务的提取边界。构建、18 项 host 检查、两项真实 Activity 设备检查及源/包哈希见[本批记录](../libraries/liquid-glass/validation/observations/source-aware-sampling-94.json)。这些结果没有完成 Host/控件提取、独立示例或公开发布验收。
+
+先复现两条不同的失效链。无隔离的取样消费者使共享父层重绘并重新发布 source revision，8 秒内出现 876 次源绘制和 438 次采样；modifier 内的 retained consumer layer 切断这条反馈。另一个固定世界序列 A→B→C→D→C→B→A 中，`clipToBounds` 子层已经真实绘制，source draw serial 从 3 增至 9，外层 `GlassHost.version` 却始终为 2，样本计数始终为 2、亮度停在 26/255。父录制 revision 不覆盖独立 retained 子层变化，不能靠增加同一 version 的读取解决。
+
+显式通知由真正源叶持有：`notifyBackdropDraw(signal)` 放在该叶最近的 graphicsLayer/clip 内，正常 `drawContent` 返回后发布；采样者记忆 `source.withContentSignal(signal)`。纯 layer 属性和原生 View 更新仍需所有者在真实更新可供绘制后通知，不能在业务 state 刚赋值时提前冒充完成，也不能从玻璃消费者回写通知。signal 只是重采样请求，不是录制完成 revision 或 compositor fence。真实 Activity 测试中父录制 revision 保持 1，26→230→77→217→26 全部更新；包装样本 `sourceRevision=null`，静止 250ms 后样本 7→7、源绘制 6→6。直接源的八种场景也通过，静止样本 16→16、源绘制 24→24；小场景耗时不能当产品流畅度或原生延迟验收。
+
+接入明确源通知后，保留同一 Dock 的 14 次固定 ≥1s/3s REST 检查全部取得对应亮度、材质状态和已组合前景，原 Window/display 就绪标准也通过。外层 host version 仍为 2，sample count 从 3 增至 9，证明更新由显式源信号送达。前一轮虽 14 次状态均正确，3 张 display 原图出现系统“已使用8小时55分钟”浮层，整轮按原标准失败并保留；浮层消失后复测，没有改变系统设置或放宽阈值。P1/P2 仍有残差：A/C 为 RGB(39,38,42)，B/D 为 (238,238,238)，旧原生对照分别约为 37 灰和 247 灰，不能写成材质匹配。
+
+细网格、彩条、明暗块、合成风景 × 浅/深主题共 8 组基线、16 张 REST/HELD、48 张 PNG 的采集就绪检查通过。光学夹具在原 1600ms 合成动画 settle 后额外推进 Compose 帧，等异步源状态与组合期 tint 一致才截图；保留的固定预算序列没有改成等待目标状态。新帧推进只处理夹具的异步组合就绪，不证明产品 tint 缓存缺陷，也不提供原生响应时间结论。普通图标仍用不透明白/黑，与原生次级图标的半透明色不同；主题选中色继续复用 Material token。
+
+`LocalDockBackdropAppearanceEnabled` **默认关闭**，仅 opt-in 设备夹具启用工程候选。生产 MainTabs 根 LayerBackdrop 的任意 retained 后代通知覆盖尚未完成，Host 的全局源与 scoped 材质 revision 也待分离。iOS 26.5 分类机制、完整多背景光学、自然输入动态、其他设备/API 与性能均未验收。独立资产库继续共用同一 runtime；达到可核验的近原生标准后再开独立仓库，本批不创建公开仓库、不宣称 99.99%。
