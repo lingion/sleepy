@@ -454,6 +454,12 @@ fun AddTableScreen(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 FormatRow(
+                    name = stringResource(R.string.format_plain),
+                    desc = stringResource(R.string.format_plain_desc),
+                    dbgTag = "import_format#PLAIN",
+                    onDetail = { detailFormat = ImportFormat.PLAIN }
+                )
+                FormatRow(
                     name = stringResource(R.string.format_wakeup_share),
                     desc = stringResource(R.string.format_wakeup_desc),
                     dbgTag = "import_format#WAKEUP_SHARE",
@@ -482,12 +488,6 @@ fun AddTableScreen(
                     desc = stringResource(R.string.format_html_desc),
                     dbgTag = "import_format#HTML",
                     onDetail = { detailFormat = ImportFormat.HTML }
-                )
-                FormatRow(
-                    name = stringResource(R.string.format_plain),
-                    desc = stringResource(R.string.format_plain_desc),
-                    dbgTag = "import_format#PLAIN",
-                    onDetail = { detailFormat = ImportFormat.PLAIN }
                 )
             }
 
