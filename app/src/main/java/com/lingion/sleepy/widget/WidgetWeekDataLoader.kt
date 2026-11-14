@@ -3,6 +3,7 @@ package com.lingion.sleepy.widget
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
+import com.lingion.sleepy.data.entity.PeriodTableEntity
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.CourseHueStore
 import com.lingion.sleepy.util.DateUtils
@@ -23,8 +24,11 @@ internal data class WidgetWeekSource(
     val table: TimeTableEntity,
     val courses: List<CourseEntity>,
     val display: WeekDisplayContext,
-    val transfers: List<com.lingion.sleepy.util.HolidayTransferEntry> = emptyList()
+    val transfers: List<com.lingion.sleepy.util.HolidayTransferEntry> = emptyList(),
+    val periodTable: PeriodTableEntity? = null
 ) {
+    fun tableFor(date: LocalDate): TimeTableEntity = table.hydratedWith(periodTable, date)
+
     fun coursesOn(date: java.time.LocalDate, previewBeforeStart: Boolean = false): List<CourseEntity> {
         if (previewBeforeStart && display.semesterStatus == DateUtils.SemesterStatus.AFTER_END &&
             transfers.none { it.targetDate == date }) return emptyList()
@@ -67,9 +71,11 @@ internal object WidgetWeekDataLoader {
         // 刷失败仅回落 stableHue, 绝不阻断装载（CourseHueStore 红线）。
         runCatching { CourseHueStore.refresh(app) }
         val repo = app.repository
-        val table = WidgetTableResolver.resolveBoundTable(appWidgetId)
-            ?: WidgetTableResolver.resolveCurrentTable()
+        val date = now.toLocalDate()
+        val table = WidgetTableResolver.resolveBoundTable(appWidgetId, date)
+            ?: WidgetTableResolver.resolveCurrentTable(date)
             ?: return null
+        val periodTable = table.periodTableId?.let { runCatching { repo.getPeriodTable(it) }.getOrNull() }
         val courses = repo.getCourses(table.id)
         val display = WeekDisplayResolver.resolve(
             startDate = table.startDate,
@@ -80,6 +86,6 @@ internal object WidgetWeekDataLoader {
             enabled = AppPrefs.isNearestBusyDay(app),
             transfers = AppPrefs.getHolidayTransfers(app, table.id)
         )
-        return WidgetWeekSource(table, courses, display, AppPrefs.getHolidayTransfers(app, table.id))
+        return WidgetWeekSource(table, courses, display, AppPrefs.getHolidayTransfers(app, table.id), periodTable)
     }
 }

@@ -143,7 +143,7 @@ class PeriodTableMigrationTest {
 
     @Test
     fun migration_chain_reaches_current_database_version() {
-        assertEquals(15, ALL_MIGRATIONS.last().endVersion)
+        assertEquals(16, ALL_MIGRATIONS.last().endVersion)
         assertTrue(ALL_MIGRATIONS.any { it.startVersion == 7 && it.endVersion == 8 })
         assertTrue(ALL_MIGRATIONS.any { it.startVersion == 8 && it.endVersion == 9 })
         assertTrue(ALL_MIGRATIONS.any { it.startVersion == 9 && it.endVersion == 10 })

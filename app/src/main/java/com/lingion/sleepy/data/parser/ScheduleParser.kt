@@ -1453,6 +1453,8 @@ object ScheduleParser {
          */
         val periodTable: ParsedPeriodTable? = null,
         val importSourceJson: String = "",
+        /** Optional source-provided date-aware timetable combination. */
+        val comboScheduleJson: String = "",
     )
 
     /** P 区块解析产物: sourceId = 导出时的 period_tables.id(恢复共享关系的键) */
@@ -1460,6 +1462,7 @@ object ScheduleParser {
         val sourceId: Long,
         val name: String,
         val nodesPerDay: Int,
-        val timeJson: String
+        val timeJson: String,
+        val comboScheduleJson: String = ""
     )
 }

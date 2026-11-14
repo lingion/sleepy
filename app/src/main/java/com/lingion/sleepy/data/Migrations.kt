@@ -206,6 +206,11 @@ val ALL_MIGRATIONS: Array<Migration> = arrayOf(
         override fun migrate(db: SupportSQLiteDatabase) {
             db.execSQL(MIGRATION_14_15_SQL)
         }
+    },
+    object : Migration(15, 16) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE period_tables ADD COLUMN comboScheduleJson TEXT NOT NULL DEFAULT ''")
+        }
     }
 )
 

@@ -404,6 +404,24 @@ fun ScheduleScreen(
                 }
                 // 拖拽坐标、缩放和弹窗变化不改变课程投影，只有数据/周次/调休/作息变化才重算。
                 val renderCourses = viewModel.presentationCache.weekCourses(state, page + 1)
+                // 组合季节作息按周内的实际日期解析。FullWeekView 的详情卡按天显示时间，
+                // 因此不能只传当前日期的单一 timeJson；旧课表仍自然回退到同一份作息。
+                val timeJsonByDay = remember(
+                    page,
+                    state.selectedTableId,
+                    state.currentTable?.startDate,
+                    state.effectivePeriodTable,
+                ) {
+                    val table = state.currentTable
+                    if (table == null || table.startDate.isBlank()) emptyMap()
+                    else (1..7).associateWith { day ->
+                        runCatching {
+                            val date = DateUtils.dateOfWeek(table.startDate, page + 1, day)
+                            state.effectiveTableFor(date)?.timeJson
+                                ?: state.effectiveCurrentTable?.timeJson.orEmpty()
+                        }.getOrElse { state.effectiveCurrentTable?.timeJson.orEmpty() }
+                    }
+                }
                 // 计算本周哪些天是节假日/周末(灰显用); 纯内存快速计算 + 缓存, 避免首帧异步跳变导致转场中途重组
                 val greyDays = remember(
                     page, state.selectedTableId, state.currentTable?.startDate, state.transfers, holidayPrefVersion
@@ -416,6 +434,7 @@ fun ScheduleScreen(
                         visibleDays = visibleDays,
                         displayMode = displayMode,
                         timeJson = state.effectiveCurrentTable?.timeJson ?: "",
+                        timeJsonByDay = timeJsonByDay,
                         startDate = state.currentTable?.startDate ?: "",
                         currentWeek = page + 1,
                         onCourseClick = { selectedCourse = it },

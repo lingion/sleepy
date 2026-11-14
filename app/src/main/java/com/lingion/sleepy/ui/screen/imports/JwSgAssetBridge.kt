@@ -194,7 +194,25 @@ object JwSgAssetBridge {
     },
     saveComboSchedule: function(comboScheduleJsonString){
       if (!active()) return Promise.reject(new Error('采集 session 已结束或取消'));
-      return metadataFailure('来源包含按日期切换的作息，本次导入尚不能完整保存该方案');
+      try {
+        var combo = JSON.parse(comboScheduleJsonString);
+        if (!combo || typeof combo !== 'object' || Array.isArray(combo) ||
+            !Array.isArray(combo.publicSchedules) || !combo.publicSchedules.length ||
+            combo.publicSchedules.length > 366) throw new Error('组合方案结构无效');
+        combo.publicSchedules.forEach(function(schedule){
+          if (!schedule || typeof schedule !== 'object' || !validDate(schedule.startDate) ||
+              !validDate(schedule.endDate) || schedule.startDate > schedule.endDate ||
+              !Array.isArray(schedule.timeSlots) || !schedule.timeSlots.length) throw new Error('组合方案日期或作息无效');
+          schedule.timeSlots.forEach(function(slot,index){
+            if (!slot || slot.number !== index + 1 || !clock(slot.startTime) || !clock(slot.endTime) ||
+                slot.startTime >= slot.endTime || index > 0 && schedule.timeSlots[index - 1].endTime > slot.startTime) {
+              throw new Error('组合方案节次无效');
+            }
+          });
+        });
+        state.comboSchedule = combo;
+      } catch(e) { return metadataFailure('来源组合作息无效，请检查后重新导入'); }
+      return promiseResult(true);
     }
   };
   var syncApi = {
@@ -210,7 +228,7 @@ object JwSgAssetBridge {
       if (state.failure || unanswered) {
         out({ok:false,captureId:state.sessionId,err:state.failure || '来源尚有未完成的导入选择，请重新导入'});
       } else if (state.submitted) {
-        out({ok:true, captureId:state.sessionId, data:state.data, periods:state.periods, startDate:state.startDate, sgConfig:state.config, sgAsset:'saveImportedCourses'});
+        out({ok:true, captureId:state.sessionId, data:state.data, periods:state.periods, startDate:state.startDate, sgConfig:state.config, comboSchedule:state.comboSchedule || null, sgAsset:'saveImportedCourses'});
       } else {
         out({ok:false, captureId:state.sessionId, err:'拾光适配脚本已结束但未提交课表 (可能需要手动导航到课表页后重试)'});
       }
@@ -221,7 +239,7 @@ object JwSgAssetBridge {
       // 来源异步代码可能在稍后读取全局 API。换 session 必须换文档，不能原页重装。
       if (state) throw new Error('再次导入前请重新加载页面');
       state = {sessionId:sessionId, submitted:false, completed:false, cancelled:false,
-        nextRequest:0,pending:{},data:'', periods:[], startDate:'', config:{},failure:''};
+        nextRequest:0,pending:{},data:'', periods:[], startDate:'', config:{}, comboSchedule:null, failure:''};
       window.shiguangBridgePromise = promiseApi;
       window.shiguangBridge = syncApi;
       window.AndroidBridgePromise = promiseApi;

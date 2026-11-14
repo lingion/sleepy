@@ -411,39 +411,49 @@ async function saveAppConfig(semesterStartDate, totalWeeks) {
 /**
  * 统一作息
  */
-async function saveAppTimeSlots(semesterId) {
-    const [, , semester] = semesterId.split("-");
-    const isAutumnSemester = semester === "1";
-
-    // 青岛大学上午作息全年一致，下午和晚间按学期对应季节切换。
-    // 当前桥接层不支持按日期切换的组合作息，因此只写入本学期实际使用的一套。
+async function saveAppTimeSlots(semesterStartDate) {
+    // 青岛大学上午作息全年一致，下午和晚间按教学日期切换。
     const baseTimeSlots = [
         { "number": 1, "startTime": "08:00", "endTime": "08:50" },
         { "number": 2, "startTime": "09:00", "endTime": "09:50" },
         { "number": 3, "startTime": "10:10", "endTime": "11:00" },
         { "number": 4, "startTime": "11:10", "endTime": "12:00" },
-        ...(isAutumnSemester ? [
-            { "number": 5, "startTime": "13:30", "endTime": "14:20" },
-            { "number": 6, "startTime": "14:30", "endTime": "15:20" },
-            { "number": 7, "startTime": "15:30", "endTime": "16:20" },
-            { "number": 8, "startTime": "16:30", "endTime": "17:20" },
-            { "number": 9, "startTime": "18:30", "endTime": "19:20" },
-            { "number": 10, "startTime": "19:30", "endTime": "20:20" },
-            { "number": 11, "startTime": "20:30", "endTime": "21:20" }
-        ] : [
-            { "number": 5, "startTime": "14:00", "endTime": "14:50" },
-            { "number": 6, "startTime": "15:00", "endTime": "15:50" },
-            { "number": 7, "startTime": "16:00", "endTime": "16:50" },
-            { "number": 8, "startTime": "17:00", "endTime": "17:50" },
-            { "number": 9, "startTime": "19:00", "endTime": "19:50" },
-            { "number": 10, "startTime": "20:00", "endTime": "20:50" },
-            { "number": 11, "startTime": "21:00", "endTime": "21:50" }
-        ])
+        { "number": 5, "startTime": "14:00", "endTime": "14:50" },
+        { "number": 6, "startTime": "15:00", "endTime": "15:50" },
+        { "number": 7, "startTime": "16:00", "endTime": "16:50" },
+        { "number": 8, "startTime": "17:00", "endTime": "17:50" },
+        { "number": 9, "startTime": "19:00", "endTime": "19:50" },
+        { "number": 10, "startTime": "20:00", "endTime": "20:50" },
+        { "number": 11, "startTime": "21:00", "endTime": "21:50" }
     ];
+
+    const autumnWinter = [
+        { "number": 1, "startTime": "08:00", "endTime": "08:50" },
+        { "number": 2, "startTime": "09:00", "endTime": "09:50" },
+        { "number": 3, "startTime": "10:10", "endTime": "11:00" },
+        { "number": 4, "startTime": "11:10", "endTime": "12:00" },
+        { "number": 5, "startTime": "13:30", "endTime": "14:20" },
+        { "number": 6, "startTime": "14:30", "endTime": "15:20" },
+        { "number": 7, "startTime": "15:30", "endTime": "16:20" },
+        { "number": 8, "startTime": "16:30", "endTime": "17:20" },
+        { "number": 9, "startTime": "18:30", "endTime": "19:20" },
+        { "number": 10, "startTime": "19:30", "endTime": "20:20" },
+        { "number": 11, "startTime": "20:30", "endTime": "21:20" }
+    ];
+    const year = Number(String(semesterStartDate || '').slice(0, 4)) || new Date().getFullYear();
+    const comboSchedule = {
+        name: "青岛大学春夏秋冬作息",
+        publicSchedules: [
+            { name: "秋冬季作息", startDate: `${year - 1}-10-01`, endDate: `${year}-04-30`, timeSlots: autumnWinter },
+            { name: "春夏季作息", startDate: `${year}-05-01`, endDate: `${year}-09-30`, timeSlots: baseTimeSlots },
+            { name: "秋冬季作息", startDate: `${year}-10-01`, endDate: `${year + 1}-04-30`, timeSlots: autumnWinter }
+        ]
+    };
 
     // 保存作息方案
     try {
         await window.shiguangBridgePromise.savePresetTimeSlots(JSON.stringify(baseTimeSlots));
+        await window.shiguangBridgePromise.saveComboSchedule(JSON.stringify(comboSchedule));
         return true;
     } catch (error) {
         window.shiguangBridge.showToast("作息方案导入失败: " + error.message);
@@ -491,7 +501,7 @@ async function runImportFlow() {
 
         // 6. 保存配置（含开学日期 + 最大周次（最大限制为 20））/ 作息 / 课程
         await saveAppConfig(semesterStartDate, Math.min(totalWeeks, 20));
-        await saveAppTimeSlots(semesterId);
+        await saveAppTimeSlots(semesterStartDate);
         await window.shiguangBridgePromise.saveImportedCourses(JSON.stringify(finalCourses));
 
         // 7. 完成

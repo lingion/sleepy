@@ -165,7 +165,6 @@ class ClassDndScheduler(private val context: Context) {
 
     private suspend fun buildIntervals(table: TimeTableEntity): List<Pair<LocalDateTime, LocalDateTime>> {
         val today = LocalDate.now(AppClock)
-        val nodes = TimeTableUtils.parseNodes(table.timeJson)
         val result = mutableListOf<Pair<LocalDateTime, LocalDateTime>>()
         for (offsetDays in 0 until WINDOW_DAYS) {
             val date = today.plusDays(offsetDays)
@@ -174,6 +173,10 @@ class ClassDndScheduler(private val context: Context) {
                     .decide(context, date, table.id)
                     .allowReminder
             ) continue
+            val periodTable = table.periodTableId?.let { id ->
+                runCatching { com.lingion.sleepy.SleepyApp.get().repository.getPeriodTable(id) }.getOrNull()
+            }
+            val nodes = TimeTableUtils.parseNodes(table.hydratedWith(periodTable, date).timeJson)
             result += com.lingion.sleepy.SleepyApp.get().repository
                 .getCoursesForDate(table, date)
                 .mapNotNull { courseInterval(date, it, nodes) }

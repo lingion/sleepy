@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter
 class EffectivePeriodResolverTest {
     // Captured from the seven vendored callers at shiguang_warehouse
     // 7c9e1907635cb1c2d481b316e6f52d69dc77edff. Clock values are explicit source
-    // values, including QDU's adjacent lessons and forty-minute tenth lesson.
+    // values, including QDU's season-dependent afternoon lessons.
     private val hzuSummer = slots(
         "08:00-08:50 09:00-09:50 10:10-11:00 11:10-12:00 " +
             "14:30-15:20 15:30-16:20 16:40-17:30 17:40-18:30 19:30-20:20 20:30-21:20"
@@ -33,12 +33,12 @@ class EffectivePeriodResolverTest {
     )
     private val qduSummer = slots(
         "08:00-08:50 09:00-09:50 10:10-11:00 11:10-12:00 " +
-            "13:10-14:00 14:00-14:50 15:00-15:50 16:00-16:50 17:00-17:50 " +
-            "17:50-18:30 19:00-19:50 20:00-20:50 21:00-21:50"
+            "14:00-14:50 15:00-15:50 16:00-16:50 17:00-17:50 19:00-19:50 " +
+            "20:00-20:50 21:00-21:50"
     )
     private val qduWinterDiff = slots(
-        "12:40-13:30 13:30-14:20 14:30-15:20 15:30-16:20 16:30-17:20 " +
-            "17:20-18:00 18:30-19:20 19:30-20:20 20:30-21:20", 5
+        "13:30-14:20 14:30-15:20 15:30-16:20 16:30-17:20 18:30-19:20 " +
+            "19:30-20:20 20:30-21:20", 5
     )
     private val tsuSummer = slots(
         "08:00-08:45 08:55-09:40 10:00-10:45 10:55-11:40 " +
@@ -99,22 +99,32 @@ class EffectivePeriodResolverTest {
         assertEquals("20:40", rows(plan.resolve(LocalDate.of(2028, 5, 1)))[10].start)
     }
 
-    @Test fun qduThirteenPeriodsKeepPartialOverridesAdjacentRowsAndFortyMinuteLesson() {
+    @Test fun qduElevenPeriodsSwitchAfternoonByDateAndKeepMorningStable() {
         val plan = validate(qduSummer, combo(
-            rule("2026-05-01", "2026-09-30", select(qduSummer, 5..13)),
+            rule("2026-05-01", "2026-09-30", select(qduSummer, 5..9)),
             rule("2026-10-01", "2027-04-30", qduWinterDiff)
         ))
+        val summerStart = rows(plan.resolve(LocalDate.of(2026, 5, 1)))
+        assertEquals(11, summerStart.size)
+        assertEquals("08:00", summerStart[0].start)
+        assertEquals("14:00", summerStart[4].start)
+        assertEquals("19:00", summerStart[8].start)
+        assertEquals("19:50", summerStart[8].end)
+        assertEquals("21:50", summerStart[10].end)
+
         val winter = rows(plan.resolve(LocalDate.of(2026, 10, 1)))
-        assertEquals(13, winter.size)
+        assertEquals(11, winter.size)
         assertEquals("08:00", winter[0].start)
-        assertEquals("12:40", winter[4].start)
-        assertEquals("13:30", winter[4].end)
-        assertEquals(winter[4].end, winter[5].start)
-        assertEquals("17:20", winter[9].start)
-        assertEquals("18:00", winter[9].end)
-        assertEquals("21:20", winter[12].end)
-        assertEquals(45L, plan.publicSchedules[1].defaultClassDuration)
-        assertEquals("18:30", rows(plan.resolve(LocalDate.of(2026, 9, 30)))[9].end)
+        assertEquals("13:30", winter[4].start)
+        assertEquals("14:20", winter[4].end)
+        assertEquals("18:30", winter[8].start)
+        assertEquals("19:20", winter[8].end)
+        assertEquals("21:20", winter[10].end)
+
+        assertEquals("14:00", rows(plan.resolve(LocalDate.of(2026, 9, 30)))[4].start)
+        assertEquals("13:30", rows(plan.resolve(LocalDate.of(2027, 4, 30)))[4].start)
+        assertEquals("14:00", rows(plan.resolve(LocalDate.of(2027, 5, 1)))[4].start)
+        assertEquals("10:10", rows(plan.resolve(LocalDate.of(2027, 5, 1)))[2].start)
     }
 
     @Test fun tsuEmptySummerDifferencesAndOctoberEighthSwitchArePreserved() {

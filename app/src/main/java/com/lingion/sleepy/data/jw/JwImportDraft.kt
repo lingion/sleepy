@@ -27,6 +27,8 @@ data class JwImportDraftSnapshot(
     val selectedSgAdapterId: String = "",
     /** Raw editable semester text; null means a legacy draft without editor state. */
     val termWeekText: String? = null,
+    /** Optional source-provided date-aware timetable combination. */
+    val comboScheduleJson: String = "",
 ) {
     /** Reopening a login draft never skips the school admission confirmation. */
     val requiresSchoolConfirmation: Boolean get() = phase == JwImportDraftPhase.WEBVIEW_LOGIN &&
@@ -66,6 +68,7 @@ object JwImportDraftCodec {
         put("smartConfigJson", snapshot.smartConfigJson)
         put("importSourceJson", snapshot.importSourceJson)
         put("selectedSgAdapterId", snapshot.selectedSgAdapterId)
+        put("comboScheduleJson", snapshot.comboScheduleJson)
     }.toString()
 
     /** Returns null for an unsupported schema or any invalid/incomplete external payload. */
@@ -114,6 +117,7 @@ object JwImportDraftCodec {
                 if (it.isNotEmpty() && JwSgSourceMetadata.read(it) == null) return null
             },
             selectedSgAdapterId = root.optString("selectedSgAdapterId", ""),
+            comboScheduleJson = root.optString("comboScheduleJson", ""),
         )
     }.getOrNull()
 

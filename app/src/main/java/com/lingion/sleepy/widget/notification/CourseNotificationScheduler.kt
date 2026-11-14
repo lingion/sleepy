@@ -290,8 +290,6 @@ class CourseNotificationScheduler private constructor(
         desired: LinkedHashMap<Int, Pair<Long, Map<String, Any?>>>,
         windowCourseRcs: MutableList<Int>
     ) {
-        val nodes = TimeTableUtils.parseNodes(table.timeJson)
-
         // 1) 枚举窗口内的天, 收集课程行(仅学期内且允许提醒的天)
         val days = mutableListOf<Pair<LocalDate, List<CourseEntity>>>()
         for (offset in 0 until BEFORE_CLASS_WINDOW_DAYS) {
@@ -303,6 +301,10 @@ class CourseNotificationScheduler private constructor(
         // 逐天收集未来槽位; 同 courseId 保留最早的未来触发
         //    (每周重复课/调休映射共享 requestCode, 天按时间顺序遍历, 先到先得 = 最早一次)
         days.forEach { (date, courses) ->
+            val periodTable = table.periodTableId?.let { id ->
+                runCatching { SleepyApp.get().repository.getPeriodTable(id) }.getOrNull()
+            }
+            val nodes = TimeTableUtils.parseNodes(table.hydratedWith(periodTable, date).timeJson)
             courses.forEach { course ->
                 val startStr = if (course.ownTime && course.startTime.isNotBlank()) {
                     course.startTime
@@ -376,7 +378,10 @@ class CourseNotificationScheduler private constructor(
                 .allowReminder
         ) return false
         val repo = SleepyApp.get().repository
-        val nodes = TimeTableUtils.parseNodes(table.timeJson)
+        val periodTable = table.periodTableId?.let { id ->
+            runCatching { repo.getPeriodTable(id) }.getOrNull()
+        }
+        val nodes = TimeTableUtils.parseNodes(table.hydratedWith(periodTable, today).timeJson)
         val hit = repo.getCoursesForDate(table, today)
             .mapNotNull { c ->
                 val st = if (c.ownTime && c.startTime.isNotBlank()) c.startTime
@@ -515,7 +520,10 @@ internal class AndroidBeforeClassDataSource(private val ctx: Context) : BeforeCl
     override suspend fun resolveReminderTables(): List<TimeTableEntity> {
         val repo = SleepyApp.get().repository
         return repo.getReminderTables().filter { it.reminderEnabled }.map { t ->
-            t.hydratedWith(t.periodTableId?.let { id -> runCatching { repo.getPeriodTable(id) }.getOrNull() })
+            t.hydratedWith(
+                t.periodTableId?.let { id -> runCatching { repo.getPeriodTable(id) }.getOrNull() },
+                LocalDate.now(AppClock)
+            )
         }
     }
 

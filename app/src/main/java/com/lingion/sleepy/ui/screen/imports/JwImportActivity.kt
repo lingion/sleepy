@@ -176,6 +176,7 @@ class JwImportActivity : ComponentActivity() {
                 var configTermWeekCount by remember { mutableIntStateOf(0) }
                 var configTermWeekText by remember { mutableStateOf("") }
                 var importSourceJson by remember { mutableStateOf("") }
+                var configComboScheduleJson by remember { mutableStateOf("") }
                 var selectedSgAdapterId by remember { mutableStateOf("") }
                 var configTimeJson by remember { mutableStateOf("") }
                 var configRows by remember { mutableStateOf(emptyList<TimeTableUtils.TimeSlotRow>()) }
@@ -206,6 +207,7 @@ class JwImportActivity : ComponentActivity() {
                         termWeekText = configTermWeekText,
                         importSourceJson = importSourceJson,
                         selectedSgAdapterId = selectedSgAdapterId,
+                        comboScheduleJson = configComboScheduleJson,
                         tableName = configTableName,
                         smartConfigJson = Json.encodeToString(configSmartConfig),
                         phase = if (parsedCourses.isEmpty()) {
@@ -513,6 +515,7 @@ class JwImportActivity : ComponentActivity() {
                         ?: snapshot.courses.maxOfOrNull { it.endWeek }?.toString().orEmpty()
                     configTermWeekCount = configTermWeekText.toIntOrNull() ?: 0
                     importSourceJson = snapshot.importSourceJson
+                    configComboScheduleJson = snapshot.comboScheduleJson
                     selectedSgAdapterId = snapshot.selectedSgAdapterId
                     configTableName = snapshot.tableName.ifBlank {
                         getString(R.string.jw_import_title, snapshot.school.name)
@@ -571,6 +574,7 @@ class JwImportActivity : ComponentActivity() {
                                         startDate = configStartDate,
                                         courses = jwViewModel.toCourseEntities(parsedCourses, targetId, "#FF6750A4"),
                                         timeJson = configTimeJson,
+                                        comboScheduleJson = configComboScheduleJson,
                                         nodesPerDay = parsedCourses.maxOf { maxOf(it.startNode, it.endNode) },
                                         maxWeek = maxOf(configTermWeekCount, parsedCourses.maxOf { it.endWeek })
                                     ),
@@ -845,6 +849,7 @@ class JwImportActivity : ComponentActivity() {
                                                 nodesPerDay = effectiveRows.maxOfOrNull { it.node } ?: 1,
                                                 maxWeek = maxOf(configTermWeekCount, confirmedCourses.maxOf { it.endWeek }),
                                                 importSourceJson = importSourceJson,
+                                                comboScheduleJson = configComboScheduleJson,
                                                 periodTable = if (configBindPeriodTableId == -1L) {
                                                     ScheduleParser.ParsedPeriodTable(
                                                         sourceId = 0L,
@@ -861,6 +866,7 @@ class JwImportActivity : ComponentActivity() {
                                                 confirmedTableName = configTableName,
                                                 confirmedTimeJson = configTimeJson,
                                                 confirmedSmartConfigJson = Json.encodeToString(configSmartConfig),
+                                                confirmedComboScheduleJson = configComboScheduleJson,
                                                 context = this@JwImportActivity,
                                                 onImported = { imported = true },
                                                 bindPeriodTableId = configBindPeriodTableId?.takeIf { it > 0 },
@@ -1008,6 +1014,10 @@ class JwImportActivity : ComponentActivity() {
                                             configTermWeekCount = maxOf(configTermWeekCount, courses.maxOf { it.endWeek })
                                             configTermWeekText = configTermWeekCount.toString()
                                             importSourceJson = capturedImportSourceJson
+                                            configComboScheduleJson = if (effectiveType == JwProtocol.TYPE_SG_ASSET) {
+                                                runCatching { org.json.JSONObject(htmlForParse).optJSONObject("comboSchedule")?.toString().orEmpty() }
+                                                    .getOrDefault("")
+                                            } else ""
                                             if (effectiveType == JwProtocol.TYPE_SG_ASSET) {
                                                 selectedSgAdapterId = com.lingion.sleepy.data.jw.JwSgSourceMetadata.read(importSourceJson)
                                                     ?.optJSONObject("adapter")?.optString("adapterId").orEmpty()

@@ -13,7 +13,7 @@ internal suspend fun loadDailyAgenda(context: Context, targetDate: LocalDate): L
     // 每表独立提醒: 聚合所有开启提醒的课表; 若全部被节假日策略豁免则整体静默
     val repo = SleepyApp.get().repository
     val tables = repo.getReminderTables().map { t ->
-        t.hydratedWith(t.periodTableId?.let { id -> runCatching { repo.getPeriodTable(id) }.getOrNull() })
+        t.hydratedWith(t.periodTableId?.let { id -> runCatching { repo.getPeriodTable(id) }.getOrNull() }, targetDate)
     }
     val enabledTables = tables.filter { it.reminderEnabled }
     val activeTables = enabledTables.filter {

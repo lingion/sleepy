@@ -73,6 +73,7 @@ object MigrationDatabaseCodec {
         val nodesPerDay: Int = 12,
         val timeJson: String,
         val smartConfigJson: String = "",
+        val comboScheduleJson: String = "",
         val createdAt: Long,
         val updatedAt: Long,
     )
@@ -126,7 +127,8 @@ object MigrationDatabaseCodec {
 
     fun PeriodTableEntity.toRow() = PeriodTableRow(
         id = id, name = name, nodesPerDay = nodesPerDay, timeJson = timeJson,
-        smartConfigJson = smartConfigJson, createdAt = createdAt, updatedAt = updatedAt,
+        smartConfigJson = smartConfigJson, comboScheduleJson = comboScheduleJson,
+        createdAt = createdAt, updatedAt = updatedAt,
     )
 
     fun ImportDraftEntity.toRow() = ImportDraftRow(
@@ -155,7 +157,8 @@ object MigrationDatabaseCodec {
 
     fun PeriodTableRow.toEntity() = PeriodTableEntity(
         id = id, name = name, nodesPerDay = nodesPerDay, timeJson = timeJson,
-        smartConfigJson = smartConfigJson, createdAt = createdAt, updatedAt = updatedAt,
+        smartConfigJson = smartConfigJson, comboScheduleJson = comboScheduleJson,
+        createdAt = createdAt, updatedAt = updatedAt,
     )
 
     fun ImportDraftRow.toEntity() = ImportDraftEntity(
