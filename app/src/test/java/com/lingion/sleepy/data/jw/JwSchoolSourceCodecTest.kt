@@ -17,7 +17,8 @@ class JwSchoolSourceCodecTest {
         )
 
         val decoded = JwImportDraftCodec.schoolFromSourceJson(
-            JwImportDraftCodec.toSchoolSourceJson(school)
+            JwImportDraftCodec.toSchoolSourceJson(school),
+            listOf(school),
         )
 
         assertNotNull(decoded)
@@ -29,8 +30,59 @@ class JwSchoolSourceCodecTest {
 
     @Test
     fun `non-JW and malformed snapshots are not eligible for update`() {
-        assertNull(JwImportDraftCodec.schoolFromSourceJson(""))
-        assertNull(JwImportDraftCodec.schoolFromSourceJson("""{"schemaVersion":1,"sourceType":"file"}"""))
-        assertNull(JwImportDraftCodec.schoolFromSourceJson("not json"))
+        assertNull(JwImportDraftCodec.schoolFromSourceJson("", emptyList()))
+        assertNull(JwImportDraftCodec.schoolFromSourceJson("""{"schemaVersion":1,"sourceType":"file"}""", emptyList()))
+        assertNull(JwImportDraftCodec.schoolFromSourceJson("not json", emptyList()))
+    }
+
+    @Test
+    fun `source URL is taken from the catalog instead of an imported snapshot`() {
+        val school = JwSchoolInfo(
+            sortKey = "H",
+            name = "哈尔滨示例大学",
+            url = "https://jw.example.edu.cn/",
+            type = "wisedu",
+            catalogId = "example-university-undergraduate",
+        )
+        val forgedSnapshot = JwImportDraftCodec.toSchoolSourceJson(
+            school.copy(url = "https://attacker.example/login")
+        )
+
+        val resolved = JwImportDraftCodec.schoolFromSourceJson(forgedSnapshot, listOf(school))
+
+        assertEquals(school.url, resolved?.url)
+        assertEquals(school.catalogId, resolved?.catalogId)
+    }
+
+    @Test
+    fun `unknown catalog identity cannot enable an update action`() {
+        val school = JwSchoolInfo(
+            sortKey = "H",
+            name = "哈尔滨示例大学",
+            url = "https://jw.example.edu.cn/",
+            type = "wisedu",
+            catalogId = "example-university-undergraduate",
+        )
+        val forgedSnapshot = JwImportDraftCodec.toSchoolSourceJson(
+            school.copy(url = "https://attacker.example/login", catalogId = "unknown-school")
+        )
+
+        assertNull(JwImportDraftCodec.schoolFromSourceJson(forgedSnapshot, listOf(school)))
+    }
+
+    @Test
+    fun `catalog identity cannot override a mismatched school name or protocol`() {
+        val school = JwSchoolInfo(
+            sortKey = "H",
+            name = "哈尔滨示例大学",
+            url = "https://jw.example.edu.cn/",
+            type = "wisedu",
+            catalogId = "example-university-undergraduate",
+        )
+        val forgedSnapshot = JwImportDraftCodec.toSchoolSourceJson(
+            school.copy(name = "另一所学校", type = "newzf")
+        )
+
+        assertNull(JwImportDraftCodec.schoolFromSourceJson(forgedSnapshot, listOf(school)))
     }
 }

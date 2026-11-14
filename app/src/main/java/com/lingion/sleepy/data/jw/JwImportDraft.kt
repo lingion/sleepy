@@ -125,8 +125,29 @@ object JwImportDraftCodec {
         put("school", schoolToJson(school))
     }.toString()
 
-    /** Invalid, unsupported, or non-JW payloads cannot enable a timetable update action. */
-    fun schoolFromSourceJson(json: String): JwSchoolInfo? = runCatching {
+    /** Resolve an imported source snapshot only through the trusted school directory. */
+    fun schoolFromSourceJson(json: String, catalog: List<JwSchoolInfo>): JwSchoolInfo? {
+        val snapshot = parseSchoolSourceJson(json) ?: return null
+        val matches = if (snapshot.catalogId.isNotBlank()) {
+            catalog.filter { it.catalogId == snapshot.catalogId }
+        } else {
+            catalog.filter {
+                it.sortKey == snapshot.sortKey &&
+                    it.name == snapshot.name &&
+                    it.url == snapshot.url &&
+                    it.type == snapshot.type
+            }
+        }
+        return matches.singleOrNull()?.takeIf { school ->
+            school.canImport &&
+                snapshot.sortKey == school.sortKey &&
+                snapshot.name == school.name &&
+                snapshot.type == school.type
+        }
+    }
+
+    /** Invalid, unsupported, or non-JW payloads cannot resolve to a directory entry. */
+    private fun parseSchoolSourceJson(json: String): JwSchoolInfo? = runCatching {
         val root = JSONObject(json)
         if (root.optInt("schemaVersion", -1) != SCHOOL_SOURCE_SCHEMA_VERSION ||
             root.optString("sourceType") != "jw"

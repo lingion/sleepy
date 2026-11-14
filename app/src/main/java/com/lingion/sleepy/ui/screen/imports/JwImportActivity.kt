@@ -128,6 +128,7 @@ class JwImportActivity : ComponentActivity() {
                 .collectAsState(initial = AppPrefs.getThemeKey(this@JwImportActivity))
             SleepyThemeProvider(darkTheme = dark, themeKey = themeKey) {
                 val jwViewModel: JwImportViewModel = viewModel()
+                val jwSchools by jwViewModel.schools.collectAsState()
                 val scheduleViewModel: ScheduleViewModel = viewModel()
                 // v1.0.56 T6: 第三 Tab「作息表」数据源 — 绑定现有作息表直接用
                 val allPeriodTables by scheduleViewModel.allPeriodTables.collectAsState(initial = emptyList())
@@ -136,22 +137,29 @@ class JwImportActivity : ComponentActivity() {
                 val incomingDraftId = intent.getStringExtra(EXTRA_DRAFT_ID)
                 val targetTableId = intent.getLongExtra(EXTRA_TARGET_TABLE_ID, 0L)
                 val updateMode = intent.getBooleanExtra(EXTRA_UPDATE_TABLE, false)
-                val initialSourceSchool = remember {
+                val initialSourceJson = remember {
                     intent.getStringExtra(EXTRA_JW_SCHOOL_SOURCE_JSON)
-                        ?.let(com.lingion.sleepy.data.jw.JwImportDraftCodec::schoolFromSourceJson)
+                }
+                val initialSourceSchool = remember(initialSourceJson, jwSchools) {
+                    initialSourceJson?.let {
+                        com.lingion.sleepy.data.jw.JwImportDraftCodec.schoolFromSourceJson(it, jwSchools)
+                    }
                 }
                 // 组合树, 滚动位置/搜索词全部销毁。各 stage 分支内容包独立 key 的
                 // SaveableStateProvider(key = stage 类名), WebView 登录返回学校列表时
                 // 列表滚动位置与 rememberSaveable 态原样恢复。
                 val saveableStateHolder: SaveableStateHolder = rememberSaveableStateHolder()
 
-                var selectedSchool by remember { mutableStateOf(initialSourceSchool) }
-                var catalogNotice by remember { mutableStateOf<JwSchoolInfo?>(null) }
+                var selectedSchool by remember(initialSourceSchool) { mutableStateOf(initialSourceSchool) }
+                var catalogNotice by remember {
+                    mutableStateOf(initialSourceSchool?.takeIf { it.isUnverified })
+                }
                 // 2026-10-18 离线回路: 未验证学校导入成功后弹报告弹窗(复制+加QQ群), 已验证学校维持静默 finish
                 var reportDialogSchool by remember { mutableStateOf<JwSchoolInfo?>(null) }
-                var stage by remember {
+                var stage by remember(updateMode, initialSourceSchool) {
                     mutableStateOf<Stage>(
-                        if (updateMode && initialSourceSchool != null) Stage.WebViewLogin else Stage.SelectSchool
+                        if (updateMode && initialSourceSchool?.isSupported == true) Stage.WebViewLogin
+                        else Stage.SelectSchool
                     )
                 }
                 var errorMsg by remember { mutableStateOf<String?>(null) }
