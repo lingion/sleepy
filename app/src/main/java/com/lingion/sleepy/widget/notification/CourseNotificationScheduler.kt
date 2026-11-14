@@ -298,12 +298,13 @@ class CourseNotificationScheduler private constructor(
 
         }
 
+        // 作息表与日期无关, 只读一次; 每天的节次仍按 date 水合 (组合作息按日期切换)。
+        val periodTable = table.periodTableId?.let { id ->
+            runCatching { SleepyApp.get().repository.getPeriodTable(id) }.getOrNull()
+        }
         // 逐天收集未来槽位; 同 courseId 保留最早的未来触发
         //    (每周重复课/调休映射共享 requestCode, 天按时间顺序遍历, 先到先得 = 最早一次)
         days.forEach { (date, courses) ->
-            val periodTable = table.periodTableId?.let { id ->
-                runCatching { SleepyApp.get().repository.getPeriodTable(id) }.getOrNull()
-            }
             val nodes = TimeTableUtils.parseNodes(table.hydratedWith(periodTable, date).timeJson)
             courses.forEach { course ->
                 val startStr = if (course.ownTime && course.startTime.isNotBlank()) {

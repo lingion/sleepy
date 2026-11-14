@@ -166,6 +166,10 @@ class ClassDndScheduler(private val context: Context) {
     private suspend fun buildIntervals(table: TimeTableEntity): List<Pair<LocalDateTime, LocalDateTime>> {
         val today = LocalDate.now(AppClock)
         val result = mutableListOf<Pair<LocalDateTime, LocalDateTime>>()
+        // 作息表与日期无关, 只读一次; 每天的节次仍按 date 水合 (组合作息按日期切换)。
+        val periodTable = table.periodTableId?.let { id ->
+            runCatching { com.lingion.sleepy.SleepyApp.get().repository.getPeriodTable(id) }.getOrNull()
+        }
         for (offsetDays in 0 until WINDOW_DAYS) {
             val date = today.plusDays(offsetDays)
             // Use the reminder policy for the same date semantics as course notifications.
@@ -173,9 +177,6 @@ class ClassDndScheduler(private val context: Context) {
                     .decide(context, date, table.id)
                     .allowReminder
             ) continue
-            val periodTable = table.periodTableId?.let { id ->
-                runCatching { com.lingion.sleepy.SleepyApp.get().repository.getPeriodTable(id) }.getOrNull()
-            }
             val nodes = TimeTableUtils.parseNodes(table.hydratedWith(periodTable, date).timeJson)
             result += com.lingion.sleepy.SleepyApp.get().repository
                 .getCoursesForDate(table, date)

@@ -57,11 +57,12 @@ internal class SchedulePresentationCache {
         } else {
             (1..7).flatMap { day ->
                 val date = DateUtils.dateOfWeek(table.startDate, week, day)
+                // 作息按日期解析, 同一天的课程共享结果 (不在逐课程循环里重复解析组合 JSON)。
+                val timeJson = state.effectiveTableFor(date)?.timeJson
                 HolidayTransferOps.coursesForDate(
                     date, table.startDate, table.maxWeek, state.courses, state.transfers,
                 ).map { course ->
                     val projected = course.copy(day = day)
-                    val timeJson = state.effectiveTableFor(date)?.timeJson
                     timeJson?.let { projected.normalizeNode(it) } ?: projected
                 }
             }
