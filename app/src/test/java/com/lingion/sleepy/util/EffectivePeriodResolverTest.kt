@@ -139,6 +139,17 @@ class EffectivePeriodResolverTest {
         assertEquals("14:30", rows(plan.resolve(LocalDate.of(2027, 5, 1)))[4].start)
     }
 
+    @Test fun qduCombinationCanStoreOnlySeasonDifferences() {
+        val plan = validate(qduSummer, combo(
+            rule("2026-05-01", "2026-09-30"),
+            rule("2026-10-01", "2027-04-30", qduWinterDiff)
+        ))
+        assertTrue(plan.publicSchedules.first().timeSlots.isEmpty())
+        assertEquals("14:00", rows(plan.resolve(LocalDate.of(2026, 9, 30)))[4].start)
+        assertEquals("13:30", rows(plan.resolve(LocalDate.of(2026, 10, 1)))[4].start)
+        assertEquals("08:00", rows(plan.resolve(LocalDate.of(2026, 10, 1)))[0].start)
+    }
+
     @Test fun ujsSemesterIntersectionsAreNotExpandedToTheWholeSeason() {
         val plan = validate(ujsSummer, combo(
             rule("2026-09-07", "2026-10-06", ujsSummer)

@@ -74,6 +74,7 @@ import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.SleepyThemeProvider
 import android.webkit.WebView
 import com.lingion.sleepy.util.AppPrefs
+import com.lingion.sleepy.util.EffectivePeriodResolver
 import com.lingion.sleepy.util.QqJoin
 import com.lingion.sleepy.util.TimeTableUtils
 import kotlinx.coroutines.Dispatchers
@@ -798,6 +799,10 @@ class JwImportActivity : ComponentActivity() {
                                         confirmError = getString(R.string.start_date_format)
                                         return@TextButton
                                     }
+                                    if (configBindPeriodTableId != null && configBindPeriodTableId!! > 0L && configComboScheduleJson.isNotBlank()) {
+                                        confirmError = getString(R.string.jw_combo_schedule_bind_conflict)
+                                        return@TextButton
+                                    }
                                     val confirmedCourses = try {
                                         if (parsedDatedCourseOrigin.isEmpty()) parsedCourses else
                                             JwShsmuCaptureCalendar.rebase(parsedCourses, parsedDatedCourseOrigin, configStartDate)
@@ -815,6 +820,15 @@ class JwImportActivity : ComponentActivity() {
                                         bindId = configBindPeriodTableId,
                                         tables = allPeriodTables.map { it.id to it.timeJson }
                                     )
+                                    val confirmedBaseJson = TimeTableUtils.buildTimeJsonFromRows(effectiveRows)
+                                    if (configComboScheduleJson.isNotBlank()) {
+                                        try {
+                                            EffectivePeriodResolver.validate(confirmedBaseJson, configComboScheduleJson)
+                                        } catch (e: IllegalArgumentException) {
+                                            confirmError = "组合作息无效：${e.message ?: "请重新导入"}"
+                                            return@TextButton
+                                        }
+                                    }
                                     val missingNode = TimeTableUtils.firstMissingCourseNode(
                                         jwViewModel.toCourseEntities(confirmedCourses, 0L, "#FF6750A4"), effectiveRows
                                     )
@@ -835,7 +849,7 @@ class JwImportActivity : ComponentActivity() {
                                         return@TextButton
                                     }
                                     confirmError = null
-                                    configTimeJson = TimeTableUtils.buildTimeJsonFromRows(effectiveRows)
+                                    configTimeJson = confirmedBaseJson
                                     // 落库
                                     statusMsg = getString(R.string.import_parsing)
                                     isApplying = true

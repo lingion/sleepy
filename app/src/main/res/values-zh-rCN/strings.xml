@@ -968,6 +968,7 @@
     <string name="period_table_unbound">未绑定（使用本表作息）</string>
     <string name="period_tables_tab">作息表</string>
     <string name="period_table_nodes_count">%1$d 节/天</string>
+    <string name="jw_combo_schedule_bind_conflict">该导入包含按日期切换的组合作息，不能绑定已有共享作息表，请在“作息表”中选择本次导入新建。</string>
     <string name="period_table_save_preview_title">保存前预览</string>
     <string name="period_table_preview_summary">将影响 %1$d 张课表：%2$d 门课时间变化，%3$d 门不变</string>
     <string name="period_table_preview_more">…和其他 %1$d 门课</string>

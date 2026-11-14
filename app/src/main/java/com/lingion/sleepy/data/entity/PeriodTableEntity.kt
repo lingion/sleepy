@@ -46,6 +46,9 @@ data class PeriodTableEntity(
 ) {
     fun effectiveTimeJson(date: LocalDate = LocalDate.now(AppClock)): String =
         comboScheduleJson.takeIf { it.isNotBlank() }?.let {
-            runCatching { EffectivePeriodResolver.resolve(timeJson, it, date) }.getOrElse { timeJson }
+            runCatching { EffectivePeriodResolver.resolve(timeJson, it, date) }.getOrElse { error ->
+                android.util.Log.w("PeriodTable", "invalid combo schedule for table=$id; using base schedule", error)
+                timeJson
+            }
         } ?: timeJson
 }

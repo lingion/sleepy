@@ -18,6 +18,12 @@ class ImportedPeriodTableDraftTest {
         assertNull(importedPeriodTableDraft(7L, "Imported", confirmed))
     }
 
+    @Test fun combinationCannotBeDroppedWhenBindingSharedPeriodTable() {
+        assertThrows(IllegalArgumentException::class.java) {
+            importedPeriodTableDraft(7L, "Imported", confirmed, "{\"publicSchedules\":[]}")
+        }
+    }
+
     @Test fun separateImportsHaveIndependentUnsavedDrafts() {
         val a = requireNotNull(importedPeriodTableDraft(null, "A", confirmed))
         val b = requireNotNull(importedPeriodTableDraft(null, "B", confirmed.replace("09:10", "09:20")))
