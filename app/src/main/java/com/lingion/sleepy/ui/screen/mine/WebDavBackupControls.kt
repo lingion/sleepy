@@ -321,6 +321,7 @@ internal fun WebDavRemoteBackupDialog(
                             onClick = { onSelect(backup) },
                             enabled = !busy,
                             modifier = Modifier.fillMaxWidth(),
+                            shape = SleepyTheme.shapes.small,
                         ) {
                             Column(
                                 modifier = Modifier.fillMaxWidth(),
