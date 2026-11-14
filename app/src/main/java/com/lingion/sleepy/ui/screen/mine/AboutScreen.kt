@@ -6,11 +6,13 @@ import android.os.Build as AndroidBuild
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -57,11 +59,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.BuildConfig
 import com.lingion.sleepy.ui.component.SettingsLayout
+import com.lingion.sleepy.ui.component.liquidglass.GlassMaterialContent
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.component.liquidglass.glassSurfaceBackground
+import com.lingion.sleepy.ui.component.liquidglass.rememberGlassMaterialScope
 import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
 import com.lingion.sleepy.R
 import com.lingion.sleepy.console.ConsoleBootstrap
@@ -70,6 +79,8 @@ import com.lingion.sleepy.console.DebugUnlockDialog
 import com.lingion.sleepy.console.handlers.UnlockTapCounter
 import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.FeedbackComposer
 import com.lingion.sleepy.util.QqJoin
@@ -593,41 +604,9 @@ fun AboutScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Privacy policy card (商店审核要求: 应用内可达 https://sleepy.qdp.qzz.io/privacy, 与 web 关于页同源)
-            InfoCard {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Outlined.Shield,
-                        contentDescription = null,
-                        tint = colors.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
-                        Text(
-                            text = stringResource(R.string.about_privacy),
-                            style = SettingsLayout.headingStyle,
-                            color = colors.onSurface
-                        )
-                        Text(
-                            text = stringResource(R.string.about_privacy_url),
-                            style = SettingsLayout.descriptionStyle,
-                            color = colors.primary,
-                            textDecoration = TextDecoration.Underline
-                        )
-                    }
-                    IconButton(modifier = Modifier.dbgTag("about_privacy_link", role = "button"), onClick = {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://sleepy.qdp.qzz.io/privacy")))
-                    }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
-                            contentDescription = null,
-                            tint = colors.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-            }
+            AboutPrivacyCard(onOpenPrivacy = {
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(PrivacyPolicyUrl)))
+            })
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -685,16 +664,104 @@ fun AboutScreen(
 
 
 @Composable
-private fun InfoCard(content: @Composable () -> Unit) {
+private fun InfoCard(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     val colors = MaterialTheme.colorScheme
+    val shape = SleepyTheme.shapes.large
+    val backing = rememberGlassMaterialScope(shape)
+    val surface = if (backing != null) {
+        Modifier.glassSurfaceBackground(colors.surfaceContainer, shape, materialScope = backing)
+    } else {
+        Modifier.clip(shape).background(colors.surfaceContainer)
+    }
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .clip(SleepyTheme.shapes.large)
-            .background(colors.surfaceContainer)
+            .then(surface)
             .padding(20.dp)
     ) {
-        content()
+        // Child lenses include this immediate card backing in their sampling chain.
+        GlassMaterialContent(backing, content)
+    }
+}
+
+private const val PrivacyPolicyUrl = "https://sleepy.qdp.qzz.io/privacy"
+
+@Composable
+internal fun AboutPrivacyCard(onOpenPrivacy: () -> Unit, modifier: Modifier = Modifier) {
+    val colors = MaterialTheme.colorScheme
+    val title = stringResource(R.string.about_privacy)
+    val urlLabel = stringResource(R.string.about_privacy_url)
+    val glass = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
+    InfoCard(modifier) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = Icons.Outlined.Shield,
+                contentDescription = null,
+                tint = colors.primary,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(if (glass) SettingsLayout.headerGap else SettingsLayout.descriptionGap),
+            ) {
+                Text(
+                    text = title,
+                    modifier = if (glass) Modifier.fillMaxWidth() else Modifier,
+                    style = SettingsLayout.headingStyle,
+                    color = colors.onSurface,
+                )
+                if (glass) {
+                    // One optical action owns both the wrapping URL and its icon;
+                    // a nested text link would dispatch a second click handler.
+                    TextButton(
+                        onClick = onOpenPrivacy,
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                            .dbgTag("about_privacy_link", text = title, role = "button"),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                    ) {
+                        Text(
+                            text = urlLabel,
+                            modifier = Modifier.weight(1f),
+                            style = SettingsLayout.descriptionStyle,
+                            color = colors.primary,
+                            textDecoration = TextDecoration.Underline,
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
+                            contentDescription = title,
+                            tint = colors.primary,
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
+                } else {
+                    Text(
+                        text = buildAnnotatedString {
+                            withLink(LinkAnnotation.Url(PrivacyPolicyUrl, linkInteractionListener = { onOpenPrivacy() })) {
+                                append(urlLabel)
+                            }
+                        },
+                        style = SettingsLayout.descriptionStyle,
+                        color = colors.primary,
+                        textDecoration = TextDecoration.Underline
+                    )
+                }
+            }
+            if (!glass) {
+                IconButton(
+                    modifier = Modifier.dbgTag("about_privacy_link", text = title, role = "button"),
+                    onClick = onOpenPrivacy,
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
+                        contentDescription = title,
+                        tint = colors.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
     }
 }
 
