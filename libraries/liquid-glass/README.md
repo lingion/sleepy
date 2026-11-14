@@ -1,8 +1,76 @@
 # Liquid Glass 资产库
 
-本目录是 Liquid Glass 资产索引和独立库的整理入口。M1、M2a、M2b、M2 几何及 M3a 渲染原语已将二十二份 Kotlin 实现和原 AGSL 移入可构建的 `:liquid-glass-runtime`，Sleepy 通过项目依赖实际消费；构建、原基线、AAR 唯一归属及 shader 打包均已验证。Host 材质采样、主题上下文和完整控件仍待解耦，独立示例尚未建立。校准及来源/分发许可核对尚未完成，当前不具备独立开源发布条件。
+本目录是 Android/Compose Liquid Glass 运行模块和资产索引。当前 `:liquid-glass-runtime` 有 23 份 Kotlin 源码及原 AGSL：运动、帧调度、几何/轮廓缓存、渲染原语，以及可显式配置的背景自适应前景原语。Sleepy 已消费同一模块；Host/主题上下文、完整控件与独立示例仍待提取，公开 API 尚未收口。
 
-用户要求：先以 iOS 26.5 原生控件打磨到接近一致，再作为独立仓库开源。Sleepy 将作为首个使用方。现阶段优先校准控件，源码索引见 [asset-catalog.json](asset-catalog.json)，实际进度和残差见 [对照记录](../../docs/native-glass-control-alignment.md)。
+以 iOS 26.5 原生控件为参照，逐控件校准后再作为独立仓库开源，Sleepy 作为首个使用方。当前近原生验收与来源/分发许可核对均未完成，不宣称“99.99%”或具备独立开源发布条件。源码范围见 [asset-catalog.json](asset-catalog.json)，提取步骤见 [extraction-plan.md](extraction-plan.md)，残差见 [对照记录](../../docs/native-glass-control-alignment.md)。
+
+## 当前接入入口
+
+在本仓库的消费 module 中添加：
+
+```kotlin
+dependencies {
+    implementation(project(":liquid-glass-runtime"))
+}
+```
+
+根工程已在 [settings.gradle.kts](../../settings.gradle.kts) 登记模块；`:kyant-backdrop`、插件及版本目录仍由本仓库提供。运行模块目前沿用 `com.lingion.sleepy.ui.component.liquidglass` 包名，独立仓库与 sample 的构建入口尚待建立。复用本机已有 Android SDK，在仓库根目录运行：
+
+```sh
+./gradlew :liquid-glass-runtime:assemble
+./gradlew :liquid-glass-runtime:testAndroidHostTest --tests 'com.lingion.sleepy.ui.component.liquidglass.BackdropForegroundAtlasTest'
+```
+
+当前 [build.gradle.kts](runtime/build.gradle.kts) 声明 minSdk 26、compileSdk 37 和 JVM 17；这些构建设置不代表完整设备支持、性能或降级矩阵已经验收。
+
+## 背景自适应前景
+
+[backdropAwareForeground](runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/BackdropAwareForeground.kt) 只按内容的 alpha mask 重绘中性前景，所有响应参数由调用方给出。`BackdropForegroundResponse` 必须显式提供 `lowBackground`、`highBackground`、`lowerLuma`、`upperLuma` 与完全不透明的 `transparentBackground`；区间满足 `0 ≤ lowerLuma < upperLuma ≤ 1`。库不提供 iOS 分类器、默认门限、选中主题色或时间平滑策略。
+
+下面的 slot 接收调用方已确定的尺寸和响应；整个 slot 是显式采样区域，也可改为其中一个有效子矩形：
+
+```kotlin
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
+import com.kyant.backdrop.Backdrop
+import com.lingion.sleepy.ui.component.liquidglass.BackdropForegroundResponse
+import com.lingion.sleepy.ui.component.liquidglass.backdropAwareForeground
+
+@Composable
+fun AdaptiveNeutralSlot(
+    width: Dp,
+    height: Dp,
+    backdrop: Backdrop,
+    response: BackdropForegroundResponse,
+    neutralContent: @Composable () -> Unit,
+    accentContent: @Composable () -> Unit,
+) {
+    val pane = with(LocalDensity.current) {
+        Rect(0f, 0f, width.toPx(), height.toPx())
+    }
+    Box(Modifier.size(width, height)) {
+        Box(Modifier.matchParentSize().backdropAwareForeground(
+            backdrop = backdrop,
+            response = response,
+            sampleBoundsPx = { pane },
+        )) { neutralContent() }
+        accentContent()
+    }
+}
+```
+
+调用方提供该控件应采样的外部 `Backdrop`，包含正确的父层上下文，并排除本控件前景及自身自适应 backing，避免反馈采样。`sampleBoundsPx` 使用该 modifier 的局部物理像素坐标，必须是尺寸内的有限正面积矩形；中心及相对 `(20%,30%)`、`(80%,30%)`、`(20%,70%)`、`(80%,70%)` 五点共同参与响应。输入 RGB 不保留，只有 alpha 用作中性 mask；主题色、选中内容、badge 和其他 accent 应像示例一样放在 mask 外。
+
+普通 `LayerBackdrop` 处理相对平移。若消费者相对 source 有缩放或旋转，调用方需先用现有 `LayerBackdrop.withTransformCompensation()` 包装，再传入；该路径未在本批硬件测试中验证。API 低于 33、消费者坐标不可用或采样矩形无效时绘制原内容；source 为空时按显式 `transparentBackground` 测量亮度。此原语为小面积前景保留三层 GPU recording，总记录面积约为内容面积的五倍，实际内存和性能尚未测量。
+
+[93 验证记录](validation/observations/backdrop-aware-foreground-gpu-93.json)保留构建、5 项 host 检查、API36 两项 GPU 测试、8 张原图及 37 个独立像素检查的哈希链。验证范围是合成与生命周期；当前没有生产 Dock 接入、原生分类器、默认响应参数或完整原生外观验收。真实 glyph 边缘、透明端点/部分透明 source、中间亮度、source 替换、scale/rotation、低 API 硬件及性能仍不在本批结论内。
+
+## 已完成的迁移
 
 [可执行提取路线](extraction-plan.md)按实际源码闭包安排纯运动/几何、材质采样、控件和 Sleepy 适配器。2026-11-14 已完成 M1：`NativeGlassDragDeformation.kt`、`NativeDockDeformation.kt`、`NativeSliderEndpoint.kt` 只有 runtime 中的一份实现；module AAR 与 Sleepy 编译通过，三类原测试在迁移前后均为 19 项通过，测试与两份 CSV 哈希不变。实际命令、首次 SDK 环境缺失及重跑结果见 [M1 迁移记录](validation/migrations/m1.json)。M2a 随后移动 `ActiveFrameLoop.kt` 和 `DockInputClock.kt`，只开放五处必要可见性；四类原测试迁移前后各 33/33 通过，计算和时钟行为不变，AAR 是唯一实现归属，debug/androidTest 同轮构建通过。依赖解析保持 Compose runtime 1.12.1 和 coroutines-core 1.11.0，详见 [M2a 记录](validation/migrations/m2a.json)。M2b、M2 几何和 M3a 渲染原语记录见下；M3 Host/主题上下文、M4 控件及独立示例仍待执行。
 
@@ -16,13 +84,13 @@ M2b 后续将 `GlassPressMotion.kt`、`NativeDockEndpoint.kt` 和 `NativeSegment
 
 M2 几何已移动六份几何源码，并把原 Shader 中的 `LiquidGlassCachedOutlineProfile` 提取到 runtime 的 `LiquidGlassOutlineProfile.kt`；只移除 28 处跨 module 必需的 internal，保留公式、FMA/精度分支和 lazy/path/descriptor 身份判断，仅增加 shapes `1.2.1` implementation 依赖。五类原 app 单测迁移前后各26/26通过，测试身份与哈希不变；AAR、debug/androidTest 和 after 单测同轮43.9488s通过。该批runtime共19源，102个AAR类与实际2253个app生产类无交集，六份原app源已不存在。compile/runtime 独立依赖图均确认 shapes `1.2.1`、UI graphics `1.12.1` 且无未解析项，API36 main/test 安装哈希匹配并已 resumed MainActivity。原三类8项设备测试使用注册的 `SleepyRenderTestRunner` 在1.286s通过；首次误用未注册默认 runner 的命令在0项测试启动时失败，原错误单独保留，未改源码、测试或预期。root逐张核对三份截图：android-module-launch.png显示现有空课表卡片和Dock，android-after-geometry-tests.png为测试后即刻resume的splash，后续android-launched-home.png可见第11周课程网格和Dock，三者分开保留且不推断瞬态数据差异；仅验证本批真实安装/启动可见，不新增数据内容、UI/光学或自然动态验收。详见 [M2 几何记录](validation/migrations/m2-geometry.json)。
 
-M3a 已把 `LiquidGlassStyle.kt`、`LiquidGlassShader.kt`、`LiquidGlassEffect.kt` 和原 AGSL 移入 runtime；只移除六处跨 module 必需的 internal，其余源码和 AGSL 字节不变，包名、调用者、实参及原测试未改。七类原 app 单测 before 34/34 用时11.8416s，after AAR/debug/androidTest 与同34项用时50.9080s通过，测试身份与源码哈希不变。runtime 共22源，113个AAR类与实际2242个app生产类无交集；AAR/APK各有唯一、字节相同的 shader，原 app 三源、资产与旧 generated shader 已不存在。
+M3a 已把 `LiquidGlassStyle.kt`、`LiquidGlassShader.kt`、`LiquidGlassEffect.kt` 和原 AGSL 移入 runtime；只移除六处跨 module 必需的 internal，其余源码和 AGSL 字节不变，包名、调用者、实参及原测试未改。七类原 app 单测 before 34/34 用时11.8416s，after AAR/debug/androidTest 与同34项用时50.9080s通过，测试身份与源码哈希不变。该阶段 runtime 共22源，113个AAR类与实际2242个app生产类无交集；AAR/APK各有唯一、字节相同的 shader，原 app 三源、资产与旧 generated shader 已不存在。
 
 标准 `runtime/src/androidMain/assets/shaders` 配合 `androidResources { enable = true }` 已由实际包验证。现有 backdrop/Material3 以 api 暴露公开类型，Foundation `1.12.1` 和 HCT `1.10.0` 为 implementation；这不是无 Material3 依赖的 core。
 
 API36 使用注册的 `SleepyRenderTestRunner` 运行原 HazeRender 三项，5.3395s通过；该次安装主包/测试包与 host 哈希匹配，第11周网格首页和 Dock 可见，仅作安装/启动验证。独立 resolutionResult 的 compile67/runtime121组件无未解析项，backdrop、Material3、Foundation、HCT、shapes/UI 均解析到现有版本，真实编译输入含 backdrop jar；最初两个只读诊断错误保留。署名证据路径元数据修正后仅重打包主包，2.4462s通过；最终主包已重装、host-device哈希一致且MainActivity resumed。该身份与原 GPU 运行包分开记录，未重复原34项单测或三项GPU测试，本页不固定主包哈希。完整证据见 [M3a 渲染原语记录](validation/migrations/m3a-rendering.json)。
 
-完整运行库仍未完成解耦。同一个 `liquidglass` 包目前仍混有 `LocalUiStyle` 等主题判断、导航图标驱动、设置布局、调试语义和 Material 分支；滑杆还引用包外的弹窗动画及 Material 辅助函数。`SegmentedSwitcher.kt` 同时承载玻璃控件实现和 Sleepy 适配，不能整文件归为已分离的适配器。语言菜单也需先拆出通用菜单行为，再把语言选项、设置入口和调试标签留在 Sleepy。现有二十二份 runtime 实现覆盖运动、调度、几何/轮廓缓存和渲染原语；Host 采样闭包、主题注入、完整控件及独立示例仍待完成，catalog 保留相应阻碍。本批未新增完整光学、自然动态、近原生或发布验收。
+完整运行库仍未完成解耦。同一个 `liquidglass` 包目前仍混有 `LocalUiStyle` 等主题判断、导航图标驱动、设置布局、调试语义和 Material 分支；滑杆还引用包外的弹窗动画及 Material 辅助函数。`SegmentedSwitcher.kt` 同时承载玻璃控件实现和 Sleepy 适配，不能整文件归为已分离的适配器。语言菜单也需先拆出通用菜单行为，再把语言选项、设置入口和调试标签留在 Sleepy。当前二十三份 runtime 实现覆盖运动、调度、几何/轮廓缓存、渲染原语和通用背景自适应前景；Host 采样闭包、主题注入、完整控件及独立示例仍待完成，catalog 保留相应阻碍。本批未新增完整光学、自然动态、近原生或发布验收。
 
 原生采集工具、可分发的数值基线、回放和示例属于独立验证目录。原始长视频、临时 APK、DerivedData 和设备导出缓存不进入库或日常 CI。CI 保留正常贡献所需的编译、针对性回归和可复现示例；多背景 GPU 采证显式运行。
 

@@ -3,7 +3,7 @@
   "status": "partial-runtime-extraction-in-sleepy",
   "reference": "iOS 26.5 native controls",
   "independentlyBuildable": true,
-  "independentlyBuildableScope": "Only :liquid-glass-runtime M1/M2a/M2b motion/press/endpoints, M2 geometry/cache and M3a render primitives plus the original AGSL are extracted: twenty-two production Kotlin sources. Builds, original unit-test closures, single AAR ownership and single byte-identical shader ownership in AAR/APK are verified. M3a independent dependency resolution and original HazeRender3 on API36 are verified within their recorded scope. Host/theme context, complete controls and the independent sample remain incomplete; this is not complete library or optical acceptance.",
+  "independentlyBuildableScope": "Current :liquid-glass-runtime has twenty-three production Kotlin sources: twenty-two extracted M1/M2a/M2b motion/press/endpoints, M2 geometry/cache and M3a render primitives, plus the new caller-configured BackdropAwareForeground primitive. The original AGSL remains a unique byte-identical runtime asset in AAR/APK. Historical migration validations retain their own counts. Batch93 verifies build, host5, bounded API36 GPU2 and packaging119/app2242 zero class intersection, not native appearance or production Dock integration. Host/theme context, complete controls, the independent sample, supported-device/performance and publication/distribution acceptance remain incomplete.",
   "publishedRepository": null,
   "pathBase": "repository-root",
   "assets": [
@@ -40,6 +40,27 @@
       "publicApiReviewDeferred": true,
       "material3IndependentCore": false,
       "productionHostSamplingMigrated": false
+    },
+    {
+      "role": "generic-backdrop-aware-foreground-runtime",
+      "sourceDirectory": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass",
+      "entryFiles": [
+        "BackdropAwareForeground.kt"
+      ],
+      "buildModule": ":liquid-glass-runtime",
+      "buildFile": "libraries/liquid-glass/runtime/build.gradle.kts",
+      "extractionStatus": "new-generic-primitive-not-a-host-or-control-migration",
+      "validationRecord": "libraries/liquid-glass/validation/observations/backdrop-aware-foreground-gpu-93.json",
+      "scope": "Small neutral foreground alpha masks, original external Backdrop and explicit caller-supplied endpoint colors/luma interval/opaque transparent-source fallback/local physical-pixel sample rectangle. Accent/selected theme content stays outside the mask. No native classifier, default thresholds, hysteresis or animation. Existing LayerBackdrop.withTransformCompensation() is required for relative scale/rotation; ordinary LayerBackdrop handles relative translation.",
+      "validation": "Batch93 app debug/androidTest and host5 pass, API36 registered-runner GPU2 pass. Eight captures contain35 standard probes plus2 detach-cleanup probes,34 exactRGB and maximum channel error1 within unchanged tolerance3. AAR119 classes and actual app2242 production classes have zero intersection; current runtime23 sources. Original AGSL remains33561 bytes and identical in HEAD/AAR/APK; original Style/Shader/Effect unchanged. Post-build KDoc-only source hash is distinguished from tested code. Full raw evidence/receipts/review hashes and explicit coverage limits are linked in the portable record.",
+      "runtimeHostTest": "libraries/liquid-glass/runtime/src/androidHostTest/kotlin/com/lingion/sleepy/ui/component/liquidglass/BackdropForegroundAtlasTest.kt",
+      "deviceTest": "app/src/androidTest/java/com/lingion/sleepy/ui/component/BackdropAwareForegroundRenderTest.kt",
+      "nativeClassifierProvided": false,
+      "defaultResponseThresholdsProvided": false,
+      "productionDockIntegrated": false,
+      "productionHostSamplingMigrated": false,
+      "publicApiReviewDeferred": true,
+      "performanceAccepted": false
     },
     {
       "role": "geometry",
@@ -160,7 +181,8 @@
       "runtimeHostTests": [
         "libraries/liquid-glass/runtime/src/androidHostTest/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeDockParentMotionTest.kt",
         "libraries/liquid-glass/runtime/src/androidHostTest/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeDockEndpointTest.kt",
-        "libraries/liquid-glass/runtime/src/androidHostTest/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeSegmentedEndpointTest.kt"
+        "libraries/liquid-glass/runtime/src/androidHostTest/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeSegmentedEndpointTest.kt",
+        "libraries/liquid-glass/runtime/src/androidHostTest/kotlin/com/lingion/sleepy/ui/component/liquidglass/BackdropForegroundAtlasTest.kt"
       ]
     },
     {
@@ -217,10 +239,10 @@
   "inventoryDate": "2026-11-14",
   "nativeCalibrationAccepted": false,
   "publicationReady": false,
-  "inventoryScope": "Twenty-two production Kotlin sources now have a single runtime owner: M1 three kernels, M2a two scheduling files, M2b four motion drivers plus press/two endpoints, M2 six geometry sources/extracted outline cache, and M3a Style/Shader/Effect. The original AGSL is a unique runtime androidMain asset and is byte-identical in the actual AAR/APK. Original M3a unit34, builds, class ownership, original API36 HazeRender3 and independent dependency resolution passed; original diagnostic errors remain retained. Week11 timetable/Dock visibility verifies installation/launch only. Original GPU-run and metadata-fixed final main package identities are distinguished in m3a-rendering.json. Host/theme context, mixed controls, independent validation/sample, optical/native-calibration and publication/license gates remain incomplete.",
+  "inventoryScope": "Current runtime owner has twenty-three production Kotlin sources and one original AGSL. Historical M3a comprises twenty-two sources/113 AAR classes; those records are unchanged. Batch93 adds BackdropAwareForeground with explicit source, response endpoints/luma interval/opaque transparent-source fallback and local physical-pixel sample rectangle, without a native classifier, default thresholds or production Dock integration. Its AAR119 classes and app2242 production classes have zero intersection; generic host5/GPU2 pass within recorded limits. Host/theme context, mixed controls, independent sample, native calibration and distribution gates remain incomplete.",
   "extractionPlan": {
     "path": "libraries/liquid-glass/extraction-plan.md",
-    "status": "m1-m2a-m2b-m2-geometry-and-m3a-render-primitives-verified-host-m4-sample-pending",
+    "status": "m1-m2a-m2b-m2-geometry-m3a-and-generic-foreground93-verified-host-m4-sample-pending",
     "sourceOwnership": "Move each implementation once; Sleepy and the future sample consume the same runtime module and packaged shader.",
     "migrationValidation": "Keep existing fixture hashes, delivered inputs, measurement code and tolerances; record before/after results for each migrated closure.",
     "independentExampleGate": "A future sample must compile and run against the runtime without app sources, theme, assets or test helpers; it has not been created.",
@@ -263,7 +285,10 @@
       "mainActivityResumed": true,
       "originalGpuRunIdentityRecordedSeparately": true,
       "unitAndGpuTestsRepeated": false
-    }
+    },
+    "genericForeground93Record": "libraries/liquid-glass/validation/observations/backdrop-aware-foreground-gpu-93.json",
+    "genericForeground93Validation": "Batch93 app debug/androidTest and host5 pass, API36 registered-runner GPU2 pass. Eight captures contain35 standard probes plus2 detach-cleanup probes,34 exactRGB and maximum channel error1 within unchanged tolerance3. AAR119 classes and actual app2242 production classes have zero intersection; current runtime23 sources. Original AGSL remains33561 bytes and identical in HEAD/AAR/APK; original Style/Shader/Effect unchanged. Post-build KDoc-only source hash is distinguished from tested code. Full raw evidence/receipts/review hashes and explicit coverage limits are linked in the portable record.",
+    "genericForeground93CompletesHostMigration": false
   },
   "sourceAndLicenseReviewComplete": false,
   "currentBuildWiring": {
@@ -274,10 +299,11 @@
     "supportContract": "SDK, Compose, GPU/fallback and accessibility requirements have not been independently established for an extracted library.",
     "libraryBuildFile": "libraries/liquid-glass/runtime/build.gradle.kts",
     "applicationDependency": "implementation(project(\":liquid-glass-runtime\"))",
-    "extractedScope": "M1/M2a/M2b, M2 geometry/cache and M3a render primitives are verified for build/original unit/AAR ownership: twenty-two production Kotlin sources plus one original AGSL in runtime. M3a unit34, actual AAR/APK single shader, API36 original HazeRender3, installation/launch and independent dependency resolution are verified within recorded scope. Final metadata-only main APK repack/reinstall completed with host/device hash agreement and MainActivity resumed; its identity is separately recorded from the original GPU-run package, whose unit/GPU tests were not repeated. Host/theme context, controls/adapters, independent sample and complete optical/support/distribution acceptance remain pending.",
-    "runtimeProductionKotlinSourceCount": 22,
+    "extractedScope": "M1/M2a/M2b, M2 geometry/cache and M3a render primitives account for twenty-two extracted production Kotlin sources plus the original AGSL. The new generic BackdropAwareForeground makes the current count twenty-three; explicit caller response only, no native classifier/default thresholds or production Dock integration. Batch93 build/host5/API36 GPU2/119 AAR classes vs2242 app classes zero intersection and original AGSL packaging are verified within recorded composition/lifecycle limits. Historical validations and counts are preserved. Host/theme context, controls/adapters, independent sample and complete optical/support/performance/distribution acceptance remain pending.",
+    "runtimeProductionKotlinSourceCount": 23,
     "shaderAsset": "libraries/liquid-glass/runtime/src/androidMain/assets/shaders/liquid_glass.agsl",
-    "androidResourcesEnabled": true
+    "androidResourcesEnabled": true,
+    "genericForegroundValidationRecord": "libraries/liquid-glass/validation/observations/backdrop-aware-foreground-gpu-93.json"
   },
   "provenance": {
     "inventory": "ACKNOWLEDGEMENTS.md",
@@ -355,7 +381,7 @@
     },
     {
       "id": "runtime-and-adapters",
-      "status": "partially-extracted-through-m3a-render-primitives-host-controls-and-adapters-pending",
+      "status": "partially-extracted-through-m3a-plus-generic-foreground-host-controls-and-adapters-pending",
       "requiredEvidence": "One Android runtime module with no Sleepy dependency; callers supply app content, theme, callbacks and policy; Material routing remains in the Sleepy adapter.",
       "implementationPlan": "libraries/liquid-glass/extraction-plan.md",
       "progressRecord": "libraries/liquid-glass/validation/migrations/m1.json",
@@ -366,6 +392,9 @@
         "libraries/liquid-glass/validation/migrations/m2b-endpoints.json",
         "libraries/liquid-glass/validation/migrations/m2-geometry.json",
         "libraries/liquid-glass/validation/migrations/m3a-rendering.json"
+      ],
+      "validationRecords": [
+        "libraries/liquid-glass/validation/observations/backdrop-aware-foreground-gpu-93.json"
       ]
     },
     {

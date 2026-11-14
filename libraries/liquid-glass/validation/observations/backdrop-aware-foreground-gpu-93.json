@@ -1,0 +1,202 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-14",
+  "kind": "generic-backdrop-aware-foreground-gpu-93",
+  "scope": "New caller-configured GPU composition/lifecycle primitive in runtime; no production Dock integration, native classifier/default thresholds, complete optics or native-parity acceptance.",
+  "sourceBaseHead": "d44e9d859fdbe141ef193c66ad3597993c8bd97c",
+  "sourceSnapshot": [
+    {
+      "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/BackdropAwareForeground.kt",
+      "bytes": 10908,
+      "sha256": "ed37293b39e1c136faab3206d963ab268ba0ac7fee945d8e34a29919aec8738b"
+    },
+    {
+      "path": "libraries/liquid-glass/runtime/src/androidHostTest/kotlin/com/lingion/sleepy/ui/component/liquidglass/BackdropForegroundAtlasTest.kt",
+      "bytes": 3447,
+      "sha256": "ef083e82bb710428c838c7c2ede973ae00a80a974391ca2773c5b739a15f76b0"
+    },
+    {
+      "path": "app/src/androidTest/java/com/lingion/sleepy/ui/component/BackdropAwareForegroundRenderTest.kt",
+      "bytes": 11745,
+      "sha256": "5327ad056f38833d620713b70934da53ea13b9c7a80159b0730eec0802c98188"
+    }
+  ],
+  "postBuildDocumentationOnly": {
+    "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/BackdropAwareForeground.kt",
+    "builtSHA256": "ed37293b39e1c136faab3206d963ab268ba0ac7fee945d8e34a29919aec8738b",
+    "currentSHA256": "874a6fabfdcd3f8efba696118f20920e9b17095ba2fc3ccf1943b11a5d6807f2",
+    "change": "KDoc only: external source/relative transform contract, small foreground area, unavailable consumer-coordinate fallback and empty-source response. No logic or test edits and no rebuild after the comment change.",
+    "builtSourceSnapshot": "gpu-primitive-built-source.kt",
+    "exactReconstructionVerified": true
+  },
+  "contract": {
+    "response": "All five BackdropForegroundResponse fields are explicit: lowBackground, highBackground, lowerLuma, upperLuma, opaque transparentBackground. No native classifier or default thresholds.",
+    "source": "Caller supplies the external scene with intended parent context, excluding this foreground and its own adaptive backing. Ordinary LayerBackdrop handles relative translation; relative scale/rotation requires LayerBackdrop.withTransformCompensation().",
+    "sample": "Finite positive Rect inside the modifier local physical-pixel size; five scene taps at center and(0.2,0.3),(0.8,0.3),(0.2,0.7),(0.8,0.7).",
+    "mask": "Only content alpha enters the neutral mask; caller accent/selected theme content remains outside. Source transparency composes over the explicit opaque fallback for luma.",
+    "fallback": "API<33, missing consumer coordinates or invalid sample rectangle draws original content; empty source uses the explicit transparentBackground for luma.",
+    "retainedLayers": "Three offscreen layers: original-sized mask, disjoint scene/mask atlas, separate completed output. Approximately five times logical content area in recordings; measured memory/performance unavailable."
+  },
+  "build": {
+    "command": [
+      "./gradlew",
+      ":app:assembleDebug",
+      ":app:assembleDebugAndroidTest",
+      ":liquid-glass-runtime:testAndroidHostTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.BackdropForegroundAtlasTest",
+      "--console=plain"
+    ],
+    "exitCode": 0,
+    "wallSeconds": 14.99614405632019,
+    "logSHA256": "c653b9f0ff34ab495cacdbf838d764df9fd0d11fa492969f71a5c6f0cc1200e9",
+    "scope": "generic GPU foreground primitive and five host checks only; no Dock integration or native parity claim"
+  },
+  "initialHostFailure": {
+    "retainedArtifact": "gpu-primitive-host.log",
+    "observedResult": "5 tests completed, 1 failed: invalidAndOverflowingAllocationsAreRejected",
+    "rootCause": "Compose Size.minDimension uses absolute dimensions; negative width passed the old positivity guard. Current primitive explicitly checks width > 0 and height > 0.",
+    "testSourceUnchangedFromInitialReview": true,
+    "oldFailureXmlAvailable": false,
+    "afterXmlOverwritesFailureXml": true,
+    "afterXmlSHA256": "abd3e0bce16b07b8142d348c80b313456470eac9a5c19d84766c3ddb82300395"
+  },
+  "host": {
+    "class": "com.lingion.sleepy.ui.component.liquidglass.BackdropForegroundAtlasTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 0.038,
+    "originalTestSHA256": "ef083e82bb710428c838c7c2ede973ae00a80a974391ca2773c5b739a15f76b0",
+    "passedXml": {
+      "path": "gpu-primitive-host-passed.xml",
+      "sha256": "abd3e0bce16b07b8142d348c80b313456470eac9a5c19d84766c3ddb82300395",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "scope": "Disjoint integer/fractional atlas packing, scene/sample separation, invalid/overflow dimensions and explicit response validation. Host tests do not establish optics."
+  },
+  "device": {
+    "api": 36,
+    "serial": "d3efcd6a",
+    "density": 2.9750001,
+    "testClass": "com.lingion.sleepy.ui.component.BackdropAwareForegroundRenderTest",
+    "runner": "com.lingion.sleepy.SleepyRenderTestRunner",
+    "tests": 2,
+    "exitCode": 0,
+    "testCaseSeconds": 2.527,
+    "commandWallSeconds": 4.4563469886779785,
+    "capturePolicy": "One requested OpticalCaptureWindow HWUI commit + PixelCopy per stage after waitForIdle; no retries, no compositor-first-presentation claim.",
+    "install": {
+      "bothCommandsSucceeded": true,
+      "mainHostSHA256": "52548587665cd3e9c9c237a5820e06fea2fbb9e6170691dd034d706961de34e7",
+      "testHostSHA256": "54ac9f599be5ff92e7b71621fefd494f85076fafe36bd2e6fdb5f932fd972e86",
+      "freshInstalledDeviceApkHashesAudited": true,
+      "finalVerification": "android-final-install-verification.json",
+      "mainHostAndDeviceSHA256": "52548587665cd3e9c9c237a5820e06fea2fbb9e6170691dd034d706961de34e7",
+      "testHostAndDeviceSHA256": "54ac9f599be5ff92e7b71621fefd494f85076fafe36bd2e6fdb5f932fd972e86",
+      "scope": "Both installed APK identities verified and MainActivity resumed. Initial task-return transition screenshot and later stable home screenshot are retained separately; neither establishes native optical parity."
+    }
+  },
+  "result": {
+    "captures": 8,
+    "exportedFiles": 10,
+    "hostDeviceExportHashesMatch": true,
+    "standardMaskProbes": 35,
+    "detachedCleanupProbes": 2,
+    "totalProbes": 37,
+    "exactRGBProbes": 34,
+    "maximumChannelError": 1,
+    "predeclaredTolerancePerChannel": 3,
+    "onlyNonexact": "Three half-blue-on-white probes are(127,127,255), expected(128,128,255), for moved/resized/reattached consumers.",
+    "independentAccent": "Orange badge remains exactly(255,128,0) in all seven consumer captures.",
+    "transparentSource": "White response fallback chooses the high/blue endpoint while visible slate(32,64,96) remains through clear mask pixels; half blue is exactly(16,32,176).",
+    "resizeReattach": "Resized and recreated consumers produce byte-identical PNGs; this is a requested committed capture, not the first compositor presentation.",
+    "independentReview": {
+      "checksPassed": 9,
+      "checksFailed": 0,
+      "report": "gpu-result-review.json",
+      "fullProbeRowsRetained": true,
+      "newBuildsOrDeviceRunsForReview": false
+    }
+  },
+  "packaging": {
+    "record": "gpu-primitive-packaging.json",
+    "runtimeSourceCount": 23,
+    "aar": {
+      "path": "libraries/liquid-glass/runtime/build/outputs/aar/liquid-glass-runtime.aar",
+      "bytes": 295409,
+      "sha256": "42bf725906b3a43dc747710dc10e26ccf11280d13caeedb28f5831b8be91fa27",
+      "classes": 119,
+      "newClasses": [
+        "com/lingion/sleepy/ui/component/liquidglass/BackdropAwareForegroundElement.class",
+        "com/lingion/sleepy/ui/component/liquidglass/BackdropAwareForegroundKt.class",
+        "com/lingion/sleepy/ui/component/liquidglass/BackdropAwareForegroundNode.class",
+        "com/lingion/sleepy/ui/component/liquidglass/BackdropForegroundAtlas$Companion.class",
+        "com/lingion/sleepy/ui/component/liquidglass/BackdropForegroundAtlas.class",
+        "com/lingion/sleepy/ui/component/liquidglass/BackdropForegroundResponse.class"
+      ]
+    },
+    "appProductionClassCount": 2242,
+    "duplicateClasses": [],
+    "shaderBytes": 33561,
+    "shaderSHA256": "2b45241e8c640d996e1ebfbe4eceff3d0fcdfc55a84e428f7fcd215560247f19",
+    "aarApkHeadShaderIdentical": true,
+    "existingStyleShaderEffectUnchanged": true,
+    "scope": "Current packaging119 classes includes6 new primitive classes; historical M3a22 sources/113 classes is unchanged evidence, not the current count."
+  },
+  "coverageLimits": [
+    "Generic rectangular synthetic mask, two opaque endpoint colors and 50% interior alpha only; no real glyph edge rasterization, partial endpoint alpha or intermediate luma response asserted.",
+    "No native iOS appearance/classifier, response threshold, sampling radius, hysteresis, motion, selected theme-color or complete Dock integration acceptance.",
+    "PixelCopy follows waitForIdle and a requested HWUI commit; it is not proven to be the compositor first presentation or a frame-by-frame source generation measurement.",
+    "GPU movement is translation and size change on one API36 device/density; no rotation, external scale, RTL, cross-window, other color space/API or invalid-geometry fallback test on hardware.",
+    "PixelCopy records final opaque window RGB, not intermediate shader alpha. Alpha is inferred from independent SRC_OVER colors in controlled backgrounds.",
+    "Mask-hole and corner probes cannot uniquely detect a scene repaint over an identical underlying opaque scene; transparent-source case and source/static checks constrain but do not prove absence of every leakage path.",
+    "Five identical-color source taps establish sample rect/endpoint reachability, not exact averaging weights or every tap position. Host tests establish packing independently, not optics.",
+    "The generic primitive is not integrated into production Dock. No selected Material token/color, full glyph acceptance, native material/classifier/hysteresis/timing or complete Dock acceptance.",
+    "Partial-alpha source, partial-alpha endpoint colors, intermediate smoothstep values and source replacement are not covered on hardware. No exact five-tap weights/positions acceptance.",
+    "Layer release is inspected in source; GPU resource counts, memory leaks and performance are not measured. Three retained offscreen layers are intended for small foreground areas.",
+    "The transform-compensation adapter is an explicit caller contract; scale/rotation are unverified on hardware in this batch."
+  ],
+  "evidenceCollection": "artifacts/glass-optics-20261112",
+  "evidenceDirectory": "android-dock-adaptation-93",
+  "evidenceStorage": "External session artifacts are referenced by relative collection/directory and SHA-256. Raw videos/build outputs are not bundled in runtime; redistribution review remains open.",
+  "evidenceSHA256": {
+    "gpu-primitive-host.log": "b0b7208c93379f735a78ddb1c71f9a0f7e3926e28361126ef3b3f7ec42c11652",
+    "gpu-primitive-build-and-host.json": "bbf5896f813f758fc94bc876db05db2d94344e51b0792df1cdf582ff6a5cc007",
+    "gpu-primitive-build-and-host.log": "c653b9f0ff34ab495cacdbf838d764df9fd0d11fa492969f71a5c6f0cc1200e9",
+    "gpu-primitive-host-passed.xml": "abd3e0bce16b07b8142d348c80b313456470eac9a5c19d84766c3ddb82300395",
+    "gpu-primitive-packaging.json": "a62c989008203652db8dd746105ef1b8fe1b2f86d2942df5e46a150651af9ce0",
+    "gpu-primitive-aar.log": "bda3914bf86e24cf4dfcfaf6363ff177988a0193bfec5b83093411773fbe4419",
+    "gpu-install.json": "0394e111d39a122761b0e09e92da0e1bc04a48772434ae4c6eb917496fdc3aac",
+    "gpu-instrumentation.json": "06140753cf309615aec73bbc2f2269315603a9a3dc7e6ca1cacc4690d28e70ce",
+    "gpu-instrumentation.log": "a1ee35f44f4dce3f916d63ab9311dc822f42d1464a315e4313115fb1a223cb0a",
+    "gpu-export.json": "20d1cf61a2a8621f45e31e6714fbbd48202e95746e9d8c73c0bcdcaf3273bbdc",
+    "gpu-result-review.json": "fcbdd66248f044a417864cf709e64d083368cd2ecf5fb0e1c6e111539ea96f67",
+    "gpu-result-review.md": "f5aa6babc44262ffc893255b94cdc68debf992244e8346f9abcec6773692c9a9",
+    "gpu/consumer-detached.png": "c5790cd71f219f2566c039839fee5839a526895de55f9bb88c3a52ce37c31f7d",
+    "gpu/consumer-left-black.png": "e0c0445fa694380509825b38cefa4bdf32cb1063a09ae1cc7506fc9a6a94d9fd",
+    "gpu/local-bright-patch.png": "678a36d2688780c1367ca46294bd047d8e08cf4e21774388aac79340a4d2bf8d",
+    "gpu/movement-resize-detach-metrics.json": "23efc28d3e374acc0029837094e3d268caaa7edd0d44e4c12aa2a7e31a186f0b",
+    "gpu/reattached-first-requested-committed-capture.png": "581e37acffebe6a7c07484ac12891eb7bf8cf955719f89072b0b56dbad9af440",
+    "gpu/same-consumer-moved-right-white.png": "691b9e33c226601f55d1ca2830871cd0800ed9cb919929bc7b7c376c1dcff3cd",
+    "gpu/same-consumer-resized.png": "581e37acffebe6a7c07484ac12891eb7bf8cf955719f89072b0b56dbad9af440",
+    "gpu/same-source-now-black.png": "1388f6874bb3c86c1b7f4a8b48f2893df7ef514576760926069060e7e0483d0f",
+    "gpu/source-mask-accent-metrics.json": "cc235ab78223dca7e35b019b61e3fc1eaa6115594a49187beec5d9cc18b9d023",
+    "gpu/transparent-source-white-response-fallback.png": "78811a234c3c8098e07419744d43e924db165ff513254c265cb63e1d5b1ad981",
+    "android-final-install-verification.json": "07926cc9c4f9738cbaa00195023818cf37f1642e176646dd410701406ae8af65",
+    "android-final-home.png": "498ddd9c98ecb923ad33de9f8d0402b0bcb71c15427f8007846183e3e53f8d8f",
+    "android-final-home-stable.png": "b4ebb0f28fcc3727fd3ef4233c24850c4ec0551f6dd487547defbeb329e72349",
+    "cleanup-unused-abi.json": "958a0855b5c33ff10ee4299f19e1e2c149618a8ce4b1df43a74016b5df2dbb7f",
+    "gpu-primitive-built-source.kt": "ed37293b39e1c136faab3206d963ab268ba0ac7fee945d8e34a29919aec8738b"
+  },
+  "productionDockIntegrated": false,
+  "nativeClassifierProvided": false,
+  "defaultResponseThresholdsProvided": false,
+  "nativeCalibrationAccepted": false,
+  "publicationReady": false,
+  "sourceAndLicenseReviewComplete": false
+}
