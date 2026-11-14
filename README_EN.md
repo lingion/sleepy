@@ -5,7 +5,7 @@
 <h1 align="center">Sleepy · Lightweight Timetable</h1>
 
 <p align="center">
-  A clean Android timetable app built with Kotlin + Jetpack Compose, Material 3 Expressive motion, and optional Liquid Glass.<br>
+  A clean, open-source timetable app for Android and iOS — both native. This repo builds the Android version with Kotlin + Jetpack Compose, Material 3 Expressive motion, and optional Liquid Glass.<br>
   Multi-view · Direct JW system import · Single-session adjustments · Home-screen widgets · Liquid Glass
 </p>
 
@@ -14,6 +14,7 @@
   <img src="https://img.shields.io/github/stars/lingion/sleepy?style=flat-square&logo=github" alt="Stars">
   <img src="https://img.shields.io/github/downloads/lingion/sleepy/total?style=flat-square" alt="Downloads">
   <img src="https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white" alt="Android">
+  <a href="https://github.com/lingion/sleepy-ios"><img src="https://img.shields.io/badge/platform-iOS-000000?style=flat-square&logo=apple&logoColor=white" alt="iOS"></a>
   <img src="https://img.shields.io/badge/lang-Kotlin-7F52FF?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin">
   <img src="https://img.shields.io/badge/UI-Jetpack%20Compose-4285F4?style=flat-square" alt="Compose">
   <img src="https://img.shields.io/badge/license-GPL--3.0-blue?style=flat-square" alt="License">
@@ -27,7 +28,7 @@
 
 ---
 
-> **Keywords (SEO):** Android schedule app, timetable, university schedule, Jetpack Compose, Material You, Chinese university academic system import, wisedu, home screen widget, HSV color picker, open source timetable
+> **Keywords (SEO):** Android schedule app, iOS schedule app, iPhone timetable, SwiftUI, WidgetKit, iOS home screen widget, App Store timetable, cross-platform timetable, university schedule, Jetpack Compose, Material You, Chinese university academic system import, wisedu, home screen widget, HSV color picker, open source timetable
 
 ---
 
