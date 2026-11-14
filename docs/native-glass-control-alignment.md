@@ -2,6 +2,8 @@
 
 2026-11-14 后续修复：日期输入切回日历的窗口高度反馈和焦点问题，以及首页课表选择弹窗与 Material Design 的尺寸一致性，见[本轮修复与验证范围](date-dialog-and-table-selector.md)。
 
+2026-11-14 新建页修复：课表与作息表立即导航、离场列表快照、初始化返回与保存协调，以及关于页隐私玻璃按钮和日期容器透明度，见[实现与验证范围](new-editor-navigation-and-privacy-link.md)。
+
 2026-11-14 发布范围更新：按用户要求，先公开独立实验性 runtime 与 sample，完整控件提取、iOS 26.5 原生校准和支持/性能验收继续进行。[Kerry1020/sleepy-liquid-glass](https://github.com/Kerry1020/sleepy-liquid-glass) 已公开实验性 runtime 与 sample，`main` 为 `ac9254c6e36312c6ef35c99ed28a881818bbd097`，Git 与 API 核对一致。下文历史批次中“近原生验收后才创建仓库”的政策已被本条替代，历史测试结果与未通过项保持原范围。独立后端采用官方 Kyant 2.0.0，排除 SleepDown 定制 fork；Sleepy 当前后端未切换。
 
 2026-11-12 使用 iPhone SE 3 模拟器、iOS 26.5（23F77）、375 × 667 pt、2×，观察系统 SwiftUI / UIKit 控件。Android 按 1 pt = 1 dp 对照控件局部尺寸，不拉伸整张屏幕截图。参考程序见 `tools/native-glass-reference`；Android 设备截图与真实触摸回放入口为 `NativeGlassParityCaptureTest`。
