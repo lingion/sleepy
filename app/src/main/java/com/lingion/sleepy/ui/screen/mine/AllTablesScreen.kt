@@ -50,6 +50,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.TimeTableEntity
+import com.lingion.sleepy.data.jw.JwImportDraftCodec
+import com.lingion.sleepy.data.jw.JwImportViewModel
+import com.lingion.sleepy.data.jw.JwSchoolInfo
 import com.lingion.sleepy.ui.component.DialogActionButtons
 import com.lingion.sleepy.ui.component.liquidglass.GlassControlLayout
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
@@ -69,6 +72,8 @@ fun AllTablesScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val periodTables by viewModel.allPeriodTables.collectAsState()
+    val jwViewModel: JwImportViewModel = viewModel()
+    val jwSchools by jwViewModel.schools.collectAsState()
     val colors = MaterialTheme.colorScheme
     val density = LocalDensity.current
     val textMeasurer = rememberTextMeasurer()
@@ -103,6 +108,11 @@ fun AllTablesScreen(
 
             itemsIndexed(state.tables, key = { _, table -> table.id }) { _, table ->
                 val isCurrent = table.id == state.selectedTableId
+                val jwSourceSchool = remember(table.jwSchoolSourceJson, table.jwSchoolSourceVerified, jwSchools) {
+                    JwImportDraftCodec.schoolFromSourceJson(
+                        table.jwSchoolSourceJson, jwSchools, table.jwSchoolSourceVerified,
+                    )
+                }
                 BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -187,8 +197,10 @@ fun AllTablesScreen(
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
-                            IconButton(onClick = { onUpdateFromJw(table.id) }) {
-                                Icon(Icons.Outlined.Refresh, contentDescription = stringResource(R.string.update_from_jw), tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                            if (jwSourceSchool != null) {
+                                IconButton(onClick = { onUpdateFromJw(table.id) }) {
+                                    Icon(Icons.Outlined.Refresh, contentDescription = stringResource(R.string.update_from_jw), tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                                }
                             }
                             IconButton(onClick = { onOpenEditTable(table.id) }) {
                                 Icon(

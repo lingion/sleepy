@@ -47,6 +47,7 @@ enum class JwImportDraftPhase {
 /** Versioned JSON boundary for [JwImportDraftSnapshot]. */
 object JwImportDraftCodec {
     const val SCHEMA_VERSION: Int = 1
+    private const val SCHOOL_SOURCE_SCHEMA_VERSION: Int = 1
 
     fun toJson(snapshot: JwImportDraftSnapshot): String = JSONObject().apply {
         put("schemaVersion", SCHEMA_VERSION)
@@ -117,6 +118,53 @@ object JwImportDraftCodec {
         )
     }.getOrNull()
 
+    /** Stable snapshot of the exact school entry used to create a timetable. */
+    fun toSchoolSourceJson(school: JwSchoolInfo): String = JSONObject().apply {
+        put("schemaVersion", SCHOOL_SOURCE_SCHEMA_VERSION)
+        put("sourceType", "jw")
+        put("school", schoolToJson(school))
+    }.toString()
+
+    /** Resolve a database source only when the timetable was verified by the in-app JW import flow. */
+    fun schoolFromSourceJson(
+        json: String,
+        catalog: List<JwSchoolInfo>,
+        sourceVerified: Boolean,
+    ): JwSchoolInfo? {
+        if (!sourceVerified) return null
+        val snapshot = parseSchoolSourceJson(json) ?: return null
+        val matches = if (snapshot.catalogId.isNotBlank()) {
+            catalog.filter { it.catalogId == snapshot.catalogId }
+        } else {
+            catalog.filter {
+                it.sortKey == snapshot.sortKey &&
+                    it.name == snapshot.name &&
+                    it.url == snapshot.url &&
+                    it.type == snapshot.type
+            }
+        }
+        val catalogMatch = matches.singleOrNull()?.takeIf { school ->
+            school.canImport && snapshot.sortKey == school.sortKey &&
+                snapshot.name == school.name && snapshot.type == school.type
+        }
+        if (catalogMatch != null || matches.isNotEmpty()) return catalogMatch
+        if (snapshot.catalogId.isNotBlank() || snapshot.sortKey.isNotBlank()) return null
+
+        // A confirmed in-app import may use a school outside the bundled directory. Keep its
+        // exact URL for the next update. Backup and schedule-file imports never set sourceVerified.
+        return snapshot.takeIf { it.canImport && it.isSupported }
+    }
+
+    /** Invalid, unsupported, or non-JW payloads cannot resolve to a directory entry. */
+    private fun parseSchoolSourceJson(json: String): JwSchoolInfo? = runCatching {
+        val root = JSONObject(json)
+        if (root.optInt("schemaVersion", -1) != SCHOOL_SOURCE_SCHEMA_VERSION ||
+            root.optString("sourceType") != "jw"
+        ) return null
+        schoolFromJson(root.optJSONObject("school") ?: return null)
+            ?.takeIf { it.canImport }
+    }.getOrNull()
+
     private fun schoolToJson(school: JwSchoolInfo): JSONObject = JSONObject().apply {
         put("sortKey", school.sortKey)
         put("name", school.name)
@@ -132,7 +180,7 @@ object JwImportDraftCodec {
     private fun schoolFromJson(json: JSONObject): JwSchoolInfo? {
         val sortKey = json.optString("sortKey", "")
         val name = json.optString("name", "")
-        if (sortKey.isBlank() || name.isBlank()) return null
+        if (name.isBlank()) return null
         val aliasesJson = json.optJSONArray("aliases")
         val aliases = if (aliasesJson == null) {
             emptyList()
@@ -145,6 +193,8 @@ object JwImportDraftCodec {
                 }
             }
         }
+        val catalogId = json.optString("catalogId", "")
+        if (sortKey.isBlank() && catalogId.isNotBlank()) return null
         return JwSchoolInfo(
             sortKey = sortKey,
             name = name,
@@ -154,7 +204,7 @@ object JwImportDraftCodec {
             aliases = aliases,
             sortKeyFull = json.optString("sortKeyFull", ""),
             enableFetch = json.optBoolean("enableFetch", false),
-            catalogId = json.optString("catalogId", ""),
+            catalogId = catalogId,
         )
     }
 
