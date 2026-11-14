@@ -44,8 +44,37 @@ class GlassControlMotionTest {
         assertEquals(0f, motion.lift, 0f)
     }
 
+    @Test fun nativeShortTapKeepsTheFullLensThroughMostOfItsTravel() {
+        val motion = GlassControlMotion(0f, GlassControlMotionSpec.Native, 22f)
+        motion.update(0f, pressed = true, dragging = true)
+        repeat(67) { motion.tick(.001) }
+        motion.update(1f, pressed = false, dragging = false, activation = 1)
+        repeat(167) { motion.tick(.001) }
+        // iOS 26.5 ordinary 66.7 ms taps: DOWN+234 ms local width ~58.83 pt.
+        // Its held-release trace contracts earlier and is a separate behavior.
+        assertTrue("short tap must not collapse at the rise's first peak", motion.geometryLift >= .98f)
+        assertTrue("the complete lens is still travelling", motion.position.value in .75f.. .95f)
+        repeat(368) { motion.tick(.001) }
+        assertEquals(0f, motion.lift, .005f)
+        assertEquals(1f, motion.position.value, .005f)
+    }
+
+    @Test fun nativeHeldReleaseUsesTheSlowerLocalContourContraction() {
+        val motion = GlassControlMotion(0f, GlassControlMotionSpec.Native, 22f)
+        motion.update(0f, pressed = true, dragging = true)
+        repeat(700) { motion.tick(.001) }
+        motion.update(1f, pressed = false, dragging = false, activation = 1)
+        var elapsed = 0
+        // Local bounds from iOS 26.5; deformation of the world box is separate.
+        for ((millis, expectedWidth) in listOf(84 to 51.25f, 150 to 43.60f, 200 to 39.61f, 251 to 37.29f)) {
+            repeat(millis - elapsed) { motion.tick(.001) }
+            elapsed = millis
+            assertEquals("release +$millis ms", expectedWidth, 37f + 21f * motion.geometryLift, 1f)
+        }
+    }
+
     @Test fun movementStretchesAndBrakingSquashesBeforeReturningToRest() {
-        val motion = GlassControlMotion(0f)
+        val motion = GlassControlMotion(0f, travelDistanceDp = 112f)
         motion.update(0f, pressed = true, dragging = false)
         advance(motion, 640)
         var maximum = 0f
@@ -83,6 +112,17 @@ class GlassControlMotionTest {
         motion.finish()
         assertEquals(1f, motion.position.value, 0f)
         assertEquals(0f, motion.lift, 0f)
+        assertFalse(motion.isRunning)
+    }
+
+    @Test fun selectingAnUnselectedNativeSegmentCompletesThePulseAfterTouchUp() {
+        val motion = GlassControlMotion(0f, GlassControlMotionSpec.NativeSegmented)
+        motion.update(1f, pressed = false, dragging = false, activation = 1)
+        var peak = 0f
+        repeat(200) { motion.tick(.008); peak = maxOf(peak, motion.geometryLift) }
+        assertTrue("native B commit reaches held geometry before lowering: $peak", peak >= .975f)
+        assertEquals(0f, motion.geometryLift, .001f)
+        assertEquals(1f, motion.position.value, .001f)
         assertFalse(motion.isRunning)
     }
 

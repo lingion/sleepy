@@ -26,6 +26,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -517,17 +519,23 @@ internal fun FloatActionPopup(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     val colors = MaterialTheme.colorScheme
     val shape = RoundedCornerShape((10 * scale).dp)
+    val acceptsInput by rememberUpdatedState(enabled)
+    val edit by rememberUpdatedState(onEdit)
+    val delete by rememberUpdatedState(onDelete)
+    SideEffect { if (!enabled) state.popupBounds = null }
+    DisposableEffect(state) { onDispose { state.popupBounds = null } }
     Row(
         modifier = modifier
             .shadow((4 * scale).dp, shape, clip = false)
-            .glassControl(shape = shape, grouped = true)
+            .glassControl(shape = shape, grouped = true, enabled = enabled)
             .clip(shape)
             .background(controlFill(colors.surfaceContainerHigh))
             .border(1.dp, colors.outlineVariant, shape)
-            .onGloballyPositioned { state.popupBounds = it.boundsInRoot() }
+            .onGloballyPositioned { if (enabled) state.popupBounds = it.boundsInRoot() }
             .testTag("float-popup"),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -538,7 +546,7 @@ internal fun FloatActionPopup(
                 fontSize = (12 * scale).sp,
             ),
             color = colors.primary,
-            modifier = Modifier.testTag("float-edit").noRippleGlassClickable(onEdit)
+            modifier = Modifier.testTag("float-edit").noRippleGlassClickable(enabled) { if (acceptsInput) edit() }
                 .padding(horizontal = (14 * scale).dp, vertical = (8 * scale).dp),
         )
         Box(Modifier.width(1.dp).height(20.dp).background(colors.outlineVariant))
@@ -549,7 +557,7 @@ internal fun FloatActionPopup(
                 fontSize = (12 * scale).sp,
             ),
             color = colors.error,
-            modifier = Modifier.testTag("float-delete").noRippleGlassClickable(onDelete)
+            modifier = Modifier.testTag("float-delete").noRippleGlassClickable(enabled) { if (acceptsInput) delete() }
                 .padding(horizontal = (14 * scale).dp, vertical = (8 * scale).dp),
         )
     }

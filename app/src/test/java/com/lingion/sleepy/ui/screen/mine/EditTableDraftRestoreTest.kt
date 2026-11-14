@@ -1,5 +1,7 @@
 package com.lingion.sleepy.ui.screen.mine
 
+import com.lingion.sleepy.ui.component.liquidglass.LocalDockInputTimeNanos
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.mutableStateOf
@@ -62,13 +64,15 @@ class EditTableDraftRestoreTest {
         val editing = mutableStateOf(true)
         var holidayTable: Long? = null
         compose.setContent {
-            SleepyThemeProvider(darkTheme = false, themeKey = "default") {
-                val holder = rememberSaveableStateHolder()
-                if (editing.value) holder.SaveableStateProvider("table-editor") {
-                    EditTableScreen(tableId = 1, onBack = {}, onSaved = {}, onDeleted = {},
-                        onOpenHoliday = { holidayTable = it; editing.value = false }, viewModel = model)
-                } else {
-                    Button(onClick = { editing.value = true }) { Text("Return to editor") }
+            CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }) {
+                SleepyThemeProvider(darkTheme = false, themeKey = "default") {
+                    val holder = rememberSaveableStateHolder()
+                    if (editing.value) holder.SaveableStateProvider("table-editor") {
+                        EditTableScreen(tableId = 1, onBack = {}, onSaved = {}, onDeleted = {},
+                            onOpenHoliday = { holidayTable = it; editing.value = false }, viewModel = model)
+                    } else {
+                        Button(onClick = { editing.value = true }) { Text("Return to editor") }
+                    }
                 }
             }
         }
@@ -114,17 +118,19 @@ class EditTableDraftRestoreTest {
         val editing = mutableStateOf(true)
         var saved = false
         compose.setContent {
-            SleepyThemeProvider(darkTheme = false, themeKey = "default") {
-                val holder = rememberSaveableStateHolder()
-                if (editing.value) holder.SaveableStateProvider("shared-editor") {
-                    EditTableScreen(tableId = 1, onBack = {}, onSaved = { saved = true }, onDeleted = {},
-                        onOpenHoliday = { editing.value = false }, viewModel = model)
-                } else {
-                    Button(onClick = {
-                        // Reproduce the lost in-memory policy state after process restoration.
-                        model.removeEditState(1)
-                        editing.value = true
-                    }) { Text("Restore editor") }
+            CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }) {
+                SleepyThemeProvider(darkTheme = false, themeKey = "default") {
+                    val holder = rememberSaveableStateHolder()
+                    if (editing.value) holder.SaveableStateProvider("shared-editor") {
+                        EditTableScreen(tableId = 1, onBack = {}, onSaved = { saved = true }, onDeleted = {},
+                            onOpenHoliday = { editing.value = false }, viewModel = model)
+                    } else {
+                        Button(onClick = {
+                            // Reproduce the lost in-memory policy state after process restoration.
+                            model.removeEditState(1)
+                            editing.value = true
+                        }) { Text("Restore editor") }
+                    }
                 }
             }
         }

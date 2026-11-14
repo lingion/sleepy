@@ -246,6 +246,8 @@
     <string name="slot_time_invalid">Period %1$d time invalid (start must be before end)</string>
     <string name="expand">Tap to expand</string>
     <string name="collapse">Tap to collapse</string>
+    <string name="accordion_expanded">Expanded</string>
+    <string name="accordion_collapsed">Collapsed</string>
     <string name="n_periods">%1$d periods</string>
 
     <string name="course_detail_title">Course Details</string>

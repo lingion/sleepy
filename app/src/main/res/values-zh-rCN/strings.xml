@@ -248,6 +248,8 @@
     <string name="jw_config_confirm">确认导入</string>
     <string name="expand">点击展开</string>
     <string name="collapse">点击收起</string>
+    <string name="accordion_expanded">已展开</string>
+    <string name="accordion_collapsed">已收起</string>
     <string name="n_periods">%1$d 节课</string>
 
     <!-- Course detail -->

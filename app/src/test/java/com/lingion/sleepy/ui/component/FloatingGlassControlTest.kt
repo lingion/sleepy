@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component
 
+import com.lingion.sleepy.ui.component.liquidglass.LocalDockInputTimeNanos
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -26,8 +27,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 
 @RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [35])
 class FloatingGlassControlTest {
     @get:Rule val compose = createComposeRule()
@@ -41,7 +44,7 @@ class FloatingGlassControlTest {
     @Test fun tabRisesProgressivelyAndStartsLoweringWithoutAFixedReleaseDelay() {
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass) {
                     GlassHost {
                         Box(Modifier.padding(40.dp)) {
                             SegmentedSwitcher(listOf(0 to "For You", 1 to "Library"), 0, {},
@@ -56,6 +59,9 @@ class FloatingGlassControlTest {
         val thumb = compose.onNodeWithTag("segment-thumb", true)
         fun height() = thumb.getUnclippedBoundsInRoot().let { (it.bottom - it.top).value }
         tabs.performTouchInput { down(Offset(width / 4f, centerY)) }
+        // Deliver the state update before advancing the animation clock, so
+        // this interval measures the spring rather than composition startup.
+        compose.runOnIdle { }
         fun advance(ms: Int) {
             repeat(ms / 16) {
                 compose.mainClock.advanceTimeByFrame()
@@ -67,19 +73,19 @@ class FloatingGlassControlTest {
         assertTrue("the lens must still be rising at 160ms, not pop to full size: $rising", rising > 40f && rising < 49.5f)
         advance(800)
         // Native segmented picker grows by 16pt from its resting seat.
-        assertEquals(50f, height(), 1f)
+        assertEquals(44f, height(), 1f)
         tabs.performTouchInput { up() }
         advance(80)
         val lowering = height()
-        assertTrue("release must lower continuously rather than freeze at full height: $lowering", lowering > 34f && lowering < 49f)
+        assertTrue("release must lower continuously rather than freeze at full height: $lowering", lowering > 28f && lowering < 43f)
         advance(1504)
-        assertEquals(34f, height(), 1f)
+        assertEquals(28f, height(), 1f)
     }
 
     @Test fun heldTabOverflowsBothTrackEdgesAndKeepsItsCenter() {
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass) {
                     GlassHost {
                         Box(Modifier.padding(40.dp)) {
                             SegmentedSwitcher(
@@ -97,7 +103,7 @@ class FloatingGlassControlTest {
         val resting = thumb.getUnclippedBoundsInRoot()
         tabs.performTouchInput { down(Offset(width / 4f, centerY)) }
         compose.waitForIdle()
-        val track = tabs.getUnclippedBoundsInRoot()
+        val track = compose.onNodeWithTag("segment-track", useUnmergedTree = true).getUnclippedBoundsInRoot()
         val held = thumb.getUnclippedBoundsInRoot()
         assertTrue("held glass must extend above track: $held / $track", held.top < track.top)
         assertTrue("held glass must extend below track: $held / $track", held.bottom > track.bottom)
@@ -106,11 +112,21 @@ class FloatingGlassControlTest {
         tabs.performTouchInput { up() }
     }
 
-    @Test fun precisionSliderHasSmallColoredVerticalThumb() {
-        assertTrue("precision thumb must be small", GlassSliderThumbMetrics.RESTING_WIDTH <= 20f)
-        assertTrue("thumb must be circular or vertical", GlassSliderThumbMetrics.RESTING_HEIGHT >= GlassSliderThumbMetrics.RESTING_WIDTH)
-        val color = GlassSliderThumbMetrics.restingColor(Color(0xFF267BEF))
-        assertTrue("thumb must retain visible color instead of whitening it away", color.blue - color.red > .3f)
+    @Test fun rangeSliderUsesTheSameOvalAsSingleAtThreeQuarterScale() {
+        assertEquals(37f, GlassSliderThumbMetrics.width(range = false), 0f)
+        assertEquals(24f, GlassSliderThumbMetrics.height(range = false), 0f)
+        assertEquals(27.75f, GlassSliderThumbMetrics.width(range = true), 0f)
+        assertEquals(18f, GlassSliderThumbMetrics.height(range = true), 0f)
+        assertEquals(.75f, GlassSliderThumbMetrics.RANGE_SCALE, 0f)
+        assertEquals(
+            GlassSliderThumbMetrics.width(false) / GlassSliderThumbMetrics.height(false),
+            GlassSliderThumbMetrics.width(true) / GlassSliderThumbMetrics.height(true),
+            .00001f,
+        )
+        assertEquals(1.55f, GlassSliderThumbMetrics.LIFT_SCALE, 0f)
+        assertEquals(8f, GlassSliderThumbMetrics.TRACK_HEIGHT, 0f)
+        assertEquals(2f, GlassSliderThumbMetrics.TICK_DIAMETER, 0f)
+        assertTrue(GlassSliderThumbMetrics.TOUCH_HEIGHT >= 48f)
     }
 
     @Test fun tabTicksWhenDraggingAcrossSelectionBoundaries() {
@@ -126,7 +142,7 @@ class FloatingGlassControlTest {
                 }
             }
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass, LocalView provides feedbackView) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass, LocalView provides feedbackView) {
                     GlassHost {
                         SegmentedSwitcher(listOf(0 to "One", 1 to "Two", 2 to "Three"), 0, {},
                             Modifier.width(300.dp).testTag("tabs"))

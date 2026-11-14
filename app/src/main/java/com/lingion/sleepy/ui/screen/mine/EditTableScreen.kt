@@ -1,7 +1,5 @@
 package com.lingion.sleepy.ui.screen.mine
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,7 +17,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.ExpandMore
 import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
 import androidx.compose.material3.ButtonDefaults
@@ -31,6 +28,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,13 +41,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.ui.component.SettingsLayout
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
+import com.lingion.sleepy.ui.component.AccordionHeader
+import com.lingion.sleepy.ui.component.AccordionContent
 import androidx.compose.foundation.layout.PaddingValues
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.SmartPeriodConfig
@@ -59,11 +61,9 @@ import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.PeriodTableOption as TimeSlotEditorPeriodTableOption
 import com.lingion.sleepy.ui.component.TimeSlotEditor
-import com.lingion.sleepy.ui.component.sleepyExpandSpecs
 import com.lingion.sleepy.ui.screen.schedule.SchedulePolicy
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
-import com.lingion.sleepy.ui.theme.noRippleClickable
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -80,6 +80,8 @@ fun EditTableScreen(
     onSaved: () -> Unit,
     onDeleted: () -> Unit,
     onOpenHoliday: (Long) -> Unit = {},
+    onSaveStarted: () -> Boolean = { true },
+    onSaveJob: (kotlinx.coroutines.Job) -> Unit = {},
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -91,9 +93,17 @@ fun EditTableScreen(
     val validationErrorMessage = stringResource(R.string.edit_table_validation_error)
 
     // tableId == null means edit current table
-    val table = if (tableId != null) state.tables.find { it.id == tableId } else state.currentTable
+    val liveTable = if (tableId != null) state.tables.find { it.id == tableId } else state.currentTable
+    var lastTable by remember(tableId) { mutableStateOf<TimeTableEntity?>(null) }
+    SideEffect { liveTable?.let { lastTable = it } }
+    // Deletion can publish before the return animation; keep the pending editor intact.
+    val table = liveTable ?: lastTable.takeIf { pendingNewTableId != null }
 
     if (table == null) {
+        if (pendingNewTableId != null) {
+            com.lingion.sleepy.ui.nav.EditorInitializingPage(R.string.edit_table_title, onDiscardPending)
+            return
+        }
         Scaffold(containerColor = colors.background) { padding ->
             Column(
                 modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp),
@@ -102,6 +112,18 @@ fun EditTableScreen(
                 Text(stringResource(R.string.edit_table_not_found), color = colors.onBackground)
             }
         }
+        return
+    }
+
+    val editorContent by remember(table.id) {
+        viewModel.observeTableEditorContent(table.id)
+    }.collectAsState()
+    val loadedContent = editorContent?.takeIf { it.tableId == table.id }
+    if (loadedContent == null) {
+        com.lingion.sleepy.ui.nav.EditorInitializingPage(
+            R.string.edit_table_title,
+            if (pendingNewTableId != null) onDiscardPending else onBack,
+        )
         return
     }
 
@@ -133,7 +155,9 @@ fun EditTableScreen(
     // A child-page round trip belongs to the same editing session.
     var editSessionStarted by rememberSaveable(table.id) { mutableStateOf(false) }
     val editState = remember(table.id) {
-        val original = state.effectivePeriodTable?.takeIf { table.periodTableId != null }
+        // The editor can target a different table from the one selected on the home screen.
+        // Wait for that table's own data before taking the session's immutable baseline.
+        val original = loadedContent.effectivePeriodTable
         if (editSessionStarted) {
             viewModel.editStateFor(table.id, original)
         } else {
@@ -148,7 +172,7 @@ fun EditTableScreen(
     // 未绑定时行为不变(编辑本表兼容列)。
     // 换绑修复: 有效表跟随 pendingBind(用户在下拉里改选时立即切换编辑区来源),
     // 否则已绑定的表 effectivePeriodTable 恒非空, 保存永远走"写回旧表"分支, 换绑成死代码。
-    val effectivePeriodTable = state.effectivePeriodTable?.takeIf {
+    val effectivePeriodTable = loadedContent.effectivePeriodTable?.takeIf {
         pendingBind != null && it.id == pendingBind
     } ?: allPeriodTables.find { it.id == pendingBind }
     // 2b(用户 2026-10-05): 草稿载体三入口统一 — 未绑定课表用本表兼容列合成载体,
@@ -190,8 +214,14 @@ fun EditTableScreen(
 
     val fieldColors = SleepyTheme.fieldColors()
 
+    var saving by remember { mutableStateOf(false) }
+    val beginSave = {
+        if (!saving && onSaveStarted()) { saving = true; true } else false
+    }
     val handleBack = {
-        if (pendingNewTableId != null) onDiscardPending() else onBack()
+        if (!saving) {
+            if (pendingNewTableId != null) onDiscardPending() else onBack()
+        }
     }
 
     Scaffold(
@@ -266,13 +296,9 @@ fun EditTableScreen(
                         .clip(SleepyTheme.shapes.extraLarge)
                         .background(colors.surfaceContainer)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .noRippleClickable { timeSlotsExpanded = !timeSlotsExpanded }
-                            .padding(16.dp),
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                    AccordionHeader(
+                        expanded = timeSlotsExpanded,
+                        onToggle = { timeSlotsExpanded = !timeSlotsExpanded },
                     ) {
                         Column {
                             Text(
@@ -281,32 +307,15 @@ fun EditTableScreen(
                                 color = colors.onSurface
                             )
                             Text(
-                            text = stringResource(R.string.n_periods, slotRows.size) + " · " + if (timeSlotsExpanded) stringResource(R.string.collapse) else stringResource(R.string.expand),
+                                text = stringResource(R.string.n_periods, slotRows.size) + " · " +
+                                    if (timeSlotsExpanded) stringResource(R.string.collapse) else stringResource(R.string.expand),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = colors.onSurfaceVariant
                             )
                         }
-                        // MD3E (Task 7a): chevron 旋转走 defaultSpatial (收稳不弹, 与展开家族同拍)
-                        val slotsArrowRotation by animateFloatAsState(
-                            targetValue = if (timeSlotsExpanded) 180f else 0f,
-                            animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>(),
-                            label = "time-slots-arrow"
-                        )
-                        Icon(
-                            Icons.Outlined.ExpandMore,
-                            contentDescription = null,
-                            tint = colors.onSurfaceVariant,
-                            modifier = Modifier.rotate(slotsArrowRotation)
-                        )
                     }
 
-                    // MD3E (Task 7a): 展开家族 — 尺寸 fastSpatial + 淡入淡出 motionScheme
-                    val expandSpecs = sleepyExpandSpecs()
-                    AnimatedVisibility(
-                        visible = timeSlotsExpanded,
-                        enter = expandSpecs.enter,
-                        exit = expandSpecs.exit,
-                    ) {
+                    AccordionContent(expanded = timeSlotsExpanded) {
                         Column(
                             modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                         ) {
@@ -461,6 +470,7 @@ fun EditTableScreen(
                                 return@Button
                             }
                             if (policyForSave != SchedulePolicy.NONE) {
+                                if (!beginSave()) return@Button
                                 viewModel.executePolicyAndSave(
                                     tableId = table.id,
                                     editedTable = updated,
@@ -468,15 +478,16 @@ fun EditTableScreen(
                                     smartConfigJson = smartConfigJson,
                                     nodesPerDay = slotRows.size.coerceAtLeast(1),
                                     onFinish = onSaved
-                                )
+                                )?.let(onSaveJob)
                                 return@Button
                             }
                         }
+                        if (!beginSave()) return@Button
                         scope.launch {
                             if (bindChanged) {
                                 // 解绑: 元数据+时间域(解绑后兼容列是真值)+periodTableId=null,
                                 // 单事务原子完成 — 课程行零改动(issue#40 §5.3)
-                                viewModel.updateTableMetadataAndBind(updated, null)
+                                viewModel.updateTableMetadataAndBind(updated, null).also(onSaveJob).join()
                             } else if (effectivePeriodTable != null) {
                                 // 未改作息时保留元数据 + 共享作息表的单事务原子双写。
                                 // 改了作息的路径已在上面的三选项闸门处理; 走到这里的
@@ -488,15 +499,16 @@ fun EditTableScreen(
                                         smartConfigJson = smartConfigJson,
                                         nodesPerDay = slotRows.size.coerceAtLeast(1)
                                     )
-                                )
+                                ).also(onSaveJob).join()
                             } else {
                                 // issue#28 P3: timeJson 变了课程节次必须自适应(16→12 节后
                                 // 课程不能再停在 13-16 节)
-                                viewModel.updateTableRemappingCourses(updated)
+                                viewModel.updateTableRemappingCourses(updated).also(onSaveJob).join()
                             }
                             onSaved()
                         }
                     },
+                    enabled = !saving,
                     modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
                     shape = SleepyTheme.Buttons.shape
                 ) {
@@ -529,9 +541,25 @@ fun EditTableScreen(
     }
 
     if (showDeleteConfirm) {
+        val nativeDialogActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
+        val actions: @Composable () -> Unit = {
+            com.lingion.sleepy.ui.component.DialogActionButtons(
+                confirmText = stringResource(R.string.delete),
+                onConfirm = {
+                    showDeleteConfirm = false
+                    scope.launch {
+                        viewModel.deleteTable(table.id)
+                        onDeleted()
+                    }
+                },
+                dismissText = stringResource(R.string.cancel),
+                onDismiss = { showDeleteConfirm = false },
+                destructive = true
+            )
+        }
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
-            confirmButton = {},
+            confirmButton = { if (nativeDialogActions) actions() },
             // 防呆: 删表=连带删全部课程, 明示数量让用户知道要失去多少数据
             // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 统一色块按钮行
             title = { Text(stringResource(R.string.edit_table_delete_confirm), color = colors.onSurface) },
@@ -539,27 +567,17 @@ fun EditTableScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         stringResource(
-                            if (state.courses.isNotEmpty()) R.string.edit_table_delete_msg_count
+                            if (loadedContent.courseCount > 0) R.string.edit_table_delete_msg_count
                             else R.string.edit_table_delete_msg,
                             table.name,
-                            state.courses.size
+                            loadedContent.courseCount
                         ),
                         color = colors.onSurfaceVariant
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    com.lingion.sleepy.ui.component.DialogActionButtons(
-                        confirmText = stringResource(R.string.delete),
-                        onConfirm = {
-                            showDeleteConfirm = false
-                            scope.launch {
-                                viewModel.deleteTable(table.id)
-                                onDeleted()
-                            }
-                        },
-                        dismissText = stringResource(R.string.cancel),
-                        onDismiss = { showDeleteConfirm = false },
-                        destructive = true
-                    )
+                    if (!nativeDialogActions) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        actions()
+                    }
                 }
             }
         )
@@ -568,6 +586,30 @@ fun EditTableScreen(
     // issue#40 §5.3: 换绑确认 — 换绑后本课表按新节次表解释节次时间, 自定义时间课程不受影响
     if (pendingRebind != null) {
         val targetId = pendingRebind
+        val nativeDialogActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
+        val actions: @Composable () -> Unit = {
+            com.lingion.sleepy.ui.component.DialogActionButtons(
+                confirmText = stringResource(R.string.period_table_preview_confirm),
+                onConfirm = confirm@{
+                    if (!beginSave()) return@confirm
+                    pendingRebind = null
+                    val metadata = pendingRebindTable
+                    val periodContent = pendingRebindPeriod
+                    pendingRebindTable = null
+                    pendingRebindPeriod = null
+                    scope.launch {
+                        if (metadata != null) {
+                            viewModel.updateTableMetadataAndBind(metadata, targetId, periodContent).also(onSaveJob).join()
+                        } else {
+                            viewModel.bindPeriodTable(table.id, targetId)
+                        }
+                        onSaved()
+                    }
+                },
+                dismissText = stringResource(R.string.cancel),
+                onDismiss = { pendingRebind = null }
+            )
+        }
         AlertDialog(
             onDismissRequest = { pendingRebind = null },
             title = { Text(stringResource(R.string.period_table_bind_preview_title), color = colors.onSurface) },
@@ -577,30 +619,13 @@ fun EditTableScreen(
                         text = stringResource(R.string.period_table_bind_preview_body),
                         color = colors.onSurfaceVariant
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    com.lingion.sleepy.ui.component.DialogActionButtons(
-                        confirmText = stringResource(R.string.period_table_preview_confirm),
-                        onConfirm = {
-                            pendingRebind = null
-                            val metadata = pendingRebindTable
-                            val periodContent = pendingRebindPeriod
-                            pendingRebindTable = null
-                            pendingRebindPeriod = null
-                            scope.launch {
-                                if (metadata != null) {
-                                    viewModel.updateTableMetadataAndBind(metadata, targetId, periodContent)
-                                } else {
-                                    viewModel.bindPeriodTable(table.id, targetId)
-                                }
-                                onSaved()
-                            }
-                        },
-                        dismissText = stringResource(R.string.cancel),
-                        onDismiss = { pendingRebind = null }
-                    )
+                    if (!nativeDialogActions) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        actions()
+                    }
                 }
             },
-            confirmButton = {},
+            confirmButton = { if (nativeDialogActions) actions() },
             dismissButton = {}
         )
     }

@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component
 
+import com.lingion.sleepy.ui.component.liquidglass.LocalDockInputTimeNanos
 import android.graphics.Bitmap
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,7 +39,7 @@ class SettingsLayoutTest {
 
     private fun page(width: Int = 360, scale: Float = 1f, dark: Boolean = false, content: @Composable () -> Unit) {
         compose.setContent {
-            CompositionLocalProvider(LocalDensity provides Density(LocalDensity.current.density, scale)) {
+            CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalDensity provides Density(LocalDensity.current.density, scale)) {
                 SleepyThemeProvider(darkTheme = dark, themeKey = "default") {
                     Surface(Modifier.width(width.dp).testTag("settings-sample")) { content() }
                 }

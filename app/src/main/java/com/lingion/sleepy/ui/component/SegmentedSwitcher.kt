@@ -22,10 +22,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
@@ -55,11 +55,14 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
@@ -70,17 +73,16 @@ import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.UiStyle
-import com.lingion.sleepy.ui.component.liquidglass.rememberGlassControlMotion
+import com.lingion.sleepy.ui.component.liquidglass.rememberTimedGlassControlMotion
+import com.lingion.sleepy.ui.component.liquidglass.LocalDockInputTimeNanos
 import com.lingion.sleepy.ui.component.liquidglass.GlassControlMotionSpec
 import com.lingion.sleepy.ui.component.liquidglass.glassLensWidth
-import com.lingion.sleepy.ui.component.liquidglass.glassLensHeight
-import com.lingion.sleepy.ui.component.liquidglass.LocalGlassDepth
+import com.lingion.sleepy.ui.component.liquidglass.nativeSegmentedDragPosition
 import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
-import com.lingion.sleepy.ui.component.liquidglass.LocalGlassOverlay
-import com.lingion.sleepy.ui.component.liquidglass.LocalGlassOverlaySamplingHost
 import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassStyle
 import com.lingion.sleepy.ui.component.liquidglass.liquidGlass
 import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassHaptics
+import com.lingion.sleepy.ui.component.liquidglass.rememberGlassSamplingBackdrop
 import androidx.compose.ui.zIndex
 import kotlin.math.roundToInt
 
@@ -114,6 +116,8 @@ data class SegmentOption<T>(
     val badge: String? = null
 )
 
+private class SegmentInputState(var selected: Int)
+
 @JvmName("SegmentedSwitcherPairs")
 @Composable
 fun <T> SegmentedSwitcher(
@@ -125,6 +129,7 @@ fun <T> SegmentedSwitcher(
     // ui-ops 语义定位前缀：非空时每个可点击段注册 dbgTag("<prefix>#<index>")，
     // find/action 可按段号或 label 文本命中；默认 null 不打标，行为与旧版一致。
     dbgTagPrefix: String? = null,
+    occupiedHeight: Dp? = null,
 ) {
     SegmentedSwitcher(
         options = options.map { SegmentOption(it.first, it.second) },
@@ -133,6 +138,7 @@ fun <T> SegmentedSwitcher(
         modifier = modifier,
         containerColor = containerColor,
         dbgTagPrefix = dbgTagPrefix,
+        occupiedHeight = occupiedHeight,
     )
 }
 
@@ -145,6 +151,8 @@ fun <T> SegmentedSwitcher(
     modifier: Modifier = Modifier,
     containerColor: Color? = null,
     dbgTagPrefix: String? = null,
+    // Home may opt into its compact track height; other screens keep 48dp seats.
+    occupiedHeight: Dp? = null,
 ) {
     val colors = MaterialTheme.colorScheme
     val selectionColors = colors.selectionColors()
@@ -156,22 +164,34 @@ fun <T> SegmentedSwitcher(
     val glassActive = LocalUiStyle.current == UiStyle.LiquidGlass && glassHost != null
     val thumbX = remember { Animatable(selectedIndex.toFloat()) }
     var classicPosition by remember { mutableFloatStateOf(selectedIndex.toFloat()) }
-    var gesturePosition by remember { mutableFloatStateOf(selectedIndex.toFloat()) }
-    var dragging by remember { mutableStateOf(false) }
-    var pressing by remember { mutableStateOf(false) }
-    var tapGeneration by remember { mutableIntStateOf(0) }
-    val motion = rememberGlassControlMotion(
-        if (dragging) gesturePosition else selectedIndex.toFloat(), pressing || dragging,
-        dragging, tapGeneration, glassActive,
+    val density = LocalDensity.current
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    var trackWidthPx by remember { mutableIntStateOf(0) }
+    val inputTimeNanos by rememberUpdatedState(LocalDockInputTimeNanos.current)
+    val driver = rememberTimedGlassControlMotion(
+        selectedIndex.toFloat(), glassActive,
         spec = GlassControlMotionSpec.NativeSegmented,
+        travelDistanceDp = trackWidthPx / density.density / count * if (isRtl) -1f else 1f,
     )
+    val motion = driver.motion
     val thumbPosition = if (glassActive) motion.position.value else classicPosition
     val thumbLift = if (glassActive) motion.lift else 0f
     val geometryLift = if (glassActive) motion.geometryLift else 0f
-    val thumbStretch = if (glassActive) motion.stretch * .5f else 0f
+    val thumbStretch = if (glassActive) motion.stretch else 0f
+    val thumbStretchY = if (glassActive) motion.stretchY else 0f
     val currentOnSelect by rememberUpdatedState(onSelect)
-    val currentSelectedIndex by rememberUpdatedState(selectedIndex)
-    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    // Input can reverse before the parent has recomposed. Confirm the latest
+    // request against the controlled value on the next composition.
+    val inputState = remember { SegmentInputState(selectedIndex) }
+    SideEffect { inputState.selected = selectedIndex }
+    fun select(index: Int) {
+        if (glassActive) {
+            if (driver.select(index.toFloat(), inputTimeNanos())) currentOnSelect(options[index].value)
+        } else if (index != inputState.selected) {
+            inputState.selected = index
+            currentOnSelect(options[index].value)
+        }
+    }
     LaunchedEffect(selectedIndex, glassActive) {
         if (!glassActive) {
             thumbX.animateTo(selectedIndex.toFloat(), SleepyThumbSpring) { classicPosition = value }
@@ -183,11 +203,8 @@ fun <T> SegmentedSwitcher(
     val charRectsCache = remember { mutableMapOf<Int, List<Rect>>() }
 
     // 轨道像素宽(padding 后的可用宽) — thumb 像素位置与字符覆盖率共同的真值
-    val density = LocalDensity.current
-    var trackWidthPx by remember { mutableIntStateOf(0) }
 
-    val samplingHost = if (LocalGlassOverlay.current) LocalGlassOverlaySamplingHost.current ?: glassHost else glassHost
-    val scene = if (LocalGlassOverlay.current) samplingHost?.overlayBackdrop else samplingHost?.backdropAt(LocalGlassDepth.current)
+    val scene = rememberGlassSamplingBackdrop()
     // Only the ordinary sibling backing is recorded. It never contains this lens.
     val trackBackdrop = rememberLayerBackdrop()
     // Native UISegmentLabel keeps its 1× transform while the lens locally refracts
@@ -201,33 +218,75 @@ fun <T> SegmentedSwitcher(
     val contentStyle = LiquidGlassStyle.controlLensContent(colors, dark).scale(thumbLift.toDouble())
     val trackShape = if (glassActive) RoundedCornerShape(50) else RoundedCornerShape(14.dp)
     val restingShape = if (glassActive) RoundedCornerShape(50) else RoundedCornerShape(12.dp)
+    val verticalInset = if (glassActive) 2.dp else 4.dp
+    val labelStyle = MaterialTheme.typography.labelLarge
+    val badgeStyle = MaterialTheme.typography.labelSmall.copy(
+        fontSize = 9.sp,
+        lineHeight = 11.sp,
+        fontWeight = FontWeight.Bold,
+    )
+    val textMeasurer = rememberTextMeasurer()
+    val requiredLabelHeightPx = remember(
+        glassActive, options, selectedIndex, labelStyle, badgeStyle, textMeasurer, density, trackWidthPx,
+    ) {
+        if (!glassActive) 0 else options.mapIndexed { index, option ->
+            val pitch = if (trackWidthPx > 0) trackWidthPx / count else Constraints.Infinity
+            val badgeGap = if (option.badge != null) with(density) { 4.dp.roundToPx() } else 0
+            val badgePadding = with(density) { 4.dp.roundToPx() * 2 }
+            val badge = option.badge?.let {
+                textMeasurer.measure(
+                    text = AnnotatedString(it), style = badgeStyle,
+                    constraints = Constraints(maxWidth = if (pitch == Constraints.Infinity) pitch else (pitch - badgeGap - badgePadding).coerceAtLeast(0)),
+                )
+            }
+            val labelWidth = if (pitch == Constraints.Infinity) pitch
+                else (pitch - badgeGap - (badge?.size?.width?.plus(badgePadding) ?: 0)).coerceAtLeast(0)
+            val labelHeight = textMeasurer.measure(
+                text = AnnotatedString(option.label),
+                style = labelStyle.copy(fontWeight = if (index == selectedIndex) FontWeight.SemiBold else FontWeight.Medium),
+                constraints = Constraints(maxWidth = labelWidth),
+            ).size.height
+            val badgeHeight = badge?.size?.height?.plus(with(density) { 1.dp.roundToPx() * 2 }) ?: 0
+            maxOf(labelHeight, badgeHeight)
+        }.maxOrNull() ?: 0
+    }
+    // Keep the measured 32 pt / 28 pt geometry at ordinary font sizes. Larger
+    // text expands the actual track and both lens passes together.
+    val visualHeight = if (glassActive) maxOf(32.dp, with(density) { (requiredLabelHeightPx + verticalInset.roundToPx() * 2).toDp() })
+        else 42.dp
+    // Native seats span the whole track. Each resting lens is inset 2 pt
+    // inside its own seat; an outer 4 pt inset shifts the end seats inward.
+    val horizontalInset = if (glassActive) 0.dp else 4.dp
+    val lensInset = if (glassActive) 2.dp else 0.dp
 
     Box(
         modifier = modifier
-            .height(42.dp)
+            .height(if (glassActive) maxOf(occupiedHeight ?: 48.dp, visualHeight) else 42.dp)
             .zIndex(if (glassActive && thumbLift > 0f) 1f else 0f)
             .onGloballyPositioned { coords ->
-                // coords 是含 padding 的外区; 轨道宽 = 外区宽 - 左右 4dp padding
-                trackWidthPx = (coords.size.width - with(density) { 8.dp.toPx() }).toInt().coerceAtLeast(0)
+                trackWidthPx = (coords.size.width - with(density) { horizontalInset.toPx() * 2 }).toInt().coerceAtLeast(0)
             }
             .selectableGroup()
-            .glassGestureOwnership(count > 1)
-            .pointerInput(options, isRtl, trackWidthPx, glassActive) {
+            .glassGestureOwnership(glassActive && count > 1)
+            .pointerInput(options, isRtl, trackWidthPx, glassActive, driver) {
                 // Classic 模式完全走原有 selectable 点击路径，不安装自定义拖动接管器。
                 if (!glassActive) return@pointerInput
                 if (count < 2 || trackWidthPx <= 0) return@pointerInput
                 val segmentWidth = trackWidthPx.toFloat() / count
                 val direction = if (isRtl) -1f else 1f
-                try {
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-                    down.consume()
-                    // 按下瞬间即升镜 (2026-11-06 用户: 手按压瞬间浮起透射, 不等 slop,
-                    // 落点是否在高亮块上也升 — 点其它段后滑块弹簧过去的全程戴镜片, 同 Toggle)。
-                    pressing = true
+                    val downReceipt = inputTimeNanos()
                     // Input follows the current selection, even while its lens is travelling.
-                    val start = currentSelectedIndex.toFloat()
-                    gesturePosition = start
+                    val start = driver.requestedPosition
+                    var gesturePosition = start
+                    var dragging = false
+                    val logicalX = (if (isRtl) size.width - down.position.x else down.position.x) - horizontalInset.toPx()
+                    val onThumb = logicalX in start * segmentWidth..(start + 1f) * segmentWidth
+                    val epoch = driver.begin(onThumb, dragging = false,
+                        receivedNanos = downReceipt, sampleUptimeMillis = down.uptimeMillis)
+                        ?: return@awaitEachGesture
+                    down.consume()
                     var lastHapticIndex = gesturePosition.roundToInt()
                     fun tickIfChanged() {
                         val index = gesturePosition.roundToInt()
@@ -237,43 +296,50 @@ fun <T> SegmentedSwitcher(
                         }
                     }
                     LiquidGlassHaptics.selectionClick(view)
-                    val logicalX = (if (isRtl) size.width - down.position.x else down.position.x) - 4.dp.toPx()
+                    // Native iOS 26.5: holding an unselected B leaves A at rest.
+                    // B's selection pulse starts only when the valid touch is released.
+                    var released = false
+                    var cancelReceipt: Long? = null
+                    var cancelSample: Long? = null
                     try {
-                        val onThumb = logicalX in start * segmentWidth..(start + 1f) * segmentWidth
                         var moved = false
                         while (true) {
                             val event = awaitPointerEvent(PointerEventPass.Initial)
-                            val pointer = event.changes.firstOrNull { it.id == down.id } ?: break
+                            val receivedNanos = inputTimeNanos()
+                            val pointer = event.changes.firstOrNull { it.id == down.id }
+                            cancelReceipt = receivedNanos
+                            cancelSample = pointer?.uptimeMillis
+                            if (pointer == null || !driver.isCurrent(epoch)) break
                             if (!pointer.pressed) {
                                 if (pointer.isConsumed || (!onThumb && moved)) break
                                 pointer.consume()
                                 val target = if (dragging) gesturePosition.roundToInt()
                                     else (logicalX / segmentWidth).toInt()
                                 val index = target.coerceIn(0, count - 1)
-                                if (index != currentSelectedIndex) currentOnSelect(options[index].value)
+                                val changed = index.toFloat() != driver.requestedPosition
+                                released = driver.release(epoch, index.toFloat(), changed, receivedNanos, pointer.uptimeMillis)
+                                if (released && changed) currentOnSelect(options[index].value)
                                 break
                             }
                             val dx = pointer.position.x - down.position.x
                             if ((pointer.position - down.position).getDistance() > viewConfiguration.touchSlop) moved = true
                             if (onThumb && kotlin.math.abs(dx) > viewConfiguration.touchSlop) dragging = true
-                            if (dragging) {
-                                gesturePosition = (start + dx * direction / segmentWidth)
+                            val lensPosition = if (dragging) {
+                                val rawLogicalIndex = start + dx * direction / segmentWidth
+                                gesturePosition = rawLogicalIndex
                                     .coerceIn(0f, (count - 1).toFloat())
                                 tickIfChanged()
-                            }
+                                nativeSegmentedDragPosition(rawLogicalIndex, count, segmentWidth / density.density)
+                            } else gesturePosition
+                            driver.move(epoch, lensPosition, dragging,
+                                receivedNanos = receivedNanos, sampleUptimeMillis = pointer.uptimeMillis)
                             pointer.consume()
+                            cancelReceipt = null
+                            cancelSample = null
                         }
                     } finally {
-                        pressing = false
-                        dragging = false
+                        if (!released) driver.cancel(epoch, cancelReceipt ?: inputTimeNanos(), cancelSample)
                     }
-                    // Native segmented lenses can contract before reaching held size.
-                    tapGeneration++
-                }
-                } finally {
-                    // pointerInput 重启或离开组合时也必须收回镜片。
-                    pressing = false
-                    dragging = false
                 }
             }
     ) {
@@ -300,18 +366,19 @@ fun <T> SegmentedSwitcher(
                 Layout(content = {
                     // Track source contains only the ordinary platter, never glyphs or lenses.
                     Layout(
-                        modifier = Modifier.layerBackdrop(trackBackdrop)
+                        modifier = Modifier.testTag("segment-track").layerBackdrop(trackBackdrop)
                             .background(containerColor ?: if (glassActive) colors.onSurface.copy(alpha = .045f) else colors.surfaceContainer, trackShape)
-                            .padding(4.dp),
+                            .padding(horizontal = horizontalInset, vertical = verticalInset),
                         content = {
                             Box(Modifier.background(selectionColors.selectedContainer
                                 .copy(alpha = if (glassActive) 1f - thumbLift else 1f), restingShape))
                         },
                     ) { children, constraints ->
                         val pitch = constraints.maxWidth.toFloat() / count
-                        val pill = children.single().measure(Constraints.fixed(pitch.toInt(), constraints.maxHeight))
+                        val inset = with(density) { lensInset.toPx() }
+                        val pill = children.single().measure(Constraints.fixed((pitch - inset * 2).roundToInt().coerceAtLeast(0), constraints.maxHeight))
                         layout(constraints.maxWidth, constraints.maxHeight) {
-                            val x = thumbPosition * pitch
+                            val x = thumbPosition * pitch + (pitch - pill.width) / 2f
                             pill.placeRelativeWithLayer(x.toInt(), 0) {
                                 translationX = (x - x.toInt()) * if (isRtl) -1f else 1f
                             }
@@ -326,7 +393,7 @@ fun <T> SegmentedSwitcher(
                                         role = Role.Tab,
                                         interactionSource = remember { MutableInteractionSource() },
                                         indication = null,
-                                        onClick = { if (index != selectedIndex) onSelect(option.value) },
+                                        onClick = { select(index) },
                                     )
                                     .then(
                                         dbgTagPrefix?.let {
@@ -338,11 +405,11 @@ fun <T> SegmentedSwitcher(
                     Layout(
                         modifier = Modifier.drawWithContent {
                             if (glassActive && thumbLift > 0f) {
-                                val padding = 4.dp.toPx()
+                                val padding = horizontalInset.toPx()
                                 val pitch = (size.width - 2 * padding) / count
-                                val width = glassLensWidth(pitch + 24.dp.toPx() * geometryLift, thumbStretch).roundToInt().toFloat()
-                                val height = glassLensHeight(size.height - 2 * padding + 16.dp.toPx() * geometryLift, thumbStretch,
-                                    minimum = size.height - 2 * padding + 14.dp.toPx() * geometryLift).roundToInt().toFloat()
+                                val width = glassLensWidth(pitch - lensInset.toPx() * 2 + 24.dp.toPx() * geometryLift, thumbStretch).roundToInt().coerceAtLeast(0).toFloat()
+                                val restingHeight = size.height - 2 * verticalInset.roundToPx()
+                                val height = ((restingHeight + 16.dp.toPx() * geometryLift) * (1f + thumbStretchY)).roundToInt().coerceAtLeast(0).toFloat()
                                 val logical = padding + thumbPosition * pitch + (pitch - width) / 2
                                 val left = if (isRtl) size.width - logical - width else logical
                                 val top = (size.height - height) / 2
@@ -353,7 +420,7 @@ fun <T> SegmentedSwitcher(
                                 // records full glyphs on its own canvas for the content lens.
                                 clipPath(outline, ClipOp.Difference) { this@drawWithContent.drawContent() }
                             } else drawContent()
-                        }.layerBackdrop(labelBackdrop).padding(4.dp),
+                        }.layerBackdrop(labelBackdrop).padding(horizontal = horizontalInset, vertical = verticalInset),
                         content = {
                         options.forEachIndexed { index, option ->
                             val isSelected = index == selectedIndex
@@ -363,11 +430,12 @@ fun <T> SegmentedSwitcher(
                             ) {
                                 Text(
                                     text = option.label,
+                                    modifier = if (glassActive && option.badge != null) Modifier.weight(1f, fill = false) else Modifier,
                                     onTextLayout = { result ->
                                         // 字形只在文本/字重变化时重排, 缓存结果避免每帧重算字符矩形
                                         charRectsCache[index] = result.charRects()
                                     },
-                                    style = MaterialTheme.typography.labelLarge.copy(
+                                    style = labelStyle.copy(
                                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
                                     ),
                                     color = segmentLabelColor(
@@ -385,11 +453,7 @@ fun <T> SegmentedSwitcher(
                                     Spacer(Modifier.width(4.dp))
                                     Text(
                                         text = option.badge,
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontSize = 9.sp,
-                                            lineHeight = 11.sp,
-                                            fontWeight = FontWeight.Bold
-                                        ),
+                                        style = badgeStyle,
                                         color = if (isSelected) selectionColors.accent else selectionColors.unselectedContent,
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(4.dp))
@@ -416,15 +480,17 @@ fun <T> SegmentedSwitcher(
                 }) { children, constraints ->
                     val width = constraints.maxWidth
                     val height = constraints.maxHeight
-                    val padding = with(density) { 4.dp.roundToPx() }
+                    val padding = with(density) { horizontalInset.roundToPx() }
+                    val trackHeight = if (glassActive) with(density) { visualHeight.roundToPx() }.coerceAtMost(height) else height
                     val pitch = (width - padding * 2) / count
-                    val track = children[0].measure(Constraints.fixed(width, height))
-                    val clicks = children.drop(1).take(count).map { it.measure(Constraints.fixed(pitch, height - padding * 2)) }
-                    val labels = children.last().measure(Constraints.fixed(width, height))
+                    val clickHeight = if (glassActive) height else height - padding * 2
+                    val track = children[0].measure(Constraints.fixed(width, trackHeight))
+                    val clicks = children.drop(1).take(count).map { it.measure(Constraints.fixed(pitch, clickHeight)) }
+                    val labels = children.last().measure(Constraints.fixed(width, trackHeight))
                     layout(width, height) {
-                        track.placeRelative(0, 0)
-                        clicks.forEachIndexed { index, click -> click.placeRelative(padding + index * pitch, padding) }
-                        labels.placeRelative(0, 0)
+                        track.placeRelative(0, (height - trackHeight) / 2)
+                        clicks.forEachIndexed { index, click -> click.placeRelative(padding + index * pitch, (height - clickHeight) / 2) }
+                        labels.placeRelative(0, (height - trackHeight) / 2)
                     }
                 }
                 Box(Modifier.then(if (glassActive && thumbLift > 0f) Modifier.drawBackdrop(
@@ -439,12 +505,14 @@ fun <T> SegmentedSwitcher(
                 val width = constraints.maxWidth
                 val height = constraints.maxHeight
                 val backing = measurables[1].measure(Constraints.fixed(width, height))
-                val padding = with(density) { 4.dp.toPx() }
+                val padding = with(density) { horizontalInset.toPx() }
+                val restingHeight = if (glassActive) {
+                    with(density) { visualHeight.roundToPx().coerceAtMost(height) - verticalInset.roundToPx() * 2 }.toFloat()
+                } else height - padding * 2
                 val segmentWidth = (width - 2 * padding) / count
                 val lift = geometryLift
-                val lensWidth = glassLensWidth(segmentWidth + with(density) { 24.dp.toPx() } * lift, thumbStretch).roundToInt()
-                val lensHeight = glassLensHeight(height - 2 * padding + with(density) { 16.dp.toPx() } * lift, thumbStretch,
-                    minimum = height - 2 * padding + with(density) { 14.dp.toPx() } * lift).roundToInt()
+                val lensWidth = glassLensWidth(segmentWidth - with(density) { lensInset.toPx() * 2 } + with(density) { 24.dp.toPx() } * lift, thumbStretch).roundToInt().coerceAtLeast(0)
+                val lensHeight = ((restingHeight + with(density) { 16.dp.toPx() } * lift) * (1f + thumbStretchY)).roundToInt().coerceAtLeast(0)
                 val lens = measurables[0].measure(Constraints.fixed(lensWidth, lensHeight))
                 val contentLens = measurables[2].measure(Constraints.fixed(lensWidth, lensHeight))
                 layout(width, height) {

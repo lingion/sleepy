@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
@@ -28,6 +29,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.isPopup
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -55,6 +59,13 @@ import java.io.File
 class GlassDropdownMenuRenderTest {
     @get:Rule val compose = createComposeRule()
     private enum class Carrier { Dropdown, Alert, DatePicker, Language }
+    private val languages = listOf(
+        "zh-CN" to "简体中文",
+        "zh-TW" to "繁體中文",
+        "en" to "English",
+        "ja" to "日本語",
+        "es" to "Español",
+    )
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Test fun popupForegroundRemainsVisibleAndUpdatesAfterEnterTransition() {
@@ -66,7 +77,8 @@ class GlassDropdownMenuRenderTest {
                 CompositionLocalProvider(LocalUiStyle provides style.value) {
                     key(style.value, carrier.value) {
                         GlassHost {
-                            Box(Modifier.size(240.dp)) {
+                            Box((if (carrier.value == Carrier.Language) Modifier.width(300.dp).height(420.dp) else Modifier.size(240.dp))
+                                .testTag("carrier_fixture")) {
                                 when (carrier.value) {
                                     Carrier.Dropdown -> GlassDropdownMenu(true, {}) {
                                         Box(Modifier.size(80.dp).background(foreground.value))
@@ -79,7 +91,7 @@ class GlassDropdownMenuRenderTest {
                                     }
                                     Carrier.Language -> GlassLanguageMenu(
                                         title = "Language", selectedCode = "en",
-                                        languages = listOf("en" to "English", "fr" to "French"), onSelect = {},
+                                        languages = languages, onSelect = {},
                                     )
                                 }
                             }
@@ -96,10 +108,16 @@ class GlassDropdownMenuRenderTest {
                 if (sample == Carrier.Language) compose.onNodeWithTag("general_language_card").performClick()
                 compose.mainClock.advanceTimeBy(600)
                 compose.waitForIdle()
-                val red = captureForeground("$sample-$mode-red", red = true)
+                if (sample == Carrier.Language) {
+                    languages.forEach { (code, _) ->
+                        val option = compose.onNodeWithTag("general_language#$code").assertIsDisplayed()
+                        if (code == "en") option.assertIsSelected() else option.assertIsNotSelected()
+                    }
+                }
+                val red = captureForeground("$sample-$mode-red", red = true, inline = sample == Carrier.Language && mode == UiStyle.Classic)
                 compose.runOnIdle { foreground.value = Color.Green }
                 compose.waitForIdle()
-                val green = captureForeground("$sample-$mode-green", red = false)
+                val green = captureForeground("$sample-$mode-green", red = false, inline = sample == Carrier.Language && mode == UiStyle.Classic)
                 counts["$sample-$mode-red"] = red
                 counts["$sample-$mode-green"] = green
                 val minimum = if (sample == Carrier.Language) 100 else 1000
@@ -155,8 +173,9 @@ class GlassDropdownMenuRenderTest {
         assertTrue("all twenty menu controls must reach the actual popup: classic=$classic liquid=$liquid", liquid >= classic * 0.98f)
     }
 
-    private fun captureForeground(name: String, red: Boolean): Int {
-        val image = compose.onAllNodes(isPopup() or isDialog()).onFirst().captureToImage().asAndroidBitmap()
+    private fun captureForeground(name: String, red: Boolean, inline: Boolean = false): Int {
+        val target = if (inline) compose.onNodeWithTag("carrier_fixture") else compose.onAllNodes(isPopup() or isDialog()).onFirst()
+        val image = target.captureToImage().asAndroidBitmap()
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         File(context.cacheDir, "popup-$name.png").outputStream().use {
             image.compress(Bitmap.CompressFormat.PNG, 100, it)

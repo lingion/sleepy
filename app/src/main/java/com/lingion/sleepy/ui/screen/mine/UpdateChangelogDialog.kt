@@ -27,7 +27,10 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
 import com.lingion.sleepy.console.ui.dbgTag
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.util.MarkdownBlocks
 
 sealed class UpdateUiState {
@@ -49,6 +52,7 @@ fun UpdateChangelogDialog(
     onRetry: (String, String, String) -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
+    val nativeActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
     when (state) {
         is UpdateUiState.UpdateAvailable, is UpdateUiState.Downloading,
         is UpdateUiState.Failed, is UpdateUiState.Installing -> {
@@ -126,30 +130,38 @@ fun UpdateChangelogDialog(
                     }
                 },
                 confirmButton = {
-                    // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 次级动作换 secondary 色块, 保持等高一行
                     when (state) {
                         is UpdateUiState.UpdateAvailable -> {
-                            androidx.compose.foundation.layout.Row(
+                            if (nativeActions) {
+                                com.lingion.sleepy.ui.component.DialogActionButtons(
+                                    confirmText = stringResource(R.string.update_download),
+                                    onConfirm = { onDownload(version, changelog, url) },
+                                    dismissText = stringResource(R.string.update_cancel),
+                                    onDismiss = onDismiss,
+                                    confirmDbgTag = "about_update_download",
+                                    dismissDbgTag = "about_update_cancel",
+                                )
+                            } else androidx.compose.foundation.layout.Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
                             ) {
                                 Button(
                                     onClick = onDismiss,
                                     modifier = Modifier.weight(1f).dbgTag("about_update_cancel", role = "button"),
-                                    shape = SleepyTheme.Buttons.shape,
-                                    colors = ButtonDefaults.buttonColors(
+                                    shape = if (nativeActions) null else SleepyTheme.Buttons.shape,
+                                    colors = if (nativeActions) null else ButtonDefaults.buttonColors(
                                         containerColor = colors.secondaryContainer,
                                         contentColor = colors.onSecondaryContainer
                                     )
                                 ) {
-                                    Text(stringResource(R.string.update_cancel), maxLines = 1)
+                                    Text(stringResource(R.string.update_cancel), maxLines = if (nativeActions) Int.MAX_VALUE else 1)
                                 }
                                 Button(
                                     onClick = { onDownload(version, changelog, url) },
                                     modifier = Modifier.weight(1f).dbgTag("about_update_download", role = "button"),
-                                    shape = SleepyTheme.Buttons.shape
+                                    shape = if (nativeActions) null else SleepyTheme.Buttons.shape
                                 ) {
-                                    Text(stringResource(R.string.update_download), maxLines = 1)
+                                    Text(stringResource(R.string.update_download), maxLines = if (nativeActions) Int.MAX_VALUE else 1)
                                 }
                             }
                         }
@@ -157,37 +169,46 @@ fun UpdateChangelogDialog(
                             Button(
                                 onClick = { onCancelDownload() },
                                 modifier = Modifier.fillMaxWidth().dbgTag("about_update_cancel_download", role = "button"),
-                                shape = SleepyTheme.Buttons.shape,
-                                colors = ButtonDefaults.buttonColors(
+                                shape = if (nativeActions) null else SleepyTheme.Buttons.shape,
+                                colors = if (nativeActions) null else ButtonDefaults.buttonColors(
                                     containerColor = colors.secondaryContainer,
                                     contentColor = colors.onSecondaryContainer
                                 )
                             ) {
-                                Text(stringResource(R.string.update_cancel), maxLines = 1)
+                                Text(stringResource(R.string.update_cancel), maxLines = if (nativeActions) Int.MAX_VALUE else 1)
                             }
                         }
                         is UpdateUiState.Failed -> {
-                            androidx.compose.foundation.layout.Row(
+                            if (nativeActions) {
+                                com.lingion.sleepy.ui.component.DialogActionButtons(
+                                    confirmText = stringResource(R.string.update_retry),
+                                    onConfirm = { onRetry(version, changelog, url) },
+                                    dismissText = stringResource(R.string.update_cancel),
+                                    onDismiss = onDismiss,
+                                    confirmDbgTag = "about_update_retry",
+                                    dismissDbgTag = "about_update_fail_cancel",
+                                )
+                            } else androidx.compose.foundation.layout.Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
                             ) {
                                 Button(
                                     onClick = onDismiss,
                                     modifier = Modifier.weight(1f).dbgTag("about_update_fail_cancel", role = "button"),
-                                    shape = SleepyTheme.Buttons.shape,
-                                    colors = ButtonDefaults.buttonColors(
+                                    shape = if (nativeActions) null else SleepyTheme.Buttons.shape,
+                                    colors = if (nativeActions) null else ButtonDefaults.buttonColors(
                                         containerColor = colors.secondaryContainer,
                                         contentColor = colors.onSecondaryContainer
                                     )
                                 ) {
-                                    Text(stringResource(R.string.update_cancel), maxLines = 1)
+                                    Text(stringResource(R.string.update_cancel), maxLines = if (nativeActions) Int.MAX_VALUE else 1)
                                 }
                                 Button(
                                     onClick = { onRetry(version, changelog, url) },
                                     modifier = Modifier.weight(1f).dbgTag("about_update_retry", role = "button"),
-                                    shape = SleepyTheme.Buttons.shape
+                                    shape = if (nativeActions) null else SleepyTheme.Buttons.shape
                                 ) {
-                                    Text(stringResource(R.string.update_retry), maxLines = 1)
+                                    Text(stringResource(R.string.update_retry), maxLines = if (nativeActions) Int.MAX_VALUE else 1)
                                 }
                             }
                         }

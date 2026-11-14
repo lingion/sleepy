@@ -39,3 +39,6 @@ include(":app")
 
 include(":kyant-backdrop")
 project(":kyant-backdrop").projectDir = file("third-party/kyant-backdrop")
+
+include(":liquid-glass-runtime")
+project(":liquid-glass-runtime").projectDir = file("libraries/liquid-glass/runtime")

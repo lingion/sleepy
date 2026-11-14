@@ -2358,7 +2358,7 @@
       "group": "sources",
       "usage": "Liquid glass shader, optics, geometry, style parameters and navigation dock behavior ported to Kotlin/AGSL.",
       "evidence": [
-        "app/src/main/assets/shaders/liquid_glass.agsl"
+        "libraries/liquid-glass/runtime/src/androidMain/assets/shaders/liquid_glass.agsl"
       ],
       "license": "GPL-3.0",
       "kind": "port",
@@ -2377,7 +2377,7 @@
       "group": "sources",
       "usage": "Rounded superellipse geometry and Dart interpolation semantics ported to Kotlin; engine revision adc901062556672b4138e18a4dc62a4be8f4b3c2.",
       "evidence": [
-        "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse.kt"
+        "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse.kt"
       ],
       "license": "BSD-3-Clause",
       "kind": "port",
@@ -2470,7 +2470,7 @@
       "group": "libraries",
       "usage": "Original HCT color algorithms behind the Material Color Utilities distribution.",
       "evidence": [
-        "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassStyle.kt"
+        "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassStyle.kt"
       ],
       "license": "Apache-2.0",
       "kind": "dependency",

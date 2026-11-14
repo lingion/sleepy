@@ -1,0 +1,262 @@
+{
+  "schemaVersion": 1,
+  "stage": "M2b remaining press and endpoints",
+  "date": "2026-11-14",
+  "status": "verified-build-baseline-and-install",
+  "scope": "Three production sources move to the existing runtime Android target; two independent Endpoint tests move to its standard host tests. Press alpha consumer test stays app. No algorithm, parameter, material, clock or application route change.",
+  "sourceBaseHead": "8dcfb99fe104fff363384dab7d0b7bc2343dca3c",
+  "sourceChanges": [
+    {
+      "old": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/GlassPressMotion.kt",
+      "new": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/GlassPressMotion.kt",
+      "beforeSHA256": "0f9266bb22901772be0b486a656fb9244ef6cb2e00fe0660185fc591c58a598d",
+      "afterSHA256": "2412b20ee20f82039082dfa7165ac9abe8c64a79c4f595336cb3697c20debfdd",
+      "onlyTopLevelInternalRemoved": true,
+      "soleSource": true,
+      "classOwnedByAAR": "com/lingion/sleepy/ui/component/liquidglass/GlassPressMotion.class"
+    },
+    {
+      "old": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/NativeDockEndpoint.kt",
+      "new": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeDockEndpoint.kt",
+      "beforeSHA256": "0a1e232498a1ae6bc8d3aad06922b9857ae984cad0f3b47128aec57b020f47c9",
+      "afterSHA256": "ce0ca9a8da1b3273f423b128da3b0cce29b6b20eba62ccfa0be491e41304351f",
+      "onlyTopLevelInternalRemoved": true,
+      "soleSource": true,
+      "classOwnedByAAR": "com/lingion/sleepy/ui/component/liquidglass/NativeDockEndpointKt.class"
+    },
+    {
+      "old": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/NativeSegmentedEndpoint.kt",
+      "new": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeSegmentedEndpoint.kt",
+      "beforeSHA256": "5681d7ab101c977946661467bebb30723e8c18d4b83874562b8469855cae315f",
+      "afterSHA256": "42e5941f2550735e43c470b001500256f3e55fe45437fb60816d13a3ce1ca607",
+      "onlyTopLevelInternalRemoved": true,
+      "soleSource": true,
+      "classOwnedByAAR": "com/lingion/sleepy/ui/component/liquidglass/NativeSegmentedEndpointKt.class"
+    }
+  ],
+  "testPolicy": "Keep all original assertions and test identities. Endpoint tests move byte-for-byte; GlassPressMotionTest remains byte-for-byte in app because it calls the app alpha helper. No new dependencies, friend paths or duplicate source registrations.",
+  "before": {
+    "command": [
+      "./gradlew",
+      ":app:testDebugUnitTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.GlassPressMotionTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.NativeDockEndpointTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.NativeSegmentedEndpointTest"
+    ],
+    "exitCode": 0,
+    "wallSeconds": 3.526475191116333,
+    "tests": [
+      {
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "class": "com.lingion.sleepy.ui.component.liquidglass.GlassPressMotionTest",
+        "xmlSHA256": "567ec94a58076107b056e79717201c77a8757359ca301b2651cecfc867bd9d7a"
+      },
+      {
+        "tests": 7,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "class": "com.lingion.sleepy.ui.component.liquidglass.NativeDockEndpointTest",
+        "xmlSHA256": "c9ae3af7af1c24897e1ba22799c352486cbec3fc486f2083e9c6c45d39481df8"
+      },
+      {
+        "tests": 7,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "class": "com.lingion.sleepy.ui.component.liquidglass.NativeSegmentedEndpointTest",
+        "xmlSHA256": "b81a1ce21d916672fe08f0cfb466e433f23dc1afc103ecde83cc2986bbcee870"
+      }
+    ],
+    "totals": {
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "sourceHashesStillMatch": true
+  },
+  "after": {
+    "command": [
+      "./gradlew",
+      ":liquid-glass-runtime:assemble",
+      ":app:assembleDebug",
+      ":app:assembleDebugAndroidTest",
+      ":liquid-glass-runtime:testAndroidHostTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.NativeDockEndpointTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.NativeSegmentedEndpointTest",
+      ":app:testDebugUnitTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.GlassPressMotionTest"
+    ],
+    "exitCode": 0,
+    "wallSeconds": 29.309767208,
+    "tests": [
+      {
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "class": "com.lingion.sleepy.ui.component.liquidglass.GlassPressMotionTest",
+        "module": ":app",
+        "xmlSHA256": "46c8289dffd57ad6c55a48d0212e10775696d7b0a3ff27d25c1c8b09919e6399",
+        "testIdentities": [
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.GlassPressMotionTest",
+            "buttonForegroundFadesContinuouslyAndRestoresAfterAnInterruptedTap"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.GlassPressMotionTest",
+            "regularAndProminentButtonsHaveDifferentMeasuredRiseCurves"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.GlassPressMotionTest",
+            "shortNativeTapTurnsAroundBeforeTheHeldSizeWithoutLosingVelocity"
+          ]
+        ]
+      },
+      {
+        "tests": 7,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "class": "com.lingion.sleepy.ui.component.liquidglass.NativeDockEndpointTest",
+        "module": ":liquid-glass-runtime",
+        "xmlSHA256": "37acf7cc08d9333ecee105b2b36322a5a2224881e6a10c9189cb465f749f0335",
+        "testIdentities": [
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.NativeDockEndpointTest",
+            "aBoundedTargetKeepsTheContinuingSpringOutsideFourDp"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.NativeDockEndpointTest",
+            "anUnmeasuredFourTabPitchDoesNotProduceOverpull"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.NativeDockEndpointTest",
+            "fourTabForwardHeldTargetMatchesTheNativeLocalEndpoint"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.NativeDockEndpointTest",
+            "fourTabReverseHeldTargetMatchesTheNativeLocalEndpoint"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.NativeDockEndpointTest",
+            "inRangePositionsAndSingleSeatGuardsRemainBounded"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.NativeDockEndpointTest",
+            "thePhysicalBoundUsesPitchMagnitudeForEitherLayoutDirection"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.NativeDockEndpointTest",
+            "unmeasuredTabCountsRetainTheirExistingLogicalRubberBand"
+          ]
+        ]
+      },
+      {
+        "tests": 7,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "class": "com.lingion.sleepy.ui.component.liquidglass.NativeSegmentedEndpointTest",
+        "module": ":liquid-glass-runtime",
+        "xmlSHA256": "89455d5dc08b55054318d60d89556d3c04448c0ef99614c9b03cddc7d79eb8b4",
+        "testIdentities": [
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.NativeSegmentedEndpointTest",
+            "aSingleSeatAndAnUnmeasuredPitchKeepTheBoundedPosition"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.NativeSegmentedEndpointTest",
+            "lateForwardMovementMatchesTheRetainedNativeCenters"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.NativeSegmentedEndpointTest",
+            "lateReverseMovementMatchesTheRetainedNativeCenters"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.NativeSegmentedEndpointTest",
+            "physicalOverdriveDoesNotDependOnSeatPitchOrItsSign"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.NativeSegmentedEndpointTest",
+            "positionsInsideTheTrackKeepTheirLogicalCoordinates"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.NativeSegmentedEndpointTest",
+            "slowForwardHoldPreservesTheMeasuredEndpointOverdrive"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.NativeSegmentedEndpointTest",
+            "slowReverseHoldPreservesTheMeasuredEndpointOverdrive"
+          ]
+        ]
+      }
+    ],
+    "totals": {
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "testAndResourceHashChecks": [
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/GlassPressMotionTest.kt",
+        "sha256": "1792f357a29e4e118dfbffa0f41db987bb2ac1bd065828a9a8060619b6d8f3bf",
+        "unchanged": true
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidHostTest/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeDockEndpointTest.kt",
+        "sha256": "335630ed846b28174517a67a1bc7dc266893605ca71e3aab3c6d63388518dc29",
+        "unchanged": true
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidHostTest/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeSegmentedEndpointTest.kt",
+        "sha256": "ab369dab110c7e56c0c5e24a18271cc07edba8d89f5ce51879f47d9de0b7f0b4",
+        "unchanged": true
+      }
+    ]
+  },
+  "testIdentitiesUnchanged": true,
+  "ownership": {
+    "aarSHA256": "8ebedef5a35917aa123e04e875bf7df85cbda63e564da388c6c4d9ff6e04272c",
+    "aarClassCount": 66,
+    "appClassCount": 2289,
+    "duplicateClasses": [],
+    "runtimeSourceCount": 12,
+    "noBuildConfigChanges": true
+  },
+  "installed": {
+    "device": "d3efcd6a",
+    "apkSHA256": "948441072ed34b301d7ab4690f34973b4920c43cc19f3637f340970c8bcec45f",
+    "installedSHA256": "948441072ed34b301d7ab4690f34973b4920c43cc19f3637f340970c8bcec45f",
+    "testApkSHA256": "2792dc6c8d43bdf32fab4851bdb546a9a6f22aebc017eb4f1a7fec5d1dc6a455",
+    "installedTestSHA256": "2792dc6c8d43bdf32fab4851bdb546a9a6f22aebc017eb4f1a7fec5d1dc6a455",
+    "mainActivityResumed": true,
+    "screenshotSHA256": "86dd3fc493c5298c01cae2c4991c4d11ddd3d1caf3ce6726b49a9f6e6a56099e"
+  },
+  "launchObservation": "MainActivity resumed; first retained screenshot shows the existing empty-timetable card and Dock. Install/launch scope only, no population, optics or motion acceptance.",
+  "ci": "Existing app + runtime host commands in ci/nightly/release and template already cover app Press3 and migrated Endpoint14; no CI change in this batch.",
+  "evidenceDirectory": "current conversation artifacts/glass-optics-20261112/android-library-endpoints-82",
+  "evidenceSHA256": {
+    "root-protocol.json": "c268b07ace226c6de73d40454c949c82e901d7b243d2a4144af15b99462e17ac",
+    "before-tests/report.json": "5eda4b1ce18ff911b5841eb899296d33739a2310be628e21ca94bf2b2308ed26",
+    "after-tests/report.json": "f14dcad7b68aec960d30e7b8ce7c657c9d260d1b368cb6723578d7a28b8cb9a4",
+    "migration-audit.json": "db7c06ddbb91f40b2da70ba18c6d8526ff0514f9ca76346cad8ce7e86448e260",
+    "root-migration-verification.json": "310c37e0ed115c0f6abcd92cc7f16221ad190a8ebb6577f86726099fd3738451",
+    "android-install-receipt.json": "a38678d242c1354fe79bb65d1bb9e034ee332c3a472ce74ca9741dc77f131fa6"
+  },
+  "remaining": "Geometry, rendering/sampling/shader, controls/adapters and independent example are not extracted. Optical/motion/corners and source/distribution publication gates remain incomplete.",
+  "nativeCalibrationAccepted": false,
+  "publicationReady": false,
+  "sourceAndLicenseReviewComplete": false
+}

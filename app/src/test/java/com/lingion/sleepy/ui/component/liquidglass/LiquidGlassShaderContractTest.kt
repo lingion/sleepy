@@ -128,9 +128,11 @@ class LiquidGlassShaderContractTest {
         val expected = mapOf(
             "uSize" to 2, "uFrame" to 4, "uSample" to 4, "uClamp" to 4, "uTexels" to 2,
             "uHazeSample" to 4, "uHazeClamp" to 4, "uHaze" to 1, "uVeil" to 4,
-            "uShape" to 4, "uCorners" to 4, "uCurves" to 48, "uOptics" to 3, "uTint" to 4,
+            "uShape" to 4, "uCorners" to 4, "uCircularCorners" to 1, "uCurves" to 48, "uOptics" to 3, "uTint" to 4,
             "uLight" to 3, "uGlow" to 4, "uGlowSpread" to 2, "uEdge" to 3, "uRim" to 4,
-            "uOutlined" to 1, "uProfile" to 64, "uShineTurns" to 8, "uShineLit" to 8,
+            "uOutlined" to 1, "uProfile" to 64, "uProfile2" to 64, "uProfileCenters" to 4,
+            "uExact1" to 144, "uExact2" to 144,
+            "uShineTurns" to 8, "uShineLit" to 8,
             "uShineEnds" to 12, "uShineShares" to 12, "uPills" to 24, "uGoo" to 8,
             "uPillCurves" to 24, "uPillCenters" to 12,
         )
@@ -262,5 +264,24 @@ class LiquidGlassShaderContractTest {
         assertTrue("有 rim 时高光必须非零", with.getValue("uShineLit").sum() > 0f)
         // side/corner/flat 是 CPU 画的渐变发丝线, 不进着色器。
         assertEquals(without.getValue("uRim").toList(), with.getValue("uRim").toList())
+    }
+
+    @Test
+    fun sheetEdgeFitPreservesMenuAndAlertDirectionalCoefficients() {
+        // Independent reference values from the existing FLClash angular-light
+        // contract, including the unlit side endpoint. The Sheet-only floor
+        // must never brighten this endpoint for menus or alerts.
+        val referenceLight = floatArrayOf(.16f, .1088f, .0768f, .0608f, .0272f, .0112f, .0048f, 0f)
+        val referenceDark = floatArrayOf(.22f, .1496f, .1056f, .0836f, .0374f, .0154f, .0066f, 0f)
+        listOf(false, true).forEach { dark ->
+            listOf(LiquidGlassRim.menu(dark), LiquidGlassRim.alert(dark)).forEach { rim ->
+                assertEquals(0.0, rim.minimumShine, 0.0)
+                assertArrayEquals(
+                    if (dark) referenceDark else referenceLight,
+                    build(rim = rim).getValue("uShineLit"),
+                    1e-7f,
+                )
+            }
+        }
     }
 }

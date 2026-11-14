@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.drawscope.inset
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.layer.GraphicsLayer
+import androidx.compose.ui.graphics.layer.CompositingStrategy
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.Measurable
@@ -174,7 +175,7 @@ private class DrawBackdropElement(
     override fun create(): DrawBackdropNode {
         return DrawBackdropNode(
             backdrop = backdrop,
-            shapeProvider = shapeProvider,
+            initialShapeProvider = shapeProvider,
             effects = effects,
             layerBlock = layerBlock,
             exportedBackdrop = exportedBackdrop,
@@ -250,7 +251,7 @@ private class DrawBackdropElement(
 
 private class DrawBackdropNode(
     var backdrop: Backdrop,
-    shapeProvider: ShapeProvider,
+    initialShapeProvider: ShapeProvider,
     var effects: BackdropEffectScope.() -> Unit,
     var layerBlock: (GraphicsLayerScope.() -> Unit)?,
     var exportedBackdrop: LayerBackdrop?,
@@ -262,7 +263,8 @@ private class DrawBackdropNode(
 
     // The placement layer retains its callback after a pager reuses a card host. Observe a
     // replacement provider so its clip follows the current outline at unchanged size.
-    var shapeProvider: ShapeProvider by mutableStateOf(shapeProvider)
+    // Keep the constructor parameter distinct: property closures must observe the current provider.
+    var shapeProvider: ShapeProvider by mutableStateOf(initialShapeProvider)
 
     private val effectScope =
         object : BackdropEffectScopeImpl() {
@@ -271,6 +273,7 @@ private class DrawBackdropNode(
         }
 
     private var graphicsLayer: GraphicsLayer? = null
+    private var inputGraphicsLayer: GraphicsLayer? = null
     private val layerDiagnostics = BackdropLayerDiagnostics("Sample")
     private val sampleRecordingCache = BackdropRecordingCache()
     private var lastEffectKey: Any? = null
@@ -295,6 +298,9 @@ private class DrawBackdropNode(
         val canvas = drawContext.canvas
         val padding = padding
         val sampleScale = shapeProvider.options.sampleScale
+        if (BackdropDiagnostics.observer != null) {
+            BackdropDiagnostics.event("Sample.RecordGeometry(scope=$size,padding=$padding,effectPadding=${effectScope.padding},effectSize=${effectScope.size},origin=${effectScope.effectOffset},sampleScale=$sampleScale)")
+        }
 
         canvas.save()
         canvas.scale(sampleScale, sampleScale)
@@ -354,7 +360,17 @@ private class DrawBackdropNode(
             if (shared != null) it to shared.contentRevision else it
         } else null
         if (!frozen || sampleRecordingCache.needsRecord(key, recordingSize, density, fontScale, layoutDirection)) {
-            recordLayer(layer, size = recordingSize, block = recordBackdropBlock)
+            val inputLayer = inputGraphicsLayer
+            if (inputLayer != null) {
+                // A separate RenderNode completes the preprocessing image filter before the
+                // optical shader reads arbitrary atlas slots. Chaining both image filters
+                // would let the consumer's clip change the intermediate input origin.
+                recordLayer(inputLayer, size = recordingSize, block = recordBackdropBlock)
+                inputLayer.topLeft = IntOffset.Zero
+                recordLayer(layer, size = recordingSize) { drawLayer(inputLayer) }
+            } else {
+                recordLayer(layer, size = recordingSize, block = recordBackdropBlock)
+            }
             layerDiagnostics.recorded(layer.size)
             sampleRecordingCache.recorded(key, recordingSize, density, fontScale, layoutDirection)
             if (shared != null) BackdropDiagnostics.event("Sample.SharedDirect")
@@ -367,6 +383,9 @@ private class DrawBackdropNode(
         try {
             canvas.scale(1f / sampleScale, 1f / sampleScale)
             canvas.translate(-padding, -padding)
+            if (BackdropDiagnostics.observer != null) {
+                BackdropDiagnostics.event("Sample.OutputGeometry(scope=$size,padding=$padding,allocation=${layer.size},sampleScale=$sampleScale)")
+            }
             drawLayer(layer)
         } finally {
             canvas.restore()
@@ -516,25 +535,51 @@ private class DrawBackdropNode(
         lastEffectShape = effectShape
         BackdropDiagnostics.event("Sample.EffectRebuilt")
         val effect = effectScope.renderEffect
-        if (effect != null || effectScope.padding != 0f) {
+        val inputEffect = effectScope.inputRenderEffect
+        if (effect != null || inputEffect != null || effectScope.padding != 0f) {
             val layer = graphicsLayer ?: requireGraphicsContext().createGraphicsLayer().also {
                 graphicsLayer = it
                 layerDiagnostics.created()
             }
             if (layer.renderEffect != effect) layer.renderEffect = effect
+            layer.compositingStrategy = if (inputEffect != null) CompositingStrategy.Offscreen else CompositingStrategy.Auto
+            if (inputEffect != null) {
+                val inputLayer = inputGraphicsLayer ?: requireGraphicsContext().createGraphicsLayer().also {
+                    inputGraphicsLayer = it
+                    layerDiagnostics.created()
+                    invalidateSampleRecording()
+                }
+                inputLayer.renderEffect = inputEffect
+                inputLayer.compositingStrategy = CompositingStrategy.Offscreen
+            } else {
+                releaseInputLayer()
+            }
         } else {
             releaseSampleLayer()
         }
         padding = effectScope.padding
+        if (BackdropDiagnostics.observer != null) {
+            BackdropDiagnostics.event("Sample.EffectGeometry(padding=$padding,effectSize=${effectScope.size},origin=${effectScope.effectOffset},density=${effectScope.density})")
+        }
     }
 
     private fun releaseSampleLayer() {
+        releaseInputLayer()
         graphicsLayer?.let {
             requireGraphicsContext().releaseGraphicsLayer(it)
             layerDiagnostics.released()
         }
         graphicsLayer = null
         invalidateSampleRecording()
+    }
+
+    private fun releaseInputLayer() {
+        inputGraphicsLayer?.let {
+            requireGraphicsContext().releaseGraphicsLayer(it)
+            layerDiagnostics.released()
+            invalidateSampleRecording()
+        }
+        inputGraphicsLayer = null
     }
 
     fun synchronizeSampleLayer() {
@@ -548,6 +593,7 @@ private class DrawBackdropNode(
 
     override fun onDetach() {
         invalidateSampleRecording()
+        releaseInputLayer()
         val graphicsContext = requireGraphicsContext()
         graphicsLayer?.let { layer ->
             graphicsContext.releaseGraphicsLayer(layer)

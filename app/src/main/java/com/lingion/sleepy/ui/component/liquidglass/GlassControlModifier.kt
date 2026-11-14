@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.backdrop.BackdropRenderOptions
+import com.kyant.backdrop.backdrops.LayerBackdrop
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
@@ -33,7 +34,7 @@ import kotlin.math.min
 /** Separate scope for a single optical pane shared by multiple actions. */
 internal val LocalGlassGrouped = androidx.compose.runtime.compositionLocalOf { false }
 
-enum class GlassMaterialRole { Regular, Menu, Alert }
+enum class GlassMaterialRole { Regular, Menu, Alert, Sheet }
 
 /** Popup windows paint locally while sampling the parent window's glass-free scene. */
 internal val LocalGlassOverlay = androidx.compose.runtime.compositionLocalOf { false }
@@ -53,6 +54,8 @@ fun Modifier.glassControl(
     role: GlassMaterialRole = GlassMaterialRole.Regular,
     interactionSource: MutableInteractionSource? = null,
     placementLayer: Boolean = true,
+    pressedContentAlpha: Float = 1f,
+    exportedBackdrop: LayerBackdrop? = null,
 ): Modifier {
     check(!LocalGlassSourceContent.current) { "An optical consumer cannot be recorded as an ordinary source" }
     val host = LocalGlassHost.current
@@ -67,28 +70,33 @@ fun Modifier.glassControl(
             GlassMaterialRole.Regular -> LiquidGlassStyle.regular(colors, dark)
             GlassMaterialRole.Menu -> LiquidGlassStyle.menu(colors, dark)
             GlassMaterialRole.Alert -> LiquidGlassStyle.alert(colors, dark)
+            GlassMaterialRole.Sheet -> LiquidGlassStyle.sheet(dark)
         }
     val rim = when (role) {
         GlassMaterialRole.Regular -> null
         GlassMaterialRole.Menu -> LiquidGlassRim.menu(dark)
         GlassMaterialRole.Alert -> LiquidGlassRim.alert(dark)
+        GlassMaterialRole.Sheet -> LiquidGlassRim.sheet()
     }
     val samplingHost = if (isOverlay) LocalGlassOverlaySamplingHost.current ?: host else host
-    val filterBand = samplingHost.filterBand(consumerDepth, isOverlay, material.blur.toFloat())
-    val backdrop = remember(samplingHost, consumerDepth, isOverlay, filterBand) {
-        filterBand?.backdrop(samplingHost) ?: if (isOverlay) samplingHost.overlayBackdrop else samplingHost.backdropAt(consumerDepth)
-    }
+    // A global filter contains only its host's prefix. Reusing it inside a
+    // material scope would skip that parent backing and expose the scene below.
+    val inheritedMaterial = LocalGlassMaterialBackdrop.current
+    val filterBand = if (inheritedMaterial == null) samplingHost.filterBand(consumerDepth, isOverlay, material.blur.toFloat()) else null
+    val scene = rememberGlassSamplingBackdrop()
+    val backdrop = remember(samplingHost, scene, filterBand) { filterBand?.backdrop(samplingHost) ?: checkNotNull(scene) }
     val contentPlacementLayer = placementLayer && LocalGlassPlacementLayer.current
     val renderOptions = remember(contentPlacementLayer) {
         if (contentPlacementLayer) BackdropRenderOptions.Default else BackdropRenderOptions(placementLayer = false)
     }
-    val motion = remember { GlassPressMotion() }
+    val prominent = tint != null || selected
+    val motion = remember(prominent) { GlassPressMotion(prominent) }
     var origin by remember { mutableStateOf(Offset.Zero) }
     var pointerId by remember { mutableStateOf<PointerId?>(null) }
     var accepted by remember { mutableStateOf(false) }
     val density = LocalDensity.current.density
     val pressed = interactionSource?.collectIsPressedAsState()?.value == true
-    LaunchedEffect(enabled, pressed) {
+    LaunchedEffect(motion, enabled, pressed) {
         if (!enabled) {
             accepted = false
             motion.reset()
@@ -111,7 +119,7 @@ fun Modifier.glassControl(
     return this
         // Observe in the fixed layout coordinates, before the painted layer
         // moves. Leave click/scroll ownership to the existing gesture handlers.
-        .pointerInput(enabled, grouped, interactionSource) {
+        .pointerInput(motion, enabled, grouped, interactionSource) {
             if (!enabled) return@pointerInput
             try {
                 awaitPointerEventScope {
@@ -142,7 +150,7 @@ fun Modifier.glassControl(
             }
         }
         .graphicsLayer {
-            val growth = min(0.25f, 16f * density / size.maxDimension.coerceAtLeast(1f))
+            val growth = 16f * density / size.maxDimension.coerceAtLeast(1f)
             val swell = 1f + motion.lift.value * growth
             val pull = Offset(motion.pullX.value, motion.pullY.value)
             scaleX = swell * (1f + abs(pull.x) / size.width.coerceAtLeast(1f) * 0.5f)
@@ -153,6 +161,7 @@ fun Modifier.glassControl(
         .drawPlainBackdrop(
             renderOptions = renderOptions,
             backdrop = backdrop,
+            exportedBackdrop = exportedBackdrop,
             shape = { shape },
             effects = {
                 liquidGlass(
@@ -166,12 +175,21 @@ fun Modifier.glassControl(
                                 transform(androidx.compose.ui.graphics.Matrix().apply { scale(1f / density, 1f / density) })
                             }
                         } else null,
+                    dualContours = if (shape is LiquidGlassDualContourShape &&
+                        size.width > 0f && size.height > 0f && size.width.isFinite() && size.height.isFinite()) {
+                        val contours = shape.createOpticalContours(size, layoutDirection, this)
+                        fun inDp(path: androidx.compose.ui.graphics.Path) = androidx.compose.ui.graphics.Path().apply {
+                            addPath(path)
+                            transform(androidx.compose.ui.graphics.Matrix().apply { scale(1f / density, 1f / density) })
+                        }
+                        inDp(contours.first) to inDp(contours.second)
+                    } else null,
                     rim = rim,
                     glow = LiquidGlassGlow(
                         center = origin / density,
-                        reach = (28f + 3f * motion.lift.value).toDouble(),
-                        strength = (0.06f * motion.lift.value).toDouble(),
-                        wash = (0.7f * motion.lift.value).toDouble(),
+                        reach = (28f + 3f * motion.lift.value.coerceIn(0f, 1f)).toDouble(),
+                        strength = (0.06f * motion.lift.value.coerceIn(0f, 1f)).toDouble(),
+                        wash = (0.7f * motion.lift.value.coerceIn(0f, 1f)).toDouble(),
                     ),
                 )
             },
@@ -207,7 +225,16 @@ fun Modifier.glassControl(
                 if (android.os.Build.VERSION.SDK_INT < 33) drawRect(material.tint)
             },
         )
+        // This layer follows the optical draw node, so only the foreground fades.
+        // Menus, sheets and grouped panes retain the default fully opaque content.
+        .then(if (pressedContentAlpha < 1f) Modifier.graphicsLayer {
+            alpha = glassPressedContentAlpha(pressedContentAlpha, motion.lift.value)
+        } else Modifier)
 }
+
+/** Visual contrast fit to captured iOS 26.5 button glyphs, not an Apple opacity constant. */
+internal fun glassPressedContentAlpha(heldAlpha: Float, lift: Float): Float =
+    (1f + (heldAlpha.coerceIn(0f, 1f) - 1f) * lift.coerceIn(0f, 1f)).coerceIn(0f, 1f)
 
 /** Original backgrounds disappear only when an actual glass host is available. */
 @Composable

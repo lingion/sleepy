@@ -8,12 +8,11 @@ import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.ColorPickerDialog
 import com.lingion.sleepy.ui.component.IntRangeSlider
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -38,7 +37,6 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.ExpandMore
 import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
 import com.lingion.sleepy.ui.component.liquidglass.GlassTonalButton as FilledTonalButton
@@ -66,7 +64,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.platform.LocalContext
@@ -83,9 +80,12 @@ import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
 import com.lingion.sleepy.ui.component.TimePickerField
-import com.lingion.sleepy.ui.component.sleepyExpandSpecs
+import com.lingion.sleepy.ui.component.AccordionHeader
+import com.lingion.sleepy.ui.component.AccordionContent
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
-import com.lingion.sleepy.ui.theme.noRippleClickable
+import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
@@ -215,6 +215,7 @@ fun AddCourseScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val colors = MaterialTheme.colorScheme
+    val nativeActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     // 节次时间域必须读取水合表; 绑定独立作息表时兼容列可能已过期。
@@ -455,10 +456,30 @@ fun AddCourseScreen(
         )
     }
     pendingGroupColorHex?.let { hex ->
+        val groupColorActions: @Composable () -> Unit = {
+            com.lingion.sleepy.ui.component.DialogActionButtons(
+                confirmText = stringResource(R.string.action_confirm),
+                onConfirm = {
+                    val gid = editingCourse?.groupId
+                    val tid = state.selectedTableId
+                    pendingGroupColorHex = null
+                    if (gid != null && tid != null) {
+                        scope.launch {
+                            SleepyApp.get().repository.setGroupSourceColor(tid, gid, hex)
+                            // 组色源变了 → 刷新编辑回填的组色源显示
+                            val fresh = SleepyApp.get().repository.getGroupCourses(tid, gid)
+                            if (fresh.isNotEmpty()) groupSourceColorHex = CourseColorUtil.groupSourceColorHex(fresh)
+                        }
+                    }
+                },
+                dismissText = stringResource(R.string.cancel),
+                onDismiss = { pendingGroupColorHex = null }
+            )
+        }
         AlertDialog(
             onDismissRequest = { pendingGroupColorHex = null },
             title = { Text(stringResource(R.string.group_color_confirm_title)) },
-            confirmButton = {},
+            confirmButton = { if (nativeActions) groupColorActions() },
             dismissButton = {},
             // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 统一色块按钮行
             text = {
@@ -469,25 +490,10 @@ fun AddCourseScreen(
                         Text(hex, style = MaterialTheme.typography.bodySmall)
                     }
                     Text(stringResource(R.string.group_color_confirm_msg), style = MaterialTheme.typography.bodySmall)
-                    Spacer(modifier = Modifier.height(12.dp))
-                    com.lingion.sleepy.ui.component.DialogActionButtons(
-                        confirmText = stringResource(R.string.action_confirm),
-                        onConfirm = {
-                            val gid = editingCourse?.groupId
-                            val tid = state.selectedTableId
-                            pendingGroupColorHex = null
-                            if (gid != null && tid != null) {
-                                scope.launch {
-                                    SleepyApp.get().repository.setGroupSourceColor(tid, gid, hex)
-                                    // 组色源变了 → 刷新编辑回填的组色源显示
-                                    val fresh = SleepyApp.get().repository.getGroupCourses(tid, gid)
-                                    if (fresh.isNotEmpty()) groupSourceColorHex = CourseColorUtil.groupSourceColorHex(fresh)
-                                }
-                            }
-                        },
-                        dismissText = stringResource(R.string.cancel),
-                        onDismiss = { pendingGroupColorHex = null }
-                    )
+                    if (!nativeActions) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        groupColorActions()
+                    }
                 }
             }
         )
@@ -792,34 +798,38 @@ fun AddCourseScreen(
                     }
 
                     if (showDeleteConfirm) {
+                        val deleteActions: @Composable () -> Unit = {
+                            com.lingion.sleepy.ui.component.DialogActionButtons(
+                                confirmText = stringResource(R.string.delete),
+                                onConfirm = {
+                                    showDeleteConfirm = false
+                                    scope.launch {
+                                        val repo = SleepyApp.get().repository
+                                        val tid = state.selectedTableId
+                                        if (tid != null) {
+                                            repo.deleteCourseGroup(tid, editingCourse.groupId)
+                                        }
+                                        onSaved()
+                                    }
+                                },
+                                dismissText = stringResource(R.string.cancel),
+                                onDismiss = { showDeleteConfirm = false },
+                                destructive = true
+                            )
+                        }
                         AlertDialog(
                             onDismissRequest = { showDeleteConfirm = false },
                             title = { Text(stringResource(R.string.confirm_delete), color = colors.onSurface) },
                             text = {
                                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                     Text(stringResource(R.string.delete_course_confirm, editingCourse.courseName), color = colors.onSurfaceVariant)
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                    // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 统一色块按钮行
-                                    com.lingion.sleepy.ui.component.DialogActionButtons(
-                                        confirmText = stringResource(R.string.delete),
-                                        onConfirm = {
-                                            showDeleteConfirm = false
-                                            scope.launch {
-                                                val repo = SleepyApp.get().repository
-                                                val tid = state.selectedTableId
-                                                if (tid != null) {
-                                                    repo.deleteCourseGroup(tid, editingCourse.groupId)
-                                                }
-                                                onSaved()
-                                            }
-                                        },
-                                        dismissText = stringResource(R.string.cancel),
-                                        onDismiss = { showDeleteConfirm = false },
-                                        destructive = true
-                                    )
+                                    if (!nativeActions) {
+                                        Spacer(modifier = Modifier.height(12.dp))
+                                        deleteActions()
+                                    }
                                 }
                             },
-                            confirmButton = {},
+                            confirmButton = { if (nativeActions) deleteActions() },
                             dismissButton = {}
                         )
                     }
@@ -1166,12 +1176,6 @@ internal fun MeetingBlockEditor(
     onDeselectEdge: (releasedNode: Int) -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
-    // 整卡 chevron 旋转与 IrregularOptionsSection 同族 (MD3E defaultSpatial)
-    val chevronRotation by animateFloatAsState(
-        targetValue = if (block.expanded) 180f else 0f,
-        animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>(),
-        label = "slot-card-chevron"
-    )
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -1184,18 +1188,23 @@ internal fun MeetingBlockEditor(
         // 卡头 = 折叠开关 (用户定令 2026-11-09): 收起态只显示标题 + 两行摘要文字,
         // 星期/节次控件一律收进展开区; 顺序不变量: 标题和摘要 [删除叉] [折叠箭头].
         // 文案居左 (weight 1f 独占剩余行宽), 右侧动作簇为统一 48dp IconButton (8dp 间距).
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+        AccordionHeader(
+            expanded = block.expanded,
+            onToggle = { block.expanded = !block.expanded },
+            contentPadding = PaddingValues(0.dp),
+            actions = {
+                if (canRemove) {
+                    IconButton(onClick = onRemove) {
+                        Icon(
+                            Icons.Outlined.Close,
+                            contentDescription = stringResource(R.string.delete_slot),
+                            tint = colors.onSurfaceVariant
+                        )
+                    }
+                }
+            },
         ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .noRippleGlassClickable { block.expanded = !block.expanded }
-                    .padding(vertical = 4.dp),
-                verticalArrangement = Arrangement.spacedBy(3.dp)
-            ) {
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
@@ -1203,31 +1212,9 @@ internal fun MeetingBlockEditor(
                 )
                 MeetingBlockSummary(block = block, timeJson = timeJson)
             }
-            if (canRemove) {
-                IconButton(onClick = onRemove) {
-                    Icon(
-                        Icons.Outlined.Close,
-                        contentDescription = stringResource(R.string.delete_slot),
-                        tint = colors.onSurfaceVariant
-                    )
-                }
-            }
-            IconButton(onClick = { block.expanded = !block.expanded }) {
-                Icon(
-                    Icons.Outlined.ExpandMore,
-                    contentDescription = stringResource(if (block.expanded) R.string.collapse else R.string.expand),
-                    tint = colors.onSurfaceVariant,
-                    modifier = Modifier.rotate(chevronRotation)
-                )
-            }
         }
 
-        val expandSpecs = sleepyExpandSpecs()
-        AnimatedVisibility(
-            visible = block.expanded,
-            enter = expandSpecs.enter,
-            exit = expandSpecs.exit,
-        ) {
+        AccordionContent(expanded = block.expanded) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 MultiDayPicker(selectedDays = block.days.toSet(), onToggleDay = { day ->
                     if (day in block.days) block.days.remove(day) else block.days.add(day)
@@ -1458,8 +1445,7 @@ private fun MeetingBlockSummary(block: MeetingBlockDraft, timeJson: String) {
 
 /** 非常规选项折叠栏 (用户反馈 2026-09-09): 「非常规节次」「非常规时间」两个开关
  *  绑到一起收进可展开区块, 默认折叠 — 普通课程用户不再被平铺的"非常规"字样干扰。
- *  展开模式沿用仓库既有写法 (EditTableScreen 节次时间表 / SettingsCards.SettingsCard):
- *  ExpandMore chevron 随展开旋转 180f + AnimatedVisibility 高度/淡入动画。
+ *  展开交互使用全应用 AccordionHeader / AccordionContent。
  *  编辑已启用任一非常规项的卡时自动展开 (irregularOptionsExpanded 由构造参数派生),
  *  收起但已启用选项时栏头露出摘要, 用户能看见"这里有东西开着"。 */
 @Composable
@@ -1474,12 +1460,6 @@ private fun IrregularOptionsSection(
     onDeselectEdge: (releasedNode: Int) -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
-    // MD3E (Task 7a): chevron 旋转走 defaultSpatial (收稳不弹, 与展开家族同拍)
-    val arrowRotation by animateFloatAsState(
-        targetValue = if (block.irregularOptionsExpanded) 180f else 0f,
-        animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>(),
-        label = "irregular-options-arrow"
-    )
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -1487,16 +1467,12 @@ private fun IrregularOptionsSection(
             .background(colors.surfaceContainerHighest)
     ) {
         // 栏头: 标题 + 摘要 + chevron, 整行可点
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .noRippleGlassClickable { block.irregularOptionsExpanded = !block.irregularOptionsExpanded }
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        AccordionHeader(
+            expanded = block.irregularOptionsExpanded,
+            onToggle = { block.irregularOptionsExpanded = !block.irregularOptionsExpanded },
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
         ) {
             Column(
-                modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 Text(
@@ -1527,21 +1503,8 @@ private fun IrregularOptionsSection(
                     maxLines = 2
                 )
             }
-            Icon(
-                Icons.Outlined.ExpandMore,
-                contentDescription = null,
-                tint = colors.onSurfaceVariant,
-                modifier = Modifier
-                    .size(20.dp)
-                    .rotate(arrowRotation)
-            )
         }
-        val expandSpecs = sleepyExpandSpecs()
-        AnimatedVisibility(
-            visible = block.irregularOptionsExpanded,
-            enter = expandSpecs.enter,
-            exit = expandSpecs.exit,
-        ) {
+        AccordionContent(expanded = block.irregularOptionsExpanded) {
             Column(
                 modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -1694,6 +1657,7 @@ private fun EdgeCandidatePickerDialog(
     onDismiss: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
+    val nativeActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.irregular_node_pick)) },
@@ -1733,15 +1697,14 @@ private fun EdgeCandidatePickerDialog(
             }
         },
         confirmButton = {
-            // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 色块按钮
             Button(
                 onClick = onDismiss,
-                shape = SleepyTheme.Buttons.shape,
-                colors = ButtonDefaults.buttonColors(
+                shape = if (nativeActions) null else SleepyTheme.Buttons.shape,
+                colors = if (nativeActions) null else ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                 )
-            ) { Text(stringResource(R.string.cancel), maxLines = 1) }
+            ) { Text(stringResource(R.string.cancel), maxLines = if (nativeActions) Int.MAX_VALUE else 1) }
         }
     )
 }
@@ -1753,6 +1716,7 @@ private fun NewEdgeSlotDialog(
     onConfirm: (start: String, end: String) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val nativeActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
     var start by remember { mutableStateOf("") }
     var end by remember { mutableStateOf("") }
     AlertDialog(
@@ -1775,22 +1739,21 @@ private fun NewEdgeSlotDialog(
             }
         },
         confirmButton = {
-            // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 色块按钮
             Button(
                 enabled = parseHm(start) != null && parseHm(end) != null,
                 onClick = { onConfirm(start, end) },
-                shape = SleepyTheme.Buttons.shape
-            ) { Text(stringResource(R.string.edge_insert_ok), maxLines = 1) }
+                shape = if (nativeActions) null else SleepyTheme.Buttons.shape
+            ) { Text(stringResource(R.string.edge_insert_ok), maxLines = if (nativeActions) Int.MAX_VALUE else 1) }
         },
         dismissButton = {
             Button(
                 onClick = onDismiss,
-                shape = SleepyTheme.Buttons.shape,
-                colors = ButtonDefaults.buttonColors(
+                shape = if (nativeActions) null else SleepyTheme.Buttons.shape,
+                colors = if (nativeActions) null else ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                 )
-            ) { Text(stringResource(R.string.cancel), maxLines = 1) }
+            ) { Text(stringResource(R.string.cancel), maxLines = if (nativeActions) Int.MAX_VALUE else 1) }
         }
     )
 }
@@ -1804,6 +1767,7 @@ private fun SlotEditDialog(
     onConfirm: (start: String, end: String) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val nativeActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
     var start by remember(node) { mutableStateOf(initialStart) }
     var end by remember(node) { mutableStateOf(initialEnd) }
     AlertDialog(
@@ -1826,22 +1790,21 @@ private fun SlotEditDialog(
             }
         },
         confirmButton = {
-            // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 色块按钮
             Button(
                 enabled = parseHm(start) != null && parseHm(end) != null,
                 onClick = { onConfirm(start, end) },
-                shape = SleepyTheme.Buttons.shape
-            ) { Text(stringResource(R.string.edge_insert_ok), maxLines = 1) }
+                shape = if (nativeActions) null else SleepyTheme.Buttons.shape
+            ) { Text(stringResource(R.string.edge_insert_ok), maxLines = if (nativeActions) Int.MAX_VALUE else 1) }
         },
         dismissButton = {
             Button(
                 onClick = onDismiss,
-                shape = SleepyTheme.Buttons.shape,
-                colors = ButtonDefaults.buttonColors(
+                shape = if (nativeActions) null else SleepyTheme.Buttons.shape,
+                colors = if (nativeActions) null else ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                 )
-            ) { Text(stringResource(R.string.cancel), maxLines = 1) }
+            ) { Text(stringResource(R.string.cancel), maxLines = if (nativeActions) Int.MAX_VALUE else 1) }
         }
     )
 }

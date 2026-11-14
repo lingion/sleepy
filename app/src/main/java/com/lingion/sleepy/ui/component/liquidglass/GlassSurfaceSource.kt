@@ -19,17 +19,25 @@ import androidx.compose.ui.layout.onGloballyPositioned
  * Overlapping backings must receive ordered depths from the owning layout.
  */
 @Composable
-fun Modifier.glassSurfaceBackground(color: Color, shape: Shape, depth: Float = -1f): Modifier {
+internal fun Modifier.glassSurfaceBackground(color: Color, shape: Shape, depth: Float = -1f, materialScope: GlassMaterialScope? = null): Modifier {
     require(depth.isFinite()) { "Source depth must be finite" }
     val host = LocalGlassHost.current
-    val layer = rememberGraphicsLayer()
+    val fallbackLayer = rememberGraphicsLayer()
+    val layer = materialScope?.exported?.graphicsLayer ?: fallbackLayer
     val segment = remember(host, layer, depth) { GlassSourceSegment(depth, layer) }
-    DisposableEffect(host, segment) {
-        host?.sources?.add(segment)
-        host?.changed()
-        onDispose { host?.sources?.remove(segment); host?.changed() }
+    DisposableEffect(host, segment, materialScope) {
+        // A scoped backing is consumed through its explicit parent chain. If it
+        // also entered the global prefix, that prefix would reference the very
+        // exported layer being recorded, and translucent fills would be doubled.
+        if (materialScope == null) {
+            host?.sources?.add(segment)
+            host?.changed()
+        }
+        onDispose {
+            if (materialScope == null) { host?.sources?.remove(segment); host?.changed() }
+        }
     }
-    return this.onGloballyPositioned { segment.coordinates = it }.drawWithContent {
+    return this.onGloballyPositioned { segment.coordinates = it; materialScope?.coordinates = it }.drawWithContent {
         fun androidx.compose.ui.graphics.drawscope.DrawScope.paintBacking() {
             when (val outline = shape.createOutline(size, layoutDirection, this)) {
                 is Outline.Rectangle -> drawRect(color)

@@ -30,17 +30,17 @@ class NativeSegmentedMotionTest {
         assertTrue("native short tap is already contracting by 400ms", motion.lift < .4f)
     }
 
-    @Test fun quickTapNeverWaitsToExpandToTheFullHeldLens() {
+    @Test fun shortHoldOnTheSelectedSegmentContractsBeforeTheFullHeldSize() {
         val motion = GlassControlMotion(0f, GlassControlMotionSpec.NativeSegmented)
         motion.update(0f, pressed = true, dragging = false)
         repeat(6) { motion.tick(.008) }
-        motion.update(1f, pressed = false, dragging = false, activation = 1)
+        motion.update(0f, pressed = false, dragging = false)
         var peak = motion.geometryLift
         repeat(80) {
             motion.tick(.008)
             peak = maxOf(peak, motion.geometryLift)
         }
-        assertTrue("native short tap only partly expands the lens", peak > .1f && peak < .85f)
+        assertTrue("a selected-segment short hold only partly expands the lens", peak > .1f && peak < .85f)
         assertEquals(0f, motion.lift, .001f)
     }
 }

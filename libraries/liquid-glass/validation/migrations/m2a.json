@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "phase": "M2a scheduling core",
+  "date": "2026-11-14",
+  "status": "moved-built-and-consumed-by-sleepy",
+  "baselineCommit": "ae30faec",
+  "scope": "Two scheduling files only; same package, one clock-local instance, no input/animation/optical parameter changes.",
+  "moves": [
+    {
+      "from": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/ActiveFrameLoop.kt",
+      "to": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/ActiveFrameLoop.kt",
+      "beforeSHA256": "c3e6fc9c51ecbc05444b41b7da35fd477f877bc34c1b473a9e493db2df9a5309",
+      "afterSHA256": "98546593879cf56f574d55d0ae8cd2f5233495deef407eebee363172329d3475",
+      "onlyInternalRemoval": true,
+      "removedInternalCount": 3
+    },
+    {
+      "from": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/DockInputClock.kt",
+      "to": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/DockInputClock.kt",
+      "beforeSHA256": "d279f6049d66fafe38b4572887646db001bc9b0c82de12ff28c4a52b63509289",
+      "afterSHA256": "ff3a1526442c1c98d9a82dfd8a1676e4e708d8bb5939d22d7dba2603f335c4c5",
+      "onlyInternalRemoval": true,
+      "removedInternalCount": 2
+    }
+  ],
+  "visibilityChanges": 5,
+  "dependencies": {
+    "composeRuntime": {
+      "declared": "1.12.1",
+      "resolvedAppBefore": "1.12.1",
+      "resolvedRuntimeCompileAndRuntime": "1.12.1",
+      "configuration": "api"
+    },
+    "coroutinesCore": {
+      "declaredVia": "libs.coroutines.core",
+      "resolvedRuntime": "1.11.0",
+      "configuration": "implementation"
+    },
+    "newComposeCompilerUiOrShapes": false
+  },
+  "tests": {
+    "classesBeforeAndAfter": 4,
+    "before": {
+      "tests": 33,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "after": {
+      "tests": 33,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "sourceHashesUnchanged": true,
+    "sources": [
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/ActiveFrameLoopTest.kt",
+        "sha256": "41f01157163776b6347a9ac449d8aa4469a92b00e9552f3b22c4e0a764afe5c4",
+        "bytes": 3292
+      },
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/DockInputClockTest.kt",
+        "sha256": "dbef228c5d1834c5108a37af5aadc49099e25d28ee11a4f6c86437fc3c700a91",
+        "bytes": 2757
+      },
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/GlassControlTimedInputTest.kt",
+        "sha256": "eed9f9551622787f7e48613fafa098fde5eb3663bc076ded2a0bd024b9bd49c7",
+        "bytes": 13376
+      },
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/DockTimedInputTest.kt",
+        "sha256": "d00ba0807546f2a461fdf38590c61bfb3420ff20b10982260ce914a89c4e7a5c",
+        "bytes": 10964
+      }
+    ]
+  },
+  "ownership": {
+    "runtimeAarSHA256": "880036cfec6fc9c61ce50fdd2fcaea1dfb919ca025800d94f1d9dbee9afd58d1",
+    "schedulingClasses": [
+      "com/lingion/sleepy/ui/component/liquidglass/ActiveFrame.class",
+      "com/lingion/sleepy/ui/component/liquidglass/ActiveFrameLoopKt$runTimestampedActiveFrameLoop$1.class",
+      "com/lingion/sleepy/ui/component/liquidglass/ActiveFrameLoopKt$runTimestampedActiveFrameLoop$2.class",
+      "com/lingion/sleepy/ui/component/liquidglass/ActiveFrameLoopKt.class",
+      "com/lingion/sleepy/ui/component/liquidglass/DockInputClock$Pending.class",
+      "com/lingion/sleepy/ui/component/liquidglass/DockInputClock.class",
+      "com/lingion/sleepy/ui/component/liquidglass/DockInputClockKt$LocalDockInputTimeNanos$1$1.class",
+      "com/lingion/sleepy/ui/component/liquidglass/DockInputClockKt.class"
+    ],
+    "appOwnSchedulingClasses": [],
+    "clockDeclarations": 1
+  },
+  "commands": {
+    "before": "ANDROID_HOME=<existing-sdk> ./gradlew :app:testDebugUnitTest --tests '*ActiveFrameLoopTest' --tests '*DockInputClockTest' --tests '*GlassControlTimedInputTest' --tests '*DockTimedInputTest' :app:dependencyInsight --configuration debugRuntimeClasspath --dependency androidx.compose.runtime:runtime",
+    "after": "ANDROID_HOME=<existing-sdk> ./gradlew :liquid-glass-runtime:assemble :app:assembleDebug :app:assembleDebugAndroidTest :app:testDebugUnitTest --tests '*ActiveFrameLoopTest' --tests '*DockInputClockTest' --tests '*GlassControlTimedInputTest' --tests '*DockTimedInputTest'",
+    "resolution": "ANDROID_HOME=<existing-sdk> ./gradlew :liquid-glass-runtime:dependencies"
+  },
+  "execution": {
+    "beforeBuildSeconds": 4,
+    "afterBuildSeconds": 34,
+    "beforeSucceeded": true,
+    "afterSucceeded": true,
+    "runtimeCompileAndRuntimeResolutionVerified": true
+  },
+  "evidenceDirectory": "android-library-motion-78",
+  "evidenceHashes": {
+    "root-protocol.json": "19fcaf93b5bcb1d9a0f656127c8f51c08e1b7ec580a71a15c33e5f53e9b1d6b1",
+    "root-migration-verification.json": "c4cbeb78459cebbfc8c5b1c181d876fa0a9040dee3896f77667a66c280b09eef",
+    "before-tests/report.json": "b20373528b468f885befbd316a9b905163e8de2e3db4c754dc523e6b49e5722f",
+    "after-tests/report.json": "020157339805207b4644704777904d3d63f05701d435bd05ea9eb97dd3a5b947",
+    "before-tests-and-resolution.log": "15be9f82367c5c14d17f4a813872e62a406486f5e80609de6fca0d1d246f3329",
+    "after-build-and-tests.log": "e6b3a3ab1bc5a59db21424ab08d832d3d72862fb12d9d8fec99c9a7e87c741ee",
+    "runtime-dependencies.log": "7c69435c46a2b90346c0636e6ed04b71b5cf2bef36e3779aa6df525a042f8c60",
+    "m2a-independent-source-review.json": "0fc83b0b091f5a4098d6caaf71d1517d7c6ad2a0c8252f8f61d2279dc85e56f0"
+  },
+  "preparationFailure": "Initial snapshot command guessed ActiveFrameLoopTest under liquidglass; actual source is component. No source edits or test changes occurred; recovered unique actual path before migration. Gradle baseline invocation remained running.",
+  "limits": [
+    "No new optical, natural-motion or native parity acceptance; existing batch77 scope remains.",
+    "Physics/drivers, geometry, materials/sampling/shader, complete controls and standalone sample remain pending.",
+    "Publication calibration and source/distribution gates remain false."
+  ],
+  "installation": {
+    "package": "com.lingion.sleepy.debug",
+    "apkSHA256": "961352f0b4cec273b5d16ccf1d6e1795b5902309fd30b6428bcfbf786a9184dd",
+    "installedSHA256": "961352f0b4cec273b5d16ccf1d6e1795b5902309fd30b6428bcfbf786a9184dd",
+    "testApkSHA256": "a200d8db5d11e5d5bc74c0b9b24a6b97782322b7faaa50edb35654c5cb6d2325",
+    "installedTestSHA256": "a200d8db5d11e5d5bc74c0b9b24a6b97782322b7faaa50edb35654c5cb6d2325",
+    "mainActivityResumed": true,
+    "scope": "MainActivity launch and identity observed; no new per-frame optical acceptance."
+  }
+}

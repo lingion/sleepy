@@ -6,92 +6,77 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SliderColors
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.backdrops.LayerBackdrop
 import com.kyant.backdrop.backdrops.rememberCombinedBackdrop
+import com.kyant.backdrop.backdrops.withTransformCompensation
 import com.kyant.backdrop.drawBackdrop
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
 
-/** Shared precision thumb and ghost dimensions in dp. */
-object GlassSliderThumbMetrics {
-    const val RESTING_WIDTH = 16f
-    const val RESTING_HEIGHT = 24f
-    const val LIFT_GROWTH_WIDTH = 12f
-    const val LIFT_GROWTH_HEIGHT = 16f
-
-    /** 滑块和幽灵保留调用方的颜色。 */
-    fun restingColor(thumbColor: Color): Color = thumbColor
-}
-
-/** Small colored vertical oval; the held lens grows around the same center. */
+/** Single and range thumbs share the same horizontal silhouette and continuous rise/fall. */
 @Composable
 internal fun GlassSliderThumb(
     trackBackdrop: LayerBackdrop?,
     modifier: Modifier = Modifier,
-    colors: SliderColors = SliderDefaults.colors(),
+    range: Boolean = false,
     enabled: Boolean = true,
     pressedOverride: Boolean? = null,
-    colorOverride: Color? = null,
     motionOverride: GlassControlMotion? = null,
 ) {
     val host = LocalGlassHost.current
     val glass = LocalUiStyle.current == UiStyle.LiquidGlass && host != null
+    val restingWidth = GlassSliderThumbMetrics.width(range)
+    val restingHeight = GlassSliderThumbMetrics.height(range)
+    val shape = RoundedCornerShape(50)
     if (!glass) {
-        val interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-        SliderDefaults.Thumb(
-            interactionSource = interactionSource,
-            modifier = modifier,
-            colors = colors,
-            enabled = enabled,
-        )
+        Box(modifier.size(restingWidth.dp, restingHeight.dp)
+            .shadow(2.dp, shape, clip = false)
+            .background(Color.White.copy(alpha = if (enabled) 1f else .38f), shape))
         return
     }
 
     var pressed by remember { mutableStateOf(false) }
-    val scheme = MaterialTheme.colorScheme
     val context = LocalContext.current
-    val thumbColor = colorOverride ?: if (enabled) colors.thumbColor else colors.disabledThumbColor
-    val restingColor = GlassSliderThumbMetrics.restingColor(thumbColor)
-    val shape = RoundedCornerShape(50)
-    val motion = motionOverride ?: rememberGlassControlMotion(0f, enabled && (pressedOverride ?: pressed), enabled = enabled)
+    val motion = motionOverride ?: rememberGlassControlMotion(0f, enabled && (pressedOverride ?: pressed), enabled = enabled,
+        spec = GlassControlMotionSpec.NativeSlider)
     val lift = motion.lift
-    val width = glassLensWidth(GlassSliderThumbMetrics.RESTING_WIDTH + GlassSliderThumbMetrics.LIFT_GROWTH_WIDTH * lift, motion.stretch)
-    val height = glassLensHeight(GlassSliderThumbMetrics.RESTING_HEIGHT + GlassSliderThumbMetrics.LIFT_GROWTH_HEIGHT * lift, motion.stretch)
+    val scale = 1f + (GlassSliderThumbMetrics.LIFT_SCALE - 1f) * motion.geometryLift
+    // Single-Slider carrier transforms were measured separately from isotropic lift.
+    // RangeSlider keeps its existing geometry until it has independent native evidence.
     val dark = LocalDarkTheme.current
-    val lensStyle = LiquidGlassStyle.controlLens(scheme, dark).scale(lift.toDouble())
+    val lensStyle = (if (range) LiquidGlassStyle.rangeSliderLens(dark)
+        else LiquidGlassStyle.sliderLens(dark)).scale(lift.toDouble())
 
     // The ordinary track is a sibling, so the optical sampling graph cannot contain itself.
-    val samplingHost = if (LocalGlassOverlay.current) LocalGlassOverlaySamplingHost.current ?: host else host
-    val scene: Backdrop = if (LocalGlassOverlay.current) {
-        samplingHost.overlayBackdrop
-    } else {
-        samplingHost.backdropAt(maxOf(1f, LocalGlassDepth.current))
+    val scene = checkNotNull(rememberGlassSamplingBackdrop())
+    val trackSource = remember(trackBackdrop, range) {
+        if (range) trackBackdrop else trackBackdrop?.withTransformCompensation()
     }
-    val lensSource: Backdrop = if (trackBackdrop != null) {
-        rememberCombinedBackdrop(scene, trackBackdrop)
+    val lensSource: Backdrop = if (trackSource != null) {
+        rememberCombinedBackdrop(scene, trackSource)
     } else {
         scene
     }
 
     Box(
         modifier
-            .size(width.dp, height.dp)
+            .size((restingWidth * scale).dp, (restingHeight * scale).dp)
             .pointerInput(enabled) {
                 if (!enabled) return@pointerInput
                 awaitEachGesture {
@@ -106,18 +91,30 @@ internal fun GlassSliderThumb(
                     }
                 }
             }
-            .background(
-                restingColor.copy(alpha = 1f - lift.coerceIn(0f, 1f)),
-                shape,
-            )
-            .then(
-                if (lift > 0f) Modifier.drawBackdrop(
-                    backdrop = lensSource,
-                    shape = { shape },
-                    effects = { liquidGlass(context = context, style = lensStyle) },
-                    highlight = null,
-                    shadow = { LiquidGlassStyle.controlLensShadow(dark, lift) },
-                ) else Modifier
-            )
-    )
+    ) {
+        // Native carrier bounds grow isotropically, then its presentation layer
+        // transforms both axes. Resizing the capsule would redraw circular ends
+        // instead of transforming them into ellipses. Keep the hit/semantic owner
+        // at its isotropic size; only this visual child (including shadow) deforms.
+        Box(
+            Modifier.matchParentSize()
+                .then(if (range) Modifier else Modifier.graphicsLayer {
+                    scaleX = 1f + motion.stretch
+                    scaleY = 1f + motion.stretchY
+                })
+                .testTag("glass-slider-thumb-carrier")
+                .shadow(2.dp, shape, clip = false)
+                .then(
+                    if (lift > 0f) Modifier.drawBackdrop(
+                        backdrop = lensSource,
+                        shape = { shape },
+                        effects = { liquidGlass(context = context, style = lensStyle) },
+                        highlight = null,
+                        shadow = null,
+                    ) else Modifier
+                )
+                // The scene is painted first; the solid thumb fades above it.
+                .background(Color.White.copy(alpha = 1f - lift.coerceIn(0f, 1f)), shape)
+        )
+    }
 }

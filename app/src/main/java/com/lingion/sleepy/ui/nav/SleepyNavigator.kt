@@ -47,6 +47,10 @@ class SleepyNavigator(
     fun openAddCourseAt(tableId: Long, week: Int, day: Int, node: Int, step: Int) =
         push(SleepyRoute.AddCourse(tableId = tableId, week = week, day = day, node = node, step = step))
     fun openAllTables() = push(SleepyRoute.AllTables)
+    fun createTableAndEdit(previousTableId: Long = NavSession.NO_ID) {
+        if (backStack.lastOrNull() is SleepyRoute.CreateTable) return
+        push(SleepyRoute.CreateTable(java.util.UUID.randomUUID().toString(), previousTableId))
+    }
     fun openAddTable() = push(SleepyRoute.AddTable)
     fun openAddCourseEntry(tableId: Long) = push(SleepyRoute.AddCourseEntry(tableId))
     fun openCourseList() = push(SleepyRoute.CourseList)
@@ -73,7 +77,10 @@ class SleepyNavigator(
         pendingNew: Long = NavSession.NO_ID,
         prevDefault: Long = NavSession.NO_ID,
     ) = push(SleepyRoute.EditTable(tableId, pendingNew, prevDefault))
-    fun createPeriodTableAndEdit(newId: Long) = openPeriodEdit(newId, isNew = true)
+    fun createPeriodTableAndEdit() {
+        if (backStack.lastOrNull() is SleepyRoute.CreatePeriodTable) return
+        push(SleepyRoute.CreatePeriodTable(java.util.UUID.randomUUID().toString()))
+    }
 }
 
 /**

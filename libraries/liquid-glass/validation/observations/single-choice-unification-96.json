@@ -1,0 +1,426 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-14",
+  "kind": "single-choice-unification-96",
+  "sourceBaseHead": "7fc3e7c61d161cb0e8ca89de96eb8544351cdc89",
+  "scope": "Unify five anchored single-choice entries through the app-side SingleChoiceDropdown; use existing Material3 Expressive APIs and the shared Glass source-card handoff. No complete native-parity or publication acceptance.",
+  "sourceSnapshot": [
+    {
+      "path": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/SingleChoiceDropdown.kt",
+      "bytes": 10112,
+      "sha256": "bd4d6a1788956fcf29b9da18a7d4bd70d26f54bbcc861593f574cdf2ad8d26f4"
+    },
+    {
+      "path": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/GlassLanguageMenu.kt",
+      "bytes": 29071,
+      "sha256": "b56309a972a08310855b0da88fa82170f25247765f78c80d095f4654ad140660"
+    },
+    {
+      "path": "app/src/main/java/com/lingion/sleepy/ui/screen/mine/CalendarImportDialog.kt",
+      "bytes": 19993,
+      "sha256": "638b4c57928618b0243d1de835aba851dccf973694b64a37c03abb4281a5d5b2"
+    },
+    {
+      "path": "app/src/main/java/com/lingion/sleepy/ui/screen/mine/GeneralSettingsScreen.kt",
+      "bytes": 10141,
+      "sha256": "9c6c4b64e748ea9140b4ac207aef2d9e3bdc93ae79d81b5089183f55ff096c5f"
+    },
+    {
+      "path": "app/src/main/java/com/lingion/sleepy/ui/screen/mine/HolidaySettingsScreen.kt",
+      "bytes": 46255,
+      "sha256": "7f953fa514cb964149bff15049e5909e0cb4dbfd6b615077a6f91310ce3a912c"
+    },
+    {
+      "path": "app/src/main/java/com/lingion/sleepy/ui/screen/mine/ReminderScreen.kt",
+      "bytes": 82826,
+      "sha256": "93a85dd5b42491c35c10da4219d842a3c6f22a4d2538684df9791927991b6b5b"
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/GlassLanguageMenuTest.kt",
+      "bytes": 21781,
+      "sha256": "8380d848187f2e645751303a011d02222297030c613f56cc9e33b007f431564b"
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/SingleChoiceDropdownTest.kt",
+      "bytes": 11342,
+      "sha256": "d6c5bde872e9822bf867fc941b096c41d80c77d8b59cdb6e203f623b1091b63a"
+    }
+  ],
+  "entries": [
+    "GeneralSettings language (GlassLanguageMenu adapter)",
+    "Reminder fluid-card primary field",
+    "CalendarImport target calendar inside Dialog",
+    "Holiday active timetable",
+    "Holiday target-date mapping"
+  ],
+  "behavior": {
+    "selection": "Accept valid current option IDs once per live session; commit immediately. Cancellation does not invoke onSelect.",
+    "completion": "Material waits for popup content disposal and a frame; Glass retains the existing source-restoration submission handoff.",
+    "business": "Language recreation remains after dismissal; reminder persistence/rescheduling and calendar persistence/preview clearing remain immediate. Holiday none clears the mapping; other opens DatePicker only after dismissal, without first changing the mapping. Explicit labels preserve dates outside the candidate list.",
+    "material": "Existing Material3 1.5.0-rc01: FilledTonalButton with ButtonDefaults.shapes, DropdownMenuPopup, DropdownMenuGroup and SelectableDropdownMenuItem. Official exposedDropdownSize bounds width/height; long lists scroll.",
+    "inventory": "Five business anchors found. Remaining GlassDropdownMenu occurrences are component definitions/internal dispatch. Inline radio groups, native WebView bridge single-choice dialogs and action menus are outside this migration."
+  },
+  "tests": {
+    "finalTargeted": {
+      "classes": 2,
+      "tests": 23,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "perClass": {
+        "GlassLanguageMenuTest": 14,
+        "SingleChoiceDropdownTest": 9
+      },
+      "seconds": 28.88765575,
+      "alsoBuilt": [
+        "debug arm64-v8a",
+        "debug androidTest"
+      ]
+    },
+    "aggregate": {
+      "uniqueClasses": 6,
+      "tests": 52,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "perClass": {
+        "GlassOverlayContentTest": 11,
+        "GlassDropdownMenuTest": 3,
+        "GlassLanguageMenuTest": 14,
+        "GlassNestedPopupTest": 1,
+        "LanguageMenuMotionTest": 14,
+        "SingleChoiceDropdownTest": 9
+      },
+      "aggregation": "First 51 tests; final rerun of two affected classes 23 tests supersedes prior 22. 52 unique passing tests, not one fresh 52-test run."
+    },
+    "firstRun": {
+      "classes": 6,
+      "tests": 51,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 49.476889708
+    },
+    "preExpressiveTargeted": {
+      "classes": 2,
+      "tests": 22,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 19.261844417
+    }
+  },
+  "testNotes": [
+    "Final 23 tests cover cancellation, repeat selection, prior-session actions, disabled/empty options, explicit labels, long lists, narrow/RTL/large-font layouts and Dialog source restoration. These are host tests, not all production-route device acceptance.",
+    "An intermediate 22-test run had one failure in selectionCommitsOnceAndCompletionFollowsPopupDisposal: a saved action read CompositionLocal from a detached Modifier node. Failed evidence is retained; valid attached actions/reopening passed in the pre-Expressive 22 and final 23. The failed run is not counted as passing aggregate evidence.",
+    "Final 23 replace the earlier results of two classes; 52 is a latest-result-per-class aggregate, not one fresh 52-test run."
+  ],
+  "device": {
+    "model": "PKX110",
+    "api": 36,
+    "serial": "d3efcd6a",
+    "density": 2.9750001,
+    "fontScale": 0.9,
+    "glassFixture": {
+      "identityStage": "pre-Expressive; not a device rerun of the final Expressive main APK",
+      "installed": [
+        {
+          "package": "com.lingion.sleepy.debug",
+          "host_apk": "app/build/intermediates/apk/debug/app-arm64-v8a-debug.apk",
+          "sha256": "f20838e8a7cfd17aff1055a59b0e6adf3667fd69f20fe771d1d9a52ee2223196",
+          "verified": true
+        },
+        {
+          "package": "com.lingion.sleepy.debug.test",
+          "host_apk": "app/build/intermediates/apk/androidTest/debug/app-debug-androidTest.apk",
+          "sha256": "afbbe762adbc000125d9887d7d31d16f78c19f170bd30a6b9513b586045ccf8a",
+          "verified": true
+        }
+      ],
+      "tests": 1,
+      "seconds": 21.969771124999998,
+      "scenarios": 6,
+      "traceRows": 4443,
+      "callbacks": [
+        "en",
+        "en",
+        "ja"
+      ],
+      "finalSelected": "ja",
+      "dismissalCodes": [
+        "en",
+        null,
+        "en",
+        null,
+        "ja",
+        null
+      ],
+      "popupAbsentAtAllDismissalCallbacks": true,
+      "scope": "Real GlassLanguageMenu with all five language labels and local selected binding; preference persistence and Activity recreation are not emulated."
+    },
+    "finalInstalled": [
+      {
+        "package": "com.lingion.sleepy.debug",
+        "host_apk": "app/build/intermediates/apk/debug/app-arm64-v8a-debug.apk",
+        "sha256": "6b822b15eda44ce70735d8c7a50c188dd416c9c37565a8938d468ee2c0b4bcbc",
+        "verified": true
+      },
+      {
+        "package": "com.lingion.sleepy.debug.test",
+        "host_apk": "app/build/intermediates/apk/androidTest/debug/app-debug-androidTest.apk",
+        "sha256": "afbbe762adbc000125d9887d7d31d16f78c19f170bd30a6b9513b586045ccf8a",
+        "verified": true
+      }
+    ],
+    "productionMaterial": {
+      "packageSha256": "6b822b15eda44ce70735d8c7a50c188dd416c9c37565a8938d468ee2c0b4bcbc",
+      "route": "通用 / language",
+      "checks": [
+        "five visible options",
+        "back cancellation",
+        "reopen",
+        "choose already-selected zh-CN",
+        "returned to source without locale recreation"
+      ],
+      "passed": true,
+      "video": "production-md-menu-final.mp4",
+      "defaultThemeStills": [
+        "production-md-general-default-final.png",
+        "production-md-menu-default-final.png"
+      ],
+      "visualReview": "Root inspected the final default-purple stills. The interaction video and default-theme stills are separate evidence; changed-locale recreation was not accepted."
+    },
+    "restored": {
+      "observedPreferences": {
+        "theme_key": "default",
+        "ui_style": "liquid_glass"
+      },
+      "restoredVia": "appearance UI",
+      "passed": true
+    },
+    "installationNote": "Initial identity check queried release package com.lingion.sleepy after installing debug APK. Install itself succeeded. Correct actual debug applicationIdSuffix is .debug. Release package was not installed or modified.",
+    "productionHoliday": {
+      "packageSha256": "6b822b15eda44ce70735d8c7a50c188dd416c9c37565a8938d468ee2c0b4bcbc",
+      "style": "Liquid Glass",
+      "route": "节假日与调休 / 2026 元旦 1/1 mapping",
+      "checks": [
+        "group initially collapsed",
+        "expand group",
+        "open shared single-choice menu",
+        "six official dates plus none and other visible",
+        "select other date and observe DatePicker with menu absent",
+        "cancel DatePicker and dash text retained inside original anchor bounds"
+      ],
+      "mappingChanged": false,
+      "scriptCorrection": "Initial post-cancel assertion searched descendants of content-desc semantics node, but value is a sibling node. The same original XML and screenshot show dash within anchor bounds; no app or input changes/retry were needed.",
+      "scopeLimit": "settled screenshots and real taps; no per-frame native timing or optics acceptance",
+      "passed": true,
+      "visualReview": "Root inspected the original menu and cancel-return PNGs; the original XML value sibling is within the anchor bounds.",
+      "evidenceIdentity": "Final Expressive main APK; production Liquid Glass style, not the earlier language fixture APK."
+    }
+  },
+  "unchangedScope": [
+    "All 26 runtime production sources and the existing AGSL are unchanged in this batch; no library extraction or dependency upgrade.",
+    "LanguageMenuMotion and its measured motion parameters are unchanged. Shared source-card/menu adaptation remains app-side.",
+    "Toggle, Slider/Range/Hue, Dialog, Dock and action-menu implementations are unchanged; the default-disabled Dock source-adaptation candidate remains disabled."
+  ],
+  "coverageLimits": [
+    "The Glass language fixture uses the pre-Expressive main APK. Final-main production device evidence covers Material GeneralSettings language and the Glass Holiday 2026-01-01 other-date cancellation flow; Reminder, CalendarImport and Holiday table switching remain unverified on device. The same test APK identity does not merge these main-APK identities.",
+    "One API36 device at density2.975/fontScale0.9. Narrow/RTL/large-font and nested-Dialog coverage is host-test evidence, not a multi-device acceptance matrix.",
+    "HWUI submission is not compositor presentation; public semantics bounds are not segmented visible contours and draw_state is not measured material alpha. Observer traversal/JSON construction may perturb timing.",
+    "No matched five-language native geometry/alpha tolerance, complete multi-background optical comparison, full 1:1 motion, performance or changed-locale recreation acceptance.",
+    "Complete app-wide Material modernization, Host/control decoupling, standalone example and existing provenance/distribution gates remain unfinished.",
+    "Production Holiday evidence is settled screenshots and real taps, not per-frame native timing or optics. Its first post-cancel script assertion searched the wrong semantics subtree; the same original XML passed a bounds-based check without replaying UI or changing production."
+  ],
+  "evidenceDirectory": "/Users/kerrylee/Documents/Codex/2026-11-10/1-sleepy-2-26-3-1/artifacts/glass-optics-20261112/single-choice-unification-96",
+  "evidence": [
+    {
+      "path": "targeted-build-test.json",
+      "bytes": 766,
+      "sha256": "af0e571a9e033995b364610377d26a852f0b8cae0535c7e5c1f56bcf527e1334"
+    },
+    {
+      "path": "first-test-summary.json",
+      "bytes": 1127,
+      "sha256": "4acf7e735d010e3548c701fb4103e4254eeaa881a882ff7c73b80ffedceffa36"
+    },
+    {
+      "path": "final-build-test.json",
+      "bytes": 982,
+      "sha256": "5a1daab24190d0240b17d59101423941c68dd827d40785fac3b269f97640b504"
+    },
+    {
+      "path": "final-build-test.log",
+      "bytes": 8408,
+      "sha256": "ce9c19f3a20ce6f6483abca26acbd2cdd2e907f994d0089005a5276afad25c80"
+    },
+    {
+      "path": "aggregate-tests.json",
+      "bytes": 5370,
+      "sha256": "30ff94f12620074d5ff2fcaaa9889d39f739822cd9ea2f951184f32754003f80"
+    },
+    {
+      "path": "final-results/TEST-com.lingion.sleepy.ui.component.liquidglass.GlassLanguageMenuTest.xml",
+      "bytes": 2628,
+      "sha256": "03c1d9704db159ab4c0de0ffc67161d69d3d747d7cc72dadddae813ec25feaa8"
+    },
+    {
+      "path": "final-results/TEST-com.lingion.sleepy.ui.component.liquidglass.SingleChoiceDropdownTest.xml",
+      "bytes": 1884,
+      "sha256": "8a71f6e4761dc907cdec1f2cd4daf37c6734591e4c96c1cdf849d179fda85b9c"
+    },
+    {
+      "path": "detached-action-failed-build-test.json",
+      "bytes": 518,
+      "sha256": "25739fabce701b6e0f25a38ade80951aebd486b49a752952d73c0d75ceef58c3"
+    },
+    {
+      "path": "detached-action-failed-results/TEST-com.lingion.sleepy.ui.component.liquidglass.SingleChoiceDropdownTest.xml",
+      "bytes": 9233,
+      "sha256": "5d6f1a2e4aa7ab9ddf11b306a22bd40894ee600678958f273129854b6c450f84"
+    },
+    {
+      "path": "pre-expressive-build-test.json",
+      "bytes": 951,
+      "sha256": "cd7583a21d2975fe99adf27444ebfcda6e6d9e5dc3d76e3d722c3cdc3dcb73cd"
+    },
+    {
+      "path": "pre-expressive-install.json",
+      "bytes": 727,
+      "sha256": "25cca2e0c4deaa1d8167798ff8b48036b274cc03fa82e64d8bc592a5faeead65"
+    },
+    {
+      "path": "final-install.json",
+      "bytes": 727,
+      "sha256": "f20b2462754979306a3c9c6c6a6383054df84ed652a82b2140fb67ed3dd70dce"
+    },
+    {
+      "path": "install-identity-correction.json",
+      "bytes": 433,
+      "sha256": "f3980f0adc2753b408cdab858dbfede5d1bbde69ceccc047b6778a9e04c4b064"
+    },
+    {
+      "path": "official-material3-check.json",
+      "bytes": 568,
+      "sha256": "227bfc0d435b3e9da5ee16e8e16b145405306b29719524e2b5ee848ae277fa1e"
+    },
+    {
+      "path": "official-material3-metadata.xml",
+      "bytes": 3610,
+      "sha256": "d70a00770a4ecfc47618e0a7c64e89081659a671b62a65306cf7721415cd7d21"
+    },
+    {
+      "path": "device-menu-motion.json",
+      "bytes": 542,
+      "sha256": "42efd6f6ef351cf22d6eae2b67f44aaf1afcb278411a946e506d83324c4b3174"
+    },
+    {
+      "path": "device-menu-motion.log",
+      "bytes": 806,
+      "sha256": "b6fb5ad611be966b6184567080da44230de8245a4c82599c675a2561f68fe7f0"
+    },
+    {
+      "path": "device-menu-motion/result.json",
+      "bytes": 1827,
+      "sha256": "88dd7dfb0ed51680e47769228caba34fee195fc446ab1e8e5924342ad0aa6fb5"
+    },
+    {
+      "path": "device-menu-motion/session.json",
+      "bytes": 4038,
+      "sha256": "eb7e477b8b73f57450519471a3ba14f1d4e3dc19e0bf09df548dad2aae8ec22b"
+    },
+    {
+      "path": "production-md-validation.json",
+      "bytes": 473,
+      "sha256": "2625299a6a36b05ffb1e703285347c509c9e7a83e71cb0c31dac8958bc8021cb"
+    },
+    {
+      "path": "production-md-menu-final.mp4",
+      "bytes": 229846,
+      "sha256": "0d44c10c0daf051ba50893c3b49a95b354690eb76eb685dfc1eefd66191daf26"
+    },
+    {
+      "path": "production-md-general-default-final.png",
+      "bytes": 110509,
+      "sha256": "b808cfb6a841aa01b823d07627e312cae82aecafc95a64f8dcce930875d449e2"
+    },
+    {
+      "path": "production-md-general-default-final.xml",
+      "bytes": 14873,
+      "sha256": "126ce8ccffc2fd8dc7c2873f7ea780b4077c77f8993e9bf7d207efc6b193cee2"
+    },
+    {
+      "path": "production-md-menu-default-final.png",
+      "bytes": 86397,
+      "sha256": "6528b88ad33e5416115a071b324fdb0fa3ca67ceb3d329e0c9aa040e6b314720"
+    },
+    {
+      "path": "production-md-menu-default-final.xml",
+      "bytes": 7630,
+      "sha256": "5fcc029d6caa7c65a77f8f3cc91b28d2f1b056d3fd4b851dbdba110b975d2fbc"
+    },
+    {
+      "path": "production-restored-preferences.json",
+      "bytes": 375,
+      "sha256": "2f6285ef42c99aa286369e1aefc253eb3ac868789f99ba778bbb978bf9831a9a"
+    },
+    {
+      "path": "production-holiday-validation.json",
+      "bytes": 878,
+      "sha256": "65037d812e80de1b504b8783de3ee701b62dcbedbaaf1b3eac16a1e822d602df"
+    },
+    {
+      "path": "production-holiday-initial.png",
+      "bytes": 228596,
+      "sha256": "db8b990868c10c66f23256e05517374a07e57b19167ca71a196775368d6afb58"
+    },
+    {
+      "path": "production-holiday-expanded.png",
+      "bytes": 223190,
+      "sha256": "737273b3f26c2fdae784dcc677a8cdb4520f656f05dfbeacb40715e9dbc1f948"
+    },
+    {
+      "path": "production-holiday-menu.png",
+      "bytes": 288660,
+      "sha256": "3248a5a8a5640a76797f263a832f8bf4299712c0258106bff644e209b600a400"
+    },
+    {
+      "path": "production-holiday-menu.xml",
+      "bytes": 10199,
+      "sha256": "2dfea0c9535df8bc88e4abb2b316566b964917c44a8f688b2d626b880bb82e5c"
+    },
+    {
+      "path": "production-holiday-date-picker.png",
+      "bytes": 141419,
+      "sha256": "3076caa622937035beedc975b42f962b393205c8c5bcb4757a3e650cce8b5902"
+    },
+    {
+      "path": "production-holiday-cancel-return.png",
+      "bytes": 223631,
+      "sha256": "b9bb30bf2044a03899343c15211a6f495b17670a55e9243ed40418cfb13d3545"
+    },
+    {
+      "path": "production-holiday-cancel-return.xml",
+      "bytes": 29505,
+      "sha256": "9fc5b7398e4669692f001c3b3d49829217e474116fa360f24641d99e0792d898"
+    }
+  ],
+  "largeTrace": {
+    "path": "device-menu-motion/trace.jsonl",
+    "bytes": 4339221,
+    "sha256": "d97ecec8ea32e45605c2373a8bd95663faf443abadfb563594d66498aeda8dd8",
+    "location": "Retained only in the local artifact directory; not copied into the library."
+  },
+  "releaseGates": {
+    "completeNativeParity": false,
+    "completeMaterialModernization": false,
+    "independentLibraryReady": false,
+    "publicRepositoryCreated": false
+  },
+  "review": "Read-only call-site/inventory review found no blocking business semantic loss. Root reviewed final default-purple Material stills and the production Holiday menu/cancel-return originals; other device routes remain unperformed.",
+  "cleanup": {
+    "temporaryDeviceXmlRemoved": true,
+    "adbForward3737Removed": true,
+    "source": "Root reported cleanup after the production Holiday check; no build or package cleanup was performed by the documentation task."
+  }
+}

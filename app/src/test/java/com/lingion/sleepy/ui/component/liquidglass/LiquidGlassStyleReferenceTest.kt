@@ -4,9 +4,11 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** Values transcribed from FLClash 0.9.1+2026101702, lib/ui/liquid_glass.dart:79–224. */
+/** FLClash control defaults and the separately measured iOS presentation materials. */
 class LiquidGlassStyleReferenceTest {
     private val light = lightColorScheme()
     // Deliberately distinguish the highest surface from the ordinary card surface.
@@ -44,13 +46,26 @@ class LiquidGlassStyleReferenceTest {
         }
     }
 
-    @Test fun menuAndAlertUseTheirOwnMaterialNotDockPill() {
-        val menu = LiquidGlassStyle.menu(dark, true)
-        assertEquals(dark.surfaceContainerHighest.copy(alpha = 0.63f), menu.tint)
-        assertEquals(12.0, menu.blur, 0.0)
-        assertEquals(1.8, menu.brightness, 0.0)
-        assertEquals(-0.53, menu.contrast, 0.0)
-        assertEquals(menu.copy(blur = 16.0), LiquidGlassStyle.alert(dark, true))
+    @Test fun neutralPresentationsDoNotBorrowTheThemeSurfaceOrSelectedColor() {
+        listOf(false, true).forEach { isDark ->
+            val colors = if (isDark) dark else light
+            val changed = colors.copy(primary = Color.Red, surfaceBright = Color.Green,
+                surfaceContainerHighest = Color.Blue)
+            val menu = LiquidGlassStyle.menu(colors, isDark)
+            val alert = LiquidGlassStyle.alert(colors, isDark)
+            assertEquals(menu, LiquidGlassStyle.menu(changed, isDark))
+            assertEquals(alert, LiquidGlassStyle.alert(changed, isDark))
+            listOf(menu, alert).forEach {
+                assertEquals(it.tint.red, it.tint.green, 0f)
+                assertEquals(it.tint.green, it.tint.blue, 0f)
+                assertEquals(0.0, it.contrast, 0.0)
+            }
+            assertTrue(alert.blur > menu.blur)
+            assertTrue(alert.brightness < menu.brightness)
+            assertNotEquals(menu.copy(blur = alert.blur), alert)
+            assertEquals(Color.Red.copy(alpha = .82f),
+                LiquidGlassStyle.tinted(changed, changed.primary, isDark).tint)
+        }
     }
 
     @Test fun lensMatchesReferenceOpticsInBothAppearances() {

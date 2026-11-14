@@ -2,6 +2,7 @@ package com.lingion.sleepy.ui.screen.mine
 
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
 import com.lingion.sleepy.ui.component.liquidglass.GlassControlLayout
+import com.lingion.sleepy.ui.component.liquidglass.liquidGlassControlsEnabled
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +35,9 @@ import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import com.lingion.sleepy.ui.component.liquidglass.GlassMaterialContent
+import com.lingion.sleepy.ui.component.liquidglass.glassSurfaceBackground
+import com.lingion.sleepy.ui.component.liquidglass.rememberGlassMaterialScope
 import androidx.compose.material3.Text
 import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -531,54 +535,58 @@ internal fun CustomThemeCard(
     val isDark = colors.background.red < 0.5f
     val scheme = remember(theme, isDark) { CustomSchemeDeriver.derive(theme, isDark) }
     val bgColor = if (selected) colors.primaryContainer else colors.surfaceContainer
+    val backing = rememberGlassMaterialScope(SleepyTheme.shapes.large)
     Surface(
         modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).noRippleClickable(onClick)
+            .then(if (backing == null) Modifier else Modifier.glassSurfaceBackground(bgColor, SleepyTheme.shapes.large, materialScope = backing))
             .dbgTag("settings_theme", text = theme.name, role = "button"),
         color = bgColor, shape = SleepyTheme.shapes.large
     ) {
-        Column(Modifier.padding(16.dp)) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.defaultMinSize(minHeight = GlassControlLayout.touchTarget)
-            ) {
-                Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    ColorSwatch(scheme.primary, Modifier.weight(1f, fill = false))
-                    ColorSwatch(scheme.secondary, Modifier.weight(1f, fill = false))
-                    ColorSwatch(scheme.tertiary, Modifier.weight(1f, fill = false))
-                }
-                IconButton(
-                    onClick = onEdit,
-                    colors = IconButtonDefaults.iconButtonColors(containerColor = colors.surfaceContainerHighest),
-                    modifier = Modifier.dbgTag("settings_theme_edit", text = theme.name, role = "button")
+        GlassMaterialContent(backing) {
+            Column(Modifier.padding(16.dp)) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.defaultMinSize(minHeight = GlassControlLayout.touchTarget)
                 ) {
-                    Icon(
-                        Icons.Outlined.Edit,
-                        contentDescription = stringResource(R.string.theme_custom_edit),
-                        tint = colors.onSurfaceVariant,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            }
-            Spacer(Modifier.height(12.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    theme.name.ifBlank { stringResource(R.string.theme_new) },
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium),
-                    color = colors.onSurface,
-                    maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
-                )
-                // 与预设卡相同:固定 20dp 槽位,避免选中态改变标题行高度。
-                Box(Modifier.size(20.dp), contentAlignment = Alignment.Center) {
-                    if (selected) {
+                    Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        ColorSwatch(scheme.primary, Modifier.weight(1f, fill = false))
+                        ColorSwatch(scheme.secondary, Modifier.weight(1f, fill = false))
+                        ColorSwatch(scheme.tertiary, Modifier.weight(1f, fill = false))
+                    }
+                    IconButton(
+                        onClick = onEdit,
+                        colors = IconButtonDefaults.iconButtonColors(containerColor = colors.surfaceContainerHighest),
+                        modifier = Modifier.dbgTag("settings_theme_edit", text = theme.name, role = "button")
+                    ) {
                         Icon(
-                            Icons.Outlined.Check,
-                            stringResource(R.string.selected),
-                            tint = colors.primary,
-                            modifier = Modifier.size(20.dp)
+                            Icons.Outlined.Edit,
+                            contentDescription = stringResource(R.string.theme_custom_edit),
+                            tint = colors.onSurfaceVariant,
+                            modifier = Modifier.size(18.dp)
                         )
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        theme.name.ifBlank { stringResource(R.string.theme_new) },
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium),
+                        color = colors.onSurface,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                    // 与预设卡相同:固定 20dp 槽位,避免选中态改变标题行高度。
+                    Box(Modifier.size(20.dp), contentAlignment = Alignment.Center) {
+                        if (selected) {
+                            Icon(
+                                Icons.Outlined.Check,
+                                stringResource(R.string.selected),
+                                tint = colors.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -594,7 +602,7 @@ internal fun CustomThemeCard(
  * anchor 取当前 Compose primary(所见即所算, 动态取色主题也正确)。
  */
 @Composable
-private fun CourseColorSection(
+internal fun CourseColorSection(
     mode: Int,
     seed: Float,
     colorless: Boolean,
@@ -605,6 +613,7 @@ private fun CourseColorSection(
     previewGids: List<Pair<String, String>>,
 ) {
     val colors = MaterialTheme.colorScheme
+    val continuousGlassInput = liquidGlassControlsEnabled()
     // 与主页/课表格/小组件同一 isDark 判定（isPaletteDark(palette)）— 保证 S/L 档逐位同源
     val isDark = CourseColorUtil.isPaletteDark(SleepyTheme.palette)
     val placeholder = stringResource(R.string.format_help_example)
@@ -675,14 +684,17 @@ private fun CourseColorSection(
                 // 替换裸 material3.Slider。拖动只动本地值, 松手/点按经 onHueCommit 落库重算。
                 HueSlider(
                     hue = sliderHue,
-                    onHueChange = { sliderHue = it.roundToInt().toFloat() },
-                    onHueCommit = { onSeedCommit(it.roundToInt().toFloat()) },
+                    onHueChange = { sliderHue = if (continuousGlassInput) it else it.roundToInt().toFloat() },
+                    onHueCommit = {
+                        val accepted = it.roundToInt().toFloat()
+                        if (continuousGlassInput) sliderHue = accepted
+                        onSeedCommit(accepted)
+                    },
                     initialHue = hueBaseline,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp)
-                        .height(36.dp)
-                        .clip(SleepyTheme.shapes.large)
+                        .height(48.dp)
                         .dbgTag("settings_color_seed", role = "slider", clickable = false),
                 )
             }

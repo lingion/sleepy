@@ -257,6 +257,7 @@ dependencies {
 
     // 液态玻璃引擎 (Kyant0/AndroidLiquidGlass 2.0.0, third-party/kyant-backdrop)
     implementation(project(":kyant-backdrop"))
+    implementation(project(":liquid-glass-runtime"))
     implementation("io.github.kyant0:shapes:1.2.1")
 
     // Room
@@ -291,6 +292,8 @@ dependencies {
     androidTestImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.compose.ui.test.junit4)
+    // ConsoleAcceptanceAndroidTest makes real HTTP requests to the debug server.
+    androidTestImplementation("com.squareup.okhttp3:okhttp:4.12.0")
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)
 }

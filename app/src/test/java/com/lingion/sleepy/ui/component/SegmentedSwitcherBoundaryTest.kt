@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component
 
+import com.lingion.sleepy.ui.component.liquidglass.LocalDockInputTimeNanos
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
@@ -31,7 +32,7 @@ class SegmentedSwitcherBoundaryTest {
         val changes = mutableListOf<Int>()
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass) {
                     GlassHost {
                         SegmentedSwitcher(
                             options = listOf(0 to "Grid", 1 to "List"), selected = selected.value,
@@ -52,7 +53,7 @@ class SegmentedSwitcherBoundaryTest {
         val changes = mutableListOf<Int>()
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass) {
                     GlassHost {
                         SegmentedSwitcher(
                             options = listOf(0 to "Grid", 1 to "Week", 2 to "Day"), selected = 0,

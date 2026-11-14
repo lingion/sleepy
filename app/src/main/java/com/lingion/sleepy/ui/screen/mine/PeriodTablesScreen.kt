@@ -18,15 +18,12 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Edit
-import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
 import androidx.compose.material3.Icon
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
-import androidx.compose.material3.TextField
 import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -45,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.PeriodTableEntity
+import com.lingion.sleepy.ui.component.CopyNameDialog
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.util.TimeTableUtils
@@ -55,23 +53,23 @@ import kotlinx.coroutines.launch
  * 不混入课程编辑。列表显示各时间表 + "已绑定 N 张课表"(§4.1 树形图)。
  *
  * @param onOpenEdit 进入某张时间表的编辑页(编辑/复制既有表)
- * @param onCreateNew 新建后进入编辑页 — 由调用方以 pendingNewPeriodTableId 标记,
- *   编辑页未保存返回时丢弃残留行(与课表侧 pendingNewTableId 同款 §4.2 语义)
+ * @param onCreateNew 立即进入新建编辑页；数据库初始化由目的地负责。
  */
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun PeriodTablesScreen(
     onBack: () -> Unit,
     onOpenEdit: (Long) -> Unit,
-    onCreateNew: (Long) -> Unit = onOpenEdit,
+    onCreateNew: () -> Unit,
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val colors = MaterialTheme.colorScheme
     val scope = rememberCoroutineScope()
     val context = androidx.compose.ui.platform.LocalContext.current
-    val newPeriodTableName = stringResource(R.string.period_table_new)
-    val periodTables by viewModel.allPeriodTables.collectAsState()
-    val tables by viewModel.state.collectAsState()
+    val livePeriodTables by viewModel.allPeriodTables.collectAsState()
+    val liveTables by viewModel.state.collectAsState()
+    val periodTables = com.lingion.sleepy.ui.nav.rememberNavigationEntrySnapshot(livePeriodTables)
+    val tables = com.lingion.sleepy.ui.nav.rememberNavigationEntrySnapshot(liveTables)
 
     // v1.0.56 T7: 删除入口迁至编辑页底部 — 本页不再持有删除弹窗/绑定拦截状态
     // v1.0.56 T8: 复制先命名, 确认后才落库; 复制成功留在管理页
@@ -146,16 +144,7 @@ fun PeriodTablesScreen(
                 item { Spacer(modifier = Modifier.height(80.dp)) }
             }
             Button(
-                onClick = {
-                    scope.launch {
-                        val newId = viewModel.insertPeriodTable(
-                            name = newPeriodTableName
-                        )
-                        // issue#40: 创建即落库(自增 id), 编辑页把它当"未保存新表" —
-                        // 未保存返回时由 onCreateNew 调用方/编辑页清掉残留行
-                        if (newId > 0) onCreateNew(newId)
-                    }
-                },
+                onClick = onCreateNew,
                 modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp).height(SleepyTheme.Buttons.ctaHeight),
                 shape = SleepyTheme.Buttons.shape
             ) {
@@ -173,44 +162,21 @@ fun PeriodTablesScreen(
             tables.tables.map { it.name },
             periodTables.map { it.name }
         )
-        AlertDialog(
-            onDismissRequest = { copyTarget = null },
-            title = { Text(stringResource(R.string.period_table_copy_dialog_title), color = colors.onSurface) },
-            confirmButton = {},
-            dismissButton = {},
-            // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 统一色块按钮行
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextField(
-                        value = copyName,
-                        onValueChange = { copyName = it },
-                        label = { Text(stringResource(R.string.period_table_name_label)) },
-                        singleLine = true,
-                        isError = nameTaken,
-                        supportingText = if (nameTaken) {
-                            { Text(stringResource(R.string.period_table_name_taken)) }
-                        } else null,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = SleepyTheme.fieldShape,
-                        colors = SleepyTheme.fieldColors()
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 统一色块按钮行
-                    com.lingion.sleepy.ui.component.DialogActionButtons(
-                        confirmText = stringResource(R.string.ok),
-                        onConfirm = {
-                            scope.launch {
-                                // 二次查重: 列表可能在弹窗打开期间发生变化, 不能只信预览态。
-                                val newId = viewModel.copyPeriodTableAs(target.id, candidate)
-                                if (newId > 0) copyTarget = null
-                            }
-                        },
-                        dismissText = stringResource(R.string.cancel),
-                        onDismiss = { copyTarget = null },
-                        confirmEnabled = candidate.isNotBlank() && !nameTaken
-                    )
+        CopyNameDialog(
+            title = stringResource(R.string.period_table_copy_dialog_title),
+            name = copyName,
+            onNameChange = { copyName = it },
+            nameLabel = stringResource(R.string.period_table_name_label),
+            nameTaken = nameTaken,
+            onDismiss = { copyTarget = null },
+            onConfirm = {
+                scope.launch {
+                    // The repository rechecks names if lists changed while the form was open.
+                    val newId = viewModel.copyPeriodTableAs(target.id, candidate)
+                    if (newId > 0) copyTarget = null
                 }
-            }
+            },
+            tagPrefix = "period_copy",
         )
     }
 }

@@ -1460,10 +1460,14 @@ fun CardsGridView(
                         modifier = Modifier.align(Alignment.CenterEnd),
                     )
                 }
+                val courseMenuVisible = floatState.active && !floatState.dragging && currentWeek == floatState.week
+                val glassCourseMenu = com.lingion.sleepy.ui.theme.LocalUiStyle.current == com.lingion.sleepy.ui.theme.UiStyle.LiquidGlass &&
+                    com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost.current != null
+                val courseMenuOrigin = androidx.compose.ui.graphics.TransformOrigin(.5f, 1f)
                 AnimatedVisibility(
-                    visible = floatState.active && !floatState.dragging && currentWeek == floatState.week,
-                    enter = sleepyPopupEnter(),
-                    exit = if (false) sleepyPopupExit() else ExitTransition.None,
+                    visible = courseMenuVisible,
+                    enter = if (glassCourseMenu) com.lingion.sleepy.ui.component.liquidglass.glassMenuEnter(courseMenuOrigin) else sleepyPopupEnter(),
+                    exit = if (glassCourseMenu) com.lingion.sleepy.ui.component.liquidglass.glassMenuExit(courseMenuOrigin) else ExitTransition.None,
                     modifier = followShift
                         .floatOverlayPlacement(floatState, scrollState, headH + gapH, popupOffset = d(36f)),
                 ) {
@@ -1475,6 +1479,7 @@ fun CardsGridView(
                         FloatActionPopup(
                             state = floatState,
                             scale = scale,
+                            enabled = !glassCourseMenu || courseMenuVisible,
                             onEdit = {
                                 floatState.dismiss()
                                 // 浮窗已点「调整本次」→ 优先直达回调; 无则退回长按通道。

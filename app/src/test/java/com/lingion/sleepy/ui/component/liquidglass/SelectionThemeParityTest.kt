@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component.liquidglass
 
+import android.content.Context
 import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -34,8 +35,11 @@ import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.dp
+import androidx.test.core.app.ApplicationProvider
 import com.lingion.sleepy.ui.component.PillNavItemSpec
 import com.lingion.sleepy.ui.component.PillNavigationBar
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
@@ -188,14 +192,19 @@ class SelectionThemeParityTest {
         )
         page {
             for ((name, dockTheme) in listOf("classic" to AppPrefs.DOCK_THEME_CLASSIC, "glass" to AppPrefs.DOCK_THEME_LIQUID_GLASS)) {
-                PillNavigationBar(
-                    items = items, selectedIndex = 0, onSelect = {}, dock = true, dockTheme = dockTheme,
-                    modifier = Modifier.testTag("dock-$name"),
-                )
+                styled(if (dockTheme == AppPrefs.DOCK_THEME_LIQUID_GLASS) UiStyle.LiquidGlass else UiStyle.Classic) {
+                    PillNavigationBar(
+                        items = items, selectedIndex = 0, onSelect = {}, dock = true, dockTheme = dockTheme,
+                        modifier = Modifier.testTag("dock-$name"),
+                    )
+                }
             }
         }
         themes.forEach { case ->
             compose.runOnIdle { theme.value = case }
+            // This node exists only in the optical implementation: comparing two
+            // classic Dock instances would otherwise make all color checks pass.
+            compose.onNodeWithTag("dock-lens").assertExists()
             val classic = image("dock-classic")
             val glass = image("dock-glass")
             for (color in listOf(case.scheme.secondaryContainer, case.scheme.onSecondaryContainer, case.scheme.primary)) {
@@ -207,12 +216,55 @@ class SelectionThemeParityTest {
         }
     }
 
+    @Test fun materialDockIgnoresSavedGlassPreferenceAndRestoresItOnlyInGlassMode() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val previousPreference = AppPrefs.getDockTheme(context)
+        val style = mutableStateOf(UiStyle.Classic)
+        val selected = mutableStateOf(0)
+        val callbacks = mutableListOf<Int>()
+        val items = listOf(
+            PillNavItemSpec(Icons.Filled.Home, "Selected"),
+            PillNavItemSpec(Icons.Filled.Check, "Other"),
+        )
+        try {
+            AppPrefs.setDockTheme(context, AppPrefs.DOCK_THEME_LIQUID_GLASS)
+            page {
+                styled(style.value) {
+                    PillNavigationBar(
+                        items = items, selectedIndex = selected.value,
+                        onSelect = { callbacks += it; selected.value = it }, dock = true,
+                        modifier = Modifier.testTag("mode-isolated-dock"),
+                    )
+                }
+            }
+            compose.onNodeWithTag("dock-lens").assertDoesNotExist()
+            compose.onNodeWithText("Other").performClick()
+            compose.runOnIdle {
+                assertEquals(listOf(1), callbacks)
+                assertEquals(1, selected.value)
+                assertEquals(AppPrefs.DOCK_THEME_LIQUID_GLASS, AppPrefs.getDockTheme(context))
+                style.value = UiStyle.LiquidGlass
+            }
+            compose.onNodeWithTag("dock-lens").assertExists()
+            compose.runOnIdle { style.value = UiStyle.Classic }
+            compose.onNodeWithTag("dock-lens").assertDoesNotExist()
+            compose.runOnIdle {
+                assertEquals("mode changes preserve the controlled destination", 1, selected.value)
+                assertEquals("mode changes must not navigate", listOf(1), callbacks)
+                assertEquals("Material mode preserves the user's glass preference for later",
+                    AppPrefs.DOCK_THEME_LIQUID_GLASS, AppPrefs.getDockTheme(context))
+            }
+        } finally {
+            AppPrefs.setDockTheme(context, previousPreference)
+        }
+    }
+
     private fun page(content: @Composable () -> Unit) {
         compose.setContent {
             val case = theme.value
             key(case.name) {
                 MaterialTheme(colorScheme = case.scheme) {
-                    CompositionLocalProvider(LocalDarkTheme provides case.dark) {
+                    CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalDarkTheme provides case.dark) {
                         GlassHost(Modifier.fillMaxSize(), background = case.scheme.background) {
                             Column(Modifier.fillMaxSize().background(case.scheme.background)) { content() }
                         }
@@ -223,7 +275,7 @@ class SelectionThemeParityTest {
     }
 
     @Composable private fun styled(style: UiStyle, content: @Composable () -> Unit) {
-        CompositionLocalProvider(LocalUiStyle provides style, content = content)
+        CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides style, content = content)
     }
 
     private fun image(tag: String): Bitmap = compose.onNodeWithTag(tag, useUnmergedTree = true).captureToImage().asAndroidBitmap()

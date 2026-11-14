@@ -1,0 +1,475 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-14",
+  "kind": "control-regressions-95",
+  "sourceBaseHead": "6ec170dd2aab3862e87e3ddce9dfaff4b5ae0f01",
+  "scope": "Fix early Toggle contraction, production slider gesture cancellation and retained menu exit/handoff. Native iOS 26.5 reference; no complete native-parity or publication acceptance.",
+  "sourceSnapshot": [
+    {
+      "path": "app/src/main/java/com/lingion/sleepy/ui/component/CourseTableView.kt",
+      "bytes": 142955,
+      "sha256": "719af727d56e9f05cc08d1d6339a146604f04fde463619adeb543fe3d6e9bacc"
+    },
+    {
+      "path": "app/src/main/java/com/lingion/sleepy/ui/component/FloatOccurrence.kt",
+      "bytes": 27971,
+      "sha256": "cae9bda970fdfc1d6e6db7fd1777f21031633ba35e2e774d58118ab822c55472"
+    },
+    {
+      "path": "app/src/main/java/com/lingion/sleepy/ui/component/IntRangeSlider.kt",
+      "bytes": 17538,
+      "sha256": "5effe6b8561ae95440af19fbccac27a39dd70525fc994a758574834db146e8d4"
+    },
+    {
+      "path": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/GlassLanguageMenu.kt",
+      "bytes": 30411,
+      "sha256": "6feac03eeea6d8af9fae1655df02273e8667b8198988b642176f29456c719111"
+    },
+    {
+      "path": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/GlassOverlayContent.kt",
+      "bytes": 17812,
+      "sha256": "3dba000c140daac44c60deddc2475d468810040e9d6cdcdbe320ba3fc0b7813f"
+    },
+    {
+      "path": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/GlassOverlays.kt",
+      "bytes": 20207,
+      "sha256": "34f533ebd8681317944f75d61dc28477c3f43acf2e7ad03bd72d9605579f0fab"
+    },
+    {
+      "path": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/GlassPopupMenu.kt",
+      "bytes": 8658,
+      "sha256": "fb27dc163eef544c1b1d7f5c9ff6e625553c91023904c538b876f14e66cc8760"
+    },
+    {
+      "path": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/GlassSwitch.kt",
+      "bytes": 10272,
+      "sha256": "caedc47ae7905f8438896fcaf96af69c2eb783025a98ea31688771a0c336e0a3"
+    },
+    {
+      "path": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/LanguageMenuMotion.kt",
+      "bytes": 17584,
+      "sha256": "93cf7ade0872f7038e77d7703119cb8e7848146a9406a1f910ab60b4a6b29bdc"
+    },
+    {
+      "path": "app/src/main/java/com/lingion/sleepy/ui/screen/mine/AppearanceScreen.kt",
+      "bytes": 38807,
+      "sha256": "e1371359d32e31d01d2ba7959191442ecb9d0c78a5e10db02cbc2517d6232b15"
+    },
+    {
+      "path": "app/src/main/java/com/lingion/sleepy/ui/screen/mine/HolidaySettingsScreen.kt",
+      "bytes": 51207,
+      "sha256": "6e1ed756da46619d8563d1aa5913303a0b530c1aa3b129d7771feb3603ca4a3a"
+    },
+    {
+      "path": "app/src/main/java/com/lingion/sleepy/ui/screen/mine/PeriodHeaderSettingsScreen.kt",
+      "bytes": 14622,
+      "sha256": "4a5cf3edc345a91c4af8b5cadb4bd09ac8cbb3558a27faec631344576d8af301"
+    },
+    {
+      "path": "app/src/main/java/com/lingion/sleepy/ui/screen/mine/ReminderScreen.kt",
+      "bytes": 85548,
+      "sha256": "3e420747e2872935a49f3df314ebb3dc11779c349d1cef08caf3bbe8bbbd2a21"
+    },
+    {
+      "path": "app/src/main/java/com/lingion/sleepy/ui/screen/mine/ScheduleDisplayScreen.kt",
+      "bytes": 13712,
+      "sha256": "49373dabe2dea71122d77d0bfaee2229fbe31cb3dd75df03ccd1993086fce1fa"
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/GlassCourseActionMenuTest.kt",
+      "bytes": 5613,
+      "sha256": "d9be05f591c21a17249874a9e34d9ff75f87372dfe5be0516317386fdacfb72c"
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/GlassControlMotionTest.kt",
+      "bytes": 6017,
+      "sha256": "e352769c7c8837917ff984823d19f43fd8b46cbcad0a049ee96acbe8112c11dd"
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/GlassDropdownMenuTest.kt",
+      "bytes": 5903,
+      "sha256": "9565b85a59788f58e78d3e31bc3e7f0fbbb7ece98f17bdb16a77032716fe1a0d"
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/GlassProductionSliderGestureTest.kt",
+      "bytes": 4354,
+      "sha256": "d311d1aa0d155d2b9992c75e04c79446f1ad2166a88f8844857b0031ac012291"
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/GlassSwitchTest.kt",
+      "bytes": 11445,
+      "sha256": "9dab96d97ac165871a3b96eb483d7aff3d8ddd89dc7bcd5343b634dd9ab3c402"
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/LanguageMenuMotionTest.kt",
+      "bytes": 15432,
+      "sha256": "d7294631ba465f4951f555018ca2fccf6bda74ff7d22bbb0dc949de4428c8af1"
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/screen/mine/GlassDisplaySliderInputTest.kt",
+      "bytes": 6081,
+      "sha256": "fd4ddff805f5d1b4671fe9fb06a95839ec60d4ff96c5e36be457401d1b0365f8"
+    },
+    {
+      "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/GlassControlMotion.kt",
+      "bytes": 19755,
+      "sha256": "2b2fe128c1e833ba52f63ace473c4e16de88d4913b5c49c3c62100b85c8a2132"
+    }
+  ],
+  "tests": {
+    "uniqueClasses": 18,
+    "tests": 125,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "aggregation": "Latest result per class; preserves first 125-test run with one course fixture failure, replaces only that class with final 2/2 result. Not a single fresh 125-test run."
+  },
+  "testNotes": [
+    "Meaningful RED→GREEN for toggle phase, range ownership and three settings slider input cases. Hue used final non-integral 47.25dp input; earlier integral48dp fixture did not expose quantization.",
+    "Course menu production guesses were reverted; final test pumps Android layout after each paused Compose frame. First failed XML and diagnostic logs are preserved.",
+    "Final course test plus debug/androidTest build successful in24s. No broad repeated testing after that."
+  ],
+  "device": {
+    "model": "PKX110",
+    "api": 36,
+    "serial": "d3efcd6a",
+    "installed": [
+      {
+        "package": "com.lingion.sleepy.debug",
+        "local": "/Users/kerrylee/.codex/worktrees/android-settings-glass-fixes/sleepy/app/build/intermediates/apk/debug/app-arm64-v8a-debug.apk",
+        "device": "/data/app/~~Ma1GeB-7yzSnDKMpyhonxA==/com.lingion.sleepy.debug-TiqVV4f9ebvJX4D-k4btOg==/base.apk",
+        "sha256": "cad2d8c9014961a075ff5912fe22b45fc15c169c6253897af0dd0834d35acf4e"
+      },
+      {
+        "package": "com.lingion.sleepy.debug.test",
+        "local": "/Users/kerrylee/.codex/worktrees/android-settings-glass-fixes/sleepy/app/build/intermediates/apk/androidTest/debug/app-debug-androidTest.apk",
+        "device": "/data/app/~~t0pPY1ZSsDfbtSHtl3gg3w==/com.lingion.sleepy.debug.test-rE_WTIDdksGvssdWYj10pg==/base.apk",
+        "sha256": "afbbe762adbc000125d9887d7d31d16f78c19f170bd30a6b9513b586045ccf8a"
+      }
+    ],
+    "captures": {
+      "toggleNatural": {
+        "tests": 1,
+        "seconds": 9.705
+      },
+      "sliderNatural": {
+        "tests": 1,
+        "seconds": 49.598
+      },
+      "languageNatural": {
+        "tests": 1,
+        "seconds": 20.515
+      },
+      "languageGpu": {
+        "tests": 1,
+        "seconds": 2.774
+      }
+    },
+    "captureIdentity": "Natural recordings used earlier b6af2dec main with identical toggle/sliders/language implementation and temporary course-only guesses later reverted. GPU and production setting/range checks used final cad2d8c9 main.",
+    "productionSingle": {
+      "device": "d3efcd6a",
+      "input": [
+        "input",
+        "swipe",
+        608,
+        2359,
+        900,
+        2359,
+        600
+      ],
+      "before": {
+        "week_scale": "1.0",
+        "ui_style": "liquid_glass",
+        "grid_scale": "1.0"
+      },
+      "after": {
+        "week_scale": "1.15",
+        "ui_style": "liquid_glass",
+        "grid_scale": "1.0"
+      },
+      "scope": "Real MainActivity settings wrapper with ADB continuous600ms input; unit case separately checks multiple recomposition frames.",
+      "restoredWeekScale": "1.0"
+    },
+    "productionRange": {
+      "input": {
+        "from_px": [
+          880,
+          1595
+        ],
+        "to_px": [
+          640,
+          1560
+        ],
+        "duration_ms": 600,
+        "start_unix_ns": 1794626891249047000
+      },
+      "before_range": "1–16",
+      "after_nodes": [
+        {
+          "text": "第 1–12 周",
+          "content-desc": "",
+          "class": "android.widget.TextView",
+          "bounds": "[96,1469][254,1512]"
+        },
+        {
+          "text": "",
+          "content-desc": "",
+          "class": "android.widget.SeekBar",
+          "bounds": "[96,1568][179,1622]"
+        },
+        {
+          "text": "",
+          "content-desc": "",
+          "class": "android.widget.SeekBar",
+          "bounds": "[641,1568][724,1622]"
+        },
+        {
+          "text": "周一 · 第 1–16 周 · 每周",
+          "content-desc": "",
+          "class": "android.widget.TextView",
+          "bounds": "[90,2226][386,2260]"
+        },
+        {
+          "text": "第 1–2 节（共 2 节）",
+          "content-desc": "",
+          "class": "android.widget.TextView",
+          "bounds": "[90,2269][384,2307]"
+        }
+      ],
+      "context": "actual manual course create screen, unsaved blank course",
+      "saved": false
+    },
+    "returnedTo": "MainActivity course home, unsaved course discarded; no added course, week scale restored1.0.",
+    "installationNotes": "AGP injected-ABI packages were in intermediates/apk. Stale outputs packages were detected before after-capture. One missing -t install attempt failed without installing; actual final install used -t -r."
+  },
+  "toggle": {
+    "ordinaryTap": "Short activation keeps full lift until near destination (~88% travel), then falls with k160,zeta0.70; already-held activation starts lowering on release. Existing rise k841,zeta0.56.",
+    "parentOwned": "Explicit null callback opts into external selection lift; controlled fixture only, pending/disabled production state and held-DOWN parity remain unverified.",
+    "measurement": {
+      "method": "14 same-direction UP-aligned observations,7 times84..350ms,11 ordinary native taps; Android world dp vs iOS world pt, not pixel contours.",
+      "widthRmsBeforeAfter": [
+        10.39,
+        1.74
+      ],
+      "heightRmsBeforeAfter": [
+        7.08,
+        1.21
+      ],
+      "travelRmsBeforeAfter": [
+        0.8,
+        0.85
+      ],
+      "lateWidthResidualDp": [
+        1.07,
+        3.28
+      ],
+      "heldOnRmsWidthHeightTravel": [
+        0.55,
+        0.66,
+        0.61
+      ]
+    },
+    "limits": [
+      "Center travel did not improve. Later ordinary-tap lens remains wider than native.",
+      "No before-held baseline or native stationary held ON→OFF reference. Null-callback rapid repress/disabled state not device verified.",
+      "Geometry/trace and sampled video review do not establish optical or per-millisecond parity."
+    ]
+  },
+  "sliders": {
+    "causes": [
+      "IntRangeSlider parent Initial-pass vertical filter consumed glass-owned pointer.",
+      "Settings quantized raw controlled values on MOVE, interpreted as external correction and cancelled active epoch."
+    ],
+    "fix": "Keep glass raw controlled echo until finish; apply original quantization and persistence once on finish. MD retains existing filter/quantization.",
+    "audit": "6 display settings,1 period header,2 Hue routes,4 range routes. Tests directly cover grid scale,rail inset,Hue and IntRangeSlider. Production device directly covers week scale and course default week range.",
+    "shape": "Existing horizontal oval handles preserved; no optics/shape/snap driver change."
+  },
+  "menus": {
+    "language": "Match source and return corner16dp; fade returning optical shell; stop invisible spring tail at <=1 physical px and alpha thresholds, restore source-window actual submitted frame before popup removal.",
+    "generic": "GL-only Popup owns spring/lifetime; optical pane,clip,border,rows transform together, stop invisible alpha tail and reject retained-exit actions. MD delegates remain.",
+    "inventory": [
+      "language5rows",
+      "calendarChooser",
+      "reminderFluidField",
+      "holidayTableSelector",
+      "holidayTransferTarget",
+      "courseAdjustDeleteMenu"
+    ],
+    "languageTimingsMs": {
+      "originToSourceDraw": [
+        675,
+        690
+      ],
+      "sourceDrawToCommit": [
+        3,
+        11
+      ],
+      "commitToDismissal": [
+        19,
+        30
+      ],
+      "maxTerminalEdgeErrorPhysicalPx": [
+        0.702,
+        0.863
+      ]
+    },
+    "limits": [
+      "Language source handoff geometry reconstructed from draw state; sampled video reviewed separately, not independent pixel segmentation.",
+      "Stationary held release and provisional cancel stay open; their report close times describe subsequent outside cleanup.",
+      "Actual application language change invokes Activity.recreate after dismissal; fixture does not cover that separate hitch.",
+      "Generic menu springs/lifetimes fixed consistently; native timing per invocation not fully measured."
+    ]
+  },
+  "evidenceDirectory": "control-regressions-95 (local artifacts, excluded from repository)",
+  "evidence": [
+    {
+      "path": "final-build-test.log",
+      "bytes": 8379,
+      "sha256": "19b3b1112828e33f9f5e8aa9353c39610f3cb7e89872a94eaa56c69e8e9d15a8"
+    },
+    {
+      "path": "course-final-green-build.log",
+      "bytes": 8319,
+      "sha256": "438e353f15d1ae50237ba08fe7c568b0d10afedeebf09c3f003351253f584083"
+    },
+    {
+      "path": "final-aggregate-tests.json",
+      "bytes": 8391,
+      "sha256": "9ce807c31cbd8c95bf79d3266918e8e96939843b1f08f6d96989c680744dfbe6"
+    },
+    {
+      "path": "final-install.json",
+      "bytes": 804,
+      "sha256": "70e8d1350dff0eec1ef0411e076b5af5a4cd8c6faca42bd1c53c0136e278ca26"
+    },
+    {
+      "path": "toggle-after-device.log",
+      "bytes": 806,
+      "sha256": "65b0ca57c4b733fdfe169c58df68a4a29a6e1e9e521f01717d55fc245bb94553"
+    },
+    {
+      "path": "sliders-after-device.log",
+      "bytes": 807,
+      "sha256": "5d60f3e932901afadee0544fa1abb5570ff8f202b7fce0ea52d64776e20d263d"
+    },
+    {
+      "path": "language-after-device.log",
+      "bytes": 806,
+      "sha256": "33922fd800d573e737838ef98fe3e54846927bf0fad3a65ddcc230997b3c01bb"
+    },
+    {
+      "path": "language-gpu-after-device.log",
+      "bytes": 843,
+      "sha256": "d4416016740b27d296e50357d4259b8069dd9cb64b66dec2a93fceb499a760d5"
+    },
+    {
+      "path": "toggle-before-contact.png",
+      "bytes": 109857,
+      "sha256": "237f303681acb91ef19e286b69c345745972d85561b2a34c4d36f93dd85cb621"
+    },
+    {
+      "path": "toggle-after-contact.jpg",
+      "bytes": 261348,
+      "sha256": "66af04eeda3d00940ba0f619112a3bc32c65d90f7b9d3c9418b170a929f73b4b"
+    },
+    {
+      "path": "language-after-contact.jpg",
+      "bytes": 334868,
+      "sha256": "dece21d85ea03519907f14823e898344dc938e1de651ecccb1c38e0fe174665d"
+    },
+    {
+      "path": "toggle-after-trace/toggle-before-after-phase-95.md",
+      "bytes": 7263,
+      "sha256": "ee21a130536f81985759ebddad9b61bc50e040f404863badc63efff71c07b6ee"
+    },
+    {
+      "path": "toggle-after-trace/toggle-before-after-phase-95.json",
+      "bytes": 1201460,
+      "sha256": "e0495407a5e40c3139c53a2508c756ad2e2596b50d896f534d5a56c90d739699"
+    },
+    {
+      "path": "language-after-trace/handoff-timings.json",
+      "bytes": 9599,
+      "sha256": "039691990e37cc65dc8cf437d8fea2966b5af1173f4c4cf5d0e6629d70ecb15f"
+    },
+    {
+      "path": "language-after-trace/handoff-timings.md",
+      "bytes": 2515,
+      "sha256": "64d403fed7fce843eaadb16bfe825eb561b4feec133105d73eab409a3869ed34"
+    },
+    {
+      "path": "production-week-slider.json",
+      "bytes": 486,
+      "sha256": "853f8590b840af2dc54e863cbb10bdb209a79dbf18ee95c8f7476842f51643cf"
+    },
+    {
+      "path": "production-week-slider-before.png",
+      "bytes": 19471,
+      "sha256": "71507b832284baf584f5c9986ca7147ba3a29d67e37e9924f3da1a9fe31ed410"
+    },
+    {
+      "path": "production-week-slider-after.png",
+      "bytes": 21738,
+      "sha256": "f1b04828d6b557adea4bfb2376926fc490d77e44295e21c76ea145c1a9b1f865"
+    },
+    {
+      "path": "production-range.json",
+      "bytes": 1078,
+      "sha256": "0c1185044147a632755aa1280032fe4e8f654d7477cb4257e6a083e3c985cfd5"
+    },
+    {
+      "path": "production-range-before.xml",
+      "bytes": 26930,
+      "sha256": "1f828646f9db6ccab8e9df9d49d667788bc8bc6a2f945ef87a5d148dc913f075"
+    },
+    {
+      "path": "production-range-after.xml",
+      "bytes": 26930,
+      "sha256": "6910ddd22b30e28cfc49b4fda05922aad274280cfd695b6c4dbfc88af3bc2ed2"
+    },
+    {
+      "path": "production-range-before.png",
+      "bytes": 34381,
+      "sha256": "b4a0da1181310175621ee7edf4bcd98e81ab283f16cf153285043f17bd8c7e2c"
+    },
+    {
+      "path": "production-range-after.png",
+      "bytes": 208067,
+      "sha256": "3b01556ec33b6529790d99fb827473f510e8c2c273ae7ddaf511037bc1484269"
+    },
+    {
+      "path": "production-range-back.xml",
+      "bytes": 84636,
+      "sha256": "4aed3180799b9015c3c802cc105ae7c8f65acaf5e89ce0c4658e0b125f7f2d7c"
+    },
+    {
+      "path": "cleanup.json",
+      "bytes": 541,
+      "sha256": "55202d96b14b4453651bbefec29b6ece58956435a7a0fe93e07964e917245570"
+    }
+  ],
+  "releaseGates": {
+    "completeNativeParity": false,
+    "independentLibraryReady": false,
+    "publicRepositoryCreated": false
+  },
+  "unchangedLimits": "26 runtime production sources and existing AGSL retained. Default-disabled Dock source-adaptation candidate unchanged; prior Dock dark/bright and optical residuals remain.",
+  "cleanup": {
+    "removedStalePackages": [
+      {
+        "path": "app/build/outputs/apk/debug/app-arm64-v8a-debug.apk",
+        "bytes": 30497244,
+        "sha256": "8174aab753553d786997d408cd0b056578ddbf5dc1941cb54165c723596191d0"
+      },
+      {
+        "path": "app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+        "bytes": 2779008,
+        "sha256": "d790f59173b95496f11977e6a496dfc5383addfa11fa04ba3f954b91c432a6cd"
+      }
+    ],
+    "reclaimedBytes": 33276252,
+    "deviceTemporaryDumpRemoved": true,
+    "currentIntermediatesApksPreserved": true
+  },
+  "review": "Independent final read-only slider and menu reviews found no new blockers; null-callback asynchronous parent-row gap remains explicitly unverified and predates this patch."
+}

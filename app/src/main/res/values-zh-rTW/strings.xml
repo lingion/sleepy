@@ -241,6 +241,8 @@
     <string name="slot_time_invalid">第 %1$d 節時間無效（開始須早於結束）</string>
     <string name="expand">點擊展開</string>
     <string name="collapse">點擊收起</string>
+    <string name="accordion_expanded">已展開</string>
+    <string name="accordion_collapsed">已收起</string>
     <string name="n_periods">%1$d 節課</string>
 
     <string name="course_detail_title">課程詳情</string>

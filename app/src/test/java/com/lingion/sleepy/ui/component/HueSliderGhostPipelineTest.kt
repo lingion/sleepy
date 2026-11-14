@@ -35,9 +35,7 @@ import org.robolectric.annotation.GraphicsMode
  * 4. 拖动过程 onHueCommit 一次不触发 (每个 onHueChange 帧快照 commit 数, 全程须 0),
  *    松手恰一次 — 节流分工归调用点 (HueSlider 自身语义, 先例注释 :201-203)。
  *
- * 手势: HueSlider = 裸 Box + detectDragGestures (非 material3), 位移必须越过
- * touch slop; x→hue 线性 (frac = x/width, hue = frac*360), 无 thumb 内缩 —
- * 坐标直接按满宽换算, 不存在 DisplaySlider 那套轨道公式。
+ * Material keeps the original full-width rainbow strip and circular indicator.
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -45,6 +43,7 @@ import org.robolectric.annotation.GraphicsMode
 class HueSliderGhostPipelineTest {
 
     @get:Rule val compose = createComposeRule()
+    private lateinit var recorder: Recorder
 
     private class Recorder {
         var hue = 180f
@@ -53,6 +52,7 @@ class HueSliderGhostPipelineTest {
     }
 
     private fun page(rec: Recorder, initialHue: Float?) {
+        recorder = rec
         compose.setContent {
             SleepyThemeProvider(darkTheme = false, themeKey = "default") {
                 var hue by remember { mutableStateOf(rec.hue) }
@@ -65,30 +65,28 @@ class HueSliderGhostPipelineTest {
                     },
                     onHueCommit = { rec.commits.add(it) },
                     initialHue = initialHue,
-                    modifier = Modifier.fillMaxWidth().height(36.dp).testTag("hue"),
+                    modifier = Modifier.fillMaxWidth().height(48.dp).testTag("hue"),
                 )
             }
         }
         compose.waitForIdle()
     }
 
-    private fun hueX(widthPx: Float, hue: Float) = (hue / 360f) * widthPx
-
-    /** down 基线刻度, 分 6 步 moveTo 到目标 hue, 松手。 */
+    /** 从历史彩虹条的当前色相位置分 6 步横移，保留真实拖动/提交断言。 */
     private fun drag(fromHue: Float, toHue: Float) {
-        val node = compose.onNodeWithTag("hue").fetchSemanticsNode()
-        val w = node.boundsInRoot.width
-        val y = node.boundsInRoot.height / 2f
         compose.onNodeWithTag("hue").performTouchInput {
-            down(Offset(hueX(w, fromHue), y))
-            repeat(6) { moveTo(Offset(hueX(w, fromHue + (toHue - fromHue) * (it + 1) / 6f), y)) }
+            val delta = (toHue - fromHue) / 360f * width
+            down(Offset(width * fromHue / 360f, centerY))
+            repeat(6) { moveBy(Offset(delta / 6f, 0f)) }
             up()
         }
         compose.waitForIdle()
+        assertEquals("手势必须到达目标色相", toHue, recorder.hue, .01f)
     }
 
+    // The historical rainbow decoration retains its original tagged ghost.
     private fun ghostExists(): Boolean =
-        compose.onAllNodesWithTag("hue-ghost").fetchSemanticsNodes().isNotEmpty()
+        compose.onAllNodesWithTag("hue-ghost", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
 
     @Test fun null_initial_hue_never_shows_ghost() {
         val rec = Recorder()

@@ -1,0 +1,904 @@
+{
+  "schemaVersion": 1,
+  "stage": "M2 geometry and cached outline profile",
+  "date": "2026-11-14",
+  "status": "verified-build-original-baselines-device-install-and-aar-ownership",
+  "scope": "Physically move six geometry sources to the existing runtime Android target, extract the existing cached outline class from app Shader into one new runtime file, remove exactly 28 necessary internal modifiers and add only shapes 1.2.1 implementation dependency. Package, formulas, FMA/precision branches, lazy/identity/cache ownership, callers, original tests and AGSL assets remain unchanged.",
+  "sourceBaseHead": "045ba5750b36e0acdb0e243cd581b87ef1486a43",
+  "sourceChanges": [
+    {
+      "old": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse.kt",
+      "new": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse.kt",
+      "beforeSHA256": "fa8dc0d812a569d5706903911ec1cd4e3c76df95c22fa4e2f6f04b282abb431e",
+      "afterSHA256": "9cc0362f917d99eaa6f6afb38c14b9eb7ec8bf360075ece001bd64af790f739b",
+      "internalRemovals": 10,
+      "allOtherBytesIdentical": true,
+      "soleSource": true,
+      "classesOwnedByAAR": [
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse$Mat4$Companion.class",
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse$Mat4.class",
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse$Octant.class",
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse$PathOp$Close.class",
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse$PathOp$Cubic.class",
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse$PathOp$Line.class",
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse$PathOp$Move.class",
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse$PathOp.class",
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse$Quadrant.class",
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse$Radii$Companion.class",
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse$Radii.class",
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse$Rect2.class",
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse$Size2.class",
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse$SuperellipseParam.class",
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse$Vec.class",
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse.class",
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipseKt.class"
+      ]
+    },
+    {
+      "old": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassGeometry.kt",
+      "new": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassGeometry.kt",
+      "beforeSHA256": "87e2ba77f84fdd7143aa457bce2bcd8c83e580fe56ec015693020b4f1bd3bd64",
+      "afterSHA256": "2d7e1b79440149cffb9c71151e0a557a2a6ec14cb184bd78492d5b10fae9cff4",
+      "internalRemovals": 8,
+      "allOtherBytesIdentical": true,
+      "soleSource": true,
+      "classesOwnedByAAR": [
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassGeometryKt.class"
+      ]
+    },
+    {
+      "old": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassExactContour.kt",
+      "new": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassExactContour.kt",
+      "beforeSHA256": "a4690cc7123439a3959f0318934bde3afaa7f287f0c204013b076b224ffc8656",
+      "afterSHA256": "f420db2bcc43a8c332594f4b276e9b27768ff77b301b149ab363e513412bd670",
+      "internalRemovals": 6,
+      "allOtherBytesIdentical": true,
+      "soleSource": true,
+      "classesOwnedByAAR": [
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassExactContour$Companion$WhenMappings.class",
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassExactContour$Companion.class",
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassExactContour.class",
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassExactContourKt.class",
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassExactContourShape.class"
+      ]
+    },
+    {
+      "old": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassDualContourShape.kt",
+      "new": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassDualContourShape.kt",
+      "beforeSHA256": "782c253291d9a88297958b40054d9bb6aedf8f8b2362a2e96794a52d5c484c22",
+      "afterSHA256": "8aa4e19264ebf8f31cb2687cf8a2d7cdc3ed151394dbe666fb5edecf2146946a",
+      "internalRemovals": 1,
+      "allOtherBytesIdentical": true,
+      "soleSource": true,
+      "classesOwnedByAAR": [
+        "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassDualContourShape.class"
+      ]
+    },
+    {
+      "old": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/FlClashGlassShape.kt",
+      "new": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/FlClashGlassShape.kt",
+      "beforeSHA256": "7a7db0822326c1ec13b7fdb4aca3f897a6d4fb9170a810523b13c573570422c1",
+      "afterSHA256": "4b09bde2a6d2dab9ae35920152a5d2055452d7656802f83d8782945f1e463f72",
+      "internalRemovals": 1,
+      "allOtherBytesIdentical": true,
+      "soleSource": true,
+      "classesOwnedByAAR": [
+        "com/lingion/sleepy/ui/component/liquidglass/FlClashGlassShape.class"
+      ]
+    },
+    {
+      "old": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/DockPlatterShape.kt",
+      "new": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/DockPlatterShape.kt",
+      "beforeSHA256": "e2b8d8ba4c724fe63eb2254f737acbfc9502bd8df35d6643c9e07ce37e964de4",
+      "afterSHA256": "5dd86599853fdeaf57485b2e64d80e5f2618ee7b53aef3e4c90eab6c43f04575",
+      "internalRemovals": 1,
+      "allOtherBytesIdentical": true,
+      "soleSource": true,
+      "classesOwnedByAAR": [
+        "com/lingion/sleepy/ui/component/liquidglass/DockPlatterShape$Entry.class",
+        "com/lingion/sleepy/ui/component/liquidglass/DockPlatterShape$Key.class",
+        "com/lingion/sleepy/ui/component/liquidglass/DockPlatterShape.class"
+      ]
+    }
+  ],
+  "cachedProfileExtraction": {
+    "kind": "cached class extraction",
+    "from": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassShader.kt",
+    "to": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassOutlineProfile.kt",
+    "originalBlockBytes": 583,
+    "originalBlockSHA256": "246f525f7800c43964884bb3044a4127381d955cf64a8f4b62fcb10933cbf875",
+    "extractedBodyBytes": 573,
+    "newFileHeaderBytes": 95,
+    "newFile": {
+      "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassOutlineProfile.kt",
+      "bytes": 668,
+      "sha256": "6e6d22c59ec41e2ea36ee671be185d4dc96af6491437080ff31971c76813949b"
+    },
+    "internalRemovals": 1,
+    "remainingShader": {
+      "beforeBytes": 17943,
+      "afterBytes": 17360,
+      "deltaBytes": -583,
+      "beforeSHA256": "3408536a844b655598d860c1530c1393ed456c728a33b5c8a7d93bb9ad7f0214",
+      "afterSHA256": "83d6de3f091c694b5910da5efc01403f8bcd0c3bea30a170d25b1259873894e3",
+      "allBytesOutsideBlockUnchanged": true
+    },
+    "verifiedBuildNewFile": {
+      "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassOutlineProfile.kt",
+      "bytes": 669,
+      "sha256": "6e47a0ec5340ee45fe84fd55e5804ffb66115448f906e2ff260b733d60a2e677"
+    },
+    "extractedBodyOnlyInternalRemovalAndTrailingSeparatorOmission": true,
+    "trailingSeparatorBytesOmitted": 1
+  },
+  "visibilityRemovals": 28,
+  "dependencyAddition": {
+    "kind": "dependency addition",
+    "path": "libraries/liquid-glass/runtime/build.gradle.kts",
+    "addedLine": "            implementation(\"io.github.kyant0:shapes:1.2.1\")",
+    "beforeBytes": 858,
+    "afterBytes": 918,
+    "deltaBytes": 60,
+    "beforeSHA256": "ba62af6bde50ce4909c1c8cb634b722f0f47862543236c1f77a8781f8698d1e3",
+    "afterSHA256": "36c993bfe823675fee1d82e2e51ef89fcff1ace93ce4398d979a7c87f22a1f58",
+    "onlyExpectedDependencyLineAdded": true
+  },
+  "testPolicy": "All five original unit classes remain byte-for-byte in app, including Robolectric graphics modes/SDK and Shader/Effect/asset consumers. All original device tests and helpers remain byte-for-byte in app. No test rewrite, friend path, duplicate source registration or new Robolectric host wiring.",
+  "before": {
+    "command": [
+      "./gradlew",
+      ":app:testDebugUnitTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassSuperellipsePrecisionTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassExactContourTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassDualContourTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.CircularGlassCornerTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest"
+    ],
+    "exitCode": 0,
+    "wallSeconds": 14.000697583,
+    "tests": [
+      {
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "class": "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassSuperellipsePrecisionTest",
+        "testIdentities": [
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassSuperellipsePrecisionTest",
+            "deflateShrinksAllEightRadii"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassSuperellipsePrecisionTest",
+            "pathOpsReplayToAndroidPath"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassSuperellipsePrecisionTest",
+            "rightOctantCircleMaxAngleFmaGolden"
+          ]
+        ],
+        "xmlSHA256": "4b1faa8607a6468cbd13ed7aaa839a0f6898d88aec8740f2b58ec75af3c7a26c"
+      },
+      {
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "class": "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassExactContourTest",
+        "testIdentities": [
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassExactContourTest",
+            "aTinyActualClosingCorrectionIsRetainedRatherThanSmoothedAway"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassExactContourTest",
+            "actualOutlineAndDescriptorShareOneCachedCommandList"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassExactContourTest",
+            "dualContoursKeepTheirIndependentTranslatedCentersAndExplicitMode"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassExactContourTest",
+            "everyTransferredControlAndClosingLineMatchesRawCpuCommandsAtRealDensities"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassExactContourTest",
+            "unsupportedCommandsAndInvalidDensityRetainTheLegacyGenericPath"
+          ]
+        ],
+        "xmlSHA256": "8438bdfec567ea1aeb60399544cc125f00a2efa65c9f927aae6eb63420e34d1a"
+      },
+      {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "class": "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassDualContourTest",
+        "testIdentities": [
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassDualContourTest",
+            "independentCentersAndRadiiIgnoreTheCarrierCenter"
+          ]
+        ],
+        "xmlSHA256": "ed1bf8668ffca4809182af1b4157c3f75bb9474e5d6252c3abe83c19cdbbddd6"
+      },
+      {
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "class": "com.lingion.sleepy.ui.component.liquidglass.CircularGlassCornerTest",
+        "testIdentities": [
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.CircularGlassCornerTest",
+            "actualCapsuleOutlineStaysCircularAtBothThumbSizesAndDuringDeformation"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.CircularGlassCornerTest",
+            "actualPresentationSuperellipseRetainsItsSeparateContour"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.CircularGlassCornerTest",
+            "asymmetricAndEllipticalRoundRectsAreNotRelabelledAsUniformCircularCapsules"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.CircularGlassCornerTest",
+            "callerUniformRoundRectKeepsItsOwnRadiusAndClampsOnlyOverlappingUniformArcs"
+          ]
+        ],
+        "xmlSHA256": "e4e447313ba1104c3bcc19a4a9b981e945e38f7fed40f04177f72926e7a4705f"
+      },
+      {
+        "tests": 13,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "class": "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+        "testIdentities": [
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "absentHazeGoesToTheDartNoHazeSentinel"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "centeredTrackSamplingHasSymmetricPixelsAroundLensCenter"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "everyPackedUniformHasTheShaderDeclaredFloatCount"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "everyPackedUniformIsDeclaredInTheShader"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "frameFoldsThePaneOriginAndTheDevicePixelScale"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "lookSectionFollowsTheDartOrder"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "outlineSelectsTheProfilePath"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "packedLengthsMatchTheSkiaUniformTable"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "presentHazeCarriesTheStyleHazeAndItsOwnSampling"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "rimOnlyContributesItsShine"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "samplingMapsPaneDpOntoTexturePixels"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "sheetEdgeFitPreservesMenuAndAlertDirectionalCoefficients"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "texelsCarryTheDevicePixelStepAndTheHeldFrost"
+          ]
+        ],
+        "xmlSHA256": "f65aed86fb8c8e9512b27699d649279a19cf3514a01c070cb03af1d45664642b"
+      }
+    ],
+    "totals": {
+      "tests": 26,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "sourceUnchanged": true
+  },
+  "after": {
+    "command": [
+      "./gradlew",
+      ":liquid-glass-runtime:assemble",
+      ":app:assembleDebug",
+      ":app:assembleDebugAndroidTest",
+      ":app:testDebugUnitTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassSuperellipsePrecisionTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassExactContourTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassDualContourTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.CircularGlassCornerTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest"
+    ],
+    "exitCode": 0,
+    "wallSeconds": 43.948815625,
+    "tests": [
+      {
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "class": "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassSuperellipsePrecisionTest",
+        "testIdentities": [
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassSuperellipsePrecisionTest",
+            "deflateShrinksAllEightRadii"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassSuperellipsePrecisionTest",
+            "pathOpsReplayToAndroidPath"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassSuperellipsePrecisionTest",
+            "rightOctantCircleMaxAngleFmaGolden"
+          ]
+        ],
+        "identitiesUnchanged": true,
+        "testHashUnchanged": true
+      },
+      {
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "class": "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassExactContourTest",
+        "testIdentities": [
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassExactContourTest",
+            "aTinyActualClosingCorrectionIsRetainedRatherThanSmoothedAway"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassExactContourTest",
+            "actualOutlineAndDescriptorShareOneCachedCommandList"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassExactContourTest",
+            "dualContoursKeepTheirIndependentTranslatedCentersAndExplicitMode"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassExactContourTest",
+            "everyTransferredControlAndClosingLineMatchesRawCpuCommandsAtRealDensities"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassExactContourTest",
+            "unsupportedCommandsAndInvalidDensityRetainTheLegacyGenericPath"
+          ]
+        ],
+        "identitiesUnchanged": true,
+        "testHashUnchanged": true
+      },
+      {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "class": "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassDualContourTest",
+        "testIdentities": [
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassDualContourTest",
+            "independentCentersAndRadiiIgnoreTheCarrierCenter"
+          ]
+        ],
+        "identitiesUnchanged": true,
+        "testHashUnchanged": true
+      },
+      {
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "class": "com.lingion.sleepy.ui.component.liquidglass.CircularGlassCornerTest",
+        "testIdentities": [
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.CircularGlassCornerTest",
+            "actualCapsuleOutlineStaysCircularAtBothThumbSizesAndDuringDeformation"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.CircularGlassCornerTest",
+            "actualPresentationSuperellipseRetainsItsSeparateContour"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.CircularGlassCornerTest",
+            "asymmetricAndEllipticalRoundRectsAreNotRelabelledAsUniformCircularCapsules"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.CircularGlassCornerTest",
+            "callerUniformRoundRectKeepsItsOwnRadiusAndClampsOnlyOverlappingUniformArcs"
+          ]
+        ],
+        "identitiesUnchanged": true,
+        "testHashUnchanged": true
+      },
+      {
+        "tests": 13,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "class": "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+        "testIdentities": [
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "absentHazeGoesToTheDartNoHazeSentinel"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "centeredTrackSamplingHasSymmetricPixelsAroundLensCenter"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "everyPackedUniformHasTheShaderDeclaredFloatCount"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "everyPackedUniformIsDeclaredInTheShader"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "frameFoldsThePaneOriginAndTheDevicePixelScale"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "lookSectionFollowsTheDartOrder"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "outlineSelectsTheProfilePath"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "packedLengthsMatchTheSkiaUniformTable"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "presentHazeCarriesTheStyleHazeAndItsOwnSampling"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "rimOnlyContributesItsShine"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "samplingMapsPaneDpOntoTexturePixels"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "sheetEdgeFitPreservesMenuAndAlertDirectionalCoefficients"
+          ],
+          [
+            "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassShaderContractTest",
+            "texelsCarryTheDevicePixelStepAndTheHeldFrost"
+          ]
+        ],
+        "identitiesUnchanged": true,
+        "testHashUnchanged": true
+      }
+    ],
+    "totals": {
+      "tests": 26,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "testIdentitiesUnchanged": true,
+  "unitTestHashChecks": [
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipsePrecisionTest.kt",
+      "sha256": "66c49a30021162072a423eaa49d4a2e1871a825a6a85e176d1eb531df4ea9f19",
+      "unchanged": true,
+      "module": ":app"
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassExactContourTest.kt",
+      "sha256": "457ba384bd2bafb85824758562ea8c8a6cac0ccb72fae84659022a1202a3ea67",
+      "unchanged": true,
+      "module": ":app"
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassDualContourTest.kt",
+      "sha256": "33982abecb01a1758c059a8f05d2c31bb16acf308914e45ff91276653fe20cb6",
+      "unchanged": true,
+      "module": ":app"
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/CircularGlassCornerTest.kt",
+      "sha256": "4f6358c2ada7ccee26771c31d20ad187881bcc362cf9b7dfe7d1e38c80fd5671",
+      "unchanged": true,
+      "module": ":app"
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassShaderContractTest.kt",
+      "sha256": "90aad5e5e142976b6af9dab03505db47b6602198a98c8f2f3c6ad1557bc6777d",
+      "unchanged": true,
+      "module": ":app"
+    }
+  ],
+  "frozenTestAndResourceChecks": [
+    {
+      "path": "app/src/main/assets/shaders/liquid_glass.agsl",
+      "sha256": "2b45241e8c640d996e1ebfbe4eceff3d0fcdfc55a84e428f7fcd215560247f19",
+      "unchanged": true
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipsePrecisionTest.kt",
+      "sha256": "66c49a30021162072a423eaa49d4a2e1871a825a6a85e176d1eb531df4ea9f19",
+      "unchanged": true
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassExactContourTest.kt",
+      "sha256": "457ba384bd2bafb85824758562ea8c8a6cac0ccb72fae84659022a1202a3ea67",
+      "unchanged": true
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassDualContourTest.kt",
+      "sha256": "33982abecb01a1758c059a8f05d2c31bb16acf308914e45ff91276653fe20cb6",
+      "unchanged": true
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/CircularGlassCornerTest.kt",
+      "sha256": "4f6358c2ada7ccee26771c31d20ad187881bcc362cf9b7dfe7d1e38c80fd5671",
+      "unchanged": true
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassShaderContractTest.kt",
+      "sha256": "90aad5e5e142976b6af9dab03505db47b6602198a98c8f2f3c6ad1557bc6777d",
+      "unchanged": true
+    },
+    {
+      "path": "app/src/androidTest/java/com/lingion/sleepy/ui/component/liquidglass/DockPlatterContourTest.kt",
+      "sha256": "3b8a750eb33859c7b94be51c54d5c8700e5c7c380fbd6d8c8e5941c5392f522c",
+      "unchanged": true
+    },
+    {
+      "path": "app/src/androidTest/java/com/lingion/sleepy/ui/component/liquidglass/DockPlatterOpticalCacheTest.kt",
+      "sha256": "cd26f054e505c4b61a23ca8942011cebd081311199fa0208e2d882a8e742e650",
+      "unchanged": true
+    },
+    {
+      "path": "app/src/androidTest/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassExactContourPathTest.kt",
+      "sha256": "282dfd35b8d1ff764fb2ab25630a22c1638ddfb6d93374c6f97135402ba39d41",
+      "unchanged": true
+    },
+    {
+      "path": "app/src/androidTest/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassCornerRenderTest.kt",
+      "sha256": "7e6f3894dc889884f680f59c54d88b7c98c3a6cb96c111dcc246c92e996a59a8",
+      "unchanged": true
+    },
+    {
+      "path": "app/src/androidTest/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassDualContourRenderTest.kt",
+      "sha256": "1488f3f86fc4c42e786395f489ef3c570af8bddeab367661c0ba277fcd1dd4d8",
+      "unchanged": true
+    },
+    {
+      "path": "app/src/androidTest/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassExactContourPerformanceTest.kt",
+      "sha256": "0fc87427852c54876e29e2387918b1f08f75d78d76bd837eff547f84c770a8cf",
+      "unchanged": true
+    },
+    {
+      "path": "app/src/androidTest/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassExactContourRenderTest.kt",
+      "sha256": "68e345d09762a5b04d1aacc6ce05ace8b562887968708f3ad34671500bb1592c",
+      "unchanged": true
+    },
+    {
+      "path": "app/src/androidTest/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassGenericGeometryRenderTest.kt",
+      "sha256": "1f362223fce998b66375f1cc2c4ce35992b8642b5d285363ff32fa87c11b9cc0",
+      "unchanged": true
+    },
+    {
+      "path": "app/src/androidTest/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassHazeRenderTest.kt",
+      "sha256": "429fa424d640a6f781cfa741d3f99ce519db4fb062927861f7978445d2aaf0af",
+      "unchanged": true
+    },
+    {
+      "path": "app/src/androidTest/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassLanguageMaterialDiagnosticTest.kt",
+      "sha256": "1336aa6a64ab449e22489b9f68cfe028a5ec05268319a9bccf5308d084c02d13",
+      "unchanged": true
+    },
+    {
+      "path": "app/src/androidTest/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassRawPathOracle.kt",
+      "sha256": "61c4339d6d505b3e1a17ae06b159990069cc026da09c1f77cef8399765781d10",
+      "unchanged": true
+    }
+  ],
+  "ownership": {
+    "aarSHA256": "b04dc3fa962f6e78abea6d661b714ee84d5aed2e323eaf7eafc19f76b333e4d0",
+    "aarClassCount": 102,
+    "appClassCount": 2253,
+    "duplicateClasses": [],
+    "runtimeSourceCountBefore": 12,
+    "runtimeSourceCount": 19,
+    "movedSourcesAbsentFromApp": true,
+    "geometrySourcesOwnedByAAR": true,
+    "cachedProfileClassOwnedByAAR": "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassCachedOutlineProfile.class",
+    "singleSourceOwner": true
+  },
+  "preserved": {
+    "formulasChanged": false,
+    "callSitesChanged": false,
+    "springStateSettersChanged": false,
+    "testFilesChanged": false,
+    "resourcesChanged": false,
+    "shaderOutsideExtractedBlockUnchanged": true
+  },
+  "focusedInstrumentation": {
+    "status": "verified-original-three-class-eight-method-closure",
+    "plannedTests": 8,
+    "testsRun": 8,
+    "classes": [
+      {
+        "class": "com.lingion.sleepy.ui.component.liquidglass.DockPlatterContourTest",
+        "path": "app/src/androidTest/java/com/lingion/sleepy/ui/component/liquidglass/DockPlatterContourTest.kt",
+        "sha256": "3b8a750eb33859c7b94be51c54d5c8700e5c7c380fbd6d8c8e5941c5392f522c",
+        "testNames": [
+          "actualKyantControlsAndAllFourLinesReachTheExactUniformsAtCurrentSizeAndDensity",
+          "descriptorBelongsToTheActualCachedOutlineAndDoesNotLeakAcrossResize",
+          "unmeasuredGeometryDoesNotBuildAnOpticalPathAndActualRoundOutlinesStayCircular"
+        ]
+      },
+      {
+        "class": "com.lingion.sleepy.ui.component.liquidglass.DockPlatterOpticalCacheTest",
+        "path": "app/src/androidTest/java/com/lingion/sleepy/ui/component/liquidglass/DockPlatterOpticalCacheTest.kt",
+        "sha256": "cd26f054e505c4b61a23ca8942011cebd081311199fa0208e2d882a8e742e650",
+        "testNames": [
+          "stableGeometryReusesPathAndProfileWhileGlowUniformsStayLive",
+          "sizeDensityDirectionAndEvictionInvalidateTheRetainedOpticsTogether",
+          "cacheRequiresBothItsOwnedPathAndItsOwnExactDescriptor",
+          "otherGeometryModesKeepTheirUncachedUniforms"
+        ]
+      },
+      {
+        "class": "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassExactContourPathTest",
+        "path": "app/src/androidTest/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassExactContourPathTest.kt",
+        "sha256": "282dfd35b8d1ff764fb2ab25630a22c1638ddfb6d93374c6f97135402ba39d41",
+        "testNames": [
+          "actualPathReaderPreservesMixedLinesAndRejectsUnsupportedOrNonradialGeometry"
+        ]
+      }
+    ],
+    "scope": "Existing geometry/cache/path closure only; no new optical, GPU rendering or natural motion acceptance.",
+    "commandAttempts": [
+      {
+        "status": "failed-before-tests-started",
+        "command": [
+          "/Users/kerrylee/Library/Android/sdk/platform-tools/adb",
+          "-s",
+          "d3efcd6a",
+          "shell",
+          "am",
+          "instrument",
+          "-w",
+          "-r",
+          "-e",
+          "class",
+          "com.lingion.sleepy.ui.component.liquidglass.DockPlatterContourTest,com.lingion.sleepy.ui.component.liquidglass.DockPlatterOpticalCacheTest,com.lingion.sleepy.ui.component.liquidglass.LiquidGlassExactContourPathTest",
+          "com.lingion.sleepy.debug.test/androidx.test.runner.AndroidJUnitRunner"
+        ],
+        "exitCode": 1,
+        "wallSeconds": 0.660196792,
+        "testClasses": [
+          "com.lingion.sleepy.ui.component.liquidglass.DockPlatterContourTest",
+          "com.lingion.sleepy.ui.component.liquidglass.DockPlatterOpticalCacheTest",
+          "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassExactContourPathTest"
+        ],
+        "instrumentationStatusCodes": [],
+        "testCount": 0,
+        "junitOK8": false,
+        "statusFailuresAbsent": true,
+        "runFailureAbsent": false,
+        "reason": "Default AndroidJUnitRunner was not registered; retain this command failure and original log separately."
+      },
+      {
+        "status": "passed-eight-original-tests",
+        "command": [
+          "/Users/kerrylee/Library/Android/sdk/platform-tools/adb",
+          "-s",
+          "d3efcd6a",
+          "shell",
+          "am",
+          "instrument",
+          "-w",
+          "-r",
+          "-e",
+          "class",
+          "com.lingion.sleepy.ui.component.liquidglass.DockPlatterContourTest,com.lingion.sleepy.ui.component.liquidglass.DockPlatterOpticalCacheTest,com.lingion.sleepy.ui.component.liquidglass.LiquidGlassExactContourPathTest",
+          "com.lingion.sleepy.debug.test/com.lingion.sleepy.SleepyRenderTestRunner"
+        ],
+        "exitCode": 0,
+        "wallSeconds": 1.286185125,
+        "testClasses": [
+          "com.lingion.sleepy.ui.component.liquidglass.DockPlatterContourTest",
+          "com.lingion.sleepy.ui.component.liquidglass.DockPlatterOpticalCacheTest",
+          "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassExactContourPathTest"
+        ],
+        "instrumentationStatusCodes": [
+          "1",
+          "0",
+          "1",
+          "0",
+          "1",
+          "0",
+          "1",
+          "0",
+          "1",
+          "0",
+          "1",
+          "0",
+          "1",
+          "0",
+          "1",
+          "0"
+        ],
+        "testCount": 8,
+        "junitOK8": true,
+        "statusFailuresAbsent": true,
+        "runFailureAbsent": true,
+        "previousCommandError": "Default AndroidJUnitRunner was not registered. Original command failed before any test. Use runner verified from Gradle and device manifest; original error retained."
+      }
+    ],
+    "runnerCorrection": "Root checked Gradle and pm registered instrumentation, then selected com.lingion.sleepy.SleepyRenderTestRunner. No source, test or expectation change."
+  },
+  "installed": {
+    "device": "d3efcd6a",
+    "package": "com.lingion.sleepy.debug",
+    "apkSHA256": "aeb5060ffddce0e17a3f93fb77ecf05c6ad556c4901a70235ae8b14afb86f9a0",
+    "installedSHA256": "aeb5060ffddce0e17a3f93fb77ecf05c6ad556c4901a70235ae8b14afb86f9a0",
+    "testApkSHA256": "dca9e55ac4a868be16befe1aa55e529d5aeebbc1cd5639c61b943a56e3f4689a",
+    "installedTestSHA256": "dca9e55ac4a868be16befe1aa55e529d5aeebbc1cd5639c61b943a56e3f4689a",
+    "mainActivityResumed": true,
+    "resumedLines": [
+      "topResumedActivity=ActivityRecord{178149456 u0 com.lingion.sleepy.debug/com.lingion.sleepy.MainActivity t41673}",
+      "ResumedActivity: ActivityRecord{178149456 u0 com.lingion.sleepy.debug/com.lingion.sleepy.MainActivity t41673}"
+    ],
+    "status": "verified-api36-main-test-identity-and-mainactivity-resumed",
+    "api": 36,
+    "launchVisualObservation": "Root visually checked three distinct retained frames: android-module-launch.png shows the existing empty timetable card and Dock; android-after-geometry-tests.png is the immediate post-test resume splash frame; android-launched-home.png later shows the existing week11 populated timetable grid and Dock. No inference about transient data differences, no data/UI/optical/natural motion acceptance and no database write by root.",
+    "finalLaunchVisualStatus": "verified-visible-post-startup-context",
+    "initialLaunchScreenshot": {
+      "file": "android-module-launch.png",
+      "sha256": "7353cc681c0d8c4dea6488c575c0595b38c6251df0c6515f951991fe43dbace5",
+      "observation": "Existing empty timetable card and Dock are visible; this is not the splash frame. Installation/launch visibility only."
+    },
+    "finalLaunchScreenshot": {
+      "file": "android-launched-home.png",
+      "sha256": "98ea7c99e2d25aa827939ff95fb3b2f48c9fd1606fd17a5e948d2d6be744fb95",
+      "rootVisualObservation": "Existing week11 populated timetable grid and Dock are visible. Installation/launch visibility only; no data, UI/optical or natural motion acceptance."
+    },
+    "homeState": {
+      "evidence": "android-home-state.json",
+      "resumedLines": [
+        "topResumedActivity=ActivityRecord{86192389 u0 com.lingion.sleepy.debug/com.lingion.sleepy.MainActivity t41674}",
+        "ResumedActivity: ActivityRecord{86192389 u0 com.lingion.sleepy.debug/com.lingion.sleepy.MainActivity t41674}"
+      ],
+      "hierarchyFile": "android-launch-hierarchy.xml",
+      "hierarchySHA256": "b849d1df8ee84ae0b487e2190073397621406422ec5f8e141d02a7ae8c03e1e6"
+    },
+    "postTestResumeScreenshot": {
+      "file": "android-after-geometry-tests.png",
+      "sha256": "4511ed36d28a5ffb09d1db065ff3cc5c1df2777095db29d5dea12d628d5d7829",
+      "observation": "Immediate post-test resume splash frame, distinct from the initial empty timetable screenshot and the later populated timetable screenshot."
+    }
+  },
+  "dependencyResolution": {
+    "status": "verified-independent-compile-and-runtime-graphs",
+    "declaredAddition": "implementation(\"io.github.kyant0:shapes:1.2.1\")",
+    "results": [
+      {
+        "command": [
+          "./gradlew",
+          ":liquid-glass-runtime:dependencies",
+          "--configuration",
+          "androidCompileClasspath"
+        ],
+        "exitCode": 0,
+        "wallSeconds": 1.644869375,
+        "shapes1_2_1Present": true,
+        "uiGraphics1_12_1Present": true,
+        "unresolvedAbsent": true
+      },
+      {
+        "command": [
+          "./gradlew",
+          ":liquid-glass-runtime:dependencies",
+          "--configuration",
+          "androidRuntimeClasspath"
+        ],
+        "exitCode": 0,
+        "wallSeconds": 0.7275582499999997,
+        "shapes1_2_1Present": true,
+        "uiGraphics1_12_1Present": true,
+        "unresolvedAbsent": true
+      }
+    ]
+  },
+  "evidenceDirectory": "current conversation artifacts/glass-optics-20261112/android-library-geometry-87",
+  "evidenceSHA256": {
+    "root-protocol.json": "95f047b099c6d9bb9c1bcef0edbd5a954eee2eceb074ed71879a659c6acf3437",
+    "before-tests/report.json": "a4d055353be8d93dc6b59d6ce16b28cab81dd40c7f1fccc93ac00ba4373493c6",
+    "after-tests/report.json": "9fd3aa65b4b04af3520d09b91405f774f8f83731a4343f88a2c0faa5096996cb",
+    "source-migration-audit.json": "9f65fd1f62587ba14e82262a5caec79eeefc4a5b374a95835020d0aefdde6921",
+    "visibility-only.diff": "c49247c96af70626ae93276500c14f9c79d03fcf5c86f50c119235256298ee29",
+    "shader-cache-extraction.diff": "3dcc41a5ea70022b5669a6333e27d4795f0c4d35d2f3bbc36026f0dcaf5d4be3",
+    "build-dependency.diff": "2345484e0068b370b7c604a9d7564999b0232364585fc484e103501f8c7a802e",
+    "after-build-tests.log": "bb392bfc03d56a40de32537d288f47bf61b2ff0144a4a5390a03c17c3ccd12c9",
+    "resolution-verification.json": "7bb14dab7717fc56d5e7f5e6ef88997d66556954766d2b03c50b10d7092f7f1c",
+    "geometry-device-tests.json": "55545cca89dea32d8396804be5ae1be9dc94bdf1a0dcf02d6a4658d6ca969316",
+    "geometry-device-tests.log": "c76909ae1ea66e034cb07c49bb9e0aec2c0b1045a49858dbd7271f72a3134646",
+    "geometry-device-command-wrong-runner.json": "2ac3deb57293857cb5fe356a74bf9c4e01b3eaf7ee7c9af090ff09f62e278357",
+    "geometry-device-command-wrong-runner.log": "de47d6ba1bdcfc2f765943f14d30fc5b2b8c226a43e92ad2b8c1379ffae3949b",
+    "android-install-receipt.json": "7ab07dbbba1db217f575ddaabd67f8a6d00aa28bf072472f9c95409a58facb33",
+    "android-home-state.json": "75f788f1597291bbfff493e536bf8f5c58f0fba277af5cea2c99ce70c73d836b",
+    "android-launched-home.png": "98ea7c99e2d25aa827939ff95fb3b2f48c9fd1606fd17a5e948d2d6be744fb95",
+    "android-launch-hierarchy.xml": "b849d1df8ee84ae0b487e2190073397621406422ec5f8e141d02a7ae8c03e1e6",
+    "android-module-launch.png": "7353cc681c0d8c4dea6488c575c0595b38c6251df0c6515f951991fe43dbace5",
+    "android-after-geometry-tests.png": "4511ed36d28a5ffb09d1db065ff3cc5c1df2777095db29d5dea12d628d5d7829",
+    "android-final-resume.json": "23374818ba517c6a78c27636b22fe89bfbb73ac8e45e851aa05becb5bc439c1d",
+    "post-verification-formatting.json": "92179f805e2556f6f4bc7f65de3d456d5a3a9404c53a2b39ff3d1bbe480d8a68"
+  },
+  "pending": [
+    "Complete rendering/sampling/shader assets and control/adapter extraction.",
+    "Independent sample and optional independent Robolectric graphics-host migration.",
+    "Existing optical/motion/corner and source/distribution publication gates remain incomplete."
+  ],
+  "remaining": "Complete rendering/sampling/shader assets, controls/adapters and independent sample are not extracted. Optional independent Robolectric graphics-host wiring remains unverified. Optical/motion/corners and source/distribution publication gates remain incomplete.",
+  "completeRuntimeExtracted": false,
+  "independentSampleCreated": false,
+  "opticalAcceptance": false,
+  "nativeCalibrationAccepted": false,
+  "publicationReady": false,
+  "sourceAndLicenseReviewComplete": false,
+  "documentationCorrection": {
+    "date": "2026-11-14",
+    "field": "installed.initialLaunchScreenshot.observation",
+    "previous": "Only splash was visible in this immediate screenshot; retained separately.",
+    "corrected": "android-module-launch.png shows an empty timetable card and Dock; android-after-geometry-tests.png is the splash frame. Root reread the original PNGs; no images or execution results changed."
+  },
+  "postVerificationFormatting": {
+    "atUtc": "2026-11-13T21:53:43.988690+00:00",
+    "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassOutlineProfile.kt",
+    "before": {
+      "bytes": 669,
+      "sha256": "6e47a0ec5340ee45fe84fd55e5804ffb66115448f906e2ff260b733d60a2e677"
+    },
+    "after": {
+      "bytes": 668,
+      "sha256": "6e6d22c59ec41e2ea36ee671be185d4dc96af6491437080ff31971c76813949b"
+    },
+    "change": "Omit only the one trailing separator newline after the closing class brace; no tokens, declarations, expressions or line numbers of executable code changed.",
+    "reason": "Final staged git diff --check includes the formerly untracked new file and identified a blank line at EOF. Earlier worktree-only check did not include it.",
+    "verification": "before[:-1] == after; git diff --cached --check after restaging",
+    "buildAndTestEvidence": "Recorded build/tests/install used before hash; no build or test rerun for the omitted EOF separator."
+  }
+}

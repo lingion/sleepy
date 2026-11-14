@@ -189,9 +189,15 @@ internal fun SleepyNavHost(
             rememberSaveableStateHolderNavEntryDecorator(),
             remember {
                 androidx.navigation3.runtime.NavEntryDecorator<NavKey> { entry ->
-                    com.lingion.sleepy.ui.component.liquidglass.GlassHost(
-                        enabled = com.lingion.sleepy.ui.theme.LocalUiStyle.current == com.lingion.sleepy.ui.theme.UiStyle.LiquidGlass,
-                    ) { entry.Content() }
+                    androidx.navigation3.runtime.NavEntry(navEntry = entry) { route ->
+                        androidx.compose.runtime.CompositionLocalProvider(
+                            LocalNavigationEntryActive provides (nav.lastOrNull() == route)
+                        ) {
+                            com.lingion.sleepy.ui.component.liquidglass.GlassHost(
+                                enabled = com.lingion.sleepy.ui.theme.LocalUiStyle.current == com.lingion.sleepy.ui.theme.UiStyle.LiquidGlass,
+                            ) { entry.Content() }
+                        }
+                    }.Content()
                 }
             },
         ),
@@ -295,6 +301,51 @@ internal fun SleepyNavHost(
 
         entry<SleepyRoute.CourseList> {
             CourseListScreen(onBack = { navigator.pop() })
+        }
+
+        entry<SleepyRoute.CreateTable> { key ->
+            var saved by rememberSaveable { mutableStateOf(false) }
+            val finish = {
+                if (!saved) {
+                    saved = true
+                    mainVm.releaseEditorCreation(key.requestId)
+                    if (nav.lastOrNull() == key) navigator.pop()
+                }
+                Unit
+            }
+            val discard: (EditorCreation) -> Unit = { creation ->
+                if (!saved) creation.discardAndClose {
+                    mainVm.releaseEditorCreation(key.requestId)
+                    if (nav.lastOrNull() == key) navigator.pop()
+                }
+            }
+            NewEditorDestination(
+                requestId = key.requestId,
+                title = R.string.edit_table_title,
+                creationFor = { restoredId ->
+                    mainVm.newTableEditorCreation(key.requestId, restoredId,
+                        key.prevDefault.takeUnless { it == SleepyRoute.NO_ID })
+                },
+                onDiscard = discard,
+                onSaved = finish,
+            ) { id ->
+                val creation = remember(key.requestId) {
+                    mainVm.newTableEditorCreation(key.requestId, id,
+                        key.prevDefault.takeUnless { it == SleepyRoute.NO_ID })
+                }
+                EditTableScreen(
+                    tableId = id,
+                    pendingNewTableId = if (saved) null else id,
+                    onOpenHoliday = { navigator.openTableHoliday(it) },
+                    onBack = finish,
+                    onDiscardPending = { discard(creation) },
+                    onSaved = { creation.completeSave() },
+                    onDeleted = finish,
+                    onSaveStarted = { creation.tryBeginSave() },
+                    onSaveJob = { creation.trackSave(it) },
+                    viewModel = mainVm,
+                )
+            }
         }
 
         entry<SleepyRoute.EditTable> { key ->
@@ -444,8 +495,48 @@ internal fun SleepyNavHost(
             PeriodTablesScreen(
                 onBack = { navigator.pop() },
                 onOpenEdit = { periodId -> navigator.openPeriodEdit(periodId, isNew = false) },
-                onCreateNew = { newId -> navigator.createPeriodTableAndEdit(newId) },
+                onCreateNew = { navigator.createPeriodTableAndEdit() },
             )
+        }
+
+        entry<SleepyRoute.CreatePeriodTable> { key ->
+            var saved by rememberSaveable { mutableStateOf(false) }
+            val finish = {
+                if (!saved) {
+                    saved = true
+                    mainVm.releaseEditorCreation(key.requestId)
+                    if (nav.lastOrNull() == key) navigator.pop()
+                }
+                Unit
+            }
+            val discard: (EditorCreation) -> Unit = { creation ->
+                if (!saved) creation.discardAndClose {
+                    mainVm.releaseEditorCreation(key.requestId)
+                    if (nav.lastOrNull() == key) navigator.pop()
+                }
+            }
+            NewEditorDestination(
+                requestId = key.requestId,
+                title = R.string.period_tables_title,
+                creationFor = { mainVm.newPeriodEditorCreation(key.requestId, it) },
+                onDiscard = discard,
+                onSaved = finish,
+            ) { id ->
+                val creation = remember(key.requestId) { mainVm.newPeriodEditorCreation(key.requestId, id) }
+                PeriodTableEditScreen(
+                    periodTableId = id,
+                    isNewUnsaved = !saved,
+                    onDiscardPending = { discard(creation) },
+                    onSaveStarted = { creation.tryBeginSave() },
+                    onSaveJob = { creation.trackSave(it) },
+                    onSaved = { creation.completeSave() },
+                    // The copy is saved independently. Remove the unsaved source
+                    // before revealing the list so it cannot leave an empty shell.
+                    onCopied = { discard(creation) },
+                    onBack = finish,
+                    viewModel = mainVm,
+                )
+            }
         }
 
         entry<SleepyRoute.PeriodEdit> { key ->

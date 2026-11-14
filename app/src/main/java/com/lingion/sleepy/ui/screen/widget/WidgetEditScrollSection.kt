@@ -25,6 +25,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.ui.component.SettingsLayout
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.R
 
 /**
@@ -91,26 +94,32 @@ object WidgetEditScrollSection : WidgetEditSection {
         }
 
         if (showConfirm) {
+            val nativeDialogActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
+            val actions: @Composable () -> Unit = {
+                com.lingion.sleepy.ui.component.DialogActionButtons(
+                    confirmText = stringResource(R.string.widget_scroll_dialog_confirm),
+                    onConfirm = {
+                        showConfirm = false
+                        scope.onScrollEnabledChange(true)
+                    },
+                    dismissText = stringResource(R.string.widget_scroll_dialog_cancel),
+                    onDismiss = { showConfirm = false }
+                )
+            }
             AlertDialog(
                 onDismissRequest = { showConfirm = false },
                 title = { Text(stringResource(R.string.widget_scroll_dialog_title)) },
                 text = {
                     androidx.compose.foundation.layout.Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
                         Text(stringResource(R.string.widget_scroll_dialog_body))
-                        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(12.dp))
-                        // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 统一色块按钮行
-                        com.lingion.sleepy.ui.component.DialogActionButtons(
-                            confirmText = stringResource(R.string.widget_scroll_dialog_confirm),
-                            onConfirm = {
-                                showConfirm = false
-                                scope.onScrollEnabledChange(true)
-                            },
-                            dismissText = stringResource(R.string.widget_scroll_dialog_cancel),
-                            onDismiss = { showConfirm = false }
-                        )
+                        if (!nativeDialogActions) {
+                            androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(12.dp))
+                            // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 统一色块按钮行
+                            actions()
+                        }
                     }
                 },
-                confirmButton = {},
+                confirmButton = { if (nativeDialogActions) actions() },
                 dismissButton = {},
                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
                 titleContentColor = MaterialTheme.colorScheme.onSurface,

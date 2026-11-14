@@ -15,8 +15,11 @@ import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.util.WeekDisplayContext
 import com.lingion.sleepy.util.WeekDisplayResolver
 import com.lingion.sleepy.util.HolidayTransferEntry
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
@@ -27,6 +30,13 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
 import com.lingion.sleepy.util.AppClock
+
+/** Data for a table editor, independent of the timetable selected on the home screen. */
+data class TableEditorContent(
+    val tableId: Long,
+    val courseCount: Int,
+    val effectivePeriodTable: PeriodTableEntity?,
+)
 
 data class ScheduleState(
     val tables: List<TimeTableEntity> = emptyList(),
@@ -111,6 +121,57 @@ class ScheduleViewModel : ViewModel() {
             emptyList()
         )
 
+    private data class TableEditorSubscription(
+        val content: StateFlow<TableEditorContent?>,
+        val job: Job,
+    )
+    private val tableEditorContents = mutableMapOf<Long, TableEditorSubscription>()
+
+    // Keep a loaded editor's first frame available after child-page navigation. Continue
+    // observing while it is hidden so a return never seeds a session from stale data.
+    fun observeTableEditorContent(tableId: Long): StateFlow<TableEditorContent?> =
+        tableEditorContents.getOrPut(tableId) {
+            val job = SupervisorJob(viewModelScope.coroutineContext[Job])
+            val content = combine(
+                repo.observeCourses(tableId),
+                repo.observeEffectivePeriodTable(tableId),
+            ) { courses, periodTable -> TableEditorContent(tableId, courses.size, periodTable) }
+                .stateIn(CoroutineScope(viewModelScope.coroutineContext + job), SharingStarted.Eagerly, null)
+            TableEditorSubscription(content, job)
+        }.content
+
+    private val editorCreations = mutableMapOf<String, com.lingion.sleepy.ui.nav.EditorCreation>()
+
+    internal fun newTableEditorCreation(requestId: String, restoredId: Long?, fallbackId: Long?) =
+        editorCreations.getOrPut(requestId) {
+            com.lingion.sleepy.ui.nav.EditorCreation(viewModelScope, restoredId,
+                create = {
+                    val id = createEmptyTable(commitSelection = false, notifyWidgets = false)
+                    // The editor must never render a transient "not found" while Room catches up.
+                    state.first { state -> state.tables.any { it.id == id } }
+                    id
+                },
+                discard = { discardNewTableAndAwait(it, fallbackId) },
+            )
+        }
+
+    internal fun newPeriodEditorCreation(requestId: String, restoredId: Long?) =
+        editorCreations.getOrPut(requestId) {
+            com.lingion.sleepy.ui.nav.EditorCreation(viewModelScope, restoredId,
+                create = {
+                    val id = insertPeriodTable(name = SleepyApp.get().getString(R.string.period_table_new))
+                    allPeriodTables.first { tables -> tables.any { it.id == id } }
+                    id
+                },
+                discard = { id ->
+                    repo.deletePeriodTable(id, onlyIfUnbound = true)
+                    allPeriodTables.first { tables -> tables.none { it.id == id } }
+                },
+            )
+        }
+
+    internal fun releaseEditorCreation(requestId: String) { editorCreations.remove(requestId) }
+
     /** Whether the user has explicitly selected a table (vs auto-picking default on load) */
     private var manualSelectDone = false
 
@@ -178,12 +239,12 @@ class ScheduleViewModel : ViewModel() {
         smartConfigJson: String,
         nodesPerDay: Int,
         onFinish: () -> Unit = {}
-    ) {
-        val editState = editStates[tableId] ?: return
+    ): Job? {
+        val editState = editStates[tableId] ?: return null
         val policy = editState.pendingSchedulePolicy.value
         val draft = editState.draftEffectiveSchedule.value
-        if (policy == SchedulePolicy.NONE || draft == null) return
-        viewModelScope.launch {
+        if (policy == SchedulePolicy.NONE || draft == null) return null
+        return viewModelScope.launch {
             com.lingion.sleepy.data.undo.UndoManager.beginBatch()
             try {
                 val current = repo.getTable(tableId) ?: return@launch
@@ -264,6 +325,11 @@ class ScheduleViewModel : ViewModel() {
                 kotlinx.coroutines.flow.flowOf(LocalDate.now(AppClock))
             ) { tables, _ -> tables }
                 .collect { tables ->
+                    // A child page keeps its row; only an actual deletion ends its cache.
+                    val existingIds = tables.mapTo(hashSetOf()) { it.id }
+                    tableEditorContents.keys.filterNot { it in existingIds }.forEach { id ->
+                        tableEditorContents.remove(id)?.job?.cancel()
+                    }
                     if (tables.isEmpty()) {
                         // 没有课表就老实空着，不强行造占位表。
                         // selectedTableId = null，UI 走空态。
@@ -425,7 +491,7 @@ class ScheduleViewModel : ViewModel() {
      *         to the new one. If false, the table is inserted but selection is not changed —
      *         useful when the caller plans to either roll back the new table or commit the
      *         selection later. */
-    suspend fun createEmptyTable(commitSelection: Boolean = true): Long {
+    suspend fun createEmptyTable(commitSelection: Boolean = true, notifyWidgets: Boolean = true): Long {
         val existingNames = _state.value.tables.map { it.name }
         var index = _state.value.tables.size + 1
         var name = com.lingion.sleepy.SleepyApp.get().getString(R.string.default_table_with_num, index)
@@ -440,10 +506,7 @@ class ScheduleViewModel : ViewModel() {
             isDefault = isFirstTable
         )
         val id = repo.insertTable(table)
-        if (isFirstTable) {
-            // 数据库侧 isDefault 唯一性保证（其他表如有 isDefault 会自动清掉）
-            repo.setDefault(id)
-        }
+        // insertTable already establishes the first/default table.
         if (commitSelection) {
             // 创建后立刻把 state 切到新表，并加载新课程。
             // 否则 loadTables 协程 observeAllTables emit 会因为 manualSelectDone=true + selectedTableId!=null
@@ -455,21 +518,18 @@ class ScheduleViewModel : ViewModel() {
         } else {
             // 不切选中：仅通知 widget 刷新（observeAllTables 会带回新表，但不切 selectedTableId）
         }
-        // 通知 widget
-        try {
-            com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(
-                com.lingion.sleepy.SleepyApp.get()
-            )
-        } catch (_: Exception) {}
+        // Uncommitted editor rows do not need to refresh home-screen widgets.
+        if (notifyWidgets) {
+            try {
+                com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(SleepyApp.get())
+            } catch (_: Exception) {}
+        }
         return id
     }
 
     /** 修改共享时间节次表内容；标准课保持节次绑定，边缘编号顺延时迁移其引用。 */
-    fun updatePeriodTableContent(table: com.lingion.sleepy.data.entity.PeriodTableEntity) {
-        viewModelScope.launch {
-            repo.savePeriodTable(table)
-        }
-    }
+    fun updatePeriodTableContent(table: com.lingion.sleepy.data.entity.PeriodTableEntity): Job =
+        viewModelScope.launch { repo.savePeriodTable(table) }
 
     /** issue#40: 换绑课程表的时间节次表(只写 periodTableId, 课程行零改动) */
     fun bindPeriodTable(timeTableId: Long, periodTableId: Long?) {
@@ -573,23 +633,18 @@ class ScheduleViewModel : ViewModel() {
     fun updateTableMetadataWithPeriodTable(
         table: TimeTableEntity,
         periodTable: com.lingion.sleepy.data.entity.PeriodTableEntity
-    ) {
-        viewModelScope.launch { repo.updateTableMetadataWithPeriodTable(table, periodTable) }
-    }
+    ): Job = viewModelScope.launch { repo.updateTableMetadataWithPeriodTable(table, periodTable) }
 
     /** 2026-09-23 症状3修复: 元数据 + 换绑/解绑(+目标作息表内容), 单事务原子完成。 */
     fun updateTableMetadataAndBind(
         table: TimeTableEntity,
         periodTableId: Long?,
         periodContent: com.lingion.sleepy.data.entity.PeriodTableEntity? = null
-    ) {
-        viewModelScope.launch { repo.updateTableMetadataAndBind(table, periodTableId, periodContent) }
-    }
+    ): Job = viewModelScope.launch { repo.updateTableMetadataAndBind(table, periodTableId, periodContent) }
 
     /** issue#28 P3: 保存课表编辑 — timeJson 变更时课程节次按绝对时间自适应 */
-    fun updateTableRemappingCourses(table: TimeTableEntity) {
+    fun updateTableRemappingCourses(table: TimeTableEntity): Job =
         viewModelScope.launch { repo.updateTableRemappingCourses(table) }
-    }
 
     fun deleteTable(id: Long) {
         viewModelScope.launch {
@@ -601,19 +656,19 @@ class ScheduleViewModel : ViewModel() {
     /** Discard a newly-created table that was never saved by the user.
      *  Deletes the table and reverts selection to the previous default table. */
     fun discardNewTable(newId: Long, fallbackId: Long?) {
-        viewModelScope.launch {
-            repo.deleteTable(newId)
-            // The observeAllTables flow will re-emit; ensure selectedTableId falls back
-            // to the previous default table (or first remaining table).
-            manualSelectDone = false
-            val remaining = repo.observeAllTables().first().filter { it.id != newId }
-            val targetId = fallbackId?.takeIf { id -> remaining.any { it.id == id } }
-                ?: remaining.find { it.isDefault }?.id
-                ?: remaining.firstOrNull()?.id
-            if (targetId != null) {
-                selectTable(targetId)
-            }
-        }
+        viewModelScope.launch { discardNewTableAndAwait(newId, fallbackId) }
+    }
+
+    private suspend fun discardNewTableAndAwait(newId: Long, fallbackId: Long?) {
+        repo.deleteTable(newId)
+        manualSelectDone = false
+        val remaining = repo.observeAllTables().first().filter { it.id != newId }
+        val targetId = fallbackId?.takeIf { id -> remaining.any { it.id == id } }
+            ?: remaining.find { it.isDefault }?.id
+            ?: remaining.firstOrNull()?.id
+        if (targetId != null) selectTable(targetId)
+        // Keep the editor visible until the parent can render the cleaned list.
+        state.first { value -> value.tables.none { it.id == newId } }
     }
 
     fun changeWeek(week: Int) {
