@@ -39,12 +39,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -57,8 +59,19 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
 import com.lingion.sleepy.ui.component.liquidglass.DockLensBoundsInRootPx
+import com.lingion.sleepy.ui.component.liquidglass.DockMaterialDark
+import com.lingion.sleepy.ui.component.liquidglass.DockBackdropLuma
+import com.lingion.sleepy.ui.component.liquidglass.DockOrdinaryTint
 import com.lingion.sleepy.ui.component.liquidglass.GlassBackground
 import com.lingion.sleepy.ui.component.liquidglass.GlassHost
+import com.lingion.sleepy.ui.component.liquidglass.GlassHostState
+import com.lingion.sleepy.ui.component.liquidglass.BackdropLumaSample
+import com.lingion.sleepy.ui.component.liquidglass.BackdropContentSignal
+import com.lingion.sleepy.ui.component.liquidglass.notifyBackdropDraw
+import com.lingion.sleepy.ui.component.liquidglass.withContentSignal
+import com.lingion.sleepy.ui.component.liquidglass.LocalDockBackdropAppearanceEnabled
+import com.lingion.sleepy.ui.component.liquidglass.LocalDockLumaObserver
+import com.lingion.sleepy.ui.component.liquidglass.rememberGlassHostState
 import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassNavigationBar
 import com.lingion.sleepy.ui.component.liquidglass.LocalDockInputTimeNanos
 import com.lingion.sleepy.ui.component.liquidglass.LocalGlassDepth
@@ -180,10 +193,14 @@ class NativeDockOpticalWorldRenderTest {
     private var spatialDrawSerial = 0L
     private var spatialDrawUptime = 0L
     private val spatialFirstDraws = ConcurrentHashMap<Int, JSONObject>()
+    private var notifySourceChanges = false
+    private var observedGlassHost: GlassHostState? = null
+    private val lumaSamples = ConcurrentLinkedQueue<BackdropLumaSample>()
 
     /** Retained REST sequence; deliberately separate from the legacy synthetic REST/HELD test. */
     @Test fun captureRetainedDockLocalAppearance() {
         val arguments = InstrumentationRegistry.getArguments()
+        notifySourceChanges = arguments.getString("glassDockSourceNotifications") == "true"
         assumeTrue("Enable with glassDockLocalAppearance=true", arguments.getString("glassDockLocalAppearance") == "true")
         nativeParent = NativeParent.SwiftUI
         val runId = (arguments.getString("glassDockOpticalRunId") ?: System.currentTimeMillis().toString())
@@ -193,6 +210,7 @@ class NativeDockOpticalWorldRenderTest {
         val captures = JSONArray()
         val stages = JSONArray()
         val result = JSONObject().put("schema", 1).put("status", "running").put("run_id", runId)
+            .put("explicit_source_notifications", notifySourceChanges)
             .put("sdk", Build.VERSION.SDK_INT).put("model", Build.MODEL).put("fingerprint", Build.FINGERPRINT)
             .put("session_origin_uptime_ms", SystemClock.uptimeMillis()).put("session_origin_unix_ms", System.currentTimeMillis())
             .put("scope", "Unchanged production LiquidGlassNavigationBar, GlassHost and GlassBackground; one retained four-item SwiftUI-placement Dock, selected index0; REST only. Capture validity and descriptive body transfer, not native material or motion parity.")
@@ -298,6 +316,17 @@ class NativeDockOpticalWorldRenderTest {
                                 assertEquals("Single retained Dock composition", 1, state.getInt("composition_creates"))
                                 assertEquals("Dock has not been disposed", 0, state.getInt("composition_disposals"))
                                 assertEquals("Schedule remains selected", 0, state.getInt("selected_index"))
+                                if (notifySourceChanges) {
+                                    val appearance = state.getJSONObject("material_state")
+                                    val expectedGray = if (input == SpatialInput.B || input == SpatialInput.D) 230 else 26
+                                    assertEquals("Notified retained source luma", expectedGray / 255.0,
+                                        appearance.getDouble("source_luma"), 1.0 / 255)
+                                    assertEquals("Candidate appearance follows its notified local source", expectedGray == 26,
+                                        appearance.getBoolean("material_dark"))
+                                    assertEquals("Composed foreground follows the same appearance",
+                                        if (expectedGray == 26) android.graphics.Color.WHITE else android.graphics.Color.BLACK,
+                                        appearance.getInt("ordinary_tint_argb"))
+                                }
                                 assertEquals("Actual drawn source matches this stage", input.name, state.getString("drawn_input"))
                                 assertEquals("Actual drawn stageID matches this checkpoint", ordinal, state.getInt("drawn_stage"))
                                 assertEquals("Actual drawn bitmap is the exported raw source",
@@ -325,6 +354,7 @@ class NativeDockOpticalWorldRenderTest {
 
     @Test fun captureNativeDockOpticalWorld() {
         val arguments = InstrumentationRegistry.getArguments()
+        notifySourceChanges = arguments.getString("glassDockSourceNotifications") == "true"
         assumeTrue("Enable with glassDockOpticalWorld=true", arguments.getString("glassDockOpticalWorld") == "true")
         fun selected(argument: String, allowed: List<String>): List<String> {
             val result = arguments.getString(argument)?.split(',')?.map(String::trim)?.distinct() ?: allowed
@@ -345,6 +375,7 @@ class NativeDockOpticalWorldRenderTest {
         val baselines = JSONArray()
         val observations = JSONArray()
         val result = JSONObject().put("schema", 1).put("status", "running").put("run_id", runId)
+            .put("explicit_source_notifications", notifySourceChanges)
             .put("sdk", Build.VERSION.SDK_INT).put("model", Build.MODEL).put("fingerprint", Build.FINGERPRINT)
             .put("scope", "Production LiquidGlassNavigationBar + GlassHost/GlassBackground; fixed 375x667dp source world; initially selected first destination; REST and settled HELD before END. Capture/coordinate validity only, not an appearance or motion parity verdict.")
             .put("native_parent", nativeParent.argument)
@@ -359,13 +390,13 @@ class NativeDockOpticalWorldRenderTest {
             .put("native_rest_base_world_rect_pt", nativeParent.base.json())
             .put("native_rest_lens_world_rect_pt", nativeParent.lens.json())
             .put("native_target_limits", if (nativeParent == NativeParent.SwiftUI)
-                "REST visible base body and first-lens AX bounds from the native four-tab parent. No alpha-mask claim. Native synthetic scroll text and SF Symbols differ; optical comparisons must exclude their influence. Native local material style adapts to background independently of the dark window; this fixture still uses the requested app theme."
+                "REST visible base body and first-lens AX bounds from the native four-tab parent. No alpha-mask claim. Native synthetic scroll text and SF Symbols differ; optical comparisons must exclude their influence. Native local material style adapts to background independently of the dark window. Production now samples its external backdrop with explicit engineering hysteresis; app theme and sampled material state are recorded separately. No native classifier equivalence is claimed."
                 else "Painted base body bright rim and selected lens gray fill from original fine_grid-light REST pixels; excludes outer shadow and does not claim complete alpha support. Holder remains distinct. Base local maximum-jump checks agree29/32; lens32/32.")
             .put("placement_policy", "Translate the declared caller only; retain product21dp side margins,62dp base height and12dp shadow room. Native holder and Android caller are distinct. Runtime carrier width must equal round(caller*density)-2*round(21*density); native-world edges independently retain the existing one-physical-pixel tolerance. Never stretch the source or product to fit screenshots.")
             .put("source_world_policy", "Required375x667dp at the observed GlassBackground top-left; unit local-to-screen axes, no stretch, and fully visible in the real host are required. Font scale1 and LTR are fixture-only native defaults.")
             .put("theme_preset", ThemePresets.KEY_DEFAULT).put("inputs", JSONArray(backgrounds.map { it.metadata() }))
             .put("selected_themes", JSONArray(themes.map { if (it) "dark" else "light" }))
-            .put("clock_policy", "Compose clock supplied to production Dock input;1600ms settle before REST/HELD. Clock time and real uptime exported separately. No synthetic clock is claimed to be native real-time motion.")
+            .put("clock_policy", "Compose clock supplied to production Dock input;1600ms animation settle then explicit frame advancement until asynchronous source appearance and composed foreground agree before REST/HELD. Clock time and real uptime exported separately. No synthetic clock is claimed to be native real-time motion.")
             .put("capture_policy", "Actual Activity PixelCopy after HWUI commit plus composited display; >=99.5% RGB3 thresholds unchanged. This full-Activity fixture explicitly excludes only actual visible systemBars/displayCutout insets from display readiness and asserts that the complete Dock holder remains inside the compared region. Full Window and display PNGs are saved independently.")
             .put("input_policy", "DOWN at measured REST painted Home lens center, no move, held capture before cleanup CANCEL. No UP is injected and selected-first wrapper state does not prove UP commit.")
             .put("baselines", baselines).put("captures", captures).put("geometry_observations", observations)
@@ -420,6 +451,7 @@ class NativeDockOpticalWorldRenderTest {
                     result.put("active_stage", "rest")
                     compose.runOnIdle { scene.value = current.copy(showDock = true) }
                     settle()
+                    awaitAppearanceComposition()
                     val rest = observeDock(activity)
                     observations.put(JSONObject().put("scene", current.name).put("phase", "rest").put("geometry", rest.json()))
                     save()
@@ -446,6 +478,7 @@ class NativeDockOpticalWorldRenderTest {
                     downEvent.put("status", "injected").put("after_injection_uptime_ms", SystemClock.uptimeMillis())
                     try {
                         settle()
+                        awaitAppearanceComposition()
                         val held = observeDock(activity)
                         observations.put(JSONObject().put("scene", current.name).put("phase", "held").put("geometry", held.json()))
                         save()
@@ -493,7 +526,8 @@ class NativeDockOpticalWorldRenderTest {
             fontScale = actualDensity.fontScale
         }
         SleepyThemeProvider(darkTheme = scene.dark, themeKey = ThemePresets.KEY_DEFAULT) {
-            CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+            CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass,
+                LocalDockBackdropAppearanceEnabled provides true) {
                 if (scene.spatialInput != null) {
                     val isAppDark = LocalDarkTheme.current
                     val scheme = MaterialTheme.colorScheme
@@ -503,11 +537,15 @@ class NativeDockOpticalWorldRenderTest {
                             .put("production_dark_policy_result", isAppDark || scheme.surface.luminance() < .5f)
                     }
                 }
-                GlassHost(Modifier.fillMaxSize(), background = MaterialTheme.colorScheme.background) {
+                val contentSignal = remember { BackdropContentSignal() }
+                val glassHost = rememberGlassHostState()
+                SideEffect { observedGlassHost = glassHost }
+                GlassHost(Modifier.fillMaxSize(), state = glassHost, background = MaterialTheme.colorScheme.background) {
                     GlassBackground(0f, Modifier.fillMaxSize().onGloballyPositioned { hostCoordinates = it }) {
                         Box(Modifier.fillMaxSize().background(Color(0xFFF0F0F5))) {
                             val sourceModifier = Modifier.align(Alignment.TopStart)
                                 .requiredSize(375.dp, 667.dp).clipToBounds()
+                                .then(if (notifySourceChanges) Modifier.notifyBackdropDraw(contentSignal) else Modifier)
                                 .onGloballyPositioned { sourceCoordinates = it }
                             if (scene.spatialInput != null) SpatialBackground(scene.spatialInput, scene.spatialStage, sourceModifier)
                             else OpticalCaptureBackground(scene.background, sourceModifier)
@@ -525,26 +563,34 @@ class NativeDockOpticalWorldRenderTest {
                         var selection by remember { mutableIntStateOf(0) }
                         SideEffect { selectedIndex = selection }
                         val host = LocalGlassHost.current
+                        val depth = LocalGlassDepth.current
+                        val sourceBackdrop = remember(host, depth, contentSignal) {
+                            checkNotNull(host).backdropAt(depth).let {
+                                if (notifySourceChanges) it.withContentSignal(contentSignal) else it
+                            }
+                        }
                         Box(Modifier.offset(nativeParent.callerOrigin.x.dp, nativeParent.callerOrigin.y.dp)
                             .width(nativeParent.callerWidth.dp)
                             .testTag("native-dock-optical-holder")) {
-                            LiquidGlassNavigationBar(
-                                if (nativeParent == NativeParent.SwiftUI) listOf(
-                                    PillNavItemSpec(Icons.Filled.CalendarToday, "Schedule"),
-                                    PillNavItemSpec(Icons.Filled.WbSunny, "Today"),
-                                    PillNavItemSpec(Icons.Filled.GridView, "Manage"),
-                                    PillNavItemSpec(Icons.Filled.Person, "Mine"),
-                                ) else listOf(PillNavItemSpec(Icons.Filled.Home, "Home"),
-                                    PillNavItemSpec(Icons.Filled.Search, "Explore"),
-                                    PillNavItemSpec(Icons.Filled.Settings, "Settings")),
-                                selection,
-                                { index ->
-                                    selectionEvents.add(event(scene, "onSelect").put("index", index))
-                                    selection = index
-                                },
-                                Modifier.fillMaxWidth(),
-                                checkNotNull(host).backdropAt(LocalGlassDepth.current),
-                            )
+                            CompositionLocalProvider(LocalDockLumaObserver provides { lumaSamples.add(it) }) {
+                                LiquidGlassNavigationBar(
+                                    if (nativeParent == NativeParent.SwiftUI) listOf(
+                                        PillNavItemSpec(Icons.Filled.CalendarToday, "Schedule"),
+                                        PillNavItemSpec(Icons.Filled.WbSunny, "Today"),
+                                        PillNavItemSpec(Icons.Filled.GridView, "Manage"),
+                                        PillNavItemSpec(Icons.Filled.Person, "Mine"),
+                                    ) else listOf(PillNavItemSpec(Icons.Filled.Home, "Home"),
+                                        PillNavItemSpec(Icons.Filled.Search, "Explore"),
+                                        PillNavItemSpec(Icons.Filled.Settings, "Settings")),
+                                    selection,
+                                    { index ->
+                                        selectionEvents.add(event(scene, "onSelect").put("index", index))
+                                        selection = index
+                                    },
+                                    Modifier.fillMaxWidth(),
+                                    sourceBackdrop,
+                                )
+                            }
                         }
                     }
                 }
@@ -637,16 +683,46 @@ class NativeDockOpticalWorldRenderTest {
         return reports
     }
 
+    /** Flush asynchronous readback-driven composition after the virtual animation settle. */
+    private fun awaitAppearanceComposition() {
+        repeat(120) {
+            compose.mainClock.advanceTimeByFrame()
+            compose.waitForIdle()
+            val state = materialState()
+            if (!state.isNull("source_luma")) {
+                val expected = if (state.getBoolean("material_dark")) android.graphics.Color.WHITE else android.graphics.Color.BLACK
+                if (state.getInt("ordinary_tint_argb") == expected) return
+            }
+        }
+        error("Source appearance and composed foreground did not converge in the capture fixture")
+    }
+
+    private fun materialState(): JSONObject {
+        val material = compose.onNodeWithTag("dock-material", useUnmergedTree = true).fetchSemanticsNode()
+        return JSONObject().put("material_dark", material.config[DockMaterialDark])
+            .put("source_luma", material.config.getOrNull(DockBackdropLuma) ?: JSONObject.NULL)
+            .put("ordinary_tint_argb", material.config[DockOrdinaryTint].toArgb())
+    }
+
     private fun localAppearanceState(activity: OpticalCaptureWindow): JSONObject {
         val holder = compose.onNodeWithTag("native-dock-optical-holder", useUnmergedTree = true).fetchSemanticsNode()
         val carrier = compose.onNodeWithTag("dock-lens", useUnmergedTree = true).fetchSemanticsNode()
+        val material = materialState()
         return compose.runOnIdle {
             JSONObject().put("uptime_ms", SystemClock.uptimeMillis()).put("compose_ms", compose.mainClock.currentTime)
                 .put("selected_index", selectedIndex).put("pointer_down", pointerDown)
                 .put("selection_event_count", selectionEvents.size).put("composition_creates", localAppearanceCreates)
                 .put("composition_disposals", localAppearanceDisposals).put("theme", localAppearanceTheme)
+                .put("material_state", material)
                 .put("drawn_input", spatialDrawnInput?.name).put("drawn_stage", spatialDrawnStage)
                 .put("drawn_bitmap_identity", System.identityHashCode(spatialDrawnBitmap))
+                .put("source_host_version", observedGlassHost?.version)
+                .put("luma_sample_count", lumaSamples.size)
+                .put("latest_luma_sample", lumaSamples.lastOrNull()?.let { sample ->
+                    JSONObject().put("sequence", sample.requestSequence).put("generation", sample.generation)
+                        .put("luma", sample.meanLuma).put("completed_at_nanos", sample.completedAtNanos)
+                        .put("source_dirty_while_busy", sample.sourceDirtyWhileBusy)
+                } ?: JSONObject.NULL)
                 .put("source_draw_serial", spatialDrawSerial).put("source_last_draw_uptime_ms", spatialDrawUptime)
                 .put("source_geometry", OpticalLayoutGeometry.read(checkNotNull(sourceCoordinates), density).json())
                 .put("holder_geometry", OpticalLayoutGeometry.read(holder.layoutInfo.coordinates, density).json())
@@ -819,6 +895,7 @@ class NativeDockOpticalWorldRenderTest {
                         baselineWindow: Bitmap, baselineScreen: Bitmap) {
         val activity = checkNotNull(surface)
         val stem = "${scene.name}-$phase"
+        val materialBefore = materialState()
         val window = activity.capture()
         window.saveOpticalPng(File(directory, "$stem-window.png"))
         try {
@@ -844,6 +921,7 @@ class NativeDockOpticalWorldRenderTest {
                 val baseRoot = bounds(geometry.baseRootCorners)
                 captures.put(JSONObject().put("scene", scene.name).put("background", scene.background.name)
                     .put("theme", if (scene.dark) "dark" else "light").put("phase", phase)
+                    .put("material_before", materialBefore).put("material_after", materialState())
                     .put("window_png", "$stem-window.png").put("screen_png", "$stem-screen.png")
                     .put("baseline_window_png", "${scene.name}-background-window.png")
                     .put("baseline_screen_png", "${scene.name}-background-screen.png")

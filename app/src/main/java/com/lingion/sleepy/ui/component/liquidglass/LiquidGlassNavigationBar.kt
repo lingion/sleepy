@@ -105,6 +105,12 @@ import kotlin.math.sign
 
 /** Actual painted capsule bounds; the lens carrier itself spans the complete Dock. */
 internal val DockLensBoundsInRootPx = SemanticsPropertyKey<Rect>("DockLensBoundsInRootPx")
+internal val DockMaterialDark = SemanticsPropertyKey<Boolean>("DockMaterialDark")
+internal val DockBackdropLuma = SemanticsPropertyKey<Float>("DockBackdropLuma")
+internal val DockOrdinaryTint = SemanticsPropertyKey<Color>("DockOrdinaryTint")
+/** Experimental until retained-source notifications and native optical calibration are complete. */
+internal val LocalDockBackdropAppearanceEnabled = androidx.compose.runtime.compositionLocalOf { false }
+internal val LocalDockLumaObserver = androidx.compose.runtime.compositionLocalOf<((BackdropLumaSample) -> Unit)?> { null }
 
 /**
  * Production four-tab sizing uses the SwiftUI TabView parent reference, whose
@@ -157,6 +163,18 @@ fun LiquidGlassNavigationBar(
     val dark by remember(isAppDark, colorScheme) {
         derivedStateOf { isAppDark || colorScheme.surface.luminance() < 0.5f }
     }
+    // Native 26.5 retains different appearances for the same gray on the rise
+    // and return paths. These midpoint thresholds and five source taps are an
+    // explicit engineering candidate; they are not measured UIKit constants.
+    val backdropAppearanceEnabled = LocalDockBackdropAppearanceEnabled.current
+    val appearance = remember(backdrop, dark, colorScheme, backdropAppearanceEnabled) {
+        BackdropAppearanceHysteresis(dark, 223.5f / 255f, 153.5f / 255f)
+    }
+    var sampledLuma by remember(backdrop, dark, colorScheme, backdropAppearanceEnabled) { mutableStateOf<Float?>(null) }
+    var materialDark by remember(backdrop, dark, colorScheme, backdropAppearanceEnabled) { mutableStateOf(dark) }
+    val ordinaryTint = if (sampledLuma == null) selectionColors.unselectedContent
+        else if (materialDark) Color.White else Color.Black
+    val lumaObserver by rememberUpdatedState(LocalDockLumaObserver.current)
     // Retain only the actual sibling backing. The raised lens must include
     // its haze, continuous corners, border and fading selection, not a second
     // approximation of the platter. Glyphs and the lens are separate siblings.
@@ -533,6 +551,24 @@ fun LiquidGlassNavigationBar(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(barHeightDp)
+                    .testTag("dock-material")
+                    .semantics {
+                        this[DockMaterialDark] = materialDark
+                        this[DockOrdinaryTint] = ordinaryTint
+                        sampledLuma?.let { this[DockBackdropLuma] = it }
+                    }
+                    .then(if (backdropAppearanceEnabled && backdrop != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        Modifier.sampleBackdropLuma(
+                            backdrop = backdrop,
+                            transparentBackground = colorScheme.background.copy(alpha = 1f),
+                            sampleBoundsPx = { size -> Rect(Offset.Zero, size) },
+                            onSample = { sample ->
+                                sampledLuma = sample.meanLuma
+                                materialDark = appearance.accept(sample.meanLuma)
+                                lumaObserver?.invoke(sample)
+                            },
+                        )
+                    } else Modifier)
                     .layerBackdrop(platterBackdrop)
                     .shadow(
                         elevation = (12 * shadowStrength).dp,
@@ -559,7 +595,7 @@ fun LiquidGlassNavigationBar(
                                     val opticalProfile = platterShape.opticalProfile(size, layoutDirection, this)
                                     liquidGlass(
                                         context = context,
-                                        style = LiquidGlassStyle.pill(colorScheme, dark),
+                                        style = LiquidGlassStyle.pill(colorScheme, materialDark),
                                         glow = touchGlow,
                                         outline = opticalProfile?.path,
                                         cachedOutlineProfile = opticalProfile,
@@ -634,7 +670,7 @@ fun LiquidGlassNavigationBar(
                     DestinationsRow(
                         items = items,
                         layout = layout,
-                        tint = selectionColors.unselectedContent,
+                        tint = ordinaryTint,
                         badgeTint = selectionColors.accent,
                         iconDrivers = iconDrivers,
                         selectedIndex = clampedSelected,
@@ -738,7 +774,7 @@ fun LiquidGlassNavigationBar(
                             val leftPx = dockContentLeftPx + (layout.inset + lensRect.left) * density.density
                             val topPx = dockContentTopPx + lensRect.top * density.density
 
-                            val style = LiquidGlassStyle.lens(colorScheme, dark).scale(lift.toDouble())
+                            val style = LiquidGlassStyle.lens(colorScheme, materialDark).scale(lift.toDouble())
                             val sizeDp = Size(lensRect.width, lensRect.height)
                             val radiusDp = lensRect.height / 2f
                             val corners = LiquidGlassCornerRadii(radiusDp, radiusDp, radiusDp, radiusDp)
@@ -887,7 +923,7 @@ fun LiquidGlassNavigationBar(
                                 val leftPx = dockContentLeftPx + (layout.inset + lensRect.left) * density.density
                                 val topPx = dockContentTopPx + lensRect.top * density.density
 
-                                val style = LiquidGlassStyle.lensContent(colorScheme, dark).scale(lift.toDouble())
+                                val style = LiquidGlassStyle.lensContent(colorScheme, materialDark).scale(lift.toDouble())
                                 val sizeDp = Size(lensRect.width, lensRect.height)
                                 val radiusDp = lensRect.height / 2f
                                 val corners = LiquidGlassCornerRadii(radiusDp, radiusDp, radiusDp, radiusDp)
