@@ -506,6 +506,8 @@
     <string name="jw_err_empty_semester">今学期の授業はありません。正しい学期を選択したか確認してください。画像形式の時間割はインポートできません</string>
     <string name="jw_import_success">%1$d 件の授業をインポートしました</string>
     <string name="jw_parse_failed">解析失敗：%1$s</string>
+    <string name="jw_combo_schedule_skipped">形式を認識できないため、季節別の時間割設定を省略しました。授業は通常どおり取り込みました。</string>
+    <string name="jw_combo_schedule_bind_conflict">この取り込みには日付で切り替わる季節別の時間割が含まれるため、既存の共有時間割に紐付けできません。今回の取り込み用に新規作成してください。</string>
     <string name="jw_parse_failed_hint">\n\nヒント：HEUの場合、ブラウザでログイン後「個人時間割」ページに移動してからインポートしてください</string>
     <string name="jw_webview_not_ready">WebViewの準備ができていません</string>
     <string name="jw_fetching">時間割を取得中…</string>

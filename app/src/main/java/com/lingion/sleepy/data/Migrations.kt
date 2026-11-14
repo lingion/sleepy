@@ -216,12 +216,20 @@ val ALL_MIGRATIONS: Array<Migration> = arrayOf(
         override fun migrate(db: SupportSQLiteDatabase) {
             db.execSQL(MIGRATION_16_17_SQL)
         }
+    },
+    object : Migration(17, 18) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(MIGRATION_17_18_SQL)
+        }
     }
 )
 
 internal const val MIGRATION_15_16_SQL = "ALTER TABLE time_tables ADD COLUMN jwSchoolSourceJson TEXT NOT NULL DEFAULT ''"
 
 internal const val MIGRATION_16_17_SQL = "ALTER TABLE time_tables ADD COLUMN jwSchoolSourceVerified INTEGER NOT NULL DEFAULT 0"
+
+/** Date-aware period combination (Qingdao University). Empty string means no combination. */
+internal const val MIGRATION_17_18_SQL = "ALTER TABLE period_tables ADD COLUMN comboScheduleJson TEXT NOT NULL DEFAULT ''"
 
 internal const val MIGRATION_14_15_SQL = "ALTER TABLE time_tables ADD COLUMN importSourceJson TEXT NOT NULL DEFAULT ''"
 

@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.util.AppClock
+import java.time.LocalDate
 
 /**
  * 课表实体 (TimeTable) — 一个课表包含多个课程
@@ -85,10 +86,10 @@ data class TimeTableEntity(
      * 渲染/通知/widget 路径统一经此函数取"节次→时间"的真源;
      * 课程行按 startNode/step 节次绑定, 不因水合而变。
      */
-    fun hydratedWith(periodTable: PeriodTableEntity?): TimeTableEntity =
+    fun hydratedWith(periodTable: PeriodTableEntity?, date: LocalDate = LocalDate.now(AppClock)): TimeTableEntity =
         if (periodTable == null) this else copy(
             nodesPerDay = periodTable.nodesPerDay,
-            timeJson = periodTable.timeJson,
+            timeJson = periodTable.effectiveTimeJson(date),
             smartConfigJson = periodTable.smartConfigJson
         )
 

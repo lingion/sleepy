@@ -1054,7 +1054,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                                 date = date,
                                 dayOfWeek = dow,
                                 courses = courses,
-                                timeJson = t.timeJson,
+                                timeJson = source.tableFor(date).timeJson,
                                 isGrey = HolidayManager.shouldGrey(context, date, t.id)
                             )
                         }

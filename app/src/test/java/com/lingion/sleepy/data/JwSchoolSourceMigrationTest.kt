@@ -26,6 +26,6 @@ class JwSchoolSourceMigrationTest {
                 }
             }
         }
-        assertEquals(17, ALL_MIGRATIONS.last().endVersion)
+        assertEquals(APP_DATABASE_VERSION, ALL_MIGRATIONS.last().endVersion)
     }
 }

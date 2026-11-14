@@ -6,6 +6,9 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.util.AppClock
+import com.lingion.sleepy.util.EffectivePeriodResolver
+import android.util.Log
+import java.time.LocalDate
 
 /**
  * 独立时间节次表 (issue#40) — "第 N 节是几点到几点"的真源, 与课程表(TimeTable)平行的层级。
@@ -35,7 +38,19 @@ data class PeriodTableEntity(
     /** 智慧节次配置 JSON。空串表示手动模式（timeJson）。 */
     @ColumnInfo(name = "smartConfigJson") val smartConfigJson: String = "",
 
+    /** Optional absolute-date schedule combination; empty means the base schedule applies. */
+    @ColumnInfo(name = "comboScheduleJson", defaultValue = "") val comboScheduleJson: String = "",
+
     @ColumnInfo(name = "createdAt") val createdAt: Long = AppClock.millis(),
 
     @ColumnInfo(name = "updatedAt") val updatedAt: Long = AppClock.millis()
-)
+) {
+    fun effectiveTimeJson(date: LocalDate = LocalDate.now(AppClock)): String =
+        comboScheduleJson.takeIf { it.isNotBlank() }?.let {
+            runCatching { EffectivePeriodResolver.resolve(timeJson, it, date) }.getOrElse { error ->
+                // 导入时已校验, 这里只会遇到损坏的存量数据; 回退到单一作息, 但留下记录便于排查。
+                Log.w("PeriodTable", "combo schedule ignored for period table $id", error)
+                timeJson
+            }
+        } ?: timeJson
+}

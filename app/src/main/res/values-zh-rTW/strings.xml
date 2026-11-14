@@ -506,6 +506,8 @@
     <string name="jw_err_empty_semester">本學期暫無課程，請確認已選擇正確學期；若課表為圖片形式將無法匯入</string>
     <string name="jw_import_success">成功匯入 %1$d 門課程</string>
     <string name="jw_parse_failed">解析失敗：%1$s</string>
+    <string name="jw_combo_schedule_skipped">已略過課表的分季節作息(格式無法識別),課程已正常匯入。</string>
+    <string name="jw_combo_schedule_bind_conflict">該匯入包含按日期切換的組合作息，不能綁定已有共享作息表，請在「作息表」中選擇本次匯入新建。</string>
     <string name="jw_parse_failed_hint">\n\n提示：HEU 需在瀏覽器中登入後導航到『個人課表』頁面再點匯入</string>
     <string name="jw_webview_not_ready">WebView 未就緒</string>
     <string name="jw_fetching">正在抓取課表…</string>

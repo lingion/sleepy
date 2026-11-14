@@ -716,6 +716,7 @@
     <string name="jw_fetch_empty">本学期暂无课程，请确认是否选对学期</string>
     <string name="jw_import_success">成功导入 %1$d 门课程</string>
     <string name="jw_parse_failed">解析失败：%1$s</string>
+    <string name="jw_combo_schedule_skipped">已跳过课表的分季节作息(格式无法识别),课程已正常导入。</string>
     <string name="jw_parse_failed_hint">\n\n提示：HEU 需在浏览器中登录后导航到『个人课表』页面再点导入</string>
     <string name="jw_webview_not_ready">WebView 未就绪</string>
     <string name="jw_fetching">正在抓取课表…</string>
@@ -1115,6 +1116,7 @@
     <string name="period_table_unbound">未绑定（使用本表作息）</string>
     <string name="period_tables_tab">作息表</string>
     <string name="period_table_nodes_count">%1$d 节/天</string>
+    <string name="jw_combo_schedule_bind_conflict">该导入包含按日期切换的组合作息，不能绑定已有共享作息表，请在“作息表”中选择本次导入新建。</string>
     <string name="period_table_save_preview_title">保存前预览</string>
     <string name="period_table_preview_summary">将影响 %1$d 张课表：%2$d 门课时间变化，%3$d 门不变</string>
     <string name="period_table_preview_more">…和其他 %1$d 门课</string>

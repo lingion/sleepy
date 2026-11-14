@@ -214,7 +214,7 @@ open class TwoDayWidgetReceiver : AppWidgetProvider() {
                                 date = date,
                                 dayOfWeek = date.dayOfWeek.value,
                                 courses = courses,
-                                timeJson = table.timeJson,
+                                timeJson = source.tableFor(date).timeJson,
                                 isGrey = HolidayManager.shouldGrey(context, date, table.id)
                             )
                         }

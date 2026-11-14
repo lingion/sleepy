@@ -71,6 +71,10 @@ data class ScheduleState(
         currentTable?.hydratedWith(effectivePeriodTable)
     }
 
+    /** Resolve the schedule that is effective on a specific calendar date. */
+    fun effectiveTableFor(date: LocalDate): TimeTableEntity? =
+        currentTable?.hydratedWith(effectivePeriodTable, date)
+
     /** Format-only display input; real clocks and persisted data remain unchanged. */
     val effectiveRenderTimeJson: String?
         get() = effectiveCurrentTable?.timeJson?.let { TimeTableUtils.sanitizeTimeJsonForDisplay(it) }

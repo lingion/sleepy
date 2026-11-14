@@ -115,7 +115,7 @@ abstract class WeekGridWideWidgetProvider : AppWidgetProvider() {
             if (source == null) return WeekData(emptyList(), false, isDark = dark, themeKey = theme)
             val dates = WeekGridWideWindowCore.visibleDates(now.toLocalDate(), mode)
             val days = dates.map { date -> DayData(date, date.dayOfWeek.value,
-                coursesForDate(source, date), source.table.timeJson,
+                coursesForDate(source, date), source.tableFor(date).timeJson,
                 HolidayManager.shouldGrey(context, date, source.table.id)) }
             return WeekData(days, true, isDark = dark, themeKey = theme,
                 showDate = AppPrefs.isShowDate(context), visibleDays = dates.map { it.dayOfWeek.value }.toSet(),
