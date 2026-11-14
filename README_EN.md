@@ -60,7 +60,7 @@ The school selector requests foreground location only after tapping Locate, for 
 | ABIs | arm64-v8a / armeabi-v7a / x86_64 |
 | Languages | zh-CN · zh-TW · en · ja · es |
 
-Sleepy is an Android timetable app built around three principles: **light, fast, accurate**. Its [school catalogue](docs/schools-list.md) distinguishes existing import configurations, unverified entries that require confirmation, and schools awaiting adaptation; catalogue inclusion is not an import guarantee. Features include JW import, multi-format parsing, single-session adjustments, five home-screen widget types in 14 fixed-size variants, daily course notifications, dark mode, and optional Liquid Glass. The version and supported-school catalogue are maintained in the app's About page and on GitHub Releases. Timetables are stored locally. Network operations include JW import, WakeUp share-code retrieval through WakeUp services, holiday-data refresh from `unpkg.com/holiday-calendar`, and update checks via GitHub (with the project mirror as fallback); these are not analytics services.
+Sleepy is an Android timetable app built around three principles: **light, fast, accurate**. Its [school catalogue](docs/schools-list.md) distinguishes existing import configurations, unverified entries that require confirmation, and schools awaiting adaptation; catalogue inclusion is not an import guarantee. Features include JW import, multi-format parsing, single-session adjustments, five home-screen widget types in 14 fixed-size variants, daily course notifications, dark mode, and optional Liquid Glass. The version and supported-school catalogue are maintained in the app's About page and on GitHub Releases. Timetables stay on the device by default, with optional user-triggered WebDAV full backups. Network operations include JW import, WakeUp share-code retrieval through WakeUp services, holiday-data refresh from `unpkg.com/holiday-calendar`, update checks via GitHub (with the project mirror as fallback), and optional backups sent directly to the configured HTTPS server; these are not analytics services.
 
 ---
 
@@ -527,6 +527,8 @@ Each timetable can map a transfer date to another date’s courses. These mappin
 
 Mine → Backup and restore exports timetable and period-table data, preferences, and widget settings to `.sleepybackup`. Restore offers **Merge** (keep local timetables and append; matching preference keys take the backup values) or **Overwrite** (replace the timetable/settings modules included in the backup). This is a whole-app migration package, distinct from a single timetable’s JSON/ICS/text export; Android’s document picker chooses the file location.
 
+You can optionally configure a WebDAV endpoint and manually upload timestamped full backups, list remote `.sleepybackup` files, and choose one to restore. There is no background sync or in-app remote-delete action. Connection testing creates the configured directory when it does not exist. The archive is a regular ZIP and is not encrypted at rest; use a trusted HTTPS server. The server operator or anyone with access to its backup directory may read the contents. The password is encrypted locally with Android Keystore; the WebDAV connection settings and password are excluded from `.sleepybackup` and Android system backups. Removing the configuration from the device does not delete server copies.
+
 ---
 
 ## Tech Stack
@@ -541,6 +543,7 @@ Mine → Backup and restore exports timetable and period-table data, preferences
 | Preferences | SharedPreferences (`AppPrefs`); DataStore Preferences 1.3.0 declared, unused |
 | Coroutines | kotlinx-coroutines 1.11.0 |
 | Serialization | kotlinx-serialization-json 1.12.0 |
+| Network transport | OkHttp 5.5.1 (WebDAV backup and restore) |
 | HTML parsing | jsoup 1.23.2 |
 | Home screen widgets | RemoteViews + Canvas, synchronous rendering |
 | Background tasks | WorkManager 2.12.0 |
@@ -582,6 +585,7 @@ sleepy/
 │       │   │   │   ├── Migrations.kt                          # Database version migrations
 │       │   │   │   ├── CustomThemeStore.kt                    # Custom theme storage
 │       │   │   │   ├── calendar/                              # System calendar import and local calendar
+│       │   │   │   ├── backup/                                # User-triggered WebDAV transport and local credentials
 │       │   │   │   ├── dao/                                   # Data access for courses, timetables, and period tables
 │       │   │   │   ├── diff/                                  # Timetable record comparison
 │       │   │   │   ├── entity/                                # Room entities and period configuration

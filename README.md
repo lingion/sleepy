@@ -62,7 +62,7 @@ Android 可在[官网下载页](https://sleepy.is-my.app/download/)选择项目�
 
 **学校教务系统在维护？** **WakeUp / 课程格子要登录云端？** **想看下一节课却要点开 App？**
 
-Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务导入会访问学校站点，WakeUp 分享口令导入会访问 WakeUp 服务，节假日数据和版本更新检查也需要联网；项目未集成 Firebase / Crashlytics / Sentry / Bugsnag 等第三方分析 SDK。[学校目录](docs/schools-list.md)按已有导入配置、待验证可尝试和待适配区分，收录不等于支持导入；[来源说明](docs/catalog/README.md)与生成清单记录当前范围。另支持 iCalendar（ICS）、WakeUp 课程包、CSV、HTML 和原生文本导入；导出的 ICS 文件可导入 Apple Calendar、Google Calendar、Outlook 等日历应用。
+Sleepy 默认将课表保存在本地，日常查看和编辑可离线使用；也提供由用户手动触发的 WebDAV 完整备份。教务导入会访问学校站点，WakeUp 分享口令导入会访问 WakeUp 服务，节假日数据和版本更新检查也需要联网；项目未集成 Firebase / Crashlytics / Sentry / Bugsnag 等第三方分析 SDK。[学校目录](docs/schools-list.md)按已有导入配置、待验证可尝试和待适配区分，收录不等于支持导入；[来源说明](docs/catalog/README.md)与生成清单记录当前范围。另支持 iCalendar（ICS）、WakeUp 课程包、CSV、HTML 和原生文本导入；导出的 ICS 文件可导入 Apple Calendar、Google Calendar、Outlook 等日历应用。
 
 桌面提供 5 种小组件、14 个固定尺寸变体（Today / TwoDay / WeekList / WeekView / WeekGrid），跨厂商兼容，放在首屏不用点开 App。GPL-3.0 开源，谁都能审计，谁都能 fork。
 
@@ -544,6 +544,10 @@ Sleepy 不会自动上传截图，也不调用任何 AI 服务。截图发给了
 
 「我的 → 备份恢复」可将全部课表、作息表、偏好和小组件配置打包为 `.sleepybackup`。恢复前可选**合并导入**（保留本机课表并追加，备份中的同名偏好会覆盖本机值）或**覆盖导入**（替换备份包含的课表与设置模块）。换机备份与单张课表的 JSON/ICS/文本导出用途不同。
 
+也可以自愿配置 WebDAV，将完整备份手动上传到自己的 HTTPS 服务器，或查看服务器目录中的备份并选择恢复。连接测试会验证服务器，并在目录尚不存在时尝试创建目录；上传会生成带时间戳的新文件，不覆盖旧备份，也没有后台自动同步或远端删除功能。恢复仍须确认合并或覆盖。
+
+备份包含课表与课程内容、作息表、偏好和自定义主题、小组件配置及导入草稿；它是普通 ZIP 文件，文件本身没有加密。服务器管理员或有目录访问权限的人可能读取内容，请只上传到可信服务器。WebDAV 地址仅接受 HTTPS；用户名和目录保存在本机应用私有设置中，密码由 Android Keystore 加密保存。WebDAV 连接设置和密码不进入 `.sleepybackup` 或 Android 系统备份；移除本机配置不会删除服务器上的文件。
+
 ---
 
 ## 技术栈
@@ -558,6 +562,7 @@ Sleepy 不会自动上传截图，也不调用任何 AI 服务。截图发给了
 | 偏好设置 | SharedPreferences（`AppPrefs`）；DataStore Preferences 1.3.0 已声明，尚未使用 |
 | 协程 | kotlinx-coroutines 1.11.0 |
 | 序列化 | kotlinx-serialization-json 1.12.0 |
+| 网络传输 | OkHttp 5.5.1（WebDAV 备份与恢复） |
 | HTML 解析 | jsoup 1.23.2 |
 | 桌面小组件 | RemoteViews + Canvas，同步渲染 |
 | 后台任务 | WorkManager 2.12.0 |
@@ -599,6 +604,7 @@ sleepy/
 │       │   │   │   ├── Migrations.kt                          # 数据库版本迁移
 │       │   │   │   ├── CustomThemeStore.kt                    # 自定义主题存储
 │       │   │   │   ├── calendar/                              # 系统日历导入与本机日历
+│       │   │   │   ├── backup/                                # 用户手动触发的 WebDAV 备份传输与本地凭据
 │       │   │   │   ├── dao/                                   # 课程、课表、作息表等数据访问
 │       │   │   │   ├── diff/                                  # 课表记录差异比较
 │       │   │   │   ├── entity/                                # Room 实体与节次配置
