@@ -17,7 +17,7 @@ import com.lingion.sleepy.data.entity.ImportDraftEntity
 import com.lingion.sleepy.data.entity.PeriodTableEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 
-internal const val APP_DATABASE_VERSION = 15
+internal const val APP_DATABASE_VERSION = 16
 
 @Database(
     entities = [CourseEntity::class, TimeTableEntity::class, PeriodTableEntity::class, ImportDraftEntity::class, CalendarImportRecordEntity::class, CourseColorEntity::class],
