@@ -190,6 +190,28 @@ class GlassSwitchTest {
         compose.onAllNodes(hasClickAction()).assertCountEquals(1)
     }
 
+    @Test fun parentOwnedTapAlsoLiftsTheThumbWhileItTravels() {
+        show(parentOwnsClick = true)
+        compose.mainClock.autoAdvance = false
+        val thumb = compose.onNodeWithTag("thumb", useUnmergedTree = true)
+        val initial = thumb.fetchSemanticsNode().boundsInRoot
+        compose.onNodeWithTag("row").performTouchInput { click() }
+        var tallest = initial.height
+        var widest = initial.width
+        repeat(40) {
+            compose.mainClock.advanceTimeByFrame()
+            val bounds = thumb.fetchSemanticsNode().boundsInRoot
+            tallest = maxOf(tallest, bounds.height)
+            widest = maxOf(widest, bounds.width)
+        }
+        assertTrue("row-owned settings switches must lift too: $widest x $tallest", widest > 55f && tallest > 34f)
+        compose.mainClock.advanceTimeBy(1_000)
+        val settled = thumb.fetchSemanticsNode().boundsInRoot
+        assertEquals(initial.width, settled.width, 1f)
+        assertTrue(settled.center.x > initial.center.x + 20f)
+        compose.runOnIdle { assertEquals(listOf(true), changes) }
+    }
+
     @Test fun keyboardActivationCommitsOnce() {
         show()
         val node = compose.onNodeWithTag("switch")

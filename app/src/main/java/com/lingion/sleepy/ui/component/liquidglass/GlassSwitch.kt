@@ -68,7 +68,8 @@ fun GlassSwitch(
     // Geometry and drag use the same measured 22dp travel.
     val travel = with(LocalDensity.current) { 22.dp.toPx() }
     val driver = rememberTimedGlassControlMotion(if (checked) 1f else 0f, enabled,
-        spec = GlassControlMotionSpec.Native, travelDistanceDp = if (rtl) -22f else 22f)
+        spec = GlassControlMotionSpec.Native, travelDistanceDp = if (rtl) -22f else 22f,
+        animateExternalChanges = onCheckedChange == null)
     val motion = driver.motion
     val lift = motion.lift
     val geometryLift = motion.geometryLift

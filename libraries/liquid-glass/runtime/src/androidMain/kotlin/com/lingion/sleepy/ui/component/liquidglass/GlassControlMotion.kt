@@ -20,19 +20,25 @@ data class GlassControlMotionSpec(
     val fall: SpringDescription,
     val release: Release = Release.NearDestination,
     val activationRelease: Release = release,
+    val activationReleaseDistance: Float = FlClashDockPhysics.LIFT_RELEASE,
+    val heldActivationRelease: Release = activationRelease,
 ) {
     enum class Release { NearDestination, FirstPeak, OnRelease }
 
     companion object {
         val Dock = GlassControlMotionSpec(FlClashSprings.LiftSpring, FlClashSprings.LiftSpring)
 
-        // Fit to the iOS 26.5 native presentation trace: a short, slightly
-        // overshooting rise followed by about 250 ms of contraction. A released
-        // lens contracts while travelling instead of waiting for its destination.
+        // iOS 26.5 ordinary taps keep the complete lens until about 88% of
+        // travel, then contract. A lens already held up contracts on release.
         val Native = GlassControlMotionSpec(
             SpringDescription.withDampingRatio(mass = 1.0, stiffness = 841.0, ratio = .56),
-            FlClashSprings.LiftSpring,
+            // Empirical local-bounds fit to the separate SwiftUI/UIKit held
+            // release traces, rather than their transformed world rectangles.
+            SpringDescription.withDampingRatio(mass = 1.0, stiffness = 160.0, ratio = .70),
             release = Release.FirstPeak,
+            activationRelease = Release.NearDestination,
+            activationReleaseDistance = .12f,
+            heldActivationRelease = Release.FirstPeak,
         )
 
         // Native segmented pickers rise monotonically, unlike switches.
@@ -67,6 +73,7 @@ class GlassControlMotion(
     private var activation = 0
     private var riseHasPeaked = false
     private var releasePhase = spec.release
+    private var releaseDistance = FlClashDockPhysics.LIFT_RELEASE
     private var dropping by mutableStateOf(false)
     private var deformationInteraction = false
     private var distancePerPositionDp = travelDistanceDp.takeIf { it.isFinite() && it != 0f } ?: 0f
@@ -119,7 +126,10 @@ class GlassControlMotion(
         deformationTargetPosition = target
         this.activation = activation
         if (pressed && !this.pressed || activated) {
-            releasePhase = if (activated) spec.activationRelease else spec.release
+            releasePhase = if (activated) {
+                if (this.pressed && riseHasPeaked) spec.heldActivationRelease else spec.activationRelease
+            } else spec.release
+            releaseDistance = if (activated) spec.activationReleaseDistance else FlClashDockPhysics.LIFT_RELEASE
             if (elevation.target != 1f) riseHasPeaked = false
             elevation.springTo(1f, spec.rise)
             dropping = !pressed
@@ -163,7 +173,7 @@ class GlassControlMotion(
             GlassControlMotionSpec.Release.OnRelease -> lift >= .35f
             GlassControlMotionSpec.Release.NearDestination ->
                 lift >= FlClashDockPhysics.LIFT_SNAP &&
-                    abs(position.target - position.value) <= FlClashDockPhysics.LIFT_RELEASE
+                    abs(position.target - position.value) <= releaseDistance
         }
         if (dropping && !pressed && canLower) {
             dropping = false
@@ -284,13 +294,15 @@ class TimedGlassControlMotion(
     }
 
     /** A matching controlled-value echo must not cancel a newer pointer epoch. */
-    fun synchronize(target: Float, enabled: Boolean, receivedNanos: Long, observedRevision: Int = requestRevision) {
+    fun synchronize(target: Float, enabled: Boolean, receivedNanos: Long, observedRevision: Int = requestRevision,
+        animateSelection: Boolean = false) {
         if (observedRevision != requestRevision) return
         if (target == requestedPosition && enabled == inputEnabled) return
+        val activate = animateSelection && inputEnabled && enabled && requestedEpoch == null && target != requestedPosition
         requestedEpoch = null
         requestedPosition = target
         inputEnabled = enabled
-        clock.enqueue(Input.Selection(target, activate = false, enabled = enabled), receivedNanos)
+        clock.enqueue(Input.Selection(target, activate = activate, enabled = enabled), receivedNanos)
     }
 
     fun needsFrame(): Boolean = clock.hasPending || motion.isRunning
@@ -351,6 +363,7 @@ fun rememberTimedGlassControlMotion(
     enabled: Boolean,
     spec: GlassControlMotionSpec,
     travelDistanceDp: Float = 0f,
+    animateExternalChanges: Boolean = false,
 ): TimedGlassControlMotion {
     val driver = remember(spec) { TimedGlassControlMotion(target, spec, travelDistanceDp, enabled) }
     val inputTimeNanos by rememberUpdatedState(LocalDockInputTimeNanos.current)
@@ -360,7 +373,7 @@ fun rememberTimedGlassControlMotion(
     val observedRevision = driver.requestRevision
     SideEffect {
         driver.motion.updateMotionDistance(travelDistanceDp)
-        driver.synchronize(target, enabled, inputTimeNanos(), observedRevision)
+        driver.synchronize(target, enabled, inputTimeNanos(), observedRevision, animateSelection = animateExternalChanges)
     }
     LaunchedEffect(driver) {
         val durationScale = coroutineContext[MotionDurationScale]
