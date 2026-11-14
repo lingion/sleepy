@@ -110,6 +110,9 @@
     <string name="edit_table_delete_msg_count">确定要删除课表「%1$s」吗？共 %2$d 门课程将一并删除，此操作不可撤销。</string>    <string name="default_table_name">默认</string>
     <string name="import_paste">粘贴课表文本</string>
     <string name="import_paste_hint">粘贴课表文本…</string>
+    <string name="import_ai_title">AI 截图转换</string>
+    <string name="import_ai_subtitle">复制提示词，让 AI 把课表截图转成 sleepy-v1 文本</string>
+    <string name="import_ai_copied">提示词已复制。发给 AI 并附上课表截图，再把它的回复粘贴到「粘贴课表文本」即可预览</string>
     <string name="import_file">从文件导入</string>
     <string name="import_qr">扫码导入</string>
     <string name="import_jw">教务直连</string>
@@ -158,7 +161,7 @@
     <string name="format_html">HTML 表格</string>
     <string name="format_html_desc">&lt;table&gt; 形式，识别表头后逐行解析</string>
     <string name="format_plain">纯文本</string>
-    <string name="format_plain_desc">Sleepy 原生格式，一行一课，竖线分列</string>
+    <string name="format_plain_desc">Sleepy 原生格式，一行一课，竖线分列；也可让 AI 从课表截图生成</string>
 
     <!-- 格式详情弹窗: 文案必须与 ScheduleParser 实际识别行为一致 -->
     <string name="format_help_spec">识别要求</string>

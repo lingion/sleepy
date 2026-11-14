@@ -102,6 +102,9 @@
     <string name="default_table_name">デフォルト</string>
     <string name="import_paste">テキストを貼り付け</string>
     <string name="import_paste_hint">時間割テキストを貼り付け…</string>
+    <string name="import_ai_title">AI でスクリーンショット変換</string>
+    <string name="import_ai_subtitle">プロンプトをコピーし、AI に時間割の画像を sleepy-v1 テキストに変換してもらいます</string>
+    <string name="import_ai_copied">プロンプトをコピーしました。時間割のスクリーンショットと一緒に AI へ送り、返答を「テキストを貼り付け」に貼ってプレビューしてください。</string>
     <string name="import_file">ファイルから</string>
     <string name="import_qr">QRスキャン</string>
     <string name="import_jw">学校システムへ接続</string>
@@ -147,7 +150,7 @@
     <string name="format_html">HTMLテーブル</string>
     <string name="format_html_desc">&lt;table&gt;形式、ヘッダー検出後に行ごとに解析</string>
     <string name="format_plain">プレーンテキスト</string>
-    <string name="format_plain_desc">Sleepyネイティブ形式、1行1科目、縦棒区切り</string>
+    <string name="format_plain_desc">Sleepyネイティブ形式、1行1科目、縦棒区切り。スクリーンショットからAIで生成も可能</string>
 
     <!-- フォーマット詳細ダイアログ: 文言は ScheduleParser の実際の識別動作と一致させること -->
     <string name="format_help_spec">識別条件</string>

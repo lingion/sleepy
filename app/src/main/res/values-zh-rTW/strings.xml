@@ -102,6 +102,9 @@
     <string name="default_table_name">預設</string>
     <string name="import_paste">貼上課表文字</string>
     <string name="import_paste_hint">貼上課表文字…</string>
+    <string name="import_ai_title">AI 截圖轉換</string>
+    <string name="import_ai_subtitle">複製提示詞，讓 AI 把課表截圖轉成 sleepy-v1 文字</string>
+    <string name="import_ai_copied">提示詞已複製。傳給 AI 並附上課表截圖，再把它的回覆貼到「貼上課表文字」即可預覽</string>
     <string name="import_file">從檔案匯入</string>
     <string name="import_qr">掃碼匯入</string>
     <string name="import_jw">教務直連</string>
@@ -147,7 +150,7 @@
     <string name="format_html">HTML 表格</string>
     <string name="format_html_desc">&lt;table&gt; 形式，識別表頭後逐行解析</string>
     <string name="format_plain">純文字</string>
-    <string name="format_plain_desc">Sleepy 原生格式，一行一課，豎線分列</string>
+    <string name="format_plain_desc">Sleepy 原生格式，一行一課，豎線分列；也可讓 AI 從課表截圖生成</string>
 
     <!-- 格式詳情彈窗: 文案必須與 ScheduleParser 實際識別行為一致 -->
     <string name="format_help_spec">識別要求</string>

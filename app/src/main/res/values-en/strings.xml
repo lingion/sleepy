@@ -107,6 +107,9 @@
     <string name="default_table_name">Default</string>
     <string name="import_paste">Paste Text</string>
     <string name="import_paste_hint">Paste schedule text…</string>
+    <string name="import_ai_title">AI screenshot conversion</string>
+    <string name="import_ai_subtitle">Copy a prompt and let AI turn your timetable screenshot into sleepy-v1 text</string>
+    <string name="import_ai_copied">Prompt copied. Send it to an AI with your timetable screenshot, then paste the reply under \"Paste Text\" to preview.</string>
     <string name="import_file">Import from File</string>
     <string name="import_qr">Scan QR</string>
     <string name="import_jw">Connect to School</string>
@@ -152,7 +155,7 @@
     <string name="format_html">HTML table</string>
     <string name="format_html_desc">&lt;table&gt; format, parse by row after detecting headers</string>
     <string name="format_plain">Plain text</string>
-    <string name="format_plain_desc">Sleepy native format, one course per line, pipe-separated</string>
+    <string name="format_plain_desc">Sleepy native format, one course per line, pipe-separated; AI can generate it from a screenshot</string>
 
     <!-- Format detail dialogs: wording must match ScheduleParser behavior -->
     <string name="format_help_spec">Recognition requirements</string>

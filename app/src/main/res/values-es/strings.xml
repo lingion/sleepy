@@ -102,6 +102,9 @@
     <string name="default_table_name">Predeterminado</string>
     <string name="import_paste">Pegar texto</string>
     <string name="import_paste_hint">Pega el texto del horario…</string>
+    <string name="import_ai_title">Conversión de captura con IA</string>
+    <string name="import_ai_subtitle">Copia el prompt y deja que la IA convierta tu captura del horario en texto sleepy-v1</string>
+    <string name="import_ai_copied">Prompt copiado. Envíalo a una IA junto con la captura del horario y pega la respuesta en \"Pegar texto\" para previsualizar.</string>
     <string name="import_file">Importar archivo</string>
     <string name="import_qr">Escanear QR</string>
     <string name="import_jw">Conectar escuela</string>
@@ -147,7 +150,7 @@
     <string name="format_html">Tabla HTML</string>
     <string name="format_html_desc">&lt;table&gt; formato, analizar por fila después de detectar encabezados</string>
     <string name="format_plain">Texto plano</string>
-    <string name="format_plain_desc">Formato nativo de Sleepy, un curso por línea, separado por barras</string>
+    <string name="format_plain_desc">Formato nativo de Sleepy, un curso por línea, separado por barras; la IA puede generarlo desde una captura</string>
 
     <!-- Diálogos de detalle de formato: el texto debe coincidir con el comportamiento real de ScheduleParser -->
     <string name="format_help_spec">Requisitos de reconocimiento</string>
