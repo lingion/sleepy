@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.util.AppClock
 import com.lingion.sleepy.util.EffectivePeriodResolver
+import android.util.Log
 import java.time.LocalDate
 
 /**
@@ -46,6 +47,10 @@ data class PeriodTableEntity(
 ) {
     fun effectiveTimeJson(date: LocalDate = LocalDate.now(AppClock)): String =
         comboScheduleJson.takeIf { it.isNotBlank() }?.let {
-            runCatching { EffectivePeriodResolver.resolve(timeJson, it, date) }.getOrElse { timeJson }
+            runCatching { EffectivePeriodResolver.resolve(timeJson, it, date) }.getOrElse { error ->
+                // 导入时已校验, 这里只会遇到损坏的存量数据; 回退到单一作息, 但留下记录便于排查。
+                Log.w("PeriodTable", "combo schedule ignored for period table $id", error)
+                timeJson
+            }
         } ?: timeJson
 }
