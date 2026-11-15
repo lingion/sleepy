@@ -72,7 +72,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -86,6 +85,7 @@ import com.lingion.sleepy.ui.component.CourseFloatState
 import com.lingion.sleepy.ui.component.dismissFloatOnOutsidePress
 import com.lingion.sleepy.ui.component.dismissQuickAddOnOutsidePress
 import com.lingion.sleepy.ui.component.CourseDetailSheet
+import com.lingion.sleepy.ui.component.rememberTimetableTextMeasurer
 import com.lingion.sleepy.ui.component.FullWeekView
 import com.lingion.sleepy.ui.component.SectionHead
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
@@ -412,13 +412,14 @@ fun ScheduleScreen(
                 // 因此不能只传当前日期的单一 timeJson；旧课表仍自然回退到同一份作息。
                 val timeJsonByDay = remember(
                     page,
+                    viewMode,
                     state.selectedTableId,
                     state.currentTable?.startDate,
                     state.currentTable?.timeJson,
                     state.effectivePeriodTable,
                 ) {
                     val table = state.currentTable
-                    if (table == null || table.startDate.isBlank()) emptyMap()
+                    if (viewMode != ViewMode.Full || table == null || table.startDate.isBlank()) emptyMap()
                     else (1..7).associateWith { day ->
                         runCatching {
                             val date = DateUtils.dateOfWeek(table.startDate, page + 1, day)
@@ -564,17 +565,29 @@ fun ScheduleScreen(
         // 此前传全周课程, ICS 往返/换教师拆出的周次不相交同行(如周四 8-10 的
         // 周1-4 与 周6-13 两行)被当成同时存在 → 幽灵图层 → 误弹"选择默认置顶"。
         // 网格一直传的是 inWeek 过滤后的 weekCourses, 弹窗对齐同一语义。
-        CourseDetailSheet(
-            course = selectedCourse,
-            timeString = selectedCourse?.let { it.nodeString(LocalContext.current) },
-            allCourses = state.currentTable?.let { table ->
+        val detailCourses = remember(
+            selectedCourse != null,
+            state.selectedWeek,
+            state.currentTable,
+            state.courses,
+            state.transfers,
+        ) {
+            val table = state.currentTable
+            if (selectedCourse == null || table == null) {
+                emptyList()
+            } else {
                 (1..7).flatMap { day ->
                     com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(
                         DateUtils.dateOfWeek(table.startDate, state.selectedWeek, day),
                         table.startDate, table.maxWeek, state.courses, state.transfers
                     ).map { it.copy(day = day) }
                 }
-            } ?: emptyList(),
+            }
+        }
+        CourseDetailSheet(
+            course = selectedCourse,
+            timeString = selectedCourse?.let { it.nodeString(LocalContext.current) },
+            allCourses = detailCourses,
             // 用户报障 2026-09-10: 详情页聚簇与网格同一时间域 — ownTime 课
             // 按真实分钟判重叠, 节点占位值不再制造假冲突。
             timeJson = state.effectiveCurrentTable?.timeJson,
@@ -701,7 +714,7 @@ internal fun TopBar(
     val weekDescription = if (statusRes == 0) weekLabel else "${stringResource(statusRes)} · $weekLabel"
     val numberLabel = currentWeek.toString()
     val labelStyle = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
-    val measurer = rememberTextMeasurer()
+    val measurer = rememberTimetableTextMeasurer()
     val density = LocalDensity.current
     val fullTextWidth = with(density) { measurer.measure(weekLabel, labelStyle, softWrap = false).size.width.toDp() }
     val numberTextWidth = with(density) { measurer.measure(numberLabel, labelStyle, softWrap = false).size.width.toDp() }

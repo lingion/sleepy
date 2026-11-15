@@ -57,13 +57,13 @@ private const val calFrameAndHoles =
     "M19,4h-1V2h-2v2H8V2H6v2H5C3.89,4 3.01,4.9 3.01,6L3,20c0,1.1 0.89,2 2,2h14c1.1,0 2,-0.9 2,-2V6C21,4.9 20.1,4 19,4z" +
         "M19,20H5V10h14V20zM19,8H5V6h14V8z"
 
-// 6 个独立日期格子 (行1: (7..9, 12..14), (11..13, 12..14), (15..17, 12..14); 行2: (7..9, 16..18), (11..13, 16..18), (15..17, 16..18))
-private const val calDot1 = "M9,14H7v-2h2V14z"
-private const val calDot2 = "M13,14h-2v-2h2V14z"
-private const val calDot3 = "M17,14h-2v-2h2V14z"
-private const val calDot4 = "M9,18H7v-2h2V18z"
-private const val calDot5 = "M13,18h-2v-2h2V18z"
-private const val calDot6 = "M17,18h-2v-2h2V18z"
+// Soft 0.35-unit corners keep the tiny date cells from looking like detached pixels.
+private const val calDot1 = "M7.35,12h1.3c.19,0 .35,.16 .35,.35v1.3c0,.19-.16,.35-.35,.35h-1.3c-.19,0-.35-.16-.35-.35v-1.3c0-.19,.16-.35,.35-.35z"
+private const val calDot2 = "M11.35,12h1.3c.19,0 .35,.16 .35,.35v1.3c0,.19-.16,.35-.35,.35h-1.3c-.19,0-.35-.16-.35-.35v-1.3c0-.19,.16-.35,.35-.35z"
+private const val calDot3 = "M15.35,12h1.3c.19,0 .35,.16 .35,.35v1.3c0,.19-.16,.35-.35,.35h-1.3c-.19,0-.35-.16-.35-.35v-1.3c0-.19,.16-.35,.35-.35z"
+private const val calDot4 = "M7.35,16h1.3c.19,0 .35,.16 .35,.35v1.3c0,.19-.16,.35-.35,.35h-1.3c-.19,0-.35-.16-.35-.35v-1.3c0-.19,.16-.35,.35-.35z"
+private const val calDot5 = "M11.35,16h1.3c.19,0 .35,.16 .35,.35v1.3c0,.19-.16,.35-.35,.35h-1.3c-.19,0-.35-.16-.35-.35v-1.3c0-.19,.16-.35,.35-.35z"
+private const val calDot6 = "M15.35,16h1.3c.19,0 .35,.16 .35,.35v1.3c0,.19-.16,.35-.35,.35h-1.3c-.19,0-.35-.16-.35-.35v-1.3c0-.19,.16-.35,.35-.35z"
 
 // 顺序错峰闪现：progress = 1 - pulse 从 0 到 1。每格按索引延迟逐个弹出
 private fun calStaggeredDot(index: Int): (Float, Float) -> PartTransform = { pulse, _ ->
@@ -77,7 +77,7 @@ private fun calStaggeredDot(index: Int): (Float, Float) -> PartTransform = { pul
         } else {
             val u = ((progress - start) / (1f - start)).coerceIn(0f, 1f)
             val pop = sin(u * PI.toFloat())
-            val scale = u + 0.25f * pop
+            val scale = u + 0.18f * pop
             val alpha = (u * 2.5f).coerceIn(0f, 1f)
             PartTransform(scaleX = scale, scaleY = scale, alpha = alpha)
         }
@@ -145,8 +145,7 @@ private const val settingsCore =
  * 部件表真源。null = 无部件拆分(None 键, 行为与改造前逐位一致)。
  * 各键峰值时刻部件变换互不相同 = "各自动作"契约 (NavIconPartsTest 锁)。
  */
-internal fun navIconPartsFor(key: NavIconMotionKey): List<NavIconPart>? = when (key) {
-    NavIconMotionKey.PageFlip -> listOf(
+private val pageFlipParts = listOf(
         NavIconPart(calFrameAndHoles, pivotX = 12f, pivotY = 12f) { _, _ -> PartTransform() },
         NavIconPart(calDot1, pivotX = 8f, pivotY = 13f, motion = calStaggeredDot(0)),
         NavIconPart(calDot2, pivotX = 12f, pivotY = 13f, motion = calStaggeredDot(1)),
@@ -156,12 +155,12 @@ internal fun navIconPartsFor(key: NavIconMotionKey): List<NavIconPart>? = when (
         NavIconPart(calDot6, pivotX = 16f, pivotY = 17f, motion = calStaggeredDot(5)),
     )
 
-    NavIconMotionKey.Hop -> listOf(
+private val hopParts = listOf(
         NavIconPart(todayFrameAndHoles, pivotX = 12f, pivotY = 12f) { _, _ -> PartTransform() },
         NavIconPart(todayCenterSquare, pivotX = 9.5f, pivotY = 13.5f) { p, _ -> todayCenterSquareMotion(p) },
     )
 
-    NavIconMotionKey.GearSpin -> listOf(
+private val gearParts = listOf(
         NavIconPart(settingsRing, pivotX = 12f, pivotY = 12f) { _, s ->
             PartTransform(rotationZ = s * (180f / PI.toFloat()))
         },
@@ -171,11 +170,16 @@ internal fun navIconPartsFor(key: NavIconMotionKey): List<NavIconPart>? = when (
         },
     )
 
-    NavIconMotionKey.Jelly -> listOf(
+private val jellyParts = listOf(
         NavIconPart(personHeadRing, pivotX = 12f, pivotY = 10f) { p, _ -> personHeadMotion(p) },
         NavIconPart(personBody, pivotX = 12f, pivotY = 20f) { _, _ -> PartTransform() },
     )
 
+internal fun navIconPartsFor(key: NavIconMotionKey): List<NavIconPart>? = when (key) {
+    NavIconMotionKey.PageFlip -> pageFlipParts
+    NavIconMotionKey.Hop -> hopParts
+    NavIconMotionKey.GearSpin -> gearParts
+    NavIconMotionKey.Jelly -> jellyParts
     NavIconMotionKey.None -> null
 }
 

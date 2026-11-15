@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.baselineprofile)
 }
 
 ksp {
@@ -135,6 +136,15 @@ android {
                 signingConfigs.getByName("debug")
             }
         }
+        create("benchmark") {
+            initWith(getByName("release"))
+            matchingFallbacks += listOf("release")
+            signingConfig = signingConfigs.getByName("debug")
+            isDebuggable = false
+            isProfileable = true
+            isMinifyEnabled = false
+            isShrinkResources = false
+        }
     }
 
     compileOptions {
@@ -226,6 +236,8 @@ tasks.matching { it.name.endsWith("UnitTestJavaRes") }.configureEach {
 }
 
 dependencies {
+    baselineProfile(project(":baselineprofile"))
+
     val composeBom = platform(libs.compose.bom)
     implementation(composeBom)
     androidTestImplementation(composeBom)
@@ -274,6 +286,7 @@ dependencies {
     // Agent Debug Console HTTP 服务器 (SPEC §4 用户预授权的唯一新增依赖)
     implementation("org.nanohttpd:nanohttpd:2.3.1")
     implementation(libs.core.splashscreen)
+    implementation(libs.profile.installer)
 
     // HCT 色调运算 (液态玻璃暗色 tint / 镜片托盘), 移植自 FLClash 的
     // material-color-utilities Hct; com.google.android.material:material-color-utilities

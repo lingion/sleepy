@@ -34,11 +34,10 @@ val SleepyThumbSpring = spring<Float>(
 const val SleepyPopupScaleStart = 0.8f
 
 /**
- * content 家族起始缩放 (页面族镜像约定): 导航/标签页/大块内容切换 — 尺度走
- * defaultSpatial (0.8 阻尼, 轻微收), alpha 走 defaultEffects。0.92 与
- * SleepyMaterialTransition 既有页面镜像缩放一致。
+ * content 家族起始缩放 (页面族镜像约定): 导航和大块内容切换只做轻微缩放，
+ * 减少复杂页面缩放幅度和新旧页面重叠时的绘制负担。
  */
-const val SleepyContentScaleStart = 0.92f
+const val SleepyContentScaleStart = 0.97f
 
 /** 按压回缩目标 (自定义表面按压反馈, noRippleClickable 全家生效): 2% 微缩。 */
 const val SleepyPressScale = 0.98f
@@ -63,7 +62,7 @@ fun sleepyPopupExit(): ExitTransition =
     ) + fadeOut(animationSpec = MaterialTheme.motionScheme.fastEffectsSpec<Float>())
 
 /**
- * 页面/大块内容入场: scaleIn 0.92→1 defaultSpatial。
+ * 页面/大块内容入场: scaleIn 0.97→1 fastSpatial。
  * 刻意不叠 fadeIn: 入页半透明会把下层出页的文字透出来(双影), 目标页
  * (targetContentZIndex=1)带不透明底直接压住出页, 只保留缩放位移;
  * 缩放期间四周露边由 SleepyNavHost 的转场底衬兜住, 不会露窗口白底。
@@ -71,7 +70,7 @@ fun sleepyPopupExit(): ExitTransition =
 @Composable
 fun sleepyContentEnter(): EnterTransition =
     scaleIn(
-        animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>(),
+        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec<Float>(),
         initialScale = SleepyContentScaleStart,
     )
 
@@ -79,11 +78,11 @@ fun sleepyContentEnter(): EnterTransition =
 @Composable
 fun sleepyContentExit(includeFade: Boolean = true): ExitTransition {
     val scale = scaleOut(
-        animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>(),
+        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec<Float>(),
         targetScale = SleepyContentScaleStart,
     )
     return if (includeFade) {
-        scale + fadeOut(animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>())
+        scale + fadeOut(animationSpec = MaterialTheme.motionScheme.fastEffectsSpec<Float>())
     } else scale
 }
 

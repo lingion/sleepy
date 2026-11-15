@@ -10,9 +10,6 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ContentTransform
-import androidx.compose.animation.SizeTransform
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -63,9 +60,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.ui.platform.LocalDensity
 import com.lingion.sleepy.ui.component.PillNavItemSpec
-import com.lingion.sleepy.ui.component.sleepyContentEnter
-import com.lingion.sleepy.ui.component.sleepyContentExit
-import com.lingion.sleepy.ui.component.TabPage
+import com.lingion.sleepy.ui.component.SinglePageTabContent
 import com.lingion.sleepy.ui.component.LocalTimetableTextMeasurer
 import com.lingion.sleepy.ui.component.TimetableTextCacheSize
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -330,9 +325,8 @@ internal fun MainTabs(
     holder: SaveableStateHolder,
     updateNoticeVisible: Boolean = false
 ) {
-    // tab 往返滚动位置保真: AnimatedContent 过渡期同时组合新旧两页, 各页内容包
-    // SaveableStateProvider(currentTab.name) — key 稳定(tab 枚举名), 返回时恢复。
-    // 注意: scheduleViewMode 会话态仍由 AppRoot 持有(§1.4 契约), 此处只管组合作用域。
+    // 每次只组合当前 tab。SaveableStateProvider 保存离场页面状态, 返回时恢复。
+    // scheduleViewMode 会话态仍由 AppRoot 持有(§1.4 契约), 此处只管组合作用域。
     val session = navigator.session
     MainTabContent(currentTab) { currentTab ->
         when (currentTab) {
@@ -384,27 +378,10 @@ internal fun MainTabs(
 /** Production tab transition, separated from screen dependencies for frame-level tests. */
 @Composable
 internal fun MainTabContent(currentTab: Tab, content: @Composable (Tab) -> Unit) {
-    val tabEnter = sleepyContentEnter()
-    // TabPage owns the fade so reversing an exit cannot leave the target translucent.
-    val tabExit = sleepyContentExit(includeFade = false)
     val timetableTextMeasurer = rememberTextMeasurer(cacheSize = TimetableTextCacheSize)
     CompositionLocalProvider(LocalTimetableTextMeasurer provides timetableTextMeasurer) {
-        AnimatedContent(
-            targetState = currentTab,
-            transitionSpec = {
-                ContentTransform(
-                    targetContentEnter = tabEnter,
-                    initialContentExit = tabExit,
-                    targetContentZIndex = 1f,
-                    // 四页尺寸差异大, togetherWith 默认 clip=true 会裁切过渡内容
-                    sizeTransform = SizeTransform(clip = false),
-                )
-            },
-        ) { tab ->
-            // The background must move with each page, covering its transparent gaps.
-            TabPage {
-                content(tab)
-            }
+        SinglePageTabContent(targetState = currentTab) { tab ->
+            content(tab)
         }
     }
 }
