@@ -159,6 +159,10 @@ data class LiquidGlassStyle(
     val refractionProfilePower: Double = 1.0,
     /** Engineering panel source-field gain, not identified physical thickness; zero keeps normal-only refraction. */
     val lateralRefractionGain: Double = 0.0,
+    /** Optional narrow contour band, independent of the wider refraction bevel. */
+    val edgeFrostWidth: Double = 0.0,
+    /** Additional blur radius at the contour; zero keeps the inherited material. */
+    val edgeFrostBlur: Double = 0.0,
     /** Null keeps the shared material path unchanged; only explicit Dock probes set this. */
     val dockToneResponse: DockToneResponse? = null,
     /** Dock-base white-rim profile only; zero retains the legacy rim without a tone response. */
@@ -180,6 +184,8 @@ data class LiquidGlassStyle(
             refractionLimit = refractionLimit,
             refractionProfilePower = refractionProfilePower,
             lateralRefractionGain = lateralRefractionGain,
+            edgeFrostWidth = edgeFrostWidth,
+            edgeFrostBlur = edgeFrostBlur * amount,
             dockToneResponse = dockToneResponse?.scale(amount),
             // The rim strength already fades below; keep its depth profile fixed.
             dockBaseRimCubicShoulderBlend = dockBaseRimCubicShoulderBlend,
@@ -306,6 +312,8 @@ data class LiquidGlassStyle(
                 refractionLimit = lerpDouble(a.refractionLimit, b.refractionLimit, t),
                 refractionProfilePower = lerpDouble(a.refractionProfilePower, b.refractionProfilePower, t),
                 lateralRefractionGain = lerpDouble(a.lateralRefractionGain, b.lateralRefractionGain, t),
+                edgeFrostWidth = lerpDouble(a.edgeFrostWidth, b.edgeFrostWidth, t),
+                edgeFrostBlur = lerpDouble(a.edgeFrostBlur, b.edgeFrostBlur, t),
                 dockToneResponse = lerpDockTone(a.dockToneResponse, b.dockToneResponse, t),
                 dockBaseRimCubicShoulderBlend = lerpDouble(a.dockBaseRimCubicShoulderBlend, b.dockBaseRimCubicShoulderBlend, t),
                 bevel = lerpDouble(a.bevel, b.bevel, t),
@@ -554,6 +562,8 @@ data class LiquidGlassRim(
     val minimumShine: Double = 0.0,
     /** Reflect only the added angular floor toward white instead of adding unbounded light. */
     val screenMinimumShine: Boolean = false,
+    /** Integrate the existing half-dp stroke in the optical pass instead of rasterizing it twice. */
+    val analyticStroke: Boolean = false,
 ) {
     fun scale(t: Double): LiquidGlassRim {
         val amount = t.coerceIn(0.0, 1.0)

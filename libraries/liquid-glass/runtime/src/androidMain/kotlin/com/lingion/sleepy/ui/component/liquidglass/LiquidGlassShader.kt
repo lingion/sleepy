@@ -127,6 +127,8 @@ object LiquidGlassShader {
         "uRefractionLimit" to 1,
         "uRefractionProfilePower" to 1,
         "uLateralRefractionGain" to 1,
+        "uEdgeFrost" to 2,
+        "uContourStroke" to 4,
         "uDockTone" to 4,
         "uDockToneBright" to 3,
         "uDockToneDark" to 3,
@@ -242,7 +244,7 @@ object LiquidGlassShader {
      * @param dualContours two convex contours in pane-local dp, with independent radial centers
      * @param goo goo 药丸布局; null = 无 goo
      * @param rim 外圈; [LiquidGlassRim.shine] 与方向亮度下限进入着色器(side/corner/flat 是 CPU 画的
-     *   渐变发丝线, 不属 uniform)
+     *   渐变发丝线，只有显式 analyticStroke 时进入 uniform)
      * @param veil 覆盖在纹理之上的均匀遮罩(直 alpha)
      */
     fun build(
@@ -332,6 +334,9 @@ object LiquidGlassShader {
         val dockTone = style.dockToneResponse
         val lateralGain = style.lateralRefractionGain
         put("uLateralRefractionGain", if (lateralGain.isFinite()) lateralGain.coerceIn(0.0, .5).toFloat() else 0f)
+        put("uEdgeFrost",
+            if (style.edgeFrostWidth.isFinite()) style.edgeFrostWidth.coerceIn(0.0, 8.0).toFloat() else 0f,
+            if (style.edgeFrostBlur.isFinite()) style.edgeFrostBlur.coerceIn(0.0, 32.0).toFloat() else 0f)
         val dockDarkLowTone = dockTone?.darkLowTone
         put("uDockDarkLowTone", dockDarkLowTone?.linearIntercept?.toFloat() ?: 0f,
             dockDarkLowTone?.linearGain?.toFloat() ?: 0f,
@@ -441,6 +446,11 @@ object LiquidGlassShader {
             secondContour?.center?.x ?: 0f, secondContour?.center?.y ?: 0f)
         put("uExact1", *(exact?.firstOrNull() ?: FloatArray(LIQUID_GLASS_EXACT_FLOATS)))
         put("uExact2", *(exact?.getOrNull(1) ?: FloatArray(LIQUID_GLASS_EXACT_FLOATS)))
+        if (rim?.analyticStroke == true) {
+            fun opacity(value: Double) = if (value.isFinite()) value.coerceIn(0.0, 1.0).toFloat() else 0f
+            put("uContourStroke", opacity(rim.side), opacity(rim.corner), opacity(rim.flat),
+                (corners.topLeft / size.width).coerceIn(0f, .4f))
+        } else put("uContourStroke", 0f, 0f, 0f, 0f)
         if (rim == null) {
             put("uShineTurns", *FloatArray(8))
             put("uShineLit", *FloatArray(8))

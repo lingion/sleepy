@@ -59,6 +59,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
@@ -232,12 +233,17 @@ class NativeGlassParityCaptureTest {
     private var opticalNativeInputs: Map<String, StaticNativeInput> = emptyMap()
     private var opticalSheetPane: GlassMaterialScope? = null
     private var opticalSheetContentHeightDp = 420f
+    private var opticalStaticPlainAlertLifecycle = false
+    private val opticalLifecycleContentObservations = ConcurrentLinkedQueue<JSONObject>()
 
     /** Static optics are independent of the synthetic gesture/replay timelines below. */
     @Test fun captureStaticOpticalBackgroundMatrix() {
         val arguments = InstrumentationRegistry.getArguments()
         assumeTrue("Pass glassStaticCapture=true for the multi-background GPU matrix",
             arguments.getString("glassStaticCapture") == "true")
+        val lifecycleArgument = arguments.getString("glassStaticPlainAlertLifecycle") ?: "false"
+        require(lifecycleArgument in listOf("true", "false")) { "glassStaticPlainAlertLifecycle must be true or false" }
+        opticalStaticPlainAlertLifecycle = lifecycleArgument == "true"
         val nativeInputDirectory = arguments.getString("glassStaticNativeInputDirectory")
         val externalInputDirectory = arguments.getString("glassStaticExternalInputsDirectory")
         require(nativeInputDirectory == null || externalInputDirectory == null) {
@@ -276,6 +282,11 @@ class NativeGlassParityCaptureTest {
         assumeTrue("menu captures require actual attached-popup PixelCopy, available on API 34+",
             OpticalSurface.menu !in surfaces || Build.VERSION.SDK_INT >= 34)
         val states = selected("glassStaticStates", listOf("rest", "held"))
+        require(!opticalStaticPlainAlertLifecycle ||
+            (externalInputDirectory != null && opticalNativeCanvas &&
+                surfaces == listOf(OpticalSurface.alert) && states == listOf("rest"))) {
+            "glassStaticPlainAlertLifecycle=true requires external PNG inputs, fixed native canvas, glassStaticSurfaces=alert and glassStaticStates=rest"
+        }
         val runId = (arguments.getString("glassStaticRunId") ?: System.currentTimeMillis().toString())
             .replace(Regex("[^A-Za-z0-9_-]"), "_")
         val context = InstrumentationRegistry.getInstrumentation().targetContext
@@ -284,6 +295,8 @@ class NativeGlassParityCaptureTest {
         val captures = JSONArray()
         val baselines = JSONArray()
         val presentationActions = JSONArray()
+        val lifecycleCaptures = JSONArray()
+        val lifecycleRequests = JSONArray()
         val manifest = JSONObject().put("schema", 1).put("run_id", runId).put("status", "running")
             .put("external_input_manifest", externalManifest ?: JSONObject.NULL)
             .put("evaluation_split", externalManifest?.getString("split") ?: "historical-calibration")
@@ -314,6 +327,23 @@ class NativeGlassParityCaptureTest {
                 else -> "Existing OpticalCaptureBackground remains selected; no external PNG input was supplied."
             })
             .put("baselines", baselines).put("captures", captures).put("presentation_actions", presentationActions)
+        if (opticalStaticPlainAlertLifecycle) {
+            manifest.put("plain_alert_lifecycle_request", JSONObject()
+                .put("schema", 1)
+                .put("glass_static_plain_alert_lifecycle", true)
+                .put("instrumentation_arguments", JSONObject().apply {
+                    for (argument in arguments.keySet().sorted()) put(argument, arguments.get(argument)?.toString() ?: JSONObject.NULL)
+                })
+                .put("external_inputs_directory", externalInputDirectory)
+                .put("fixed_native_canvas", opticalNativeCanvas)
+                .put("surfaces", JSONArray(surfaces.map { it.name })).put("states", JSONArray(states))
+                .put("phases", JSONArray(listOf("clean-before", "rest", "rest-repeat", "dismiss-after")))
+                .put("minimum_rest_complete_to_repeat_request_elapsed_ns", 250_000_000L)
+                .put("repeat_interval_policy", "SystemClock.elapsedRealtimeNanos after first capture completion; real SystemClock.sleep, never Compose clock advancement")
+                .put("trigger_policy", "Existing public trigger retains layout, semantics and pointer handler; fixture-only alpha0 prevents its drawing from contaminating the source")
+                .put("action_policy", "Open once through public trigger, capture twice, cancel once through original public Cancel, switch to plain fixture, await unchanged display convergence"))
+                .put("lifecycle_captures", lifecycleCaptures).put("lifecycle_requests", lifecycleRequests)
+        }
         fun sceneFor(background: String, dark: Boolean, surface: OpticalSurface = OpticalSurface.home,
                      showControls: Boolean = true) = if (externalRecords == null)
             OpticalScene(OpticalBackground.valueOf(background), dark, surface, showControls)
@@ -346,31 +376,103 @@ class NativeGlassParityCaptureTest {
             compose.mainClock.autoAdvance = false
             for (dark in themes) for (background in backgrounds) {
                 val plain = sceneFor(background, dark, showControls = false)
+                val cleanStateRequest = if (opticalStaticPlainAlertLifecycle)
+                    opticalLifecycleRequest(plain, "show-plain-before").also { lifecycleRequests.put(it) } else null
+                val cleanLifecycle = if (opticalStaticPlainAlertLifecycle)
+                    opticalLifecycleRecord(plain, "clean-before").also {
+                        lifecycleCaptures.put(it)
+                    } else null
+                markOpticalLifecycle(cleanLifecycle, "plain_state_requested")
                 compose.runOnIdle { scene.value = plain }
                 settleOptical()
+                markOpticalLifecycle(cleanLifecycle, "plain_state_settled")
+                cleanStateRequest?.put("completed_at", opticalLifecycleInstant())
                 val activity = checkNotNull(opticalActivity)
                 assertTrue("Static optics require hardware acceleration", activity.root.isHardwareAccelerated)
+                cleanLifecycle?.put("environment_before_capture", opticalLifecycleEnvironment(plain))
+                markOpticalLifecycle(cleanLifecycle, "window_capture_requested")
                 val baselineWindow = activity.capture()
+                markOpticalLifecycle(cleanLifecycle, "window_capture_completed")
                 val baselineName = "$background-${if (dark) "dark" else "light"}-background"
                 baselineWindow.saveOpticalPng(File(directory, "$baselineName-window.png"))
+                markOpticalLifecycle(cleanLifecycle, "screen_convergence_requested")
                 val readyScreen = try {
                     awaitOpticalBackgroundScreen(activity, baselineWindow, density, directory, baselineName)
                 } catch (failure: Throwable) {
                     baselineWindow.recycle()
+                    cleanLifecycle?.put("status", "failed")?.put("exception", "${failure.javaClass.name}: ${failure.message}")
+                    markOpticalLifecycle(cleanLifecycle, "capture_failed")
                     throw failure
                 }
+                markOpticalLifecycle(cleanLifecycle, "screen_capture_completed")
                 val baselineScreen = readyScreen.bitmap
                 try {
                     baselineScreen.saveOpticalPng(File(directory, "$baselineName-screen.png"))
-                    baselines.put(JSONObject().put("background", background).put("dark", dark)
+                    val baselineRecord = JSONObject().put("background", background).put("dark", dark)
                         .put("window_png", "$baselineName-window.png").put("screen_png", "$baselineName-screen.png")
                         .put("background_canvas", opticalBackgroundWorld())
                         .put("window_geometry", activity.geometry())
-                        .put("display_readiness", readyScreen.verification))
+                        .put("display_readiness", readyScreen.verification)
+                    baselines.put(baselineRecord)
+                    if (cleanLifecycle != null) {
+                        val cleanCapture = JSONObject(baselineRecord.toString())
+                            .put("scene", plain.name).put("phase", "clean-before")
+                            .put("theme", if (dark) "dark" else "light").put("window_source", "activity")
+                            .put("window_size_px", JSONArray(listOf(baselineWindow.width, baselineWindow.height)))
+                            .put("screen_size_px", JSONArray(listOf(baselineScreen.width, baselineScreen.height)))
+                            .put("content_origin_in_window_px", JSONArray(activity.origin().toList()))
+                            .put("content_origin_on_screen_px", JSONArray(activity.screenOrigin().toList()))
+                        cleanLifecycle.put("capture", cleanCapture)
+                            .put("environment_after_capture", opticalLifecycleEnvironment(plain)).put("status", "captured")
+                        markOpticalLifecycle(cleanLifecycle, "capture_completed")
+                    }
                     for (surface in surfaces) {
                         val current = sceneFor(background, dark, surface)
+                        val showTriggerRequest = if (opticalStaticPlainAlertLifecycle)
+                            opticalLifecycleRequest(current, "show-alert-trigger").also { lifecycleRequests.put(it) } else null
                         compose.runOnIdle { opticalPresentationEvents.clear(); scene.value = current }
                         settleOptical()
+                        showTriggerRequest?.put("completed_at", opticalLifecycleInstant())
+                        if (opticalStaticPlainAlertLifecycle) {
+                            val openRequest = opticalLifecycleRequest(current, "open", surface.triggerTag)
+                            lifecycleRequests.put(openRequest)
+                            tapOptical(surface.triggerTag)
+                            openRequest.put("completed_at", opticalLifecycleInstant())
+                            val rest = opticalLifecycleRecord(current, "rest").also { lifecycleCaptures.put(it) }
+                            captureOptical(current, "rest", directory, captures, baselineName, baselineWindow, baselineScreen, rest)
+                            val repeatNotBeforeNs = rest.getJSONObject("timing").getJSONObject("capture_completed")
+                                .getLong("elapsed_realtime_ns") + 250_000_000L
+                            val repeatWait = opticalLifecycleRequest(current, "wait-real-rest-repeat")
+                                .put("not_before_elapsed_realtime_ns", repeatNotBeforeNs)
+                            lifecycleRequests.put(repeatWait)
+                            while (true) {
+                                val remaining = repeatNotBeforeNs - SystemClock.elapsedRealtimeNanos()
+                                if (remaining <= 0L) break
+                                SystemClock.sleep((remaining + 999_999L) / 1_000_000L)
+                            }
+                            repeatWait.put("completed_at", opticalLifecycleInstant())
+                            val repeat = opticalLifecycleRecord(current, "rest-repeat").also { lifecycleCaptures.put(it) }
+                            val repeatRequestedNs = repeat.getJSONObject("timing").getJSONObject("capture_requested")
+                                .getLong("elapsed_realtime_ns")
+                            assertTrue("Real rest-repeat request is at least250ms after first capture completion", repeatRequestedNs >= repeatNotBeforeNs)
+                            repeat.put("previous_capture_complete_to_request_elapsed_ns", repeatRequestedNs -
+                                rest.getJSONObject("timing").getJSONObject("capture_completed").getLong("elapsed_realtime_ns"))
+                            captureOptical(current, "rest-repeat", directory, captures, baselineName, baselineWindow, baselineScreen, repeat)
+                            val cancelRequest = opticalLifecycleRequest(current, "cancel", "static-alert-cancel")
+                            lifecycleRequests.put(cancelRequest)
+                            verifyOpticalPresentationActions(current, presentationActions, cancelOnly = true)
+                            cancelRequest.put("completed_at", opticalLifecycleInstant())
+                            val dismiss = opticalLifecycleRecord(plain, "dismiss-after").also { lifecycleCaptures.put(it) }
+                            val plainAfterRequest = opticalLifecycleRequest(plain, "show-plain-after-cancel").also { lifecycleRequests.put(it) }
+                            markOpticalLifecycle(dismiss, "plain_state_requested")
+                            compose.runOnIdle { scene.value = plain }
+                            settleOptical()
+                            markOpticalLifecycle(dismiss, "plain_state_settled")
+                            plainAfterRequest.put("completed_at", opticalLifecycleInstant())
+                            captureOpticalLifecyclePlain(plain, dismiss, directory)
+                            File(directory, "matrix.json").writeText(manifest.toString(2))
+                            continue
+                        }
                         if (surface.presentation) tapOptical(surface.triggerTag)
                         if ("rest" in states) captureOptical(current, "rest", directory, captures, baselineName, baselineWindow, baselineScreen)
                         for (tag in if ("held" in states) surface.heldTags else emptyList()) {
@@ -392,10 +494,12 @@ class NativeGlassParityCaptureTest {
                     }
                 } finally { baselineWindow.recycle(); baselineScreen.recycle() }
             }
-            val statesPerScene = surfaces.sumOf { (if ("rest" in states) 1 else 0) +
-                (if ("held" in states) it.heldTags.size else 0) }
+            val statesPerScene = if (opticalStaticPlainAlertLifecycle) 2 else surfaces.sumOf {
+                (if ("rest" in states) 1 else 0) + (if ("held" in states) it.heldTags.size else 0) }
             assertEquals("Every selected carrier/theme/background/state is captured",
                 backgrounds.size * themes.size * statesPerScene, captures.length())
+            if (opticalStaticPlainAlertLifecycle) assertEquals("Every selected input/theme has four lifecycle captures",
+                backgrounds.size * themes.size * 4, lifecycleCaptures.length())
             manifest.put("status", "passed")
         } catch (failure: Throwable) {
             manifest.put("status", "failed").put("exception", "${failure.javaClass.name}: ${failure.message}")
@@ -414,6 +518,108 @@ class NativeGlassParityCaptureTest {
     private fun settleOptical() {
         compose.mainClock.advanceTimeBy(640)
         compose.waitForIdle()
+    }
+
+    private fun opticalLifecycleInstant() = JSONObject()
+        .put("elapsed_realtime_ns", SystemClock.elapsedRealtimeNanos())
+        .put("wall_uptime_ms", SystemClock.uptimeMillis())
+        .put("unix_epoch_ms", System.currentTimeMillis())
+        .put("compose_ms", compose.mainClock.currentTime)
+
+    private fun markOpticalLifecycle(record: JSONObject?, event: String) {
+        record?.getJSONObject("timing")?.put(event, opticalLifecycleInstant())
+    }
+
+    private fun opticalLifecycleRequest(scene: OpticalScene, action: String, tag: String? = null) = JSONObject()
+        .put("scene", scene.name).put("input_scene", scene.inputName).put("show_controls", scene.showControls)
+        .put("action", action).put("tag", tag ?: JSONObject.NULL).put("requested_at", opticalLifecycleInstant())
+
+    private fun opticalLifecycleRecord(scene: OpticalScene, phase: String) = JSONObject()
+        .put("scene", "${scene.inputName}-alert").put("actual_fixture_scene", scene.name)
+        .put("background", scene.backgroundId).put("theme", if (scene.dark) "dark" else "light")
+        .put("phase", phase).put("status", "requested")
+        .put("show_controls", scene.showControls).put("requested_presentation_visible", scene.showControls)
+        .put("trigger_alpha", if (scene.showControls) 0.0 else JSONObject.NULL)
+        .put("source_input", opticalNativeInputs.getValue(scene.inputName).metadata)
+        .put("timing", JSONObject().put("capture_requested", opticalLifecycleInstant()))
+
+    /** Raw platform configuration and actual composition observations, not inferred theme support. */
+    private fun opticalLifecycleEnvironment(scene: OpticalScene): JSONObject = compose.runOnIdle {
+        val sourceView = checkNotNull(opticalActivity).view
+        var activityContext = sourceView.context
+        while (activityContext !is Activity && activityContext is ContextWrapper) activityContext = activityContext.baseContext
+        val activity = activityContext as Activity
+        val configuration = activity.resources.configuration
+        val displayMetrics = activity.resources.displayMetrics
+        val observations = opticalLifecycleContentObservations.filter {
+            it.getString("scene") == scene.name && it.getBoolean("show_controls") == scene.showControls
+        }.associateBy { it.getString("slot") }
+        JSONObject().put("observed_at", opticalLifecycleInstant())
+            .put("activity_class", activity.javaClass.name).put("activity_identity", System.identityHashCode(activity))
+            .put("activity_configuration", JSONObject()
+                .put("ui_mode", configuration.uiMode)
+                .put("ui_mode_night_mask", configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK)
+                .put("density_dpi", configuration.densityDpi).put("font_scale", configuration.fontScale)
+                .put("locale_language_tags", configuration.locales.toLanguageTags())
+                .put("display_metrics_density", displayMetrics.density).put("display_metrics_density_dpi", displayMetrics.densityDpi))
+            .put("content_observations", JSONArray(observations.values.toList()))
+            .put("observation_policy", "Activity resources are read at capture time; composition LocalDarkTheme/LocalUiStyle, density, resolved theme colors and actual view/root identity are observed independently inside each existing content scope")
+    }
+
+    @Composable private fun ObserveOpticalLifecycleContent(scene: OpticalScene, slot: String) {
+        val actualDensity = LocalDensity.current
+        val actualView = LocalView.current
+        val actualDark = LocalDarkTheme.current
+        val actualStyle = LocalUiStyle.current
+        val colors = MaterialTheme.colorScheme
+        SideEffect {
+            opticalLifecycleContentObservations.add(JSONObject()
+                .put("scene", scene.name).put("show_controls", scene.showControls).put("slot", slot)
+                .put("observed_at", opticalLifecycleInstant()).put("local_dark_theme", actualDark)
+                .put("local_ui_style", actualStyle.toString())
+                .put("density", actualDensity.density).put("font_scale", actualDensity.fontScale)
+                .put("resolved_primary_argb_int", colors.primary.toArgb())
+                .put("resolved_surface_argb_int", colors.surface.toArgb())
+                .put("resolved_background_argb_int", colors.background.toArgb())
+                .put("view_class", actualView.javaClass.name).put("view_identity", System.identityHashCode(actualView))
+                .put("root_class", actualView.rootView.javaClass.name).put("root_identity", System.identityHashCode(actualView.rootView))
+                .put("view_attached_at_observation", actualView.isAttachedToWindow))
+        }
+    }
+
+    private fun captureOpticalLifecyclePlain(scene: OpticalScene, record: JSONObject, directory: File) {
+        check(opticalStaticPlainAlertLifecycle && !scene.showControls)
+        compose.waitForIdle()
+        val activity = checkNotNull(opticalActivity)
+        val stem = "${scene.inputName}-alert-${record.getString("phase")}"
+        record.put("environment_before_capture", opticalLifecycleEnvironment(scene))
+        markOpticalLifecycle(record, "window_capture_requested")
+        val windowBitmap = activity.capture()
+        markOpticalLifecycle(record, "window_capture_completed")
+        try {
+            windowBitmap.saveOpticalPng(File(directory, "$stem-window.png"))
+            markOpticalLifecycle(record, "screen_convergence_requested")
+            val ready = awaitOpticalBackgroundScreen(activity, windowBitmap, density, directory, stem)
+            markOpticalLifecycle(record, "screen_capture_completed")
+            try {
+                ready.bitmap.saveOpticalPng(File(directory, "$stem-screen.png"))
+                record.put("capture", JSONObject().put("scene", scene.name).put("background", scene.backgroundId)
+                    .put("theme", if (scene.dark) "dark" else "light").put("phase", record.getString("phase"))
+                    .put("window_source", "activity").put("window_png", "$stem-window.png").put("screen_png", "$stem-screen.png")
+                    .put("window_size_px", JSONArray(listOf(windowBitmap.width, windowBitmap.height)))
+                    .put("screen_size_px", JSONArray(listOf(ready.bitmap.width, ready.bitmap.height)))
+                    .put("window_geometry", activity.geometry()).put("background_canvas", opticalBackgroundWorld())
+                    .put("content_origin_in_window_px", JSONArray(activity.origin().toList()))
+                    .put("content_origin_on_screen_px", JSONArray(activity.screenOrigin().toList()))
+                    .put("display_readiness", ready.verification))
+                    .put("environment_after_capture", opticalLifecycleEnvironment(scene)).put("status", "captured")
+                markOpticalLifecycle(record, "capture_completed")
+            } finally { ready.bitmap.recycle() }
+        } catch (failure: Throwable) {
+            record.put("status", "failed").put("exception", "${failure.javaClass.name}: ${failure.message}")
+            markOpticalLifecycle(record, "capture_failed")
+            throw failure
+        } finally { windowBitmap.recycle() }
     }
 
     private fun opticalBackgroundWorld(): JSONObject = compose.runOnIdle {
@@ -778,8 +984,10 @@ class NativeGlassParityCaptureTest {
     }
 
     /** Exercise the same public open/action/dismiss path used for the captured carrier. */
-    private fun verifyOpticalPresentationActions(scene: OpticalScene, records: JSONArray) {
-        val actions = if (scene.surface == OpticalSurface.menu) listOf("first", "second", "delete")
+    private fun verifyOpticalPresentationActions(scene: OpticalScene, records: JSONArray, cancelOnly: Boolean = false) {
+        check(!cancelOnly || opticalStaticPlainAlertLifecycle && scene.surface == OpticalSurface.alert)
+        val actions = if (cancelOnly) listOf("cancel")
+            else if (scene.surface == OpticalSurface.menu) listOf("first", "second", "delete")
             else listOf("confirm", "cancel")
         for ((index, action) in actions.withIndex()) {
             if (index > 0) tapOptical(scene.surface.triggerTag)
@@ -810,6 +1018,7 @@ class NativeGlassParityCaptureTest {
         SleepyThemeProvider(darkTheme = scene.dark, themeKey = ThemePresets.KEY_DEFAULT) {
             CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
                 val colors = MaterialTheme.colorScheme
+                if (opticalStaticPlainAlertLifecycle) ObserveOpticalLifecycleContent(scene, "activity-content")
                 GlassHost(Modifier.fillMaxSize(), background = colors.background) {
                     GlassBackground(0f, Modifier.fillMaxSize().onGloballyPositioned { opticalBackgroundHostCoordinates = it }) {
                         if (opticalNativeCanvas) {
@@ -897,6 +1106,7 @@ class NativeGlassParityCaptureTest {
             Box(Modifier.offset(x = 126.5.dp, y = 411.5.dp).width(122.5.dp)) {
                 GlassButton({ opticalPresentationEvents.add("opened"); visible = true },
                     Modifier.fillMaxWidth().height(33.5.dp).testTag(surface.triggerTag)
+                        .then(if (opticalStaticPlainAlertLifecycle) Modifier.alpha(0f) else Modifier)
                         .observeOpticalPointer(surface.triggerTag)) {
                     Text(if (surface == OpticalSurface.menu) "System menu" else "System alert")
                 }
@@ -956,6 +1166,7 @@ class NativeGlassParityCaptureTest {
     ) {
         // No layout node is added, preserving action-row parent data and product geometry.
         CompositionLocalProvider(LocalDensity provides measuringDensity) {
+            if (opticalStaticPlainAlertLifecycle) ObserveOpticalLifecycleContent(scene, slot)
             val actualDensity = LocalDensity.current
             val actualView = LocalView.current
             val actualMaterial = LocalGlassMaterialBackdrop.current as? GlassMaterialScope
@@ -1060,23 +1271,32 @@ class NativeGlassParityCaptureTest {
     }
 
     private fun captureOptical(scene: OpticalScene, phase: String, directory: File, captures: JSONArray,
-                               baselineName: String, baselineWindow: Bitmap, baselineScreen: Bitmap) {
+                               baselineName: String, baselineWindow: Bitmap, baselineScreen: Bitmap,
+                               lifecycle: JSONObject? = null) {
         compose.waitForIdle()
+        lifecycle?.put("environment_before_capture", opticalLifecycleEnvironment(scene))
+        markOpticalLifecycle(lifecycle, "surface_capture_entered")
         val surface = if (scene.surface == OpticalSurface.home) checkNotNull(opticalActivity) else checkNotNull(opticalDialog)
         val nativeAlignment = assertOpticalNativeAlertPlacement(scene, surface)
         val contentDensity = verifiedOpticalContentDensity(scene, surface)
         val origin = surface.origin()
         val screenOrigin = surface.screenOrigin()
+        markOpticalLifecycle(lifecycle, "window_capture_requested")
         val windowBitmap = surface.capture()
+        markOpticalLifecycle(lifecycle, "window_capture_completed")
         val stem = "${scene.name}-$phase"
+        markOpticalLifecycle(lifecycle, "screen_convergence_requested")
         val readyScreen = try {
             if (scene.surface.presentation) awaitOpticalSurfaceScreen(surface, windowBitmap, density, directory, stem)
             else OpticalBackgroundScreen(opticalScreenCapture(), JSONObject().put("policy", "Legacy non-presentation capture; no per-surface display convergence checked"))
         } catch (failure: Throwable) {
             windowBitmap.saveOpticalPng(File(directory, "$stem-window.png"))
             windowBitmap.recycle()
+            lifecycle?.put("status", "failed")?.put("exception", "${failure.javaClass.name}: ${failure.message}")
+            markOpticalLifecycle(lifecycle, "capture_failed")
             throw failure
         }
+        markOpticalLifecycle(lifecycle, "screen_capture_completed")
         val screenBitmap = readyScreen.bitmap
         try {
             windowBitmap.saveOpticalPng(File(directory, "$stem-window.png"))
@@ -1116,7 +1336,7 @@ class NativeGlassParityCaptureTest {
                 bounds(compose.onNodeWithTag(scene.surface.triggerTag, useUnmergedTree = true))
                     .translate(Offset(activityOrigin[0].toFloat(), activityOrigin[1].toFloat()))
             } else null
-            captures.put(JSONObject().put("scene", scene.name).put("background", scene.backgroundId)
+            val captureRecord = JSONObject().put("scene", scene.name).put("background", scene.backgroundId)
                 .put("theme", if (scene.dark) "dark" else "light").put("carrier", scene.surface.name).put("phase", phase)
                 .put("window_source", when (scene.surface) {
                     OpticalSurface.home -> "activity"
@@ -1141,8 +1361,19 @@ class NativeGlassParityCaptureTest {
                 .put("window_baseline_png", if (scene.surface == OpticalSurface.home) "$baselineName-window.png" else JSONObject.NULL)
                 .put("display_baseline_png", "$baselineName-screen.png")
                 .put("content_origin_in_window_px", JSONArray(origin.toList()))
-                .put("content_origin_on_screen_px", JSONArray(screenOrigin.toList())).put("measurements", measurements))
+                .put("content_origin_on_screen_px", JSONArray(screenOrigin.toList())).put("measurements", measurements)
+            captures.put(captureRecord)
             assertOpticalNativeAlertPlacement(scene, surface)
+            if (lifecycle != null) {
+                captureRecord.put("screen_size_px", JSONArray(listOf(screenBitmap.width, screenBitmap.height)))
+                lifecycle.put("capture", captureRecord)
+                    .put("environment_after_capture", opticalLifecycleEnvironment(scene)).put("status", "captured")
+                markOpticalLifecycle(lifecycle, "capture_completed")
+            }
+        } catch (failure: Throwable) {
+            lifecycle?.put("status", "failed")?.put("exception", "${failure.javaClass.name}: ${failure.message}")
+            markOpticalLifecycle(lifecycle, "capture_failed")
+            throw failure
         } finally { windowBitmap.recycle(); screenBitmap.recycle() }
     }
 

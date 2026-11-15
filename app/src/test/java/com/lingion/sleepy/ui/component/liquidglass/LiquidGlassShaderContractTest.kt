@@ -138,7 +138,7 @@ class LiquidGlassShaderContractTest {
             "uSize" to 2, "uFrame" to 4, "uSample" to 4, "uClamp" to 4, "uTexels" to 2, "uFrostRadiusMode" to 1,
             "uHazeSample" to 4, "uHazeClamp" to 4, "uHaze" to 1, "uVeil" to 4,
             "uShape" to 4, "uCorners" to 4, "uCircularCorners" to 1, "uCurves" to 48, "uOptics" to 3,
-            "uRefractionLimit" to 1, "uRefractionProfilePower" to 1, "uLateralRefractionGain" to 1, "uTint" to 4,
+            "uRefractionLimit" to 1, "uRefractionProfilePower" to 1, "uLateralRefractionGain" to 1, "uEdgeFrost" to 2, "uContourStroke" to 4, "uTint" to 4,
             "uDockTone" to 4, "uDockToneBright" to 3, "uDockToneDark" to 3,
             "uDockDarkLowTone" to 4, "uDockDarkLowToneBlend" to 1,
             "uDockBrightRim" to 4, "uDockBrightRimChroma" to 1, "uDockBrightRimAngular" to 2,
@@ -892,6 +892,39 @@ class LiquidGlassShaderContractTest {
         listOf("sampleFrosted(point + shift, frost)", "sampleFrosted(point + shift + part, frost)",
             "sampleFrosted(point + shift - part, frost)", "sampleHaze(point + shift)").forEach {
             assertTrue("All optical texture reads share the corrected source field: $it", main.contains(it))
+        }
+    }
+
+    @Test
+    fun analyticStrokeOptInKeepsEveryOtherUniformAndScalesItsOpacity() {
+        val rim = LiquidGlassRim(side = .2, corner = .1, flat = .06, shine = .16)
+        val baseline = build(rim = rim)
+        assertArrayEquals(floatArrayOf(0f, 0f, 0f, 0f), baseline.getValue("uContourStroke"), 0f)
+        val analytic = build(rim = rim.copy(analyticStroke = true))
+        assertArrayEquals(floatArrayOf(.2f, .1f, .06f), analytic.getValue("uContourStroke").copyOf(3), 0f)
+        assertTrue(analytic.getValue("uContourStroke")[3] in 0f..0.4f)
+        baseline.forEach { (name, values) ->
+            if (name != "uContourStroke") assertArrayEquals(name, values, analytic.getValue(name), 0f)
+        }
+        val gone = build(rim = rim.copy(analyticStroke = true).scale(0.0))
+        assertArrayEquals(floatArrayOf(0f, 0f, 0f), gone.getValue("uContourStroke").copyOf(3), 0f)
+    }
+
+    @Test
+    fun narrowEdgeFrostIsOptInFiniteAndIndependentOfOtherUniforms() {
+        val baseline = build()
+        assertArrayEquals(floatArrayOf(0f, 0f), baseline.getValue("uEdgeFrost"), 0f)
+        listOf(
+            Triple(1.5, 14.0, floatArrayOf(1.5f, 14f)),
+            Triple(-1.0, -1.0, floatArrayOf(0f, 0f)),
+            Triple(100.0, 100.0, floatArrayOf(8f, 32f)),
+            Triple(Double.NaN, Double.POSITIVE_INFINITY, floatArrayOf(0f, 0f)),
+        ).forEach { (width, blur, expected) ->
+            val changed = build(style = sampleStyle().copy(edgeFrostWidth = width, edgeFrostBlur = blur))
+            assertArrayEquals(expected, changed.getValue("uEdgeFrost"), 0f)
+            baseline.forEach { (name, values) ->
+                if (name != "uEdgeFrost") assertArrayEquals(name, values, changed.getValue(name), 0f)
+            }
         }
     }
 

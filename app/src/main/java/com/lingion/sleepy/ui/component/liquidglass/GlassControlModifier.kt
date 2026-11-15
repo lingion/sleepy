@@ -124,7 +124,7 @@ fun Modifier.glassControl(
             GlassMaterialRole.Regular -> LiquidGlassStyle.regular(colors, dark)
             GlassMaterialRole.Menu -> LiquidGlassStyle.menu(colors, dark)
             GlassMaterialRole.Alert -> LiquidGlassStyle.alert(colors, dark).let {
-                if (dark) it else it.copy(blur = 8.0)
+                if (dark) it else it.copy(blur = 8.0, edgeFrostWidth = 1.1, edgeFrostBlur = 26.0)
             }
             GlassMaterialRole.Sheet -> LiquidGlassStyle.sheet(dark).let {
                 if (dark) it else it.copy(blur = 10.0)
@@ -135,7 +135,7 @@ fun Modifier.glassControl(
         GlassMaterialRole.Menu -> LiquidGlassRim.menu(dark)
         GlassMaterialRole.Alert -> LiquidGlassRim.alert(dark).let {
             if (dark) it else it.copy(side = 0.0, corner = 0.0, flat = 0.06,
-                minimumShine = 0.08, screenMinimumShine = true)
+                minimumShine = 0.08, screenMinimumShine = true, analyticStroke = true)
         }
         GlassMaterialRole.Sheet -> LiquidGlassRim.sheet()
     }
@@ -235,7 +235,8 @@ fun Modifier.glassControl(
                 )
             },
             onDrawFront = {
-                if (rim != null && size.width > 0f && size.height > 0f) {
+                if (rim != null && (!rim.analyticStroke || android.os.Build.VERSION.SDK_INT < 33) &&
+                    size.width > 0f && size.height > 0f) {
                     // liquid_glass.dart LiquidGlassRim.paintLine: exterior black hairline.
                     val radius = when (shape) {
                         is FlClashGlassShape -> shape.radiusDp * density
