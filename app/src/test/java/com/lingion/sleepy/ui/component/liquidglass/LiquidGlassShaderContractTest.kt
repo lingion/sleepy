@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -137,7 +138,7 @@ class LiquidGlassShaderContractTest {
             "uSize" to 2, "uFrame" to 4, "uSample" to 4, "uClamp" to 4, "uTexels" to 2, "uFrostRadiusMode" to 1,
             "uHazeSample" to 4, "uHazeClamp" to 4, "uHaze" to 1, "uVeil" to 4,
             "uShape" to 4, "uCorners" to 4, "uCircularCorners" to 1, "uCurves" to 48, "uOptics" to 3,
-            "uRefractionLimit" to 1, "uRefractionProfilePower" to 1, "uTint" to 4,
+            "uRefractionLimit" to 1, "uRefractionProfilePower" to 1, "uLateralRefractionGain" to 1, "uTint" to 4,
             "uDockTone" to 4, "uDockToneBright" to 3, "uDockToneDark" to 3,
             "uDockDarkLowTone" to 4, "uDockDarkLowToneBlend" to 1,
             "uDockBrightRim" to 4, "uDockBrightRimChroma" to 1, "uDockBrightRimAngular" to 2,
@@ -842,6 +843,55 @@ class LiquidGlassShaderContractTest {
                 .getValue("uRefractionProfilePower").single()
             assertEquals(expected, actual, 0f)
             assertTrue(actual.isFinite() && actual > 0f)
+        }
+    }
+
+    @Test
+    fun lateralSamplingBendsBothHalvesWithoutMovingTheCenterOrFlatFace() {
+        // Read the shipped scalar field, so the check also catches a disconnected
+        // or oppositely signed AGSL implementation. This is not a native fit.
+        val expression = Regex("float panelLateralShift\\([^)]*\\)\\s*\\{\\s*return ([^;]+);")
+            .find(agsl)?.groupValues?.get(1)
+        assertNotNull("The positive-refraction path needs a horizontal sampling field", expression)
+        fun shift(x: Double, depth: Double, normalY: Double = 1.0, gain: Double = .025): Double =
+            ScalarExpression(expression!!, mapOf("x" to x, "halfWidth" to 160.0,
+                "depth" to depth, "normalY" to normalY, "gain" to gain)).evaluate()
+        assertTrue("Left source samples move inward so its displayed stripe can bow outward", shift(-120.0, 60.0) > 0.0)
+        assertEquals(-shift(-120.0, 60.0), shift(120.0, 60.0), 1e-12)
+        assertEquals(0.0, shift(0.0, 60.0), 0.0)
+        assertEquals(0.0, shift(-120.0, 0.0), 0.0)
+        assertEquals(0.0, shift(-120.0, 60.0, normalY = 0.0), 0.0)
+        assertEquals(0.0, shift(-120.0, 60.0, gain = 0.0), 0.0)
+        assertEquals(shift(-120.0, 60.0), shift(-120.0, 60.0, normalY = -1.0), 0.0)
+        assertTrue(shift(-120.0, 12.0) < shift(-120.0, 60.0))
+        // The added field must not fold a previously monotone straight-edge
+        // horizontal mapping, including the supported 1.5x depth cap.
+        var previous = Double.NEGATIVE_INFINITY
+        for (x in -160..160) {
+            val mapped = x + shift(x.toDouble(), 240.0, gain = .5)
+            assertTrue("Horizontal source order at x=$x", mapped > previous)
+            previous = mapped
+        }
+    }
+
+    @Test
+    fun lateralGainIsFiniteBoundedAndIndependentOfOtherUniforms() {
+        val baseline = build()
+        listOf(-1.0 to 0f, .45 to .45f, 1.0 to .5f,
+            Double.NaN to 0f, Double.POSITIVE_INFINITY to 0f).forEach { (gain, expected) ->
+            val changed = build(style = sampleStyle().copy(lateralRefractionGain = gain))
+            assertEquals(expected, changed.getValue("uLateralRefractionGain").single(), 0f)
+            baseline.forEach { (name, values) ->
+                if (name != "uLateralRefractionGain") assertArrayEquals(name, values, changed.getValue(name), 0f)
+            }
+        }
+        val main = agsl.substringAfter("half4 main(float2 fragCoord)")
+        val lens = main.substringAfter("if (lens) {").substringBefore("} else {")
+        assertTrue(!lens.contains("uLateralRefractionGain"))
+        assertTrue(main.contains("shift.x += panelLateralShift(centered.x, halfSize.x, depth, normal.y, uLateralRefractionGain)"))
+        listOf("sampleFrosted(point + shift, frost)", "sampleFrosted(point + shift + part, frost)",
+            "sampleFrosted(point + shift - part, frost)", "sampleHaze(point + shift)").forEach {
+            assertTrue("All optical texture reads share the corrected source field: $it", main.contains(it))
         }
     }
 

@@ -89,6 +89,27 @@ class LiquidGlassStyleReferenceTest {
         }
     }
 
+    @Test fun lateralRefractionIsLimitedToPanelsAndKeepsItsShapeWhileScaling() {
+        assertEquals(0.0, LiquidGlassStyle(Color.Transparent).lateralRefractionGain, 0.0)
+        listOf(false, true).forEach { isDark ->
+            val colors = if (isDark) dark else light
+            listOf(LiquidGlassStyle.alert(colors, isDark), LiquidGlassStyle.sheet(isDark)).forEach { panel ->
+                assertEquals(.45, panel.lateralRefractionGain, 0.0)
+                listOf(0.0, .5, 1.0).forEach { amount ->
+                    assertEquals(.45, panel.scale(amount).lateralRefractionGain, 0.0)
+                }
+            }
+            listOf(LiquidGlassStyle.pill(colors, isDark), LiquidGlassStyle.menu(colors, isDark),
+                LiquidGlassStyle.tinted(colors, Color.Red, isDark), LiquidGlassStyle.lens(colors, isDark),
+                LiquidGlassStyle.controlLens(colors, isDark)).forEach {
+                assertEquals(0.0, it.lateralRefractionGain, 0.0)
+            }
+        }
+        val a = LiquidGlassStyle(Color.White)
+        val b = a.copy(lateralRefractionGain = .1)
+        assertEquals(.025, LiquidGlassStyle.lerp(a, b, .25).lateralRefractionGain, 0.0)
+    }
+
     @Test fun dockBaseShoulderKeepsItsProfileWhileTheRimStrengthScales() {
         val style = LiquidGlassStyle(Color.White, dockBaseRimCubicShoulderBlend = .75)
         listOf(-1.0, 0.0, .25, .5, 1.0, 2.0).forEach { amount ->

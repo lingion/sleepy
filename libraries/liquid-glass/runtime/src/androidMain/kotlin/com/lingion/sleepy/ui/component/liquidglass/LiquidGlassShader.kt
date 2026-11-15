@@ -126,6 +126,7 @@ object LiquidGlassShader {
         "uOptics" to 3,
         "uRefractionLimit" to 1,
         "uRefractionProfilePower" to 1,
+        "uLateralRefractionGain" to 1,
         "uDockTone" to 4,
         "uDockToneBright" to 3,
         "uDockToneDark" to 3,
@@ -329,6 +330,8 @@ object LiquidGlassShader {
             } else 1f,
         )
         val dockTone = style.dockToneResponse
+        val lateralGain = style.lateralRefractionGain
+        put("uLateralRefractionGain", if (lateralGain.isFinite()) lateralGain.coerceIn(0.0, .5).toFloat() else 0f)
         val dockDarkLowTone = dockTone?.darkLowTone
         put("uDockDarkLowTone", dockDarkLowTone?.linearIntercept?.toFloat() ?: 0f,
             dockDarkLowTone?.linearGain?.toFloat() ?: 0f,

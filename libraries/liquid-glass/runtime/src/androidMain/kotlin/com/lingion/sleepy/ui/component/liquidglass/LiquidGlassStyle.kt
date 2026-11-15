@@ -157,6 +157,8 @@ data class LiquidGlassStyle(
      * 这是尚未拟合、验收的图像响应自由度，不表示原生玻璃的物理厚度。
      */
     val refractionProfilePower: Double = 1.0,
+    /** Engineering panel source-field gain, not identified physical thickness; zero keeps normal-only refraction. */
+    val lateralRefractionGain: Double = 0.0,
     /** Null keeps the shared material path unchanged; only explicit Dock probes set this. */
     val dockToneResponse: DockToneResponse? = null,
     /** Dock-base white-rim profile only; zero retains the legacy rim without a tone response. */
@@ -177,6 +179,7 @@ data class LiquidGlassStyle(
             refraction = refraction * amount,
             refractionLimit = refractionLimit,
             refractionProfilePower = refractionProfilePower,
+            lateralRefractionGain = lateralRefractionGain,
             dockToneResponse = dockToneResponse?.scale(amount),
             // The rim strength already fades below; keep its depth profile fixed.
             dockBaseRimCubicShoulderBlend = dockBaseRimCubicShoulderBlend,
@@ -302,6 +305,7 @@ data class LiquidGlassStyle(
                 refraction = lerpDouble(a.refraction, b.refraction, t),
                 refractionLimit = lerpDouble(a.refractionLimit, b.refractionLimit, t),
                 refractionProfilePower = lerpDouble(a.refractionProfilePower, b.refractionProfilePower, t),
+                lateralRefractionGain = lerpDouble(a.lateralRefractionGain, b.lateralRefractionGain, t),
                 dockToneResponse = lerpDockTone(a.dockToneResponse, b.dockToneResponse, t),
                 dockBaseRimCubicShoulderBlend = lerpDouble(a.dockBaseRimCubicShoulderBlend, b.dockBaseRimCubicShoulderBlend, t),
                 bevel = lerpDouble(a.bevel, b.bevel, t),
@@ -407,9 +411,11 @@ data class LiquidGlassStyle(
             if (dark) LiquidGlassStyle(
                 tint = Color(0xFF313131).copy(alpha = .556f),
                 blur = 16.0, brightness = .281, saturation = 1.67, rim = 0.0,
+                lateralRefractionGain = .45,
             ) else LiquidGlassStyle(
                 tint = Color(0xFFF2F2F2).copy(alpha = .743f),
                 blur = 16.0, brightness = .915, saturation = 1.69, rim = 0.0,
+                lateralRefractionGain = .45,
             )
 
         /**
@@ -422,10 +428,12 @@ data class LiquidGlassStyle(
                 tint = Color(0xFF313131).copy(alpha = .59f),
                 contrast = -.09, blur = 12.0, brightness = .315,
                 saturation = 2.50, rim = 0.0,
+                lateralRefractionGain = .45,
             ) else LiquidGlassStyle(
                 tint = Color(0xFFF2F2F2).copy(alpha = .70f),
                 contrast = .05, blur = 12.0, brightness = .88,
                 saturation = 1.90, rim = 0.0,
+                lateralRefractionGain = .45,
             )
 
         fun tinted(colorScheme: ColorScheme, color: Color, dark: Boolean): LiquidGlassStyle =

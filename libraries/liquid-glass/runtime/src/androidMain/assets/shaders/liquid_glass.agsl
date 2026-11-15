@@ -76,6 +76,8 @@ uniform float3 uOptics;
 uniform float uRefractionLimit;
 // Calibratable positive-section shape, not physical thickness. One retains the legacy section.
 uniform float uRefractionProfilePower;
+// Panel-only lateral source sampling; zero preserves the normal-only field.
+uniform float uLateralRefractionGain;
 // Explicit Dock-only response: blend amount, fixed bright weight, optional low/high pane-luma gates.
 // Equal gates disable adaptation. No standard material factory enables this candidate.
 uniform float4 uDockTone;
@@ -847,6 +849,13 @@ float3 dockSignedRim(float3 unlitGlass, float coverage, float3 sourceColor,
       + materialFacing * finiteBand * amplitude, 0.0, 1.0) * coverage;
 }
 
+// A reverse sampling field: reading inward on each half makes a source stripe
+// bow outward near the top/bottom rim. Keep the contour normal separate so
+// coverage, dispersion and lighting still use the actual surface boundary.
+float panelLateralShift(float x, float halfWidth, float depth, float normalY, float gain) {
+  return -clamp(x / max(halfWidth, 1e-3), -1.0, 1.0) * depth * normalY * normalY * gain;
+}
+
 half4 main(float2 fragCoord) {
   float2 point = uFrame.xy + fragCoord * uFrame.zw;
   float2 halfSize = uShape.xy * 0.5;
@@ -917,6 +926,9 @@ half4 main(float2 fragCoord) {
       depth = min(uOptics.x, max(uRefractionLimit, 0.0) * halfMinor) * pow(profile, uRefractionProfilePower);
     }
     shift = -normal * depth;
+    if (uLateralRefractionGain > 0.0) {
+      shift.x += panelLateralShift(centered.x, halfSize.x, depth, normal.y, uLateralRefractionGain);
+    }
   }
 
   float frost = uShape.w + uEdge.z * rise * rise;
