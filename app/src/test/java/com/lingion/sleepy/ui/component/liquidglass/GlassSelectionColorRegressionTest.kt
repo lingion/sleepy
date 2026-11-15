@@ -31,7 +31,6 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
-import java.io.File
 
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -65,11 +64,9 @@ class GlassSelectionColorRegressionTest {
             }
         }
         val segments = compose.onNodeWithTag("segments").captureToImage().asAndroidBitmap()
-        saveFrame("glass-selection-segments.png", segments)
         assertEquals("selected segment keeps the same themed surface as Material", android.graphics.Color.MAGENTA,
             segments.getPixel(12, segments.height / 2))
         val chip = compose.onNodeWithTag("chip").captureToImage().asAndroidBitmap()
-        saveFrame("glass-selection-chip.png", chip)
         assertEquals("selected chip keeps the supplied Material selection color", android.graphics.Color.MAGENTA,
             chip.getPixel(chip.width / 2, chip.height / 2))
     }
@@ -79,7 +76,6 @@ class GlassSelectionColorRegressionTest {
         compose.onNodeWithTag("general_language_card").performClick()
         languages.forEach { (code, _) -> compose.onNodeWithTag("general_language#$code").assertIsDisplayed() }
         val menu = compose.onNodeWithTag("general_language_menu").captureToImage().asAndroidBitmap()
-        saveFrame("glass-five-language-menu.png", menu)
         assertEquals("menu uses the measured iOS 26.5 content width", 250, menu.width)
     }
 
@@ -89,7 +85,6 @@ class GlassSelectionColorRegressionTest {
         showLanguages()
         compose.onNodeWithTag("general_language_card").performClick()
         compose.onNodeWithTag("general_language#es").performScrollTo().assertIsDisplayed()
-        saveFrame("glass-language-short-window.png", compose.onNodeWithTag("general_language_menu").captureToImage().asAndroidBitmap())
     }
 
     @Test fun toggleThumbCrossfadesDuringBothRiseAndFall() {
@@ -109,22 +104,22 @@ class GlassSelectionColorRegressionTest {
             }
         }
         val toggle = compose.onNodeWithTag("toggle")
-        fun frame(name: String): android.graphics.Bitmap = toggle.captureToImage().asAndroidBitmap().also { saveFrame(name, it) }
+        fun frame(): android.graphics.Bitmap = toggle.captureToImage().asAndroidBitmap()
         fun whiteness(bitmap: android.graphics.Bitmap): Int = android.graphics.Color.green(bitmap.getPixel(23, 24))
-        val rest = frame("glass-toggle-0-rest.png")
+        val rest = frame()
         compose.mainClock.autoAdvance = false
         toggle.performTouchInput { down(Offset(centerX, centerY)) }
         compose.runOnIdle { }
         compose.mainClock.advanceTimeBy(64)
-        val rising = frame("glass-toggle-1-rising.png")
+        val rising = frame()
         compose.mainClock.advanceTimeBy(800)
-        val held = frame("glass-toggle-2-held.png")
+        val held = frame()
         toggle.performTouchInput { cancel() }
         compose.runOnIdle { }
         compose.mainClock.advanceTimeBy(64)
-        val lowering = frame("glass-toggle-3-lowering.png")
+        val lowering = frame()
         compose.mainClock.advanceTimeBy(1_000)
-        val settled = frame("glass-toggle-4-settled.png")
+        val settled = frame()
         compose.mainClock.autoAdvance = true
         assertEquals("resting thumb is opaque", 255, whiteness(rest))
         assertTrue("rise has a visible intermediate opacity", whiteness(rising) in 20..240)
@@ -141,11 +136,5 @@ class GlassSelectionColorRegressionTest {
                 }
             }
         }
-    }
-
-    private fun saveFrame(name: String, bitmap: android.graphics.Bitmap) {
-        val root = System.getProperty("sleepy.test.root")?.let(::File) ?: File("..").absoluteFile
-        val directory = File(root, "app/build/reports/ui-regressions").apply { mkdirs() }
-        File(directory, name).outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
     }
 }
