@@ -45,9 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.saveable.SaveableStateHolder
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.togetherWith
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -80,9 +78,7 @@ import com.lingion.sleepy.ui.component.PillNavigationBar
 import com.lingion.sleepy.ui.component.PillNavItemSpec
 import com.lingion.sleepy.ui.component.PillBarState
 import com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding
-import com.lingion.sleepy.ui.component.sleepyContentEnter
-import com.lingion.sleepy.ui.component.sleepyContentExit
-import com.lingion.sleepy.ui.component.TabPage
+import com.lingion.sleepy.ui.component.SinglePageTabContent
 import com.lingion.sleepy.ui.screen.edit.AddCourseScreen
 import com.lingion.sleepy.ui.screen.mine.AllTablesScreen
 import com.lingion.sleepy.ui.screen.mine.CourseListScreen
@@ -691,7 +687,7 @@ private fun MainRoute(
                         .fillMaxSize()
                         .background(colors.background)
                 )
-                // 右: AnimatedContent 切换 Today/Manage/Mine
+                // 右: Today/Manage/Mine 单页切换
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -952,8 +948,7 @@ private fun PlainRailItem(
 }
 
 /**
- * 右半边内容 — AnimatedContent 包 3 个子页 (Today / Manage / Mine)。
- * MD3E content 家族入场缩放、退场缩放淡出 (sleepyContent* 工厂, 与页面转场同族)。
+ * 右半边内容 — 切换时只组合目标页, 避免两个重页面同时参与绘制。
  * 子页面跳转回调全部接到 navigator (避免空 lambda 让按钮"点不动")。
  */
 @Composable
@@ -1004,19 +999,7 @@ private fun RightHalfContent(
 /** The right pane owns its background throughout the tab animation. */
 @Composable
 internal fun RightHalfTabContent(currentTab: Tab, content: @Composable (Tab) -> Unit) {
-    val contentEnter = sleepyContentEnter()
-    val contentExit = sleepyContentExit(includeFade = false)
-    AnimatedContent(
-        targetState = currentTab,
-        transitionSpec = {
-            (contentEnter togetherWith contentExit).apply {
-                targetContentZIndex = 1f
-            }
-        },
-        label = "right-half-tab-switch",
-    ) { tab ->
-        TabPage {
-            content(tab)
-        }
+    SinglePageTabContent(targetState = currentTab) { tab ->
+        content(tab)
     }
 }

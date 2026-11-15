@@ -12,14 +12,14 @@ import com.lingion.sleepy.ui.component.sleepyContentExit
  * M3 Expressive 全量过闸(Task 2, ledger 反转裁决): InstallerX Revived Classic 的
  * 手搓物理(220ms/110ms 不对称淡入 + 200ms 贝塞尔回弹曲线)全部退场, 推进/程序化返回/
  * 预测性返回三路统一走 SleepyMotion 的 content 家族工厂:
- *  - 入页: sleepyContentEnter() — scaleIn 0.92→1 defaultSpatial (不叠 fadeIn, 防父子页双影)
- *  - 出页: sleepyContentExit()  — scaleOut 1→0.92 defaultSpatial + fadeOut defaultEffects
+ *  - 入页: sleepyContentEnter() — 轻微 scaleIn 0.97→1 fastSpatial (不叠 fadeIn, 防父子页双影)
+ *  - 出页: sleepyContentExit()  — scaleOut 1→0.97 fastSpatial + fadeOut fastEffects
  * 旧的「返回时目标页原地不动画」(EnterTransition.None)设计按用户裁决反转: 返回时
  * 目标页同样缩放淡入, 与 MD3E 页面族的对称 content 转场一致。取消手势的回弹旧常量
  * 系死代码已删除 — 官方 SeekableTransitionState 在取消时自动反向播放 commit 动画,
  * 不存在独立的取消视觉形态。
  *
- * 0.92 镜像缩放与 motionScheme 规格的单一定义点在 SleepyMotion.kt(改一处全局生效);
+ * 页面缩放与 motionScheme 规格的单一定义点在 SleepyMotion.kt(改一处全局生效);
  * 本文件只做组装, 不再落任何时长/曲线字面量。scaleIn/scaleOut 的缺省 transformOrigin
  * 即 Center, 由工厂实现承载。三个 transform 都保留 targetContentZIndex = 1f(目标页压层)。
  *
