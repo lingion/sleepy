@@ -6,6 +6,8 @@ composeBom = "2026.09.00"
 material3 = "1.5.0-rc01"
 activity = "1.13.0"
 androidxCore = "1.19.1"
+baselineProfile = "1.5.0"
+macrobenchmark = "1.5.0"
 lifecycle = "2.8.7"
 lifecycleNavigation3 = "2.11.0"
 navigation3 = "1.1.7"
@@ -17,6 +19,8 @@ serialization = "1.12.0"
 jsoup = "1.24.1"
 workManager = "2.12.0"
 splashScreen = "1.2.0"
+profileInstaller = "1.4.1"
+uiAutomator = "2.3.0"
 junit = "4.13.2"
 json = "20260814"
 sqliteJdbc = "3.54.1.0"
@@ -56,6 +60,9 @@ serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-jso
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "workManager" }
 core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "splashScreen" }
+profile-installer = { module = "androidx.profileinstaller:profileinstaller", version.ref = "profileInstaller" }
+macrobenchmark-junit4 = { module = "androidx.benchmark:benchmark-macro-junit4", version.ref = "macrobenchmark" }
+test-ui-automator = { module = "androidx.test.uiautomator:uiautomator", version.ref = "uiAutomator" }
 junit = { module = "junit:junit", version.ref = "junit" }
 json = { module = "org.json:json", version.ref = "json" }
 sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqliteJdbc" }
@@ -76,3 +83,4 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+baselineprofile = { id = "androidx.baselineprofile", version.ref = "baselineProfile" }

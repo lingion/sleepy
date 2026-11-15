@@ -36,6 +36,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "WakeUpPure"
 include(":app")
+include(":baselineprofile")
 
 include(":kyant-backdrop")
 project(":kyant-backdrop").projectDir = file("third-party/kyant-backdrop")
