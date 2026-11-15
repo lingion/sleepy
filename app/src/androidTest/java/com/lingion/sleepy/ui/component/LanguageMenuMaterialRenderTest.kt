@@ -1,6 +1,5 @@
 package com.lingion.sleepy.ui.component
 
-import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,7 +18,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
-import androidx.test.platform.app.InstrumentationRegistry
 import com.lingion.sleepy.ui.component.liquidglass.GlassBackground
 import com.lingion.sleepy.ui.component.liquidglass.GlassHost
 import com.lingion.sleepy.ui.component.liquidglass.GlassLanguageMenu
@@ -30,7 +28,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.io.File
 
 /** Text visibility alone cannot detect a menu whose optical backing clips after its first row. */
 @RunWith(AndroidJUnit4::class)
@@ -56,9 +53,6 @@ class LanguageMenuMaterialRenderTest {
         compose.onNodeWithTag("general_language_card").performClick()
         compose.waitForIdle()
         val menu = compose.onNodeWithTag("general_language_menu").captureToImage().asAndroidBitmap()
-        val output = File(InstrumentationRegistry.getInstrumentation().targetContext.getExternalFilesDir(null), "glass-language-material")
-        output.mkdirs()
-        File(output, "all-five-language-material.png").outputStream().use { menu.compress(Bitmap.CompressFormat.PNG, 100, it) }
         val colors = (0..4).map { index ->
             val x = (menu.width * .88f).toInt()
             val y = (menu.height * (10f + 42f * (index + .5f)) / 230f).toInt().coerceIn(0, menu.height - 1)

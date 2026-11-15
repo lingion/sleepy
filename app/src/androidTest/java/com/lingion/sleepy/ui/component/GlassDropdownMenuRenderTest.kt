@@ -1,7 +1,5 @@
 package com.lingion.sleepy.ui.component
 
-import android.graphics.Bitmap
-import android.os.Bundle
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -40,7 +38,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenu
 import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog
 import com.lingion.sleepy.ui.component.liquidglass.GlassDatePickerDialog
@@ -52,7 +49,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.io.File
 
 /** Actual popup-window pixels, including a foreground change after the enter transition. */
 @RunWith(AndroidJUnit4::class)
@@ -100,7 +96,6 @@ class GlassDropdownMenuRenderTest {
                 }
             }
         }
-        val counts = linkedMapOf<String, Int>()
         val failures = mutableListOf<String>()
         for (sample in Carrier.entries) {
             for (mode in listOf(UiStyle.Classic, UiStyle.LiquidGlass)) {
@@ -114,19 +109,14 @@ class GlassDropdownMenuRenderTest {
                         if (code == "en") option.assertIsSelected() else option.assertIsNotSelected()
                     }
                 }
-                val red = captureForeground("$sample-$mode-red", red = true, inline = sample == Carrier.Language && mode == UiStyle.Classic)
+                val red = captureForeground(red = true, inline = sample == Carrier.Language && mode == UiStyle.Classic)
                 compose.runOnIdle { foreground.value = Color.Green }
                 compose.waitForIdle()
-                val green = captureForeground("$sample-$mode-green", red = false, inline = sample == Carrier.Language && mode == UiStyle.Classic)
-                counts["$sample-$mode-red"] = red
-                counts["$sample-$mode-green"] = green
+                val green = captureForeground(red = false, inline = sample == Carrier.Language && mode == UiStyle.Classic)
                 val minimum = if (sample == Carrier.Language) 100 else 1000
                 if (red <= minimum || green <= minimum) failures += "$sample-$mode: $red red, $green green"
             }
         }
-        InstrumentationRegistry.getInstrumentation().sendStatus(2, Bundle().apply {
-            putString("stream", "Popup foreground pixels: $counts\n")
-        })
         assertTrue("popup foreground must reach actual window pixels and stay live: $failures", failures.isEmpty())
     }
 
@@ -162,24 +152,17 @@ class GlassDropdownMenuRenderTest {
         }
         compose.mainClock.advanceTimeBy(600)
         compose.waitForIdle()
-        val classic = captureForeground("nested-classic", red = true)
+        val classic = captureForeground(red = true)
         compose.runOnIdle { style.value = UiStyle.LiquidGlass }
         compose.mainClock.advanceTimeBy(600)
         compose.waitForIdle()
-        val liquid = captureForeground("nested-liquid", red = true)
-        InstrumentationRegistry.getInstrumentation().sendStatus(2, Bundle().apply {
-            putString("stream", "Nested menu pixels: classic=$classic, liquid=$liquid\n")
-        })
+        val liquid = captureForeground(red = true)
         assertTrue("all twenty menu controls must reach the actual popup: classic=$classic liquid=$liquid", liquid >= classic * 0.98f)
     }
 
-    private fun captureForeground(name: String, red: Boolean, inline: Boolean = false): Int {
+    private fun captureForeground(red: Boolean, inline: Boolean = false): Int {
         val target = if (inline) compose.onNodeWithTag("carrier_fixture") else compose.onAllNodes(isPopup() or isDialog()).onFirst()
         val image = target.captureToImage().asAndroidBitmap()
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        File(context.cacheDir, "popup-$name.png").outputStream().use {
-            image.compress(Bitmap.CompressFormat.PNG, 100, it)
-        }
         var count = 0
         for (y in 0 until image.height) for (x in 0 until image.width) {
             val pixel = image.getPixel(x, y)

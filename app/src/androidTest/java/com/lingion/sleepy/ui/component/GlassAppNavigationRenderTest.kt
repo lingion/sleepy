@@ -1,9 +1,7 @@
 package com.lingion.sleepy.ui.component
 
 import android.content.Context
-import android.graphics.Bitmap
 import androidx.compose.ui.test.*
-import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.text.TextLayoutResult
@@ -24,7 +22,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExternalResource
 import org.junit.rules.TestName
-import java.io.File
 import java.time.LocalDate
 
 /** Real MainActivity routes on an isolated in-memory repository; never seeds the installed DB. */
@@ -90,34 +87,34 @@ class GlassAppNavigationRenderTest {
     }
     @get:Rule(order = 2) val compose = createAndroidComposeRule<MainActivity>()
 
-    @Test fun capturesLightRealRoutesAndPopupStates() = walk("light")
-    @Test fun capturesDarkRealRoutesAndPopupStates() = walk("dark")
-    @Test fun capturesLightWideNavigation() = wide("light")
-    @Test fun capturesDarkWideNavigation() = wide("dark")
+    @Test fun capturesLightRealRoutesAndPopupStates() = walk()
+    @Test fun capturesDarkRealRoutesAndPopupStates() = walk()
+    @Test fun capturesLightWideNavigation() = wide()
+    @Test fun capturesDarkWideNavigation() = wide()
 
-    private fun wide(mode: String) {
+    private fun wide() {
         compose.mainClock.autoAdvance = true
         waitText("课表管理")
         compose.activityRule.scenario.onActivity {
             it.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         }
         compose.waitUntil(20_000) { compose.activity.resources.configuration.screenWidthDp > 600 }
-        capture("$mode-wide-schedule-today")
+        capture()
         tap("我的")
-        capture("$mode-wide-mine")
+        capture()
         compose.activityRule.scenario.onActivity {
             it.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
     }
 
-    private fun walk(mode: String) {
+    private fun walk() {
         compose.mainClock.autoAdvance = true
         waitText("课表管理")
         compose.waitUntil(20_000) { compose.onAllNodesWithTag("schedule_add_course").fetchSemanticsNodes().isNotEmpty() }
-        capture("$mode-home")
+        capture()
         compose.onNodeWithTag("schedule_prev_week").performTouchInput { down(center) }
         compose.mainClock.advanceTimeBy(180)
-        capture("$mode-home-pressed")
+        capture()
         compose.onNodeWithTag("schedule_prev_week").performTouchInput { up() }
         compose.waitForIdle()
         compose.onNodeWithTag("schedule_week_label").performTouchInput { click() }
@@ -125,26 +122,26 @@ class GlassAppNavigationRenderTest {
         compose.onNodeWithTag("schedule_week_label").performTouchInput { click() }
         compose.waitUntil(10_000) { compose.onAllNodesWithTag("schedule_week#1").fetchSemanticsNodes().isNotEmpty() }
         compose.mainClock.advanceTimeBy(600)
-        capture("$mode-week-menu")
+        capture()
         back()
         compose.onNodeWithTag("schedule_add_course").performTouchInput { click() }
         waitText("手动创建课程")
-        capture("$mode-add-course")
+        capture()
         tap("新增一个上课时段")
-        capture("$mode-two-period-cards")
+        capture()
         back()
-        tap("今日"); capture("$mode-today")
-        tap("课表管理"); capture("$mode-manage")
-        tap("备份与导出"); waitText("导出课表/作息表"); capture("$mode-export"); back()
-        tap("添加课表"); capture("$mode-import")
-        tap("教务直连"); capture("$mode-school-select"); back(); back()
-        tap("我的"); capture("$mode-mine")
+        tap("今日"); capture()
+        tap("课表管理"); capture()
+        tap("备份与导出"); waitText("导出课表/作息表"); capture(); back()
+        tap("添加课表"); capture()
+        tap("教务直连"); capture(); back(); back()
+        tap("我的"); capture()
         for ((entry, name) in listOf(
             "所有课表" to "tables", "作息表" to "periods", compose.activity.getString(com.lingion.sleepy.R.string.settings_holidays) to "holiday", "提醒" to "reminders",
             "外观与主题" to "appearance", "通用" to "general", "小组件" to "widgets", "关于" to "about",
         )) {
             tap(entry)
-            capture("$mode-$name")
+            capture()
             if (name == "periods") {
                 compose.onAllNodesWithContentDescription("编辑课表").onFirst().performTouchInput { click() }
                 waitText("作息表")
@@ -156,35 +153,35 @@ class GlassAppNavigationRenderTest {
                     assertTrue("actual app time $time must show all five characters",
                         layout.lineCount == 1 && layout.getLineEnd(0, true) == time.length && layout.getLineRight(0) <= layout.size.width + .5f)
                 }
-                capture("$mode-period-edit")
+                capture()
                 compose.onNodeWithContentDescription("分享作息表").performTouchInput { click() }
-                capture("$mode-period-share"); back()
+                capture(); back()
                 tap("自动模式")
                 tap("添加短课时")
-                capture("$mode-period-auto")
+                capture()
                 back()
             }
             if (name == "about") {
                 compose.onAllNodes(hasScrollAction()).onFirst().performScrollToNode(hasText("开源声明"))
-                tap("开源声明"); capture("$mode-licenses"); back()
+                tap("开源声明"); capture(); back()
             }
             if (name == "appearance") {
                 reveal("长名称自定义主题")
-                capture("$mode-theme-cards")
+                capture()
                 val edit = compose.onNodeWithContentDescription("编辑主题")
                 edit.assertIsDisplayed().performTouchInput { down(center) }
                 compose.mainClock.advanceTimeBy(180)
-                capture("$mode-theme-edit-pressed")
+                capture()
                 edit.performTouchInput { cancel() }
                 reveal("界面风格")
-                capture("$mode-style-selector")
+                capture()
             }
             if (name == "widgets") {
                 val node = compose.onAllNodesWithText("添加或管理桌面小组件").fetchSemanticsNodes()
                 if (node.isNotEmpty()) {
-                    tap("添加或管理桌面小组件"); capture("$mode-widget-management")
+                    tap("添加或管理桌面小组件"); capture()
                     compose.onNodeWithContentDescription("添加小组件").performTouchInput { click() }
-                    capture("$mode-widget-gallery"); back(); back()
+                    capture(); back(); back()
                 }
             }
             back()
@@ -199,7 +196,7 @@ class GlassAppNavigationRenderTest {
             compose.mainClock.advanceTimeByFrame()
             compose.onAllNodesWithTag("app_navigation_dock").fetchSemanticsNodes().isNotEmpty()
         }
-        capture("$mode-dock")
+        capture()
     }
 
     private fun waitText(text: String) {
@@ -237,7 +234,7 @@ class GlassAppNavigationRenderTest {
         }
         compose.waitForIdle()
     }
-    private fun capture(name: String) {
+    private fun capture() {
         compose.waitForIdle()
         // A separate Activity can still be cross-fading after Compose becomes idle.
         // Wait for the accessibility window to settle before requesting the HWUI commit.
@@ -256,11 +253,7 @@ class GlassAppNavigationRenderTest {
             java.io.FileInputStream(descriptor.fileDescriptor).use { android.graphics.BitmapFactory.decodeStream(it) }
         }
         assertTrue("screenshot must have actual pixels", image != null && image.width > 0 && image.height > 0)
-        val directory = InstrumentationRegistry.getArguments().getString("glassCaptureDirectory") ?: "glass-route-matrix"
-        val dir = File(context.cacheDir, directory).apply { mkdirs() }
-        File(dir, "$name.png").outputStream().use { assertTrue(image.compress(Bitmap.CompressFormat.PNG, 100, it)) }
         image.recycle()
-        println("GLASS_ROUTE_CAPTURE=$name")
     }
     private fun course(id: Long, tableId: Long, name: String, day: Int, node: Int, color: String) = CourseEntity(
         id = id, groupId = "visual-$id", tableId = tableId, courseName = name, day = day,

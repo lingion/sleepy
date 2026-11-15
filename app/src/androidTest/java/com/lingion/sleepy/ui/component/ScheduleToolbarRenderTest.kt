@@ -1,6 +1,5 @@
 package com.lingion.sleepy.ui.component
 
-import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
@@ -11,21 +10,18 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import com.lingion.sleepy.data.undo.UndoManager
 import com.lingion.sleepy.ui.component.liquidglass.GlassHost
 import com.lingion.sleepy.ui.screen.schedule.TopBar
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
-import java.io.File
 import org.junit.After
 import org.junit.Rule
 import org.junit.Test
@@ -36,17 +32,17 @@ import org.junit.runner.RunWith
 class ScheduleToolbarRenderTest {
     @get:Rule val compose = createComposeRule()
     @After fun clearHistory() { UndoManager.clear() }
-    @Test fun lightFullWeek() = capture(false, false, 360, 1f, "toolbar-full-light")
-    @Test fun darkFullWeek() = capture(true, false, 360, 1f, "toolbar-full-dark")
-    @Test fun lightGroupedWeek() = capture(false, true, 360, 1f, "toolbar-group-light")
-    @Test fun darkGroupedWeek() = capture(true, true, 360, 1f, "toolbar-group-dark")
-    @Test fun narrowLargeFontAlwaysStaysOnOneRow() = capture(false, true, 280, 1.5f, "toolbar-single-row-large")
-    @Test fun classicLightKeepsFilledActions() = capture(false, false, 360, 1f, "toolbar-classic-light", UiStyle.Classic)
-    @Test fun classicDarkKeepsFilledActions() = capture(true, false, 360, 1f, "toolbar-classic-dark", UiStyle.Classic)
-    @Test fun classicLightBusyKeepsFilledActions() = capture(false, true, 360, 1f, "toolbar-classic-busy-light", UiStyle.Classic)
-    @Test fun classicDarkBusyKeepsFilledActions() = capture(true, true, 360, 1f, "toolbar-classic-busy-dark", UiStyle.Classic)
+    @Test fun lightFullWeek() = capture(false, false, 360, 1f)
+    @Test fun darkFullWeek() = capture(true, false, 360, 1f)
+    @Test fun lightGroupedWeek() = capture(false, true, 360, 1f)
+    @Test fun darkGroupedWeek() = capture(true, true, 360, 1f)
+    @Test fun narrowLargeFontAlwaysStaysOnOneRow() = capture(false, true, 280, 1.5f)
+    @Test fun classicLightKeepsFilledActions() = capture(false, false, 360, 1f, UiStyle.Classic)
+    @Test fun classicDarkKeepsFilledActions() = capture(true, false, 360, 1f, UiStyle.Classic)
+    @Test fun classicLightBusyKeepsFilledActions() = capture(false, true, 360, 1f, UiStyle.Classic)
+    @Test fun classicDarkBusyKeepsFilledActions() = capture(true, true, 360, 1f, UiStyle.Classic)
 
-    private fun capture(dark: Boolean, busy: Boolean, width: Int, font: Float, name: String, style: UiStyle = UiStyle.LiquidGlass) {
+    private fun capture(dark: Boolean, busy: Boolean, width: Int, font: Float, style: UiStyle = UiStyle.LiquidGlass) {
         UndoManager.clear()
         if (busy) UndoManager.capture(emptyList(), emptyList(), null)
         compose.setContent {
@@ -85,29 +81,21 @@ class ScheduleToolbarRenderTest {
             org.junit.Assert.assertTrue(compose.onNodeWithTag("schedule_week_label").fetchSemanticsNode()
                 .config[androidx.compose.ui.semantics.SemanticsProperties.Text].single().text != "2")
         }
-        save(name)
+        compose.waitForIdle()
         if (busy && width == 360 && style == UiStyle.LiquidGlass) {
             compose.mainClock.autoAdvance = false
             val undo = compose.onNodeWithTag("schedule_undo")
             undo.performTouchInput { down(center) }
             try {
                 repeat(30) { compose.mainClock.advanceTimeByFrame(); compose.waitForIdle() }
-                save("$name-pressed")
+                compose.waitForIdle()
                 undo.performTouchInput { moveBy(Offset(-60f, 30f), 200) }
                 repeat(30) { compose.mainClock.advanceTimeByFrame(); compose.waitForIdle() }
-                save("$name-dragged")
+                compose.waitForIdle()
             } finally {
                 undo.performTouchInput { cancel() }
                 compose.mainClock.autoAdvance = true
             }
         }
-    }
-
-    private fun save(name: String) {
-        val bitmap = compose.onRoot().captureToImage().asAndroidBitmap()
-        val output = InstrumentationRegistry.getArguments().getString("glassCaptureDirectory") ?: "glass-route-matrix"
-        val directory = File(InstrumentationRegistry.getInstrumentation().targetContext.cacheDir, output).apply { mkdirs() }
-        File(directory, "$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
-        println("GLASS_TOOLBAR_CAPTURE=$name")
     }
 }

@@ -25,7 +25,6 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
@@ -35,19 +34,15 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
-import androidx.test.platform.app.InstrumentationRegistry
 import com.kyant.backdrop.backdrops.rememberCanvasBackdrop
-import com.kyant.backdrop.BackdropDiagnostics
 import com.kyant.backdrop.BackdropRenderOptions
 import com.kyant.backdrop.drawPlainBackdrop
-import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
-import org.junit.After
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -60,11 +55,6 @@ class LiquidGlassHazeRenderTest {
     private lateinit var contentView: View
     private lateinit var window: Window
 
-    @After
-    fun removeGeometryObserver() {
-        BackdropDiagnostics.observer = null
-    }
-
     @Composable
     private fun rememberWindow() {
         val view = LocalView.current
@@ -76,12 +66,7 @@ class LiquidGlassHazeRenderTest {
         }
     }
 
-    private fun artifactDirectory(): File = File(
-        InstrumentationRegistry.getInstrumentation().targetContext.getExternalFilesDir(null),
-        "native-haze-reference",
-    ).apply { mkdirs() }
-
-    private fun capture(tag: String, name: String): Bitmap {
+    private fun capture(tag: String): Bitmap {
         compose.waitForIdle()
         val committed = CountDownLatch(1)
         compose.runOnUiThread {
@@ -101,7 +86,6 @@ class LiquidGlassHazeRenderTest {
         val bounds = compose.onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot
         return Bitmap.createBitmap(full, origin[0] + bounds.left.roundToInt(), origin[1] + bounds.top.roundToInt(),
             bounds.width.roundToInt(), bounds.height.roundToInt()).also { cropped ->
-            File(artifactDirectory(), "$name.png").outputStream().use { cropped.compress(Bitmap.CompressFormat.PNG, 100, it) }
             if (cropped !== full) full.recycle()
         }
     }
@@ -190,11 +174,11 @@ class LiquidGlassHazeRenderTest {
                 checkerboard(4.dp.toPx())
             }
         }
-        val source = capture("atlas", "source")
+        val source = capture("atlas")
         compose.runOnIdle { enabled.value = true }
-        val packed = capture("atlas", "packed")
+        val packed = capture("atlas")
         compose.runOnIdle { opticsEnabled.value = true }
-        val optical = capture("atlas", "atlas-material")
+        val optical = capture("atlas")
         val margin = 8
         val width = atlas.clearBoundsPx.width.toInt() - margin * 2
         val height = atlas.clearBoundsPx.height.toInt() - margin * 2
@@ -226,7 +210,6 @@ class LiquidGlassHazeRenderTest {
             "clearFrequency=$clearFrequency hazeFrequency=$hazeFrequency clearMean=$clearMean hazeMean=$hazeMean " +
             "fullOpticalMean=${mean(optical, sourceX, sourceY, width, height)} " +
             "fullOpticalFrequency=${highFrequency(optical, sourceX, sourceY, width, height)}"
-        File(artifactDirectory(), "atlas-metrics.txt").writeText(diagnostics)
         assertTrue("clear branch changed: $diagnostics", worstClearDifference <= 1f)
         assertTrue("fixture must contain high-frequency black/white edges", clearFrequency > 10f)
         assertTrue("haze must be an actual Gaussian: clear=$clearFrequency haze=$hazeFrequency", hazeFrequency < clearFrequency * .2f)
@@ -235,27 +218,21 @@ class LiquidGlassHazeRenderTest {
 
     @Test
     fun productionOpticsReadTheBlurredSlotAndRestoreTheOriginalClearSource() {
-        verifyProductionOptics(insetDp = 80, artifactSuffix = "")
+        verifyProductionOptics(insetDp = 80)
     }
 
     @Test
     fun productionOpticsKeepBothAtlasSlotsAtTheWindowOrigin() {
-        verifyProductionOptics(insetDp = 0, artifactSuffix = "-origin")
+        verifyProductionOptics(insetDp = 0)
     }
 
-    private fun verifyProductionOptics(insetDp: Int, artifactSuffix: String) {
+    private fun verifyProductionOptics(insetDp: Int) {
         val haze = mutableStateOf(0.0)
         val placementLayer = mutableStateOf(true)
-        val geometry = mutableListOf<String>()
-        BackdropDiagnostics.observer = { name, _ -> if (name.contains("Geometry")) geometry.add(name) }
         compose.setContent {
             rememberWindow()
             val context = LocalContext.current
             val backdrop = rememberCanvasBackdrop {
-                val matrix = android.graphics.Matrix()
-                @Suppress("DEPRECATION")
-                drawContext.canvas.nativeCanvas.getMatrix(matrix)
-                geometry.add("SourceGeometry(size=$size,density=$density,matrix=$matrix)")
                 checkerboard(4.dp.toPx())
             }
             Box(Modifier.padding(start = insetDp.dp, top = insetDp.dp)) {
@@ -273,14 +250,14 @@ class LiquidGlassHazeRenderTest {
             ).testTag("material"))
             }
         }
-        val clear = capture("material", "clear$artifactSuffix")
+        val clear = capture("material")
         compose.runOnIdle { haze.value = .72 }
-        val hazy = capture("material", "hazy$artifactSuffix")
+        val hazy = capture("material")
         compose.runOnIdle { placementLayer.value = false }
-        val unclipped = capture("material", "hazy-unclipped$artifactSuffix")
+        capture("material")
         compose.runOnIdle { placementLayer.value = true }
         compose.runOnIdle { haze.value = 0.0 }
-        val restored = capture("material", "restored$artifactSuffix")
+        val restored = capture("material")
         val margin = clear.height / 4
         val width = clear.width - margin * 2
         val height = clear.height - margin * 2
@@ -290,10 +267,6 @@ class LiquidGlassHazeRenderTest {
         val hazeMean = mean(hazy, margin, margin, width, height)
         val diagnostics = "clearFrequency=$clearFrequency hazeFrequency=$hazeFrequency clearMean=$clearMean hazeMean=$hazeMean " +
             "dimensions=${clear.width}x${clear.height} region=$margin,$margin,$width,$height"
-        File(artifactDirectory(), "material-metrics$artifactSuffix.txt").writeText(diagnostics +
-            " unclippedMean=${mean(unclipped, margin, margin, width, height)} " +
-            "unclippedFrequency=${highFrequency(unclipped, margin, margin, width, height)}")
-        File(artifactDirectory(), "material-geometry$artifactSuffix.txt").writeText(geometry.joinToString("\n"))
         assertTrue("production haze must lower high-frequency detail: clear=$clearFrequency haze=$hazeFrequency",
             clearFrequency > 10f && hazeFrequency < clearFrequency * .45f)
         assertTrue("haze sampling must retain the backdrop's average luminance: $diagnostics", abs(hazeMean - clearMean) < 16f)

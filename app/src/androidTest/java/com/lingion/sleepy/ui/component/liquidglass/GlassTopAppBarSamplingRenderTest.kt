@@ -1,6 +1,5 @@
 package com.lingion.sleepy.ui.component.liquidglass
 
-import android.graphics.Bitmap
 import android.os.Build
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -26,13 +25,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
-import java.io.File
 import kotlin.math.abs
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -55,7 +51,7 @@ class GlassTopAppBarSamplingRenderTest {
             StripedPage(alternateBackground.value)
             Toolbar(color.value)
         }
-        val white = pixels("opaque-white")
+        val white = pixels()
         white.forEach { pixel ->
             val channels = channels(pixel)
             assertTrue("white toolbar must hide colored stripes in both button sources: ${hex(pixel)}",
@@ -63,9 +59,9 @@ class GlassTopAppBarSamplingRenderTest {
         }
         compose.runOnIdle { alternateBackground.value = true }
         assertEquals("an opaque white toolbar must hide a second underlying pattern too",
-            white, pixels("opaque-white-over-black-white"))
+            white, pixels())
         compose.runOnIdle { color.value = Color.Blue }
-        pixels("opaque-blue").forEach(::assertBlue)
+        pixels().forEach(::assertBlue)
     }
 
     @Test fun translucentBarIsCompositedExactlyOnceInTheButtonSources() {
@@ -74,7 +70,7 @@ class GlassTopAppBarSamplingRenderTest {
             Box(Modifier.size(280.dp, 120.dp).background(Color.Red))
             Toolbar(Color.Blue.copy(alpha = .5f))
         }
-        pixels("half-blue-over-red").forEach { pixel ->
+        pixels().forEach { pixel ->
             assertTrue("half-blue over red must remain purple, without omitted or doubled backing: ${hex(pixel)}",
                 abs(android.graphics.Color.red(pixel) - android.graphics.Color.blue(pixel)) < 25 &&
                     android.graphics.Color.blue(pixel) > android.graphics.Color.green(pixel) + 20)
@@ -95,11 +91,11 @@ class GlassTopAppBarSamplingRenderTest {
             SideEffect { scrollState = state }
             Toolbar(Color.White, scrolled = Color.Blue, state = state)
         }
-        pixels("before-scroll").forEach { pixel ->
+        pixels().forEach { pixel ->
             assertTrue("unscrolled toolbar source must be white: ${hex(pixel)}", channels(pixel).min() > 220)
         }
         compose.runOnIdle { scrollState.contentOffset = -10_000f }
-        pixels("after-scroll").forEach(::assertBlue)
+        pixels().forEach(::assertBlue)
     }
 
     @Test fun titleForegroundIsExcludedFromBothButtonSources() {
@@ -116,10 +112,10 @@ class GlassTopAppBarSamplingRenderTest {
                 })
             })
         }
-        val first = pixels("foreground-green")
+        val first = pixels()
         first.forEach(::assertBlue)
         compose.runOnIdle { foreground.value = Color.Yellow }
-        val second = pixels("foreground-yellow")
+        val second = pixels()
         first.zip(second).forEach { (a, b) ->
             assertEquals("changing title foreground cannot alter a sibling button's optical input", a, b)
         }
@@ -168,12 +164,8 @@ class GlassTopAppBarSamplingRenderTest {
         }
     }
 
-    private fun pixels(name: String): List<Int> {
+    private fun pixels(): List<Int> {
         compose.waitForIdle()
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val directory = File(context.getExternalFilesDir(null), "glass-top-app-bar-sampling").apply { mkdirs() }
-        val screen = compose.onRoot().captureToImage().asAndroidBitmap()
-        File(directory, "$name.png").outputStream().use { screen.compress(Bitmap.CompressFormat.PNG, 100, it) }
         return listOf("sampling-navigation", "sampling-action").map { tag ->
             val image = compose.onNodeWithTag(tag).captureToImage().asAndroidBitmap()
             image.getPixel(image.width / 2, image.height / 2)
