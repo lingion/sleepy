@@ -413,6 +413,7 @@ fun ScheduleScreen(
                     page,
                     state.selectedTableId,
                     state.currentTable?.startDate,
+                    state.currentTable?.timeJson,
                     state.effectivePeriodTable,
                 ) {
                     val table = state.currentTable
