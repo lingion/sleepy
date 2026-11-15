@@ -16,7 +16,8 @@ import kotlin.math.PI
  *
  * 真源 = [navIconPartsFor] 部件表 + 每部件 motion(pulse, spinRad) → [PartTransform]
  * 纯函数。几何单位 = vector 视口 24: pivot 在 0..24 域, 位移以视口单位计。
- * 静止态(pulse=0, spin=0)全部件恒等 → 与单 path 原图标逐位一致。
+ * 静止态(pulse=0, spin=0)全部件恒等 → 与锁定的静息路径集逐位一致；PageFlip
+ * 日期格采用柔和圆角，作为有意的静息外观调整。
  */
 class NavIconPartsTest {
 
@@ -45,10 +46,10 @@ class NavIconPartsTest {
     }
 
     @Test
-    fun subpathsCoverOriginalExactly() {
-        // 拆而不丢、不增: 部件子路径集合必须与原图标相等。
+    fun subpathsCoverRestStateGeometryExactly() {
+        // 拆而不丢、不增: 部件子路径集合必须与设计锁定的静息几何相等。
         for ((key, original) in mapOf(
-            NavIconMotionKey.PageFlip to originalCal,
+            NavIconMotionKey.PageFlip to restPageFlip,
             NavIconMotionKey.Hop to originalToday,
             NavIconMotionKey.Jelly to originalPerson,
             NavIconMotionKey.GearSpin to originalSettings,
@@ -231,12 +232,16 @@ class NavIconPartsTest {
     }
 
     companion object {
-        // 用户给定真值 (Tab 图标的 android:pathData, viewport 24)。
-        const val originalCal =
+        // PageFlip 锁定圆角化后的静息路径；其余常量是 Tab 图标原始 pathData。
+        const val restPageFlip =
             "M19,4h-1V2h-2v2H8V2H6v2H5C3.89,4 3.01,4.9 3.01,6L3,20c0,1.1 0.89,2 2,2h14c1.1,0 2,-0.9 2,-2V6C21,4.9 20.1,4 19,4z" +
                 "M19,20H5V10h14V20zM19,8H5V6h14V8z" +
-                "M9,14H7v-2h2V14zM13,14h-2v-2h2V14zM17,14h-2v-2h2V14z" +
-                "M9,18H7v-2h2V18zM13,18h-2v-2h2V18zM17,18h-2v-2h2V18z"
+                "M7.35,12h1.3c.19,0 .35,.16 .35,.35v1.3c0,.19-.16,.35-.35,.35h-1.3c-.19,0-.35-.16-.35-.35v-1.3c0-.19,.16-.35,.35-.35z" +
+                "M11.35,12h1.3c.19,0 .35,.16 .35,.35v1.3c0,.19-.16,.35-.35,.35h-1.3c-.19,0-.35-.16-.35-.35v-1.3c0-.19,.16-.35,.35-.35z" +
+                "M15.35,12h1.3c.19,0 .35,.16 .35,.35v1.3c0,.19-.16,.35-.35,.35h-1.3c-.19,0-.35-.16-.35-.35v-1.3c0-.19,.16-.35,.35-.35z" +
+                "M7.35,16h1.3c.19,0 .35,.16 .35,.35v1.3c0,.19-.16,.35-.35,.35h-1.3c-.19,0-.35-.16-.35-.35v-1.3c0-.19,.16-.35,.35-.35z" +
+                "M11.35,16h1.3c.19,0 .35,.16 .35,.35v1.3c0,.19-.16,.35-.35,.35h-1.3c-.19,0-.35-.16-.35-.35v-1.3c0-.19,.16-.35,.35-.35z" +
+                "M15.35,16h1.3c.19,0 .35,.16 .35,.35v1.3c0,.19-.16,.35-.35,.35h-1.3c-.19,0-.35-.16-.35-.35v-1.3c0-.19,.16-.35,.35-.35z"
         const val originalToday =
             "M19,3h-1V1h-2v2H8V1H6v2H5c-1.11,0 -2,0.9 -2,2v14c0,1.1 0.89,2 2,2h14c1.1,0 2,-0.9 2,-2V5c0,-1.1 -0.9,-2 -2,-2z" +
                 "M19,19H5V9h14v10z" +
