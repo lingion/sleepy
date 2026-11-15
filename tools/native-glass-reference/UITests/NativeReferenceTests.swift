@@ -1,4 +1,5 @@
 import XCTest
+import CryptoKit
 
 /// All gestures use public XCUITest APIs. Requested straight-line gestures and
 /// actual delivered touch waveforms are separate records; no synthesized curves.
@@ -90,6 +91,55 @@ final class NativeReferenceTests: XCTestCase {
     func testSegmentedStripes() { segmented(background: "stripes") }
     func testSliderGrid() { slider(background: "grid") }
     func testSliderStripes() { slider(background: "stripes") }
+
+    /// REST capability evidence only. Three width requests must be checked
+    /// against actual native geometry; they are not three optical parity passes.
+    func testNativeControlWidthSupport() {
+        executionTimeAllowance = 150
+        for scene in ["slider", "segmented"] {
+            for width in [160.0, 240.0, 320.0] {
+                launch(scene: scene, background: "grid", sliderLayerProbe: scene == "slider",
+                       controlWidth: width)
+                for identifier in scene == "slider"
+                    ? ["uikit-slider", "swiftui-slider"] : ["uikit-segmented", "swiftui-segmented"] {
+                    let target = scene == "slider" ? app.sliders[identifier] : app.segmentedControls[identifier]
+                    XCTAssertTrue(target.waitForExistence(timeout: 5))
+                    XCTAssertTrue(target.frame.width.isFinite && target.frame.height.isFinite)
+                    XCTAssertGreaterThan(target.frame.width, 0)
+                    XCTAssertGreaterThan(target.frame.height, 0)
+                    request("size-support: \(scene), width \(width), \(identifier)", kind: "sizeCalibration",
+                            target: target, extra: ["requestedWidthPt": width,
+                              "measurementScope": "AX control rectangle; not an optical contour or thumb size"])
+                }
+                captureLanguage("size-support-\(scene)-width-\(Int(width))-rest")
+                app.terminate()
+            }
+        }
+    }
+
+    /// Public controlSize may be ignored by a particular native subtype.
+    /// Equal realized switch sizes remain equal samples, never invented levels.
+    func testNativeControlSizeSupport() {
+        executionTimeAllowance = 150
+        for scene in ["toggle", "buttons"] {
+            for size in ["small", "regular", "large"] {
+                launch(scene: scene, background: "grid", nativeControlSize: size)
+                let identifiers = scene == "toggle" ? ["swiftui-toggle", "uikit-toggle"]
+                    : ["glass-button", "glass-prominent-button", "glass-circle-button"]
+                for identifier in identifiers {
+                    let target = scene == "toggle" ? app.switches[identifier] : app.buttons[identifier]
+                    XCTAssertTrue(target.waitForExistence(timeout: 5))
+                    XCTAssertGreaterThan(target.frame.width, 0)
+                    XCTAssertGreaterThan(target.frame.height, 0)
+                    request("size-support: \(scene), controlSize \(size), \(identifier)", kind: "sizeCalibration",
+                            target: target, extra: ["requestedControlSize": size,
+                              "measurementScope": "AX control rectangle; UIKit representable keeps its own intrinsic sizing"])
+                }
+                captureLanguage("size-support-\(scene)-\(size)-rest")
+                app.terminate()
+            }
+        }
+    }
 
     /// Two fresh range sessions, one at each whole-UISlider scale. Held host
     /// screenshots must come from opticalHeldCapture signals during real DOWN;
@@ -689,6 +739,431 @@ final class NativeReferenceTests: XCTestCase {
     func testSwiftUITabViewDockLandscapeLight() { swiftUITabViewDockOptics(background: "synthetic_landscape", style: "light") }
     func testSwiftUITabViewDockLandscapeDark() { swiftUITabViewDockOptics(background: "synthetic_landscape") }
 
+    // External-input matrices deliberately capture REST only. Repeats describe
+    // capture stability; they are not independent samples of the input family.
+    private let holdoutInputIDs = [
+        "h01_horizontal_steps", "h02_chirp_pos", "h03_chirp_neg", "h04_multiscale_checker",
+        "h05_low_contrast_weave", "h06_offcenter_spots", "h07_broad_chroma_gradient", "h08_bandlimited_texture"
+    ]
+
+    func testSwiftUITabViewDockHoldoutMatrix() {
+        executionTimeAllowance = 300
+        settleDuration = 0.8
+        for id in holdoutInputIDs {
+            for style in ["light", "dark"] {
+                launch(scene: "toggle", background: "grid", style: style, staticOptics: true,
+                       dockParent: "swiftui-tabview", dockContent: "synthetic-scroll", externalInputFile: id + ".png")
+                XCTAssertEqual(app.windows.firstMatch.frame.width, 375, accuracy: 0.01)
+                XCTAssertEqual(app.windows.firstMatch.frame.height, 667, accuracy: 0.01)
+                XCTAssertTrue(app.scrollViews["dock-synthetic-scroll-0"].waitForExistence(timeout: 5))
+                let control = app.tabBars["swiftui-tabbar"]
+                XCTAssertTrue(control.waitForExistence(timeout: 5))
+                XCTAssertEqual(control.buttons.count, 4)
+                XCTAssertTrue(control.buttons["Schedule"].isSelected)
+                let prefix = "holdout-dock-\(id)-\(style)"
+                request(prefix + ": REST pair", kind: "externalHoldoutRest", target: control,
+                        extra: ["inputID": id, "externalInputFile": id + ".png", "requestedTheme": style,
+                                "split": "holdout", "repeatSpacingMinimumSeconds": 0.25,
+                                "repeatScope": "capture stability only; not independent statistical samples"])
+                captureLanguage(prefix + "-rest")
+                Thread.sleep(forTimeInterval: 0.25)
+                captureLanguage(prefix + "-rest-repeat")
+                XCTAssertTrue(control.buttons["Schedule"].isSelected)
+                app.terminate()
+            }
+        }
+    }
+
+    func testSystemMediumSheetHoldoutMatrix() {
+        executionTimeAllowance = 300
+        settleDuration = 0.8
+        for id in holdoutInputIDs {
+            for style in ["light", "dark"] {
+                launch(scene: "presentations", background: "grid", style: style, staticOptics: true,
+                       externalInputFile: id + ".png")
+                XCTAssertEqual(app.windows.firstMatch.frame.width, 375, accuracy: 0.01)
+                XCTAssertEqual(app.windows.firstMatch.frame.height, 667, accuracy: 0.01)
+                let prefix = "holdout-sheet-\(id)-\(style)"
+                tap(app.buttons["show-sheet"], label: prefix + ": present native medium sheet")
+                let title = app.staticTexts["sheet-title"]
+                XCTAssertTrue(title.waitForExistence(timeout: 5))
+                request(prefix + ": REST pair", kind: "externalHoldoutRest", target: title,
+                        extra: ["inputID": id, "externalInputFile": id + ".png", "requestedTheme": style,
+                                "split": "holdout", "repeatSpacingMinimumSeconds": 0.25,
+                                "repeatScope": "capture stability only; not independent statistical samples"])
+                captureLanguage(prefix + "-rest")
+                Thread.sleep(forTimeInterval: 0.25)
+                captureLanguage(prefix + "-rest-repeat")
+                app.terminate()
+            }
+        }
+    }
+
+    /// Independent seeded stimuli. Same unchanged native TabView and capture
+    /// path as the first external-input matrix, with a separate manifest/run.
+    func testSwiftUITabViewDockNoiseTrackingMatrix() {
+        executionTimeAllowance = 300
+        settleDuration = 0.8
+        let inputIDs = [
+            "n01_rgb_noise_s0", "n02_rgb_noise_s1", "n03_rgb_noise_s2", "n04_rgb_noise_s3",
+            "n05_dots_s0", "n06_dots_s1", "n07_dots_s2", "n08_dots_s3"
+        ]
+        for id in inputIDs {
+            for style in ["light", "dark"] {
+                launch(scene: "toggle", background: "grid", style: style, staticOptics: true,
+                       dockParent: "swiftui-tabview", dockContent: "synthetic-scroll", externalInputFile: id + ".png")
+                XCTAssertEqual(app.windows.firstMatch.frame.width, 375, accuracy: 0.01)
+                XCTAssertEqual(app.windows.firstMatch.frame.height, 667, accuracy: 0.01)
+                XCTAssertTrue(app.scrollViews["dock-synthetic-scroll-0"].waitForExistence(timeout: 5))
+                let control = app.tabBars["swiftui-tabbar"]
+                XCTAssertTrue(control.waitForExistence(timeout: 5))
+                XCTAssertEqual(control.buttons.count, 4)
+                XCTAssertTrue(control.buttons["Schedule"].isSelected)
+                let prefix = "holdout-dock-\(id)-\(style)"
+                request(prefix + ": REST pair", kind: "externalHoldoutRest", target: control,
+                        extra: ["inputID": id, "externalInputFile": id + ".png", "requestedTheme": style,
+                                "split": "holdout", "repeatSpacingMinimumSeconds": 0.25,
+                                "repeatScope": "capture stability only; not independent statistical samples"])
+                captureLanguage(prefix + "-rest")
+                Thread.sleep(forTimeInterval: 0.25)
+                captureLanguage(prefix + "-rest-repeat")
+                XCTAssertTrue(control.buttons["Schedule"].isSelected)
+                app.terminate()
+            }
+        }
+    }
+
+    /// The runner and reference app have separate sandboxes. Before this test,
+    /// mirror the same original manifest.json into Documents/holdout in both
+    /// containers; PNGs remain in the reference app's existing input directory.
+    /// Only this runner-side manifest is enumerated; no stimulus names are built in.
+    private func externalInputMatrixManifest() throws -> (setID: String, split: String, inputIDs: [String], sha256: String) {
+        let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .resolvingSymlinksInPath().standardizedFileURL
+        let directory = documents.appendingPathComponent("holdout", isDirectory: true)
+        let manifestURL = directory.appendingPathComponent("manifest.json")
+            .resolvingSymlinksInPath().standardizedFileURL
+        XCTAssertEqual(directory.resolvingSymlinksInPath().standardizedFileURL, directory,
+                       "The runner input directory must not escape through a symlink")
+        XCTAssertEqual(manifestURL.deletingLastPathComponent(), directory,
+                       "The runner manifest must remain inside its dedicated input directory")
+        let attributes = try FileManager.default.attributesOfItem(atPath: manifestURL.path)
+        XCTAssertEqual(attributes[.type] as? FileAttributeType, .typeRegular)
+        let count = try XCTUnwrap((attributes[.size] as? NSNumber)?.intValue)
+        XCTAssertGreaterThan(count, 0)
+        XCTAssertLessThanOrEqual(count, 128 * 1024, "Use the shared native/Android manifest size limit")
+        let data = try Data(contentsOf: manifestURL)
+        let manifest = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        XCTAssertEqual(manifest["schema"] as? Int, 1)
+        let setID = try XCTUnwrap(manifest["set_id"] as? String)
+        let split = try XCTUnwrap(manifest["split"] as? String)
+        XCTAssertTrue(["calibration", "holdout"].contains(split))
+        func safeID(_ value: String) -> Bool {
+            guard let range = value.range(of: "^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$", options: .regularExpression) else { return false }
+            return range == value.startIndex..<value.endIndex
+        }
+        XCTAssertTrue(safeID(setID))
+        let inputs = try XCTUnwrap(manifest["inputs"] as? [[String: Any]])
+        XCTAssertEqual(inputs.count, 8)
+        var ids = [String]()
+        var seen = Set<String>()
+        for input in inputs {
+            let id = try XCTUnwrap(input["id"] as? String)
+            XCTAssertTrue(safeID(id))
+            XCTAssertTrue(seen.insert(id).inserted, "External input IDs must be unique")
+            XCTAssertEqual(input["file"] as? String, id + ".png")
+            let checksum = try XCTUnwrap(input["sha256"] as? String)
+            XCTAssertNotNil(checksum.range(of: "^[0-9a-f]{64}$", options: .regularExpression))
+            ids.append(id)
+        }
+        let checksum = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+        return (setID, split, ids, checksum)
+    }
+
+    /// Two explicitly selected calibration inputs; the remaining six manifest
+    /// entries satisfy the existing loader contract and are never launched.
+    /// Native Alert/Sheet presentation, material, layout and timing stay owned
+    /// by the unchanged reference App. REST repeats measure capture stability.
+    func testPanelExternalInputFeasibility() throws {
+        executionTimeAllowance = 120
+        settleDuration = 0.8
+        let manifest = try externalInputMatrixManifest()
+        XCTAssertEqual(manifest.split, "calibration")
+        let inputIDs = ["panel_probe_coordinate", "panel_probe_shapes"]
+        for id in inputIDs {
+            XCTAssertTrue(manifest.inputIDs.contains(id), "Missing selected panel calibration input: \(id)")
+        }
+
+        for id in inputIDs {
+            let style = "light"
+            launch(scene: "presentations", background: "grid", style: style, staticOptics: true,
+                   externalInputFile: id + ".png")
+            let window = app.windows.firstMatch
+            XCTAssertEqual(window.frame.minX, 0, accuracy: 0.01)
+            XCTAssertEqual(window.frame.minY, 0, accuracy: 0.01)
+            XCTAssertEqual(window.frame.width, 375, accuracy: 0.01)
+            XCTAssertEqual(window.frame.height, 667, accuracy: 0.01)
+            let prefix = "panel-feasibility-\(manifest.setID)-\(id)-\(style)"
+            let context: [String: Any] = [
+                "inputID": id, "externalInputFile": id + ".png", "requestedTheme": style,
+                "set_id": manifest.setID, "split": manifest.split,
+                "inputManifestSHA256": manifest.sha256, "selectedInputIDs": inputIDs,
+                "unselectedManifestEntryCount": manifest.inputIDs.count - inputIDs.count,
+                "referenceRunID": app.launchEnvironment["REFERENCE_RUN_ID"] ?? "",
+                "bareSource": "App exports original PNG bytes as background-input.png, with external-input-metadata.json; context screenshots include the existing native backing UI",
+                "actualTraitsAndPresentationGeometrySource": "App trace.jsonl external-input and external-presentation-context events; public controller traits/geometry, not an optical alpha contour",
+                "notice": "Read-only REST capture observation; target screenFramePt is an AX rectangle, not a fitted or optical material boundary"
+            ]
+
+            func captureContext(_ phase: String) {
+                var extra = context
+                extra["phase"] = phase
+                extra["carrier"] = "none"
+                request(prefix + ": " + phase, kind: "externalPanelContext", target: window, extra: extra)
+                captureLanguage(prefix + "-" + phase)
+            }
+
+            func captureRestPair(_ carrier: String, target: XCUIElement) {
+                for sampleIndex in 0...1 {
+                    if sampleIndex == 1 { Thread.sleep(forTimeInterval: 0.25) }
+                    var extra = context
+                    extra["carrier"] = carrier
+                    extra["phase"] = "rest"
+                    extra["sampleIndex"] = sampleIndex
+                    extra["repeatSpacingMinimumSeconds"] = 0.25
+                    extra["repeatScope"] = "capture stability only; not independent statistical samples"
+                    extra["targetGeometryScope"] = carrier == "alert" ? "native Alert AX rectangle" : "native Sheet title AX rectangle; use App public-controller trace and full AX attachment for presentation geometry"
+                    if carrier == "sheet", app.sheets.firstMatch.exists {
+                        let frame = app.sheets.firstMatch.frame
+                        extra["sheetAXContainerFramePt"] = ["x": frame.minX, "y": frame.minY,
+                                                            "w": frame.width, "h": frame.height]
+                    }
+                    request(prefix + ": " + carrier + " REST \(sampleIndex)",
+                            kind: "externalPanelRest", target: target, extra: extra)
+                    let suffix = sampleIndex == 0 ? "-rest" : "-rest-repeat"
+                    captureLanguage(prefix + "-" + carrier + suffix)
+                }
+            }
+
+            captureContext("before-alert-context")
+            tap(app.buttons["show-alert"], label: prefix + ": present native Alert")
+            let alert = app.alerts["Native Alert"]
+            XCTAssertTrue(alert.waitForExistence(timeout: 5))
+            XCTAssertTrue(alert.buttons["Confirm"].exists)
+            XCTAssertTrue(alert.buttons["Cancel"].exists)
+            captureRestPair("alert", target: alert)
+            tap(alert.buttons["Cancel"], label: prefix + ": dismiss native Alert")
+            XCTAssertFalse(alert.exists)
+            captureContext("after-alert-before-sheet-context")
+
+            tap(app.buttons["show-sheet"], label: prefix + ": present native medium Sheet")
+            let title = app.staticTexts["sheet-title"]
+            XCTAssertTrue(title.waitForExistence(timeout: 5))
+            XCTAssertTrue(app.buttons["dismiss-sheet"].exists)
+            captureRestPair("sheet", target: title)
+            tap(app.buttons["dismiss-sheet"], label: prefix + ": dismiss native Sheet")
+            XCTAssertFalse(title.exists)
+            captureContext("after-sheet-context")
+            app.terminate()
+        }
+    }
+
+    /// Clean-backing feasibility uses the same native parents in four fresh
+    /// processes. The existing title relays a real tap; no timer presents a panel.
+    /// REST repeats describe capture stability, not independent input samples.
+    func testPanelPlainBackingFeasibility() throws {
+        try panelPlainBackingFeasibility(inputIDs: ["panel_probe_coordinate", "panel_probe_shapes"],
+                                        carriers: ["alert", "sheet"])
+    }
+
+    /// Preparation-only paired-slope entry point: four registered calibration
+    /// inputs, light appearance, and the unchanged clean-backing Alert cycle.
+    /// Acquisition requires its separately frozen source-footprint/tangent plan.
+    func testPanelPairedSlopeMappingFeasibility() throws {
+        try panelPlainBackingFeasibility(inputIDs: [
+            "paired_slope_alert_a20_normal", "paired_slope_alert_a20_reversed",
+            "paired_slope_alert_a24_normal", "paired_slope_alert_a24_reversed"
+        ], carriers: ["alert"])
+    }
+
+    private func panelPlainBackingFeasibility(inputIDs: [String], carriers: [String]) throws {
+        executionTimeAllowance = 180
+        settleDuration = 0.8
+        let manifest = try externalInputMatrixManifest()
+        XCTAssertEqual(manifest.split, "calibration")
+        for id in inputIDs {
+            XCTAssertTrue(manifest.inputIDs.contains(id), "Missing selected panel calibration input: \(id)")
+        }
+        let manifestURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("holdout/manifest.json").resolvingSymlinksInPath().standardizedFileURL
+        let manifestData = try Data(contentsOf: manifestURL)
+        let manifestSHA256 = SHA256.hash(data: manifestData).map { String(format: "%02x", $0) }.joined()
+        XCTAssertEqual(manifestSHA256, manifest.sha256, "Manifest changed after validation")
+        let completeManifest = try XCTUnwrap(JSONSerialization.jsonObject(with: manifestData) as? [String: Any])
+        let manifestInputs = try XCTUnwrap(completeManifest["inputs"] as? [[String: Any]])
+
+        for id in inputIDs {
+            let manifestEntry = try XCTUnwrap(manifestInputs.first { $0["id"] as? String == id })
+            for carrier in carriers {
+                let style = "light"
+                launch(scene: "presentations", background: "grid", style: style, staticOptics: true,
+                       externalInputFile: id + ".png", panelPlainBacking: true, panelCarrier: carrier)
+                let window = app.windows.firstMatch
+                XCTAssertEqual(window.frame.minX, 0, accuracy: 0.01)
+                XCTAssertEqual(window.frame.minY, 0, accuracy: 0.01)
+                XCTAssertEqual(window.frame.width, 375, accuracy: 0.01)
+                XCTAssertEqual(window.frame.height, 667, accuracy: 0.01)
+                let trigger = app.staticTexts["reference-title"]
+                XCTAssertEqual(trigger.value as? String, "panel-plain-backing:" + carrier)
+                XCTAssertTrue(trigger.isHittable)
+                XCTAssertFalse(app.buttons["show-alert"].exists)
+                XCTAssertFalse(app.buttons["show-sheet"].exists)
+                XCTAssertFalse(app.buttons["show-menu"].exists)
+                XCTAssertFalse(app.alerts["Native Alert"].exists)
+                XCTAssertFalse(app.staticTexts["sheet-title"].exists)
+                let prefix = "panel-plain-backing-\(manifest.setID)-\(id)-\(style)-\(carrier)"
+                let fixtureParameters: [String: Any] = [
+                    "scene": "presentations", "background": "grid", "focused": false, "tabCount": 3,
+                    "style": style, "staticOptics": true, "dockParent": NSNull(), "dockContent": NSNull(),
+                    "appearanceControls": false, "localAppearance": false, "horizontalLocalAppearance": false,
+                    "foregroundProperties": false, "tonalResponse": false, "tonalReturn": false,
+                    "initialSlider": NSNull(), "sliderLayerProbe": false,
+                    "rangeScale": NSNull(), "rangeLower": NSNull(), "rangeUpper": NSNull(), "rangeGeometryProbe": false,
+                    "externalInputFile": id + ".png", "controlWidth": NSNull(), "nativeControlSize": NSNull(),
+                    "panelPlainBacking": true, "panelCarrier": carrier
+                ]
+                let context: [String: Any] = [
+                    "inputID": id, "externalInputFile": id + ".png", "requestedTheme": style,
+                    "set_id": manifest.setID, "split": manifest.split,
+                    "inputManifestSHA256": manifest.sha256, "inputManifest": completeManifest,
+                    "selectedManifestEntry": manifestEntry, "selectedInputIDs": inputIDs,
+                    "unselectedManifestEntryCount": manifest.inputIDs.count - inputIDs.count,
+                    "requestedCarrier": carrier, "panelPlainBacking": true,
+                    "fixtureParameters": fixtureParameters,
+                    "fixtureLaunchArguments": app.launchArguments,
+                    "fixtureLaunchEnvironment": app.launchEnvironment,
+                    "referenceRunID": app.launchEnvironment["REFERENCE_RUN_ID"] ?? "",
+                    "backingScope": "Original PNG and existing parent/layout; only three inner presentation triggers are hidden by explicit fixture flag; clean footprint requires screenshot measurement",
+                    "actualTraitsAndPresentationGeometrySource": "App trace.jsonl external-input, panel-plain-backing-configuration, panel-plain-backing-command and external-presentation-context events; public controller geometry",
+                    "notice": "REST feasibility observation; AX rectangles are not fitted optical material boundaries"
+                ]
+                func targetMetadata(_ target: XCUIElement) -> [String: Any] {
+                    let frame = target.frame
+                    return ["identifier": target.identifier, "label": target.label,
+                            "value": target.value as? String ?? "", "elementType": target.elementType.rawValue,
+                            "exists": target.exists, "isHittable": target.isHittable,
+                            "screenFramePt": ["x": frame.minX, "y": frame.minY, "w": frame.width, "h": frame.height]]
+                }
+                func record(_ phase: String, target: XCUIElement, controls: [XCUIElement] = [], sampleIndex: Int? = nil) {
+                    var extra = context
+                    extra["phase"] = phase
+                    extra["carrier"] = ["rest", "dismiss-request"].contains(phase) ? carrier : "none"
+                    extra["actualTarget"] = targetMetadata(target)
+                    extra["presentationControls"] = controls.map { targetMetadata($0) }
+                    if let sampleIndex {
+                        extra["sampleIndex"] = sampleIndex
+                        extra["repeatSpacingMinimumSeconds"] = 0.25
+                        extra["repeatScope"] = "same presentation capture stability only; not independent statistical samples"
+                    }
+                    if carrier == "sheet", app.sheets.firstMatch.exists {
+                        extra["sheetAXContainer"] = targetMetadata(app.sheets.firstMatch)
+                    }
+                    request(prefix + ": " + phase, kind: "externalPanelPlainBacking", target: target, extra: extra)
+                }
+                record("clean-before", target: window)
+                captureLanguage(prefix + "-clean-before")
+                record("present-request", target: trigger)
+                XCTContext.runActivity(named: prefix + ": tap existing title to present native " + carrier) { _ in trigger.tap() }
+
+                let panelTarget: XCUIElement
+                let dismissControl: XCUIElement
+                let controls: [XCUIElement]
+                if carrier == "alert" {
+                    let alert = app.alerts["Native Alert"]
+                    XCTAssertTrue(alert.waitForExistence(timeout: 5))
+                    XCTAssertTrue(alert.buttons["Confirm"].waitForExistence(timeout: 5))
+                    XCTAssertTrue(alert.buttons["Cancel"].waitForExistence(timeout: 5))
+                    panelTarget = alert
+                    dismissControl = alert.buttons["Cancel"]
+                    controls = [alert.buttons["Confirm"], dismissControl]
+                } else {
+                    let title = app.staticTexts["sheet-title"]
+                    XCTAssertTrue(title.waitForExistence(timeout: 5))
+                    XCTAssertTrue(app.buttons["dismiss-sheet"].waitForExistence(timeout: 5))
+                    panelTarget = title
+                    dismissControl = app.buttons["dismiss-sheet"]
+                    controls = [title, dismissControl]
+                }
+                pause()
+                for sampleIndex in 0...1 {
+                    if sampleIndex == 1 { Thread.sleep(forTimeInterval: 0.25) }
+                    record("rest", target: panelTarget, controls: controls, sampleIndex: sampleIndex)
+                    captureLanguage(prefix + (sampleIndex == 0 ? "-rest" : "-rest-repeat"))
+                }
+                XCTAssertTrue(dismissControl.isHittable)
+                record("dismiss-request", target: dismissControl, controls: controls)
+                XCTContext.runActivity(named: prefix + ": dismiss through native control") { _ in dismissControl.tap() }
+                let dismissed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: panelTarget)
+                XCTAssertEqual(XCTWaiter.wait(for: [dismissed], timeout: 5), .completed)
+                pause()
+                XCTAssertFalse(app.alerts["Native Alert"].exists)
+                XCTAssertFalse(app.staticTexts["sheet-title"].exists)
+                record("dismiss-after", target: window)
+                captureLanguage(prefix + "-dismiss-after")
+                app.terminate()
+            }
+        }
+    }
+
+    /// Generic REST-only matrix for registered calibration or holdout inputs.
+    /// This preserves the same native parent, selection, REST/repeat spacing,
+    /// screenshot/AX attachments and source trace path as the earlier matrices.
+    func testSwiftUITabViewDockExternalInputMatrix() throws {
+        try externalInputMatrix(content: "synthetic-scroll")
+    }
+
+    /// New, separately identified calibration context. Native bar, parent and
+    /// ScrollView layout remain system owned; only page text is invisible.
+    func testSwiftUITabViewDockPlainInputFeasibility() throws {
+        try externalInputMatrix(content: "plain-scroll", inputLimit: 2, styles: ["light"])
+    }
+
+    func testSwiftUITabViewDockPlainInputMatrix() throws {
+        try externalInputMatrix(content: "plain-scroll")
+    }
+
+    private func externalInputMatrix(content: String, inputLimit: Int? = nil, styles: [String] = ["light", "dark"]) throws {
+        executionTimeAllowance = 300
+        settleDuration = 0.8
+        let manifest = try externalInputMatrixManifest()
+        let inputIDs = inputLimit.map { Array(manifest.inputIDs.prefix($0)) } ?? manifest.inputIDs
+        for id in inputIDs {
+            for style in styles {
+                launch(scene: "toggle", background: "grid", style: style, staticOptics: true,
+                       dockParent: "swiftui-tabview", dockContent: content, externalInputFile: id + ".png")
+                XCTAssertEqual(app.windows.firstMatch.frame.width, 375, accuracy: 0.01)
+                XCTAssertEqual(app.windows.firstMatch.frame.height, 667, accuracy: 0.01)
+                XCTAssertTrue(app.scrollViews["dock-synthetic-scroll-0"].waitForExistence(timeout: 5))
+                let control = app.tabBars["swiftui-tabbar"]
+                XCTAssertTrue(control.waitForExistence(timeout: 5))
+                XCTAssertEqual(control.buttons.count, 4)
+                XCTAssertTrue(control.buttons["Schedule"].isSelected)
+                let prefix = "external-dock-\(manifest.setID)-\(id)-\(style)"
+                request(prefix + ": REST pair", kind: "externalInputRest", target: control,
+                        extra: ["inputID": id, "externalInputFile": id + ".png", "requestedTheme": style,
+                                "set_id": manifest.setID, "split": manifest.split,
+                                "dockContent": content,
+                                "inputManifestSHA256": manifest.sha256, "repeatSpacingMinimumSeconds": 0.25,
+                                "repeatScope": "capture stability only; not independent statistical samples"])
+                captureLanguage(prefix + "-rest")
+                Thread.sleep(forTimeInterval: 0.25)
+                captureLanguage(prefix + "-rest-repeat")
+                XCTAssertTrue(control.buttons["Schedule"].isSelected)
+                app.terminate()
+            }
+        }
+    }
+
     /// One process and one native bar; short top-overlay taps only advance the
     /// controlled input. No tab press, drag, held capture or motion suite.
     func testSwiftUITabViewDockAppearanceControls() {
@@ -1235,7 +1710,10 @@ final class NativeReferenceTests: XCTestCase {
                         tonalResponse: Bool = false, tonalReturn: Bool = false,
                         initialSlider: Double? = nil,
                         sliderLayerProbe: Bool = false, rangeScale: Double? = nil, rangeLower: Double? = nil,
-                        rangeUpper: Double? = nil, rangeGeometryProbe: Bool = false) {
+                        rangeUpper: Double? = nil, rangeGeometryProbe: Bool = false,
+                        externalInputFile: String? = nil, controlWidth: Double? = nil,
+                        nativeControlSize: String? = nil, panelPlainBacking: Bool = false,
+                        panelCarrier: String? = nil) {
         app = XCUIApplication()
         app.launchArguments = ["-ReferenceScene", scene, "-ReferenceBackground", background,
                                "-ReferenceInterfaceStyle", style]
@@ -1256,9 +1734,21 @@ final class NativeReferenceTests: XCTestCase {
         if let rangeLower { app.launchArguments += ["-ReferenceRangeLower", String(rangeLower)] }
         if let rangeUpper { app.launchArguments += ["-ReferenceRangeUpper", String(rangeUpper)] }
         if rangeGeometryProbe { app.launchArguments.append("-ReferenceRangeGeometryProbe") }
+        if let externalInputFile { app.launchArguments += ["-ReferenceExternalInputFile", externalInputFile] }
+        if panelPlainBacking { app.launchArguments.append("-ReferencePanelPlainBacking") }
+        if let panelCarrier { app.launchArguments += ["-ReferencePanelCarrier", panelCarrier] }
+        if controlWidth != nil || nativeControlSize != nil { app.launchArguments.append("-ReferenceSizeProbe") }
+        if let controlWidth { app.launchArguments += ["-ReferenceControlWidth", String(controlWidth)] }
+        if let nativeControlSize { app.launchArguments += ["-ReferenceControlSize", nativeControlSize] }
         app.launchEnvironment["REFERENCE_RUN_ID"] = "\(name)-\(UUID().uuidString)"
         app.launch()
-        XCTAssertTrue(app.staticTexts["reference-title"].waitForExistence(timeout: 10))
+        if dockContent == "plain-scroll" {
+            XCTAssertTrue(app.tabBars["swiftui-tabbar"].waitForExistence(timeout: 10))
+            XCTAssertTrue(app.scrollViews["dock-synthetic-scroll-0"].waitForExistence(timeout: 5))
+            XCTAssertFalse(app.staticTexts["reference-title"].exists)
+        } else {
+            XCTAssertTrue(app.staticTexts["reference-title"].waitForExistence(timeout: 10))
+        }
         pause()
     }
 

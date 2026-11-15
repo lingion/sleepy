@@ -114,6 +114,7 @@ object LiquidGlassShader {
         "uSample" to 4,
         "uClamp" to 4,
         "uTexels" to 2,
+        "uFrostRadiusMode" to 1,
         "uHazeSample" to 4,
         "uHazeClamp" to 4,
         "uHaze" to 1,
@@ -123,6 +124,28 @@ object LiquidGlassShader {
         "uCircularCorners" to 1,
         "uCurves" to 48,
         "uOptics" to 3,
+        "uRefractionLimit" to 1,
+        "uRefractionProfilePower" to 1,
+        "uDockTone" to 4,
+        "uDockToneBright" to 3,
+        "uDockToneDark" to 3,
+        "uDockDarkLowTone" to 4,
+        "uDockDarkLowToneBlend" to 1,
+        "uDockBrightRim" to 4,
+        "uDockBrightRimChroma" to 1,
+        "uDockBrightRimAngular" to 2,
+        "uDockBrightRimCosine" to 1,
+        "uDockBrightRimCubicShoulder" to 1,
+        "uDockBrightRimLogit" to 1,
+        "uDockBrightRimHeadroom" to 1,
+        "uDockDarkRim" to 4,
+        "uDockDarkRimChroma" to 1,
+        "uDockDarkRimAngular" to 2,
+        "uDockDarkRimCosine" to 1,
+        "uDockDarkRimCubicShoulder" to 1,
+        "uDockDarkRimLogit" to 1,
+        "uDockDarkRimHeadroom" to 1,
+        "uDockBaseRimCubicShoulder" to 1,
         "uTint" to 4,
         "uLight" to 3,
         "uGlow" to 4,
@@ -137,6 +160,7 @@ object LiquidGlassShader {
         "uExact2" to LIQUID_GLASS_EXACT_FLOATS,
         "uShineTurns" to 8,
         "uShineLit" to 8,
+        "uShineFloorLit" to 8,
         "uShineEnds" to 12,
         "uShineShares" to 12,
         "uPills" to 24,
@@ -240,6 +264,7 @@ object LiquidGlassShader {
         circularCorners: Boolean = false,
         exactContours: List<LiquidGlassExactContour>? = null,
         cachedOutlineProfile: LiquidGlassCachedOutlineProfile? = null,
+        frostRadiusSampling: Boolean = false,
     ): Map<String, FloatArray> {
         require(sampling.size == 8) { "sampling 须为 8 个 float, 实为 ${sampling.size}" }
         require(hazeSampling == null || hazeSampling.size == 8) {
@@ -266,6 +291,7 @@ object LiquidGlassShader {
         put("uClamp", sampling[4], sampling[5], sampling[6], sampling[7])
         // uTexels: dp 每设备 px, 与纹理里已含的 sigma(纹理 px)。
         put("uTexels", 1f / (density * stretch), heldFrostTexelPx)
+        put("uFrostRadiusMode", if (frostRadiusSampling) 1f else 0f)
         if (hazeSampling != null) {
             put("uHazeSample", hazeSampling[0], hazeSampling[1], hazeSampling[2], hazeSampling[3])
             put("uHazeClamp", hazeSampling[4], hazeSampling[5], hazeSampling[6], hazeSampling[7])
@@ -292,8 +318,72 @@ object LiquidGlassShader {
             "uOptics",
             style.refraction.toFloat(), style.saturation.toFloat(), style.brightness.toFloat(),
         )
+        put("uRefractionLimit", style.refractionLimit.toFloat())
+        // A positive finite exponent keeps the flat endpoint at zero, including
+        // underflow-sized requests; nonfinite requests retain the legacy shape.
+        val profilePower = style.refractionProfilePower
+        put(
+            "uRefractionProfilePower",
+            if (profilePower.isFinite()) {
+                profilePower.coerceIn(1e-3, Float.MAX_VALUE.toDouble()).toFloat()
+            } else 1f,
+        )
+        val dockTone = style.dockToneResponse
+        val dockDarkLowTone = dockTone?.darkLowTone
+        put("uDockDarkLowTone", dockDarkLowTone?.linearIntercept?.toFloat() ?: 0f,
+            dockDarkLowTone?.linearGain?.toFloat() ?: 0f,
+            dockDarkLowTone?.transition?.low?.toFloat() ?: 0f,
+            dockDarkLowTone?.transition?.high?.toFloat() ?: 0f)
+        put("uDockDarkLowToneBlend", dockDarkLowTone?.blend?.toFloat() ?: 0f)
+        val dockBrightRim = dockTone?.brightRim
+        put("uDockBrightRim", dockBrightRim?.blend?.toFloat() ?: 0f,
+            dockBrightRim?.widthDp?.toFloat() ?: 0f,
+            dockBrightRim?.intercept?.toFloat() ?: 0f,
+            dockBrightRim?.lumaGain?.toFloat() ?: 0f)
+        put("uDockBrightRimChroma", dockBrightRim?.chromaGain?.toFloat() ?: 0f)
+        put("uDockBrightRimCosine", dockBrightRim?.cosineBlend?.toFloat() ?: 0f)
+        put("uDockBrightRimCubicShoulder", dockBrightRim?.cubicShoulderBlend?.toFloat() ?: 0f)
+        put("uDockBrightRimLogit", dockBrightRim?.logitBlend?.toFloat() ?: 0f)
+        put("uDockBrightRimHeadroom", dockBrightRim?.headroomBlend?.toFloat() ?: 0f)
+        put("uDockBrightRimAngular", dockBrightRim?.angularBlend?.toFloat() ?: 0f,
+            dockBrightRim?.normalCrossGain?.toFloat() ?: 0f)
+        val dockDarkRim = dockTone?.darkRim
+        put("uDockDarkRim", dockDarkRim?.blend?.toFloat() ?: 0f,
+            dockDarkRim?.widthDp?.toFloat() ?: 0f,
+            dockDarkRim?.intercept?.toFloat() ?: 0f,
+            dockDarkRim?.lumaGain?.toFloat() ?: 0f)
+        put("uDockDarkRimChroma", dockDarkRim?.chromaGain?.toFloat() ?: 0f)
+        put("uDockDarkRimAngular", dockDarkRim?.angularBlend?.toFloat() ?: 0f,
+            dockDarkRim?.normalCrossGain?.toFloat() ?: 0f)
+        put("uDockDarkRimCosine", dockDarkRim?.cosineBlend?.toFloat() ?: 0f)
+        put("uDockDarkRimCubicShoulder", dockDarkRim?.cubicShoulderBlend?.toFloat() ?: 0f)
+        put("uDockDarkRimLogit", dockDarkRim?.logitBlend?.toFloat() ?: 0f)
+        put("uDockDarkRimHeadroom", dockDarkRim?.headroomBlend?.toFloat() ?: 0f)
+        if (dockTone == null) {
+            put("uDockTone", 0f, 0f, 0f, 0f)
+            put("uDockToneBright", 0f, 0f, 0f)
+            put("uDockToneDark", 0f, 0f, 0f)
+        } else {
+            put(
+                "uDockTone", dockTone.blend.toFloat(), dockTone.brightWeight.toFloat(),
+                dockTone.adaptiveThresholds?.low?.toFloat() ?: 0f,
+                dockTone.adaptiveThresholds?.high?.toFloat() ?: 0f,
+            )
+            put(
+                "uDockToneBright", dockTone.brightIntercept.toFloat(),
+                dockTone.brightGain.toFloat(), dockTone.brightChromaGain.toFloat(),
+            )
+            put(
+                "uDockToneDark", dockTone.darkIntercept.toFloat(),
+                dockTone.darkGain.toFloat(), dockTone.darkChromaGain.toFloat(),
+            )
+        }
         put("uTint", style.tint.red, style.tint.green, style.tint.blue, style.tint.alpha)
         put("uLight", style.rim.toFloat(), style.rimWidth.toFloat(), style.endShade.toFloat())
+        val baseRimShoulderBlend = style.dockBaseRimCubicShoulderBlend
+        put("uDockBaseRimCubicShoulder", if (baseRimShoulderBlend.isFinite()) {
+            baseRimShoulderBlend.coerceIn(0.0, 1.0).toFloat()
+        } else 0f)
         // uGlow 第 4 位 = style.contrast(clash 可读性), 不是 glow 数据(Dart `_look`)。
         put(
             "uGlow",
@@ -351,18 +441,25 @@ object LiquidGlassShader {
         if (rim == null) {
             put("uShineTurns", *FloatArray(8))
             put("uShineLit", *FloatArray(8))
+            put("uShineFloorLit", *FloatArray(8))
             put("uShineEnds", *FloatArray(12))
             put("uShineShares", *FloatArray(12))
         } else {
             val shine = liquidGlassShineUniforms(size, rim.shine.toFloat(), corners.topLeft)
+            val floorLight = FloatArray(8)
             // A neutral system sheet retains an edge highlight along its long sides.
             // This empirical floor reuses the existing angular interpolation, depth
             // bands and per-pixel coverage. Other materials retain their exact table.
             if (rim.minimumShine > 0.0) {
-                for (index in 8 until 16) shine[index] = max(shine[index], rim.minimumShine.toFloat())
+                for (index in 8 until 16) {
+                    val previous = shine[index]
+                    shine[index] = max(previous, rim.minimumShine.toFloat())
+                    if (rim.screenMinimumShine) floorLight[index - 8] = shine[index] - previous
+                }
             }
             put("uShineTurns", *shine.copyOfRange(0, 8))
             put("uShineLit", *shine.copyOfRange(8, 16))
+            put("uShineFloorLit", *floorLight)
             put("uShineEnds", *shine.copyOfRange(16, 28))
             put("uShineShares", *shine.copyOfRange(28, 40))
         }

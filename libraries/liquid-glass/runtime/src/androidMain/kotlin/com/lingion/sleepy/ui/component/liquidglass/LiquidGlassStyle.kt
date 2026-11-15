@@ -9,6 +9,114 @@ import androidx.compose.ui.unit.dp
 import com.kyant.backdrop.shadow.Shadow
 import material.Hct
 
+/** Explicit experimental pane-luma thresholds; they are not measured UIKit constants. */
+data class DockToneThresholds(val low: Double, val high: Double) {
+    init {
+        require(low.isFinite() && high.isFinite() && low in 0.0..1.0 && high in 0.0..1.0)
+        require(high.toFloat() > low.toFloat()) { "Dock tone thresholds must remain ordered in float32" }
+    }
+}
+
+/** Explicit low-tone candidate in linear sRGB; the high branch keeps its gamma affine response. */
+data class DockDarkLowToneResponse(
+    val linearIntercept: Double,
+    val linearGain: Double,
+    val transition: DockToneThresholds,
+    val blend: Double = 1.0,
+) {
+    init {
+        require(linearIntercept.isFinite() && linearIntercept in 0.0..1.0)
+        require(linearGain.isFinite() && linearGain in 0.0..8.0)
+        require(blend.isFinite() && blend in 0.0..1.0)
+    }
+}
+
+/**
+ * Signed material-space bright rim, decaying directly from the actual contour.
+ * Coefficients are explicit calibration inputs, not a white highlight or a
+ * physical thickness. The existing angular facing remains an uncalibrated
+ * extension away from the measured straight top edge.
+ */
+data class DockBrightRimResponse(
+    val widthDp: Double,
+    val intercept: Double,
+    val lumaGain: Double,
+    val chromaGain: Double,
+    val blend: Double = 1.0,
+    /** Explicit continuous angular candidate; zero keeps the inherited rim. */
+    val angularBlend: Double = 0.0,
+    /** Multiplies nx*ny in 1 + gain*nx*ny; bounded to keep the lobe nonnegative. */
+    val normalCrossGain: Double = 0.0,
+    /** Finite half-cosine contour response; zero preserves the linear candidate. */
+    val cosineBlend: Double = 0.0,
+    /** Fixed C1 shoulder (1 - t^3)^2 on actual edge/widthDp; zero retains the old profile. */
+    val cubicShoulderBlend: Double = 0.0,
+    /** Opt-in bounded log-odds composition in the shared signed-rim path; zero keeps additive. */
+    val logitBlend: Double = 0.0,
+    /** Experimental signed attenuation with a bounded positive headroom response. */
+    val headroomBlend: Double = 0.0,
+) {
+    init {
+        require(widthDp.isFinite() && widthDp in .001..8.0)
+        require(listOf(intercept, lumaGain, chromaGain).all { it.isFinite() && it in -8.0..8.0 })
+        require(blend.isFinite() && blend in 0.0..1.0)
+        require(angularBlend.isFinite() && angularBlend in 0.0..1.0)
+        require(normalCrossGain.isFinite() && normalCrossGain in -2.0..2.0)
+        require(cosineBlend.isFinite() && cosineBlend in 0.0..1.0)
+        require(cubicShoulderBlend.isFinite() && cubicShoulderBlend in 0.0..1.0)
+        require(logitBlend.isFinite() && logitBlend in 0.0..1.0)
+        require(headroomBlend.isFinite() && headroomBlend in 0.0..1.0)
+    }
+}
+
+/**
+ * Opt-in Dock body response: T(Y) + chromaGain * (RGB - Y), before the existing rim.
+ * Fixed bright/dark probes use brightWeight 1/0. Adaptive blending requires explicit
+ * thresholds and uses the pane's existing sampleBehind taps, not the local pixel luma.
+ * Dark chroma gain is deliberately required: the flat calibration does not identify it.
+ */
+data class DockToneResponse(
+    val brightWeight: Double,
+    val darkChromaGain: Double,
+    val brightIntercept: Double = .55,
+    val brightGain: Double = .45,
+    val brightChromaGain: Double = 1.0575,
+    val darkIntercept: Double = 14.0392 / 255.0,
+    val darkGain: Double = .821569,
+    val adaptiveThresholds: DockToneThresholds? = null,
+    /** Mix with the original material for continuous nullable style transitions. */
+    val blend: Double = 1.0,
+    /** Only the effective bright branch replaces its old screened-white rim. */
+    val brightRim: DockBrightRimResponse? = null,
+    /** Explicit signed response for the effective dark branch; null retains its old rim. */
+    val darkRim: DockBrightRimResponse? = null,
+    /** Null preserves the gamma affine dark body; no material factory enables this curve. */
+    val darkLowTone: DockDarkLowToneResponse? = null,
+) {
+    init {
+        require(blend.isFinite() && blend in 0.0..1.0)
+        require(brightWeight.isFinite() && brightWeight in 0.0..1.0)
+        require(brightIntercept.isFinite() && brightIntercept in 0.0..1.0)
+        require(darkIntercept.isFinite() && darkIntercept in 0.0..1.0)
+        require(listOf(brightGain, brightChromaGain, darkGain, darkChromaGain).all {
+            it.isFinite() && it in 0.0..8.0
+        }) { "Dock tone gain candidates must be finite and in 0..8" }
+    }
+
+    /** A response faded to zero is the identity color transform, not a white pane. */
+    internal fun scale(amount: Double): DockToneResponse = copy(
+        brightIntercept = brightIntercept * amount,
+        brightGain = 1.0 + (brightGain - 1.0) * amount,
+        brightChromaGain = 1.0 + (brightChromaGain - 1.0) * amount,
+        darkIntercept = darkIntercept * amount,
+        darkGain = 1.0 + (darkGain - 1.0) * amount,
+        darkChromaGain = 1.0 + (darkChromaGain - 1.0) * amount,
+        brightRim = brightRim?.copy(blend = brightRim.blend * amount),
+        darkRim = darkRim?.copy(blend = darkRim.blend * amount),
+        darkLowTone = darkLowTone?.copy(blend = darkLowTone.blend * amount),
+    )
+}
+
 /**
  * 液态玻璃的外观参数, 逐字段对应 FLClash 的 `lib/ui/liquid_glass.dart` 中的
  * `LiquidGlassStyle`。长度单位是 dp —— 着色器会把 [bevel] 与 [refraction]
@@ -42,6 +150,17 @@ data class LiquidGlassStyle(
     val rimBlur: Double = 0.0,
     val hairline: Double = 0.0,
     val hairlineSide: Double? = null,
+    /** 正折射位移相对面板短边一半的上限倍数；不影响负折射镜片。 */
+    val refractionLimit: Double = 1.0,
+    /**
+     * 正折射截面的可校准形状指数；1 保留原圆弧截面，不改变深度上限与 bevel。
+     * 这是尚未拟合、验收的图像响应自由度，不表示原生玻璃的物理厚度。
+     */
+    val refractionProfilePower: Double = 1.0,
+    /** Null keeps the shared material path unchanged; only explicit Dock probes set this. */
+    val dockToneResponse: DockToneResponse? = null,
+    /** Dock-base white-rim profile only; zero retains the legacy rim without a tone response. */
+    val dockBaseRimCubicShoulderBlend: Double = 0.0,
 ) {
     /** Dart 的 `_hairlineSide`: 未单独指定时退回 [hairline]。 */
     val hairlineSideOrHairline: Double get() = hairlineSide ?: hairline
@@ -56,6 +175,11 @@ data class LiquidGlassStyle(
             haze = haze * amount,
             hazeBlur = hazeBlur,
             refraction = refraction * amount,
+            refractionLimit = refractionLimit,
+            refractionProfilePower = refractionProfilePower,
+            dockToneResponse = dockToneResponse?.scale(amount),
+            // The rim strength already fades below; keep its depth profile fixed.
+            dockBaseRimCubicShoulderBlend = dockBaseRimCubicShoulderBlend,
             bevel = bevel,
             saturation = 1.0 + (saturation - 1.0) * amount,
             brightness = 1.0 + (brightness - 1.0) * amount,
@@ -98,6 +222,76 @@ data class LiquidGlassStyle(
             )
         }
 
+        private fun lerpDockBrightRim(
+            a: DockBrightRimResponse?, b: DockBrightRimResponse?, t: Double,
+        ): DockBrightRimResponse? {
+            if (t == 0.0) return a
+            if (t == 1.0) return b
+            if (a == null && b == null) return null
+            val from = a ?: b!!.copy(blend = 0.0)
+            val to = b ?: from.copy(blend = 0.0)
+            return DockBrightRimResponse(
+                widthDp = lerpDouble(from.widthDp, to.widthDp, t),
+                intercept = lerpDouble(from.intercept, to.intercept, t),
+                lumaGain = lerpDouble(from.lumaGain, to.lumaGain, t),
+                chromaGain = lerpDouble(from.chromaGain, to.chromaGain, t),
+                blend = lerpDouble(from.blend, to.blend, t),
+                angularBlend = lerpDouble(from.angularBlend, to.angularBlend, t),
+                normalCrossGain = lerpDouble(from.normalCrossGain, to.normalCrossGain, t),
+                cosineBlend = lerpDouble(from.cosineBlend, to.cosineBlend, t),
+                cubicShoulderBlend = lerpDouble(from.cubicShoulderBlend, to.cubicShoulderBlend, t),
+                logitBlend = lerpDouble(from.logitBlend, to.logitBlend, t),
+                headroomBlend = lerpDouble(from.headroomBlend, to.headroomBlend, t),
+            )
+        }
+
+        private fun lerpDockDarkLowTone(
+            a: DockDarkLowToneResponse?, b: DockDarkLowToneResponse?, t: Double,
+        ): DockDarkLowToneResponse? {
+            if (t == 0.0) return a
+            if (t == 1.0) return b
+            if (a == null && b == null) return null
+            val from = a ?: b!!.copy(blend = 0.0)
+            val to = b ?: from.copy(blend = 0.0)
+            require(from.transition == to.transition) {
+                "Dock low-tone interpolation requires the same explicit transition"
+            }
+            return DockDarkLowToneResponse(
+                linearIntercept = lerpDouble(from.linearIntercept, to.linearIntercept, t),
+                linearGain = lerpDouble(from.linearGain, to.linearGain, t),
+                transition = from.transition,
+                blend = lerpDouble(from.blend, to.blend, t),
+            )
+        }
+
+        private fun lerpDockTone(a: DockToneResponse?, b: DockToneResponse?, t: Double): DockToneResponse? {
+            if (t == 0.0) return a
+            if (t == 1.0) return b
+            if (a == null && b == null) return null
+            // Candidate response interpolation is bounded; independently selected adaptive
+            // protocols must not silently change their sampling gates during a style tween.
+            require(t.isFinite() && t in 0.0..1.0)
+            val from = a ?: b!!.copy(blend = 0.0)
+            val to = b ?: from.copy(blend = 0.0)
+            require(from.adaptiveThresholds == to.adaptiveThresholds) {
+                "Dock tone interpolation requires the same explicit adaptive thresholds"
+            }
+            return DockToneResponse(
+                brightWeight = lerpDouble(from.brightWeight, to.brightWeight, t),
+                darkChromaGain = lerpDouble(from.darkChromaGain, to.darkChromaGain, t),
+                brightIntercept = lerpDouble(from.brightIntercept, to.brightIntercept, t),
+                brightGain = lerpDouble(from.brightGain, to.brightGain, t),
+                brightChromaGain = lerpDouble(from.brightChromaGain, to.brightChromaGain, t),
+                darkIntercept = lerpDouble(from.darkIntercept, to.darkIntercept, t),
+                darkGain = lerpDouble(from.darkGain, to.darkGain, t),
+                adaptiveThresholds = from.adaptiveThresholds,
+                blend = lerpDouble(from.blend, to.blend, t),
+                brightRim = lerpDockBrightRim(from.brightRim, to.brightRim, t),
+                darkRim = lerpDockBrightRim(from.darkRim, to.darkRim, t),
+                darkLowTone = lerpDockDarkLowTone(from.darkLowTone, to.darkLowTone, t),
+            )
+        }
+
         fun lerp(a: LiquidGlassStyle, b: LiquidGlassStyle, t: Double): LiquidGlassStyle =
             LiquidGlassStyle(
                 tint = lerpColor(a.tint, b.tint, t),
@@ -106,6 +300,10 @@ data class LiquidGlassStyle(
                 haze = lerpDouble(a.haze, b.haze, t),
                 hazeBlur = lerpDouble(a.hazeBlur, b.hazeBlur, t),
                 refraction = lerpDouble(a.refraction, b.refraction, t),
+                refractionLimit = lerpDouble(a.refractionLimit, b.refractionLimit, t),
+                refractionProfilePower = lerpDouble(a.refractionProfilePower, b.refractionProfilePower, t),
+                dockToneResponse = lerpDockTone(a.dockToneResponse, b.dockToneResponse, t),
+                dockBaseRimCubicShoulderBlend = lerpDouble(a.dockBaseRimCubicShoulderBlend, b.dockBaseRimCubicShoulderBlend, t),
                 bevel = lerpDouble(a.bevel, b.bevel, t),
                 saturation = lerpDouble(a.saturation, b.saturation, t),
                 brightness = lerpDouble(a.brightness, b.brightness, t),
@@ -149,6 +347,11 @@ data class LiquidGlassStyle(
                 )
             }
 
+        /**
+         * A 1.5x cap is a provisional positive-refraction candidate. It still needs
+         * same-world native/device capture validation; it is not a fitted native
+         * material result. The other optical coefficients remain unchanged.
+         */
         fun pill(colorScheme: ColorScheme, dark: Boolean): LiquidGlassStyle =
             if (dark) {
                 LiquidGlassStyle(
@@ -157,6 +360,7 @@ data class LiquidGlassStyle(
                     blur = 0.0,
                     haze = 0.72,
                     hazeBlur = 15.6,
+                    refractionLimit = 1.5,
                     saturation = 1.925,
                     rim = 0.35,
                 )
@@ -167,6 +371,7 @@ data class LiquidGlassStyle(
                     blur = 0.0,
                     haze = 0.72,
                     hazeBlur = 15.6,
+                    refractionLimit = 1.5,
                     saturation = 2.1,
                     hairline = 0.35,
                 )
@@ -337,8 +542,10 @@ data class LiquidGlassRim(
     val flat: Double,
     /** 增补的光而非盖上的白: iOS 深浅两种面板都被提亮。 */
     val shine: Double,
-    /** Empirical Sheet-only floor on the existing directional shine table, not an Apple parameter. */
+    /** Empirical floor on the existing directional shine table, not an Apple parameter. */
     val minimumShine: Double = 0.0,
+    /** Reflect only the added angular floor toward white instead of adding unbounded light. */
+    val screenMinimumShine: Boolean = false,
 ) {
     fun scale(t: Double): LiquidGlassRim {
         val amount = t.coerceIn(0.0, 1.0)

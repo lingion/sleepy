@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertHasClickAction
@@ -85,6 +86,7 @@ class AboutPrivacyCardTest {
         val actionTags = listOf("about_source_link", "about_privacy_link", "about_license_entry")
         val container = compose.onNodeWithTag("external_links").fetchSemanticsNode().boundsInRoot
         val titleBounds = titles.map { compose.onNodeWithText(it, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot }
+        assertProjectTitleOrder(titleBounds)
         val buttonBounds = actionTags.map { compose.onNodeWithTag(it).fetchSemanticsNode().boundsInRoot }
         details.forEachIndexed { index, detail ->
             val title = compose.onNodeWithText(titles[index], useUnmergedTree = true)
@@ -120,6 +122,53 @@ class AboutPrivacyCardTest {
             opens.forEachIndexed { target, count ->
                 assertEquals("A destination does not trigger another destination", if (target <= index) 2 else 0, count)
             }
+        }
+    }
+
+    @Test fun productionMaterialExternalLinksKeepProjectOrderAndSeparateDestinations() {
+        val opens = intArrayOf(0, 0, 0)
+        compose.setContent {
+            MaterialTheme {
+                CompositionLocalProvider(LocalUiStyle provides UiStyle.Classic) {
+                    GlassHost(enabled = false) {
+                        Box(Modifier.width(328.dp)) {
+                            AboutExternalLinks(
+                                onOpenSource = { opens[0]++ },
+                                onOpenPrivacy = { opens[1]++ },
+                                onOpenLicenses = { opens[2]++ },
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        val titles = listOf("开源地址", "隐私政策", "开源声明")
+        val titleBounds = titles.map {
+            compose.onNodeWithText(it, useUnmergedTree = true).assertIsDisplayed().fetchSemanticsNode().boundsInRoot
+        }
+        assertProjectTitleOrder(titleBounds)
+        val details = listOf("github.com/lingion/sleepy", "sleepy.qdp.qzz.io/privacy")
+        val destinations = listOf("https://github.com/lingion/sleepy", "https://sleepy.qdp.qzz.io/privacy")
+        val actionTags = listOf("about_source_link", "about_privacy_link")
+        details.forEachIndexed { index, detail ->
+            val link = compose.onNodeWithText(detail, useUnmergedTree = true).assertIsDisplayed()
+            val layout = assertActualLink(link, destinations[index])
+            assertFalse("The complete Material URL fits without clipping", layout.hasVisualOverflow)
+            link.performTouchInput { click(layout.getBoundingBox(0).center) }
+            assertEquals("The Material link opens its own destination once", 1, opens[index])
+            compose.onNodeWithTag(actionTags[index]).assertHasClickAction().performTouchInput { click() }
+            assertEquals("The independent Material action opens the same destination", 2, opens[index])
+            opens.forEachIndexed { target, count ->
+                assertEquals("A Material destination cannot open another destination", if (target <= index) 2 else 0, count)
+            }
+        }
+        compose.onNodeWithTag("about_license_entry").assertHasClickAction().performTouchInput { click() }
+        assertEquals("The Material license row retains its own action", listOf(2, 2, 1), opens.toList())
+    }
+
+    private fun assertProjectTitleOrder(bounds: List<Rect>) {
+        bounds.zipWithNext().forEach { (before, after) ->
+            assertTrue("Project information stays source, privacy, then license without overlap", before.bottom <= after.top)
         }
     }
 

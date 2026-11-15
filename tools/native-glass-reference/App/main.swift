@@ -1,5 +1,141 @@
 import SwiftUI
 import UIKit
+import CryptoKit
+import ImageIO
+
+/// Opt-in, fail-closed external optical input. Legacy fixture launches never
+/// enter this loader. Both platforms receive these exact preregistered bytes.
+private struct ReferenceExternalInput {
+    static let worldSize = CGSize(width: 375, height: 667)
+    let id: String
+    let setID: String
+    let split: String
+    let file: String
+    let sha256: String
+    let data: Data
+    let image: UIImage
+    let profileName: String
+
+    static let active: ReferenceExternalInput? = {
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let index = arguments.firstIndex(of: "-ReferenceExternalInputFile") else { return nil }
+        guard index + 1 < arguments.count else { fatalError("External input file argument is missing") }
+        precondition(arguments.contains("-ReferenceStaticOptics"), "External input is limited to REST optical fixtures")
+        precondition(!arguments.contains(where: { $0.hasPrefix("-ReferenceDock") && $0 != "-ReferenceDockParent" && $0 != "-ReferenceDockContent" }),
+                     "External input cannot run adaptive/local appearance experiments")
+        do { return try load(file: arguments[index + 1]) }
+        catch { fatalError("External input rejected: \(error)") }
+    }()
+
+    private enum InvalidInput: Error { case invalid(String) }
+    private static func require(_ condition: @autoclosure () -> Bool, _ detail: String) throws {
+        if !condition() { throw InvalidInput.invalid(detail) }
+    }
+    private static func safeID(_ value: String) -> Bool {
+        guard let range = value.range(of: "^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$", options: .regularExpression) else { return false }
+        return range == value.startIndex..<value.endIndex
+    }
+    private static func hash(_ data: Data) -> String { SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined() }
+    private static func limitedData(_ url: URL, directory: URL, maximumBytes: Int) throws -> Data {
+        let resolved = url.resolvingSymlinksInPath().standardizedFileURL
+        try require(resolved.deletingLastPathComponent() == directory.resolvingSymlinksInPath().standardizedFileURL,
+                    "Input escaped the dedicated external-input directory")
+        let attributes = try FileManager.default.attributesOfItem(atPath: resolved.path)
+        try require((attributes[.type] as? FileAttributeType) == .typeRegular, "Input must be a regular file")
+        let count = (attributes[.size] as? NSNumber)?.intValue ?? 0
+        try require(count > 0 && count <= maximumBytes, "Input size is outside the fixture limit")
+        return try Data(contentsOf: resolved)
+    }
+    private static func load(file: String) throws -> ReferenceExternalInput {
+        try require(file.hasSuffix(".png") && safeID(String(file.dropLast(4))), "Expected a safe PNG basename")
+        let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let directory = documents.appendingPathComponent("holdout", isDirectory: true)
+        try require(directory.resolvingSymlinksInPath().standardizedFileURL == documents.resolvingSymlinksInPath().standardizedFileURL.appendingPathComponent("holdout", isDirectory: true),
+                    "Dedicated external-input directory must not be a symlink escape")
+        let manifestData = try limitedData(directory.appendingPathComponent("manifest.json"), directory: directory, maximumBytes: 524_288)
+        guard let manifest = try JSONSerialization.jsonObject(with: manifestData) as? [String: Any],
+              let setID = manifest["set_id"] as? String, safeID(setID),
+              manifest["schema"] as? Int == 1,
+              let split = manifest["split"] as? String, ["calibration", "holdout"].contains(split),
+              let inputs = manifest["inputs"] as? [[String: Any]], inputs.count == 8 else {
+            throw InvalidInput.invalid("Expected schema1 eight-input calibration or holdout manifest")
+        }
+        var knownIDs = Set<String>()
+        for input in inputs {
+            guard let id = input["id"] as? String, safeID(id),
+                  let name = input["file"] as? String, name == id + ".png",
+                  let checksum = input["sha256"] as? String,
+                  checksum.range(of: "^[0-9a-f]{64}$", options: .regularExpression) != nil,
+                  knownIDs.insert(id).inserted else { throw InvalidInput.invalid("Malformed or duplicate manifest entry") }
+        }
+        guard let record = inputs.first(where: { $0["file"] as? String == file }),
+              let id = record["id"] as? String, let expectedSHA = record["sha256"] as? String else {
+            throw InvalidInput.invalid("Requested PNG is absent from manifest")
+        }
+        let data = try limitedData(directory.appendingPathComponent(file), directory: directory, maximumBytes: 8_388_608)
+        let sha256 = hash(data)
+        try require(sha256 == expectedSHA, "Original PNG byte SHA256 did not match manifest")
+        let bytes = [UInt8](data)
+        try require(bytes.count >= 33 && Array(bytes[0..<8]) == [137,80,78,71,13,10,26,10], "Missing PNG signature")
+        func word(_ offset: Int) -> Int { bytes[offset..<offset + 4].reduce(0) { ($0 << 8) | Int($1) } }
+        try require(word(8) == 13 && String(bytes: bytes[12..<16], encoding: .ascii) == "IHDR", "Missing PNG IHDR")
+        try require(word(16) == 750 && word(20) == 1334 && bytes[24] == 8 && bytes[25] == 2,
+                    "Only 750x1334 opaque RGB8 input is accepted")
+        try require(bytes[26] == 0 && bytes[27] == 0 && bytes[28] == 0, "Unsupported PNG coding or interlace")
+        var offset = 8, hasICC = false
+        while offset + 12 <= bytes.count {
+            let length = word(offset)
+            try require(length <= bytes.count - offset - 12, "Truncated PNG chunk")
+            let type = String(bytes: bytes[offset + 4..<offset + 8], encoding: .ascii) ?? ""
+            try require(type != "tRNS", "Transparent PNG inputs are prohibited")
+            if type == "iCCP" { hasICC = true }
+            offset += length + 12
+            if type == "IEND" { break }
+        }
+        try require(hasICC, "Input must carry its sRGB ICC profile")
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil),
+              let cgImage = CGImageSourceCreateImageAtIndex(source, 0, nil),
+              let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any] else {
+            throw InvalidInput.invalid("PNG decode failed")
+        }
+        let profileName = properties[kCGImagePropertyProfileName] as? String ?? ""
+        let namedSRGB = cgImage.colorSpace?.name.map { CFEqual($0, CGColorSpace.sRGB) } ?? false
+        try require(namedSRGB || profileName.lowercased().contains("srgb"), "Decoded profile is not sRGB")
+        try require(cgImage.width == 750 && cgImage.height == 1334, "Decoded input geometry changed")
+        return ReferenceExternalInput(id: id, setID: setID, split: split, file: file, sha256: sha256, data: data,
+                                      image: UIImage(cgImage: cgImage, scale: 2, orientation: .up), profileName: profileName)
+    }
+
+    var metadata: [String: Any] {
+        ["id": id, "set_id": setID, "split": split, "file": file, "sha256": sha256,
+         "hashScope": "original PNG bytes; shared unchanged with Android", "sizePx": [750,1334],
+         "worldSizePt": [375,667], "worldOriginPt": [0,0], "pixelsPerPt": 2,
+         "encoding": "opaque RGB8 PNG", "colorSpace": "sRGB", "decodedICCProfileName": profileName,
+         "rendering": "fixed375x667pt at origin0,0; interpolation.none; no bounds fit"]
+    }
+
+    func exportOriginal(window: UIWindow, canvas: UIView? = nil) {
+        precondition(window.bounds.origin == .zero && window.bounds.size == Self.worldSize && window.screen.scale == 2,
+                     "External input requires native375x667pt @2 world geometry")
+        var row = metadata
+        row["event"] = "external-input"
+        row["windowRectPt"] = ["x": window.bounds.minX, "y": window.bounds.minY,
+                               "w": window.bounds.width, "h": window.bounds.height]
+        row["requestedInterfaceStyle"] = ProcessInfo.processInfo.arguments.drop(while: { $0 != "-ReferenceInterfaceStyle" }).dropFirst().first ?? "unspecified"
+        row["windowEffectiveInterfaceStyle"] = window.traitCollection.userInterfaceStyle.rawValue
+        if let canvas {
+            let rect = canvas.convert(canvas.bounds, to: window)
+            row["canvasRectInWindowPt"] = ["x": rect.minX, "y": rect.minY, "w": rect.width, "h": rect.height]
+        }
+        do {
+            try data.write(to: ReferenceTrace.shared.directory.appendingPathComponent("background-input.png"), options: .atomic)
+            let json = try JSONSerialization.data(withJSONObject: row, options: [.prettyPrinted, .sortedKeys])
+            try json.write(to: ReferenceTrace.shared.directory.appendingPathComponent("external-input-metadata.json"), options: .atomic)
+        } catch { fatalError("Could not export original external input: \(error)") }
+        ReferenceTrace.shared.add(row)
+        ReferenceTrace.shared.flush()
+    }
+}
 
 enum ReferencePalette {
     static let uiTint = UIColor(red: 0, green: 0.65, blue: 0.75, alpha: 1)
@@ -246,10 +382,16 @@ final class ReferenceBackgroundView: UIView {
     fileprivate var spatialStage: Int?
     fileprivate var spatialDrawPending = false
     fileprivate var spatialDidDraw: ((ReferenceBackgroundView, Int, [String: Double], [String: Double]) -> Void)?
-    var inputMetadata: [String: Any] { spatialInput?.metadata ?? background.metadata }
+    var inputMetadata: [String: Any] { ReferenceExternalInput.active?.metadata ?? spatialInput?.metadata ?? background.metadata }
 
     override func draw(_ rect: CGRect) {
         guard let context = UIGraphicsGetCurrentContext() else { return }
+        if let external = ReferenceExternalInput.active {
+            context.setShouldAntialias(false)
+            context.interpolationQuality = .none
+            external.image.draw(in: CGRect(origin: .zero, size: ReferenceExternalInput.worldSize))
+            return
+        }
         if let spatialInput {
             let begin = ReferenceDockLocalAppearance.clock()
             context.setShouldAntialias(false)
@@ -841,6 +983,11 @@ private struct ReferenceDockCanvas: UIViewRepresentable {
 private enum ReferenceDockContent: String {
     case placeholder
     case syntheticScroll = "synthetic-scroll"
+    // Static calibration only: keep the same real scroll hierarchy and layout,
+    // while removing its visible title/rows from the optical stimulus.
+    case plainScroll = "plain-scroll"
+
+    var usesScrollView: Bool { self == .syntheticScroll || self == .plainScroll }
 }
 
 /// A fixed observation window is an experiment budget, not a native settling
@@ -1182,7 +1329,7 @@ private struct ReferenceDockTabs: View {
         TabView(selection: $selection) {
             ForEach(0..<tabs.count, id: \.self) { index in
                 Group {
-                    if content == .syntheticScroll {
+                    if content.usesScrollView {
                         // A real SwiftUI ScrollView supplies native scroll-edge
                         // context. Sparse synthetic text leaves the optical
                         // canvas visible; it is not a production business page.
@@ -1196,6 +1343,8 @@ private struct ReferenceDockTabs: View {
                             }
                             .padding(16)
                             .padding(.bottom, 92)
+                            .opacity(content == .plainScroll ? 0 : 1)
+                            .accessibilityHidden(content == .plainScroll)
                         }
                         .accessibilityIdentifier("dock-synthetic-scroll-\(index)")
                     } else {
@@ -1312,6 +1461,10 @@ private final class ReferenceDockHostingController: UIHostingController<Referenc
         // No delegate or gesture recognizer is installed on native controls.
         let timer = Timer(timeInterval: 0.25, repeats: true) { [weak self] _ in
             self?.observation.recordContextIfChanged(phase: "sampled")
+            if let self, self.content == .plainScroll,
+               let state = self.observation.experimentState(phase: "plain-scroll-sampled", spatialDetails: true) {
+                ReferenceTrace.shared.add(["event": "plain-scroll-state", "state": state])
+            }
             self?.appearanceControls.sample()
             self?.localAppearance.sample()
         }
@@ -1320,7 +1473,7 @@ private final class ReferenceDockHostingController: UIHostingController<Referenc
         let staticOptics = ProcessInfo.processInfo.arguments.contains("-ReferenceStaticOptics")
         ReferenceTrace.shared.add(["event": "reference-configuration", "scene": "dock-parent",
                                    "dockParent": "swiftui-tabview", "tabCount": 4,
-                                   "background": background.metadata,
+                                   "background": ReferenceExternalInput.active?.metadata ?? background.metadata,
                                    "interfaceStyle": window.traitCollection.userInterfaceStyle.rawValue,
                                    "staticOptics": staticOptics,
                                    "safeAreaPolicy": "Sleepy child.additionalSafeAreaInsets.bottom = -max(baseBottom - 34, 0)",
@@ -1329,16 +1482,26 @@ private final class ReferenceDockHostingController: UIHostingController<Referenc
                                    "publicContextSamplingIntervalSeconds": 0.25,
                                    "backgroundInputScope": "uncomposited full-window optical input; verify actual canvas window rectangles in context samples",
                                    "navigationContext": "outer SwiftUI host -> hidden UINavigationController -> tab page host",
-                                   "scrollBottomPaddingPt": content == .syntheticScroll ? 92 : 0,
-                                   "contentScope": "four synthetic pages; SF Symbols; optical root canvas; no production business content"])
+                                   "scrollBottomPaddingPt": content.usesScrollView ? 92 : 0,
+                                   "scrollTextVisible": content != .plainScroll,
+                                   "contentScope": content == .plainScroll
+                                       ? "four real ScrollViews with unchanged synthetic text layout at opacity0; native SF Symbols/tab labels retained; optical root canvas; not production business content"
+                                       : "four synthetic pages; SF Symbols; optical root canvas; no production business content"])
+        if content == .plainScroll {
+            _ = observation.experimentState(phase: "plain-scroll-attached", forceRecord: true, spatialDetails: true)
+        }
         recorder.context = { [background] in
-            ["scene": "dock-parent", "dockParent": "swiftui-tabview", "background": background.rawValue, "tabCount": 4]
+            ["scene": "dock-parent", "dockParent": "swiftui-tabview", "background": ReferenceExternalInput.active?.id ?? background.rawValue, "tabCount": 4]
         }
         if localAppearance.enabled {
             localAppearance.start(window: window)
         } else if appearanceControls.enabled {
             appearanceControls.start(window: window)
         } else if staticOptics {
+            if let external = ReferenceExternalInput.active {
+                external.exportOriginal(window: window)
+                return
+            }
             let canvas = ReferenceBackgroundView(frame: window.bounds)
             canvas.background = background
             let format = UIGraphicsImageRendererFormat()
@@ -1363,6 +1526,38 @@ final class ReferenceViewController: UIViewController, UITabBarDelegate {
     private var backgroundName = "grid"
     private var recordingStarted = false
     private var recordedTabLayout: [CGFloat] = []
+    private var externalContextTimer: Timer?
+    private var lastExternalPresentationContext: Data?
+    private var panelPlainBackingRequestID = 0
+
+    deinit { externalContextTimer?.invalidate() }
+
+    /// Read-only public traits and presentation geometry. These are context
+    /// evidence, not a claim that UIKit exposes the private material shader.
+    private func sampleExternalPresentationContext() {
+        guard ReferenceExternalInput.active != nil, let window = view.window else { return }
+        var rows: [[String: Any]] = []
+        var current: UIViewController? = window.rootViewController
+        while let controller = current {
+            let rect = controller.view.convert(controller.view.bounds, to: window)
+            rows.append(["class": String(describing: type(of: controller)),
+                         "effectiveInterfaceStyle": controller.traitCollection.userInterfaceStyle.rawValue,
+                         "viewEffectiveInterfaceStyle": controller.view.traitCollection.userInterfaceStyle.rawValue,
+                         "viewRectInWindowPt": ["x": rect.minX, "y": rect.minY, "w": rect.width, "h": rect.height],
+                         "presentationStyle": controller.modalPresentationStyle.rawValue,
+                         "isBeingPresented": controller.isBeingPresented,
+                         "isBeingDismissed": controller.isBeingDismissed])
+            current = controller.presentedViewController
+        }
+        let row: [String: Any] = ["event": "external-presentation-context", "publicControllers": rows,
+                                  "windowEffectiveInterfaceStyle": window.traitCollection.userInterfaceStyle.rawValue,
+                                  "scope": "public traits/geometry only; native material adaptation may differ"]
+        guard let signature = try? JSONSerialization.data(withJSONObject: row, options: [.sortedKeys]),
+              signature != lastExternalPresentationContext else { return }
+        lastExternalPresentationContext = signature
+        ReferenceTrace.shared.add(row)
+        ReferenceTrace.shared.flush()
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -1378,6 +1573,13 @@ final class ReferenceViewController: UIViewController, UITabBarDelegate {
         heading.text = "iOS 26.5 · Native Glass Reference"
         heading.font = .systemFont(ofSize: 16, weight: .semibold)
         heading.accessibilityIdentifier = "reference-title"
+        if let carrier = ReferencePanelPlainBacking.carrier {
+            heading.isUserInteractionEnabled = true
+            heading.accessibilityValue = "panel-plain-backing:\(carrier.rawValue)"
+            heading.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(requestPlainBackingPanel)))
+            // Preserve the existing launch/test identity after enabling taps.
+            heading.accessibilityTraits = .staticText
+        }
         view.addSubview(heading)
         backgroundPicker.accessibilityIdentifier = "background-selector"
         backgroundPicker.addTarget(self, action: #selector(changeBackground), for: .valueChanged)
@@ -1412,7 +1614,7 @@ final class ReferenceViewController: UIViewController, UITabBarDelegate {
 
         scene = ReferenceScene(rawValue: argument("-ReferenceScene") ?? "toggle") ?? .toggle
         background.background = ReferenceBackground(rawValue: argument("-ReferenceBackground") ?? "grid") ?? .grid
-        backgroundName = background.background.rawValue
+        backgroundName = ReferenceExternalInput.active?.id ?? background.background.rawValue
         backgroundPicker.selectedSegmentIndex = backgroundName == "grid" ? 0 : (backgroundName == "stripes" ? 1 : UISegmentedControl.noSegment)
         scenePicker.selectedSegmentIndex = ReferenceScene.visibleCases.firstIndex(of: scene) ?? UISegmentedControl.noSegment
         installScene()
@@ -1425,9 +1627,17 @@ final class ReferenceViewController: UIViewController, UITabBarDelegate {
         ReferenceTrace.shared.beginSession(window: window)
         ReferenceDockPublicSnapshot.record(tabBar, phase: "attached", parent: "standalone")
         ReferenceTrace.shared.add(["event": "reference-configuration", "scene": scene.rawValue,
-                                   "background": background.background.metadata,
+                                   "background": background.inputMetadata,
                                    "interfaceStyle": window.traitCollection.userInterfaceStyle.rawValue,
                                    "staticOptics": ProcessInfo.processInfo.arguments.contains("-ReferenceStaticOptics")])
+        if let carrier = ReferencePanelPlainBacking.carrier, let external = ReferenceExternalInput.active {
+            ReferenceTrace.shared.add([
+                "event": "panel-plain-backing-configuration", "carrier": carrier.rawValue,
+                "trigger": "reference-title-relay", "hiddenBackingIDs": ["show-sheet", "show-alert", "show-menu"],
+                "inputID": external.id, "inputSHA256": external.sha256,
+                "scope": "inner trigger stack opacity0; existing parent/layout/system presentation unchanged in source; realized geometry and clean footprint require measurement"
+            ])
+        }
         recorder.context = { [weak self] in
             var row: [String: Any] = ["scene": self?.scene.rawValue ?? "", "background": self?.backgroundName ?? "",
                                       "tabCount": self?.tabBar.items?.count ?? 0]
@@ -1441,6 +1651,14 @@ final class ReferenceViewController: UIViewController, UITabBarDelegate {
             return row
         }
         if ProcessInfo.processInfo.arguments.contains("-ReferenceStaticOptics") {
+            if let external = ReferenceExternalInput.active {
+                external.exportOriginal(window: window, canvas: background)
+                sampleExternalPresentationContext()
+                let timer = Timer(timeInterval: 0.25, repeats: true) { [weak self] _ in self?.sampleExternalPresentationContext() }
+                RunLoop.main.add(timer, forMode: .common)
+                externalContextTimer = timer
+                return
+            }
             let format = UIGraphicsImageRendererFormat()
             format.scale = window.screen.scale
             format.opaque = true
@@ -1500,9 +1718,29 @@ final class ReferenceViewController: UIViewController, UITabBarDelegate {
     }
 
     @objc private func changeScene() {
+        precondition(ReferencePanelPlainBacking.carrier == nil,
+                     "Plain-backing panel calibration cannot change the scene")
         guard ReferenceScene.visibleCases.indices.contains(scenePicker.selectedSegmentIndex) else { return }
         scene = ReferenceScene.visibleCases[scenePicker.selectedSegmentIndex]
         installScene()
+    }
+
+    @objc private func requestPlainBackingPanel() {
+        guard let carrier = ReferencePanelPlainBacking.carrier else { return }
+        precondition(scene == .presentations, "Plain-backing panel requires its original scene")
+        guard recordingStarted, host != nil, presentedViewController == nil else {
+            ReferenceTrace.shared.add(["event": "panel-plain-backing-command", "phase": "ignored-unavailable",
+                                       "carrier": carrier.rawValue])
+            ReferenceTrace.shared.flush()
+            return
+        }
+        panelPlainBackingRequestID += 1
+        ReferenceTrace.shared.add(["event": "panel-plain-backing-command", "phase": "relay-requested",
+                                   "carrier": carrier.rawValue, "requestID": panelPlainBackingRequestID,
+                                   "trigger": "reference-title"])
+        NotificationCenter.default.post(name: ReferencePanelPlainBacking.requestNotification, object: nil,
+                                        userInfo: ["carrier": carrier.rawValue, "requestID": panelPlainBackingRequestID])
+        ReferenceTrace.shared.flush()
     }
 
     private func installScene() {
@@ -1514,6 +1752,11 @@ final class ReferenceViewController: UIViewController, UITabBarDelegate {
         let controller = UIHostingController(rootView: NativeStage(scene: scene))
         controller.view.backgroundColor = .clear
         controller.view.accessibilityIdentifier = "reference-stage"
+        if ReferencePanelPlainBacking.carrier != nil {
+            // Backing controls remain laid out and optically hidden; exclude
+            // their entire hosting subtree without changing native modals.
+            controller.view.accessibilityElementsHidden = true
+        }
         addChild(controller)
         view.insertSubview(controller.view, belowSubview: tabBar)
         controller.didMove(toParent: self)
@@ -1534,6 +1777,12 @@ final class ReferenceAppDelegate: NSObject, UIApplicationDelegate {
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         let window = UIWindow(frame: UIScreen.main.bounds)
         let arguments = ProcessInfo.processInfo.arguments
+        // Validate before choosing a parent; invalid probe flags must not fall
+        // through to a different scene or an unvalidated external input.
+        if ReferencePanelPlainBacking.carrier != nil {
+            precondition(ReferenceExternalInput.active != nil,
+                         "Plain panel backing requires a validated external input")
+        }
         let styleIndex = arguments.firstIndex(of: "-ReferenceInterfaceStyle")
         let dark = styleIndex.map { $0 + 1 < arguments.count && arguments[$0 + 1] == "dark" } ?? false
         window.overrideUserInterfaceStyle = dark ? .dark : .light
@@ -1544,6 +1793,10 @@ final class ReferenceAppDelegate: NSObject, UIApplicationDelegate {
             let backgroundName = backgroundIndex.flatMap { $0 + 1 < arguments.count ? arguments[$0 + 1] : nil } ?? "grid"
             let contentIndex = arguments.firstIndex(of: "-ReferenceDockContent")
             let contentName = contentIndex.flatMap { $0 + 1 < arguments.count ? arguments[$0 + 1] : nil } ?? "placeholder"
+            if contentName == ReferenceDockContent.plainScroll.rawValue {
+                precondition(arguments.contains("-ReferenceStaticOptics") && arguments.contains("-ReferenceExternalInputFile"),
+                             "Plain-scroll is limited to registered static external-input calibration")
+            }
             let parent = ReferenceDockNavigationParent(background: ReferenceBackground(rawValue: backgroundName) ?? .grid,
                                                        content: ReferenceDockContent(rawValue: contentName) ?? .placeholder)
             window.rootViewController = UIHostingController(rootView: parent.ignoresSafeArea(.container))

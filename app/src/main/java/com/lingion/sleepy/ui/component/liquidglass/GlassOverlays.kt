@@ -53,25 +53,30 @@ import kotlin.math.roundToInt
 @Composable
 private fun overlayGlass() = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
 
-// Visual fit to the recorded iOS 26.5 light alert/sheet backdrop: RGB 240 -> 192.
+// Fits to the recorded iOS 26.5 alert/sheet exterior: light gain .80, dark gain .52.
 // This only dims the surrounding scene; it is not an optical pane tint or blur value.
 internal const val NativeLightModalDimAmount = 0.2f
+internal const val NativeDarkModalDimAmount = 0.48f
+
+internal fun nativeGlassModalDimAmount(dark: Boolean): Float =
+    if (dark) NativeDarkModalDimAmount else NativeLightModalDimAmount
 
 /** Must run inside the actual dialog composition, whose parent owns its window. */
 @Composable
 internal fun GlassDialogScrim(enabled: Boolean) {
     if (!enabled) return
     val window = (LocalView.current.parent as? DialogWindowProvider)?.window ?: return
-    DisposableEffect(window) {
+    val dimAmount = nativeGlassModalDimAmount(LocalDarkTheme.current)
+    DisposableEffect(window, dimAmount) {
         val originalDimAmount = window.attributes.dimAmount
-        window.setDimAmount(NativeLightModalDimAmount)
+        window.setDimAmount(dimAmount)
         onDispose { window.setDimAmount(originalDimAmount) }
     }
 }
 
 internal fun glassModalScrimColor(requested: Color, glass: Boolean, dark: Boolean, materialDefault: Color): Color =
     if (requested != Color.Unspecified) requested
-    else if (glass && !dark) Color.Black.copy(alpha = NativeLightModalDimAmount)
+    else if (glass) Color.Black.copy(alpha = nativeGlassModalDimAmount(dark))
     else materialDefault
 
 /**
@@ -129,7 +134,6 @@ fun GlassAlertDialog(
         )
         return
     }
-    val nativeLightScrim = !LocalDarkTheme.current
     val parentScene = LocalGlassPopupScene.current ?: LocalGlassHost.current
     val popupScene = rememberGlassHostState()
     val carrierShape = shape ?: FlClashGlassShape(34f)
@@ -155,7 +159,7 @@ fun GlassAlertDialog(
             MaterialAlertDialog(
                 onDismissRequest = onDismissRequest,
                 confirmButton = {
-                    GlassDialogScrim(nativeLightScrim)
+                    GlassDialogScrim(enabled = true)
                     confirmButton()
                 },
                 modifier = modifier.recordGlassPopupScene(popupScene)
@@ -176,7 +180,7 @@ fun GlassAlertDialog(
         // pane. Dialog provides the same platform lifetime/focus/dismissal while
         // our content measures the pane and its real outer drawing room separately.
         Dialog(onDismissRequest = onDismissRequest, properties = nativeGlassAlertDialogProperties(properties)) {
-            GlassDialogScrim(nativeLightScrim)
+            GlassDialogScrim(enabled = true)
             val opticalModifier = modifier.graphicsLayer {
                 scaleX = pressScale
                 scaleY = pressScale
@@ -260,7 +264,6 @@ fun GlassDialog(
     content: @Composable () -> Unit,
 ) {
     val glass = overlayGlass()
-    val nativeLightScrim = glass && !LocalDarkTheme.current
     val parentScene = LocalGlassPopupScene.current ?: LocalGlassHost.current
     val popupScene = rememberGlassHostState()
     CompositionLocalProvider(
@@ -270,7 +273,7 @@ fun GlassDialog(
         LocalGlassMaterialBackdrop provides null,
     ) {
         androidx.compose.ui.window.Dialog(onDismissRequest, properties) {
-            GlassDialogScrim(nativeLightScrim)
+            GlassDialogScrim(enabled = glass)
             androidx.compose.foundation.layout.Box(Modifier.recordGlassPopupScene(popupScene)) { content() }
         }
     }
@@ -296,7 +299,6 @@ fun GlassDatePickerDialog(
         )
         return
     }
-    val nativeLightScrim = !LocalDarkTheme.current
     val parentScene = LocalGlassPopupScene.current ?: LocalGlassHost.current
     val popupScene = rememberGlassHostState()
     val carrierShape = FlClashGlassShape(34f)
@@ -324,7 +326,7 @@ fun GlassDatePickerDialog(
         )
         Dialog(onDismissRequest, properties = DialogProperties(usePlatformDefaultWidth = false)) {
             DatePickerDialogWindowViewport()
-            GlassDialogScrim(nativeLightScrim)
+            GlassDialogScrim(enabled = true)
             NativeGlassAlertDrawingSpace {
                 GlassMaterialContent(materialScope) {
                     // Keep the Material calendar body at its 360dp width; the native

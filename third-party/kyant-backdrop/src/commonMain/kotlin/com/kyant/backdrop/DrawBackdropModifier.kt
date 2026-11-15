@@ -434,7 +434,8 @@ private class DrawBackdropNode(
             "Fixed geometry does not support exported backdrops"
         }
         if (effectScope.update(this, (bounds?.size ?: size) * sampleScale,
-                (bounds?.topLeft ?: Offset.Zero) * sampleScale, sampleScale)) {
+                (bounds?.topLeft ?: Offset.Zero) * sampleScale, sampleScale,
+                allocationPadding = shapeProvider.options.allocationPadding)) {
             updateEffects(geometryChanged = true)
         }
 

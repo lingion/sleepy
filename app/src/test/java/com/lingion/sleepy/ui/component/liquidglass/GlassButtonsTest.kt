@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component.liquidglass
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -44,6 +45,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
+import java.io.File
 import androidx.compose.material3.Button as MaterialButton
 import androidx.compose.material3.FilledTonalButton as MaterialTonalButton
 import androidx.compose.material3.IconButton as MaterialIconButton
@@ -311,8 +313,39 @@ class GlassButtonsTest {
         compose.runOnIdle { wrappedVisible.value = false }
         compose.waitForIdle()
         val expected = compose.onNodeWithTag("official").captureToImage().asAndroidBitmap()
-        assertTrue("$label must match the official Expressive component's pixels and dimensions", actual.sameAs(expected))
+        val identical = actual.sameAs(expected)
+        val diagnostic = if (identical) "" else parityFailureDiagnostic(label, actual, expected)
+        assertTrue("$label must match the official Expressive component's pixels and dimensions$diagnostic", identical)
         return expected
+    }
+
+    private fun parityFailureDiagnostic(label: String, actual: Bitmap, expected: Bitmap): String {
+        val directory = File("build/reports/glass-button-parity").apply { mkdirs() }
+        val name = label.replace(Regex("[^A-Za-z0-9_-]"), "_")
+        listOf("actual" to actual, "official" to expected).forEach { (role, bitmap) ->
+            File(directory, "$name-$role.png").outputStream().use {
+                check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it))
+            }
+        }
+        var mismatches = 0
+        var left = Int.MAX_VALUE
+        var top = Int.MAX_VALUE
+        var right = -1
+        var bottom = -1
+        for (y in 0 until minOf(actual.height, expected.height)) {
+            for (x in 0 until minOf(actual.width, expected.width)) {
+                if (actual.getPixel(x, y) != expected.getPixel(x, y)) {
+                    mismatches++
+                    left = minOf(left, x)
+                    top = minOf(top, y)
+                    right = maxOf(right, x)
+                    bottom = maxOf(bottom, y)
+                }
+            }
+        }
+        val bounds = if (mismatches == 0) "none in overlap" else "[$left,$top,$right,$bottom] inclusive"
+        return "; actual=${actual.width}x${actual.height}, official=${expected.width}x${expected.height}" +
+            ", differing overlap pixels=$mismatches, bounds=$bounds; PNGs=${directory.absolutePath}/$name-*"
     }
 
     @Composable

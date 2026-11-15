@@ -58,6 +58,8 @@ uniform float uHaze;
 uniform float4 uVeil;
 // Width, height, bevel width, frost sigma.
 uniform float4 uShape;
+// Opt-in: style frost uses Android blur radii; held texture blur uses true sigma.
+uniform float uFrostRadiusMode;
 // Corner radii: top left, top right, bottom right, bottom left.
 uniform float4 uCorners;
 // The CPU clip may use exact circular arcs instead of a continuous superellipse.
@@ -70,6 +72,38 @@ uniform float4 uCurves[12];
 // Refraction depth at the rim, saturation, brightness. A negative depth makes
 // a raised lens, which bends outward on UIKit's profile.
 uniform float3 uOptics;
+// Positive refraction cap as a multiple of half the short side; raised lenses ignore it.
+uniform float uRefractionLimit;
+// Calibratable positive-section shape, not physical thickness. One retains the legacy section.
+uniform float uRefractionProfilePower;
+// Explicit Dock-only response: blend amount, fixed bright weight, optional low/high pane-luma gates.
+// Equal gates disable adaptation. No standard material factory enables this candidate.
+uniform float4 uDockTone;
+// Each branch holds intercept, luminance gain and chroma gain; no alpha/tint reinterpretation.
+uniform float3 uDockToneBright;
+uniform float3 uDockToneDark;
+// Optional dark low-tone linear response: intercept, gain, and gamma-luma transition gates.
+uniform float4 uDockDarkLowTone;
+uniform float uDockDarkLowToneBlend;
+// Explicit bright-branch signed rim: blend, width dp, intercept, luma gain.
+uniform float4 uDockBrightRim;
+uniform float uDockBrightRimChroma;
+// Optional continuous angular lobe: explicit blend, signed normal cross gain.
+uniform float2 uDockBrightRimAngular;
+uniform float uDockBrightRimCosine;
+uniform float uDockBrightRimCubicShoulder;
+uniform float uDockBrightRimLogit;
+uniform float uDockBrightRimHeadroom;
+// Independent opt-in dark-branch coefficients; zero blend retains the old rim.
+uniform float4 uDockDarkRim;
+uniform float uDockDarkRimChroma;
+uniform float2 uDockDarkRimAngular;
+uniform float uDockDarkRimCosine;
+uniform float uDockDarkRimCubicShoulder;
+uniform float uDockDarkRimLogit;
+uniform float uDockDarkRimHeadroom;
+// Independent Dock-base white-rim profile; zero keeps the exact legacy shine arithmetic.
+uniform float uDockBaseRimCubicShoulder;
 // Straight alpha.
 uniform float4 uTint;
 // Highlight along the top and bottom of the rim, the dp it fades over, how
@@ -110,6 +144,9 @@ uniform float4 uExact2[36];
 // bands inward from the rim, where each ends in dp and its share.
 uniform float4 uShineTurns[2];
 uniform float4 uShineLit[2];
+// Explicit opt-in: only the new floor is reflected using remaining channel headroom.
+// Zero preserves the original additive expression for every existing material.
+uniform float4 uShineFloorLit[2];
 uniform float4 uShineEnds[3];
 uniform float4 uShineShares[3];
 // Pills in rows, each from the left, as GooSurface in lib/ui/goo.dart lays
@@ -234,6 +271,12 @@ float4 frostDisc64(float2 center, float2 reach, float falloff) {
 // texture holds, read on a Vogel disc.
 float4 sampleFrosted(float2 point, float frost) {
   float2 sigma = frost / uSample.zw;
+  if (uFrostRadiusMode > 0.5) {
+    // HWUI converts Java RenderEffect radius to sigma in physical pixels.
+    // Keep legacy materials unchanged until their sampling contract is migrated.
+    sigma = float2(sigma.x > 0.0 ? 0.57735 * sigma.x + 0.5 : 0.0,
+        sigma.y > 0.0 ? 0.57735 * sigma.y + 0.5 : 0.0);
+  }
   sigma = sqrt(max(sigma * sigma - uTexels.y * uTexels.y, float2(0.0)));
   float2 reach = max(sigma - 0.5, 0.0) * kFrostReach;
   if (reach.x <= 0.0 || reach.y <= 0.0) {
@@ -258,6 +301,11 @@ float4 sampleFrosted(float2 point, float frost) {
 float4 sampleBehind(float2 point) {
   if (uHaze > 0.0) {
     return sampleHaze(point);
+  }
+  // An opt-in input need not contain the body's complete frost. Keep the
+  // adaptive tone reference at body blur even when the edge input is clearer.
+  if (uFrostRadiusMode > 0.5) {
+    return sampleFrosted(point, uShape.w);
   }
   if (uShape.w >= kSteadyFrost) {
     return sampleGlass(point);
@@ -658,6 +706,147 @@ float shineAround(float turn) {
         ));
 }
 
+float shineFloorAround(float turn) {
+  float4 startTurns = uShineTurns[0];
+  float4 lastTurns = uShineTurns[1];
+  float4 startLit = uShineFloorLit[0];
+  float4 lastLit = uShineFloorLit[1];
+  float4 firstEnds = float4(startTurns.yzw, lastTurns.x);
+  float3 lastEnds = lastTurns.yzw;
+  float4 firstRise = float4(startLit.yzw, lastLit.x) - startLit;
+  float3 lastRise = lastLit.yzw - lastLit.xyz;
+  return startLit.x
+      + dot(firstRise, clamp(
+          (turn - startTurns) / max(firstEnds - startTurns, 1e-5), 0.0, 1.0))
+      + dot(lastRise, clamp(
+          (turn - lastTurns.xyz) / max(lastEnds - lastTurns.xyz, 1e-5),
+          0.0,
+          1.0
+        ));
+}
+
+// Standard sRGB transfer functions; fractional powers never receive negative bases.
+float dockSrgbDecode(float value) {
+  float encoded = max(value, 0.0);
+  if (encoded <= 0.04045) return encoded / 12.92;
+  return pow((encoded + 0.055) / 1.055, 2.4);
+}
+
+float dockSrgbEncode(float value) {
+  float linearValue = max(value, 0.0);
+  if (linearValue <= 0.0031308) return 12.92 * linearValue;
+  return 1.055 * pow(linearValue, 1.0 / 2.4) - 0.055;
+}
+
+// Fixed mathematical shoulder only, not a native appearance claim. Actual edge/widthDp
+// supplies t; both ends have zero slope and the inner support ends exactly at one.
+float dockCubicShoulder(float t) {
+  if (t < 0.0 || t >= 1.0) return 0.0;
+  float shoulder = 1.0 - t * t * t;
+  return shoulder * shoulder;
+}
+
+// Stable logistic(logit(body) + shift), without epsilon or a positive exponent.
+// Exact body endpoints stay fixed; rounded interior endpoints are not structural locks.
+float dockLogitChannel(float body, float shift) {
+  if (body <= 0.0 || body >= 1.0 || shift == 0.0) return body;
+  float q = exp(-abs(shift));
+  if (shift >= 0.0) return body / (body + (1.0 - body) * q);
+  return body * q / (1.0 - body + body * q);
+}
+
+// AGSL has no expm1 builtin. This fixed fourth-order small-x expansion avoids
+// cancellation; the 0.01 join can differ by float rounding, not a C1 claim.
+float dockOneMinusExp(float x) {
+  if (x < 0.01) return x * (1.0 - x * (0.5 - x * (1.0 / 6.0 - x / 24.0)));
+  return 1.0 - exp(-x);
+}
+
+float dockHeadroomChannel(float body, float shift) {
+  if (shift <= 0.0) return max(body + shift, 0.0);
+  if (body >= 1.0) return 1.0;
+  float room = 1.0 - body;
+  return body + room * dockOneMinusExp(shift / room);
+}
+
+// A separate opt-in wrapper leaves the previous signed/logit code intact.
+// Both blend operands are complete premultiplied results. A zero profile must
+// preserve the original even when coverage is below the legacy division floor.
+float3 dockHeadroomRim(float3 unlitGlass, float coverage, float3 sourceColor,
+    float edge, float2 normal, float facing, float4 rim, float chroma,
+    float2 angular, float cosineBlend, float cubicShoulderBlend,
+    float headroomBlend, float3 previousRim) {
+  if (headroomBlend <= 0.0) return previousRim;
+  float3 headroomRim = unlitGlass;
+  if (coverage > 0.0) {
+    float finiteBand = max(1.0 - edge / max(rim.y, 1e-3), 0.0);
+    if (cosineBlend > 0.0) {
+      float normalizedDepth = max(edge, 0.0) / max(rim.y, 1e-3);
+      float cosineBand = normalizedDepth < 1.0
+          ? cos(1.5707963267948966 * normalizedDepth) : 0.0;
+      finiteBand = mix(finiteBand, cosineBand, cosineBlend);
+    }
+    if (cubicShoulderBlend > 0.0) {
+      float normalizedDepth = max(edge, 0.0) / max(rim.y, 1e-3);
+      finiteBand = mix(finiteBand, dockCubicShoulder(normalizedDepth), cubicShoulderBlend);
+    }
+    float materialFacing = mix(facing,
+        max(1.0 + angular.y * normal.x * normal.y, 0.0), angular.x);
+    float profile = materialFacing * finiteBand;
+    if (profile != 0.0) {
+      float sourceLuma = dot(sourceColor, kLuma);
+      float3 amplitude = float3(rim.z + rim.w * sourceLuma)
+          + chroma * (sourceColor - float3(sourceLuma));
+      float3 body = clamp(unlitGlass / coverage, 0.0, 1.0);
+      float3 shift = profile * amplitude;
+      headroomRim = float3(dockHeadroomChannel(body.r, shift.r),
+          dockHeadroomChannel(body.g, shift.g), dockHeadroomChannel(body.b, shift.b)) * coverage;
+    }
+  }
+  if (headroomBlend >= 1.0) return headroomRim;
+  return mix(previousRim, headroomRim, headroomBlend);
+}
+
+// Shared by the two explicit candidates only when the dark response is enabled.
+// The old bright-only block below remains unchanged at the null/zero endpoint.
+float3 dockSignedRim(float3 unlitGlass, float coverage, float3 sourceColor,
+    float edge, float2 normal, float facing, float4 rim, float chroma,
+    float2 angular, float cosineBlend, float cubicShoulderBlend, float logitBlend) {
+  float sourceLuma = dot(sourceColor, kLuma);
+  float3 amplitude = float3(rim.z + rim.w * sourceLuma)
+      + chroma * (sourceColor - float3(sourceLuma));
+  float finiteBand = max(1.0 - edge / max(rim.y, 1e-3), 0.0);
+  if (cosineBlend > 0.0) {
+    float normalizedDepth = max(edge, 0.0) / max(rim.y, 1e-3);
+    float cosineBand = normalizedDepth < 1.0
+        ? cos(1.5707963267948966 * normalizedDepth) : 0.0;
+    finiteBand = mix(finiteBand, cosineBand, cosineBlend);
+  }
+  if (cubicShoulderBlend > 0.0) {
+    float normalizedDepth = max(edge, 0.0) / max(rim.y, 1e-3);
+    finiteBand = mix(finiteBand, dockCubicShoulder(normalizedDepth), cubicShoulderBlend);
+  }
+  float materialFacing = mix(facing,
+      max(1.0 + angular.y * normal.x * normal.y, 0.0), angular.x);
+  if (logitBlend > 0.0) {
+    if (coverage <= 0.0) return unlitGlass;
+    float profile = materialFacing * finiteBand;
+    float3 logitRim = unlitGlass;
+    if (profile != 0.0) {
+      float3 body = clamp(unlitGlass / coverage, 0.0, 1.0);
+      float3 shift = profile * amplitude;
+      logitRim = float3(dockLogitChannel(body.r, shift.r),
+          dockLogitChannel(body.g, shift.g), dockLogitChannel(body.b, shift.b)) * coverage;
+    }
+    if (logitBlend >= 1.0) return logitRim;
+    float3 additiveRim = clamp(unlitGlass / max(coverage, 1e-4)
+        + materialFacing * finiteBand * amplitude, 0.0, 1.0) * coverage;
+    return mix(additiveRim, logitRim, logitBlend);
+  }
+  return clamp(unlitGlass / max(coverage, 1e-4)
+      + materialFacing * finiteBand * amplitude, 0.0, 1.0) * coverage;
+}
+
 half4 main(float2 fragCoord) {
   float2 point = uFrame.xy + fragCoord * uFrame.zw;
   float2 halfSize = uShape.xy * 0.5;
@@ -720,7 +909,13 @@ half4 main(float2 fragCoord) {
     // A bevel of circular profile, fitted to small panes: flat where it meets
     // the face and steepening toward the rim, which reads from so far inside
     // that its outermost band shows the content squeezed and mirrored.
-    float depth = min(uOptics.x, halfMinor) * (1.0 - sqrt(1.0 - rise * rise));
+    float depth = min(uOptics.x, max(uRefractionLimit, 0.0) * halfMinor) * (1.0 - sqrt(1.0 - rise * rise));
+    // Keep the legacy expression above at power1, avoiding a pow rounding change.
+    // The host binds a strictly positive finite exponent for the flat endpoint.
+    if (uRefractionProfilePower != 1.0) {
+      float profile = 1.0 - sqrt(max(1.0 - rise * rise, 0.0));
+      depth = min(uOptics.x, max(uRefractionLimit, 0.0) * halfMinor) * pow(profile, uRefractionProfilePower);
+    }
     shift = -normal * depth;
   }
 
@@ -745,27 +940,92 @@ half4 main(float2 fragCoord) {
   base = veiled(base);
   float alpha = base.a;
   float3 color = base.rgb / max(alpha, 1e-4);
-  color = mix(float3(dot(color, kLuma)), color, uOptics.y) * uOptics.z;
-  color *= 1.0 - uLight.z * abs(normal.x) * exp(-inset / kEndShade);
+  float3 sourceColor = color;
+  float dockBrightRimWeight = 0.0;
+  float dockDarkRimWeight = 0.0;
+  float coverage;
+  float3 glass;
+  if (uDockTone.x > 0.0) {
+    float brightWeight = uDockTone.y;
+    if (uDockTone.w > uDockTone.z) {
+      // The same existing pane-level source taps drive all pixels. This branch is
+      // explicit and separate from local tone/chroma; no per-pixel hard gate.
+      float4 responseBehind = sampleBehind(halfSize)
+          + sampleBehind(halfSize * float2(0.4, 0.6))
+          + sampleBehind(halfSize * float2(1.6, 0.6))
+          + sampleBehind(halfSize * float2(0.4, 1.4))
+          + sampleBehind(halfSize * float2(1.6, 1.4));
+      responseBehind = veiled(responseBehind * 0.2);
+      float responseLuma = dot(responseBehind.rgb / max(responseBehind.a, 1e-4), kLuma);
+      brightWeight = smoothstep(uDockTone.z, uDockTone.w, responseLuma);
+    }
+    float3 response = mix(uDockToneDark, uDockToneBright, brightWeight);
+    dockBrightRimWeight = uDockTone.x * brightWeight * uDockBrightRim.x;
+    dockDarkRimWeight = uDockTone.x * (1.0 - brightWeight) * uDockDarkRim.x;
+    float colorLuma = dot(color, kLuma);
+    float materialTone = response.x + response.y * colorLuma;
+    if (uDockDarkLowToneBlend > 0.0) {
+      float linearLuma = dockSrgbDecode(colorLuma);
+      float lowLinear = clamp(uDockDarkLowTone.x + uDockDarkLowTone.y * linearLuma, 0.0, 1.0);
+      float lowTone = dockSrgbEncode(lowLinear);
+      float highAffine = uDockToneDark.x + uDockToneDark.y * colorLuma;
+      float hybridDark = mix(lowTone, highAffine,
+          smoothstep(uDockDarkLowTone.z, uDockDarkLowTone.w, colorLuma));
+      materialTone += (1.0 - brightWeight) * uDockDarkLowToneBlend * (hybridDark - highAffine);
+    }
+    color = clamp(float3(materialTone)
+        + response.z * (color - float3(colorLuma)), 0.0, 1.0);
+    color *= 1.0 - uLight.z * abs(normal.x) * exp(-inset / kEndShade);
+    // Retain source coverage and premultiply once. The candidate replaces the
+    // old saturation/clash/tint stage; the existing rim below remains separate.
+    coverage = alpha;
+    glass = color * alpha;
+    if (uDockTone.x < 1.0) {
+      // A nullable response interpolates with the real legacy material, not an
+      // identity surrogate that drops the endpoint's tint and coverage.
+      float3 legacyColor = base.rgb / max(alpha, 1e-4);
+      legacyColor = mix(float3(dot(legacyColor, kLuma)), legacyColor, uOptics.y) * uOptics.z;
+      legacyColor *= 1.0 - uLight.z * abs(normal.x) * exp(-inset / kEndShade);
+      float legacyClash = 0.0;
+      if (uGlow.w != 0.0) {
+        float4 legacyBehind = sampleBehind(halfSize)
+            + sampleBehind(halfSize * float2(0.4, 0.6))
+            + sampleBehind(halfSize * float2(1.6, 0.6))
+            + sampleBehind(halfSize * float2(0.4, 1.4))
+            + sampleBehind(halfSize * float2(1.6, 1.4));
+        legacyBehind = veiled(legacyBehind * 0.2);
+        float legacyLuma = dot(legacyBehind.rgb / max(legacyBehind.a, 1e-4), kLuma);
+        legacyClash = clamp((sign(uGlow.w) * (dot(uTint.rgb, kLuma) - legacyLuma) - 0.3) / 0.5, 0.0, 1.0);
+      }
+      float legacyCover = uTint.a + (1.0 - uTint.a) * legacyClash * abs(uGlow.w);
+      float legacyCoverage = alpha * (1.0 - legacyCover) + legacyCover;
+      float3 legacyGlass = legacyColor * alpha * (1.0 - legacyCover) + uTint.rgb * legacyCover;
+      glass = mix(legacyGlass, glass, uDockTone.x);
+      coverage = mix(legacyCoverage, coverage, uDockTone.x);
+    }
+  } else {
+    color = mix(float3(dot(color, kLuma)), color, uOptics.y) * uOptics.z;
+    color *= 1.0 - uLight.z * abs(normal.x) * exp(-inset / kEndShade);
 
-  float clash = 0.0;
-  if (uGlow.w != 0.0) {
-    float4 behind = sampleBehind(halfSize)
-        + sampleBehind(halfSize * float2(0.4, 0.6))
-        + sampleBehind(halfSize * float2(1.6, 0.6))
-        + sampleBehind(halfSize * float2(0.4, 1.4))
-        + sampleBehind(halfSize * float2(1.6, 1.4));
-    behind = veiled(behind * 0.2);
-    float behindLuma = dot(behind.rgb / max(behind.a, 1e-4), kLuma);
-    clash = clamp(
-      (sign(uGlow.w) * (dot(uTint.rgb, kLuma) - behindLuma) - 0.3) / 0.5,
-      0.0,
-      1.0
-    );
+    float clash = 0.0;
+    if (uGlow.w != 0.0) {
+      float4 behind = sampleBehind(halfSize)
+          + sampleBehind(halfSize * float2(0.4, 0.6))
+          + sampleBehind(halfSize * float2(1.6, 0.6))
+          + sampleBehind(halfSize * float2(0.4, 1.4))
+          + sampleBehind(halfSize * float2(1.6, 1.4));
+      behind = veiled(behind * 0.2);
+      float behindLuma = dot(behind.rgb / max(behind.a, 1e-4), kLuma);
+      clash = clamp(
+        (sign(uGlow.w) * (dot(uTint.rgb, kLuma) - behindLuma) - 0.3) / 0.5,
+        0.0,
+        1.0
+      );
+    }
+    float cover = uTint.a + (1.0 - uTint.a) * clash * abs(uGlow.w);
+    coverage = alpha * (1.0 - cover) + cover;
+    glass = color * alpha * (1.0 - cover) + uTint.rgb * cover;
   }
-  float cover = uTint.a + (1.0 - uTint.a) * clash * abs(uGlow.w);
-  float coverage = alpha * (1.0 - cover) + cover;
-  float3 glass = color * alpha * (1.0 - cover) + uTint.rgb * cover;
 
   // iOS lights the top and bottom of its glass, just inside the line, and on
   // its tab bar fades that around the rounded ends with the normal's upward
@@ -786,7 +1046,71 @@ half4 main(float2 fragCoord) {
   float band = clamp(1.0 - within / max(uLight.y, 1e-3), 0.0, 1.0);
   float tail = clamp(1.0 - max(inset - kLine, 0.0) / kRimTail, 0.0, 1.0);
   float shine = min(uLight.x * facing * mix(band, tail, uRim.x), 1.0);
+  if (uDockBaseRimCubicShoulder > 0.0) {
+    float shoulderShine = min(uLight.x * facing
+        * dockCubicShoulder(max(edge, 0.0) / max(uLight.y, 1e-3)), 1.0);
+    shine = mix(shine, shoulderShine, uDockBaseRimCubicShoulder);
+  }
+  float3 unlitGlass = glass;
   glass += (float3(coverage) - (1.0 - uRim.z) * glass) * shine;
+  if (dockDarkRimWeight > 0.0) {
+    float3 brightMaterialRim = unlitGlass;
+    if (dockBrightRimWeight > 0.0) {
+      brightMaterialRim = dockSignedRim(unlitGlass, coverage, sourceColor,
+          edge, normal, facing, uDockBrightRim, uDockBrightRimChroma,
+          uDockBrightRimAngular, uDockBrightRimCosine, uDockBrightRimCubicShoulder, uDockBrightRimLogit);
+      if (uDockBrightRimHeadroom > 0.0) {
+        brightMaterialRim = dockHeadroomRim(unlitGlass, coverage, sourceColor,
+            edge, normal, facing, uDockBrightRim, uDockBrightRimChroma,
+            uDockBrightRimAngular, uDockBrightRimCosine, uDockBrightRimCubicShoulder,
+            uDockBrightRimHeadroom, brightMaterialRim);
+      }
+    }
+    float3 darkMaterialRim = dockSignedRim(unlitGlass, coverage, sourceColor,
+        edge, normal, facing, uDockDarkRim, uDockDarkRimChroma,
+        uDockDarkRimAngular, uDockDarkRimCosine, uDockDarkRimCubicShoulder, uDockDarkRimLogit);
+    if (uDockDarkRimHeadroom > 0.0) {
+      darkMaterialRim = dockHeadroomRim(unlitGlass, coverage, sourceColor,
+          edge, normal, facing, uDockDarkRim, uDockDarkRimChroma,
+          uDockDarkRimAngular, uDockDarkRimCosine, uDockDarkRimCubicShoulder,
+          uDockDarkRimHeadroom, darkMaterialRim);
+    }
+    // Each branch weight is bounded by its share of the same tone blend.
+    // Combine all three from the same unmodified white-rim result, never sequentially.
+    float legacyRimWeight = max(1.0 - (dockBrightRimWeight + dockDarkRimWeight), 0.0);
+    glass = legacyRimWeight * glass + dockBrightRimWeight * brightMaterialRim
+        + dockDarkRimWeight * darkMaterialRim;
+  } else if (dockBrightRimWeight > 0.0) {
+    // Unlike the legacy screened-white highlight, a signed material response
+    // preserves chroma and can darken a channel. No kLine plateau or extra tail.
+    // The optional lobe retains the measured straight-edge factor1, including
+    // the side, and varies continuously around diagonals. It is a calibration
+    // candidate, not an inferred UIKit lighting implementation.
+    float sourceLuma = dot(sourceColor, kLuma);
+    float3 amplitude = float3(uDockBrightRim.z + uDockBrightRim.w * sourceLuma)
+        + uDockBrightRimChroma * (sourceColor - float3(sourceLuma));
+    float finiteBand = max(1.0 - edge / max(uDockBrightRim.y, 1e-3), 0.0);
+    if (uDockBrightRimCosine > 0.0) {
+      // A bounded empirical profile: soften the outer crest, then meet the
+      // body within the measured narrow band. Explicit support prevents the
+      // cosine from creating further bright rings deeper inside the pane.
+      // Keep the zero endpoint above bit-identical to the linear candidate.
+      float normalizedDepth = max(edge, 0.0) / max(uDockBrightRim.y, 1e-3);
+      float cosineBand = normalizedDepth < 1.0
+          ? cos(1.5707963267948966 * normalizedDepth) : 0.0;
+      finiteBand = mix(finiteBand, cosineBand, uDockBrightRimCosine);
+    }
+    if (uDockBrightRimCubicShoulder > 0.0) {
+      float normalizedDepth = max(edge, 0.0) / max(uDockBrightRim.y, 1e-3);
+      finiteBand = mix(finiteBand, dockCubicShoulder(normalizedDepth), uDockBrightRimCubicShoulder);
+    }
+    float materialFacing = mix(facing,
+        max(1.0 + uDockBrightRimAngular.y * normal.x * normal.y, 0.0),
+        uDockBrightRimAngular.x);
+    float3 materialRim = clamp(unlitGlass / max(coverage, 1e-4)
+        + materialFacing * finiteBand * amplitude, 0.0, 1.0) * coverage;
+    glass = mix(glass, materialRim, dockBrightRimWeight);
+  }
 
   // iOS 27 outlines its glass with a dark line, which UIKit draws just outside
   // the bounds, over the backdrop, where the pane cannot draw, so it takes the
@@ -813,8 +1137,29 @@ half4 main(float2 fragCoord) {
   if (uShineLit[0].x > 0.0 && edge < uShineEnds[2].w + uTexels.x) {
     float turn = atan(abs(centered.x), abs(centered.y));
     float pixel = 0.5 * uTexels.x;
-    glass += coverage * shineAround(turn)
-        * shineAcross(max(edge - pixel, 0.0), edge + pixel);
+    if (uShineFloorLit[1].w > 0.0) {
+      float acrossBand = shineAcross(max(edge - pixel, 0.0), edge + pixel);
+      float addedFloor = max(shineFloorAround(turn), 0.0) * acrossBand;
+      if (addedFloor > 0.0) {
+        // The floor is an additive encoded-RGB light budget, not screen alpha.
+        // Normalize by the remaining weighted headroom before reflecting it;
+        // near-white material otherwise loses almost all of the requested lift.
+        // This smooth bound does not guarantee non-clipping after quantization.
+        glass += coverage * (shineAround(turn) * acrossBand - addedFloor);
+        float3 headroom = max(float3(coverage) - glass, 0.0);
+        float availableLight = dot(headroom, float3(0.2126, 0.7152, 0.0722));
+        if (availableLight > 0.0) {
+          float reflected = dockOneMinusExp(coverage * addedFloor / availableLight);
+          glass += reflected * headroom;
+        }
+      } else {
+        glass += coverage * shineAround(turn)
+            * shineAcross(max(edge - pixel, 0.0), edge + pixel);
+      }
+    } else {
+      glass += coverage * shineAround(turn)
+          * shineAcross(max(edge - pixel, 0.0), edge + pixel);
+    }
   }
 
   return half4(min(glass, float3(coverage)), coverage);

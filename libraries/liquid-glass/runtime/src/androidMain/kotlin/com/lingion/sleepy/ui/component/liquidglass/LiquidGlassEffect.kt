@@ -32,6 +32,8 @@ import com.kyant.shapes.RoundedRectangularShape
  * - 雾化层与双重采样 (uHaze / uHazeSample / uHazeClamp)
  *
  * 在不支持 RuntimeShader 的设备上, 优雅降级为高保真高斯模糊与鲜艳度滤镜。
+ * [inputBlurPx] optionally prefilters the supplied backdrop to a total input sigma;
+ * it cannot undo [sampledBlurPx] or bypass an inherited parent material.
  */
 fun BackdropEffectScope.liquidGlass(
     context: Context,
@@ -44,6 +46,8 @@ fun BackdropEffectScope.liquidGlass(
     veil: Color = Color.Transparent,
     sampledBlurPx: Float = 0f,
     cachedOutlineProfile: LiquidGlassCachedOutlineProfile? = null,
+    // Opt-in total input sigma, in texture pixels. Null retains the original path.
+    inputBlurPx: Float? = null,
 ) {
     // Backdrop observes effects on attachment, before its first measured DrawScope.
     // Wait for real geometry; Size.Unspecified would otherwise create NaN corners.
@@ -55,15 +59,29 @@ fun BackdropEffectScope.liquidGlass(
     if (!isRuntimeShaderSupported()) {
         val effectiveStyle = LiquidGlassStyle.standard(style)
         if (effectiveStyle.blur > 0.0) {
-            val requestedPx = effectiveStyle.blur.toFloat() * density
-            val remainderPx = kotlin.math.sqrt((requestedPx * requestedPx - sampledBlurPx * sampledBlurPx).coerceAtLeast(0f))
-            if (remainderPx > 0f) blur(remainderPx)
+            if (inputBlurPx == null) {
+                val requestedPx = effectiveStyle.blur.toFloat() * density
+                val remainderPx = kotlin.math.sqrt((requestedPx * requestedPx - sampledBlurPx * sampledBlurPx).coerceAtLeast(0f))
+                if (remainderPx > 0f) blur(remainderPx)
+            } else {
+                val requestedSigmaPx = androidBlurRadiusToSigma(effectiveStyle.blur.toFloat() * density)
+                val remainder = liquidGlassInputBlur(sampledBlurPx, requestedSigmaPx)
+                if (remainder.additionalBlurPx > 0f) blur(androidBlurSigmaToRadius(remainder.additionalBlurPx))
+            }
         }
         vibrancy()
         return
     }
 
+    // A failed opt-in graph must leave neither its input blur nor atlas packing
+    // behind when the original uniform-blur fallback is assembled.
+    val previousInputEffect = if (inputBlurPx != null) inputRenderEffect else null
+    val previousMaterialEffect = if (inputBlurPx != null) renderEffect else null
+    val previousPadding = if (inputBlurPx != null) padding else 0f
     try {
+        val inputBlur = inputBlurPx?.let { liquidGlassInputBlur(sampledBlurPx, it) }
+        val heldBlurPx = inputBlur?.heldBlurPx ?: sampledBlurPx
+        val additionalInputBlurPx = inputBlur?.additionalBlurPx ?: 0f
         val shaderSource = LiquidGlassShader.shaderSource(context)
         val actualOutline = shape.createOutline(currentSize, layoutDirection, this)
         val circular = circularGlassCornerRadii(actualOutline, density)
@@ -71,20 +89,51 @@ fun BackdropEffectScope.liquidGlass(
         val corners = circular ?: extractCornerRadii(currentSize)
         val sizeDp = Size(currentSize.width / density, currentSize.height / density)
         val hazeAtlas = if (style.haze > 0.0) {
-            LiquidGlassShader.hazeAtlas(
+            val hazeBlurPx = if (inputBlurPx != null)
+                androidBlurRadiusToSigma(style.hazeBlur.toFloat() * density)
+            else style.hazeBlur.toFloat() * density
+            val atlas = LiquidGlassShader.hazeAtlas(
                 sizePx = currentSize,
                 effectOriginPx = effectOffset,
-                hazeBlurPx = style.hazeBlur.toFloat() * density,
-                sampledBlurPx = sampledBlurPx,
+                hazeBlurPx = hazeBlurPx,
+                sampledBlurPx = heldBlurPx,
                 minimumPaddingPx = padding,
-            ).also { padding = it.paddingPx }
+            )
+            val inputPadding = if (additionalInputBlurPx > 0f)
+                checkNotNull(inputBlur).capturePaddingPx(atlas.remainingBlurPx) else 0f
+            (if (inputPadding > atlas.paddingPx) LiquidGlassShader.hazeAtlas(
+                sizePx = currentSize,
+                effectOriginPx = effectOffset,
+                hazeBlurPx = hazeBlurPx,
+                sampledBlurPx = heldBlurPx,
+                minimumPaddingPx = inputPadding,
+            ) else atlas).also { padding = it.paddingPx }
         } else null
-        val paneOrigin = hazeAtlas?.sourceOriginPx ?: effectOffset
+        val inputPadding = if (hazeAtlas == null && additionalInputBlurPx > 0f) {
+            padding = maxOf(padding, checkNotNull(inputBlur).capturePaddingPx())
+            padding
+        } else 0f
+        val inputOrigin = if (inputPadding > 0f) effectOffset + Offset(inputPadding, inputPadding) else effectOffset
+        // The legacy path keeps its original pane-sized arithmetic. Opt-in inputs
+        // sample the actual complete recording, even without an additional blur pass.
+        val inputGeometry = if (inputBlurPx != null && hazeAtlas == null) liquidGlassInputGeometry(
+            effectOriginPx = effectOffset,
+            captureSizePx = captureSize,
+            paddingPx = padding,
+            allocationPaddingPx = captureAllocationPadding,
+        ) else null
+        val paneOrigin = hazeAtlas?.sourceOriginPx ?: inputGeometry?.originPx ?: inputOrigin
+        val inputBounds = Rect(inputPadding, inputPadding,
+            inputPadding + currentSize.width, inputPadding + currentSize.height)
+        val inputSize = if (inputPadding > 0f) Size(
+            kotlin.math.ceil(currentSize.width + inputPadding * 2f),
+            kotlin.math.ceil(currentSize.height + inputPadding * 2f),
+        ) else currentSize
 
         val sampling = LiquidGlassShader.sampling(
-            originPx = if (hazeAtlas != null) Offset.Zero else effectOffset,
+            originPx = if (hazeAtlas != null) Offset.Zero else inputGeometry?.originPx ?: inputOrigin,
             texelsPerDp = density,
-            clampPx = hazeAtlas?.clearBoundsPx ?: Rect(0f, 0f, currentSize.width, currentSize.height),
+            clampPx = hazeAtlas?.clearBoundsPx ?: inputGeometry?.clampPx ?: inputBounds,
         )
         val hazeSampling = hazeAtlas?.let {
             LiquidGlassShader.sampling(
@@ -101,9 +150,10 @@ fun BackdropEffectScope.liquidGlass(
             originPx = paneOrigin,
             density = density,
             stretch = 1f,
-            atlasSizePx = hazeAtlas?.sizePx ?: currentSize,
+            atlasSizePx = hazeAtlas?.sizePx ?: inputGeometry?.sizePx ?: inputSize,
             sampling = sampling,
-            heldFrostTexelPx = sampledBlurPx,
+            heldFrostTexelPx = heldBlurPx,
+            frostRadiusSampling = inputBlurPx != null,
             hazeSampling = hazeSampling,
             outline = outline,
             dualContours = dualContours,
@@ -126,22 +176,51 @@ fun BackdropEffectScope.liquidGlass(
                 shader.asAndroidRuntimeShader(),
                 "uTexture",
             )
-            if (hazeAtlas != null) {
-                inputRenderEffect = createLiquidGlassHazeAtlasEffect(
+            val additionalInputRadiusPx = if (additionalInputBlurPx > 0f)
+                androidBlurSigmaToRadius(additionalInputBlurPx) else 0f
+            val prefilter = if (additionalInputRadiusPx > 0f) android.graphics.RenderEffect.createBlurEffect(
+                additionalInputRadiusPx, additionalInputRadiusPx, android.graphics.Shader.TileMode.CLAMP,
+            ) else null
+            val localInputEffect = if (hazeAtlas != null) {
+                createLiquidGlassHazeAtlasEffect(
                     atlas = hazeAtlas,
                     clearShader = obtainRuntimeShader("LiquidGlassClearAtlas", LiquidGlassShader.HAZE_ATLAS_SHADER).asAndroidRuntimeShader(),
                     hazeShader = obtainRuntimeShader("LiquidGlassHazeAtlas", LiquidGlassShader.HAZE_ATLAS_SHADER).asAndroidRuntimeShader(),
-                ).asComposeRenderEffect()
+                    prefilter = prefilter,
+                    sigmaUnits = inputBlurPx != null,
+                )
+            } else prefilter
+            if (inputBlurPx != null) {
+                // The backend rasterizes this input graph in its own RenderNode
+                // before the material shader reads it. Blur precedes atlas packing.
+                inputRenderEffect = if (localInputEffect != null && previousInputEffect != null)
+                    android.graphics.RenderEffect.createChainEffect(
+                        localInputEffect, previousInputEffect.asAndroidRenderEffect(),
+                    ).asComposeRenderEffect()
+                else localInputEffect?.asComposeRenderEffect() ?: previousInputEffect
+            } else if (localInputEffect != null) {
+                inputRenderEffect = localInputEffect.asComposeRenderEffect()
             }
             effect(materialEffect.asComposeRenderEffect())
         }
     } catch (e: Throwable) {
         android.util.Log.w("LiquidGlassEffect", "RuntimeShader fallback to blur+vibrancy", e)
+        if (inputBlurPx != null) {
+            inputRenderEffect = previousInputEffect
+            renderEffect = previousMaterialEffect
+            padding = previousPadding
+        }
         val effectiveStyle = LiquidGlassStyle.standard(style)
         if (effectiveStyle.blur > 0.0) {
-            val requestedPx = effectiveStyle.blur.toFloat() * density
-            val remainderPx = kotlin.math.sqrt((requestedPx * requestedPx - sampledBlurPx * sampledBlurPx).coerceAtLeast(0f))
-            if (remainderPx > 0f) blur(remainderPx)
+            if (inputBlurPx == null) {
+                val requestedPx = effectiveStyle.blur.toFloat() * density
+                val remainderPx = kotlin.math.sqrt((requestedPx * requestedPx - sampledBlurPx * sampledBlurPx).coerceAtLeast(0f))
+                if (remainderPx > 0f) blur(remainderPx)
+            } else {
+                val requestedSigmaPx = androidBlurRadiusToSigma(effectiveStyle.blur.toFloat() * density)
+                val remainder = liquidGlassInputBlur(sampledBlurPx, requestedSigmaPx)
+                if (remainder.additionalBlurPx > 0f) blur(androidBlurSigmaToRadius(remainder.additionalBlurPx))
+            }
         }
         vibrancy()
     }
@@ -167,6 +246,9 @@ fun createLiquidGlassHazeAtlasEffect(
     atlas: LiquidGlassShader.HazeAtlas,
     clearShader: android.graphics.RuntimeShader,
     hazeShader: android.graphics.RuntimeShader,
+    prefilter: android.graphics.RenderEffect? = null,
+    // Opt-in only: the original atlas path supplies Android radius units.
+    sigmaUnits: Boolean = false,
 ): android.graphics.RenderEffect {
     fun packed(
         shader: android.graphics.RuntimeShader,
@@ -184,11 +266,18 @@ fun createLiquidGlassHazeAtlasEffect(
             android.graphics.RenderEffect.createRuntimeShaderEffect(shader, "uTexture"), positioned,
         )
     }
-    val clear = packed(clearShader, atlas.clearBoundsPx)
-    val gaussian = if (atlas.remainingBlurPx > 0f) android.graphics.RenderEffect.createBlurEffect(
-        atlas.remainingBlurPx, atlas.remainingBlurPx, android.graphics.Shader.TileMode.CLAMP,
+    val clear = packed(clearShader, atlas.clearBoundsPx, prefilter)
+    val hazeRadiusPx = if (sigmaUnits) {
+        // As for the input prefilter, do not replace a tiny remainder with the
+        // radius API's minimum positive sigma (which would overshoot the target).
+        if (atlas.remainingBlurPx > 0.5f) androidBlurSigmaToRadius(atlas.remainingBlurPx) else 0f
+    } else atlas.remainingBlurPx
+    val gaussian = if (hazeRadiusPx > 0f) android.graphics.RenderEffect.createBlurEffect(
+        hazeRadiusPx, hazeRadiusPx, android.graphics.Shader.TileMode.CLAMP,
     ) else null
-    val haze = packed(hazeShader, atlas.hazeBoundsPx, gaussian)
+    val hazeInput = if (gaussian != null && prefilter != null)
+        android.graphics.RenderEffect.createChainEffect(gaussian, prefilter) else gaussian ?: prefilter
+    val haze = packed(hazeShader, atlas.hazeBoundsPx, hazeInput)
     // The slots never overlap, so SRC_OVER preserves the clear texels without color mixing.
     return android.graphics.RenderEffect.createBlendModeEffect(clear, haze, android.graphics.BlendMode.SRC_OVER)
 }

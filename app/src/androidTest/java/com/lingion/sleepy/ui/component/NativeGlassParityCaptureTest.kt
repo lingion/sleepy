@@ -3,6 +3,8 @@ package com.lingion.sleepy.ui.component
 import android.app.Activity
 import android.content.ContextWrapper
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ColorSpace
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -15,6 +17,7 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -62,6 +65,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
@@ -81,6 +86,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
@@ -116,6 +123,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
+import java.security.MessageDigest
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
@@ -181,10 +189,14 @@ class NativeGlassParityCaptureTest {
         val triggerTag get() = "static-${name}-anchor"
         val carrierTag get() = "static-${name}-carrier"
     }
-    private data class OpticalScene(val background: OpticalBackground, val dark: Boolean,
+    private data class OpticalScene(val background: OpticalBackground?, val dark: Boolean,
                                     val surface: OpticalSurface = OpticalSurface.home,
-                                    val showControls: Boolean = true) {
-        val name get() = "${background.name}-${if (dark) "dark" else "light"}-${surface.name}"
+                                    val showControls: Boolean = true,
+                                    val externalInputId: String? = null) {
+        init { require((background != null) != (externalInputId != null)) }
+        val backgroundId get() = externalInputId ?: checkNotNull(background).name
+        val inputName get() = "$backgroundId-${if (dark) "dark" else "light"}"
+        val name get() = "$inputName-${surface.name}"
     }
     private data class OpticalContentDensityObservation(
         val scene: OpticalScene, val slot: String, val density: Float, val fontScale: Float,
@@ -216,22 +228,48 @@ class NativeGlassParityCaptureTest {
     private val opticalPresentationEvents = ArrayList<String>()
     private val opticalPresentationTrace = ConcurrentLinkedQueue<JSONObject>()
     private var opticalPresentationTextColors: Map<String, Int> = emptyMap()
+    private data class StaticNativeInput(val bitmap: Bitmap, val metadata: JSONObject)
+    private var opticalNativeInputs: Map<String, StaticNativeInput> = emptyMap()
+    private var opticalSheetPane: GlassMaterialScope? = null
+    private var opticalSheetContentHeightDp = 420f
 
     /** Static optics are independent of the synthetic gesture/replay timelines below. */
     @Test fun captureStaticOpticalBackgroundMatrix() {
         val arguments = InstrumentationRegistry.getArguments()
         assumeTrue("Pass glassStaticCapture=true for the multi-background GPU matrix",
             arguments.getString("glassStaticCapture") == "true")
-        val nativeCanvasArgument = arguments.getString("glassStaticNativeCanvas") ?: "false"
+        val nativeInputDirectory = arguments.getString("glassStaticNativeInputDirectory")
+        val externalInputDirectory = arguments.getString("glassStaticExternalInputsDirectory")
+        require(nativeInputDirectory == null || externalInputDirectory == null) {
+            "Select either original native inputs or a preregistered external input set"
+        }
+        val externalManifest = externalInputDirectory?.let(::loadStaticExternalManifest)
+        val externalRecords = externalManifest?.getJSONArray("inputs")?.let { inputs ->
+            (0 until inputs.length()).map { inputs.getJSONObject(it) }
+        }
+        val inputDirectory = externalInputDirectory ?: nativeInputDirectory
+        val sheetContentHeightArgument = arguments.getString("glassStaticSheetContentHeightDp")
+        opticalSheetContentHeightDp = sheetContentHeightArgument?.toFloatOrNull() ?: run {
+            require(sheetContentHeightArgument == null) { "glassStaticSheetContentHeightDp must be a finite number in48..600" }
+            420f
+        }
+        require(opticalSheetContentHeightDp.isFinite() && opticalSheetContentHeightDp in 48f..600f) {
+            "glassStaticSheetContentHeightDp must be a finite number in48..600"
+        }
+        val nativeCanvasArgument = arguments.getString("glassStaticNativeCanvas")
+            ?: if (inputDirectory == null) "false" else "true"
         require(nativeCanvasArgument in listOf("true", "false")) { "glassStaticNativeCanvas must be true or false" }
         opticalNativeCanvas = nativeCanvasArgument == "true"
+        require(inputDirectory == null || opticalNativeCanvas) {
+            "External PNG inputs require the fixed375x667dp world; do not set glassStaticNativeCanvas=false"
+        }
         fun selected(name: String, allowed: List<String>, defaults: List<String> = allowed): List<String> {
             val values = arguments.getString(name)?.split(',')?.map(String::trim)?.distinct() ?: defaults
             require(values.isNotEmpty() && values.all { it in allowed }) { "$name must select from $allowed" }
             return values
         }
-        val backgrounds = selected("glassStaticBackgrounds", OpticalBackground.entries.map { it.name })
-            .map(OpticalBackground::valueOf)
+        val backgrounds = selected("glassStaticBackgrounds",
+            externalRecords?.map { it.getString("id") } ?: OpticalBackground.entries.map { it.name })
         val themes = selected("glassStaticThemes", listOf("light", "dark")).map { it == "dark" }
         val surfaces = selected("glassStaticSurfaces", OpticalSurface.entries.map { it.name },
             listOf("home", "share_sheet", "edit_sheet")).map(OpticalSurface::valueOf)
@@ -246,17 +284,21 @@ class NativeGlassParityCaptureTest {
         val captures = JSONArray()
         val baselines = JSONArray()
         val presentationActions = JSONArray()
-        val manifest = JSONObject().put("schema", 1).put("run_id", runId)
+        val manifest = JSONObject().put("schema", 1).put("run_id", runId).put("status", "running")
+            .put("external_input_manifest", externalManifest ?: JSONObject.NULL)
+            .put("evaluation_split", externalManifest?.getString("split") ?: "historical-calibration")
+            .put("requested_sheet_content_height_dp", opticalSheetContentHeightDp)
+            .put("sheet_content_height_explicit", sheetContentHeightArgument != null)
             .put("glass_static_native_canvas", opticalNativeCanvas)
             .put("background_canvas_policy", if (opticalNativeCanvas)
                 "Opt-in glassStaticNativeCanvas=true: actual fixed 375x667dp source world at the existing GlassBackground top-left, clipped to that world with neutral #F0F0F5 outside; never stretched to the Activity. Geometry is observed with localToScreen."
                 else "Default glassStaticNativeCanvas=false: preserve the original Activity-sized background reproduction; geometry is observed with localToScreen.")
             .put("native_canvas_limits", "Android font rasterization and menu/alert row shapes still differ from iOS. This is a static GPU fixture, not motion proof. Opt-in canvas captures do not establish an old-product GPU before image in that world; such comparisons need a separately captured old-product canvas or an explicitly labelled counterfactual proxy.")
             .put("sdk", Build.VERSION.SDK_INT).put("model", Build.MODEL).put("fingerprint", Build.FINGERPRINT)
-            .put("inputs", JSONArray(OpticalBackground.entries.map { it.metadata() }))
+            .put("inputs", JSONArray(externalRecords ?: OpticalBackground.entries.map { it.metadata() }))
             .put("theme_preset", ThemePresets.KEY_DEFAULT)
             .put("matrix", "Selected fixed inputs × themes × carriers; optional menu/alert use actual public presentation controls, with rest and each named held control")
-            .put("selected_backgrounds", JSONArray(backgrounds.map { it.name }))
+            .put("selected_backgrounds", JSONArray(backgrounds))
             .put("selected_themes", JSONArray(themes.map { if (it) "dark" else "light" }))
             .put("selected_surfaces", JSONArray(surfaces.map { it.name })).put("selected_states", JSONArray(states))
             .put("fixture_scope", "Actual product GlassTopAppBar/buttons/Dock/common controls, GlassModalBottomSheet share/edit carriers, and opt-in GlassDropdownMenu/GlassAlertDialog; not a full screen data-flow test")
@@ -266,31 +308,50 @@ class NativeGlassParityCaptureTest {
             .put("acceptance", "No single background or scalar metric proves parity. Review every input, theme and carrier. Center/edge RGB, luminance, saturation and channel gradients are descriptive, not inferred opacity/dispersion or pass thresholds.")
             .put("clock", "Compose mainClock static snapshots; presentation taps wait for recomposition, advance one frame to start popup animation, then settle640ms. Held after640ms without movement; not natural-time motion evidence or a product-fix assertion.")
             .put("presentation_fixture", "Menu anchor [126.5,411.5,122.5,33.5]dp and public offset [-63.5,-146]dp align its top-left with native [63,299]pt on the larger Android display. Liquid Glass uses measured 42dp rows plus 10dp top/bottom insets; Material Design retains M3 dimensions. Content follows observed native above-anchor display order Delete/Second action/First action. Alert title/message/actions use the measured native layout. Actual root/screen rectangles are exported; backing controls and font rasterization differ from iOS.")
+            .put("background_input_policy", when {
+                externalManifest != null -> "Preregistered external holdout PNGs: validate the complete manifest and every input in both light/dark traits before composition, including each original PNG byte hash. Each complete750x1334 source maps once to the existing375x667dp world using FilterQuality.Low. These stimuli require independently captured new native screenshots, not historical native-image substitutions. No crop, alignment fit, product geometry change or appearance-parity claim."
+                nativeInputDirectory != null -> "Opt-in native bare-background PNGs: all eight750x1334 inputs are validated and decoded before composition. Each complete image maps once to the existing375x667dp world using actual rounded Android layout pixels and FilterQuality.Low. The world stays at the real GlassBackground origin; the production Sheet is not moved or resized to fit it. No appearance-parity claim."
+                else -> "Existing OpticalCaptureBackground remains selected; no external PNG input was supplied."
+            })
             .put("baselines", baselines).put("captures", captures).put("presentation_actions", presentationActions)
-        val scene = mutableStateOf(OpticalScene(OpticalBackground.fine_grid, false, showControls = false))
-        compose.setContent {
-            val systemDensity = LocalDensity.current
-            SideEffect { opticalSystemFontScale = systemDensity.fontScale }
-            // The native optical reference uses its default content-size category.
-            // Normalize only this measuring fixture, preserving the user's setting.
-            CompositionLocalProvider(
-                LocalDensity provides Density(systemDensity.density, fontScale = 1f),
-                LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L },
-            ) {
-                OpticalFixture(scene.value)
-            }
-        }
-        compose.waitForIdle()
-        compose.mainClock.autoAdvance = false
+        fun sceneFor(background: String, dark: Boolean, surface: OpticalSurface = OpticalSurface.home,
+                     showControls: Boolean = true) = if (externalRecords == null)
+            OpticalScene(OpticalBackground.valueOf(background), dark, surface, showControls)
+        else OpticalScene(null, dark, surface, showControls, externalInputId = background)
+        val scene = mutableStateOf(sceneFor(backgrounds.first(), themes.first(), showControls = false))
+        File(directory, "matrix.json").writeText(manifest.toString(2))
         try {
+            if (inputDirectory != null) {
+                val validation = JSONObject().put("status", "validating")
+                manifest.put("native_input_validation", validation)
+                opticalNativeInputs = loadStaticNativeInputs(inputDirectory, validation, externalRecords)
+                manifest.put("inputs", JSONArray(backgrounds.flatMap { background -> themes.map { dark ->
+                    opticalNativeInputs.getValue(staticNativeInputName(background, dark)).metadata
+                } }))
+                File(directory, "matrix.json").writeText(manifest.toString(2))
+            }
+            compose.setContent {
+                val systemDensity = LocalDensity.current
+                SideEffect { opticalSystemFontScale = systemDensity.fontScale }
+                // The native optical reference uses its default content-size category.
+                // Normalize only this measuring fixture, preserving the user's setting.
+                CompositionLocalProvider(
+                    LocalDensity provides Density(systemDensity.density, fontScale = 1f),
+                    LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L },
+                ) {
+                    OpticalFixture(scene.value)
+                }
+            }
+            compose.waitForIdle()
+            compose.mainClock.autoAdvance = false
             for (dark in themes) for (background in backgrounds) {
-                val plain = OpticalScene(background, dark, showControls = false)
+                val plain = sceneFor(background, dark, showControls = false)
                 compose.runOnIdle { scene.value = plain }
                 settleOptical()
                 val activity = checkNotNull(opticalActivity)
                 assertTrue("Static optics require hardware acceleration", activity.root.isHardwareAccelerated)
                 val baselineWindow = activity.capture()
-                val baselineName = "${background.name}-${if (dark) "dark" else "light"}-background"
+                val baselineName = "$background-${if (dark) "dark" else "light"}-background"
                 baselineWindow.saveOpticalPng(File(directory, "$baselineName-window.png"))
                 val readyScreen = try {
                     awaitOpticalBackgroundScreen(activity, baselineWindow, density, directory, baselineName)
@@ -301,13 +362,13 @@ class NativeGlassParityCaptureTest {
                 val baselineScreen = readyScreen.bitmap
                 try {
                     baselineScreen.saveOpticalPng(File(directory, "$baselineName-screen.png"))
-                    baselines.put(JSONObject().put("background", background.name).put("dark", dark)
+                    baselines.put(JSONObject().put("background", background).put("dark", dark)
                         .put("window_png", "$baselineName-window.png").put("screen_png", "$baselineName-screen.png")
                         .put("background_canvas", opticalBackgroundWorld())
                         .put("window_geometry", activity.geometry())
                         .put("display_readiness", readyScreen.verification))
                     for (surface in surfaces) {
-                        val current = OpticalScene(background, dark, surface)
+                        val current = sceneFor(background, dark, surface)
                         compose.runOnIdle { opticalPresentationEvents.clear(); scene.value = current }
                         settleOptical()
                         if (surface.presentation) tapOptical(surface.triggerTag)
@@ -335,6 +396,10 @@ class NativeGlassParityCaptureTest {
                 (if ("held" in states) it.heldTags.size else 0) }
             assertEquals("Every selected carrier/theme/background/state is captured",
                 backgrounds.size * themes.size * statesPerScene, captures.length())
+            manifest.put("status", "passed")
+        } catch (failure: Throwable) {
+            manifest.put("status", "failed").put("exception", "${failure.javaClass.name}: ${failure.message}")
+            throw failure
         } finally {
             compose.mainClock.autoAdvance = true
             File(directory, "matrix.json").writeText(manifest.put("density", density)
@@ -365,6 +430,176 @@ class NativeGlassParityCaptureTest {
             .put("requested_logical_size_dp", if (opticalNativeCanvas) JSONArray(listOf(375, 667)) else JSONObject.NULL)
             .put("glass_background_host", host.json())
             .put("outside_world", if (opticalNativeCanvas) "opaque neutral #F0F0F5, recorded in the real GlassBackground source" else JSONObject.NULL)
+            .apply { opticalCurrentScene?.let { scene -> staticNativeInputMapping(scene, world)?.let {
+                put("native_input_mapping", it)
+            } } }
+    }
+
+    private fun staticNativeInputName(backgroundId: String, dark: Boolean) =
+        "$backgroundId-${if (dark) "dark" else "light"}"
+
+    private fun staticInputDirectory(directoryName: String): File {
+        require(directoryName.matches(Regex("[A-Za-z0-9][A-Za-z0-9._-]*"))) {
+            "Input directory must be one directory name beneath target externalFilesDir"
+        }
+        val external = checkNotNull(InstrumentationRegistry.getInstrumentation().targetContext.getExternalFilesDir(null))
+            .canonicalFile
+        val directory = File(external, directoryName).canonicalFile
+        require(directory.parentFile == external && directory.isDirectory) {
+            "Input directory must exist directly beneath target externalFilesDir: $directory"
+        }
+        return directory
+    }
+
+    /** Same schema1 preregistration protocol as the independent Dock fixture. */
+    private fun loadStaticExternalManifest(directoryName: String): JSONObject {
+        val directory = staticInputDirectory(directoryName)
+        val file = File(directory, "manifest.json").canonicalFile
+        require(file.parentFile == directory && file.isFile && file.length() <= 128 * 1024) {
+            "External input manifest must be a local manifest.json of at most128KiB"
+        }
+        return JSONObject(file.readText()).also { manifest ->
+            require(manifest.getInt("schema") == 1 && manifest.getString("split") in listOf("holdout", "calibration"))
+            require(manifest.getString("set_id").matches(Regex("[A-Za-z0-9][A-Za-z0-9_-]*")))
+            val inputs = manifest.getJSONArray("inputs")
+            require(inputs.length() in 1..32)
+            val ids = mutableSetOf<String>()
+            for (index in 0 until inputs.length()) {
+                val record = inputs.getJSONObject(index)
+                val id = record.getString("id")
+                require(id.matches(Regex("[A-Za-z0-9][A-Za-z0-9_-]*")) && ids.add(id))
+                require(record.getString("file") == "$id.png")
+                require(record.getString("sha256").matches(Regex("[a-f0-9]{64}")))
+            }
+        }
+    }
+
+    /** Preflight every registered input in both themes before setContent; no draw I/O. */
+    private fun loadStaticNativeInputs(directoryName: String, report: JSONObject,
+                                       externalRecords: List<JSONObject>? = null): Map<String, StaticNativeInput> {
+        val directory = staticInputDirectory(directoryName)
+        val ids = externalRecords?.map { it.getString("id") } ?: OpticalBackground.entries.map { it.name }
+        val expectedCount = ids.size * 2
+        val records = JSONArray()
+        report.put("directory", directory.path).put("expected_count", expectedCount).put("inputs", records)
+            .put("decode_policy", "BitmapFactory inScaled=false, inSampleSize=1, ARGB_8888, preferred sRGB; Bitmap.DENSITY_NONE. SHA256 covers original PNG bytes. No pixel edits or pre-resampling.")
+        val loaded = linkedMapOf<String, StaticNativeInput>()
+        try {
+            for (id in ids) for (dark in listOf(false, true)) {
+                val name = staticNativeInputName(id, dark)
+                val declared = externalRecords?.first { it.getString("id") == id }
+                val file = File(directory, declared?.getString("file") ?: "$name.png").canonicalFile
+                require(file.parentFile == directory && file.isFile) { "Missing native input $name.png" }
+                val bytes = file.readBytes()
+                val hash = MessageDigest.getInstance("SHA-256").digest(bytes)
+                    .joinToString("") { "%02x".format(it.toInt() and 255) }
+                require(declared == null || hash == declared.getString("sha256")) {
+                    "External input $id has changed after manifest registration"
+                }
+                val signature = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A)
+                require(bytes.size >= signature.size && signature.indices.all { bytes[it] == signature[it] }) {
+                    "$name.png must contain PNG bytes"
+                }
+                val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+                require(bounds.outWidth == 750 && bounds.outHeight == 1334 && bounds.outMimeType == "image/png") {
+                    "$name.png must be750x1334; got ${bounds.outWidth}x${bounds.outHeight} ${bounds.outMimeType}"
+                }
+                val options = BitmapFactory.Options().apply {
+                    inScaled = false
+                    inSampleSize = 1
+                    inPreferredConfig = Bitmap.Config.ARGB_8888
+                    inPreferredColorSpace = ColorSpace.get(ColorSpace.Named.SRGB)
+                }
+                val bitmap = checkNotNull(BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)) {
+                    "Cannot decode native input $name.png"
+                }
+                val metadata = JSONObject().put("scene", name).put("file", file.name)
+                    .put("sha256", hash).put("external_input_record", declared ?: JSONObject.NULL)
+                    .put("file_bytes", bytes.size).put("size_px", JSONArray(listOf(bitmap.width, bitmap.height)))
+                    .put("native_pixels_per_point", 2).put("native_world_size_pt", JSONArray(listOf(375, 667)))
+                    .put("encoded_color_space", bounds.outColorSpace?.name ?: JSONObject.NULL)
+                    .put("decoded_color_space", bitmap.colorSpace?.name ?: JSONObject.NULL)
+                    .put("decoded_config", bitmap.config?.name ?: JSONObject.NULL)
+                loaded[name] = StaticNativeInput(bitmap, metadata)
+                records.put(metadata)
+                require(bitmap.width == 750 && bitmap.height == 1334 && bitmap.config == Bitmap.Config.ARGB_8888 &&
+                    bitmap.colorSpace?.isSrgb == true) { "$name.png decoded with unexpected geometry/config/color space" }
+                bitmap.density = Bitmap.DENSITY_NONE
+                val row = IntArray(bitmap.width)
+                var minimumAlpha = 255
+                for (y in 0 until bitmap.height) {
+                    bitmap.getPixels(row, 0, bitmap.width, 0, y, bitmap.width, 1)
+                    for (pixel in row) minimumAlpha = minOf(minimumAlpha, pixel ushr 24)
+                }
+                metadata.put("minimum_decoded_alpha", minimumAlpha).put("bitmap_density", bitmap.density)
+                require(minimumAlpha == 255) { "$name.png must be an opaque bare background" }
+            }
+            require(loaded.size == expectedCount) { "All registered background/theme inputs are required" }
+            report.put("status", "validated").put("validated_count", loaded.size)
+            return loaded
+        } catch (failure: Throwable) {
+            report.put("status", "failed").put("exception", "${failure.javaClass.name}: ${failure.message}")
+            loaded.values.forEach { it.bitmap.recycle() }
+            throw failure
+        }
+    }
+
+    @Composable private fun StaticNativeInputBackground(input: StaticNativeInput, modifier: Modifier) {
+        val image = remember(input.bitmap) { input.bitmap.asImageBitmap() }
+        Canvas(modifier) {
+            drawImage(image = image, srcOffset = IntOffset.Zero, srcSize = IntSize(750, 1334),
+                dstOffset = IntOffset.Zero, dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()),
+                filterQuality = FilterQuality.Low)
+        }
+    }
+
+    private fun staticNativeInputMapping(scene: OpticalScene, source: OpticalLayoutGeometry): JSONObject? =
+        opticalNativeInputs[scene.inputName]?.let { input ->
+            JSONObject().put("input_scene", scene.inputName)
+                .put("input_sha256", input.metadata.getString("sha256"))
+                .put("source_rect_px", JSONArray(listOf(0, 0, 750, 1334)))
+                .put("destination_rect_local_px", JSONArray(listOf(0, 0, source.size.width, source.size.height)))
+                .put("requested_world_size_dp", JSONArray(listOf(375, 667)))
+                .put("android_density_px_per_dp", source.density).put("native_density_px_per_pt", 2)
+                .put("ideal_android_px_per_native_px", source.density / 2f)
+                .put("actual_scale_xy", JSONArray(listOf(source.size.width / 750.0, source.size.height / 1334.0)))
+                .put("destination_rounding_residual_px", JSONArray(listOf(
+                    source.size.width - 375f * source.density, source.size.height - 667f * source.density)))
+                .put("filter_quality", "Low").put("crop", false)
+                .put("policy", "Complete source mapped once to the complete measured fixed-world layout; native2px/pt becomes actual Android density px/dp, with only existing independent layout rounding. No geometry fit or native similarity conclusion.")
+        }
+
+    /** Observe the actual production material coordinates after its sheet-placement offset. */
+    private fun opticalSheetGeometryComparison(): JSONObject = compose.runOnIdle {
+        val pane = OpticalLayoutGeometry.read(checkNotNull(checkNotNull(opticalSheetPane).coordinates), density)
+        val world = OpticalLayoutGeometry.read(checkNotNull(opticalBackgroundCoordinates), density)
+        val actual = Rect((pane.screenRect.left - world.screenOrigin.x) / density,
+            (pane.screenRect.top - world.screenOrigin.y) / density,
+            (pane.screenRect.right - world.screenOrigin.x) / density,
+            (pane.screenRect.bottom - world.screenOrigin.y) / density)
+        val native = Rect(8f, 317.7f, 367f, 659f)
+        val worldWidth = world.size.width / density
+        val worldHeight = world.size.height / density
+        val overlapWidth = (minOf(actual.right, worldWidth) - maxOf(actual.left, 0f)).coerceAtLeast(0f)
+        val overlapHeight = (minOf(actual.bottom, worldHeight) - maxOf(actual.top, 0f)).coerceAtLeast(0f)
+        JSONObject().put("actual_material_layout", pane.json())
+            .put("actual_pane_world_ltrb_dp", JSONArray(listOf(actual.left, actual.top, actual.right, actual.bottom)))
+            .put("actual_pane_size_dp", JSONArray(listOf(actual.width, actual.height)))
+            .put("native_ios26_5_medium_sheet_ax_world_ltrb_pt", JSONArray(listOf(native.left, native.top, native.right, native.bottom)))
+            .put("native_sheet_ax_size_pt", JSONArray(listOf(native.width, native.height)))
+            .put("android_minus_native_ltrb_logical", JSONArray(listOf(actual.left - native.left, actual.top - native.top,
+                actual.right - native.right, actual.bottom - native.bottom)))
+            .put("android_minus_native_size_logical", JSONArray(listOf(actual.width - native.width, actual.height - native.height)))
+            .put("background_world_size_dp", JSONArray(listOf(worldWidth, worldHeight)))
+            .put("pane_bounds_inside_background_world", actual.left >= 0 && actual.top >= 0 &&
+                actual.right <= worldWidth && actual.bottom <= worldHeight)
+            .put("pane_bounds_area_fraction_inside_background_world", overlapWidth * overlapHeight / (actual.width * actual.height))
+            .put("outside_background_world", "Existing opaque neutral#F0F0F5; pane geometry and fixed source world are not fitted together")
+            .put("geometry_source", "Production GlassMaterialScope attached LayoutCoordinates after real placement, mapped by localToScreen; a material layout rectangle, not an alpha mask or the pre-placement semantics carrier")
+            .put("native_reference", "native-static-optics/rest/optics-fine_grid-light-presentations-sheet-rest; public AX[8,317.7,359,341.3]pt on375x667pt iOS26.5/23F77. Neutral visible raster contour separately measured[8,317.5,367,659]pt")
+            .put("requested_sheet_content_height_dp", opticalSheetContentHeightDp)
+            .put("limits", "Android production Expanded sheet with fixture${opticalSheetContentHeightDp}dp content and actual device Window differs from iOS system medium detent and native contents. Delta is descriptive, with Android dp versus iOS pt at declared world origins; no translation, resize, crop, contour equivalence or optical-parity inference.")
     }
 
     private fun opticalAlertLayout(): OpticalAlertLayout = compose.runOnIdle {
@@ -579,16 +814,19 @@ class NativeGlassParityCaptureTest {
                     GlassBackground(0f, Modifier.fillMaxSize().onGloballyPositioned { opticalBackgroundHostCoordinates = it }) {
                         if (opticalNativeCanvas) {
                             Box(Modifier.fillMaxSize().background(Color(0xFFF0F0F5))) {
-                                OpticalCaptureBackground(scene.background,
-                                    Modifier.align(Alignment.TopStart).requiredSize(375.dp, 667.dp).clipToBounds()
-                                        .onGloballyPositioned { opticalBackgroundCoordinates = it })
+                                val sourceModifier = Modifier.align(Alignment.TopStart)
+                                    .requiredSize(375.dp, 667.dp).clipToBounds()
+                                    .onGloballyPositioned { opticalBackgroundCoordinates = it }
+                                if (opticalNativeInputs.isEmpty()) OpticalCaptureBackground(checkNotNull(scene.background), sourceModifier)
+                                else StaticNativeInputBackground(
+                                    opticalNativeInputs.getValue(scene.inputName), sourceModifier)
                             }
                         } else {
-                            OpticalCaptureBackground(scene.background,
+                            OpticalCaptureBackground(checkNotNull(scene.background),
                                 Modifier.onGloballyPositioned { opticalBackgroundCoordinates = it })
                         }
                     }
-                    if (scene.showControls) key(scene.background, scene.dark, scene.surface) {
+                    if (scene.showControls) key(scene.backgroundId, scene.dark, scene.surface) {
                         if (scene.surface == OpticalSurface.home) {
                             Box(Modifier.fillMaxSize()) {
                                 GlassTopAppBar(title = { Text("Optical background matrix") }, windowInsets = WindowInsets(0),
@@ -618,7 +856,7 @@ class NativeGlassParityCaptureTest {
                                 OpticalMeasuredContent(scene, "sheet-content", currentDensity) {
                                     val dialogView = LocalView.current
                                     SideEffect { opticalDialog = OpticalCaptureWindow.from(dialogView) }
-                                    Column(Modifier.fillMaxWidth().height(420.dp).padding(24.dp).testTag("static-sheet-content"),
+                                    Column(Modifier.fillMaxWidth().height(opticalSheetContentHeightDp.dp).padding(24.dp).testTag("static-sheet-content"),
                                         verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
                                             verticalAlignment = Alignment.CenterVertically) {
@@ -720,7 +958,9 @@ class NativeGlassParityCaptureTest {
         CompositionLocalProvider(LocalDensity provides measuringDensity) {
             val actualDensity = LocalDensity.current
             val actualView = LocalView.current
+            val actualMaterial = LocalGlassMaterialBackdrop.current as? GlassMaterialScope
             SideEffect {
+                if (slot == "sheet-content") opticalSheetPane = actualMaterial
                 opticalContentDensityObservations.add(OpticalContentDensityObservation(
                     scene, slot, actualDensity.density, actualDensity.fontScale,
                     actualView, actualView.rootView, SystemClock.uptimeMillis(),
@@ -876,7 +1116,7 @@ class NativeGlassParityCaptureTest {
                 bounds(compose.onNodeWithTag(scene.surface.triggerTag, useUnmergedTree = true))
                     .translate(Offset(activityOrigin[0].toFloat(), activityOrigin[1].toFloat()))
             } else null
-            captures.put(JSONObject().put("scene", scene.name).put("background", scene.background.name)
+            captures.put(JSONObject().put("scene", scene.name).put("background", scene.backgroundId)
                 .put("theme", if (scene.dark) "dark" else "light").put("carrier", scene.surface.name).put("phase", phase)
                 .put("window_source", when (scene.surface) {
                     OpticalSurface.home -> "activity"
@@ -888,6 +1128,9 @@ class NativeGlassParityCaptureTest {
                 .put("background_canvas", opticalBackgroundWorld())
                 .put("window_geometry", surface.geometry())
                 .put("actual_alert_layout", if (scene.surface == OpticalSurface.alert) opticalAlertLayout().json() else JSONObject.NULL)
+                .put("sheet_geometry_comparison", if (opticalNativeInputs.isNotEmpty() &&
+                    scene.surface in listOf(OpticalSurface.share_sheet, OpticalSurface.edit_sheet))
+                    opticalSheetGeometryComparison() else JSONObject.NULL)
                 .put("native_alert_alignment", nativeAlignment ?: JSONObject.NULL)
                 .put("display_readiness", readyScreen.verification)
                 .put("content_density_observations", contentDensity)

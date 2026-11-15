@@ -1,6 +1,8 @@
 package com.lingion.sleepy.ui.component
 
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ColorSpace
 import android.os.Build
 import android.os.SystemClock
 import androidx.compose.foundation.Canvas
@@ -53,6 +55,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -71,6 +74,12 @@ import com.lingion.sleepy.ui.component.liquidglass.notifyBackdropDraw
 import com.lingion.sleepy.ui.component.liquidglass.withContentSignal
 import com.lingion.sleepy.ui.component.liquidglass.LocalDockBackdropAppearanceEnabled
 import com.lingion.sleepy.ui.component.liquidglass.LocalDockLumaObserver
+import com.lingion.sleepy.ui.component.liquidglass.DockBaseMaterialProbe
+import com.lingion.sleepy.ui.component.liquidglass.DockToneResponse
+import com.lingion.sleepy.ui.component.liquidglass.DockDarkLowToneResponse
+import com.lingion.sleepy.ui.component.liquidglass.DockToneThresholds
+import com.lingion.sleepy.ui.component.liquidglass.DockBrightRimResponse
+import com.lingion.sleepy.ui.component.liquidglass.LocalDockBaseMaterialProbe
 import com.lingion.sleepy.ui.component.liquidglass.rememberGlassHostState
 import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassNavigationBar
 import com.lingion.sleepy.ui.component.liquidglass.LocalDockInputTimeNanos
@@ -100,6 +109,8 @@ import kotlin.math.roundToInt
  * Opt-in hardware optical evidence in the native reference's fixed source world.
  * Production Dock geometry, material, animation, and pointer handling are reused.
  * A successful run validates capture coordinates/readiness, not native appearance.
+ * Optional glassDockNativeInputDirectory names a target externalFilesDir child
+ * containing all eight {OpticalBackground.name}-{light|dark}.png bare sources.
  */
 @RunWith(AndroidJUnit4::class)
 @SdkSuppress(minSdkVersion = 33)
@@ -128,9 +139,13 @@ class NativeDockOpticalWorldRenderTest {
     }
 
     private data class Scene(val background: OpticalBackground, val dark: Boolean, val showDock: Boolean,
-                             val spatialInput: SpatialInput? = null, val spatialStage: Int = -1) {
-        val name get() = "${spatialInput?.name ?: background.name}-${if (dark) "dark" else "light"}"
+                             val spatialInput: SpatialInput? = null, val spatialStage: Int = -1,
+                             val externalInputId: String? = null) {
+        val backgroundId get() = externalInputId ?: spatialInput?.name ?: background.name
+        val name get() = "$backgroundId-${if (dark) "dark" else "light"}"
     }
+
+    private data class NativeInput(val bitmap: Bitmap, val metadata: JSONObject)
 
     private data class World(val source: OpticalLayoutGeometry, val host: OpticalLayoutGeometry) {
         fun json() = JSONObject().put("source", source.json()).put("glass_background_host", host.json())
@@ -196,6 +211,10 @@ class NativeDockOpticalWorldRenderTest {
     private var notifySourceChanges = false
     private var observedGlassHost: GlassHostState? = null
     private val lumaSamples = ConcurrentLinkedQueue<BackdropLumaSample>()
+    private var nativeInputs: Map<String, NativeInput> = emptyMap()
+    private var fixtureBackdropAppearanceEnabled = true
+    private var productOrdinaryTint: Int? = null
+    private var baseMaterialProbe: DockBaseMaterialProbe? = null
 
     /** Retained REST sequence; deliberately separate from the legacy synthetic REST/HELD test. */
     @Test fun captureRetainedDockLocalAppearance() {
@@ -354,15 +373,137 @@ class NativeDockOpticalWorldRenderTest {
 
     @Test fun captureNativeDockOpticalWorld() {
         val arguments = InstrumentationRegistry.getArguments()
+        val probeFields = listOf("glassDockBaseBorder", "glassDockBaseHairline", "glassDockBaseTintRgb", "glassDockBaseProfilePower",
+            "glassDockBaseRimCubicShoulderBlend",
+            "glassDockToneWeight", "glassDockToneDarkChroma", "glassDockToneLow", "glassDockToneHigh", "glassDockDisableRawEdges",
+            "glassDockToneDarkIntercept", "glassDockToneDarkGain", "glassDockDarkLowToneLinearIntercept",
+            "glassDockDarkLowToneLinearGain", "glassDockDarkLowToneLow", "glassDockDarkLowToneHigh",
+            "glassDockBaseHaze", "glassDockBaseHazeBlur", "glassDockBaseContrast", "glassDockBaseSaturation", "glassDockBaseBrightness",
+            "glassDockBrightRimWidth", "glassDockBrightRimIntercept", "glassDockBrightRimLuma", "glassDockBrightRimChroma",
+            "glassDockBrightRimAngularBlend", "glassDockBrightRimNormalCrossGain", "glassDockBrightRimCosineBlend",
+            "glassDockBrightRimCubicShoulderBlend",
+            "glassDockDarkRimWidth", "glassDockDarkRimIntercept", "glassDockDarkRimLuma", "glassDockDarkRimChroma",
+            "glassDockDarkRimAngularBlend", "glassDockDarkRimNormalCrossGain", "glassDockDarkRimCosineBlend",
+            "glassDockDarkRimCubicShoulderBlend", "glassDockDarkRimLogitBlend", "glassDockDarkRimHeadroomBlend")
+        val probeEnabled = arguments.getString("glassDockBaseProbe")
+        require(probeEnabled == null || probeEnabled == "true")
+        require(probeEnabled == "true" || probeFields.all { arguments.getString(it) == null }) {
+            "Material interventions require explicit glassDockBaseProbe=true"
+        }
+        if (probeEnabled == "true") {
+            val border = arguments.getString("glassDockBaseBorder") ?: "true"
+            require(border in listOf("true", "false"))
+            val hairline = arguments.getString("glassDockBaseHairline")?.toDouble()?.also {
+                require(it.isFinite() && it in 0.0..1.0)
+            }
+            val power = arguments.getString("glassDockBaseProfilePower")?.toDouble()?.also {
+                require(it.isFinite() && it in 1e-3..Float.MAX_VALUE.toDouble())
+            }
+            val tint = arguments.getString("glassDockBaseTintRgb")?.let {
+                require(it.matches(Regex("#[0-9a-fA-F]{6}")))
+                Color(android.graphics.Color.parseColor(it))
+            }
+            val toneWeight = arguments.getString("glassDockToneWeight")?.toDouble()
+            val darkChroma = arguments.getString("glassDockToneDarkChroma")?.toDouble()
+            val toneLow = arguments.getString("glassDockToneLow")?.toDouble()
+            val toneHigh = arguments.getString("glassDockToneHigh")?.toDouble()
+            require((toneWeight == null) == (darkChroma == null)) { "Both tone weight and dark chroma are explicit" }
+            require((toneLow == null) == (toneHigh == null)) { "Both adaptive thresholds are explicit" }
+            require(toneLow == null || toneWeight != null) { "Thresholds require tone response" }
+            val darkIntercept = arguments.getString("glassDockToneDarkIntercept")?.toDouble()
+            val darkGain = arguments.getString("glassDockToneDarkGain")?.toDouble()
+            require((darkIntercept == null) == (darkGain == null)) { "Both dark affine coefficients are explicit" }
+            require(darkIntercept == null || toneWeight != null) { "Dark coefficients require tone response" }
+            val lowToneValues = listOf("LinearIntercept", "LinearGain", "Low", "High").map {
+                arguments.getString("glassDockDarkLowTone" + it)?.toDouble()
+            }
+            require(lowToneValues.all { it == null } || lowToneValues.all { it != null }) { "All dark low tone inputs are explicit" }
+            require(lowToneValues.first() == null || toneWeight != null) { "Dark low tone requires tone response" }
+            val darkLowTone = lowToneValues.first()?.let { intercept ->
+                DockDarkLowToneResponse(intercept, checkNotNull(lowToneValues[1]),
+                    DockToneThresholds(checkNotNull(lowToneValues[2]), checkNotNull(lowToneValues[3])))
+            }
+            fun rimResponse(prefix: String): DockBrightRimResponse? {
+                val fields = listOf("Width", "Intercept", "Luma", "Chroma")
+                val values = fields.map { arguments.getString(prefix + it)?.toDouble() }
+                require(values.all { it == null } || values.all { it != null }) { "All rim coefficients are explicit" }
+                require(values.first() == null || toneWeight != null) { "Rim requires a tone response" }
+                val angular = arguments.getString(prefix + "AngularBlend")?.toDouble()
+                val cross = arguments.getString(prefix + "NormalCrossGain")?.toDouble()
+                require((angular == null) == (cross == null)) { "Both angular inputs are explicit" }
+                require(angular == null || values.first() != null) { "Angular candidate requires a finite rim" }
+                val cosine = arguments.getString(prefix + "CosineBlend")?.toDouble()
+                require(cosine == null || values.first() != null) { "Cosine candidate requires a finite rim" }
+                val shoulder = arguments.getString(prefix + "CubicShoulderBlend")?.toDouble()
+                require(shoulder == null || values.first() != null) { "Shoulder candidate requires a finite rim" }
+                val logit = if (prefix == "glassDockDarkRim") {
+                    arguments.getString("glassDockDarkRimLogitBlend")?.toDouble()
+                } else null
+                require(logit == null || values.first() != null) { "Logit composition requires a finite dark rim" }
+                val headroom = if (prefix == "glassDockDarkRim") {
+                    arguments.getString("glassDockDarkRimHeadroomBlend")?.toDouble()
+                } else null
+                require(headroom == null || values.first() != null) { "Headroom composition requires a finite dark rim" }
+                return values.first()?.let { width ->
+                    DockBrightRimResponse(widthDp = width, intercept = checkNotNull(values[1]),
+                        lumaGain = checkNotNull(values[2]), chromaGain = checkNotNull(values[3]),
+                        angularBlend = angular ?: 0.0, normalCrossGain = cross ?: 0.0,
+                        cosineBlend = cosine ?: 0.0, cubicShoulderBlend = shoulder ?: 0.0,
+                        logitBlend = logit ?: 0.0, headroomBlend = headroom ?: 0.0)
+                }
+            }
+            val brightRim = rimResponse("glassDockBrightRim")
+            val darkRim = rimResponse("glassDockDarkRim")
+            val tone = toneWeight?.let {
+                DockToneResponse(brightWeight = it, darkChromaGain = checkNotNull(darkChroma),
+                    adaptiveThresholds = toneLow?.let { low -> DockToneThresholds(low, checkNotNull(toneHigh)) },
+                    darkIntercept = darkIntercept ?: 14.0392 / 255.0,
+                    darkGain = darkGain ?: .821569,
+                    brightRim = brightRim, darkRim = darkRim, darkLowTone = darkLowTone)
+            }
+            val disableRawEdges = arguments.getString("glassDockDisableRawEdges") ?: "false"
+            require(disableRawEdges in listOf("true", "false"))
+            require((brightRim == null && darkRim == null) || disableRawEdges == "true") { "Finite rim candidate must not stack raw-source lines" }
+            fun boundedProbe(name: String, low: Double, high: Double): Double? =
+                arguments.getString(name)?.toDouble()?.also { require(it.isFinite() && it in low..high) }
+            baseMaterialProbe = DockBaseMaterialProbe(drawBorder = border == "true", hairline = hairline,
+                tintRgb = tint, refractionProfilePower = power, toneResponse = tone,
+                disableRawEdges = disableRawEdges == "true",
+                haze = boundedProbe("glassDockBaseHaze", 0.0, 1.0),
+                hazeBlur = boundedProbe("glassDockBaseHazeBlur", 0.0, 64.0),
+                contrast = boundedProbe("glassDockBaseContrast", -1.0, 1.0),
+                saturation = boundedProbe("glassDockBaseSaturation", 0.0, 8.0),
+                brightness = boundedProbe("glassDockBaseBrightness", 0.0, 8.0),
+                baseRimCubicShoulderBlend = boundedProbe("glassDockBaseRimCubicShoulderBlend", 0.0, 1.0))
+        }
         notifySourceChanges = arguments.getString("glassDockSourceNotifications") == "true"
         assumeTrue("Enable with glassDockOpticalWorld=true", arguments.getString("glassDockOpticalWorld") == "true")
+        val nativeInputDirectory = arguments.getString("glassDockNativeInputDirectory")
+        val externalInputDirectory = arguments.getString("glassDockExternalInputsDirectory")
+        require(nativeInputDirectory == null || externalInputDirectory == null) {
+            "Select either original native inputs or a preregistered external input set"
+        }
+        val externalManifest = externalInputDirectory?.let(::loadExternalManifest)
+        val externalSplit = externalManifest?.getString("split")
+        val externalRecords = externalManifest?.getJSONArray("inputs")?.let { inputs ->
+            (0 until inputs.length()).map { inputs.getJSONObject(it) }
+        }
+        val appearanceArgument = arguments.getString("glassDockBackdropAppearance") ?: "true"
+        require(appearanceArgument in listOf("true", "false"))
+        fixtureBackdropAppearanceEnabled = appearanceArgument == "true"
+        val hideNavigationArgument = arguments.getString("glassDockHideNavigationBar") ?: "false"
+        require(hideNavigationArgument in listOf("true", "false"))
+        val hideNavigationBar = hideNavigationArgument == "true"
+        val statesArgument = arguments.getString("glassDockOpticalStates") ?: "rest,held"
+        require(statesArgument in listOf("rest", "rest,held"))
+        val captureHeld = statesArgument != "rest"
         fun selected(argument: String, allowed: List<String>): List<String> {
             val result = arguments.getString(argument)?.split(',')?.map(String::trim)?.distinct() ?: allowed
             require(result.isNotEmpty() && result.all { it in allowed }) { "$argument must select from $allowed" }
             return result
         }
-        val backgrounds = selected("glassDockOpticalBackgrounds", OpticalBackground.entries.map { it.name })
-            .map(OpticalBackground::valueOf)
+        val backgrounds = selected("glassDockOpticalBackgrounds",
+            externalRecords?.map { it.getString("id") } ?: OpticalBackground.entries.map { it.name })
         val themes = selected("glassDockOpticalThemes", listOf("light", "dark")).map { it == "dark" }
         val parentArgument = arguments.getString("glassDockOpticalParent") ?: "uikit"
         nativeParent = NativeParent.entries.firstOrNull { it.argument == parentArgument }
@@ -379,6 +520,60 @@ class NativeDockOpticalWorldRenderTest {
             .put("sdk", Build.VERSION.SDK_INT).put("model", Build.MODEL).put("fingerprint", Build.FINGERPRINT)
             .put("scope", "Production LiquidGlassNavigationBar + GlassHost/GlassBackground; fixed 375x667dp source world; initially selected first destination; REST and settled HELD before END. Capture/coordinate validity only, not an appearance or motion parity verdict.")
             .put("native_parent", nativeParent.argument)
+            .put("fixture_backdrop_appearance_enabled", fixtureBackdropAppearanceEnabled)
+            .put("fixture_base_material_probe", baseMaterialProbe?.let { probe ->
+                JSONObject().put("scope", "Explicit base-only calibration intervention, not a product factory or parity verdict")
+                    .put("draw_external_border", probe.drawBorder)
+                    .put("hairline", probe.hairline ?: JSONObject.NULL)
+                    .put("requested_tint_rgb", probe.tintRgb?.toArgb()?.and(0x00FFFFFF) ?: JSONObject.NULL)
+                    .put("tint_alpha_policy", "Retain the actual material factory alpha exactly; RGB-only intervention")
+                    .put("requested_refraction_profile_power", probe.refractionProfilePower ?: JSONObject.NULL)
+                    .put("refraction_profile_power_uniform_float", probe.refractionProfilePower?.toFloat()?.toDouble() ?: JSONObject.NULL)
+                    .put("disable_raw_edges", probe.disableRawEdges)
+                    .put("requested_haze", probe.haze ?: JSONObject.NULL)
+                    .put("requested_haze_blur", probe.hazeBlur ?: JSONObject.NULL)
+                    .put("requested_contrast", probe.contrast ?: JSONObject.NULL)
+                    .put("requested_saturation", probe.saturation ?: JSONObject.NULL)
+                    .put("requested_brightness", probe.brightness ?: JSONObject.NULL)
+                    .apply { probe.baseRimCubicShoulderBlend?.let { put("requested_base_rim_cubic_shoulder_blend", it) } }
+                    .put("dock_tone_response", probe.toneResponse?.let { tone ->
+                        JSONObject().put("bright_weight", tone.brightWeight).put("dark_chroma_gain", tone.darkChromaGain)
+                            .put("blend", tone.blend)
+                            .put("bright_intercept", tone.brightIntercept).put("bright_gain", tone.brightGain)
+                            .put("bright_chroma_gain", tone.brightChromaGain).put("dark_intercept", tone.darkIntercept)
+                            .put("dark_gain", tone.darkGain).put("adaptive_thresholds", tone.adaptiveThresholds?.let {
+                                JSONObject().put("low", it.low).put("high", it.high)
+                            } ?: JSONObject.NULL)
+                            .put("bright_rim", tone.brightRim?.let { rim ->
+                                JSONObject().put("width_dp", rim.widthDp).put("intercept", rim.intercept)
+                                    .put("luma_gain", rim.lumaGain).put("chroma_gain", rim.chromaGain).put("blend", rim.blend)
+                                    .put("angular_blend", rim.angularBlend).put("normal_cross_gain", rim.normalCrossGain)
+                                    .put("cosine_blend", rim.cosineBlend)
+                                    .apply { if (rim.cubicShoulderBlend != 0.0) put("cubic_shoulder_blend", rim.cubicShoulderBlend) }
+                            } ?: JSONObject.NULL)
+                            .put("dark_low_tone", tone.darkLowTone?.let { curve ->
+                                JSONObject().put("linear_intercept", curve.linearIntercept).put("linear_gain", curve.linearGain)
+                                    .put("transition", JSONObject().put("low", curve.transition.low).put("high", curve.transition.high))
+                                    .put("blend", curve.blend)
+                            } ?: JSONObject.NULL)
+                            .put("dark_rim", tone.darkRim?.let { rim ->
+                                JSONObject().put("width_dp", rim.widthDp).put("intercept", rim.intercept)
+                                    .put("luma_gain", rim.lumaGain).put("chroma_gain", rim.chromaGain).put("blend", rim.blend)
+                                    .put("angular_blend", rim.angularBlend).put("normal_cross_gain", rim.normalCrossGain)
+                                    .put("cosine_blend", rim.cosineBlend)
+                                    .apply { if (rim.cubicShoulderBlend != 0.0) put("cubic_shoulder_blend", rim.cubicShoulderBlend) }
+                                    .apply { if (rim.logitBlend != 0.0) put("logit_blend", rim.logitBlend) }
+                                    .apply { if (rim.headroomBlend != 0.0) put("headroom_blend", rim.headroomBlend) }
+                            } ?: JSONObject.NULL)
+                    } ?: JSONObject.NULL)
+            } ?: JSONObject.NULL)
+            .put("capture_navigation_bar_hidden", hideNavigationBar)
+            .put("external_input_manifest", externalManifest ?: JSONObject.NULL)
+            .put("evaluation_split", externalSplit ?: "historical-calibration")
+            .put("appearance_policy", if (fixtureBackdropAppearanceEnabled)
+                "Existing fixture opt-in experimental backdrop hysteresis; differs from the product's default false. Requested and effective material themes are reported separately."
+                else "Product default: backdrop hysteresis disabled, material follows the selected app theme.")
+            .put("requested_capture_states", statesArgument)
             .put("native_reference", if (nativeParent == NativeParent.SwiftUI)
                 "swiftui-dock-parent-61; four-item SwiftUI TabView in the production-like navigation parent;375x667pt at2px/pt"
                 else "dock-optics-natural-20261113; independent three-item UITabBar;375x667pt at2px/pt")
@@ -390,15 +585,23 @@ class NativeDockOpticalWorldRenderTest {
             .put("native_rest_base_world_rect_pt", nativeParent.base.json())
             .put("native_rest_lens_world_rect_pt", nativeParent.lens.json())
             .put("native_target_limits", if (nativeParent == NativeParent.SwiftUI)
-                "REST visible base body and first-lens AX bounds from the native four-tab parent. No alpha-mask claim. Native synthetic scroll text and SF Symbols differ; optical comparisons must exclude their influence. Native local material style adapts to background independently of the dark window. Production now samples its external backdrop with explicit engineering hysteresis; app theme and sampled material state are recorded separately. No native classifier equivalence is claimed."
+                "REST visible base body and first-lens AX bounds from the historical native four-tab parent. These are geometry targets, not the source of new external holdout captures. No alpha-mask claim. Native synthetic scroll text and SF Symbols differ; optical comparisons must exclude their influence. Native local material style adapts independently of the dark window; the fixture's actual appearance-feature policy and material state are recorded separately. No native classifier equivalence is claimed."
                 else "Painted base body bright rim and selected lens gray fill from original fine_grid-light REST pixels; excludes outer shadow and does not claim complete alpha support. Holder remains distinct. Base local maximum-jump checks agree29/32; lens32/32.")
             .put("placement_policy", "Translate the declared caller only; retain product21dp side margins,62dp base height and12dp shadow room. Native holder and Android caller are distinct. Runtime carrier width must equal round(caller*density)-2*round(21*density); native-world edges independently retain the existing one-physical-pixel tolerance. Never stretch the source or product to fit screenshots.")
             .put("source_world_policy", "Required375x667dp at the observed GlassBackground top-left; unit local-to-screen axes, no stretch, and fully visible in the real host are required. Font scale1 and LTR are fixture-only native defaults.")
-            .put("theme_preset", ThemePresets.KEY_DEFAULT).put("inputs", JSONArray(backgrounds.map { it.metadata() }))
+            .put("theme_preset", ThemePresets.KEY_DEFAULT)
+            .put("inputs", JSONArray(externalRecords ?: backgrounds.map { OpticalBackground.valueOf(it).metadata() }))
             .put("selected_themes", JSONArray(themes.map { if (it) "dark" else "light" }))
             .put("clock_policy", "Compose clock supplied to production Dock input;1600ms animation settle then explicit frame advancement until asynchronous source appearance and composed foreground agree before REST/HELD. Clock time and real uptime exported separately. No synthetic clock is claimed to be native real-time motion.")
             .put("capture_policy", "Actual Activity PixelCopy after HWUI commit plus composited display; >=99.5% RGB3 thresholds unchanged. This full-Activity fixture explicitly excludes only actual visible systemBars/displayCutout insets from display readiness and asserts that the complete Dock holder remains inside the compared region. Full Window and display PNGs are saved independently.")
-            .put("input_policy", "DOWN at measured REST painted Home lens center, no move, held capture before cleanup CANCEL. No UP is injected and selected-first wrapper state does not prove UP commit.")
+            .put("input_policy", if (captureHeld)
+                "DOWN at measured REST painted Home lens center, no move, held capture before cleanup CANCEL. No UP is injected and selected-first wrapper state does not prove UP commit."
+                else "REST-only optical comparison; no pointer input is injected.")
+            .put("background_input_policy", when {
+                externalManifest != null -> "Registered external $externalSplit PNGs: validate the complete manifest and all image byte hashes before composition, then draw each complete750x1334 source into the existing375x667dp world. These synthetic stimuli are not historical native exports; independently captured new native screenshots are required. No crop, alignment fit, retouch or appearance-parity claim."
+                nativeInputDirectory != null -> "Opt-in native bare-background PNGs, all eight validated and decoded before Compose content starts. Each complete750x1334 source maps to the existing375x667dp world using actual rounded Android layout pixels and FilterQuality.Low; no crop, alignment fit, retouch, generated replacement or appearance-parity claim."
+                else -> "Existing procedurally drawn OpticalCaptureBackground; no external input was supplied."
+            })
             .put("baselines", baselines).put("captures", captures).put("geometry_observations", observations)
             .put("input_events", inputEvents)
         val report = File(directory, "result.json")
@@ -408,8 +611,24 @@ class NativeDockOpticalWorldRenderTest {
             report.writeText(result.toString(2))
         }
         save()
-        val scene = mutableStateOf(Scene(backgrounds.first(), themes.first(), false))
+        fun sceneFor(background: String, dark: Boolean) = if (externalRecords == null)
+            Scene(OpticalBackground.valueOf(background), dark, false)
+        else Scene(OpticalBackground.fine_grid, dark, false, externalInputId = background)
+        val scene = mutableStateOf(sceneFor(backgrounds.first(), themes.first()))
+        var navigationBarWindow: android.view.Window? = null
+        var navigationBarOriginallyVisible: Boolean? = null
         try {
+            val inputDirectory = externalInputDirectory ?: nativeInputDirectory
+            if (inputDirectory != null) {
+                val validation = JSONObject().put("status", "validating")
+                result.put("native_input_validation", validation)
+                save()
+                nativeInputs = loadNativeInputs(inputDirectory, validation, externalRecords)
+                result.put("inputs", JSONArray(backgrounds.flatMap { background -> themes.map { dark ->
+                    nativeInputs.getValue("$background-${if (dark) "dark" else "light"}").metadata
+                } }))
+                save()
+            }
             compose.setContent {
                 val actualDensity = LocalDensity.current
                 SideEffect { systemFontScale = actualDensity.fontScale }
@@ -420,16 +639,40 @@ class NativeDockOpticalWorldRenderTest {
                 ) { Fixture(scene.value) }
             }
             compose.waitForIdle()
+            if (hideNavigationBar) {
+                val activity = checkNotNull(surface)
+                val window = checkNotNull(activity.window)
+                navigationBarWindow = window
+                result.put("system_ui_before_capture_override", activity.geometry())
+                InstrumentationRegistry.getInstrumentation().runOnMainSync {
+                    navigationBarOriginallyVisible = checkNotNull(activity.root.rootWindowInsets)
+                        .isVisible(android.view.WindowInsets.Type.navigationBars())
+                    window.insetsController!!.hide(android.view.WindowInsets.Type.navigationBars())
+                }
+                compose.waitUntil(timeoutMillis = 3_000) {
+                    var hidden = false
+                    InstrumentationRegistry.getInstrumentation().runOnMainSync {
+                        val insets = activity.root.rootWindowInsets
+                        hidden = insets != null && !insets.isVisible(android.view.WindowInsets.Type.navigationBars()) &&
+                            insets.getInsets(android.view.WindowInsets.Type.navigationBars()).bottom == 0
+                    }
+                    hidden
+                }
+                result.put("system_ui_capture_override", activity.geometry())
+                    .put("system_ui_capture_override_reason", "Fixture-only: remove system navigation pixels overlapping the fixed native-world Dock shadow room. No product geometry, material, or readiness threshold changes; original visibility restored in finally.")
+                save()
+            }
             compose.mainClock.autoAdvance = false
             for (dark in themes) for (background in backgrounds) {
-                val current = Scene(background, dark, false)
+                val current = sceneFor(background, dark)
                 result.put("active_scene", current.name).put("active_stage", "plain-background")
                 compose.runOnIdle { scene.value = current; selectionEvents.clear() }
                 settle()
                 val activity = checkNotNull(surface)
                 assertTrue("Hardware accelerated capture required", activity.root.isHardwareAccelerated)
                 val world = observeWorld()
-                observations.put(JSONObject().put("scene", current.name).put("phase", "background").put("world", world.json()))
+                observations.put(JSONObject().put("scene", current.name).put("phase", "background").put("world", world.json())
+                    .apply { nativeInputMapping(current, world.source)?.let { put("native_input_mapping", it) } })
                 save()
                 validateWorld(world)
                 val stem = "${current.name}-background"
@@ -447,7 +690,8 @@ class NativeDockOpticalWorldRenderTest {
                     assertBitmapContains("Baseline fixed world on actual display", ready.bitmap, world.source.screenRect)
                     baselines.put(JSONObject().put("scene", current.name).put("window_png", "$stem-window.png")
                         .put("screen_png", "$stem-screen.png").put("background_world", world.json())
-                        .put("window_geometry", activity.geometry()).put("display_readiness", ready.verification))
+                        .put("window_geometry", activity.geometry()).put("display_readiness", ready.verification)
+                        .apply { nativeInputMapping(current, world.source)?.let { put("native_input_mapping", it) } })
                     result.put("active_stage", "rest")
                     compose.runOnIdle { scene.value = current.copy(showDock = true) }
                     settle()
@@ -458,6 +702,7 @@ class NativeDockOpticalWorldRenderTest {
                     validateDock(rest, rest = true)
                     capture(current, "rest", rest, directory, captures, baselineWindow, ready.bitmap)
                     save()
+                    if (!captureHeld) continue
                     val node = compose.onNodeWithTag("dock-lens", useUnmergedTree = true)
                     val carrierBounds = node.getUnclippedBoundsInRoot().let {
                         Rect(it.left.value * density, it.top.value * density,
@@ -504,7 +749,7 @@ class NativeDockOpticalWorldRenderTest {
                     baselineScreen?.recycle()
                 }
             }
-            assertEquals("Every selected scene has REST and HELD", backgrounds.size * themes.size * 2, captures.length())
+            assertEquals("Every selected scene has requested states", backgrounds.size * themes.size * (if (captureHeld) 2 else 1), captures.length())
             assertEquals("Every selected scene has a plain background baseline", backgrounds.size * themes.size, baselines.length())
             result.put("status", "passed").put("active_stage", "complete")
                 .put("acceptance", "All requested captures passed fixed-world, production-coordinate, Home selection, and Window/display readiness checks. Native material/appearance similarity remains an external review.")
@@ -513,6 +758,16 @@ class NativeDockOpticalWorldRenderTest {
             throw failure
         } finally {
             compose.mainClock.autoAdvance = true
+            navigationBarWindow?.let { window ->
+                InstrumentationRegistry.getInstrumentation().runOnMainSync {
+                    if (navigationBarOriginallyVisible == true) {
+                        window.insetsController!!.show(android.view.WindowInsets.Type.navigationBars())
+                    } else {
+                        window.insetsController!!.hide(android.view.WindowInsets.Type.navigationBars())
+                    }
+                }
+                result.put("navigation_bar_original_visibility_restore_requested", navigationBarOriginallyVisible)
+            }
             save()
         }
     }
@@ -526,8 +781,11 @@ class NativeDockOpticalWorldRenderTest {
             fontScale = actualDensity.fontScale
         }
         SleepyThemeProvider(darkTheme = scene.dark, themeKey = ThemePresets.KEY_DEFAULT) {
+            val productColors = MaterialTheme.colorScheme.selectionColors()
+            SideEffect { productOrdinaryTint = productColors.unselectedContent.toArgb() }
             CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass,
-                LocalDockBackdropAppearanceEnabled provides true) {
+                LocalDockBackdropAppearanceEnabled provides fixtureBackdropAppearanceEnabled,
+                LocalDockBaseMaterialProbe provides baseMaterialProbe) {
                 if (scene.spatialInput != null) {
                     val isAppDark = LocalDarkTheme.current
                     val scheme = MaterialTheme.colorScheme
@@ -548,10 +806,11 @@ class NativeDockOpticalWorldRenderTest {
                                 .then(if (notifySourceChanges) Modifier.notifyBackdropDraw(contentSignal) else Modifier)
                                 .onGloballyPositioned { sourceCoordinates = it }
                             if (scene.spatialInput != null) SpatialBackground(scene.spatialInput, scene.spatialStage, sourceModifier)
+                            else if (nativeInputs.isNotEmpty()) NativeInputBackground(nativeInputs.getValue(scene.name), sourceModifier)
                             else OpticalCaptureBackground(scene.background, sourceModifier)
                         }
                     }
-                    if (scene.showDock) key(scene.background, scene.dark) {
+                    if (scene.showDock) key(scene.backgroundId, scene.dark) {
                         if (scene.spatialInput != null) {
                             val retainedInstance = remember { Any() }
                             DisposableEffect(retainedInstance) {
@@ -597,6 +856,135 @@ class NativeDockOpticalWorldRenderTest {
             }
         }
     }
+
+    /** Decode and validate every input once, before any composition or draw callback. */
+    private fun externalDirectory(directoryName: String): File {
+        require(directoryName.matches(Regex("[A-Za-z0-9][A-Za-z0-9._-]*"))) {
+            "Input directory must be one directory name beneath target externalFilesDir"
+        }
+        val external = checkNotNull(InstrumentationRegistry.getInstrumentation().targetContext.getExternalFilesDir(null))
+            .canonicalFile
+        val directory = File(external, directoryName).canonicalFile
+        require(directory.parentFile == external && directory.isDirectory) {
+            "Native input directory must exist directly beneath target externalFilesDir: $directory"
+        }
+        return directory
+    }
+
+    private fun loadExternalManifest(directoryName: String): JSONObject {
+        val directory = externalDirectory(directoryName)
+        val file = File(directory, "manifest.json").canonicalFile
+        require(file.parentFile == directory && file.isFile && file.length() <= 128 * 1024)
+        return JSONObject(file.readText()).also { manifest ->
+            require(manifest.getInt("schema") == 1 && manifest.getString("split") in listOf("calibration", "holdout"))
+            require(manifest.getString("set_id").matches(Regex("[A-Za-z0-9][A-Za-z0-9_-]*")))
+            val inputs = manifest.getJSONArray("inputs")
+            require(inputs.length() in 1..32)
+            val ids = mutableSetOf<String>()
+            for (index in 0 until inputs.length()) {
+                val record = inputs.getJSONObject(index)
+                val id = record.getString("id")
+                require(id.matches(Regex("[A-Za-z0-9][A-Za-z0-9_-]*")) && ids.add(id))
+                require(record.getString("file") == "$id.png")
+                require(record.getString("sha256").matches(Regex("[a-f0-9]{64}")))
+            }
+        }
+    }
+
+    private fun loadNativeInputs(directoryName: String, report: JSONObject,
+                                 externalRecords: List<JSONObject>? = null): Map<String, NativeInput> {
+        val directory = externalDirectory(directoryName)
+        val ids = externalRecords?.map { it.getString("id") } ?: OpticalBackground.entries.map { it.name }
+        val expectedCount = ids.size * 2
+        val records = JSONArray()
+        report.put("directory", directory.path).put("expected_count", expectedCount).put("inputs", records)
+            .put("decode_policy", "BitmapFactory with inScaled=false, inSampleSize=1, ARGB_8888 and preferred sRGB; Bitmap.DENSITY_NONE after decode. PNG byte hash covers the original file bytes. No pixel replacement or pre-resampling.")
+        val loaded = linkedMapOf<String, NativeInput>()
+        try {
+            for (id in ids) for (dark in listOf(false, true)) {
+                val name = "$id-${if (dark) "dark" else "light"}"
+                val declared = externalRecords?.first { it.getString("id") == id }
+                val file = File(directory, declared?.getString("file") ?: "$name.png").canonicalFile
+                require(file.parentFile == directory && file.isFile) { "Missing native input $name.png" }
+                val bytes = file.readBytes()
+                val hash = MessageDigest.getInstance("SHA-256").digest(bytes)
+                    .joinToString("") { "%02x".format(it.toInt() and 255) }
+                require(declared == null || hash == declared.getString("sha256")) {
+                    "External input $id has changed after manifest registration"
+                }
+                val signature = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A)
+                require(bytes.size >= signature.size && signature.indices.all { bytes[it] == signature[it] }) {
+                    "$name.png must contain a PNG, not just a PNG filename"
+                }
+                val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+                require(bounds.outWidth == 750 && bounds.outHeight == 1334 && bounds.outMimeType == "image/png") {
+                    "$name.png must be an unmodified750x1334 native bare background; got ${bounds.outWidth}x${bounds.outHeight} ${bounds.outMimeType}"
+                }
+                val options = BitmapFactory.Options().apply {
+                    inScaled = false
+                    inSampleSize = 1
+                    inPreferredConfig = Bitmap.Config.ARGB_8888
+                    inPreferredColorSpace = ColorSpace.get(ColorSpace.Named.SRGB)
+                }
+                val bitmap = checkNotNull(BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)) {
+                    "Cannot decode native input $name.png"
+                }
+                // Register before further validation so every decode is released if validation fails.
+                val metadata = JSONObject().put("scene", name).put("file", file.name)
+                    .put("sha256", hash).put("external_input_record", declared ?: JSONObject.NULL)
+                    .put("file_bytes", bytes.size).put("size_px", JSONArray(listOf(bitmap.width, bitmap.height)))
+                    .put("native_pixels_per_point", 2).put("native_world_size_pt", JSONArray(listOf(375, 667)))
+                    .put("encoded_color_space", bounds.outColorSpace?.name ?: JSONObject.NULL)
+                    .put("decoded_color_space", bitmap.colorSpace?.name ?: JSONObject.NULL)
+                    .put("decoded_config", bitmap.config?.name ?: JSONObject.NULL)
+                loaded[name] = NativeInput(bitmap, metadata)
+                records.put(metadata)
+                require(bitmap.width == 750 && bitmap.height == 1334 && bitmap.config == Bitmap.Config.ARGB_8888 &&
+                    bitmap.colorSpace?.isSrgb == true) { "$name.png decoded with unexpected geometry/config/color space" }
+                bitmap.density = Bitmap.DENSITY_NONE
+                val row = IntArray(bitmap.width)
+                var minimumAlpha = 255
+                for (y in 0 until bitmap.height) {
+                    bitmap.getPixels(row, 0, bitmap.width, 0, y, bitmap.width, 1)
+                    for (pixel in row) minimumAlpha = minOf(minimumAlpha, pixel ushr 24)
+                }
+                metadata.put("minimum_decoded_alpha", minimumAlpha).put("bitmap_density", bitmap.density)
+                require(minimumAlpha == 255) { "$name.png must be an opaque bare background" }
+            }
+            require(loaded.size == expectedCount) { "All registered input/theme pairs are required" }
+            report.put("status", "validated").put("validated_count", loaded.size)
+            return loaded
+        } catch (failure: Throwable) {
+            report.put("status", "failed").put("exception", "${failure.javaClass.name}: ${failure.message}")
+            loaded.values.forEach { it.bitmap.recycle() }
+            throw failure
+        }
+    }
+
+    @Composable private fun NativeInputBackground(input: NativeInput, modifier: Modifier) {
+        val image = remember(input.bitmap) { input.bitmap.asImageBitmap() }
+        Canvas(modifier) {
+            drawImage(image = image, srcOffset = IntOffset.Zero, srcSize = IntSize(750, 1334),
+                dstOffset = IntOffset.Zero, dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()),
+                filterQuality = FilterQuality.Low)
+        }
+    }
+
+    private fun nativeInputMapping(scene: Scene, source: OpticalLayoutGeometry): JSONObject? =
+        nativeInputs[scene.name]?.let { input ->
+            JSONObject().put("scene", scene.name).put("input_sha256", input.metadata.getString("sha256"))
+                .put("source_rect_px", JSONArray(listOf(0, 0, 750, 1334)))
+                .put("destination_rect_local_px", JSONArray(listOf(0, 0, source.size.width, source.size.height)))
+                .put("requested_world_size_dp", JSONArray(listOf(375, 667)))
+                .put("android_density_px_per_dp", source.density).put("native_density_px_per_pt", 2)
+                .put("ideal_android_px_per_native_px", source.density / 2f)
+                .put("actual_scale_xy", JSONArray(listOf(source.size.width / 750.0, source.size.height / 1334.0)))
+                .put("destination_rounding_residual_px", JSONArray(listOf(
+                    source.size.width - 375f * source.density, source.size.height - 667f * source.density)))
+                .put("filter_quality", "Low").put("crop", false)
+                .put("policy", "Complete source mapped once to the complete measured fixed-world layout. Native2px/pt becomes actual Android density px/dp, with only the existing independent layout rounding. No geometry fitting, axis adjustment, decoded-pixel edits or native similarity conclusion.")
+        }
 
     @Composable private fun SpatialBackground(input: SpatialInput, stage: Int, modifier: Modifier) {
         val actualDensity = LocalDensity.current.density
@@ -685,6 +1073,15 @@ class NativeDockOpticalWorldRenderTest {
 
     /** Flush asynchronous readback-driven composition after the virtual animation settle. */
     private fun awaitAppearanceComposition() {
+        if (!fixtureBackdropAppearanceEnabled) {
+            compose.mainClock.advanceTimeByFrame()
+            compose.waitForIdle()
+            val state = materialState()
+            assertTrue("Product default does not run experimental source readback", state.isNull("source_luma"))
+            assertEquals("Product unselected foreground follows the theme role",
+                checkNotNull(productOrdinaryTint), state.getInt("ordinary_tint_argb"))
+            return
+        }
         repeat(120) {
             compose.mainClock.advanceTimeByFrame()
             compose.waitForIdle()
@@ -919,7 +1316,7 @@ class NativeDockOpticalWorldRenderTest {
                     .put("window", opticalRegionMetrics(window, baselineWindow, root.translate(geometry.windowOrigin)))
                     .put("composited_display", opticalRegionMetrics(ready.bitmap, baselineScreen, root.translate(geometry.screenOrigin)))
                 val baseRoot = bounds(geometry.baseRootCorners)
-                captures.put(JSONObject().put("scene", scene.name).put("background", scene.background.name)
+                captures.put(JSONObject().put("scene", scene.name).put("background", scene.backgroundId)
                     .put("theme", if (scene.dark) "dark" else "light").put("phase", phase)
                     .put("material_before", materialBefore).put("material_after", materialState())
                     .put("window_png", "$stem-window.png").put("screen_png", "$stem-screen.png")

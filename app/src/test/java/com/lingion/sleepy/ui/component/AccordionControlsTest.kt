@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -31,6 +32,7 @@ import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -56,11 +58,12 @@ class AccordionControlsTest {
 
     @Test
     fun headerHasOneAccessibleToggleAndReportsTheCurrentState() {
+        var style by mutableStateOf(UiStyle.Classic)
         var expanded by mutableStateOf(false)
         var collapsedLabel = ""
         var expandedLabel = ""
         compose.setContent {
-            Fixture {
+            Fixture(style) {
                 collapsedLabel = LocalContext.current.getString(R.string.accordion_collapsed)
                 expandedLabel = LocalContext.current.getString(R.string.accordion_expanded)
                 AccordionHeader(expanded, { expanded = !expanded }, Modifier.testTag("header")) {
@@ -68,14 +71,30 @@ class AccordionControlsTest {
                 }
             }
         }
-        compose.onAllNodes(hasClickAction()).assertCountEquals(1)
-        compose.onNodeWithTag("header").assert(
-            SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, collapsedLabel),
-        ).performClick()
-        compose.onNodeWithTag("header").assert(
-            SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, expandedLabel),
-        )
-        assertTrue(expanded)
+        listOf(UiStyle.Classic, UiStyle.LiquidGlass).forEach { current ->
+            compose.runOnIdle { style = current }
+            compose.onAllNodes(hasClickAction()).assertCountEquals(1)
+            compose.onAllNodes(hasClickAction(), useUnmergedTree = true).assertCountEquals(1)
+            val arrow = compose.onNodeWithTag(AccordionHeaderChevronTag, useUnmergedTree = true)
+                .assertIsDisplayed()
+                .assert(SemanticsMatcher.keyNotDefined(SemanticsActions.OnClick))
+                .assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Role))
+                .assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.ContentDescription))
+                .assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.StateDescription))
+            compose.onNodeWithTag("header").assert(
+                SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, collapsedLabel),
+            ).performClick()
+            compose.onNodeWithTag("header").assert(
+                SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, expandedLabel),
+            )
+            assertTrue(expanded)
+            // The semantics-free physical arrow still handles real touch input.
+            arrow.performTouchInput { click() }
+            assertFalse(expanded)
+            compose.onNodeWithTag("header").assert(
+                SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, collapsedLabel),
+            )
+        }
     }
 
     @Test

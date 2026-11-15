@@ -44,12 +44,15 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton
 import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
+
+internal const val AccordionHeaderChevronTag = "accordion-header-chevron"
 
 /** Business accordions share interaction and geometry, while each style owns its motion. */
 @Composable
@@ -182,7 +185,8 @@ fun AccordionHeader(
             interactionSource = source,
             modifier = Modifier
                 .focusProperties { canFocus = false }
-                .clearAndSetSemantics { },
+                // Layout-only identifier; the header remains the sole accessible toggle.
+                .clearAndSetSemantics { testTag = AccordionHeaderChevronTag },
         )
     }
 }

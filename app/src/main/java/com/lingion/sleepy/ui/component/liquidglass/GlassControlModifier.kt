@@ -69,20 +69,32 @@ fun Modifier.glassControl(
         else when (role) {
             GlassMaterialRole.Regular -> LiquidGlassStyle.regular(colors, dark)
             GlassMaterialRole.Menu -> LiquidGlassStyle.menu(colors, dark)
-            GlassMaterialRole.Alert -> LiquidGlassStyle.alert(colors, dark)
-            GlassMaterialRole.Sheet -> LiquidGlassStyle.sheet(dark)
+            GlassMaterialRole.Alert -> LiquidGlassStyle.alert(colors, dark).let {
+                if (dark) it else it.copy(blur = 8.0)
+            }
+            GlassMaterialRole.Sheet -> LiquidGlassStyle.sheet(dark).let {
+                if (dark) it else it.copy(blur = 10.0)
+            }
         }
     val rim = when (role) {
         GlassMaterialRole.Regular -> null
         GlassMaterialRole.Menu -> LiquidGlassRim.menu(dark)
-        GlassMaterialRole.Alert -> LiquidGlassRim.alert(dark)
+        GlassMaterialRole.Alert -> LiquidGlassRim.alert(dark).let {
+            if (dark) it else it.copy(side = 0.0, corner = 0.0, flat = 0.06,
+                minimumShine = 0.08, screenMinimumShine = true)
+        }
         GlassMaterialRole.Sheet -> LiquidGlassRim.sheet()
     }
     val samplingHost = if (isOverlay) LocalGlassOverlaySamplingHost.current ?: host else host
     // A global filter contains only its host's prefix. Reusing it inside a
     // material scope would skip that parent backing and expose the scene below.
     val inheritedMaterial = LocalGlassMaterialBackdrop.current
-    val filterBand = if (inheritedMaterial == null) samplingHost.filterBand(consumerDepth, isOverlay, material.blur.toFloat()) else null
+    // An edge that is clearer than the body needs a genuinely clearer input.
+    // Selecting the body's prefiltered band cannot undo its Gaussian blur.
+    val radiusSampling = (!dark && (role == GlassMaterialRole.Alert || role == GlassMaterialRole.Sheet)) ||
+        material.rimBlur < 0.0
+    val minimumBlurDp = (material.blur + min(material.rimBlur, 0.0)).coerceAtLeast(0.0).toFloat()
+    val filterBand = if (inheritedMaterial == null) samplingHost.filterBand(consumerDepth, isOverlay, minimumBlurDp) else null
     val scene = rememberGlassSamplingBackdrop()
     val backdrop = remember(samplingHost, scene, filterBand) { filterBand?.backdrop(samplingHost) ?: checkNotNull(scene) }
     val contentPlacementLayer = placementLayer && LocalGlassPlacementLayer.current
@@ -167,7 +179,11 @@ fun Modifier.glassControl(
                 liquidGlass(
                     context = context,
                     style = material,
-                    sampledBlurPx = if (filterBand?.ready == true) material.blur.toFloat() * density else 0f,
+                    sampledBlurPx = if (filterBand?.ready == true) {
+                        if (radiusSampling) androidBlurRadiusToSigma(minimumBlurDp * density)
+                        else minimumBlurDp * density
+                    } else 0f,
+                    inputBlurPx = if (radiusSampling) androidBlurRadiusToSigma(minimumBlurDp * density) else null,
                     outline = if (size.width > 0f && size.height > 0f && size.width.isFinite() && size.height.isFinite())
                         (shape.createOutline(size, layoutDirection, this) as? androidx.compose.ui.graphics.Outline.Generic)?.path?.let { pxPath ->
                             androidx.compose.ui.graphics.Path().apply {
