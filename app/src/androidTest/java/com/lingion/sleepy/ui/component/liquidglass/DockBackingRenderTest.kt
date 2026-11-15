@@ -41,12 +41,9 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.kyant.backdrop.backdrops.rememberCanvasBackdrop
 import com.lingion.sleepy.ui.component.PillNavItemSpec
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
-import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
-import org.json.JSONArray
-import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
@@ -77,81 +74,62 @@ class DockBackingRenderTest {
     fun heldLensIncludesChangesToItsActualBackingMaterial() {
         val arguments = InstrumentationRegistry.getArguments()
         assumeTrue("Enable with glassDockBackingCheck=true", arguments.getString("glassDockBackingCheck") == "true")
-        val runId = (arguments.getString("glassDockBackingRunId") ?: System.currentTimeMillis().toString())
-            .replace(Regex("[^A-Za-z0-9_.-]"), "_")
-        val directory = File(InstrumentationRegistry.getInstrumentation().targetContext.getExternalFilesDir(null),
-            "dock-backing/$runId").apply { check(mkdirs() || isDirectory) }
         val backing = mutableStateOf(Color(0xFFB82020))
-        val result = JSONObject().put("scope", "Production Dock PixelCopy; deterministic held state, not native motion or optical parity")
-            .put("status", "running")
-        val reportFile = File(directory, "result.json")
-        reportFile.writeText(result.toString(2))
-        try {
-            compose.setContent {
-                rememberWindow()
-                val scene = rememberCanvasBackdrop { checkerboard() }
-                val colors = darkColorScheme(
-                    surface = Color(0xFF101010),
-                    surfaceContainer = Color(0xFF292929),
-                    surfaceContainerHighest = backing.value,
-                    secondaryContainer = Color(0xFF404040),
-                    onSecondaryContainer = Color.White,
-                )
-                MaterialTheme(colorScheme = colors) {
-                    CompositionLocalProvider(LocalDarkTheme provides true,
-                        LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }) {
-                        Box(Modifier.requiredSize(360.dp, 160.dp).background(Color(0xFF808080)).padding(20.dp)) {
-                            LiquidGlassNavigationBar(
-                                listOf(PillNavItemSpec(Icons.Filled.Home, "Home"),
-                                    PillNavItemSpec(Icons.Filled.Search, "Explore"),
-                                    PillNavItemSpec(Icons.Filled.Settings, "Settings")),
-                                0, {}, Modifier.width(316.dp).testTag("dock"), scene,
-                            )
-                        }
+        compose.setContent {
+            rememberWindow()
+            val scene = rememberCanvasBackdrop { checkerboard() }
+            val colors = darkColorScheme(
+                surface = Color(0xFF101010),
+                surfaceContainer = Color(0xFF292929),
+                surfaceContainerHighest = backing.value,
+                secondaryContainer = Color(0xFF404040),
+                onSecondaryContainer = Color.White,
+            )
+            MaterialTheme(colorScheme = colors) {
+                CompositionLocalProvider(LocalDarkTheme provides true,
+                    LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }) {
+                    Box(Modifier.requiredSize(360.dp, 160.dp).background(Color(0xFF808080)).padding(20.dp)) {
+                        LiquidGlassNavigationBar(
+                            listOf(PillNavItemSpec(Icons.Filled.Home, "Home"),
+                                PillNavItemSpec(Icons.Filled.Search, "Explore"),
+                                PillNavItemSpec(Icons.Filled.Settings, "Settings")),
+                            0, {}, Modifier.width(316.dp).testTag("dock"), scene,
+                        )
                     }
                 }
             }
-            compose.waitForIdle()
-            assertTrue("Real accelerated Window required", contentView.isHardwareAccelerated)
-            compose.onNodeWithTag("dock").performTouchInput { down(Offset(width * .20f, height * .5f)) }
-            compose.mainClock.advanceTimeBy(1600)
-            compose.waitForIdle()
-            val boundsBefore = lensBounds()
-            val red = capture(directory, "red-held")
-            compose.runOnIdle { backing.value = Color(0xFF20B820) }
-            val green = capture(directory, "green-held")
-            val boundsAfter = lensBounds()
-            result.put("lens_bounds_before_px", boundsBefore.toJson()).put("lens_bounds_after_px", boundsAfter.toJson())
-            assertEquals("Material change must not move the held lens", boundsBefore, boundsAfter)
-            // The patch is inside the raised lens, away from both glyph rows
-            // and its refracting edge. Only its direct backing material changed.
-            val patch = Rect(
-                boundsBefore.left + boundsBefore.width * .73f,
-                boundsBefore.top + boundsBefore.height * .43f,
-                boundsBefore.left + boundsBefore.width * .81f,
-                boundsBefore.top + boundsBefore.height * .57f,
-            )
-            val before = patchMean(red, patch)
-            val after = patchMean(green, patch)
-            val redDrop = before[0] - after[0]
-            val greenRise = after[1] - before[1]
-            result.put("probe_px", patch.toJson()).put("before_rgb", JSONArray(before.toList()))
-                .put("after_rgb", JSONArray(after.toList())).put("red_drop", redDrop).put("green_rise", greenRise)
-            red.recycle()
-            green.recycle()
-            // A synthetic surfaceContainer copy ignores this live backing
-            // change entirely. The threshold only distinguishes that omission;
-            // it is not a fitted material-color or native-parity tolerance.
-            val passed = redDrop > 20.0 && greenRise > 20.0
-            result.put("status", if (passed) "passed" else "failed")
-            reportFile.writeText(result.toString(2))
-            assertTrue("Held lens skipped its real backing material: redDrop=$redDrop greenRise=$greenRise; artifacts=$directory", passed)
-            compose.onNodeWithTag("dock").performTouchInput { cancel() }
-        } catch (failure: Throwable) {
-            result.put("status", "failed").put("exception", "${failure.javaClass.name}: ${failure.message}")
-            reportFile.writeText(result.toString(2))
-            throw failure
         }
+        compose.waitForIdle()
+        assertTrue("Real accelerated Window required", contentView.isHardwareAccelerated)
+        compose.onNodeWithTag("dock").performTouchInput { down(Offset(width * .20f, height * .5f)) }
+        compose.mainClock.advanceTimeBy(1600)
+        compose.waitForIdle()
+        val boundsBefore = lensBounds()
+        val red = capture()
+        compose.runOnIdle { backing.value = Color(0xFF20B820) }
+        val green = capture()
+        val boundsAfter = lensBounds()
+        assertEquals("Material change must not move the held lens", boundsBefore, boundsAfter)
+        // The patch is inside the raised lens, away from both glyph rows
+        // and its refracting edge. Only its direct backing material changed.
+        val patch = Rect(
+            boundsBefore.left + boundsBefore.width * .73f,
+            boundsBefore.top + boundsBefore.height * .43f,
+            boundsBefore.left + boundsBefore.width * .81f,
+            boundsBefore.top + boundsBefore.height * .57f,
+        )
+        val before = patchMean(red, patch)
+        val after = patchMean(green, patch)
+        val redDrop = before[0] - after[0]
+        val greenRise = after[1] - before[1]
+        red.recycle()
+        green.recycle()
+        // A synthetic surfaceContainer copy ignores this live backing
+        // change entirely. The threshold only distinguishes that omission;
+        // it is not a fitted material-color or native-parity tolerance.
+        val passed = redDrop > 20.0 && greenRise > 20.0
+        assertTrue("Held lens skipped its real backing material: redDrop=$redDrop greenRise=$greenRise", passed)
+        compose.onNodeWithTag("dock").performTouchInput { cancel() }
     }
 
     private fun DrawScope.checkerboard() {
@@ -179,7 +157,7 @@ class DockBackingRenderTest {
         return bounds.translate(Offset(location[0].toFloat(), location[1].toFloat()))
     }
 
-    private fun capture(directory: File, name: String): Bitmap {
+    private fun capture(): Bitmap {
         compose.waitForIdle()
         val committed = CountDownLatch(1)
         compose.runOnUiThread {
@@ -193,7 +171,6 @@ class DockBackingRenderTest {
         PixelCopy.request(window, bitmap, { status = it; copied.countDown() }, Handler(Looper.getMainLooper()))
         assertTrue("PixelCopy must finish", copied.await(5, TimeUnit.SECONDS))
         assertEquals(PixelCopy.SUCCESS, status)
-        File(directory, "$name-window.png").outputStream().use { check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)) }
         return bitmap
     }
 
@@ -213,5 +190,4 @@ class DockBackingRenderTest {
         return mean.map { it / count }.toDoubleArray()
     }
 
-    private fun Rect.toJson() = JSONArray(listOf(left, top, right, bottom))
 }

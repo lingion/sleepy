@@ -41,16 +41,12 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
-import java.io.File
-import java.security.MessageDigest
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.roundToInt
-import org.json.JSONArray
-import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
@@ -91,11 +87,6 @@ class LiquidGlassExactContourRenderTest {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val arguments = InstrumentationRegistry.getArguments()
         assumeTrue("Enable explicitly with glassExactCheck=true", arguments.getString("glassExactCheck") == "true")
-        val forceLegacy = arguments.getString("glassExactForceLegacy") == "true"
-        val runId = (arguments.getString("glassExactRunId") ?: System.currentTimeMillis().toString())
-            .replace(Regex("[^A-Za-z0-9_.-]"), "_")
-        val directory = File(instrumentation.targetContext.getExternalFilesDir(null), "glass-exact-geometry/$runId")
-            .apply { check(mkdirs() || isDirectory) }
         val production = LiquidGlassShader.shaderSource(instrumentation.targetContext)
         val finalReturn = "return half4(min(glass, float3(coverage)), coverage);"
         check(production.indexOf(finalReturn) >= 0 && production.indexOf(finalReturn) == production.lastIndexOf(finalReturn))
@@ -120,95 +111,57 @@ class LiquidGlassExactContourRenderTest {
                 : clamp((diagnosticInset + 4.0) / 8.0, 0.0, 1.0);
             return half4(diagnosticDepthChannel, normal * 0.5 + 0.5, 1.0);
         """.trimIndent())
-        val fixturePrefix = arguments.getString("glassExactFixturePrefix")
-        val fixtures = fixtures().filter { fixturePrefix == null || it.name.startsWith(fixturePrefix) }
-        check(fixtures.isNotEmpty()) { "No exact geometry fixture matches $fixturePrefix" }
+        val fixtures = fixtures()
+        check(fixtures.isNotEmpty()) { "Exact geometry fixtures must not be empty" }
         val selected = mutableStateOf(fixtures.first())
         val phase = mutableStateOf(0)
-        val report = JSONObject().put("scope", "raw CPU cubic versus hardware AGSL geometry and independent CPU Path coverage; no native-appearance claim")
-            .put("production_shader_sha256", sha(production))
-            .put("diagnostic_shader_sha256", sha(diagnostic))
-            .put("forced_legacy", forceLegacy)
-            .put("fixture_prefix", fixturePrefix)
-            .put("diagnostic", "magenta=invalid exact helper or exact-dispatch fallback; helper frame R=(exactHelperSignedDepth+4)/8; dispatch frame R=actualMainDispatchInset/8; both GB=actualMainDispatchNormal/2+0.5")
-            .put("legacy_contract", "glassExactForceLegacy changes only instrumentation setup: old mode1/3 and original profile packing; exact uniforms remain solely for the separately labelled helper buffer; expectations and tolerances are unchanged")
-            .put("tolerance", "8-bit PixelCopy: signed depth 0.05dp, normal component 0.025; exact joints allow either actual one-sided CPU tangent")
-        val results = JSONArray()
         val failures = mutableListOf<String>()
-        compose.setContent { Pane(selected.value, diagnostic, phase.value, forceLegacy) }
-        try {
-            fixtures.forEach { fixture ->
-                compose.runOnIdle { selected.value = fixture; phase.value = 0 }
-                val helperAndNormal = capture()
-                compose.runOnIdle { phase.value = 1 }
-                val dispatch = capture()
-                compose.runOnIdle { phase.value = 2 }
-                val mask = capture()
-                try {
-                    save(helperAndNormal, File(directory, "${fixture.name}-exact-helper-and-dispatch-normal.png"))
-                    save(dispatch, File(directory, "${fixture.name}-actual-dispatch-inset.png"))
-                    save(mask, File(directory, "${fixture.name}-cpu-path.png"))
-                    assertEquals(fixture.width, helperAndNormal.width)
-                    assertEquals(fixture.height, helperAndNormal.height)
-                    assertEquals(fixture.width, dispatch.width)
-                    assertEquals(fixture.height, dispatch.height)
-                    val points = JSONArray()
-                    samplePixels(fixture).forEach { (x, y) ->
-                        val point = LiquidGlassRawPathOracle.V((x + .5) / fixture.density, (y + .5) / fixture.density)
-                        val expected = fixture.geometry(point)
-                        val pixel = helperAndNormal.getPixel(x, y)
-                        val dispatchPixel = dispatch.getPixel(x, y)
-                        val red = android.graphics.Color.red(pixel)
-                        val green = android.graphics.Color.green(pixel)
-                        val blue = android.graphics.Color.blue(pixel)
-                        val dispatchRed = android.graphics.Color.red(dispatchPixel)
-                        val invalid = (red > 248 && green < 8 && blue > 248) ||
-                            (dispatchRed > 248 && android.graphics.Color.green(dispatchPixel) < 8 && android.graphics.Color.blue(dispatchPixel) > 248)
-                        val expectedDepth = ((expected.signedInset + 4.0) / 8.0).coerceIn(0.0, 1.0)
-                        val depthError = abs(red / 255.0 - expectedDepth) * 8.0
-                        val expectedDispatchDepth = (max(expected.signedInset, 0.0) / 8.0).coerceIn(0.0, 1.0)
-                        val dispatchDepthError = abs(dispatchRed / 255.0 - expectedDispatchDepth) * 8.0
-                        val normalError = expected.normals.minOf { n ->
-                            max(abs(green / 255.0 * 2.0 - 1.0 - n.x), abs(blue / 255.0 * 2.0 - 1.0 - n.y))
-                        }
-                        val cpuCoverage = android.graphics.Color.red(mask.getPixel(x, y))
-                        val maskValid = when {
-                            expected.signedInset * fixture.density > .8 -> cpuCoverage > 239
-                            expected.signedInset * fixture.density < -.8 -> cpuCoverage < 16
-                            else -> true // Antialias boundary pixels retain their measured coverage.
-                        }
-                        val valid = !invalid && depthError <= .05 && dispatchDepthError <= .05 && normalError <= .025 && maskValid
-                        if (!valid) failures += "${fixture.name} ($x,$y): forcedLegacy=$forceLegacy invalid=$invalid helperDepth=$depthError actualDispatchDepth=$dispatchDepthError actualDispatchNormal=$normalError cpuMask=$cpuCoverage"
-                        points.put(JSONObject().put("pixel", JSONArray(listOf(x, y)))
-                            .put("expected_signed_inset_dp", expected.signedInset)
-                            .put("expected_cpu_one_sided_normals", JSONArray(expected.normals.map { JSONArray(listOf(it.x, it.y)) }))
-                            .put("helper_and_dispatch_normal_rgba", JSONArray(listOf(red, green, blue, android.graphics.Color.alpha(pixel))))
-                            .put("actual_dispatch_inset_rgba", JSONArray(listOf(dispatchRed, android.graphics.Color.green(dispatchPixel),
-                                android.graphics.Color.blue(dispatchPixel), android.graphics.Color.alpha(dispatchPixel))))
-                            .put("expected_actual_dispatch_inset_dp", max(expected.signedInset, 0.0))
-                            .put("cpu_path_coverage", cpuCoverage).put("exact_helper_signed_depth_error_dp", depthError)
-                            .put("actual_dispatch_inset_error_dp", dispatchDepthError)
-                            .put("actual_dispatch_normal_component_error", normalError).put("valid", valid))
+        compose.setContent { Pane(selected.value, diagnostic, phase.value) }
+        fixtures.forEach { fixture ->
+            compose.runOnIdle { selected.value = fixture; phase.value = 0 }
+            val helperAndNormal = capture()
+            compose.runOnIdle { phase.value = 1 }
+            val dispatch = capture()
+            compose.runOnIdle { phase.value = 2 }
+            val mask = capture()
+            try {
+                assertEquals(fixture.width, helperAndNormal.width)
+                assertEquals(fixture.height, helperAndNormal.height)
+                assertEquals(fixture.width, dispatch.width)
+                assertEquals(fixture.height, dispatch.height)
+                samplePixels(fixture).forEach { (x, y) ->
+                    val point = LiquidGlassRawPathOracle.V((x + .5) / fixture.density, (y + .5) / fixture.density)
+                    val expected = fixture.geometry(point)
+                    val pixel = helperAndNormal.getPixel(x, y)
+                    val dispatchPixel = dispatch.getPixel(x, y)
+                    val red = android.graphics.Color.red(pixel)
+                    val green = android.graphics.Color.green(pixel)
+                    val blue = android.graphics.Color.blue(pixel)
+                    val dispatchRed = android.graphics.Color.red(dispatchPixel)
+                    val invalid = (red > 248 && green < 8 && blue > 248) ||
+                        (dispatchRed > 248 && android.graphics.Color.green(dispatchPixel) < 8 && android.graphics.Color.blue(dispatchPixel) > 248)
+                    val expectedDepth = ((expected.signedInset + 4.0) / 8.0).coerceIn(0.0, 1.0)
+                    val depthError = abs(red / 255.0 - expectedDepth) * 8.0
+                    val expectedDispatchDepth = (max(expected.signedInset, 0.0) / 8.0).coerceIn(0.0, 1.0)
+                    val dispatchDepthError = abs(dispatchRed / 255.0 - expectedDispatchDepth) * 8.0
+                    val normalError = expected.normals.minOf { n ->
+                        max(abs(green / 255.0 * 2.0 - 1.0 - n.x), abs(blue / 255.0 * 2.0 - 1.0 - n.y))
                     }
-                    results.put(JSONObject().put("name", fixture.name).put("density", fixture.density)
-                        .put("forced_legacy", forceLegacy)
-                        .put("actual_dispatch_mode", if (forceLegacy) (if (fixture.sources.size == 2) 3 else 1) else (if (fixture.sources.size == 2) 5 else 4))
-                        .put("size_px", JSONArray(listOf(fixture.width, fixture.height)))
-                        .put("raw_operations", JSONArray(fixture.sources.map { source -> JSONArray(source.operations.map { it.toString() }) }))
-                        .put("raw_operations_sha256", JSONArray(fixture.sources.map { sha(it.operations.joinToString("\n")) }))
-                        .put("exact_uniforms", JSONArray(fixture.sources.map { JSONArray(checkNotNull(it.exact?.pack(fixture.density)).toList()) }))
-                        .put("samples", points))
-                } finally { helperAndNormal.recycle(); dispatch.recycle(); mask.recycle() }
-            }
-        } finally {
-            report.put("fixtures", results).put("failures", JSONArray(failures))
-                .put("status", if (failures.isEmpty() && results.length() == fixtures.size) "passed" else "failed")
-            File(directory, "result.json").writeText(report.toString(2))
+                    val cpuCoverage = android.graphics.Color.red(mask.getPixel(x, y))
+                    val maskValid = when {
+                        expected.signedInset * fixture.density > .8 -> cpuCoverage > 239
+                        expected.signedInset * fixture.density < -.8 -> cpuCoverage < 16
+                        else -> true // Antialias boundary pixels retain their measured coverage.
+                    }
+                    val valid = !invalid && depthError <= .05 && dispatchDepthError <= .05 && normalError <= .025 && maskValid
+                    if (!valid) failures += "${fixture.name} ($x,$y): invalid=$invalid helperDepth=$depthError actualDispatchDepth=$dispatchDepthError actualDispatchNormal=$normalError cpuMask=$cpuCoverage"
+                }
+            } finally { helperAndNormal.recycle(); dispatch.recycle(); mask.recycle() }
         }
-        assertTrue("Raw CPU/GPU contour mismatch: ${failures.take(20).joinToString()}; artifacts=$directory", failures.isEmpty())
+        assertTrue("Raw CPU/GPU contour mismatch: ${failures.take(20).joinToString()}", failures.isEmpty())
     }
 
-    @Composable private fun Pane(fixture: Fixture, source: String, phase: Int, forceLegacy: Boolean) {
+    @Composable private fun Pane(fixture: Fixture, source: String, phase: Int) {
         val view = LocalView.current
         SideEffect {
             contentView = view
@@ -243,17 +196,10 @@ class LiquidGlassExactContourRenderTest {
                         sampling = LiquidGlassShader.sampling(Offset.Zero, fixture.density, Rect(Offset.Zero, size)),
                         outline = fixture.pathDp,
                         dualContours = if (fixture.sources.size == 2) dp(fixture.sources[0].path) to dp(fixture.sources[1].path) else null,
-                        exactContours = if (forceLegacy) null else fixture.sources.map { checkNotNull(it.exact) })
-                    val expectedMode = if (forceLegacy) (if (fixture.sources.size == 2) 3f else 1f) else (if (fixture.sources.size == 2) 5f else 4f)
+                        exactContours = fixture.sources.map { checkNotNull(it.exact) })
+                    val expectedMode = if (fixture.sources.size == 2) 5f else 4f
                     check(uniforms.getValue("uOutlined")[0] == expectedMode)
                     uniforms.forEach { (name, values) -> shader.setFloatUniform(name, values) }
-                    if (forceLegacy) {
-                        // Preserve real legacy profile packing/dispatch. These arrays feed only
-                        // the separately labelled helper query added by this diagnostic return.
-                        shader.setFloatUniform("uExact1", checkNotNull(fixture.sources[0].exact?.pack(fixture.density)))
-                        shader.setFloatUniform("uExact2", fixture.sources.getOrNull(1)?.exact?.pack(fixture.density)
-                            ?: FloatArray(LIQUID_GLASS_EXACT_FLOATS))
-                    }
                     shader.setFloatUniform("uExactDiagnosticPhase", phase.toFloat())
                     paint.shader = shader
                     canvas.drawRect(0f, 0f, size.width, size.height, paint)
@@ -363,7 +309,5 @@ class LiquidGlassExactContourRenderTest {
             bounds.width.roundToInt(), bounds.height.roundToInt()) } finally { full.recycle() }
     }
 
-    private fun save(bitmap: Bitmap, file: File) { file.outputStream().use { check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)) } }
-    private fun sha(value: String) = MessageDigest.getInstance("SHA-256").digest(value.toByteArray())
-        .joinToString("") { "%02x".format(it.toInt() and 0xff) }
+
 }

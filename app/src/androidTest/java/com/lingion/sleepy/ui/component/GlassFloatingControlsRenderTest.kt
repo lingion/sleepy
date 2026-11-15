@@ -27,7 +27,6 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import com.lingion.sleepy.ui.component.liquidglass.*
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
@@ -36,12 +35,11 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertEquals
 
-/** Held frames are exported from the real Android renderer for reference comparison. */
+/** Real renderer assertions keep sampled frames and geometry in memory. */
 @RunWith(AndroidJUnit4::class)
 class GlassFloatingControlsRenderTest {
     @get:Rule val compose = createComposeRule()
@@ -94,9 +92,6 @@ class GlassFloatingControlsRenderTest {
         PixelCopy.request(window, bitmap, { result = it; copied.countDown() }, Handler(Looper.getMainLooper()))
         assertTrue("$name: window copy did not complete", copied.await(5, TimeUnit.SECONDS))
         assertEquals("$name: window copy failed", PixelCopy.SUCCESS, result)
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val dir = File(context.getExternalFilesDir(null), "pr299-controls").apply { mkdirs() }
-        File(dir, "$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
         return bitmap
     }
 
@@ -153,19 +148,12 @@ class GlassFloatingControlsRenderTest {
     @Test fun motionFramesShowProgressiveLiftJellyAndRainbowEdges() {
         val opticalPattern = mutableStateOf(false)
         showControls(mutableStateOf(false), opticalPattern)
-        save("motion-rest")
         compose.mainClock.autoAdvance = false
         fun advance(ms: Int) {
             repeat(ms / 16) {
                 compose.mainClock.advanceTimeByFrame()
                 compose.waitForIdle()
             }
-        }
-        val samples = StringBuilder("control,phase,frame,width_dp,height_dp\n")
-        fun capture(control: String, phase: String, frame: Int, lens: SemanticsNodeInteraction): Bitmap {
-            val bounds = lens.getUnclippedBoundsInRoot()
-            samples.append("$control,$phase,$frame,${(bounds.right - bounds.left).value},${(bounds.bottom - bounds.top).value}\n")
-            return save("motion-$control-$phase-${frame.toString().padStart(2, '0')}")
         }
         for ((control, rootTag, lensTag) in listOf(
             Triple("tab", "tabs", "segment-thumb"),
@@ -181,7 +169,6 @@ class GlassFloatingControlsRenderTest {
             }
             for (frame in 0..20) {
                 advance(16)
-                if (frame % 2 == 0) capture(control, "rise", frame, lens)
                 if (frame == 9) {
                     val height = lens.getUnclippedBoundsInRoot().let { (it.bottom - it.top).value }
                     assertTrue("$control must have an intermediate rising frame", height > restHeight + 2f)
@@ -190,26 +177,27 @@ class GlassFloatingControlsRenderTest {
             advance(320)
             val full = lens.getUnclippedBoundsInRoot()
             val fullWidth = (full.right - full.left).value
-            capture(control, "held", 0, lens)
             if (control == "tab") {
                 // Black/white scene gives RGB dispersion an achromatic high-contrast source.
                 // A pale gray track alone cannot produce saturated channel differences.
                 compose.runOnUiThread { opticalPattern.value = true }
                 advance(32)
                 val held = save("motion-tab-dispersion-pattern")
-                val bounds = node.fetchSemanticsNode().boundsInRoot
-                val origin = IntArray(2)
-                compose.runOnUiThread { contentView.getLocationInWindow(origin) }
-                var colored = 0
-                for (y in (bounds.top.toInt() + origin[1] - 24).coerceAtLeast(0) until
-                    (bounds.bottom.toInt() + origin[1] + 24).coerceAtMost(held.height)) {
-                    for (x in bounds.left.toInt().coerceAtLeast(0) until bounds.right.toInt().coerceAtMost(held.width)) {
-                        val pixel = held.getPixel(x, y)
-                        val channels = listOf(android.graphics.Color.red(pixel), android.graphics.Color.green(pixel), android.graphics.Color.blue(pixel))
-                        if (channels.max() - channels.min() > 65) colored++
+                try {
+                    val bounds = node.fetchSemanticsNode().boundsInRoot
+                    val origin = IntArray(2)
+                    compose.runOnUiThread { contentView.getLocationInWindow(origin) }
+                    var colored = 0
+                    for (y in (bounds.top.toInt() + origin[1] - 24).coerceAtLeast(0) until
+                        (bounds.bottom.toInt() + origin[1] + 24).coerceAtMost(held.height)) {
+                        for (x in bounds.left.toInt().coerceAtLeast(0) until bounds.right.toInt().coerceAtMost(held.width)) {
+                            val pixel = held.getPixel(x, y)
+                            val channels = listOf(android.graphics.Color.red(pixel), android.graphics.Color.green(pixel), android.graphics.Color.blue(pixel))
+                            if (channels.max() - channels.min() > 65) colored++
+                        }
                     }
-                }
-                assertTrue("achromatic scene must produce actual RGB edge separation, pixels=$colored", colored > 10)
+                    assertTrue("achromatic scene must produce actual RGB edge separation, pixels=$colored", colored > 10)
+                } finally { held.recycle() }
                 compose.runOnUiThread { opticalPattern.value = false }
                 advance(32)
             }
@@ -227,19 +215,15 @@ class GlassFloatingControlsRenderTest {
                 advance(16)
                 val bounds = lens.getUnclippedBoundsInRoot()
                 widest = maxOf(widest, (bounds.right - bounds.left).value)
-                capture(control, "drag", frame, lens)
             }
             assertTrue("$control must stretch while moving: held=$fullWidth moving=$widest", widest > fullWidth * 1.015f)
             node.performTouchInput { up() }
             for (frame in 0..30) {
                 advance(32)
-                if (frame % 2 == 0) capture(control, "release", frame, lens)
             }
             val finalHeight = lens.getUnclippedBoundsInRoot().let { (it.bottom - it.top).value }
             assertEquals("$control must return to its resting height", restHeight, finalHeight, 1f)
         }
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        File(context.getExternalFilesDir(null), "pr299-controls/motion-samples.csv").writeText(samples.toString())
         compose.mainClock.autoAdvance = true
     }
 
