@@ -414,6 +414,11 @@ internal val NativeGlassSheetShape: CornerBasedShape = NativeGlassSheetContour(
     bottomEnd = CornerSize(20.dp), bottomStart = CornerSize(20.dp),
 )
 
+/** The visible upper section of the Sheet: preserve its top rim and corners, crop below. */
+internal val NativeGlassSheetTopSectionShape: CornerBasedShape = NativeGlassSheetShape.copy(
+    bottomEnd = CornerSize(0.dp), bottomStart = CornerSize(0.dp),
+)
+
 /** Publish the same contour's radii to the optical shader's directional rim. */
 private class NativeGlassSheetContour(
     topStart: CornerSize,

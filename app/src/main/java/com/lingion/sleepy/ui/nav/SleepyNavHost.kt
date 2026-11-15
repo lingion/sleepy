@@ -1,7 +1,6 @@
 package com.lingion.sleepy.ui.nav
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.size
@@ -20,7 +18,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -76,7 +73,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.lingion.sleepy.ui.component.liquidglass.GlassMaterialRole
-import com.lingion.sleepy.ui.component.liquidglass.NativeGlassSheetShape
+import com.lingion.sleepy.ui.component.liquidglass.NativeGlassSheetTopSectionShape
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.NavDockSpec
 import com.lingion.sleepy.ui.component.OfficialNavIconMotion
@@ -882,13 +879,12 @@ private fun MainRoute(
                 fallbackBarHeight
             }
 
-            BoxWithConstraints(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(colors.background)
                     .windowInsetsPadding(WindowInsets.statusBars)
             ) {
-                val sheetBackingHeight = maxHeight
                 CompositionLocalProvider(LocalNavExtraBottomPadding provides barHeight) {
                     Box(Modifier.fillMaxSize().layerBackdrop(backdrop)) {
                         MainTabs(
@@ -911,25 +907,20 @@ private fun MainRoute(
                             .height(barHeight)
                             .onSizeChanged { barHeightPx = it.height }
                     ) {
-                        // Keep the original Sheet's full optical geometry. The viewport begins at
-                        // the Sheet's top edge, preserving its top rim and corners; only the lower
-                        // part extends beyond the measured Material bar and is clipped away.
-                        Box(Modifier.matchParentSize().clipToBounds()) {
-                            Box(
-                                Modifier
-                                    .align(Alignment.TopCenter)
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 8.dp)
-                                    .requiredHeight(sheetBackingHeight)
-                                    .glassControl(
-                                        shape = NativeGlassSheetShape,
-                                        enabled = false,
-                                        registerPane = false,
-                                        role = GlassMaterialRole.Sheet,
-                                        backdropOverride = backdrop,
-                                    )
-                            )
-                        }
+                        // The backing is exactly bar-height. Its top edge and 36dp corners are
+                        // the Sheet's original; square lower corners represent the part cropped off.
+                        Box(
+                            Modifier
+                                .matchParentSize()
+                                .padding(horizontal = 8.dp)
+                                .glassControl(
+                                    shape = NativeGlassSheetTopSectionShape,
+                                    enabled = false,
+                                    registerPane = false,
+                                    role = GlassMaterialRole.Sheet,
+                                    backdropOverride = backdrop,
+                                )
+                        )
                         NavigationBar(
                             modifier = Modifier.fillMaxWidth(),
                             containerColor = Color.Transparent,
