@@ -2,9 +2,7 @@ package com.lingion.sleepy.ui.screen.mine
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,7 +21,6 @@ import com.lingion.sleepy.ui.component.liquidglass.glassButtonShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -55,11 +52,7 @@ import com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding
 import com.lingion.sleepy.ui.component.settingsSection
 import com.lingion.sleepy.ui.component.SettingToggleRow
 import com.lingion.sleepy.ui.component.SettingsCard
-import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton
-import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
-import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
-import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.widget.WidgetManagementViewModel
@@ -82,7 +75,6 @@ fun WidgetSettingsScreen(
     onOpenScheduleDisplay: () -> Unit = {}
 ) {
     val colors = MaterialTheme.colorScheme
-    val glass = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
     val context = LocalContext.current
 
     var expanded by rememberSaveable { mutableStateOf(true) }
@@ -149,7 +141,16 @@ fun WidgetSettingsScreen(
         ) {
             // 添加或管理桌面小组件: 跳「添加或管理」页(右上 ＋ 进画廊)
             item {
-                val rowContent: @Composable RowScope.() -> Unit = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(SleepyTheme.shapes.large)
+                        .background(colors.surfaceContainer)
+                        .noRippleClickable(onOpenWidgetManagement)
+                        .padding(SettingsLayout.cardInset),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(SettingsLayout.controlGap)
+                ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = stringResource(R.string.widget_manage_entry),
@@ -162,32 +163,6 @@ fun WidgetSettingsScreen(
                         contentDescription = null,
                         tint = colors.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
-                    )
-                }
-                if (glass) {
-                    GlassTextButton(
-                        onClick = onOpenWidgetManagement,
-                        modifier = Modifier.fillMaxWidth(),
-                        contentPadding = PaddingValues(SettingsLayout.cardInset),
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(SettingsLayout.controlGap),
-                            content = rowContent,
-                        )
-                    }
-                } else {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(SleepyTheme.shapes.large)
-                            .background(colors.surfaceContainer)
-                            .noRippleClickable(onOpenWidgetManagement)
-                            .padding(SettingsLayout.cardInset),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(SettingsLayout.controlGap),
-                        content = rowContent,
                     )
                 }
             }
@@ -222,43 +197,24 @@ fun WidgetSettingsScreen(
                 }
             }
             item {
-                val rowContentColor = LocalContentColor.current
-                val rowContent: @Composable RowScope.() -> Unit = {
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                        .clip(SleepyTheme.shapes.large)
+                        .background(colors.surfaceContainer)
+                        .noRippleClickable(onOpenScheduleDisplay)
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(SettingsLayout.controlGap)
+                ) {
                     Column(Modifier.weight(1f), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
                         Text(stringResource(R.string.settings_widget_shared_display),
-                            style = SettingsLayout.headingStyle,
-                            color = rowContentColor)
+                            style = SettingsLayout.headingStyle)
                         Text(stringResource(R.string.settings_widget_shared_display_sub),
                             style = MaterialTheme.typography.bodySmall,
                             color = colors.onSurfaceVariant)
                     }
                     Icon(Icons.Outlined.ChevronRight, contentDescription = null,
                         tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
-                }
-                if (glass) {
-                    GlassTextButton(
-                        onClick = onOpenScheduleDisplay,
-                        modifier = Modifier.fillMaxWidth(),
-                        contentPadding = PaddingValues(16.dp),
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(SettingsLayout.controlGap),
-                            content = rowContent,
-                        )
-                    }
-                } else {
-                    Row(
-                        modifier = Modifier.fillMaxWidth()
-                            .clip(SleepyTheme.shapes.large)
-                            .background(colors.surfaceContainer)
-                            .noRippleClickable(onOpenScheduleDisplay)
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(SettingsLayout.controlGap),
-                        content = rowContent,
-                    )
                 }
             }
             settingsSection(R.string.settings_widget_advanced) {

@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,7 +29,6 @@ import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.ui.component.DialogActionButtons
 import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
-import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton
 
 /**
  * 甲案 (设计文档 §4.1) 三选项 BottomSheet — 绑定了共享作息表时改作息内容, 弹窗决定写入作用域。
@@ -153,7 +151,14 @@ private fun ConflictOption(
     onClick: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
-    val optionContent: @Composable () -> Unit = {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(SleepyTheme.shapes.large)
+            .background(colors.surfaceContainer)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp)
+    ) {
         Text(
             text = title,
             style = MaterialTheme.typography.bodyLarge,
@@ -165,23 +170,5 @@ private fun ConflictOption(
             style = MaterialTheme.typography.bodySmall,
             color = colors.onSurfaceVariant
         )
-    }
-    if (LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null) {
-        GlassTextButton(
-            onClick = onClick,
-            modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp),
-        ) {
-            Column(modifier = Modifier.weight(1f)) { optionContent() }
-        }
-    } else {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(SleepyTheme.shapes.large)
-                .background(colors.surfaceContainer)
-                .clickable(onClick = onClick)
-                .padding(horizontal = 16.dp, vertical = 14.dp)
-        ) { optionContent() }
     }
 }

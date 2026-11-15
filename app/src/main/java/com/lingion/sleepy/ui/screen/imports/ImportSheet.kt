@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
@@ -753,7 +752,6 @@ private fun ImportMethodRow(
     onClick: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
-    val glass = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
     if (expanded != null) {
         AccordionHeader(
             expanded = expanded,
@@ -775,7 +773,15 @@ private fun ImportMethodRow(
         }
         return
     }
-    val rowContent: @Composable RowScope.() -> Unit = {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(SleepyTheme.shapes.medium)
+            .clickable(enabled = enabled, onClick = onClick)
+            .then(dbgTag?.let { Modifier.dbgTag(it, text = label, role = "button") } ?: Modifier)
+            .padding(vertical = 14.dp, horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         ImportMethodIcon(icon)
         Column(
             modifier = Modifier.weight(1f).padding(start = 14.dp)
@@ -796,27 +802,6 @@ private fun ImportMethodRow(
         if (trailing != null) {
             Icon(trailing, contentDescription = null, tint = colors.onSurfaceVariant)
         }
-    }
-    if (glass) {
-        TextButton(
-            onClick = onClick,
-            enabled = enabled,
-            modifier = Modifier.fillMaxWidth()
-                .then(dbgTag?.let { Modifier.dbgTag(it, text = label, role = "button") } ?: Modifier),
-            contentPadding = PaddingValues(vertical = 14.dp, horizontal = 4.dp),
-            content = rowContent,
-        )
-    } else {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(SleepyTheme.shapes.medium)
-                .clickable(enabled = enabled, onClick = onClick)
-                .then(dbgTag?.let { Modifier.dbgTag(it, text = label, role = "button") } ?: Modifier)
-                .padding(vertical = 14.dp, horizontal = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            content = rowContent,
-        )
     }
 }
 

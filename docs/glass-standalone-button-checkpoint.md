@@ -6,7 +6,7 @@ Prominent buttons reuse the existing theme primary/onPrimary colors. Regular but
 
 ## Entry points
 
-The paste-text preview button releases the Material fixed body height, shape and label style in Glass mode. Noncollapsing import actions now use the shared glass button rather than an ordinary clickable Row. Course details, backup/WebDAV, Glass date-calendar navigation and 25 standard shape overrides across 13 editor/settings screens use the matching glass path. Material rows and callbacks remain unchanged. Deliberate custom shapes, including course color groups and remote backup items, are retained.
+The paste-text preview button releases the Material fixed body height, shape and label style in Glass mode. Import method rows retain their original row layout. Course details, backup/WebDAV, Glass date-calendar navigation and 25 standard shape overrides across 13 editor/settings screens use the matching glass path. Material rows and callbacks remain unchanged. Deliberate custom shapes, including course color groups and remote backup items, are retained.
 
 ## Actual pointer fix and verification
 
@@ -19,8 +19,6 @@ A real 56dp tall button could activate from its surrounding touch padding but it
 
 The standalone wrapper belongs to the Sleepy app. The public asset library receives only its mapped runtime primitives and App validation evidence; it does not yet distribute this entire button, GlassHost or DatePicker implementation as a standalone package.
 
-## Follow-up entry audit
+## Scope correction after user review
 
-Five additional groups still used opaque Material fills and ordinary clickable containers in Glass mode. They now route through the existing glass text button only when a glass host is present: the three schedule-conflict choices; the four management actions; the shared appearance navigation row; the WebDAV configuration header; and both widget-settings navigation entries. Their Material branches retain the original containers, spacing, content and callbacks. The WebDAV header's Glass branch also releases its surrounding opaque Material fill; upload/restore eligibility and credential handling are unchanged.
-
-The final build passed 21 focused tests (the preceding 18 plus three editor-draft tests) and both APK tasks. That app was installed on the API 36 device and its installed SHA-256 matched the built APK. Management entry components were captured and inspected. This extends the named-entry audit; it does not establish every-entry or native optical acceptance.
+The broad conversion of management cards, appearance/widget/WebDAV navigation and conflict rows into full-width glass buttons was rejected by the user and reverted. Those deliberate page layouts remain as before that expansion. The uncommitted follow-up import/header expansion was discarded, and import method rows were also restored. Future work is restricted to Alert/Sheet backing optics; replacing deliberate list/card layouts is not authorized.

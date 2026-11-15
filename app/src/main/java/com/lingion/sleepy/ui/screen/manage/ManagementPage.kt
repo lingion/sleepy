@@ -4,9 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,11 +33,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
-import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
-import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
-import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.ui.theme.noRippleClickable
 
 @Composable
@@ -169,7 +164,15 @@ private fun ManageCard(
     onClick: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
-    val rowContent: @Composable RowScope.() -> Unit = {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(SleepyTheme.shapes.large)
+            .background(colors.surfaceContainer)
+            .noRippleClickable(onClick)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Box(
             modifier = Modifier
                 .size(44.dp)
@@ -184,24 +187,5 @@ private fun ManageCard(
             Spacer(modifier = Modifier.height(2.dp))
             Text(subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
         }
-    }
-    if (LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null) {
-        TextButton(
-            onClick = onClick,
-            modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(16.dp),
-            content = rowContent,
-        )
-    } else {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(SleepyTheme.shapes.large)
-                .background(colors.surfaceContainer)
-                .noRippleClickable(onClick)
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            content = rowContent,
-        )
     }
 }
