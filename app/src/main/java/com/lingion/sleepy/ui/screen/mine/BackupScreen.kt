@@ -15,16 +15,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ChevronRight
-import androidx.compose.material3.AlertDialog
+import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -51,7 +51,11 @@ import com.lingion.sleepy.data.backup.WebDavFailureKind
 import com.lingion.sleepy.data.backup.WebDavRemoteBackup
 import com.lingion.sleepy.data.migration.MigrationExecutor
 import com.lingion.sleepy.data.migration.MigrationModule
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.component.liquidglass.NativeGlassAlertActionGroup
+import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -65,6 +69,7 @@ import java.util.Locale
 @Composable
 fun BackupScreen(onBack: () -> Unit) {
     val colors = MaterialTheme.colorScheme
+    val nativeDialogActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
     val context = LocalContext.current
     val widgetScope = rememberCoroutineScope()
     fun refreshWidgets() {
@@ -458,21 +463,47 @@ fun BackupScreen(onBack: () -> Unit) {
             title = { Text(stringResource(R.string.settings_migration_import_dialog_title)) },
             text = { Text(stringResource(R.string.settings_migration_import_dialog_text)) },
             confirmButton = {
-                Row {
-                    TextButton(onClick = { showImportDialog = false; runMigrationImport(MigrationExecutor.ImportMode.OVERWRITE) },
-                        modifier = Modifier.dbgTag("general_import_overwrite", role = "button")) {
-                        Text(stringResource(R.string.settings_migration_import_overwrite))
-                    }
-                    TextButton(onClick = { showImportDialog = false; runMigrationImport(MigrationExecutor.ImportMode.MERGE) },
-                        modifier = Modifier.dbgTag("general_import_merge", role = "button")) {
-                        Text(stringResource(R.string.settings_migration_import_merge))
+                if (nativeDialogActions) {
+                    NativeGlassAlertActionGroup(
+                        stacked = true,
+                        dismissButton = {
+                            TextButton(onClick = { showImportDialog = false; pendingImportBytes = null },
+                                modifier = Modifier.dbgTag("general_import_cancel", role = "button")) {
+                                Text(stringResource(R.string.cancel))
+                            }
+                        },
+                        thirdButton = {
+                            TextButton(onClick = { showImportDialog = false; runMigrationImport(MigrationExecutor.ImportMode.MERGE) },
+                                modifier = Modifier.dbgTag("general_import_merge", role = "button")) {
+                                Text(stringResource(R.string.settings_migration_import_merge))
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(onClick = { showImportDialog = false; runMigrationImport(MigrationExecutor.ImportMode.OVERWRITE) },
+                                modifier = Modifier.dbgTag("general_import_overwrite", role = "button")) {
+                                Text(stringResource(R.string.settings_migration_import_overwrite))
+                            }
+                        },
+                    )
+                } else {
+                    Row {
+                        TextButton(onClick = { showImportDialog = false; runMigrationImport(MigrationExecutor.ImportMode.OVERWRITE) },
+                            modifier = Modifier.dbgTag("general_import_overwrite", role = "button")) {
+                            Text(stringResource(R.string.settings_migration_import_overwrite))
+                        }
+                        TextButton(onClick = { showImportDialog = false; runMigrationImport(MigrationExecutor.ImportMode.MERGE) },
+                            modifier = Modifier.dbgTag("general_import_merge", role = "button")) {
+                            Text(stringResource(R.string.settings_migration_import_merge))
+                        }
                     }
                 }
             },
-            dismissButton = {
-                TextButton(onClick = { showImportDialog = false; pendingImportBytes = null },
-                    modifier = Modifier.dbgTag("general_import_cancel", role = "button")) {
-                    Text(stringResource(R.string.cancel))
+            dismissButton = if (nativeDialogActions) null else {
+                {
+                    TextButton(onClick = { showImportDialog = false; pendingImportBytes = null },
+                        modifier = Modifier.dbgTag("general_import_cancel", role = "button")) {
+                        Text(stringResource(R.string.cancel))
+                    }
                 }
             }
         )

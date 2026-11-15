@@ -47,7 +47,8 @@ fun ManagementPage(
     onOpenAllTables: () -> Unit,
     viewModel: ScheduleViewModel = viewModel()
 ) {
-    val state by viewModel.state.collectAsState()
+    val liveState by viewModel.state.collectAsState()
+    val state = com.lingion.sleepy.ui.nav.rememberNavigationEntrySnapshot(liveState)
     val colors = MaterialTheme.colorScheme
     val table = state.currentTable
 

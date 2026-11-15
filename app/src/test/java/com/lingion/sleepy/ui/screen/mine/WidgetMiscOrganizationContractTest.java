@@ -23,6 +23,22 @@ public class WidgetMiscOrganizationContractTest {
         }
     }
 
+    /** Read the owned helper body so declaration placement cannot stand in for render order. */
+    private String functionBody(String source, String name) {
+        int declaration = source.indexOf("fun " + name + "(");
+        assertTrue("Missing helper: " + name, declaration >= 0);
+        int opening = source.indexOf('{', declaration);
+        assertTrue("Missing helper body: " + name, opening >= 0);
+        int depth = 1;
+        for (int position = opening + 1; position < source.length(); position++) {
+            char token = source.charAt(position);
+            if (token == '{') depth++;
+            if (token == '}' && --depth == 0) return source.substring(opening + 1, position);
+        }
+        fail("Unclosed helper body: " + name);
+        return "";
+    }
+
     @Test public void widgetPageStartsWithManagementAndEndsWithConditionalRefresh() throws Exception {
         String s = source("mine/WidgetSettingsScreen.kt");
         s = s.substring(s.indexOf("LazyColumn("));
@@ -63,10 +79,17 @@ public class WidgetMiscOrganizationContractTest {
 
     @Test public void aboutGroupsUpdateControlsThenSupportThenProjectInformation() throws Exception {
         String s = source("mine/AboutScreen.kt");
-        s = s.substring(s.indexOf("// Version info card"));
-        ordered(s, "stringResource(R.string.about_version)", "stringResource(R.string.about_update)", "stringResource(R.string.about_update_check)",
+        String page = functionBody(s, "AboutScreen");
+        page = page.substring(page.indexOf("// Version info card"));
+        ordered(page, "stringResource(R.string.about_version)", "stringResource(R.string.about_update)", "stringResource(R.string.about_update_check)",
             "stringResource(R.string.about_feedback)", "stringResource(R.string.about_qq_title)", "stringResource(R.string.about_author)",
-            "stringResource(R.string.about_source)", "stringResource(R.string.about_privacy)", "stringResource(R.string.about_license_title)");
+            "AboutExternalLinks(");
+        String links = functionBody(s, "AboutExternalLinks");
+        ordered(links, "stringResource(R.string.about_source)", "AboutPrivacyCard(onOpenPrivacy)",
+            "if (glass)", "stringResource(R.string.about_license_title)", "} else {", "stringResource(R.string.about_license_title)");
+        String composedOrder = links.replace("AboutPrivacyCard(onOpenPrivacy)", functionBody(s, "AboutPrivacyCard"));
+        ordered(composedOrder, "stringResource(R.string.about_source)", "stringResource(R.string.about_privacy)",
+            "stringResource(R.string.about_license_title)");
     }
 
     @Test public void exportGroupsSharingBeforeCalendarActionsWithoutChangingPeriodFormats() throws Exception {

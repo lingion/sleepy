@@ -2,6 +2,83 @@
   "repository": "Kyant0/AndroidLiquidGlass",
   "tag": "2.0.0",
   "commit": "bebb11a91bd97bf1dabde479f3b332ad9898731f",
+  "customizationProvenance": {
+    "repository": "xiaomanjun233/SleepDown-Schedule",
+    "customizedImportRevision": null,
+    "verifiedEquivalentSourceRevision": "d02898140327796946f2b140cb3ca87390595810",
+    "verifiedEquivalentSourceUrl": "https://github.com/xiaomanjun233/SleepDown-Schedule/tree/d02898140327796946f2b140cb3ca87390595810/third-party/kyant-backdrop",
+    "verifiedAgainstSleepyImportCommit": "c2490785c90ea57f6a06ab14c14386786f19b9d0",
+    "verificationDate": "2026-11-14",
+    "verification": {
+      "runtimeSourceFilesCompared": 42,
+      "runtimeSourceExactByteMatches": 42,
+      "runtimeSourceScope": [
+        "src/androidMain/**/*.kt",
+        "src/commonMain/**/*.kt"
+      ],
+      "runtimeManifestFormat": "Sorted module-relative path + TAB + lowercase SHA-256(file bytes) + LF; UTF-8.",
+      "originalImportRuntimeManifestSha256": "cf2ed67c433dc7f56299197146f4b54728f1ebe67d3840769833400211449c67",
+      "originalImportReadmeSha256": "a59f19aed18bc62fdc04cd2893a0b239c550b8528c83cbc9cabd3ff10df5ed26",
+      "retainedNoticeExactByteMatches": [
+        {
+          "sourcePath": "LICENSE.md",
+          "retainedPath": "app/src/main/assets/third_party/notices/SleepDown-LICENSE.md",
+          "sha256": "f4c89976e3986b7105d7a6d2d509fe4baa845f3a033f58bb8021629d34731023",
+          "sourceUrl": "https://github.com/xiaomanjun233/SleepDown-Schedule/blob/d02898140327796946f2b140cb3ca87390595810/LICENSE.md"
+        },
+        {
+          "sourcePath": "THIRD_PARTY_NOTICES.md",
+          "retainedPath": "app/src/main/assets/third_party/notices/SleepDown-THIRD_PARTY_NOTICES.md",
+          "sha256": "a24cd028cbc6677d941b59891809cf13e4d9f1f9b604cf7350e7dbd2d007ae68",
+          "sourceUrl": "https://github.com/xiaomanjun233/SleepDown-Schedule/blob/d02898140327796946f2b140cb3ca87390595810/THIRD_PARTY_NOTICES.md"
+        }
+      ],
+      "scopeNote": "Matches the original Sleepy import, not its later runtime changes; Gradle adapter, tests and other assets are outside this comparison."
+    },
+    "runtimeDeltaFromKyantBaseline": {
+      "auditedSleepyRevision": "4b5978690eb0b34d9e60a0e19f25366b7bffd3d8",
+      "baselineFilesComparedAndBlobHashesVerified": 34,
+      "originalFilesWithOnlyOneAppendedNewline": 24,
+      "modifiedOriginalFiles": 10,
+      "addedRuntimeFiles": 8,
+      "missingBaselineFiles": 0,
+      "shaderSource": "src/commonMain/kotlin/com/kyant/backdrop/internal/Shaders.kt differs only by one appended newline."
+    },
+    "runtimeChangesAfterImport": [
+      {
+        "commit": "ff6672a7314f8c1ea498f706e39e8bfb4f22464a",
+        "files": [
+          "src/commonMain/kotlin/com/kyant/backdrop/BackdropEffectScope.kt",
+          "src/commonMain/kotlin/com/kyant/backdrop/DrawBackdropModifier.kt"
+        ],
+        "purpose": "Separate GPU preprocessing input from the optical sampling effect."
+      },
+      {
+        "commit": "6faf5b7a9ac4c0e7f9d9c7b7b3541f9dc2b9c6a2",
+        "files": [
+          "src/commonMain/kotlin/com/kyant/backdrop/DrawBackdropModifier.kt"
+        ],
+        "purpose": "Retained callbacks read the current shape provider and sampling options."
+      },
+      {
+        "changeId": "external-source-recording-revision-94",
+        "files": [
+          "src/commonMain/kotlin/com/kyant/backdrop/backdrops/LayerBackdrop.kt"
+        ],
+        "sha256": "3c2d2c935f4c0d98e25ad404f687f23eeed0bb14c43db8571c3853efce162510",
+        "purpose": "Expose the existing completed display-list recording revision as a read-only getter for external historical source samples. No producer behavior or compositor/pixel fence is added."
+      }
+    ],
+    "pinnedSleepDownPatch": {
+      "url": "https://github.com/xiaomanjun233/SleepDown-Schedule/blob/d02898140327796946f2b140cb3ca87390595810/patches/kyant-backdrop-2.0.0-sleepdown.patch",
+      "bytes": 68170,
+      "sha256": "dffae0ff919598b8dd6bfadd4e09c80edecc8398f2174e1f6902bb4c4d5ddab7",
+      "presentInSleepyCheckout": false,
+      "includesLaterSleepyChanges": false
+    },
+    "redistributionAuthorizationConfirmed": false,
+    "limitation": "Content equivalence supplies a reproducible source baseline; it does not prove the historical acquisition/import revision or resolve authorization to redistribute SleepDown-owned customizations."
+  },
   "files": [
     {
       "path": "backdrop/src/androidMain/kotlin/com/kyant/backdrop/Platform.kt",

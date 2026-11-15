@@ -16,7 +16,6 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
-import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -38,7 +37,7 @@ import java.io.File
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [35], qualifiers = "w360dp-h640dp-mdpi")
 class GlassSelectionColorRegressionTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule val compose = createSoftwareWindowComposeRule()
 
     private val languages = listOf(
         "zh-CN" to "简体中文", "zh-TW" to "繁體中文", "en" to "English",
@@ -48,7 +47,7 @@ class GlassSelectionColorRegressionTest {
     @Test fun glassSelectionsRetainTheirMaterialThemeFill() {
         compose.setContent {
             MaterialTheme(colorScheme = lightColorScheme(secondaryContainer = Color.Magenta)) {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass) {
                     GlassHost {
                         Column {
                             SegmentedSwitcher(
@@ -81,7 +80,7 @@ class GlassSelectionColorRegressionTest {
         languages.forEach { (code, _) -> compose.onNodeWithTag("general_language#$code").assertIsDisplayed() }
         val menu = compose.onNodeWithTag("general_language_menu").captureToImage().asAndroidBitmap()
         saveFrame("glass-five-language-menu.png", menu)
-        assertEquals("menu stays at its full content width", 280, menu.width)
+        assertEquals("menu uses the measured iOS 26.5 content width", 250, menu.width)
     }
 
     @Test
@@ -96,7 +95,7 @@ class GlassSelectionColorRegressionTest {
     @Test fun toggleThumbCrossfadesDuringBothRiseAndFall() {
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass) {
                     GlassHost(Modifier.fillMaxSize(), background = Color.Red) {
                         GlassSwitch(
                             checked = false, onCheckedChange = {}, modifier = Modifier.testTag("toggle"),
@@ -137,7 +136,7 @@ class GlassSelectionColorRegressionTest {
     private fun showLanguages() {
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass) {
                     GlassHost { GlassLanguageMenu("Language", "en", languages, {}) }
                 }
             }

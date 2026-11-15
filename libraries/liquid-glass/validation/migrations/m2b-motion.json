@@ -1,0 +1,528 @@
+{
+  "schemaVersion": 1,
+  "phase": "M2b first four-file motion closure",
+  "date": "2026-11-14",
+  "status": "moved-built-tested-and-consumed-by-sleepy",
+  "baselineCommit": "08ad45c057f09b981a4c78d2397f43e7e1338d8c",
+  "scope": "Four motion files only; same package, one runtime implementation. No motion, timing, input, numerical, optical or expectation changes. Remaining press/endpoint, geometry, M3/M4 and sample are pending.",
+  "moves": [
+    {
+      "from": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassPhysics.kt",
+      "to": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassPhysics.kt",
+      "beforeSHA256": "20a9d90d15eb26d4be3a225523424e424533e5d52b0e3a96772615cf82cbfc4c",
+      "afterSHA256": "20a9d90d15eb26d4be3a225523424e424533e5d52b0e3a96772615cf82cbfc4c",
+      "onlyInternalRemoval": true,
+      "removedInternalCount": 0
+    },
+    {
+      "from": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/GlassControlMotion.kt",
+      "to": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/GlassControlMotion.kt",
+      "beforeSHA256": "a2e243371bf60da8191001f32a1a13c0843a1089685984c701f35d1ea3bb985b",
+      "afterSHA256": "771af0b3ba37ca77d4ccb33dbf6271b891b773a050825b8fc6311dff23134d0f",
+      "onlyInternalRemoval": true,
+      "removedInternalCount": 8
+    },
+    {
+      "from": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/GlassDockMotion.kt",
+      "to": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/GlassDockMotion.kt",
+      "beforeSHA256": "1a204a50bde977578b17170f1a12a27644a61442fd88abf7fc46c79bb4d6d58a",
+      "afterSHA256": "0c9933e29ad995653052a7eadc4941e18247387a733f9c420b5284aa1e699164",
+      "onlyInternalRemoval": true,
+      "removedInternalCount": 3
+    },
+    {
+      "from": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/NativeDockParentMotion.kt",
+      "to": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeDockParentMotion.kt",
+      "beforeSHA256": "866ace235e07e7fb4f99776f985bd0915862f048d121f5acdcf559bea2b4f167",
+      "afterSHA256": "866ace235e07e7fb4f99776f985bd0915862f048d121f5acdcf559bea2b4f167",
+      "onlyInternalRemoval": true,
+      "removedInternalCount": 0
+    }
+  ],
+  "visibilityChanges": 11,
+  "springStateSettersInternal": [
+    "value",
+    "target",
+    "velocity",
+    "isRunning"
+  ],
+  "parentMotionClassInternal": true,
+  "testAndResourceMoves": [
+    {
+      "from": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/NativeDockParentMotionTest.kt",
+      "to": "libraries/liquid-glass/runtime/src/androidHostTest/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeDockParentMotionTest.kt",
+      "sha256": "8fff4fbc920bf2ef5c74dad099017cd9cfe7613bb87cb9b3da05772f6efa4204",
+      "byteIdentical": true
+    },
+    {
+      "from": "app/src/test/resources/native-glass/dock-parent-input-65.csv",
+      "to": "libraries/liquid-glass/runtime/src/androidHostTest/resources/native-glass/dock-parent-input-65.csv",
+      "sha256": "8d7d0b6c718e7f31c3101f3861c05dee407e3244eafa7ec473ca0b8bc07dc6d6",
+      "byteIdentical": true
+    },
+    {
+      "from": "app/src/test/resources/native-glass/dock-parent-reference-65.csv",
+      "to": "libraries/liquid-glass/runtime/src/androidHostTest/resources/native-glass/dock-parent-reference-65.csv",
+      "sha256": "d71f875edda79dc82fd70854a16dc271cb75fb4bc99c7b40d734adac719f8411",
+      "byteIdentical": true
+    }
+  ],
+  "dependencies": {
+    "composeRuntime": {
+      "configuration": "api",
+      "declared": "1.12.1",
+      "resolvedRuntimeCompileAndRuntime": "1.12.1",
+      "unchangedFromM2a": true
+    },
+    "composeUi": {
+      "configuration": "api",
+      "declared": "1.12.1",
+      "resolvedAppBefore": "1.12.1",
+      "resolvedRuntimeCompileAndRuntime": "1.12.1",
+      "reason": "Existing Rect/Offset public APIs and MotionDurationScale usage."
+    },
+    "composeCompiler": {
+      "plugin": "org.jetbrains.kotlin.plugin.compose",
+      "rootVersion": "2.4.21",
+      "resolvedCompilerArtifact": "org.jetbrains.kotlin:kotlin-compose-compiler-plugin-embeddable:2.4.21"
+    },
+    "coroutinesCore": {
+      "configuration": "implementation",
+      "declaredVia": "libs.coroutines.core",
+      "resolvedRuntimeCompileAndRuntime": "1.11.0",
+      "unchangedFromM2a": true
+    },
+    "hostJUnit": {
+      "sourceSet": "androidHostTest",
+      "declaredVia": "libs.junit",
+      "declaredVersion": "4.13.2",
+      "registration": "withHostTestBuilder {}.configure {}",
+      "task": "testAndroidHostTest",
+      "onlyHostTestDependencyAdded": true
+    },
+    "friendPathsOrAppSourceInclusion": false,
+    "newRobolectricShapesOrBackdropDependencies": false
+  },
+  "tests": {
+    "classesBeforeAndAfter": 19,
+    "before": {
+      "tests": 124,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "after": {
+      "tests": 124,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "afterApp": {
+      "classes": 18,
+      "tests": 109
+    },
+    "afterHost": {
+      "classes": 1,
+      "tests": 15
+    },
+    "suites": [
+      {
+        "class": "com.lingion.sleepy.ui.component.liquidglass.DockTimedInputTest",
+        "beforeModule": ":app",
+        "afterModule": ":app",
+        "tests": 10
+      },
+      {
+        "class": "com.lingion.sleepy.ui.component.liquidglass.GlassControlMotionTest",
+        "beforeModule": ":app",
+        "afterModule": ":app",
+        "tests": 7
+      },
+      {
+        "class": "com.lingion.sleepy.ui.component.liquidglass.GlassControlTimedInputTest",
+        "beforeModule": ":app",
+        "afterModule": ":app",
+        "tests": 16
+      },
+      {
+        "class": "com.lingion.sleepy.ui.component.liquidglass.GlassDockMotionTest",
+        "beforeModule": ":app",
+        "afterModule": ":app",
+        "tests": 9
+      },
+      {
+        "class": "com.lingion.sleepy.ui.component.liquidglass.GlassSliderContinuousInputTest",
+        "beforeModule": ":app",
+        "afterModule": ":app",
+        "tests": 6
+      },
+      {
+        "class": "com.lingion.sleepy.ui.component.liquidglass.GlassSliderThumbDeformationTest",
+        "beforeModule": ":app",
+        "afterModule": ":app",
+        "tests": 3
+      },
+      {
+        "class": "com.lingion.sleepy.ui.component.liquidglass.GlassSliderTimestampInteractionTest",
+        "beforeModule": ":app",
+        "afterModule": ":app",
+        "tests": 2
+      },
+      {
+        "class": "com.lingion.sleepy.ui.component.liquidglass.GlassSliderVisualEndpointInputTest",
+        "beforeModule": ":app",
+        "afterModule": ":app",
+        "tests": 7
+      },
+      {
+        "class": "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassPhysicsTest",
+        "beforeModule": ":app",
+        "afterModule": ":app",
+        "tests": 9
+      },
+      {
+        "class": "com.lingion.sleepy.ui.component.liquidglass.NativeDockDirectDeformationTest",
+        "beforeModule": ":app",
+        "afterModule": ":app",
+        "tests": 8
+      },
+      {
+        "class": "com.lingion.sleepy.ui.component.liquidglass.NativeDockEndpointTest",
+        "beforeModule": ":app",
+        "afterModule": ":app",
+        "tests": 7
+      },
+      {
+        "class": "com.lingion.sleepy.ui.component.liquidglass.NativeDockParentMotionTest",
+        "beforeModule": ":app",
+        "afterModule": ":liquid-glass-runtime",
+        "tests": 15
+      },
+      {
+        "class": "com.lingion.sleepy.ui.component.liquidglass.NativeDockPositionReferenceTest",
+        "beforeModule": ":app",
+        "afterModule": ":app",
+        "tests": 2
+      },
+      {
+        "class": "com.lingion.sleepy.ui.component.liquidglass.NativeGlassDragDeformationTest",
+        "beforeModule": ":app",
+        "afterModule": ":app",
+        "tests": 6
+      },
+      {
+        "class": "com.lingion.sleepy.ui.component.liquidglass.NativeGlassReleaseInterruptionTest",
+        "beforeModule": ":app",
+        "afterModule": ":app",
+        "tests": 2
+      },
+      {
+        "class": "com.lingion.sleepy.ui.component.liquidglass.NativeSegmentedCoalescedTapTest",
+        "beforeModule": ":app",
+        "afterModule": ":app",
+        "tests": 2
+      },
+      {
+        "class": "com.lingion.sleepy.ui.component.liquidglass.NativeSegmentedMotionTest",
+        "beforeModule": ":app",
+        "afterModule": ":app",
+        "tests": 3
+      },
+      {
+        "class": "com.lingion.sleepy.ui.component.liquidglass.NativeSliderDeformationTest",
+        "beforeModule": ":app",
+        "afterModule": ":app",
+        "tests": 5
+      },
+      {
+        "class": "com.lingion.sleepy.ui.component.liquidglass.TabViewDockGeometryTest",
+        "beforeModule": ":app",
+        "afterModule": ":app",
+        "tests": 5
+      }
+    ],
+    "sourceAndResourceHashCount": 21,
+    "sourceAndResourceHashesUnchanged": true,
+    "testIdentitiesPreserved": {
+      "testcases": 124,
+      "beforeXmlFiles": 19,
+      "afterXmlFiles": 19,
+      "unchanged": true
+    },
+    "sources": [
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/DockTimedInputTest.kt",
+        "sha256": "d00ba0807546f2a461fdf38590c61bfb3420ff20b10982260ce914a89c4e7a5c"
+      },
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/GlassControlMotionTest.kt",
+        "sha256": "6ddd220c927a63d460628007970cc531ece3fc3e13ed9e0c82e569995eb1951c"
+      },
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/GlassControlTimedInputTest.kt",
+        "sha256": "eed9f9551622787f7e48613fafa098fde5eb3663bc076ded2a0bd024b9bd49c7"
+      },
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/GlassDockMotionTest.kt",
+        "sha256": "b9bf51c2fbed0c57a55230ed1011601a6829ca7b71f6e86430c7c1551eb9145e"
+      },
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/GlassSliderContinuousInputTest.kt",
+        "sha256": "c822486ae5a0f071cf06d53d09691284d120be4685d32c110de2ad4432227e68"
+      },
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/GlassSliderThumbDeformationTest.kt",
+        "sha256": "c19c2b05a7ee4e12092d89125440a9ade774287781e72874896eb36b4009bb85"
+      },
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/GlassSliderTimestampInteractionTest.kt",
+        "sha256": "7967d7de99257f42ad2a2cfceca911d92c5518a450626b57ecba2bf0e6921296"
+      },
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/GlassSliderVisualEndpointInputTest.kt",
+        "sha256": "40649d99b672d2ef4b6dc45a7a150af659640a6cfaac8bb293ba3507528ef715"
+      },
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassPhysicsTest.kt",
+        "sha256": "c46e396e79e937761d08471a3c7bf5436ae34e1ac1475852a6d2967dc2239c66"
+      },
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/NativeDockDirectDeformationTest.kt",
+        "sha256": "b4c0ac8540cc4151b554796728ac5054064d6ccf173232dbcac23d449cd4e923"
+      },
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/NativeDockEndpointTest.kt",
+        "sha256": "335630ed846b28174517a67a1bc7dc266893605ca71e3aab3c6d63388518dc29"
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidHostTest/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeDockParentMotionTest.kt",
+        "sha256": "8fff4fbc920bf2ef5c74dad099017cd9cfe7613bb87cb9b3da05772f6efa4204"
+      },
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/NativeDockPositionReferenceTest.kt",
+        "sha256": "e7943ee4922338fef621869d44573b6607747237db227028817fe8a79372b4a1"
+      },
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/NativeGlassDragDeformationTest.kt",
+        "sha256": "5718ec97e8b761fefe8315ca2e8becd42743478306b1d41f18b4ffde66e72c43"
+      },
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/NativeGlassReleaseInterruptionTest.kt",
+        "sha256": "885537d9f47648f90ed0fafda199a59ff340fc39d1f75f3e4c8e8d5280c12e1b"
+      },
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/NativeSegmentedCoalescedTapTest.kt",
+        "sha256": "0f3216c30c4009e5e2b1946c6de42dd8118841cf734823fe1e8fb7a2873418d0"
+      },
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/NativeSegmentedMotionTest.kt",
+        "sha256": "f9f87aed921f2653e81cd036e674e25b84a9eca050d0d037f5247a887ae5d62f"
+      },
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/NativeSliderDeformationTest.kt",
+        "sha256": "41e632e65b061ee53845434603ca467ed6cbb6f57420cde9500752209e100d10"
+      },
+      {
+        "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/TabViewDockGeometryTest.kt",
+        "sha256": "34de2f132c43973efa784946cb7fec80cbde0e709acf5ce1f33f901feafd7b59"
+      }
+    ],
+    "resources": [
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidHostTest/resources/native-glass/dock-parent-input-65.csv",
+        "sha256": "8d7d0b6c718e7f31c3101f3861c05dee407e3244eafa7ec473ca0b8bc07dc6d6",
+        "unchanged": true
+      },
+      {
+        "path": "libraries/liquid-glass/runtime/src/androidHostTest/resources/native-glass/dock-parent-reference-65.csv",
+        "sha256": "d71f875edda79dc82fd70854a16dc271cb75fb4bc99c7b40d734adac719f8411",
+        "unchanged": true
+      }
+    ]
+  },
+  "ownership": {
+    "runtimeAarSHA256": "a550e2827fe9abc3d3a075fbf4306bfbe0339e7991e156af45da4ec698c7b652",
+    "movedMotionClassCount": 48,
+    "allRuntimeImplementationClassCount": 63,
+    "appProductionOutput": "app/build/intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes",
+    "appProductionClassCount": 2292,
+    "appAnchors": [
+      "com/lingion/sleepy/MainActivity.class",
+      "com/lingion/sleepy/ui/component/liquidglass/LiquidGlassNavigationBarKt.class"
+    ],
+    "runtimeClassDuplicates": [],
+    "sourceOwners": "Each of the four moved files exists only under runtime/androidMain."
+  },
+  "commands": {
+    "environment": "ANDROID_HOME=<existing-sdk>",
+    "taskDiscovery": [
+      "./gradlew",
+      ":liquid-glass-runtime:tasks",
+      "--all"
+    ],
+    "before": [
+      "./gradlew",
+      ":app:testDebugUnitTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.DockTimedInputTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.GlassControlMotionTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.GlassControlTimedInputTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.GlassDockMotionTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.GlassSliderContinuousInputTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.GlassSliderThumbDeformationTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.GlassSliderTimestampInteractionTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.GlassSliderVisualEndpointInputTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassPhysicsTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.NativeDockDirectDeformationTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.NativeDockEndpointTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.NativeDockParentMotionTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.NativeDockPositionReferenceTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.NativeGlassDragDeformationTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.NativeGlassReleaseInterruptionTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.NativeSegmentedCoalescedTapTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.NativeSegmentedMotionTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.NativeSliderDeformationTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.TabViewDockGeometryTest"
+    ],
+    "after": [
+      "./gradlew",
+      ":liquid-glass-runtime:assemble",
+      ":app:assembleDebug",
+      ":app:assembleDebugAndroidTest",
+      ":liquid-glass-runtime:testAndroidHostTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.NativeDockParentMotionTest",
+      ":app:testDebugUnitTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.DockTimedInputTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.GlassControlMotionTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.GlassControlTimedInputTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.GlassDockMotionTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.GlassSliderContinuousInputTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.GlassSliderThumbDeformationTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.GlassSliderTimestampInteractionTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.GlassSliderVisualEndpointInputTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.LiquidGlassPhysicsTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.NativeDockDirectDeformationTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.NativeDockEndpointTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.NativeDockPositionReferenceTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.NativeGlassDragDeformationTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.NativeGlassReleaseInterruptionTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.NativeSegmentedCoalescedTapTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.NativeSegmentedMotionTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.NativeSliderDeformationTest",
+      "--tests",
+      "com.lingion.sleepy.ui.component.liquidglass.TabViewDockGeometryTest"
+    ],
+    "dependencyGraphs": [
+      [
+        "./gradlew",
+        ":liquid-glass-runtime:dependencies",
+        "--configuration",
+        "androidCompileClasspath"
+      ],
+      [
+        "./gradlew",
+        ":liquid-glass-runtime:dependencies",
+        "--configuration",
+        "androidRuntimeClasspath"
+      ]
+    ]
+  },
+  "execution": {
+    "beforeWallSeconds": 13.87028694152832,
+    "afterBuildAndTestsWallSeconds": 67.39257287979126,
+    "beforeExitCode": 0,
+    "afterExitCode": 0,
+    "runtimeCompileAndRuntimeResolutionVerified": true
+  },
+  "preparationNotes": [
+    "Initial ownership pass guessed legacy app/build/tmp/kotlin-classes/debug, which is absent under current built-in Kotlin. That incomplete pass was not accepted; its full record is retained separately. This final pass verifies actual built_in_kotlinc output directory and two anchor classes, and checks all AAR classes against every app production class. No source/build/test changes or rerun for this correction.",
+    "Repeated Gradle dependencyInsight selectors collapsed to final selection; separate complete compile/runtime graphs were subsequently verified."
+  ],
+  "installation": {
+    "package": "com.lingion.sleepy.debug",
+    "apkSHA256": "78e5a7f2dedc64193b00503648ef63afdf5a6ab4bb42ae788bf1de98580bd59f",
+    "installedSHA256": "78e5a7f2dedc64193b00503648ef63afdf5a6ab4bb42ae788bf1de98580bd59f",
+    "testApkSHA256": "a200d8db5d11e5d5bc74c0b9b24a6b97782322b7faaa50edb35654c5cb6d2325",
+    "installedTestSHA256": "a200d8db5d11e5d5bc74c0b9b24a6b97782322b7faaa50edb35654c5cb6d2325",
+    "mainActivityResumed": true,
+    "screenshotSHA256": "70970ed24b13a2f5f22f442f47796ee3fff5f0c2c64fcb51f9664e6143b083e2",
+    "apiLevel": 36,
+    "rootVisualObservation": "Timetable grid with courses and Dock; screenshot android-module-launch.png.",
+    "scope": "Installed debug/test identity and MainActivity launch only; no per-frame rendering or optical acceptance."
+  },
+  "evidenceDirectory": "android-library-motion-80",
+  "evidenceHashes": {
+    "root-protocol.json": "f9d2c3c8e9fff278b1cb25914c162978735c9a89dad1871cf5bfa83ce3019d45",
+    "root-migration-verification.json": "9bd36b14355c241d3dc250ec2fdfaeae1dabbf263d725f1863cb9eb8348b5270",
+    "root-migration-verification-incomplete-app-path.json": "603c63c39a9633aa970a0d4c3f132df8cfa022b9c51a3973f3edea4fc3fc3fe2",
+    "before-tests/report.json": "bbe6a890e49de0635f6f8c38065229755e068636146764fe096f4246a1f1c363",
+    "after-tests/report.json": "d564a79cdb750fb16ebdd944280fbefb09a0299e9589da1c26f251812962bd6e",
+    "before-tests.log": "7051c0ef1ce1939e14cde8ac48c2e7beba40d66afdcaf591c96bf70c558a6dde",
+    "after-build-tests.log": "2cdc2daeee2ab7ea7948002267be20e92a86bd72a34eabcb9ff31f067fd23f67",
+    "before-ui-resolution.log": "42ea34b59c723de1131b488c1a5047b9dc428e2680717244fbab3018eafe064e",
+    "runtime-tasks.log": "d055965e37366a3b0fd2f10eff23da61f589024795f4cdb48b99693f6bbdf92c",
+    "runtime-resolution.log": "5de72b66e10cfe04bc78176b855d3775b473929045655a9eca73dbe9b7037fae",
+    "resolution-verification.json": "e11eb4f3def21b6160fb835c47c775e5a4428f5c83de41c6c2e333b78f716231",
+    "androidCompileClasspath.log": "317221e34e1c31bbf161c1527d36d0f0cb22c8cc8b16d154b1f7ead0bf364ec9",
+    "androidRuntimeClasspath.log": "e5e8372c2103beb08407675715840c58256b6355b00a69191b9dd2e52e1bad13",
+    "android-install-receipt.json": "d3146e5037fe7ae22d08f57dfd93c952fa48ff1ddd2d440421d38e8b5586c429",
+    "android-module-launch.png": "70970ed24b13a2f5f22f442f47796ee3fff5f0c2c64fcb51f9664e6143b083e2",
+    "motion-migration-audit.json": "5345efe6b0cfa14f77b893a44d41ed0deb45a4ef7f6ef41d1481dd0ec8f48255",
+    "motion-migration-audit.md": "448dd0a8971406be930d503aeebc6db49b950806b6aac8c5b12555d6fab965dc"
+  },
+  "limits": [
+    "First four-file motion closure only; remaining press/endpoint and geometry have not moved.",
+    "No new optical, natural-motion, native parity or performance acceptance.",
+    "M3 material/sampling/shader, M4 controls/adapters and standalone sample remain pending.",
+    "Publication calibration and source/distribution gates remain false."
+  ],
+  "gates": {
+    "nativeCalibrationAccepted": false,
+    "publicationReady": false,
+    "sourceAndLicenseReviewComplete": false,
+    "publishedRepository": null,
+    "standaloneExample": null
+  },
+  "buildFile": {
+    "path": "libraries/liquid-glass/runtime/build.gradle.kts",
+    "beforeSHA256": "5ec78839dc1ceea861d328f838f5c55ffea2b7a50c87e8f27a180876ffee76f2",
+    "afterSHA256": "ba62af6bde50ce4909c1c8cb634b722f0f47862543236c1f77a8781f8698d1e3"
+  },
+  "visibilityPolicy": "Nine required top-level declarations and two read-only epoch getters become public for existing app callers/tests; all four SpringState setters and ParentMotion stay internal."
+}

@@ -1,0 +1,554 @@
+{
+  "schemaVersion": 1,
+  "status": "partial-runtime-extraction-in-sleepy",
+  "reference": "iOS 26.5 native controls",
+  "independentlyBuildable": true,
+  "independentlyBuildableScope": "Current :liquid-glass-runtime source inventory contains twenty-six production Kotlin sources: twenty-two extracted M1/M2a/M2b motion/press/endpoints, M2 geometry/cache and M3a render primitives, plus caller-configured BackdropAwareForeground, external-source BackdropLumaSampler, explicit BackdropContentSignal and BackdropAppearanceHysteresis. The original AGSL remains a single runtime asset. Historical M3a and batch93 build/test/packaging claims retain their original scope and source counts; this inventory does not extend them to the three batch94 primitives or the default-disabled app-side Dock candidate. Host/theme context, complete controls, the full-control sample and support/performance/native-calibration/distribution acceptance remain incomplete. The initial independent experimental runtime/material sample is published separately under experimentalPublication.",
+  "publishedRepository": "https://github.com/Kerry1020/sleepy-liquid-glass",
+  "publishedCommit": "ac9254c6e36312c6ef35c99ed28a881818bbd097",
+  "experimentalPublication": {
+    "targetRepository": "https://github.com/Kerry1020/sleepy-liquid-glass",
+    "status": "published-experimental-runtime-and-sample",
+    "repositoryCreationConfirmed": true,
+    "pushVerified": true,
+    "scope": "Experimental runtime and standalone sample; complete controls remain under extraction and native calibration is unaccepted.",
+    "publicationPolicy": "Publish the independently buildable and distributable experimental scope now, with limits and notices. Near-native acceptance is a separate future milestone, not a prerequisite for creating the experimental repository.",
+    "independentBackend": "Official Kyant 2.0.0; exclude the SleepDown-customized backdrop fork used by the current Sleepy application.",
+    "applicationBackendChanged": false,
+    "independentBuildAndSampleEvidence": {
+      "hostTestsPassed": 38,
+      "sampleDeviceBackgrounds": 4,
+      "sampleDeviceThemes": 2,
+      "sampleDeviceReviewScope": "Runtime/material sample inspected on a real device; not complete controls, native optics, natural motion or performance acceptance.",
+      "cleanCloneConsumerBuild": {
+        "status": "passed",
+        "remoteBranch": "main",
+        "commit": "ac9254c6e36312c6ef35c99ed28a881818bbd097",
+        "tasks": [
+          ":runtime:assemble",
+          ":runtime:testAndroidHostTest",
+          ":sample:assembleDebug"
+        ],
+        "wallSeconds": 34.99,
+        "localPropertiesCreated": false,
+        "environment": "Existing Gradle 9.8.2 and SDK environment; no user configuration changes.",
+        "nativeAcceptance": false
+      },
+      "githubActionsWorkflowPresent": false
+    },
+    "sourceAndLicenseScope": "Review the files actually distributed by the experimental repository and retain applicable GPL, BSD and Apache notices; this does not clear the whole application inventory or authorize customized-fork redistribution.",
+    "publishedCommit": "ac9254c6e36312c6ef35c99ed28a881818bbd097",
+    "remoteVerification": "Git main and GitHub API both resolve to the publishedCommit."
+  },
+  "pathBase": "repository-root",
+  "assets": [
+    {
+      "role": "rendering-and-sampling",
+      "sourceDirectory": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass",
+      "entryFiles": [
+        "GlassHost.kt",
+        "GlassMaterialBackdrop.kt",
+        "GlassBackdropSource.kt",
+        "GlassLayerRecorder.kt",
+        "GlassAndroidViewSource.kt",
+        "GlassSurfaceSource.kt",
+        "GlassFilterBands.kt",
+        "GlassControlModifier.kt"
+      ],
+      "scope": "Host/sampling/theme context remains in app; extracted render primitives are indexed separately. Same-package locals and MaterialTheme/UiStyle gates still require an explicit context/strategy boundary."
+    },
+    {
+      "role": "extracted-render-primitives-runtime",
+      "sourceDirectory": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass",
+      "entryFiles": [
+        "LiquidGlassStyle.kt",
+        "LiquidGlassShader.kt",
+        "LiquidGlassEffect.kt"
+      ],
+      "buildModule": ":liquid-glass-runtime",
+      "buildFile": "libraries/liquid-glass/runtime/build.gradle.kts",
+      "extractionStatus": "m3a-render-primitives-moved-and-consumed-by-sleepy",
+      "migrationRecord": "libraries/liquid-glass/validation/migrations/m3a-rendering.json",
+      "scope": "Three render primitive sources and the original AGSL physically moved into runtime. Exactly six necessary internal removals (including nested Shader.Goo); all other source bytes, formulas, package names, callers, arguments and original tests are unchanged. Existing customized backdrop and Material3 public types remain API dependencies; Foundation1.12.1 and HCT1.10.0 are implementation dependencies. Host/sampling/theme context and controls were not migrated.",
+      "validation": "Original seven app unit classes pass 34 before in 11.8416s and after in 50.9080s with zero failures/errors/skips and unchanged method identities/test-source hashes; the after command also builds runtime AAR, app debug and androidTest. Runtime has 22 production Kotlin sources; 113 AAR classes and 2242 actual app production classes have zero intersection. Original app three sources/asset and stale generated shader are absent. AAR/APK each contain exactly one byte-identical original AGSL at assets/shaders/liquid_glass.agsl, using standard src/androidMain/assets with androidResources enabled. API36 original HazeRender 3 pass in 5.3395s with registered SleepyRenderTestRunner; that run's main/test installed hashes match host. Week11 populated timetable/Dock visibility is installation/launch scope only. Independent resolutionResult compile 67/runtime 121 components have no unresolved entries and actual compileAndroidMain.libraries includes the backdrop compile jar; the two original read-only diagnostic errors are retained. After attribution-path metadata fixes, only the main APK was repackaged in 2.4462s and reinstalled; its host/device hashes match and MainActivity resumed. The final main APK identity is recorded separately from the original GPU-run APK in the migration record; unit 34/GPU 3 were not rerun.",
+      "pendingValidation": [],
+      "publicApiReviewDeferred": true,
+      "material3IndependentCore": false,
+      "productionHostSamplingMigrated": false
+    },
+    {
+      "role": "generic-backdrop-aware-foreground-runtime",
+      "sourceDirectory": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass",
+      "entryFiles": [
+        "BackdropAwareForeground.kt"
+      ],
+      "buildModule": ":liquid-glass-runtime",
+      "buildFile": "libraries/liquid-glass/runtime/build.gradle.kts",
+      "extractionStatus": "new-generic-primitive-not-a-host-or-control-migration",
+      "validationRecord": "libraries/liquid-glass/validation/observations/backdrop-aware-foreground-gpu-93.json",
+      "scope": "Small neutral foreground alpha masks, original external Backdrop and explicit caller-supplied endpoint colors/luma interval/opaque transparent-source fallback/local physical-pixel sample rectangle. Accent/selected theme content stays outside the mask. No native classifier, default thresholds, hysteresis or animation. Existing LayerBackdrop.withTransformCompensation() is required for relative scale/rotation; ordinary LayerBackdrop handles relative translation.",
+      "validation": "Batch93 app debug/androidTest and host5 pass, API36 registered-runner GPU2 pass. Eight captures contain35 standard probes plus2 detach-cleanup probes,34 exactRGB and maximum channel error1 within unchanged tolerance3. AAR119 classes and actual app2242 production classes have zero intersection; runtime23 sources at batch93. Original AGSL remains33561 bytes and identical in HEAD/AAR/APK; original Style/Shader/Effect unchanged. Post-build KDoc-only source hash is distinguished from tested code. Full raw evidence/receipts/review hashes and explicit coverage limits are linked in the portable record.",
+      "runtimeHostTest": "libraries/liquid-glass/runtime/src/androidHostTest/kotlin/com/lingion/sleepy/ui/component/liquidglass/BackdropForegroundAtlasTest.kt",
+      "deviceTest": "app/src/androidTest/java/com/lingion/sleepy/ui/component/BackdropAwareForegroundRenderTest.kt",
+      "nativeClassifierProvided": false,
+      "defaultResponseThresholdsProvided": false,
+      "productionDockIntegrated": false,
+      "productionHostSamplingMigrated": false,
+      "publicApiReviewDeferred": true,
+      "performanceAccepted": false
+    },
+    {
+      "sourceDirectory": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass",
+      "buildModule": ":liquid-glass-runtime",
+      "buildFile": "libraries/liquid-glass/runtime/build.gradle.kts",
+      "extractionStatus": "new-generic-primitive-not-a-host-or-control-migration",
+      "nativeClassifierProvided": false,
+      "defaultResponseThresholdsProvided": false,
+      "nativeCalibrationAccepted": false,
+      "performanceAccepted": false,
+      "productionHostSamplingMigrated": false,
+      "publicApiReviewDeferred": true,
+      "role": "generic-source-luma-sampling-runtime",
+      "entryFiles": [
+        "BackdropLumaSampler.kt"
+      ],
+      "publicApis": [
+        "Modifier.sampleBackdropLuma",
+        "BackdropLumaSample"
+      ],
+      "scope": "Caller-supplied already-recorded external Backdrop, opaque transparent-source fallback and finite positive local physical-pixel rectangle. Five one-pixel regions at center and20/30,80/30,20/70,80/70 percent form a5x1 sample. Captured sRGB channels are weighted directly by.2126/.7152/.0722; this is not linear-light luminance or native sampling support. Consumers must exclude themselves and adaptive backing from the source.",
+      "sampleOrdering": "UI-thread recording/toImageBitmap precedes CPU readback from the returned standalone bitmap on a worker; hardware bitmaps are copied to ARGB_8888 there. No source layer, DrawScope or LayoutCoordinates is passed to the worker. At most one request is in flight. Frozen samples remain ordered historical observations tagged with snapshot/completion times and direct LayerBackdrop recording revision when available, followed by newer content. Wrapped Backdrops, including withContentSignal, have null sourceRevision; the signal is not a completed recording revision. Content versions may be skipped and a callback is not promised to describe the current frame. Source identity, geometry or configuration changes invalidate incompatible results. Other sources must expose observed snapshot invalidation or complete caller notifications; a parent recording version does not automatically cover retained child updates.",
+      "consumerIsolation": "The modifier retains its own consumer graphicsLayer so observer invalidation does not rerecord a sibling source in a shared layer and feed recording revisions back into sampling. Unchanged draws do not poll. This implementation contract is not a new device or performance acceptance claim.",
+      "supportLimits": "API<28, unavailable coordinates or invalid geometry produce no sample. Relative scale/rotation requires caller transform compensation. The5x1 target does not bound traversal, GPU work or UI latency; independent support and performance are unaccepted.",
+      "deviceTest": "app/src/androidTest/java/com/lingion/sleepy/ui/component/DockBackdropAppearanceRenderTest.kt",
+      "realActivityDeviceTest": "app/src/androidTest/java/com/lingion/sleepy/ui/component/BackdropLumaReadbackRenderTest.kt",
+      "currentConsumer": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassNavigationBar.kt",
+      "consumerScope": "Source-level Dock engineering candidate. LocalDockBackdropAppearanceEnabled defaults false; NativeDockOpticalWorldRenderTest explicitly provides true and DockBackdropAppearanceRenderTest selects the candidate through its adaptive fixture parameter. Complete control/Host/theme extraction and native optical/timing parity remain pending.",
+      "knownRetainedSourceFailure": "Before explicit source notifications, batch94 retained-diagnostic A-B-C-D-C-B-A has14 REST observations with source draw serial3 to9, source_host_version fixed at2, luma_sample_count fixed at2 and source_luma fixed at26/255. Its passed capture/coordinate checks do not establish continuing source sampling. This pre-signal observation does not validate the new notification API.",
+      "validationScope": "Batch94 runtime/app builds and18 host checks pass. Two API36 real-Activity tests pass direct8-stage sampling and explicitly notified retained leaf changes without idle polling. The retained Dock14 observations and eight-scene16-capture optical fixture pass their recorded state/geometry/Window-display readiness checks. This is not native classification, optics, timing or performance acceptance; production candidate remains default-disabled. See the record for failures, hashes, package identities and capture-clock limits.",
+      "validationRecord": "libraries/liquid-glass/validation/observations/source-aware-sampling-94.json"
+    },
+    {
+      "role": "explicit-backdrop-content-notification-runtime",
+      "sourceDirectory": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass",
+      "entryFiles": [
+        "BackdropContentSignal.kt"
+      ],
+      "publicApis": [
+        "BackdropContentSignal",
+        "BackdropContentSignal.notifyContentChanged",
+        "Backdrop.withContentSignal",
+        "Modifier.notifyBackdropDraw"
+      ],
+      "buildModule": ":liquid-glass-runtime",
+      "buildFile": "libraries/liquid-glass/runtime/build.gradle.kts",
+      "extractionStatus": "new-generic-primitive-not-a-host-or-control-migration",
+      "scope": "An explicit observable resampling request for an external source whose retained leaves can redraw without parent recording. Notify on the UI thread after the corresponding source update is available to draw. It does not record pixels, recursively detect subtree changes, identify a completed recording revision or represent presentation time.",
+      "wrapperOwnership": "Retain one signal for source leaves of one scene and retain source.withContentSignal(signal), for example with remember(source, signal). Each call creates a new wrapper; replacing it changes sampler source identity. The wrapper observes the signal while delegating source drawing and coordinate-dependence unchanged. Wrapped samples have null sourceRevision.",
+      "callerOwnership": "Cover every independently retained pane-free source leaf. Place notifyBackdropDraw inside that leaf's own graphicsLayer/clip boundary before drawing modifiers; it notifies after drawContent returns. A parent containing other retained children does not observe their later redraws. The modifier creates no retained isolation. Layer-property-only and native drawing updates require explicit owner notification after the update is available to draw; notifying early at a pending state mutation can sample old pixels without a later notification. Never notify from optical consumers or include them in the source.",
+      "deviceTest": "app/src/androidTest/java/com/lingion/sleepy/ui/component/BackdropLumaReadbackRenderTest.kt",
+      "optInFixture": "app/src/androidTest/java/com/lingion/sleepy/ui/component/NativeDockOpticalWorldRenderTest.kt",
+      "fixtureScope": "glassDockSourceNotifications=true opts the fixture into explicit leaf notifications and a retained source wrapper; default production Dock adaptation remains disabled.",
+      "validationScope": "Batch94 runtime/app builds and18 host checks pass. Two API36 real-Activity tests pass direct8-stage sampling and explicitly notified retained leaf changes without idle polling. The retained Dock14 observations and eight-scene16-capture optical fixture pass their recorded state/geometry/Window-display readiness checks. This is not native classification, optics, timing or performance acceptance; production candidate remains default-disabled. See the record for failures, hashes, package identities and capture-clock limits.",
+      "nativeClassifierProvided": false,
+      "nativeCalibrationAccepted": false,
+      "performanceAccepted": false,
+      "productionHostSamplingMigrated": false,
+      "publicApiReviewDeferred": true,
+      "validationRecord": "libraries/liquid-glass/validation/observations/source-aware-sampling-94.json"
+    },
+    {
+      "sourceDirectory": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass",
+      "buildModule": ":liquid-glass-runtime",
+      "buildFile": "libraries/liquid-glass/runtime/build.gradle.kts",
+      "extractionStatus": "new-generic-primitive-not-a-host-or-control-migration",
+      "nativeClassifierProvided": false,
+      "defaultResponseThresholdsProvided": false,
+      "nativeCalibrationAccepted": false,
+      "performanceAccepted": false,
+      "productionHostSamplingMigrated": false,
+      "publicApiReviewDeferred": true,
+      "role": "caller-configured-appearance-policy-runtime",
+      "entryFiles": [
+        "BackdropAppearanceHysteresis.kt"
+      ],
+      "publicApis": [
+        "BackdropAppearanceHysteresis",
+        "BackdropAppearanceHysteresis.accept"
+      ],
+      "scope": "Caller explicitly supplies initialDark and finite normalized enterDarkLuma < enterLightLuma. Dark enters light at luma>=enterLightLuma; light enters dark at luma<=enterDarkLuma; the dead band and invalid samples retain state. No sampling, palette, Compose observable state, default threshold, debounce, animation or native timing model is supplied.",
+      "callerOwnership": "Retain one instance for its source/appearance context; recreate on source or context replacement and write accept() results into caller UI state.",
+      "runtimeHostTest": "libraries/liquid-glass/runtime/src/androidHostTest/kotlin/com/lingion/sleepy/ui/component/liquidglass/BackdropAppearanceHysteresisTest.kt",
+      "currentConsumer": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassNavigationBar.kt",
+      "consumerScope": "Five taps and223.5/255 enter-light,153.5/255 enter-dark cutoffs belong to the app-side uncalibrated Dock candidate, disabled by default through LocalDockBackdropAppearanceEnabled=false and explicitly enabled in validation fixtures. Selected/accent tokens and theme fallback remain caller policy.",
+      "validationScope": "Test source is inventoried; no new pass, timing, optical or native-calibration claim is added by this documentation change."
+    },
+    {
+      "role": "geometry",
+      "sourceDirectory": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass",
+      "entryFiles": [
+        "LiquidGlassGeometry.kt",
+        "LiquidGlassExactContour.kt",
+        "LiquidGlassDualContourShape.kt",
+        "LiquidGlassSuperellipse.kt",
+        "DockPlatterShape.kt",
+        "FlClashGlassShape.kt",
+        "LiquidGlassOutlineProfile.kt"
+      ],
+      "buildModule": ":liquid-glass-runtime",
+      "buildFile": "libraries/liquid-glass/runtime/build.gradle.kts",
+      "extractionStatus": "m2-geometry-moved-and-consumed-by-sleepy",
+      "migrationRecord": "libraries/liquid-glass/validation/migrations/m2-geometry.json",
+      "scope": "Six geometry sources physically moved; the cached outline profile class was extracted from app Shader into the seventh runtime file. Exactly 28 necessary internal removals; formulas, FMA/precision branches, lazy/path/descriptor identity, callers, tests and AGSL bytes are unchanged. Only shapes 1.2.1 implementation dependency was added. All original five app unit classes remain app and pass 26 before/after with identical test hashes and identities.",
+      "pendingValidation": [],
+      "validation": "Runtime AAR/app debug/androidTest plus original app unit26 pass; all 102 AAR classes are absent from actual app2253 classes. Original focused device8 pass in 1.286s using the registered SleepyRenderTestRunner. The first unregistered default-runner command failed before any tests started (testCount=0) and remains a retained command failure. API36 main/test host-device hashes match and MainActivity resumed. Independent compile/runtime graphs retain shapes1.2.1 and ui-graphics1.12.1 with no unresolved entries. Root visually confirmed the later retained screenshot shows the existing week11 populated timetable grid and Dock; the initial empty-timetable/Dock frame and the immediate post-test resume splash frame remain separate. Installation/launch evidence only; no data, UI/optical or natural-motion acceptance."
+    },
+    {
+      "role": "input-and-motion",
+      "sourceDirectory": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass",
+      "entryFiles": [
+        "GlassGestureOwnership.kt",
+        "LiquidGlassHaptics.kt",
+        "LanguageMenuGestures.kt",
+        "LanguageMenuMotion.kt"
+      ]
+    },
+    {
+      "role": "extracted-pure-motion-runtime",
+      "sourceDirectory": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass",
+      "entryFiles": [
+        "NativeGlassDragDeformation.kt",
+        "NativeDockDeformation.kt",
+        "NativeSliderEndpoint.kt"
+      ],
+      "buildModule": ":liquid-glass-runtime",
+      "buildFile": "libraries/liquid-glass/runtime/build.gradle.kts",
+      "extractionStatus": "m1-moved-and-consumed-by-sleepy",
+      "migrationRecord": "libraries/liquid-glass/validation/migrations/m1.json",
+      "scope": "M1 moved only three pure-motion kernels; package retained and four required internal modifiers removed. No controls, geometry, optics, sampling or shader assets moved in that stage."
+    },
+    {
+      "role": "controls",
+      "sourceDirectory": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass",
+      "entryFiles": [
+        "GlassSwitch.kt",
+        "LiquidGlassNavigationBar.kt",
+        "GlassSlider.kt",
+        "GlassSliderThumb.kt",
+        "SliderVisuals.kt",
+        "GlassButtons.kt",
+        "GlassSelectionControls.kt",
+        "GlassLanguageMenu.kt",
+        "GlassOverlays.kt",
+        "GlassOverlayContent.kt",
+        "GlassSurface.kt",
+        "GlassTopAppBar.kt"
+      ],
+      "currentAdapterDependencies": [
+        "Sleepy LocalUiStyle, LocalDarkTheme and SleepyTheme",
+        "NavIconDriver, PillNavItemSpec and selectionColors",
+        "SettingsLayout, sleepyExpandSpecs and application debug tags",
+        "materialSliderGhostX and sleepyPopupEnter/sleepyPopupExit",
+        "Material routing, localized content, settings callers and haptic policy"
+      ],
+      "extractionStatus": "mixed-runtime-and-sleepy-integration"
+    },
+    {
+      "role": "segmented-control-and-sleepy-integration",
+      "sourceDirectory": "app/src/main/java/com/lingion/sleepy/ui/component",
+      "entryFiles": [
+        "SegmentedSwitcher.kt"
+      ],
+      "extractionStatus": "mixed-control-implementation-and-adapter",
+      "extractionRequired": "Extract the glass interaction and rendering implementation; keep Sleepy theme routing, content and debug semantics in its adapter."
+    },
+    {
+      "role": "runtime-shader-assets",
+      "sourceDirectory": "libraries/liquid-glass/runtime/src/androidMain/assets/shaders",
+      "entryFiles": [
+        "liquid_glass.agsl"
+      ],
+      "loadedBy": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassShader.kt",
+      "packagingRequired": true,
+      "packagingVerified": true,
+      "extractionStatus": "m3a-original-agsl-moved-single-runtime-owner",
+      "migrationRecord": "libraries/liquid-glass/validation/migrations/m3a-rendering.json",
+      "packagingContract": "Standard src/androidMain/assets with androidResources { enable = true }; original lookup key shaders/liquid_glass.agsl. Actual AAR/APK each contain one byte-identical entry; original app and stale generated shader are absent. Independent sample and notice distribution are still pending."
+    },
+    {
+      "role": "third-party-runtime-dependency",
+      "sourceDirectory": "third-party/kyant-backdrop/src",
+      "currentBuildFile": "third-party/kyant-backdrop/build.gradle.kts",
+      "upstreamMetadata": "third-party/kyant-backdrop/UPSTREAM.json",
+      "currentAdditionalDependencyCoordinates": [
+        "io.github.kyant0:shapes:1.2.1"
+      ],
+      "customizedSourceRedistributionReview": "unresolved; see provenance",
+      "experimentalPublication": "Excluded customized-fork source; the independent experimental repository uses official Kyant 2.0.0. Sleepy current wiring remains unchanged."
+    },
+    {
+      "role": "native-reference-and-baselines",
+      "sourceDirectory": "tools/native-glass-reference",
+      "numericFixtures": "app/src/test/resources/native-glass",
+      "jvmTests": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass",
+      "deviceTests": "app/src/androidTest/java/com/lingion/sleepy/ui/component",
+      "acceptanceRecord": "docs/native-glass-control-alignment.md",
+      "runtimeDependency": false,
+      "deviceTestsScope": "Containing directory also includes non-glass tests; migrate only relevant fixtures and tests after dependency review.",
+      "fixtureRedistributionReview": "not-complete",
+      "tonalHistoryObservation": "libraries/liquid-glass/validation/observations/dock-tonal-history-93.json",
+      "tonalHistoryScope": "Two separately launched retained native sequences constrain history-dependent body and foreground responses. Native classifier, thresholds, state granularity, timing and production policy remain unidentified; pane-shared parameters with local source transmission are not excluded.",
+      "runtimeNumericFixtures": [
+        "libraries/liquid-glass/runtime/src/androidHostTest/resources/native-glass/dock-parent-input-65.csv",
+        "libraries/liquid-glass/runtime/src/androidHostTest/resources/native-glass/dock-parent-reference-65.csv"
+      ],
+      "runtimeHostTests": [
+        "libraries/liquid-glass/runtime/src/androidHostTest/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeDockParentMotionTest.kt",
+        "libraries/liquid-glass/runtime/src/androidHostTest/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeDockEndpointTest.kt",
+        "libraries/liquid-glass/runtime/src/androidHostTest/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeSegmentedEndpointTest.kt",
+        "libraries/liquid-glass/runtime/src/androidHostTest/kotlin/com/lingion/sleepy/ui/component/liquidglass/BackdropForegroundAtlasTest.kt",
+        "libraries/liquid-glass/runtime/src/androidHostTest/kotlin/com/lingion/sleepy/ui/component/liquidglass/BackdropAppearanceHysteresisTest.kt"
+      ]
+    },
+    {
+      "role": "extracted-scheduling-runtime",
+      "sourceDirectory": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass",
+      "entryFiles": [
+        "ActiveFrameLoop.kt",
+        "DockInputClock.kt"
+      ],
+      "buildModule": ":liquid-glass-runtime",
+      "buildFile": "libraries/liquid-glass/runtime/build.gradle.kts",
+      "extractionStatus": "m2a-moved-and-consumed-by-sleepy",
+      "migrationRecord": "libraries/liquid-glass/validation/migrations/m2a.json",
+      "scope": "Actual frame loop, receipt queue and single injected/default clock local. Five necessary visibility changes only; private state and numerical behavior preserved. No drivers, geometry, optics or controls moved."
+    },
+    {
+      "role": "extracted-motion-runtime",
+      "sourceDirectory": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass",
+      "entryFiles": [
+        "LiquidGlassPhysics.kt",
+        "GlassControlMotion.kt",
+        "GlassDockMotion.kt",
+        "NativeDockParentMotion.kt"
+      ],
+      "buildModule": ":liquid-glass-runtime",
+      "buildFile": "libraries/liquid-glass/runtime/build.gradle.kts",
+      "extractionStatus": "m2b-first-motion-moved-and-consumed-by-sleepy",
+      "scope": "First four-file motion closure. Physics and ParentMotion remain byte-identical; two drivers remove eleven necessary internal modifiers. Four SpringState setters and ParentMotion remain internal. The unchanged ParentMotion test and two unique CSVs use standard androidHostTest with JUnit4.13.2. The later press/endpoints stage is recorded separately; geometry, rendering, sampling, shader and complete controls had not moved in this first motion stage.",
+      "migrationRecord": "libraries/liquid-glass/validation/migrations/m2b-motion.json"
+    },
+    {
+      "role": "extracted-press-and-endpoint-runtime",
+      "sourceDirectory": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass",
+      "entryFiles": [
+        "GlassPressMotion.kt",
+        "NativeDockEndpoint.kt",
+        "NativeSegmentedEndpoint.kt"
+      ],
+      "buildModule": ":liquid-glass-runtime",
+      "buildFile": "libraries/liquid-glass/runtime/build.gradle.kts",
+      "extractionStatus": "m2b-press-and-endpoints-moved-and-consumed-by-sleepy",
+      "scope": "Each source removes only one necessary top-level internal modifier. Both original Endpoint tests move unchanged to standard androidHostTest; app Press alpha consumer test stays unchanged. Existing build configuration, physics setters, parameters and application callers are unchanged.",
+      "migrationRecord": "libraries/liquid-glass/validation/migrations/m2b-endpoints.json"
+    }
+  ],
+  "excludedFromRuntimeLibrary": [
+    "timetable and course models",
+    "application persistence",
+    "Material Design routing",
+    "native capture host tools",
+    "raw videos and temporary build outputs"
+  ],
+  "publicationPrerequisite": "Full mature-library acceptance criteria: per-control visual, interaction, optical and performance evidence; source and license provenance; independent module and example; documented remaining limits. Experimental publication is tracked separately and does not require native-calibration completion.",
+  "inventoryDate": "2026-11-14",
+  "nativeCalibrationAccepted": false,
+  "publicationReady": false,
+  "inventoryScope": "Current runtime owner has twenty-six production Kotlin sources and one original AGSL. Historical M3a has twenty-two sources/113 AAR classes and batch93 has twenty-three sources/119 AAR classes; those receipts remain unchanged. The three batch94 sources provide external-source five-pixel historical sampling, explicit source-content notification and caller-configured hysteresis. The app-side Dock engineering candidate defaults disabled and validation fixtures explicitly opt in. They do not provide a native classifier, default thresholds, calibrated transfer or accepted timing. Complete Host/theme context, mixed controls, full-control sample, native calibration and distribution gates remain incomplete; the initial independent experimental runtime/material sample is published separately.",
+  "extractionPlan": {
+    "path": "libraries/liquid-glass/extraction-plan.md",
+    "status": "m1-through-m3a-and-foreground93-verified-source-aware-primitives-added-host-m4-full-control-sample-pending",
+    "sourceOwnership": "Move each implementation once; Sleepy and the future sample consume the same runtime module and packaged shader.",
+    "migrationValidation": "Keep existing fixture hashes, delivered inputs, measurement code and tolerances; record before/after results for each migrated closure.",
+    "independentExampleGate": "The full control sample must compile and run against the runtime without app sources, theme, assets or test helpers. That full sample is not present in this source tree; the initial independent experimental runtime/sample and its verification are tracked separately under experimentalPublication.",
+    "runtimeModule": ":liquid-glass-runtime",
+    "runtimeModuleDirectory": "libraries/liquid-glass/runtime",
+    "m1MigrationRecord": "libraries/liquid-glass/validation/migrations/m1.json",
+    "m1Validation": "Runtime AAR and Sleepy Kotlin compilation passed; the same original Drag/Dock/Slider suites passed 19 tests before and after; original tests and both CSV fixture hashes are unchanged.",
+    "m2aMigrationRecord": "libraries/liquid-glass/validation/migrations/m2a.json",
+    "m2aValidation": "Runtime AAR, debug and androidTest builds passed; original four scheduling/consumer test classes passed33 before and after with unchanged source hashes; exactly five visibility changes, one clock-local declaration, sole runtime AAR ownership.",
+    "m2bFirstMotionValidation": "Original nineteen-class/124-test baseline and after eighteen-app-class/109 plus unchanged ParentMotion-host/15 closure passed with no failures/errors/skips; all 21 test/resource hashes and 124 test identities preserved. Runtime AAR, app debug and androidTest builds passed. All 63 AAR classes are absent from 2292 actual app production classes. Separate compile/runtime resolution retains runtime/UI 1.12.1 and coroutines 1.11.0; compiler 2.4.21. API36 debug/test installed hashes match host hashes; MainActivity resumed and populated timetable/Dock observed. Launch scope only; no new optical acceptance.",
+    "m2bMotionMigrationRecord": "libraries/liquid-glass/validation/migrations/m2b-motion.json",
+    "m2bEndpointsMigrationRecord": "libraries/liquid-glass/validation/migrations/m2b-endpoints.json",
+    "m2bEndpointsValidation": "Original three-class/17-test closure passed before and after (app Press3 plus standard runtime Endpoint14), all test bytes and identities unchanged. Runtime AAR, app debug/androidTest builds passed; 66 AAR classes and 2289 app production classes have zero intersection. At that stage, twelve runtime production sources each had a single owner. No build configuration changes. Installed main/test hashes match host; launch scope only.",
+    "m2GeometryMigrationRecord": "libraries/liquid-glass/validation/migrations/m2-geometry.json",
+    "m2GeometryValidation": "Original five-class/26-test app closure passed before and after, with zero failures/errors/skips and unchanged test hashes/identities. Runtime AAR, app debug and androidTest builds plus after unit tests passed in 43.9488s. Nineteen runtime sources have a single owner; all 102 AAR classes are absent from 2253 actual app production classes. Six original app geometry sources are absent; the cached outline profile also belongs to the AAR. Exactly 28 visibility removals and one shapes 1.2.1 implementation line; no formula, caller, asset or test changes. Independent compile/runtime graphs confirm shapes1.2.1/ui-graphics1.12.1 with no unresolved entries. API36 main/test host-device hashes match; MainActivity resumed. Original focused device8 pass in 1.286s using registered SleepyRenderTestRunner; the first unregistered default-runner command failed with zero tests started and is retained separately. Root confirmed actual post-startup week11 populated timetable/Dock visibility with retained screenshot/hierarchy/resumed evidence; the initial empty-timetable/Dock frame and the immediate post-test resume splash frame remain separate. Install/launch scope only, no data/UI/optical acceptance.",
+    "m2GeometryPendingValidation": [],
+    "m3aRenderingMigrationRecord": "libraries/liquid-glass/validation/migrations/m3a-rendering.json",
+    "m3aRenderingValidation": "Original seven app unit classes pass 34 before in 11.8416s and after in 50.9080s with zero failures/errors/skips and unchanged method identities/test-source hashes; the after command also builds runtime AAR, app debug and androidTest. Runtime has 22 production Kotlin sources; 113 AAR classes and 2242 actual app production classes have zero intersection. Original app three sources/asset and stale generated shader are absent. AAR/APK each contain exactly one byte-identical original AGSL at assets/shaders/liquid_glass.agsl, using standard src/androidMain/assets with androidResources enabled. API36 original HazeRender 3 pass in 5.3395s with registered SleepyRenderTestRunner; that run's main/test installed hashes match host. Week11 populated timetable/Dock visibility is installation/launch scope only. Independent resolutionResult compile 67/runtime 121 components have no unresolved entries and actual compileAndroidMain.libraries includes the backdrop compile jar; the two original read-only diagnostic errors are retained. After attribution-path metadata fixes, only the main APK was repackaged in 2.4462s and reinstalled; its host/device hashes match and MainActivity resumed. The final main APK identity is recorded separately from the original GPU-run APK in the migration record; unit 34/GPU 3 were not rerun.",
+    "m3aRenderingPendingValidation": [],
+    "m3aDependencyResolution": {
+      "status": "verified",
+      "compileComponents": 67,
+      "runtimeComponents": 121,
+      "unresolved": [],
+      "actualBackdropCompileJarPresent": true,
+      "resolvedVersions": {
+        "Material3": "1.5.0-rc01",
+        "Foundation": "1.12.1",
+        "HCT": "1.10.0",
+        "shapes": "1.2.1",
+        "UI": "1.12.1"
+      },
+      "originalReadOnlyDiagnosticErrorsRetained": 2
+    },
+    "m3aPackageIdentity": {
+      "status": "verified-final-main-install-after-metadata-only-repackage",
+      "record": "libraries/liquid-glass/validation/migrations/m3a-rendering.json",
+      "metadataOnlyRepackageWallSeconds": 2.4462,
+      "finalMainHostDeviceHashesMatch": true,
+      "mainActivityResumed": true,
+      "originalGpuRunIdentityRecordedSeparately": true,
+      "unitAndGpuTestsRepeated": false
+    },
+    "genericForeground93Record": "libraries/liquid-glass/validation/observations/backdrop-aware-foreground-gpu-93.json",
+    "genericForeground93Validation": "Batch93 app debug/androidTest and host5 pass, API36 registered-runner GPU2 pass. Eight captures contain35 standard probes plus2 detach-cleanup probes,34 exactRGB and maximum channel error1 within unchanged tolerance3. AAR119 classes and actual app2242 production classes have zero intersection; runtime23 sources at batch93. Original AGSL remains33561 bytes and identical in HEAD/AAR/APK; original Style/Shader/Effect unchanged. Post-build KDoc-only source hash is distinguished from tested code. Full raw evidence/receipts/review hashes and explicit coverage limits are linked in the portable record.",
+    "genericForeground93CompletesHostMigration": false,
+    "sourceAwarePrimitivesScope": "Runtime inventory26 includes BackdropLumaSampler, explicit BackdropContentSignal and BackdropAppearanceHysteresis. Batch94 builds, host18 and two API36 real-Activity tests pass; notified retained Dock14 and optical16 captures pass the declared integration/readiness checks. Candidate default-disabled; arbitrary production subtree source notifications, Host/control extraction, native calibration and performance remain incomplete. See source-aware-sampling-94.json.",
+    "sourceAwarePrimitivesPendingRecord": "libraries/liquid-glass/validation/observations/source-aware-sampling-94.json"
+  },
+  "sourceAndLicenseReviewComplete": false,
+  "currentBuildWiring": {
+    "applicationBuildFile": "app/build.gradle.kts",
+    "settingsFile": "settings.gradle.kts",
+    "independentLibraryModule": ":liquid-glass-runtime",
+    "standaloneExample": null,
+    "supportContract": "SDK, Compose, GPU/fallback and accessibility requirements have not been independently established for an extracted library.",
+    "libraryBuildFile": "libraries/liquid-glass/runtime/build.gradle.kts",
+    "applicationDependency": "implementation(project(\":liquid-glass-runtime\"))",
+    "extractedScope": "Twenty-two extracted production Kotlin sources plus BackdropAwareForeground, BackdropLumaSampler, BackdropContentSignal and BackdropAppearanceHysteresis make the current source count twenty-six, with one original AGSL. Historical batch93 build/host5/API36 GPU2 and119 AAR vs2242 app class receipts cover its then23-source foreground scope. The three batch94 primitives and default-disabled app-side Dock candidate are inventoried independently; this documentation update records the pre-signal retained failure but does not claim new signal build/device acceptance or native parity. Host/theme context, controls/adapters, full-control sample and complete support/performance/distribution acceptance remain pending. The initial independent experimental runtime/material sample is published separately.",
+    "runtimeProductionKotlinSourceCount": 26,
+    "shaderAsset": "libraries/liquid-glass/runtime/src/androidMain/assets/shaders/liquid_glass.agsl",
+    "androidResourcesEnabled": true,
+    "genericForegroundValidationRecord": "libraries/liquid-glass/validation/observations/backdrop-aware-foreground-gpu-93.json",
+    "sourceAwareValidationRecord": "libraries/liquid-glass/validation/observations/source-aware-sampling-94.json",
+    "standaloneExampleScope": "The null standaloneExample value describes this Sleepy source tree; independent experimental sample preparation and publication are tracked separately."
+  },
+  "provenance": {
+    "inventory": "ACKNOWLEDGEMENTS.md",
+    "researchRecord": "docs/attribution-audit/glass-research-sources.md",
+    "repositoryLicense": "LICENSE",
+    "existingRepositoryLicenseText": "GNU GPL version 3; unchanged",
+    "blanketRelicensingApproved": false,
+    "sources": [
+      {
+        "name": "FLClash Kotlin and AGSL port",
+        "recordedLicense": "GPL-3.0",
+        "noticeFiles": [
+          "app/src/main/assets/third_party/notices/FLClash-GPL-3.0.txt"
+        ],
+        "sourceEvidence": [
+          "libraries/liquid-glass/runtime/src/androidMain/assets/shaders/liquid_glass.agsl"
+        ],
+        "scope": "Shader, optics, geometry, style and navigation behavior; retain original headers and trace exact extraction history."
+      },
+      {
+        "name": "Flutter rounded-superellipse adaptation",
+        "recordedLicense": "BSD-3-Clause",
+        "recordedEngineRevision": "adc901062556672b4138e18a4dc62a4be8f4b3c2",
+        "noticeFiles": [
+          "app/src/main/assets/third_party/notices/Flutter-BSD-3-Clause.txt"
+        ],
+        "sourceEvidence": [
+          "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassSuperellipse.kt"
+        ]
+      },
+      {
+        "name": "Kyant baseline and SleepDown customizations",
+        "sourceRecord": "third-party/kyant-backdrop/README.md",
+        "upstreamMetadata": "third-party/kyant-backdrop/UPSTREAM.json",
+        "recordedBaselineLicense": "Apache-2.0",
+        "recordedCustomizationNotice": "SleepDown source-available non-commercial 1.1",
+        "customizedImportRevision": null,
+        "noticeFiles": [
+          "third-party/kyant-backdrop/LICENSE",
+          "app/src/main/assets/third_party/notices/Kyant-Backdrop-Apache-2.0.txt",
+          "app/src/main/assets/third_party/notices/SleepDown-LICENSE.md",
+          "app/src/main/assets/third_party/notices/SleepDown-THIRD_PARTY_NOTICES.md"
+        ],
+        "redistributionCompatibilityConfirmed": false,
+        "verifiedEquivalentSourceRevision": "d02898140327796946f2b140cb3ca87390595810",
+        "verifiedEquivalentSourceUrl": "https://github.com/xiaomanjun233/SleepDown-Schedule/tree/d02898140327796946f2b140cb3ca87390595810/third-party/kyant-backdrop",
+        "sourceEquivalenceVerifiedAgainstSleepyImportCommit": "c2490785c90ea57f6a06ab14c14386786f19b9d0",
+        "sourceEquivalenceVerificationDate": "2026-11-14",
+        "sourceEquivalenceEvidence": "third-party/kyant-backdrop/UPSTREAM.json:customizationProvenance",
+        "sourceEquivalenceScope": "All 42 Android/common runtime files and original module README exactly match the original Sleepy import; retained SleepDown license and third-party notices exactly match the pinned snapshot.",
+        "sourceEquivalenceLimitation": "The historical acquisition/import revision remains unknown; equivalent source content does not establish redistribution authorization. Later Sleepy runtime changes are recorded separately in UPSTREAM.json.",
+        "excludedFromExperimentalPublication": true,
+        "experimentalPublicationBackend": "Official Kyant 2.0.0; this customized-fork provenance remains the application record, not the independent distribution backend."
+      },
+      {
+        "name": "NexioSchedule behavioral reference recorded by imported module",
+        "sourceRecord": "third-party/kyant-backdrop/README.md",
+        "recordedLicense": "AGPL-3.0",
+        "noticeFiles": [
+          "app/src/main/assets/third_party/notices/NexioSchedule-AGPL-3.0.txt"
+        ],
+        "scope": "Behavioral reference only; not a claim of importing customized source."
+      }
+    ],
+    "openIssues": [
+      "The historical SleepDown acquisition/import revision remains unknown. A content-equivalent pinned source snapshot is verified; the independent experimental publication excludes this customized fork. Any future extraction of its customizations still requires redistribution authorization.",
+      "Retain applicable GPL, Apache and BSD notices plus original attribution; do not treat all implementations as original work.",
+      "Verify the redistributable scope of native screenshots, numeric baselines, example materials and remaining dependencies before migration."
+    ]
+  },
+  "publicationCriteria": [
+    {
+      "id": "near-native-per-control",
+      "status": "incomplete",
+      "requiredEvidence": "Freeze per-control and per-role measurement methods and error limits, then pass the applicable shape, motion, optics and multi-background matrix with recorded residuals.",
+      "record": "docs/native-glass-control-alignment.md",
+      "acceptanceScope": "Full mature-library acceptance; experimental runtime/sample publication is tracked separately."
+    },
+    {
+      "id": "runtime-and-adapters",
+      "status": "partially-extracted-through-m3a-plus-generic-foreground-and-source-aware-primitives-host-controls-and-adapters-pending",
+      "requiredEvidence": "One Android runtime module with no Sleepy dependency; callers supply app content, theme, callbacks and policy; Material routing remains in the Sleepy adapter.",
+      "implementationPlan": "libraries/liquid-glass/extraction-plan.md",
+      "progressRecord": "libraries/liquid-glass/validation/migrations/m1.json",
+      "progressRecords": [
+        "libraries/liquid-glass/validation/migrations/m1.json",
+        "libraries/liquid-glass/validation/migrations/m2a.json",
+        "libraries/liquid-glass/validation/migrations/m2b-motion.json",
+        "libraries/liquid-glass/validation/migrations/m2b-endpoints.json",
+        "libraries/liquid-glass/validation/migrations/m2-geometry.json",
+        "libraries/liquid-glass/validation/migrations/m3a-rendering.json"
+      ],
+      "validationRecords": [
+        "libraries/liquid-glass/validation/observations/backdrop-aware-foreground-gpu-93.json"
+      ],
+      "acceptanceScope": "Full mature-library acceptance; experimental runtime/sample publication is tracked separately."
+    },
+    {
+      "id": "independent-consumer",
+      "status": "sleepy-runtime-integrated-initial-standalone-experimental-sample-published-full-controls-and-app-backend-switch-pending",
+      "requiredEvidence": "A standalone example and Sleepy consume the same module and packaged shader; extraction preserves the existing baselines.",
+      "implementationPlan": "libraries/liquid-glass/extraction-plan.md",
+      "acceptanceScope": "Full mature-library acceptance; experimental runtime/sample publication is tracked separately."
+    },
+    {
+      "id": "support-and-performance",
+      "status": "not-accepted-for-library",
+      "requiredEvidence": "Declare SDK/Compose/GPU support and validate actual rendering, performance, fallback, cancellation and accessibility on the supported scope.",
+      "acceptanceScope": "Full mature-library acceptance; experimental runtime/sample publication is tracked separately."
+    },
+    {
+      "id": "provenance-and-distribution",
+      "status": "unresolved",
+      "requiredEvidence": "Retain per-file source history and applicable notices for the actual distribution; review fixture/material redistribution. The independent experimental publication excludes the customized backdrop fork and uses official Kyant 2.0.0; its unresolved redistribution issue remains part of the application record.",
+      "acceptanceScope": "Full mature-library acceptance; experimental runtime/sample publication is tracked separately."
+    }
+  ],
+  "publicationReadyScope": "The existing publicationReady, nativeCalibrationAccepted and sourceAndLicenseReviewComplete flags describe full asset-library acceptance. They do not report the experimental repository creation or push status."
+}

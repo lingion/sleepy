@@ -6,11 +6,11 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class NativeSegmentedCoalescedTapTest {
-    @Test fun activationOnlyTapHasAVisiblePartialRiseWithoutAnInputJump() {
+    @Test fun activationOnlyTapHasAFullSelectionPulseWithoutAnInputJump() {
         checkTap(pressObserved = false)
     }
 
-    @Test fun pressAndReleaseBeforeTheFirstFrameHaveAVisiblePartialRiseWithoutAnInputJump() {
+    @Test fun pressAndReleaseBeforeTheFirstFrameHaveAFullSelectionPulseWithoutAnInputJump() {
         checkTap(pressObserved = true)
     }
 
@@ -39,7 +39,9 @@ class NativeSegmentedCoalescedTapTest {
         }
 
         assertTrue("a tap without a pressed frame still visibly lifts the lens: $peak", peak > .1f)
-        assertTrue("a coalesced tap remains below the full held lens: $peak", peak < .85f)
+        // Direct B selection on iOS 26.5 reaches local 44 pt held bounds even
+        // for a 66.7 ms tap. This differs from releasing an already selected A.
+        assertTrue("a committed B selection completes the native pulse: $peak", peak >= .975f)
         assertEquals("the lens contracts fully after the tap", 0f, motion.lift, .001f)
         assertEquals("selection still reaches its destination", 1f, motion.position.value, .001f)
         assertFalse("the tap leaves no active animation", motion.isRunning)

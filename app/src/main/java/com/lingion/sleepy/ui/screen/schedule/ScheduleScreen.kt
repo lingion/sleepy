@@ -3,6 +3,7 @@ package com.lingion.sleepy.ui.screen.schedule
 import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import com.lingion.sleepy.ui.component.liquidglass.glassControl
 import com.lingion.sleepy.ui.component.liquidglass.glassSurfaceBackground
+import com.lingion.sleepy.ui.component.liquidglass.rememberGlassMaterialScope
 import com.lingion.sleepy.ui.component.liquidglass.controlFill
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.AnimatedVisibility
@@ -53,6 +54,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
+import com.lingion.sleepy.ui.component.liquidglass.glassButtonShape
 import com.lingion.sleepy.ui.component.liquidglass.GlassTonalButton as FilledTonalButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -322,14 +324,16 @@ fun ScheduleScreen(
             // Segmented Switcher — 选中态由调用方注入(会话级存活), 切换经回调上抛。
             // 隐藏时只释放这根 Bar 的空间, Pager 与当前 viewMode 不变。
             if (showViewSwitcher) {
+                val compactGlass = liquidGlassControlsEnabled()
                 SegmentedSwitcher(
                     options = ViewMode.entries.map { it to stringResource(it.labelRes) },
                     selected = viewMode,
                     onSelect = onViewModeChange,
                     dbgTagPrefix = "schedule_view_segment",
+                    occupiedHeight = if (compactGlass) 32.dp else null,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .padding(horizontal = 16.dp, vertical = if (compactGlass) 4.dp else 8.dp)
                 )
             }
 
@@ -411,6 +415,7 @@ fun ScheduleScreen(
                     viewMode,
                     state.selectedTableId,
                     state.currentTable?.startDate,
+                    state.currentTable?.timeJson,
                     state.effectivePeriodTable,
                 ) {
                     val table = state.currentTable
@@ -608,7 +613,7 @@ fun ScheduleScreen(
  * 列出全部课表, 当前行 primaryContainer 高亮 + 对勾, 点击即切换。
  */
 @Composable
-private fun TableSwitcherDialog(
+internal fun TableSwitcherDialog(
     tables: List<TimeTableEntity>,
     selectedTableId: Long?,
     onSelect: (Long) -> Unit,
@@ -617,6 +622,8 @@ private fun TableSwitcherDialog(
     val colors = MaterialTheme.colorScheme
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.dbgTag("schedule_table_dialog", clickable = false),
+        matchMaterialLayout = true,
         titleContentColor = colors.onSurface,
         textContentColor = colors.onSurfaceVariant,
         title = { Text(stringResource(R.string.schedule_switch_table)) },
@@ -712,26 +719,29 @@ internal fun TopBar(
     val fullTextWidth = with(density) { measurer.measure(weekLabel, labelStyle, softWrap = false).size.width.toDp() }
     val numberTextWidth = with(density) { measurer.measure(numberLabel, labelStyle, softWrap = false).size.width.toDp() }
     val groupedLabelWidth = maxOf(32.dp, numberTextWidth + 8.dp)
+    val actionSize = if (liquidGlassControlsEnabled()) 36.dp else 48.dp
     val openWeek = {
         if (isOnActual) menuOpen = true else onJumpToActual()
     }
+    val toolbarBacking = rememberGlassMaterialScope(androidx.compose.ui.graphics.RectangleShape)
     ScheduleToolbarLayout(
         modifier = Modifier.fillMaxWidth()
-            .glassSurfaceBackground(colors.surface, androidx.compose.ui.graphics.RectangleShape)
+            .glassSurfaceBackground(colors.surface, androidx.compose.ui.graphics.RectangleShape, materialScope = toolbarBacking)
             .padding(vertical = 6.dp),
+        materialScope = toolbarBacking,
         centerWidths = mapOf(
             WeekControlDensity.Full to with(density) {
-                (2 * 48.dp.roundToPx() + 2 * 8.dp.roundToPx() + 2 * 14.dp.roundToPx() + fullTextWidth.roundToPx()).toDp()
+                (2 * actionSize.roundToPx() + 2 * 8.dp.roundToPx() + 2 * 14.dp.roundToPx() + fullTextWidth.roundToPx()).toDp()
             },
             WeekControlDensity.Grouped to with(density) {
                 (2 * 32.dp.roundToPx() + 2 * 1.dp.roundToPx() + groupedLabelWidth.roundToPx()).toDp()
             },
         ),
         startWidths = ToolbarSideWidths(
-            48.dp + (if (historyPresent) 73.dp else 0.dp) + (if (scaleUncommitted) 56.dp else 0.dp),
-            48.dp + (if (historyPresent) 65.dp else 0.dp) + (if (scaleUncommitted) 48.dp else 0.dp),
+            actionSize + (if (historyPresent) 73.dp else 0.dp) + (if (scaleUncommitted) actionSize + 8.dp else 0.dp),
+            actionSize + (if (historyPresent) 65.dp else 0.dp) + (if (scaleUncommitted) actionSize else 0.dp),
         ),
-        endWidths = ToolbarSideWidths(104.dp, 96.dp),
+        endWidths = ToolbarSideWidths(actionSize * 2 + 8.dp, actionSize * 2),
         start = { side ->
             val gap = side.gap * side.scale
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -772,7 +782,7 @@ internal fun TopBar(
                 .clip(CircleShape).background(controlFill(colors.surfaceContainerHigh))
                 .dbgTag("schedule_week_group") else Modifier
             BoxWithConstraints {
-                val labelMaxWidth = (maxWidth - 96.dp - gap * 2).coerceAtLeast(0.dp)
+                val labelMaxWidth = (maxWidth - actionSize * 2 - gap * 2).coerceAtLeast(0.dp)
                 Row(groupModifier, verticalAlignment = Alignment.CenterVertically) {
                     if (grouped) {
                         GroupedWeekArrow(Icons.Outlined.ChevronLeft, "schedule_prev_week", interaction, onPrevWeek)
@@ -872,7 +882,7 @@ private fun WeekNavButton(
     }
     val interaction = remember { MutableInteractionSource() }
     Box(
-        Modifier.size(48.dp * scale).dbgTag(tag, role = "button")
+        Modifier.size(36.dp * scale).dbgTag(tag, role = "button")
             .clickable(interactionSource = interaction, indication = null, role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
@@ -1012,7 +1022,7 @@ private fun NoCourseState(
         Button(
             onClick = onAddCourse,
             modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight).dbgTag("schedule_add", role = "button"),
-            shape = SleepyTheme.Buttons.shape,
+            shape = glassButtonShape(SleepyTheme.Buttons.shape),
         ) {
             Text(stringResource(R.string.schedule_manual_first))
         }
@@ -1021,7 +1031,7 @@ private fun NoCourseState(
         FilledTonalButton(
             onClick = onImport,
             modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight).dbgTag("schedule_import", role = "button"),
-            shape = SleepyTheme.Buttons.shape,
+            shape = glassButtonShape(SleepyTheme.Buttons.shape),
         ) {
             Text(stringResource(R.string.schedule_go_manage))
         }
@@ -1058,7 +1068,7 @@ private fun EmptyState(
         Button(
             onClick = onGoImport,
             modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight).dbgTag("schedule_go_import", role = "button"),
-            shape = SleepyTheme.Buttons.shape,
+            shape = glassButtonShape(SleepyTheme.Buttons.shape),
         ) {
             Text(stringResource(R.string.schedule_empty_import))
         }
@@ -1067,7 +1077,7 @@ private fun EmptyState(
         FilledTonalButton(
             onClick = onCreateTable,
             modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight).dbgTag("schedule_create_table", role = "button"),
-            shape = SleepyTheme.Buttons.shape,
+            shape = glassButtonShape(SleepyTheme.Buttons.shape),
         ) {
             Text(stringResource(R.string.schedule_empty_create_table))
         }

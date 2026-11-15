@@ -39,6 +39,9 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.SleepyTextStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.ConflictCluster
 import com.lingion.sleepy.util.ConflictLayoutEngine
@@ -73,6 +76,7 @@ fun CourseDetailSheet(
     // 两门 ownTime 课(节点区间恰好相同)误判成冲突簇。null = 旧行为(节点域)。
     timeJson: String? = null
 ) {
+    val nativeGlass = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
     val sheetState = rememberBottomSheetState(
         initialValue = SheetValue.Hidden,
         enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
@@ -94,7 +98,8 @@ fun CourseDetailSheet(
         ModalBottomSheet(
             onDismissRequest = onDismiss,
             sheetState = sheetState,
-            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+            shape = if (LocalUiStyle.current == UiStyle.LiquidGlass) null
+                else RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
         ) {
             Column(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
                 // Header
@@ -137,7 +142,7 @@ fun CourseDetailSheet(
                         Button(
                             onClick = { onEdit(course) },
                             modifier = Modifier.fillMaxWidth(),
-                            shape = SleepyTheme.shapes.large,
+                            shape = if (nativeGlass) null else SleepyTheme.shapes.large,
                         ) {
                             Text(stringResource(R.string.course_detail_edit_course))
                         }

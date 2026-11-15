@@ -1,0 +1,683 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-14",
+  "kind": "native-retained-dock-public-foreground-properties",
+  "scope": "Native-only observed public model properties and final context images. No Android production material/foreground fix or parity acceptance.",
+  "reference": {
+    "os": "Version 26.5 (Build 23F77)",
+    "worldSizePt": [
+      375,
+      667
+    ],
+    "scale": 2,
+    "container": "Retained SwiftUI TabView/hidden navigation parent/synthetic scroll; selection0, scroll(0,-20)",
+    "simulator": "B7EBD2CC-2FAE-449B-BB9B-1CB95F055764"
+  },
+  "explicitOptIn": "-ReferenceDockForegroundProperties",
+  "entry": "testSwiftUITabViewDockForegroundProperties",
+  "default79And85Preserved": true,
+  "sequence": [
+    "A",
+    "B"
+  ],
+  "sourceInputs": [
+    {
+      "id": "A",
+      "brightLTRBpx": null,
+      "brightPixels": 0,
+      "histogram": {
+        "(26, 26, 26, 255)": 1000500
+      },
+      "decodedRGBASHA256": "47713ceb1eaa5f342983b6b098974fbf05983094d4867720ce31deb3a896dd67",
+      "scope": "Predeclared expected array; actual exported native PNG must match after run."
+    },
+    {
+      "id": "B",
+      "brightLTRBpx": [
+        0,
+        1100,
+        750,
+        1334
+      ],
+      "brightPixels": 175500,
+      "histogram": {
+        "(26, 26, 26, 255)": 825000,
+        "(230, 230, 230, 255)": 175500
+      },
+      "decodedRGBASHA256": "678ab05479fa1d6bf7ebf68233c19770dac3f2f2bbebc2069d2921208bb082e8",
+      "scope": "Predeclared expected array; actual exported native PNG must match after run."
+    }
+  ],
+  "sourceHashes": {
+    "tools/native-glass-reference/App/main.swift": "0356a079966b1f1dccef4120f70150d290835197f823c9fa50b373a114406f92",
+    "tools/native-glass-reference/UITests/NativeReferenceTests.swift": "9ca346491ca552300aebea85093daf424df60970aa8d3318279095127badaa5b"
+  },
+  "build": {
+    "exitCode": 0,
+    "wallSeconds": 9.660073041915894,
+    "hardBudgetSeconds": 120,
+    "reusedDerivedData": true
+  },
+  "test": {
+    "exitCode": 0,
+    "wallSeconds": 33.04581689834595,
+    "hardBudgetSeconds": 120,
+    "retryFlagsAbsent": true,
+    "binaryHashesMatchSuccessfulBuild": true
+  },
+  "audit": {
+    "checksPassed": 121,
+    "checksFailed": 0,
+    "errors": [],
+    "sourceDrawApplications": 2,
+    "originalScreenshotAXPairs": 4,
+    "formalGetterCount": 8,
+    "fullPropertyArrayStableWithinEachStage": true
+  },
+  "sharedPropertyScope": {
+    "values": "Actual per-view public getters, colors resolved with each view own traits; RGBA alpha retained.",
+    "barEffectiveStyleAB": [
+      2,
+      2
+    ],
+    "windowAndControllerStyleAB": [
+      2,
+      2
+    ],
+    "barOverrideAB": [
+      0,
+      0
+    ],
+    "foregroundEffectiveStyleAB": [
+      2,
+      1
+    ],
+    "sameFormalViewIdentitiesAndGeometry": true,
+    "sameFormalFontsImageMetadataAndAlphaChains": true,
+    "symbolNumericFieldsAvailable": false,
+    "symbolConfigurationPresence": true,
+    "symbolConfigurationEqualsUnspecified": false,
+    "coverageAvailable": false
+  },
+  "foregroundSubtrees": [
+    {
+      "pathPrefix": "tabBar/0/0/",
+      "scope": "Runtime class/path metadata only; no independent visible ownership or screen-space coverage.",
+      "viewCount": 8,
+      "actualViewEffectiveStyleAB": [
+        2,
+        1
+      ],
+      "viewTintSRGBA_AB": [
+        [
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1
+        ]
+      ],
+      "labelTextColorSRGBA_AB": [
+        [
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1
+        ]
+      ],
+      "labelFont": {
+        "fontName": ".SFUI-Semibold",
+        "familyName": ".AppleSystemUIFont",
+        "pointSize": 10,
+        "symbolicTraitsRawValue": 2,
+        "weightTrait": 0.30000001192092896,
+        "widthTrait": 0,
+        "slantTrait": 0
+      },
+      "attributedRunForegroundColor": {
+        "attributePresent": true,
+        "isUIColor": true,
+        "present": true,
+        "resolutionScope": "this observed view's own traitCollection; not final composited glyph color",
+        "resolutionSucceeded": true,
+        "resolvedSRGBA": [
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "ownAlpha": 1,
+      "allOwnAlphaEqual": true,
+      "subtreeContainerClassLabel": "SelectedContentView",
+      "allUIViewAncestorsAlphaOneAndNotHidden": true
+    },
+    {
+      "pathPrefix": "tabBar/0/2/",
+      "scope": "Runtime class/path metadata only; no independent visible ownership or screen-space coverage.",
+      "viewCount": 8,
+      "actualViewEffectiveStyleAB": [
+        2,
+        1
+      ],
+      "viewTintSRGBA_AB": [
+        [
+          0.9215686274509803,
+          0.9215686274509803,
+          0.9607843137254902,
+          0.6
+        ],
+        [
+          0.23529411764705882,
+          0.23529411764705882,
+          0.2627450980392157,
+          0.6
+        ]
+      ],
+      "labelTextColorSRGBA_AB": [
+        [
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "labelFont": {
+        "fontName": ".SFUI-Medium",
+        "familyName": ".AppleSystemUIFont",
+        "pointSize": 10,
+        "symbolicTraitsRawValue": 0,
+        "weightTrait": 0.23000000417232513,
+        "widthTrait": 0,
+        "slantTrait": 0
+      },
+      "attributedRunForegroundColor": {
+        "attributePresent": false,
+        "isUIColor": false,
+        "present": false,
+        "resolutionScope": "this observed view's own traitCollection; not final composited glyph color",
+        "resolutionSucceeded": false,
+        "resolvedSRGBA": null
+      },
+      "ownAlpha": 1,
+      "allOwnAlphaEqual": true,
+      "subtreeContainerClassLabel": "ContentView",
+      "allUIViewAncestorsAlphaOneAndNotHidden": true
+    }
+  ],
+  "itemImageMetadata": [
+    {
+      "label": "Schedule",
+      "selectedSubtreeImagePath": "tabBar/0/0/0/0",
+      "imageSizePt": {
+        "h": 17.5,
+        "w": 21
+      },
+      "imageScale": 2,
+      "imageRenderingModeRawValue": 0,
+      "isSymbolImage": true,
+      "CGImageSizePx": [
+        34,
+        31
+      ]
+    },
+    {
+      "label": "Today",
+      "selectedSubtreeImagePath": "tabBar/0/0/1/0",
+      "imageSizePt": {
+        "h": 20.5,
+        "w": 21
+      },
+      "imageScale": 2,
+      "imageRenderingModeRawValue": 0,
+      "isSymbolImage": true,
+      "CGImageSizePx": [
+        36,
+        37
+      ]
+    },
+    {
+      "label": "Manage",
+      "selectedSubtreeImagePath": "tabBar/0/0/2/0",
+      "imageSizePt": {
+        "h": 17.5,
+        "w": 19.5
+      },
+      "imageScale": 2,
+      "imageRenderingModeRawValue": 0,
+      "isSymbolImage": true,
+      "CGImageSizePx": [
+        31,
+        31
+      ]
+    },
+    {
+      "label": "Mine",
+      "selectedSubtreeImagePath": "tabBar/0/0/3/0",
+      "imageSizePt": {
+        "h": 17,
+        "w": 18
+      },
+      "imageScale": 2,
+      "imageRenderingModeRawValue": 0,
+      "isSymbolImage": true,
+      "CGImageSizePx": [
+        28,
+        30
+      ]
+    }
+  ],
+  "bodyProbeXYXYpt": [
+    [
+      196,
+      592,
+      208,
+      596
+    ],
+    [
+      244,
+      592,
+      256,
+      596
+    ]
+  ],
+  "formalObservations": [
+    {
+      "name": "dock-foreground-00-A-1s-rest",
+      "inputID": "A",
+      "observationBudgetSeconds": 1,
+      "barEffectiveStyleBeforeAfter": [
+        2,
+        2
+      ],
+      "actualElapsedSecondsBeforeAfter": [
+        5.973247374990024,
+        6.105777916673105
+      ],
+      "bodyProbeRGBHistograms": [
+        [
+          {
+            "RGB": [
+              37,
+              37,
+              37
+            ],
+            "count": 192
+          }
+        ],
+        [
+          {
+            "RGB": [
+              37,
+              37,
+              37
+            ],
+            "count": 192
+          }
+        ]
+      ]
+    },
+    {
+      "name": "dock-foreground-00-A-3s-rest",
+      "inputID": "A",
+      "observationBudgetSeconds": 3,
+      "barEffectiveStyleBeforeAfter": [
+        2,
+        2
+      ],
+      "actualElapsedSecondsBeforeAfter": [
+        7.468899416679051,
+        7.551443875010591
+      ],
+      "bodyProbeRGBHistograms": [
+        [
+          {
+            "RGB": [
+              37,
+              37,
+              37
+            ],
+            "count": 192
+          }
+        ],
+        [
+          {
+            "RGB": [
+              37,
+              37,
+              37
+            ],
+            "count": 192
+          }
+        ]
+      ]
+    },
+    {
+      "name": "dock-foreground-01-B-1s-rest",
+      "inputID": "B",
+      "observationBudgetSeconds": 1,
+      "barEffectiveStyleBeforeAfter": [
+        2,
+        2
+      ],
+      "actualElapsedSecondsBeforeAfter": [
+        2.190755374962464,
+        2.2671221666387282
+      ],
+      "bodyProbeRGBHistograms": [
+        [
+          {
+            "RGB": [
+              247,
+              247,
+              247
+            ],
+            "count": 192
+          }
+        ],
+        [
+          {
+            "RGB": [
+              247,
+              247,
+              247
+            ],
+            "count": 192
+          }
+        ]
+      ]
+    },
+    {
+      "name": "dock-foreground-01-B-3s-rest",
+      "inputID": "B",
+      "observationBudgetSeconds": 3,
+      "barEffectiveStyleBeforeAfter": [
+        2,
+        2
+      ],
+      "actualElapsedSecondsBeforeAfter": [
+        3.5956222499953583,
+        3.6775014583254233
+      ],
+      "bodyProbeRGBHistograms": [
+        [
+          {
+            "RGB": [
+              247,
+              247,
+              247
+            ],
+            "count": 192
+          }
+        ],
+        [
+          {
+            "RGB": [
+              247,
+              247,
+              247
+            ],
+            "count": 192
+          }
+        ]
+      ]
+    }
+  ],
+  "conclusion": {
+    "scope": "Native-only observed public model properties and final context images. No Android production material/foreground fix or parity acceptance.",
+    "formalGetterCount": 8,
+    "typedRowsPerGetter": 16,
+    "labelsAndImagesPerGetter": [
+      8,
+      8
+    ],
+    "fourFormalContextsStableBeforeAfter": true,
+    "propertiesStableWithinEachFormalStage": {
+      "A": {
+        "getterCount": 4,
+        "allFullPublicPropertyArraysEqual": true
+      },
+      "B": {
+        "getterCount": 4,
+        "allFullPublicPropertyArraysEqual": true
+      }
+    },
+    "viewPropertyLeafDifferencesAB": 52,
+    "retainedFormalViewIdentities": true,
+    "retainedFormalImageIdentities": true,
+    "earlyImageIdentityReplacement": "First nine A trace states use four other UIImage identities; later formal getter images are retained A/B. This does not establish whole-run image identity invariance or observer inertness.",
+    "bodyProbes": "A:192 pixels RGB37 at both probes; B:192 pixels RGB247, at both minimum budgets.",
+    "rootVisualObservation": "Original unselected glyph contexts are light on A and dark on B; selected foreground stays light. No isolated glyph RGBA/coverage recovered.",
+    "getterBracketMilliseconds": {
+      "min": 1.3112499727867544,
+      "max": 3.5004583187401295
+    },
+    "nextQuestion": "How to reproduce local material/foreground adaptation in Android for matched parent/sampling contexts across colored and textured inputs; no classifier inferred from A/B."
+  },
+  "limitations": [
+    "The two view subtrees are observed objects; class/path labels and UIView alpha cannot establish which pixels are visible or their final RGBA.",
+    "Minimum 1s/3s budgets are not exact observation times, compositor presentation timestamps, settled-state proof or adaptation latency.",
+    "Early trace image identity replacements are retained; only formal screenshot/getter image continuity is established.",
+    "UIImage CGImage metadata and opaque symbol configuration properties do not recover screen-space masks, numeric symbol configuration or coverage.",
+    "A/B cannot identify native brightness classifier, sampling support, blur radius, opacity or foreground transfer function.",
+    "Android retains the known body and fixed-tint residuals. This fixture/source-only change adds no production fix or acceptance."
+  ],
+  "publicationReady": false,
+  "nativeCalibrationAccepted": false,
+  "sourceAndLicenseReviewComplete": false,
+  "evidence": [
+    {
+      "path": "android-dock-foreground-properties-91/export-result.py",
+      "bytes": 2831,
+      "sha256": "5beecbb6ca09c9b07515077661b4e517f0edc181716a6ee13ccb7bc688c91c69"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/independent-result-review.json",
+      "bytes": 109948,
+      "sha256": "fe38c5356429880caa50f6e00121eef90ca904b866cb66d21768eed4cb0b0c67"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/independent-result-review.md",
+      "bytes": 3177,
+      "sha256": "167d261ee5e1d29981d6703ca173ace6f178e217eccbcb6c06b57117be27dd58"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/native-build-result.json",
+      "bytes": 2081,
+      "sha256": "188b3a8a3aec6228ed719e279be7c28540487b349f54efec9638a39e7c63e11f"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/native-build.log",
+      "bytes": 91022,
+      "sha256": "121861e687db0829928504ea6dba15bb159716c998ed473a2d96290b13e20f2d"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/native-foreground-properties.patch",
+      "bytes": 23302,
+      "sha256": "cb82269593d068bd8b2a972f585b06d07b35e7acc42fd85dd3800d1b088989a9"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/native-test-result.json",
+      "bytes": 2550,
+      "sha256": "50651938b30763e9db92118c3e1e1718a05323d684610302a1b822685ac476af"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/native-test.log",
+      "bytes": 8639,
+      "sha256": "af289e08f013f32e9162624e1b0185381a38e69a58b0251868f5a434feaa694f"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/official-api-sources.json",
+      "bytes": 7903,
+      "sha256": "8d57f3efa99c0b8d04a72f58099e207d0556b1ab8d93d0bc2e025307b77a64bd"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/post-run-validation/validation.json",
+      "bytes": 745525,
+      "sha256": "f122468100e5f4851ca6444aa6a2ac6fa396916c1307f1dd2748c6257b78028e"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/result-export/attachments/041410FB-68CF-4626-8626-1E17ABE90924.txt",
+      "bytes": 10083,
+      "sha256": "00d54bcbc7ce9672f830aa0b7cdca5ab00e88deeb10b0c09276bf100b4bea554"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/result-export/attachments/063077C2-1271-4DE1-A8BE-FA3246AB1FE1.png",
+      "bytes": 102343,
+      "sha256": "6ae464c5debe8d6d98eba907ad49560b126149ddd7cc901181f8fa9b4a1ca35a"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/result-export/attachments/166CE01E-83F7-408F-B0D4-81FD403A12B5.png",
+      "bytes": 105909,
+      "sha256": "dbe29b07cd0785a7c991240061128d14a0ea0d8d677487fd2d366a13084230d2"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/result-export/attachments/4C72E164-DD1F-4452-BB4B-F9D086A9CCA7.txt",
+      "bytes": 10083,
+      "sha256": "39794a6f42e708826f3e9314fbdc2081be446c00844291d0d68c9358c0d42f6e"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/result-export/attachments/8D303E88-E68B-42E1-8895-B04960A94F4E.txt",
+      "bytes": 10083,
+      "sha256": "e80bbaadebc326a02b88cf48674687030b06e7a94432fe6255956b7db23f8853"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/result-export/attachments/991116E9-9B50-483D-8D62-76A9A0A99C1C.png",
+      "bytes": 105909,
+      "sha256": "dbe29b07cd0785a7c991240061128d14a0ea0d8d677487fd2d366a13084230d2"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/result-export/attachments/E33D0A1F-37C1-4B3A-996A-F49808F11EBD.json",
+      "bytes": 2132158,
+      "sha256": "6875ecef2fb9338b872ca4280e408c3d35792d1c5472ffbe60a5aa706010a75a"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/result-export/attachments/E79AD00E-E7DB-4CBC-9434-3E1E18C62261.png",
+      "bytes": 102343,
+      "sha256": "6ae464c5debe8d6d98eba907ad49560b126149ddd7cc901181f8fa9b4a1ca35a"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/result-export/attachments/F4AC2EB5-7334-4C1D-A805-F7C0EA03133A.txt",
+      "bytes": 10083,
+      "sha256": "5e3fabce5fa7aaf414c7e084fa7b874859d3daf8601af027d95c2913bed64d49"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/result-export/attachments/manifest.json",
+      "bytes": 4880,
+      "sha256": "24d1a74b56756c72de02ce0ddea182a7ff5af1e6ea77aa3c2f33b056863a7842"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/result-export/export-audit.json",
+      "bytes": 15095,
+      "sha256": "c955c137b60f1cbca9d7afe09ea3839c1e1e4ad03cbeff9448a3b0ad64cef944"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/result-export/summary.json",
+      "bytes": 1049,
+      "sha256": "5a44d9c0799d064d79aa2975003b69c123c818fc82c5b9aa18bff3b6bea521ec"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/root-conclusion.json",
+      "bytes": 1443,
+      "sha256": "9fdd99497a44155d8f2078ec97aa3072610195cf2e87d4574634e3dca58c08e6"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/root-foreground-contact.png",
+      "bytes": 62848,
+      "sha256": "cdd6d7b8726e7a3786df3788dfad347c5ee393459e424886f75d76d789a20478"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/root-protocol.json",
+      "bytes": 2900,
+      "sha256": "7bf5388dba0050daf3a15f8d1eab8a56a70df47eaa084653a3b1fcc494ed4115"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/run-native.py",
+      "bytes": 3386,
+      "sha256": "b181336a9241e55bb956d936e3bf01e3d0c630e035b8ea1c90d172036dd871e4"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/source-baseline.json",
+      "bytes": 516,
+      "sha256": "bee4950e85c513f893dd5d98e66a7adc60d4d38115f31e8dd4a25f8c48d8be77"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/source-implementation-receipt.json",
+      "bytes": 700,
+      "sha256": "560539537b3f33b264b2b07f7709d899a9b0d9d742a9c2441bd274fbf3544390"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/source-independent-review.json",
+      "bytes": 9577,
+      "sha256": "d5df716157c46068392294cba79945ed57ecc1f5118ec0213bb0e0b5ced613dd"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/source-independent-review.md",
+      "bytes": 2224,
+      "sha256": "3b9bbde39a59370204b6cd7c500edfb1ede3cb79f656cc3a969b3b4dcac1bcd0"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/source-review.json",
+      "bytes": 7161,
+      "sha256": "288b674296369c996a196cce3103c57de35cda0523b3a47fcd3daa748941ed12"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/source-review.md",
+      "bytes": 3166,
+      "sha256": "3c0fa598106ba38ec685553b459bc4aada82ac0b78d477f2e3b46c2f01404c51"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/trace-copy-receipt.json",
+      "bytes": 1180,
+      "sha256": "ce6101034bd0f44599162d0a228d543ca891ded60bad6b7321c46fbf91af86a1"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/trace/dock-local-input-A.png",
+      "bytes": 23285,
+      "sha256": "1377af291a4a8b3f11a9e183674ab6e62e0f4331635f840f778424cb176973e0"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/trace/dock-local-input-B.png",
+      "bytes": 23708,
+      "sha256": "dae4823e38f9e35a7a08ef08e28c578adf2a056d86849737aa2d7b192939f1ee"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/trace/session.json",
+      "bytes": 3780,
+      "sha256": "9a018572fcd4f17d9ee8c226499016c362baf8d686a6fc3d0886318cd9acb2f2"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/trace/trace.jsonl",
+      "bytes": 13654744,
+      "sha256": "54b5ef1689ca61b1c2d9fb71a607c0368528c31bf9875500277a7fc7623599a9"
+    },
+    {
+      "path": "android-dock-foreground-properties-91/validate-post-run.py",
+      "bytes": 24122,
+      "sha256": "550f46a296e216ac174f4aef8ec6fc9e9b9e5f498125b75a5c4d5827fd1826f6"
+    }
+  ],
+  "sourceBaseHead": "1bf451289312f1b32a682a1e0ead593724450e96",
+  "independentReviews": {
+    "source": "PASS_SOURCE_SCOPE;13/13",
+    "rawResult": "PASS_RESULT_SCOPE;143/143",
+    "scope": "These saved-artifact checks do not establish production optical or motion acceptance."
+  }
+}

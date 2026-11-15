@@ -20,8 +20,8 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
 /**
- * SettingsCard 折叠内容显隐管线契约 (MD3E motion 全量补齐 Task 7a):
- * 折叠内容经 AnimatedVisibility(sleepyExpandSpecs 家族) 显隐 — 断言动画
+ * SettingsCard 折叠内容显隐管线契约:
+ * 折叠内容经共享 AccordionContent 显隐 — 断言动画
  * 落定后的存在性终态: expanded=true 内容稳态在树里、切 false 退场播完后
  * 节点真的移除、再切 true 重新入场 (与 T6 徽标管线测试同构)。
  *
@@ -29,7 +29,7 @@ import org.robolectric.annotation.GraphicsMode
  * 由外部 holder 状态驱动 (与生产中 remember(expanded) 翻转同形态); 内容
  * 槽放带 testTag 的 Box, 存在性一律 testTag 判定不用文案 (locale 桶 trap,
  * T5 定型)。chevron 旋转与展开动画同拍, 但旋转是无语义装饰, 终态断言
- * 不触它 — 接线正确性由 ExpandChevronMotionContractTest 源码闸锁。
+ * 不触它；动作隔离、单一无障碍入口与中途反向见 AccordionControlsTest。
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)

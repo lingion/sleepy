@@ -24,6 +24,7 @@ import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.NewReleases
@@ -57,11 +58,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.BuildConfig
 import com.lingion.sleepy.ui.component.SettingsLayout
+import com.lingion.sleepy.ui.component.liquidglass.GlassMaterialContent
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.component.liquidglass.glassSurfaceBackground
+import com.lingion.sleepy.ui.component.liquidglass.rememberGlassMaterialScope
+import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
 import com.lingion.sleepy.R
 import com.lingion.sleepy.console.ConsoleBootstrap
 import com.lingion.sleepy.console.DebugGate
@@ -69,6 +78,8 @@ import com.lingion.sleepy.console.DebugUnlockDialog
 import com.lingion.sleepy.console.handlers.UnlockTapCounter
 import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.FeedbackComposer
 import com.lingion.sleepy.util.QqJoin
@@ -343,7 +354,7 @@ fun AboutScreen(
 
             if (debugStatus.active) {
                 Text(stringResource(R.string.debug_unlock_active))
-                androidx.compose.material3.TextButton(onClick = { ConsoleBootstrap.stop() }) {
+                TextButton(onClick = { ConsoleBootstrap.stop() }) {
                     Text(stringResource(R.string.debug_unlock_stop))
                 }
             }
@@ -554,116 +565,17 @@ fun AboutScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Source code card
-            InfoCard {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Outlined.Code,
-                        contentDescription = null,
-                        tint = colors.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
-                        Text(
-                            text = stringResource(R.string.about_source),
-                            style = SettingsLayout.headingStyle,
-                            color = colors.onSurface
-                        )
-                        Text(
-                            text = stringResource(R.string.about_source_url),
-                            style = SettingsLayout.descriptionStyle,
-                            color = colors.primary,
-                            textDecoration = TextDecoration.Underline
-                        )
-                    }
-                    IconButton(modifier = Modifier.dbgTag("about_source_link", role = "button"), onClick = {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/lingion/sleepy")))
-                    }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
-                            contentDescription = null,
-                            tint = colors.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Privacy policy card (商店审核要求: 应用内可达 https://sleepy.qdp.qzz.io/privacy, 与 web 关于页同源)
-            InfoCard {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Outlined.Shield,
-                        contentDescription = null,
-                        tint = colors.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
-                        Text(
-                            text = stringResource(R.string.about_privacy),
-                            style = SettingsLayout.headingStyle,
-                            color = colors.onSurface
-                        )
-                        Text(
-                            text = stringResource(R.string.about_privacy_url),
-                            style = SettingsLayout.descriptionStyle,
-                            color = colors.primary,
-                            textDecoration = TextDecoration.Underline
-                        )
-                    }
-                    IconButton(modifier = Modifier.dbgTag("about_privacy_link", role = "button"), onClick = {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://sleepy.qdp.qzz.io/privacy")))
-                    }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
-                            contentDescription = null,
-                            tint = colors.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // The website hosts the complete inventory; original notices remain bundled.
-            InfoCard {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .noRippleClickable {
-                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(
-                                "https://sleepy.is-my.app/licenses/"
-                            )))
-                        }
-                        .dbgTag("about_license_entry", role = "button")
-                ) {
-                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)) {
-                        Text(
-                            text = stringResource(R.string.about_license_title),
-                            style = SettingsLayout.headingStyle,
-                            color = colors.onSurface
-                        )
-                        Text(
-                            text = stringResource(R.string.about_license_detail),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = colors.onSurfaceVariant
-                        )
-                    }
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
-                        contentDescription = null,
-                        tint = colors.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-
+            AboutExternalLinks(
+                onOpenSource = {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(SourceCodeUrl)))
+                },
+                onOpenPrivacy = {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(PrivacyPolicyUrl)))
+                },
+                onOpenLicenses = {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(OpenSourceNoticesUrl)))
+                },
+            )
 
             Spacer(modifier = Modifier.height(32.dp))
         }
@@ -684,16 +596,138 @@ fun AboutScreen(
 
 
 @Composable
-private fun InfoCard(content: @Composable () -> Unit) {
+private fun InfoCard(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     val colors = MaterialTheme.colorScheme
+    val shape = SleepyTheme.shapes.large
+    val backing = rememberGlassMaterialScope(shape)
+    val surface = if (backing != null) {
+        Modifier.glassSurfaceBackground(colors.surfaceContainer, shape, materialScope = backing)
+    } else {
+        Modifier.clip(shape).background(colors.surfaceContainer)
+    }
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .clip(SleepyTheme.shapes.large)
-            .background(colors.surfaceContainer)
+            .then(surface)
             .padding(20.dp)
     ) {
-        content()
+        // Child lenses include this immediate card backing in their sampling chain.
+        GlassMaterialContent(backing, content)
+    }
+}
+
+private const val SourceCodeUrl = "https://github.com/lingion/sleepy"
+private const val PrivacyPolicyUrl = "https://sleepy.qdp.qzz.io/privacy"
+private const val OpenSourceNoticesUrl = "https://sleepy.is-my.app/licenses/"
+
+/** The source-code row defines the geometry for all three external destinations. */
+@Composable
+internal fun AboutExternalLinks(
+    onOpenSource: () -> Unit,
+    onOpenPrivacy: () -> Unit,
+    onOpenLicenses: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val glass = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        AboutExternalLinkCard(
+            title = stringResource(R.string.about_source),
+            detail = stringResource(R.string.about_source_url),
+            destination = SourceCodeUrl,
+            leadingIcon = Icons.Outlined.Code,
+            actionTag = "about_source_link",
+            onOpen = onOpenSource,
+        )
+        AboutPrivacyCard(onOpenPrivacy)
+        if (glass) {
+            AboutExternalLinkCard(
+                title = stringResource(R.string.about_license_title),
+                detail = stringResource(R.string.about_license_detail),
+                destination = OpenSourceNoticesUrl,
+                leadingIcon = Icons.Outlined.Description,
+                actionTag = "about_license_entry",
+                onOpen = onOpenLicenses,
+            )
+        } else {
+            // Preserve the established Material Design license row.
+            val colors = MaterialTheme.colorScheme
+            InfoCard {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().noRippleClickable(onOpenLicenses)
+                        .dbgTag("about_license_entry", role = "button"),
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap),
+                    ) {
+                        Text(stringResource(R.string.about_license_title), style = SettingsLayout.headingStyle, color = colors.onSurface)
+                        Text(stringResource(R.string.about_license_detail), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+                    }
+                    Icon(
+                        Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = null,
+                        tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+internal fun AboutPrivacyCard(onOpenPrivacy: () -> Unit, modifier: Modifier = Modifier) {
+    AboutExternalLinkCard(
+        title = stringResource(R.string.about_privacy),
+        detail = stringResource(R.string.about_privacy_url),
+        destination = PrivacyPolicyUrl,
+        leadingIcon = Icons.Outlined.Shield,
+        actionTag = "about_privacy_link",
+        onOpen = onOpenPrivacy,
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun AboutExternalLinkCard(
+    title: String,
+    detail: String,
+    destination: String,
+    leadingIcon: androidx.compose.ui.graphics.vector.ImageVector,
+    actionTag: String,
+    onOpen: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = MaterialTheme.colorScheme
+    InfoCard(modifier) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(leadingIcon, contentDescription = null, tint = colors.primary, modifier = Modifier.size(24.dp))
+            Spacer(Modifier.width(12.dp))
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap),
+            ) {
+                Text(title, style = SettingsLayout.headingStyle, color = colors.onSurface)
+                Text(
+                    text = buildAnnotatedString {
+                        withLink(LinkAnnotation.Url(destination, linkInteractionListener = { onOpen() })) {
+                            append(detail)
+                        }
+                    },
+                    style = SettingsLayout.descriptionStyle,
+                    color = colors.primary,
+                    textDecoration = TextDecoration.Underline,
+                )
+            }
+            IconButton(
+                modifier = Modifier.dbgTag(actionTag, text = title, role = "button"),
+                onClick = onOpen,
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = title,
+                    tint = colors.primary, modifier = Modifier.size(20.dp),
+                )
+            }
+        }
     }
 }
 

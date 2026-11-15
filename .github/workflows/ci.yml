@@ -29,10 +29,19 @@ jobs:
           BASE_REF: ${{ github.base_ref || 'main' }}
           COMMIT_FROM: ${{ github.event_name == 'push' && github.event.before || github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || 'HEAD^' }}
         run: |
+          set -euo pipefail
           npm install -g @commitlint/cli @commitlint/config-conventional
           # PR 校验分支范围，main 校验推送范围，手动运行校验所选提交。
           git fetch origin "$BASE_REF" --depth=200
-          npx commitlint --from "$COMMIT_FROM" --to HEAD --verbose
+          # 只排除 Git 确认的合并提交；普通提交仍逐条校验完整消息。
+          commits="$(git rev-list --reverse --no-merges "$COMMIT_FROM..HEAD")"
+          if [ -z "$commits" ]; then
+            echo "No non-merge commits to lint."
+            exit 0
+          fi
+          while IFS= read -r commit; do
+            git show --format=%B --no-patch "$commit" | npx commitlint --verbose
+          done <<< "$commits"
 
   school-catalog-check:
     runs-on: ubuntu-latest
@@ -130,7 +139,7 @@ jobs:
         # (issue #98: preview_skips_ink_guard 红但 android-unit-test 绿, 差点带病合入)
         run: |
           set -o pipefail
-          ./gradlew :app:testDebugUnitTest --info --stacktrace 2>&1 | tee gradle-unit-test.log | tail -400
+          ./gradlew :app:testDebugUnitTest :liquid-glass-runtime:testAndroidHostTest --info --stacktrace 2>&1 | tee gradle-unit-test.log | tail -400
           git diff --exit-code -- app/schemas
           test -z "$(git ls-files --others --exclude-standard app/schemas)"
       - name: Release console lifecycle

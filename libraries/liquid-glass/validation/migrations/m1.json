@@ -1,0 +1,393 @@
+{
+  "schemaVersion": 1,
+  "migration": "M1",
+  "status": "complete-m1-only",
+  "recordedDate": "2026-11-14",
+  "startedAtUtc": "2026-11-13T18:45:32.802840+00:00",
+  "baseCommit": "2337d8ff2fab8e51e59c61bac93008da1a520e8a",
+  "module": ":liquid-glass-runtime",
+  "moduleDirectory": "libraries/liquid-glass/runtime",
+  "scope": "Move exactly three pure motion kernels; preserve package, methods, constants, arithmetic and fixtures. Only the four required internal visibility modifiers are removed.",
+  "sources": [
+    {
+      "beforePath": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/NativeGlassDragDeformation.kt",
+      "afterPath": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeGlassDragDeformation.kt",
+      "beforeSha256": "c5860e637b287a634eff2f9f4cc36299a235f4d87dd129c6bb9ee1d1369b7668",
+      "expectedAfterSha256": "b49db084e67163921cd3bd7a8139ca9eafe6a17a827b6bf53d875ebe054e795c",
+      "visibilityChanges": [
+        {
+          "before": "internal class NativeGlassDragDeformation",
+          "after": "class NativeGlassDragDeformation"
+        },
+        {
+          "before": "internal data class Spec",
+          "after": "data class Spec"
+        }
+      ],
+      "afterSha256": "b49db084e67163921cd3bd7a8139ca9eafe6a17a827b6bf53d875ebe054e795c",
+      "beforePathRemoved": true,
+      "onlyDeclaredVisibilityChanges": true
+    },
+    {
+      "beforePath": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/NativeDockDeformation.kt",
+      "afterPath": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeDockDeformation.kt",
+      "beforeSha256": "6544770bf1f5a78e437a49dc8a2a2a62385dde5516623afa812da4524b138914",
+      "expectedAfterSha256": "7836138f47cde63ed68fd4f3808a7f9651ebb088c427b493bc625127ecdd7b73",
+      "visibilityChanges": [
+        {
+          "before": "internal class NativeDockDeformation",
+          "after": "class NativeDockDeformation"
+        }
+      ],
+      "afterSha256": "7836138f47cde63ed68fd4f3808a7f9651ebb088c427b493bc625127ecdd7b73",
+      "beforePathRemoved": true,
+      "onlyDeclaredVisibilityChanges": true
+    },
+    {
+      "beforePath": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/NativeSliderEndpoint.kt",
+      "afterPath": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeSliderEndpoint.kt",
+      "beforeSha256": "9d8340e7abfc147611cd5fa60da407483d4cfb1153ae45e8c354ad203b8e7b53",
+      "expectedAfterSha256": "c6e10e1decb60296007d64213b748fa8431f7a07de28f325d3b354f94b177ffb",
+      "visibilityChanges": [
+        {
+          "before": "internal fun nativeSliderVisualPosition",
+          "after": "fun nativeSliderVisualPosition"
+        }
+      ],
+      "afterSha256": "c6e10e1decb60296007d64213b748fa8431f7a07de28f325d3b354f94b177ffb",
+      "beforePathRemoved": true,
+      "onlyDeclaredVisibilityChanges": true
+    }
+  ],
+  "unchangedTestsAndFixtures": [
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/NativeGlassDragDeformationTest.kt",
+      "beforeSha256": "5718ec97e8b761fefe8315ca2e8becd42743478306b1d41f18b4ffde66e72c43",
+      "afterSha256": "5718ec97e8b761fefe8315ca2e8becd42743478306b1d41f18b4ffde66e72c43",
+      "unchanged": true
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/NativeDockDirectDeformationTest.kt",
+      "beforeSha256": "b4c0ac8540cc4151b554796728ac5054064d6ccf173232dbcac23d449cd4e923",
+      "afterSha256": "b4c0ac8540cc4151b554796728ac5054064d6ccf173232dbcac23d449cd4e923",
+      "unchanged": true
+    },
+    {
+      "path": "app/src/test/java/com/lingion/sleepy/ui/component/liquidglass/NativeSliderEndpointTest.kt",
+      "beforeSha256": "2e330a03f6217e05331e9678ae7c2b5793f9ee27db16a8a025135838fcef10af",
+      "afterSha256": "2e330a03f6217e05331e9678ae7c2b5793f9ee27db16a8a025135838fcef10af",
+      "unchanged": true
+    },
+    {
+      "path": "app/src/test/resources/native-glass/drag-matrix.csv",
+      "beforeSha256": "0179e8089f292e67ffa846ed5826b0c6ffa11c68ed2e066a6027d7057dcd6f3b",
+      "afterSha256": "0179e8089f292e67ffa846ed5826b0c6ffa11c68ed2e066a6027d7057dcd6f3b",
+      "unchanged": true
+    },
+    {
+      "path": "app/src/test/resources/native-glass/dock-direct-selection.csv",
+      "beforeSha256": "34bd10c436fc23fcebf1da58a60fea3bcdd4cf94eda749d4a1212b3311ad47fa",
+      "afterSha256": "34bd10c436fc23fcebf1da58a60fea3bcdd4cf94eda749d4a1212b3311ad47fa",
+      "unchanged": true
+    }
+  ],
+  "focusedTests": [
+    "com.lingion.sleepy.ui.component.liquidglass.NativeGlassDragDeformationTest",
+    "com.lingion.sleepy.ui.component.liquidglass.NativeDockDirectDeformationTest",
+    "com.lingion.sleepy.ui.component.liquidglass.NativeSliderEndpointTest"
+  ],
+  "commands": [
+    {
+      "id": "baseline-tests",
+      "command": "./gradlew :app:testDebugUnitTest --tests com.lingion.sleepy.ui.component.liquidglass.NativeGlassDragDeformationTest --tests com.lingion.sleepy.ui.component.liquidglass.NativeDockDirectDeformationTest --tests com.lingion.sleepy.ui.component.liquidglass.NativeSliderEndpointTest",
+      "startedAtUtc": "2026-11-13T18:46:07.385954+00:00",
+      "status": "failed",
+      "finishedAtUtc": "2026-11-13T18:46:16.969933+00:00",
+      "durationSeconds": 9.584,
+      "exitCode": 1,
+      "taskFailures": [],
+      "failureSummary": [
+        "* What went wrong:",
+        "> SDK location not found. Define a valid SDK location with an ANDROID_HOME environment variable or by setting the sdk.dir path in your project's local properties file at '/Users/kerrylee/.codex/worktrees/android-settings-glass-fixes/sleepy/local.properties'.",
+        "> Run with --stacktrace option to get the stack trace.",
+        "> Run with --info or --debug option to get more log output.",
+        "> Run with --scan to get full insights from a Build Scan (powered by Develocity).",
+        "> Get more help at https://help.gradle.org."
+      ],
+      "testResults": [
+        {
+          "suite": "com.lingion.sleepy.ui.component.liquidglass.NativeGlassDragDeformationTest",
+          "report": "app/build/test-results/testDebugUnitTest/TEST-com.lingion.sleepy.ui.component.liquidglass.NativeGlassDragDeformationTest.xml",
+          "status": "not-produced"
+        },
+        {
+          "suite": "com.lingion.sleepy.ui.component.liquidglass.NativeDockDirectDeformationTest",
+          "report": "app/build/test-results/testDebugUnitTest/TEST-com.lingion.sleepy.ui.component.liquidglass.NativeDockDirectDeformationTest.xml",
+          "status": "not-produced"
+        },
+        {
+          "suite": "com.lingion.sleepy.ui.component.liquidglass.NativeSliderEndpointTest",
+          "report": "app/build/test-results/testDebugUnitTest/TEST-com.lingion.sleepy.ui.component.liquidglass.NativeSliderEndpointTest.xml",
+          "status": "not-produced"
+        }
+      ]
+    },
+    {
+      "id": "baseline-sdk-tests",
+      "command": "env ANDROID_HOME=/Users/kerrylee/Library/Android/sdk ./gradlew :app:testDebugUnitTest --tests com.lingion.sleepy.ui.component.liquidglass.NativeGlassDragDeformationTest --tests com.lingion.sleepy.ui.component.liquidglass.NativeDockDirectDeformationTest --tests com.lingion.sleepy.ui.component.liquidglass.NativeSliderEndpointTest",
+      "startedAtUtc": "2026-11-13T18:46:43.305738+00:00",
+      "status": "passed",
+      "finishedAtUtc": "2026-11-13T18:46:49.650199+00:00",
+      "durationSeconds": 6.345,
+      "exitCode": 0,
+      "taskFailures": [],
+      "testResults": [
+        {
+          "suite": "com.lingion.sleepy.ui.component.liquidglass.NativeGlassDragDeformationTest",
+          "report": "app/build/test-results/testDebugUnitTest/TEST-com.lingion.sleepy.ui.component.liquidglass.NativeGlassDragDeformationTest.xml",
+          "reportSha256": "f7b059aac99888cfa449fcb57d799efc7e238f18f6e2ede0af9a57d0ff211595",
+          "reportFreshForInvocation": true,
+          "tests": 6,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failureCases": []
+        },
+        {
+          "suite": "com.lingion.sleepy.ui.component.liquidglass.NativeDockDirectDeformationTest",
+          "report": "app/build/test-results/testDebugUnitTest/TEST-com.lingion.sleepy.ui.component.liquidglass.NativeDockDirectDeformationTest.xml",
+          "reportSha256": "203ab757296a1533d9741e3c66be4cab2f971b1f28e7c411b74739b259c86c2b",
+          "reportFreshForInvocation": true,
+          "tests": 8,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failureCases": []
+        },
+        {
+          "suite": "com.lingion.sleepy.ui.component.liquidglass.NativeSliderEndpointTest",
+          "report": "app/build/test-results/testDebugUnitTest/TEST-com.lingion.sleepy.ui.component.liquidglass.NativeSliderEndpointTest.xml",
+          "reportSha256": "adc254dcd0d3b5dba80437b7517b4e86489262b6816151a3351a4ceefc05d44a",
+          "reportFreshForInvocation": true,
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failureCases": []
+        }
+      ]
+    },
+    {
+      "id": "module-tasks",
+      "command": "env ANDROID_HOME=/Users/kerrylee/Library/Android/sdk ./gradlew :liquid-glass-runtime:tasks --all",
+      "startedAtUtc": "2026-11-13T18:47:33.367393+00:00",
+      "status": "passed",
+      "finishedAtUtc": "2026-11-13T18:47:40.877327+00:00",
+      "durationSeconds": 7.51,
+      "exitCode": 0,
+      "taskFailures": []
+    },
+    {
+      "id": "module-and-app-build",
+      "command": "env ANDROID_HOME=/Users/kerrylee/Library/Android/sdk ./gradlew :liquid-glass-runtime:assemble :app:compileDebugKotlin",
+      "startedAtUtc": "2026-11-13T18:47:54.018135+00:00",
+      "status": "passed",
+      "finishedAtUtc": "2026-11-13T18:49:44.861610+00:00",
+      "durationSeconds": 110.845,
+      "exitCode": 0,
+      "taskFailures": []
+    },
+    {
+      "id": "post-migration-tests",
+      "command": "env ANDROID_HOME=/Users/kerrylee/Library/Android/sdk ./gradlew :app:testDebugUnitTest --tests com.lingion.sleepy.ui.component.liquidglass.NativeGlassDragDeformationTest --tests com.lingion.sleepy.ui.component.liquidglass.NativeDockDirectDeformationTest --tests com.lingion.sleepy.ui.component.liquidglass.NativeSliderEndpointTest",
+      "startedAtUtc": "2026-11-13T18:50:28.490998+00:00",
+      "status": "passed",
+      "finishedAtUtc": "2026-11-13T18:50:39.798923+00:00",
+      "durationSeconds": 11.308,
+      "exitCode": 0,
+      "taskFailures": [],
+      "testResults": [
+        {
+          "suite": "com.lingion.sleepy.ui.component.liquidglass.NativeGlassDragDeformationTest",
+          "report": "app/build/test-results/testDebugUnitTest/TEST-com.lingion.sleepy.ui.component.liquidglass.NativeGlassDragDeformationTest.xml",
+          "reportSha256": "1ad325dac7832af4c059352411ee64b078327f6fdda7e74f6a2e604cb3dba80f",
+          "reportFreshForInvocation": true,
+          "tests": 6,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failureCases": []
+        },
+        {
+          "suite": "com.lingion.sleepy.ui.component.liquidglass.NativeDockDirectDeformationTest",
+          "report": "app/build/test-results/testDebugUnitTest/TEST-com.lingion.sleepy.ui.component.liquidglass.NativeDockDirectDeformationTest.xml",
+          "reportSha256": "5e11af0c7f034891c267c213c52aab95c3afc8a533ff15e19dca9236c3cecb93",
+          "reportFreshForInvocation": true,
+          "tests": 8,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failureCases": []
+        },
+        {
+          "suite": "com.lingion.sleepy.ui.component.liquidglass.NativeSliderEndpointTest",
+          "report": "app/build/test-results/testDebugUnitTest/TEST-com.lingion.sleepy.ui.component.liquidglass.NativeSliderEndpointTest.xml",
+          "reportSha256": "aaa7f1f69427d0db4c10df1ef712a788b0e563e2b748060d295111df9dbde422",
+          "reportFreshForInvocation": true,
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failureCases": []
+        }
+      ]
+    },
+    {
+      "id": "app-runtime-dependency",
+      "command": "env ANDROID_HOME=/Users/kerrylee/Library/Android/sdk ./gradlew :app:dependencyInsight --configuration debugCompileClasspath --dependency liquid-glass-runtime",
+      "startedAtUtc": "2026-11-13T18:51:02.922960+00:00",
+      "status": "passed",
+      "finishedAtUtc": "2026-11-13T18:51:04.277747+00:00",
+      "durationSeconds": 1.355,
+      "exitCode": 0,
+      "taskFailures": []
+    },
+    {
+      "id": "diff-check",
+      "command": "git diff --check",
+      "finishedAtUtc": "2026-11-13T18:53:38.119450+00:00",
+      "exitCode": 0,
+      "status": "passed",
+      "taskFailures": []
+    }
+  ],
+  "gates": {
+    "nativeCalibrationAccepted": false,
+    "sourceAndLicenseReviewComplete": false,
+    "publicationReady": false,
+    "independentExampleComplete": false
+  },
+  "remainingScope": [
+    "M2 motion and geometry closures",
+    "M3 optics, sampling and shader assets",
+    "M4 controls and Sleepy adapters",
+    "Independent sample and support/performance validation"
+  ],
+  "environment": {
+    "androidSdk": "/Users/kerrylee/Library/Android/sdk",
+    "sdkConfiguration": "ANDROID_HOME command environment; no local.properties or cache-root change",
+    "initialBaselineFailure": "SDK location not found before test execution; rerun with installed SDK succeeded",
+    "gradleUserHome": "existing default; unchanged"
+  },
+  "observedWarnings": [
+    {
+      "scope": "new Android-only KMP module",
+      "message": "commonTest is not attached to a compilation; M1 retains its original tests in app and does not add a host test target.",
+      "impact": "non-fatal; module tasks and assemble/app compile completed successfully"
+    }
+  ],
+  "sourceOwnershipValidation": {
+    "status": "passed",
+    "method": "SHA-256 and byte comparison against baseCommit sources after only the four declared visibility removals; exact Kotlin source set and declaration scan across app/src/main and runtime/src",
+    "runtimeKotlinFiles": [
+      "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeDockDeformation.kt",
+      "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeGlassDragDeformation.kt",
+      "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeSliderEndpoint.kt"
+    ],
+    "declarations": {
+      "NativeGlassDragDeformation": [
+        {
+          "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeGlassDragDeformation.kt",
+          "line": 26
+        }
+      ],
+      "NativeGlassDragDeformation.Spec": [
+        {
+          "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeGlassDragDeformation.kt",
+          "line": 30
+        }
+      ],
+      "NativeDockDeformation": [
+        {
+          "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeDockDeformation.kt",
+          "line": 19
+        }
+      ],
+      "nativeSliderVisualPosition": [
+        {
+          "path": "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/NativeSliderEndpoint.kt",
+          "line": 14
+        }
+      ]
+    },
+    "appOriginalSourcesRemoved": true,
+    "testsAndFixturesUnchanged": true
+  },
+  "buildArtifacts": {
+    "aar": {
+      "path": "libraries/liquid-glass/runtime/build/outputs/aar/liquid-glass-runtime.aar",
+      "sha256": "a17ff5cee2451e481d6ec1d5b22c38e67d29cccfc6376aa9565298a5af54e917",
+      "classesJarSha256": "ab7c5c25f05656412f88ada64114491c4e864dde2b45239c12f42fce9d8f81cd",
+      "implementationClasses": [
+        "com/lingion/sleepy/ui/component/liquidglass/NativeDockDeformation$Companion.class",
+        "com/lingion/sleepy/ui/component/liquidglass/NativeDockDeformation$Mode.class",
+        "com/lingion/sleepy/ui/component/liquidglass/NativeDockDeformation.class",
+        "com/lingion/sleepy/ui/component/liquidglass/NativeGlassDragDeformation$Spec$Companion.class",
+        "com/lingion/sleepy/ui/component/liquidglass/NativeGlassDragDeformation$Spec.class",
+        "com/lingion/sleepy/ui/component/liquidglass/NativeGlassDragDeformation.class",
+        "com/lingion/sleepy/ui/component/liquidglass/NativeSliderEndpointKt.class"
+      ]
+    },
+    "outputsTrackedInRepository": false
+  },
+  "appConsumption": {
+    "status": "passed",
+    "settingsModule": ":liquid-glass-runtime",
+    "applicationDependency": "implementation(project(\":liquid-glass-runtime\"))",
+    "resolvedCompileConfiguration": "debugCompileClasspath",
+    "resolvedVariant": "androidApiElements",
+    "dependencyInsightCommandId": "app-runtime-dependency",
+    "appCompileCommandId": "module-and-app-build",
+    "appOwnedMigratedClassFiles": [],
+    "appCompileJarChecks": [
+      {
+        "path": "app/build/intermediates/compile_app_classes_jar/debug/bundleDebugClassesToCompileJar/classes.jar",
+        "containsMigratedImplementationClasses": false
+      }
+    ]
+  },
+  "testComparison": {
+    "status": "passed",
+    "baselineCommandId": "baseline-sdk-tests",
+    "afterCommandId": "post-migration-tests",
+    "baselineAndAfterCountsIdentical": true,
+    "testsPerRun": 19,
+    "failuresPerRun": 0,
+    "errorsPerRun": 0,
+    "skippedPerRun": 0,
+    "results": [
+      {
+        "suite": "com.lingion.sleepy.ui.component.liquidglass.NativeGlassDragDeformationTest",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "suite": "com.lingion.sleepy.ui.component.liquidglass.NativeDockDirectDeformationTest",
+        "tests": 8,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "suite": "com.lingion.sleepy.ui.component.liquidglass.NativeSliderEndpointTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ]
+  },
+  "completedAtUtc": "2026-11-13T18:53:38.119450+00:00"
+}

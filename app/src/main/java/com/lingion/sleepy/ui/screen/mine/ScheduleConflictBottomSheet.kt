@@ -25,6 +25,10 @@ import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.screen.schedule.SchedulePolicy
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
+import com.lingion.sleepy.ui.component.DialogActionButtons
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
 
 /**
  * 甲案 (设计文档 §4.1) 三选项 BottomSheet — 绑定了共享作息表时改作息内容, 弹窗决定写入作用域。
@@ -112,22 +116,29 @@ fun ScheduleConflictBottomSheet(
             Spacer(modifier = Modifier.height(20.dp))
 
             // 「取消」= 撤销本次作息改动, 其他字段草稿保留
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(SleepyTheme.shapes.large)
-                    .background(colors.secondaryContainer)
-                    .clickable(onClick = onCancel)
-                    .padding(vertical = 14.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.cancel),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Medium,
-                    color = colors.onSecondaryContainer
+            if (LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null) {
+                DialogActionButtons(
+                    confirmText = stringResource(R.string.cancel),
+                    onConfirm = onCancel,
                 )
+            } else {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(SleepyTheme.shapes.large)
+                        .background(colors.secondaryContainer)
+                        .clickable(onClick = onCancel)
+                        .padding(vertical = 14.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.cancel),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Medium,
+                        color = colors.onSecondaryContainer
+                    )
+                }
             }
         }
     }

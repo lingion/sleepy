@@ -4,8 +4,16 @@ This module was imported through the customized source assets of
 [xiaomanjun233/SleepDown-Schedule](https://github.com/xiaomanjun233/SleepDown-Schedule).
 The original Kyant baseline retains Apache-2.0. SleepDown-owned changes have a
 separate source-available non-commercial notice; they must not be described as
-Kyant originals solely because they share its package name. The imported
-SleepDown revision was not recorded. See the [attribution inventory](../../ACKNOWLEDGEMENTS.md)
+Kyant originals solely because they share its package name. The historical
+SleepDown acquisition/import revision was not recorded. On 2026-11-14, all 42
+Android/common runtime files and this module's original README at Sleepy import
+`c2490785c90ea57f6a06ab14c14386786f19b9d0` matched
+[SleepDown `d02898140327796946f2b140cb3ca87390595810`](https://github.com/xiaomanjun233/SleepDown-Schedule/tree/d02898140327796946f2b140cb3ca87390595810/third-party/kyant-backdrop)
+byte-for-byte. The retained SleepDown license and third-party notices also match
+that snapshot exactly. This establishes a reproducible equivalent source revision,
+not the historical acquisition revision or authorization to redistribute its
+customizations. Evidence hashes and the later Sleepy changes are recorded in
+[UPSTREAM.json](UPSTREAM.json). See the [attribution inventory](../../ACKNOWLEDGEMENTS.md)
 and the retained [SleepDown license](../../app/src/main/assets/third_party/notices/SleepDown-LICENSE.md)
 and [upstream third-party notices](../../app/src/main/assets/third_party/notices/SleepDown-THIRD_PARTY_NOTICES.md).
 
@@ -18,6 +26,14 @@ Original upstream: https://github.com/Kyant0/AndroidLiquidGlass
 Baseline: tag `2.0.0`, commit `bebb11a91bd97bf1dabde479f3b332ad9898731f`.
 
 Original upstream license: Apache-2.0; see LICENSE. Original `com.kyant.backdrop` packages are retained.
+
+Against the pinned Kyant baseline, the current runtime has 24 original files with
+only one appended newline, 10 modified original files and eight extension files;
+none of the 34 baseline files is missing. `internal/Shaders.kt` is in the
+newline-only group. Since the original import, Sleepy changed only
+`BackdropEffectScope.kt` and `DrawBackdropModifier.kt` in commits `ff6672a7`
+(separate preprocessing input) and `6faf5b7a` (current shape provider capture).
+These content comparisons do not resolve the customization license review.
 
 ## Course rendering (2026-10-18)
 
@@ -85,10 +101,15 @@ recording evidence, not GPU allocations, resident memory, frame submissions or F
 
 ## Patch and verification
 
-`patches/kyant-backdrop-2.0.0-sleepdown.patch` contains the complete production source delta
-against the exact upstream baseline, including SleepDown extension files. Do not apply it to this
-already-patched module. Regenerate it from the source tree, then apply it to a clean upstream copy
-and compare every Android/common runtime source. The Android-only Gradle adapter remains local.
+The imported README referred to `patches/kyant-backdrop-2.0.0-sleepdown.patch`,
+which is absent from this checkout. The
+[pinned SleepDown patch](https://github.com/xiaomanjun233/SleepDown-Schedule/blob/d02898140327796946f2b140cb3ca87390595810/patches/kyant-backdrop-2.0.0-sleepdown.patch)
+is 68,170 bytes (SHA-256
+`dffae0ff919598b8dd6bfadd4e09c80edecc8398f2174e1f6902bb4c4d5ddab7`).
+It predates the later Sleepy changes above. Do not apply it to this already-patched
+module. For extraction, reconstruct the full current delta against clean Kyant
+2.0.0 and compare every Android/common runtime source. The local Gradle adapter
+is outside that runtime comparison.
 
 `testAndroidHostTest` covers recording identity, geometry, dynamic outline invalidation and effect
 geometry. Existing app glass tests exercise native host drawing and generic scene/Morph behavior.

@@ -14,7 +14,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 
 /** Own touch input before Material's slop detector; retain its rendering and semantics.
- * SliderState performs discrete snapping; relative motion uses the default 4dp thumb.
+ * SliderState performs discrete snapping; Material's default 4dp handle defines input travel.
  */
 @Composable
 internal fun Modifier.materialSliderGestureOwnership(
@@ -34,6 +34,7 @@ internal fun Modifier.materialSliderGestureOwnership(
             // Relative motion leaves the value unchanged for purely vertical detours.
             var pointerId = down.id
             var moved = false
+            var movedHorizontally = false
             // Material's raw offset is initialized only by its internal onPress path.
             // Keep an unsnapped value here so small movements accumulate across steps.
             var dragValue = state.value
@@ -48,7 +49,7 @@ internal fun Modifier.materialSliderGestureOwnership(
                     val next = event.changes.firstOrNull { it.pressed }
                     event.changes.forEach { it.consume() }
                     if (next == null) {
-                        if (!moved) {
+                        if (!moved && !movedHorizontally) {
                             val fraction = ((down.position.x - inset) / trackWidth).coerceIn(0f, 1f)
                             state.value = state.trackRange.start + (if (rtl) 1f - fraction else fraction) * range
                             update(state.value)
@@ -62,6 +63,7 @@ internal fun Modifier.materialSliderGestureOwnership(
                 if ((pointer.position - down.position).getDistance() > viewConfiguration.touchSlop) moved = true
                 val dx = pointer.position.x - pointer.previousPosition.x
                 if (dx != 0f) {
+                    movedHorizontally = true
                     dragValue = (dragValue + (if (rtl) -dx else dx) / trackWidth * range)
                         .coerceIn(state.trackRange.start, state.trackRange.endInclusive)
                     state.value = dragValue

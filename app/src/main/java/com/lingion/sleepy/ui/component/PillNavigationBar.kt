@@ -56,6 +56,8 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kyant.backdrop.Backdrop
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassNavigationBar
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
@@ -141,7 +143,7 @@ fun PillNavigationBar(
     // ═══ 形态分流 ═══
     // 贴底 = 通栏 76dp 矩形带(现状不动); Dock = 经典 / FLClash 液态玻璃
     if (dock) {
-        if (effectiveTheme == AppPrefs.DOCK_THEME_LIQUID_GLASS) {
+        if (LocalUiStyle.current == UiStyle.LiquidGlass && effectiveTheme == AppPrefs.DOCK_THEME_LIQUID_GLASS) {
             LiquidGlassNavigationBar(
                 items = items,
                 selectedIndex = selectedIndex,

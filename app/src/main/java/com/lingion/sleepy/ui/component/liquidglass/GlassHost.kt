@@ -126,7 +126,10 @@ fun GlassHost(
     content: @Composable BoxScope.() -> Unit,
 ) {
     state.background = background
-    CompositionLocalProvider(LocalGlassHost provides if (enabled) state else null) {
+    CompositionLocalProvider(
+        LocalGlassHost provides if (enabled) state else null,
+        LocalGlassMaterialBackdrop provides null,
+    ) {
         Box(modifier.onGloballyPositioned { state.coordinates = it }.drawWithContent {
             state.filterDemand
             if (enabled) {

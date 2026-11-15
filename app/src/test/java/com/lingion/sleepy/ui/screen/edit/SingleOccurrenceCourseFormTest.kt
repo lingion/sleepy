@@ -1,5 +1,7 @@
 package com.lingion.sleepy.ui.screen.edit
 
+import com.lingion.sleepy.ui.component.liquidglass.LocalDockInputTimeNanos
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.lifecycle.viewModelScope
@@ -60,8 +62,10 @@ class SingleOccurrenceCourseFormTest {
 
     private fun show(initialSlot: InitialCourseSlot? = slot) {
         compose.setContent {
-            SleepyThemeProvider(darkTheme = false, themeKey = "default") {
-                AddCourseScreen(onBack = {}, onSaved = { saved = true }, initialSlot = initialSlot, viewModel = model)
+            CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }) {
+                SleepyThemeProvider(darkTheme = false, themeKey = "default") {
+                    AddCourseScreen(onBack = {}, onSaved = { saved = true }, initialSlot = initialSlot, viewModel = model)
+                }
             }
         }
         waitFor { model.state.value.effectiveCurrentTable != null }

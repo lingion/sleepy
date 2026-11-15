@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component.liquidglass
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -8,11 +9,13 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,6 +23,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.layout.onPlaced
@@ -54,22 +59,49 @@ fun GlassTopAppBar(
         )
         return
     }
+    // Material3's single-row app bar switches at the same overlap threshold
+    // and animates with the theme's DefaultEffects motion token. Own that one
+    // fill here so later sibling lenses can consume it without recording the
+    // title, icons, or the optical controls themselves.
+    val targetColor by remember(colors, scrollBehavior) {
+        derivedStateOf {
+            if ((scrollBehavior?.state?.overlappedFraction ?: 0f) > 0.01f) colors.scrolledContainerColor
+            else colors.containerColor
+        }
+    }
+    val backingColor by animateColorAsState(
+        targetColor,
+        animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
+        label = "GlassTopAppBarContainer",
+    )
+    val material = rememberGlassMaterialScope(RectangleShape)
     val positions = remember { ToolbarPositions() }
     SubcomposeLayout(
-        modifier.onPlaced { positions.root = it }.semantics { isTraversalGroup = true },
+        modifier
+            .glassSurfaceBackground(
+                if (backingColor == Color.Unspecified) Color.Transparent else backingColor,
+                RectangleShape,
+                materialScope = material,
+            )
+            .onPlaced { positions.root = it }
+            .semantics { isTraversalGroup = true },
     ) { constraints ->
         val loose = constraints.copy(minWidth = 0, minHeight = 0)
         val navigation = subcompose(ToolbarPart.Navigation) {
-            CompositionLocalProvider(LocalContentColor provides colors.navigationIconContentColor) {
-                Box(Modifier.semantics { traversalIndex = -1f }) { navigationIcon() }
+            GlassMaterialContent(material) {
+                CompositionLocalProvider(LocalContentColor provides colors.navigationIconContentColor) {
+                    Box(Modifier.semantics { traversalIndex = -1f }) { navigationIcon() }
+                }
             }
         }.single().measure(loose)
         val actionButtons = subcompose(ToolbarPart.Actions) {
-            CompositionLocalProvider(LocalContentColor provides colors.actionIconContentColor) {
-                Row(
-                    Modifier.semantics { traversalIndex = 1f },
-                    verticalAlignment = Alignment.CenterVertically, content = actions,
-                )
+            GlassMaterialContent(material) {
+                CompositionLocalProvider(LocalContentColor provides colors.actionIconContentColor) {
+                    Row(
+                        Modifier.semantics { traversalIndex = 1f },
+                        verticalAlignment = Alignment.CenterVertically, content = actions,
+                    )
+                }
             }
         }.single().measure(loose)
         val navigationWidth = navigation.width.toDp()
@@ -78,7 +110,7 @@ fun GlassTopAppBar(
         val actionsHeight = actionButtons.height.toDp()
         val bar = subcompose(ToolbarPart.Bar) {
             androidx.compose.material3.TopAppBar(
-                title = title,
+                title = { GlassMaterialContent(material, title) },
                 navigationIcon = {
                     Box(Modifier.requiredSize(navigationWidth, navigationHeight).onPlaced {
                         positions.originOf(it)?.let { origin -> positions.navigation = origin }
@@ -89,7 +121,8 @@ fun GlassTopAppBar(
                         positions.originOf(it)?.let { origin -> positions.actions = origin }
                     })
                 },
-                expandedHeight = expandedHeight, windowInsets = windowInsets, colors = colors,
+                expandedHeight = expandedHeight, windowInsets = windowInsets,
+                colors = colors.copy(containerColor = Color.Transparent, scrolledContainerColor = Color.Transparent),
                 scrollBehavior = scrollBehavior, contentPadding = contentPadding,
             )
         }.single().measure(constraints)

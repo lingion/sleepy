@@ -15,6 +15,9 @@ import androidx.compose.ui.res.stringResource
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.util.CourseOccurrences
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.HolidayTransferEntry
@@ -95,18 +98,24 @@ internal class OccurrenceSaveDialogs(private val string: (Int, Array<out Any>) -
 @Composable
 internal fun OccurrenceSaveDialogHost(dialogs: OccurrenceSaveDialogs) {
     val q = dialogs.question ?: return
+    val nativeActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
+    val actions: @Composable () -> Unit = {
+        com.lingion.sleepy.ui.component.DialogActionButtons(
+            confirmText = q.choices.first(), onConfirm = { dialogs.answer(0) },
+            dismissText = stringResource(R.string.conflict_detail_go_back), onDismiss = { dialogs.answer(null) },
+            thirdText = q.choices.getOrNull(1), onThird = { dialogs.answer(1) }, destructive = q.destructive
+        )
+    }
     AlertDialog(
         onDismissRequest = { dialogs.answer(null) },
         title = { Text(q.title) },
         text = { Column {
             Text(q.message, Modifier.heightIn(max = 300.dp).verticalScroll(rememberScrollState()))
-            Spacer(Modifier.height(16.dp))
-            com.lingion.sleepy.ui.component.DialogActionButtons(
-                confirmText = q.choices.first(), onConfirm = { dialogs.answer(0) },
-                dismissText = stringResource(R.string.conflict_detail_go_back), onDismiss = { dialogs.answer(null) },
-                thirdText = q.choices.getOrNull(1), onThird = { dialogs.answer(1) }, destructive = q.destructive
-            )
+            if (!nativeActions) {
+                Spacer(Modifier.height(16.dp))
+                actions()
+            }
         } },
-        confirmButton = {},
+        confirmButton = { if (nativeActions) actions() },
     )
 }

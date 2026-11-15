@@ -1,0 +1,1058 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-14",
+  "kind": "native-retained-dock-tonal-history-observations",
+  "scope": "Two independent single-run native sequences, retained only within each run. Public typed model properties and composited body probes; no production material/classifier recipe.",
+  "artifactRoot": "artifacts/glass-optics-20261112",
+  "artifactPathConvention": "Every evidence/screenshot path is relative to artifactRoot; sourceHashes use repository-relative paths. No absolute host path is required.",
+  "reference": {
+    "os": "Version 26.5 (Build 23F77)",
+    "worldSizePt": [
+      375,
+      667
+    ],
+    "scale": 2,
+    "container": "SwiftUI TabView/hidden navigation/synthetic-scroll; selectedIndex0; scroll(0,-20)",
+    "fixedWindowControllerCanvasStyle": 2,
+    "barEffectiveStyle": 2,
+    "barOverrideStyle": 0,
+    "baseGrayByte": 26,
+    "bandWorldYHalfOpenPt": [
+      550,
+      667
+    ],
+    "sourceRGBAAlphaByte": 255,
+    "inputHistogram": "825000gray26+175500band pixels; band26 merges to1000500gray26"
+  },
+  "bodyProbes": {
+    "P1": {
+      "XYXYpt": [
+        196,
+        592,
+        208,
+        596
+      ],
+      "XYXYpx": [
+        392,
+        1184,
+        416,
+        1192
+      ]
+    },
+    "P2": {
+      "XYXYpt": [
+        244,
+        592,
+        256,
+        596
+      ],
+      "XYXYpx": [
+        488,
+        1184,
+        512,
+        1192
+      ]
+    }
+  },
+  "foreground": {
+    "formalLabelCount": 8,
+    "formalImageViewCount": 8,
+    "coverageAvailable": false,
+    "ownOverrideStyle": 0,
+    "formalOwnAndUIViewAncestorAlphaOneAndNotHidden": true,
+    "style2OrdinaryTextSRGBA": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "style1OrdinaryTextSRGBA": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "style2OrdinaryTintSRGBA": [
+      0.9215686274509803,
+      0.9215686274509803,
+      0.9607843137254902,
+      0.6
+    ],
+    "style1OrdinaryTintSRGBA": [
+      0.23529411764705882,
+      0.23529411764705882,
+      0.2627450980392157,
+      0.6
+    ],
+    "selectedContentTintAndTextSRGBA": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "propertyScope": "Each observed view own traits resolve model properties; branch runtime paths do not establish independent visible glyph coverage."
+  },
+  "runs": [
+    {
+      "id": "93-rise-return",
+      "run": "-_NativeReferenceTests_testSwiftUITabViewDockTonalResponse_-3EEF5AE8-BFA3-49E1-B996-4B470054E697",
+      "entry": "testSwiftUITabViewDockTonalResponse",
+      "optIn": "-ReferenceDockTonalResponse",
+      "evidenceDirectory": "android-dock-adaptation-93",
+      "sequenceGrayBytes": [
+        179,
+        204,
+        217,
+        230,
+        204,
+        179
+      ],
+      "screenshotAXPairs": 12,
+      "formalSnapshots": 24,
+      "sourceHashes": {
+        "tools/native-glass-reference/App/main.swift": "206ba5ed4a309f8ac4e1161e724b745996212563ecc3ae5175245b4d35b85dfd",
+        "tools/native-glass-reference/UITests/NativeReferenceTests.swift": "08d6e12f9b86463a7aa34dcaa7f8809be278231496685a81e60cb05b0b689cf4"
+      },
+      "testExitCode": 0,
+      "testWallSeconds": 51.82361698150635,
+      "stages": [
+        {
+          "stage": 0,
+          "grayByte": 179,
+          "glyphOwnStyle": 2,
+          "bodyProbes": {
+            "P1": {
+              "pixelCount": 192,
+              "RGBHistogram": [
+                {
+                  "RGB": [
+                    158,
+                    157,
+                    157
+                  ],
+                  "count": 12
+                },
+                {
+                  "RGB": [
+                    158,
+                    158,
+                    158
+                  ],
+                  "count": 180
+                }
+              ]
+            },
+            "P2": {
+              "pixelCount": 192,
+              "RGBHistogram": [
+                {
+                  "RGB": [
+                    158,
+                    157,
+                    157
+                  ],
+                  "count": 12
+                },
+                {
+                  "RGB": [
+                    158,
+                    158,
+                    158
+                  ],
+                  "count": 180
+                }
+              ]
+            }
+          },
+          "same1s3sOriginalPNGBytes": true,
+          "captures": [
+            {
+              "budgetSeconds": 1,
+              "actualBeforeAfterGetterElapsedSeconds": [
+                6.0492324166116305,
+                6.209029833320528
+              ],
+              "screenshot": {
+                "path": "android-dock-adaptation-93/result-export/attachments/6C6AC328-8A9A-4267-AF99-2F8B1E8DDA7A.png",
+                "bytes": 120042,
+                "sha256": "34527a6352d3ac06082461a44314e2413a5d2065ef8bfd9177dc74fac7325bd9"
+              }
+            },
+            {
+              "budgetSeconds": 3,
+              "actualBeforeAfterGetterElapsedSeconds": [
+                7.546621999994386,
+                7.6291658749687485
+              ],
+              "screenshot": {
+                "path": "android-dock-adaptation-93/result-export/attachments/B9533DFF-3DB5-4F98-B251-3270FEE6E7A0.png",
+                "bytes": 120042,
+                "sha256": "34527a6352d3ac06082461a44314e2413a5d2065ef8bfd9177dc74fac7325bd9"
+              }
+            }
+          ]
+        },
+        {
+          "stage": 1,
+          "grayByte": 204,
+          "glyphOwnStyle": 2,
+          "bodyProbes": {
+            "P1": {
+              "pixelCount": 192,
+              "RGBHistogram": [
+                {
+                  "RGB": [
+                    173,
+                    173,
+                    173
+                  ],
+                  "count": 192
+                }
+              ]
+            },
+            "P2": {
+              "pixelCount": 192,
+              "RGBHistogram": [
+                {
+                  "RGB": [
+                    173,
+                    173,
+                    173
+                  ],
+                  "count": 192
+                }
+              ]
+            }
+          },
+          "same1s3sOriginalPNGBytes": true,
+          "captures": [
+            {
+              "budgetSeconds": 1,
+              "actualBeforeAfterGetterElapsedSeconds": [
+                1.278800833330024,
+                1.3543995833024383
+              ],
+              "screenshot": {
+                "path": "android-dock-adaptation-93/result-export/attachments/668C153C-6A69-458E-9370-4FEC126E5F3F.png",
+                "bytes": 118143,
+                "sha256": "8e8ad24e250324d3fcc2c934acf04baf5b0e9c249fc13d9bbfcf9f8cd05bc60d"
+              }
+            },
+            {
+              "budgetSeconds": 3,
+              "actualBeforeAfterGetterElapsedSeconds": [
+                3.6439409166341648,
+                3.721480000007432
+              ],
+              "screenshot": {
+                "path": "android-dock-adaptation-93/result-export/attachments/4BEFE630-094B-45D5-A3F6-1C8472995604.png",
+                "bytes": 118143,
+                "sha256": "8e8ad24e250324d3fcc2c934acf04baf5b0e9c249fc13d9bbfcf9f8cd05bc60d"
+              }
+            }
+          ]
+        },
+        {
+          "stage": 2,
+          "grayByte": 217,
+          "glyphOwnStyle": 2,
+          "bodyProbes": {
+            "P1": {
+              "pixelCount": 192,
+              "RGBHistogram": [
+                {
+                  "RGB": [
+                    182,
+                    182,
+                    182
+                  ],
+                  "count": 192
+                }
+              ]
+            },
+            "P2": {
+              "pixelCount": 192,
+              "RGBHistogram": [
+                {
+                  "RGB": [
+                    182,
+                    182,
+                    182
+                  ],
+                  "count": 192
+                }
+              ]
+            }
+          },
+          "same1s3sOriginalPNGBytes": true,
+          "captures": [
+            {
+              "budgetSeconds": 1,
+              "actualBeforeAfterGetterElapsedSeconds": [
+                1.3159598750062287,
+                1.3882777083781548
+              ],
+              "screenshot": {
+                "path": "android-dock-adaptation-93/result-export/attachments/4AB64F6F-270E-4BF7-AC3F-92B670ABF09B.png",
+                "bytes": 110270,
+                "sha256": "44fa56cd70a89e2bdcded364d881920fa0ca1919a9799807198143f3b236db91"
+              }
+            },
+            {
+              "budgetSeconds": 3,
+              "actualBeforeAfterGetterElapsedSeconds": [
+                3.663776791712735,
+                3.7480054167099297
+              ],
+              "screenshot": {
+                "path": "android-dock-adaptation-93/result-export/attachments/486D33B0-0E8E-4D6A-A6A2-C9940D0420EE.png",
+                "bytes": 110270,
+                "sha256": "44fa56cd70a89e2bdcded364d881920fa0ca1919a9799807198143f3b236db91"
+              }
+            }
+          ]
+        },
+        {
+          "stage": 3,
+          "grayByte": 230,
+          "glyphOwnStyle": 1,
+          "bodyProbes": {
+            "P1": {
+              "pixelCount": 192,
+              "RGBHistogram": [
+                {
+                  "RGB": [
+                    247,
+                    247,
+                    247
+                  ],
+                  "count": 192
+                }
+              ]
+            },
+            "P2": {
+              "pixelCount": 192,
+              "RGBHistogram": [
+                {
+                  "RGB": [
+                    247,
+                    247,
+                    247
+                  ],
+                  "count": 192
+                }
+              ]
+            }
+          },
+          "same1s3sOriginalPNGBytes": true,
+          "captures": [
+            {
+              "budgetSeconds": 1,
+              "actualBeforeAfterGetterElapsedSeconds": [
+                2.1824114166665822,
+                2.2611821250175126
+              ],
+              "screenshot": {
+                "path": "android-dock-adaptation-93/result-export/attachments/4C9A0579-D989-4516-9969-E2ACCB0300BE.png",
+                "bytes": 105934,
+                "sha256": "d6a53db07e11678f6713f47d6697ea67b32330e33a96fb03ffeb84ce0bbb2562"
+              }
+            },
+            {
+              "budgetSeconds": 3,
+              "actualBeforeAfterGetterElapsedSeconds": [
+                3.552817333373241,
+                3.6307748749968596
+              ],
+              "screenshot": {
+                "path": "android-dock-adaptation-93/result-export/attachments/2833C2BE-5DFB-4CB9-A6EC-B5A5623DF537.png",
+                "bytes": 105934,
+                "sha256": "d6a53db07e11678f6713f47d6697ea67b32330e33a96fb03ffeb84ce0bbb2562"
+              }
+            }
+          ]
+        },
+        {
+          "stage": 4,
+          "grayByte": 204,
+          "glyphOwnStyle": 1,
+          "bodyProbes": {
+            "P1": {
+              "pixelCount": 192,
+              "RGBHistogram": [
+                {
+                  "RGB": [
+                    234,
+                    235,
+                    234
+                  ],
+                  "count": 176
+                },
+                {
+                  "RGB": [
+                    234,
+                    235,
+                    235
+                  ],
+                  "count": 2
+                },
+                {
+                  "RGB": [
+                    235,
+                    235,
+                    235
+                  ],
+                  "count": 14
+                }
+              ]
+            },
+            "P2": {
+              "pixelCount": 192,
+              "RGBHistogram": [
+                {
+                  "RGB": [
+                    234,
+                    235,
+                    234
+                  ],
+                  "count": 192
+                }
+              ]
+            }
+          },
+          "same1s3sOriginalPNGBytes": true,
+          "captures": [
+            {
+              "budgetSeconds": 1,
+              "actualBeforeAfterGetterElapsedSeconds": [
+                2.142000374966301,
+                2.2176504166563973
+              ],
+              "screenshot": {
+                "path": "android-dock-adaptation-93/result-export/attachments/CEED2C6E-F64A-4B59-8CAD-8EBBE746D9E3.png",
+                "bytes": 111284,
+                "sha256": "97c3f94e141aefcabd6847e9b76bf22e483e268e4f851bfbb27b58f6d3c152dd"
+              }
+            },
+            {
+              "budgetSeconds": 3,
+              "actualBeforeAfterGetterElapsedSeconds": [
+                3.5296204166370444,
+                3.6213218749617226
+              ],
+              "screenshot": {
+                "path": "android-dock-adaptation-93/result-export/attachments/97B465AA-716C-469D-BD1F-9818D6179B36.png",
+                "bytes": 111284,
+                "sha256": "97c3f94e141aefcabd6847e9b76bf22e483e268e4f851bfbb27b58f6d3c152dd"
+              }
+            }
+          ]
+        },
+        {
+          "stage": 5,
+          "grayByte": 179,
+          "glyphOwnStyle": 1,
+          "bodyProbes": {
+            "P1": {
+              "pixelCount": 192,
+              "RGBHistogram": [
+                {
+                  "RGB": [
+                    223,
+                    223,
+                    223
+                  ],
+                  "count": 192
+                }
+              ]
+            },
+            "P2": {
+              "pixelCount": 192,
+              "RGBHistogram": [
+                {
+                  "RGB": [
+                    223,
+                    223,
+                    223
+                  ],
+                  "count": 192
+                }
+              ]
+            }
+          },
+          "same1s3sOriginalPNGBytes": true,
+          "captures": [
+            {
+              "budgetSeconds": 1,
+              "actualBeforeAfterGetterElapsedSeconds": [
+                1.7594427916919813,
+                1.8683993333252147
+              ],
+              "screenshot": {
+                "path": "android-dock-adaptation-93/result-export/attachments/DBB2CD57-F0E8-45CE-BFA4-41BC01CE6EAF.png",
+                "bytes": 106200,
+                "sha256": "45ac8d080863ebfdd27e9325eee4ab07197f5ad29fbeb365351aef03d07b88c3"
+              }
+            },
+            {
+              "budgetSeconds": 3,
+              "actualBeforeAfterGetterElapsedSeconds": [
+                3.3189844583394006,
+                3.3988996249972843
+              ],
+              "screenshot": {
+                "path": "android-dock-adaptation-93/result-export/attachments/84C9A26B-6167-4165-A062-1F2D86B06C8B.png",
+                "bytes": 106200,
+                "sha256": "45ac8d080863ebfdd27e9325eee4ab07197f5ad29fbeb365351aef03d07b88c3"
+              }
+            }
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "path": "android-dock-adaptation-93/native-tonal-result.md",
+          "bytes": 7148,
+          "sha256": "54410ce7caa338af3d4d4f127634ab5ccb89b9a84f23e4470e3ed8ee1307f092"
+        },
+        {
+          "path": "android-dock-adaptation-93/native-tonal-result.json",
+          "bytes": 446518,
+          "sha256": "12532d6e7eeb8f171f46bb4d161cbd2a6b76d99146843bfb0b98ba4e8117abfa"
+        },
+        {
+          "path": "android-dock-adaptation-93/native-test-result.json",
+          "bytes": 2525,
+          "sha256": "8e054a9c44db6228e90d1b19ea78f15d88abcb992bc86d9c0cdeb779081d45b9"
+        },
+        {
+          "path": "android-dock-adaptation-93/native-build-result.json",
+          "bytes": 2081,
+          "sha256": "4402eba56e2e8768087cf031e70f85ae2bc805feee96cb6dc25af709b0c14da5"
+        },
+        {
+          "path": "android-dock-adaptation-93/result-export/attachments/manifest.json",
+          "bytes": 12370,
+          "sha256": "a7494229c54ff3ac75725f60aada5d8f7b22092379ed196cb0e7a1c294671b74"
+        },
+        {
+          "path": "android-dock-adaptation-93/result-export/attachments/4B4AE064-AE7A-4052-B6BB-0ED32350A58D.json",
+          "bytes": 6437124,
+          "sha256": "d228b3dfcd9b220d072bf217a6ba3a74a9334c09f6bcd9e0493c45a8b84e1b28"
+        },
+        {
+          "path": "android-dock-adaptation-93/trace/trace.jsonl",
+          "bytes": 37019492,
+          "sha256": "174d3dc79fa59006aa3b4a2fb003a312fc1d9732b269f3fae595a78baa99ed24"
+        },
+        {
+          "path": "android-dock-adaptation-93/trace/session.json",
+          "bytes": 3771,
+          "sha256": "195f6a7b38ad38d218685c9a689278364288052684a2537f4d45bcd95b5a4aa3"
+        },
+        {
+          "path": "android-dock-adaptation-93/native-tonal-trace-copy-audit.json",
+          "bytes": 4960,
+          "sha256": "9c438227d2664f6ab2ef9ba31d4fa477d24ebb0b7327c77b12f65e94b89345be"
+        },
+        {
+          "path": "android-dock-adaptation-93/native-tonal-source/main.swift",
+          "bytes": 89706,
+          "sha256": "206ba5ed4a309f8ac4e1161e724b745996212563ecc3ae5175245b4d35b85dfd"
+        },
+        {
+          "path": "android-dock-adaptation-93/native-tonal-source/NativeReferenceTests.swift",
+          "bytes": 87721,
+          "sha256": "08d6e12f9b86463a7aa34dcaa7f8809be278231496685a81e60cb05b0b689cf4"
+        }
+      ]
+    },
+    {
+      "id": "93-tonal-return",
+      "run": "-_NativeReferenceTests_testSwiftUITabViewDockTonalReturn_-6C2F8C47-ED77-4C3D-A140-49C5E57595C3",
+      "entry": "testSwiftUITabViewDockTonalReturn",
+      "optIn": "-ReferenceDockTonalReturn",
+      "evidenceDirectory": "android-dock-adaptation-93/tonal-return",
+      "sequenceGrayBytes": [
+        230,
+        179,
+        128,
+        77,
+        26
+      ],
+      "screenshotAXPairs": 10,
+      "formalSnapshots": 20,
+      "sourceHashes": {
+        "tools/native-glass-reference/App/main.swift": "89b9514f1afa9b9642fa92a213d5b440c475d49b63a7667ed9da409df217d846",
+        "tools/native-glass-reference/UITests/NativeReferenceTests.swift": "f5325b7db23df4164aecdc53818a905222c2474682a0696f86ff1e80e552aadc"
+      },
+      "testExitCode": 0,
+      "testWallSeconds": 35.436342000961304,
+      "stages": [
+        {
+          "stage": 0,
+          "grayByte": 230,
+          "glyphOwnStyle": 1,
+          "bodyProbes": {
+            "P1": {
+              "pixelCount": 192,
+              "RGBHistogram": [
+                {
+                  "RGB": [
+                    247,
+                    247,
+                    247
+                  ],
+                  "count": 192
+                }
+              ]
+            },
+            "P2": {
+              "pixelCount": 192,
+              "RGBHistogram": [
+                {
+                  "RGB": [
+                    247,
+                    247,
+                    247
+                  ],
+                  "count": 192
+                }
+              ]
+            }
+          },
+          "same1s3sOriginalPNGBytes": true,
+          "captures": [
+            {
+              "budgetSeconds": 1,
+              "actualBeforeAfterGetterElapsedSeconds": [
+                6.496295624994673,
+                6.595165666658431
+              ],
+              "screenshot": {
+                "path": "android-dock-adaptation-93/tonal-return/result-export/attachments/C05589C1-6560-44B8-9174-797A8541BD95.png",
+                "bytes": 106390,
+                "sha256": "2efcf253c13a400df7a5ffa8fd3c9f46c4bfb7ba175d721d525b1d0d37f13dbb"
+              }
+            },
+            {
+              "budgetSeconds": 3,
+              "actualBeforeAfterGetterElapsedSeconds": [
+                7.905264333356172,
+                7.985085083346348
+              ],
+              "screenshot": {
+                "path": "android-dock-adaptation-93/tonal-return/result-export/attachments/8AC7AC4A-9CCC-4C80-B1D4-D7B5F93BF83B.png",
+                "bytes": 106390,
+                "sha256": "2efcf253c13a400df7a5ffa8fd3c9f46c4bfb7ba175d721d525b1d0d37f13dbb"
+              }
+            }
+          ]
+        },
+        {
+          "stage": 1,
+          "grayByte": 179,
+          "glyphOwnStyle": 1,
+          "bodyProbes": {
+            "P1": {
+              "pixelCount": 192,
+              "RGBHistogram": [
+                {
+                  "RGB": [
+                    223,
+                    223,
+                    223
+                  ],
+                  "count": 192
+                }
+              ]
+            },
+            "P2": {
+              "pixelCount": 192,
+              "RGBHistogram": [
+                {
+                  "RGB": [
+                    223,
+                    223,
+                    223
+                  ],
+                  "count": 192
+                }
+              ]
+            }
+          },
+          "same1s3sOriginalPNGBytes": true,
+          "captures": [
+            {
+              "budgetSeconds": 1,
+              "actualBeforeAfterGetterElapsedSeconds": [
+                1.9059188750106841,
+                1.9848898333730176
+              ],
+              "screenshot": {
+                "path": "android-dock-adaptation-93/tonal-return/result-export/attachments/D7F15A67-CCBF-471A-8BE5-FC05CB4E44AB.png",
+                "bytes": 106662,
+                "sha256": "8fb202da0312aff8c1f1bbffc782931a81b1a63aadb23ac1e126fe40acabe30f"
+              }
+            },
+            {
+              "budgetSeconds": 3,
+              "actualBeforeAfterGetterElapsedSeconds": [
+                3.5564565417007543,
+                3.6366530416999012
+              ],
+              "screenshot": {
+                "path": "android-dock-adaptation-93/tonal-return/result-export/attachments/D7FA1445-403E-42CF-84B6-6291B573D2FB.png",
+                "bytes": 106662,
+                "sha256": "8fb202da0312aff8c1f1bbffc782931a81b1a63aadb23ac1e126fe40acabe30f"
+              }
+            }
+          ]
+        },
+        {
+          "stage": 2,
+          "grayByte": 128,
+          "glyphOwnStyle": 2,
+          "bodyProbes": {
+            "P1": {
+              "pixelCount": 192,
+              "RGBHistogram": [
+                {
+                  "RGB": [
+                    126,
+                    126,
+                    126
+                  ],
+                  "count": 192
+                }
+              ]
+            },
+            "P2": {
+              "pixelCount": 192,
+              "RGBHistogram": [
+                {
+                  "RGB": [
+                    126,
+                    126,
+                    126
+                  ],
+                  "count": 192
+                }
+              ]
+            }
+          },
+          "same1s3sOriginalPNGBytes": true,
+          "captures": [
+            {
+              "budgetSeconds": 1,
+              "actualBeforeAfterGetterElapsedSeconds": [
+                2.1937982499948703,
+                2.265148541657254
+              ],
+              "screenshot": {
+                "path": "android-dock-adaptation-93/tonal-return/result-export/attachments/77A9FDCF-9053-449A-B6AC-327C28CD2098.png",
+                "bytes": 118401,
+                "sha256": "7b2cd330469dbe0ddc2fbb86af0486b45ac1a7d4e30329c668205ca177ab8d8d"
+              }
+            },
+            {
+              "budgetSeconds": 3,
+              "actualBeforeAfterGetterElapsedSeconds": [
+                3.615495625010226,
+                3.6928372916881926
+              ],
+              "screenshot": {
+                "path": "android-dock-adaptation-93/tonal-return/result-export/attachments/751737DD-E971-47EE-8D7A-4B102B226941.png",
+                "bytes": 118401,
+                "sha256": "7b2cd330469dbe0ddc2fbb86af0486b45ac1a7d4e30329c668205ca177ab8d8d"
+              }
+            }
+          ]
+        },
+        {
+          "stage": 3,
+          "grayByte": 77,
+          "glyphOwnStyle": 2,
+          "bodyProbes": {
+            "P1": {
+              "pixelCount": 192,
+              "RGBHistogram": [
+                {
+                  "RGB": [
+                    78,
+                    78,
+                    78
+                  ],
+                  "count": 192
+                }
+              ]
+            },
+            "P2": {
+              "pixelCount": 192,
+              "RGBHistogram": [
+                {
+                  "RGB": [
+                    78,
+                    78,
+                    78
+                  ],
+                  "count": 188
+                },
+                {
+                  "RGB": [
+                    79,
+                    78,
+                    78
+                  ],
+                  "count": 2
+                },
+                {
+                  "RGB": [
+                    79,
+                    79,
+                    79
+                  ],
+                  "count": 2
+                }
+              ]
+            }
+          },
+          "same1s3sOriginalPNGBytes": true,
+          "captures": [
+            {
+              "budgetSeconds": 1,
+              "actualBeforeAfterGetterElapsedSeconds": [
+                2.054298250004649,
+                2.1319052500184625
+              ],
+              "screenshot": {
+                "path": "android-dock-adaptation-93/tonal-return/result-export/attachments/4E9E70FE-619F-4911-9E88-9F49D76D6B30.png",
+                "bytes": 109693,
+                "sha256": "f48bb63df0c43577e497f379bb57654ce804fa9a97fd9f56a1a0424154b36d1b"
+              }
+            },
+            {
+              "budgetSeconds": 3,
+              "actualBeforeAfterGetterElapsedSeconds": [
+                3.4338892083615065,
+                3.5154883333598264
+              ],
+              "screenshot": {
+                "path": "android-dock-adaptation-93/tonal-return/result-export/attachments/56CB6470-2C1D-4B4F-A02A-96CB5FC2C457.png",
+                "bytes": 109693,
+                "sha256": "f48bb63df0c43577e497f379bb57654ce804fa9a97fd9f56a1a0424154b36d1b"
+              }
+            }
+          ]
+        },
+        {
+          "stage": 4,
+          "grayByte": 26,
+          "glyphOwnStyle": 2,
+          "bodyProbes": {
+            "P1": {
+              "pixelCount": 192,
+              "RGBHistogram": [
+                {
+                  "RGB": [
+                    37,
+                    37,
+                    37
+                  ],
+                  "count": 192
+                }
+              ]
+            },
+            "P2": {
+              "pixelCount": 192,
+              "RGBHistogram": [
+                {
+                  "RGB": [
+                    37,
+                    37,
+                    37
+                  ],
+                  "count": 192
+                }
+              ]
+            }
+          },
+          "same1s3sOriginalPNGBytes": true,
+          "captures": [
+            {
+              "budgetSeconds": 1,
+              "actualBeforeAfterGetterElapsedSeconds": [
+                2.0800272499909624,
+                2.186577749962453
+              ],
+              "screenshot": {
+                "path": "android-dock-adaptation-93/tonal-return/result-export/attachments/EFBE6DA2-73FA-474E-B87C-8169A9FC6FC2.png",
+                "bytes": 102840,
+                "sha256": "1922c986ca05f8a9465821c9ca98de777030e9d3247e2d746231fc10e3ad447d"
+              }
+            },
+            {
+              "budgetSeconds": 3,
+              "actualBeforeAfterGetterElapsedSeconds": [
+                3.509791333344765,
+                3.600267583329696
+              ],
+              "screenshot": {
+                "path": "android-dock-adaptation-93/tonal-return/result-export/attachments/5522B249-EBBA-45DF-8092-8AAEAEC60CA8.png",
+                "bytes": 102840,
+                "sha256": "1922c986ca05f8a9465821c9ca98de777030e9d3247e2d746231fc10e3ad447d"
+              }
+            }
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "path": "android-dock-adaptation-93/tonal-return/tonal-return-result.md",
+          "bytes": 4884,
+          "sha256": "1cf610a857a87c101442ee776a88a1aba4d04298c628ffe176974818b6dd2ea8"
+        },
+        {
+          "path": "android-dock-adaptation-93/tonal-return/tonal-return-result.json",
+          "bytes": 162903,
+          "sha256": "097a337cdc96076b689e4893b1d3a8fe1b24c4c54cbea066d58d04e0bfe651ba"
+        },
+        {
+          "path": "android-dock-adaptation-93/tonal-return/native-test-result.json",
+          "bytes": 2535,
+          "sha256": "837245b4a9927affecfc9dc2205cf062a67e632725d7f653ef66d4c27b56c60c"
+        },
+        {
+          "path": "android-dock-adaptation-93/tonal-return/native-build-result.json",
+          "bytes": 2081,
+          "sha256": "60b561df4576e0437455921b86acc9767a1af5f03a69149ed1d918d54a9c7491"
+        },
+        {
+          "path": "android-dock-adaptation-93/tonal-return/result-export/attachments/manifest.json",
+          "bytes": 10632,
+          "sha256": "9f567a75977306bc3d3183ec9eab3743c0e6170669410f02ff13b8675f87a9f4"
+        },
+        {
+          "path": "android-dock-adaptation-93/tonal-return/result-export/attachments/1585817D-4AC2-4FE2-A502-B90EAB8A8235.json",
+          "bytes": 5363282,
+          "sha256": "1bb52ab39fec1f06b850438e5b7fc9d3e51c787a3050dd8bbe28bc2e7fec80fe"
+        },
+        {
+          "path": "android-dock-adaptation-93/tonal-return/trace/trace.jsonl",
+          "bytes": 30608199,
+          "sha256": "cad7c075adeff5d29a9acda1fe2e3da73c4b9e915f8332dee0c80a5d95fcdbb0"
+        },
+        {
+          "path": "android-dock-adaptation-93/tonal-return/trace/session.json",
+          "bytes": 3771,
+          "sha256": "92a3bd0ec3f85988d9c02a9dafc9194a0d1939cb2aa8248a7de453b2e593194a"
+        },
+        {
+          "path": "android-dock-adaptation-93/tonal-return/trace-copy-receipt.json",
+          "bytes": 5821,
+          "sha256": "a74a0437923a626ef12342bbeb955b54324777bdfda8ec9bbf393aaedb8066bc"
+        }
+      ]
+    }
+  ],
+  "observedConstraints": {
+    "original93SameInputHistoryDifferences": {
+      "179": {
+        "firstOwnStyle": 2,
+        "returnOwnStyle": 1,
+        "firstP1MeanRGB": [
+          158,
+          157.9375,
+          157.9375
+        ],
+        "returnP1RGB": [
+          223,
+          223,
+          223
+        ]
+      },
+      "204": {
+        "firstOwnStyle": 2,
+        "returnOwnStyle": 1,
+        "firstP1RGB": [
+          173,
+          173,
+          173
+        ],
+        "returnP1MeanRGB": [
+          234.07291666666666,
+          235,
+          234.08333333333334
+        ]
+      }
+    },
+    "risingSampledOwnStyles": {
+      "179": 2,
+      "204": 2,
+      "217": 2,
+      "230": 1
+    },
+    "descendingSampledOwnStyles": {
+      "230": 1,
+      "179": 1,
+      "128": 2,
+      "77": 2,
+      "26": 2
+    },
+    "returnObservedRange": "Light own traits at this179stage, dark at this128stage; path/time-specific observation only.",
+    "return179LastOwnStyle1ElapsedSeconds": 3.9569648333708756,
+    "return128FirstOwnStyle2ElapsedSeconds": 0.05628566670930013,
+    "initial230StartupOwnTraitObservations": {
+      "last2ElapsedSeconds": 0.9121607500128448,
+      "first1ElapsedSeconds": 1.1621076666633599
+    },
+    "prior85SpatialResponse": {
+      "L_P1_P2": [
+        [
+          182,
+          182,
+          182
+        ],
+        [
+          55,
+          55,
+          55
+        ]
+      ],
+      "R_P1_P2": [
+        [
+          55,
+          55,
+          55
+        ],
+        [
+          182,
+          182,
+          182
+        ]
+      ],
+      "evidence": {
+        "path": "android-dock-spatial-response-85/result-export/attachments/manifest.json",
+        "bytes": 13910,
+        "sha256": "fd9daf81951d1991a73744d7a42ca2bf1293ce5ec4974ff34370825347c00c2f"
+      },
+      "libraryObservation": "dock-horizontal-response-85.json",
+      "consequence": "85 constrains spatial transfer. A global5tap classifier alone is not an established native mechanism; pane-shared material state or parameters combined with local source transmission are not excluded.93 adds independent history constraints."
+    }
+  },
+  "limitations": [
+    "These are two separate single retained sequences, with different launches/native identities; identity retention is verified within each run only.",
+    "One descent observes light at179 and dark at128 under this order and timing. This does not identify a native classifier threshold, a universal return boundary or a transition waveform.",
+    "The startup230 stage has early own-style2 getters before own-style1; final screenshot budgets occur later and cannot locate material presentation or causal latency.",
+    "1s/3s are draw-end lower-bound waits; actual getter times are recorded. Equal screenshots at these two observations do not prove continuous settling.",
+    "Body probes are stored RGB bytes from two192px composited image patches, not a complete material function or linear-light coefficients.",
+    "Typed foreground UIColor/font/alpha/image properties are model/configuration values resolved with each observed view own traits; final composited glyph RGBA and coverage are unavailable.",
+    "No native sampling footprint, mean operator, blur kernel,5tap radius, physical material coefficient, persistence constant or general tonal interpolation law is identified.",
+    "85L/R probe swap182/55↔55/182 constrains spatial transfer. A global5tap classifier alone is not an established native mechanism; pane-shared material state or parameters combined with local source transmission are not excluded.",
+    "History is required to account for observed identical179/204 inputs with different outcomes in original93; the engineering policy and native internal mechanism remain unproven.",
+    "No production stateless formula, native calibration, optical parity or release acceptance follows from these observations."
+  ],
+  "nativeCalibrationAccepted": false,
+  "opticalParityAccepted": false,
+  "productionStatelessRecipeEstablished": false
+}

@@ -18,16 +18,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,6 +42,10 @@ import com.lingion.sleepy.data.backup.SavedWebDavSettings
 import com.lingion.sleepy.data.backup.WebDavConfig
 import com.lingion.sleepy.data.backup.WebDavRemoteBackup
 import com.lingion.sleepy.ui.component.SettingsLayout
+import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
+import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
+import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import java.util.Locale

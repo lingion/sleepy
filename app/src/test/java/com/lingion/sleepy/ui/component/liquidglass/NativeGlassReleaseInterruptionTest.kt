@@ -30,7 +30,9 @@ class NativeGlassReleaseInterruptionTest {
         assertEquals(velocity, motion.elevation.velocity, 0f)
         repeat(80) { motion.tick(.008) }
         motion.update(0f, pressed = false, dragging = false, activation = 1)
-        repeat(100) { motion.tick(.008) }
+        // The calibrated k160/ζ.70 release retains a small tail past 800ms.
+        // Keep exact continuity above, and require exact rest within 1.2 seconds.
+        repeat(150) { motion.tick(.008) }
         assertEquals(0f, motion.lift, 0f)
     }
 }

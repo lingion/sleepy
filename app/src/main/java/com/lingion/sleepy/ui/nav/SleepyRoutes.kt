@@ -11,6 +11,8 @@ sealed interface SleepyRoute : NavKey {
     @Serializable data class AddCourseEntry(val tableId: Long) : SleepyRoute
     @Serializable data class AddCourse(val courseId: Long = NO_ID, val editing: Boolean = false, val tableId: Long = NO_ID, val week: Int = 0, val day: Int = 1, val node: Int = 1, val step: Int = 1) : SleepyRoute
     @Serializable data object AllTables : SleepyRoute
+    @Serializable data class CreateTable(val requestId: String, val prevDefault: Long = NO_ID) : SleepyRoute
+    @Serializable data class CreatePeriodTable(val requestId: String) : SleepyRoute
     @Serializable data object CourseList : SleepyRoute
     @Serializable data class EditTable(
         val tableId: Long = NO_ID,

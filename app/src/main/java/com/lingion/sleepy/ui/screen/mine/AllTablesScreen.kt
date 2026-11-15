@@ -22,14 +22,13 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Refresh
-import androidx.compose.material3.AlertDialog
 import com.lingion.sleepy.ui.component.liquidglass.GlassTonalButton as FilledTonalButton
+import com.lingion.sleepy.ui.component.liquidglass.glassButtonShape
 import androidx.compose.material3.Icon
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -52,8 +51,7 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.data.jw.JwImportDraftCodec
 import com.lingion.sleepy.data.jw.JwImportViewModel
-import com.lingion.sleepy.data.jw.JwSchoolInfo
-import com.lingion.sleepy.ui.component.DialogActionButtons
+import com.lingion.sleepy.ui.component.CopyNameDialog
 import com.lingion.sleepy.ui.component.liquidglass.GlassControlLayout
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -70,7 +68,8 @@ fun AllTablesScreen(
     onUpdateFromJw: (Long) -> Unit,
     viewModel: ScheduleViewModel = viewModel()
 ) {
-    val state by viewModel.state.collectAsState()
+    val liveState by viewModel.state.collectAsState()
+    val state = com.lingion.sleepy.ui.nav.rememberNavigationEntrySnapshot(liveState)
     val periodTables by viewModel.allPeriodTables.collectAsState()
     val jwViewModel: JwImportViewModel = viewModel()
     val jwSchools by jwViewModel.schools.collectAsState()
@@ -244,7 +243,7 @@ fun AllTablesScreen(
                 FilledTonalButton(
                     onClick = onCreateNewTable,
                     modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
-                    shape = SleepyTheme.Buttons.shape
+                    shape = glassButtonShape(SleepyTheme.Buttons.shape)
                 ) {
                     Icon(Icons.Outlined.Add, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
@@ -263,49 +262,28 @@ fun AllTablesScreen(
             state.tables.map { it.name },
             periodTables.map { it.name }
         )
-        AlertDialog(
-            onDismissRequest = { if (!copying) copyTarget = null },
-            title = { Text(stringResource(R.string.all_tables_duplicate), color = colors.onSurface) },
-            confirmButton = {},
-            dismissButton = {},
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextField(
-                        value = copyName,
-                        onValueChange = { copyName = it },
-                        label = { Text(stringResource(R.string.edit_table_name)) },
-                        singleLine = true,
-                        enabled = !copying,
-                        isError = nameTaken,
-                        supportingText = if (nameTaken) {
-                            { Text(stringResource(R.string.period_table_name_taken)) }
-                        } else null,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = SleepyTheme.fieldShape,
-                        colors = SleepyTheme.fieldColors()
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    DialogActionButtons(
-                        confirmText = stringResource(R.string.ok),
-                        onConfirm = {
-                            if (!copying) {
-                                copying = true
-                                scope.launch {
-                                    try {
-                                        val newId = viewModel.duplicateTable(target.id, candidate)
-                                        if (newId > 0) copyTarget = null
-                                    } finally {
-                                        copying = false
-                                    }
-                                }
-                            }
-                        },
-                        dismissText = stringResource(R.string.cancel),
-                        onDismiss = { if (!copying) copyTarget = null },
-                        confirmEnabled = candidate.isNotBlank() && !nameTaken && !copying
-                    )
+        CopyNameDialog(
+            title = stringResource(R.string.all_tables_duplicate),
+            name = copyName,
+            onNameChange = { copyName = it },
+            nameLabel = stringResource(R.string.edit_table_name),
+            nameTaken = nameTaken,
+            enabled = !copying,
+            onDismiss = { copyTarget = null },
+            onConfirm = {
+                if (!copying) {
+                    copying = true
+                    scope.launch {
+                        try {
+                            val newId = viewModel.duplicateTable(target.id, candidate)
+                            if (newId > 0) copyTarget = null
+                        } finally {
+                            copying = false
+                        }
+                    }
                 }
-            }
+            },
+            tagPrefix = "table_copy",
         )
     }
 }

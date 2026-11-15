@@ -36,6 +36,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import com.lingion.sleepy.R
 import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
 
 /**
@@ -72,6 +75,15 @@ fun ColorPickerDialog(
     val currentColor = Color(android.graphics.Color.HSVToColor(floatArrayOf(hue, saturation, value)))
     val currentHex = String.format("#%08X", android.graphics.Color.HSVToColor(floatArrayOf(hue, saturation, value)))
 
+    val nativeActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
+    val actions: @Composable () -> Unit = {
+            DialogActionButtons(
+                confirmText = stringResource(R.string.ok),
+                onConfirm = { onConfirm(currentHex) },
+                dismissText = stringResource(R.string.cancel),
+                onDismiss = onDismiss
+            )
+    }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -128,15 +140,10 @@ fun ColorPickerDialog(
                 }
 
                 // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 统一色块按钮行
-                DialogActionButtons(
-                    confirmText = stringResource(R.string.ok),
-                    onConfirm = { onConfirm(currentHex) },
-                    dismissText = stringResource(R.string.cancel),
-                    onDismiss = onDismiss
-                )
+                if (!nativeActions) actions()
             }
         },
-        confirmButton = {},
+        confirmButton = { if (nativeActions) actions() },
         dismissButton = {}
     )
 }
@@ -230,12 +237,13 @@ fun HueSlider(
             value = hue, onValueChange = { deliveredHue.floatValue = it; onHueChange(it) }, modifier = modifier,
             valueRange = 0f..360f, onValueChangeFinished = { currentCommit(deliveredHue.floatValue) },
             initialValue = initialHue, ghostEpsilon = .5f, ghostTag = "hue-ghost",
-            thumbColor = Color(android.graphics.Color.HSVToColor(floatArrayOf(hue, 1f, 1f))),
             trackBrush = androidx.compose.ui.graphics.Brush.horizontalGradient(
                 (0..6).map { Color(android.graphics.Color.HSVToColor(floatArrayOf(it * 60f, 1f, 1f))) }),
         )
         return
     }
+    val currentChange by androidx.compose.runtime.rememberUpdatedState(onHueChange)
+    val currentCommit by androidx.compose.runtime.rememberUpdatedState(onHueCommit)
     // pointerInput(Unit) 只在首组成形, 闭包捕获的 hue 会过期; dragged 在 onDrag 逐帧
     // 更新, onDragEnd 松手提交 = 最后一帧视觉值(同 coroutine, 零竞态; cancel 复位不提交)。
     // 触碰未越过 touch slop 时 detectDragGestures 不触发, 点按走下方 tap 通道。
@@ -244,13 +252,13 @@ fun HueSlider(
             .pointerInput(Unit) {
                 var dragged = -1f
                 detectDragGestures(
-                    onDragEnd = { if (dragged >= 0f) onHueCommit(dragged) },
+                    onDragEnd = { if (dragged >= 0f) currentCommit(dragged) },
                     onDragCancel = { dragged = -1f },
                     onDrag = { change, _ ->
                         change.consume()
                         val x = (change.position.x / size.width).coerceIn(0f, 1f)
                         dragged = x * 360f
-                        onHueChange(dragged)
+                        currentChange(dragged)
                     }
                 )
             }
@@ -259,8 +267,8 @@ fun HueSlider(
                     onTap = { offset ->
                         val x = (offset.x / size.width).coerceIn(0f, 1f)
                         val target = x * 360f
-                        onHueChange(target)
-                        onHueCommit(target)
+                        currentChange(target)
+                        currentCommit(target)
                     }
                 )
             }

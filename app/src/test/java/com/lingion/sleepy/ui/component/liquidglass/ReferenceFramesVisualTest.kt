@@ -42,7 +42,7 @@ class ReferenceFramesVisualTest {
         val checked = mutableStateOf(false)
         compose.setContent {
             androidx.compose.material3.MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass) {
                     GlassHost(Modifier.fillMaxSize(), background = Color(0xFFF0F0F2)) {
                         GlassSwitch(
                             checked = checked.value,
@@ -72,7 +72,7 @@ class ReferenceFramesVisualTest {
         val selected = mutableStateOf("For You")
         compose.setContent {
             androidx.compose.material3.MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass) {
                     GlassHost(Modifier.fillMaxSize(), background = Color(0xFFF0F0F2)) {
                         Box(Modifier.fillMaxWidth().height(100.dp).background(Color(0xFF42DA5C)))
                         SegmentedSwitcher(

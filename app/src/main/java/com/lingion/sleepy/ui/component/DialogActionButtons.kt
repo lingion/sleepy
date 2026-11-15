@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -14,15 +15,30 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.util.DialogActionsLayoutPolicyBridge
 import com.lingion.sleepy.util.DialogButtonsLayoutPolicy
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.component.liquidglass.NativeGlassAlertActionButton
+import com.lingion.sleepy.ui.component.liquidglass.NativeGlassAlertActionGroup
+import com.lingion.sleepy.ui.component.liquidglass.NativeGlassAlertActionMetrics
+import com.lingion.sleepy.ui.component.liquidglass.nativeGlassAlertActionTextStyle
+import com.lingion.sleepy.ui.component.liquidglass.nativeGlassAlertActionGroupLayout
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
 
 /**
- * [intentional custom] 官方 AlertDialog 的 textButton 槽 = 裸文字按钮; 用户 2026-09-16
+ * Material Design 保留 2026-09-16 的应用色块动作布局。
+ * Liquid Glass 使用同一个原生 alert 动作组，包括放在正文中的显式动作组；
+ * 2026-11-14 的统一要求覆盖旧的玻璃色块按钮要求，不影响正文里的普通控件。
+ *
+ * 官方 AlertDialog 的 textButton 槽 = 裸文字按钮; 用户 2026-09-16
  * 明确「裸 TextButton 无背景看不出可点」→ 色块按钮 + 宽度自适应换行是 Sleepy 领域需求,
  * 官方无等价组合件, 保留薄层。内部消费官方 Button, 全部官方 token。
  *
@@ -62,8 +78,22 @@ fun DialogActionButtons(
     // 调试台语义身份: 传前缀则三键自动得 <prefix>_confirm / <prefix>_dismiss / <prefix>_third
     // (复刻 SegmentedSwitcher 的 dbgTagPrefix 形态; null = 不打标, 全部既有调用点零影响)
     dbgTagPrefix: String? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    // Naming forms can grow vertically with font scaling; existing dialogs keep their fixed row height.
+    growWithContent: Boolean = false,
+    dismissEnabled: Boolean = true,
+    thirdEnabled: Boolean = true,
+    confirmDbgTag: String? = null,
+    dismissDbgTag: String? = null,
 ) {
+    if (LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null) {
+        NativeDialogActionButtons(
+            confirmText, onConfirm, dismissText, onDismiss, thirdText, onThird,
+            destructive, thirdDestructive, confirmEnabled, dismissEnabled, thirdEnabled, dbgTagPrefix, modifier,
+            confirmDbgTag, dismissDbgTag,
+        )
+        return
+    }
     val colors = MaterialTheme.colorScheme
 
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
@@ -87,9 +117,11 @@ fun DialogActionButtons(
                     BlockButton(
                         text = dismissText,
                         onClick = onDismiss,
+                        enabled = dismissEnabled,
                         container = colors.secondaryContainer,
                         content = colors.onSecondaryContainer,
-                        dbgTag = dbgTagPrefix?.let { "${it}_dismiss" },
+                        dbgTag = dismissDbgTag ?: dbgTagPrefix?.let { "${it}_dismiss" },
+                        growWithContent = growWithContent,
                         modifier = Modifier.weight(weights[wi++])
                     )
                 }
@@ -97,9 +129,11 @@ fun DialogActionButtons(
                     BlockButton(
                         text = thirdText,
                         onClick = onThird,
+                        enabled = thirdEnabled,
                         container = if (thirdDestructive) colors.errorContainer else colors.secondaryContainer,
                         content = if (thirdDestructive) colors.onErrorContainer else colors.onSecondaryContainer,
                         dbgTag = dbgTagPrefix?.let { "${it}_third" },
+                        growWithContent = growWithContent,
                         modifier = Modifier.weight(weights[wi++])
                     )
                 }
@@ -109,7 +143,8 @@ fun DialogActionButtons(
                     enabled = confirmEnabled,
                     container = if (destructive) colors.errorContainer else colors.primary,
                     content = if (destructive) colors.onErrorContainer else colors.onPrimary,
-                    dbgTag = dbgTagPrefix?.let { "${it}_confirm" },
+                    dbgTag = confirmDbgTag ?: dbgTagPrefix?.let { "${it}_confirm" },
+                    growWithContent = growWithContent,
                     modifier = Modifier.weight(weights[wi++])
                 )
             }
@@ -123,9 +158,11 @@ fun DialogActionButtons(
                     BlockButton(
                         text = dismissText,
                         onClick = onDismiss,
+                        enabled = dismissEnabled,
                         container = colors.secondaryContainer,
                         content = colors.onSecondaryContainer,
-                        dbgTag = dbgTagPrefix?.let { "${it}_dismiss" },
+                        dbgTag = dismissDbgTag ?: dbgTagPrefix?.let { "${it}_dismiss" },
+                        growWithContent = growWithContent,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -133,9 +170,11 @@ fun DialogActionButtons(
                     BlockButton(
                         text = thirdText,
                         onClick = onThird,
+                        enabled = thirdEnabled,
                         container = if (thirdDestructive) colors.errorContainer else colors.secondaryContainer,
                         content = if (thirdDestructive) colors.onErrorContainer else colors.onSecondaryContainer,
                         dbgTag = dbgTagPrefix?.let { "${it}_third" },
+                        growWithContent = growWithContent,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -145,12 +184,86 @@ fun DialogActionButtons(
                     enabled = confirmEnabled,
                     container = if (destructive) colors.errorContainer else colors.primary,
                     content = if (destructive) colors.onErrorContainer else colors.onPrimary,
-                    dbgTag = dbgTagPrefix?.let { "${it}_confirm" },
+                    dbgTag = confirmDbgTag ?: dbgTagPrefix?.let { "${it}_confirm" },
+                    growWithContent = growWithContent,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
         }
     }
+}
+
+@Composable
+private fun NativeDialogActionButtons(
+    confirmText: String,
+    onConfirm: () -> Unit,
+    dismissText: String?,
+    onDismiss: () -> Unit,
+    thirdText: String?,
+    onThird: () -> Unit,
+    destructive: Boolean,
+    thirdDestructive: Boolean,
+    confirmEnabled: Boolean,
+    dismissEnabled: Boolean,
+    thirdEnabled: Boolean,
+    dbgTagPrefix: String?,
+    modifier: Modifier,
+    confirmDbgTag: String?,
+    dismissDbgTag: String?,
+) {
+    val textMeasurer = rememberTextMeasurer()
+    val textStyle = nativeGlassAlertActionTextStyle()
+    val density = LocalDensity.current
+    BoxWithConstraints(modifier.nativeGlassAlertActionGroupLayout().fillMaxWidth()) {
+        val labels = listOfNotNull(dismissText, thirdText, confirmText)
+        val labelSpacePx = with(density) {
+            ((maxWidth - NativeGlassAlertActionMetrics.inset * 2 -
+                NativeGlassAlertActionMetrics.gap * (labels.size - 1)) / labels.size -
+                NativeGlassAlertActionMetrics.horizontalContentPadding * 2).toPx()
+        }
+        // The reference covers two short actions. Three actions or labels that do
+        // not fit use full-width cells; measure real shaped text at the current font scale.
+        val stacked = labels.size > 2 || labels.any { label ->
+            textMeasurer.measure(AnnotatedString(label), textStyle, softWrap = false).size.width > labelSpacePx
+        }
+        NativeGlassAlertActionGroup(
+            stacked = stacked,
+            dismissButton = dismissText?.let { label -> {
+                NativeDialogActionButton(
+                    label, onDismiss, enabled = dismissEnabled,
+                    dbgTag = dismissDbgTag ?: dbgTagPrefix?.let { "${it}_dismiss" },
+                )
+            } },
+            thirdButton = thirdText?.let { label -> {
+                NativeDialogActionButton(
+                    label, onThird, enabled = thirdEnabled, destructive = thirdDestructive,
+                    dbgTag = dbgTagPrefix?.let { "${it}_third" },
+                )
+            } },
+            confirmButton = {
+                NativeDialogActionButton(
+                    confirmText, onConfirm, enabled = confirmEnabled, destructive = destructive,
+                    dbgTag = confirmDbgTag ?: dbgTagPrefix?.let { "${it}_confirm" },
+                )
+            },
+        )
+    }
+}
+
+@Composable
+private fun NativeDialogActionButton(
+    text: String,
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+    destructive: Boolean = false,
+    dbgTag: String? = null,
+) {
+    NativeGlassAlertActionButton(
+        onClick = onClick,
+        modifier = dbgTag?.let { Modifier.dbgTag(it, text = text, role = "button") } ?: Modifier,
+        enabled = enabled,
+        destructive = destructive,
+    ) { Text(text) }
 }
 
 @Composable
@@ -161,6 +274,7 @@ private fun BlockButton(
     content: Color,
     enabled: Boolean = true,
     dbgTag: String? = null,
+    growWithContent: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Button(
@@ -168,22 +282,21 @@ private fun BlockButton(
         enabled = enabled,
         modifier = modifier
             .then(dbgTag?.let { Modifier.dbgTag(it, text = text, role = "button") } ?: Modifier)
-            .height(SleepyTheme.Buttons.regularHeight),
+            .then(if (growWithContent) Modifier.heightIn(min = SleepyTheme.Buttons.regularHeight)
+                else Modifier.height(SleepyTheme.Buttons.regularHeight)),
         shape = SleepyTheme.Buttons.shape,
         colors = ButtonDefaults.buttonColors(
             containerColor = container,
             contentColor = content
         )
     ) {
-        // 2026-09-16 用户: 文字必须完整展示 — 竖排降级保证宽度, 不设 maxLines 截断
-        // 2026-09-18 用户: "一行能搞定的就一行" — softWrap=false 强制单行; 横排已按
-        // 必需宽比例分配权重(每键 ≥ 文字宽), 竖排全宽更装得下, 两者都不会截断。
+        // Existing callers retain single-line labels; adaptive forms allow wrapping and a taller button.
         Text(
             text,
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Medium,
-            softWrap = false,
-            maxLines = 1
+            softWrap = growWithContent,
+            maxLines = if (growWithContent) Int.MAX_VALUE else 1
         )
     }
 }

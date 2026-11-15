@@ -17,6 +17,7 @@ import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import com.lingion.sleepy.ui.component.liquidglass.GlassTonalButton as FilledTonalButton
+import com.lingion.sleepy.ui.component.liquidglass.glassButtonShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
@@ -245,7 +246,7 @@ fun WidgetSettingsScreen(
                             }
                         },
                         modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
-                        shape = SleepyTheme.Buttons.shape
+                        shape = glassButtonShape(SleepyTheme.Buttons.shape)
                     ) {
                         Icon(Icons.Outlined.Refresh, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))

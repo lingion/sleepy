@@ -20,7 +20,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material3.Icon
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
@@ -49,7 +48,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
-import com.lingion.sleepy.ui.component.liquidglass.GlassControlLayout
+import com.lingion.sleepy.ui.component.AccordionHeader
+import com.lingion.sleepy.ui.component.AccordionChevron
+import com.lingion.sleepy.ui.component.accordionToggle
+import com.lingion.sleepy.ui.component.accordionSpatialSpec
+import com.lingion.sleepy.ui.component.accordionEffectsSpec
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.widget.PinResult
 import com.lingion.sleepy.widget.WidgetGalleryData
@@ -205,10 +208,16 @@ fun WidgetGalleryScreen(onBack: () -> Unit) {
                 items = rowItems,
                 key = { it.key }
             ) { item ->
+                val animatedItem = Modifier.animateItem(
+                    fadeInSpec = accordionEffectsSpec(),
+                    placementSpec = accordionSpatialSpec(),
+                    fadeOutSpec = accordionEffectsSpec(),
+                )
                 when (item) {
                     is GalleryRowItem.ExpandedRow -> {
                         ExpandedGroupItem(
                             group = item.group,
+                            modifier = animatedItem,
                             cooling = cooling.value,
                             onCollapse = { expandedGroupKey = null },
                             onPin = { pin(it) }
@@ -216,7 +225,7 @@ fun WidgetGalleryScreen(onBack: () -> Unit) {
                     }
                     is GalleryRowItem.CollapsedRow -> {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = animatedItem.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             val firstIndex = groups.indexOf(item.first)
@@ -278,7 +287,9 @@ private fun CollapsedGroupItem(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .then(if (enabled) Modifier.noRippleClickable(onClick) else Modifier),
+            .then(if (group.isMultiSize) {
+                Modifier.accordionToggle(expanded = false, onToggle = onClick, enabled = enabled)
+            } else if (enabled) Modifier.noRippleClickable(onClick) else Modifier),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
@@ -292,19 +303,24 @@ private fun CollapsedGroupItem(
             alpha = if (enabled) 1f else 0.5f
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = displayName,
-            style = MaterialTheme.typography.titleSmall,
-            color = if (enabled) colors.onSurface else colors.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            maxLines = 2
-        )
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = displayName,
+                style = MaterialTheme.typography.titleSmall,
+                color = if (enabled) colors.onSurface else colors.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                modifier = Modifier.weight(1f, fill = false),
+            )
+            if (group.isMultiSize) AccordionChevron(expanded = false)
+        }
     }
 }
 
 @Composable
 private fun ExpandedGroupItem(
     group: WidgetGalleryGroup,
+    modifier: Modifier = Modifier,
     cooling: Set<String>,
     onCollapse: () -> Unit,
     onPin: (WidgetVariantInfo) -> Unit,
@@ -319,20 +335,17 @@ private fun ExpandedGroupItem(
     }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(colors.surfaceContainer)
             .border(1.dp, colors.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
             .padding(14.dp)
     ) {
-        // 折叠头: 点击整行收起, 恢复为主卡视图
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .noRippleClickable(onCollapse),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        AccordionHeader(
+            expanded = true,
+            onToggle = onCollapse,
+            contentPadding = PaddingValues(0.dp),
         ) {
             Text(
                 text = displayName,
@@ -340,16 +353,7 @@ private fun ExpandedGroupItem(
                 color = colors.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f)
             )
-            Spacer(modifier = Modifier.width(GlassControlLayout.controlGap))
-            IconButton(onClick = onCollapse) {
-                Icon(
-                    imageVector = Icons.Outlined.ExpandLess,
-                    contentDescription = stringResource(R.string.back),
-                    tint = colors.onSurfaceVariant
-                )
-            }
         }
 
         Spacer(modifier = Modifier.height(10.dp))

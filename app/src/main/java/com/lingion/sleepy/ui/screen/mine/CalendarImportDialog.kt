@@ -14,8 +14,7 @@ import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDial
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
-import com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenu as DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import com.lingion.sleepy.ui.component.liquidglass.SingleChoiceDropdown
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -26,8 +25,12 @@ import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
 import androidx.compose.runtime.Composable
 import com.lingion.sleepy.ui.component.DialogActionButtons
 import com.lingion.sleepy.ui.component.SettingToggleRow
-import com.lingion.sleepy.ui.component.SettingsFlatCard
+import com.lingion.sleepy.ui.component.liquidglass.GlassAlertActionScope
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.component.liquidglass.NativeGlassAlertActionButton
+import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.UiStyle
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -68,6 +71,7 @@ fun CalendarImportDialog(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val nativeActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
     var calendars by remember { mutableStateOf<List<SystemCalendarInfo>>(emptyList()) }
     var selectedCalendarId by remember { mutableLongStateOf(AppPrefs.getCalendarTargetId(context)) }
     var range by remember {
@@ -79,7 +83,6 @@ fun CalendarImportDialog(
     var reminderMinutes by remember { mutableStateOf((AppPrefs.getCalendarReminderMinutes(context) ?: 15).toString()) }
     var alarmEnabled by remember { mutableStateOf(AppPrefs.isCalendarFirstAlarmEnabled(context)) }
     var alarmMinutes by remember { mutableStateOf(AppPrefs.getCalendarFirstAlarmMinutes(context).toString()) }
-    var calendarMenu by remember { mutableStateOf(false) }
     var preview by remember { mutableStateOf<CalendarImportPreview?>(null) }
     var result by remember { mutableStateOf<CalendarImportResult?>(null) }
     var managedCount by remember { mutableIntStateOf(0) }
@@ -112,6 +115,14 @@ fun CalendarImportDialog(
         }
     }
 
+    val actions: @Composable () -> Unit = {
+            DialogActionButtons(
+                confirmText = stringResource(R.string.ok),
+                onConfirm = onDismiss,
+                dismissText = stringResource(R.string.cancel),
+                onDismiss = onDismiss
+            )
+    }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.calendar_import_title), fontWeight = FontWeight.SemiBold) },
@@ -129,29 +140,30 @@ fun CalendarImportDialog(
                         )
                     }
                 } else {
-                    SettingsFlatCard(
+                    SingleChoiceDropdown(
                         title = stringResource(R.string.calendar_target_label),
-                        subtitle = stringResource(R.string.calendar_choose_target)
-                    ) {
-                        TextButton(onClick = { calendarMenu = true }) {
-                            Text(calendars.firstOrNull { it.id == selectedCalendarId }?.let {
-                                "${it.displayName} · ${it.accountName}"
-                            } ?: stringResource(R.string.calendar_choose_target))
-                        }
-                        DropdownMenu(expanded = calendarMenu, onDismissRequest = { calendarMenu = false }) {
-                            calendars.forEach { calendar ->
-                                DropdownMenuItem(
-                                    text = { Text("${calendar.displayName} · ${calendar.accountName}") },
-                                    onClick = {
-                                        selectedCalendarId = calendar.id
-                                        AppPrefs.setCalendarTargetId(context, calendar.id)
-                                        calendarMenu = false
-                                        preview = null
-                                    }
-                                )
+                        selectedId = selectedCalendarId.toString(),
+                        options = calendars.map { calendar ->
+                            calendar.id.toString() to "${calendar.displayName} · ${calendar.accountName}"
+                        },
+                        onSelect = { key ->
+                            calendars.firstOrNull { it.id.toString() == key }?.let { calendar ->
+                                selectedCalendarId = calendar.id
+                                AppPrefs.setCalendarTargetId(context, calendar.id)
+                                preview = null
                             }
-                        }
-                    }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        selectedLabel = calendars.firstOrNull { it.id == selectedCalendarId }?.let {
+                            "${it.displayName} · ${it.accountName}"
+                        } ?: stringResource(R.string.calendar_choose_target),
+                        tagPrefix = "calendar_target"
+                    )
+                    Text(
+                        stringResource(R.string.calendar_choose_target),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
 
                     Surface(color = MaterialTheme.colorScheme.surfaceContainer, shape = SleepyTheme.shapes.large) {
                         Column(
@@ -247,18 +259,20 @@ fun CalendarImportDialog(
                     }
 
                     Spacer(Modifier.height(2.dp))
-                    Button(enabled = !busy && selectedCalendarId >= 0, onClick = {
-                        scope.launch {
-                            busy = true
-                            val current = currentOptions()
-                            AppPrefs.setCalendarTargetId(context, current.calendarId)
-                            preview = withContext(Dispatchers.Default) {
-                                SystemCalendarManager.buildPreview(context, table, courses, current)
+                    GlassAlertActionScope {
+                        Button(enabled = !busy && selectedCalendarId >= 0, onClick = {
+                            scope.launch {
+                                busy = true
+                                val current = currentOptions()
+                                AppPrefs.setCalendarTargetId(context, current.calendarId)
+                                preview = withContext(Dispatchers.Default) {
+                                    SystemCalendarManager.buildPreview(context, table, courses, current)
+                                }
+                                result = null
+                                busy = false
                             }
-                            result = null
-                            busy = false
-                        }
-                    }) { Text(stringResource(R.string.calendar_preview_action)) }
+                        }) { Text(stringResource(R.string.calendar_preview_action)) }
+                    }
 
                     preview?.let { p ->
                         Surface(color = MaterialTheme.colorScheme.surfaceContainer, shape = MaterialTheme.shapes.medium) {
@@ -277,8 +291,10 @@ fun CalendarImportDialog(
                                     style = MaterialTheme.typography.bodySmall)
                                 Text(stringResource(R.string.calendar_second_confirm_warning),
                                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
-                                Button(enabled = p.rows.isNotEmpty() && !busy, onClick = { showFinalConfirm = true }) {
-                                    Text(stringResource(R.string.calendar_confirm_import))
+                                GlassAlertActionScope {
+                                    Button(enabled = p.rows.isNotEmpty() && !busy, onClick = { showFinalConfirm = true }) {
+                                        Text(stringResource(R.string.calendar_confirm_import))
+                                    }
                                 }
                             }
                         }
@@ -305,22 +321,30 @@ fun CalendarImportDialog(
                     }
 
                     if (managedCount > 0) {
-                        TextButton(onClick = { showDeleteConfirm = true }, enabled = !busy) {
-                            Text(stringResource(R.string.calendar_delete_managed, managedCount), color = MaterialTheme.colorScheme.error)
+                        GlassAlertActionScope {
+                            if (nativeActions) {
+                                NativeGlassAlertActionButton(
+                                    onClick = { showDeleteConfirm = true },
+                                    modifier = Modifier,
+                                    enabled = !busy,
+                                    destructive = true,
+                                ) { Text(stringResource(R.string.calendar_delete_managed, managedCount)) }
+                            } else {
+                                TextButton(onClick = { showDeleteConfirm = true }, enabled = !busy) {
+                                    Text(stringResource(R.string.calendar_delete_managed, managedCount), color = MaterialTheme.colorScheme.error)
+                                }
+                            }
                         }
                     }
                 }
                 if (busy) CircularProgressIndicator()
-                Spacer(Modifier.height(4.dp))
-                DialogActionButtons(
-                    confirmText = stringResource(R.string.ok),
-                    onConfirm = onDismiss,
-                    dismissText = stringResource(R.string.cancel),
-                    onDismiss = onDismiss
-                )
+                if (!nativeActions) {
+                    Spacer(Modifier.height(4.dp))
+                    actions()
+                }
             }
         },
-        confirmButton = {},
+        confirmButton = { if (nativeActions) actions() },
         dismissButton = {}
     )
 
@@ -350,7 +374,7 @@ fun CalendarImportDialog(
             title = { Text(stringResource(R.string.calendar_delete_confirm_title)) },
             text = { Text(stringResource(R.string.calendar_delete_confirm_body, managedCount)) },
             confirmButton = {
-                TextButton(enabled = !busy, onClick = {
+                val deleteManaged: () -> Unit = {
                     showDeleteConfirm = false
                     scope.launch {
                         busy = true
@@ -359,7 +383,19 @@ fun CalendarImportDialog(
                         managedCount = withContext(Dispatchers.IO) { AppDatabase.get(context).calendarImportRecordDao().forTable(table.id).size }
                         busy = false
                     }
-                }) { Text(stringResource(R.string.calendar_delete_action)) }
+                }
+                if (nativeActions) {
+                    NativeGlassAlertActionButton(
+                        onClick = deleteManaged,
+                        modifier = Modifier,
+                        enabled = !busy,
+                        destructive = true,
+                    ) { Text(stringResource(R.string.calendar_delete_action)) }
+                } else {
+                    TextButton(enabled = !busy, onClick = deleteManaged) {
+                        Text(stringResource(R.string.calendar_delete_action))
+                    }
+                }
             },
             dismissButton = { TextButton(onClick = { showDeleteConfirm = false }) { Text(stringResource(R.string.cancel)) } }
         )

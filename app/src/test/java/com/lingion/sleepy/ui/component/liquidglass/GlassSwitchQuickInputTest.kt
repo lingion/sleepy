@@ -45,7 +45,7 @@ class GlassSwitchQuickInputTest {
     private fun show() {
         compose.setContent {
             MaterialTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.LiquidGlass) {
+                CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }, LocalUiStyle provides UiStyle.LiquidGlass) {
                     GlassHost {
                         scroll = rememberScrollState(initial = 300)
                         scope = rememberCoroutineScope()

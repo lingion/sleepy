@@ -34,7 +34,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.AccessTime
-import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.School
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
@@ -53,9 +52,7 @@ import androidx.compose.material3.TimePicker
 import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
-import com.lingion.sleepy.ui.component.liquidglass.GlassDropdownMenu as DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.RadioButton
+import com.lingion.sleepy.ui.component.liquidglass.SingleChoiceDropdown
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -79,6 +76,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.lingion.sleepy.ui.component.SettingsLayout
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
 import androidx.compose.foundation.layout.heightIn
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
@@ -276,7 +276,6 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
     // 课前提醒形态互斥 tab: banner(普通可划横幅, 手环/手表友好) ⇄ fluid(实况卡片, 实验)
     var beforeClassMode by remember { mutableStateOf(AppPrefs.getBeforeClassMode(context)) }
     var fluidPrimary by remember { mutableStateOf(AppPrefs.getBeforeClassFluidPrimary(context)) }
-    var fieldsMenuExpanded by remember { mutableStateOf(false) }
     // 流体云测试按钮两态: 投放中显示「投放中 | 结束投放」。提升到顶层供授权回调置位。
     var fluidTesting by remember { mutableStateOf(false) }
     var liveCardCapability by remember {
@@ -821,55 +820,24 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                         color = colors.onSurface
                                     )
                                     Spacer(modifier = Modifier.height(6.dp))
-                                    androidx.compose.foundation.layout.Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clip(SleepyTheme.fieldShape)
-                                            .noRippleClickable { fieldsMenuExpanded = true }
-                                    ) {
-                                        TextField(
-                                            value = fluidPrimaryLabel(context, fluidPrimary),
-                                            onValueChange = {},
-                                            readOnly = true,
-                                            enabled = false,
-                                            modifier = Modifier.fillMaxWidth(),
-                                            label = { Text(stringResource(R.string.reminder_fluid_fields_hint)) },
-                                            trailingIcon = {
-                                                Icon(Icons.Outlined.ExpandMore, contentDescription = null, tint = colors.onSurfaceVariant)
-                                            },
-                                            shape = SleepyTheme.fieldShape,
-                                            colors = SleepyTheme.fieldColors()
-                                        )
-                                        DropdownMenu(
-                                            expanded = fieldsMenuExpanded,
-                                            onDismissRequest = { fieldsMenuExpanded = false },
-                                            // 菜单浮在 surfaceContainer 卡片上, 用 Highest 拉开对比(默认 High 与卡片几乎同色=隐形)
-                                            containerColor = colors.surfaceContainerHighest
-                                        ) {
-                                            listOf(
-                                                "name" to R.string.reminder_fluid_field_name,
-                                                "time" to R.string.reminder_fluid_field_time,
-                                                "room" to R.string.reminder_fluid_field_room,
-                                                "countdown" to R.string.reminder_fluid_field_countdown
-                                            ).forEach { (key, labelRes) ->
-                                                DropdownMenuItem(
-                                                    text = { Text(stringResource(labelRes)) },
-                                                    onClick = {
-                                                        fluidPrimary = key
-                                                        AppPrefs.setBeforeClassFluidPrimary(context, key)
-                                                        ReminderRescheduler.request()
-                                                        fieldsMenuExpanded = false
-                                                    },
-                                                    leadingIcon = {
-                                                        RadioButton(
-                                                            selected = key == fluidPrimary,
-                                                            onClick = null
-                                                        )
-                                                    }
-                                                )
-                                            }
-                                        }
-                                    }
+                                    SingleChoiceDropdown(
+                                        title = stringResource(R.string.reminder_fluid_fields_hint),
+                                        selectedId = fluidPrimary,
+                                        options = listOf(
+                                            "name" to stringResource(R.string.reminder_fluid_field_name),
+                                            "time" to stringResource(R.string.reminder_fluid_field_time),
+                                            "room" to stringResource(R.string.reminder_fluid_field_room),
+                                            "countdown" to stringResource(R.string.reminder_fluid_field_countdown)
+                                        ),
+                                        onSelect = { key ->
+                                            fluidPrimary = key
+                                            AppPrefs.setBeforeClassFluidPrimary(context, key)
+                                            ReminderRescheduler.request()
+                                        },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        selectedLabel = fluidPrimaryLabel(context, fluidPrimary),
+                                        tagPrefix = "reminder_fluid_field"
+                                    )
                                     Text(
                                         text = stringResource(R.string.reminder_fluid_note),
                                         style = MaterialTheme.typography.bodySmall,
@@ -1233,8 +1201,8 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                                     ReminderRescheduler.request()
                                 }
                             )
-                            // 假期规则 = 二级设置页跳转入口 (2026-11-04 用户三裁: 大导航入口保持扁平)
-                            androidx.compose.material3.FilledTonalButton(
+                            // 假期规则仍是二级设置页入口；共享包装器按当前样式呈现。
+                            FilledTonalButton(
                                 onClick = onOpenHoliday,
                                 modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
                             ) {
@@ -1289,6 +1257,22 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
     // 流体云三查闸门拦截弹窗: 列出未满足项, 「去设置」走厂商候选链,
     // 「仍要投放」= 用户明知降级继续 (不静默)。
     if (showFluidGateDialog) {
+        val nativeDialogActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
+        val actions: @Composable () -> Unit = {
+            com.lingion.sleepy.ui.component.DialogActionButtons(
+                confirmText = stringResource(R.string.reminder_fluid_gate_cast_anyway),
+                onConfirm = {
+                    showFluidGateDialog = false
+                    startFluidTestCast()
+                },
+                dismissText = stringResource(R.string.reminder_fluid_gate_go_settings),
+                onDismiss = {
+                    showFluidGateDialog = false
+                    openVendorSettings()
+                },
+                destructive = false
+            )
+        }
         AlertDialog(
             onDismissRequest = { showFluidGateDialog = false },
             title = { Text(stringResource(R.string.reminder_fluid_gate_title)) },
@@ -1303,23 +1287,13 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
-                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(12.dp))
-                    com.lingion.sleepy.ui.component.DialogActionButtons(
-                        confirmText = stringResource(R.string.reminder_fluid_gate_cast_anyway),
-                        onConfirm = {
-                            showFluidGateDialog = false
-                            startFluidTestCast()
-                        },
-                        dismissText = stringResource(R.string.reminder_fluid_gate_go_settings),
-                        onDismiss = {
-                            showFluidGateDialog = false
-                            openVendorSettings()
-                        },
-                        destructive = false
-                    )
+                    if (!nativeDialogActions) {
+                        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(12.dp))
+                        actions()
+                    }
                 }
             },
-            confirmButton = {},
+            confirmButton = { if (nativeDialogActions) actions() },
             dismissButton = {}
         )
     }
@@ -1346,6 +1320,31 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
             initialMinute = parts.getOrNull(1)?.toIntOrNull() ?: 0,
             is24Hour = true
         )
+        val nativeDialogActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
+        val actions: @Composable () -> Unit = {
+            com.lingion.sleepy.ui.component.DialogActionButtons(
+                confirmText = stringResource(R.string.action_confirm),
+                onConfirm = {
+                    val h = String.format("%02d", timeState.hour)
+                    val m = String.format("%02d", timeState.minute)
+                    val newTime = "$h:$m"
+                    when (target) {
+                        DailyReminderTimeTarget.Today -> {
+                            dailyTime = newTime
+                            AppPrefs.setDailyReminderTime(context, newTime)
+                        }
+                        DailyReminderTimeTarget.Tomorrow -> {
+                            tomorrowTime = newTime
+                            AppPrefs.setTomorrowReminderTime(context, newTime)
+                        }
+                    }
+                    ReminderRescheduler.request()
+                    timePickerTarget = null
+                },
+                dismissText = stringResource(R.string.action_cancel),
+                onDismiss = { timePickerTarget = null }
+            )
+        }
         AlertDialog(
             onDismissRequest = { timePickerTarget = null },
             title = { Text(stringResource(R.string.reminder_pick_time)) },
@@ -1353,33 +1352,14 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTab
                 androidx.compose.foundation.layout.Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
                     // 默认 TimePicker 配色 — 与 TimePickerField 弹窗一致, 不再单独覆写表盘色
                     TimePicker(state = timeState)
-                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(12.dp))
-                    // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 统一色块按钮行
-                    com.lingion.sleepy.ui.component.DialogActionButtons(
-                        confirmText = stringResource(R.string.action_confirm),
-                        onConfirm = {
-                            val h = String.format("%02d", timeState.hour)
-                            val m = String.format("%02d", timeState.minute)
-                            val newTime = "$h:$m"
-                            when (target) {
-                                DailyReminderTimeTarget.Today -> {
-                                    dailyTime = newTime
-                                    AppPrefs.setDailyReminderTime(context, newTime)
-                                }
-                                DailyReminderTimeTarget.Tomorrow -> {
-                                    tomorrowTime = newTime
-                                    AppPrefs.setTomorrowReminderTime(context, newTime)
-                                }
-                            }
-                            ReminderRescheduler.request()
-                            timePickerTarget = null
-                        },
-                        dismissText = stringResource(R.string.action_cancel),
-                        onDismiss = { timePickerTarget = null }
-                    )
+                    if (!nativeDialogActions) {
+                        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(12.dp))
+                        // 2026-09-16 用户: 裸 TextButton 无边界无色块 — 统一色块按钮行
+                        actions()
+                    }
                 }
             },
-            confirmButton = {},
+            confirmButton = { if (nativeDialogActions) actions() },
             dismissButton = {},
             titleContentColor = colors.onSurface,
             textContentColor = colors.onSurfaceVariant

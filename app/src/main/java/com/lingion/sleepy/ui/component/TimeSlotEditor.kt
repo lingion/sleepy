@@ -33,6 +33,7 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.DragHandle
 import androidx.compose.material.icons.outlined.RemoveCircleOutline
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
+import com.lingion.sleepy.ui.component.liquidglass.glassButtonShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
@@ -402,7 +403,7 @@ private fun ManualTimeSlotEditor(
                     onClick = { onRowsChange(TimeTableUtils.appendEmptyRow(rows)) },
                     modifier = dbgTagPrefix?.let { Modifier.dbgTag("${it}_add", role = "button") }
                         ?: Modifier.testTag("timeslot-add-row"),
-                    shape = SleepyTheme.shapes.medium,
+                    shape = glassButtonShape(SleepyTheme.shapes.medium),
                     contentPadding = PaddingValues(horizontal = if (compactRows) 8.dp else 24.dp, vertical = 8.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colors.secondaryContainer,

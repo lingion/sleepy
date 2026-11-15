@@ -41,19 +41,21 @@ class GlassSettingsHeldDragTest {
         var checked by mutableStateOf(false)
         var selected by mutableIntStateOf(0)
         compose.setContent {
-            SleepyThemeProvider(darkTheme = false) {
-                list = rememberLazyListState(initialFirstVisibleItemIndex = 4)
-                LazyColumn(Modifier.fillMaxSize().testTag("page"), state = list) {
-                    items(5) { Spacer(Modifier.height(100.dp)) }
-                    item {
-                        Box(Modifier.padding(16.dp).testTag("card")) {
-                            if (switch) SettingsFlatCard("Toggle") {
-                                SettingToggleRow("Toggle", checked, { checked = it }, dbg = "control")
-                            } else SettingsFlatCard("Tabs", options = listOf("First", "Second"),
-                                selectedKey = selected, onSelect = { selected = it })
+            CompositionLocalProvider(LocalDockInputTimeNanos provides { compose.mainClock.currentTime * 1_000_000L }) {
+                SleepyThemeProvider(darkTheme = false) {
+                    list = rememberLazyListState(initialFirstVisibleItemIndex = 4)
+                    LazyColumn(Modifier.fillMaxSize().testTag("page"), state = list) {
+                        items(5) { Spacer(Modifier.height(100.dp)) }
+                        item {
+                            Box(Modifier.padding(16.dp).testTag("card")) {
+                                if (switch) SettingsFlatCard("Toggle") {
+                                    SettingToggleRow("Toggle", checked, { checked = it }, dbg = "control")
+                                } else SettingsFlatCard("Tabs", options = listOf("First", "Second"),
+                                    selectedKey = selected, onSelect = { selected = it })
+                            }
                         }
+                        items(20) { Spacer(Modifier.height(100.dp)) }
                     }
-                    items(20) { Spacer(Modifier.height(100.dp)) }
                 }
             }
         }

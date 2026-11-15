@@ -3,6 +3,8 @@ package com.lingion.sleepy.ui.screen.imports
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,6 +44,10 @@ import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.parser.ScheduleParser
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.component.liquidglass.GlassAlertActionScope
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
 
 /**
  * 2026-10-26 用户定令: 添加课程/创建课表的每条导入路径(从现有课表、教务导入、
@@ -128,11 +134,16 @@ fun CourseSelectionSheet(
                         ) {
                             Text(toggleLabel)
                         }
-                        TextButton(
-                            enabled = selectedSet.isNotEmpty(),
-                            onClick = { onConfirm(selectedSet) },
-                            modifier = Modifier.dbgTag("import_select_confirm", text = stringResource(R.string.import_confirm), role = "button")
-                        ) { Text(stringResource(R.string.import_confirm)) }
+                        GlassAlertActionScope {
+                            TextButton(
+                                enabled = selectedSet.isNotEmpty(),
+                                onClick = { onConfirm(selectedSet) },
+                                modifier = Modifier
+                                    .then(if (LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null)
+                                        Modifier.width(IntrinsicSize.Max) else Modifier)
+                                    .dbgTag("import_select_confirm", text = stringResource(R.string.import_confirm), role = "button")
+                            ) { Text(stringResource(R.string.import_confirm)) }
+                        }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = colors.background,

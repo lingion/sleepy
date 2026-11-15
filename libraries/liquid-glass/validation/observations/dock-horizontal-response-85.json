@@ -1,0 +1,690 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-14",
+  "kind": "native-retained-horizontal-background-observation",
+  "scope": "Native REST source/context observation, not Android parity, calibration acceptance, isolated foreground color, internal material state or sampling-radius identification.",
+  "reference": {
+    "os": "Version 26.5 (Build 23F77)",
+    "worldSizePt": [
+      375,
+      667
+    ],
+    "screenScale": 2,
+    "simulator": "B7EBD2CC-2FAE-449B-BB9B-1CB95F055764",
+    "container": "SwiftUI TabView, hidden navigation parent, fixed synthetic scroll; Schedule selected, scroll(0,-20)",
+    "windowAndCanvasRequestedStyle": "dark",
+    "barOverride": "unspecified; effective style observed"
+  },
+  "sequence": [
+    "A",
+    "L",
+    "R",
+    "B",
+    "R",
+    "L",
+    "A"
+  ],
+  "inputs": [
+    {
+      "id": "A",
+      "brightLTRBpx": null,
+      "brightPixels": 0,
+      "histogram": {
+        "(26, 26, 26, 255)": 1000500
+      },
+      "decodedRGBASHA256": "47713ceb1eaa5f342983b6b098974fbf05983094d4867720ce31deb3a896dd67",
+      "scope": "Predeclared expected array; actual exported native PNG must match after run."
+    },
+    {
+      "id": "L",
+      "brightLTRBpx": [
+        250,
+        1100,
+        450,
+        1334
+      ],
+      "brightPixels": 46800,
+      "histogram": {
+        "(26, 26, 26, 255)": 953700,
+        "(230, 230, 230, 255)": 46800
+      },
+      "decodedRGBASHA256": "910e381be3318669da87206dec44ae2fe34fb5d1c6add08f5918b5b83cda60ba",
+      "scope": "Predeclared expected array; actual exported native PNG must match after run."
+    },
+    {
+      "id": "R",
+      "brightLTRBpx": [
+        450,
+        1100,
+        650,
+        1334
+      ],
+      "brightPixels": 46800,
+      "histogram": {
+        "(26, 26, 26, 255)": 953700,
+        "(230, 230, 230, 255)": 46800
+      },
+      "decodedRGBASHA256": "c4ba06bb630da5b2ade8404b3eb28b9c0208f4d7bc5ba79d7bea3a300674939b",
+      "scope": "Predeclared expected array; actual exported native PNG must match after run."
+    },
+    {
+      "id": "B",
+      "brightLTRBpx": [
+        0,
+        1100,
+        750,
+        1334
+      ],
+      "brightPixels": 175500,
+      "histogram": {
+        "(26, 26, 26, 255)": 825000,
+        "(230, 230, 230, 255)": 175500
+      },
+      "decodedRGBASHA256": "678ab05479fa1d6bf7ebf68233c19770dac3f2f2bbebc2069d2921208bb082e8",
+      "scope": "Predeclared expected array; actual exported native PNG must match after run."
+    }
+  ],
+  "bodyProbesPt": [
+    [
+      196,
+      592,
+      208,
+      596
+    ],
+    [
+      244,
+      592,
+      256,
+      596
+    ]
+  ],
+  "foregroundContextCropsPt": {
+    "Today": [
+      128,
+      588,
+      170,
+      642
+    ],
+    "Mine": [
+      282,
+      588,
+      324,
+      642
+    ]
+  },
+  "sourceHashes": {
+    "tools/native-glass-reference/App/main.swift": "bfd05c19c9284982fc675a570850073ae37052d5d84768283e3acd8bb6c7e666",
+    "tools/native-glass-reference/UITests/NativeReferenceTests.swift": "044202525c508f32fa3a11f9687357f96d8ed1ca12e845736d690cec40118de2"
+  },
+  "build": {
+    "exitCode": 0,
+    "wallSeconds": 10.36243486404419,
+    "hardBudgetSeconds": 120,
+    "reusedDerivedData": true
+  },
+  "test": {
+    "entry": "testSwiftUITabViewDockHorizontalResponse",
+    "exitCode": 0,
+    "wallSeconds": 54.58295488357544,
+    "hardBudgetSeconds": 120,
+    "binaryManifestsMatchBuild": true,
+    "retryOrRepetition": false
+  },
+  "artifactAudit": {
+    "checksPassed": 326,
+    "checksFailed": 0,
+    "errors": [],
+    "sourcePNGCount": 4,
+    "screenshotAXPairs": 14,
+    "sourceDrawApplications": 7,
+    "retainedContext": "bar/controller/window/canvas and observed model Dock/scroll identities and geometry retained; public snapshots before/after equal except phase",
+    "rawEvidenceDirectory": "android-dock-spatial-response-85",
+    "validationJSONSHA256": "80e96114afa0334e9bb91837afa51e6d2bfb2805aee7f8669f4d3f1bedecddcf"
+  },
+  "checkpoints": [
+    {
+      "stage": 0,
+      "inputID": "A",
+      "observationBudgetSeconds": 1,
+      "barInterfaceStyleObserved": 2,
+      "screenshotSHA256": "73997e80c50ec9d9f8d5c21babc4af9a31b0b34212a821ae8fd4e3cb0de220c3",
+      "probes": {
+        "body-196": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                37,
+                37,
+                37
+              ],
+              "count": 192
+            }
+          ]
+        },
+        "body-244": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                37,
+                37,
+                37
+              ],
+              "count": 192
+            }
+          ]
+        }
+      }
+    },
+    {
+      "stage": 0,
+      "inputID": "A",
+      "observationBudgetSeconds": 3,
+      "barInterfaceStyleObserved": 2,
+      "screenshotSHA256": "73997e80c50ec9d9f8d5c21babc4af9a31b0b34212a821ae8fd4e3cb0de220c3",
+      "probes": {
+        "body-196": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                37,
+                37,
+                37
+              ],
+              "count": 192
+            }
+          ]
+        },
+        "body-244": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                37,
+                37,
+                37
+              ],
+              "count": 192
+            }
+          ]
+        }
+      }
+    },
+    {
+      "stage": 1,
+      "inputID": "L",
+      "observationBudgetSeconds": 1,
+      "barInterfaceStyleObserved": 2,
+      "screenshotSHA256": "b58dce739e8b932742a01877edd4c524b4b538371ecaaa868541fc47642e57cc",
+      "probes": {
+        "body-196": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                182,
+                182,
+                182
+              ],
+              "count": 192
+            }
+          ]
+        },
+        "body-244": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                55,
+                55,
+                55
+              ],
+              "count": 192
+            }
+          ]
+        }
+      }
+    },
+    {
+      "stage": 1,
+      "inputID": "L",
+      "observationBudgetSeconds": 3,
+      "barInterfaceStyleObserved": 2,
+      "screenshotSHA256": "b58dce739e8b932742a01877edd4c524b4b538371ecaaa868541fc47642e57cc",
+      "probes": {
+        "body-196": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                182,
+                182,
+                182
+              ],
+              "count": 192
+            }
+          ]
+        },
+        "body-244": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                55,
+                55,
+                55
+              ],
+              "count": 192
+            }
+          ]
+        }
+      }
+    },
+    {
+      "stage": 2,
+      "inputID": "R",
+      "observationBudgetSeconds": 1,
+      "barInterfaceStyleObserved": 2,
+      "screenshotSHA256": "683a623cb53a9796ae4cd261148de47de68611aec3815ceaf4d96c7bf9f4af88",
+      "probes": {
+        "body-196": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                55,
+                55,
+                55
+              ],
+              "count": 192
+            }
+          ]
+        },
+        "body-244": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                182,
+                182,
+                182
+              ],
+              "count": 192
+            }
+          ]
+        }
+      }
+    },
+    {
+      "stage": 2,
+      "inputID": "R",
+      "observationBudgetSeconds": 3,
+      "barInterfaceStyleObserved": 2,
+      "screenshotSHA256": "683a623cb53a9796ae4cd261148de47de68611aec3815ceaf4d96c7bf9f4af88",
+      "probes": {
+        "body-196": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                55,
+                55,
+                55
+              ],
+              "count": 192
+            }
+          ]
+        },
+        "body-244": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                182,
+                182,
+                182
+              ],
+              "count": 192
+            }
+          ]
+        }
+      }
+    },
+    {
+      "stage": 3,
+      "inputID": "B",
+      "observationBudgetSeconds": 1,
+      "barInterfaceStyleObserved": 2,
+      "screenshotSHA256": "c4bdedc58027756f55e594c1e36438f57937d81d7738c97a0d9a7501cfe76386",
+      "probes": {
+        "body-196": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                247,
+                247,
+                247
+              ],
+              "count": 192
+            }
+          ]
+        },
+        "body-244": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                247,
+                247,
+                247
+              ],
+              "count": 192
+            }
+          ]
+        }
+      }
+    },
+    {
+      "stage": 3,
+      "inputID": "B",
+      "observationBudgetSeconds": 3,
+      "barInterfaceStyleObserved": 2,
+      "screenshotSHA256": "c4bdedc58027756f55e594c1e36438f57937d81d7738c97a0d9a7501cfe76386",
+      "probes": {
+        "body-196": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                247,
+                247,
+                247
+              ],
+              "count": 192
+            }
+          ]
+        },
+        "body-244": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                247,
+                247,
+                247
+              ],
+              "count": 192
+            }
+          ]
+        }
+      }
+    },
+    {
+      "stage": 4,
+      "inputID": "R",
+      "observationBudgetSeconds": 1,
+      "barInterfaceStyleObserved": 2,
+      "screenshotSHA256": "d72cb15b8e0603c5322d71aea22824fa132784c04b759566538cd40989035aae",
+      "probes": {
+        "body-196": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                55,
+                55,
+                55
+              ],
+              "count": 192
+            }
+          ]
+        },
+        "body-244": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                182,
+                182,
+                182
+              ],
+              "count": 192
+            }
+          ]
+        }
+      }
+    },
+    {
+      "stage": 4,
+      "inputID": "R",
+      "observationBudgetSeconds": 3,
+      "barInterfaceStyleObserved": 2,
+      "screenshotSHA256": "d72cb15b8e0603c5322d71aea22824fa132784c04b759566538cd40989035aae",
+      "probes": {
+        "body-196": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                55,
+                55,
+                55
+              ],
+              "count": 192
+            }
+          ]
+        },
+        "body-244": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                182,
+                182,
+                182
+              ],
+              "count": 192
+            }
+          ]
+        }
+      }
+    },
+    {
+      "stage": 5,
+      "inputID": "L",
+      "observationBudgetSeconds": 1,
+      "barInterfaceStyleObserved": 2,
+      "screenshotSHA256": "d4653b24e7cd3ea8625eb6c9cb0b7c0173c38e7808ae1b5c066637e702d9935e",
+      "probes": {
+        "body-196": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                182,
+                182,
+                182
+              ],
+              "count": 192
+            }
+          ]
+        },
+        "body-244": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                55,
+                55,
+                55
+              ],
+              "count": 192
+            }
+          ]
+        }
+      }
+    },
+    {
+      "stage": 5,
+      "inputID": "L",
+      "observationBudgetSeconds": 3,
+      "barInterfaceStyleObserved": 2,
+      "screenshotSHA256": "d4653b24e7cd3ea8625eb6c9cb0b7c0173c38e7808ae1b5c066637e702d9935e",
+      "probes": {
+        "body-196": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                182,
+                182,
+                182
+              ],
+              "count": 192
+            }
+          ]
+        },
+        "body-244": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                55,
+                55,
+                55
+              ],
+              "count": 192
+            }
+          ]
+        }
+      }
+    },
+    {
+      "stage": 6,
+      "inputID": "A",
+      "observationBudgetSeconds": 1,
+      "barInterfaceStyleObserved": 2,
+      "screenshotSHA256": "73997e80c50ec9d9f8d5c21babc4af9a31b0b34212a821ae8fd4e3cb0de220c3",
+      "probes": {
+        "body-196": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                37,
+                37,
+                37
+              ],
+              "count": 192
+            }
+          ]
+        },
+        "body-244": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                37,
+                37,
+                37
+              ],
+              "count": 192
+            }
+          ]
+        }
+      }
+    },
+    {
+      "stage": 6,
+      "inputID": "A",
+      "observationBudgetSeconds": 3,
+      "barInterfaceStyleObserved": 2,
+      "screenshotSHA256": "73997e80c50ec9d9f8d5c21babc4af9a31b0b34212a821ae8fd4e3cb0de220c3",
+      "probes": {
+        "body-196": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                37,
+                37,
+                37
+              ],
+              "count": 192
+            }
+          ]
+        },
+        "body-244": {
+          "pixels": 192,
+          "RGBHistogram": [
+            {
+              "RGB": [
+                37,
+                37,
+                37
+              ],
+              "count": 192
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "nativeCalibrationAccepted": false,
+  "limitations": [
+    "Observation budgets are minimum waits after actual draw end; they do not establish compositor presentation, settled state or adaptation latency.",
+    "Stable public configuration/model geometry does not expose a native blur creation style, shader, sampling support or radius.",
+    "Effective bar style and raw RGB probes are observed without a preferred value or acceptance threshold.",
+    "A single retained sequence does not establish a causal brightness classifier, hysteresis, native material coefficients or Android parity.",
+    "Foreground context crops include material and antialiasing; no per-glyph adaptation function is identified.",
+    "Spatially distinct output at these two points does not identify local-vs-global adaptation coefficients or native sampling support.",
+    "No Android material/foreground production change or cross-platform image score was made."
+  ],
+  "wholeScreenshotRepeatability": {
+    "observation": "All seven within-stage 1s/3s screenshot pairs and initial/final A are pixel-identical. Returned L/R full screenshots differ, while the two fixed body probes repeat exactly.",
+    "returnPairs": [
+      {
+        "before": "dock-local-00-A-1s-rest",
+        "after": "dock-local-06-A-1s-rest",
+        "changedPixels": 0,
+        "bbox": null,
+        "maximumChannelDifference": 0,
+        "beforeSHA256": "73997e80c50ec9d9f8d5c21babc4af9a31b0b34212a821ae8fd4e3cb0de220c3",
+        "afterSHA256": "73997e80c50ec9d9f8d5c21babc4af9a31b0b34212a821ae8fd4e3cb0de220c3"
+      },
+      {
+        "before": "dock-local-01-L-1s-rest",
+        "after": "dock-local-05-L-1s-rest",
+        "changedPixels": 45592,
+        "bbox": [
+          0,
+          1055,
+          750,
+          1334
+        ],
+        "maximumChannelDifference": 42,
+        "beforeSHA256": "b58dce739e8b932742a01877edd4c524b4b538371ecaaa868541fc47642e57cc",
+        "afterSHA256": "d4653b24e7cd3ea8625eb6c9cb0b7c0173c38e7808ae1b5c066637e702d9935e"
+      },
+      {
+        "before": "dock-local-02-R-1s-rest",
+        "after": "dock-local-04-R-1s-rest",
+        "changedPixels": 49508,
+        "bbox": [
+          0,
+          1055,
+          750,
+          1334
+        ],
+        "maximumChannelDifference": 42,
+        "beforeSHA256": "683a623cb53a9796ae4cd261148de47de68611aec3815ceaf4d96c7bf9f4af88",
+        "afterSHA256": "d72cb15b8e0603c5322d71aea22824fa132784c04b759566538cd40989035aae"
+      }
+    ],
+    "auditSHA256": "0fec2035369b487b8131f97a23a50e15da1f9447bcd14ec1d4b8034e6de58b13",
+    "limits": "Probe repeatability does not establish whole-image repeatability, hysteresis, settled material state or adaptation latency."
+  }
+}

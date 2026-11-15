@@ -54,6 +54,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     var language by remember { mutableStateOf(AppPrefs.getLanguage(context)) }
+    var languageRecreationPending by remember { mutableStateOf(false) }
     val languages = listOf("zh-CN" to "简体中文", "zh-TW" to "繁體中文", "en" to "English", "ja" to "日本語", "es" to "Español")
     var undoDepth by remember { mutableStateOf(AppPrefs.getUndoDepth(context)) }
     var customDepth by rememberSaveable { mutableStateOf(if (undoDepth > 0) undoDepth.toString() else "5") }
@@ -86,11 +87,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
             contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(SettingsLayout.cardGap)
         ) {
-            // ── 语言：从当前值锚点展开浮框 (分支裁定: 独立锚定窗口替代内联折叠) ──
-            item {
-                SectionHeader(title = stringResource(R.string.settings_language))
-            }
-
+            // Language uses the shared single-choice dropdown for the selected design system.
             item {
                 com.lingion.sleepy.ui.component.liquidglass.GlassLanguageMenu(
                     title = stringResource(R.string.settings_language),
@@ -100,6 +97,12 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
                         if (language != code) {
                             language = code
                             AppPrefs.setLanguage(context, code)
+                            languageRecreationPending = true
+                        }
+                    },
+                    onDismissed = {
+                        if (languageRecreationPending) {
+                            languageRecreationPending = false
                             (context as? android.app.Activity)?.recreate()
                         }
                     },

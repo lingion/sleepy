@@ -3,7 +3,6 @@ package com.lingion.sleepy.ui.component
 import com.lingion.sleepy.ui.theme.noRippleGlassClickable
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import com.lingion.sleepy.ui.component.liquidglass.GlassSwitch as Switch
@@ -28,7 +26,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
@@ -40,7 +37,8 @@ import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.ui.component.liquidglass.glassSurfaceBackground
-import com.lingion.sleepy.ui.theme.noRippleClickable
+import com.lingion.sleepy.ui.component.liquidglass.GlassMaterialContent
+import com.lingion.sleepy.ui.component.liquidglass.rememberGlassMaterialScope
 
 /**
  * [intentional custom] 官方 M3 无「分组标题+折叠卡+单选行+开关行」组合件;
@@ -74,44 +72,31 @@ fun SettingsCard(
     content: @Composable () -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
-    // MD3E (Task 7a): chevron 旋转走 defaultSpatial (收稳不弹, 与展开家族同拍)
-    val arrowRotation by animateFloatAsState(
-        targetValue = if (expanded) 180f else 0f,
-        animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>(),
-        label = "settings-arrow"
-    )
+    val backing = rememberGlassMaterialScope(SleepyTheme.shapes.large)
     Column(
-        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).glassSurfaceBackground(colors.surfaceContainer, SleepyTheme.shapes.large).noRippleClickable(onToggle)
-            .then(dbg?.let { Modifier.dbgTag(it, text = title, role = "button") } ?: Modifier)
-            .padding(horizontal = SettingsLayout.cardInset),
+        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large)
+            .glassSurfaceBackground(colors.surfaceContainer, SleepyTheme.shapes.large, materialScope = backing),
         verticalArrangement = Arrangement.Top
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().heightIn(min = SettingsLayout.minRowHeight).padding(vertical = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(text = title, style = SettingsLayout.headingStyle, color = colors.onSurface, modifier = Modifier.weight(1f))
-            // 箭头随展开旋转, 与内容动画同拍
-            Icon(
-                imageVector = Icons.Outlined.ExpandMore,
-                contentDescription = null,
-                tint = colors.onSurfaceVariant,
-                modifier = Modifier
-                    .size(20.dp)
-                    .rotate(arrowRotation)
-            )
-        }
-        // 展开动画 (MD3E Task 7a): 尺寸 fastSpatial + 淡入淡出走 motionScheme,
-        // 工厂先行取值再进 enter/exit 槽 (T5 rowExpand 先例)
-        val expandSpecs = sleepyExpandSpecs()
-        AnimatedVisibility(
-            visible = expanded,
-            enter = expandSpecs.enter,
-            exit = expandSpecs.exit,
-        ) {
-            Column(Modifier.padding(top = SettingsLayout.headerGap, bottom = SettingsLayout.cardInset)) {
-                content()
+        GlassMaterialContent(backing) {
+            AccordionHeader(
+                expanded = expanded,
+                onToggle = onToggle,
+                modifier = dbg?.let { Modifier.dbgTag(it, text = title, role = "button") } ?: Modifier,
+            ) {
+                Text(text = title, style = SettingsLayout.headingStyle, color = colors.onSurface)
+            }
+            AccordionContent(expanded) {
+                Column(
+                    Modifier.padding(
+                        start = SettingsLayout.cardInset,
+                        end = SettingsLayout.cardInset,
+                        top = SettingsLayout.headerGap,
+                        bottom = SettingsLayout.cardInset,
+                    )
+                ) {
+                    content()
+                }
             }
         }
     }
@@ -134,69 +119,72 @@ fun SettingsFlatCard(
     content: @Composable ColumnScope.() -> Unit = {}
 ) {
     val colors = MaterialTheme.colorScheme
+    val backing = rememberGlassMaterialScope(SleepyTheme.shapes.large)
     Column(
         // The backing owns its rounded shape; a lifted glass lens may overflow it.
         modifier = Modifier.fillMaxWidth()
             .then(if (LocalUiStyle.current == UiStyle.LiquidGlass) Modifier else Modifier.clip(SleepyTheme.shapes.large))
-            .glassSurfaceBackground(colors.surfaceContainer, SleepyTheme.shapes.large)
+            .glassSurfaceBackground(colors.surfaceContainer, SleepyTheme.shapes.large, materialScope = backing)
             .padding(horizontal = SettingsLayout.cardInset, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(SettingsLayout.headerGap),
     ) {
-        BoxWithConstraints(Modifier.fillMaxWidth()) {
-            val density = LocalDensity.current
-            val measurer = rememberTextMeasurer()
-            val titleStyle = SettingsLayout.headingStyle
-            val labelStyle = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
-            val labelSizes = options.map { measurer.measure(AnnotatedString(it), labelStyle).size }
-            val tabWidth = with(density) {
-                ((labelSizes.maxOfOrNull { it.width } ?: 0).toDp() + 32.dp) * options.size + 8.dp
-            }
-            val titleWidth = with(density) { measurer.measure(AnnotatedString(title), titleStyle).size.width.toDp() }
-            val controlHeight = with(density) {
-                // Compact visual track; the surrounding row still reserves 48dp.
-                ((labelSizes.maxOfOrNull { it.height } ?: 0).toDp() + 16.dp).coerceAtLeast(36.dp)
-            }
-            val inline = options.isNotEmpty() && titleWidth + SettingsLayout.controlGap + tabWidth <= maxWidth
-            val choices: @Composable (Modifier) -> Unit = { modifier ->
-                if (tabWidth <= maxWidth) {
-                    SegmentedSwitcher(
-                        options = options.mapIndexed { i, label -> i to label },
-                        selected = selectedKey,
-                        onSelect = onSelect,
-                        modifier = modifier.height(controlHeight),
-                        containerColor = colors.surfaceContainerHighest,
-                        dbgTagPrefix = dbg,
-                    )
-                } else {
-                    // Long translations / large fonts must remain readable and selectable.
-                    Column(Modifier.fillMaxWidth()) {
-                        options.forEachIndexed { index, label ->
-                            DisplayModeOption(label, "", index == selectedKey, { onSelect(index) },
-                                dbg = dbg?.let { "$it#$index" })
+        GlassMaterialContent(backing) {
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val density = LocalDensity.current
+                val measurer = rememberTextMeasurer()
+                val titleStyle = SettingsLayout.headingStyle
+                val labelStyle = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
+                val labelSizes = options.map { measurer.measure(AnnotatedString(it), labelStyle).size }
+                val tabWidth = with(density) {
+                    ((labelSizes.maxOfOrNull { it.width } ?: 0).toDp() + 32.dp) * options.size + 8.dp
+                }
+                val titleWidth = with(density) { measurer.measure(AnnotatedString(title), titleStyle).size.width.toDp() }
+                val controlHeight = with(density) {
+                    val minimum = if (LocalUiStyle.current == UiStyle.LiquidGlass) 48.dp else 36.dp
+                    ((labelSizes.maxOfOrNull { it.height } ?: 0).toDp() + 16.dp).coerceAtLeast(minimum)
+                }
+                val inline = options.isNotEmpty() && titleWidth + SettingsLayout.controlGap + tabWidth <= maxWidth
+                val choices: @Composable (Modifier) -> Unit = { modifier ->
+                    if (tabWidth <= maxWidth) {
+                        SegmentedSwitcher(
+                            options = options.mapIndexed { i, label -> i to label },
+                            selected = selectedKey,
+                            onSelect = onSelect,
+                            modifier = modifier.height(controlHeight),
+                            containerColor = colors.surfaceContainerHighest,
+                            dbgTagPrefix = dbg,
+                        )
+                    } else {
+                        // Long translations / large fonts must remain readable and selectable.
+                        Column(Modifier.fillMaxWidth()) {
+                            options.forEachIndexed { index, label ->
+                                DisplayModeOption(label, "", index == selectedKey, { onSelect(index) },
+                                    dbg = dbg?.let { "$it#$index" })
+                            }
                         }
                     }
                 }
-            }
-            if (inline) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().heightIn(min = SettingsLayout.minRowHeight),
-                    horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(title, style = titleStyle, color = colors.onSurface, modifier = Modifier.weight(1f))
-                    choices(Modifier.width(tabWidth))
+                if (inline) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().heightIn(min = SettingsLayout.minRowHeight),
+                        horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(title, style = titleStyle, color = colors.onSurface, modifier = Modifier.weight(1f))
+                        choices(Modifier.width(tabWidth))
+                    }
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(SettingsLayout.headerGap)) {
+                        Text(title, style = titleStyle, color = colors.onSurface)
+                        if (options.isNotEmpty()) choices(Modifier.fillMaxWidth())
+                    }
                 }
-            } else {
-                Column(verticalArrangement = Arrangement.spacedBy(SettingsLayout.headerGap)) {
-                    Text(title, style = titleStyle, color = colors.onSurface)
-                    if (options.isNotEmpty()) choices(Modifier.fillMaxWidth())
-                }
             }
+            if (!subtitle.isNullOrBlank()) {
+                Text(text = subtitle, style = SettingsLayout.descriptionStyle, color = colors.onSurfaceVariant)
+            }
+            content()
         }
-        if (!subtitle.isNullOrBlank()) {
-            Text(text = subtitle, style = SettingsLayout.descriptionStyle, color = colors.onSurfaceVariant)
-        }
-        content()
     }
 }
 

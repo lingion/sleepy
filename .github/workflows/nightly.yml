@@ -32,7 +32,7 @@ jobs:
       - name: Unit tests
         run: |
           set -o pipefail
-          ./gradlew :app:testDebugUnitTest --stacktrace 2>&1 | tail -400
+          ./gradlew :app:testDebugUnitTest :liquid-glass-runtime:testAndroidHostTest --stacktrace 2>&1 | tail -400
 
   catalog-check:
     runs-on: ubuntu-latest

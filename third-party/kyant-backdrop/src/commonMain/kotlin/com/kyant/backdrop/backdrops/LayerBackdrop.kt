@@ -44,6 +44,9 @@ class LayerBackdrop internal constructor(
 
     internal var contentVersion: Int by mutableIntStateOf(0)
 
+    /** Completed display-list recording revision, not a compositor presentation or pixel fence. */
+    val recordingRevision: Int get() = contentVersion
+
     private var inverseLayerScope: InverseLayerScope? = null
 
     override fun DrawScope.drawBackdrop(

@@ -1,0 +1,487 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-14",
+  "stage": "dock-contrast-zero-diagnostic-90",
+  "sourceHead": "2621452c6e4cf1d51f06b2c7cadcf398fc5892a8",
+  "status": "diagnostic-completed-baseline-restored",
+  "scope": "One temporary Dock-base contrast override in the original GlassHost retained REST fixture. The ablation has been reverted and is not a production/native-optical candidate. Embedded legacy fixture prose saying unchanged production is superseded only for this run by the explicit root protocol.",
+  "singleVariable": {
+    "path": "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassNavigationBar.kt",
+    "before": "style = LiquidGlassStyle.pill(colorScheme, dark),",
+    "after": "style = LiquidGlassStyle.pill(colorScheme, dark).copy(contrast = 0.0),",
+    "changedOccurrences": 1
+  },
+  "hypothesis": "The current dark Dock tint and negative contrast materially explain the bright-source compression; source loss is not needed to explain baseline81. This is a causal ablation, not a native material candidate.",
+  "predeclaredPrediction": {
+    "A_C": "Approximately unchanged RGB(39,38,42) at the two pre-existing glyph-free probes",
+    "B_D": "Near RGB(146,145,148) in sufficiently uniform bright-region conditions, versus baseline(117,115,120). Gaussian support, integer/color rounding and actual sampled source remain confounds; report exact values, do not fit tolerance after result.",
+    "falsifier": "Remaining near original bright117/115/120 or material change in dark A/C requires checking actual uniforms/atlas/alpha/source before any additional material change."
+  },
+  "frozenInputs": {
+    "app/src/main/java/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassNavigationBar.kt": "8ae7c5014140942c3215a19ebc0fb0644366386e549ad28e25405fcf1d8b538c",
+    "app/src/androidTest/java/com/lingion/sleepy/ui/component/NativeDockOpticalWorldRenderTest.kt": "fa23de029583d931d528d5b85189c917603cd856cdea1e465677329708c1627f",
+    "app/src/androidTest/java/com/lingion/sleepy/ui/component/GlassOpticalCaptureFixtures.kt": "3bcee1b8b7d2d4f1d6e452f7ecd8dfa75e9e65329c40dfa7eff3436b9850d8d0",
+    "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassStyle.kt": "a755c6125dee7f885a38800f3c79b0941ed63c07e870a76533546c860a8f808e",
+    "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassEffect.kt": "17bcec74d13faee03c1c6f16f4c02e3db735253bdf716adc687c0564e58a376a",
+    "libraries/liquid-glass/runtime/src/androidMain/kotlin/com/lingion/sleepy/ui/component/liquidglass/LiquidGlassShader.kt": "068b2e8d83d499f0a36d9167ab6bef2f5b6af16d3460c4b3ce0b0a5654c477d4",
+    "libraries/liquid-glass/runtime/src/androidMain/assets/shaders/liquid_glass.agsl": "2b45241e8c640d996e1ebfbe4eceff3d0fcdfc55a84e428f7fcd215560247f19",
+    "app/build.gradle.kts": "82dca65f0bc0d748bc2e3d8aa419b97217d1e4ee4d9f0b4586ccb40ba49b0ac1",
+    "libraries/liquid-glass/runtime/build.gradle.kts": "8377a1039de3f8ea8a4a754e80f93010de1862e11fe561cfa8c4527577fe4d8b"
+  },
+  "build": {
+    "command": [
+      "./gradlew",
+      ":app:assembleDebug"
+    ],
+    "exitCode": 0,
+    "wallSeconds": 9.195762,
+    "logSHA256": "44649112eb6f63e339a0e71b186eea2c22053fa1d85771219a8f1a022f28cdff",
+    "scope": "Only temporary Dock base contrast override; existing test APK reused unchanged."
+  },
+  "run": {
+    "command": [
+      "/Users/kerrylee/Library/Android/sdk/platform-tools/adb",
+      "-s",
+      "d3efcd6a",
+      "shell",
+      "am",
+      "instrument",
+      "-w",
+      "-r",
+      "-e",
+      "class",
+      "com.lingion.sleepy.ui.component.NativeDockOpticalWorldRenderTest#captureRetainedDockLocalAppearance",
+      "-e",
+      "glassDockLocalAppearance",
+      "true",
+      "-e",
+      "glassDockOpticalRunId",
+      "contrast-zero90",
+      "com.lingion.sleepy.debug.test/com.lingion.sleepy.SleepyRenderTestRunner"
+    ],
+    "exitCode": 0,
+    "wallSeconds": 28.951325041,
+    "hardBudgetSeconds": 150,
+    "timedOut": false,
+    "diagnosticMainSHA256": "5f10c1af216096a2df90802f5bde7cc23edada506db327b797bbb7991cb1da47",
+    "testSHA256": "dca9e55ac4a868be16befe1aa55e529d5aeebbc1cd5639c61b943a56e3f4689a",
+    "oneTestPassMarker": true,
+    "sourceSHA256After": "a643da8434c795248abdb4cd1ec0e8fde66f0570d617e9c27ec7272c608436f4",
+    "scope": "Temporary contrast-zero Dock call; original test/inputs/clocks/gates unchanged. Embedded original fixture scope is superseded by root-protocol for the ablation only."
+  },
+  "reuseTestAPKUnchanged": true,
+  "preconditionExitStatus": "The diagnostic output-directory test -e returned expected exit1 to prove absence; other installation/hash commands succeeded. Do not classify that precondition as an execution failure or all commands as exit0.",
+  "export": {
+    "fileCount": 33,
+    "allHostDeviceHashesMatch": true
+  },
+  "artifactValidation": {
+    "validatorSHA256": "2327943c9e9cf269da2ab95109aadffbd3abc587c3493139e6db119fc1bf11c9",
+    "validatorUnchangedFrom81": true,
+    "checksPassed": 459,
+    "checksFailed": 0,
+    "schemaErrors": 0,
+    "fullDomainReadinessPassed": 14,
+    "scope": "Capture/integrity checks only; no optical pass score."
+  },
+  "observations": [
+    {
+      "stage": 0,
+      "input": "A",
+      "budgetMs": 1000,
+      "baselineRGB": [
+        39,
+        38,
+        42
+      ],
+      "diagnosticRGB": [
+        39,
+        38,
+        42
+      ],
+      "nativeRGB": [
+        37,
+        37,
+        37
+      ]
+    },
+    {
+      "stage": 0,
+      "input": "A",
+      "budgetMs": 3000,
+      "baselineRGB": [
+        39,
+        38,
+        42
+      ],
+      "diagnosticRGB": [
+        39,
+        38,
+        42
+      ],
+      "nativeRGB": [
+        37,
+        37,
+        37
+      ]
+    },
+    {
+      "stage": 1,
+      "input": "B",
+      "budgetMs": 1000,
+      "baselineRGB": [
+        117,
+        115,
+        120
+      ],
+      "diagnosticRGB": [
+        146,
+        145,
+        148
+      ],
+      "nativeRGB": [
+        247,
+        247,
+        247
+      ]
+    },
+    {
+      "stage": 1,
+      "input": "B",
+      "budgetMs": 3000,
+      "baselineRGB": [
+        117,
+        115,
+        120
+      ],
+      "diagnosticRGB": [
+        146,
+        145,
+        148
+      ],
+      "nativeRGB": [
+        247,
+        247,
+        247
+      ]
+    },
+    {
+      "stage": 2,
+      "input": "C",
+      "budgetMs": 1000,
+      "baselineRGB": [
+        39,
+        38,
+        42
+      ],
+      "diagnosticRGB": [
+        39,
+        38,
+        42
+      ],
+      "nativeRGB": [
+        37,
+        37,
+        37
+      ]
+    },
+    {
+      "stage": 2,
+      "input": "C",
+      "budgetMs": 3000,
+      "baselineRGB": [
+        39,
+        38,
+        42
+      ],
+      "diagnosticRGB": [
+        39,
+        38,
+        42
+      ],
+      "nativeRGB": [
+        37,
+        37,
+        37
+      ]
+    },
+    {
+      "stage": 3,
+      "input": "D",
+      "budgetMs": 1000,
+      "baselineRGB": [
+        117,
+        115,
+        120
+      ],
+      "diagnosticRGB": [
+        146,
+        145,
+        148
+      ],
+      "nativeRGB": [
+        247,
+        247,
+        247
+      ]
+    },
+    {
+      "stage": 3,
+      "input": "D",
+      "budgetMs": 3000,
+      "baselineRGB": [
+        117,
+        115,
+        120
+      ],
+      "diagnosticRGB": [
+        146,
+        145,
+        148
+      ],
+      "nativeRGB": [
+        247,
+        247,
+        247
+      ]
+    },
+    {
+      "stage": 4,
+      "input": "C",
+      "budgetMs": 1000,
+      "baselineRGB": [
+        39,
+        38,
+        42
+      ],
+      "diagnosticRGB": [
+        39,
+        38,
+        42
+      ],
+      "nativeRGB": [
+        37,
+        37,
+        37
+      ]
+    },
+    {
+      "stage": 4,
+      "input": "C",
+      "budgetMs": 3000,
+      "baselineRGB": [
+        39,
+        38,
+        42
+      ],
+      "diagnosticRGB": [
+        39,
+        38,
+        42
+      ],
+      "nativeRGB": [
+        37,
+        37,
+        37
+      ]
+    },
+    {
+      "stage": 5,
+      "input": "B",
+      "budgetMs": 1000,
+      "baselineRGB": [
+        117,
+        115,
+        120
+      ],
+      "diagnosticRGB": [
+        146,
+        145,
+        148
+      ],
+      "nativeRGB": [
+        247,
+        247,
+        247
+      ]
+    },
+    {
+      "stage": 5,
+      "input": "B",
+      "budgetMs": 3000,
+      "baselineRGB": [
+        117,
+        115,
+        120
+      ],
+      "diagnosticRGB": [
+        146,
+        145,
+        148
+      ],
+      "nativeRGB": [
+        247,
+        247,
+        247
+      ]
+    },
+    {
+      "stage": 6,
+      "input": "A",
+      "budgetMs": 1000,
+      "baselineRGB": [
+        39,
+        38,
+        42
+      ],
+      "diagnosticRGB": [
+        39,
+        38,
+        42
+      ],
+      "nativeRGB": [
+        37,
+        37,
+        37
+      ]
+    },
+    {
+      "stage": 6,
+      "input": "A",
+      "budgetMs": 3000,
+      "baselineRGB": [
+        39,
+        38,
+        42
+      ],
+      "diagnosticRGB": [
+        39,
+        38,
+        42
+      ],
+      "nativeRGB": [
+        37,
+        37,
+        37
+      ]
+    }
+  ],
+  "interpretation": [
+    "A/C glyph-free body probes remain exactly RGB(39,38,42); B/D become exactly(146,145,148) instead of historical baseline81(117,115,120), in both Window/display and both budgets. This agrees with the predeclared conditional transfer calculation.",
+    "The known negative-contrast path contributes to bright-source compression. No source-loss explanation is needed for these probes; this does not identify a unique full rendering mechanism or dump intermediate GPU uniforms.",
+    "Removing contrast leaves a large gap from the native B/D probes(247,247,247), so this diagnostic parameter is not a fix. Unselected foreground remains an independently drawn fixed tint.",
+    "Baseline81 is a historical package preceding byte-preserving module extraction. Current diagnostic has only the one-call override relative to its current source head; a fresh same-build baseline was not rerun. Inputs/geometry and the known formulas are checked separately."
+  ],
+  "restored": {
+    "allFrozenSourcesRestored": true,
+    "worktreeCleanAtRestore": true,
+    "mainHostAndDeviceSHA256": "448a5b67bbc970b96485bd0d7f0a7c7c3bb8f010058e737f4237bf419eddf190",
+    "testHostAndDeviceSHA256": "dca9e55ac4a868be16befe1aa55e529d5aeebbc1cd5639c61b943a56e3f4689a",
+    "mainActivityResumed": true,
+    "screenshotSHA256": "c87da9f13dad6592d234127c22b6d766f9f985841c05ed2670312b31a95f0628",
+    "observedScreenshot": "Week 11 populated timetable grid and Dock; installation/launch scope only."
+  },
+  "cleanup": {
+    "unusedABIAPKsRemoved": [
+      {
+        "path": "app/build/outputs/apk/debug/app-armeabi-v7a-debug.apk",
+        "bytes": 30060674,
+        "sha256": "c326507a1d653472167b4cfd5375d30a6c833e011e554f0541552f02d9c6df4a"
+      },
+      {
+        "path": "app/build/outputs/apk/debug/app-universal-debug.apk",
+        "bytes": 30161054,
+        "sha256": "938251ff9e2080bcacba0b03ae2338fcf3873f578283b35368a94a5565033951"
+      },
+      {
+        "path": "app/build/outputs/apk/debug/app-x86_64-debug.apk",
+        "bytes": 30062224,
+        "sha256": "b56e506895779e6c9390fe0ec380b0bbedb8dfef4f7b459f54cde0b7d21cd3f9"
+      }
+    ],
+    "unusedABIBytesRemoved": 90283952,
+    "temporaryBaselineAPKBackupRemovedBytes": 30078637,
+    "diagnosticAPKReplacedByExactBaseline": true,
+    "referenceAndFailureEvidencePreserved": true
+  },
+  "evidenceDirectory": "android-dock-contrast-diagnostic-90",
+  "evidenceSHA256": {
+    "root-protocol.json": "df5b1de408823432bf61b7e2ff76bed015dc62257a61fee3fcdf4a86648728dc",
+    "LiquidGlassNavigationBar-before.kt": "8ae7c5014140942c3215a19ebc0fb0644366386e549ad28e25405fcf1d8b538c",
+    "diagnostic-source.patch": "1ebf9e635154980a47a31dd48b683a643f59a688d239fcd8850f47fa0bbd4e78",
+    "diagnostic-build.json": "32208b1583a8f236eb35e913f824b271cf62302676412e27b15e41f9be8513f9",
+    "diagnostic-build.log": "44649112eb6f63e339a0e71b186eea2c22053fa1d85771219a8f1a022f28cdff",
+    "diagnostic-install.json": "1176ee82eba39c01929e01fa17b526f3c6e614802fd5878c47b8b4e9b3425dce",
+    "android-instrumentation-receipt.json": "18559dfca184e7b28ac5caa55d4459add98e593857b645f72f15d1f80e8517bc",
+    "android-instrumentation.log": "89e3309d432dc5144e887c1296f1e6df56f2147e0481f60a61d38dd5fc047341",
+    "export-receipt.json": "ee0bf47f7c9d96149b84b167639cdeabe8fc24d9f96a37fe4288f95055ff145c",
+    "validate-offline.py": "2327943c9e9cf269da2ab95109aadffbd3abc587c3493139e6db119fc1bf11c9",
+    "offline-validation-receipt.json": "19fcd108fe9851408a7c18e75d6572cdbbbe74ecbab5ebddb0b6c4697500d88b",
+    "offline-validation/validation.json": "eb4762858aa9cc70e3f78c1c28398f0b084eef8d13d15b42b93479345eb15878",
+    "offline-validation/comparison.json": "c4c267719788bb7368962f949cef3751cbcc50ccc7328a4497c4214a24e71be0",
+    "restore-receipt.json": "f91a051aae08288d8779bc06fcd123f3f6b1f68d0fa24f2d3a450b7ac57e75af",
+    "android-restored-home.png": "c87da9f13dad6592d234127c22b6d766f9f985841c05ed2670312b31a95f0628",
+    "android-restored-hierarchy.xml": "b849d1df8ee84ae0b487e2190073397621406422ec5f8e141d02a7ae8c03e1e6",
+    "unused-output-cleanup.json": "26582833e2412836c669c6accaf50bd84c4391a0d2474ab3c1ced2587a205a5f",
+    "trace/00-A-1000ms-rest-screen.png": "e4bbcf83167cee1a029f604888ebdd7bb6cfa432d1cd7898530462c577a6c63c",
+    "trace/00-A-1000ms-rest-window.png": "624392dc566920dbcb6b870a84340d6df3597b0efcc2fbbb1d98253abbcba6d1",
+    "trace/00-A-3000ms-rest-screen.png": "6b6dd8bbea236a75ff85baa8e87281524c25484b2951c149eb2826af325a676f",
+    "trace/00-A-3000ms-rest-window.png": "624392dc566920dbcb6b870a84340d6df3597b0efcc2fbbb1d98253abbcba6d1",
+    "trace/01-B-1000ms-rest-screen.png": "4d9f0ec266942c0647d74f5614805b21a20451fdb42b57ec449e3fc2d85da7d8",
+    "trace/01-B-1000ms-rest-window.png": "9264b2dbdd5c7aa0e939e6476a8d43f0ed710c4e06e71f37f74c00842451b025",
+    "trace/01-B-3000ms-rest-screen.png": "694b5ddce98e915d4afc4d30290303eddaa03218d3391f27777b2d590330c8ab",
+    "trace/01-B-3000ms-rest-window.png": "9264b2dbdd5c7aa0e939e6476a8d43f0ed710c4e06e71f37f74c00842451b025",
+    "trace/02-C-1000ms-rest-screen.png": "2923b0cea25646bfcc87d70bc1b9057690ce6330c0fbcc5467935254035df1df",
+    "trace/02-C-1000ms-rest-window.png": "6b5562509d8529ecb5349c8aa2f198276ee1b55d48a94d599fc88f2c69c0cca5",
+    "trace/02-C-3000ms-rest-screen.png": "601e2c8350c443aaf3008705ca7989ca0997fc54ddd87a3d948af88dad479cca",
+    "trace/02-C-3000ms-rest-window.png": "6b5562509d8529ecb5349c8aa2f198276ee1b55d48a94d599fc88f2c69c0cca5",
+    "trace/03-D-1000ms-rest-screen.png": "930da650c7873dce97a3f407a8e353f8383c9e210f073a4ecbbdc24f005ab5a2",
+    "trace/03-D-1000ms-rest-window.png": "39d76b7a64a0aa704e142c8bd410ee2f6d95706ef9f156c6f14d65db44de9940",
+    "trace/03-D-3000ms-rest-screen.png": "930da650c7873dce97a3f407a8e353f8383c9e210f073a4ecbbdc24f005ab5a2",
+    "trace/03-D-3000ms-rest-window.png": "39d76b7a64a0aa704e142c8bd410ee2f6d95706ef9f156c6f14d65db44de9940",
+    "trace/04-C-1000ms-rest-screen.png": "8526c493ea61ac722817e31a93fed0bf852888e1179a17924c4cc1246b501616",
+    "trace/04-C-1000ms-rest-window.png": "6b5562509d8529ecb5349c8aa2f198276ee1b55d48a94d599fc88f2c69c0cca5",
+    "trace/04-C-3000ms-rest-screen.png": "8526c493ea61ac722817e31a93fed0bf852888e1179a17924c4cc1246b501616",
+    "trace/04-C-3000ms-rest-window.png": "6b5562509d8529ecb5349c8aa2f198276ee1b55d48a94d599fc88f2c69c0cca5",
+    "trace/05-B-1000ms-rest-screen.png": "2bcabd8625e1c046c09e77cd0e1a2078bc57d558e4870ab5846538d11c5bb01e",
+    "trace/05-B-1000ms-rest-window.png": "9264b2dbdd5c7aa0e939e6476a8d43f0ed710c4e06e71f37f74c00842451b025",
+    "trace/05-B-3000ms-rest-screen.png": "2bcabd8625e1c046c09e77cd0e1a2078bc57d558e4870ab5846538d11c5bb01e",
+    "trace/05-B-3000ms-rest-window.png": "9264b2dbdd5c7aa0e939e6476a8d43f0ed710c4e06e71f37f74c00842451b025",
+    "trace/06-A-1000ms-rest-screen.png": "b71da7461bfbf1b4526332026d1cd2d32ae85474b0358bdca03f3ffeb0862519",
+    "trace/06-A-1000ms-rest-window.png": "624392dc566920dbcb6b870a84340d6df3597b0efcc2fbbb1d98253abbcba6d1",
+    "trace/06-A-3000ms-rest-screen.png": "b71da7461bfbf1b4526332026d1cd2d32ae85474b0358bdca03f3ffeb0862519",
+    "trace/06-A-3000ms-rest-window.png": "624392dc566920dbcb6b870a84340d6df3597b0efcc2fbbb1d98253abbcba6d1",
+    "trace/input-A.png": "674344a3294752b3235ec6aaef59028075c79367590f15c1b73d2aa9ab763fb6",
+    "trace/input-B.png": "5c508e2d471093c4fc40f878a31224c66495f7fff5322b86c7cac27321fe89a0",
+    "trace/input-C.png": "dcc344c3e0e363cb9ac847493822ab17cbafbbda4618a7fadeac401fcab03285",
+    "trace/input-D.png": "0127e63581b7a43d57232b6b9f56102820077894c8474f9004dde4ce676fdb3a",
+    "trace/result.json": "01d1d9bf5d6bba80f2545d71afbfbebe90183345c3b29bcfb920acdf83eb752d"
+  },
+  "remaining": [
+    "Native foreground configuration colors already exist, but actual UILabel/UIImageView properties and independent glyph coverage were not captured. Reuse the existing data before any minimal additional getter.",
+    "Production MainTabs LayerBackdrop is a different source graph from this GlassHost fixture.",
+    "No support for fitting a new material to these four gray inputs; retain the declared diverse-background matrix, motion, shape and layering requirements."
+  ],
+  "opticalAcceptance": false,
+  "nativeCalibrationAccepted": false,
+  "publicationReady": false,
+  "bodyProbeDefinitions": {
+    "worldBounds": [
+      [
+        196,
+        592,
+        208,
+        596
+      ],
+      [
+        244,
+        592,
+        256,
+        596
+      ]
+    ],
+    "androidPixelsEach": 432,
+    "nativePixelsEach": 192,
+    "distribution": "At each observation below, both probes are uniform at the listed RGB. Diagnostic Window/display distributions are equal, each with 432 pixels. Raw per-probe bounds/distributions remain in the hashed original trace and offline validation."
+  }
+}

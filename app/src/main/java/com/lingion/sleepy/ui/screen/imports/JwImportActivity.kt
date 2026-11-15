@@ -31,6 +31,7 @@ import androidx.compose.material3.Text
 import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -67,12 +68,15 @@ import com.lingion.sleepy.data.diff.diffImportedCourses
 import com.lingion.sleepy.data.parser.ScheduleParser
 import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.DialogActionButtons
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
 import com.lingion.sleepy.ui.component.PeriodTableOption as TimeSlotEditorPeriodTableOption
 import com.lingion.sleepy.ui.component.TimeSlotEditor
 import com.lingion.sleepy.ui.component.resolveAutoPeriodConfig
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.SleepyThemeProvider
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
 import android.webkit.WebView
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.EffectivePeriodResolver
@@ -129,6 +133,7 @@ class JwImportActivity : ComponentActivity() {
             val themeKey by AppPrefs.themeKeyFlow(this@JwImportActivity)
                 .collectAsState(initial = AppPrefs.getThemeKey(this@JwImportActivity))
             SleepyThemeProvider(darkTheme = dark, themeKey = themeKey) {
+                val nativeActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
                 val jwViewModel: JwImportViewModel = viewModel()
                 val jwSchools by jwViewModel.schools.collectAsState()
                 val jwImportState by jwViewModel.importState.collectAsState()
@@ -1227,6 +1232,17 @@ class JwImportActivity : ComponentActivity() {
                         reportDialogSchool = null
                         scope.launch { completeImport() }
                     }
+                    val actions: @Composable () -> Unit = {
+                        DialogActionButtons(
+                            confirmText = getString(R.string.jw_import_report_done),
+                            onConfirm = closeReportDialog,
+                            thirdText = getString(R.string.jw_import_report_join_qq),
+                            onThird = { launchQqGroupJoin(qqGroup) },
+                            dismissText = getString(R.string.jw_import_report_copy),
+                            onDismiss = { copyTextToClipboard(reportText, "jw_import_report") },
+                            dbgTagPrefix = "jw_report",
+                        )
+                    }
                     AlertDialog(
                         onDismissRequest = closeReportDialog,
                         title = { Text(getString(R.string.jw_import_report_title)) },
@@ -1260,19 +1276,13 @@ class JwImportActivity : ComponentActivity() {
                                         )
                                     }
                                 }
-                                Spacer(modifier = Modifier.height(20.dp))
-                                DialogActionButtons(
-                                    confirmText = getString(R.string.jw_import_report_done),
-                                    onConfirm = closeReportDialog,
-                                    thirdText = getString(R.string.jw_import_report_join_qq),
-                                    onThird = { launchQqGroupJoin(qqGroup) },
-                                    dismissText = getString(R.string.jw_import_report_copy),
-                                    onDismiss = { copyTextToClipboard(reportText, "jw_import_report") },
-                                    dbgTagPrefix = "jw_report",
-                                )
+                                if (!nativeActions) {
+                                    Spacer(modifier = Modifier.height(20.dp))
+                                    actions()
+                                }
                             }
                         },
-                        confirmButton = {},
+                        confirmButton = { if (nativeActions) actions() },
                         dismissButton = {}
                     )
                 }
@@ -1281,6 +1291,17 @@ class JwImportActivity : ComponentActivity() {
                 // 确定 + 导出排查全量包 — 学生把包发给开发者, 免来回截图问诊)
                 errorMsg?.let { msg ->
                     val dumpSchool = parsedSchool ?: selectedSchool
+                    val actions: @Composable () -> Unit = {
+                        // 导出(第三位 secondary) / 确定(confirm 位 primary)
+                        // #27: 确定只关弹窗, 不退出页面 — 用户改完环境可当场重试
+                        DialogActionButtons(
+                            confirmText = getString(R.string.jw_err_dismiss),
+                            onConfirm = { errorMsg = null },
+                            thirdText = getString(R.string.jw_diag_export_btn),
+                            onThird = { exportDiagnosticDump(dumpSchool) },
+                            dbgTagPrefix = "jw_err",
+                        )
+                    }
                     AlertDialog(
                         onDismissRequest = { errorMsg = null },
                         title = { Text(getString(R.string.jw_error_dialog_title)) },
@@ -1294,16 +1315,10 @@ class JwImportActivity : ComponentActivity() {
                                         .verticalScroll(rememberScrollState()),
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                                Spacer(Modifier.height(20.dp))
-                                // 导出(第三位 secondary) / 确定(confirm 位 primary)
-                                // #27: 确定只关弹窗, 不退出页面 — 用户改完环境可当场重试
-                                DialogActionButtons(
-                                    confirmText = getString(R.string.jw_err_dismiss),
-                                    onConfirm = { errorMsg = null },
-                                    thirdText = getString(R.string.jw_diag_export_btn),
-                                    onThird = { exportDiagnosticDump(dumpSchool) },
-                                    dbgTagPrefix = "jw_err",
-                                )
+                                if (!nativeActions) {
+                                    Spacer(Modifier.height(20.dp))
+                                    actions()
+                                }
                                 // 点击导出后在同一个错误弹窗内向下展开进度区 — 用户不离开
                                 // 当前问题上下文即可看到步骤、阶段文案和百分比。
                                 dumpProgress?.let { progress ->
@@ -1353,7 +1368,7 @@ class JwImportActivity : ComponentActivity() {
                                 }
                             }
                         },
-                        confirmButton = {},
+                        confirmButton = { if (nativeActions) actions() },
                         dismissButton = {}
                     )
                 }

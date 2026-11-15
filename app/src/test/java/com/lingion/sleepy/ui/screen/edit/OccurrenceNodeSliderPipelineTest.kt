@@ -84,11 +84,11 @@ class OccurrenceNodeSliderPipelineTest {
     private fun endThumbX(nodeWidthPx: Float, endValue: Int): Float {
         val density = 2f // xhdpi (qualifiers)
         val thumbW = 4f * density
-        val trackH = 16f * density
-        val trackW = nodeWidthPx - thumbW
         val frac = (endValue - 1) / 11f
-        val corner = trackH / 2f
-        return thumbW / 2f + corner + (trackW - 2f * corner) * frac
+        val corner = 8f * density
+        return thumbW / 2f + if (frac != 0f && frac != 1f) {
+            kotlin.math.round((nodeWidthPx - thumbW - corner * 2) * frac) + corner
+        } else kotlin.math.round((nodeWidthPx - thumbW) * frac)
     }
 
     /** 终点从 fromValue 拖到 toValue: 寻址 = RangeSlider 本体 (组件内部把摘要文本

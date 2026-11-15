@@ -1,37 +1,23 @@
 package com.lingion.sleepy.ui.component
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.Row
-import com.kyant.backdrop.backdrops.layerBackdrop
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RangeSlider
-import androidx.compose.material3.RangeSliderState
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -39,11 +25,10 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.ui.component.liquidglass.GlassRangeSlider
-import com.lingion.sleepy.ui.component.liquidglass.liquidGlassControlsEnabled
-import com.lingion.sleepy.ui.component.liquidglass.GlassSliderThumb
+import com.lingion.sleepy.ui.component.liquidglass.drawSliderGhost
 import com.lingion.sleepy.ui.component.liquidglass.GlassSliderThumbMetrics
-import com.lingion.sleepy.ui.theme.LocalUiStyle
-import com.lingion.sleepy.ui.theme.UiStyle
+import com.lingion.sleepy.ui.component.liquidglass.liquidGlassControlsEnabled
+import androidx.compose.ui.geometry.CornerRadius
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlinx.coroutines.coroutineScope
@@ -90,33 +75,13 @@ fun IntRangeSlider(
     // 只有一个可选档位 (maxStd=1 的作息表) — 滑杆两端点重合无意义, 退化成静态读数;
     // 退化域只是普通文本, 拖它应当照常滚页面, 不加纵向拦截
     val hasTwoStops = maxValue >= minValue + 1
+    // GlassSlider owns input from Initial pass. The Material-only filter below
+    // would pre-consume a vertical frame and cancel that same glass pointer.
+    val glassOwnsInput = liquidGlassControlsEnabled()
     val displayStart = startValue.coerceIn(minValue, maxValue)
     val displayEnd = endValue.coerceIn(displayStart, maxValue)
-    // 幽灵坐标与可见性共用同一对夹取后的初值读数 (夹取规则与 displayStart/displayEnd
-    // 完全同构, 见 sliderGhostVisible 的 KDoc) — 脏数据不会画出与摘要矛盾的幽灵
-    val ghostVisible = sliderGhostVisible(
-        currentStart = displayStart,
-        currentEnd = displayEnd,
-        initialStart = initialStart,
-        initialEnd = initialEnd,
-        minValue = minValue,
-        maxValue = maxValue,
-    )
-    val ghostRange: IntRange? = if (ghostVisible && initialStart != null && initialEnd != null) {
-        val os = initialStart.coerceIn(minValue, maxValue)
-        os..initialEnd.coerceIn(os, maxValue)
-    } else {
-        null
-    }
-    // 终审 I-1: 退场帧保留的幽灵快照 — ghostRange 在拖回初值的同一次重组翻 null,
-    // 与 visible=false 同帧; 内容若直读 ghostRange, Canvas 在退场第 0 帧即被拆走,
-    // sleepyPopupExit 只剩空壳动画 (弹入真实、退出硬切)。组合期直写保留最后非空
-    // 快照供内容判据 (CourseTableView retainedLifted 同款模式); 快照一旦现身不再
-    // 复位 null — 无妨, 退场播完 AnimatedVisibility 移除整棵子树, 终态存在性不变。
-    var lastGhostRange by remember { mutableStateOf<IntRange?>(null) }
-    ghostRange?.let { lastGhostRange = it }
     Column(
-        modifier = (if (hasTwoStops) modifier.sliderFreezePageScroll() else modifier)
+        modifier = (if (hasTwoStops && !glassOwnsInput) modifier.sliderFreezePageScroll() else modifier)
             .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
@@ -138,7 +103,7 @@ fun IntRangeSlider(
                 color = colors.onSurface
             )
         }
-        if (hasTwoStops && liquidGlassControlsEnabled()) {
+        if (hasTwoStops) {
             GlassRangeSlider(
                 value = displayStart.toFloat()..displayEnd.toFloat(),
                 onValueChange = { val snapped = snapRangeToInt(it, minValue, maxValue); onValueChange(snapped.first, snapped.second) },
@@ -146,159 +111,6 @@ fun IntRangeSlider(
                 steps = maxValue - minValue - 1,
                 initialValue = if (initialStart != null && initialEnd != null) initialStart.toFloat()..initialEnd.toFloat() else null,
                 modifier = Modifier.semantics { contentDescription = if (label != null) "$label $summary" else summary },
-            )
-        } else if (hasTwoStops) {
-            // 值域版 RangeSlider 重载没有 track 插槽 (且已弃用, ReplaceWith 指向此
-            // 状态版), 幽灵只能画进状态版的 track lambda — 与真轨道同盒同坐标。
-            // 控制形态照抄 material3 值域重载内部实现 (Slider.kt: 建 state 后每
-            // 组合写回 value, 拖动经 onValueChange 冒给调用方再回流)
-            val trackRange = minValue.toFloat()..maxValue.toFloat()
-            // stops = maxValue-minValue+1, 内部档位 = stops-2 (两端点之外)
-            val steps = maxValue - minValue - 1
-            val sliderState = remember(steps, trackRange) {
-                RangeSliderState(
-                    startValue = displayStart.toFloat(),
-                    endValue = displayEnd.toFloat(),
-                    steps = steps,
-                    trackRange = trackRange,
-                )
-            }
-            val trackBackdrop = rememberLayerBackdrop()
-            sliderState.startValue = displayStart.toFloat()
-            sliderState.endValue = displayEnd.toFloat()
-            RangeSlider(
-                state = sliderState,
-                onValueChange = { range ->
-                    val snapped = snapRangeToInt(range, minValue, maxValue)
-                    onValueChange(snapped.first, snapped.second)
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .semantics { contentDescription = if (label != null) "$label $summary" else summary },
-                startThumb = { rangeSliderState ->
-                    GlassSliderThumb(trackBackdrop = trackBackdrop)
-                },
-                endThumb = { rangeSliderState ->
-                    GlassSliderThumb(trackBackdrop = trackBackdrop)
-                },
-                track = { rangeSliderState ->
-                    Box(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(44.dp)
-                            .layerBackdrop(trackBackdrop),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        SliderDefaults.Track(
-                            rangeSliderState = rangeSliderState,
-                        )
-                        // MD3E (Task 6) + 终审 I-1: 幽灵弹入弹出走 popup 家族 (T1 工厂)。
-                        // testTag 仍挂 AnimatedVisibility — 存在性 = 终态语义不变
-                        // (管线测试锁初始无节点、退场播完移除); 退场期间绘制内容经
-                        // lastGhostRange 快照保留, 弹出动画真实播放 (CourseTableView
-                        // retainedLifted 同款模式)。不许改 alpha 常驻。
-                        // this@Column: Box 作用域无 AnimatedVisibility 扩展,
-                        // 外层 Column 版不许隐式接收者 (DSL 闸) — CourseTableView:969 同款修法;
-                        // .align 父级数据仍由本 Box 布局消费, 落位不受重载选择影响。
-                        this@Column.AnimatedVisibility(
-                            visible = ghostRange != null,
-                            enter = sleepyPopupEnter(),
-                            exit = sleepyPopupExit(),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .testTag("slider-ghost"),
-                        ) {
-                            val ghost = lastGhostRange
-                            if (ghost != null) {
-                                val primary = colors.primary
-                                // 幽灵端帽形态分流 (2026-11-08 用户: 滑块长什么样幽灵就长
-                                // 什么样): Composable 上下文读风格, Canvas 只吃布尔。
-                                val glassThumb = LocalUiStyle.current == UiStyle.LiquidGlass
-                                val ghostStart = ghost.first
-                                val ghostEnd = ghost.last
-                                Canvas(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(44.dp)
-                                        .testTag("slider-ghost-canvas"),
-                            ) {
-                                // 1:1 复刻真滑杆形态 (material3 SliderTokens 实测):
-                                // 真 thumb = HandleWidth 4dp x HandleHeight 44dp 全圆
-                                // 胶囊 (HandleShape=CornerFull), 真轨道 = 16dp 高胶囊
-                                // 垂直居中。幽灵 = 同款几何只降透明度。Canvas 宽 = 轨道
-                                // 盒宽 (与真轨道同坐标系), 高 = 44dp; 轨道段画在中部
-                                // 16dp 带内, 端条画满全高 — 与真 thumb 逐像素同形。
-                                // x 映射 = drawTrack 同款: 档位轨道两端各缩进 corner
-                                // (轨道高/2), 端点档 (frac==0/1) 走全宽线性;
-                                // RTL 按 drawTrack 的端点翻转镜像
-                                val trackH = 16.dp.toPx()
-                                val corner = trackH / 2f
-                                val trackTop = (size.height - trackH) / 2f
-                                val isRtl = layoutDirection == LayoutDirection.Rtl
-                                fun ghostX(value: Int): Float {
-                                    val frac = (value - minValue).toFloat() / (maxValue - minValue)
-                                    val f = if (isRtl) 1f - frac else frac
-                                    return if (steps > 0 && f != 0f && f != 1f) {
-                                        corner + (size.width - 2f * corner) * f
-                                    } else {
-                                        size.width * f
-                                    }
-                                }
-                                val g1 = ghostX(ghostStart)
-                                val g2 = ghostX(ghostEnd)
-                                val left = minOf(g1, g2)
-                                val right = maxOf(g1, g2)
-                                // 幽灵轨道段: 浅色胶囊, 与真轨道同高 (16dp) 同垂直位
-                                if (right - left >= 1f) {
-                                    drawRoundRect(
-                                        color = primary.copy(alpha = 0.25f),
-                                        topLeft = Offset(left, trackTop),
-                                        size = Size(right - left, trackH),
-                                        cornerRadius = CornerRadius(corner, corner),
-                                    )
-                                }
-                                // 两端条: 真 thumb 的 1:1 复刻 (2026-11-08 用户:
-                                // "滑块长什么样，幽灵态就长什么样") — Classic = 4dp 宽
-                                // x 44dp 全高竖胶囊; 液态玻璃 = 真滑块静置外形
-                                // 37x24dp 横胶囊 + 同款主题淡色 (GlassSliderThumbMetrics
-                                // 单点真源, 禁手抄几何)。
-                                val barW = 4.dp.toPx()
-                                val thumbW = GlassSliderThumbMetrics.RESTING_WIDTH.dp.toPx()
-                                val thumbH = GlassSliderThumbMetrics.RESTING_HEIGHT.dp.toPx()
-                                val thumbTop = (size.height - thumbH) / 2f
-                                val ghostThumbColor = GlassSliderThumbMetrics.restingColor(primary)
-                                // 玻璃端帽 x = 真 thumb 中心摆放公式 (singleSliderGhostX,
-                                // SliderLayout measurable 像素实测): 37dp 宽 thumb 轨道盒
-                                // 两端各缩进半个 thumb 宽 — 与 4dp 竖条的 track 端点公式
-                                // 不同源; 幽灵必须落在真滑块中心才叫"同款外形同位置"。
-                                fun ghostThumbX(value: Int): Float {
-                                    val frac = (value - minValue).toFloat() / (maxValue - minValue)
-                                    val f = if (isRtl) 1f - frac else frac
-                                    return singleSliderGhostX(size.width, f, steps, thumbW, trackH)
-                                }
-                                for (v in intArrayOf(ghostStart, ghostEnd)) {
-                                    val gx = if (glassThumb) ghostThumbX(v) else ghostX(v)
-                                    if (glassThumb) {
-                                        drawRoundRect(
-                                            color = ghostThumbColor.copy(alpha = 0.40f),
-                                            topLeft = Offset(gx - thumbW / 2f, thumbTop),
-                                            size = Size(thumbW, thumbH),
-                                            cornerRadius = CornerRadius(thumbH / 2f, thumbH / 2f),
-                                        )
-                                    } else {
-                                        drawRoundRect(
-                                            color = primary.copy(alpha = 0.40f),
-                                            topLeft = Offset(gx - barW / 2f, 0f),
-                                            size = Size(barW, size.height),
-                                            cornerRadius = CornerRadius(barW / 2f, barW / 2f),
-                                        )
-                                    }
-                                }
-                            }
-                            }
-                        }
-                    }
-                },
             )
         }
     }
@@ -350,16 +162,12 @@ internal fun singleSliderGhostVisible(
     return abs(current - baseline) > epsilon
 }
 
-/**
- * 单头幽灵细条中心 x (px) — 1:1 复刻 material3 1.5.0-beta02 SliderLayout 的 thumb
- * 摆放公式 (Slider.kt Layout measurable 实测): 轨道盒 = 全宽两端共缩进一个
- * thumbWidth (trackW = W - thumbW), 盒起点缩进 thumbWidth/2; 档位 (steps>0) 的
- * 内部刻度再按轨道圆角 (trackHeight/2) 内缩, 端点刻度 (frac==0/1) 回全轨线性 —
- * 与真 thumb 的 isOnFirstOrLastStep 分支逐字对应。thumb 中心 = thumbWidth/2 +
- * round(...)。调用点 Canvas matchParentSize 与 Slider 布局节点同盒 (探针实测),
- * 故本式产出的 x 即真 thumb 中心所在。
- */
-internal fun singleSliderGhostX(
+/** App slider and ghost share a linear center path, inset by half the thumb width. */
+internal fun singleSliderGhostX(nodeWidthPx: Float, frac: Float, thumbWidthPx: Float): Float =
+    com.lingion.sleepy.ui.component.liquidglass.sliderVisualX(nodeWidthPx, frac, thumbWidthPx / 2f, false)
+
+/** Material3's original handle/track coordinate mapping, before glass controls were added. */
+internal fun materialSliderGhostX(
     nodeWidthPx: Float,
     frac: Float,
     steps: Int,
@@ -367,76 +175,38 @@ internal fun singleSliderGhostX(
     trackHeightPx: Float,
 ): Float {
     val f = frac.coerceIn(0f, 1f)
-    val trackW = nodeWidthPx - thumbWidthPx
+    val trackWidth = nodeWidthPx - thumbWidthPx
     val corner = trackHeightPx / 2f
     val offset = if (steps > 0 && f != 0f && f != 1f) {
-        ((trackW - 2f * corner) * f).roundToInt() + corner
-    } else {
-        (trackW * f).roundToInt().toFloat()
-    }
+        ((trackWidth - 2f * corner) * f).roundToInt() + corner
+    } else (trackWidth * f).roundToInt().toFloat()
     return thumbWidthPx / 2f + offset
 }
 
-/**
- * 单头滑杆轨道上的原值细条 (纯装饰, 需求 2026-10-29; 形态 = 用户裁定的"一条细条",
- * 单值没有区间段, 不做轨道段)。仿 material3 默认 thumb 竖胶囊形态: 4dp 宽 x 全高
- * 圆头, primary 低透明 — 与双头幽灵端点细条 (本文件 RangeSlider track 内) 同观感族。
- *
- * 几何与色值单点: thumb 宽 4dp / 轨道高 16dp / 细条宽 4dp / alpha 0.40 只准出现在
- * 下面这一处 — 摆位走 singleSliderGhostX (material3 摆放公式逐字复刻); 调用点
- * Slider 有档位时必须把同一 steps 传进本件, 幽灵与真 thumb 才同分支同刻度。
- * 色相条等自定义底衬不进本件 (对比配方另画, 见 HueSlider), 本件服务标准
- * material3 Slider。RTL 镜像与双头幽灵同法 (frac 翻转, 公式对称)。
- *
- * 非交互铁律: 零 pointerInput、零语义 (testTag 由调用点挂在本件返回的布局上时
- * 仅服务 Robolectric 存在性断言, 不参与朗读), 幽灵纯渲染 — 落库节奏仍归调用点
- * onValueChangeFinished 一克不动。BoxScope 扩展 = 本件只准放进 Box{ Slider; … }
- * 的轨道边界内 (matchParentSize 是 BoxScope 能力), 与双头幽灵同宿主形态。
- *
- * thumbHeightDp (2026-11-08 用户: "滑块长什么样子, 幽灵状态就是什么样子, 不是
- * 液态玻璃椭圆滑块配 Material 竖条幽灵"): 非 null = 画 thumbWidthDp x thumbHeightDp
- * 横胶囊 (全圆角) + 滑块同款主题淡色 (GlassSliderThumbMetrics.restingColor),
- * 垂直居中 — 玻璃风格调用点 (DisplaySlider) 传 24dp 并同把 thumbWidthDp 切到 37dp;
- * Classic 不传 (null) = 原 4dp 全高竖条一克不动, SingleSliderGhostGeometryTest
- * 像素对拍走的就是这条默认分支。
- */
+/** Noninteractive original-value marker, matching the selected appearance. */
 @Composable
 internal fun BoxScope.SingleSliderGhostMark(
     baselineFrac: Float,
     modifier: Modifier = Modifier,
+    thumbWidthDp: Dp = GlassSliderThumbMetrics.SINGLE_WIDTH.dp,
     steps: Int = 0,
-    thumbWidthDp: Dp = 4.dp,
-    thumbHeightDp: Dp? = null,
 ) {
     val primary = MaterialTheme.colorScheme.primary
+    val glass = liquidGlassControlsEnabled()
     Canvas(modifier.matchParentSize()) {
-        val thumbW = thumbWidthDp.toPx()
-        val trackH = 16.dp.toPx()
-        val barW = 4.dp.toPx()
-        val frac = if (layoutDirection == LayoutDirection.Rtl) {
-            1f - baselineFrac.coerceIn(0f, 1f)
-        } else {
-            baselineFrac
+        val frac = if (layoutDirection == LayoutDirection.Rtl) 1f - baselineFrac else baselineFrac
+        if (!glass) {
+            val width = 4.dp.toPx()
+            val height = 44.dp.toPx()
+            val x = materialSliderGhostX(size.width, frac, steps, width, 16.dp.toPx())
+            drawRoundRect(primary.copy(alpha = .4f), Offset(x - width / 2, (size.height - height) / 2),
+                Size(width, height), CornerRadius(width / 2))
+            return@Canvas
         }
-        val x = singleSliderGhostX(size.width, frac, steps, thumbW, trackH)
-        val capsuleH = thumbHeightDp
-        if (capsuleH != null) {
-            // 玻璃幽灵 = 真滑块静置外形的半透明复刻 (37x24 横胶囊 + 同款淡色)
-            val ch = capsuleH.toPx()
-            drawRoundRect(
-                color = GlassSliderThumbMetrics.restingColor(primary).copy(alpha = 0.40f),
-                topLeft = Offset(x - thumbW / 2f, (size.height - ch) / 2f),
-                size = Size(thumbW, ch),
-                cornerRadius = CornerRadius(ch / 2f, ch / 2f),
-            )
-        } else {
-            drawRoundRect(
-                color = primary.copy(alpha = 0.40f),
-                topLeft = Offset(x - barW / 2f, 0f),
-                size = Size(barW, size.height),
-                cornerRadius = CornerRadius(barW / 2f, barW / 2f),
-            )
-        }
+        val thumbWidth = thumbWidthDp.toPx()
+        val thumbHeight = thumbWidth * GlassSliderThumbMetrics.SINGLE_HEIGHT / GlassSliderThumbMetrics.SINGLE_WIDTH
+        val x = singleSliderGhostX(size.width, frac, thumbWidth)
+        drawSliderGhost(Offset(x, size.height / 2f), Size(thumbWidth, thumbHeight), primary)
     }
 }
 
