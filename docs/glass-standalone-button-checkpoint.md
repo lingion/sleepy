@@ -18,3 +18,9 @@ A real 56dp tall button could activate from its surrounding touch padding but it
 - The installed build's real create-table and expanded paste-text pages were captured and visually inspected for layout/cropping. This was a targeted page check, not complete application or native animation acceptance.
 
 The standalone wrapper belongs to the Sleepy app. The public asset library receives only its mapped runtime primitives and App validation evidence; it does not yet distribute this entire button, GlassHost or DatePicker implementation as a standalone package.
+
+## Follow-up entry audit
+
+Five additional groups still used opaque Material fills and ordinary clickable containers in Glass mode. They now route through the existing glass text button only when a glass host is present: the three schedule-conflict choices; the four management actions; the shared appearance navigation row; the WebDAV configuration header; and both widget-settings navigation entries. Their Material branches retain the original containers, spacing, content and callbacks. The WebDAV header's Glass branch also releases its surrounding opaque Material fill; upload/restore eligibility and credential handling are unchanged.
+
+The final build passed 21 focused tests (the preceding 18 plus three editor-draft tests) and both APK tasks. That app was installed on the API 36 device and its installed SHA-256 matched the built APK. Management entry components were captured and inspected. This extends the named-entry audit; it does not establish every-entry or native optical acceptance.

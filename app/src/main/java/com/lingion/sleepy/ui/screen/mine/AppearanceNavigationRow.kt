@@ -2,7 +2,9 @@ package com.lingion.sleepy.ui.screen.mine
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.outlined.ChevronRight
@@ -16,7 +18,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.ui.component.SettingsLayout
 import com.lingion.sleepy.console.ui.dbgTag
+import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.ui.theme.noRippleClickable
 
 @Composable
@@ -26,16 +32,7 @@ internal fun AppearanceNavigationRow(
     onClick: () -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(colors.surfaceContainer, SleepyTheme.shapes.medium)
-            .noRippleClickable(onClick)
-            .dbgTag(tag, text = title, role = "button")
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap),
-    ) {
+    val rowContent: @Composable RowScope.() -> Unit = {
         Text(
             text = title,
             modifier = Modifier.weight(1f),
@@ -46,6 +43,32 @@ internal fun AppearanceNavigationRow(
             imageVector = Icons.Outlined.ChevronRight,
             contentDescription = null,
             tint = colors.onSurfaceVariant,
+        )
+    }
+    if (LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null) {
+        GlassTextButton(
+            onClick = onClick,
+            modifier = Modifier.fillMaxWidth().dbgTag(tag, text = title, role = "button"),
+            contentPadding = PaddingValues(16.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap),
+                content = rowContent,
+            )
+        }
+    } else {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(colors.surfaceContainer, SleepyTheme.shapes.medium)
+                .noRippleClickable(onClick)
+                .dbgTag(tag, text = title, role = "button")
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap),
+            content = rowContent,
         )
     }
 }

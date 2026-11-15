@@ -3,7 +3,9 @@ package com.lingion.sleepy.ui.screen.mine
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -46,7 +48,10 @@ import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDial
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import java.util.Locale
 
@@ -59,35 +64,53 @@ internal fun WebDavBackupCard(
     onRestore: () -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
+    val glass = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
+    val headerContent: @Composable RowScope.() -> Unit = {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)
+        ) {
+            Text(
+                text = stringResource(R.string.webdav_section_title),
+                style = SettingsLayout.headingStyle,
+                color = colors.onSurface,
+            )
+            Text(
+                text = if (settings == null) stringResource(R.string.webdav_section_sub)
+                else stringResource(R.string.webdav_configured_sub, settings.config.serverUrl),
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.onSurfaceVariant,
+            )
+        }
+        Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = colors.onSurfaceVariant)
+    }
     Column(
-        modifier = Modifier.fillMaxWidth()
+        modifier = if (glass) Modifier.fillMaxWidth() else Modifier.fillMaxWidth()
             .clip(SleepyTheme.shapes.large)
             .background(colors.surfaceContainer)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth()
-                .noRippleClickable(onConfigure)
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap)
-        ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(SettingsLayout.descriptionGap)
+        if (glass) {
+            TextButton(
+                onClick = onConfigure,
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(16.dp),
             ) {
-                Text(
-                    text = stringResource(R.string.webdav_section_title),
-                    style = SettingsLayout.headingStyle,
-                    color = colors.onSurface,
-                )
-                Text(
-                    text = if (settings == null) stringResource(R.string.webdav_section_sub)
-                    else stringResource(R.string.webdav_configured_sub, settings.config.serverUrl),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colors.onSurfaceVariant,
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap),
+                    content = headerContent,
                 )
             }
-            Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = colors.onSurfaceVariant)
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .noRippleClickable(onConfigure)
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(SettingsLayout.controlGap),
+                content = headerContent,
+            )
         }
         if (settings != null) {
             HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
