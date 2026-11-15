@@ -19,6 +19,7 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Share
 import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
+import com.lingion.sleepy.ui.component.liquidglass.glassButtonShape
 import androidx.compose.material3.Icon
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
@@ -322,7 +323,7 @@ fun PeriodTableEditScreen(
                     },
                     enabled = !saving,
                     modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
-                    shape = SleepyTheme.Buttons.shape
+                    shape = glassButtonShape(SleepyTheme.Buttons.shape)
                 ) {
                     Icon(Icons.Outlined.Check, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
@@ -338,7 +339,7 @@ fun PeriodTableEditScreen(
                     Button(
                         onClick = { showDeleteConfirm = true },
                         modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
-                        shape = SleepyTheme.Buttons.shape,
+                        shape = glassButtonShape(SleepyTheme.Buttons.shape),
                         colors = androidx.compose.material3.ButtonDefaults.buttonColors(
                             containerColor = colors.errorContainer
                         )

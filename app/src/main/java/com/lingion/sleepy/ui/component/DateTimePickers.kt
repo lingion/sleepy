@@ -53,12 +53,11 @@ import androidx.compose.material3.DisplayMode
 import com.lingion.sleepy.ui.component.liquidglass.GlassDatePickerDialog as DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton as MaterialIconButton
-import androidx.compose.material3.TextButton as MaterialTextButton
 import androidx.compose.material3.Surface as MaterialSurface
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ProvideTextStyle
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
+import com.lingion.sleepy.ui.component.liquidglass.GlassTextButton as TextButton
 import androidx.compose.material3.TextField
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
 import androidx.compose.material3.ButtonDefaults
@@ -211,7 +210,7 @@ private fun GlassDateEntry(state: DatePickerState, modifier: Modifier, showModeT
                     }
                     if (showModeToggle) {
                         val calendarMode = state.displayMode == DisplayMode.Picker
-                        MaterialIconButton(
+                        IconButton(
                             onClick = { state.displayMode = if (calendarMode) DisplayMode.Input else DisplayMode.Picker },
                             modifier = Modifier.padding(end = 12.dp, bottom = 12.dp),
                         ) {
@@ -274,7 +273,7 @@ private fun GlassDateCalendar(state: DatePickerState, colors: DatePickerColors) 
     val monthLabel = formatter.formatMonthYear(state.displayedMonthMillis, state.locale).orEmpty()
     Column {
         Row(Modifier.fillMaxWidth().height(56.dp).padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            MaterialTextButton(onClick = { yearsVisible = !yearsVisible }, contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp)) {
+            TextButton(onClick = { yearsVisible = !yearsVisible }, contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp)) {
                 Text(monthLabel, color = colors.navigationContentColor)
                 Spacer(Modifier.width(8.dp))
                 Icon(
@@ -285,10 +284,10 @@ private fun GlassDateCalendar(state: DatePickerState, colors: DatePickerColors) 
             }
             Spacer(Modifier.weight(1f))
             if (!yearsVisible) {
-                MaterialIconButton(onClick = { scope.launch { pager.animateScrollToPage((pager.currentPage - 1).coerceAtLeast(0)) } }, enabled = pager.currentPage > 0) {
+                IconButton(onClick = { scope.launch { pager.animateScrollToPage((pager.currentPage - 1).coerceAtLeast(0)) } }, enabled = pager.currentPage > 0) {
                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, stringResource(MaterialR.string.m3c_date_picker_switch_to_previous_month), tint = colors.navigationContentColor)
                 }
-                MaterialIconButton(onClick = { scope.launch { pager.animateScrollToPage((pager.currentPage + 1).coerceAtMost(monthCount - 1)) } }, enabled = pager.currentPage < monthCount - 1) {
+                IconButton(onClick = { scope.launch { pager.animateScrollToPage((pager.currentPage + 1).coerceAtMost(monthCount - 1)) } }, enabled = pager.currentPage < monthCount - 1) {
                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, stringResource(MaterialR.string.m3c_date_picker_switch_to_next_month), tint = colors.navigationContentColor)
                 }
             }

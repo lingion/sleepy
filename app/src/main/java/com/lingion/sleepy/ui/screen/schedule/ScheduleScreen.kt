@@ -54,6 +54,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
+import com.lingion.sleepy.ui.component.liquidglass.glassButtonShape
 import com.lingion.sleepy.ui.component.liquidglass.GlassTonalButton as FilledTonalButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -1008,7 +1009,7 @@ private fun NoCourseState(
         Button(
             onClick = onAddCourse,
             modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight).dbgTag("schedule_add", role = "button"),
-            shape = SleepyTheme.Buttons.shape,
+            shape = glassButtonShape(SleepyTheme.Buttons.shape),
         ) {
             Text(stringResource(R.string.schedule_manual_first))
         }
@@ -1017,7 +1018,7 @@ private fun NoCourseState(
         FilledTonalButton(
             onClick = onImport,
             modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight).dbgTag("schedule_import", role = "button"),
-            shape = SleepyTheme.Buttons.shape,
+            shape = glassButtonShape(SleepyTheme.Buttons.shape),
         ) {
             Text(stringResource(R.string.schedule_go_manage))
         }
@@ -1054,7 +1055,7 @@ private fun EmptyState(
         Button(
             onClick = onGoImport,
             modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight).dbgTag("schedule_go_import", role = "button"),
-            shape = SleepyTheme.Buttons.shape,
+            shape = glassButtonShape(SleepyTheme.Buttons.shape),
         ) {
             Text(stringResource(R.string.schedule_empty_import))
         }
@@ -1063,7 +1064,7 @@ private fun EmptyState(
         FilledTonalButton(
             onClick = onCreateTable,
             modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight).dbgTag("schedule_create_table", role = "button"),
-            shape = SleepyTheme.Buttons.shape,
+            shape = glassButtonShape(SleepyTheme.Buttons.shape),
         ) {
             Text(stringResource(R.string.schedule_empty_create_table))
         }

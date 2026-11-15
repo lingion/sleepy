@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import com.lingion.sleepy.ui.component.liquidglass.GlassTopAppBar as TopAppBar
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
+import com.lingion.sleepy.ui.component.liquidglass.glassButtonShape
 import com.lingion.sleepy.ui.component.liquidglass.GlassTonalButton as FilledTonalButton
 import com.lingion.sleepy.ui.component.liquidglass.GlassFilterChip as FilterChip
 import androidx.compose.runtime.*
@@ -69,12 +70,12 @@ internal fun SingleOccurrenceCourseForm(
                 verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = { keyboard?.hide(); onSave() }, enabled = canSave && !saving,
                     modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight).testTag("single-occurrence-save"),
-                    shape = SleepyTheme.Buttons.shape) {
+                    shape = glassButtonShape(SleepyTheme.Buttons.shape)) {
                     Text(stringResource(if (saving) R.string.occurrence_busy else R.string.save_course))
                 }
                 FilledTonalButton(onClick = { keyboard?.hide(); onMore() }, enabled = !saving,
                     modifier = Modifier.fillMaxWidth().testTag("single-occurrence-more"),
-                    shape = SleepyTheme.Buttons.shape) {
+                    shape = glassButtonShape(SleepyTheme.Buttons.shape)) {
                     Text(stringResource(R.string.occurrence_add_more))
                 }
             }

@@ -21,6 +21,7 @@ import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntSize
 import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.backdrop.BackdropRenderOptions
 import com.kyant.backdrop.backdrops.LayerBackdrop
@@ -42,6 +43,58 @@ internal val LocalGlassOverlay = androidx.compose.runtime.compositionLocalOf { f
 /** A dropdown already owns the placement layer for its complete content tree. */
 internal val LocalGlassPlacementLayer = androidx.compose.runtime.compositionLocalOf { true }
 
+/** Shares one lens's raw pointer lifetime with its larger, fixed touch target. */
+class GlassControlInteraction internal constructor(prominent: Boolean) {
+    internal val motion = GlassPressMotion(prominent)
+    internal var rawPressOrigin by mutableStateOf(Offset.Zero)
+    internal var pointerId: PointerId? = null
+    internal var accepted = false
+    internal var bodySize = IntSize.Zero
+    internal var bodyOffset by mutableStateOf(Offset.Zero)
+    internal val origin: Offset get() = rawPressOrigin - bodyOffset
+}
+
+/** Observes without consuming; click and scroll handlers retain gesture ownership. */
+internal fun Modifier.observeGlassControlPointers(
+    interaction: GlassControlInteraction,
+    enabled: Boolean,
+    grouped: Boolean = false,
+    interactionSource: MutableInteractionSource? = null,
+): Modifier = pointerInput(interaction, enabled, grouped, interactionSource) {
+    if (!enabled) return@pointerInput
+    val motion = interaction.motion
+    try {
+        awaitPointerEventScope {
+            while (true) {
+                val event = awaitPointerEvent(PointerEventPass.Initial)
+                if (interaction.pointerId == null) {
+                    val pointer = event.changes.firstOrNull { it.pressed && !it.previousPressed } ?: continue
+                    interaction.pointerId = pointer.id
+                    interaction.rawPressOrigin = pointer.position
+                    interaction.accepted = !grouped || interactionSource == null
+                    if (interaction.accepted) motion.press()
+                } else {
+                    val pointer = event.changes.firstOrNull { it.id == interaction.pointerId } ?: continue
+                    if (pointer.pressed) {
+                        if (interaction.accepted) {
+                            val body = interaction.bodySize.takeIf { it.width > 0 && it.height > 0 } ?: size
+                            motion.drag(pointer.position - interaction.rawPressOrigin, min(body.width, body.height).toFloat())
+                        }
+                    } else {
+                        if (interaction.accepted) motion.release()
+                        interaction.pointerId = null
+                        interaction.accepted = false
+                    }
+                }
+            }
+        }
+    } finally {
+        if (interaction.accepted) motion.release()
+        interaction.pointerId = null
+        interaction.accepted = false
+    }
+}
+
 /** Adds optical material without owning clicks or introducing a second semantic node. */
 @Composable
 fun Modifier.glassControl(
@@ -56,6 +109,7 @@ fun Modifier.glassControl(
     placementLayer: Boolean = true,
     pressedContentAlpha: Float = 1f,
     exportedBackdrop: LayerBackdrop? = null,
+    sharedInteraction: GlassControlInteraction? = null,
 ): Modifier {
     check(!LocalGlassSourceContent.current) { "An optical consumer cannot be recorded as an ordinary source" }
     val host = LocalGlassHost.current
@@ -102,22 +156,20 @@ fun Modifier.glassControl(
         if (contentPlacementLayer) BackdropRenderOptions.Default else BackdropRenderOptions(placementLayer = false)
     }
     val prominent = tint != null || selected
-    val motion = remember(prominent) { GlassPressMotion(prominent) }
-    var origin by remember { mutableStateOf(Offset.Zero) }
-    var pointerId by remember { mutableStateOf<PointerId?>(null) }
-    var accepted by remember { mutableStateOf(false) }
+    val interaction = sharedInteraction ?: remember(prominent) { GlassControlInteraction(prominent) }
+    val motion = interaction.motion
     val density = LocalDensity.current.density
     val pressed = interactionSource?.collectIsPressedAsState()?.value == true
     LaunchedEffect(motion, enabled, pressed) {
         if (!enabled) {
-            accepted = false
+            interaction.accepted = false
             motion.reset()
         } else if (pressed) {
             // A shared pane only lifts for an enabled child. Once accepted, a
             // click cancellation must not end the raw pointer's optical drag.
-            if (pointerId != null) accepted = true
+            if (interaction.pointerId != null) interaction.accepted = true
             motion.press()
-        } else if (pointerId == null || !accepted) {
+        } else if (interaction.pointerId == null || !interaction.accepted) {
             motion.release()
         }
     }
@@ -131,36 +183,9 @@ fun Modifier.glassControl(
     return this
         // Observe in the fixed layout coordinates, before the painted layer
         // moves. Leave click/scroll ownership to the existing gesture handlers.
-        .pointerInput(motion, enabled, grouped, interactionSource) {
-            if (!enabled) return@pointerInput
-            try {
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent(PointerEventPass.Initial)
-                        if (pointerId == null) {
-                            val pointer = event.changes.firstOrNull { it.pressed && !it.previousPressed } ?: continue
-                            pointerId = pointer.id
-                            origin = pointer.position
-                            accepted = !grouped || interactionSource == null
-                            if (accepted) motion.press()
-                        } else {
-                            val pointer = event.changes.firstOrNull { it.id == pointerId } ?: continue
-                            if (pointer.pressed) {
-                                if (accepted) motion.drag(pointer.position - origin, min(size.width, size.height).toFloat())
-                            } else {
-                                if (accepted) motion.release()
-                                pointerId = null
-                                accepted = false
-                            }
-                        }
-                    }
-                }
-            } finally {
-                if (accepted) motion.release()
-                pointerId = null
-                accepted = false
-            }
-        }
+        .then(if (sharedInteraction == null) Modifier.observeGlassControlPointers(
+            interaction, enabled, grouped, interactionSource,
+        ) else Modifier)
         .graphicsLayer {
             val growth = 16f * density / size.maxDimension.coerceAtLeast(1f)
             val swell = 1f + motion.lift.value * growth
@@ -202,7 +227,7 @@ fun Modifier.glassControl(
                     } else null,
                     rim = rim,
                     glow = LiquidGlassGlow(
-                        center = origin / density,
+                        center = interaction.origin / density,
                         reach = (28f + 3f * motion.lift.value.coerceIn(0f, 1f)).toDouble(),
                         strength = (0.06f * motion.lift.value.coerceIn(0f, 1f)).toDouble(),
                         wash = (0.7f * motion.lift.value.coerceIn(0f, 1f)).toDouble(),

@@ -29,6 +29,7 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import com.lingion.sleepy.ui.component.liquidglass.GlassTonalButton as FilledTonalButton
+import com.lingion.sleepy.ui.component.liquidglass.glassButtonShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
@@ -733,7 +734,7 @@ internal fun CourseColorSection(
                     onClick = onRecalc,
                     modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight)
                         .dbgTag("settings_recalc_button", role = "button"),
-                    shape = SleepyTheme.Buttons.shape,
+                    shape = glassButtonShape(SleepyTheme.Buttons.shape),
                 ) {
                     Text(stringResource(R.string.course_color_recalc))
                 }

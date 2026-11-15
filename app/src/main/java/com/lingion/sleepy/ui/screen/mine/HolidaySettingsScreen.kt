@@ -33,6 +33,7 @@ import androidx.compose.material.icons.outlined.Refresh
 import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import com.lingion.sleepy.ui.component.liquidglass.GlassDatePickerDialog as DatePickerDialog
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
+import com.lingion.sleepy.ui.component.liquidglass.glassButtonShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -448,7 +449,7 @@ fun HolidaySettingsScreen(
                                         )
                                     },
                                     modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
-                                    shape = SleepyTheme.Buttons.shape
+                                    shape = glassButtonShape(SleepyTheme.Buttons.shape)
                                 ) { Text(stringResource(R.string.holiday_add_entry)) }
                             }
                         }
@@ -713,7 +714,7 @@ private fun HolidayOrphanCard(
                 Button(
                     onClick = { onClear(entry.sourceDate) },
                     modifier = Modifier.height(SleepyTheme.Buttons.regularHeight),
-                    shape = SleepyTheme.Buttons.shape,
+                    shape = glassButtonShape(SleepyTheme.Buttons.shape),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colors.secondaryContainer,
                         contentColor = colors.onSecondaryContainer
@@ -853,7 +854,7 @@ private fun HolidayRemovedCard(
                 Button(
                     onClick = { onRestore(segment) },
                     modifier = Modifier.height(SleepyTheme.Buttons.regularHeight),
-                    shape = SleepyTheme.Buttons.shape,
+                    shape = glassButtonShape(SleepyTheme.Buttons.shape),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colors.secondaryContainer,
                         contentColor = colors.onSecondaryContainer

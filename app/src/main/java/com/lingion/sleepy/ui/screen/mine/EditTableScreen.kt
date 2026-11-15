@@ -19,6 +19,7 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Delete
 import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
+import com.lingion.sleepy.ui.component.liquidglass.glassButtonShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
@@ -510,7 +511,7 @@ fun EditTableScreen(
                     },
                     enabled = !saving,
                     modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
-                    shape = SleepyTheme.Buttons.shape
+                    shape = glassButtonShape(SleepyTheme.Buttons.shape)
                 ) {
                     Icon(Icons.Outlined.Check, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
@@ -527,7 +528,7 @@ fun EditTableScreen(
                     Button(
                         onClick = { showDeleteConfirm = true },
                         modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
-                        shape = SleepyTheme.Buttons.shape,
+                        shape = glassButtonShape(SleepyTheme.Buttons.shape),
                         colors = ButtonDefaults.buttonColors(containerColor = colors.errorContainer)
                     ) {
                         Icon(Icons.Outlined.Delete, contentDescription = null, tint = colors.onErrorContainer)

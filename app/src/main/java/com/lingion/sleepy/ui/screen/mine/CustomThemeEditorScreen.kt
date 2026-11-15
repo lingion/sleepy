@@ -26,6 +26,7 @@ import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Tune
 import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
+import com.lingion.sleepy.ui.component.liquidglass.glassButtonShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -219,7 +220,7 @@ fun CustomThemeEditorScreen(
                         containerColor = colors.primary,
                         contentColor = colors.onPrimary
                     ),
-                    shape = SleepyTheme.Buttons.shape,
+                    shape = glassButtonShape(SleepyTheme.Buttons.shape),
                     modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight)
                 ) {
                     Text(stringResource(R.string.save), style = MaterialTheme.typography.titleMedium)
@@ -235,7 +236,7 @@ fun CustomThemeEditorScreen(
                             containerColor = colors.errorContainer,
                             contentColor = colors.onErrorContainer
                         ),
-                        shape = SleepyTheme.Buttons.shape,
+                        shape = glassButtonShape(SleepyTheme.Buttons.shape),
                         modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight)
                     ) {
                         Icon(Icons.Outlined.Delete, null, modifier = Modifier.size(18.dp))

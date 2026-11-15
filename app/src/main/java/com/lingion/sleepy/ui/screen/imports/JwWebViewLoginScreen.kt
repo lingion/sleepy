@@ -37,6 +37,7 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.ui.text.input.ImeAction
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
+import com.lingion.sleepy.ui.component.liquidglass.glassButtonShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
@@ -1053,7 +1054,7 @@ private fun CaptureBar(enabled: Boolean, navigationHint: String? = null, onCaptu
             onClick = onCapture,
             enabled = enabled,
             modifier = Modifier.dbgTag("jw_capture", text = stringResource(R.string.jw_import_page), role = "button"),
-            shape = SleepyTheme.shapes.extraLarge,
+            shape = glassButtonShape(SleepyTheme.shapes.extraLarge),
         ) {
             Icon(
                 imageVector = Icons.Outlined.CheckCircle,

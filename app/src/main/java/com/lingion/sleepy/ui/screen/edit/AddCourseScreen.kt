@@ -39,6 +39,7 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Close
 import com.lingion.sleepy.ui.component.liquidglass.GlassAlertDialog as AlertDialog
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
+import com.lingion.sleepy.ui.component.liquidglass.glassButtonShape
 import com.lingion.sleepy.ui.component.liquidglass.GlassTonalButton as FilledTonalButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -674,7 +675,7 @@ fun AddCourseScreen(
                             }
                         },
                         modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
-                        shape = SleepyTheme.Buttons.shape,
+                        shape = glassButtonShape(SleepyTheme.Buttons.shape),
                     ) {
                         Text(stringResource(R.string.apply_to_all_slots))
                     }
@@ -757,7 +758,7 @@ fun AddCourseScreen(
                         nextBlockId += 1
                     },
                     modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
-                    shape = SleepyTheme.Buttons.shape,
+                    shape = glassButtonShape(SleepyTheme.Buttons.shape),
                 ) {
                     Icon(Icons.Outlined.Add, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
@@ -772,7 +773,7 @@ fun AddCourseScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(SleepyTheme.Buttons.ctaHeight),
-                    shape = SleepyTheme.Buttons.shape
+                    shape = glassButtonShape(SleepyTheme.Buttons.shape)
                 ) {
                     Icon(Icons.Outlined.Check, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
@@ -789,7 +790,7 @@ fun AddCourseScreen(
                     Button(
                         onClick = { showDeleteConfirm = true },
                         modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
-                        shape = SleepyTheme.Buttons.shape,
+                        shape = glassButtonShape(SleepyTheme.Buttons.shape),
                         colors = ButtonDefaults.buttonColors(containerColor = colors.errorContainer)
                     ) {
                         Icon(Icons.Outlined.Delete, contentDescription = null, tint = colors.onErrorContainer)
