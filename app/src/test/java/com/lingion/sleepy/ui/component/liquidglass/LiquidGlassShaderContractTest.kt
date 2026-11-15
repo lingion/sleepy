@@ -131,6 +131,51 @@ class LiquidGlassShaderContractTest {
     }
 
     @Test
+    fun narrowDispersionChangesOnlyItsOwnUniformAndRejectsInvalidSupport() {
+        val baseline = build()
+        assertArrayEquals(floatArrayOf(0f, 0f), baseline.getValue("uDispersionProfile"), 0f)
+        listOf(
+            LiquidGlassDispersionProfile(6.5) to floatArrayOf(6.5f, 1f),
+            LiquidGlassDispersionProfile(-1.0) to floatArrayOf(0f, 0f),
+            LiquidGlassDispersionProfile(64.0, .25) to floatArrayOf(32f, .25f),
+            LiquidGlassDispersionProfile(Double.NaN) to floatArrayOf(0f, 0f),
+            LiquidGlassDispersionProfile(Double.POSITIVE_INFINITY) to floatArrayOf(0f, 0f),
+            LiquidGlassDispersionProfile(Double.MIN_VALUE, .5) to floatArrayOf(0f, 0f),
+            LiquidGlassDispersionProfile(Float.MIN_VALUE.toDouble()) to floatArrayOf(0f, 0f),
+            LiquidGlassDispersionProfile(1e-10) to floatArrayOf(0f, 0f),
+            LiquidGlassDispersionProfile(6.5, Double.NaN) to floatArrayOf(6.5f, 0f),
+        ).forEach { (profile, expected) ->
+            val actual = build(style = sampleStyle().copy(dispersionProfile = profile))
+            assertArrayEquals(expected, actual.getValue("uDispersionProfile"), 0f)
+            baseline.filterKeys { it != "uDispersionProfile" }.forEach { (name, values) ->
+                assertArrayEquals(name, values, actual.getValue(name), 0f)
+            }
+        }
+    }
+
+    @Test
+    fun frostBandIsOptInAndRejectsInvalidSupportsBeforeBinding() {
+        val baseline = build()
+        val band = LiquidGlassFrostBand(1.5, 7.0, .5, 1.1)
+        listOf(band, band.copy(startDp = -1.0), band.copy(endDp = 33.0),
+            band.copy(endDp = 1.6), band.copy(featherDp = Double.MIN_VALUE),
+            band.copy(blurDp = Double.NaN), band.copy(blend = Double.POSITIVE_INFINITY)
+        ).forEach { candidate ->
+            val actual = build(style = sampleStyle().copy(frostBand = candidate))
+            val expected = if (candidate == band) floatArrayOf(1.5f, 7f, .5f, 1.1f)
+                else floatArrayOf(0f, 0f, 0f, 0f)
+            assertArrayEquals(expected, actual.getValue("uFrostBand"), 0f)
+            assertArrayEquals(floatArrayOf(if (candidate == band) 1f else 0f),
+                actual.getValue("uFrostBandBlend"), 0f)
+            baseline.filterKeys { it != "uFrostBand" && it != "uFrostBandBlend" }.forEach { (name, values) ->
+                assertArrayEquals(name, values, actual.getValue(name), 0f)
+            }
+        }
+        assertArrayEquals(floatArrayOf(0f, 0f, 0f, 0f), baseline.getValue("uFrostBand"), 0f)
+        assertArrayEquals(floatArrayOf(0f), baseline.getValue("uFrostBandBlend"), 0f)
+    }
+
+    @Test
     fun packedLengthsMatchTheSkiaUniformTable() {
         // Skia: `sizeInBytes() = uniform_element_size(type) * count`, AOSP 要求
         // `sizeof(float) * count == sizeInBytes()` ⇒ float 个数 = 元素宽 × 数组长。
@@ -138,7 +183,9 @@ class LiquidGlassShaderContractTest {
             "uSize" to 2, "uFrame" to 4, "uSample" to 4, "uClamp" to 4, "uTexels" to 2, "uFrostRadiusMode" to 1,
             "uHazeSample" to 4, "uHazeClamp" to 4, "uHaze" to 1, "uVeil" to 4,
             "uShape" to 4, "uCorners" to 4, "uCircularCorners" to 1, "uCurves" to 48, "uOptics" to 3,
-            "uRefractionLimit" to 1, "uRefractionProfilePower" to 1, "uLateralRefractionGain" to 1, "uEdgeFrost" to 2, "uContourStroke" to 4, "uTint" to 4,
+            "uRefractionLimit" to 1, "uRefractionProfilePower" to 1, "uRefractionShoulder" to 2,
+            "uFrostBand" to 4, "uFrostBandBlend" to 1,
+            "uLateralRefractionGain" to 1, "uEdgeFrost" to 2, "uContourStroke" to 4, "uTint" to 4,
             "uDockTone" to 4, "uDockToneBright" to 3, "uDockToneDark" to 3,
             "uDockDarkLowTone" to 4, "uDockDarkLowToneBlend" to 1,
             "uDockBrightRim" to 4, "uDockBrightRimChroma" to 1, "uDockBrightRimAngular" to 2,
@@ -151,6 +198,7 @@ class LiquidGlassShaderContractTest {
             "uDockDarkRimHeadroom" to 1,
             "uDockBaseRimCubicShoulder" to 1,
             "uLight" to 3, "uGlow" to 4, "uGlowSpread" to 2, "uEdge" to 3, "uRim" to 4,
+            "uDispersionProfile" to 2,
             "uOutlined" to 1, "uProfile" to 64, "uProfile2" to 64, "uProfileCenters" to 4,
             "uExact1" to 144, "uExact2" to 144,
             "uShineTurns" to 8, "uShineLit" to 8, "uShineFloorLit" to 8,
