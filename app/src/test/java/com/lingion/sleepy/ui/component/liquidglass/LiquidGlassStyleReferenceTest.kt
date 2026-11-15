@@ -17,6 +17,56 @@ class LiquidGlassStyleReferenceTest {
         surfaceContainerHighest = Color(0xFF445566),
     )
 
+    @Test fun narrowDispersionKeepsItsSupportWhileStrengthFades() {
+        val style = LiquidGlassStyle(Color.White, dispersion = 5.0, dispersionProfile = LiquidGlassDispersionProfile(6.5))
+        listOf(-1.0, 0.0, .5, 1.0, 2.0).forEach { amount ->
+            val actual = style.scale(amount)
+            assertEquals(style.dispersionProfile, actual.dispersionProfile)
+            assertEquals(5.0 * amount.coerceIn(0.0, 1.0), actual.dispersion, 0.0)
+        }
+        val other = style.copy(dispersionProfile = LiquidGlassDispersionProfile(8.5))
+        assertEquals(LiquidGlassDispersionProfile(7.5), LiquidGlassStyle.lerp(style, other, .5).dispersionProfile)
+    }
+
+    @Test fun enteringAndLeavingAnExplicitDispersionProfilePreservesSupport() {
+        val legacy = LiquidGlassStyle(Color.White, dispersion = 5.0)
+        val narrow = legacy.copy(dispersionProfile = LiquidGlassDispersionProfile(6.5))
+        listOf(0.0, 1e-6, .25, .5, .999999, 1.0).forEach { t ->
+            assertEquals(LiquidGlassDispersionProfile(6.5, t),
+                LiquidGlassStyle.lerp(legacy, narrow, t).dispersionProfile)
+            assertEquals(LiquidGlassDispersionProfile(6.5, 1.0 - t),
+                LiquidGlassStyle.lerp(narrow, legacy, t).dispersionProfile)
+        }
+    }
+
+    @Test fun frostBandKeepsItsSupportAndFadesTheReplacementRadiusWithLift() {
+        val band = LiquidGlassFrostBand(1.5, 7.0, .5, 1.1)
+        val legacy = LiquidGlassStyle(Color.White, rimBlur = 1.5)
+        val style = legacy.copy(frostBand = band)
+        listOf(0.0, .25, .5, 1.0).forEach { t ->
+            assertEquals(band.copy(blurDp = 1.1 * t), style.scale(t).frostBand)
+            assertEquals(1.5 * t, style.scale(t).rimBlur, 0.0)
+            assertEquals(band.copy(blend = t), LiquidGlassStyle.lerp(legacy, style, t).frostBand)
+            assertEquals(band.copy(blend = 1.0 - t), LiquidGlassStyle.lerp(style, legacy, t).frostBand)
+        }
+    }
+
+    @Test fun nonSliderFactoriesRetainTheirInheritedDispersionEnvelope() {
+        assertEquals(null, LiquidGlassStyle(Color.Transparent).dispersionProfile)
+        listOf(false, true).forEach { isDark ->
+            val colors = if (isDark) dark else light
+            listOf(LiquidGlassStyle.regular(colors, isDark), LiquidGlassStyle.pill(colors, isDark),
+                LiquidGlassStyle.menu(colors, isDark), LiquidGlassStyle.alert(colors, isDark),
+                LiquidGlassStyle.sheet(isDark), LiquidGlassStyle.tinted(colors, Color.Red, isDark),
+                LiquidGlassStyle.lens(colors, isDark), LiquidGlassStyle.controlLens(colors, isDark),
+                LiquidGlassStyle.lensContent(colors, isDark), LiquidGlassStyle.controlLensContent(colors, isDark))
+                .forEach {
+                    assertEquals(null, it.dispersionProfile)
+                    assertEquals(null, it.frostBand)
+                }
+        }
+    }
+
     @Test fun refractionLimitDefaultsToTheExistingHalfMinorCap() {
         assertEquals(1.0, LiquidGlassStyle(Color.Transparent).refractionLimit, 0.0)
     }
